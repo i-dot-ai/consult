@@ -4,7 +4,13 @@ This project is currently at prototyping stage.
 
 The Consultation Analyser is an AI-powered tool to automate the processing of public consultations.
 
+## Setting up the application
 
+Ensure you have `python > 3.10` and `poetry` installed.
+
+```
+poetry install
+```
 
 ## Frontend Prototype
 
