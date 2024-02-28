@@ -14,6 +14,7 @@ python = "^3.10"
 django = "^5.0.2"
 django-environ = "^0.11.2"
 ruff = "^0.2.2"
+pre-commit = "^3.6.2"
 
 
 [build-system]
