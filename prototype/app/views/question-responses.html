@@ -1,0 +1,119 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% set pageName="Home" %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">Responses to question:</h1>
+    <p>{{data.questions[0]}}</p>
+  </div>
+</div>
+
+<div class="govuk-grid-row govuk-!-margin-top-4">
+  <div class="govuk-grid-column-one-third">
+    <h2 class="govuk-heading-m">Filters</h2>
+    <form>
+      {{ govukInput({
+        label: {
+          text: "Keyword search"
+        },
+        classes: "govuk-input--width-10",
+        id: "keyword",
+        name: "keyword"
+      }) }}
+
+      {{ govukSelect({
+        id: "theme",
+        name: "theme",
+        label: {
+          text: "Theme"
+        },
+        items: [
+          {
+            value: "all",
+            text: "All themes"
+          },
+          {
+            value: "updated",
+            text: "Recently updated",
+            selected: true
+          },
+          {
+            value: "views",
+            text: "Most views"
+          },
+          {
+            value: "comments",
+            text: "Most comments"
+          }
+        ]
+      }) }}
+
+      {{ govukButton({
+        text: "Apply filters"
+      }) }}
+    </form>
+  </div>
+  <div class="govuk-grid-column-two-thirds">
+    
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Responses</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Closed response</th>
+          <th scope="col" class="govuk-table__header">Open response</th>
+          <th scope="col" class="govuk-table__header" style="width: 10.25rem;">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for question in data.questions %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">Yes</td>
+            <td class="govuk-table__cell">{{question}}</td>
+            <td class="govuk-table__cell">
+              {{ govukButton({
+                text: "View respondent",
+                classes: "govuk-button--secondary",
+                href: "/respondent"
+              }) }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+    {{ govukPagination({
+      previous: {
+        href: "#"
+      },
+      next: {
+        href: "#"
+      },
+      items: [
+        {
+          number: 1,
+          href: "#"
+        },
+        {
+          number: 2,
+          current: true,
+          href: "#"
+        },
+        {
+          number: 3,
+          href: "#"
+        }
+      ]
+    }) }}
+  </div>
+</div>
+
+{% endblock %}
