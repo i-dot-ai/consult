@@ -1,0 +1,45 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+
+{% set pageName="Home" %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+
+    <h1 class="govuk-heading-l">Smoking consultation</h1>
+
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--m">Questions</caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Question</th>
+          <th scope="col" class="govuk-table__header" style="width: 22.25rem;">Actions</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        {% for question in data.questions %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">{{question}}</td>
+            <td class="govuk-table__cell">
+              {{ govukButton({
+                text: "Question summary",
+                classes: "govuk-button--secondary"
+              }) }}
+              {{ govukButton({
+                text: "Explore responses",
+                classes: "govuk-button--secondary",
+                href: "/question-responses"
+              }) }}
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+
+  </div>
+</div>
+
+{% endblock %}
