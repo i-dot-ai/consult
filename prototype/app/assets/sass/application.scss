@@ -3,4 +3,14 @@
 // https://prototype-kit.service.gov.uk/docs/adding-css-javascript-and-images
 // 
 
-// Add extra styles here
+:root {
+  --iai-pink: #b62777;
+}
+
+.govuk-header__container {
+  border-color: var(--iai-pink);
+}
+.govuk-phase-banner__content__tag {
+  background-color: var(--iai-pink);
+  color: white;
+}
