@@ -6,6 +6,8 @@ The Consultation Analyser is an AI-powered tool to automate the processing of pu
 
 ## Setting up the application
 
+Populate `.env` by copying `.env.example` and filling in required values.
+
 Ensure you have `python > 3.10` and `poetry` installed.
 
 ```
