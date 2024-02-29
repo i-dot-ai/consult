@@ -35,8 +35,8 @@ repos:
     rev: v1.8.0
     hooks:
     -   id: mypy
-        files: .
         args: ["--ignore-missing-imports"]
+        exclude: ^consultation_analyser/consultations/migrations
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.4.0
     hooks:

@@ -2,4 +2,4 @@ from django.apps import AppConfig
 
 
 class ConsultationsConfig(AppConfig):
-    name = "consultations"
+    name = "consultation_analyser.consultations"
