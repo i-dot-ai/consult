@@ -14,3 +14,16 @@
   background-color: var(--iai-pink);
   color: white;
 }
+
+
+.iai-key-finding {
+  align-items: center;
+  background-color: govuk-colour("light-grey");
+  display: flex;
+  padding: 0.75rem;
+}
+.iai-key-finding__chart {
+  flex-shrink: 0;
+  margin-right: 1rem;
+  width: 5rem;
+}
