@@ -14,6 +14,22 @@ Ensure you have `python > 3.10` and `poetry` installed.
 poetry install
 ```
 
+### Database
+
+Assuming local postgres:
+
+```
+createdb consultations_dev
+createuser consultations_dev
+psql -d postgres -c 'GRANT ALL ON database consultations_dev TO consultations_dev;'
+```
+
+Confirm it works with
+
+```
+poetry run python manage.py check --database default
+```
+
 ## Frontend Prototype
 
 Located at `/prototype`. Using the Gov.uk Prototype Kit. This is work in progress, not all pages are available yet.
