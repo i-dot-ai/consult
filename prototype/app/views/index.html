@@ -3,7 +3,6 @@
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 {% from "govuk/components/tabs/macro.njk" import govukTabs %}
-{% from "/components/barchart.html" import barchart %}
 
 {% set pageName="Home" %}
 
@@ -70,7 +69,7 @@
       <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Smokefree generation:</h3>
       <div class="iai-key-finding">
         <div class="iai-key-finding__chart">
-          <canvas id="chart1" data-yes="63" data-no="33"></canvas>
+          <canvas data-yes="63" data-no="33"></canvas>
         </div>
         <div>
           <p class="govuk-!-margin-bottom-1"><strong>63% of respondents are in favour of the smokefree generation policy, 33% are opposed</strong></p>
@@ -81,7 +80,7 @@
       <h3 class="govuk-heading-s govuk-!-margin-top-5 govuk-!-margin-bottom-1">Product scope:</h3>
       <div class="iai-key-finding">
         <div class="iai-key-finding__chart">
-          <canvas id="chart1" data-yes="63" data-no="31"></canvas>
+          <canvas data-yes="63" data-no="31"></canvas>
         </div>
         <div>
           <p class="govuk-!-margin-bottom-1"><strong>63% of respondents agree that all tobacco products, cigarette papers and herbal smoking products should be covered in the new legislation, 31% are opposed</strong></p>
@@ -92,7 +91,7 @@
       <h3 class="govuk-heading-s govuk-!-margin-top-5 govuk-!-margin-bottom-1">Disposable vapes:</h3>
       <div class="iai-key-finding">
         <div class="iai-key-finding__chart">
-          <canvas id="chart1" data-yes="79" data-no="18"></canvas>
+          <canvas data-yes="79" data-no="18"></canvas>
         </div>
         <div>
           <p class="govuk-!-margin-bottom-1"><strong>79% of respondents agree that there should be restrictions on the sale and supply of disposable vapes, 18% are opposed</strong></p>
@@ -103,7 +102,7 @@
       <h3 class="govuk-heading-s govuk-!-margin-top-5 govuk-!-margin-bottom-1">Enforcement:</h3>
       <div class="iai-key-finding">
         <div class="iai-key-finding__chart">
-          <canvas id="chart1" data-yes="88" data-no="9"></canvas>
+          <canvas data-yes="88" data-no="9"></canvas>
         </div>
         <div>
           <p class="govuk-!-margin-bottom-1"><strong>88% of respondents think that that fixed penalty notices should be issued for breaches of age of sale legislation for tobacco products and vapes, 9% are opposed</strong></p>
