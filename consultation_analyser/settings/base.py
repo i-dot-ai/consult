@@ -48,7 +48,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-# ROOT_URLCONF = "consultation_analyser.urls"
+ROOT_URLCONF = "consultation_analyser.urls"
 
 TEMPLATES = [
     {
