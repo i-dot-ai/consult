@@ -31,8 +31,6 @@ ALLOWED_HOSTS: list[str] = []
 # Application definition
 
 INSTALLED_APPS = [
-    "django.contrib.admin",
-    "django.contrib.auth",
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
@@ -49,7 +47,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
 ]
 
-ROOT_URLCONF = "consultation_analyser.urls"
+# ROOT_URLCONF = "consultation_analyser.urls"
 
 TEMPLATES = [
     {
