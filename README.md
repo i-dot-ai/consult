@@ -4,7 +4,31 @@ This project is currently at prototyping stage.
 
 The Consultation Analyser is an AI-powered tool to automate the processing of public consultations.
 
+## Setting up the application
 
+Populate `.env` by copying `.env.example` and filling in required values.
+
+Ensure you have `python > 3.10` and `poetry` installed.
+
+```
+poetry install
+```
+
+### Database
+
+Assuming local postgres:
+
+```
+createdb consultations_dev
+createuser consultations_dev
+psql -d postgres -c 'GRANT ALL ON database consultations_dev TO consultations_dev;'
+```
+
+Confirm it works with
+
+```
+poetry run python manage.py check --database default
+```
 
 ## Frontend Prototype
 

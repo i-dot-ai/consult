@@ -1,0 +1,96 @@
+# http://EditorConfig.org
+# https://gds-way.digital.cabinet-office.gov.uk/manuals/programming-languages/editorconfig
+# Copy into project root and rename to .editorconfig
+
+# uncomment if top-most EditorConfig file
+# root = true
+
+[*.scss]
+indent_size = 2
+indent_style = space
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.njk]
+indent_size = 2
+indent_style = space
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.html]
+indent_size = 2
+indent_style = space
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.css]
+indent_size = 2
+indent_style = space
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{cjs,js,mjs}]
+indent_size = 2
+indent_style = space
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.json]
+indent_size = 2
+indent_style = space
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.py]
+indent_size = 4
+indent_style = space
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+max_line_length = 119
+
+[*.sh]
+indent_size = 2
+indent_style = space
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{yml,yaml}]
+indent_size = 2
+indent_style = space
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[Makefile]
+indent_size = 2
+indent_style = tab
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[**vendor**]
+indent_size = unset
+indent_style = unset
+charset = unset
+end_of_line = unset
+insert_final_newline = unset
+trim_trailing_whitespace = unset
+max_line_length = unset
