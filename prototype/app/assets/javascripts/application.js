@@ -16,7 +16,12 @@
         labels: ['In favour', 'Opposed', 'Undecided'],
         datasets: [{
           data: [chart.dataset.yes, chart.dataset.no, 100 - parseInt(chart.dataset.yes || '0') - parseInt(chart.dataset.no || '0')],
-          borderWidth: 1
+          borderWidth: 1,
+          backgroundColor: [
+            '#005abb',
+            '#a23138',
+            '#cc5a13'
+          ]
         }]
       },
       options: {
