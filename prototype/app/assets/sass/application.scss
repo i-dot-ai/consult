@@ -16,7 +16,7 @@
   color: white;
 }
 
-
+/** START PAGE **/
 .iai-key-finding {
   align-items: center;
   background-color: govuk-colour("light-grey");
@@ -39,6 +39,7 @@
   gap: 1rem;
 }
 
+/** QUESTION OVERVIEW PAGE **/
 .govuk-table__cell:has(.iai-bar) {
   padding: 0.25rem 0;
   vertical-align: middle;
@@ -66,4 +67,18 @@
 }
 .iai-bar__bar.animate {
   transition: width 1s;
+}
+
+/** QUESTION DETAIL PAGE **/
+.iai-filters {
+  background-color: govuk-colour("light-grey");
+  padding: 1rem;
+}
+@media (min-width: 641px) {
+  .iai-filters {
+    max-width: 14rem;
+  }
+}
+.iai-filters .govuk-form-group {
+  /*margin-bottom: 1.5rem;*/
 }
