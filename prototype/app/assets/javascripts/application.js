@@ -20,7 +20,7 @@
           backgroundColor: [
             '#005abb',
             '#a23138',
-            '#cc5a13'
+            '#cc5a13' // #ecac00 is only 2:1 contrast ratio
           ]
         }]
       },
@@ -80,6 +80,23 @@
         }
       }
     }
+  });
+
+})();
+
+
+// Prevalent themes bars animation
+(() => {
+  
+  /** @type {NodeListOf<HTMLElement>} */
+  const bars = document.querySelectorAll('.js-bar');
+  bars.forEach((bar) => {
+    const originalWidth = bar.style.width;
+    bar.style.width = '0%';
+    window.setTimeout(() => {
+      bar.classList.add('animate');
+      bar.style.width = originalWidth;
+    }, 1);
   });
 
 })();

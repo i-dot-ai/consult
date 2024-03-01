@@ -5,6 +5,7 @@
 
 :root {
   --iai-pink: #b62777;
+  --govuk-light-blue: #5694ca;
 }
 
 .govuk-header__container {
@@ -26,4 +27,43 @@
   flex-shrink: 0;
   margin-right: 1rem;
   width: 5rem;
+}
+
+.iai-questions__item {
+  background-color: govuk-colour("light-grey");
+  list-style-type: none;
+  padding: 0.75rem;
+}
+.iai-questions__links {
+  display: flex;
+  gap: 1rem;
+}
+
+.govuk-table__cell:has(.iai-bar) {
+  padding: 0.25rem 0;
+  vertical-align: middle;
+}
+.iai-bar {
+  align-items: center;
+  display: flex;
+  height: 46px;
+  position: relative;
+  vertical-align: middle;
+}
+.iai-bar__value {
+  padding: 0 0.25rem;
+  position: relative;
+  z-index: 10;
+}
+.iai-bar__bar {
+  background-color: var(--govuk-light-blue);
+  display: block;
+  height: 100%;
+  left: 0;
+  opacity: 0.3;
+  position: absolute;
+  top: 0;
+}
+.iai-bar__bar.animate {
+  transition: width 1s;
 }
