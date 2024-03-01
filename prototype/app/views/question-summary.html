@@ -1,0 +1,120 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/input/macro.njk" import govukInput %}
+{% from "govuk/components/pagination/macro.njk" import govukPagination %}
+{% from "govuk/components/select/macro.njk" import govukSelect %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% set pageName="Home" %}
+
+{% block beforeMain %}
+  {{ govukBackLink({
+    text: "Back to all questions",
+    href: "/"
+  }) }}
+{% endblock %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-l">Question summary</h1>
+    <p>{{data.questions[0]}}</p>
+    {{ govukSummaryList({
+      rows: [
+        {
+          key: {
+            text: "In favour"
+          },
+          value: {
+            text: "63%"
+          }
+        },
+        {
+          key: {
+            text: "Apposed"
+          },
+          value: {
+            text: "33%"
+          }
+        },
+        {
+          key: {
+            text: "Undecided"
+          },
+          value: {
+            text: "3%"
+          }
+        }
+      ]
+    }) }}
+  </div>
+  <div class="govuk-grid-column-one-third">
+    <canvas data-yes="63" data-no="31"></canvas>
+  </div>
+</div>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    {#<h2 class="govuk-heading-m">Prevalent themes</h2>#}
+    {#<canvas id="prevalent-themes"></canvas>#}
+    
+    <table class="govuk-table">
+      <caption class="govuk-table__caption govuk-table__caption--s">
+        <h2>Prevalent themes</h2>
+      </caption>
+      <thead class="govuk-table__head">
+        <tr class="govuk-table__row">
+          <th scope="col" class="govuk-table__header">Theme</th>
+          <th scope="col" class="govuk-table__header">Number of respondents</th>
+        </tr>
+      </thead>
+      <tbody class="govuk-table__body">
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Preventing smoking-related illnesses starts now</th>
+          <td class="govuk-table__cell">671</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Vaping is becoming increasingly popular among young people who have never smoked as they perceive it as a safer alternative to smoking.</th>
+          <td class="govuk-table__cell">443</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Strong public opposition to change in tobacco sale ages</th>
+          <td class="govuk-table__cell">163</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Limit children\'s access to tobacco products</th>
+          <td class="govuk-table__cell">136</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Legalise ban on tobacco products for current and future generations</th>
+          <td class="govuk-table__cell">127</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Age of sale for tobacco products should be changed to eradicate smoking</th>
+          <td class="govuk-table__cell">112</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Smoking is harmful and should not be legally sold to anyone born after 1 January 2009</th>
+          <td class="govuk-table__cell">105</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Vaping and smoking both need to be completely unavailable</th>
+          <td class="govuk-table__cell">91</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">Protect future generations from the harmful effects of smoking</th>
+          <td class="govuk-table__cell">84</td>
+        </tr>
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">The majority of respondents support raising the legal age of sale for tobacco products to 18 years old in the UK, believing it will help prevent addiction and reduce peer pressure among young people</th>
+          <td class="govuk-table__cell">81</td>
+        </tr>
+      </tbody>
+    </table>
+    
+  </div>
+</div>
+
+{% endblock %}

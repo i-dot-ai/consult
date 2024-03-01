@@ -1,18 +1,199 @@
 {% extends "layouts/main.html" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+{% from "govuk/components/tabs/macro.njk" import govukTabs %}
 
 {% set pageName="Home" %}
 
 {% block content %}
 
+<script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-base.min.js"></script>
+
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
-
+    <span class="govuk-caption-m">Department of Health and Social Care</span>
     <h1 class="govuk-heading-l">Smoking consultation</h1>
 
+    {% set tab1 %}
+      <h2 class="govuk-heading-m">Responses processed</h2>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: "Total"
+            },
+            value: {
+              text: "27,921"
+            }
+          },
+          {
+            key: {
+              text: "England"
+            },
+            value: {
+              text: "21,701"
+            }
+          },
+          {
+            key: {
+              text: "Scotland"
+            },
+            value: {
+              text: "3,089"
+            }
+          },
+          {
+            key: {
+              text: "Wales"
+            },
+            value: {
+              text: "1,018"
+            }
+          },
+          {
+            key: {
+              text: "Northern Ireland"
+            },
+            value: {
+              text: "1,221"
+            }
+          }
+        ]
+      }) }}
+    {% endset %}
+
+    {% set tab2 %}
+      <h2 class="govuk-heading-m">Key findings</h2>
+
+      <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Smokefree generation:</h3>
+      <div class="iai-key-finding">
+        <div class="iai-key-finding__chart">
+          <canvas data-yes="63" data-no="33"></canvas>
+        </div>
+        <div>
+          <p class="govuk-!-margin-bottom-1"><strong>63% of respondents are in favour of the smokefree generation policy, 33% are opposed</strong></p>
+          <p class="govuk-!-margin-bottom-0">The key argument expressed in the responses is that smoking is a major health issue in the UK and that strict measures need to be implemented to reduce its impact.</p>
+        </div>
+      </div>
+      
+      <h3 class="govuk-heading-s govuk-!-margin-top-5 govuk-!-margin-bottom-1">Product scope:</h3>
+      <div class="iai-key-finding">
+        <div class="iai-key-finding__chart">
+          <canvas data-yes="63" data-no="31"></canvas>
+        </div>
+        <div>
+          <p class="govuk-!-margin-bottom-1"><strong>63% of respondents agree that all tobacco products, cigarette papers and herbal smoking products should be covered in the new legislation, 31% are opposed</strong></p>
+          <p class="govuk-!-margin-bottom-0">Respondents express support in order to eradicate smoking and protect public health. Respondents also commonly agree that all tobacco products should be covered to promote a complete ban on smoking and prevent loopholes that can be exploited by the tobacco industry.</p>
+        </div>
+      </div>
+
+      <h3 class="govuk-heading-s govuk-!-margin-top-5 govuk-!-margin-bottom-1">Disposable vapes:</h3>
+      <div class="iai-key-finding">
+        <div class="iai-key-finding__chart">
+          <canvas data-yes="79" data-no="18"></canvas>
+        </div>
+        <div>
+          <p class="govuk-!-margin-bottom-1"><strong>79% of respondents agree that there should be restrictions on the sale and supply of disposable vapes, 18% are opposed</strong></p>
+          <p class="govuk-!-margin-bottom-0">Respondents cite negative impacts on the environment and on children as the key reasons for support.</p>
+        </div>
+      </div>
+
+      <h3 class="govuk-heading-s govuk-!-margin-top-5 govuk-!-margin-bottom-1">Enforcement:</h3>
+      <div class="iai-key-finding">
+        <div class="iai-key-finding__chart">
+          <canvas data-yes="88" data-no="9"></canvas>
+        </div>
+        <div>
+          <p class="govuk-!-margin-bottom-1"><strong>88% of respondents think that that fixed penalty notices should be issued for breaches of age of sale legislation for tobacco products and vapes, 9% are opposed</strong></p>
+          <p class="govuk-!-margin-bottom-0">Respondents commonly believe that FPNs would help restrict the sale of these products to minors and make retailers and sellers comply with the law.</p>
+        </div>
+      </div>
+
+    {% endset %}
+
+    {% set tab3 %}
+      <h2 class="govuk-heading-m">Contacts</h2>
+      <h3 class="govuk-heading-s govuk-!-margin-bottom-1">DHSC:</h3>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: "Policy"
+            },
+            value: {
+              text: "firstname.lastname@dhsc.gov.uk"
+            }
+          },
+          {
+            key: {
+              text: "Analyst"
+            },
+            value: {
+              text: "firstname.lastname@dhsc.gov.uk"
+            }
+          },
+          {
+            key: {
+              text: "Data Science"
+            },
+            value: {
+              text: "firstname.lastname@dhsc.gov.uk"
+            }
+          }
+        ]
+      }) }}
+      <h3 class="govuk-heading-s govuk-!-margin-bottom-1">10DS:</h3>
+      {{ govukSummaryList({
+        rows: [
+          {
+            key: {
+              text: "Analyst"
+            },
+            value: {
+              text: "firstname.lastname@no10.gov.uk"
+            }
+          },
+          {
+            key: {
+              text: "Health Lead"
+            },
+            value: {
+              text: "firstname.lastname@no10.gov.uk"
+            }
+          }
+        ]
+      }) }}
+    {% endset %}
+
+    {{ govukTabs({
+      items: [
+        {
+          label: "Responses processed",
+          id: "responses",
+          panel: {
+            html: tab1
+          }
+        },
+        {
+          label: "Key findings",
+          id: "findings",
+          panel: {
+            html: tab2
+          }
+        },
+        {
+          label: "Contacts",
+          id: "contacts",
+          panel: {
+            html: tab3
+          }
+        }
+      ]
+    }) }}
+
     <table class="govuk-table">
-      <caption class="govuk-table__caption govuk-table__caption--m">Questions</caption>
+      <caption class="govuk-table__caption govuk-table__caption--m govuk-!-margin-top-4">Questions</caption>
       <thead class="govuk-table__head">
         <tr class="govuk-table__row">
           <th scope="col" class="govuk-table__header">Question</th>
@@ -26,12 +207,13 @@
             <td class="govuk-table__cell">
               {{ govukButton({
                 text: "Question summary",
-                classes: "govuk-button--secondary"
+                classes: "govuk-button--secondary",
+                href: "/question-summary?question-index={{loop.index0}}"
               }) }}
               {{ govukButton({
                 text: "Explore responses",
                 classes: "govuk-button--secondary",
-                href: "/question-responses"
+                href: "/question-responses?question-index={{loop.index0}}"
               }) }}
             </td>
           </tr>

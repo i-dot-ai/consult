@@ -8,6 +8,13 @@
 
 {% set pageName="Home" %}
 
+{% block beforeMain %}
+  {{ govukBackLink({
+    text: "Back to all questions",
+    href: "/"
+  }) }}
+{% endblock %}
+
 {% block content %}
 
 <div class="govuk-grid-row">
@@ -42,17 +49,17 @@
             text: "All themes"
           },
           {
-            value: "updated",
-            text: "Recently updated",
+            value: "theme1",
+            text: "Theme 1",
             selected: true
           },
           {
-            value: "views",
-            text: "Most views"
+            value: "theme2",
+            text: "Theme 2"
           },
           {
-            value: "comments",
-            text: "Most comments"
+            value: "theme3",
+            text: "Theme3"
           }
         ]
       }) }}
