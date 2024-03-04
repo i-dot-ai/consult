@@ -9,6 +9,9 @@ description = ""
 authors = ["i.AI <i-dot-ai-enquiries@cabinetoffice.gov.uk>"]
 readme = "README.md"
 
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "consultation_analyser.settings.test"
+
 [tool.poetry.dependencies]
 python = "^3.12"
 django = "^5.0.2"
@@ -19,6 +22,14 @@ psycopg = "^3.1.18"
 [tool.poetry.group.development.dependencies]
 ruff = "^0.2.2"
 pre-commit = "^3.6.2"
+factory_boy = "^3.3.0"
+
+[tool.mypy]
+files = '**/*.py'
+exclude= ['^consultation_analyser/consultations/migrations/']
+
+[tool.poetry.group.test.dependencies]
+pytest-django = "^4.8.0"
 
 [build-system]
 requires = ["poetry-core"]
