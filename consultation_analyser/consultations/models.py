@@ -2,6 +2,7 @@ from django.db import models
 
 
 class Consultation(models.Model):
+    # May need something better long-term
     class Organisation(models.TextChoices):
         DFE = "dept-for-education", "Department for Education"
         CO = "cabinet-office", "Cabinet Office"
