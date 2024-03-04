@@ -1,13 +1,14 @@
 // @ts-check
 
 
-// Key findings charts
+// Doughnut charts
 (() => {
 
   /** @type {NodeListOf<HTMLCanvasElement>} */
-  const keyFindingCharts = document.querySelectorAll('[data-yes]');
+  const doughnutCharts = document.querySelectorAll('[data-yes]');
+  let chartObjects = [];
 
-  keyFindingCharts.forEach((chart) => {
+  doughnutCharts.forEach((chart) => {
 
     let options = {
       responsive: true,
@@ -37,30 +38,38 @@
       };
     }
 
-    console.log(options);
-
     // @ts-ignore
-    new Chart(chart, {
+    chartObjects.push(new Chart(chart, {
       type: 'doughnut',
-      plugins: [ChartDataLabels],
+      // @ts-ignore
+      plugins: chart.dataset.labels ? [ChartDataLabels]: [],
       data: {
         labels: ['Agree', 'Disagree', 'Not sure'],
         datasets: [{
           data: [chart.dataset.yes, chart.dataset.no, 100 - parseInt(chart.dataset.yes || '0') - parseInt(chart.dataset.no || '0')],
           borderWidth: 1,
-          backgroundColor: [
-            '#005abb',
-            '#a23138',
-            '#cc5a13' // #ecac00 is only 2:1 contrast ratio
+          backgroundColor: [ // based on https://analysisfunction.civilservice.gov.uk/policy-store/data-visualisation-colours-in-charts/
+            '#12436D',
+            '#801650',
+            '#F46A25'
           ]
         }]
       },
       options: options
-    });
+    }));
 
   });
 
+  // Trigger chart animation when a tab containing a chart is activated
+  document.querySelector('#tab_findings')?.addEventListener('click', () => {
+    chartObjects.forEach((chart) => {
+      chart.reset();
+      chart.update();
+    });
+  });
+
 })();
+
 
 
 // Prevalent themes chart
