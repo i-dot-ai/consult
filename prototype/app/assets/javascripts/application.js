@@ -9,11 +9,42 @@
 
   keyFindingCharts.forEach((chart) => {
 
+    let options = {
+      responsive: true,
+      plugins: {
+        legend: {
+          display: chart.dataset.legend === 'true'
+        }
+      }
+    };
+    if (chart.dataset.labels) {
+      options.plugins.datalabels = {
+        display: true,
+        color: '#FFF',
+        formatter: (value, context) => {
+            if (value < 10) {
+                return '';
+            }
+            return context.chart.data.labels[context.dataIndex];
+            //return `${context.chart.data.labels[context.dataIndex]}\n${value}%`;
+        },
+        font: {
+            size: 14,
+            weight: 'bold',
+            lineHeight: 1.5
+        },
+        textAlign: 'center'
+      };
+    }
+
+    console.log(options);
+
     // @ts-ignore
     new Chart(chart, {
       type: 'doughnut',
+      plugins: [ChartDataLabels],
       data: {
-        labels: ['In favour', 'Opposed', 'Undecided'],
+        labels: ['Agree', 'Disagree', 'Not sure'],
         datasets: [{
           data: [chart.dataset.yes, chart.dataset.no, 100 - parseInt(chart.dataset.yes || '0') - parseInt(chart.dataset.no || '0')],
           borderWidth: 1,
@@ -24,14 +55,7 @@
           ]
         }]
       },
-      options: {
-        responsive: true,
-        plugins: {
-          legend: {
-            display: chart.dataset.legend === 'true'
-          }
-        }
-      }
+      options: options
     });
 
   });
@@ -40,6 +64,7 @@
 
 
 // Prevalent themes chart
+/*
 (() => {
 
   const chart = document.getElementById('prevalent-themes');
@@ -83,6 +108,7 @@
   });
 
 })();
+*/
 
 
 // Prevalent themes bars animation
