@@ -27,7 +27,7 @@ psql -d postgres -c 'GRANT ALL ON database consultations_dev TO consultations_de
 # test
 createdb consultations_test
 createuser consultations_test
-psql -d postgres -c 'GRANT ALL ON database consultations_test TO consultations_test;'
+psql -d postgres -c 'GRANT ALL ON database consultations_test TO consultations_test; ALTER USER consultations_test CREATEDB;'
 ```
 
 Confirm it works with
