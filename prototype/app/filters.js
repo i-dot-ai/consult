@@ -6,5 +6,9 @@
 const govukPrototypeKit = require('govuk-prototype-kit')
 const addFilter = govukPrototypeKit.views.addFilter
 
-// Add your filters here
 
+addFilter('filter', (data, keywords) => {
+  return data.filter((item) => {
+    return item.toLowerCase().indexOf(keywords.toLowerCase()) !== -1;
+  });
+});
