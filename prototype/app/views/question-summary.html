@@ -47,15 +47,19 @@
             text: "3%"
           }
         }
-      ]
+      ],
+      classes: "govuk-!-margin-bottom-4"
     }) }}
+
+    <a href="/question-responses?question-index={{data['question-index']}}">View detailed responses &#8250;</a>
+
   </div>
   <div class="govuk-grid-column-one-third">
     <canvas data-yes="63" data-no="31" data-labels="true"></canvas>
   </div>
 </div>
 
-<div class="govuk-grid-row">
+<div class="govuk-grid-row govuk-!-margin-top-5">
   <div class="govuk-grid-column-full">
     {#<h2 class="govuk-heading-m">Prevalent themes</h2>#}
     {#<canvas id="prevalent-themes"></canvas>#}
