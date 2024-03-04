@@ -198,7 +198,7 @@
       {% for question in data.questions %}
         <li class="iai-questions__item govuk-!-margin-top-3">
           <p class="govuk-!-margin-bottom-1">{{question}}</p>
-          <span class="iai-questions__links">
+          <span class="iai-questions__links govuk-!-margin-top-2">
             <a href="/question-summary?question-index={{loop.index0}}" class="govuk-link govuk-link--no-visited-state">Question summary</a>
             <a href="/question-responses?question-index={{loop.index0}}" class="govuk-link govuk-link--no-visited-state">Explore responses</a>
           </span>
