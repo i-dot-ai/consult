@@ -11,6 +11,22 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
+    container: python:3.12
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: pguser
+          POSTGRES_PASSWORD: pgpass
+          POSTGRES_DB: consultations_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
       - uses: actions/checkout@v2
@@ -27,3 +43,5 @@ jobs:
 
       - name: pytest
         run: poetry run pytest
+        env:
+          DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test

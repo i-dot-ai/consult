@@ -41,7 +41,7 @@ repos:
     rev: v1.4.0
     hooks:
     -   id: detect-secrets
-        exclude: (poetry.lock|.env.example|.env.test)
+        exclude: (poetry.lock|.env.example|.env.test|test.yml)
   - repo: local
     hooks:
     -   id: detect-ip
