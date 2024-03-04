@@ -220,20 +220,23 @@
         <tr class="govuk-table__row">
           <th scope="col" class="govuk-table__header">Closed response</th>
           <th scope="col" class="govuk-table__header">Open response</th>
-          <th scope="col" class="govuk-table__header" style="width: 10.25rem;">Actions</th>
+          <th scope="col" class="govuk-table__header" style="width: 9rem;">Actions</th>
         </tr>
       </thead>
       <tbody class="govuk-table__body">
         {% for question in data.questions %}
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell">Yes</td>
+            <td class="govuk-table__cell">Agree</td>
             <td class="govuk-table__cell">{{question}}</td>
             <td class="govuk-table__cell">
+              <a href="/respondent">View respondent</a>
+              {#
               {{ govukButton({
                 text: "View respondent",
                 classes: "govuk-button--secondary",
                 href: "/respondent"
               }) }}
+              #}
             </td>
           </tr>
         {% endfor %}
