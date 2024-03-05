@@ -19,6 +19,7 @@
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
+    <span class="govuk-caption-m">Showing <strong>all</strong> of <strong>27,921</strong> responses</span>
     <h1 class="govuk-heading-l">Question summary</h1>
     <p>{{data.questions[0]}}</p>
     {{ govukSummaryList({
@@ -51,7 +52,7 @@
       classes: "govuk-!-margin-bottom-4"
     }) }}
 
-    <a href="/question-responses?question-index={{data['question-index']}}">View detailed responses &#8250;</a>
+    <a href="/question-responses?question-index={{data['question-index']}}&keyword=&theme=all&opinion=all&location=all&age=all&capacity=all">View detailed responses &#8250;</a>
 
   </div>
   <div class="govuk-grid-column-one-third">
@@ -59,8 +60,189 @@
   </div>
 </div>
 
-<div class="govuk-grid-row govuk-!-margin-top-5">
-  <div class="govuk-grid-column-full">
+<div class="govuk-grid-row govuk-!-margin-top-5 govuk-!-padding-top-3">
+
+  <div class="govuk-grid-column-one-third">
+    <div class="iai-filters govuk-!-margin-bottom-5">
+      <h2 class="govuk-heading-m">Filters</h2>
+      <form>
+
+        {{ govukSelect({
+          id: "filter-theme",
+          name: "theme",
+          label: {
+            text: "Theme"
+          },
+          items: [
+            {
+              value: "all",
+              text: "All",
+              selected: true
+            },
+            {
+              value: "theme1",
+              text: "Theme 1"
+            },
+            {
+              value: "theme2",
+              text: "Theme 2"
+            },
+            {
+              value: "theme3",
+              text: "Theme 3"
+            }
+          ]
+        }) }}
+
+        {{ govukSelect({
+          id: "filter-opinion",
+          name: "opinion",
+          label: {
+            text: "Opinion"
+          },
+          items: [
+            {
+              value: "all",
+              text: "All",
+              selected: true
+            },
+            {
+              value: "agree",
+              text: "Agree"
+            },
+            {
+              value: "disagree",
+              text: "Disagree"
+            },
+            {
+              value: "not-sure",
+              text: "Not sure"
+            }
+          ]
+        }) }}
+
+        {{ govukSelect({
+          id: "filter-location",
+          name: "location",
+          label: {
+            text: "Location"
+          },
+          items: [
+            {
+              value: "all",
+              text: "All",
+              selected: true
+            },
+            {
+              value: "england",
+              text: "England"
+            },
+            {
+              value: "scotland",
+              text: "Scotland"
+            },
+            {
+              value: "wales",
+              text: "Wales"
+            },
+            {
+              value: "northern-ireland",
+              text: "Northern Ireland"
+            }
+          ]
+        }) }}
+
+        {{ govukSelect({
+          id: "filter-age",
+          name: "age",
+          label: {
+            text: "Age group"
+          },
+          items: [
+            {
+              value: "all",
+              text: "All",
+              selected: true
+            },
+            {
+              value: "13-14",
+              text: "13 - 14"
+            },
+            {
+              value: "15-17",
+              text: "15 - 17"
+            },
+            {
+              value: "18-24",
+              text: "18 - 24"
+            },
+            {
+              value: "25-34",
+              text: "25 - 34"
+            },
+            {
+              value: "35-44",
+              text: "35 - 44"
+            },
+            {
+              value: "45-54",
+              text: "45 - 54"
+            },
+            {
+              value: "55-64",
+              text: "55 - 64"
+            },
+            {
+              value: "65-74",
+              text: "65 - 74"
+            },
+            {
+              value: "75plus",
+              text: "75 or above"
+            },
+            {
+              value: "unknown",
+              text: "Prefer not to say"
+            }
+          ]
+        }) }}
+
+        {{ govukSelect({
+          id: "filter-capacity",
+          name: "capacity",
+          label: {
+            text: "Capacity"
+          },
+          items: [
+            {
+              value: "all",
+              text: "All",
+              selected: true
+            },
+            {
+              value: "personal",
+              text: "Personal"
+            },
+            {
+              value: "professional",
+              text: "Professional"
+            },
+            {
+              value: "organisation",
+              text: "Organisation"
+            }
+          ]
+        }) }}
+
+        {{ govukButton({
+          text: "Apply filters",
+          classes: "govuk-!-margin-bottom-1"
+        }) }}
+      </form>
+    </div>
+  </div>
+
+  <div class="govuk-grid-column-two-thirds">
     {#<h2 class="govuk-heading-m">Prevalent themes</h2>#}
     {#<canvas id="prevalent-themes"></canvas>#}
     
@@ -81,7 +263,7 @@
 
     <table class="govuk-table">
       <caption class="govuk-table__caption govuk-table__caption--s">
-        <h2>Prevalent themes</h2>
+        <h2 class="govuk-!-margin-bottom-2 govuk-!-margin-top-0">Prevalent themes</h2>
       </caption>
       <thead class="govuk-table__head">
         <tr class="govuk-table__row">
@@ -105,6 +287,7 @@
     </table>
     
   </div>
+
 </div>
 
 {% endblock %}
