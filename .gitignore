@@ -161,6 +161,7 @@ cython_debug/
 
 # Frontend Prototype
 prototype/node_modules
+prototype/usage-data-config.json
 
 # Other
 .env

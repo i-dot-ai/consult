@@ -192,8 +192,25 @@
       ]
     }) }}
 
+  
+    <h2 class="govuk-heading-m govuk-!-margin-bottom-0">Questions</h2>
+    <ul class="iai-questions govuk-!-padding-0">
+      {% for question in data.questions %}
+        <li class="iai-questions__item govuk-!-margin-top-3">
+          <p class="govuk-!-margin-bottom-1">{{question}}</p>
+          <span class="iai-questions__links govuk-!-margin-top-2">
+            <a href="/question-summary?question-index={{loop.index0}}&keyword=&theme=all&opinion=all&location=all&age=all&capacity=all" class="govuk-link govuk-link--no-visited-state">Question summary</a>
+            <a href="/question-responses?question-index={{loop.index0}}&keyword=&theme=all&opinion=all&location=all&age=all&capacity=all" class="govuk-link govuk-link--no-visited-state">Explore responses</a>
+          </span>
+        </li>
+      {% endfor %}
+    </ul>
+
+    {#
     <table class="govuk-table">
-      <caption class="govuk-table__caption govuk-table__caption--m govuk-!-margin-top-4">Questions</caption>
+      <caption class="govuk-table__caption govuk-table__caption--m govuk-!-margin-top-4">
+        <h2 class="govuk-heading-m">Questions</h2>
+      </caption>
       <thead class="govuk-table__head">
         <tr class="govuk-table__row">
           <th scope="col" class="govuk-table__header">Question</th>
@@ -208,18 +225,19 @@
               {{ govukButton({
                 text: "Question summary",
                 classes: "govuk-button--secondary",
-                href: "/question-summary?question-index={{loop.index0}}"
+                href: "/question-summary?question-index={{loop.index0}}&keyword=&theme=all&opinion=all&location=all&age=all&capacity=all"
               }) }}
               {{ govukButton({
                 text: "Explore responses",
                 classes: "govuk-button--secondary",
-                href: "/question-responses?question-index={{loop.index0}}"
+                href: "/question-responses?question-index={{loop.index0}}&keyword=&theme=all&opinion=all&location=all&age=all&capacity=all"
               }) }}
             </td>
           </tr>
         {% endfor %}
       </tbody>
     </table>
+    #}
 
   </div>
 </div>

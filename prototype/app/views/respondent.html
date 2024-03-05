@@ -24,18 +24,18 @@
       rows: [
         {
           key: {
-            text: "Age group"
+            text: "Location"
           },
           value: {
-            text: "30 - 40"
+            text: "England"
           }
         },
         {
           key: {
-            text: "Location"
+            text: "Age group"
           },
           value: {
-            text: "London"
+            text: "35 - 44"
           }
         },
         {
@@ -43,11 +43,21 @@
             text: "Capacity"
           },
           value: {
-            text: "..."
+            text: "Personal"
           }
         }
       ]
     }) }}
+
+    <h2 class="govuk-heading-m">Responses</h2>
+    <ul class="iai-questions govuk-!-padding-0">
+      {% for question in data.questions %}
+        <li class="iai-questions__item govuk-!-margin-top-3">
+          <h3 class="govuk-heading-s govuk-!-margin-bottom-3">{{question}}</h3>
+          <p class="govuk-!-margin-bottom-1">The respondent's answer will be displayed here. Both the closed response and the open response.</p>
+        </li>
+      {% endfor %}
+    </ul>
 
   </div>
 </div>
