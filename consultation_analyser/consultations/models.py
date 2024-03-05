@@ -9,18 +9,27 @@ class UUIDPrimaryKeyBase(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
 
 
-class Consultation(UUIDPrimaryKeyBase):
+class SlugPrimaryKeyBase(models.Model):
+    class Meta:
+        abstract = True
+
+    slug = models.CharField(primary_key=True, blank=False, max_length=256)
+
+
+class Consultation(SlugPrimaryKeyBase):
     name = models.CharField(max_length=256, blank=False)
-    slug = models.CharField(max_length=256, blank=False)
 
 
-class Question(UUIDPrimaryKeyBase):
+class Section(SlugPrimaryKeyBase):
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, null=True)
+    text = models.TextField(blank=True)
+
+
+class Question(SlugPrimaryKeyBase):
     text = models.CharField(max_length=None)  # no idea what's a sensible value for max_length
-    slug = models.CharField(max_length=256)
     has_free_text = models.BooleanField(default=False)
     multiple_choice_options = models.JSONField(default=list)
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, null=True)
-    section = models.TextField(blank=True)
 
 
 class Respondent(UUIDPrimaryKeyBase):
