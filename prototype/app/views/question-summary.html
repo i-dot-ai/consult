@@ -274,7 +274,35 @@
       <tbody class="govuk-table__body">
         {% for item in themes %}
           <tr class="govuk-table__row">
-            <td class="govuk-table__cell">{{item.theme}}</th>
+            <td class="govuk-table__cell">
+              <details class="govuk-details govuk-!-margin-bottom-0">
+                <summary class="govuk-details__summary govuk-!-margin-top-1">
+                  <span class="govuk-details__summary-text">{{item.theme}}</span>
+                </summary>
+                <div class="govuk-details__text">
+                  <p>The key argument expressed in the responses is that smoking is a major health issue in the UK and that strict measures need to be implemented to reduce its impact. Many respondents support the idea of raising the age of sale for tobacco products, with some seeing it as a way to 'Level Up' and reduce the burden on the NHS. The cost of smoking-related illnesses is also highlighted as a significant factor in the argument for stricter regulations.</p>
+                  <p>This theme has the following keywords:</p>
+                  <ul class="iai-inline-list">
+                    <li>nhs</li>
+                    <li>cost</li>
+                    <li>related</li>
+                    <li>money</li>
+                    <li>costs</li>
+                    <li>smoking</li>
+                    <li>health</li>
+                    <li>uk</li>
+                    <li>impact</li>
+                    <li>illnesses</li>
+                  </ul>
+                  <p>Example responses from this theme:</p>
+                  <ol>
+                    <li>"Smoking well recognised to be major impact on health, rates already falling, makes sense to go the next step. Will have great indirect benefits for healthcare also. Good protection against passive smoking, especially for children of parents who smoke."</li>
+                    <li>"I believe that the risks and ongoing NHS costs to the country outweigh the freedom of choice to start smoking"</li>
+                    <li>"The health, financial, and social implications of smoking are well documented and action is urgently needed to tackle the health of the nation. The NHS is under such strain, if we could reduce the number of smoking related health diseases it would have a big impact on resources. I believe we have a duty to protect future generations and especially young children from exposure to smoke."</li>
+                  </ol>
+                </div>
+              </details>
+            </td>
             <td class="govuk-table__cell">
               <span class="iai-bar">
                 <span class="iai-bar__value">{{item.value}}</span>

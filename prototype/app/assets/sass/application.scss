@@ -69,6 +69,16 @@
   transition: width 1s;
 }
 
+.iai-inline-list {
+  display: flex;
+  flex-wrap: wrap;
+  margin-top: -0.5rem;
+  padding: 0;
+}
+.iai-inline-list li {
+  margin-left: 2rem;
+}
+
 /** QUESTION DETAIL PAGE **/
 .iai-filters {
   background-color: govuk-colour("light-grey");
