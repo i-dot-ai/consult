@@ -1,43 +1,42 @@
+import uuid
 from django.db import models
 
 
-class Consultation(models.Model):
-    # May need something better long-term
-    class Organisation(models.TextChoices):
-        DFE = "dept-for-education", "Department for Education"
-        CO = "cabinet-office", "Cabinet Office"
+class UUIDPrimaryKeyBase(models.Model):
+    class Meta:
+        abstract = True
 
-    identifier = models.CharField(max_length=256, blank=False)
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+
+class Consultation(UUIDPrimaryKeyBase):
     name = models.CharField(max_length=256, blank=False)
-    organisation_identifier = models.CharField(max_length=256, choices=Organisation.choices, blank=True)
+    slug = models.CharField(max_length=256, blank=False)
 
 
-class Question(models.Model):
+class Question(UUIDPrimaryKeyBase):
     text = models.CharField(max_length=None)  # no idea what's a sensible value for max_length
     slug = models.CharField(max_length=256)
-    is_closed = models.BooleanField(default=False)
-    is_open = models.BooleanField(default=False)
-    closed_response_options = models.JSONField(default=list)
+    has_free_text = models.BooleanField(default=False)
+    multiple_choice_options = models.JSONField(default=list)
     order = models.IntegerField(blank=True, null=True)
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, null=True)
 
 
-class Respondent(models.Model):
-    # These characteristics might be different for different consultations
-    age_group = models.CharField(max_length=256, blank=True)
-    location = models.CharField(max_length=256, blank=True)
-    # TODO - what is capacity?
+class Respondent(UUIDPrimaryKeyBase):
+    # Characteristics may be different for different consultations
+    pass
 
 
-class Theme(models.Model):
+class Theme(UUIDPrimaryKeyBase):
     label = models.CharField(max_length=256, blank=True)
     summary = models.TextField(blank=True)
     keywords = models.JSONField(default=list)
 
 
-class Answer(models.Model):
-    closed_response = models.CharField(max_length=256, blank=True)
-    free_text_response = models.TextField(blank=True)
+class Answer(UUIDPrimaryKeyBase):
+    multiple_choice_responses = models.JSONField(default=list) # Multiple choice can have more than one response
+    free_text = models.TextField(blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
-    theme = models.ForeignKey(Theme, on_delete=models.CASCADE, blank=True)
+    theme = models.ForeignKey(Theme, on_delete=models.CASCADE, blank=True) # For now, just one theme per answer
