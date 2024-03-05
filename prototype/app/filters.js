@@ -9,6 +9,6 @@ const addFilter = govukPrototypeKit.views.addFilter
 
 addFilter('filter', (data, keywords) => {
   return data.filter((item) => {
-    return item.toLowerCase().indexOf(keywords.toLowerCase()) !== -1;
+    return !keywords || item.toLowerCase().indexOf(keywords.toLowerCase()) !== -1;
   });
 });
