@@ -21,6 +21,7 @@ class Question(UUIDPrimaryKeyBase):
     multiple_choice_options = models.JSONField(default=list)
     order = models.IntegerField(blank=True, null=True)
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, null=True)
+    section = models.TextField(blank=True)
 
 
 class Respondent(UUIDPrimaryKeyBase):
