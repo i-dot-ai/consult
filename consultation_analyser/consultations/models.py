@@ -19,7 +19,6 @@ class Question(UUIDPrimaryKeyBase):
     slug = models.CharField(max_length=256)
     has_free_text = models.BooleanField(default=False)
     multiple_choice_options = models.JSONField(default=list)
-    order = models.IntegerField(blank=True, null=True)
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, null=True)
     section = models.TextField(blank=True)
 
