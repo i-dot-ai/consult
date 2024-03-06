@@ -7,9 +7,6 @@ repos:
       - id: check-added-large-files
         name: Check for files larger than 5 MB
         args: [ "--maxkb=5120" ]
-      - id: end-of-file-fixer
-        name: Check for a blank line at the end of scripts (auto-fixes)
-        exclude: '\.Rd'
       - id: trailing-whitespace
         name: Check for trailing whitespaces (auto-fixes)
 

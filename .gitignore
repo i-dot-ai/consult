@@ -163,6 +163,11 @@ cython_debug/
 prototype/node_modules
 prototype/usage-data-config.json
 
+# Frontend
+node_modules
+frontend/CACHE
+frontend/govuk-assets
+
 # Other
 .env
 .DS_Store
