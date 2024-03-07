@@ -20,11 +20,18 @@ class TimeStampedModel(models.Model):
 
 class Consultation(UUIDPrimaryKeyBase, TimeStampedModel):
     name = models.CharField(max_length=256, blank=False)
+    slug = models.CharField(blank=False, null=False, max_length=256)
 
 
 class Section(UUIDPrimaryKeyBase, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, null=True)
     text = models.TextField(blank=True)
+    slug = models.CharField(blank=False, null=False, max_length=256)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["slug", "consultation"], name="unique_section_consultation"),
+        ]
 
 
 class Question(UUIDPrimaryKeyBase, TimeStampedModel):
@@ -33,6 +40,11 @@ class Question(UUIDPrimaryKeyBase, TimeStampedModel):
     has_free_text = models.BooleanField(default=False)
     multiple_choice_options = models.JSONField(default=list, null=True)
     section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["slug", "section"], name="unique_question_section"),
+        ]
 
 
 class ConsultationResponse(UUIDPrimaryKeyBase, TimeStampedModel):
