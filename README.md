@@ -36,6 +36,19 @@ Confirm it works with
 poetry run python manage.py check --database default
 ```
 
+
+### Run the application
+```
+poetry run python manage.py runserver
+```
+
+### Run the tests
+
+```
+poetry run pytest
+```
+
+
 ### Frontend
 
 
@@ -65,18 +78,6 @@ The govuk assets are versioned in the `npm` package. On initial app setup you wi
 
 We’ll revisit this process when we deploy the app.
 
-
-
-### Run the application
-```
-poetry run python manage.py runserver
-```
-
-### Run the tests
-
-```
-poetry run pytest
-```
 
 ## Frontend Prototype
 
