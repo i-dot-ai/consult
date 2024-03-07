@@ -33,6 +33,7 @@ make check_db
 ```
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 (You can see all the available `make` commands by running bare `make` or `make help`).
 =======
 
@@ -49,6 +50,8 @@ poetry run pytest
 
 >>>>>>> 16c9255 (tidy readme after rebase)
 
+=======
+>>>>>>> de81d1f (Update README)
 ### Frontend
 
 
