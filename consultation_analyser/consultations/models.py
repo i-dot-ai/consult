@@ -18,37 +18,37 @@ class TimeStampedModel(models.Model):
         ordering = ["created_at"]
 
 
-class Consultation(UUIDPrimaryKeyBase):
+class Consultation(UUIDPrimaryKeyBase, TimeStampedModel):
     name = models.CharField(max_length=256, blank=False)
 
 
-class Section(UUIDPrimaryKeyBase):
+class Section(UUIDPrimaryKeyBase, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     text = models.TextField(blank=True)
 
 
-class Question(UUIDPrimaryKeyBase):
+class Question(UUIDPrimaryKeyBase, TimeStampedModel):
     text = models.CharField(max_length=None)  # no idea what's a sensible value for max_length
     slug = models.CharField(blank=False, null=False, max_length=256)
     has_free_text = models.BooleanField(default=False)
-    multiple_choice_options = models.JSONField(default=list)
+    multiple_choice_options = models.JSONField(default=list, null=True)
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
 
 
-class Respondent(UUIDPrimaryKeyBase):
+class ConsultationResponse(UUIDPrimaryKeyBase, TimeStampedModel):
     # Characteristics may be different for different consultations
     pass
 
 
-class Theme(UUIDPrimaryKeyBase):
+class Theme(UUIDPrimaryKeyBase, TimeStampedModel):
     label = models.CharField(max_length=256, blank=True)
     summary = models.TextField(blank=True)
     keywords = models.JSONField(default=list)
 
 
-class Answer(UUIDPrimaryKeyBase):
-    multiple_choice_responses = models.JSONField(default=list) # Multiple choice can have more than one response
+class Answer(UUIDPrimaryKeyBase, TimeStampedModel):
+    multiple_choice_responses = models.JSONField(default=list, null=True) # Multiple choice can have more than one response
     free_text = models.TextField(blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
+    consultation_response = models.ForeignKey(ConsultationResponse, on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE, blank=True) # For now, just one theme per answer
