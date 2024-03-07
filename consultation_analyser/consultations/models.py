@@ -23,7 +23,7 @@ class Consultation(UUIDPrimaryKeyBase, TimeStampedModel):
 
 
 class Section(UUIDPrimaryKeyBase, TimeStampedModel):
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, null=True)
     text = models.TextField(blank=True)
 
 
@@ -32,7 +32,7 @@ class Question(UUIDPrimaryKeyBase, TimeStampedModel):
     slug = models.CharField(blank=False, null=False, max_length=256)
     has_free_text = models.BooleanField(default=False)
     multiple_choice_options = models.JSONField(default=list, null=True)
-    section = models.ForeignKey(Section, on_delete=models.CASCADE)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
 
 
 class ConsultationResponse(UUIDPrimaryKeyBase, TimeStampedModel):
@@ -51,4 +51,4 @@ class Answer(UUIDPrimaryKeyBase, TimeStampedModel):
     free_text = models.TextField(blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     consultation_response = models.ForeignKey(ConsultationResponse, on_delete=models.CASCADE)
-    theme = models.ForeignKey(Theme, on_delete=models.CASCADE, blank=True) # For now, just one theme per answer
+    theme = models.ForeignKey(Theme, on_delete=models.CASCADE, blank=True, null=True) # For now, just one theme per answer
