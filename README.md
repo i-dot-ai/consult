@@ -32,7 +32,22 @@ Confirm it works with
 make check_db
 ```
 
+<<<<<<< HEAD
 (You can see all the available `make` commands by running bare `make` or `make help`).
+=======
+
+### Run the application
+```
+poetry run python manage.py runserver
+```
+
+### Run the tests
+
+```
+poetry run pytest
+```
+
+>>>>>>> 16c9255 (tidy readme after rebase)
 
 ### Frontend
 
