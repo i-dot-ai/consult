@@ -51,9 +51,6 @@
       ],
       classes: "govuk-!-margin-bottom-4"
     }) }}
-
-    <a href="/question-responses?question-index={{data['question-index']}}&keyword=&theme=all&opinion=all&location=all&age=all&capacity=all">View detailed responses &#8250;</a>
-
   </div>
   <div class="govuk-grid-column-one-third">
     <canvas data-yes="63" data-no="31" data-labels="true"></canvas>
@@ -245,21 +242,8 @@
   <div class="govuk-grid-column-two-thirds">
     {#<h2 class="govuk-heading-m">Prevalent themes</h2>#}
     {#<canvas id="prevalent-themes"></canvas>#}
-    
-    {% set themes = [
-      {"theme": "Preventing related illnesses starts now", value: 671},
-      {"theme": "... is becoming increasingly popular among young people who perceive it as a safer alternative.", value: 443},
-      {"theme": "Strong public opposition to change in sale ages", value: 163},
-      {"theme": "Limit children's access to products", value: 136},
-      {"theme": "Legalise ban on products for current and future generations", value: 127},
-      {"theme": "Age of sale for products should be changed to eradicate ...", value: 112},
-      {"theme": "It is harmful and should not be legally sold to anyone born after 1 January 2009", value: 105},
-      {"theme": "... and ... both need to be completely unavailable", value: 91},
-      {"theme": "Protect future generations from the harmful effects", value: 84},
-      {"theme": "The majority of respondents support raising the legal age of sale for products to 18 years old in the UK, believing it will help reduce peer pressure among young people", value: 81}
-    ] %}
 
-    {% set highestCount = themes[0].value %}
+    {% set highestCount = data.themes[0].value %}
 
     <table class="govuk-table">
       <caption class="govuk-table__caption govuk-table__caption--s">
@@ -272,7 +256,7 @@
         </tr>
       </thead>
       <tbody class="govuk-table__body">
-        {% for item in themes %}
+        {% for item in data.themes %}
           <tr class="govuk-table__row">
             <td class="govuk-table__cell">
               <details class="govuk-details govuk-!-margin-bottom-0">
@@ -294,12 +278,10 @@
                     <li>impact</li>
                     <li>illnesses</li>
                   </ul>
-                  <p>Example responses from this theme:</p>
-                  <ol>
-                    <li>"Smoking well recognised to be major impact on health, rates already falling, makes sense to go the next step. Will have great indirect benefits for healthcare also. Good protection against passive smoking, especially for children of parents who smoke."</li>
-                    <li>"I believe that the risks and ongoing NHS costs to the country outweigh the freedom of choice to start smoking"</li>
-                    <li>"The health, financial, and social implications of smoking are well documented and action is urgently needed to tackle the health of the nation. The NHS is under such strain, if we could reduce the number of smoking related health diseases it would have a big impact on resources. I believe we have a duty to protect future generations and especially young children from exposure to smoke."</li>
-                  </ol>
+                  <a href="/question-responses?question-index={{data['question-index']}}&keyword=&theme={{item.theme | urlencode}}&opinion=all&location=all&age=all&capacity=all">
+                    View detailed responses for this theme &#8250;
+                    <span class="govuk-visually-hidden"> - {{item.theme}}</span>
+                  </a>
                 </div>
               </details>
             </td>
