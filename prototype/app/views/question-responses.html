@@ -35,32 +35,17 @@
           <input class="govuk-input govuk-input--width-10" id="keyword" name="keyword" type="text" value="{{data.keyword}}">
         </div>
 
-        {{ govukSelect({
-          id: "filter-theme",
-          name: "theme",
-          label: {
-            text: "Theme"
-          },
-          items: [
-            {
-              value: "all",
-              text: "All",
-              selected: true
-            },
-            {
-              value: "theme1",
-              text: "Theme 1"
-            },
-            {
-              value: "theme2",
-              text: "Theme 2"
-            },
-            {
-              value: "theme3",
-              text: "Theme 3"
-            }
-          ]
-        }) }}
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="theme">
+            Theme
+          </label>
+          <select class="govuk-select" id="filter-theme" name="theme">
+            <option value="all" {% if not data.theme or data.theme == "all" %}selected{% endif %}>All</option>
+            {% for item in data.themes %}
+              <option value="{{item.theme | urlencode}}" {% if data.theme == item.theme %}selected{% endif %}>{{item.theme}}</option>
+            {% endfor %}
+          </select>
+        </div>
 
         {{ govukSelect({
           id: "filter-opinion",
