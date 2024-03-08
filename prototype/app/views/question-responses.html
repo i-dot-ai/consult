@@ -8,6 +8,8 @@
 
 {% set pageName="Home" %}
 
+{% block pageTitle %}Responses to question {{data["question-index"]|int + 1}}{% endblock %}
+
 {% block beforeMain %}
   {{ govukBackLink({
     text: "Back to all questions",
