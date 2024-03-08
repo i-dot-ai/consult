@@ -25,7 +25,7 @@ class Consultation(UUIDPrimaryKeyBase, TimeStampedModel):
 
 class Section(UUIDPrimaryKeyBase, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, null=True)
-    text = models.TextField(blank=True)
+    name = models.TextField(blank=False)
     slug = models.CharField(blank=False, null=False, max_length=256)
 
     class Meta:
