@@ -1,10 +1,10 @@
 module.exports = {
 
   questions: [
-    "Do you agree or disagree that the age of sale for tobacco products should be changed so that anyone born on or after 1 January 2009 will never be legally sold (and also in Scotland, never legally purchase) tobacco products?", 
-    "Do you think that proxy sales should also be prohibited?", 
-    "Do you agree or disagree that all tobacco products, cigarette papers and herbal smoking products should be covered in the new legislation?",
-    "Do you agree or disagree that warning notices in retail premises will need to be changed to read 'it is illegal to sell tobacco products to anyone born on or after 1 January 2009' when the law comes into effect?"
+    "Do you agree or disagree that the level of support for pathfinders should be changed so that anyone finding a path in Spring or Winter will never be allowed to complete their pathfinding (including in Scotland)?",
+    "Do you think that reselling of paths found previously should also be prohibited?",
+    "Do you agree or disagree that all paths, ways, means and methods found in the fourth sector should be covered in the new legislation?",
+    "Do you agree or disagree that warning notices in public will need to be erected to remind suppliers that pathfinding is a highly regulated activity when the law comes into effect?"
   ],
   themes: [
     {"theme": "Preventing related illnesses starts now", value: 671},
