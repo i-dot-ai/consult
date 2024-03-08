@@ -242,6 +242,18 @@
   <div class="govuk-grid-column-two-thirds">
     {#<h2 class="govuk-heading-m">Prevalent themes</h2>#}
     {#<canvas id="prevalent-themes"></canvas>#}
+    {% set themes = [
+      {"theme": "Support pathfinding as an activity", value: 671},
+      {"theme": "Pathfinding is in short supply among fourth sector organisations.", value: 443},
+      {"theme": "Strong opposition to pathfinding as a government priority", value: 163},
+      {"theme": "Increase civil servants access to third party pathfinding services", value: 136},
+      {"theme": "Enshrine pathfinding as a right for current and future generations", value: 127},
+      {"theme": "What’s pathfinding?", value: 112},
+      {"theme": "Pathfinding should only be carried out by licensed professionals", value: 105},
+      {"theme": "Third party pathfinding services need to be completely unavailable", value: 91},
+      {"theme": "Protect future generations from the repercussions of legacy pathfinding ", value: 84},
+      {"theme": "Keep pathfinding but give it a purely ceremonial role", value: 81}
+    ] %}
 
     {% set highestCount = data.themes[0].value %}
 
@@ -264,19 +276,15 @@
                   <span class="govuk-details__summary-text">{{item.theme}}</span>
                 </summary>
                 <div class="govuk-details__text">
-                  <p>The key argument expressed in the responses is that smoking is a major health issue in the UK and that strict measures need to be implemented to reduce its impact. Many respondents support the idea of raising the age of sale for tobacco products, with some seeing it as a way to 'Level Up' and reduce the burden on the NHS. The cost of smoking-related illnesses is also highlighted as a significant factor in the argument for stricter regulations.</p>
+                  <p>The key argument expressed in the responses is that Fourth Sector Pathfinding is a subject of great importance to citizens, particularly with respect to the paths themselves and the fourth sector in relation to the other three sectors and in respect of cost</p>
                   <p>This theme has the following keywords:</p>
                   <ul class="iai-inline-list">
-                    <li>nhs</li>
+                    <li>pathfinding</li>
+                    <li>civil service</li>
+                    <li>sectors</li>
+                    <li>third sector</li>
+                    <li>citizens</li>
                     <li>cost</li>
-                    <li>related</li>
-                    <li>money</li>
-                    <li>costs</li>
-                    <li>smoking</li>
-                    <li>health</li>
-                    <li>uk</li>
-                    <li>impact</li>
-                    <li>illnesses</li>
                   </ul>
                   <a href="/question-responses?question-index={{data['question-index']}}&keyword=&theme={{item.theme | urlencode}}&opinion=all&location=all&age=all&capacity=all">
                     View detailed responses for this theme &#8250;
@@ -295,7 +303,7 @@
         {% endfor %}
       </tbody>
     </table>
-    
+
   </div>
 
 </div>
