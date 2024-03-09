@@ -21,6 +21,9 @@ django-compressor = "^4.4"
 django-libsass = "^0.9"
 langchain = "^0.1.11"
 hdbscan = "^0.8.33"
+sentence-transformers = "^2.5.1"
+bertopic = "^0.16.0"
+scikit-learn = "^1.4.1.post1"
 
 
 [tool.poetry.group.development.dependencies]
@@ -31,6 +34,9 @@ factory_boy = "^3.3.0"
 [tool.mypy]
 files = '**/*.py'
 exclude= ['^consultation_analyser/consultations/migrations/']
+
+
+
 
 
 
