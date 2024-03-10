@@ -34,6 +34,14 @@ make check_db
 
 (You can see all the available `make` commands by running bare `make` or `make help`).
 
+### Generating dummy data
+
+Only run this in development. Will create a consultation with 10 complete responses in a variety of question formats.
+
+```
+make dummy_data
+```
+
 ### Frontend
 
 

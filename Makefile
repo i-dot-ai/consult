@@ -40,3 +40,7 @@ test: ## Run the tests
 govuk_frontend: ## Pull govuk-frontend
 	npm install
 	poetry run python manage.py collectstatic --noinput
+
+.PHONY: dummy_data
+dummy_data: ## Pull govuk-frontend
+	poetry run python manage.py generate_dummy_data
