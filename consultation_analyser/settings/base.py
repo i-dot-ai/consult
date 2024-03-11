@@ -14,6 +14,7 @@ import environ
 
 import os
 from pathlib import Path
+from django_jinja.builtins import DEFAULT_EXTENSIONS
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -37,6 +38,7 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.auth",
     "consultation_analyser.consultations",
+    "django_jinja",
     "compressor",
 ]
 
@@ -53,13 +55,15 @@ ROOT_URLCONF = "consultation_analyser.urls"
 
 TEMPLATES = [
     {
-        "BACKEND": "django.template.backends.jinja2.Jinja2",
+        "BACKEND": "django_jinja.jinja2.Jinja2",
+        "DIRS": [
+            BASE_DIR / "consultation_analyser" / "consultations" / "templates",
+        ],
         "APP_DIRS": True,
-        "OPTIONS": {"environment": "consultation_analyser.jinja2.environment"},
-    },
-    {
-        "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "APP_DIRS": True,
+        "OPTIONS": {
+            "match_extension": ".html",
+            "extensions": DEFAULT_EXTENSIONS + ["compressor.contrib.jinja2ext.CompressorExtension"],
+        },
     },
 ]
 
