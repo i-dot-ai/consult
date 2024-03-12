@@ -1,0 +1,170 @@
+# PROMPT 1:
+#
+# Please could you help me create some fake data?
+#
+# I would like the data in YAML format.
+#
+# A question should have properties "text" (the text of the question), "slug" (a short dash-separated version of the question suitable for using in a URL), "has_free_text" (boolean whether or not the question has a free text component), and "multiple_choice_options", which should be a list of three alternatives, or null if there is no multiple choice component.
+#
+# There should be 10 questions altogether.
+# 6 of the questions should have a multiple choice and a free text component.
+# 2 of the questions should have only a multiple choice component.
+# 2 of the questions should have only a free text component.
+#
+# All of the questions should be asking about the subject of British chocolate bars. The questions should be open-ended to invite free text answers — for instance "Do you believe that 2 finger Kit Kats are better than 4 finger Kit Kats?". Multiple choice answers should usually be "Yes", "No" or "I don't know".
+#
+# PROMPT 2:
+#
+# For each of the following questions, please generate 10 responses. Each response should be between 1 and 3 sentences long. Return each set of responses as YAML.
+- has_free_text: true
+  multiple_choice_options:
+  - 'Yes'
+  - 'No'
+  - I don't know
+  slug: two-finger-vs-four-finger-kit-kats
+  text: Do you believe that 2 finger Kit Kats are better than 4 finger Kit Kats?
+  answers:
+  - "Two-finger Kit Kats are perfect for a small snack, making them superior in moderation."
+  - "Four-finger Kit Kats offer more satisfaction in one go, making them better for serious cravings."
+  - "It depends on the occasion; 2 fingers for a quick treat, 4 fingers for sharing or indulging."
+  - "The 2 finger variant is better for portion control and reducing waste."
+  - "Four-finger Kit Kats are more value for money, hence my preference."
+  - "Two-finger Kit Kats are easier to carry and consume on the go, making them more practical."
+  - "The 4 finger version is better because it's more satisfying to eat."
+  - "Two-finger versions are better for those who want a taste without the commitment."
+  - "Four-finger Kit Kats are best for sharing, which makes them superior in social settings."
+  - "It's all about personal preference, but I lean towards the 2 finger Kit Kats for a light snack."
+- has_free_text: true
+  multiple_choice_options:
+  - Dairy Milk
+  - Whole Nut
+  - I don't have a favorite
+  slug: favorite-cadbury-chocolate-bar
+  text: What is your favorite type of Cadbury chocolate bar?
+  answers:
+  - "Dairy Milk is a classic favorite for its smooth and creamy taste."
+  - "The Fruit & Nut bar combines the best of both worlds with its chewy and crunchy textures."
+  - "Caramel, for its perfect blend of sweet milk chocolate and gooey caramel."
+  - "The Whole Nut bar, for the added crunch and richness of whole nuts."
+  - "Crunchie, for its unique honeycomb center that's both crisp and sweet."
+  - "Bournville, for those who prefer the rich and bitter taste of dark chocolate."
+  - "The Dairy Milk Oreo integrates the creaminess of Dairy Milk with the crunch of Oreo bits."
+  - "Double Decker, for its satisfying layers of nougat and crispy cereal."
+  - "Twirl, for its flaky layers and melt-in-the-mouth experience."
+  - "The Wispa bar, for its aerated chocolate that's light yet chocolatey."
+- has_free_text: true
+  multiple_choice_options:
+  - 'Yes'
+  - 'No'
+  - I'm not sure
+  slug: mars-bar-recipe-change
+  text: Do you think the recipe for Mars bars has changed over the years?
+  answers:
+  - "Yes, it seems to taste slightly different, perhaps due to changes in ingredient sourcing."
+  - "No, Mars bars have maintained their iconic taste throughout the years."
+  - "There might have been minor adjustments for health regulations or cost-saving."
+  - "It's hard to say without official confirmation, but some fans claim there's a subtle difference."
+  - "Yes, the texture seems to have changed, possibly due to modifications in the production process."
+  - "No, any perceived changes are likely due to changes in our taste preferences over time."
+  - "If there have been changes, they're minimal and aimed at improving quality or sustainability."
+  - "Yes, changes in the recipe could be a response to consumer feedback for less sugar or healthier options."
+  - "No, the core elements of the Mars bar – caramel, nougat, and chocolate – remain untouched."
+  - "Potentially, but it's more likely that variations in flavor come from natural ingredient variations."
+- has_free_text: true
+  multiple_choice_options:
+  - 'Yes'
+  - 'No'
+  - Depends on my mood
+  slug: is-crunchie-too-sweet
+  text: Is the Crunchie bar too sweet for your taste?
+  answers:
+  - "Yes, the combination of honeycomb and chocolate can be overwhelmingly sweet."
+  - "No, the sweetness level is perfect for satisfying a sweet tooth craving."
+  - "It's on the edge, but the unique texture of the honeycomb center makes up for it."
+  - "For some, it might be too sweet, but it balances well with a cup of tea or coffee."
+  - "Yes, it can be a bit much, especially if you're not into very sweet chocolates."
+  - "No, the sweetness is what makes a Crunchie bar so irresistible."
+  - "It's perfectly sweet for those who love a good sugar rush."
+  - "Yes, I prefer chocolate bars that are less sweet and more balanced in flavor."
+  - "No, the sweet and crunchy contrast is what defines a Crunchie bar."
+  - "It depends on the day; sometimes it's too sweet, and other times it's just right."
+- has_free_text: true
+  multiple_choice_options:
+  - Snickers
+  - Milky Way
+  - Neither
+  slug: snickers-vs-milky-way
+  text: Would you prefer a Snickers or a Milky Way?
+  answers:
+  - "Snickers, for its satisfying combination of nuts, caramel, and nougat."
+  - "Milky Way, for its smooth and creamy caramel and nougat without the crunch."
+  - "Snickers, because the nuts provide a good texture contrast and make it more filling."
+  - "Milky Way, it's lighter and less intense, perfect for a sweet snack without the heaviness."
+  - "Snickers, it feels like a more substantial snack that can tide you over until your next meal."
+  - "Milky Way, for those times when I want something sweet but not too complex."
+  - "Snickers, as the peanut flavor adds an extra layer of satisfaction not found in Milky Way."
+  - "Milky Way, because it's smoother and simpler, making it easier to enjoy."
+  - "Snickers, its rich and diverse textures make it a more interesting eat."
+  - "Milky Way, it's the perfect choice for when I'm in the mood for something sweet and uncomplicated."
+- has_free_text: true
+  multiple_choice_options:
+  - 'Yes'
+  - 'No'
+  - Somewhat
+  slug: double-decker-satisfaction
+  text: Do you find the Double Decker bar to be satisfyingly filling?
+  answers:
+  - "Yes, its combination of nougat and crispy cereal makes it exceptionally satisfying."
+  - "Absolutely, it's like two treats in one, making it a hearty snack."
+  - "Yes, the layers provide a fulfilling eating experience that lasts."
+  - "For sure, it's dense and packed with flavor, which makes it very filling."
+  - "Yes, it's one of the most filling chocolate bars, perfect for a hunger pang."
+  - "Definitely, its unique texture and richness make it a substantial snack."
+  - "Yes, the variety within the bar itself provides a satisfying fullness."
+  - "Absolutely, it strikes a great balance between sweet, crunchy, and chewy."
+  - "Yes, the Double Decker bar is a meal in itself with its dense layers."
+  - "Indeed, its size and the combination of ingredients offer a fulfilling experience."
+- has_free_text: false
+  multiple_choice_options:
+  - Yorkie
+  - Lion
+  - No preference
+  slug: yorkie-vs-lion-bar
+  text: Which is better, a Yorkie bar or a Lion bar?
+- has_free_text: false
+  multiple_choice_options:
+  - With nuts
+  - Without nuts
+  - No preference
+  slug: chocolate-bars-with-or-without-nuts
+  text: Do you prefer chocolate bars with or without nuts?
+- has_free_text: true
+  multiple_choice_options: null
+  slug: frequency-of-eating-british-chocolate-bars
+  text: How often do you eat British chocolate bars?
+  answers:
+  - "Regularly, they're a go-to treat for their unique and comforting flavors."
+  - "Occasionally, when I'm in the mood for something distinct and indulgent."
+  - "Frequently, as I find them to be superior in quality and taste."
+  - "Rarely, as I like to vary my chocolate consumption with brands from around the world."
+  - "Often, they're a staple in my snack selection for their creamy texture."
+  - "Sometimes, especially when I'm feeling nostalgic for classic flavors."
+  - "Weekly, there's always a time when only a British chocolate bar will satisfy."
+  - "Infrequently, I enjoy them as a special treat rather than a regular snack."
+  - "Every now and then, when I come across one that catches my eye."
+  - "Sporadically, they're not my everyday choice but I indulge when the craving hits."
+- has_free_text: true
+  multiple_choice_options: null
+  slug: uniqueness-of-british-chocolate-bars
+  text: What do you think makes British chocolate bars unique?
+  answers:
+  - "The creaminess of the chocolate, thanks to the higher milk content."
+  - "Their iconic and diverse range of fillings and flavors that cater to all tastes."
+  - "The texture, often smoother and richer than other chocolates."
+  - "Their unique blend of ingredients, offering a distinct taste experience."
+  - "The quality of ingredients and the traditional recipes they often follow."
+  - "Their nostalgic appeal, many have been favorites for generations."
+  - "The innovative combinations of textures, like crispies, nougat, and caramel."
+  - "The balance of sweetness, not too overpowering but just right."
+  - "Their packaging, often colorful and eye-catching, adds to the appeal."
+  - "The commitment to tradition while also embracing new trends in flavors and textures."
