@@ -6,7 +6,7 @@ from tests.factories import (
     SectionFactory,
     AnswerFactory,
     ConsultationResponseFactory,
-    ThemeFactory
+    ThemeFactory,
 )
 import random
 

@@ -90,7 +90,3 @@ class AnswerFactory(factory.django.DjangoModelFactory):
     )
 
     question = factory.SubFactory(QuestionFactory)
-
-
-
-
