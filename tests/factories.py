@@ -66,6 +66,15 @@ class ConsultationResponseFactory(factory.django.DjangoModelFactory):
         model = models.ConsultationResponse
 
 
+class ThemeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Theme
+
+    label = faker.sentence()
+    summary = f"Summary: {label}"
+    keywords = label.lower().strip(".").split(" ")
+
+
 class AnswerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Answer
@@ -81,3 +90,7 @@ class AnswerFactory(factory.django.DjangoModelFactory):
     )
 
     question = factory.SubFactory(QuestionFactory)
+
+
+
+
