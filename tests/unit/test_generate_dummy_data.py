@@ -1,12 +1,13 @@
 import pytest
+from unittest.mock import patch
 
 from consultation_analyser.consultations.dummy_data import DummyConsultation
 from consultation_analyser.consultations.models import Consultation, Question, Answer
 
 
 @pytest.mark.django_db
+@patch("consultation_analyser.hosting_environment.HostingEnvironment.is_local", return_value=True)
 def test_a_consultation_is_generated(settings):
-    settings.DEBUG = True
     assert Consultation.objects.count() == 0
 
     DummyConsultation()
@@ -17,8 +18,7 @@ def test_a_consultation_is_generated(settings):
 
 
 @pytest.mark.django_db
+@patch("consultation_analyser.hosting_environment.HostingEnvironment.is_local", return_value=False)
 def test_the_tool_will_only_run_in_dev(settings):
-    settings.DEBUG = False
-
     with pytest.raises(Exception, match=r"should only be run in development"):
         DummyConsultation()

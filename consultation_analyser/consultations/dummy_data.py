@@ -1,4 +1,4 @@
-from django.conf import settings  # replace with HostingEnvironment
+from consultation_analyser.hosting_environment import HostingEnvironment
 from tests.factories import (
     FakeConsultationData,
     QuestionFactory,
@@ -11,7 +11,7 @@ from tests.factories import (
 
 class DummyConsultation:
     def __init__(self, responses=10, **options):
-        if not settings.DEBUG:
+        if not HostingEnvironment.is_local():
             raise RuntimeError("Dummy data generation should only be run in development")
 
         consultation = ConsultationFactory(**options)

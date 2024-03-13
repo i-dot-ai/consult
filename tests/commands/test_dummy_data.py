@@ -1,4 +1,5 @@
 import pytest
+from unittest.mock import patch
 from io import StringIO
 from consultation_analyser.consultations.models import Consultation
 
@@ -6,9 +7,8 @@ from django.core.management import call_command
 
 
 @pytest.mark.django_db
-def test_name_parameter_sets_consultation_name(settings):
-    settings.DEBUG = True  # command will only work in DEBUG
-
+@patch("consultation_analyser.hosting_environment.HostingEnvironment.is_local", return_value=True)
+def test_name_parameter_sets_consultation_name(mock_is_local):
     call_command(
         "generate_dummy_data",
         name="My special consultation",
