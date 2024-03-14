@@ -26,9 +26,7 @@ class DummyConsultation:
             # Set themes per question, multiple answers with the same theme
             for q in questions:
                 themes = [ThemeFactory() for _ in range(2, 6)]
-                print(f"themes: {themes}")
                 for a in _answers:
                     random_theme = random.choice(themes)
-                    print(f"random_theme: {random_theme}")
                     a.theme = random_theme
                     a.save()

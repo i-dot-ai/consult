@@ -3,8 +3,6 @@ import yaml
 import random
 from consultation_analyser.consultations import models
 
-# import datetime
-# from factory.fuzzy import FuzzyDate
 import faker as _faker
 
 faker = _faker.Faker()
@@ -32,6 +30,30 @@ class FakeConsultationData:
         return list(self.questions.values())
 
 
+class ConsultationFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Consultation
+
+    name = faker.sentence()
+    slug = faker.slug()
+
+    class Params:
+        fixed_slug = factory.Trait(slug="consultation-slug")
+
+
+class SectionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Section
+
+    name = faker.sentence()
+    slug = faker.slug()
+
+    class Params:
+        fixed_slug = factory.Trait(
+            slug="section-slug", consultation=factory.SubFactory(ConsultationFactory, fixed_slug=True)
+        )
+
+
 class QuestionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Question
@@ -44,21 +66,13 @@ class QuestionFactory(factory.django.DjangoModelFactory):
     class Params:
         question = FakeConsultationData().question()
 
-
-class SectionFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.Section
-
-    name = faker.sentence()
-    slug = faker.slug()
-
-
-class ConsultationFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.Consultation
-
-    name = faker.sentence()
-    slug = faker.slug()
+        fixed_slug = factory.Trait(
+            section=factory.SubFactory(SectionFactory, fixed_slug=True),
+            slug="question-slug",
+            text="Is this an interesting question?",
+            multiple_choice_options=[],
+            has_free_text=False,
+        )
 
 
 class ConsultationResponseFactory(factory.django.DjangoModelFactory):
@@ -70,6 +84,7 @@ class ThemeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Theme
 
+    # TODO - may need to be changed once ML pipeline is in
     label = faker.sentence()
     summary = f"Summary: {label}"
     keywords = label.lower().strip(".").split(" ")
@@ -90,3 +105,11 @@ class AnswerFactory(factory.django.DjangoModelFactory):
     )
 
     question = factory.SubFactory(QuestionFactory)
+    consultation_response = factory.SubFactory(ConsultationResponseFactory)
+
+    class Params:
+        specific_theme = factory.Trait(
+            consultation_response=factory.SubFactory(ConsultationResponseFactory),
+            question=factory.SubFactory(QuestionFactory, fixed_slug=True),
+            theme=factory.SubFactory(ThemeFactory, summary="Summary theme 1", keywords=["summary", "one"]),
+        )
