@@ -1,5 +1,10 @@
 {% extends "base.html" %}
+{%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
 
 {% block content %}
   <h1 class="govuk-heading-xl">it works</h1>
+
+  {{ govukButton({
+    'text': "Here is a button"
+  }) }}
 {% endblock %}
