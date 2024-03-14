@@ -42,5 +42,5 @@ govuk_frontend: ## Pull govuk-frontend
 	poetry run python manage.py collectstatic --noinput
 
 .PHONY: dummy_data
-dummy_data: ## Pull govuk-frontend
+dummy_data: ## Generate a dummy consultation. Only works in dev
 	poetry run python manage.py generate_dummy_data
