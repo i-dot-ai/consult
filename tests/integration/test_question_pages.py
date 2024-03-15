@@ -1,5 +1,5 @@
 import pytest
-from tests.factories import QuestionFactory
+from tests.factories import AnswerFactory
 from tests import factories
 
 

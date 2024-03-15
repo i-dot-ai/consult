@@ -14,4 +14,4 @@ def show_question(request: HttpRequest, consultation_slug: str, section_slug: st
     themes_for_question = models.Theme.objects.filter(answer__question=question)
     # TODO - probably want counts etc.
     context = {"question": question, "themes": themes_for_question}
-    return render(request, "question-summary.html", context)
+    return render(request, "show_question.html", context)
