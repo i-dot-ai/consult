@@ -20,19 +20,18 @@ psycopg = "^3.1.18"
 django-compressor = "^4.4"
 django-libsass = "^0.9"
 govuk-frontend-jinja = "^3.0.0"
+pydot = "^2.0.0"
 
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.3.3"
 pre-commit = "^3.6.2"
 factory_boy = "^3.3.0"
+django-extensions = "^3.2.3"
 
 [tool.mypy]
 files = '**/*.py'
 exclude= ['^consultation_analyser/consultations/migrations/']
-
-
-
 
 [tool.poetry.group.test.dependencies]
 pytest-django = "^4.8.0"
