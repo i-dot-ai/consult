@@ -41,6 +41,14 @@ jobs:
           python -m pip install --upgrade poetry
           poetry install --with development
 
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '14'
+
+      - name: Install npm dependencies
+        run: npm install
+
       - name: Check migrations
         run: |
           poetry run python manage.py migrate
@@ -49,18 +57,9 @@ jobs:
           DJANGO_SECRET_KEY: dummy-key
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
 
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '14'
-
-      - name: Install dependencies
-        run: npm install
-
       - name: pytest
         run:
-          # poetry run python manage.py collectstatic --noinput
-          poetry run pytest
+          make test
         env:
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
 
