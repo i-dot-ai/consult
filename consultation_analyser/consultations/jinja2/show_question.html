@@ -1,6 +1,14 @@
 {% extends "base.html" %}
 
 {% block content %}
-  <h1 class="govuk-heading-xl">Question</h1>
+
+  <h1 class="govuk-heading-xl">Question summary - dummy page</h1>
+  <p class="govuk-body">{{ question.text }}</p>
+  <h2 class="govuk-heading-l">Prevalent themes</h2>
+  <ul class="govuk-list govuk-list--bullet">
+    {% for theme in themes %}
+      <li>{{ theme.summary }}</li>
+    {% endfor %}
+  </ul>
 
 {% endblock %}
