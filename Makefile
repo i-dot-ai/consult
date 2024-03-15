@@ -28,6 +28,11 @@ reset_test_db: ## Reset the test db
 check_db: ## Make sure the db is addressable
 	poetry run python manage.py check --database default
 
+.PHONY: migrate
+migrate: ## Apply migrations
+	poetry run python manage.py migrate
+	poetry run python manage.py generate_erd
+
 .PHONY: serve
 serve: ## Run the server
 	poetry run python manage.py runserver

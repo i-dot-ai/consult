@@ -42,6 +42,15 @@ Only run this in development. Will create a consultation with 10 complete respon
 make dummy_data
 ```
 
+### Database migrations and schema diagram
+
+If you use the `make migrate` command to run migrations, the diagram below will
+be regenerated automatically. If you need to generate it outside that process,
+you can run `manage.py generate_erd`. (You will need `graphviz` installed: see
+[`pydot` docs](https://pypi.org/project/pydot/)).
+
+![](docs/erd.png)
+
 ### Frontend
 
 
