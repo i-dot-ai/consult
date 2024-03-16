@@ -1,4 +1,4 @@
-name: Test migrations
+name: Check migrations
 
 on:
   push:
@@ -41,11 +41,18 @@ jobs:
           python -m pip install --upgrade poetry
           poetry install --with development
 
+      # - name: Get test env vars
+      #   uses: c-py/action-dotenv-to-setenv@v5
+      #   with:
+      #     env-file: .env.test
+
       - name: Check migrations
         run: |
           poetry run python manage.py migrate
           poetry run python manage.py makemigrations --check
         env:
-          export $(cat .env.test | xargs)
+          DJANGO_SECRET_KEY: dummy-key
+          DATABASE_URL: psql://consultations_test:@localhost:5432/consultations_test
+
 
 

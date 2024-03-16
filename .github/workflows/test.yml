@@ -45,3 +45,5 @@ jobs:
         run: poetry run pytest
         env:
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
+
+
