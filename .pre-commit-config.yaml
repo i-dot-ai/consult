@@ -39,7 +39,7 @@ repos:
     rev: v1.4.0
     hooks:
     -   id: detect-secrets
-        exclude: (poetry.lock|.env.example|.env.test|test.yml|check_migrations.yml)
+        exclude: (poetry.lock|.env.example|.env.test|^.github/workflows/)
   - repo: local
     hooks:
     -   id: detect-ip
