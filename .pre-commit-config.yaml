@@ -39,7 +39,7 @@ repos:
     rev: v1.4.0
     hooks:
     -   id: detect-secrets
-        exclude: (poetry.lock|.env.example|.env.test|test.yml)
+        exclude: (poetry.lock|.env.example|.env.test|^.github/workflows/)
   - repo: local
     hooks:
     -   id: detect-ip
@@ -54,3 +54,4 @@ repos:
         name: Detect AWS account numbers
         language: pygrep
         entry: ':\d{12}:'
+

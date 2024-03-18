@@ -41,7 +41,17 @@ jobs:
           python -m pip install --upgrade poetry
           poetry install --with development
 
+      - name: Check migrations
+        run: |
+          poetry run python manage.py migrate
+          poetry run python manage.py makemigrations --check
+        env:
+          DJANGO_SECRET_KEY: dummy-key
+          DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
+
       - name: pytest
         run: poetry run pytest
         env:
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
+
+

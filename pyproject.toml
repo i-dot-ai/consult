@@ -33,6 +33,7 @@ exclude= ['^consultation_analyser/consultations/migrations/']
 
 
 
+
 [tool.poetry.group.test.dependencies]
 pytest-django = "^4.8.0"
 
