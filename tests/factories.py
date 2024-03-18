@@ -37,9 +37,6 @@ class ConsultationFactory(factory.django.DjangoModelFactory):
     name = faker.sentence()
     slug = faker.slug()
 
-    class Params:
-        fixed_slug = factory.Trait(slug="consultation-slug")
-
 
 class SectionFactory(factory.django.DjangoModelFactory):
     class Meta:
@@ -47,11 +44,7 @@ class SectionFactory(factory.django.DjangoModelFactory):
 
     name = faker.sentence()
     slug = faker.slug()
-
-    class Params:
-        fixed_slug = factory.Trait(
-            slug="section-slug", consultation=factory.SubFactory(ConsultationFactory, fixed_slug=True)
-        )
+    consultation = factory.SubFactory(ConsultationFactory)
 
 
 class QuestionFactory(factory.django.DjangoModelFactory):
@@ -62,17 +55,10 @@ class QuestionFactory(factory.django.DjangoModelFactory):
     slug = factory.LazyAttribute(lambda o: o.question["slug"])
     multiple_choice_options = factory.LazyAttribute(lambda o: o.question["multiple_choice_options"])
     has_free_text = factory.LazyAttribute(lambda o: o.question["has_free_text"])
+    section = factory.SubFactory(SectionFactory)
 
     class Params:
         question = FakeConsultationData().question()
-
-        fixed_slug = factory.Trait(
-            section=factory.SubFactory(SectionFactory, fixed_slug=True),
-            slug="question-slug",
-            text="Is this an interesting question?",
-            multiple_choice_options=[],
-            has_free_text=False,
-        )
 
 
 class ConsultationResponseFactory(factory.django.DjangoModelFactory):
@@ -106,10 +92,4 @@ class AnswerFactory(factory.django.DjangoModelFactory):
 
     question = factory.SubFactory(QuestionFactory)
     consultation_response = factory.SubFactory(ConsultationResponseFactory)
-
-    class Params:
-        specific_theme = factory.Trait(
-            consultation_response=factory.SubFactory(ConsultationResponseFactory),
-            question=factory.SubFactory(QuestionFactory, fixed_slug=True),
-            theme=factory.SubFactory(ThemeFactory, summary="Summary theme 1", keywords=["summary", "one"]),
-        )
+    theme = factory.SubFactory(ThemeFactory)

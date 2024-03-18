@@ -1,13 +1,17 @@
 import pytest
+
+
 from tests.factories import AnswerFactory
-from tests import factories
 
 
 @pytest.mark.django_db
 def test_get_question_summary_page(client):
-    factories.AnswerFactory(specific_theme=True)
-    question_summary_url = "/consultation/consultation-slug/section/section-slug/question/question-slug/"
+    answer = AnswerFactory()
+    question = answer.question
+    section = question.section
+    consultation = section.consultation
+    question_summary_url = f"/consultations/{consultation.slug}/sections/{section.slug}/questions/{question.slug}"
     response = client.get(question_summary_url)
     page_content = str(response.content)
-    assert "Is this an interesting question?" in page_content
-    assert "Summary theme 1" in page_content
+    assert question.text in page_content
+    assert answer.theme.summary in page_content
