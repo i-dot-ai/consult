@@ -23,7 +23,7 @@ govuk-frontend-jinja = "^3.0.0"
 
 
 [tool.poetry.group.development.dependencies]
-ruff = "^0.2.2"
+ruff = "^0.3.3"
 pre-commit = "^3.6.2"
 factory_boy = "^3.3.0"
 
