@@ -44,3 +44,34 @@ govuk_frontend: ## Pull govuk-frontend
 .PHONY: dummy_data
 dummy_data: ## Generate a dummy consultation. Only works in dev
 	poetry run python manage.py generate_dummy_data
+
+CONFIG_DIR=../../consultations-analyser-config
+TF_BACKEND_CONFIG=$(CONFIG_DIR)/backend.hcl
+
+tf_new_workspace:
+	terraform -chdir=./infrastructure workspace new $(env)
+
+tf_set_workspace:
+	terraform -chdir=./infrastructure workspace select $(env)
+
+tf_set_or_create_workspace:
+	make tf_set_workspace || make tf_new_workspace
+
+.PHONY: tf_init
+tf_init: ## Initialise terraform
+	terraform -chdir=./infrastructure init -backend-config=$(TF_BACKEND_CONFIG)
+
+.PHONY: tf_plan
+tf_plan: ## Plan terraform
+	make tf_set_workspace && \
+	terraform -chdir=./infrastructure plan -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${args}
+
+.PHONY: tf_apply
+tf_apply: ## Apply terraform
+	make tf_set_workspace && \
+	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${args}
+
+.PHONY: tf_destroy
+tf_destroy: ## Destroy terraform
+	make tf_set_workspace && \
+	terraform -chdir=./infrastructure destroy -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${args}
