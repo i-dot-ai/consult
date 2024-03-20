@@ -62,6 +62,8 @@ class QuestionFactory(factory.django.DjangoModelFactory):
 
 
 class ConsultationResponseFactory(factory.django.DjangoModelFactory):
+    consultation = factory.SubFactory(ConsultationFactory)
+
     class Meta:
         model = models.ConsultationResponse
 
