@@ -15,6 +15,7 @@ jobs:
       ec2-instance-type: ${{ steps.export.outputs.ec2-instance-type }}
       aws-region: ${{ steps.export.outputs.aws-region }}
       version: ${{ steps.export.outputs.version }}
+      runner_label: ${{ steps.export.outputs.runner_label }}
 
     steps:
       - name: Checkout
@@ -26,6 +27,7 @@ jobs:
           echo "app-name=${APP_NAME}" >> $GITHUB_OUTPUT
           echo "aws-region=${AWS_REGION}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "RUNNER_LABEL=${RUNNER_LABELS}" >> $GITHUB_OUTPUT
 
   build-image:
     needs:
@@ -34,6 +36,8 @@ jobs:
     with:
       APP_NAME: ${{ needs.set-vars.outputs.app-name }}
       AWS_REGION: ${{ needs.set-vars.outputs.aws-region }}
+      RUNNER_LABEL: ${{ needs.set-vars.outputs.runner_label }}
+      INFRASTRUCTURE_FOLDER: "infrastructure"
     secrets:
       AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT}}
       AWS_GITHUBRUNNER_PAT_USER: ${{ secrets.AWS_GITHUBRUNNER_PAT_USER }}
