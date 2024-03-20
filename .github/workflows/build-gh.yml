@@ -1,0 +1,41 @@
+# Put action within a raw block so that the curly bracket expressions aren't picked up by the cookiecutter
+# {% raw %}
+
+name: build
+on:
+  push:
+    branches:
+      - "**"
+
+jobs:
+  set-vars:
+    runs-on: ubuntu-latest
+    outputs:
+      app-name: ${{ steps.export.outputs.app-name }}
+      ec2-instance-type: ${{ steps.export.outputs.ec2-instance-type }}
+      aws-region: ${{ steps.export.outputs.aws-region }}
+      version: ${{ steps.export.outputs.version }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - id: export
+        run: |
+          . ./.github/.github.env
+          echo "ec2-instance-type=${EC2_INSTANCE_TYPE}" >> $GITHUB_OUTPUT
+          echo "app-name=${APP_NAME}" >> $GITHUB_OUTPUT
+          echo "aws-region=${AWS_REGION}" >> $GITHUB_OUTPUT
+          echo "version=${VERSION}" >> $GITHUB_OUTPUT
+
+  build-image:
+    needs:
+      - set-vars
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-dash.yaml@main
+    with:
+      APP_NAME: ${{ needs.set-vars.outputs.app-name }}
+      AWS_REGION: ${{ needs.set-vars.outputs.aws-region }}
+    secrets:
+      AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT}}
+      AWS_GITHUBRUNNER_PAT_USER: ${{ secrets.AWS_GITHUBRUNNER_PAT_USER }}
+  
+# {%- endraw %}
