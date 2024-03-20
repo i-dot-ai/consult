@@ -51,8 +51,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
-    # Characteristics may be different for different consultations
-    pass
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, null=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
