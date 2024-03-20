@@ -3,8 +3,6 @@ import yaml
 import random
 from consultation_analyser.consultations import models
 
-# import datetime
-# from factory.fuzzy import FuzzyDate
 import faker as _faker
 
 faker = _faker.Faker()
@@ -32,27 +30,6 @@ class FakeConsultationData:
         return list(self.questions.values())
 
 
-class QuestionFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.Question
-
-    text = factory.LazyAttribute(lambda o: o.question["text"])
-    slug = factory.LazyAttribute(lambda o: o.question["slug"])
-    multiple_choice_options = factory.LazyAttribute(lambda o: o.question["multiple_choice_options"])
-    has_free_text = factory.LazyAttribute(lambda o: o.question["has_free_text"])
-
-    class Params:
-        question = FakeConsultationData().question()
-
-
-class SectionFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.Section
-
-    name = faker.sentence()
-    slug = faker.slug()
-
-
 class ConsultationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Consultation
@@ -61,9 +38,42 @@ class ConsultationFactory(factory.django.DjangoModelFactory):
     slug = faker.slug()
 
 
+class SectionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Section
+
+    name = faker.sentence()
+    slug = faker.slug()
+    consultation = factory.SubFactory(ConsultationFactory)
+
+
+class QuestionFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Question
+
+    text = factory.LazyAttribute(lambda o: o.question["text"])
+    slug = factory.LazyAttribute(lambda o: o.question["slug"])
+    multiple_choice_options = factory.LazyAttribute(lambda o: o.question["multiple_choice_options"])
+    has_free_text = factory.LazyAttribute(lambda o: o.question["has_free_text"])
+    section = factory.SubFactory(SectionFactory)
+
+    class Params:
+        question = FakeConsultationData().question()
+
+
 class ConsultationResponseFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.ConsultationResponse
+
+
+class ThemeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Theme
+
+    # TODO - may need to be changed once ML pipeline is in
+    label = faker.sentence()
+    summary = f"Summary: {label}"
+    keywords = label.lower().strip(".").split(" ")
 
 
 class AnswerFactory(factory.django.DjangoModelFactory):
@@ -81,3 +91,5 @@ class AnswerFactory(factory.django.DjangoModelFactory):
     )
 
     question = factory.SubFactory(QuestionFactory)
+    consultation_response = factory.SubFactory(ConsultationResponseFactory)
+    theme = factory.SubFactory(ThemeFactory)
