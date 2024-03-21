@@ -28,7 +28,7 @@ jobs:
           echo "app-name=${APP_NAME}" >> $GITHUB_OUTPUT
           echo "aws-region=${AWS_REGION}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
-          echo "RUNNER_LABEL=persistent-runner-dev" >> $GITHUB_OUTPUT
+          echo "RUNNER_LABEL=persistent-dev" >> $GITHUB_OUTPUT
 
   build-image:
     needs:
