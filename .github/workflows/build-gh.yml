@@ -36,7 +36,7 @@ jobs:
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-docker.yml@main
     with:
       APP_NAME: ${{ needs.set-vars.outputs.app-name }}
-      AWS_REGION: ${{ needs.set-vars.outputs.aws-region }}
+      AWS_REGION: "test"
       RUNNER_LABEL: ${{ needs.set-vars.outputs.runner_label }}
       INFRASTRUCTURE_FOLDER: "infrastructure"
     secrets:
