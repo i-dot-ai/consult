@@ -1,5 +1,3 @@
-# Put action within a raw block so that the curly bracket expressions aren't picked up by the cookiecutter
-# {% raw %}
 
 name: build
 on:
@@ -45,4 +43,3 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
-# {%- endraw %}
