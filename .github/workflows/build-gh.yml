@@ -30,7 +30,7 @@ jobs:
           echo "RUNNER_LABEL=self-hosted" >> $GITHUB_OUTPUT
 
   start-runner:
-        uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yaml@feature/start-stop-runners
+        uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@feature/start-stop-runners
         needs: set-vars
         with:
             EC2_INSTANCE_TYPE: ${{ needs.set-vars.outputs.ec2-instance-type }}
