@@ -9,3 +9,5 @@ EXPOSE 80
 
 # Start Nginx and keep it running in the foreground
 CMD ["nginx", "-g", "daemon off;"]
+
+CMD ["sh", "entrypoint.sh"]

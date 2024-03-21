@@ -7,10 +7,10 @@ variable "project_name" {
   description = "Name of project"
 }
 
-# variable "image_tag" {
-#   type        = string
-#   description = "The tag of the image to use"
-# }
+variable "image_tag" {
+  type        = string
+  description = "The tag of the image to use"
+}
 
 # variable "ecr_repository_uri" {
 #   type        = string
@@ -103,6 +103,7 @@ variable "cluster_name" {
   type        = string
   description = "ECS cluster name to attach service to"
 }
+
 
 
 
