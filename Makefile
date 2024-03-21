@@ -50,7 +50,7 @@ dummy_data: ## Generate a dummy consultation. Only works in dev
 
 
 # Docker
-ECR_URL=$(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
+ECR_URL=$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 ECR_REPO_URL=$(ECR_URL)/$(ECR_REPO_NAME)
 IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 
