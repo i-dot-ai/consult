@@ -27,6 +27,7 @@ jobs:
           echo "app-name=${APP_NAME}" >> $GITHUB_OUTPUT
           echo "aws-region=${{ secrets.AWS_REGION }}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
+          echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
           echo "RUNNER_LABEL=self-hosted" >> $GITHUB_OUTPUT
 
   start-runner:
@@ -51,6 +52,7 @@ jobs:
       APP_NAME: ${{ needs.set-vars.outputs.app-name }}
       RUNNER_LABEL: ${{ needs.set-vars.outputs.runner_label }}
       INFRASTRUCTURE_FOLDER: "infrastructure"
+      ENVIRONMENT: ${{ needs.set-vars.outputs.environment }}
     secrets:
       AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT}}
       AWS_GITHUBRUNNER_PAT_USER: ${{ secrets.AWS_GITHUBRUNNER_PAT_USER }}
