@@ -38,6 +38,7 @@ jobs:
       APP_NAME: ${{ needs.set-vars.outputs.app-name }}
       RUNNER_LABEL: ${{ needs.set-vars.outputs.runner_label }}
       INFRASTRUCTURE_FOLDER: "infrastructure"
+      AWS_REGION: ${{ needs.set-vars.outputs.aws-region }}
     secrets:
       AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT}}
       AWS_GITHUBRUNNER_PAT_USER: ${{ secrets.AWS_GITHUBRUNNER_PAT_USER }}
