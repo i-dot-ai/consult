@@ -26,7 +26,7 @@ jobs:
           . ./.github/.github.env
           echo "ec2-instance-type=${EC2_INSTANCE_TYPE}" >> $GITHUB_OUTPUT
           echo "app-name=${APP_NAME}" >> $GITHUB_OUTPUT
-          echo "aws-region=${AWS_REGION}" >> $GITHUB_OUTPUT
+          echo "aws-region=${{ secrets.AWS_REGION }}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "RUNNER_LABEL=self-hosted" >> $GITHUB_OUTPUT
 
