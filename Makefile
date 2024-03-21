@@ -65,7 +65,7 @@ docker/login:
 .PHONY: docker_build
 docker/build:
 	cd frontend && \
-	docker build --build-arg -t $(ECR_REPO_URL):$(IMAGE_TAG) $(DOCKER_BUILD_ARGS) 
+	docker build -t $(ECR_REPO_URL):$(IMAGE_TAG) --build-arg $(DOCKER_BUILD_ARGS) 
 
 .PHONY: docker_push
 docker/push:
