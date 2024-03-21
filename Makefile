@@ -50,7 +50,7 @@ dummy_data: ## Generate a dummy consultation. Only works in dev
 
 
 # Docker
-ECR_URL=$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
+ECR_URL=$(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 ECR_REPO_URL=$(ECR_URL)/$(ECR_REPO_NAME)
 IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 
@@ -59,7 +59,7 @@ ECR_REPO_NAME=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
 
 .PHONY: docker_login
-docker_login:
+docker/login:
 	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_URL)
 
 .PHONY: docker_build
@@ -68,7 +68,7 @@ docker/build:
 	docker build --build-arg -t $(ECR_REPO_URL):$(IMAGE_TAG) $(DOCKER_BUILD_ARGS) 
 
 .PHONY: docker_push
-docker_push:
+docker/push:
 	docker push $(IMAGE)
 
 .PHONY: docker_update_tag
