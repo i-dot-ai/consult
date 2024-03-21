@@ -45,7 +45,7 @@ govuk_frontend: ## Pull govuk-frontend
 dummy_data: ## Generate a dummy consultation. Only works in dev
 	poetry run python manage.py generate_dummy_data
 
-CONFIG_DIR=../../consultations-analyser-config
+CONFIG_DIR=../../consultation-analyser-infra-config
 TF_BACKEND_CONFIG=$(CONFIG_DIR)/backend.hcl
 
 tf_new_workspace:

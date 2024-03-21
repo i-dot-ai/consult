@@ -1,3 +1,7 @@
+locals {
+  record_prefix = var.env == "prod" ? var.project_name : "${var.project_name}-${var.env}"
+}
+
 data "terraform_remote_state" "vpc" {
   backend   = "s3"
   workspace = terraform.workspace
