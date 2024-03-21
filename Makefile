@@ -58,5 +58,13 @@ docker-build: ## Build the docker container
 	docker build . -t $(DOCKER_CONTAINER_NAME):$(CURRENT_GIT_SHA)
 
 .PHONY: docker-run
-docker-run: ## Build the docker container
-	docker run -p 8000:8000 $(DOCKER_CONTAINER_NAME):$(CURRENT_GIT_SHA)
+docker-run: ## Run the docker container
+	docker run -e DATABASE_URL=psql://consultations_dev:@host.docker.internal:5432/consultations_dev -p 8000:8000 $(DOCKER_CONTAINER_NAME):$(CURRENT_GIT_SHA)
+
+.PHONY: docker-shell
+docker-shell: ## Run the docker container
+	docker run -e DATABASE_URL=psql://consultations_dev:@host.docker.internal:5432/consultations_dev -it $(DOCKER_CONTAINER_NAME):$(CURRENT_GIT_SHA) /bin/bash
+
+.PHONY: docker-test
+docker-test: ## Run the tests in the docker container
+	docker run -e DATABASE_URL=psql://consultations_test:@host.docker.internal:5432/consultations_test $(DOCKER_CONTAINER_NAME):$(CURRENT_GIT_SHA) ./venv/bin/pytest
