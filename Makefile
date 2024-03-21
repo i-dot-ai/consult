@@ -49,6 +49,8 @@ dummy_data: ## Generate a dummy consultation. Only works in dev
 	poetry run python manage.py generate_dummy_data
 
 # Docker
+AWS_REGION=eu-west-2
+APP_NAME=consultations
 ECR_URL=$(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 ECR_REPO_URL=$(ECR_URL)/$(ECR_REPO_NAME)
 IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
@@ -58,14 +60,25 @@ ECR_REPO_NAME=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
 tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 
+.PHONY: docker_build
+docker_build: ## Build the docker container
+	docker build . -t $(IMAGE)
+
+.PHONY: docker_run
+docker_run: ## Run the docker container
+	docker run -e DATABASE_URL=psql://consultations_dev:@host.docker.internal:5432/consultations_dev -p 8000:8000 $(IMAGE)
+
+.PHONY: docker_shell
+docker_shell: ## Run the docker container
+	docker run -e DATABASE_URL=psql://consultations_dev:@host.docker.internal:5432/consultations_dev -it $(IMAGE) /bin/bash
+
+.PHONY: docker_test
+docker_test: ## Run the tests in the docker container
+	docker run -e DATABASE_URL=psql://consultations_test:@host.docker.internal:5432/consultations_test $(IMAGE) ./venv/bin/pytest
+
 .PHONY: docker_login
 docker_login:
 	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_URL)
-
-.PHONY: docker_build
-docker_build:
-	cd frontend && \
-	docker build -t $(ECR_REPO_URL):$(IMAGE_TAG) .
 
 .PHONY: docker_push
 docker_push:
@@ -80,7 +93,6 @@ docker_update_tag:
 .PHONY: docker_echo
 docker_echo:
 	echo $($(value))
-
 
 CONFIG_DIR=../../consultation-analyser-infra-config
 TF_BACKEND_CONFIG=$(CONFIG_DIR)/backend.hcl
@@ -108,14 +120,13 @@ tf_apply: ## Apply terraform
 	make tf_set_workspace && \
 	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
-
 .PHONY: tf_destroy
 tf_destroy: ## Destroy terraform
 	make tf_set_workspace && \
 	terraform -chdir=./infrastructure destroy -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
-
 # Release commands to deploy your app to AWS
 .PHONY: release
 release: ## Deploy app
 	chmod +x ./infrastructure/scripts/release.sh && ./infrastructure/scripts/release.sh $(env)
+
