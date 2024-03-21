@@ -29,11 +29,11 @@ variable "project_name" {
 #   default     = 1024
 # }
 
-# variable "container_port" {
-#   type        = number
-#   description = "The port to run the application on"
-#   default     = 80
-# }
+variable "container_port" {
+  type        = number
+  description = "The port to run the application on"
+  default     = 80
+}
 
 # variable "environment_variables" {
 #   type        = map(any)
@@ -88,6 +88,22 @@ variable "domain_name" {
   type        = string
   description = "The base domain name for the project"
 }
+
+variable "developer_ips" {
+  type        = list(string)
+  description = "List of developer IPs"
+}
+
+variable "ecr_repository_uri" {
+  type        = string
+  description = "ECR repo uri"
+}
+
+variable "cluster_name" {
+  type        = string
+  description = "ECS cluster name to attach service to"
+}
+
 
 
 # variable "prefix" {

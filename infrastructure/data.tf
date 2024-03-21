@@ -22,3 +22,24 @@ data "terraform_remote_state" "platform" {
     region = var.region
   }
 }
+
+
+
+data "terraform_remote_state" "universal" {
+  backend = "s3"
+  config = {
+    bucket = var.state_bucket
+    key    = "universal/terraform.tfstate"
+    region = var.region
+  }
+}
+
+
+data "terraform_remote_state" "account" {
+  backend = "s3"
+  config = {
+    bucket = var.state_bucket
+    key    = "account/terraform.tfstate"
+    region = var.region
+  }
+}
