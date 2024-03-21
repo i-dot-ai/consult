@@ -63,9 +63,9 @@ docker_login:
 	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_URL)
 
 .PHONY: docker_build
-docker_build:
+docker/build:
 	cd frontend && \
-	docker build --build-arg GEMFURY_URL=$(GEMFURY_URL) -t $(ECR_REPO_URL):$(IMAGE_TAG) $(DOCKER_BUILD_ARGS) 
+	docker build --build-arg -t $(ECR_REPO_URL):$(IMAGE_TAG) $(DOCKER_BUILD_ARGS) 
 
 .PHONY: docker_push
 docker_push:
