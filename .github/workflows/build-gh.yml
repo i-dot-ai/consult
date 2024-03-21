@@ -26,8 +26,10 @@ jobs:
           . ./.github/.github.env
           echo "ec2-instance-type=${EC2_INSTANCE_TYPE}" >> $GITHUB_OUTPUT
           echo "app-name=${APP_NAME}" >> $GITHUB_OUTPUT
+          echo "aws-region=${{ secrets.AWS_REGION }}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "RUNNER_LABEL=self-hosted" >> $GITHUB_OUTPUT
+          echo ${{ secrets.AWS_REGION }}
 
   build-image:
     needs:
@@ -35,7 +37,7 @@ jobs:
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-docker.yml@main
     with:
       APP_NAME: ${{ needs.set-vars.outputs.app-name }}
-      AWS_REGION: ${{secrets.AWS_REGION}}
+      AWS_REGION: ${{ needs.set-vars.outputs.aws-region }}
       RUNNER_LABEL: ${{ needs.set-vars.outputs.runner_label }}
       INFRASTRUCTURE_FOLDER: "infrastructure"
     secrets:
