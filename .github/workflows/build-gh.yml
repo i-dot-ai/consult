@@ -18,7 +18,7 @@ jobs:
       version: ${{ steps.export.outputs.version }}
       runner_label: ${{ steps.export.outputs.runner_label }}
 
-      
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -43,5 +43,6 @@ jobs:
       AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT}}
       AWS_GITHUBRUNNER_PAT_USER: ${{ secrets.AWS_GITHUBRUNNER_PAT_USER }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
+      AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
 
 # {%- endraw %}
