@@ -1,3 +1,6 @@
+-include .env
+export
+
 .PHONY: help
 help: ## Show this help
 	@grep -E '^[a-zA-Z\.\-\_]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -45,7 +48,36 @@ govuk_frontend: ## Pull govuk-frontend
 dummy_data: ## Generate a dummy consultation. Only works in dev
 	poetry run python manage.py generate_dummy_data
 
-CONFIG_DIR=../../consultations-analyser-config
+
+# Docker
+ECR_URL=$(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
+ECR_REPO_URL=$(ECR_URL)/$(ECR_REPO_NAME)
+IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
+
+DOCKER_BUILD_ARGS = .
+ECR_REPO_NAME=$(APP_NAME)
+IMAGE_TAG=$$(git rev-parse HEAD)
+
+.PHONY: docker_login
+docker_login:
+	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_URL)
+
+.PHONY: docker_build
+docker_build:
+	cd frontend && \
+	docker build --build-arg GEMFURY_URL=$(GEMFURY_URL) -t $(ECR_REPO_URL):$(IMAGE_TAG) $(DOCKER_BUILD_ARGS) 
+
+.PHONY: docker_push
+docker_push:
+	docker push $(IMAGE)
+
+.PHONY: docker_update_tag
+docker_update_tag:
+	MANIFEST=$$(aws ecr batch-get-image --repository-name $(ECR_REPO_NAME) --image-ids imageTag=$(IMAGE_TAG) --query 'images[].imageManifest' --output text) && \
+	aws ecr put-image --repository-name $(ECR_REPO_NAME) --image-tag $(tag) --image-manifest "$$MANIFEST"
+
+
+CONFIG_DIR=../../consultation-analyser-infra-config
 TF_BACKEND_CONFIG=$(CONFIG_DIR)/backend.hcl
 
 tf_new_workspace:
