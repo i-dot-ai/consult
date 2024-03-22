@@ -34,8 +34,8 @@ jobs:
           echo "::add-mask::${AWS_REGION}"
           echo "::add-mask::${VERSION}"
           echo "::add-mask::${REPO}"
-          
-   start-runner:
+
+  start-runner:
         uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@feature/apply-terraform
         needs: set-vars
         with:
