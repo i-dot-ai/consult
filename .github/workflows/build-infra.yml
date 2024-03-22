@@ -29,6 +29,7 @@ jobs:
           echo "data-path=${DATA_PATH}" >> $GITHUB_OUTPUT
           echo "repo=${REPO}" >> $GITHUB_OUTPUT
           echo "infra-config-repo=${INFRA_CONFIG_REPO}" >> $GITHUB_OUTPUT
+          echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
           echo "::add-mask::${EC2_INSTANCE_TYPE}"
           echo "::add-mask::${APP_NAME}"
           echo "::add-mask::${AWS_REGION}"
