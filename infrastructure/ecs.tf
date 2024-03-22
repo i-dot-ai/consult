@@ -1,7 +1,7 @@
 module "ecs" {
   source             = "../../i-ai-core-infrastructure//modules/ecs"
   project_name       = var.project_name
-  image_tag          = var.image_tag
+  image_tag          = "57aec8f3294bbc7002214c1b7ca7235615c2d0f6"
   prefix             = "i-dot-ai"
   ecr_repository_uri = var.ecr_repository_uri
   cluster_name       = var.cluster_name
