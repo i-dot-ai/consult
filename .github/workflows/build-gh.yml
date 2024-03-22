@@ -12,7 +12,6 @@ jobs:
     outputs:
       app-name: ${{ steps.export.outputs.app-name }}
       ec2-instance-type: ${{ steps.export.outputs.ec2-instance-type }}
-      aws-region: ${{ steps.export.outputs.aws-region }}
       version: ${{ steps.export.outputs.version }}
       runner_label: ${{ steps.export.outputs.runner_label }}
       environment: ${{ steps.export.outputs.environment }}
@@ -26,7 +25,6 @@ jobs:
           . ./.github/.github.env
           echo "ec2-instance-type=${EC2_INSTANCE_TYPE}" >> $GITHUB_OUTPUT
           echo "app-name=${APP_NAME}" >> $GITHUB_OUTPUT
-          echo "aws-region=${{ secrets.AWS_REGION }}" >> $GITHUB_OUTPUT
           echo "version=${VERSION}" >> $GITHUB_OUTPUT
           echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
           echo "RUNNER_LABEL=self-hosted" >> $GITHUB_OUTPUT
