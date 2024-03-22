@@ -61,7 +61,10 @@ jobs:
 
   stop-runner:
         uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@feature/start-stop-runners
-        needs: set-vars
+        needs: 
+            - set-vars
+            - start-runner
+            - build-image
         with:
             RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
             EC2_INSTANCE_ID: ${{ needs.start-runner.outputs.ec2-instance-id }}
