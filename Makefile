@@ -48,7 +48,6 @@ govuk_frontend: ## Pull govuk-frontend
 dummy_data: ## Generate a dummy consultation. Only works in dev
 	poetry run python manage.py generate_dummy_data
 
-
 # Docker
 ECR_URL=$(ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 ECR_REPO_URL=$(ECR_URL)/$(ECR_REPO_NAME)
@@ -57,18 +56,19 @@ IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 DOCKER_BUILD_ARGS = .
 ECR_REPO_NAME=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
+tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 
 .PHONY: docker_login
-docker/login:
+docker_login:
 	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_URL)
 
 .PHONY: docker_build
-docker/build:
+docker_build:
 	cd frontend && \
-	docker build -t $(ECR_REPO_URL):$(IMAGE_TAG) .
+	docker buildx build --platform linux/amd64 -t $(ECR_REPO_URL):$(IMAGE_TAG) .
 
 .PHONY: docker_push
-docker/push:
+docker_push:
 	docker push $(IMAGE)
 
 .PHONY: docker_update_tag
@@ -96,15 +96,15 @@ tf_init: ## Initialise terraform
 .PHONY: tf_plan
 tf_plan: ## Plan terraform
 	make tf_set_workspace && \
-	terraform -chdir=./infrastructure plan -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${args}
+	terraform -chdir=./infrastructure plan -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
 .PHONY: tf_apply
 tf_apply: ## Apply terraform
 	make tf_set_workspace && \
-	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${args}
+	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
 
 .PHONY: tf_destroy
 tf_destroy: ## Destroy terraform
 	make tf_set_workspace && \
-	terraform -chdir=./infrastructure destroy -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${args}
+	terraform -chdir=./infrastructure destroy -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
