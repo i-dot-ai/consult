@@ -104,6 +104,10 @@ variable "cluster_name" {
   description = "ECS cluster name to attach service to"
 }
 
+variable "hosted_zone_id" {
+  type        = string
+  description = "Route 53 Hosted Zone"
+}
 
 
 
