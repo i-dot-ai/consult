@@ -13,6 +13,7 @@ jobs:
       ec2-instance-type: ${{ steps.export.outputs.ec2-instance-type }}
       version: ${{ steps.export.outputs.version }}
       repo: ${{ steps.export.outputs.repo }}
+      infra_config_repo: ${{ steps.export.outputs.infra-config-repo }}
       environment: ${{ steps.export.outputs.environment }}
 
     steps:
@@ -55,7 +56,7 @@ jobs:
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
       ENVIRONMENT: ${{ needs.set-vars.outputs.environment }}
       PUBLIC_INFRA_DEPLOYMENT: true
-      INFRA_CONFIG_REPO: ${{ needs.set-vars.outputs.repo }}
+      INFRA_CONFIG_REPO: ${{ needs.set-vars.outputs.infra_config_repo }}
     secrets:
       AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT }}
       AWS_GITHUBRUNNER_PAT_USER: ${{ secrets.AWS_GITHUBRUNNER_PAT_USER }} 
