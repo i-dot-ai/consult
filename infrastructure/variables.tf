@@ -99,11 +99,6 @@ variable "ecr_repository_uri" {
   description = "ECR repo uri"
 }
 
-variable "cluster_name" {
-  type        = string
-  description = "ECS cluster name to attach service to"
-}
-
 variable "hosted_zone_id" {
   type        = string
   description = "Route 53 Hosted Zone"
