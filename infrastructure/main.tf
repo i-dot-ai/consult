@@ -3,3 +3,7 @@ terraform {
     key = "consultation-analyser/terraform.tfstate"
   }
 }
+
+provider "random" {
+
+}
