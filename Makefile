@@ -35,7 +35,7 @@ migrate: ## Apply migrations
 
 .PHONY: serve
 serve: ## Run the server
-	poetry run python manage.py runserver
+	poetry run gunicorn -c consultation_analyser/gunicorn.py consultation_analyser.wsgi
 
 .PHONY: test
 test: ## Run the tests
