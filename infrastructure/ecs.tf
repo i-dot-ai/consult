@@ -1,7 +1,7 @@
 module "ecs" {
   source             = "../../i-ai-core-infrastructure//modules/ecs"
   project_name       = var.project_name
-  image_tag          = "a07a0d03cfd1aeebf6baed86b7dccf4d79504405"
+  image_tag          = "dfcde6a235a58d4e708e53c9c2252477516c414b"
   prefix             = "i-dot-ai"
   ecr_repository_uri = module.ecr_front_end.repository_url
   cluster_name       = data.terraform_remote_state.platform.outputs.ecs_cluster_id
@@ -19,10 +19,19 @@ module "ecs" {
   container_port               = "80"
   load_balancer_security_group = data.terraform_remote_state.platform.outputs.load_balancer_security_group_id["default"]
   aws_lb_arn                   = data.terraform_remote_state.platform.outputs.load_balancer_arn["default"]
+  host                         = local.host
+  route53_record_name          = aws_route53_record.type_a_record.name
+
+  authenticate_cognito = {
+    enabled : true,
+    user_pool_arn : module.cognito.user_pool_arn,
+    user_pool_client_id : module.cognito.user_pool_client_id,
+    user_pool_domain : module.cognito.user_pool_domain
+  }
 }
 
 
-resource "aws_route53_record" "type-a-record" {
+resource "aws_route53_record" "type_a_record" {
   zone_id = var.hosted_zone_id
   name    = local.host
   type    = "A"
