@@ -22,6 +22,7 @@ django-libsass = "^0.9"
 govuk-frontend-jinja = "^3.0.0"
 pydot = "^2.0.0"
 gunicorn = "^21.2.0"
+whitenoise = "^6.6.0"
 
 
 [tool.poetry.group.development.dependencies]
@@ -33,6 +34,7 @@ django-extensions = "^3.2.3"
 [tool.mypy]
 files = '**/*.py'
 exclude= ['^consultation_analyser/consultations/migrations/']
+
 
 
 [tool.poetry.group.test.dependencies]
