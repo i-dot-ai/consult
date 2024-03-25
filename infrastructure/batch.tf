@@ -24,22 +24,3 @@ module "batch_job_defintiion" {
   image                   = module.ecr_pre_processing.ecr_repository_url
   fargate_flag            = false
 }
-
-# The ECS task will need to invoke SageMaker endpoint
-resource "aws_iam_policy" "sagemaker_invoke" {
-  name        = "SageMakerInvokePolicy"
-  description = "Policy that allows ECS tasks to invoke SageMaker endpoints"
-
-  policy = <<EOF
-{
-  "Version": "2012-10-17",
-  "Statement": [
-    {
-      "Action": "sagemaker:InvokeEndpoint",
-      "Effect": "Allow",
-      "Resource": "*"
-    }
-  ]
-}
-EOF
-}

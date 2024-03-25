@@ -10,8 +10,18 @@ terraform {
   backend "s3" {
     key = "consultation-analyser/terraform.tfstate"
   }
+
 }
 
 provider "random" {
 
+}
+
+provider "aws" {
+  default_tags {
+    tags = {
+      Environment = terraform.workspace
+      Deployed    = "github"
+    }
+  }
 }
