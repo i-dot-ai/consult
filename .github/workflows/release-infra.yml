@@ -2,6 +2,11 @@ name: build-infrastructure
 
 on:
   push:
+    tags:
+      - release-dev-**
+      - release-preprod-**
+      - release-prod-**
+
     branches:
       - main
 
@@ -32,6 +37,18 @@ jobs:
           echo "infra-config-repo=${INFRA_CONFIG_REPO}" >> $GITHUB_OUTPUT
           echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
           echo "::add-mask::${AWS_REGION}"
+
+      - id: env-var
+        run: |
+          # prod env from main branch
+          if [ ${{ github.ref == 'refs/heads/main' }} ]; then
+            export ENVIRONMENT=prod
+          # Otherwise get the environment from the tag
+          else
+            export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $2 }')
+          fi
+          echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
+
 
   start-runner:
         uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@feature/apply-terraform

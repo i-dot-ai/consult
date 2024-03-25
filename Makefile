@@ -108,3 +108,9 @@ tf_apply: ## Apply terraform
 tf_destroy: ## Destroy terraform
 	make tf_set_workspace && \
 	terraform -chdir=./infrastructure destroy -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+
+
+# Release commands to deploy your app to AWS
+.PHONY: release
+release: ## Deploy app
+	chmod +x ./infrastructure/scripts/release.sh && ./infrastructure/scripts/release.sh $(env)
