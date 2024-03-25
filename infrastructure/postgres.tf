@@ -1,3 +1,8 @@
+
+locals {
+  dev_flag = var.env != "prod" ? true : false
+}
+
 module "postgres" {
   source                  = "../../i-ai-core-infrastructure//modules/postgres"
   vpc_id                  = data.terraform_remote_state.vpc.outputs.vpc_id
@@ -12,4 +17,5 @@ module "postgres" {
   state_bucket            = var.state_bucket
   task_prefix             = var.project_name
   service_sg_ids          = [data.terraform_remote_state.platform.outputs.load_balancer_security_group_id["default"]]
+  dev_instance            = local.dev_flag
 }
