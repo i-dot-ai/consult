@@ -1,7 +1,7 @@
 #!/bin/bash
 # Usage:
 ## Just pass the name of the env we want to tag and deploy.
-## This will create a tag locally with a format of $INSTANCE-$ENV-$BRANCH-$CURRENT_USER-$TIMESTAMP 
+## This will create a tag locally with a format of $$ENV-$BRANCH-$CURRENT_USER-$TIMESTAMP 
 ## Then push it to the remote git.
 ENV=$1
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
