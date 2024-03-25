@@ -58,17 +58,17 @@ ECR_REPO_NAME=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
 tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 
-.PHONY: docker_login
-docker_login:
+.PHONY: docker/login
+docker/login:
 	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_URL)
 
 .PHONY: docker_build
-docker_build:
+docker/build:
 	cd frontend && \
 	docker buildx build --platform linux/amd64 -t $(ECR_REPO_URL):$(IMAGE_TAG) .
 
-.PHONY: docker_push
-docker_push:
+.PHONY: docker/push
+docker/push:
 	docker push $(IMAGE)
 
 .PHONY: docker_update_tag
