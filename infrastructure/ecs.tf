@@ -28,7 +28,6 @@ module "ecs" {
     user_pool_client_id : module.cognito.user_pool_client_id,
     user_pool_domain : module.cognito.user_pool_domain
   }
-
 }
 
 

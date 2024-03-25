@@ -6,4 +6,12 @@ terraform {
     }
   }
   required_version = ">= 1.3.5"
+
+  backend "s3" {
+    key = "consultation-analyser/terraform.tfstate"
+  }
+}
+
+provider "random" {
+
 }
