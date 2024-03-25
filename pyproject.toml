@@ -25,7 +25,7 @@ pydot = "^2.0.0"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.3.3"
-pre-commit = "^3.6.2"
+pre-commit = "^3.7.0"
 factory_boy = "^3.3.0"
 django-extensions = "^3.2.3"
 
