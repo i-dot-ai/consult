@@ -3,8 +3,8 @@ module "ecs" {
   project_name       = var.project_name
   image_tag          = "a07a0d03cfd1aeebf6baed86b7dccf4d79504405"
   prefix             = "i-dot-ai"
-  ecr_repository_uri = var.ecr_repository_uri
-  ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
+  ecr_repository_uri = module.ecr_front_end.repository_url
+  cluster_name       = data.terraform_remote_state.platform.outputs.ecs_cluster_id
   health_check = {
     healthy_threshold   = 3
     unhealthy_threshold = 3
@@ -19,7 +19,6 @@ module "ecs" {
   container_port               = "80"
   load_balancer_security_group = data.terraform_remote_state.platform.outputs.load_balancer_security_group_id["default"]
   aws_lb_arn                   = data.terraform_remote_state.platform.outputs.load_balancer_arn["default"]
-  host                         = local.host
 }
 
 

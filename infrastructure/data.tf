@@ -1,6 +1,10 @@
 locals {
-  record_prefix = var.env == "prod" ? var.project_name : "${var.project_name}-${var.env}"
-  host          = terraform.workspace == "prod" ? "${var.project_name}.ai.cabinetoffice.gov.uk" : "${var.project_name}-${terraform.workspace}.ai.cabinetoffice.gov.uk"
+  record_prefix           = var.env == "prod" ? var.project_name : "${var.project_name}-${var.env}"
+  host                    = terraform.workspace == "prod" ? "${var.project_name}.ai.cabinetoffice.gov.uk" : "${var.project_name}-${terraform.workspace}.ai.cabinetoffice.gov.uk"
+  image_tag_frontend_test = "a07a0d03cfd1aeebf6baed86b7dccf4d79504405"
+
+  image_frontend = 
+
 }
 
 data "terraform_remote_state" "vpc" {
