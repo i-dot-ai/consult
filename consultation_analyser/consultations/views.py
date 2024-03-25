@@ -4,7 +4,9 @@ from . import models
 
 
 def home(request: HttpRequest):
-    return render(request, "home.html")
+    questions = models.Question.objects.all().order_by("id")[:10]
+    context = {"questions": questions}
+    return render(request, "home.html", context)
 
 
 def show_question(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):

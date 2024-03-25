@@ -1,6 +1,6 @@
 [tool.ruff]
 line-length = 120
-target-version = 'py310'
+target-version = 'py312'
 
 [tool.poetry]
 name = "consultation-analyser"
@@ -21,6 +21,8 @@ django-compressor = "^4.4"
 django-libsass = "^0.9"
 govuk-frontend-jinja = "^3.0.0"
 pydot = "^2.0.0"
+gunicorn = "^21.2.0"
+whitenoise = "^6.6.0"
 
 
 [tool.poetry.group.development.dependencies]
@@ -35,6 +37,7 @@ exclude= ['^consultation_analyser/consultations/migrations/']
 
 [tool.poetry.group.test.dependencies]
 pytest-django = "^4.8.0"
+django-webtest = "^1.9.11"
 
 [build-system]
 requires = ["poetry-core"]

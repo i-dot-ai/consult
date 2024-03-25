@@ -1,3 +1,6 @@
+DOCKER_CONTAINER_NAME :=consultation-analyser
+CURRENT_GIT_SHA := $(shell git rev-parse HEAD | cut -c 1-8)
+
 .PHONY: help
 help: ## Show this help
 	@grep -E '^[a-zA-Z\.\-\_]+:.*?## .*$$' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}'
@@ -35,7 +38,7 @@ migrate: ## Apply migrations
 
 .PHONY: serve
 serve: ## Run the server
-	poetry run python manage.py runserver
+	poetry run gunicorn -c consultation_analyser/gunicorn.py consultation_analyser.wsgi
 
 .PHONY: test
 test: ## Run the tests
@@ -49,3 +52,11 @@ govuk_frontend: ## Pull govuk-frontend
 .PHONY: dummy_data
 dummy_data: ## Generate a dummy consultation. Only works in dev
 	poetry run python manage.py generate_dummy_data
+
+.PHONY: docker-build
+docker-build: ## Build the docker container
+	docker build . -t $(DOCKER_CONTAINER_NAME):$(CURRENT_GIT_SHA)
+
+.PHONY: docker-run
+docker-run: ## Build the docker container
+	docker run -p 8000:8000 $(DOCKER_CONTAINER_NAME):$(CURRENT_GIT_SHA)
