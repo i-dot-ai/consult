@@ -6,7 +6,7 @@ module "ecr_front_end" {
   container_name      = "front-end"
 }
 
-module "ecr_pre-processing" {
+module "ecr_pre_processing" {
   source              = "../../i-ai-core-infrastructure//modules/ecr"
   project_name_prefix = var.project_name
   container_name      = "pre-processing"
