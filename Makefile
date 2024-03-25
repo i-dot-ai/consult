@@ -58,17 +58,17 @@ ECR_REPO_NAME=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
 tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 
-.PHONY: docker_login
-docker_login:
+.PHONY: docker/login
+docker/login:
 	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_URL)
 
 .PHONY: docker_build
-docker_build:
+docker/build:
 	cd frontend && \
 	docker build -t $(ECR_REPO_URL):$(IMAGE_TAG) .
 
-.PHONY: docker_push
-docker_push:
+.PHONY: docker/push
+docker/push:
 	docker push $(IMAGE)
 
 .PHONY: docker_update_tag
@@ -102,6 +102,7 @@ tf_plan: ## Plan terraform
 tf_apply: ## Apply terraform
 	make tf_set_workspace && \
 	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+
 
 .PHONY: tf_destroy
 tf_destroy: ## Destroy terraform

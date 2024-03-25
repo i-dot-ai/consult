@@ -3,8 +3,8 @@ module "ecs" {
   project_name       = var.project_name
   image_tag          = "dfcde6a235a58d4e708e53c9c2252477516c414b"
   prefix             = "i-dot-ai"
-  ecr_repository_uri = var.ecr_repository_uri
-  ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
+  ecr_repository_uri = module.ecr_front_end.repository_url
+  cluster_name       = data.terraform_remote_state.platform.outputs.ecs_cluster_id
   health_check = {
     healthy_threshold   = 3
     unhealthy_threshold = 3
@@ -28,6 +28,7 @@ module "ecs" {
     user_pool_client_id : module.cognito.user_pool_client_id,
     user_pool_domain : module.cognito.user_pool_domain
   }
+
 }
 
 
