@@ -3,7 +3,7 @@ name: build-infrastructure
 on:
   push:
     branches:
-      - feature/integrate_actions
+      - main
 
 jobs:
   set-vars:
