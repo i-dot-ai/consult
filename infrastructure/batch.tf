@@ -19,9 +19,9 @@ module "batch_job_defintiion" {
   project                 = "i-dot-ai"
   name                    = "consultations"
   region                  = var.region
-  compute_environment_arn = module.batch_compute.compute_environment_arn
+  compute_environment_arn = [module.batch_compute.ec2_compute_environment_arn]
   state_bucket            = var.state_bucket
-  image                   = module.ecr_back_end.repository_url
+  image                   = module.ecr_pre_processing.ecr_repository_url
   fargate_flag            = false
 }
 

@@ -4,10 +4,10 @@ variable "app-replica-count-desired" {
   description = "The desired number of replicas"
 }
 
-variable "cloudwatch_log_group" {
-  type        = string
-  description = "CloudWatch log group name"
-}
+# variable "cloudwatch_log_group" {
+#   type        = string
+#   description = "CloudWatch log group name"
+# }
 
 variable "container_port" {
   type        = number
