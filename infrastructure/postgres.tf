@@ -7,7 +7,7 @@ module "postgres" {
   developer_ips           = var.developer_ips
   db_name                 = var.project_name
   kms_secrets_arn         = data.terraform_remote_state.universal.outputs.kms_secrets_arn
-  project                 = var.project_name
+  project                 = "i-dot-ai"
   domain_name             = var.domain_name
   state_bucket            = var.state_bucket
   task_prefix             = var.project_name
