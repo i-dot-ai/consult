@@ -83,7 +83,7 @@ jobs:
           - 5432:5432
 
     container:
-      image: $:${{ needs.build-image.outputs.image_tag }}
+      image: ${{ needs.build-image.outputs.image_tag }}
 
     steps:
       - uses: actions/checkout@v4
