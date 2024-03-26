@@ -63,7 +63,7 @@ jobs:
       - start-runner
       - build-image
     outputs:
-      IMAGE: ${{ needs.build-image.outputs.image }}
+      ECR_URI: ${{ needs.build-image.outputs.ecr_uri }}
     env:
       DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
 
@@ -83,7 +83,7 @@ jobs:
           - 5432:5432
 
     container:
-      image: ${{ needs.build-image.outputs.image }}
+      image: ${{ needs.build-image.outputs.ecr_uri }}
 
     steps:
       - uses: actions/checkout@v4
