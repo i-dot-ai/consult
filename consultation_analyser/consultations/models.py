@@ -63,9 +63,6 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     summary = models.TextField(blank=True)
     keywords = models.JSONField(default=list)
 
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
-
 
 class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     multiple_choice_responses = models.JSONField(null=True)  # Multiple choice can have more than one response
