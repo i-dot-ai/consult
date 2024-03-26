@@ -44,7 +44,7 @@ jobs:
     needs:
       - set-vars
       - start-runner
-    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-docker.yml@main
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-docker.yml@add/docker-prune
     with:
       APP_NAME: ${{ needs.set-vars.outputs.app-name }}
       RUNNER_LABEL: ${{ needs.set-vars.outputs.runner_label }}
@@ -56,13 +56,14 @@ jobs:
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   
   test:
-    runs-on: ubuntu-latest
+    runs-on: ${{ needs.set-vars.outputs.runner_label }}
     needs: 
+      - set-vars
+      - start-runner
       - build-image
     outputs:
       IMAGE_TAG: ${{ needs.build.outputs.IMAGE_TAG }}
     env:
-      DOCKER_IMAGE: consultation-analyser
       DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
 
     services:
@@ -81,16 +82,22 @@ jobs:
           - 5432:5432
 
     container:
-      image: consultation-analyser:${{ needs.build.outputs.IMAGE_TAG }}
+      image: $:${{ needs.build.outputs.IMAGE_TAG }}
 
     steps:
       - uses: actions/checkout@v4
 
       - name: pytest
         run:
-          docker run -e DATABASE_URL=$DATABASE_URL ./venv/bin/pytest
-        env:
-          DATABASE_URL: ${{ env.DATABASE_URL }}
+          make docker_test
+
+  prune-docker:
+    needs:
+      - set-vars
+      - start-runner
+      - build-image
+      - test
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/prune-docker.yml@add/docker-prune
 
 
   stop-runner:
@@ -100,6 +107,8 @@ jobs:
             - set-vars
             - start-runner
             - build-image
+            - test
+            - prune-docker
         with:
             RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
             EC2_INSTANCE_ID: ${{ needs.start-runner.outputs.ec2-instance-id }}
