@@ -2,6 +2,10 @@ name: build-infrastructure
 
 on:
   push:
+    tags:
+      - release-dev-**
+      - release-preprod-**
+
     branches:
       - main
 
@@ -33,8 +37,20 @@ jobs:
           echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
           echo "::add-mask::${AWS_REGION}"
 
+      - id: env-var
+        run: |
+          # prod env from main branch
+          if [ ${{ github.ref == 'refs/heads/main' }} ]; then
+            export ENVIRONMENT=prod
+          # Otherwise get the environment from the tag
+          else
+            export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $2 }')
+          fi
+          echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
+
+
   start-runner:
-        uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@feature/apply-terraform
+        uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@main
         needs: set-vars
         with:
             EC2_INSTANCE_TYPE: ${{ needs.set-vars.outputs.ec2-instance-type }}
@@ -50,7 +66,7 @@ jobs:
     needs:
       - set-vars
       - start-runner
-    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/apply-terraform.yml@feature/apply-terraform
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/apply-terraform.yml@main
     with:
       APP_NAME: ${{ needs.set-vars.outputs.app-name }}
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
@@ -67,7 +83,7 @@ jobs:
       - set-vars
       - start-runner
       - build-infra
-    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@feature/apply-terraform
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@main
     if: needs.start-runner.outputs.use-persisted == 0 && always() 
     with:
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
