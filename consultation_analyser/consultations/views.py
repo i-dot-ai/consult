@@ -1,31 +1,24 @@
-from django.shortcuts import render
+import datetime
+
+from django.shortcuts import render, redirect, reverse
 from django.http import HttpRequest
 
 from . import models
 from consultation_analyser.consultations import ml_pipeline
+from consultation_analyser.consultations.dummy_data import DummyConsultation
 
 
-def generate_dummy_consultation():
-    # TODO - well, generate a dummy consultation
-    return
-
-
+# TODO - this is placeholder for homepage - useful things to help us test
 def home(request: HttpRequest):
     consultations = models.Consultation.objects.all()
     questions = models.Question.objects.all().order_by("id")[:10]
     context = {"questions": questions, "consultations": consultations}
     if request.POST:
-        generate_dummy_consultation()
-        # TODO - can't import from factories
-        # dummy_consultation = ConsultationFactory(with_question=True)
-        # dummy_question = models.Question.objects.filter(consultation=dummy_consultation).first()
-        # dummy_question.has_free_text = True
-        # dummy_question.save()
-        # AnswerFactory(questions=dummy_question, theme=None)
-        # consultation_slug = dummy_consultation.slug
-        # # TODO - to be replaced by redirect
-        return render(request, "home.html", context)
-
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%D-%H:%M:%S")
+        name = f"Dummy Consultation generated at {timestamp}"
+        DummyConsultation(name=name, blank_themes=True)  # TODO - how to run when not local?
+        consultation = models.Consultation.objects.get(name=name)
+        return redirect(reverse("show_consultation", args=(consultation.slug,)))
     return render(request, "home.html", context)
 
 
