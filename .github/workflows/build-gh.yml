@@ -63,7 +63,7 @@ jobs:
       - start-runner
       - build-image
     outputs:
-      IMAGE_TAG: ${{ needs.build-image.outputs.image_tag }}
+      IMAGE: ${{ needs.build-image.outputs.image }}
     env:
       DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
 
@@ -83,12 +83,13 @@ jobs:
           - 5432:5432
 
     container:
-      image: ${{ needs.build-image.outputs.image_tag }}
+      image: ${{ needs.build-image.outputs.image }}
 
     steps:
       - uses: actions/checkout@v4
-
       - name: pytest
+        env:
+          ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
         run:
           make docker_test
 
