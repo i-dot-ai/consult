@@ -21,7 +21,7 @@ module "batch_job_defintiion" {
   region                  = var.region
   compute_environment_arn = [module.batch_compute.ec2_compute_environment_arn]
   state_bucket            = var.state_bucket
-  image                   = module.ecr_pre_processing.ecr_repository_url
+  image                   = module.ecr.ecr_repository_url
   fargate_flag            = false
 }
 
