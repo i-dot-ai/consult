@@ -40,6 +40,8 @@ COPY --from=poetry-packages /src/venv ./venv
 
 COPY . .
 
+
+ENV DJANGO_SECRET_KEY=dummy-key
 ENV DJANGO_SETTINGS_MODULE='consultation_analyser.settings.production'
 ENV PYTHONPATH "${PYTHONPATH}:/."
 
