@@ -56,7 +56,7 @@ jobs:
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
   
-  test:
+  test-image:
     runs-on: ${{ needs.set-vars.outputs.runner_label }}
     needs: 
       - set-vars
@@ -87,6 +87,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+      - name: Check migrations
+        run: |
+          poetry run python manage.py migrate
+          poetry run python manage.py makemigrations --check
+        env:
+          DJANGO_SECRET_KEY: dummy-key
+          DATABASE_URL: ${{ env.DATABASE_URL }}
       - name: pytest
         env:
           ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
@@ -99,7 +106,7 @@ jobs:
       - set-vars
       - start-runner
       - build-image
-      - test
+      - test-image
     if: always()
     uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/prune-docker.yml@add/docker-prune
 
@@ -111,7 +118,7 @@ jobs:
             - set-vars
             - start-runner
             - build-image
-            - test
+            - test-image
             - prune-docker
         with:
             RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
