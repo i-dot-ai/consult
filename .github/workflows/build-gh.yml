@@ -15,6 +15,7 @@ jobs:
       version: ${{ steps.export.outputs.version }}
       runner_label: ${{ steps.export.outputs.runner_label }}
       environment: ${{ steps.export.outputs.environment }}
+      
 
     steps:
       - name: Checkout
@@ -62,7 +63,7 @@ jobs:
       - start-runner
       - build-image
     outputs:
-      IMAGE_TAG: ${{ needs.build.outputs.IMAGE_TAG }}
+      IMAGE_TAG: ${{ needs.build-image.outputs.tag }}
     env:
       DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
 
