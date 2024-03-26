@@ -1,9 +1,9 @@
 module "ecs" {
   source             = "../../i-ai-core-infrastructure//modules/ecs"
   project_name       = var.project_name
-  image_tag          = "5586478ada171e6b4fc81c3c4142f2d125079bf3"
+  image_tag          = var.image_tag
   prefix             = "i-dot-ai"
-  ecr_repository_uri = module.ecr.ecr_repository_url
+  ecr_repository_uri = module.ecr_front_end.ecr_repository_url
   ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
   health_check = {
     healthy_threshold   = 3
