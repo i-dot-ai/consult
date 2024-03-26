@@ -58,23 +58,28 @@ ECR_REPO_NAME=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
 tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 
-.PHONY: docker/login
-docker/login:
+.PHONY: docker_login
+docker_login:
 	aws ecr get-login-password --region $(AWS_REGION) | docker login --username AWS --password-stdin $(ECR_URL)
 
 .PHONY: docker_build
-docker/build:
+docker_build:
 	cd frontend && \
 	docker build -t $(ECR_REPO_URL):$(IMAGE_TAG) .
 
-.PHONY: docker/push
-docker/push:
+.PHONY: docker_push
+docker_push:
 	docker push $(IMAGE)
 
 .PHONY: docker_update_tag
 docker_update_tag:
 	MANIFEST=$$(aws ecr batch-get-image --repository-name $(ECR_REPO_NAME) --image-ids imageTag=$(IMAGE_TAG) --query 'images[].imageManifest' --output text) && \
 	aws ecr put-image --repository-name $(ECR_REPO_NAME) --image-tag $(tag) --image-manifest "$$MANIFEST"
+
+# Ouputs the value that you're after - useful to get a value i.e. IMAGE_TAG out of the Makefile
+.PHONY: docker_echo
+docker_echo:
+	echo $($(value))
 
 
 CONFIG_DIR=../../consultation-analyser-infra-config
