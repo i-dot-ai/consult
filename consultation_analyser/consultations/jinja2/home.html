@@ -3,7 +3,6 @@
 
 {% block content %}
   <h1 class="govuk-heading-xl">Questions</h1>
-  <ul class="govuk-list">
     {% for q in questions %}
       <li>
         <a class="govuk-link" href="{{ url('show_question', kwargs={'question_slug': q.slug, 'section_slug': q.section.slug, 'consultation_slug': q.section.consultation.slug}) }}">
@@ -11,5 +10,13 @@
         </a>
       </li>
 
-  {% endfor %}
+    {% endfor %}
+
+
+  <form method="post" novalidate>{{csrf_input}}
+    {{ govukButton({
+      'text': "Generate dummy consultation"
+    }) }}
+  </form>
+
 {% endblock %}
