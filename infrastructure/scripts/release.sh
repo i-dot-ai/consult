@@ -17,11 +17,7 @@ echo "New tag name will be " "$TAG_NAME"
 if [ $ENV == 'prod' ]; then
     echo ''
     if [ $BRANCH != 'main' ]; then
-        echo -e "\033[0;31mYou can only deploy to prod from main branch\033[0m"
-        exit 0
-    fi
-    read -p "DANGER: Are you sure you want to push to prod without a PR? Enter y to continue: " answer
-    if [ $answer != 'y' ]; then
+        echo -e "\033[0;31mYou can only deploy to prod through a PR into main\033[0m"
         exit 0
     fi
 fi
