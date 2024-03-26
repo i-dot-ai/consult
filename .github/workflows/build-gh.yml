@@ -86,20 +86,20 @@ jobs:
       image: ${{ needs.build-image.outputs.ecr_uri }}
 
     steps:
-      - uses: actions/checkout@v4
       - name: Check migrations
         run: |
-          poetry run python manage.py migrate
-          poetry run python manage.py makemigrations --check
+          ./venv/bin/django-admin migrate
+        
         env:
           DJANGO_SECRET_KEY: dummy-key
+          DJANGO_SETTINGS_MODULE: consultation_analyser.settings.test
           DATABASE_URL: ${{ env.DATABASE_URL }}
+
       - name: pytest
         env:
-          ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
           DJANGO_SECRET_KEY: dummy-key
         run:
-          make docker_test
+          ./venv/bin/pytest
 
   prune-docker:
     needs:
