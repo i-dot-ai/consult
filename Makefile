@@ -62,6 +62,7 @@ tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 
 .PHONY: docker_build
 docker_build: ## Build the docker container
+	docker system prune -f
 	docker build . -t $(IMAGE)
 
 .PHONY: docker_run
