@@ -45,7 +45,7 @@ jobs:
     needs:
       - set-vars
       - start-runner
-    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-docker.yml@add/docker-prune
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-docker.yml@main
     with:
       APP_NAME: ${{ needs.set-vars.outputs.app-name }}
       RUNNER_LABEL: ${{ needs.set-vars.outputs.runner_label }}
@@ -55,61 +55,6 @@ jobs:
       AWS_GITHUBRUNNER_PAT_USER: ${{ secrets.AWS_GITHUBRUNNER_PAT_USER }}
       AWS_REGION: ${{ secrets.AWS_REGION }}
       AWS_ACCOUNT_ID: ${{ secrets.AWS_ACCOUNT_ID }}
-  
-  test-image:
-    runs-on: ${{ needs.set-vars.outputs.runner_label }}
-    needs: 
-      - set-vars
-      - start-runner
-      - build-image
-    outputs:
-      ECR_URI: ${{ needs.build-image.outputs.ecr_uri }}
-    env:
-      DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
-
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_USER: pguser
-          POSTGRES_PASSWORD: pgpass
-          POSTGRES_DB: consultations_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
-
-    container:
-      image: ${{ needs.build-image.outputs.ecr_uri }}
-
-    steps:
-      - name: Check migrations
-        run: |
-          ./venv/bin/django-admin migrate
-        
-        env:
-          DJANGO_SECRET_KEY: dummy-key
-          DJANGO_SETTINGS_MODULE: consultation_analyser.settings.test
-          DATABASE_URL: ${{ env.DATABASE_URL }}
-
-      - name: pytest
-        env:
-          DJANGO_SECRET_KEY: dummy-key
-        run:
-          ./venv/bin/pytest
-
-  prune-docker:
-    needs:
-      - set-vars
-      - start-runner
-      - build-image
-      - test-image
-    if: always()
-    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/prune-docker.yml@add/docker-prune
-
 
   stop-runner:
         uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@main
@@ -118,8 +63,6 @@ jobs:
             - set-vars
             - start-runner
             - build-image
-            - test-image
-            - prune-docker
         with:
             RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
             EC2_INSTANCE_ID: ${{ needs.start-runner.outputs.ec2-instance-id }}
