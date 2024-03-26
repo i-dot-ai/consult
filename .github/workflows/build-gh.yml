@@ -30,7 +30,7 @@ jobs:
           echo "RUNNER_LABEL=self-hosted" >> $GITHUB_OUTPUT
 
   start-runner:
-        uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml@feature/apply-terraform
+        uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/start-runner.yml
         needs: set-vars
         with:
             EC2_INSTANCE_TYPE: ${{ needs.set-vars.outputs.ec2-instance-type }}
@@ -45,7 +45,7 @@ jobs:
     needs:
       - set-vars
       - start-runner
-    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-docker.yml@feature/apply-terraform
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-docker.yml
     with:
       APP_NAME: ${{ needs.set-vars.outputs.app-name }}
       RUNNER_LABEL: ${{ needs.set-vars.outputs.runner_label }}
@@ -58,7 +58,7 @@ jobs:
 
 
   stop-runner:
-        uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml@feature/apply-terraform
+        uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/stop-runner.yml
         if: needs.start-runner.outputs.use-persisted == 0 && always()
         needs: 
             - set-vars
