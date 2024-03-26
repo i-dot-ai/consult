@@ -63,7 +63,7 @@ jobs:
       - start-runner
       - build-image
     outputs:
-      IMAGE_TAG: ${{ needs.build-image.outputs.tag }}
+      IMAGE_TAG: ${{ needs.build-image.outputs.image_tag }}
     env:
       DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
 
@@ -83,7 +83,7 @@ jobs:
           - 5432:5432
 
     container:
-      image: $:${{ needs.build.outputs.IMAGE_TAG }}
+      image: $:${{ needs.build-image.outputs.image_tag }}
 
     steps:
       - uses: actions/checkout@v4
