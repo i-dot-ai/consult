@@ -76,6 +76,11 @@ docker_update_tag:
 	MANIFEST=$$(aws ecr batch-get-image --repository-name $(ECR_REPO_NAME) --image-ids imageTag=$(IMAGE_TAG) --query 'images[].imageManifest' --output text) && \
 	aws ecr put-image --repository-name $(ECR_REPO_NAME) --image-tag $(tag) --image-manifest "$$MANIFEST"
 
+# Ouputs the value that you're after - useful to get a value i.e. IMAGE_TAG out of the Makefile
+.PHONY: docker_echo
+docker_echo:
+	echo $($(value))
+
 
 CONFIG_DIR=../../consultation-analyser-infra-config
 TF_BACKEND_CONFIG=$(CONFIG_DIR)/backend.hcl
