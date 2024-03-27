@@ -1,7 +1,7 @@
 
 
 module "batch_compute" {
-  source          = "../../i-ai-core-infrastructure/modules/batch/batch_compute_environment/"
+  source          = "../../i-ai-core-infrastructure/modules/batch/batch_compute_environment"
   project         = "i-dot-ai"
   name            = "consultations"
   region          = var.region
@@ -15,7 +15,7 @@ module "batch_compute" {
 }
 
 module "batch_job_definition" {
-  source                  = "../../i-ai-core-infrastructure/modules/batch/batch_job_definitons/"
+  source                  = "../../i-ai-core-infrastructure/modules/batch/batch_job_definitons"
   project                 = "i-dot-ai"
   name                    = "consultations"
   region                  = var.region
