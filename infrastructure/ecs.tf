@@ -21,6 +21,7 @@ module "ecs" {
     "POSTGRES_FQDN"        = local.postgres_fqdn,
     "BATCH_JOB_QUEUE"      = module.batch_job_defintiion.batch_job_queue
     "BATCH_JOB_DEFINITION" = module.batch_job_defintiion.batch_job_definition
+    "DJANGO_SECRET"        = 
   }
 
   state_bucket                 = var.state_bucket
@@ -53,3 +54,7 @@ resource "aws_route53_record" "type_a_record" {
   }
 }
 
+resource "aws_secretsmanager_secret" "django_secret" {
+  name        = "${var.prefix}-${var.project_name}-django-secret"
+  description = "Django secret for ${var.project_name}"
+}
