@@ -1,15 +1,5 @@
 locals {
   postgres_fqdn = "${module.postgres.rds_instance_username}:${module.postgres.rds_instance_db_password}@${module.postgres.db_instance_address}/${module.postgres.db_instance_name}"
-  database_resource_map = {
-    "ENGINE" : "django.db.backends.postgresql_psycopg2",
-    "NAME" : "${module.postgres.db_instance_name}",
-    "USER" : "${module.postgres.rds_instance_username}",
-    "PASSWORD" : "${module.postgres.rds_instance_db_password}",
-    "HOST" : "${module.postgres.db_instance_address}",
-    "PORT" : 5432,
-  }
-
-
 }
 
 module "ecs" {
@@ -32,6 +22,10 @@ module "ecs" {
     "BATCH_JOB_QUEUE"       = module.batch_job_definition.job_queue_name,
     "BATCH_JOB_DEFINITION"  = module.batch_job_definition.job_definition_name,
     "DJANGO_SECRET_KEY"     = data.aws_secretsmanager_secret_version.django_secret.secret_string
+    "DB_NAME" : "${module.postgres.db_instance_name}",
+    "DB_USER" : "${module.postgres.rds_instance_username}",
+    "DB_PASSWORD" : "${module.postgres.rds_instance_db_password}",
+    "DB_HOST" : "${module.postgres.db_instance_address}",
   }
 
   state_bucket                 = var.state_bucket
