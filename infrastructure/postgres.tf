@@ -16,6 +16,6 @@ module "postgres" {
   domain_name             = var.domain_name
   state_bucket            = var.state_bucket
   task_prefix             = var.project_name
-  service_sg_ids          = [data.terraform_remote_state.platform.outputs.load_balancer_security_group_id["default"]]
+  service_sg_ids          = [module.ecs.service_sg_id]
   dev_instance            = local.dev_flag
 }
