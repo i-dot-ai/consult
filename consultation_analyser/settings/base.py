@@ -76,10 +76,10 @@ if PRODUCTION_DEPLOYMENT:
     DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql_psycopg2",
-            "NAME": "${module.postgres.db_instance_name}",
-            "USER": "${module.postgres.rds_instance_username}",
-            "PASSWORD": "${module.postgres.rds_instance_db_password}",
-            "HOST": "${module.postgres.db_instance_address}",
+            "NAME": os.getenv("DB_NAME"),
+            "USER": os.getenv("DB_USER"),
+            "PASSWORD": os.getenv("DB_PASSWORD"),
+            "HOST": os.getenv("DB_HOST"),
             "PORT": 5432,
         }
     }
