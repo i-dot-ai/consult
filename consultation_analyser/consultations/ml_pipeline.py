@@ -13,7 +13,7 @@ def dummy_generate_theme_for_question(question):
     answers_qs = models.Answer.objects.filter(question=question)
     made_up_themes = []
     for i in range(3):
-        label = f"Theme {i}: {question.slug} : {datetime.datetime.now().strftime("%Y-%m-%d %H:%M")}"
+        label = f"Theme {i}: {question.slug} : {datetime.datetime.now().strftime('%Y-%m-%d %H:%M')}"
         words = question.text.split()
         keywords = [random.choice(words), random.choice(words)]
         theme = models.Theme(keywords=keywords, label=label)
