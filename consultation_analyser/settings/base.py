@@ -70,7 +70,19 @@ WSGI_APPLICATION = "consultation_analyser.wsgi.application"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {"default": env.db()}
+PRODUCTION_DEPLOYMENT = os.environ.get("PRODUCTION_DEPLOYMENT", False)
+
+if PRODUCTION_DEPLOYMENT:
+    DATABASES = {
+        "ENGINE": "django.db.backends.postgresql_psycopg2",
+        "NAME": "${module.postgres.db_instance_name}",
+        "USER": "${module.postgres.rds_instance_username}",
+        "PASSWORD": "${module.postgres.rds_instance_db_password}",
+        "HOST": "${module.postgres.db_instance_address}",
+        "PORT": 5432,
+    }
+else:
+    DATABASES = {"default": env.db()}
 
 
 # Password validation
@@ -111,8 +123,13 @@ COMPRESS_PRECOMPILERS = (("text/x-scss", "django_libsass.SassCompiler"),)
 
 STATIC_URL = "static/"
 STATIC_ROOT = "frontend/"
-STATICFILES_DIRS = [("govuk-assets", BASE_DIR / "node_modules/govuk-frontend/dist/govuk/assets")]
-STATICFILES_FINDERS = ["compressor.finders.CompressorFinder", "django.contrib.staticfiles.finders.FileSystemFinder"]
+STATICFILES_DIRS = [
+    ("govuk-assets", BASE_DIR / "node_modules/govuk-frontend/dist/govuk/assets")
+]
+STATICFILES_FINDERS = [
+    "compressor.finders.CompressorFinder",
+    "django.contrib.staticfiles.finders.FileSystemFinder",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
