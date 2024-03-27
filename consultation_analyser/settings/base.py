@@ -83,7 +83,6 @@ if PRODUCTION_DEPLOYMENT:
             "PORT": 5432,
         }
     }
-    print(DATABASES)
 else:
     DATABASES = {"default": env.db()}
 
