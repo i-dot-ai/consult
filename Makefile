@@ -60,7 +60,6 @@ ECR_URL=$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 ECR_REPO_URL=$(ECR_URL)/$(ECR_REPO_NAME)
 IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 
-DOCKER_BUILD_ARGS = .
 ECR_REPO_NAME=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
 tf_build_args=-var "image_tag=$(IMAGE_TAG)"
@@ -124,6 +123,11 @@ tf_plan: ## Plan terraform
 tf_apply: ## Apply terraform
 	make tf_set_workspace && \
 	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+
+.PHONY: tf_auto_apply
+tf_auto_apply: ## Apply terraform
+	make tf_set_workspace && \
+	terraform -chdir=./infrastructure apply -auto-approve -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
 .PHONY: tf_destroy
 tf_destroy: ## Destroy terraform
