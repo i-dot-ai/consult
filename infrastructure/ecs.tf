@@ -55,7 +55,7 @@ resource "aws_route53_record" "type_a_record" {
 }
 
 resource "aws_secretsmanager_secret" "django_secret" {
-  name        = "${var.prefix}-${var.project_name}-django-secret"
+  name        = "${var.prefix}-${var.project_name}-${var.env}-django-secret"
   description = "Django secret for ${var.project_name}"
 }
 
