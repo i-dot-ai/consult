@@ -16,7 +16,6 @@ def test_save_themes_for_consultation():
     no_free_text_question = factories.QuestionFactory(
         section=section, has_free_text=False, slug="favorite-cadbury-chocolate-bar"
     )
-
     questions = [free_text_question1, free_text_question2, no_free_text_question]
     for r in range(10):
         response = factories.ConsultationResponseFactory(consultation=consultation)
@@ -26,13 +25,13 @@ def test_save_themes_for_consultation():
 
     # Check we've generated themes for questions with full text responses, and check fields populated
     for q in [free_text_question1, free_text_question2]:
-        themes_for_q = models.Theme.objects.filter(answer__question=q)
+        themes_for_q = models.Theme.objects.filter(question=q)
         assert themes_for_q.exists()
     example_theme = themes_for_q.first()
     assert example_theme.keywords
     assert example_theme.label
-    # Summary will be populated in a separate step
+    # Summary not populated here - done in a separate step
 
     # Check no themes for question with no free text
-    themes_for_q = models.Theme.objects.filter(answer__question=no_free_text_question)
+    themes_for_q = models.Theme.objects.filter(question=no_free_text_question)
     assert not themes_for_q.exists()
