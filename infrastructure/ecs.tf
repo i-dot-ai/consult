@@ -21,7 +21,7 @@ module "ecs" {
     "DATABASE_URL"         = local.postgres_fqdn,
     "BATCH_JOB_QUEUE"      = module.batch_job_defintiion.batch_job_queue
     "BATCH_JOB_DEFINITION" = module.batch_job_defintiion.batch_job_definition
-    "DJANGO_SECRET"        = 
+    "DJANGO_SECRET"        = data.aws_secretsmanager_secret_version.django_secret.secret_string
   }
 
   state_bucket                 = var.state_bucket
@@ -57,4 +57,9 @@ resource "aws_route53_record" "type_a_record" {
 resource "aws_secretsmanager_secret" "django_secret" {
   name        = "${var.prefix}-${var.project_name}-django-secret"
   description = "Django secret for ${var.project_name}"
+}
+
+data "aws_secretsmanager_secret_version" "django_secret" {
+  secret_id  = aws_secretsmanager_secret.django_secret.id
+  depends_on = [aws_secretsmanager_secret.django_secret]
 }
