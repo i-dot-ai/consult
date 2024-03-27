@@ -27,6 +27,7 @@ module "ecs" {
     "DB_USER" : "${module.postgres.rds_instance_username}",
     "DB_PASSWORD" : "${module.postgres.rds_instance_db_password}",
     "DB_HOST" : "${module.postgres.db_instance_address}",
+    "DOMAIN_NAME" : "${local.host}"
   }
 
   state_bucket                 = var.state_bucket
