@@ -119,5 +119,4 @@ STATICFILES_FINDERS = ["compressor.finders.CompressorFinder", "django.contrib.st
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-
 IS_AWS_BATCH = env("IS_AWS_BATCH")
