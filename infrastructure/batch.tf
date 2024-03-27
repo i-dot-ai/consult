@@ -14,7 +14,7 @@ module "batch_compute" {
   instance_type   = "g5.xlarge"
 }
 
-module "batch_job_defintiion" {
+module "batch_job_definition" {
   source                  = "../../i-ai-core-infrastructure/modules/batch/batch_job_definitons/"
   project                 = "i-dot-ai"
   name                    = "consultations"

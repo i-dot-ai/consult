@@ -1,5 +1,5 @@
 locals {
-  postgres_fqdn = "${module.postgres.db_user}:${module.postgres.db_password}@${module.postgres.db_instance_address}/${module.postgres.db_name}"
+  postgres_fqdn = "${module.postgres.rds_instance_username}:${module.postgres.rds_instance_db_password}@${module.postgres.db_instance_address}/${module.postgres.db_instance_name}"
 }
 
 module "ecs" {
@@ -19,8 +19,8 @@ module "ecs" {
   environment_variables = {
     "ENVIRONMENT"          = terraform.workspace,
     "DATABASE_URL"         = local.postgres_fqdn,
-    "BATCH_JOB_QUEUE"      = module.batch_job_defintiion.batch_job_queue
-    "BATCH_JOB_DEFINITION" = module.batch_job_defintiion.batch_job_definition
+    "BATCH_JOB_QUEUE"      = module.batch_job_definition.job_queue_name,
+    "BATCH_JOB_DEFINITION" = module.batch_job_definition.job_definition_name
   }
 
   state_bucket                 = var.state_bucket
