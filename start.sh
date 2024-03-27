@@ -2,4 +2,4 @@
 
 venv/bin/django-admin migrate
 venv/bin/django-admin compress --force --engine jinja2
-venv/bin/gunicorn -c ./consultation_analyser/gunicorn.py consultation_analyser.wsgi
+exec venv/bin/gunicorn -c ./consultation_analyser/gunicorn.py consultation_analyser.wsgi
