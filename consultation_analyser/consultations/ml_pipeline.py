@@ -8,7 +8,8 @@ import random
 from . import models
 
 
-def dummy_generate_theme_for_question(question):
+def save_themes_for_question(question: models.Question) -> None:
+    # TODO - this is dummy code to be replaced
     # This generates junk themes for us to test things
     answers_qs = models.Answer.objects.filter(question=question)
     made_up_themes = []
@@ -24,7 +25,29 @@ def dummy_generate_theme_for_question(question):
         answer.save()
 
 
-def dummy_save_themes_for_consultation(consultation_slug: str) -> None:
+def save_themes_for_consultation(consultation_slug: str) -> None:
+    # Only add themes for questions with free text responses.
     questions = models.Question.objects.filter(section__consultation__slug=consultation_slug, has_free_text=True)
     for question in questions:
-        dummy_generate_theme_for_question(question)
+        save_themes_for_question(question)
+
+
+def get_summary_for_theme(theme: models.Theme) -> str:
+    # TODO - replace this dummy code with LLM calls
+    summary = f"summary: {theme.keywords.join(",")}"
+    return summary
+
+
+def save_theme_summaries_for_question(question: models.Question) -> None:
+    # TODO: replace with non-dummy code!
+    themes_qs = models.Theme.objects.filter(answer__question=question)
+    for theme in themes_qs:
+        summary = get_summary_for_theme(theme)
+        theme.summary = summary
+        theme.save()
+
+
+def save_theme_summaries_for_consultation(consultation_slug: str) -> None:
+    questions = models.Question.objects.filter(section__consultation__slug=consultation_slug, has_free_text=True)
+    for question in questions:
+        save_theme_summaries_for_question(question)
