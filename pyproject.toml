@@ -20,12 +20,9 @@ psycopg = "^3.1.18"
 django-compressor = "^4.4"
 django-libsass = "^0.9"
 govuk-frontend-jinja = "^3.0.0"
-<<<<<<< HEAD
-=======
 pydot = "^2.0.0"
 gunicorn = "^21.2.0"
 whitenoise = "^6.6.0"
->>>>>>> 671c92e25d6a062f03f24dce94765e8e27ffc267
 boto3 = "^1.34.71"
 
 
@@ -39,13 +36,6 @@ django-extensions = "^3.2.3"
 files = '**/*.py'
 exclude= ['^consultation_analyser/consultations/migrations/']
 
-<<<<<<< HEAD
-
-
-
-
-=======
->>>>>>> 671c92e25d6a062f03f24dce94765e8e27ffc267
 [tool.poetry.group.test.dependencies]
 pytest-django = "^4.8.0"
 django-webtest = "^1.9.11"
