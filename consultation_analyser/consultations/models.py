@@ -27,7 +27,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class Section(UUIDPrimaryKeyModel, TimeStampedModel):
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, null=True)
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     name = models.TextField()
     slug = models.CharField(null=False, max_length=256)
 
@@ -42,7 +42,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     slug = models.CharField(null=False, max_length=256)
     has_free_text = models.BooleanField(default=False)
     multiple_choice_options = models.JSONField(null=True)
-    section = models.ForeignKey(Section, on_delete=models.CASCADE, null=True)
+    section = models.ForeignKey(Section, on_delete=models.CASCADE)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -51,8 +51,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
-    # Characteristics may be different for different consultations
-    pass
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass

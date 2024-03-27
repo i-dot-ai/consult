@@ -1,1 +1,45 @@
-{{ question.text }}
+{% extends "base.html" %}
+
+{% block content %}
+
+  <h1 class="govuk-heading-xl">Question summary - dummy page</h1>
+  <p class="govuk-body">{{ question.text }}</p>
+
+  <table class="govuk-table">
+    <caption class="govuk-table__caption govuk-table__caption--s">
+      <h2 class="govuk-!-margin-bottom-2 govuk-!-margin-top-0">Prevalent themes</h2>
+    </caption>
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Theme</th>
+        <th scope="col" class="govuk-table__header">Number of respondents</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+      {% for theme in themes %}
+        <tr class="govuk-table__row">
+          <td class="govuk-table__cell">
+            <details class="govuk-details govuk-!-margin-bottom-0">
+              <summary class="govuk-details__summary govuk-!-margin-top-1">
+                <span class="govuk-details__summary-text">{{ theme.label }}</span>
+              </summary>
+              <div class="govuk-details__text">
+                <p>{{ theme.summary }}</p>
+                <p>This theme has the following keywords:</p>
+
+                <ul class="iai-inline-list">
+                  {% for word in theme.keywords %}
+                    <li>{{ word }}</li>
+                  {% endfor %}
+                </ul>
+              </div>
+            </details>
+          </td>
+          <td class="govuk-table__cell">
+          </td>
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+
+{% endblock %}

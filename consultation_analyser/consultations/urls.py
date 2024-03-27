@@ -1,4 +1,12 @@
 from django.urls import path
-from .views import home, show_question
 
-urlpatterns = [path("", home), path("questions/<str:slug>", show_question)]
+from . import views
+
+urlpatterns = [
+    path("", views.home),
+    path(
+        "consultations/<str:consultation_slug>/sections/<str:section_slug>/questions/<str:question_slug>",
+        views.show_question,
+        name="show_question",
+    ),
+]

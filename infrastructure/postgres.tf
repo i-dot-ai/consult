@@ -1,4 +1,3 @@
-
 locals {
   dev_flag = var.env != "prod" ? true : false
 }

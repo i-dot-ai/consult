@@ -40,7 +40,10 @@ COPY --from=poetry-packages /src/venv ./venv
 
 COPY . .
 
+<<<<<<< HEAD
 
+=======
+>>>>>>> 671c92e25d6a062f03f24dce94765e8e27ffc267
 ENV DJANGO_SETTINGS_MODULE='consultation_analyser.settings.production'
 ENV PYTHONPATH "${PYTHONPATH}:/."
 

@@ -3,8 +3,6 @@ import yaml
 import random
 from consultation_analyser.consultations import models
 
-# import datetime
-# from factory.fuzzy import FuzzyDate
 import faker as _faker
 
 faker = _faker.Faker()
@@ -32,38 +30,75 @@ class FakeConsultationData:
         return list(self.questions.values())
 
 
-class QuestionFactory(factory.django.DjangoModelFactory):
+class ConsultationFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Question
+        model = models.Consultation
+        skip_postgeneration_save = True
 
-    text = factory.LazyAttribute(lambda o: o.question["text"])
-    slug = factory.LazyAttribute(lambda o: o.question["slug"])
-    multiple_choice_options = factory.LazyAttribute(lambda o: o.question["multiple_choice_options"])
-    has_free_text = factory.LazyAttribute(lambda o: o.question["has_free_text"])
+    name = faker.sentence()
+    slug = faker.slug()
 
-    class Params:
-        question = FakeConsultationData().question()
+    @factory.post_generation
+    def with_question(consultation, creation_strategy, value, **kwargs):
+        if value is True:
+            SectionFactory(
+                consultation=consultation, with_question=True, with_question__with_answer=kwargs.get("with_answer")
+            )
 
 
 class SectionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Section
+        skip_postgeneration_save = True
 
     name = faker.sentence()
     slug = faker.slug()
+    consultation = factory.SubFactory("tests.factories.ConsultationFactory")
+
+    class Params:
+        with_questions = factory.Trait(questions=[factory.SubFactory("tests.factories.QuestionFactory")])
+
+    @factory.post_generation
+    def with_question(section, creation_strategy, value, **kwargs):
+        if value is True:
+            QuestionFactory(section=section, with_answer=kwargs.get("with_answer"))
 
 
-class ConsultationFactory(factory.django.DjangoModelFactory):
+class QuestionFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Consultation
+        model = models.Question
+        skip_postgeneration_save = True
 
-    name = faker.sentence()
-    slug = faker.slug()
+    text = factory.LazyAttribute(lambda o: o.question["text"])
+    slug = factory.LazyAttribute(lambda o: o.question["slug"])
+    multiple_choice_options = factory.LazyAttribute(lambda o: o.question["multiple_choice_options"])
+    has_free_text = factory.LazyAttribute(lambda o: o.question["has_free_text"])
+    section = factory.SubFactory(SectionFactory)
+
+    class Params:
+        question = FakeConsultationData().question()
+
+    @factory.post_generation
+    def with_answer(question, creation_strategy, value, **kwargs):
+        if value is True:
+            AnswerFactory(question=question)
 
 
 class ConsultationResponseFactory(factory.django.DjangoModelFactory):
+    consultation = factory.SubFactory(ConsultationFactory)
+
     class Meta:
         model = models.ConsultationResponse
+
+
+class ThemeFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Theme
+
+    # TODO - may need to be changed once ML pipeline is in
+    label = faker.sentence()
+    summary = f"Summary: {label}"
+    keywords = label.lower().strip(".").split(" ")
 
 
 class AnswerFactory(factory.django.DjangoModelFactory):
@@ -81,3 +116,5 @@ class AnswerFactory(factory.django.DjangoModelFactory):
     )
 
     question = factory.SubFactory(QuestionFactory)
+    consultation_response = factory.SubFactory(ConsultationResponseFactory)
+    theme = factory.SubFactory(ThemeFactory)
