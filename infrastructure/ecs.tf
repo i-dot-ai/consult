@@ -21,7 +21,7 @@ module "ecs" {
     "DATABASE_URL"         = local.postgres_fqdn,
     "BATCH_JOB_QUEUE"      = module.batch_job_definition.job_queue_name,
     "BATCH_JOB_DEFINITION" = module.batch_job_definition.job_definition_name,
-    "DJANGO_SECRET"        = data.aws_secretsmanager_secret_version.django_secret.secret_string
+    "DJANGO_SECRET_KEY"    = data.aws_secretsmanager_secret_version.django_secret.secret_string
   }
 
   state_bucket                 = var.state_bucket
