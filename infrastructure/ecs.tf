@@ -1,3 +1,7 @@
+locals {
+  postgres_fqdn = "${module.postgres.db_user}:${module.postgres.db_password}@${module.postgres.db_instance_address}/${module.postgres.db_name}"
+}
+
 module "ecs" {
   source             = "../../i-ai-core-infrastructure//modules/ecs"
   project_name       = var.project_name
@@ -11,6 +15,12 @@ module "ecs" {
     accepted_response   = "200"
     path                = "/"
     timeout             = 6
+  }
+  environment_variables = {
+    "ENVIRONMENT"          = terraform.workspace,
+    "POSTGRES_FQDN"        = local.postgres_fqdn,
+    "BATCH_JOB_QUEUE"      = module.batch_job_defintiion.batch_job_queue
+    "BATCH_JOB_DEFINITION" = module.batch_job_defintiion.batch_job_definition
   }
 
   state_bucket                 = var.state_bucket

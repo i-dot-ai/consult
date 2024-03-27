@@ -20,6 +20,7 @@ psycopg = "^3.1.18"
 django-compressor = "^4.4"
 django-libsass = "^0.9"
 govuk-frontend-jinja = "^3.0.0"
+boto3 = "^1.34.71"
 
 
 [tool.poetry.group.development.dependencies]
@@ -30,6 +31,7 @@ factory_boy = "^3.3.0"
 [tool.mypy]
 files = '**/*.py'
 exclude= ['^consultation_analyser/consultations/migrations/']
+
 
 
 
