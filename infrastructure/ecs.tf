@@ -33,7 +33,7 @@ module "ecs" {
   state_bucket                 = var.state_bucket
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
-  container_port               = "80"
+  container_port               = "8000"
   load_balancer_security_group = data.terraform_remote_state.platform.outputs.load_balancer_security_group_id["default"]
   aws_lb_arn                   = data.terraform_remote_state.platform.outputs.load_balancer_arn["default"]
   host                         = local.host
@@ -58,14 +58,4 @@ resource "aws_route53_record" "type_a_record" {
     zone_id                = data.terraform_remote_state.platform.outputs.zone_id["default"]
     evaluate_target_health = true
   }
-}
-
-resource "aws_secretsmanager_secret" "django_secret" {
-  name        = "${var.prefix}-${var.project_name}-${var.env}-django-secret"
-  description = "Django secret for ${var.project_name}"
-}
-
-data "aws_secretsmanager_secret_version" "django_secret" {
-  secret_id  = aws_secretsmanager_secret.django_secret.id
-  depends_on = [aws_secretsmanager_secret.django_secret]
 }
