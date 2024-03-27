@@ -74,12 +74,14 @@ PRODUCTION_DEPLOYMENT = os.environ.get("PRODUCTION_DEPLOYMENT", False)
 
 if PRODUCTION_DEPLOYMENT:
     DATABASES = {
-        "ENGINE": "django.db.backends.postgresql_psycopg2",
-        "NAME": "${module.postgres.db_instance_name}",
-        "USER": "${module.postgres.rds_instance_username}",
-        "PASSWORD": "${module.postgres.rds_instance_db_password}",
-        "HOST": "${module.postgres.db_instance_address}",
-        "PORT": 5432,
+        "consultations": {
+            "ENGINE": "django.db.backends.postgresql_psycopg2",
+            "NAME": "${module.postgres.db_instance_name}",
+            "USER": "${module.postgres.rds_instance_username}",
+            "PASSWORD": "${module.postgres.rds_instance_db_password}",
+            "HOST": "${module.postgres.db_instance_address}",
+            "PORT": 5432,
+        }
     }
 else:
     DATABASES = {"default": env.db()}
