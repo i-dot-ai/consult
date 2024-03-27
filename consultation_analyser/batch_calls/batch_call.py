@@ -8,12 +8,12 @@ import os
 # load env variables
 BATCH_JOB_QUEUE = os.environ.get("BATCH_JOB_QUEUE")
 BATCH_JOB_DEFINITION = os.environ.get("BATCH_JOB_DEFINITION")
-client = boto3.client("batch")
 
 
 class BatchJobHandler:
 
     def submit_job_batch(self, jobName: str, containerOverrides: dict) -> None:
+        client = boto3.client("batch")
         job = client.submit_job(
             jobName=jobName,
             jobQueue=BATCH_JOB_QUEUE,
@@ -23,10 +23,13 @@ class BatchJobHandler:
         return "The job has been submitted successfully with job id: " + job["jobId"]
 
     def get_job_status(self, jobId: str) -> str:
+        client = boto3.client("batch")
+
         job = client.describe_jobs(jobs=[jobId])
         return job["jobs"][0]["status"]
 
     def get_job_list(self) -> list:
+        client = boto3.client("batch")
         jobs = client.list_jobs(jobQueue=BATCH_JOB_QUEUE)
 
         while jobs["nextToken"] is not None:
@@ -37,5 +40,6 @@ class BatchJobHandler:
         return jobs["jobSummaryList"]
 
     def cancel_job(self, jobId: str) -> None:
+        client = boto3.client("batch")
         client.cancel_job(jobId=jobId)
         return "The job has been cancelled successfully."
