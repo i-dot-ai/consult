@@ -10,4 +10,8 @@ urlpatterns = [
         questions.show,
         name="show_question",
     ),
+    path(
+        "consultations/<str:consultation_slug>/sections/<str:section_slug>/responses/<str:question_slug>",
+        views.show_responses,
+    ),
 ]
