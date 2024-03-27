@@ -15,7 +15,7 @@ module "ecs" {
     accepted_response   = "200"
     path                = "/"
     timeout             = 6
-    port                = 80
+    port                = 8000
   }
   environment_variables = {
     "ENVIRONMENT"           = terraform.workspace,
@@ -32,7 +32,7 @@ module "ecs" {
   state_bucket                 = var.state_bucket
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
-  container_port               = "80"
+  container_port               = "8000"
   load_balancer_security_group = data.terraform_remote_state.platform.outputs.load_balancer_security_group_id["default"]
   aws_lb_arn                   = data.terraform_remote_state.platform.outputs.load_balancer_arn["default"]
   host                         = local.host
