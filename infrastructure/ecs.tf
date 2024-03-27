@@ -18,7 +18,7 @@ module "ecs" {
   }
   environment_variables = {
     "ENVIRONMENT"          = terraform.workspace,
-    "POSTGRES_FQDN"        = local.postgres_fqdn,
+    "DATABASE_URL"         = local.postgres_fqdn,
     "BATCH_JOB_QUEUE"      = module.batch_job_defintiion.batch_job_queue
     "BATCH_JOB_DEFINITION" = module.batch_job_defintiion.batch_job_definition
     "DJANGO_SECRET"        = 
