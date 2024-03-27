@@ -26,7 +26,7 @@ env = environ.Env(DEBUG=(bool, False))
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
 
-ALLOWED_HOSTS: list[str] = ["0.0.0.0"]  # nosec
+ALLOWED_HOSTS: list[str] = ["*", ""]  # nosec
 
 # Application definition
 
