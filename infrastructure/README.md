@@ -49,7 +49,7 @@
    1. **Do not hardcode any secrets into these variables**
 
 ## FAQ Debugs
-1. The build and release workflows have finished without failing, but now the service is down.**
+1. **The build and release workflows have finished without failing, but now the service is down.**
    1. The code in the docker image is likely broken
    2. To see the logs of the container, login to the aws console and switch roles to the `ai-engineer-role`. More detailed instructions (here)[https://github.com/i-dot-ai/i-ai-core-infrastructure/wiki/Using-AWS-Vault#switching-roles-in-the-console]
    3. To see the logs of the container:
@@ -58,13 +58,13 @@
       3. Under services click on `i-dot-ai-consultations-<ENV>-ecs-service` 
       4. Logs
    
-2. My release action failed at the `Terraform apply` stage**
+2. **My release action failed at the `Terraform apply` stage**
    1. Double check that build step has successfully passed
    2. Outputs of this stage are hidden as could contain sensitive information. Please ask someone from the engineering to help you debug this step. 
 
-3. I am hitting some permision errors**
+3. **I am hitting some permision errors**
    1. This can be amended, please speak to a Cloud engineer to advise.
 
-4. If you'd like to connect to the hosted docker container to run bash commands in the container shell, you can do so by following this article: . In summary, you'll need:
+4. **If you'd like to connect to the hosted docker container to run bash commands in the container shell**, you can do so by following this article: . In summary, you'll need:
    1. To install aws session-manager plugin
 
