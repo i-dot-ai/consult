@@ -1,7 +1,7 @@
 # Infrastructure FAQs
 
 ## Architecture
-![](./architecture_diagram.png)
+<img src="architecture_diagram.png" alt="drawing" width="50%"/>
 
 ### Resources and status
 * **RDS Postgres DB** - fully integrated
