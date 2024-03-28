@@ -59,5 +59,8 @@
    2. Outputs of this stage are hidden as could contain sensitive information. Please ask someone from the engineering to help you debug this step. 
 
 3. I am hitting some permision errors
-   1. This can be amended, please speak to an engineer to advise
+   1. This can be amended, please speak to a Cloud engineer to advise.
+
+4. If you'd like to connect to the hosted docker container to run bash commands in the container shell, you can do so by following this article: . In summary, you'll need:
+   1. To install aws session-manager plugin
 
