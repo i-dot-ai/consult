@@ -14,17 +14,17 @@
    1. You will only be able to deploy to `dev` or `preprod` through this make command
    2. This will deploy the image from ECR to the ECS cluster
 
-4. To release to `prod` 
-   1. Create a PR to main
-   2. Once approved and merged, this will trigger both a build action
-   3. When the build has successfully finished it will automatically trigger a release to `prod` to update ECS
-
-5. See the changes live 
+4. See the changes live 
    1. Once the workflows release it will take some time to for ECS to swap out the images
    2. When completed you will be able to see the changes at:
       1. dev: consultations-dev.ai.cabinetoffice.gov.uk
       2. preprod: consultations-preprod.ai.cabinetoffice.gov.uk
       3. prod: consultations.ai.cabinetoffice.gov.uk
+
+5. To release to `prod` 
+   1. Create a PR to main
+   2. Once approved and merged, this will trigger both a build action
+   3. When the build has successfully finished it will automatically trigger a release to `prod` to update ECS
 
 ## FAQ Debugs
 1. The build and release workflows have finished without failing, but now the service is down.
