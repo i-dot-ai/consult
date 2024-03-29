@@ -76,7 +76,7 @@ class SectionFactory(factory.django.DjangoModelFactory):
 class QuestionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Question
-        skip_postgeneration_save = False
+        skip_postgeneration_save = True
 
     text = factory.LazyAttribute(lambda o: o.question["text"])
     slug = factory.LazyAttribute(lambda o: o.question["slug"])
@@ -96,6 +96,7 @@ class QuestionFactory(factory.django.DjangoModelFactory):
     def with_multiple_choice(question, creation_strategy, value, **kwargs):
         if value is True and question.multiple_choice_options is None:
             question.multiple_choice_options = default_multiple_choice_options
+            question.save()
 
 
 class ConsultationResponseFactory(factory.django.DjangoModelFactory):
@@ -118,6 +119,7 @@ class ThemeFactory(factory.django.DjangoModelFactory):
 class AnswerFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Answer
+        skip_postgeneration_save = True
 
     multiple_choice_responses = factory.LazyAttribute(
         lambda o: FakeConsultationData().get_multiple_choice_answer(o.question.slug)
@@ -137,3 +139,4 @@ class AnswerFactory(factory.django.DjangoModelFactory):
     def with_multiple_choice(answer, creation_strategy, value, **kwargs):
         if answer.multiple_choice_responses is None:
             answer.multiple_choice_responses = random.choice(default_multiple_choice_options)
+            answer.save()
