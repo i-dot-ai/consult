@@ -17,9 +17,13 @@ class HostingEnvironment:
         return env.str("IS_AWS_BATCH", "")
 
     @staticmethod
-    def is_deployed() -> bool:  # How do we check if AWS?
-        environment = env.str("ENVIRONMENT", "").upper()
+    def is_deployed_aws() -> bool:
+        environment = env.str("ENVIRONMENT", "").lower()
         deployed_envs = ["dev", "preprod", "prod"]
         if environment in deployed_envs:
             return True
         return False
+
+    @staticmethod
+    def is_dev() -> bool:
+        return env.str("ENVIRONMENT", "").lower() == "dev"

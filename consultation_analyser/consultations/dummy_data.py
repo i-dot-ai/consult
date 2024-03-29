@@ -13,7 +13,7 @@ import random
 
 class DummyConsultation:
     def __init__(self, responses=10, blank_themes=False, **options):
-        if not HostingEnvironment.is_local():
+        if not (HostingEnvironment.is_local() or HostingEnvironment.is_dev()):
             raise RuntimeError("Dummy data generation should only be run in development")
 
         consultation = ConsultationFactory(**options)
