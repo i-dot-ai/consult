@@ -1,12 +1,12 @@
 from django.urls import path
 
-from . import views
+from .views import questions, pages
 
 urlpatterns = [
-    path("", views.home),
+    path("", pages.home),
     path(
         "consultations/<str:consultation_slug>/sections/<str:section_slug>/questions/<str:question_slug>",
-        views.show_question,
+        questions.show,
         name="show_question",
     ),
 ]
