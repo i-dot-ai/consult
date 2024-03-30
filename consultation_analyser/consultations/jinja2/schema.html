@@ -7,10 +7,12 @@
 
   <p class="govuk-body">This page lists the data components required for a consultation to be suitable for processing by the analyser. </p>
 
-  <p class="govuk-body">Data should be provided in one JSON file containing both the consultation itself and a list of responses. That overall data file is described here and an example is given. Underneath are details of each section, including individual JSON schemas for both the Consultation and ConsultationResponseList parts of the JSON file.</p>
+  <p class="govuk-body">Data should be provided in one JSON file containing both the consultation itself and a list of responses. That overall data file is described here and an example is given. Underneath are details of each section, including individual JSON schemas for both the Consultation and ConsultationResponse parts of the JSON file.</p>
 
-  <h2 class="govuk-heading-l">ConsultationWithResponses JSON</h2>
-  <p class="govuk-body">This is the schema for the file the analyser tool will accept.</p>
+  <h2 class="govuk-heading-l">JSON schemas</h2>
+
+  <h3 class="govuk-heading-m">ConsultationWithResponses JSON</h3>
+  <p class="govuk-body">This is the schema for the file the analyser tool will accept, so if your JSON is valid according to this schema, is is ready to upload. For advice on how to do this in Python, see <a class="govuk-link" href="https://python-jsonschema.readthedocs.io/en/latest/validate/">the jsonschema documentation</a>. Other languages will have equivalent libraries.</p>
 
   <details class="govuk-details">
     <summary class="govuk-details__summary">
@@ -19,6 +21,7 @@
       </span>
     </summary>
     <div class="govuk-details__text" data-qa="consultation-with-responses-schema">
+      <p class="govuk-body"><a class="govuk-link" download href="/schema/consultation_with_responses_schema.json">Download the JSON schema</a></p>
       <pre><code>{{ json_schemas['consultation_with_responses'] }}</code></pre>
     </div>
   </details>
@@ -34,8 +37,8 @@
     </div>
   </details>
 
-  <h2 class="govuk-heading-l">Consultation JSON</h2>
-  <p class="govuk-body">The consultation file should describe the consultation conforming to this schema.</p>
+  <h3 class="govuk-heading-m">Consultation JSON</h3>
+  <p class="govuk-body">The schema for the consultation part of the file, provided in case it is easier to work on this part individually.</p>
 
   <details class="govuk-details">
     <summary class="govuk-details__summary">
@@ -44,6 +47,7 @@
       </span>
     </summary>
     <div class="govuk-details__text" data-qa="consultation-schema">
+      <p class="govuk-body"><a class="govuk-link" download href="/schema/consultation_schemajson">Download the JSON schema</a></p>
       <pre><code>{{ json_schemas['consultation'] }}</code></pre>
     </div>
   </details>
@@ -59,8 +63,9 @@
     </div>
   </details>
 
-  <h2 class="govuk-heading-l">ConsultationResponse JSON</h2>
-  <p class="govuk-body">The ConsultationResponse contains answers and metadata about the response.</p>
+  <h3 class="govuk-heading-m">ConsultationResponse JSON</h3>
+  <p class="govuk-body">The schema for each response part of the file.</p>
+
   <details class="govuk-details">
     <summary class="govuk-details__summary">
       <span class="govuk-details__summary-text">
@@ -68,6 +73,7 @@
       </span>
     </summary>
     <div class="govuk-details__text" data-qa="consultation-response-schema">
+      <p class="govuk-body"><a class="govuk-link" download href="/schema/consultation_response_schema.json">Download the JSON schema</a></p>
       <pre><code>{{ json_schemas['consultation_response'] }}</code></pre>
     </div>
   </details>
@@ -82,6 +88,7 @@
       <pre><code>{{ json_examples['consultation_response'] }}</code></pre>
     </div>
   </details>
+
 
   <h2 class="govuk-heading-l">Entities</h2>
   {% for schema in entity_schemas %}

@@ -20,7 +20,7 @@ def raw_schema(request: HttpRequest, schema_name: str):
         "consultation_with_responses_schema": f"{SCHEMA_DIR}/consultation_with_responses_schema.json",
     }
 
-    # this is here so we don't find files using untrusted input
+    # this is here so we don't use untrusted input to traverse the filesystem
     if not (schema_to_serve := mappings.get(schema_name)):
         raise Http404("Schema does not exist")
 
