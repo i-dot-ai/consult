@@ -31,8 +31,13 @@
   {{ govukHeader({
     "homepageUrl": "https://www.gov.uk",
     "serviceName": "Consultations Analyser",
-    "serviceUrl": "/"
-  }) }}
+    "serviceUrl": "/",
+    'navigation': [
+      {
+        'href': "/schema",
+        'text': "Data schema",
+        'active': request.path == "/schema"
+        }]}) }}
 
 
   <div class="govuk-width-container">
