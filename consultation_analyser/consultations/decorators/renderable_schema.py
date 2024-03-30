@@ -19,6 +19,7 @@ class RenderableSchema:
             field_details = {
                 "name": field_name,
                 "description": field.description,
+                "datatype": field.annotation.__name__,
             }
 
             output.append(field_details)
