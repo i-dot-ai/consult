@@ -14,4 +14,5 @@ urlpatterns = [
         "consultations/<str:consultation_slug>/sections/<str:section_slug>/responses/<str:question_slug>",
         questions.show_responses,
     ),
+    path("batch-example", views.batch_example, name="batch_example"),
 ]

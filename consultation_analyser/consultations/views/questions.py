@@ -79,3 +79,12 @@ def show_responses(request: HttpRequest, consultation_slug: str, section_slug: s
         "pagination": current_page,
     }
     return render(request, "show_responses.html", context)
+
+
+def batch_example(request: HttpRequest):
+    context = {}
+    if request.POST:
+        # TODO - run management command
+        pass
+
+    return render(request, "batch_example.html", context)
