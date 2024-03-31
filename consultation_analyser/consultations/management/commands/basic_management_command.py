@@ -11,4 +11,3 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         dummy_message = "Hi, I am a mangement command that just outputs a string."
         self.stdout.write(dummy_message)
-
