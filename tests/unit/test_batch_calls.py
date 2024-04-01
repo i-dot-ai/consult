@@ -1,6 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
-from batch_call import BatchJobHandler
+from consultation_analyser.batch_calls.batch_calls import BatchJobHandler
 
 
 @patch("boto3.client")
