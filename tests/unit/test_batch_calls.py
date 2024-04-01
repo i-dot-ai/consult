@@ -1,5 +1,6 @@
 import unittest
 from unittest.mock import patch, MagicMock
+
 from consultation_analyser.batch_calls.batch_calls import BatchJobHandler
 
 

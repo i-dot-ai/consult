@@ -1,17 +1,17 @@
 """
-Simple class and functions to deploy and monitor AWS Batch jobs. 
+Simple class and functions to deploy and monitor AWS Batch jobs.
 """
 
-import boto3
 import os
 
-# load env variables
+import boto3
+
+
 BATCH_JOB_QUEUE = os.environ.get("BATCH_JOB_QUEUE")
 BATCH_JOB_DEFINITION = os.environ.get("BATCH_JOB_DEFINITION")
 
 
 class BatchJobHandler:
-
     def submit_job_batch(self, jobName: str, containerOverrides: dict) -> None:
         client = boto3.client("batch")
         job = client.submit_job(
@@ -33,9 +33,7 @@ class BatchJobHandler:
         jobs = client.list_jobs(jobQueue=BATCH_JOB_QUEUE)
 
         while jobs["nextToken"] is not None:
-            jobs = client.list_jobs(
-                jobQueue=BATCH_JOB_QUEUE, nextToken=jobs["nextToken"]
-            )
+            jobs = client.list_jobs(jobQueue=BATCH_JOB_QUEUE, nextToken=jobs["nextToken"])
 
         return jobs["jobSummaryList"]
 
