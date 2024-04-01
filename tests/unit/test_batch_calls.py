@@ -3,6 +3,8 @@ from unittest.mock import patch, MagicMock
 
 from consultation_analyser.batch_calls import BatchJobHandler
 
+from django.conf import settings
+
 
 @patch("boto3.client")
 class TestBatchCall(unittest.TestCase):
@@ -25,8 +27,8 @@ class TestBatchCall(unittest.TestCase):
         mock_boto_client.assert_called_once_with("batch")
         mock_job.submit_job.assert_called_once_with(
             jobName=job_name,
-            jobQueue=None,
-            jobDefinition=None,
+            jobQueue=settings.BATCH_JOB_QUEUE,
+            jobDefinition=settings.BATCH_JOB_DEFINITION,
             containerOverrides=container_overrides,
         )
 
