@@ -6,9 +6,7 @@ import os
 
 import boto3
 
-
-BATCH_JOB_QUEUE = os.environ.get("BATCH_JOB_QUEUE")
-BATCH_JOB_DEFINITION = os.environ.get("BATCH_JOB_DEFINITION")
+from django.conf import settings
 
 
 class BatchJobHandler:
@@ -16,8 +14,8 @@ class BatchJobHandler:
         client = boto3.client("batch")
         job = client.submit_job(
             jobName=jobName,
-            jobQueue=BATCH_JOB_QUEUE,
-            jobDefinition=BATCH_JOB_DEFINITION,
+            jobQueue=settings.BATCH_JOB_QUEUE,
+            jobDefinition=settings.BATCH_JOB_DEFINITION,
             containerOverrides=containerOverrides,
         )
         return "The job has been submitted successfully with job id: " + job["jobId"]
@@ -30,10 +28,10 @@ class BatchJobHandler:
 
     def get_job_list(self) -> list:
         client = boto3.client("batch")
-        jobs = client.list_jobs(jobQueue=BATCH_JOB_QUEUE)
+        jobs = client.list_jobs(jobQueue=settings.BATCH_JOB_QUEUE)
 
         while jobs["nextToken"] is not None:
-            jobs = client.list_jobs(jobQueue=BATCH_JOB_QUEUE, nextToken=jobs["nextToken"])
+            jobs = client.list_jobs(jobQueue=settings.BATCH_JOB_QUEUE, nextToken=jobs["nextToken"])
 
         return jobs["jobSummaryList"]
 
