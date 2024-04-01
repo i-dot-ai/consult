@@ -3,11 +3,19 @@ from django.http import HttpRequest
 from django.db.models import Count, Max
 from . import models
 
+from consultation_analyser.consultations.processing import send_consultation_to_be_processed
 
 def home(request: HttpRequest):
     questions = models.Question.objects.all().order_by("id")[:10]
     context = {"questions": questions}
     return render(request, "home.html", context)
+
+
+def show_consultation(request, consultation_slug: str):
+    # assume this is the view that shows a consultation
+    # on the page there is a button to process the consultation
+    if request.method == "POST": # or whatever to determine we're processing
+        send_consultation_to_be_processed(consultation_slug)
 
 
 def show_question(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
