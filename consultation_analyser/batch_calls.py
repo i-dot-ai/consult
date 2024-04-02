@@ -2,15 +2,13 @@
 Simple class and functions to deploy and monitor AWS Batch jobs.
 """
 
-import os
-
 import boto3
 
 from django.conf import settings
 
 
 class BatchJobHandler:
-    def submit_job_batch(self, jobName: str, containerOverrides: dict) -> None:
+    def submit_job_batch(self, jobName: str, containerOverrides: dict) -> str:
         client = boto3.client("batch")
         job = client.submit_job(
             jobName=jobName,
@@ -35,7 +33,7 @@ class BatchJobHandler:
 
         return jobs["jobSummaryList"]
 
-    def cancel_job(self, jobId: str) -> None:
+    def cancel_job(self, jobId: str) -> str:
         client = boto3.client("batch")
         client.cancel_job(jobId=jobId)
         return "The job has been cancelled successfully."
