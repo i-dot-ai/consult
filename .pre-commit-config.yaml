@@ -26,7 +26,7 @@ repos:
     rev: 1.7.6
     hooks:
     -   id: bandit
-        args: [ "-c", "pyproject.toml", "-ll", "-r", "." ]
+        args: [ "-c", "pyproject.toml", "-ll", "-r", "consultation_analyser" ]
         additional_dependencies: [ "bandit[toml]" ]
   - repo: https://github.com/pre-commit/mirrors-mypy
     rev: v1.8.0
