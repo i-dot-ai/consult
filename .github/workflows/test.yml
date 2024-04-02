@@ -56,11 +56,15 @@ jobs:
         env:
           DJANGO_SECRET_KEY: dummy-key
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
+          BATCH_JOB_QUEUE: dummy-queue
+          BATCH_JOB_DEFINITION: dummy-definition
 
       - name: pytest
         run:
           make test
         env:
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
+          BATCH_JOB_QUEUE: dummy-queue
+          BATCH_JOB_DEFINITION: dummy-definition
 
 
