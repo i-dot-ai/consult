@@ -76,7 +76,6 @@ def save_theme_to_answer(question: models.Question, answer_row: AnswerRow) -> mo
 
 
 def save_themes_to_answers(question: models.Question, answers_topics_df: pd.DataFrame) -> None:
-    print(f"answers_topics_df: {answers_topics_df}")
     for row in answers_topics_df.itertuples():
         save_theme_to_answer(question, row)
 
