@@ -25,7 +25,6 @@ def test_get_question_summary_page(django_app):
         assert keyword in page_content
 
     if question.multiple_choice_options:
-        print("Has multiple choice")
         for option in question.multiple_choice_options:
             assert option in page_content
 

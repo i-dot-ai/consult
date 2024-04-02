@@ -5,6 +5,8 @@ from django.shortcuts import render
 from .. import models
 from django.core.paginator import Paginator
 
+from .. import models
+
 
 def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
     question = models.Question.objects.get(

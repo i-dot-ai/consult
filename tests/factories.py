@@ -49,10 +49,7 @@ class ConsultationFactory(factory.django.DjangoModelFactory):
                 with_question=True,
                 with_question__with_answer=kwargs.get("with_answer"),
                 with_question__with_multiple_choice=kwargs.get("with_multiple_choice"),
-<<<<<<< HEAD
-=======
                 with_question__with_free_text=kwargs.get("with_free_text"),
->>>>>>> 3e52f6e (Build responses page)
             )
 
 
@@ -75,10 +72,7 @@ class SectionFactory(factory.django.DjangoModelFactory):
                 section=section,
                 with_answer=kwargs.get("with_answer"),
                 with_multiple_choice=kwargs.get("with_multiple_choice"),
-<<<<<<< HEAD
-=======
                 with_free_text=kwargs.get("with_free_text"),
->>>>>>> 3e52f6e (Build responses page)
             )
 
 
@@ -100,14 +94,13 @@ class QuestionFactory(factory.django.DjangoModelFactory):
     def with_answer(question, creation_strategy, value, **kwargs):
         if value is True:
             AnswerFactory(question=question, with_multiple_choice=kwargs.get("with_multiple_choice"))
+            question.save()
 
     @factory.post_generation
     def with_multiple_choice(question, creation_strategy, value, **kwargs):
         if value is True and question.multiple_choice_options is None:
             question.multiple_choice_options = default_multiple_choice_options
-<<<<<<< HEAD
             question.save()
-=======
 
     @factory.post_generation
     def with_free_text(question, creation_strategy, value, **kwargs):
@@ -117,7 +110,7 @@ class QuestionFactory(factory.django.DjangoModelFactory):
                 with_multiple_choice=kwargs.get("with_multiple_choice"),
                 with_free_text=kwargs.get("with_free_text"),
             )
->>>>>>> 3e52f6e (Build responses page)
+            question.save()
 
 
 class ConsultationResponseFactory(factory.django.DjangoModelFactory):
