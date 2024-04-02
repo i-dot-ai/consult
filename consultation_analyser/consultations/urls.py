@@ -10,9 +10,13 @@ urlpatterns = [
         questions.show,
         name="show_question",
     ),
+<<<<<<< HEAD
     path(
         "consultations/<str:consultation_slug>/sections/<str:section_slug>/responses/<str:question_slug>",
         questions.show_responses,
     ),
     path("batch-example", views.batch_example, name="batch_example"),
+=======
+    path("batch-example", pages.batch_example, name="batch_example"),
+>>>>>>> 2540631 (Move views to refactored pages, some tweaks to batch job example view.)
 ]

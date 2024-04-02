@@ -1,13 +1,14 @@
 from django.core.paginator import Paginator
 from django.db.models import Count, Max
+<<<<<<< HEAD
 from django.http import HttpRequest
 from django.shortcuts import render
 
 from .. import models
+=======
+>>>>>>> 2540631 (Move views to refactored pages, some tweaks to batch job example view.)
 
-from consultation_analyser.consultations import models
-from consultation_analyser.batch_calls import BatchJobHandler
-from consultation_analyser.hosting_environment import HostingEnvironment
+from .. import models
 
 
 def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
