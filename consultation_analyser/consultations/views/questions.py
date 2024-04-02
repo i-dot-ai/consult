@@ -5,6 +5,10 @@ from django.shortcuts import render
 
 from .. import models
 
+from consultation_analyser.consultations import models
+from consultation_analyser.batch_calls import BatchJobHandler
+from consultation_analyser.hosting_environment import HostingEnvironment
+
 
 def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
     question = models.Question.objects.get(
@@ -81,10 +85,18 @@ def show_responses(request: HttpRequest, consultation_slug: str, section_slug: s
     return render(request, "show_responses.html", context)
 
 
+# TODO - simple view for testing batch jobs
+# To be removed once tested
 def batch_example(request: HttpRequest):
-    context = {}
+    message = ""
     if request.POST:
         # TODO - run management command
-        pass
-
+        job_name = "batch_example"
+        command = ["python", "manage.py", "basic_management_command"]
+        if not HostingEnvironment.is_local():
+            BatchJobHandler.submit_job_batch(jobName=job_name, containerOverrides=command)
+            message = "Batch job has been run"
+        else:
+            message = "Batch job not run locally"
+    context = {"message": message}
     return render(request, "batch_example.html", context)
