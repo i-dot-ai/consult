@@ -123,11 +123,12 @@ tf_plan: ## Plan terraform
 tf_apply: ## Apply terraform
 	make tf_set_workspace && \
 	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
-
+	
 .PHONY: tf_auto_apply
 tf_auto_apply: ## Apply terraform
 	make tf_set_workspace && \
-	terraform -chdir=./infrastructure apply -auto-approve -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+	terraform -chdir=./infrastructure apply -auto-approve -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} >> terraform_output.txt
+	aws s3 cp terraform_output.txt s3://i-dot-ai-clean-data/consultations/
 
 .PHONY: tf_destroy
 tf_destroy: ## Destroy terraform
