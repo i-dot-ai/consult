@@ -3,7 +3,6 @@ Simple class and functions to deploy and monitor AWS Batch jobs.
 """
 
 import boto3
-
 from django.conf import settings
 
 

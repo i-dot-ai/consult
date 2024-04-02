@@ -1,6 +1,5 @@
 import pytest
 
-
 from tests.factories import ConsultationFactory
 
 

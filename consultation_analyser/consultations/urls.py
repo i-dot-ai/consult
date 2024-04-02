@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import questions, pages, consultations
+from .views import consultations, pages, questions
 
 urlpatterns = [
     path("", pages.home),

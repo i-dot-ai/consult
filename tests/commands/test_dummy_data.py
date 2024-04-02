@@ -1,9 +1,10 @@
-import pytest
-from unittest.mock import patch
 from io import StringIO
-from consultation_analyser.consultations.models import Consultation
+from unittest.mock import patch
 
+import pytest
 from django.core.management import call_command
+
+from consultation_analyser.consultations.models import Consultation
 
 
 @pytest.mark.django_db

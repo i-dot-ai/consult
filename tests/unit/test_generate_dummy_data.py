@@ -1,8 +1,9 @@
-import pytest
 from unittest.mock import patch
 
+import pytest
+
 from consultation_analyser.consultations.dummy_data import DummyConsultation
-from consultation_analyser.consultations.models import Consultation, Question, Answer
+from consultation_analyser.consultations.models import Answer, Consultation, Question
 
 
 @pytest.mark.django_db
