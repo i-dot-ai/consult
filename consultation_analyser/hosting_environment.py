@@ -16,6 +16,6 @@ class HostingEnvironment:
     def is_deployed() -> bool:
         environment = env.str("ENVIRONMENT", "").upper()
         deployed_envs = ["DEV", "DEVELOPMENT", "PREPROD", "PROD", "PRODUCTION"]
-        if environment in deployed_envs:
+        return environment in deployed_envs
             return True
         return False
