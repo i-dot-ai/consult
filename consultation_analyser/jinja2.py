@@ -1,7 +1,7 @@
-from jinja2 import Environment, ChoiceLoader, PrefixLoader, PackageLoader
-from django.urls import reverse
-from django.templatetags.static import static
 from compressor.contrib.jinja2ext import CompressorExtension
+from django.templatetags.static import static
+from django.urls import reverse
+from jinja2 import ChoiceLoader, Environment, PackageLoader, PrefixLoader
 
 
 def environment(**options):

@@ -1,7 +1,7 @@
-import pytest
 import html
 import re
 
+import pytest
 
 from tests.factories import ConsultationFactory
 

@@ -1,5 +1,6 @@
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
+
 from consultation_analyser.consultations.dummy_data import DummyConsultation
 
 

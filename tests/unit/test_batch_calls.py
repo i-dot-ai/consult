@@ -1,9 +1,9 @@
 import unittest
-from unittest.mock import patch, MagicMock
-
-from consultation_analyser.batch_calls import BatchJobHandler
+from unittest.mock import MagicMock, patch
 
 from django.conf import settings
+
+from consultation_analyser.batch_calls import BatchJobHandler
 
 
 @patch("boto3.client")

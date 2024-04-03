@@ -1,9 +1,10 @@
-import factory
-import yaml
 import random
-from consultation_analyser.consultations import models
 
+import factory
 import faker as _faker
+import yaml
+
+from consultation_analyser.consultations import models
 
 faker = _faker.Faker()
 

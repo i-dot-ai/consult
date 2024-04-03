@@ -1,14 +1,15 @@
+import random
+
 from consultation_analyser.hosting_environment import HostingEnvironment
 from tests.factories import (
+    AnswerFactory,
+    ConsultationFactory,
+    ConsultationResponseFactory,
     FakeConsultationData,
     QuestionFactory,
-    ConsultationFactory,
     SectionFactory,
-    AnswerFactory,
-    ConsultationResponseFactory,
     ThemeFactory,
 )
-import random
 
 
 class DummyConsultation:

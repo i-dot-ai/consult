@@ -1,6 +1,7 @@
-from django.shortcuts import render
-from django.http import HttpRequest
 from django.db.models import Count, Max
+from django.http import HttpRequest
+from django.shortcuts import render
+
 from .. import models
 
 
