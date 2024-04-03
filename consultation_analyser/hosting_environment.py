@@ -17,5 +17,3 @@ class HostingEnvironment:
         environment = env.str("ENVIRONMENT", "").upper()
         deployed_envs = ["DEV", "DEVELOPMENT", "PREPROD", "PROD", "PRODUCTION"]
         return environment in deployed_envs
-            return True
-        return False
