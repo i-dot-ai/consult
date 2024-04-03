@@ -92,6 +92,14 @@ make serve
 make test
 ```
 
+## Schema documentation
+
+The data schema for consultations supplied to the tool is defined in `consultation_analyser/consultations/public_schema/public_schema.yaml`.
+
+To build the JSON schemas and examples from this file, run `make schema_docs`.
+
+The `json-schema-faker-options.js` file configures (JSON Schema Faker)[https://github.com/json-schema-faker] to make the JSON examples.
+
 ## Frontend Prototype
 
 Located at `/prototype`. Using the Gov.uk Prototype Kit. This is work in progress, not all pages are available yet.
