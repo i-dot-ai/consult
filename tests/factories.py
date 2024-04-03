@@ -79,7 +79,7 @@ class SectionFactory(factory.django.DjangoModelFactory):
 class QuestionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Question
-        skip_postgeneration_save = False
+        skip_postgeneration_save = True
 
     text = factory.LazyAttribute(lambda o: o.question["text"])
     slug = factory.LazyAttribute(lambda o: o.question["slug"])
