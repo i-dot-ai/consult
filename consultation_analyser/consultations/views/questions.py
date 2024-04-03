@@ -1,12 +1,7 @@
 from django.core.paginator import Paginator
 from django.db.models import Count, Max
-<<<<<<< HEAD
 from django.http import HttpRequest
 from django.shortcuts import render
-
-from .. import models
-=======
->>>>>>> 2540631 (Move views to refactored pages, some tweaks to batch job example view.)
 
 from .. import models
 
@@ -84,20 +79,3 @@ def show_responses(request: HttpRequest, consultation_slug: str, section_slug: s
         "pagination": current_page,
     }
     return render(request, "show_responses.html", context)
-
-
-# TODO - simple view for testing batch jobs
-# To be removed once tested
-def batch_example(request: HttpRequest):
-    message = ""
-    if request.POST:
-        # TODO - run management command
-        job_name = "batch_example"
-        command = ["python", "manage.py", "basic_management_command"]
-        if not HostingEnvironment.is_local():
-            BatchJobHandler.submit_job_batch(jobName=job_name, containerOverrides=command)
-            message = "Batch job has been run"
-        else:
-            message = "Batch job not run locally"
-    context = {"message": message}
-    return render(request, "batch_example.html", context)
