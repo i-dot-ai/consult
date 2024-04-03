@@ -24,8 +24,9 @@ def test_get_question_summary_page(django_app):
     for keyword in answer.theme.keywords:
         assert keyword in page_content
 
-    for option in question.multiple_choice_options:
-        assert option in page_content
+    if question.multiple_choice_options:
+        for option in question.multiple_choice_options:
+            assert option in page_content
 
     percentages = re.findall(r"\d+%", page_content)
     count = 0
