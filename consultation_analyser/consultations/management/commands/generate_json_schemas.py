@@ -1,11 +1,12 @@
 import json
+
 from django.core.management import BaseCommand
 
 from consultation_analyser.consultations import public_schema
 
 
 class Command(BaseCommand):
-    help = "Generates an Entity Relationship Diagram for the repository’s README"
+    help = "Generates JSON schema"
 
     def handle(self, *args, **options):
         schema_folder = "./consultation_analyser/consultations/public_schema"
