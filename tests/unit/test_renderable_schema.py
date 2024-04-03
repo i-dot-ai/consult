@@ -1,5 +1,5 @@
-from consultation_analyser.consultations.decorators.renderable_schema import RenderableSchema
 from consultation_analyser.consultations import public_schema
+from consultation_analyser.consultations.decorators.renderable_schema import RenderableSchema
 
 
 def test_renderable_schema():
