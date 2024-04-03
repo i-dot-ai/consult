@@ -6,7 +6,6 @@ urlpatterns = [
     path("", pages.home),
     path("consultations", consultations.show_questions),
     path("schema", schema.show),
-
     path("schema/<str:schema_name>.json", schema.raw_schema),
     path(
         "consultations/<str:consultation_slug>/sections/<str:section_slug>/questions/<str:question_slug>",
