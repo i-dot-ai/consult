@@ -1,6 +1,6 @@
-import pytest
 import html
 
+import pytest
 
 from tests.factories import ConsultationFactory
 
