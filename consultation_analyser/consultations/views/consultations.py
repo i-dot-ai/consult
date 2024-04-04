@@ -3,8 +3,6 @@ import datetime
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
-from consultation_analyser.hosting_environment import HostingEnvironment
-
 from .. import dummy_data, ml_pipeline, models
 
 
@@ -28,6 +26,7 @@ def show_consultation(request: HttpRequest, consultation_slug: str) -> HttpRespo
 def create_dummy_data(request: HttpRequest) -> HttpResponse:
     # For testing, only on dev/local/test
     if request.POST:
+        # Timestamp to avoid duplicates
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         name = f"Dummy Consultation generated at {timestamp}"
         slug = f"consultation-slug-{timestamp}"
