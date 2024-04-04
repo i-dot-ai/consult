@@ -139,7 +139,7 @@ tf_apply: ## Apply terraform
 	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
 .PHONY: tf_apply_universal
-tf_apply: ## Apply terraform
+tf_apply_universal: ## Apply terraform
 	make tf_set_workspace && \
 	terraform -chdir=./infrastructure/universal apply -var-file=$(CONFIG_DIR)/prod-input-params.tfvars ${tf_build_args}
 
