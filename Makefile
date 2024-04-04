@@ -141,7 +141,7 @@ tf_apply: ## Apply terraform
 .PHONY: tf_apply_universal
 tf_apply_universal: ## Apply terraform
 	make tf_set_workspace && \
-	terraform -chdir=./infrastructure/universal apply -var-file=$(CONFIG_DIR)/prod-input-params.tfvars ${tf_build_args}
+	terraform -chdir=./infrastructure/universal apply -var-file=../$(CONFIG_DIR)/prod-input-params.tfvars ${tf_build_args}
 
 .PHONY: tf_auto_apply
 tf_auto_apply: ## Auto apply terraform
