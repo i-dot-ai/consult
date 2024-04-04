@@ -1,4 +1,12 @@
+<<<<<<< HEAD
 from typing import Dict, List, NamedTuple, Union
+=======
+"""
+Placeholder file - to be updated when ML pipeline is merged.
+"""
+
+from random import randint
+>>>>>>> a40c130 (Update fake ML pipeline.)
 from uuid import UUID
 
 import numpy as np
