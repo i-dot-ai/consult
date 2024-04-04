@@ -14,7 +14,11 @@ from tests.factories import (
 
 class DummyConsultation:
     def __init__(self, responses=10, include_themes=True, **options):
-        if not HostingEnvironment.is_local():
+        development_environment = (
+            HostingEnvironment.is_local() or HostingEnvironment.is_dev() or HostingEnvironment.is_test()
+        )
+
+        if not development_environment:
             raise RuntimeError("Dummy data generation should only be run in development")
 
         consultation = ConsultationFactory(**options)
