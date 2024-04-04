@@ -1,17 +1,16 @@
+from typing import Dict, List, NamedTuple, Union
 from uuid import UUID
-from typing import List, NamedTuple, Dict, Union
 
-from umap.umap_ import UMAP
-from sentence_transformers import SentenceTransformer
-from hdbscan import HDBSCAN
-from bertopic import BERTopic
-from bertopic.vectorizers import ClassTfidfTransformer
-from sklearn.feature_extraction.text import CountVectorizer
 import numpy as np
 import pandas as pd
+from bertopic import BERTopic
+from bertopic.vectorizers import ClassTfidfTransformer
+from hdbscan import HDBSCAN
+from sentence_transformers import SentenceTransformer
+from sklearn.feature_extraction.text import CountVectorizer
+from umap.umap_ import UMAP
 
 from consultation_analyser.consultations import models
-
 
 RANDOM_STATE = 12  # For reproducibility
 
@@ -56,28 +55,12 @@ def get_answers_and_topics(topic_model: BERTopic, answers_list: List[Dict[str, U
     return answers_df
 
 
-class AnswerRow(NamedTuple):
-    id: int
-    Name: str
-    Representation: List
-
-
-def save_theme_to_answer(question: models.Question, answer_row: AnswerRow) -> models.Answer:
-    # Row of answer_df with free_text answers and topic classification
-    answer = models.Answer.objects.get(id=answer_row.id)
-    theme, _ = models.Theme.objects.get_or_create(
-        question=question,
-        label=answer_row.Name,
-        keywords=answer_row.Representation,
-    )
-    answer.theme = theme
-    answer.save()
-    return answer
-
-
-def save_themes_to_answers(question: models.Question, answers_topics_df: pd.DataFrame) -> None:
+def save_themes_to_answers(answers_topics_df: pd.DataFrame) -> None:
     for row in answers_topics_df.itertuples():
-        save_theme_to_answer(question, row)
+        answer = models.Answer.objects.get(id=row.id)
+        theme_label = row.Name
+        theme_keywords = row.Representation
+        answer.save_theme_to_answer(theme_label=theme_label, theme_keywords=theme_keywords)
 
 
 def save_themes_for_question(question: models.Question) -> None:
@@ -87,7 +70,7 @@ def save_themes_for_question(question: models.Question) -> None:
     answers_list_with_embeddings = get_embeddings_for_question(answers_list)
     topic_model = get_topic_model(answers_list_with_embeddings)
     answers_topics_df = get_answers_and_topics(topic_model, answers_list_with_embeddings)
-    save_themes_to_answers(question, answers_topics_df)
+    save_themes_to_answers(answers_topics_df)
 
 
 def save_themes_for_consultation(consultation_id: UUID) -> None:
