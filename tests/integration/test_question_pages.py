@@ -3,7 +3,7 @@ import re
 
 import pytest
 
-from tests.factories import ConsultationFactory
+from consultation_analyser.consultations.factories import ConsultationFactory
 
 
 @pytest.mark.django_db
