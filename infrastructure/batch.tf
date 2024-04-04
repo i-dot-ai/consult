@@ -1,6 +1,6 @@
 
 locals {
-  batch_image_ecr_url = data.aws_ecr_repository.existing[0].repository_url != null ? data.aws_ecr_repository.existing[0].repository_url : module.ecr.ecr_repository_url
+  batch_image_ecr_url = var.ecr_repository_uri
 }
 
 module "batch_compute" {

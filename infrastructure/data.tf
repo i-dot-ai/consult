@@ -1,6 +1,6 @@
 locals {
-  record_prefix           = var.env == "prod" ? var.project_name : "${var.project_name}-${var.env}"
-  host                    = terraform.workspace == "prod" ? "${var.project_name}.ai.cabinetoffice.gov.uk" : "${var.project_name}-${terraform.workspace}.ai.cabinetoffice.gov.uk"
+  record_prefix = var.env == "prod" ? var.project_name : "${var.project_name}-${var.env}"
+  host          = terraform.workspace == "prod" ? "${var.project_name}.ai.cabinetoffice.gov.uk" : "${var.project_name}-${terraform.workspace}.ai.cabinetoffice.gov.uk"
 }
 
 data "terraform_remote_state" "vpc" {
@@ -23,7 +23,6 @@ data "terraform_remote_state" "platform" {
     region = var.region
   }
 }
-
 
 
 data "terraform_remote_state" "universal" {
