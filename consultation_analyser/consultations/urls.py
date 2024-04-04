@@ -17,4 +17,5 @@ urlpatterns = [
         questions.show_responses,
     ),
     path("batch-example", pages.batch_example, name="batch_example"),
+    path("consultations/<str:consultation_slug>", consultations.show_consultation, name="show_consultation"),
 ]
