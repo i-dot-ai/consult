@@ -22,9 +22,8 @@ class DummyConsultation:
         questions = [QuestionFactory(question=q, section=section) for q in FakeConsultationData().all_questions()]
         for r in range(responses):
             response = ConsultationResponseFactory(consultation=consultation)
-            _answers = [AnswerFactory(question=q, consultation_response=response) for q in questions]
-
             if include_themes:
+                _answers = [AnswerFactory(question=q, consultation_response=response) for q in questions]
                 # Set themes per question, multiple answers with the same theme
                 for q in questions:
                     themes = [ThemeFactory() for _ in range(2, 6)]
@@ -32,3 +31,5 @@ class DummyConsultation:
                         random_theme = random.choice(themes)
                         a.theme = random_theme
                         a.save()
+            else:
+                _answers = [AnswerFactory(question=q, consultation_response=response, theme=None) for q in questions]
