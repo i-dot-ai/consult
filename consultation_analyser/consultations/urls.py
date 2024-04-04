@@ -21,7 +21,11 @@ urlpatterns = [
         "consultations/<str:consultation_slug>/sections/<str:section_slug>/responses/<str:question_slug>",
         questions.show_responses,
     ),
-    path("consultations/<str:consultation_slug>", consultations.show_consultation, name="show_consultation"),
+    path(
+        "consultations/<str:consultation_slug>",
+        consultations.show_consultation,
+        name="show_consultation",
+    ),
 ]
 
 development_urlpatterns = [

@@ -1,9 +1,9 @@
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 from consultation_analyser.hosting_environment import HostingEnvironment
 
-from .. import models
+from .. import dummy_data, models
 
 
 def show_questions(request: HttpRequest):
@@ -12,7 +12,7 @@ def show_questions(request: HttpRequest):
     return render(request, "consultation.html", context)
 
 
-# TODO placeholder view for testing - needs updating
+# TODO placeholder - needs updating
 def show_consultation(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     questions = models.Question.objects.filter(section__consultation__slug=consultation_slug)
     show_button = HostingEnvironment.is_dev() or HostingEnvironment.is_local() or HostingEnvironment.is_test()
@@ -24,7 +24,9 @@ def show_consultation(request: HttpRequest, consultation_slug: str) -> HttpRespo
 
 
 def create_dummy_data(request: HttpRequest) -> HttpResponse:
+    # For testing, only on dev/local/test
     if request.POST:
-        pass
-        #
+        dummy_data.DummyConsultation(include_themes=False)
+        latest_consultation = models.Consultation.objects.order_by("created_at").last()  # assume one just created
+        return redirect("show_consultation", consultation_slug=latest_consultation.slug)
     return render(request, "create_dummy_data.html")
