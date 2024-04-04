@@ -6,7 +6,8 @@
 {% block content %}
   <h1 class="govuk-heading-l">{{ page_title }}</h1>
 
-  <h2 class="govuk-heading-m govuk-!-margin-bottom-0">Questions</h2>
+  <h2 class="govuk-heading-m">{{ consultation.name }}</h2>
+  <h3 class="govuk-heading-s govuk-!-margin-bottom-0">Questions</h3>
   <ul class="iai-questions govuk-body govuk-!-padding-0">
     {% for q in questions %}
       <li class="iai-questions__item govuk-!-margin-top-3">
@@ -16,8 +17,7 @@
             Question summary
             <span class="govuk-visually-hidden"> - {{ q.text }}</span>
           </a>
-          {# TO DO: put the following href in the same format as above (once the question-detail PR has been merged) #}
-          <a href="/consultations/{{ q.section.consultation.slug }}/sections/{{ q.section.slug }}/questions/{{ q.slug }}" class="govuk-link govuk-link--no-visited-state">
+          <a href="{{ url('show_responses', kwargs={'question_slug': q.slug, 'section_slug': q.section.slug, 'consultation_slug': q.section.consultation.slug}) }}" class="govuk-link govuk-link--no-visited-state">
             Explore responses
             <span class="govuk-visually-hidden"> - {{ q.text }}</span>
           </a>
@@ -26,13 +26,10 @@
     {% endfor %}
   </ul>
 
-  {% if show_button %}
-    <form method="post" novalidate>{{ csrf_input }}
-      {{ govukButton({
-        'text': "Generate themes"
-      }) }}
-    </form>
-  {% endif %}
-
+  <form method="post" novalidate>{{ csrf_input }}
+    {{ govukButton({
+      'text': "Generate themes"
+    }) }}
+  </form>
 
 {% endblock %}

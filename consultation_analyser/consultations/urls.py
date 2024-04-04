@@ -20,6 +20,7 @@ urlpatterns = [
     path(
         "consultations/<str:consultation_slug>/sections/<str:section_slug>/responses/<str:question_slug>",
         questions.show_responses,
+        name="show_responses",
     ),
     path(
         "consultations/<str:consultation_slug>",
