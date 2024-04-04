@@ -34,5 +34,6 @@ development_urlpatterns = [
     path("batch-example", pages.batch_example, name="batch_example"),
 ]
 
+
 if development_environments:
     urlpatterns = urlpatterns + development_urlpatterns
