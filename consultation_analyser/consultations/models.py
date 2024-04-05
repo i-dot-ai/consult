@@ -62,9 +62,13 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     label = models.CharField(max_length=256, blank=True)
     summary = models.TextField(blank=True)
     keywords = models.JSONField(default=list)
+    # Duplicates info in Answer model, but needed for uniqueness constraint.
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
 
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["summary", "label", "keywords", "question"], name="unique_up_to_question"),
+        ]
 
 
 class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -76,3 +80,13 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
+
+    def save_theme_to_answer(self, theme_label, theme_keywords):
+        question = self.question
+        theme, _ = Theme.objects.get_or_create(
+            question=question,
+            label=theme_label,
+            keywords=theme_keywords,
+        )
+        self.theme = theme
+        self.save()
