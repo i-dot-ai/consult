@@ -56,10 +56,12 @@ class SectionFactory(factory.django.DjangoModelFactory):
 
     name = faker.sentence()
     slug = faker.slug()
-    consultation = factory.SubFactory("tests.factories.ConsultationFactory")
+    consultation = factory.SubFactory("consultation_analyser.consultations.factories.ConsultationFactory")
 
     class Params:
-        with_questions = factory.Trait(questions=[factory.SubFactory("tests.factories.QuestionFactory")])
+        with_questions = factory.Trait(
+            questions=[factory.SubFactory("consultation_analyser.consultations.factories.QuestionFactory")]
+        )
 
     @factory.post_generation
     def with_question(section, creation_strategy, value, **kwargs):
