@@ -93,7 +93,6 @@ class QuestionFactory(factory.django.DjangoModelFactory):
     @factory.post_generation
     def with_answer(question, creation_strategy, value, **kwargs):
         if value is True:
-            # answer = AnswerFactory(question=question, with_multiple_choice=kwargs.get("with_multiple_choice"))
             answer = AnswerFactory(question=question)
             answer.save()
 
@@ -108,7 +107,6 @@ class QuestionFactory(factory.django.DjangoModelFactory):
         if value is True:
             answer = AnswerFactory(
                 question=question,
-                # with_multiple_choice=kwargs.get("with_multiple_choice"),
                 with_free_text=kwargs.get("with_free_text"),
             )
             answer.save()
@@ -136,12 +134,6 @@ class AnswerFactory(factory.django.DjangoModelFactory):
         model = models.Answer
         skip_postgeneration_save = True
 
-    # multiple_choice_responses = factory.LazyAttribute(
-    #     lambda o: FakeConsultationData().get_multiple_choice_answer(o.question.slug)
-    #     if o.question.multiple_choice_options
-    #     else None
-    # )
-
     free_text = factory.LazyAttribute(
         lambda o: FakeConsultationData().get_free_text_answer(o.question.slug) if o.question.has_free_text else None
     )
@@ -150,18 +142,9 @@ class AnswerFactory(factory.django.DjangoModelFactory):
     consultation_response = factory.SubFactory(ConsultationResponseFactory)
     theme = factory.SubFactory(ThemeFactory)
 
-    # multiple_choice_responses = factory.LazyAttribute(lambda o: get_random_choice(factory.SelfAttribute("question.multiple_choice_options")))
-
     multiple_choice_responses = factory.LazyAttribute(
         lambda o: random.choice(o.question.multiple_choice_options) if o.question.multiple_choice_options else None
     )
-
-    # Should this just relate to whether or not the question is multiple choice?
-    # @factory.post_generation
-    # def with_multiple_choice(answer, creation_strategy, value, **kwargs):
-    #     if answer.multiple_choice_responses is None:
-    #         answer.multiple_choice_responses = random.choice(default_multiple_choice_options)
-    #         answer.save()
 
     @factory.post_generation
     def with_free_text(answer, creation_strategy, value, **kwargs):
