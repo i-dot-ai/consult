@@ -91,11 +91,19 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     keywords = models.JSONField(default=list)
     # Duplicates info in Answer model, but needed for uniqueness constraint.
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
+    is_outlier = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["summary", "label", "keywords", "question"], name="unique_up_to_question"),
         ]
+
+    def save(self, *args, **kwargs):
+        label_constituents = self.label.split("_")
+        self.keywords = label_constituents[1:]
+        topic_number = label_constituents[0]
+        self.is_outlier = topic_number == "-1"
+        super.save(*args, **kwargs)
 
 
 class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
