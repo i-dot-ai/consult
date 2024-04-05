@@ -11,13 +11,13 @@ def test_save_theme_to_answer():
     keywords = ["key", "lock"]
     label = "0_key_lock"
     # Check theme created and saved to answer
-    answer.save_theme_to_answer(theme_label=label, theme_keywords=keywords)
+    answer.save_theme_to_answer(theme_label=label)
     theme = models.Theme.objects.get(keywords=keywords, label=label)
     assert theme.keywords == keywords
     assert theme.label == label
     assert answer.theme.label == label
     # Check no duplicate created
-    answer.save_theme_to_answer(theme_label=label, theme_keywords=keywords)
+    answer.save_theme_to_answer(theme_label=label)
     themes_qs = models.Theme.objects.filter(keywords=keywords, label=label)
     assert themes_qs.count() == 1
 

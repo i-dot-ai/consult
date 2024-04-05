@@ -11,6 +11,15 @@ faker = _faker.Faker()
 default_multiple_choice_options = ["Yes", "No", "Not sure"]
 
 
+def generate_dummy_topic_label():
+    dummy_sentence = faker.sentence()
+    words = dummy_sentence.lower().strip(".")
+    words_joined = words.replace(" ", "_")
+    topic_number = random.randint(-1, 3)
+    output = f"{topic_number}_{words_joined}"
+    return output
+
+
 class FakeConsultationData:
     def __init__(self):
         with open("./tests/examples/questions.yml", "r") as f:
@@ -100,9 +109,8 @@ class ThemeFactory(factory.django.DjangoModelFactory):
         model = models.Theme
 
     # TODO - may need to be changed once ML pipeline is in
-    label = faker.sentence()
+    label = generate_dummy_topic_label()
     summary = f"Summary: {label}"
-    keywords = label.lower().strip(".").split(" ")
 
 
 class AnswerFactory(factory.django.DjangoModelFactory):
