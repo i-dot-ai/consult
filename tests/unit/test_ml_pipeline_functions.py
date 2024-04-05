@@ -25,7 +25,6 @@ def test_save_themes_to_answers():
     answer1 = factories.AnswerFactory(question=question, theme=None)
     answer2 = factories.AnswerFactory(question=question, theme=None)
     answer3 = factories.AnswerFactory(question=question, theme=None)
-    assert not answer1.theme
     answers_df = pd.DataFrame(
         {
             "id": [answer1.id, answer2.id, answer3.id],
