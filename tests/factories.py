@@ -25,10 +25,6 @@ class FakeConsultationData:
         q = self.questions[slug]
         return random.choice(q["answers"])
 
-    # def get_multiple_choice_answer(self, slug):
-    #     q = self.questions[slug]
-    #     return random.choice(q["multiple_choice_options"])
-
     def all_questions(self):
         return list(self.questions.values())
 
