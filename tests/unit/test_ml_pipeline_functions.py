@@ -19,25 +19,6 @@ def test_get_embeddings_for_question():
     assert not np.array_equal(output[0]["embedding"], output[2]["embedding"])
 
 
-# @pytest.mark.django_db
-# def test_get_or_create_theme_for_question():
-#     question = factories.QuestionFactory(has_free_text=True)
-#     factories.AnswerFactory(question=question, theme=None)
-#     keywords = ["key", "lock"]
-#     label = "0_key_lock"
-#     # Check theme created
-#     theme, created = models.Theme.objects.get_or_create(question=question, keywords=keywords, label=label)
-#     themes_qs = models.Theme.objects.filter(keywords=keywords, label=label)
-#     assert themes_qs.count() == 1
-#     assert theme.keywords == keywords
-#     assert theme.label == label
-#     assert created
-#     # Check no duplicate created
-#     theme, created = models.Theme.objects.get_or_create(question=question, keywords=keywords, label=label)
-#     themes_qs = models.Theme.objects.filter(keywords=keywords, label=label)
-#     assert themes_qs.count() == 1
-
-
 @pytest.mark.django_db
 def test_save_themes_to_answers():
     question = factories.QuestionFactory()
