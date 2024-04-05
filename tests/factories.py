@@ -93,7 +93,8 @@ class QuestionFactory(factory.django.DjangoModelFactory):
     @factory.post_generation
     def with_answer(question, creation_strategy, value, **kwargs):
         if value is True:
-            answer = AnswerFactory(question=question, with_multiple_choice=kwargs.get("with_multiple_choice"))
+            # answer = AnswerFactory(question=question, with_multiple_choice=kwargs.get("with_multiple_choice"))
+            answer = AnswerFactory(question=question)
             answer.save()
 
     @factory.post_generation
@@ -107,7 +108,7 @@ class QuestionFactory(factory.django.DjangoModelFactory):
         if value is True:
             answer = AnswerFactory(
                 question=question,
-                with_multiple_choice=kwargs.get("with_multiple_choice"),
+                # with_multiple_choice=kwargs.get("with_multiple_choice"),
                 with_free_text=kwargs.get("with_free_text"),
             )
             answer.save()
