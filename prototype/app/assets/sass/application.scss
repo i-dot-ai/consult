@@ -3,16 +3,13 @@
 // https://prototype-kit.service.gov.uk/docs/adding-css-javascript-and-images
 //
 
-:root {
-  --iai-pink: #b62777;
-  --govuk-light-blue: #5694ca;
-}
+$iai-colour-pink: #b62777;
 
 .govuk-header__container {
-  border-color: var(--iai-pink);
+  border-color: $iai-colour-pink;
 }
 .govuk-phase-banner__content__tag {
-  background-color: var(--iai-pink);
+  background-color: $iai-colour-pink;
   color: white;
 }
 
@@ -57,7 +54,7 @@
   z-index: 10;
 }
 .iai-bar__bar {
-  background-color: var(--govuk-light-blue);
+  background-color: govuk-colour("light-blue");
   display: block;
   height: 100%;
   left: 0;
@@ -97,4 +94,19 @@
   display: block;
   font-size: 1.125rem;
   font-weight: 100;
+}
+
+
+/** UPLOAD PAGE **/
+.iai-error-list {
+  list-style-type: disc;
+  color: govuk-colour("red");
+  font-weight: 700;
+  padding-left: 1.25rem;
+}
+.iai-label__additional-text {
+  color: govuk-colour("dark-grey");
+  display: block;
+  font-size: 1rem;
+  margin: 0.25rem 0;
 }

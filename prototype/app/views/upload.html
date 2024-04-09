@@ -1,0 +1,80 @@
+{% extends "layouts/main.html" %}
+
+{% from "govuk/components/button/macro.njk" import govukButton %}
+{% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
+
+{% block pageTitle %}Upload consultation{% endblock %}
+
+{% block content %}
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+
+    {% if data.schemaErrors %}
+      <div class="govuk-error-summary" data-module="govuk-error-summary">
+        <div role="alert">
+          <h2 class="govuk-error-summary__title">
+            There is a problem
+          </h2>
+          <div class="govuk-error-summary__body">
+            <ul class="govuk-list govuk-error-summary__list iai-error-list">
+              {% for error in data.schemaErrors %}
+                <li>{{ error }}</li>
+              {% endfor %}
+            </ul>
+          </div>
+        </div>
+      </div>
+    {% endif %}
+
+    <h1 class="govuk-heading-l">Upload a consultation</h1>
+
+    <form action="/upload-file" method="post">
+
+      {# If/when we allow users to upload their own files, we may require this #}
+      {#
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="name">
+          Your name
+        </label>
+        <input class="govuk-input" id="name" name="name" type="text" autocomplete="name" spellcheck="false" required value="{{ data.name }}">
+      </div>
+      <div class="govuk-form-group">
+        <label class="govuk-label" for="email">
+          Your email address
+        </label>
+        <input class="govuk-input" id="email" name="email" type="email" autocomplete="email" spellcheck="false" required value="{{ data.email }}">
+      </div>
+      #}
+
+      {% if data.schemaErrors %}
+        <div class="govuk-form-group govuk-form-group--error">
+          <label class="govuk-label" for="file">
+            Upload a file
+            <span class="iai-label__additional-text">Files must be in JSON format, to match the <a href="#schema">required schema</a></span>
+          </label>
+          <p id="file-error" class="govuk-error-message">
+            <span class="govuk-visually-hidden">Error:</span> The file has the incorrect schema
+          </p>
+          <input class="govuk-file-upload govuk-file-upload--error" id="file" name="file" type="file" aria-describedby="file-error" required>
+        </div>
+      {% else %}
+        <div class="govuk-form-group">
+          <label class="govuk-label" for="file">
+            Upload a file
+            <span class="iai-label__additional-text">Files must be in JSON format, to match the <a href="#schema">required schema</a></span>
+          </label>
+          <input class="govuk-file-upload" id="file" name="file" type="file" required>
+        </div>
+      {% endif %}
+
+      {{ govukButton({
+        text: "Continue"
+      }) }}
+
+    </form>
+
+  </div>
+</div>
+
+{% endblock %}
