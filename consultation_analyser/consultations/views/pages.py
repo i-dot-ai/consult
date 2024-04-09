@@ -13,6 +13,10 @@ def home(request: HttpRequest):
     return render(request, "home.html", context)
 
 
+def privacy(request: HttpRequest):
+    return render(request, "privacy.html")
+
+
 # TODO - simple view for testing batch jobs
 # To be removed once tested
 def batch_example(request: HttpRequest):

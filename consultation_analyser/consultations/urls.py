@@ -4,6 +4,7 @@ from .views import consultations, pages, questions, responses, schema
 
 urlpatterns = [
     path("", pages.home),
+    path("privacy", pages.privacy),
     path("consultations", consultations.show_questions),
     path("schema", schema.show),
     path("schema/<str:schema_name>.json", schema.raw_schema),
