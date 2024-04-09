@@ -82,22 +82,37 @@ $iai-colour-pink: #b62777;
 .iai-filters {
     background-color: govuk-colour("light-grey");
     padding: 1rem;
-  }
-  @media (min-width: 641px) {
+}
+@media (min-width: 641px) {
     .iai-filters {
       max-width: 14rem;
     }
-  }
-  .iai-filters .govuk-form-group {
+}
+.iai-filters .govuk-form-group {
     /*margin-bottom: 1.5rem;*/
-  }
+}
 
-  .iai-table-subhead {
+.iai-table-subhead {
     display: block;
     font-size: 1.125rem;
     font-weight: 100;
-  }
+}
 pre code {
   white-space: pre-wrap;
   font-size: 80%;
+}
+
+
+/** UPLOAD PAGE **/
+.iai-error-list {
+    list-style-type: disc;
+    color: govuk-colour("red");
+    font-weight: 700;
+    padding-left: 1.25rem;
+  }
+.iai-label__additional-text {
+    color: govuk-colour("dark-grey");
+    display: block;
+    font-size: 1rem;
+    margin: 0.25rem 0;
 }
