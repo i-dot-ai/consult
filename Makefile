@@ -1,5 +1,8 @@
 -include .env
-export
+export AWS_ACCOUNT_ID
+export AWS_REGION
+export ECR_REPO_NAME
+export APP_NAME
 
 .PHONY: help
 help:     ## Show this help.
