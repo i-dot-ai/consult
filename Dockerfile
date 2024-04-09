@@ -25,6 +25,7 @@ COPY poetry.lock .
 # do this so that poetry bundle can run without the project - can't pass --no-root to bundle
 RUN touch README.md
 
+RUN poetry install
 RUN poetry bundle venv ./venv
 
 
