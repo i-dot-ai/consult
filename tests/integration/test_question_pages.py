@@ -9,7 +9,10 @@ from tests.factories import ConsultationFactory
 @pytest.mark.django_db
 def test_get_question_summary_page(django_app):
     consultation = ConsultationFactory(
-        with_question=True, with_question__with_answer=True, with_question__with_multiple_choice=True
+        with_question=True,
+        with_question__with_multiple_choice=True,
+        with_question__with_answer=True,
+        with_question__with_free_text=True,
     )
     section = consultation.section_set.first()
     question = section.question_set.first()

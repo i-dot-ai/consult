@@ -67,8 +67,6 @@ class SectionFactory(factory.django.DjangoModelFactory):
             QuestionFactory(
                 section=section,
                 with_answer=kwargs.get("with_answer"),
-                with_multiple_choice=kwargs.get("with_multiple_choice"),
-                with_free_text=kwargs.get("with_free_text"),
             )
 
 
@@ -77,34 +75,16 @@ class QuestionFactory(factory.django.DjangoModelFactory):
         model = models.Question
         skip_postgeneration_save = True
 
-    text = factory.LazyAttribute(lambda o: o.question["text"])
-    slug = factory.LazyAttribute(lambda o: o.question["slug"])
-    multiple_choice_options = factory.LazyAttribute(lambda o: o.question["multiple_choice_options"])
-    has_free_text = factory.LazyAttribute(lambda o: o.question["has_free_text"])
+    text = faker.sentence()
+    slug = faker.slug()
+    multiple_choice_options = ["Yes", "No", "Maybe"]
+    has_free_text = True
     section = factory.SubFactory(SectionFactory)
-
-    class Params:
-        question = FakeConsultationData().question()
 
     @factory.post_generation
     def with_answer(question, creation_strategy, value, **kwargs):
         if value is True:
             answer = AnswerFactory(question=question)
-            answer.save()
-
-    @factory.post_generation
-    def with_multiple_choice(question, creation_strategy, value, **kwargs):
-        if value is True and question.multiple_choice_options is None:
-            question.multiple_choice_options = default_multiple_choice_options
-            question.save()
-
-    @factory.post_generation
-    def with_free_text(question, creation_strategy, value, **kwargs):
-        if value is True:
-            answer = AnswerFactory(
-                question=question,
-                with_free_text=kwargs.get("with_free_text"),
-            )
             answer.save()
 
 
@@ -130,9 +110,7 @@ class AnswerFactory(factory.django.DjangoModelFactory):
         model = models.Answer
         skip_postgeneration_save = True
 
-    free_text = factory.LazyAttribute(
-        lambda o: FakeConsultationData().get_free_text_answer(o.question.slug) if o.question.has_free_text else None
-    )
+    free_text = factory.LazyAttribute(lambda o: faker.sentence() if o.question.has_free_text else None)
 
     question = factory.SubFactory(QuestionFactory)
     consultation_response = factory.SubFactory(ConsultationResponseFactory)
@@ -141,9 +119,3 @@ class AnswerFactory(factory.django.DjangoModelFactory):
     multiple_choice_responses = factory.LazyAttribute(
         lambda o: random.choice(o.question.multiple_choice_options) if o.question.multiple_choice_options else None
     )
-
-    @factory.post_generation
-    def with_free_text(answer, creation_strategy, value, **kwargs):
-        if answer.free_text is None:
-            answer.free_text = "This is a sample free-text response"
-            answer.save()
