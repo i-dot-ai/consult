@@ -117,5 +117,5 @@ class AnswerFactory(factory.django.DjangoModelFactory):
     theme = factory.LazyAttribute(lambda o: ThemeFactory() if o.free_text else None)
 
     multiple_choice_responses = factory.LazyAttribute(
-        lambda o: random.choice(o.question.multiple_choice_options) if o.question.multiple_choice_options else None
+        lambda o: [random.choice(o.question.multiple_choice_options)] if o.question.multiple_choice_options else None
     )
