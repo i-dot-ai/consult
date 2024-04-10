@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import consultations, pages, questions, schema
+from .views import consultations, pages, questions, responses, schema
 
 urlpatterns = [
     path("", pages.home),
@@ -14,7 +14,8 @@ urlpatterns = [
     ),
     path(
         "consultations/<str:consultation_slug>/sections/<str:section_slug>/responses/<str:question_slug>",
-        questions.show_responses,
+        responses.show,
+        name="show_question_responses",
     ),
     path("batch-example", pages.batch_example, name="batch_example"),
 ]
