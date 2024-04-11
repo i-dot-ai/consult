@@ -47,6 +47,7 @@ jobs:
           else
             export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $2 }')
           fi
+          export ENVIRONMENT=prod
           echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
 
 
