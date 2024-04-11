@@ -55,7 +55,7 @@ jobs:
         needs: set-vars
         with:
             EC2_INSTANCE_TYPE: ${{ needs.set-vars.outputs.ec2-instance-type }}
-            ENVIRONMENT: ${{ needs.env-var.outputs.environment }}
+            ENVIRONMENT: ${{ needs.set-vars.outputs.environment }}
         secrets:
             AWS_GITHUBRUNNER_USER_ACCESS_KEY: ${{ secrets.AWS_GITHUBRUNNER_USER_ACCESS_KEY }}
             AWS_GITHUBRUNNER_USER_SECRET_ID: ${{ secrets.AWS_GITHUBRUNNER_USER_SECRET_ID }}
