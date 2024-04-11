@@ -4,7 +4,7 @@ from django.conf import settings
 def check_and_launch_sagemaker(func):
     def wrapper(request, *args, **kwargs):
         sagemaker = boto3.client("sagemaker")
-        endpoint_name = settings.sagemaker_endpoint_name
+        endpoint_name = settings.SAGEMAKER_ENDPOINT_NAME
         if not endpoint_name:
             return func(request, *args, **kwargs)
         try:
