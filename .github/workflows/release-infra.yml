@@ -40,7 +40,7 @@ jobs:
 
       - id: env-var
         run: |
-          echo "environment=dev" >> $GITHUB_OUTPUT
+          echo "environment=preprod" >> $GITHUB_OUTPUT
 
 
   start-runner:
