@@ -13,7 +13,7 @@ jobs:
       app-name: ${{ steps.export.outputs.app-name }}
       ec2-instance-type: ${{ steps.export.outputs.ec2-instance-type }}
       version: ${{ steps.export.outputs.version }}
-      runner-size: ${{ steps.export.outputs.runner_size }}
+      runner-size: ${{ steps.export.outputs.runner-size }}
 
 
     steps:
