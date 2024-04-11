@@ -31,7 +31,9 @@ def get_topic_model(answers_list_with_embeddings: List[Dict[str, Union[UUID, str
     embeddings_list = [answer["embedding"] for answer in answers_list_with_embeddings]
     embeddings = np.array(embeddings_list)
     # Set random_state so that we can reproduce the results
-    umap_model = UMAP(n_neighbors=15, n_components=5, min_dist=0.0, metric="cosine", random_state=RANDOM_STATE)
+    umap_model = UMAP(
+        n_neighbors=15, n_components=5, min_dist=0.0, metric="cosine", n_jobs=1, random_state=RANDOM_STATE
+    )
     hdbscan_model = HDBSCAN(
         min_cluster_size=3, metric="euclidean", cluster_selection_method="eom", prediction_data=True
     )

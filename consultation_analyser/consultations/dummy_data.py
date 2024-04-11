@@ -19,7 +19,16 @@ class DummyConsultation:
 
         consultation = ConsultationFactory(**options)
         section = SectionFactory(name="Base section", consultation=consultation)
-        questions = [QuestionFactory(question=q, section=section) for q in FakeConsultationData().all_questions()]
+        questions = [
+            QuestionFactory(
+                text=q["text"],
+                slug=q["slug"],
+                multiple_choice_options=q.get("multiple_choice_options", None),
+                has_free_text=q["has_free_text"],
+                section=section,
+            )
+            for q in FakeConsultationData().all_questions()
+        ]
         for r in range(responses):
             response = ConsultationResponseFactory(consultation=consultation)
             _answers = [AnswerFactory(question=q, consultation_response=response) for q in questions]

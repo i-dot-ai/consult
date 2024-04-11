@@ -10,15 +10,15 @@
       <h1 class="govuk-heading-l">{{ page_title }}</h1>
       <p class="govuk-body">{{ question.text }}</p>
 
-      {% if multiple_choice and total_responses %}
+      {% if question.multiple_choice_options %}
         <dl class="govuk-summary-list">
-          {% for item in multiple_choice %}
+          {% for response in question.multiple_choice_response_counts() %}
             <div class="govuk-summary-list__row">
               <dt class="govuk-summary-list__key">
-                {{ item.label }}
+                {{ response.answer }}
               </dt>
               <dd class="govuk-summary-list__value">
-                {{ ((item.count / total_responses) * 100)|round|int }}%
+                {{ response.percent }}%
               </dd>
             </div>
           {% endfor %}
@@ -26,11 +26,11 @@
       {% endif %}
     </div>
 
-    {% if multiple_choice and total_responses %}
+    {% if question.multiple_choice_options %}
       <div class="govuk-grid-column-one-third govuk-!-padding-0">
         <donut-chart>
-          {% for item in multiple_choice %}
-            <chart-item data-label="{{ item.label }}" data-count="{{ ((item.count / total_responses) * 100)|round|int }}"></chart-item>
+          {% for response in question.multiple_choice_response_counts() %}
+            <chart-item data-label="{{ response.answer }}" data-count="{{ response.percent }}"></chart-item>
           {% endfor %}
         </donut-chart>
       </div>
