@@ -5,7 +5,8 @@ def check_and_launch_sagemaker(func):
     def wrapper(request, *args, **kwargs):
         sagemaker = boto3.client("sagemaker")
         endpoint_name = settings.sagemaker_endpoint_name
-
+        if not endpoint_name:
+            return func(request, *args, **kwargs)
         try:
             response = sagemaker.describe_endpoint(EndpointName=endpoint_name)
             print(f"Endpoint {endpoint_name} already exists. Skipping creation.")
