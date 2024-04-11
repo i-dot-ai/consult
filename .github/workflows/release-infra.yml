@@ -42,6 +42,7 @@ jobs:
         run: |
           # prod env from main branch
           export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $2 }')
+          echo "environment=${ENVIRONMENT}"
           echo "environment=${ENVIRONMENT}" >> $GITHUB_OUTPUT
 
 
