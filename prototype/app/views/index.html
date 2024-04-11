@@ -2,244 +2,32 @@
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
-{% from "govuk/components/tabs/macro.njk" import govukTabs %}
 
 {% set pageName="Home" %}
 
-{% block pageTitle %}Consultation on Fourth Sector Pathfinders{% endblock %}
+{% block pageTitle %}Home{% endblock %}
 
 {% block content %}
 
-<script src="https://cdn.anychart.com/releases/8.0.0/js/anychart-base.min.js"></script>
-
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-full">
-    <span class="govuk-caption-m">Department of Social Affairs and Citizenship</span>
-    <h1 class="govuk-heading-l">Consultation on Fourth Sector Pathfinders</h1>
+    <h1 class="govuk-heading-l">Consultations frontend prototype</h1>
 
-    {% set tab1 %}
-      <h2 class="govuk-heading-m">Responses processed</h2>
-      {{ govukSummaryList({
-        rows: [
-          {
-            key: {
-              text: "Total"
-            },
-            value: {
-              text: "27,921"
-            }
-          },
-          {
-            key: {
-              text: "England"
-            },
-            value: {
-              text: "21,701"
-            }
-          },
-          {
-            key: {
-              text: "Scotland"
-            },
-            value: {
-              text: "3,089"
-            }
-          },
-          {
-            key: {
-              text: "Wales"
-            },
-            value: {
-              text: "1,018"
-            }
-          },
-          {
-            key: {
-              text: "Northern Ireland"
-            },
-            value: {
-              text: "1,221"
-            }
-          }
-        ]
-      }) }}
-    {% endset %}
-
-    {% set tab2 %}
-      <h2 class="govuk-heading-m">Key findings</h2>
-
-      <h3 class="govuk-heading-s govuk-!-margin-bottom-1">Fourth sector pathfinders:</h3>
-      <div class="iai-key-finding">
-        <div class="iai-key-finding__chart">
-          <canvas data-yes="63" data-no="33"></canvas>
-        </div>
-        <div>
-          <p class="govuk-!-margin-bottom-1"><strong>63% of respondents are in favour of the fourth sector pathfinder policy, 33% are opposed</strong></p>
-          <p class="govuk-!-margin-bottom-0">The key argument expressed in the responses is that pathfinding is a major issue in the fourth sector and that strict measures need to be implemented to ensure its continuation.</p>
-        </div>
-      </div>
-
-      <h3 class="govuk-heading-s govuk-!-margin-top-5 govuk-!-margin-bottom-1">Product scope:</h3>
-      <div class="iai-key-finding">
-        <div class="iai-key-finding__chart">
-          <canvas data-yes="63" data-no="31"></canvas>
-        </div>
-        <div>
-          <p class="govuk-!-margin-bottom-1"><strong>63% of respondents agree that all pathfinding projects be coverd by the new legislation</strong></p>
-          <p class="govuk-!-margin-bottom-0">Respondents express support in order to find paths harmoniously and protect the finders of paths. Respondents also commonly agree that all pathfinding products should be covered to promote complete pathfinding satisfaction and prevent loopholes that stray from paths thus discovered.</p>
-        </div>
-      </div>
-
-      <h3 class="govuk-heading-s govuk-!-margin-top-5 govuk-!-margin-bottom-1">Part time pathfinders:</h3>
-      <div class="iai-key-finding">
-        <div class="iai-key-finding__chart">
-          <canvas data-yes="79" data-no="18"></canvas>
-        </div>
-        <div>
-          <p class="govuk-!-margin-bottom-1"><strong>79% of respondents agree that there should be restrictions on part time pathfinders, 18% are opposed</strong></p>
-          <p class="govuk-!-margin-bottom-0">Respondents cite negative impacts on paths found and on the fourth sector as a whole as the key reasons for support.</p>
-        </div>
-      </div>
-
-      <h3 class="govuk-heading-s govuk-!-margin-top-5 govuk-!-margin-bottom-1">Enforcement:</h3>
-      <div class="iai-key-finding">
-        <div class="iai-key-finding__chart">
-          <canvas data-yes="88" data-no="9"></canvas>
-        </div>
-        <div>
-          <p class="govuk-!-margin-bottom-1"><strong>88% of respondents think that that fixed penalty notices should be issued for paths that turn out not to lead anywhere, 9% are opposed</strong></p>
-          <p class="govuk-!-margin-bottom-0">Respondents commonly believe that FPNs would help restrict the provision of these paths to consenting bodies and make suppliers comply with the law.</p>
-        </div>
-      </div>
-
-    {% endset %}
-
-    {% set tab3 %}
-      <h2 class="govuk-heading-m">Contacts</h2>
-      <h3 class="govuk-heading-s govuk-!-margin-bottom-1">DOSaC:</h3>
-      {{ govukSummaryList({
-        rows: [
-          {
-            key: {
-              text: "Policy"
-            },
-            value: {
-              text: "firstname.lastname@dosac.gov.uk"
-            }
-          },
-          {
-            key: {
-              text: "Analyst"
-            },
-            value: {
-              text: "firstname.lastname@dosac.gov.uk"
-            }
-          },
-          {
-            key: {
-              text: "Data Science"
-            },
-            value: {
-              text: "firstname.lastname@dosac.gov.uk"
-            }
-          }
-        ]
-      }) }}
-      <h3 class="govuk-heading-s govuk-!-margin-bottom-1">10DS:</h3>
-      {{ govukSummaryList({
-        rows: [
-          {
-            key: {
-              text: "Analyst"
-            },
-            value: {
-              text: "firstname.lastname@no10.gov.uk"
-            }
-          },
-          {
-            key: {
-              text: "Social Affairs Lead"
-            },
-            value: {
-              text: "firstname.lastname@no10.gov.uk"
-            }
-          }
-        ]
-      }) }}
-    {% endset %}
-
-    {{ govukTabs({
-      items: [
-        {
-          label: "Responses processed",
-          id: "responses",
-          panel: {
-            html: tab1
-          }
-        },
-        {
-          label: "Key findings",
-          id: "findings",
-          panel: {
-            html: tab2
-          }
-        },
-        {
-          label: "Contacts",
-          id: "contacts",
-          panel: {
-            html: tab3
-          }
-        }
-      ]
+    <h2 class="govuk-heading-m">Demo consultation</h2>
+    <p>The demo consultation shows how each page will look and what features will be available.</p>
+    {{ govukButton({
+      text: "View consultation",
+      href: "/demo-consultation",
+      isStartButton: true
     }) }}
 
-
-    <h2 class="govuk-heading-m govuk-!-margin-bottom-0">Questions</h2>
-    <ul class="iai-questions govuk-!-padding-0">
-      {% for question in data.questions %}
-        <li class="iai-questions__item govuk-!-margin-top-3">
-          <p class="govuk-!-margin-bottom-1">{{question}}</p>
-          <span class="iai-questions__links govuk-!-margin-top-2">
-            <a href="/question-summary?question-index={{loop.index0}}&keyword=&theme=all&opinion=all&location=all&age=all&capacity=all" class="govuk-link govuk-link--no-visited-state">Question summary</a>
-            <a href="/question-responses?question-index={{loop.index0}}&keyword=&theme=all&opinion=all&location=all&age=all&capacity=all" class="govuk-link govuk-link--no-visited-state">Explore responses</a>
-          </span>
-        </li>
-      {% endfor %}
-    </ul>
-
-    {#
-    <table class="govuk-table">
-      <caption class="govuk-table__caption govuk-table__caption--m govuk-!-margin-top-4">
-        <h2 class="govuk-heading-m">Questions</h2>
-      </caption>
-      <thead class="govuk-table__head">
-        <tr class="govuk-table__row">
-          <th scope="col" class="govuk-table__header">Question</th>
-          <th scope="col" class="govuk-table__header" style="width: 22.25rem;">Actions</th>
-        </tr>
-      </thead>
-      <tbody class="govuk-table__body">
-        {% for question in data.questions %}
-          <tr class="govuk-table__row">
-            <td class="govuk-table__cell">{{question}}</td>
-            <td class="govuk-table__cell">
-              {{ govukButton({
-                text: "Question summary",
-                classes: "govuk-button--secondary",
-                href: "/question-summary?question-index={{loop.index0}}&keyword=&theme=all&opinion=all&location=all&age=all&capacity=all"
-              }) }}
-              {{ govukButton({
-                text: "Explore responses",
-                classes: "govuk-button--secondary",
-                href: "/question-responses?question-index={{loop.index0}}&keyword=&theme=all&opinion=all&location=all&age=all&capacity=all"
-              }) }}
-            </td>
-          </tr>
-        {% endfor %}
-      </tbody>
-    </table>
-    #}
+    <h2 class="govuk-heading-m govuk-!-margin-top-3">Upload consultation</h2>
+    <p>This is an MVP version just for use by the i.AI team currently. Longer term this can be expanded to be useable by others. At which point we'll need to consider what additional data/instructions will be required.</p>
+    {{ govukButton({
+      text: "Upload consultation",
+      classes: "govuk-button--secondary",
+      href: "/upload"
+    }) }}
 
   </div>
 </div>
