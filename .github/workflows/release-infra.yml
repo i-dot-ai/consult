@@ -41,7 +41,7 @@ jobs:
       - id: env-var
         run: |
           # prod env from main branch
-          if [[ "${{ github.ref_name }}" == refs/heads/main ]]; then 
+          if [[ "${{ github.ref_name }}" == refs/heads/main ]]; then
             export ENVIRONMENT=prod
           else
             export ENVIRONMENT=$(echo ${{ github.ref_name }} | awk -F- '{ print $2 }')
