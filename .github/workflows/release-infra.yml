@@ -41,7 +41,7 @@ jobs:
       - id: env-var
         run: |
           # prod env from main branch
-          if [ ${{ github.ref == 'refs/heads/main' }} ]; then
+          if [[ "${{ github.ref_name }}" == refs/heads/main ]]; then 
             echo "down route 1"
             export ENVIRONMENT=prod
           else
