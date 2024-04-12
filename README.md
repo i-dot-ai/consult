@@ -1,32 +1,31 @@
 # Consultation Analyser
 
-This project is currently at prototyping stage.
-
-The Consultation Analyser is an AI-powered tool to automate the processing of public consultations.
+The Consultation analyser is a machine learning and LLM-powered tool to automate the processing of public consultations.
 
 ## Setting up the application
 
+### External dependencies
+
+- PostgreSQL (`brew install postgresql`)
+- GraphViz (`brew install graphviz`), for generating diagrams
+
+### Environment variables
+
 Populate `.env` by copying `.env.example` and filling in required values.
 
-Ensure you have `python > 3.10` and `poetry` installed.
+### Python
+
+Ensure you have `python > 3.10` and `poetry` installed, then run `poetry install`.
+
+### Database setup
 
 ```
-poetry install
+make dev_environment
 ```
 
-### Database
+This will set up dev and test databases with dummy data. See the definition of that make task for the various steps.
 
-Assuming local postgres:
-
-```
-# dev
-make setup_dev_db
-
-# test
-make setup_test_db
-```
-
-Confirm it works with
+Confirm everything is working with
 
 ```
 make check_db
@@ -34,9 +33,25 @@ make check_db
 
 (You can see all the available `make` commands by running bare `make` or `make help`).
 
+### Run the application
+
+```
+make serve
+```
+
+### Run the tests
+
+```
+make test
+```
+
+## The database
+
 ### Generating dummy data
 
-Only run this in development. Will create a consultation with 10 complete responses in a variety of question formats.
+Only run this in development. Will create a consultation with 10 complete
+responses in a variety of question formats. This runs as part of `make
+dev_environment`, but you can run it more than once.
 
 ```
 make dummy_data
@@ -51,46 +66,28 @@ you can run `manage.py generate_erd`. (You will need `graphviz` installed: see
 
 ![](docs/erd.png)
 
-### Frontend
-
+### The frontend
 
 #### CSS
 
 We depend on `govuk-frontend` for GOV.UK Design System styles.
 
-```
-npm install
-```
+`django-compressor` should work automatically to compile the govuk-frontend
+SCSS on the first request and any subsequent request after the SCSS has
+changed. In the meantime it will read from `frontend/CACHE`, which is
+`.gitignore`d.
 
-Once this has been done, `django-compressor` should work automatically to
-compile the govuk-frontend SCSS on the first request and any subsequent request
-after the SCSS has changed. In the meantime it will read from `frontend/CACHE`,
-which is `.gitignore`d.
-
-When we get to production, we can prepopulate `frontend/CACHE` using `manage.py
-compress` before building our container, which will mean that every request
-will be served from the cache.
+In production, we prepopulate `frontend/CACHE` using `manage.py compress`
+which will mean that every request is served from the cache.
 
 `django-compressor` also takes care of fingerprinting and setting cache headers
-for our CSS so it can be cached.
+for our CSS.
 
 #### Fonts and images
 
-The govuk assets are versioned in the `npm` package. On initial app setup you will need to run `make govuk_frontend` to copy them to the `frontend` folder from where `runserver` can serve them.
-
-We’ll revisit this process when we deploy the app.
-
-### Run the application
-
-```
-make serve
-```
-
-### Run the tests
-
-```
-make test
-```
+The govuk assets are versioned in the `npm` package. `make dev_environment`
+includes a step to copy them to the `frontend` folder from where `runserver`
+can serve them; you can rerun this with `make govuk_frontend`.
 
 ## Schema documentation
 
@@ -102,14 +99,18 @@ The `json-schema-faker-options.js` file configures (JSON Schema Faker)[https://g
 
 ## Frontend Prototype
 
-Located at `/prototype`. Using the Gov.uk Prototype Kit. This is work in progress, not all pages are available yet.
+Located at `/prototype` in this repo, using the GOV.UK Prototype Kit. This is work in progress, not all pages are available yet.
 
 ### How to run
 
-Ensure you have a recent version of Node.js installed (v16 or greater). Then, from the prototype directory, run:
-`npm install`
+Ensure you have a recent version of Node.js installed (v16 or greater). Then, **from the prototype directory**, run:
 
-To start development server:
-`npm run dev`
+```
+npm install
+```
 
-Start at http://localhost:3000/
+Then
+
+```
+npm run dev
+```
