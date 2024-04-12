@@ -30,7 +30,7 @@ setup_dev_db: ## Set up the development db on a local postgres
 
 .PHONY: reset_dev_db
 reset_dev_db: ## Reset the dev db
-	dropdb consultations_dev
+	-dropdb consultations_dev
 	$(MAKE) setup_dev_db
 
 .PHONY: setup_test_db
@@ -69,6 +69,9 @@ govuk_frontend: ## Pull govuk-frontend
 .PHONY: dummy_data
 dummy_data: ## Generate a dummy consultation. Only works in dev
 	poetry run python manage.py generate_dummy_data
+
+.PHONY: dev_environment
+dev_environment: reset_dev_db migrate reset_test_db govuk_frontend ## set up the database with dummy data and configure govuk_frontend
 
 # Docker
 AWS_REGION=eu-west-2
