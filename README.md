@@ -1,4 +1,4 @@
-# Consultation Analyser
+# Consultation analyser
 
 The Consultation analyser is a machine learning and LLM-powered tool to automate the processing of public consultations.
 
