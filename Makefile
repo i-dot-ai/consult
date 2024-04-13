@@ -59,7 +59,7 @@ serve: ## Run the server
 
 .PHONY: test
 test: ## Run the tests
-	poetry run pytest
+	poetry run pytest tests/
 
 .PHONY: govuk_frontend
 govuk_frontend: ## Pull govuk-frontend
