@@ -10,10 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import logging
 import os
 from pathlib import Path
 
 import environ
+import waffle
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -40,6 +42,7 @@ INSTALLED_APPS = [
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "compressor",
+    "waffle",  # feature flags
 ]
 
 
@@ -54,6 +57,7 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "waffle.middleware.WaffleMiddleware",
 ]
 
 ROOT_URLCONF = "consultation_analyser.urls"
@@ -71,9 +75,9 @@ TEMPLATES = [
             "context_processors": [
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.request"
+                "django.template.context_processors.request",
             ]
-        }
+        },
     },
 ]
 
@@ -154,3 +158,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 BATCH_JOB_QUEUE = env("BATCH_JOB_QUEUE")
 BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION")
+
+WAFFLE_SWITCH_DEFAULT = False
+WAFFLE_CREATE_MISSING_SWITCHES = True
+WAFFLE_LOG_MISSING_SWITCHES = logging.INFO

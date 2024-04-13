@@ -39,6 +39,7 @@ umap-learn = "^0.5.5"
 scipy = "^1.12.0"
 numpy = "^1.26.4"
 django-types = "^0.19.1"
+django-waffle = "^4.1.0"
 
 
 [tool.poetry.group.development.dependencies]
@@ -50,6 +51,7 @@ django-extensions = "^3.2.3"
 [tool.mypy]
 files = '**/*.py'
 exclude= ['^consultation_analyser/consultations/migrations/']
+
 
 [tool.poetry.group.test.dependencies]
 pytest-django = "^4.8.0"
