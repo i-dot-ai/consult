@@ -25,6 +25,8 @@ make dev_environment
 
 This will set up dev and test databases with dummy data. See the definition of that make task for the various steps.
 
+You will have an staff user (i.e. one that can access the admin) created with the username `email@example.com` and the password `admin`.
+
 Confirm everything is working with
 
 ```

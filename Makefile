@@ -70,8 +70,12 @@ govuk_frontend: ## Pull govuk-frontend
 dummy_data: ## Generate a dummy consultation. Only works in dev
 	poetry run python manage.py generate_dummy_data
 
+.PHONY: dev_admin_user
+dev_admin_user:
+	poetry run python manage.py shell -c "from consultation_analyser.authentication.models import User; User.objects.create_user(email='email@example.com', password='admin', is_staff=True)" # pragma: allowlist secret
+
 .PHONY: dev_environment
-dev_environment: reset_dev_db migrate reset_test_db govuk_frontend ## set up the database with dummy data and configure govuk_frontend
+dev_environment: reset_dev_db migrate dummy_data reset_test_db govuk_frontend dev_admin_user ## set up the database with dummy data and configure govuk_frontend
 
 # Docker
 AWS_REGION=eu-west-2
