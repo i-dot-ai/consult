@@ -9,9 +9,7 @@ from .. import models
 
 
 def home(request: HttpRequest):
-    questions = models.Question.objects.all().order_by("id")[:10]
-    context = {"questions": questions}
-    return render(request, "home.html", context)
+    return render(request, "home.html")
 
 
 def privacy(request: HttpRequest):
