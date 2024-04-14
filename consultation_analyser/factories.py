@@ -4,6 +4,7 @@ import factory
 import faker as _faker
 import yaml
 
+from consultation_analyser.authentication import models as authentication_models
 from consultation_analyser.consultations import models
 
 faker = _faker.Faker()
@@ -129,3 +130,20 @@ class AnswerFactory(factory.django.DjangoModelFactory):
     multiple_choice_responses = factory.LazyAttribute(
         lambda o: [random.choice(o.question.multiple_choice_options)] if o.question.multiple_choice_options else None
     )
+
+
+# this delegates all creation to the create_user method on User
+# because that's how Django likes users to be created
+class UserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = authentication_models.User
+        skip_postgeneration_save = True
+
+    email = factory.LazyAttribute(lambda o: faker.email())
+    is_staff = False
+    password = factory.LazyAttribute(lambda o: faker.password())
+
+    @factory.post_generation
+    def create_user(user, creation_strategy, value, **kwargs):
+        user.set_password(user.password)
+        user.save()
