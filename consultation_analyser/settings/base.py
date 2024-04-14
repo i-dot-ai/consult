@@ -39,10 +39,10 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.auth",
     "django.contrib.admin",
+    "waffle",  # feature flags
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "compressor",
-    "waffle",  # feature flags
 ]
 
 
