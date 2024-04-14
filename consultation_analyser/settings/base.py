@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "waffle",  # feature flags
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
+    "consultation_analyser.support_console",
     "compressor",
 ]
 
