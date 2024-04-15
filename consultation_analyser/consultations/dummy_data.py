@@ -1,7 +1,6 @@
 import random
 
-from consultation_analyser.hosting_environment import HostingEnvironment
-from tests.factories import (
+from consultation_analyser.factories import (
     AnswerFactory,
     ConsultationFactory,
     ConsultationResponseFactory,
@@ -10,6 +9,7 @@ from tests.factories import (
     SectionFactory,
     ThemeFactory,
 )
+from consultation_analyser.hosting_environment import HostingEnvironment
 
 
 class DummyConsultation:

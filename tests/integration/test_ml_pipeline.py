@@ -1,10 +1,10 @@
 import pytest
 
+from consultation_analyser import factories
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.ml_pipeline import (
     save_themes_for_consultation,
 )
-from tests import factories
 
 
 @pytest.mark.django_db

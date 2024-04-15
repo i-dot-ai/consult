@@ -2,7 +2,7 @@ import html
 
 import pytest
 
-from tests.factories import ConsultationFactory
+from consultation_analyser.factories import ConsultationFactory
 
 
 @pytest.mark.django_db
