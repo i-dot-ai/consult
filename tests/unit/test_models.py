@@ -4,21 +4,23 @@ from consultation_analyser.consultations import models
 from tests import factories
 
 
+@pytest.mark.parametrize(
+    "label,expected_keywords,is_outlier", [("0_key_lock", ["key", "lock"], False), ("-1_dog_cat", ["dog", "cat"], True)]
+)
 @pytest.mark.django_db
-def test_save_theme_to_answer():
+def test_save_theme_to_answer(label, expected_keywords, is_outlier):
     question = factories.QuestionFactory(has_free_text=True)
     answer = factories.AnswerFactory(question=question, theme=None)
-    keywords = ["key", "lock"]
-    label = "0_key_lock"
     # Check theme created and saved to answer
-    answer.save_theme_to_answer(theme_label=label, theme_keywords=keywords)
-    theme = models.Theme.objects.get(keywords=keywords, label=label)
-    assert theme.keywords == keywords
+    answer.save_theme_to_answer(theme_label=label)
+    theme = models.Theme.objects.get(keywords=expected_keywords, label=label)
+    assert theme.keywords == expected_keywords
     assert theme.label == label
+    assert theme.is_outlier == is_outlier
     assert answer.theme.label == label
     # Check no duplicate created
-    answer.save_theme_to_answer(theme_label=label, theme_keywords=keywords)
-    themes_qs = models.Theme.objects.filter(keywords=keywords, label=label)
+    answer.save_theme_to_answer(theme_label=label)
+    themes_qs = models.Theme.objects.filter(keywords=expected_keywords, label=label)
     assert themes_qs.count() == 1
 
 
