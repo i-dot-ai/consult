@@ -109,7 +109,7 @@ class ThemeFactory(factory.django.DjangoModelFactory):
         model = models.Theme
 
     # TODO - may need to be changed once ML pipeline is in
-    label = generate_dummy_topic_label()
+    label = factory.LazyAttribute(lambda _o: generate_dummy_topic_label())
     summary = f"Summary: {label}"
 
 
