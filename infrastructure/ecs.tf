@@ -39,12 +39,6 @@ module "ecs" {
   host                         = local.host
   route53_record_name          = aws_route53_record.type_a_record.name
 
-  authenticate_cognito = {
-    enabled : true,
-    user_pool_arn : module.cognito.user_pool_arn,
-    user_pool_client_id : module.cognito.user_pool_client_id,
-    user_pool_domain : module.cognito.user_pool_domain
-  }
 }
 
 
