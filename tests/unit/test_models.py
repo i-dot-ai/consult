@@ -1,7 +1,7 @@
 import pytest
 
+from consultation_analyser import factories
 from consultation_analyser.consultations import models
-from tests import factories
 
 
 @pytest.mark.parametrize(
