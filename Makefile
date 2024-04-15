@@ -82,7 +82,7 @@ IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 
 ECR_REPO_NAME=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
-tf_build_args=-var "image_tag=$(IMAGE_TAG)" -target "module.lambda_shutdown_sagemaker"
+tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 
 .PHONY: docker_build
 docker_build: ## Build the docker container
