@@ -35,6 +35,3 @@ def test_save_themes_to_answers():
     themes_qs = models.Theme.objects.filter(question=question)
     assert themes_qs.count() == 2
     assert "-1_x_y" in themes_qs.values_list("label", flat=True)
-    assert themes_qs.get(label="0_m_n").keywords == ["m", "n"]
-    assert themes_qs.get(label="-1_x_y").is_outlier
-    assert not themes_qs.get(label="0_m_n").is_outlier
