@@ -1,5 +1,5 @@
 #!/bin/sh
 
-venv/bin/django-admin migrate
-venv/bin/django-admin compress --force --engine jinja2
-exec venv/bin/gunicorn -c ./consultation_analyser/gunicorn.py consultation_analyser.wsgi
+poetry run django-admin migrate
+poetry run django-admin compress --force --engine jinja2
+exec poetry run gunicorn -c ./consultation_analyser/gunicorn.py consultation_analyser.wsgi

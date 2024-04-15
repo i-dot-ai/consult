@@ -102,7 +102,7 @@ docker_shell: ## Run the docker container
 
 .PHONY: docker_test
 docker_test: ## Run the tests in the docker container
-	docker run -e DATABASE_URL=psql://consultations_test:@host.docker.internal:5432/consultations_test $(IMAGE) ./venv/bin/pytest
+	docker run -e DATABASE_URL=psql://consultations_test:@host.docker.internal:5432/consultations_test $(IMAGE) poetry run pytest tests/
 
 .PHONY: docker_login
 docker_login:
