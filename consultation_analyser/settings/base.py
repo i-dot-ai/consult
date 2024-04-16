@@ -39,11 +39,11 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.admin",
     "waffle",  # feature flags
+    "magic_link",
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "consultation_analyser.support_console",
     "compressor",
-    "magic_link",
     "crispy_forms",
     "crispy_forms_gds",
 ]
