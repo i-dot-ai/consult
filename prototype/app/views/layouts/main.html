@@ -1,4 +1,4 @@
-{% from "govuk/components/back-link/macro.njk" import govukBackLink %}
+{% from "govuk/components/footer/macro.njk" import govukFooter %}
 {% from "govuk/components/header/macro.njk" import govukHeader %}
 {% from "govuk/components/phase-banner/macro.njk" import govukPhaseBanner %}
 
@@ -7,7 +7,7 @@
 
 <head>
     <meta charset="utf-8">
-    <title>{% block pageTitle %}{% endblock %} – Consultation analyser - GOV.UK Prototype Kit</title>
+    <title>{% if pageTitle %}{{pageTitle}} - {% endif %}Consultation analyser - GOV.UK Prototype Kit</title>
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#0b0c0c">
     <link rel="icon" sizes="48x48" href="/assets/images/favicon.ico">
@@ -43,99 +43,153 @@
 <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 
 {{ govukHeader({
-homepageUrl: "/",
-serviceName: serviceName,
-serviceUrl: "/"
+  homepageUrl: "/",
+  serviceName: "i.AI " + serviceName,
+  serviceUrl: "/"
 }) }}
 
 <div class="govuk-width-container">
-
-    {{ govukPhaseBanner({
+  {{ govukPhaseBanner({
     tag: {
     text: "Prototype"
     },
-    html: 'This is a new service – your <a class="govuk-link" href="#feedback">feedback</a> will help us to improve it.'
-    }) }}
-
-    {% block beforeMain %}{% endblock %}
-
-    <main class="govuk-main-wrapper" id="main-content" role="main">
-        {% if title %}
-        <h1 class="govuk-heading-l">{{title}}</h1>
-        {% endif %}
-        {% block content %}{% endblock %}
-    </main>
-
+    html: 'This is a new service – your <a class="govuk-link" href="https://www.smartsurvey.co.uk/s/GESFSF/">feedback</a> will help us to improve it.'
+  }) }}
 </div>
 
-<footer class="govuk-footer" role="contentinfo">
-    <div class="govuk-width-container">
+{#
+,
+  navigation: [
+    {
+      href: "/how-it-works",
+      text: "How it works"
+    },
+    {
+      href: "/how-it-works",
+      text: "Data schema"
+    },
+    {
+      href: "/how-it-works",
+      text: "Data sharing"
+    },
+    {
+      href: "/get-involved",
+      text: "Get involved"
+    },
+    {
+      href: "/prototype",
+      text: "Sign in"
+    }
+  ]
+#}
 
-        <div class="govuk-footer__meta">
-            <div class="govuk-footer__meta-item govuk-footer__meta-item--grow">
+{% set topNavLinks = [
+    {text: "Home", url: "/"},
+    {text: "How it works", url: "/how-it-works"},
+    {text: "Data schema", url: "/data-schema"},
+    {text: "Data sharing", url: "/data-sharing"},
+    {text: "Get involved", url: "/get-involved"},
+    {text: "Sign in", url: "/sign-in"}
+  ]
+%}
 
-                <h2 class="govuk-visually-hidden">Footer links</h2>
+{% set currentPage = pageTitle %}
+{% if currentPage == "" %}
+  {% set currentPage = "Home" %}
+{% endif %}
 
-                <ul class="govuk-footer__inline-list">
+<nav class="x-govuk-primary-navigation" aria-labelledby="primary-navigation-heading">
+  <div class="govuk-width-container">
+    <h2 class="govuk-visually-hidden" id="primary-navigation-heading">Navigation</h2>
+    <ul class="x-govuk-primary-navigation__list">
+      {% for link in topNavLinks %}
+        <li class="x-govuk-primary-navigation__item {% if currentPage == link.text %}x-govuk-primary-navigation__item--current {% endif %}">
+          <a class="x-govuk-primary-navigation__link" {% if currentPage == link.text %}aria-current="page"{% endif %} href="{{link.url}}">{{link.text}}</a>
+        </li>
+      {% endfor %}
+    </ul>
+  </div>
+</nav>
 
-                    <li class="govuk-footer__inline-list-item">
-                        <a class="govuk-footer__link" href="/manage-prototype">
-                            Manage your prototype
-                        </a>
-                    </li>
+<main class="govuk-main-wrapper" id="main-content" role="main">
+    {% block content %}{% endblock %}
+</main>
 
-                    <li class="govuk-footer__inline-list-item">
-                        <a class="govuk-footer__link" href="/manage-prototype/clear-data">
-                            Clear data
-                        </a>
-                    </li>
+{{ govukFooter({
+  navigation: [
+    {
+      title: "About Consultation analyser",
+      width: "one-half",
+      items: [
+        {
+          href: "/how-it-works",
+          text: "How it works"
+        },
+        {
+          href: "/data-schema",
+          text: "Data schema"
+        },
+        {
+          href: "/data-sharing",
+          text: "Data sharing"
+        },
+        {
+          href: "/user-research",
+          text: "User research"
+        },
+        {
+          href: "/sign-in",
+          text: "Sign in"
+        },
+        {
+          href: "/prototype",
+          text: "Prototype"
+        }
+      ]
+    },
+    {
+      title: "Contact",
+      width: "one-half",
+      items: [
+        {
+          href: "#form-link-needed",
+          text: "Register your interest"
+        },
+        {
+          href: "#slack-link-needed",
+          text: "Chat to us on Slack"
+        },
+        {
+          href: "#blog-link-needed",
+          text: "Blog"
+        }
+      ]
+    }
+  ],
+  meta: {
+    items: [
+      {
+        href: "/privacy",
+        text: "Privacy"
+      },
+      {
+        href: "/accessibility",
+        text: "Accessibility"
+      },
+      {
+        href: "/sitemap",
+        text: "Sitemap"
+      }
+    ],
+    html: 'Built by <a href="https://ai.gov.uk">Incubator for Artificial Intelligence (i.AI)</a>'
+  }
+}) }}
 
-                </ul>
-
-
-                <svg
-                        aria-hidden="true"
-                        focusable="false"
-                        class="govuk-footer__licence-logo"
-                        xmlns="http://www.w3.org/2000/svg"
-                        viewBox="0 0 483.2 195.7"
-                        height="17"
-                        width="41"
-                >
-                    <path
-                            fill="currentColor"
-                            d="M421.5 142.8V.1l-50.7 32.3v161.1h112.4v-50.7zm-122.3-9.6A47.12 47.12 0 0 1 221 97.8c0-26 21.1-47.1 47.1-47.1 16.7 0 31.4 8.7 39.7 21.8l42.7-27.2A97.63 97.63 0 0 0 268.1 0c-36.5 0-68.3 20.1-85.1 49.7A98 98 0 0 0 97.8 0C43.9 0 0 43.9 0 97.8s43.9 97.8 97.8 97.8c36.5 0 68.3-20.1 85.1-49.7a97.76 97.76 0 0 0 149.6 25.4l19.4 22.2h3v-87.8h-80l24.3 27.5zM97.8 145c-26 0-47.1-21.1-47.1-47.1s21.1-47.1 47.1-47.1 47.2 21 47.2 47S123.8 145 97.8 145"
-                    />
-                </svg>
-                <span class="govuk-footer__licence-description">
-
-              All content is available under the
-              <a
-                      class="govuk-footer__link"
-                      href="https://www.nationalarchives.gov.uk/doc/open-government-licence/version/3/"
-                      rel="license"
-              >Open Government Licence v3.0</a>, except where otherwise stated
-
-          </span>
-            </div>
-            <div class="govuk-footer__meta-item">
-                <a
-                        class="govuk-footer__link govuk-footer__copyright-logo"
-                        href="https://www.nationalarchives.gov.uk/information-management/re-using-public-sector-information/uk-government-licensing-framework/crown-copyright/"
-                >© Crown copyright</a>
-            </div>
-        </div>
-    </div>
-</footer>
 
 <script src="/plugin-assets/govuk-prototype-kit/lib/assets/javascripts/kit.js"></script>
 <script src="/plugin-assets/govuk-prototype-kit/lib/assets/javascripts/auto-store-data.js"></script>
 <script type="module" src="/plugin-assets/govuk-frontend/dist/govuk/govuk-frontend.min.js"></script>
 <script type="module" src="/plugin-assets/govuk-frontend/dist/govuk-prototype-kit/init.js"></script>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
-<script type="module" src="/public/javascripts/application.js"></script>
 
 </body>
 
