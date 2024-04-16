@@ -1,8 +1,24 @@
 {% extends "base.html" %}
 {%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+{%- from 'govuk_frontend_jinja/components/notification-banner/macro.html' import govukNotificationBanner -%}
+{%- from 'govuk_frontend_jinja/components/warning-text/macro.html' import govukWarningText -%}
 
 
 {% block content %}
+
+  {% for message in messages %}
+    {% if message.tags == "info" %}
+      {{ govukNotificationBanner({
+        'html': message
+      }) }}
+    {% elif message.tags == "warning" %}
+      {{ govukWarningText({
+        'text': message,
+        'iconFallbackText': "Warning"
+      }) }}
+    {% endif %}
+  {% endfor %}
+
   <h1 class="govuk-heading-xl">Create dummy data for testing</h1>
 
 
@@ -25,8 +41,6 @@
         }) }}
 
       {% endfor %}
-
-      <p class="govuk-body">{{ message }}</p>
 
   </form>
 
