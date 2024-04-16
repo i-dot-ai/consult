@@ -42,7 +42,7 @@ django-types = "^0.19.1"
 
 
 [tool.poetry.group.development.dependencies]
-ruff = "^0.3.4"
+ruff = "^0.3.7"
 pre-commit = "^3.7.0"
 factory_boy = "^3.3.0"
 django-extensions = "^3.2.3"
