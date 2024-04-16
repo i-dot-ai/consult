@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+
+
+{% block content %}
+  <h1 class="govuk-heading-xl">Create dummy data for testing</h1>
+
+
+  <p class="govuk-body">Local, test, dev environments only. Generate dummy questions and responses only, no themes.</p>
+
+  <form method="post" novalidate>{{ csrf_input }}
+    {{ govukButton({
+      'text': "Generate dummy consultation",
+      'name': "generate_dummy_consultation"
+    }) }}
+
+
+    <h2 class="govuk-heading-l">Existing consultations</h2>
+      {% for c in consultations %}
+        <p class="govuk-body">{{ c.name }}</p>
+        {{ govukButton({
+          'text': "Generate themes",
+          'name': "consultation_id",
+          'value': c.id
+        }) }}
+
+      {% endfor %}
+
+      <p class="govuk-body">{{ message }}</p>
+
+  </form>
+
+  {% endblock %}
+
+
+
