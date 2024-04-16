@@ -448,6 +448,21 @@ files = [
 ]
 
 [[package]]
+name = "crispy-forms-gds"
+version = "0.3.1"
+description = "Django application to add 'django-crispy-forms' layout objects for the GOV.UK Design System."
+optional = false
+python-versions = ">=3.6"
+files = [
+    {file = "crispy-forms-gds-0.3.1.tar.gz", hash = "sha256:9766764d48b2572c414b5c7853f4ea1a0c4d26881ad074a99139fdf97200d43a"},
+    {file = "crispy_forms_gds-0.3.1-py2.py3-none-any.whl", hash = "sha256:ffa2ffe80a41a112475260220a2247d941c7f1c3aff7798c3532cd9d8020e018"},
+]
+
+[package.dependencies]
+Django = ">=3.2"
+django-crispy-forms = ">=1.9"
+
+[[package]]
 name = "cython"
 version = "0.29.37"
 description = "The Cython compiler for writing C extensions for the Python language."
@@ -601,6 +616,20 @@ files = [
 django-appconf = ">=1.0.3"
 rcssmin = "1.1.1"
 rjsmin = "1.2.1"
+
+[[package]]
+name = "django-crispy-forms"
+version = "2.1"
+description = "Best way to have Django DRY forms"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "django-crispy-forms-2.1.tar.gz", hash = "sha256:4d7ec431933ad4d4b5c5a6de4a584d24613c347db9ac168723c9aaf63af4bb96"},
+    {file = "django_crispy_forms-2.1-py3-none-any.whl", hash = "sha256:d592044771412ae1bd539cc377203aa61d4eebe77fcbc07fbc8f12d3746d4f6b"},
+]
+
+[package.dependencies]
+django = ">=4.2"
 
 [[package]]
 name = "django-environ"
@@ -3596,4 +3625,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "c4fea6461244bcaf70279807e92705ae7bb0e7a91f115eb982402433fd768012"
+content-hash = "b24a73de59b7e58e156f2500d4c39cef9c011e3123ad2d4d5a1624068ea1fb77"

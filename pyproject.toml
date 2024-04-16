@@ -41,6 +41,8 @@ numpy = "^1.26.4"
 django-types = "^0.19.1"
 django-waffle = "^4.1.0"
 django-magic-link = "^1.0.0"
+django-crispy-forms = "^2.1"
+crispy-forms-gds = "^0.3.1"
 
 
 [tool.poetry.group.development.dependencies]
@@ -52,6 +54,8 @@ django-extensions = "^3.2.3"
 [tool.mypy]
 files = '**/*.py'
 exclude= ['^consultation_analyser/consultations/migrations/']
+
+
 
 
 [tool.poetry.group.test.dependencies]

@@ -1,0 +1,11 @@
+{#
+This template exists because crispy_forms_gds does not support jinja2.
+We render this template to a string when we call render_form() from
+a jinja2 template.
+#}
+
+{% load crispy_forms_tags crispy_forms_gds %}
+{% error_summary form %}
+<div class="govuk-body">
+  {% crispy form %}
+</div>
