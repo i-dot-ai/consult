@@ -1,9 +1,11 @@
 import pytest
+from waffle.testutils import override_switch
 
 from consultation_analyser.factories import UserFactory
 
 
 @pytest.mark.django_db
+@override_switch("FRONTEND_USER_LOGIN", True)
 def test_user_can_sign_in(django_app):
     UserFactory(email="email@example.com", password="admin")  # pragma: allowlist secret
 
