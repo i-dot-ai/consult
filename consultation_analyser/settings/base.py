@@ -45,6 +45,8 @@ INSTALLED_APPS = [
     "consultation_analyser.support_console",
     "compressor",
     "magic_link",
+    "crispy_forms",
+    "crispy_forms_gds",
 ]
 
 
@@ -172,3 +174,6 @@ WAFFLE_CREATE_MISSING_SWITCHES = True
 WAFFLE_LOG_MISSING_SWITCHES = logging.INFO
 
 APPEND_SLASH = True
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "gds"
+CRISPY_TEMPLATE_PACK = "gds"
