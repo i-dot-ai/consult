@@ -12,5 +12,13 @@ class Command(BaseCommand):
 
         call_command(
             "graph_models",
-            ["consultations", "--pydot", "-X", "UUIDPrimaryKeyModel,TimeStampedModel", "-o", "docs/erd.png"],
+            [
+                "consultations",
+                "authentication",
+                "--pydot",
+                "-X",
+                "UUIDPrimaryKeyModel,TimeStampedModel",
+                "-o",
+                "docs/erd.png",
+            ],
         )
