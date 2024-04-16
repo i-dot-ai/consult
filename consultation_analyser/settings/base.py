@@ -74,6 +74,7 @@ TEMPLATES = [
             "environment": "consultation_analyser.jinja2.environment",
             "context_processors": [
                 "consultation_analyser.context_processors.app_config",
+                "django.contrib.messages.context_processors.messages",
             ],
         },
     },
