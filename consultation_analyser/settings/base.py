@@ -10,10 +10,12 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/5.0/ref/settings/
 """
 
+import logging
 import os
 from pathlib import Path
 
 import environ
+import waffle
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -36,6 +38,8 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.auth",
+    "django.contrib.admin",
+    "waffle",  # feature flags
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "compressor",
@@ -48,10 +52,12 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    "waffle.middleware.WaffleMiddleware",
 ]
 
 ROOT_URLCONF = "consultation_analyser.urls"
@@ -65,6 +71,13 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "APP_DIRS": True,
+        "OPTIONS": {
+            "context_processors": [
+                "django.contrib.auth.context_processors.auth",
+                "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.request",
+            ]
+        },
     },
 ]
 
@@ -134,6 +147,7 @@ STATICFILES_DIRS = [("govuk-assets", BASE_DIR / "node_modules/govuk-frontend/dis
 STATICFILES_FINDERS = [
     "compressor.finders.CompressorFinder",
     "django.contrib.staticfiles.finders.FileSystemFinder",
+    "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
 
 # Default primary key field type
@@ -144,3 +158,7 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 BATCH_JOB_QUEUE = env("BATCH_JOB_QUEUE")
 BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION")
+
+WAFFLE_SWITCH_DEFAULT = False
+WAFFLE_CREATE_MISSING_SWITCHES = True
+WAFFLE_LOG_MISSING_SWITCHES = logging.INFO

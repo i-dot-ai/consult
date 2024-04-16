@@ -1,5 +1,6 @@
 from django.http import HttpRequest
 from django.shortcuts import render
+from waffle.decorators import waffle_switch
 
 from consultation_analyser.batch_calls import BatchJobHandler
 from consultation_analyser.hosting_environment import HostingEnvironment
@@ -8,9 +9,7 @@ from .. import models
 
 
 def home(request: HttpRequest):
-    questions = models.Question.objects.all().order_by("id")[:10]
-    context = {"questions": questions}
-    return render(request, "home.html", context)
+    return render(request, "home.html")
 
 
 def privacy(request: HttpRequest):
@@ -19,6 +18,7 @@ def privacy(request: HttpRequest):
 
 # TODO - simple view for testing batch jobs
 # To be removed once tested
+@waffle_switch("CONSULTATION_PROCESSING")
 def batch_example(request: HttpRequest):
     message = ""
     if request.POST:

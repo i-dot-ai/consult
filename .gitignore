@@ -167,6 +167,8 @@ prototype/usage-data-config.json
 node_modules
 frontend/CACHE
 frontend/govuk-assets
+frontend/admin
+frontend/django_extensions
 
 # Other
 .env
