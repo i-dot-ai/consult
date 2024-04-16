@@ -4,6 +4,15 @@ on:
   push:
     branches:
       - "**"
+    branches-ignore:
+      - "dependabot/**"
+
+  # Runs build workflow when dependabot PR is completed
+  # so that secrets can be accessed
+  workflow_run:
+    workflows: ["Dependabot PR Check"]
+    types:
+      - completed
 
 
 jobs:
