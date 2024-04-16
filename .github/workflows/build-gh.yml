@@ -1,12 +1,9 @@
 
 name: build
 on:
-  workflow_run:
-    workflows: ['Tests']
-    types:
-      - completed
-    branches: "**"
-
+  push:
+    branches-ignore:
+      - "dependabot/**"
 
 jobs:
   set-vars:
