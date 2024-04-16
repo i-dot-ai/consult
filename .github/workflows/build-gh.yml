@@ -1,12 +1,9 @@
 
 name: build
 on:
-  workflow_run:
-    workflows: ['Tests']
-    types:
-      - completed
-    branches: "**"
-
+  push:
+    branches-ignore:
+      - "dependabot/**"
 
 jobs:
   set-vars:
@@ -21,8 +18,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_branch }}
       - id: export
         run: |
           . ./.github/.github.env
