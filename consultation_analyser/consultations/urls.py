@@ -1,6 +1,7 @@
-from django.urls import path
+from django.urls import path, include
 
-from .views import consultations, pages, questions, responses, schema
+from .views import consultations, pages, questions, responses, schema, sessions
+from magic_link import urls as magic_link_urls
 
 urlpatterns = [
     path("", pages.home),
@@ -20,4 +21,9 @@ urlpatterns = [
         name="show_question_responses",
     ),
     path("batch-example/", pages.batch_example, name="batch_example"),
+    # authentication
+    path("sign-in/", sessions.new),
+    path("sign-out/", sessions.destroy),
+    path("magic-link/", include(magic_link_urls)),
+    path("batch-example", pages.batch_example, name="batch_example"),
 ]

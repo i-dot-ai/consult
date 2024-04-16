@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% set page_title = "Sign in" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-xl">Sign in</h1>
+      <form method="POST" action="">
+        {{ csrf_input }}
+        <div class="govuk-form-group">
+          <label class="govuk-label govuk-label--m" for="email">
+            Email address
+          </label>
+          <div class="govuk-hint" id="email-hint">
+            Enter the email address you used to register, and we will send you a link to sign in.
+          </div>
+          <input class="govuk-input" id="email" name="email" type="email" aria-describedby="email-hint">
+        </div>
+        <input type="submit" class="govuk-button" data-module="govuk-button" />
+      </form>
+    </div>
+  </div>
+{% endblock %}

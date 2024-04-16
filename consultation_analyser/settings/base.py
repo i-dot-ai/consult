@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     "consultation_analyser.consultations",
     "consultation_analyser.support_console",
     "compressor",
+    "magic_link",
 ]
 
 
