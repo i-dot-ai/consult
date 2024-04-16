@@ -33,13 +33,18 @@
 
     <h2 class="govuk-heading-l">Existing consultations</h2>
       {% for c in consultations %}
-        <p class="govuk-body">{{ c.name }}</p>
+
+        <a href="{{ url('consultation', kwargs={'consultation_slug': c.slug}) }}" class="govuk-link govuk-link--no-visited-state">
+          {{ c.name }}
+        </a>
+
         {{ govukButton({
           'text': "Generate themes",
           'name': "consultation_id",
           'value': c.id
         }) }}
 
+        <br>
       {% endfor %}
 
   </form>
