@@ -6,18 +6,29 @@ from django.shortcuts import redirect
 from consultation_analyser.authentication.models import User
 from magic_link.models import MagicLink
 
+from consultation_analyser.consultations.forms.sessions import NewSessionForm
+
+
+def get_magic_link_for_email(request: HttpRequest, email: str) -> str:
+    try:
+        user = User.objects.get(email=email)
+        link = MagicLink.objects.create(user=user, redirect_to="/")
+        return request.build_absolute_uri(link.get_absolute_url())
+    except User.DoesNotExist:
+        return ""
+
 
 def new(request: HttpRequest):
     if not request.POST:
-        return render(request, "new_session.html")
+        form = NewSessionForm()
     else:
-        # TODO
-        # do not 404 on invalid user as it's insecure
-        # use a form for this
-        user = get_object_or_404(User, email=request.POST.get("email", ""))
-        link = MagicLink.objects.create(user=user, redirect_to="/")
-        url = request.build_absolute_uri(link.get_absolute_url())
-        return render(request, "magic_link/link_sent.html", {"link": url})
+        form = NewSessionForm(request.POST)
+        if form.is_valid():
+            email = form.cleaned_data["email"]
+            url = get_magic_link_for_email(request, email)
+            return render(request, "magic_link/link_sent.html", {"link": url})
+
+    return render(request, "new_session.html", {"form": form})
 
 
 def destroy(request: HttpRequest):
