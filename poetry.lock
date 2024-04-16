@@ -648,6 +648,20 @@ django-compressor = ">=1.3"
 libsass = ">=0.7.0,<1"
 
 [[package]]
+name = "django-magic-link"
+version = "1.0.0"
+description = "Django app for managing tokenised 'magic link' logins."
+optional = false
+python-versions = ">=3.8,<4.0"
+files = [
+    {file = "django_magic_link-1.0.0-py3-none-any.whl", hash = "sha256:a8d457f30be81a29126d5db34f7a079c51d3673c97eb4fcf1435b865b662c83d"},
+    {file = "django_magic_link-1.0.0.tar.gz", hash = "sha256:7247db82f9671f155e5fa4fc412c94f891d0f8877036e377ca92b9b4a40c759c"},
+]
+
+[package.dependencies]
+django = ">=3.2,<6.0"
+
+[[package]]
 name = "django-types"
 version = "0.19.1"
 description = "Type stubs for Django"
@@ -3582,4 +3596,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "eb2097a9be6304ccbd2d28f9e0a6013466042d8a7af517d55c304db4cafbc726"
+content-hash = "c4fea6461244bcaf70279807e92705ae7bb0e7a91f115eb982402433fd768012"

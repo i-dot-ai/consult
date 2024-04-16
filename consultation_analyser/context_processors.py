@@ -23,16 +23,30 @@ def app_config(request: HttpRequest):
             ],
         )
     else:
+        menu_items=[
+            {
+                "href": "/schema",
+                "text": "Data schema",
+                "active": request.path == "/schema",
+            }
+        ]
+
+        if request.user.is_authenticated:
+            menu_items.append({
+                "href": "/sign-out",
+                "text": "Sign out",
+            })
+        else:
+            menu_items.append({
+                "href": "/sign-in",
+                "text": "Sign in",
+                "active": request.path == "/sign-in",
+            })
+
         app_config = AppConfig(
             name="Consultation analyser",
             path="/",
-            menu_items=[
-                {
-                    "href": "/schema",
-                    "text": "Data schema",
-                    "active": request.path == "/schema",
-                }
-            ],
+            menu_items=menu_items
         )
 
     return {"app_config": app_config}
