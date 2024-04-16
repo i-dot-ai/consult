@@ -1,6 +1,5 @@
 import pytest
-
-from tests.factories import UserFactory
+from consultation_analyser.factories import UserFactory
 
 
 @pytest.mark.django_db
@@ -9,12 +8,16 @@ def test_logging_in_to_support(django_app):
     UserFactory(email="email@example.com", password="admin", is_staff=True)
 
     # when I visit support
-    form = django_app.get("/support").follow().form
+    login_page = django_app.get("/support").follow().follow() # 2 redirects
 
     # and I sign in to support
-    form["email"] = "email@example.com"
-    form["password"] = "admin"
-    response = form.submit().follow()
+    login_page.form["username"] = "email@example.com" # Django field is called "username"
+    login_page.form["password"] = "admin"
+    support_home = login_page.form.submit().follow()
 
     # then I should see the support console page
-    assert "Consultation support console" in response
+    assert "Consultation analyser support console" in support_home
+
+    logged_out_page = support_home.click("Sign out")
+
+    assert "Consultation analyser support console" not in logged_out_page
