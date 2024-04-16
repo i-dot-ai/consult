@@ -7,8 +7,8 @@ on:
     branches-ignore:
       - "dependabot/**"
 
-  # Runs build workflow when dependabot PR is completed
-  # so that secrets can be accessed
+  # Runs build workflow when dependabot PR is completed so that secrets can be accessed:
+  # https://github.com/dependabot/dependabot-core/issues/3253#issuecomment-852541544
   workflow_run:
     workflows: ["Dependabot PR Check"]
     types:
