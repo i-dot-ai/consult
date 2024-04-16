@@ -32,6 +32,7 @@ def lambda_handler(event: Dict, context):
         sagemaker.delete_endpoint(EndpointName=sagemaker_endpoint_name)
         logger.info(f"Sagemaker endpoint {sagemaker_endpoint_name} deleted")
         return
+
     else:
         # Jobs found waiting in the batch queue
         logger.info(f"Jobs found in the {queue_name} queue, exiting lambda")
