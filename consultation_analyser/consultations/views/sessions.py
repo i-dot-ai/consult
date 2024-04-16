@@ -2,9 +2,11 @@ from django.http import HttpRequest
 from django.shortcuts import render, get_object_or_404
 from django.contrib.auth import logout
 from django.shortcuts import redirect
+from django.contrib import messages
 
 from consultation_analyser.authentication.models import User
 from magic_link.models import MagicLink
+
 
 from consultation_analyser.consultations.forms.sessions import NewSessionForm
 
@@ -33,4 +35,5 @@ def new(request: HttpRequest):
 
 def destroy(request: HttpRequest):
     logout(request)
+    messages.success(request, "You have signed out")
     return redirect("/")
