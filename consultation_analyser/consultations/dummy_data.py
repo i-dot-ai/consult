@@ -1,3 +1,4 @@
+import datetime
 import random
 
 from consultation_analyser.factories import (
@@ -16,6 +17,14 @@ class DummyConsultation:
     def __init__(self, responses=10, include_themes=True, **options):
         if not HostingEnvironment.is_development_environment():
             raise RuntimeError("Dummy data generation should only be run in development")
+
+        # Timestamp to avoid duplicates - set these as default options
+        timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        if "name" not in options:
+            # name = f"Dummy consultation generated at {timestamp}"
+            options["name"] = f"Dummy consultation generated at {timestamp}"
+        if "slug" not in options:
+            options["slug"] = f"consultation-slug-{timestamp}"
 
         consultation = ConsultationFactory(**options)
         section = SectionFactory(name="Base section", consultation=consultation)
