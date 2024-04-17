@@ -34,8 +34,8 @@ module "ecs" {
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   container_port               = "8000"
-  load_balancer_security_group = module.load_balancer.load_balancer_security_group_id["default"]
-  aws_lb_arn                   = module.load_balancer.alb_arn["default"]
+  load_balancer_security_group = module.load_balancer.load_balancer_security_group_id
+  aws_lb_arn                   = module.load_balancer.alb_arn
   host                         = local.host
   route53_record_name          = aws_route53_record.type_a_record.name
   ip_whitelist                 = var.external_ips
