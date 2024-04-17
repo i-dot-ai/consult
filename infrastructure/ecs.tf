@@ -9,14 +9,9 @@ module "ecs" {
   prefix             = "i-dot-ai"
   ecr_repository_uri = var.ecr_repository_uri
   ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
-  health_check = {
-    healthy_threshold   = 3
-    unhealthy_threshold = 3
-    accepted_response   = "200"
-    path                = "/"
-    timeout             = 6
-    port                = 8000
-  }
+  health_check       = local.health_check
+  target_group_id    = aws_lb_target_group.target_group.id
+  target_group_arn   = aws_lb_target_group.target_group.arn
   environment_variables = {
     "ENVIRONMENT"           = terraform.workspace,
     "PRODUCTION_DEPLOYMENT" = true,
@@ -48,8 +43,8 @@ resource "aws_route53_record" "type_a_record" {
   type    = "A"
 
   alias {
-    name                   = data.terraform_remote_state.platform.outputs.dns_name["default"]
-    zone_id                = data.terraform_remote_state.platform.outputs.zone_id["default"]
+    name                   = module.load_balancer.load_balancer_dns_name
+    zone_id                = module.load_balancer.load_balancer_zone_id
     evaluate_target_health = true
   }
 }
