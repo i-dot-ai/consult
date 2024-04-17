@@ -34,11 +34,10 @@ def test_generating_dummy_data(django_app):
     login_page.form["username"] = "email@example.com"
     login_page.form["password"] = "admin"  # pragma: allowlist secret
     ml_page = login_page.form.submit().follow()
-    assert "dummy data" in ml_page
+    assert "Generate a dummy consultation" in ml_page
 
     # Check dummy data button does generate a new consultation
     initial_count = Consultation.objects.all().count()
-    # TODO - why isn't this working
-    ml_page.clickbutton("Generate dummy consultation")
+    ml_page.form.submit("generate_dummy_consultation")
     count_after_dummy_data = Consultation.objects.all().count()
     assert count_after_dummy_data > initial_count
