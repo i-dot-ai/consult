@@ -83,6 +83,11 @@ variable "hosted_zone_id" {
   description = "Route 53 Hosted Zone"
 }
 
+variable "internal_ips" {
+  type        = list(string)
+  description = "IP's of No10 and CO"
+}
+
 variable "image_tag" {
   type        = string
   description = "The tag of the image to use"
