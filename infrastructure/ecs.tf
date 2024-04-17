@@ -10,7 +10,6 @@ module "ecs" {
   ecr_repository_uri = var.ecr_repository_uri
   ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
   health_check       = local.health_check
-  target_group_id    = aws_lb_target_group.target_group.id
   target_group_arn   = aws_lb_target_group.target_group.arn
   environment_variables = {
     "ENVIRONMENT"           = terraform.workspace,
