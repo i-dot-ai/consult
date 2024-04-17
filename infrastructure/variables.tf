@@ -36,6 +36,11 @@ variable "domain_name" {
   description = "The base domain name for the project"
 }
 
+variable "external_ips" {
+  type        = list(string)
+  description = "List of external IPs"
+}
+
 variable "ecr_repository_uri" {
   type        = string
   description = "ECR repo uri"
