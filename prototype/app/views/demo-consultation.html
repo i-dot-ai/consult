@@ -112,24 +112,30 @@
 
     {% endset %}
 
-    {{ govukTabs({
-      items: [
-        {
-          label: "Responses processed",
-          id: "responses",
-          panel: {
-            html: tab1
+    {% if data.respondents == "true" %}
+      {{ govukTabs({
+        items: [
+          {
+            label: "Responses processed",
+            id: "responses",
+            panel: {
+              html: tab1
+            }
+          },
+          {
+            label: "Key findings",
+            id: "findings",
+            panel: {
+              html: tab2
+            }
           }
-        },
-        {
-          label: "Key findings",
-          id: "findings",
-          panel: {
-            html: tab2
-          }
-        }
-      ]
-    }) }}
+        ]
+      }) }}
+    {% else %}
+      <div class="govuk-!-margin-bottom-7">
+        {{ tab2 | safe }}
+      </div>
+    {% endif %}
 
 
     <h2 class="govuk-heading-m govuk-!-margin-bottom-0">Questions</h2>

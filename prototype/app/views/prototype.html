@@ -1,35 +1,42 @@
-{% extends "layouts/main.html" %}
+{% extends "layouts/signed-in.html" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/summary-list/macro.njk" import govukSummaryList %}
 
-{% set pageTitle = "Prototype" %}
+{% set pageName="Home" %}
+
+{% block pageTitle %}Home{% endblock %}
 
 {% block content %}
 
-<div class="govuk-width-container">
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+    <h1 class="govuk-heading-l">Consultations frontend prototype</h1>
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-l">Consultations frontend prototype</h1>
-
-      <h2 class="govuk-heading-m">Demo consultation</h2>
-      <p>The demo consultation shows how each page will look and what features will be available.</p>
+    <h2 class="govuk-heading-m">Demo consultation</h2>
+    <p>The demo consultation shows how each page will look and what features will be available.</p>
+    <div class="govuk-button-group">
       {{ govukButton({
         text: "View consultation",
-        href: "/demo-consultation",
+        href: "/demo-consultation?respondents=true",
         isStartButton: true
       }) }}
-
-      <h2 class="govuk-heading-m govuk-!-margin-top-3">Upload consultation</h2>
-      <p>This is an MVP version just for use by the i.AI team currently. Longer term this can be expanded to be useable by others. At which point we'll need to consider what additional data/instructions will be required.</p>
       {{ govukButton({
-        text: "Upload consultation",
-        classes: "govuk-button--secondary",
-        href: "/upload"
+        text: "View with no respondents",
+        href: "/demo-consultation?respondents=false",
+        isStartButton: true,
+        classes: "govuk-button--secondary"
       }) }}
-
     </div>
+
+    <h2 class="govuk-heading-m govuk-!-margin-top-3">Upload consultation</h2>
+    <p>This is an MVP version just for use by the i.AI team currently. Longer term this can be expanded to be useable by others. At which point we'll need to consider what additional data/instructions will be required.</p>
+    {{ govukButton({
+      text: "Upload consultation",
+      classes: "govuk-button--secondary",
+      href: "/upload"
+    }) }}
+
   </div>
 </div>
 
