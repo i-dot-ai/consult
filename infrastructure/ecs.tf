@@ -9,7 +9,6 @@ module "ecs" {
   prefix             = "i-dot-ai"
   ecr_repository_uri = var.ecr_repository_uri
   ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
-  target_group_arn   = aws_lb_target_group.target_group.arn
   health_check = {
     healthy_threshold   = 3
     unhealthy_threshold = 3
