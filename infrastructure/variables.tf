@@ -26,11 +26,6 @@ variable "cpu" {
   description = "The cpu resource to give to the task"
 }
 
-variable "cognito_usernames" {
-  type        = list(string)
-  description = "List of usernames to be added"
-}
-
 variable "developer_ips" {
   type        = list(string)
   description = "List of developer IPs"
