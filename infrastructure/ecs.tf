@@ -9,8 +9,15 @@ module "ecs" {
   prefix             = "i-dot-ai"
   ecr_repository_uri = var.ecr_repository_uri
   ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
-  health_check       = local.health_check
   target_group_arn   = aws_lb_target_group.target_group.arn
+  health_check = {
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    accepted_response   = "200"
+    path                = "/"
+    timeout             = 6
+    port                = 8000
+  }
   environment_variables = {
     "ENVIRONMENT"           = terraform.workspace,
     "PRODUCTION_DEPLOYMENT" = true,
