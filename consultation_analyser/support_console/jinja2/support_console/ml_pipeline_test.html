@@ -19,37 +19,43 @@
     {% endif %}
   {% endfor %}
 
-  <h1 class="govuk-heading-xl">Create dummy data for testing</h1>
+  <h1 class="govuk-heading-xl">Test the machine learning pipeline</h1>
+    <form method="post" novalidate>{{ csrf_input }}
 
-
-  <p class="govuk-body">Local, test, dev environments only. Generate dummy questions and responses only, no themes.</p>
-
-  <form method="post" novalidate>{{ csrf_input }}
-    {{ govukButton({
-      'text': "Generate dummy consultation",
-      'name': "generate_dummy_consultation"
-    }) }}
-
-
-    <h2 class="govuk-heading-l">Existing consultations</h2>
-      {% for c in consultations %}
-
-        <a href="{{ url('consultation', kwargs={'consultation_slug': c.slug}) }}" class="govuk-link govuk-link--no-visited-state">
-          {{ c.name }}
-        </a>
+      <h2 class="govuk-heading-l">Generate a dummy consultation for testing</h2>
+        <p class="govuk-body">Local, test, and develop environments only. Generate dummy questions and responses but no dummy themes.</p>
 
         {{ govukButton({
-          'text': "Generate themes",
-          'name': "consultation_id",
-          'value': c.id
+          'text': "Generate dummy consultation",
+          'name': "generate_dummy_consultation"
         }) }}
 
-        <br>
-      {% endfor %}
 
-  </form>
+      <h2 class="govuk-heading-l">Generate themes for existing consultations</h2>
+        {% for c in consultations %}
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+              <p>
+                <a href="{{ url('consultation', kwargs={'consultation_slug': c.slug}) }}" class="govuk-body-l govuk-link govuk-link--no-visited-state">
+                  {{ c.name }}
+                </a>
+              </p>
+            </div>
+            <div class="govuk-grid-column-one-third">
+              <p>
+                {{ govukButton({
+                  'text': "Generate themes",
+                  'name': "consultation_id",
+                  'value': c.id
+                }) }}
+              </p>
+            </div>
+          </div>
+        {% endfor %}
 
-  {% endblock %}
+    </form>
+
+{% endblock %}
 
 
 

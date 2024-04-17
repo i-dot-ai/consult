@@ -21,7 +21,6 @@ class DummyConsultation:
         # Timestamp to avoid duplicates - set these as default options
         timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
         if "name" not in options:
-            # name = f"Dummy consultation generated at {timestamp}"
             options["name"] = f"Dummy consultation generated at {timestamp}"
         if "slug" not in options:
             options["slug"] = f"consultation-slug-{timestamp}"
