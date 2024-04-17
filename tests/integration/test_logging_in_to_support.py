@@ -1,5 +1,6 @@
 import pytest
 
+from consultation_analyser.consultations.models import Consultation
 from consultation_analyser.factories import UserFactory
 
 
@@ -22,3 +23,22 @@ def test_logging_in_to_support(django_app):
     logged_out_page = support_home.click("Sign out")
 
     assert "Consultation analyser support console" not in logged_out_page
+
+
+@pytest.mark.django_db
+def test_generating_dummy_data(django_app):
+    page_url = "/support/ml-pipeline-test/"
+    # Login and go to ML test page
+    UserFactory(email="email@example.com", password="admin", is_staff=True)  # pragma: allowlist secret
+    login_page = django_app.get(page_url).follow()
+    login_page.form["username"] = "email@example.com"
+    login_page.form["password"] = "admin"  # pragma: allowlist secret
+    ml_page = login_page.form.submit().follow()
+    assert "dummy data" in ml_page
+
+    # Check dummy data button does generate a new consultation
+    initial_count = Consultation.objects.all().count()
+    # TODO - why isn't this working
+    ml_page.clickbutton("Generate dummy consultation")
+    count_after_dummy_data = Consultation.objects.all().count()
+    assert count_after_dummy_data > initial_count
