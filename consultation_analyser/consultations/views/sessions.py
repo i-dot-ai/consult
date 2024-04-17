@@ -1,14 +1,11 @@
-from django.http import HttpRequest
-from django.shortcuts import render, get_object_or_404
-from django.contrib.auth import logout
-from django.shortcuts import redirect
 from django.contrib import messages
+from django.contrib.auth import logout
+from django.http import HttpRequest
+from django.shortcuts import get_object_or_404, redirect, render
+from magic_link.models import MagicLink
 from waffle.decorators import waffle_switch
 
 from consultation_analyser.authentication.models import User
-from magic_link.models import MagicLink
-
-
 from consultation_analyser.consultations.forms.sessions import NewSessionForm
 
 
@@ -21,7 +18,7 @@ def get_magic_link_for_email(request: HttpRequest, email: str) -> str:
         return ""
 
 
-@waffle_switch('FRONTEND_USER_LOGIN')
+@waffle_switch("FRONTEND_USER_LOGIN")
 def new(request: HttpRequest):
     if not request.POST:
         form = NewSessionForm()

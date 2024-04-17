@@ -19,5 +19,5 @@ def test_user_can_sign_in(django_app):
     successful_sign_in_page = success_page.click("Click here to sign in")
     homepage = successful_sign_in_page.form.submit().follow()
 
-    signed_out_homepage = homepage.click("Sign out").follow().follow()
+    signed_out_homepage = homepage.click("Sign out").follow()
     assert "You have signed out" in signed_out_homepage
