@@ -112,60 +112,6 @@
 
     {% endset %}
 
-    {% set tab3 %}
-      <h2 class="govuk-heading-m">Contacts</h2>
-      <h3 class="govuk-heading-s govuk-!-margin-bottom-1">DOSaC:</h3>
-      {{ govukSummaryList({
-        rows: [
-          {
-            key: {
-              text: "Policy"
-            },
-            value: {
-              text: "firstname.lastname@dosac.gov.uk"
-            }
-          },
-          {
-            key: {
-              text: "Analyst"
-            },
-            value: {
-              text: "firstname.lastname@dosac.gov.uk"
-            }
-          },
-          {
-            key: {
-              text: "Data Science"
-            },
-            value: {
-              text: "firstname.lastname@dosac.gov.uk"
-            }
-          }
-        ]
-      }) }}
-      <h3 class="govuk-heading-s govuk-!-margin-bottom-1">10DS:</h3>
-      {{ govukSummaryList({
-        rows: [
-          {
-            key: {
-              text: "Analyst"
-            },
-            value: {
-              text: "firstname.lastname@no10.gov.uk"
-            }
-          },
-          {
-            key: {
-              text: "Social Affairs Lead"
-            },
-            value: {
-              text: "firstname.lastname@no10.gov.uk"
-            }
-          }
-        ]
-      }) }}
-    {% endset %}
-
     {{ govukTabs({
       items: [
         {
@@ -180,13 +126,6 @@
           id: "findings",
           panel: {
             html: tab2
-          }
-        },
-        {
-          label: "Contacts",
-          id: "contacts",
-          panel: {
-            html: tab3
           }
         }
       ]
