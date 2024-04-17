@@ -1,6 +1,6 @@
 from django.contrib import admin
-from waffle.models import Flag, Sample
 from magic_link.models import MagicLink, MagicLinkUse
+from waffle.models import Flag, Sample
 
 admin.site.site_header = "Consultation analyser admin panel"
 

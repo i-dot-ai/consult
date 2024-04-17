@@ -1,7 +1,7 @@
 import jinja2
 from compressor.contrib.jinja2ext import CompressorExtension
-from django.templatetags.static import static
 from django.template.loader import render_to_string
+from django.templatetags.static import static
 from django.urls import reverse
 from jinja2 import ChoiceLoader, Environment, PackageLoader, PrefixLoader
 
