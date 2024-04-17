@@ -7,7 +7,10 @@
 
 <head>
   <meta charset="utf-8">
-  <title>{% if page_title %}{{ page_title }} - {% endif %}Consultation analyser</title>
+  <title>
+    {% if page_title %}{{ page_title }} - {% endif %}
+    {{ app_config.name }}
+  </title>
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <meta name="theme-color" content="#0b0c0c">
 
@@ -31,15 +34,9 @@
 
   {{ govukHeader({
     "homepageUrl": "https://www.gov.uk",
-    "serviceName": "Consultation analyser",
-    "serviceUrl": "/",
-    'navigation': [
-      {
-        'href': "/schema",
-        'text': "Data schema",
-        'active': request.path == "/schema"
-        }]}) }}
-
+    "serviceName": app_config.name,
+    "serviceUrl": app_config.path,
+    'navigation': app_config.menu_items}) }}
 
   <div class="govuk-width-container">
 

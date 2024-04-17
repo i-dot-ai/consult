@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     "waffle",  # feature flags
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
+    "consultation_analyser.support_console",
     "compressor",
 ]
 
@@ -58,6 +59,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "waffle.middleware.WaffleMiddleware",
+    "consultation_analyser.middleware.CurrentAppMiddleware",
 ]
 
 ROOT_URLCONF = "consultation_analyser.urls"
@@ -66,7 +68,12 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.jinja2.Jinja2",
         "APP_DIRS": True,
-        "OPTIONS": {"environment": "consultation_analyser.jinja2.environment"},
+        "OPTIONS": {
+            "environment": "consultation_analyser.jinja2.environment",
+            "context_processors": [
+                "consultation_analyser.context_processors.app_config",
+            ],
+        },
     },
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
