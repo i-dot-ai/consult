@@ -19,7 +19,7 @@ def test_get_question_summary_page(django_app):
     AnswerFactory(multiple_choice_responses=["No"], question=question)
     AnswerFactory(multiple_choice_responses=["Maybe"], question=question)
 
-    question_summary_url = f"/consultations/{consultation.slug}/sections/{section.slug}/questions/{question.slug}"
+    question_summary_url = f"/consultations/{consultation.slug}/sections/{section.slug}/questions/{question.slug}/"
 
     question_page = django_app.get(question_summary_url)
     page_content = html.unescape(str(question_page.content))
