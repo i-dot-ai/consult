@@ -17,9 +17,13 @@ def app_config(request: HttpRequest):
             path="/support/",
             menu_items=[
                 {
+                    "href": "/support/consultations/",
+                    "text": "Consultations",
+                },
+                {
                     "href": "/support/sign-out/",
                     "text": "Sign out",
-                }
+                },
             ],
         )
     else:
