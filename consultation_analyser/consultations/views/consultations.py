@@ -6,7 +6,15 @@ from .. import models
 
 
 @waffle_switch("CONSULTATION_PROCESSING")
-def show_questions(request: HttpRequest, consultation_slug: str) -> HttpResponse:
+def show_all(request: HttpRequest) -> HttpResponse:
+    # TODO - in future, would restrict to all consultations for user
+    consultations = models.Consultation.objects.all()
+    context = {"consultations": consultations}
+    return render(request, "all-consultations.html", context)
+
+
+@waffle_switch("CONSULTATION_PROCESSING")
+def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     questions = models.Question.objects.filter(section__consultation__slug=consultation_slug)
     context = {"questions": questions}
     return render(request, "consultation.html", context)
