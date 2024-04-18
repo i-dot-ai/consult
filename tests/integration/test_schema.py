@@ -3,7 +3,7 @@ import json
 
 def test_get_public_schema_page(django_app):
     # Given I am viewing the /schema page
-    schema_page = django_app.get("/schema")
+    schema_page = django_app.get("/schema/")
 
     # When I look for information about the schema
     # Then I should see the headings

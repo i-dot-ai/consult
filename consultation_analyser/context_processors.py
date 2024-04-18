@@ -14,10 +14,10 @@ def app_config(request: HttpRequest):
     if request.current_app == "support_console":
         app_config = AppConfig(
             name="Consultation analyser support console",
-            path="/support",
+            path="/support/",
             menu_items=[
                 {
-                    "href": "/support/sign-out",
+                    "href": "/support/sign-out/",
                     "text": "Sign out",
                 }
             ],
@@ -28,9 +28,9 @@ def app_config(request: HttpRequest):
             path="/",
             menu_items=[
                 {
-                    "href": "/schema",
+                    "href": "/schema/",
                     "text": "Data schema",
-                    "active": request.path == "/schema",
+                    "active": request.path == "/schema/",
                 }
             ],
         )

@@ -18,7 +18,7 @@ def test_get_question_responses_page(django_app):
     section = consultation.section_set.first()
     question = section.question_set.first()
     answers = question.answer_set.all()
-    question_responses_url = f"/consultations/{consultation.slug}/sections/{section.slug}/responses/{question.slug}"
+    question_responses_url = f"/consultations/{consultation.slug}/sections/{section.slug}/responses/{question.slug}/"
     responses_page = django_app.get(question_responses_url)
     page_content = html.unescape(str(responses_page.content))
 
