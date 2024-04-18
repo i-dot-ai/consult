@@ -21,33 +21,6 @@ def sign_out(request: HttpRequest):
 
 
 @staff_member_required
-def ml_pipeline_test(request: HttpRequest) -> HttpResponse:
-    if request.POST:
-        if "generate_dummy_consultation" in request.POST:
-            try:
-                dummy_data.DummyConsultation(include_themes=False)
-                messages.add_message(request, messages.INFO, "New consultation generated")
-            except RuntimeError as error:
-                messages.add_message(request, messages.WARN, error.args[0])
-        else:
-            consultation_id = request.POST.get("consultation_id")
-            themes_already_exist = models.Theme.objects.filter(
-                answer__question__section__consultation__id=consultation_id
-            ).exists()
-            if not themes_already_exist:
-                ml_pipeline.save_themes_for_consultation(consultation_id=consultation_id)
-                messages.add_message(request, messages.INFO, "Themes created for consultation")
-            else:
-                messages.add_message(request, messages.INFO, "Themes already exist for this consultation")
-
-    # TODO - messages
-    consultations = models.Consultation.objects.all()
-
-    context = {"consultations": consultations, "messages": get_messages(request)}
-    return render(request, "support_console/ml_pipeline_test.html", context=context)
-
-
-@staff_member_required
 def show_consultations(request: HttpRequest) -> HttpResponse:
     if request.POST:
         try:
