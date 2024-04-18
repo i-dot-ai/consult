@@ -59,3 +59,20 @@ def show_consultations(request: HttpRequest) -> HttpResponse:
     # TODO - do something with messages
     context = {"consultations": consultations, "development_env": HostingEnvironment.is_development_environment()}
     return render(request, "support_console/all-consultations.html", context=context)
+
+
+@staff_member_required
+def show_consultation(request: HttpRequest, consultation_slug: str) -> HttpResponse:
+    consultation = models.Consultation.objects.get(slug=consultation_slug)
+    if request.POST:
+        themes_already_exist = models.Theme.objects.filter(
+            answer__question__section__consultation=consultation
+        ).exists()
+        if not themes_already_exist:
+            ml_pipeline.save_themes_for_consultation(consultation_id=consultation.id)
+            messages.add_message(request, messages.INFO, "Themes created for consultation")
+        else:
+            messages.add_message(request, messages.INFO, "Themes already exist for this consultation")
+    # TODO - do something with messages
+    context = {"consultation": consultation}
+    return render(request, "support_console/consultation.html", context=context)

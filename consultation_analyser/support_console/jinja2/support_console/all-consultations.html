@@ -9,7 +9,7 @@
     <ul class="govuk-list">
       {% for consultation in consultations %}
         <li>
-          <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-body-l govuk-link govuk-link--no-visited-state">
+          <a href="{{ url('support_consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-body-l govuk-link govuk-link--no-visited-state">
             {{ consultation.name }}
           </a>
         </li>
