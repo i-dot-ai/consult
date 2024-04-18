@@ -6,6 +6,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from consultation_analyser.consultations import dummy_data, ml_pipeline, models
+from consultation_analyser.hosting_environment import HostingEnvironment
 
 
 @staff_member_required
@@ -39,8 +40,22 @@ def ml_pipeline_test(request: HttpRequest) -> HttpResponse:
             else:
                 messages.add_message(request, messages.INFO, "Themes already exist for this consultation")
 
+    # TODO - messages
     consultations = models.Consultation.objects.all()
-    # TODO - improve the way we deal with messages
-    # Have to pass messages to template as we are using jinja not DTL
+
     context = {"consultations": consultations, "messages": get_messages(request)}
     return render(request, "support_console/ml_pipeline_test.html", context=context)
+
+
+@staff_member_required
+def show_consultations(request: HttpRequest) -> HttpResponse:
+    if request.POST:
+        try:
+            dummy_data.DummyConsultation(include_themes=False)
+            messages.add_message(request, messages.INFO, "New consultation generated")
+        except RuntimeError as error:
+            messages.add_message(request, messages.WARNING, error.args[0])
+    consultations = models.Consultation.objects.all()
+    # TODO - do something with messages
+    context = {"consultations": consultations, "development_env": HostingEnvironment.is_development_environment()}
+    return render(request, "support_console/all-consultations.html", context=context)
