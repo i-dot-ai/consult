@@ -27,17 +27,16 @@ def test_logging_in_to_support(django_app):
 
 @pytest.mark.django_db
 def test_generating_dummy_data(django_app):
-    page_url = "/support/ml-pipeline-test/"
-    # Login and go to ML test page
+    page_url = "/support/consultations/"
     UserFactory(email="email@example.com", password="admin", is_staff=True)  # pragma: allowlist secret
     login_page = django_app.get(page_url).follow()
     login_page.form["username"] = "email@example.com"
     login_page.form["password"] = "admin"  # pragma: allowlist secret
-    ml_page = login_page.form.submit().follow()
-    assert "Generate a dummy consultation" in ml_page
+    consultations_page = login_page.form.submit().follow()
+    assert "All consultations" in consultations_page
 
     # Check dummy data button does generate a new consultation
     initial_count = Consultation.objects.all().count()
-    ml_page.form.submit("generate_dummy_consultation")
+    consultations_page.form.submit("generate_dummy_consultation")
     count_after_dummy_data = Consultation.objects.all().count()
     assert count_after_dummy_data > initial_count

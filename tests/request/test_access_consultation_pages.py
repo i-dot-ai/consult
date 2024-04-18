@@ -9,7 +9,7 @@ from consultation_analyser.factories import ConsultationFactory
 def test_accessing_when_flag_is_on(client):
     consultation = ConsultationFactory()
     assert client.get("/").status_code == 200
-    assert client.get(f"/consultations/{consultation.slug}").status_code == 200
+    assert client.get(f"/consultations/{consultation.slug}/").status_code == 200
 
 
 @pytest.mark.django_db
@@ -17,4 +17,4 @@ def test_accessing_when_flag_is_on(client):
 def test_accessing_when_flag_is_off(client):
     consultation = ConsultationFactory()
     assert client.get("/").status_code == 200
-    assert client.get(f"/consultations/{consultation.slug}").status_code == 404
+    assert client.get(f"/consultations/{consultation.slug}/").status_code == 404
