@@ -36,6 +36,11 @@ variable "domain_name" {
   description = "The base domain name for the project"
 }
 
+variable "external_ips" {
+  type        = list(string)
+  description = "List of external IPs"
+}
+
 variable "ecr_repository_uri" {
   type        = string
   description = "ECR repo uri"
@@ -76,6 +81,11 @@ variable "health_check" {
 variable "hosted_zone_id" {
   type        = string
   description = "Route 53 Hosted Zone"
+}
+
+variable "internal_ips" {
+  type        = list(string)
+  description = "IP's of No10 and CO"
 }
 
 variable "image_tag" {
