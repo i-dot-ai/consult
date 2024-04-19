@@ -3,12 +3,6 @@ from uuid import UUID
 
 import numpy as np
 import pandas as pd
-from bertopic import BERTopic
-from bertopic.vectorizers import ClassTfidfTransformer
-from hdbscan import HDBSCAN
-from sentence_transformers import SentenceTransformer
-from sklearn.feature_extraction.text import CountVectorizer
-from umap.umap_ import UMAP
 
 from consultation_analyser.consultations import models
 
@@ -18,6 +12,8 @@ RANDOM_STATE = 12  # For reproducibility
 def get_embeddings_for_question(
     answers_list: List[Dict[str, Union[UUID, str]]], embedding_model_name: str = "thenlper/gte-small"
 ) -> List[Dict[str, Union[UUID, str, np.ndarray]]]:
+    from sentence_transformers import SentenceTransformer
+
     free_text_responses = [answer["free_text"] for answer in answers_list]
     embedding_model = SentenceTransformer(embedding_model_name)
     embeddings = embedding_model.encode(free_text_responses)
@@ -26,7 +22,13 @@ def get_embeddings_for_question(
     return answers_list_with_embeddings
 
 
-def get_topic_model(answers_list_with_embeddings: List[Dict[str, Union[UUID, str, np.ndarray]]]) -> BERTopic:
+def get_topic_model(answers_list_with_embeddings: List[Dict[str, Union[UUID, str, np.ndarray]]]):
+    from bertopic import BERTopic
+    from hdbscan import HDBSCAN
+    from sklearn.feature_extraction.text import CountVectorizer
+    from bertopic.vectorizers import ClassTfidfTransformer
+    from umap.umap_ import UMAP
+
     free_text_responses_list = [answer["free_text"] for answer in answers_list_with_embeddings]
     embeddings_list = [answer["embedding"] for answer in answers_list_with_embeddings]
     embeddings = np.array(embeddings_list)
@@ -46,7 +48,7 @@ def get_topic_model(answers_list_with_embeddings: List[Dict[str, Union[UUID, str
     return topic_model
 
 
-def get_answers_and_topics(topic_model: BERTopic, answers_list: List[Dict[str, Union[UUID, str]]]) -> pd.DataFrame:
+def get_answers_and_topics(topic_model, answers_list: List[Dict[str, Union[UUID, str]]]) -> pd.DataFrame:
     # Answers free text/IDs need to be in the same order
     free_text_responses = [answer["free_text"] for answer in answers_list]
     answers_id_list = [answer["id"] for answer in answers_list]

@@ -5,7 +5,7 @@ from django.contrib.messages import get_messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
-from consultation_analyser.consultations import dummy_data, ml_pipeline, models
+from consultation_analyser.consultations import dummy_data, models
 from consultation_analyser.hosting_environment import HostingEnvironment
 
 
@@ -42,6 +42,8 @@ def show_consultation(request: HttpRequest, consultation_slug: str) -> HttpRespo
             answer__question__section__consultation=consultation
         ).exists()
         if not themes_already_exist:
+            from consultation_analyser.consultations import ml_pipeline
+
             ml_pipeline.save_themes_for_consultation(consultation_id=consultation.id)
     # TODO - pass through messages - "themes created" or "consultation already has themes"
     context = {"consultation": consultation}
