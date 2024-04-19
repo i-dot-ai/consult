@@ -15,3 +15,8 @@
 
 **/.build-harness
 **/build-harness
+
+frontend/CACHE
+frontend/govuk-assets
+frontend/admin
+frontend/django_extensions
