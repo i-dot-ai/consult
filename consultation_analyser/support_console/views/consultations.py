@@ -1,27 +1,13 @@
-from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
-from django.contrib.auth import logout
-from django.contrib.messages import get_messages
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import render
 
 from consultation_analyser.consultations import dummy_data, models
 from consultation_analyser.hosting_environment import HostingEnvironment
 
 
 @staff_member_required
-def support_home(request: HttpRequest):
-    return render(request, "support_console/home.html")
-
-
-@staff_member_required
-def sign_out(request: HttpRequest):
-    logout(request)
-    return redirect("/")
-
-
-@staff_member_required
-def show_consultations(request: HttpRequest) -> HttpResponse:
+def index(request: HttpRequest) -> HttpResponse:
     # TODO - add messages
     if request.POST:
         try:
@@ -35,7 +21,7 @@ def show_consultations(request: HttpRequest) -> HttpResponse:
 
 
 @staff_member_required
-def show_consultation(request: HttpRequest, consultation_slug: str) -> HttpResponse:
+def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     consultation = models.Consultation.objects.get(slug=consultation_slug)
     if request.POST:
         themes_already_exist = models.Theme.objects.filter(
