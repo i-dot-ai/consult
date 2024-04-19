@@ -43,6 +43,9 @@ COPY . .
 ENV DJANGO_SETTINGS_MODULE='consultation_analyser.settings.production'
 ENV PYTHONPATH "${PYTHONPATH}:/."
 
+RUN venv/bin/django-admin collectstatic --noinput
+RUN venv/bin/django-admin compress --force --engine jinja2
+
 EXPOSE 8000
 
 CMD ["./start.sh"]
