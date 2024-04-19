@@ -50,7 +50,7 @@ def test_generating_dummy_data(django_app):
 
 @pytest.mark.django_db
 def test_generate_themes(django_app):
-    DummyConsultation(name="Test consultation", slug="test-consultation", responses=5, include_themes=False)
+    DummyConsultation(name="Test consultation", slug="test-consultation", include_themes=False)
     UserFactory(email="email@example.com", password="admin", is_staff=True)  # pragma: allowlist secret
     login_page = django_app.get("/support/consultations/test-consultation/").follow()
     login_page.form["username"] = "email@example.com"
