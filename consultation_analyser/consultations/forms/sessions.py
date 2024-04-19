@@ -6,11 +6,12 @@ from django import forms
 class NewSessionForm(forms.Form):
     email = forms.EmailField(
         label="Email address",
-        help_text="Enter the email address you used to register, and we will send you a link to sign in.",
+        help_text="Enter your email address to generate a link to sign in",
+        error_messages={"required": "Your email address is required", "invalid": "Enter a valid email address"},
     )
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.helper = FormHelper()
         self.helper.attrs = {"novalidate": ""}
-        self.helper.layout = Layout("email", Button("submit", "Submit"))
+        self.helper.layout = Layout("email", Button("submit", "Continue"))
