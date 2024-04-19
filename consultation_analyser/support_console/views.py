@@ -22,14 +22,14 @@ def sign_out(request: HttpRequest):
 
 @staff_member_required
 def show_consultations(request: HttpRequest) -> HttpResponse:
+    # TODO - add messages
     if request.POST:
         try:
             dummy_data.DummyConsultation(include_themes=False)
-            messages.add_message(request, messages.INFO, "New consultation generated")
         except RuntimeError as error:
-            messages.add_message(request, messages.WARNING, error.args[0])
+            pass
+            # TODO - pass through message from the error
     consultations = models.Consultation.objects.all()
-    # TODO - do something with messages
     context = {"consultations": consultations, "development_env": HostingEnvironment.is_development_environment()}
     return render(request, "support_console/all-consultations.html", context=context)
 
@@ -43,9 +43,6 @@ def show_consultation(request: HttpRequest, consultation_slug: str) -> HttpRespo
         ).exists()
         if not themes_already_exist:
             ml_pipeline.save_themes_for_consultation(consultation_id=consultation.id)
-            messages.add_message(request, messages.INFO, "Themes created for consultation")
-        else:
-            messages.add_message(request, messages.INFO, "Themes already exist for this consultation")
-    # TODO - do something with messages
+    # TODO - pass through messages - "themes created" or "consultation already has themes"
     context = {"consultation": consultation}
     return render(request, "support_console/consultation.html", context=context)
