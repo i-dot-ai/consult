@@ -1,8 +1,10 @@
-{% extends "base.html" %}
+{% extends "base_content_page.html" %}
 
-{% set page_title = "Consultation data schema" %}
+{% set page_title = "Data schema" %}
 
 {% block content %}
+<div class="govuk-width-container">
+
   <h1 class="govuk-heading-xl">Consultation data schema v0.1</h1>
 
   <p class="govuk-body">This page lists the data components required for a consultation to be suitable for processing by the analyser. </p>
@@ -119,5 +121,7 @@
   <h2 class="govuk-heading-l">Changelog</h2>
   <h3 class="govuk-heading-s">28 March 2024</h3>
   <p class="govuk-body">Initial release</p>
+
+</div>
 {% endblock %}
 

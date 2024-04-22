@@ -5,8 +5,11 @@ from .views import consultations, pages, questions, responses, schema, sessions
 
 urlpatterns = [
     path("", pages.home),
-    path("privacy/", pages.privacy),
+    path("how-it-works/", pages.how_it_works),
     path("schema/", schema.show),
+    path("data-sharing/", pages.data_sharing),
+    path("get-involved/", pages.get_involved),
+    path("privacy/", pages.privacy),
     path("consultations/", consultations.show_all),
     path("consultations/<str:consultation_slug>/", consultations.show, name="consultation"),
     path("schema/<str:schema_name>.json", schema.raw_schema),

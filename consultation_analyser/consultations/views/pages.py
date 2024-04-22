@@ -16,6 +16,18 @@ def privacy(request: HttpRequest):
     return render(request, "privacy.html")
 
 
+def data_sharing(request: HttpRequest):
+    return render(request, "data_sharing.html")
+
+
+def how_it_works(request: HttpRequest):
+    return render(request, "how_it_works.html")
+
+
+def get_involved(request: HttpRequest):
+    return render(request, "get_involved.html")
+
+
 # TODO - simple view for testing batch jobs
 # To be removed once tested
 @waffle_switch("CONSULTATION_PROCESSING")
