@@ -101,7 +101,7 @@ The `json-schema-faker-options.js` file configures (JSON Schema Faker)[https://g
 
 ## Frontend Prototype
 
-Located at `/prototype` in this repo, using the GOV.UK Prototype Kit. This is work in progress, not all pages are available yet.
+Located at `/prototype` in this repo, using the GOV.UK Prototype Kit.
 
 ### How to run
 
@@ -116,3 +116,5 @@ Then
 ```
 npm run dev
 ```
+
+The actual prototype can be accessed at http://localhost:3000/prototype
