@@ -2868,13 +2868,13 @@ test = ["array-api-strict", "asv", "gmpy2", "hypothesis (>=6.30)", "mpmath", "po
 
 [[package]]
 name = "sentence-transformers"
-version = "2.6.1"
+version = "2.7.0"
 description = "Multilingual text embeddings"
 optional = false
 python-versions = ">=3.8.0"
 files = [
-    {file = "sentence-transformers-2.6.1.tar.gz", hash = "sha256:633ad6b70e390ea335de8689652a5d6c21a323b79ed19519c2f392451088487f"},
-    {file = "sentence_transformers-2.6.1-py3-none-any.whl", hash = "sha256:a887e17696b513f99a709ce1f37fd547f53857aebe863785ede546c303b09ea0"},
+    {file = "sentence_transformers-2.7.0-py3-none-any.whl", hash = "sha256:6a7276b05a95931581bbfa4ba49d780b2cf6904fa4a171ec7fd66c343f761c98"},
+    {file = "sentence_transformers-2.7.0.tar.gz", hash = "sha256:2f7df99d1c021dded471ed2d079e9d1e4fc8e30ecb06f957be060511b36f24ea"},
 ]
 
 [package.dependencies]
@@ -2885,7 +2885,10 @@ scikit-learn = "*"
 scipy = "*"
 torch = ">=1.11.0"
 tqdm = "*"
-transformers = ">=4.32.0,<5.0.0"
+transformers = ">=4.34.0,<5.0.0"
+
+[package.extras]
+dev = ["pre-commit", "pytest", "ruff (>=0.3.0)"]
 
 [[package]]
 name = "setuptools"
@@ -3617,4 +3620,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.12"
-content-hash = "80e703f0e02c49ff0519f979500312459dafb2c4968a0003392dd65c09ca7c38"
+content-hash = "11fa8f61b6dea57bed9038730fa2eb2dd088cd6c69f8d63526b4f457d6375805"
