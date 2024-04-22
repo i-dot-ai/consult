@@ -30,10 +30,25 @@ def app_config(request: HttpRequest):
     else:
         menu_items = [
             {
+                "href": "/how-it-works/",
+                "text": "How it works",
+                "active": request.path == "/how-it-works/",
+            },
+            {
                 "href": "/schema/",
                 "text": "Data schema",
                 "active": request.path == "/schema/",
-            }
+            },
+            {
+                "href": "/data-sharing/",
+                "text": "Data sharing",
+                "active": request.path == "/data-sharing/",
+            },
+            {
+                "href": "/get-involved/",
+                "text": "Get involved",
+                "active": request.path == "/get-involved/",
+            },
         ]
 
         if waffle.switch_is_active("FRONTEND_USER_LOGIN"):
