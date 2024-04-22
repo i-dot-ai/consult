@@ -1,10 +1,10 @@
 from django.urls import path
 
-from . import views
+from .views import consultations, pages
 
 urlpatterns = [
-    path("", views.support_home),
-    path("sign-out/", views.sign_out),
-    path("consultations/", views.show_consultations),
-    path("consultations/<str:consultation_slug>/", views.show_consultation, name="support_consultation"),
+    path("", pages.support_home),
+    path("sign-out/", pages.sign_out),
+    path("consultations/", consultations.index),
+    path("consultations/<str:consultation_slug>/", consultations.show, name="support_consultation"),
 ]
