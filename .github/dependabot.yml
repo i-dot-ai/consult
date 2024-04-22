@@ -5,19 +5,35 @@ updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "weekly"
+      interval: "daily"
+    groups:
+      pip-updates:
+        patterns:
+          - "*"
 
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      npm-updates:
+        patterns:
+          - "*"
 
   - package-ecosystem: "npm"
     directory: "/prototype"
     schedule:
       interval: "weekly"
+    groups:
+      prototype-updates:
+        patterns:
+          - "*"
 
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      actions-updates:
+        patterns:
+          - "*"
