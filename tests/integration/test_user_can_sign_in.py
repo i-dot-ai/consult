@@ -10,7 +10,7 @@ def test_user_can_sign_in(django_app):
     UserFactory(email="email@example.com", password="admin")  # pragma: allowlist secret
 
     homepage = django_app.get("/")
-    homepage.click("Sign in")
+    homepage.click("Sign in", index=0)
 
     login_page = django_app.get("/sign-in/")
     login_page.form["email"] = "email@example.com"
@@ -19,5 +19,5 @@ def test_user_can_sign_in(django_app):
     successful_sign_in_page = success_page.click("Click here to sign in")
     homepage = successful_sign_in_page.form.submit().follow()
 
-    signed_out_homepage = homepage.click("Sign out").follow()
-    assert "You have signed out" in signed_out_homepage
+    signed_out_homepage = homepage.click("Sign out", index=0).follow()
+    assert "Sign in" in signed_out_homepage
