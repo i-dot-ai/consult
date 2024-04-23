@@ -41,7 +41,7 @@ def batch_example(request: HttpRequest):
                 "/bin/sh",
                 "-c",
                 "source",
-                "/usr/src/app/venv/bin/activate",
+                "venv/bin/activate",
                 "&&",
                 "python",
                 "manage.py",
