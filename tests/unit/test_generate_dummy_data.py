@@ -25,3 +25,10 @@ def test_the_tool_will_only_run_in_dev(environment):
     with patch.dict(os.environ, {"ENVIRONMENT": environment}):
         with pytest.raises(Exception, match=r"should only be run in development"):
             DummyConsultation()
+
+
+@pytest.mark.django_db
+def test_consultation_contains_outliers():
+    DummyConsultation()
+    qs = Answer.objects.filter(theme__is_outlier=True)
+    assert qs.exists()
