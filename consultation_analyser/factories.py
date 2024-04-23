@@ -111,9 +111,8 @@ class ThemeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Theme
 
-    # TODO - may need to be changed once ML pipeline is in
     label = factory.LazyAttribute(lambda _o: generate_dummy_topic_label())
-    summary = f"Summary: {label}"
+    summary = faker.sentence()
 
 
 class AnswerFactory(factory.django.DjangoModelFactory):
