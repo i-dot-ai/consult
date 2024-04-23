@@ -75,7 +75,6 @@ data "aws_iam_policy_document" "this" {
     effect = "Allow"
     actions = [
       "batch:DescribeJobQueues",
-      "batch:DescribeJobDefinitions",
       "batch:SubmitJob"
     ]
     resources = [
