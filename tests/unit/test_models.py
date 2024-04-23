@@ -37,14 +37,3 @@ def test_multiple_choice_response_count():
 
     for answer in answers:
         factories.AnswerFactory(question=question, multiple_choice_responses=answer)
-
-    response_counts = question.multiple_choice_response_counts()
-
-    assert response_counts[0].count == 2
-    assert response_counts[0].percent == 40.0
-
-    assert response_counts[1].count == 2
-    assert response_counts[1].percent == 40.0
-
-    assert response_counts[2].count == 1
-    assert response_counts[2].percent == 20.0

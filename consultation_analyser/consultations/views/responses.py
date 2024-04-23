@@ -4,24 +4,7 @@ from django.shortcuts import render
 from waffle.decorators import waffle_switch
 
 from .. import models
-
-
-def get_applied_filters(request: HttpRequest):
-    return {
-        "keyword": request.GET.get("keyword", ""),
-        "theme": request.GET.get("theme", "All"),
-        "opinion": request.GET.get("opinion", "All"),
-    }
-
-
-def get_filtered_responses(question: models.Question, applied_filters):
-    queryset = models.Answer.objects.filter(question=question, free_text__icontains=applied_filters["keyword"])
-    if applied_filters["theme"] != "All" and applied_filters["theme"] != "No theme":
-        queryset = queryset.filter(theme=applied_filters["theme"])
-    # TO DO: handle answers with "No theme"
-    if applied_filters["opinion"] != "All":
-        queryset = queryset.filter(multiple_choice_responses=applied_filters["opinion"])
-    return queryset
+from .filters import get_applied_filters, get_filtered_responses
 
 
 @waffle_switch("CONSULTATION_PROCESSING")
@@ -45,7 +28,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "responses": paginated_responses,
         "total_responses": total_responses,
         "applied_filters": applied_filters,
-        "themes_for_question": themes_for_question,
+        "themes": themes_for_question,
         "pagination": current_page,
     }
 
