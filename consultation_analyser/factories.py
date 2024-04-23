@@ -12,11 +12,14 @@ faker = _faker.Faker()
 default_multiple_choice_options = ["Yes", "No", "Not sure"]
 
 
-def generate_dummy_topic_label():
+def generate_dummy_topic_label(is_outlier=False):
     dummy_sentence = faker.sentence()
     words = dummy_sentence.lower().strip(".")
     words_joined = words.replace(" ", "_")
-    topic_number = random.randint(-1, 3)
+    if is_outlier:
+        topic_number = -1
+    else:
+        topic_number = random.randint(0, 3)
     output = f"{topic_number}_{words_joined}"
     return output
 
@@ -113,6 +116,9 @@ class ThemeFactory(factory.django.DjangoModelFactory):
 
     label = factory.LazyAttribute(lambda _o: generate_dummy_topic_label())
     summary = faker.sentence()
+
+    class Params:
+        is_outlier = factory.Trait(label=factory.LazyAttribute(lambda _o: generate_dummy_topic_label(is_outlier=True)))
 
 
 class AnswerFactory(factory.django.DjangoModelFactory):
