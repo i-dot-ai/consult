@@ -23,7 +23,7 @@ module "ecs" {
     "BATCH_JOB_QUEUE"       = module.batch_job_definition.job_queue_name,
     "BATCH_JOB_DEFINITION"  = module.batch_job_definition.job_definition_name,
     "DJANGO_SECRET_KEY"     = data.aws_secretsmanager_secret_version.django_secret.secret_string,
-    "DEBUG"     = data.aws_secretsmanager_secret_version.debug.secret_string
+    "DEBUG"                 = data.aws_secretsmanager_secret_version.debug.secret_string
     "DB_NAME" : "${module.postgres.db_instance_name}",
     "DB_USER" : "${module.postgres.rds_instance_username}",
     "DB_PASSWORD" : "${module.postgres.rds_instance_db_password}",
@@ -41,8 +41,8 @@ module "ecs" {
   route53_record_name          = aws_route53_record.type_a_record.name
   ip_whitelist                 = var.external_ips
   create_listener              = true
+  task_additional_iam_policy   = aws_iam_policy.this.arn
 }
-
 
 resource "aws_route53_record" "type_a_record" {
   zone_id = var.hosted_zone_id
@@ -53,5 +53,29 @@ resource "aws_route53_record" "type_a_record" {
     name                   = module.load_balancer.load_balancer_dns_name
     zone_id                = module.load_balancer.load_balancer_zone_id
     evaluate_target_health = true
+  }
+}
+
+
+resource "aws_iam_policy" "this" {
+  name        = "i-dot-ai-dev-${terraform.workspace}-ecs-${var.project_name}-additional"
+  description = "Additional permissions for consultations ECS task"
+  policy      = data.aws_iam_policy_document.this.json
+}
+
+data "aws_iam_policy_document" "this" {
+  # checkov:skip=CKV_AWS_109:KMS policies can't be restricted
+  # checkov:skip=CKV_AWS_111:KMS policies can't be restricted
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "batch:DescribeJobQueues",
+      "batch:DescribeJobDefinitions",
+      "batch:SubmitJob"
+    ]
+    resources = [
+      "*",
+    ]
   }
 }
