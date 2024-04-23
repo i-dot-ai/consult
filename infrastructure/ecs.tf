@@ -39,6 +39,8 @@ module "ecs" {
   host                         = local.host
   route53_record_name          = aws_route53_record.type_a_record.name
   ip_whitelist                 = var.external_ips
+  create_networking            = true
+  create_listener              = true
 }
 
 

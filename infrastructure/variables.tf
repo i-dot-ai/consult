@@ -120,3 +120,27 @@ variable "state_bucket" {
   type        = string
   description = "Name of the S3 bucket to use a terraform state"
 }
+
+
+variable "rules" {
+  description = "The rules to add to this WAF"
+  type        = list(object({}))
+  default     = []
+}
+
+variable "use_case" {
+  description = "Use case/resource for WAF"
+  type        = string
+  default     = "load_balancer"
+}
+
+variable "scope" {
+  description = "Scope of the WAF, either 'CLOUDFRONT' or 'REGIONAL'"
+  type        = string
+  default     = "REGIONAL"
+}
+
+variable "universal_tags" {
+  type        = map(string)
+  description = "Map to tag resources with"
+}
