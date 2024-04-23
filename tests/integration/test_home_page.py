@@ -6,8 +6,16 @@ from consultation_analyser.factories import ConsultationFactory
 @pytest.mark.django_db
 def test_nav_links(django_app):
     homepage = django_app.get("/")
-    assert len(homepage.html.select(".govuk-header__navigation-item--active")) == 0
+    assert "Use machine learning to help you understand consultation responses" in homepage
 
-    schema_page = homepage.click("Data schema")
-    assert len(schema_page.html.select(".govuk-header__navigation-item--active")) == 1
-    assert "data schema" in schema_page
+    how_it_works_page = homepage.click("How it works", index=0)
+    assert "You can see the code on" in how_it_works_page
+
+    schema_page = how_it_works_page.click("Data schema", index=0)
+    assert "JSON schemas" in schema_page
+
+    data_sharing_page = schema_page.click("Data sharing", index=0)
+    assert "data sharing agreement" in data_sharing_page
+
+    get_involved_page = data_sharing_page.click("Get involved", index=0)
+    assert "register your interest" in get_involved_page
