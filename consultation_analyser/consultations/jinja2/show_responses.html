@@ -32,10 +32,10 @@
               </label>
               <select class="govuk-select" id="theme" name="theme">
                 <option {% if applied_filters.theme == "All" %}selected{% endif %}>All</option>
-                {% for theme in themes_for_question %}
+                {% for theme in themes %}
                   <option value="{{ theme.id }}" {% if applied_filters.theme|string == theme.id|string %}selected{% endif %}>{{ theme.label }}</option>
                 {% endfor %}
-                <option {% if applied_filters.theme == "No theme" %}selected{% endif %}>No theme</option>
+                {#<option {% if applied_filters.theme == "No theme" %}selected{% endif %}>No theme</option>#}
               </select>
             </div>
 
@@ -85,7 +85,7 @@
             <tr class="govuk-table__row govuk-body-s">
               {% if question.multiple_choice_options %}
                 <td class="govuk-table__cell">
-                  {{ response.multiple_choice_responses }}
+                  {{ response.multiple_choice_responses[0] }}
                 </td>
               {% endif %}
               <td class="govuk-table__cell">
