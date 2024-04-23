@@ -18,7 +18,7 @@ data "aws_secretsmanager_secret_version" "django_secret" {
 
 resource "aws_secretsmanager_secret" "django_debug" {
   name        = "${var.prefix}-${var.project_name}-${var.env}-django-debug"
-  description = "Django secret for ${var.project_name}"
+  description = "Django debug value for ${var.project_name}"
   tags = {
     SecretPurpose = "general" # pragma: allowlist secret
   }
