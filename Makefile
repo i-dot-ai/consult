@@ -86,7 +86,19 @@ IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 
 ECR_REPO_NAME=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
-tf_build_args=-var "image_tag=$(IMAGE_TAG)"
+
+AUTO_APPLY_RESOURCES = module.ecs.aws_ecs_task_definition.aws-ecs-task \
+                       module.ecs.aws_ecs_service.aws-ecs-service \
+                       module.ecs.data.aws_ecs_task_definition.main \
+                       module.batch_job_definition.aws_batch_job_definition.job_definition \
+                       module.waf.aws_wafv2_ip_set.london \
+                       aws_secretsmanager_secret.django_secret \
+                       aws_secretsmanager_secret.debug \
+					   module.load_balancer.aws_security_group_rule.load_balancer_http_whitelist \
+					   module.load_balancer.aws_security_group_rule.load_balancer_https_whitelist
+
+target_modules = $(foreach resource,$(AUTO_APPLY_RESOURCES),-target $(resource))
+tf_build_args=-var "image_tag=$(IMAGE_TAG)" 
 
 .PHONY: docker_build
 docker_build: ## Build the docker container
@@ -160,7 +172,7 @@ tf_apply_universal: ## Apply terraform
 .PHONY: tf_auto_apply
 tf_auto_apply: ## Auto apply terraform
 	make tf_set_workspace && \
-	terraform -chdir=./infrastructure apply -auto-approve -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} $(target_modules)
 
 .PHONY: tf_destroy
 tf_destroy: ## Destroy terraform
