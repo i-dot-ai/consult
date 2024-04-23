@@ -35,12 +35,12 @@ def batch_example(request: HttpRequest):
     message = ""
     if request.POST:
         job_name = "batch_example"
-        # command = {"command": ["python", "manage.py", "basic_management_command"]}
+        ## command = {"command": ["python", "manage.py", "basic_management_command"]}
         command = {"command": ["venv/bin", "python", "manage.py", "basic_management_command"]}
         if not HostingEnvironment.is_local():
             batch_handler = BatchJobHandler()
             batch_handler.submit_job_batch(jobName=job_name, containerOverrides=command)
-            message = "Batch job has been run"
+            message = "Batch job being run"
         else:
             message = "Batch job not run locally"
     context = {"message": message}
