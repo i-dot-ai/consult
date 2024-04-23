@@ -58,9 +58,13 @@ resource "aws_route53_record" "type_a_record" {
 
 
 resource "aws_iam_policy" "this" {
-  name        = "i-dot-ai-dev-${terraform.workspace}-ecs-${var.project_name}-additional"
+  name        = "i-dot-ai-${terraform.workspace}-ecs-${var.project_name}-additional"
   description = "Additional permissions for consultations ECS task"
   policy      = data.aws_iam_policy_document.this.json
+  tags = {
+    Environment = terraform.workspace
+    Deployed    = "github"
+  }
 }
 
 data "aws_iam_policy_document" "this" {
@@ -71,6 +75,7 @@ data "aws_iam_policy_document" "this" {
     effect = "Allow"
     actions = [
       "batch:DescribeJobQueues",
+      "batch:DescribeJobDefinitions",
       "batch:SubmitJob"
     ]
     resources = [
