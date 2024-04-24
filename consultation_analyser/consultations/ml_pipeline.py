@@ -3,6 +3,7 @@ from uuid import UUID
 
 import numpy as np
 import pandas as pd
+from django.conf import settings
 
 from consultation_analyser.consultations import models
 
@@ -10,12 +11,12 @@ RANDOM_STATE = 12  # For reproducibility
 
 
 def get_embeddings_for_question(
-    answers_list: List[Dict[str, Union[UUID, str]]], embedding_model_name: str = "thenlper/gte-small"
+    answers_list: List[Dict[str, Union[UUID, str]]],
 ) -> List[Dict[str, Union[UUID, str, np.ndarray]]]:
     from sentence_transformers import SentenceTransformer
 
     free_text_responses = [answer["free_text"] for answer in answers_list]
-    embedding_model = SentenceTransformer(embedding_model_name)
+    embedding_model = SentenceTransformer(settings.EMBEDDING_MODEL)
     embeddings = embedding_model.encode(free_text_responses)
     z = zip(answers_list, embeddings)
     answers_list_with_embeddings = [dict(list(d.items()) + [("embedding", embedding)]) for d, embedding in z]
