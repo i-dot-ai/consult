@@ -2,7 +2,6 @@ from dataclasses import dataclass
 
 import waffle
 from django.http import HttpRequest
-
 from django.urls import resolve
 from django.urls.exceptions import Resolver404
 
