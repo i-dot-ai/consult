@@ -24,7 +24,9 @@ module "ecs" {
     "BATCH_JOB_QUEUE"       = module.batch_job_definition.job_queue_name,
     "BATCH_JOB_DEFINITION"  = module.batch_job_definition.job_definition_name,
     "DJANGO_SECRET_KEY"     = data.aws_secretsmanager_secret_version.django_secret.secret_string,
-    "DEBUG"                 = local.secret_env_vars.DEBUG
+    "DEBUG"                 = local.secret_env_vars.DEBUG,
+    "GOVUK_NOTIFY_API_KEY"                 = local.secret_env_vars.GOVUK_NOTIFY_API_KEY,
+    "GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID" = local.secret_env_vars.GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID
     "DB_NAME" : "${module.postgres.db_instance_name}",
     "DB_USER" : "${module.postgres.rds_instance_username}",
     "DB_PASSWORD" : "${module.postgres.rds_instance_db_password}",
