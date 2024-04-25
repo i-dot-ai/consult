@@ -61,7 +61,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "waffle.middleware.WaffleMiddleware",
-    "consultation_analyser.middleware.CurrentAppMiddleware",
 ]
 
 ROOT_URLCONF = "consultation_analyser.urls"

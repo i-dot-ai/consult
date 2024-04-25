@@ -3,6 +3,9 @@ from dataclasses import dataclass
 import waffle
 from django.http import HttpRequest
 
+from django.urls import resolve
+from django.urls.exceptions import Resolver404
+
 
 @dataclass
 class AppConfig:
@@ -12,7 +15,14 @@ class AppConfig:
 
 
 def app_config(request: HttpRequest):
-    if request.current_app == "support_console":
+    try:
+        resolved_url = resolve(request.path)
+    except Resolver404:
+        return {"app_config": AppConfig(name="Consultation analyser", path="/", menu_items=[])}
+
+    current_app = resolved_url.func.__module__.split(".")[1]
+
+    if current_app == "support_console":
         app_config = AppConfig(
             name="Consultation analyser support console",
             path="/support/",
