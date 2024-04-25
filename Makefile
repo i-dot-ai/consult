@@ -82,14 +82,19 @@ AWS_REGION=eu-west-2
 APP_NAME=consultations
 ECR_URL=$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 ECR_REPO_URL=$(ECR_URL)/$(ECR_REPO_NAME)
-IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 
 ECR_REPO_NAME=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
+IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
+
+PREV_IMAGE_TAG=$$(git rev-parse HEAD~1)
+PREV_IMAGE=$(ECR_REPO_URL):$(PREV_IMAGE_TAG)
+
 tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 
 .PHONY: docker_build
-docker_build: ## Build the docker container
+docker_build: ## Pull previous container (if it exists) build the docker container
+	docker pull $(PREV_IMAGE) || true
 	docker build . -t $(IMAGE)
 
 .PHONY: docker_run
