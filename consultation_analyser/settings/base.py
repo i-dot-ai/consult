@@ -98,23 +98,7 @@ AUTH_USER_MODEL = "authentication.User"
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
-
-PRODUCTION_DEPLOYMENT = os.environ.get("PRODUCTION_DEPLOYMENT", False)
-
-if PRODUCTION_DEPLOYMENT:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql_psycopg2",
-            "NAME": os.getenv("DB_NAME"),
-            "USER": os.getenv("DB_USER"),
-            "PASSWORD": os.getenv("DB_PASSWORD"),
-            "HOST": os.getenv("DB_HOST"),
-            "PORT": 5432,
-        }
-    }
-else:
-    DATABASES = {"default": env.db()}
-
+DATABASES = {"default": env.db()}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
