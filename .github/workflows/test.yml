@@ -54,10 +54,13 @@ jobs:
           poetry run python manage.py migrate
           poetry run python manage.py makemigrations --check
         env:
+
           DJANGO_SECRET_KEY: dummy-key
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
           BATCH_JOB_QUEUE: dummy-queue
           BATCH_JOB_DEFINITION: dummy-definition
+          GOVUK_NOTIFY_API_KEY: dummy-key
+          GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID: dummy-template
 
       - name: pytest
         run:
