@@ -16,7 +16,7 @@ data "aws_secretsmanager_secret_version" "django_secret" {
 }
 
 data "aws_secretsmanager_secret" "env_vars" {
-  name = "${var.prefix}-${var.project_name}-${var.env}-environement-variables"
+  name = "${var.prefix}-${var.project_name}-${var.env}-environment-variables"
 }
 data "aws_secretsmanager_secret_version" "env_vars" {
   secret_id = data.aws_secretsmanager_secret.env_vars.id
