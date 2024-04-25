@@ -1,3 +1,5 @@
+import logging
+
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.http import HttpRequest
@@ -11,13 +13,18 @@ from consultation_analyser.email import send_magic_link_email
 
 
 def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
+    logger = logging.getLogger(__name__)
+    logger.info("logging info")
+    logger.warning("logging warning")
     try:
         user = User.objects.get(email=email)
         link = MagicLink.objects.create(user=user, redirect_to="/")
         magic_link = request.build_absolute_uri(link.get_absolute_url())
         send_magic_link_email(email, magic_link)
+        logger.warning("sent email")
     except User.DoesNotExist:
-        pass
+        logger.warning("did not send email")
+        # pass
 
 
 @waffle_switch("FRONTEND_USER_LOGIN")
