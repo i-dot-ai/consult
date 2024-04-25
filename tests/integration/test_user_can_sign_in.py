@@ -1,5 +1,7 @@
 import pytest
+import re
 from waffle.testutils import override_switch
+from django.core import mail
 
 from consultation_analyser.factories import UserFactory
 
@@ -14,9 +16,14 @@ def test_user_can_sign_in(django_app):
 
     login_page = django_app.get("/sign-in/")
     login_page.form["email"] = "email@example.com"
-    success_page = login_page.form.submit()
+    login_page.form.submit()
 
-    successful_sign_in_page = success_page.click("Click here to sign in")
+    sign_in_email = mail.outbox[0]
+
+    assert sign_in_email.subject == "Sign in to Consultation analyser"
+    url = re.search("(?P<url>https?://[^\s]+)", sign_in_email.body).group("url")
+
+    successful_sign_in_page = django_app.get(url)
     homepage = successful_sign_in_page.form.submit().follow()
 
     signed_out_homepage = homepage.click("Sign out", index=0).follow()
