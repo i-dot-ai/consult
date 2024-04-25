@@ -4,6 +4,7 @@ import factory
 import faker as _faker
 import yaml
 
+from consultation_analyser.authentication import models as authentication_models
 from consultation_analyser.consultations import models
 
 faker = _faker.Faker()
@@ -11,11 +12,14 @@ faker = _faker.Faker()
 default_multiple_choice_options = ["Yes", "No", "Not sure"]
 
 
-def generate_dummy_topic_label():
+def generate_dummy_topic_label(is_outlier=False):
     dummy_sentence = faker.sentence()
     words = dummy_sentence.lower().strip(".")
     words_joined = words.replace(" ", "_")
-    topic_number = random.randint(-1, 3)
+    if is_outlier:
+        topic_number = -1
+    else:
+        topic_number = random.randint(0, 3)
     output = f"{topic_number}_{words_joined}"
     return output
 
@@ -110,9 +114,11 @@ class ThemeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Theme
 
-    # TODO - may need to be changed once ML pipeline is in
     label = factory.LazyAttribute(lambda _o: generate_dummy_topic_label())
-    summary = f"Summary: {label}"
+    summary = faker.sentence()
+
+    class Params:
+        is_outlier = factory.Trait(label=factory.LazyAttribute(lambda _o: generate_dummy_topic_label(is_outlier=True)))
 
 
 class AnswerFactory(factory.django.DjangoModelFactory):
@@ -129,3 +135,20 @@ class AnswerFactory(factory.django.DjangoModelFactory):
     multiple_choice_responses = factory.LazyAttribute(
         lambda o: [random.choice(o.question.multiple_choice_options)] if o.question.multiple_choice_options else None
     )
+
+
+# this delegates all creation to the create_user method on User
+# because that's how Django likes users to be created
+class UserFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = authentication_models.User
+        skip_postgeneration_save = True
+
+    email = factory.LazyAttribute(lambda o: faker.email())
+    is_staff = False
+    password = factory.LazyAttribute(lambda o: faker.password())
+
+    @factory.post_generation
+    def create_user(user, creation_strategy, value, **kwargs):
+        user.set_password(user.password)
+        user.save()

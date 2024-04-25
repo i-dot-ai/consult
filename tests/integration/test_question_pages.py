@@ -19,7 +19,7 @@ def test_get_question_summary_page(django_app):
     AnswerFactory(multiple_choice_responses=["No"], question=question)
     AnswerFactory(multiple_choice_responses=["Maybe"], question=question)
 
-    question_summary_url = f"/consultations/{consultation.slug}/sections/{section.slug}/questions/{question.slug}"
+    question_summary_url = f"/consultations/{consultation.slug}/sections/{section.slug}/questions/{question.slug}/"
 
     question_page = django_app.get(question_summary_url)
     page_content = html.unescape(str(question_page.content))
@@ -29,9 +29,17 @@ def test_get_question_summary_page(django_app):
     answer = question.answer_set.first()
     assert answer.theme.summary in page_content
 
+    for option in question.multiple_choice_options:
+        assert option in page_content
+
     for keyword in answer.theme.keywords:
         assert keyword in page_content
 
     assert re.search(r"Yes\s+50%", question_page.html.text)
     assert re.search(r"No\s+25%", question_page.html.text)
     assert re.search(r"Maybe\s+25%", question_page.html.text)
+
+    filtered_page = django_app.get(f"{question_summary_url}?opinion=Yes")
+    assert re.search(r"Yes\s+100%", filtered_page.html.text)
+    assert re.search(r"No\s+0%", filtered_page.html.text)
+    assert re.search(r"Maybe\s+0%", filtered_page.html.text)

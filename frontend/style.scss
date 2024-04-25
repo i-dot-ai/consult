@@ -1,9 +1,10 @@
 $govuk-assets-path: "govuk-assets/";
 $govuk-font-family: sans-serif;
 
-$iai-colour-pink: #b62777;
+$iai-colour-pink: #C50878;
 
 @import "node_modules/govuk-frontend/dist/govuk/all";
+@import "node_modules/@x-govuk/govuk-prototype-components/x-govuk/all";
 
 .govuk-header__container {
     border-color: $iai-colour-pink;
@@ -11,6 +12,65 @@ $iai-colour-pink: #b62777;
 .govuk-phase-banner__content__tag {
     background-color: $iai-colour-pink;
     color: white;
+}
+
+.iai-header {
+    border-bottom: 0;
+}
+.iai-header .iai-phase-banner {
+    background-color: white;
+    padding-top: 10px;
+}
+.iai-header .govuk-phase-banner {
+    border-bottom: 0;
+}
+.iai-header .x-govuk-primary-navigation__link:hover {
+    /*color: $iai-colour-pink !important;*/
+    /*text-decoration: none;*/
+}
+
+.iai-header + .govuk-main-wrapper:has(.x-govuk-masthead) {
+    padding-top: 0;
+}
+
+/* HOMEPAGE */
+
+.x-govuk-masthead--pink {
+    background-color: $iai-colour-pink;
+}
+.x-govuk-masthead--pink .govuk-phase-banner {
+    border-bottom-color: white;
+}
+.x-govuk-masthead--pink .govuk-tag {
+    background-color: white;
+    color: $iai-colour-pink;
+}
+.x-govuk-masthead--pink .govuk-button {
+    box-shadow: 0 2px 0 govuk-colour("dark-grey");
+    color: $iai-colour-pink;
+}
+.x-govuk-primary-navigation__link {
+    color: govuk-colour("dark-grey") !important;
+}
+.x-govuk-primary-navigation__item--current {
+    border-bottom-color: govuk-colour("dark-grey");
+}
+
+.iai-processlist {
+    padding: 0;
+}
+.iai-processlist__item {
+    display: flex;
+    align-items: center;
+    list-style-type: none;
+    margin: 3rem 0;
+}
+.iai-processlist__item svg {
+    color: $iai-colour-pink;
+    width: 5rem;
+}
+.iai-processlist__text {
+    margin-left: 1.5rem;
 }
 
 

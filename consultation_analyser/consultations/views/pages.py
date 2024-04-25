@@ -16,15 +16,26 @@ def privacy(request: HttpRequest):
     return render(request, "privacy.html")
 
 
+def data_sharing(request: HttpRequest):
+    return render(request, "data_sharing.html")
+
+
+def how_it_works(request: HttpRequest):
+    return render(request, "how_it_works.html")
+
+
+def get_involved(request: HttpRequest):
+    return render(request, "get_involved.html")
+
+
 # TODO - simple view for testing batch jobs
 # To be removed once tested
 @waffle_switch("CONSULTATION_PROCESSING")
 def batch_example(request: HttpRequest):
     message = ""
     if request.POST:
-        # TODO - run management command
         job_name = "batch_example"
-        command = {"command": ["python", "manage.py", "basic_management_command"]}
+        command = {"command": ["venv/bin/django-admin", "basic_management_command"]}
         if not HostingEnvironment.is_local():
             batch_handler = BatchJobHandler()
             batch_handler.submit_job_batch(jobName=job_name, containerOverrides=command)

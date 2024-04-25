@@ -18,7 +18,7 @@ def test_get_question_responses_page(django_app):
     section = consultation.section_set.first()
     question = section.question_set.first()
     answers = question.answer_set.all()
-    question_responses_url = f"/consultations/{consultation.slug}/sections/{section.slug}/responses/{question.slug}"
+    question_responses_url = f"/consultations/{consultation.slug}/sections/{section.slug}/responses/{question.slug}/"
     responses_page = django_app.get(question_responses_url)
     page_content = html.unescape(str(responses_page.content))
 
@@ -29,7 +29,7 @@ def test_get_question_responses_page(django_app):
     answer_loop_range = min(4, len(answers))
     for i in range(answer_loop_range):
         assert f"{answers[i].free_text}" in page_content
-        assert f"{answers[i].multiple_choice_responses}" in page_content
+        assert f"{answers[i].multiple_choice_responses[0]}" in page_content
         if answers[i].free_text:
             assert f"{answers[i].theme.label}" in page_content
 

@@ -6,19 +6,25 @@
 ### Resources and status
 * **RDS Postgres DB** - fully integrated
   * Credentials can be found in Secrets Manager (when `ai-engineer-role` or `developer` is assumed). Navigate to this by searching for secrets manager in the console or using the aws cli commands for the relevant secrets
-* **Sagemaker** - `ready to integrated`
+* **Sagemaker**
   * Endpoint needs to be spun up when read to be integrated into the app. Ask an engineer to help you do this (Elliot Moore)
   * Work is ongoing to spin these up and down as and when they are being used to  save costs. In the interim, if testing, please ensure that you delete endpoints post use. You can use the boto docs to find the relevant bits for this.
-* **Cognito** - `fully integrated`
-  * Users can be added to cognito in this repo (here)[https://github.com/i-dot-ai/consultation-analyser-infra-config]
-  * Add users to the appropriate environment `.tfvars`
-  * The next time you release your app credentials will be sent out
-* **Batch** - `ready to integrated`
+* **Batch**
   * Place holder code provided on how to use batch in this (PR)[https://github.com/i-dot-ai/consultation-analyser/pull/48/files]. Submit job function documentation is also available in boto documentation. Unit tests available for this code as well.
-* **GitHub Actions** - `fully integrated`
+* **GitHub Actions**
   * Actions for building and pushing docker images and deploying to ECS
   • Actions for building and pushing docker images to AWS batch.
   * Actions for deploying changes to consultations infrastructure available as well.
+* **Whitelisting**
+  * IPs can be added to this repo (here)[https://github.com/i-dot-ai/consultation-analyser-infra-config]
+  * Add IP ranges to the appropriate environment `.tfvars`
+    * Current restriction of 60 individual IPs that can be added (we are in the process of remove this limit)
+  * External IPs should only to `prod`
+  * Whitelisting will take effect the next time the `release-infrastructure` is run. To apply the changes to prod, either:
+    * Wait for the next time you merge into main (this will then automatically trigger the release)
+    * Or click on the latest `release-action` from `main` and hit "Re-run all jobs": https://github.com/i-dot-ai/consultation-analyser/actions/workflows/release-infra.yml?query=branch%3Amain
+* **Secret Manager**
+  * Follow this guide on how to create and use secrets: https://github.com/i-dot-ai/i-ai-core-infrastructure/wiki/Secrets-Manager
 
 ## How to deploy the consultations app to AWS
 1. **Build and push the docker image**

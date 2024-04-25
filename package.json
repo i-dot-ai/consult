@@ -12,7 +12,8 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "govuk-frontend": "^5.3.0",
+    "govuk-frontend": "^5.3.1",
+    "@x-govuk/govuk-prototype-components": "^3.0.5",
     "json-schema-faker-cli": "^5.0.6"
   }
 }

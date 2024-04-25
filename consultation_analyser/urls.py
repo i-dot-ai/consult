@@ -19,5 +19,10 @@ from django.contrib import admin
 from django.urls import include, path
 
 from consultation_analyser.consultations import urls
+from consultation_analyser.support_console import urls as support_console_urls
 
-urlpatterns = [path("admin/", admin.site.urls), path("", include(urls))]
+urlpatterns = [
+    path("", include(urls)),
+    path("admin/", admin.site.urls),
+    path("support/", include(support_console_urls)),
+]

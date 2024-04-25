@@ -1,5 +1,6 @@
 locals {
-  postgres_fqdn = "${module.postgres.rds_instance_username}:${module.postgres.rds_instance_db_password}@${module.postgres.db_instance_address}/${module.postgres.db_instance_name}"
+  postgres_fqdn   = "${module.postgres.rds_instance_username}:${module.postgres.rds_instance_db_password}@${module.postgres.db_instance_address}/${module.postgres.db_instance_name}"
+  secret_env_vars = jsondecode(data.aws_secretsmanager_secret_version.env_vars.secret_string)
 }
 
 module "ecs" {
@@ -22,7 +23,8 @@ module "ecs" {
     "PRODUCTION_DEPLOYMENT" = true,
     "BATCH_JOB_QUEUE"       = module.batch_job_definition.job_queue_name,
     "BATCH_JOB_DEFINITION"  = module.batch_job_definition.job_definition_name,
-    "DJANGO_SECRET_KEY"     = data.aws_secretsmanager_secret_version.django_secret.secret_string
+    "DJANGO_SECRET_KEY"     = data.aws_secretsmanager_secret_version.django_secret.secret_string,
+    "DEBUG"                 = local.secret_env_vars.DEBUG
     "DB_NAME" : "${module.postgres.db_instance_name}",
     "DB_USER" : "${module.postgres.rds_instance_username}",
     "DB_PASSWORD" : "${module.postgres.rds_instance_db_password}",
@@ -34,13 +36,14 @@ module "ecs" {
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   container_port               = "8000"
-  load_balancer_security_group = data.terraform_remote_state.platform.outputs.load_balancer_security_group_id["default"]
-  aws_lb_arn                   = data.terraform_remote_state.platform.outputs.load_balancer_arn["default"]
+  load_balancer_security_group = module.load_balancer.load_balancer_security_group_id
+  aws_lb_arn                   = module.load_balancer.alb_arn
   host                         = local.host
   route53_record_name          = aws_route53_record.type_a_record.name
-
+  ip_whitelist                 = var.external_ips
+  create_listener              = true
+  task_additional_iam_policy   = aws_iam_policy.this.arn
 }
-
 
 resource "aws_route53_record" "type_a_record" {
   zone_id = var.hosted_zone_id
@@ -48,8 +51,35 @@ resource "aws_route53_record" "type_a_record" {
   type    = "A"
 
   alias {
-    name                   = data.terraform_remote_state.platform.outputs.dns_name["default"]
-    zone_id                = data.terraform_remote_state.platform.outputs.zone_id["default"]
+    name                   = module.load_balancer.load_balancer_dns_name
+    zone_id                = module.load_balancer.load_balancer_zone_id
     evaluate_target_health = true
+  }
+}
+
+
+resource "aws_iam_policy" "this" {
+  name        = "i-dot-ai-${terraform.workspace}-ecs-${var.project_name}-additional"
+  description = "Additional permissions for consultations ECS task"
+  policy      = data.aws_iam_policy_document.this.json
+  tags = {
+    Environment = terraform.workspace
+    Deployed    = "github"
+  }
+}
+
+data "aws_iam_policy_document" "this" {
+  # checkov:skip=CKV_AWS_109:KMS policies can't be restricted
+  # checkov:skip=CKV_AWS_111:KMS policies can't be restricted
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "batch:DescribeJobQueues",
+      "batch:SubmitJob"
+    ]
+    resources = [
+      "*",
+    ]
   }
 }

@@ -15,7 +15,6 @@ import os
 from pathlib import Path
 
 import environ
-import waffle
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -40,9 +39,13 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.admin",
     "waffle",  # feature flags
+    "magic_link",
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
+    "consultation_analyser.support_console",
     "compressor",
+    "crispy_forms",
+    "crispy_forms_gds",
 ]
 
 
@@ -58,6 +61,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "waffle.middleware.WaffleMiddleware",
+    "consultation_analyser.middleware.CurrentAppMiddleware",
 ]
 
 ROOT_URLCONF = "consultation_analyser.urls"
@@ -66,11 +70,18 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.jinja2.Jinja2",
         "APP_DIRS": True,
-        "OPTIONS": {"environment": "consultation_analyser.jinja2.environment"},
+        "OPTIONS": {
+            "environment": "consultation_analyser.jinja2.environment",
+            "context_processors": [
+                "consultation_analyser.context_processors.app_config",
+                "django.contrib.messages.context_processors.messages",
+            ],
+        },
     },
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
         "APP_DIRS": True,
+        "DIRS": [BASE_DIR / "consultation_analyser/templates"],
         "OPTIONS": {
             "context_processors": [
                 "django.contrib.auth.context_processors.auth",
@@ -162,3 +173,8 @@ BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION")
 WAFFLE_SWITCH_DEFAULT = False
 WAFFLE_CREATE_MISSING_SWITCHES = True
 WAFFLE_LOG_MISSING_SWITCHES = logging.INFO
+
+APPEND_SLASH = True
+
+CRISPY_ALLOWED_TEMPLATE_PACKS = "gds"
+CRISPY_TEMPLATE_PACK = "gds"

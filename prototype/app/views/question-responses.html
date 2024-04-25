@@ -1,4 +1,4 @@
-{% extends "layouts/main.html" %}
+{% extends "layouts/signed-in.html" %}
 
 {% from "govuk/components/button/macro.njk" import govukButton %}
 {% from "govuk/components/input/macro.njk" import govukInput %}
@@ -74,118 +74,122 @@
           ]
         }) }}
 
-        {{ govukSelect({
-          id: "filter-location",
-          name: "location",
-          label: {
-            text: "Location"
-          },
-          items: [
-            {
-              value: "all",
-              text: "All",
-              selected: true
-            },
-            {
-              value: "england",
-              text: "England"
-            },
-            {
-              value: "scotland",
-              text: "Scotland"
-            },
-            {
-              value: "wales",
-              text: "Wales"
-            },
-            {
-              value: "northern-ireland",
-              text: "Northern Ireland"
-            }
-          ]
-        }) }}
+        {% if data.respondents == "true" %}
 
-        {{ govukSelect({
-          id: "filter-age",
-          name: "age",
-          label: {
-            text: "Age group"
-          },
-          items: [
-            {
-              value: "all",
-              text: "All",
-              selected: true
+          {{ govukSelect({
+            id: "filter-location",
+            name: "location",
+            label: {
+              text: "Location"
             },
-            {
-              value: "13-14",
-              text: "13 - 14"
-            },
-            {
-              value: "15-17",
-              text: "15 - 17"
-            },
-            {
-              value: "18-24",
-              text: "18 - 24"
-            },
-            {
-              value: "25-34",
-              text: "25 - 34"
-            },
-            {
-              value: "35-44",
-              text: "35 - 44"
-            },
-            {
-              value: "45-54",
-              text: "45 - 54"
-            },
-            {
-              value: "55-64",
-              text: "55 - 64"
-            },
-            {
-              value: "65-74",
-              text: "65 - 74"
-            },
-            {
-              value: "75plus",
-              text: "75 or above"
-            },
-            {
-              value: "unknown",
-              text: "Prefer not to say"
-            }
-          ]
-        }) }}
+            items: [
+              {
+                value: "all",
+                text: "All",
+                selected: true
+              },
+              {
+                value: "england",
+                text: "England"
+              },
+              {
+                value: "scotland",
+                text: "Scotland"
+              },
+              {
+                value: "wales",
+                text: "Wales"
+              },
+              {
+                value: "northern-ireland",
+                text: "Northern Ireland"
+              }
+            ]
+          }) }}
 
-        {{ govukSelect({
-          id: "filter-capacity",
-          name: "capacity",
-          label: {
-            text: "Capacity"
-          },
-          items: [
-            {
-              value: "all",
-              text: "All",
-              selected: true
+          {{ govukSelect({
+            id: "filter-age",
+            name: "age",
+            label: {
+              text: "Age group"
             },
-            {
-              value: "personal",
-              text: "Personal"
+            items: [
+              {
+                value: "all",
+                text: "All",
+                selected: true
+              },
+              {
+                value: "13-14",
+                text: "13 - 14"
+              },
+              {
+                value: "15-17",
+                text: "15 - 17"
+              },
+              {
+                value: "18-24",
+                text: "18 - 24"
+              },
+              {
+                value: "25-34",
+                text: "25 - 34"
+              },
+              {
+                value: "35-44",
+                text: "35 - 44"
+              },
+              {
+                value: "45-54",
+                text: "45 - 54"
+              },
+              {
+                value: "55-64",
+                text: "55 - 64"
+              },
+              {
+                value: "65-74",
+                text: "65 - 74"
+              },
+              {
+                value: "75plus",
+                text: "75 or above"
+              },
+              {
+                value: "unknown",
+                text: "Prefer not to say"
+              }
+            ]
+          }) }}
+
+          {{ govukSelect({
+            id: "filter-capacity",
+            name: "capacity",
+            label: {
+              text: "Capacity"
             },
-            {
-              value: "professional",
-              text: "Professional"
-            },
-            {
-              value: "organisation",
-              text: "Organisation"
-            }
-          ]
-        }) }}
+            items: [
+              {
+                value: "all",
+                text: "All",
+                selected: true
+              },
+              {
+                value: "personal",
+                text: "Personal"
+              },
+              {
+                value: "professional",
+                text: "Professional"
+              },
+              {
+                value: "organisation",
+                text: "Organisation"
+              }
+            ]
+          }) }}
+
+        {% endif %}
 
         {{ govukButton({
           text: "Apply filters",
@@ -211,7 +215,9 @@
         <tr class="govuk-table__row">
           <th scope="col" class="govuk-table__header">Closed response</th>
           <th scope="col" class="govuk-table__header">Open response</th>
-          <th scope="col" class="govuk-table__header" style="width: 9rem;">Actions</th>
+          {% if data.respondents == "true" %}
+            <th scope="col" class="govuk-table__header" style="width: 9rem;">Actions</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody class="govuk-table__body">
@@ -220,16 +226,11 @@
           <tr class="govuk-table__row">
             <td class="govuk-table__cell">Agree</td>
             <td class="govuk-table__cell">{{response}}</td>
-            <td class="govuk-table__cell">
-              <a href="/respondent">View respondent</a>
-              {#
-              {{ govukButton({
-                text: "View respondent",
-                classes: "govuk-button--secondary",
-                href: "/respondent"
-              }) }}
-              #}
-            </td>
+            {% if data.respondents == "true" %}
+              <td class="govuk-table__cell">
+                <a href="/respondent">View respondent</a>
+              </td>
+            {% endif %}
           </tr>
         {% endfor %}
       </tbody>

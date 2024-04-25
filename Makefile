@@ -93,8 +93,8 @@ PREV_IMAGE=$(ECR_REPO_URL):$(PREV_IMAGE_TAG)
 tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 
 .PHONY: docker_build
-docker_build: ## Build the docker container
-	docker pull $(PREV_IMAGE)
+docker_build: ## Pull previous container (if it exists) build the docker container
+	docker pull $(PREV_IMAGE) || true
 	docker build . -t $(IMAGE)
 
 .PHONY: docker_run
