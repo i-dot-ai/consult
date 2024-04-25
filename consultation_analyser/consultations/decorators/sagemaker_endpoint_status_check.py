@@ -1,13 +1,14 @@
+import os
+
 import boto3
-from django.conf import settings
 
 
 def check_and_launch_sagemaker(func):
-    def wrapper(request, *args, **kwargs):
+    def wrapper(*args, **kwargs):
         sagemaker = boto3.client("sagemaker")
-        endpoint_name = settings.SAGEMAKER_ENDPOINT_NAME
+        endpoint_name = os.environ.get("SAGEMAKER_ENDPOINT_NAME", None)
         if not endpoint_name:
-            return func(request, *args, **kwargs)
+            return func(*args, **kwargs)
         try:
             sagemaker.describe_endpoint(EndpointName=endpoint_name)
             print(f"Endpoint {endpoint_name} already exists. Skipping creation.")
@@ -18,6 +19,6 @@ def check_and_launch_sagemaker(func):
                 EndpointConfigName=endpoint_name,
             )
             print(f"Endpoint {endpoint_name} has been created.")
-        return func(request, *args, **kwargs)
+        return func(*args, **kwargs)
 
     return wrapper
