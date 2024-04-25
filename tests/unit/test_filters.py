@@ -1,6 +1,7 @@
 import pytest
 
 from consultation_analyser import factories
+from consultation_analyser.consultations import models
 from consultation_analyser.consultations.views import filters
 
 
@@ -15,7 +16,7 @@ def set_up_for_filters():
         theme=theme2, question=question, free_text="We like cats not dogs.", multiple_choice_responses=["Option 1"]
     )
     factories.AnswerFactory(theme=theme2, question=question, free_text="We love cats.")
-    return question, theme1
+    return question
 
 
 @pytest.mark.parametrize(
@@ -29,14 +30,30 @@ def set_up_for_filters():
 )
 @pytest.mark.django_db
 def test_get_filtered_responses(applied_filters, expected_count):
-    question, _ = set_up_for_filters()
+    question = set_up_for_filters()
     queryset = filters.get_filtered_responses(question, applied_filters=applied_filters)
     assert queryset.count() == expected_count
 
 
 @pytest.mark.django_db
 def test_get_filtered_responses_themes():
-    question, theme1 = set_up_for_filters()
+    # Separate test, we need to get the theme ID from the generated theme
+    question = set_up_for_filters()
+    theme1 = models.Theme.objects.all().order_by("created_at").first()
     applied_filters = {"keyword": "", "theme": theme1.id, "opinion": "All"}
     queryset = filters.get_filtered_responses(question, applied_filters=applied_filters)
     assert queryset.count() == 1
+    assert queryset[0].free_text == "We love dogs."
+
+
+@pytest.mark.django_db
+def test_get_filtered_themes():
+    question = set_up_for_filters()
+    answers_queryset = models.Answer.objects.all()
+    theme2 = models.Theme.objects.all().order_by("created_at").last()
+    applied_filters = {"keyword": "", "theme": theme2.id, "opinion": "All"}
+    queryset = filters.get_filtered_themes(
+        question=question, filtered_answers=answers_queryset, applied_filters=applied_filters
+    )
+    assert queryset.count() == 1
+    assert queryset[0].label == "2_cat_kitten"
