@@ -5,9 +5,6 @@ module "lambda" {
   handler               = "lambda_function.lambda_handler"
   runtime               = "python3.12"
   source_code_hash      = data.archive_file.lambda_zip.output_base64sha256
-  environment_variables = {
-    queue_name = "consultations"
-  }
   iam_role_name = "lambda_sagemaker_endpoint"
 }
 
