@@ -25,8 +25,16 @@ from consultation_analyser.support_console import urls as support_console_urls
 handler404 = error_views.error_404
 handler500 = error_views.error_500
 
+
+# TODO - remove after testing!
+def trigger_error(request):
+    division_by_zero = 1 / 0
+    return division_by_zero
+
+
 urlpatterns = [
     path("", include(urls)),
     path("admin/", admin.site.urls),
     path("support/", include(support_console_urls)),
+    path("trigger-error/", trigger_error),
 ]
