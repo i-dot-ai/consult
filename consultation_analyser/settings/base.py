@@ -27,7 +27,7 @@ env = environ.Env(DEBUG=(bool, False))
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
 
-SAGEMAKER_ENDPOINT_NAME = env("SAGEMAKER_ENDPOINT_NAME", default=None)
+SAGEMAKER_ENDPOINT_NAME = env("SAGEMAKER_ENDPOINT_NAME")
 
 ALLOWED_HOSTS: list[str] = [os.getenv("DOMAIN_NAME", "0.0.0.0"), "*"]  # nosec
 
