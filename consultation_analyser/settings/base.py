@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "consultation_analyser.support_console",
+    "consultation_analyser.error_pages",
     "compressor",
     "crispy_forms",
     "crispy_forms_gds",
@@ -61,7 +62,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "waffle.middleware.WaffleMiddleware",
-    "consultation_analyser.middleware.CurrentAppMiddleware",
 ]
 
 ROOT_URLCONF = "consultation_analyser.urls"
