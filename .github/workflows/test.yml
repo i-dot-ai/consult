@@ -61,6 +61,7 @@ jobs:
           SAGEMAKER_ENDPOINT_NAME: test-endpoint
           GOVUK_NOTIFY_API_KEY: dummy-key
           GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID: dummy-template
+          ENVIRONMENT: test
 
       - name: pytest
         run:
