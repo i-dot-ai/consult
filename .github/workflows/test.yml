@@ -59,6 +59,7 @@ jobs:
           BATCH_JOB_QUEUE: dummy-queue
           BATCH_JOB_DEFINITION: dummy-definition
           SAGEMAKER_ENDPOINT_NAME: test-endpoint
+          ENVIRONMENT: test
 
       - name: pytest
         run:
