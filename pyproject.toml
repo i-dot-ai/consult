@@ -43,6 +43,7 @@ django-waffle = "^4.1.0"
 django-magic-link = "^1.0.0"
 django-crispy-forms = "^2.1"
 crispy-forms-gds = "^0.3.1"
+sentry-sdk = "^2.0.1"
 
 
 [tool.poetry.group.development.dependencies]
@@ -54,6 +55,7 @@ django-extensions = "^3.2.3"
 [tool.mypy]
 files = '**/*.py'
 exclude= ['^consultation_analyser/consultations/migrations/']
+
 
 
 
