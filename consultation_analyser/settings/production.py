@@ -8,4 +8,5 @@ SENTRY_DSN = env("SENTRY_DSN")
 
 sentry_sdk.init(
     dsn=SENTRY_DSN,
+    environment=ENVIRONMENT,
 )
