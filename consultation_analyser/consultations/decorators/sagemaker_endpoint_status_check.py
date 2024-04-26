@@ -10,9 +10,7 @@ logger.setLevel("INFO")
 def check_and_launch_sagemaker(func):
     def wrapper(*args, **kwargs):
         sagemaker = boto3.client("sagemaker")
-        endpoint_name = os.environ.get("SAGEMAKER_ENDPOINT_NAME", None)
-        if not endpoint_name:
-            return func(*args, **kwargs)
+        endpoint_name = os.environ.get("SAGEMAKER_ENDPOINT_NAME")
         try:
             sagemaker.describe_endpoint(EndpointName=endpoint_name)
             logger.info(f"Endpoint {endpoint_name} already exists. Skipping creation.")
