@@ -1,5 +1,6 @@
 locals {
-  postgres_fqdn = "${module.postgres.rds_instance_username}:${module.postgres.rds_instance_db_password}@${module.postgres.db_instance_address}/${module.postgres.db_instance_name}"
+  postgres_fqdn   = "${module.postgres.rds_instance_username}:${module.postgres.rds_instance_db_password}@${module.postgres.db_instance_address}/${module.postgres.db_instance_name}"
+  secret_env_vars = jsondecode(data.aws_secretsmanager_secret_version.env_vars.secret_string)
 }
 
 module "ecs" {
@@ -18,12 +19,13 @@ module "ecs" {
     port                = 8000
   }
   environment_variables = {
-    "ENVIRONMENT"           = terraform.workspace,
-    "PRODUCTION_DEPLOYMENT" = true,
-    "BATCH_JOB_QUEUE"       = module.batch_job_definition.job_queue_name,
-    "BATCH_JOB_DEFINITION"  = module.batch_job_definition.job_definition_name,
-    "DJANGO_SECRET_KEY"     = data.aws_secretsmanager_secret_version.django_secret.secret_string,
-    "DEBUG"                 = data.aws_secretsmanager_secret_version.debug.secret_string
+    "ENVIRONMENT"             = terraform.workspace,
+    "PRODUCTION_DEPLOYMENT"   = true,
+    "BATCH_JOB_QUEUE"         = module.batch_job_definition.job_queue_name,
+    "BATCH_JOB_DEFINITION"    = module.batch_job_definition.job_definition_name,
+    "DJANGO_SECRET_KEY"       = data.aws_secretsmanager_secret_version.django_secret.secret_string,
+    "DEBUG"                   = local.secret_env_vars.DEBUG,
+    "SAGEMAKER_ENDPOINT_NAME" = local.secret_env_vars.SAGEMAKER_ENDPOINT_NAME
     "DB_NAME" : "${module.postgres.db_instance_name}",
     "DB_USER" : "${module.postgres.rds_instance_username}",
     "DB_PASSWORD" : "${module.postgres.rds_instance_db_password}",

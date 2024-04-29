@@ -1,4 +1,4 @@
-from typing import Dict, List, NamedTuple, Union
+from typing import Dict, List, Union
 from uuid import UUID
 
 import numpy as np
