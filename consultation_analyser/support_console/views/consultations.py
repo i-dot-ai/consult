@@ -24,13 +24,14 @@ def index(request: HttpRequest) -> HttpResponse:
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     consultation = models.Consultation.objects.get(slug=consultation_slug)
     if request.POST:
+        # TODO - do we want to run it more than once?
         themes_already_exist = models.Theme.objects.filter(
             answer__question__section__consultation=consultation
         ).exists()
         if not themes_already_exist:
-            from consultation_analyser.consultations import ml_pipeline
+            from consultation_analyser.processing import process_consultation_themes  # Only import when needed
 
-            ml_pipeline.save_themes_for_consultation(consultation_id=consultation.id)
+            process_consultation_themes(consultation)
     # TODO - pass through messages - "themes created" or "consultation already has themes"
     context = {"consultation": consultation}
     return render(request, "support_console/consultation.html", context=context)
