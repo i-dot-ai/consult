@@ -1,6 +1,6 @@
 # npm
 # use the same base image as the others for efficiency
-FROM python:3.12-slim AS npm-packages
+FROM python:3.12.3-slim AS npm-packages
 
 RUN apt-get update && apt-get install --yes nodejs npm > /dev/null
 
@@ -11,7 +11,7 @@ RUN npm install
 
 
 # poetry
-FROM python:3.12-slim AS poetry-packages
+FROM python:3.12.3-slim AS poetry-packages
 
 RUN apt-get update && apt-get install --yes build-essential > /dev/null
 
@@ -29,7 +29,7 @@ RUN poetry bundle venv ./venv
 
 
 # app
-FROM python:3.12-slim
+FROM python:3.12.3-slim
 
 RUN apt-get update && apt-get install --yes libpq-dev > /dev/null
 
