@@ -32,6 +32,5 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
             from consultation_analyser.processing import run_processing_pipeline  # Only import when needed
 
             run_processing_pipeline(consultation)
-    # TODO - pass through messages - "themes created" or "consultation already has themes"
     context = {"consultation": consultation}
     return render(request, "support_console/consultation.html", context=context)
