@@ -35,6 +35,9 @@ $iai-colour-pink: #C50878;
 
 /* HOMEPAGE */
 
+.x-govuk-masthead {
+    width: 100%;
+}
 .x-govuk-masthead--pink {
     background-color: $iai-colour-pink;
 }
