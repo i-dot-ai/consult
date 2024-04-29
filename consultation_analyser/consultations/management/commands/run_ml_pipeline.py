@@ -1,7 +1,7 @@
-# Currently a placeholder for command to run ML pipeline
 from django.core.management.base import BaseCommand
 
 from consultation_analyser.consultations import models
+from consultation_analyser.processing import process_consultation_themes
 
 
 class Command(BaseCommand):
@@ -14,9 +14,10 @@ class Command(BaseCommand):
         if options["consultation_slug"]:
             try:
                 consultation = models.Consultation.objects.get(slug=options["consultation_slug"])
-                # TODO - this is to be replaced with the actual ML pipeline
-                dummy_message = f"This is a placeholder for running the ML pipeline for consultation with name '{consultation.name}'"
-                self.stdout.write(dummy_message)
+                process_consultation_themes(consultation)
+                self.stdout.write(
+                    f"Theme generating pipeline has been run for consultation with name {consultation.name}"
+                )
             except models.Consultation.DoesNotExist:
                 self.stdout.write("You need to enter a valid slug for a consultation")
         else:

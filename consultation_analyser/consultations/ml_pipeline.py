@@ -77,8 +77,10 @@ def save_themes_for_question(question: models.Question) -> None:
 
 
 def save_themes_for_consultation(consultation_id: UUID) -> None:
+    print("save themes")
     questions = models.Question.objects.filter(section__consultation__id=consultation_id, has_free_text=True)
     for question in questions:
+        print(f"question slug: {question.slug}")
         save_themes_for_question(question)
 
 

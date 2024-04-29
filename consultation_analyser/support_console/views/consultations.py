@@ -29,9 +29,9 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
             answer__question__section__consultation=consultation
         ).exists()
         if not themes_already_exist:
-            from consultation_analyser.processing import process_consultation_themes  # Only import when needed
+            from consultation_analyser.processing import run_processing_pipeline  # Only import when needed
 
-            process_consultation_themes(consultation)
+            run_processing_pipeline(consultation)
     # TODO - pass through messages - "themes created" or "consultation already has themes"
     context = {"consultation": consultation}
     return render(request, "support_console/consultation.html", context=context)
