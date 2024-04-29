@@ -44,6 +44,9 @@ module "ecs" {
   ip_whitelist                 = var.external_ips
   create_listener              = true
   task_additional_iam_policy   = aws_iam_policy.this.arn
+  additional_tags = {
+    "RolePassableByRunner" = "True"
+  }
 }
 
 resource "aws_route53_record" "type_a_record" {
