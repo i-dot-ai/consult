@@ -15,7 +15,7 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-m">Showing <strong>all</strong> of <strong>{{ total_responses}} </strong> responses</span>
+      <span class="govuk-caption-m">Showing <strong>all</strong> of <strong>{{ total_responses }} </strong> responses</span>
       <h1 class="govuk-heading-l">{{ page_title }}</h1>
       <p class="govuk-body">{{ question.text }}</p>
 
@@ -61,7 +61,7 @@
               <select class="govuk-select" id="theme" name="theme">
                 <option {% if applied_filters.theme == "All" %}selected{% endif %}>All</option>
                 {% for theme in themes %}
-                  <option value="{{ theme.id }}" {% if applied_filters.theme|string == theme.id|string %}selected{% endif %}>{{ theme.label }}</option>
+                  <option value="{{ theme.id }}" {% if applied_filters.theme|string == theme.id|string %}selected{% endif %}>{{ theme.summary }}</option>
                 {% endfor %}
                 {#<option {% if applied_filters.theme == "No theme" %}selected{% endif %}>No theme</option>#}
               </select>
@@ -110,10 +110,9 @@
               <td class="govuk-table__cell">
                 <details class="govuk-details govuk-!-margin-bottom-0">
                   <summary class="govuk-details__summary govuk-!-margin-top-1">
-                    <span class="govuk-details__summary-text">{{ theme.label }}</span>
+                    <span class="govuk-details__summary-text">{{ theme.summary }}</span>
                   </summary>
                   <div class="govuk-details__text">
-                    <p>{{ theme.summary }}</p>
                     <p class="govuk-!-margin-bottom-0">This theme has the following keywords:</p>
                     <ul class="iai-inline-list govuk-!-margin-top-1">
                       {% for word in theme.keywords %}
