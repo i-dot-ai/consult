@@ -2,12 +2,10 @@ import html
 import re
 
 import pytest
-from waffle.testutils import override_switch
 
 from consultation_analyser.factories import AnswerFactory, ConsultationFactory
 
 
-@override_switch("CONSULTATION_PROCESSING", True)
 @pytest.mark.django_db
 def test_get_question_summary_page(django_app):
     consultation = ConsultationFactory(with_question=True, with_question__with_free_text=True)

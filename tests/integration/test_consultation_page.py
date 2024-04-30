@@ -1,11 +1,9 @@
 import pytest
-from waffle.testutils import override_switch
 
 from consultation_analyser.factories import ConsultationFactory
 
 
 @pytest.mark.django_db
-@override_switch("CONSULTATION_PROCESSING", True)
 def test_consultation_page(django_app):
     consultation = ConsultationFactory(with_question=True)
     consultation_slug = consultation.slug

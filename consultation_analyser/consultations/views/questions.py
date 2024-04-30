@@ -1,13 +1,11 @@
 from django.db.models import Max
 from django.http import HttpRequest
 from django.shortcuts import render
-from waffle.decorators import waffle_switch
 
 from .. import models
 from .filters import get_applied_filters, get_filtered_responses, get_filtered_themes
 
 
-@waffle_switch("CONSULTATION_PROCESSING")
 def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
     question = models.Question.objects.get(
         slug=question_slug, section__slug=section_slug, section__consultation__slug=consultation_slug
