@@ -6,7 +6,7 @@ from .. import models
 
 
 @waffle_switch("CONSULTATION_PROCESSING")
-def show_all(request: HttpRequest) -> HttpResponse:
+def index(request: HttpRequest) -> HttpResponse:
     # TODO - in future, would restrict to all consultations for user
     consultations = models.Consultation.objects.all()
     context = {"consultations": consultations}

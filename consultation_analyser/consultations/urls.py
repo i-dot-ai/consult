@@ -10,7 +10,7 @@ urlpatterns = [
     path("data-sharing/", pages.data_sharing),
     path("get-involved/", pages.get_involved),
     path("privacy/", pages.privacy),
-    path("consultations/", consultations.show_all),
+    path("consultations/", consultations.index),
     path("consultations/<str:consultation_slug>/", consultations.show, name="consultation"),
     path("schema/<str:schema_name>.json", schema.raw_schema),
     path(
