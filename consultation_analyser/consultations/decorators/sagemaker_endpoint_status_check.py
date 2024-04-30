@@ -1,5 +1,4 @@
 import logging
-import os
 
 import boto3
 from django.conf import settings
@@ -9,10 +8,9 @@ logger.setLevel("INFO")
 
 
 def check_and_launch_sagemaker(func):
-    if not settings.USE_SAGEMAKER_LLM:
-        return func
-
     def wrapper(*args, **kwargs):
+        if not settings.USE_SAGEMAKER_LLM:
+            return func(*args, **kwargs)
         sagemaker = boto3.client("sagemaker")
         endpoint_name = settings.SAGEMAKER_ENDPOINT_NAME
         try:

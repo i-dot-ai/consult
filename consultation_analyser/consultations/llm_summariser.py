@@ -1,6 +1,7 @@
 """
 Use LLMs to generate summaries for themes. More to follow!
 """
+
 from consultation_analyser.consultations.models import Theme
 
 
