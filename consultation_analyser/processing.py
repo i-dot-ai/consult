@@ -1,23 +1,8 @@
 from django.conf import settings
 
 from consultation_analyser.batch_calls import BatchJobHandler
-from consultation_analyser.consultations.decorators.sagemaker_endpoint_status_check import check_and_launch_sagemaker
-from consultation_analyser.consultations.llm_summariser import dummy_generate_theme_summary
-from consultation_analyser.consultations.models import Theme
+from consultation_analyser.consultations.llm_summariser import create_llm_summaries_for_consultation
 from consultation_analyser.hosting_environment import HostingEnvironment
-
-
-@check_and_launch_sagemaker
-def create_llm_summaries_for_consultation(consultation):
-    themes = Theme.objects.filter(question__section__consultation=consultation).filter(question__has_free_text=True)
-    for theme in themes:
-        if settings.USE_SAGEMAKER_LLM:
-            # TODO - to be replaced by a real version!
-            summary = dummy_generate_theme_summary(theme)
-        else:
-            summary = dummy_generate_theme_summary(theme)
-        theme.summary = summary
-        theme.save()
 
 
 def process_consultation_themes(consultation):
