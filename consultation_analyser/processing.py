@@ -9,7 +9,6 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 
 @check_and_launch_sagemaker
 def create_llm_summaries_for_consultation(consultation):
-    # TODO - alternative method when we are using LLMs - switch on USE
     themes = Theme.objects.filter(question__section__consultation=consultation).filter(question__has_free_text=True)
     for theme in themes:
         if settings.USE_SAGEMAKER_LLM:

@@ -4,6 +4,7 @@ from django.shortcuts import render
 
 from consultation_analyser.consultations import dummy_data, models
 from consultation_analyser.hosting_environment import HostingEnvironment
+from consultation_analyser.processing import run_processing_pipeline
 
 
 @staff_member_required
@@ -24,13 +25,11 @@ def index(request: HttpRequest) -> HttpResponse:
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     consultation = models.Consultation.objects.get(slug=consultation_slug)
     if request.POST:
-        # TODO - do we want to run it more than once?
+        # TODO - run it just once for now
         themes_already_exist = models.Theme.objects.filter(
             answer__question__section__consultation=consultation
         ).exists()
         if not themes_already_exist:
-            from consultation_analyser.processing import run_processing_pipeline  # Only import when needed
-
             run_processing_pipeline(consultation)
     context = {"consultation": consultation}
     return render(request, "support_console/consultation.html", context=context)
