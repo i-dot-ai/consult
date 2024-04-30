@@ -1,3 +1,4 @@
+from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
@@ -9,13 +10,12 @@ from consultation_analyser.processing import run_processing_pipeline
 
 @staff_member_required
 def index(request: HttpRequest) -> HttpResponse:
-    # TODO - add messages
     if request.POST:
         try:
             dummy_data.DummyConsultation(include_themes=False)
+            messages.success(request, "A dummy consultation has been generated")
         except RuntimeError as error:
-            pass
-            # TODO - pass through message from the error
+            messages.error(request, error.args[0])
     consultations = models.Consultation.objects.all()
     context = {"consultations": consultations, "development_env": HostingEnvironment.is_development_environment()}
     return render(request, "support_console/all-consultations.html", context=context)
@@ -31,5 +31,8 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
         ).exists()
         if not themes_already_exist:
             run_processing_pipeline(consultation)
+            messages.success(request, "Themes have been generated for this consultation")
+        else:
+            messages.info(request, "This consultation already has themes")
     context = {"consultation": consultation}
     return render(request, "support_console/consultation.html", context=context)
