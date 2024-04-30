@@ -12,7 +12,7 @@ from consultation_analyser.processing import run_processing_pipeline
 def index(request: HttpRequest) -> HttpResponse:
     if request.POST:
         try:
-            dummy_data.DummyConsultation(include_themes=False)
+            dummy_data.DummyConsultation(include_themes=False, number_questions=2)
             messages.success(request, "A dummy consultation has been generated")
         except RuntimeError as error:
             messages.error(request, error.args[0])
