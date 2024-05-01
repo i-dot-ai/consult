@@ -1,8 +1,8 @@
 import pytest
 
 from consultation_analyser import factories
-from consultation_analyser.consultations.llm_summariser import create_llm_summaries_for_consultation
 from consultation_analyser.consultations.models import Theme
+from consultation_analyser.pipeline.llm_summariser import create_llm_summaries_for_consultation
 
 
 @pytest.mark.django_db
