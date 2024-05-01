@@ -28,4 +28,5 @@ module "batch_job_definition" {
   state_bucket            = var.state_bucket
   image                   = "${local.batch_image_ecr_url}:${var.image_tag}"
   fargate_flag            = false
+  env_vars                = local.env_vars
 }
