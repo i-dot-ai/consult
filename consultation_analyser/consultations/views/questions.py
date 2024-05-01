@@ -26,6 +26,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
     highest_theme_count = filtered_themes.aggregate(Max("answer_count"))["answer_count__max"]
 
     context = {
+        "consultation_slug": consultation_slug,
         "question": question,
         "multiple_choice_responses": multiple_choice_responses,
         "responses": responses,
