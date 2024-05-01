@@ -19,12 +19,12 @@ module "ecs" {
     port                = 8000
   }
   environment_variables = {
-    "ENVIRONMENT"           = terraform.workspace,
-    "PRODUCTION_DEPLOYMENT" = true,
-    "BATCH_JOB_QUEUE"       = module.batch_job_definition.job_queue_name,
-    "BATCH_JOB_DEFINITION"  = module.batch_job_definition.job_definition_name,
-    "DJANGO_SECRET_KEY"     = data.aws_secretsmanager_secret_version.django_secret.secret_string,
-    "DEBUG"                 = local.secret_env_vars.DEBUG,
+    "ENVIRONMENT"             = terraform.workspace,
+    "PRODUCTION_DEPLOYMENT"   = true,
+    "BATCH_JOB_QUEUE"         = module.batch_job_definition.job_queue_name,
+    "BATCH_JOB_DEFINITION"    = module.batch_job_definition.job_definition_name,
+    "DJANGO_SECRET_KEY"       = data.aws_secretsmanager_secret_version.django_secret.secret_string,
+    "DEBUG"                   = local.secret_env_vars.DEBUG,
     "SAGEMAKER_ENDPOINT_NAME" = local.secret_env_vars.SAGEMAKER_ENDPOINT_NAME
     "GOVUK_NOTIFY_API_KEY"                 = local.secret_env_vars.GOVUK_NOTIFY_API_KEY,
     "GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID" = local.secret_env_vars.GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID,
@@ -46,6 +46,9 @@ module "ecs" {
   ip_whitelist                 = var.external_ips
   create_listener              = true
   task_additional_iam_policy   = aws_iam_policy.this.arn
+  additional_tags = {
+    "RolePassableByRunner" = "True"
+  }
 }
 
 resource "aws_route53_record" "type_a_record" {
