@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "consultation_analyser.consultations",
     "consultation_analyser.support_console",
     "consultation_analyser.error_pages",
+    "consultation_analyser.email",
     "compressor",
     "crispy_forms",
     "crispy_forms_gds",
@@ -168,15 +169,23 @@ STATICFILES_FINDERS = [
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+# Django URL format
+APPEND_SLASH = True
 
+# AWS Batch
 BATCH_JOB_QUEUE = env("BATCH_JOB_QUEUE")
 BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION")
 
+# Feature flags
 WAFFLE_SWITCH_DEFAULT = False
 WAFFLE_CREATE_MISSING_SWITCHES = True
 WAFFLE_LOG_MISSING_SWITCHES = logging.INFO
 
-APPEND_SLASH = True
-
+# Crispy forms
 CRISPY_ALLOWED_TEMPLATE_PACKS = "gds"
 CRISPY_TEMPLATE_PACK = "gds"
+
+# Email
+EMAIL_BACKEND = "django_gov_notify.backends.NotifyEmailBackend"
+GOVUK_NOTIFY_API_KEY = env("GOVUK_NOTIFY_API_KEY")
+GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID = env("GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID")
