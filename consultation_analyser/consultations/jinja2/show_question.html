@@ -1,7 +1,15 @@
 {% extends "base.html" %}
+{%- from 'govuk_frontend_jinja/components/back-link/macro.html' import govukBackLink -%}
 {%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
 
-{% set page_title = "Question summary - dummy page" %}
+{% set page_title = "Question summary" %}
+
+{% block pre_main %}
+  {{ govukBackLink({
+    "text": "Back to all questions",
+    "href": "/consultations/" + consultation_slug
+  }) }}
+{% endblock %}
 
 {% block content %}
 

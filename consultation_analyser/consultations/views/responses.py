@@ -24,6 +24,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
     paginated_responses = current_page.object_list
 
     context = {
+        "consultation_slug": consultation_slug,
         "question": question,
         "responses": paginated_responses,
         "total_responses": total_responses,

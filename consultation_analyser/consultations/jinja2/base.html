@@ -47,6 +47,9 @@
       "html": 'This is a new service – your <a class="govuk-link" href="https://www.smartsurvey.co.uk/s/GESFSF/">feedback</a> will help us to improve it.'
     }) }}
 
+    {% block pre_main %}
+    {% endblock %}
+
     <main class="govuk-main-wrapper" id="main-content" role="main">
       {% include "messages.html" %}
       {% block content %}
