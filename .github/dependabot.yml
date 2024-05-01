@@ -5,11 +5,12 @@ updates:
   - package-ecosystem: "pip"
     directory: "/"
     schedule:
-      interval: "daily"
+      interval: "weekly"
     groups:
       pip-updates:
-        patterns:
-          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/"
@@ -17,8 +18,9 @@ updates:
       interval: "weekly"
     groups:
       npm-updates:
-        patterns:
-          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "npm"
     directory: "/prototype"
@@ -26,8 +28,9 @@ updates:
       interval: "weekly"
     groups:
       prototype-updates:
-        patterns:
-          - "*"
+        update-types:
+          - "minor"
+          - "patch"
 
   - package-ecosystem: "github-actions"
     directory: "/"
@@ -35,5 +38,6 @@ updates:
       interval: "weekly"
     groups:
       actions-updates:
-        patterns:
-          - "*"
+        update-types:
+          - "minor"
+          - "patch"
