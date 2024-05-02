@@ -6,6 +6,7 @@ urlpatterns = [
     path("", pages.support_home),
     path("sign-out/", pages.sign_out),
     path("users/", users.index),
+    path("users/new", users.new),
     path("consultations/", consultations.index),
     path("consultations/<str:consultation_slug>/", consultations.show, name="support_consultation"),
 ]

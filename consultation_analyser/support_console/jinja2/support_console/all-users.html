@@ -3,8 +3,14 @@
 
 {% set page_title = "Users" %}
 
+
 {% block content %}
   <h1 class="govuk-heading-l">{{ page_title }}</h1>
+
+  <a href="/support/users/new" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+    Add a new user
+  </a>
+
   <table class="govuk-table">
     <thead class="govuk-table__head">
       <tr class="govuk-table__row">
