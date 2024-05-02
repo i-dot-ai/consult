@@ -15,6 +15,7 @@
     <thead class="govuk-table__head">
       <tr class="govuk-table__row">
         <th scope="col" class="govuk-table__header">Email</th>
+        <th scope="col" class="govuk-table__header">Created at</th>
       </tr>
     </thead>
     <tbody class="govuk-table__body">
@@ -22,6 +23,9 @@
       <tr class="govuk-table__row">
         <td class="govuk-table__cell">
           <a class="govuk-link" href="/support/users/{{ user.id }}">{{ user.email }}</a>
+        </td>
+        <td class="govuk-table__cell">
+          {{ user.created_at }}
         </td>
       </tr>
     {% endfor %}
