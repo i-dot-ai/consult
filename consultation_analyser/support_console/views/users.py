@@ -1,7 +1,7 @@
 from django.contrib import messages
-from django.http import HttpRequest
-from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib.admin.views.decorators import staff_member_required
+from django.http import HttpRequest
+from django.shortcuts import get_object_or_404, redirect, render
 
 from consultation_analyser.authentication.models import User
 
