@@ -5,8 +5,10 @@ from django.shortcuts import render
 
 from .. import models
 from .filters import get_applied_filters, get_filtered_responses, get_filtered_themes
+from .decorators import user_can_see_consultation
 
 
+@user_can_see_consultation
 @login_required
 def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
     question = models.Question.objects.get(
