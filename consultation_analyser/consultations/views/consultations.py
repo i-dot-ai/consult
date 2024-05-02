@@ -1,9 +1,11 @@
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_required
 
 from .. import models
 
 
+@login_required
 def index(request: HttpRequest) -> HttpResponse:
     # TODO - in future, would restrict to all consultations for user
     consultations = models.Consultation.objects.all()
