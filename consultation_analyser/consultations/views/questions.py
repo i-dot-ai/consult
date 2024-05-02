@@ -1,3 +1,4 @@
+from django.contrib.auth.decorators import login_required
 from django.db.models import Max
 from django.http import HttpRequest
 from django.shortcuts import render
@@ -6,6 +7,7 @@ from .. import models
 from .filters import get_applied_filters, get_filtered_responses, get_filtered_themes
 
 
+@login_required
 def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
     question = models.Question.objects.get(
         slug=question_slug, section__slug=section_slug, section__consultation__slug=consultation_slug

@@ -1,9 +1,9 @@
 import pytest
-from waffle.testutils import override_switch
-from tests.helpers import sign_in
 from django.core import mail
+from waffle.testutils import override_switch
 
 from consultation_analyser.factories import UserFactory
+from tests.helpers import sign_in
 
 
 @pytest.mark.django_db

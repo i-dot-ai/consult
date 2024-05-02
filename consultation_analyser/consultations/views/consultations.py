@@ -1,6 +1,6 @@
+from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
-from django.contrib.auth.decorators import login_required
 
 from .. import models
 
@@ -13,6 +13,7 @@ def index(request: HttpRequest) -> HttpResponse:
     return render(request, "all-consultations.html", context)
 
 
+@login_required
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     questions = models.Question.objects.filter(section__consultation__slug=consultation_slug)
     context = {"questions": questions}
