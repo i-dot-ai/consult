@@ -26,21 +26,3 @@ def how_it_works(request: HttpRequest):
 
 def get_involved(request: HttpRequest):
     return render(request, "get_involved.html")
-
-
-# TODO - simple view for testing batch jobs
-# To be removed once tested
-@waffle_switch("CONSULTATION_PROCESSING")
-def batch_example(request: HttpRequest):
-    message = ""
-    if request.POST:
-        job_name = "batch_example"
-        command = {"command": ["venv/bin/django-admin", "basic_management_command"]}
-        if not HostingEnvironment.is_local():
-            batch_handler = BatchJobHandler()
-            batch_handler.submit_job_batch(jobName=job_name, containerOverrides=command)
-            message = "Batch job has been run"
-        else:
-            message = "Batch job not run locally"
-    context = {"message": message}
-    return render(request, "batch_example.html", context)

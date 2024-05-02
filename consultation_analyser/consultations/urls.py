@@ -23,10 +23,8 @@ urlpatterns = [
         responses.show,
         name="show_question_responses",
     ),
-    path("batch-example/", pages.batch_example, name="batch_example"),
     # authentication
     path("sign-in/", sessions.new),
     path("sign-out/", sessions.destroy),
     path("magic-link/", include(magic_link_urls)),
-    path("batch-example", pages.batch_example, name="batch_example"),
 ]
