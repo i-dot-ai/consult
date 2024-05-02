@@ -21,7 +21,7 @@
     {% for user in users %}
       <tr class="govuk-table__row">
         <td class="govuk-table__cell">
-          {{ user.email }}
+          <a class="govuk-link" href="/support/users/{{ user.id }}">{{ user.email }}</a>
         </td>
       </tr>
     {% endfor %}

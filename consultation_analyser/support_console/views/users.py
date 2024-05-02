@@ -1,6 +1,6 @@
 from django.contrib import messages
 from django.http import HttpRequest
-from django.shortcuts import redirect, render
+from django.shortcuts import redirect, render, get_object_or_404
 
 from consultation_analyser.authentication.models import User
 
@@ -24,3 +24,11 @@ def new(request: HttpRequest):
             return redirect("/support/users")
 
     return render(request, "support_console/new-user.html", {"form": form})
+
+
+
+def show(request: HttpRequest, user_id: int):
+    user = get_object_or_404(User, pk=user_id)
+    consultations = user.consultation_set.all()
+    return render(request, "support_console/user.html", {"user": user, "consultations": consultations})
+
