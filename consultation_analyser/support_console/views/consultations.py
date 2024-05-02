@@ -5,7 +5,7 @@ from django.shortcuts import render
 
 from consultation_analyser.consultations import dummy_data, models
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.processing import run_processing_pipeline
+from consultation_analyser.pipeline.processing import run_processing_pipeline
 
 
 @staff_member_required

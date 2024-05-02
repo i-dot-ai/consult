@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 
 from consultation_analyser.consultations import models
-from consultation_analyser.processing import process_consultation_themes
+from consultation_analyser.pipeline.processing import process_consultation_themes
 
 
 class Command(BaseCommand):
