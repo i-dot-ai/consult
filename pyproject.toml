@@ -44,7 +44,8 @@ django-magic-link = "^1.0.0"
 django-crispy-forms = "^2.1"
 crispy-forms-gds = "^0.3.1"
 django-gov-notify = { git = "https://github.com/i-dot-ai/django-gov-notify", branch = "support-python-3-12" }
-
+sentry-sdk = "^2.0.1"
+torch = "~2.2"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.4.2"
@@ -55,6 +56,7 @@ django-extensions = "^3.2.3"
 [tool.mypy]
 files = '**/*.py'
 exclude= ['^consultation_analyser/consultations/migrations/']
+
 
 
 

@@ -28,6 +28,8 @@ module "ecs" {
     "SAGEMAKER_ENDPOINT_NAME" = local.secret_env_vars.SAGEMAKER_ENDPOINT_NAME
     "GOVUK_NOTIFY_API_KEY"                 = local.secret_env_vars.GOVUK_NOTIFY_API_KEY,
     "GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID" = local.secret_env_vars.GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID,
+    "SAGEMAKER_ENDPOINT_NAME" = local.secret_env_vars.SAGEMAKER_ENDPOINT_NAME,
+    "SENTRY_DSN" = local.secret_env_vars.SENTRY_DSN
     "DB_NAME" : "${module.postgres.db_instance_name}",
     "DB_USER" : "${module.postgres.rds_instance_username}",
     "DB_PASSWORD" : "${module.postgres.rds_instance_db_password}",
