@@ -14,7 +14,9 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 
 
 class DummyConsultation:
-    def __init__(self, responses=10, include_themes=True, **options):
+    def __init__(self, responses=10, include_themes=True, number_questions=10, **options):
+        if number_questions > 10:
+            raise RuntimeError("You can't have more than 10 questions")
         if not HostingEnvironment.is_development_environment():
             raise RuntimeError("Dummy data generation should only be run in development")
 
@@ -27,6 +29,8 @@ class DummyConsultation:
 
         consultation = ConsultationFactory(**options)
         section = SectionFactory(name="Base section", consultation=consultation)
+        all_questions = FakeConsultationData().all_questions()
+        questions_to_include = all_questions[:number_questions]
         questions = [
             QuestionFactory(
                 text=q["text"],
@@ -35,7 +39,7 @@ class DummyConsultation:
                 has_free_text=q["has_free_text"],
                 section=section,
             )
-            for q in FakeConsultationData().all_questions()
+            for q in questions_to_include
         ]
         for r in range(responses):
             response = ConsultationResponseFactory(consultation=consultation)

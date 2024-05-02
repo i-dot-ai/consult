@@ -115,7 +115,7 @@ class ThemeFactory(factory.django.DjangoModelFactory):
         model = models.Theme
 
     label = factory.LazyAttribute(lambda _o: generate_dummy_topic_label())
-    summary = faker.sentence()
+    summary = factory.LazyAttribute(lambda _o: faker.sentence())
 
     class Params:
         is_outlier = factory.Trait(label=factory.LazyAttribute(lambda _o: generate_dummy_topic_label(is_outlier=True)))

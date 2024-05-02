@@ -80,10 +80,3 @@ def save_themes_for_consultation(consultation_id: UUID) -> None:
     questions = models.Question.objects.filter(section__consultation__id=consultation_id, has_free_text=True)
     for question in questions:
         save_themes_for_question(question)
-
-
-# TODO - what to do with topic -1 (outliers)
-# We save them in the database, we may want to deal with them in the views
-
-
-# TODO - Generate theme summaries using LLM

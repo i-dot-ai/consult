@@ -62,6 +62,7 @@ jobs:
           GOVUK_NOTIFY_API_KEY: dummy-key
           GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID: dummy-template
           ENVIRONMENT: test
+          USE_SAGEMAKER_LLM: False
 
       - name: pytest
         run:

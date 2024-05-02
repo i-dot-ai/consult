@@ -3,7 +3,8 @@ import pandas as pd
 import pytest
 
 from consultation_analyser import factories
-from consultation_analyser.consultations import ml_pipeline, models
+from consultation_analyser.consultations import models
+from consultation_analyser.pipeline import ml_pipeline
 
 
 def test_get_embeddings_for_question():
