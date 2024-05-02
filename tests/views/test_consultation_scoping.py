@@ -19,6 +19,7 @@ def test_get_consultation_we_own():
 
     assert resp.status_code == 200
 
+
 @pytest.mark.django_db
 def test_get_consultation_we_do_not_own():
     user = UserFactory()

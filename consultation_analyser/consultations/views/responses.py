@@ -4,8 +4,8 @@ from django.http import HttpRequest
 from django.shortcuts import render
 
 from .. import models
-from .filters import get_applied_filters, get_filtered_responses
 from .decorators import user_can_see_consultation
+from .filters import get_applied_filters, get_filtered_responses
 
 
 @user_can_see_consultation

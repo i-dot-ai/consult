@@ -12,4 +12,3 @@ def user_can_see_consultation(view_function):
         return view_function(*args, **kwargs)
 
     return decorator
-
