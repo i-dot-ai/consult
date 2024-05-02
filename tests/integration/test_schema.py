@@ -1,6 +1,9 @@
 import json
 
+import pytest
 
+
+@pytest.mark.django_db
 def test_get_public_schema_page(django_app):
     # Given I am viewing the /schema page
     schema_page = django_app.get("/schema/")
