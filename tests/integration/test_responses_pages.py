@@ -3,13 +3,18 @@ import html
 import pytest
 from waffle.testutils import override_switch
 
-from consultation_analyser.factories import ConsultationFactory
+from consultation_analyser.factories import ConsultationFactory, UserFactory
+from tests.helpers import sign_in
 
 
 @pytest.mark.django_db
-@override_switch("CONSULTATION_PROCESSING", True)
+@override_switch("FRONTEND_USER_LOGIN", True)
 def test_get_question_responses_page(django_app):
+    user = UserFactory(email="email@example.com")
+    sign_in(django_app, "email@example.com")
+
     consultation = ConsultationFactory(
+        user=user,
         with_question=True,
         with_question__with_answer=True,
         with_question__with_multiple_choice=True,

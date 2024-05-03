@@ -1,3 +1,7 @@
+import pytest
+
+
+@pytest.mark.django_db
 def test_download_valid_schema(client):
     valid_schemas = ["consultation", "consultation_response", "consultation_with_responses"]
     for schema in valid_schemas:
@@ -5,11 +9,13 @@ def test_download_valid_schema(client):
         assert b"$defs" in resp.content
 
 
+@pytest.mark.django_db
 def test_download_invalid_schema(client):
     resp = client.get("/schema/totally_made_up_schema.json")
     assert resp.status_code == 404
 
 
+@pytest.mark.django_db
 def test_download_malicious_schema(client):
     resp = client.get("/schema/../public_schema.py.json")
     assert resp.status_code == 404

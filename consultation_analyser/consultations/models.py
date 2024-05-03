@@ -5,6 +5,8 @@ from functools import reduce
 
 from django.db import models
 
+from consultation_analyser.authentication.models import User
+
 
 class UUIDPrimaryKeyModel(models.Model):
     class Meta:
@@ -25,6 +27,7 @@ class TimeStampedModel(models.Model):
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     name = models.CharField(max_length=256)
     slug = models.CharField(null=False, max_length=256)
+    users = models.ManyToManyField(User)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass

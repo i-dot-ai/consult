@@ -6,13 +6,17 @@
 {% block content %}
   <h1 class="govuk-heading-l">{{ page_title }}</h1>
   <ul class="govuk-list">
-    {% for consultation in consultations %}
-      <li>
-        <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-body-l govuk-link govuk-link--no-visited-state">
-          {{ consultation.name }}
-        </a>
-      </li>
-    {% endfor %}
+    {% if consultations %}
+      {% for consultation in consultations %}
+        <li>
+          <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-body-l govuk-link govuk-link--no-visited-state">
+            {{ consultation.name }}
+          </a>
+        </li>
+      {% endfor %}
+    {% else %}
+      <p class="govuk-body">You do not have any consultations</p>
+    {% endif %}
   </ul>
 
 {% endblock %}

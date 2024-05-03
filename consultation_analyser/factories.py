@@ -61,6 +61,11 @@ class ConsultationFactory(factory.django.DjangoModelFactory):
                 with_question__with_free_text=kwargs.get("with_free_text"),
             )
 
+    @factory.post_generation
+    def user(consultation, creation_strategy, value, **kwargs):
+        if value:
+            consultation.users.set([value])
+
 
 class SectionFactory(factory.django.DjangoModelFactory):
     class Meta:

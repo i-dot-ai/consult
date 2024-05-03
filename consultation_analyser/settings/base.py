@@ -190,3 +190,6 @@ EMAIL_BACKEND = "django_gov_notify.backends.NotifyEmailBackend"
 GOVUK_NOTIFY_API_KEY = env("GOVUK_NOTIFY_API_KEY")
 GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID = env("GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID")
 USE_SAGEMAKER_LLM = env.bool("USE_SAGEMAKER_LLM")
+
+# Authentication
+LOGIN_URL = "/sign-in/"

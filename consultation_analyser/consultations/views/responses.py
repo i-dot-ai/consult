@@ -1,13 +1,15 @@
+from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import HttpRequest
 from django.shortcuts import render
-from waffle.decorators import waffle_switch
 
 from .. import models
+from .decorators import user_can_see_consultation
 from .filters import get_applied_filters, get_filtered_responses
 
 
-@waffle_switch("CONSULTATION_PROCESSING")
+@user_can_see_consultation
+@login_required
 def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
     question = models.Question.objects.get(
         slug=question_slug, section__slug=section_slug, section__consultation__slug=consultation_slug
