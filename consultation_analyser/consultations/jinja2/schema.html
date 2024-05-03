@@ -5,7 +5,7 @@
 {% block content %}
 <div class="govuk-width-container">
 
-  <h1 class="govuk-heading-xl">Consultation data schema v0.1</h1>
+  <h1 class="govuk-heading-xl">Consultation data schema v0.2</h1>
 
   <p class="govuk-body">This page lists the data components required for a consultation to be suitable for processing by the analyser. </p>
 
@@ -119,7 +119,18 @@
   {% endfor %}
 
   <h2 class="govuk-heading-l">Changelog</h2>
+
+  <h3 class="govuk-heading-s">6 May 2024</h3>
+  <p class="govuk-body">v0.2</p>
+  <ul class="govuk-list govuk-list--bullet">
+    <li>ConsultationResponse now has a mandatory submitted_at field, which is a datetime</li>
+    <li>enforce presence of at least one Question, one Answer, one Section and one ConsultationResponse in a ConsultationWithResponses</li>
+    <li>correct definition of Consultation to be an object, not an array</li>
+    <li>multiple_choice is now an optional, instead of a nullable, field on Answer</li>
+  </ul>
+
   <h3 class="govuk-heading-s">28 March 2024</h3>
+  <p class="govuk-body">v0.1</p>
   <p class="govuk-body">Initial release</p>
 
 </div>
