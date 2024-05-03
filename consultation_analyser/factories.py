@@ -3,6 +3,7 @@ import random
 import factory
 import faker as _faker
 import yaml
+from django.utils import timezone
 
 from consultation_analyser.authentication import models as authentication_models
 from consultation_analyser.consultations import models
@@ -110,6 +111,7 @@ class QuestionFactory(factory.django.DjangoModelFactory):
 
 class ConsultationResponseFactory(factory.django.DjangoModelFactory):
     consultation = factory.SubFactory(ConsultationFactory)
+    submitted_at = timezone.now()
 
     class Meta:
         model = models.ConsultationResponse

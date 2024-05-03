@@ -65,6 +65,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    submitted_at = models.DateTimeField(editable=False, null=False)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
