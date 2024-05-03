@@ -3,6 +3,7 @@ Use LLMs to generate summaries for themes.
 """
 import json
 
+import boto3
 import tiktoken
 from django.conf import settings
 from langchain.chains.llm import LLMChain
@@ -108,22 +109,19 @@ def get_random_sample_of_responses_for_theme(theme: Theme, encoding: tiktoken.En
 
 def get_sagemaker_endpoint() -> SagemakerEndpoint:
     content_handler = ContentHandler()
+    client = boto3.client("sagemaker-runtime", region_name=settings.AWS_REGION)
     sagemaker_endpoint = SagemakerEndpoint(
-        endpoint_name=settings.SAGEMAKER_ENDPOINT_NAME, content_handler=content_handler
+        endpoint_name=settings.SAGEMAKER_ENDPOINT_NAME,
+        content_handler=content_handler,
+        client=client,
+        region_name=settings.AWS_REGION,
     )
-    print(f"sagemaker_endpoint: {sagemaker_endpoint}")
     return sagemaker_endpoint
-
-
-def get_llm_chain(prompt_template: PromptTemplate, sagemaker_endpoint: SagemakerEndpoint) -> LLMChain:
-    llm_chain = LLMChain(llm=sagemaker_endpoint, prompt=prompt_template)
-    return llm_chain
 
 
 def generate_theme_summary(theme: Theme) -> str:
     """For a given theme, generate a summary using an LLM."""
     prompt_template = get_prompt_template()
-    print(f"prompt_template: {prompt_template}")
     sagemaker_endpoint = get_sagemaker_endpoint()
     print(f"sagemaker_endpoint: {sagemaker_endpoint}")
     llm_chain = LLMChain(llm=sagemaker_endpoint, prompt=prompt_template)
@@ -135,7 +133,9 @@ def generate_theme_summary(theme: Theme) -> str:
         "keywords": ", ".join(theme.keywords),
         "responses": sample_responses,
     }
-    llm_response = llm_chain(prompt_inputs)["text"]
+    llm_response = llm_chain(prompt_inputs)
+    print(f"llm_response: {llm_response}")
+    llm_response = llm_response["text"]
     print(f"llm_response: {llm_response}")
     parser = PydanticOutputParser(pydantic_object=ThemeSummaryOutput)
     retry_parser = RetryWithErrorOutputParser.from_llm(
@@ -165,7 +165,6 @@ def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
 
 @check_and_launch_sagemaker
 def create_llm_summaries_for_consultation(consultation):
-    print("Create LLM summaries")
     themes = Theme.objects.filter(question__section__consultation=consultation).filter(question__has_free_text=True)
     for theme in themes:
         print(f"theme: {theme.label}")
