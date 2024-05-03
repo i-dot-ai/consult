@@ -68,6 +68,15 @@ you can run `manage.py generate_erd`. (You will need `graphviz` installed: see
 
 ![](docs/erd.png)
 
+## Login
+
+### Magic links
+
+You can sign into the application using a magic link, requested via `/sign-in`.
+
+For convenience, in local dev environments the value of the magic link will be
+logged along with the rest of the server logs.
+
 ### The frontend
 
 #### CSS
