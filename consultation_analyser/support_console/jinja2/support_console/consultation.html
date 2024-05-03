@@ -21,10 +21,44 @@
   <br />
 
   <form method="post" novalidate>{{ csrf_input }}
+<<<<<<< HEAD
+=======
+
+    <div>
+      <p class="govuk-body">
+        Generating themes runs topic modelling then LLM summarisation. You may wish to do these steps separately in testing.
+      </p>
+    </div>
+
+    <div>
+      <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-body govuk-link govuk-link--no-visited-state">
+        {{ consultation.name }}
+      </a>
+    </div>
+
+    <br>
+>>>>>>> 5eaf561 (Add extra buttons in support for better testing.)
     {{ govukButton({
       'text': "Generate themes",
       'name': "generate_themes"
     }) }}
+<<<<<<< HEAD
+=======
+
+    {{ govukButton({
+      'text': "Run topic modelling",
+      'name': "topic_modelling",
+      'classes': "govuk-button--secondary"
+    }) }}
+
+    {{ govukButton({
+      'text': "Run LLM summarisation",
+      'name': "llm_summarisation",
+      'classes': "govuk-button--secondary"
+    }) }}
+
+
+>>>>>>> 5eaf561 (Add extra buttons in support for better testing.)
   </form>
 
 {% endblock %}

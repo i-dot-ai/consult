@@ -27,7 +27,20 @@ def index(request: HttpRequest) -> HttpResponse:
 @staff_member_required
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     consultation = models.Consultation.objects.get(slug=consultation_slug)
-    if request.POST:
+    if "topic_modelling" in request.POST:
+        print("Topic modelling")
+        # Only import when need it - otherwise slow on start-up
+        from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
+
+        save_themes_for_consultation(consultation.id)
+        messages.success(request, "Topic modelling has been run for this consultation")
+    elif "llm_summarisation" in request.POST:
+        print("LLM summarisation")
+        from consultation_analyser.pipeline.llm_summariser import create_llm_summaries_for_consultation
+
+        create_llm_summaries_for_consultation(consultation)
+        messages.success(request, "Summaries have been generated for themes using the LLM")
+    elif "generate_themes" in request.POST:
         run_processing_pipeline(consultation)
         messages.success(request, "Themes have been generated for this consultation")
     themes_for_consultation = models.Theme.objects.filter(question__section__consultation=consultation)

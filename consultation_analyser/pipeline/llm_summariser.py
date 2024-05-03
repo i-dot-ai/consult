@@ -3,7 +3,6 @@ Use LLMs to generate summaries for themes.
 """
 import json
 
-import boto3
 import tiktoken
 from django.conf import settings
 from langchain.chains.llm import LLMChain
@@ -11,7 +10,7 @@ from langchain.llms import SagemakerEndpoint
 from langchain.llms.sagemaker_endpoint import LLMContentHandler
 from langchain.output_parsers import PydanticOutputParser, RetryWithErrorOutputParser
 from langchain.prompts import PromptTemplate
-from langchain.pydantic_v1 import BaseModel, Field
+from langchain.pydantic_v1 import BaseModel
 
 from consultation_analyser.consultations.decorators.sagemaker_endpoint_status_check import check_and_launch_sagemaker
 from consultation_analyser.consultations.models import Answer, Theme
@@ -124,6 +123,7 @@ def generate_theme_summary(theme: Theme) -> str:
     """For a given theme, generate a summary using an LLM."""
     prompt_template = get_prompt_template()
     sagemaker_endpoint = get_sagemaker_endpoint()
+    print(f"sagemaker_endpoint: {sagemaker_endpoint}")
     llm_chain = LLMChain(llm=sagemaker_endpoint, prompt=prompt_template)
     # TODO - where is this max tokens coming from
     sample_responses = get_random_sample_of_responses_for_theme(theme, encoding=MODEL_ENCODING, max_tokens=2000)
@@ -134,23 +134,24 @@ def generate_theme_summary(theme: Theme) -> str:
         "responses": sample_responses,
     }
     llm_response = llm_chain(prompt_inputs)["text"]
+    print(f"llm_response: {llm_response}")
     parser = PydanticOutputParser(pydantic_object=ThemeSummaryOutput)
     retry_parser = RetryWithErrorOutputParser.from_llm(
         parser=parser,
         llm=sagemaker_endpoint,
         max_retries=5,
     )
+
     try:
         parsed_output = parser.parse(llm_response)
+
     except:  # TODO - what is the exception here?
         parsed_output = retry_parser.parse_with_prompt(
             llm_response,
             prompt_template.format_prompt(prompt_inputs),
         )
         # TODO - this will error after 5 retries - how do we deal with this?
-    return (
-        parsed_output.summary
-    )  # TODO - return the whole parsed_output dictionary, but we have to deal with it elsewhere
+    return parsed_output.summary  # TODO - return the whole parsed_output dictionary, but we have to deal with it elsewhere - do we want both fields?
 
 
 def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
@@ -162,8 +163,10 @@ def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
 
 @check_and_launch_sagemaker
 def create_llm_summaries_for_consultation(consultation):
+    print("Create LLM summaries")
     themes = Theme.objects.filter(question__section__consultation=consultation).filter(question__has_free_text=True)
     for theme in themes:
+        print(f"theme: {theme.label}")
         if settings.USE_SAGEMAKER_LLM:
             theme_summary_data = generate_theme_summary(theme)
         else:
