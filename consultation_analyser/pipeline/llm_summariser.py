@@ -12,6 +12,7 @@ from langchain.llms.sagemaker_endpoint import LLMContentHandler
 from langchain.output_parsers import PydanticOutputParser, RetryWithErrorOutputParser
 from langchain.prompts import PromptTemplate
 from langchain.pydantic_v1 import BaseModel
+from langchain_core.exceptions import OutputParserException
 
 from consultation_analyser.consultations.decorators.sagemaker_endpoint_status_check import check_and_launch_sagemaker
 from consultation_analyser.consultations.models import Answer, Theme
@@ -57,6 +58,7 @@ def get_prompt_template():
     """
 
     return PromptTemplate.from_template(prompt_template)
+    # TODO - Do we want both "phrase" and "summary"?
 
 
 class ContentHandler(LLMContentHandler):
@@ -124,7 +126,7 @@ def get_sagemaker_endpoint() -> SagemakerEndpoint:
 def generate_theme_summary(theme: Theme) -> str:
     """For a given theme, generate a summary using an LLM."""
     prompt_template = get_prompt_template()
-    # TODO - issues with this
+    # TODO - issues with this sagemaker endpoint
     sagemaker_endpoint = get_sagemaker_endpoint()
     print(f"sagemaker_endpoint: {sagemaker_endpoint}")
     llm_chain = LLMChain(llm=sagemaker_endpoint, prompt=prompt_template)
@@ -137,9 +139,7 @@ def generate_theme_summary(theme: Theme) -> str:
         "responses": sample_responses,
     }
     llm_response = llm_chain(prompt_inputs)
-    print(f"llm_response: {llm_response}")
     llm_response = llm_response["text"]
-    print(f"llm_response: {llm_response}")
     parser = PydanticOutputParser(pydantic_object=ThemeSummaryOutput)
     retry_parser = RetryWithErrorOutputParser.from_llm(
         parser=parser,
@@ -149,13 +149,12 @@ def generate_theme_summary(theme: Theme) -> str:
 
     try:
         parsed_output = parser.parse(llm_response)
-
-    except:  # TODO - what is the exception here?
+    except OutputParserException as e:
         parsed_output = retry_parser.parse_with_prompt(
             llm_response,
             prompt_template.format_prompt(prompt_inputs),
         )
-        # TODO - this will error after 5 retries - how do we deal with this?
+        # TODO - this will error after 5 retries - are we ok with that?
     return parsed_output.summary  # TODO - return the whole parsed_output dictionary, but we have to deal with it elsewhere - do we want both fields?
 
 
