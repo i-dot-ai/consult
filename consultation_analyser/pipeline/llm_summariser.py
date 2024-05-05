@@ -90,7 +90,6 @@ def token_count(text: str, encoding: tiktoken.Encoding) -> int:
 
 
 # TODO - max tokens also to be associated with model
-# TODO - approx how many
 def get_random_sample_of_responses_for_theme(theme: Theme, encoding: tiktoken.Encoding, max_tokens: int) -> str:
     responses_for_theme = Answer.objects.filter(theme=theme).order_by("?")
     free_text_responses_for_theme = responses_for_theme.values_list("free_text", flat=True)
@@ -98,10 +97,13 @@ def get_random_sample_of_responses_for_theme(theme: Theme, encoding: tiktoken.En
     combined_responses_string = ""
     i = 0
     append_more_results = True
+    # TODO - how else might we want to separate documents (aka responses)?
+    separator = "\n"
     while append_more_results:
-        # TODO - how else might we want to separate documents?
-        combined_responses_string = "\n".join(free_text_responses_for_theme[i])
-        under_token_limit = token_count(text=combined_responses_string, encoding=encoding) < max_tokens
+        new_combined_responses_string = separator.join([combined_responses_string, free_text_responses_for_theme[i]])
+        under_token_limit = token_count(text=new_combined_responses_string, encoding=encoding) < max_tokens
+        if under_token_limit:
+            combined_responses_string = new_combined_responses_string
         i = i + 1
         append_more_results = under_token_limit and (i < number_responses)
     return combined_responses_string
@@ -125,7 +127,7 @@ def generate_theme_summary(theme: Theme) -> str:
     sagemaker_endpoint = get_sagemaker_endpoint()
     print(f"sagemaker_endpoint: {sagemaker_endpoint}")
     llm_chain = LLMChain(llm=sagemaker_endpoint, prompt=prompt_template)
-    # TODO - where is this max tokens coming from
+    # TODO - where is this max tokens coming from?
     sample_responses = get_random_sample_of_responses_for_theme(theme, encoding=MODEL_ENCODING, max_tokens=2000)
     prompt_inputs = {
         "consultation_name": theme.question.section.consultation.name,
@@ -167,7 +169,6 @@ def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
 def create_llm_summaries_for_consultation(consultation):
     themes = Theme.objects.filter(question__section__consultation=consultation).filter(question__has_free_text=True)
     for theme in themes:
-        print(f"theme: {theme.label}")
         if settings.USE_SAGEMAKER_LLM:
             theme_summary_data = generate_theme_summary(theme)
         else:
