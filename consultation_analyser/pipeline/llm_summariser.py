@@ -124,6 +124,7 @@ def get_sagemaker_endpoint() -> SagemakerEndpoint:
 def generate_theme_summary(theme: Theme) -> str:
     """For a given theme, generate a summary using an LLM."""
     prompt_template = get_prompt_template()
+    # TODO - issues with this
     sagemaker_endpoint = get_sagemaker_endpoint()
     print(f"sagemaker_endpoint: {sagemaker_endpoint}")
     llm_chain = LLMChain(llm=sagemaker_endpoint, prompt=prompt_template)
