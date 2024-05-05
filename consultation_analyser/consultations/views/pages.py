@@ -1,11 +1,5 @@
 from django.http import HttpRequest
 from django.shortcuts import render
-from waffle.decorators import waffle_switch
-
-from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.pipeline.batch_calls import BatchJobHandler
-
-from .. import models
 
 
 def home(request: HttpRequest):
