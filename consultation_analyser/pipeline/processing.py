@@ -1,7 +1,7 @@
 from django.conf import settings
 
-from consultation_analyser.batch_calls import BatchJobHandler
 from consultation_analyser.hosting_environment import HostingEnvironment
+from consultation_analyser.pipeline.batch_calls import BatchJobHandler
 from consultation_analyser.pipeline.llm_summariser import create_llm_summaries_for_consultation
 
 
