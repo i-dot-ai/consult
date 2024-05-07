@@ -2,6 +2,7 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from consultation_analyser.consultations.upload_consultation import upload_consultation
 
 from .. import models
 from ..forms.consultation_upload_form import ConsultationUploadForm
@@ -30,6 +31,7 @@ def new(request: HttpRequest):
     else:
         form = ConsultationUploadForm(request.POST, request.FILES)
         if form.is_valid():
+            consultation = upload_consultation(request.FILES["consultation_json"], request.user)
             return redirect(f"/consultations/{consultation.slug}/")
 
     return render(request, "new-consultation.html", {"form": form})
