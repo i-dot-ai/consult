@@ -9,11 +9,11 @@ from consultation_analyser.factories import ConsultationFactory, UserFactory
 @pytest.mark.django_db
 def test_get_consultation_we_own():
     user = UserFactory()
-    consultation_we_own = ConsultationFactory(user=user)
+    consultation_we_own = ConsultationFactory(user=user, with_themes=True)
 
     request_factory = RequestFactory()
 
-    valid_request = request_factory.get("/consultations/slug-does-not-matter-here")
+    valid_request = request_factory.get("/consultations/slug-does-not-matter-here/")
     valid_request.user = user
     resp = consultations.show(valid_request, consultation_slug=consultation_we_own.slug)
 
@@ -27,7 +27,7 @@ def test_get_consultation_we_do_not_own():
 
     request_factory = RequestFactory()
 
-    invalid_request = request_factory.get("/consultations/slug-does-not-matter-here")
+    invalid_request = request_factory.get("/consultations/slug-does-not-matter-here/")
     invalid_request.user = user
 
     # rest of Django not around to catch 404 so we'll catch it ourselves

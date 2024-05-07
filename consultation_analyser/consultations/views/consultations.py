@@ -29,6 +29,11 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
 
 
 @login_required
+def processing(request: HttpRequest) -> HttpResponse:
+    return render(request, "consultation-processing.html", {})
+
+
+@login_required
 def new(request: HttpRequest):
     if not request.POST:
         form = ConsultationUploadForm()

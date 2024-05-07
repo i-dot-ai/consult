@@ -7,6 +7,8 @@ from webtest import Upload
 from consultation_analyser.factories import UserFactory
 from tests.helpers import sign_in
 
+from consultation_analyser.pipeline.dummy_pipeline import save_themes_for_consultation
+
 
 @pytest.mark.django_db
 @override_switch("FRONTEND_USER_LOGIN", True)
@@ -32,3 +34,13 @@ def test_user_uploads_consultation(django_app):
 
     # then I should see a success page
     assert "Consultation uploaded" in success_page
+
+    # and when I visit the consultation again I should still see the processing page
+    consultation = user.consultation_set.first()
+    processing_page = django_app.get(f"/consultations/{consultation.slug}/").follow()
+    assert "Consultation processing" in processing_page
+
+    save_themes_for_consultation(consultation.id)
+
+    consultation_page = django_app.get(f"/consultations/{consultation.slug}/")
+    assert consultation.name in consultation_page
