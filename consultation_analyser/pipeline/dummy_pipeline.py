@@ -1,5 +1,7 @@
 from uuid import UUID
+
 from faker import Faker
+
 from consultation_analyser.consultations import models
 
 
