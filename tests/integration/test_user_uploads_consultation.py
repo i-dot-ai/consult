@@ -32,3 +32,8 @@ def test_user_uploads_consultation(django_app):
 
     # then I should see a success page
     assert "Consultation uploaded" in success_page
+
+    # and when I visit the consultation again I should still see the success page
+    consultation = user.consultation_set.first()
+    django_app.get(f"/consultations/{consultation.slug}/")
+    assert "Consultation uploaded" in success_page
