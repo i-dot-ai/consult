@@ -19,8 +19,11 @@ def index(request: HttpRequest) -> HttpResponse:
 @user_can_see_consultation
 @login_required
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
+    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     questions = models.Question.objects.filter(section__consultation__slug=consultation_slug)
-    context = {"questions": questions}
+
+    context = {"questions": questions, "consultation": consultation}
+
     return render(request, "consultation.html", context)
 
 
