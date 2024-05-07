@@ -17,7 +17,7 @@ def get_filtered_responses(question: models.Question, applied_filters: dict[str,
     if applied_filters["theme"] != "All":
         queryset = queryset.filter(theme=applied_filters["theme"])
     if applied_filters["opinion"] != "All":
-        queryset = queryset.filter(multiple_choice_responses__contains=applied_filters["opinion"])
+        queryset = queryset.filter(multiple_choice__contains=applied_filters["opinion"])
     return queryset
 
 

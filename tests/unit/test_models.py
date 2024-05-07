@@ -36,4 +36,4 @@ def test_multiple_choice_response_count():
     ]
 
     for answer in answers:
-        factories.AnswerFactory(question=question, multiple_choice_responses=answer)
+        factories.AnswerFactory(question=question, multiple_choice=answer)
