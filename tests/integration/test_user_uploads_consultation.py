@@ -28,7 +28,7 @@ def test_user_uploads_consultation(django_app):
 
     # and when I provide my JSON and submit the form
     upload_page.form["consultation_json"] = Upload("consultation.json", binary_data, "application/json")
-    consultation_page = upload_page.form.submit().follow()
+    success_page = upload_page.form.submit()
 
-    # then I should see my consultation
-    assert "My consultation" in consultation_page
+    # then I should see a success page
+    assert "Consultation uploaded" in success_page

@@ -1,0 +1,20 @@
+{%- from 'govuk_frontend_jinja/components/panel/macro.html' import govukPanel -%}
+{% extends "base.html" %}
+
+{% set page_title = "Consultation uploaded" %}
+
+{% block content %}
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-full">
+
+    {{ govukPanel({
+      "titleText": "Consultation uploaded",
+      }) }}
+
+    <h2 class="govuk-heading-m">What happens next</h2>
+
+    <p class="govuk-body">The team will be notified that your consultation is ready for processing</p>
+    <p class="govuk-body">We will process it and let you know when the results are ready to view. This should take no more than one working day.</p>
+  </div>
+</div>
+{% endblock %}
