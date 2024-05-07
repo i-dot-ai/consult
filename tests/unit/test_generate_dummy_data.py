@@ -29,6 +29,6 @@ def test_the_tool_will_only_run_in_dev(environment):
 
 @pytest.mark.django_db
 def test_consultation_contains_outliers():
-    DummyConsultation()
+    DummyConsultation(include_themes=True)
     qs = Answer.objects.filter(theme__is_outlier=True)
     assert qs.exists()

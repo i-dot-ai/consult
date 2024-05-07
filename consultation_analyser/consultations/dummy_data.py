@@ -14,7 +14,7 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 
 
 class DummyConsultation:
-    def __init__(self, responses=10, include_themes=True, number_questions=10, **options):
+    def __init__(self, responses=50, include_themes=False, number_questions=10, **options):
         if number_questions > 10:
             raise RuntimeError("You can't have more than 10 questions")
         if not HostingEnvironment.is_development_environment():
@@ -29,7 +29,9 @@ class DummyConsultation:
 
         consultation = ConsultationFactory(**options)
         section = SectionFactory(name="Base section", consultation=consultation)
-        all_questions = FakeConsultationData().all_questions()
+
+        fake_consultation_data = FakeConsultationData()
+        all_questions = fake_consultation_data.all_questions()
         questions_to_include = all_questions[:number_questions]
         questions = [
             QuestionFactory(
@@ -43,20 +45,24 @@ class DummyConsultation:
         ]
         for r in range(responses):
             response = ConsultationResponseFactory(consultation=consultation)
-            if include_themes:
-                _answers = [AnswerFactory(question=q, consultation_response=response) for q in questions]
+            answers = []
+            for q in questions:
+                if q.has_free_text:
+                    free_text_answer = fake_consultation_data.get_free_text_answer(q.slug)
+                    answers.append(AnswerFactory(question=q, consultation_response=response,
+                                                 free_text=free_text_answer, theme=None))
+                else:
+                    answers.append(AnswerFactory(question=q, consultation_response=response, theme=None))
 
+            if include_themes:
                 # Set themes per question, multiple answers with the same theme
                 for q in questions:
                     themes = [ThemeFactory() for _ in range(2, 6)]
                     themes.append(ThemeFactory(is_outlier=True))  # include an outlier
-                    for a in _answers:
+                    for a in answers:
                         random_theme = random.choice(themes)
                         a.theme = random_theme
                         a.save()
                 # Force at least one answer to be an outlier
-                a = random.choice(_answers)
+                a = random.choice(answers)
                 a.theme = themes[-1]
-
-            else:
-                _answers = [AnswerFactory(question=q, consultation_response=response, theme=None) for q in questions]

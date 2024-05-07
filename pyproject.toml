@@ -47,6 +47,7 @@ django-gov-notify = { git = "https://github.com/i-dot-ai/django-gov-notify", bra
 sentry-sdk = "^2.1.1"
 torch = "~2.2"
 jsonschema = {extras = ["format"], version = "^4.22.0"}
+langchain-openai = "^0.1.6"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.4.3"
@@ -57,6 +58,7 @@ django-extensions = "^3.2.3"
 [tool.mypy]
 files = '**/*.py'
 exclude= ['^consultation_analyser/consultations/migrations/']
+
 
 
 

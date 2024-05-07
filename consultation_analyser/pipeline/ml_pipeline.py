@@ -10,7 +10,7 @@ RANDOM_STATE = 12  # For reproducibility
 
 
 def get_embeddings_for_question(
-    answers_list: List[Dict[str, Union[UUID, str]]], embedding_model_name: str = "thenlper/gte-small"
+    answers_list: List[Dict[str, Union[UUID, str]]], embedding_model_name: str = "all-mpnet-base-v2"
 ) -> List[Dict[str, Union[UUID, str, np.ndarray]]]:
     from sentence_transformers import SentenceTransformer
 
