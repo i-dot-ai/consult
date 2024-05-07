@@ -23,7 +23,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
     multiple_choice_responses = []
     if total_responses:
         for option in question.multiple_choice_options:
-            count = responses.filter(multiple_choice_responses__contains=option).count()
+            count = responses.filter(multiple_choice__contains=option).count()
             multiple_choice_responses.append({"answer": option, "percent": round((count / total_responses) * 100)})
     highest_theme_count = filtered_themes.aggregate(Max("answer_count"))["answer_count__max"]
 

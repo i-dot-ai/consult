@@ -19,10 +19,10 @@ def test_get_question_summary_page(django_app):
     section = consultation.section_set.first()
     question = section.question_set.first()
 
-    AnswerFactory(multiple_choice_responses=["Yes"], question=question)
-    AnswerFactory(multiple_choice_responses=["Yes"], question=question)
-    AnswerFactory(multiple_choice_responses=["No"], question=question)
-    AnswerFactory(multiple_choice_responses=["Maybe"], question=question)
+    AnswerFactory(multiple_choice=["Yes"], question=question)
+    AnswerFactory(multiple_choice=["Yes"], question=question)
+    AnswerFactory(multiple_choice=["No"], question=question)
+    AnswerFactory(multiple_choice=["Maybe"], question=question)
 
     question_summary_url = f"/consultations/{consultation.slug}/sections/{section.slug}/questions/{question.slug}/"
 

@@ -10,10 +10,10 @@ def set_up_for_filters():
     theme1 = factories.ThemeFactory(label="1_dog_puppy")
     theme2 = factories.ThemeFactory(label="2_cat_kitten")
     factories.AnswerFactory(
-        theme=theme1, question=question, free_text="We love dogs.", multiple_choice_responses=["Option 1", "Option 2"]
+        theme=theme1, question=question, free_text="We love dogs.", multiple_choice=["Option 1", "Option 2"]
     )
     factories.AnswerFactory(
-        theme=theme2, question=question, free_text="We like cats not dogs.", multiple_choice_responses=["Option 1"]
+        theme=theme2, question=question, free_text="We like cats not dogs.", multiple_choice=["Option 1"]
     )
     factories.AnswerFactory(theme=theme2, question=question, free_text="We love cats.")
     return question

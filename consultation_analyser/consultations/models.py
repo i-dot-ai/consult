@@ -95,7 +95,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
-    multiple_choice_responses = models.JSONField(null=True)  # Multiple choice can have more than one response
+    multiple_choice = models.JSONField(null=True)  # Multiple choice can have more than one response
     free_text = models.TextField(null=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     consultation_response = models.ForeignKey(ConsultationResponse, on_delete=models.CASCADE)
