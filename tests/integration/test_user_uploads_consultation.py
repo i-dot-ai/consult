@@ -7,6 +7,8 @@ from webtest import Upload
 from consultation_analyser.factories import UserFactory
 from tests.helpers import sign_in
 
+from consultation_analyser.pipeline.dummy_pipeline import save_themes_for_consultation
+
 
 @pytest.mark.django_db
 @override_switch("FRONTEND_USER_LOGIN", True)
