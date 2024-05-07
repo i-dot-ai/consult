@@ -27,4 +27,3 @@ def test_upload_consultation():
     response = consultation.consultationresponse_set.all()[1]
     answers = Answer.objects.filter(consultation_response=response).all()
     assert answers.count() == 2
-

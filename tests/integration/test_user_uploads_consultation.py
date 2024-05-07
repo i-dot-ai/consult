@@ -5,9 +5,8 @@ from waffle.testutils import override_switch
 from webtest import Upload
 
 from consultation_analyser.factories import UserFactory
-from tests.helpers import sign_in
-
 from consultation_analyser.pipeline.dummy_pipeline import save_themes_for_consultation
+from tests.helpers import sign_in
 
 
 @pytest.mark.django_db
