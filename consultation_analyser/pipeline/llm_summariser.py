@@ -7,9 +7,11 @@ from consultation_analyser.consultations.decorators.sagemaker_endpoint_status_ch
 from consultation_analyser.consultations.models import Theme
 
 
-def dummy_generate_theme_summary(theme: Theme) -> str:
-    made_up_summary = (", ").join(theme.keywords)
-    return made_up_summary
+def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
+    made_up_short_description = (", ").join(theme.keywords)
+    made_up_summary = f"Longer summary: {made_up_short_description}"
+    output = {"phrase": made_up_short_description, "summary": made_up_summary}
+    return output
 
 
 @check_and_launch_sagemaker
@@ -18,8 +20,9 @@ def create_llm_summaries_for_consultation(consultation):
     for theme in themes:
         if settings.USE_SAGEMAKER_LLM:
             # TODO - to be replaced by a real version!
-            summary = dummy_generate_theme_summary(theme)
+            theme_summary_data = dummy_generate_theme_summary(theme)
         else:
-            summary = dummy_generate_theme_summary(theme)
-        theme.summary = summary
+            theme_summary_data = dummy_generate_theme_summary(theme)
+        theme.summary = theme_summary_data["summary"]
+        theme.short_description = theme_summary_data["phrase"]
         theme.save()

@@ -12,8 +12,10 @@ def test_create_llm_summaries_for_consultation():
     question = factories.QuestionFactory(section=section, has_free_text=True)
     theme = factories.ThemeFactory(question=question, summary="")
     theme_id = theme.id
-    # Check that we create some value for theme summary
+    # Check that we create some value for theme summary and description
     assert not theme.summary
+    assert not theme.short_description
     create_llm_summaries_for_consultation(consultation)
     theme = Theme.objects.get(id=theme_id)
     assert theme.summary
+    assert theme.short_description
