@@ -1,28 +1,37 @@
 {% extends "base.html" %}
 {%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
 
-{% set page_title = "All consultations" %}
+{% set page_title = "Consultations" %}
 
 {% block content %}
   <h1 class="govuk-heading-l">{{ page_title }}</h1>
-  <form method="post" novalidate>{{ csrf_input }}
-    <ul class="govuk-list">
-      {% for consultation in consultations %}
-        <li>
-          <a href="{{ url('support_consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-body govuk-link govuk-link--no-visited-state">
+  <table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Consultation name</th>
+        <th scope="col" class="govuk-table__header">Created at</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+    {% for consultation in consultations %}
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell">
+          <a href="{{ url('support_consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-link--no-visited-state">
             {{ consultation.name }}
           </a>
-        </li>
-      {% endfor %}
-    </ul>
-
+        </td>
+        <td class="govuk-table__cell">
+          {{ consultation.created_at }}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+  <form method="post" novalidate>{{ csrf_input }}
     {% if development_env %}
       {{ govukButton({
         'text': "Generate dummy consultation",
         'name': "generate_dummy_consultation"
       }) }}
     {% endif %}
-
   </form>
-
 {% endblock %}

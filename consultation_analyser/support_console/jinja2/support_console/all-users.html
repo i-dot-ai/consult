@@ -1,0 +1,41 @@
+{% extends "base.html" %}
+{%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+
+{% set page_title = "Users" %}
+
+
+{% block content %}
+  <h1 class="govuk-heading-l">{{ page_title }}</h1>
+
+  <a href="/support/users/new" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+    Add a new user
+  </a>
+
+  <table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Email</th>
+        <th scope="col" class="govuk-table__header">Created at</th>
+        <th scope="col" class="govuk-table__header">Can access support console</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+    {% for user in users %}
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell">
+          <a class="govuk-link" href="/support/users/{{ user.id }}">{{ user.email }}</a>
+        </td>
+        <td class="govuk-table__cell">
+          {{ user.created_at }}
+        </td>
+        <td class="govuk-table__cell">
+          {% if user.is_staff %}
+            Yes
+          {% else %}
+            No
+          {% endif %}
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+{% endblock %}

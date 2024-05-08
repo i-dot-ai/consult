@@ -34,7 +34,7 @@ def test_generating_dummy_data(django_app):
     login_page.form["username"] = "email@example.com"
     login_page.form["password"] = "admin"  # pragma: allowlist secret
     consultations_page = login_page.form.submit().follow()
-    assert "All consultations" in consultations_page
+    assert "Consultations" in consultations_page
 
     # Check dummy data button does generate a new consultation
     initial_count = Consultation.objects.all().count()

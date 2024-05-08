@@ -29,6 +29,12 @@ def app_config(request: HttpRequest):
                 {
                     "href": "/support/consultations/",
                     "text": "Consultations",
+                    "active": request.path.startswith("/support/consultations"),
+                },
+                {
+                    "href": "/support/users/",
+                    "text": "Users",
+                    "active": request.path.startswith("/support/users"),
                 },
                 {
                     "href": "/support/sign-out/",
