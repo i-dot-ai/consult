@@ -116,6 +116,7 @@ class ThemeFactory(factory.django.DjangoModelFactory):
         model = models.Theme
 
     keywords = factory.LazyAttribute(lambda _o: generate_dummy_topic_keywords())
+    dummy_data = factory.LazyAttribute(lambda _o: faker.sentence())
     summary = factory.LazyAttribute(lambda _o: faker.sentence())
 
 
