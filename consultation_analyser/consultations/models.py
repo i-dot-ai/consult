@@ -72,7 +72,8 @@ class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
-    summary = models.TextField(blank=True)
+    short_description = models.TextField(blank=True)
+    summary = models.TextField(blank=True)  # More detailed description
     # Duplicates info in Answer model, but needed for uniqueness constraint.
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
 
