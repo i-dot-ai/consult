@@ -18,6 +18,12 @@
         </tbody>
       </table>
 
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+          {{ render_form(form, request) }}
+        </div>
+      </div>
+
       <h2 class="govuk-heading-m">Consultations</h2>
 
       {% if consultations %}

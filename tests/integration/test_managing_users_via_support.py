@@ -7,7 +7,7 @@ from tests.helpers import sign_in
 
 @pytest.mark.django_db
 @override_switch("FRONTEND_USER_LOGIN", True)
-def test_managin_users_via_support(django_app):
+def test_managing_users_via_support(django_app):
     # given I am an admin user
     user = UserFactory(email="email@example.com", password="admin", is_staff=True)  # pragma: allowlist secret
     sign_in(django_app, user.email)
@@ -23,3 +23,12 @@ def test_managin_users_via_support(django_app):
 
     assert "User added" in users_page
     assert "a-new-user@example.com" in users_page
+
+    user_page = users_page.click("a-new-user@example.com")
+    assert user_page.form["is_staff"].checked is not True
+
+    user_page.form["is_staff"] = True
+    updated_user_page = user_page.form.submit().follow()
+
+    assert "User updated" in updated_user_page
+    assert user_page.form["is_staff"].checked is True
