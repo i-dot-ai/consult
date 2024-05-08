@@ -32,7 +32,7 @@ def test_get_question_summary_page(django_app):
     assert question.text in page_content
 
     answer = question.answer_set.first()
-    assert answer.theme.summary in page_content
+    assert answer.theme.short_description in page_content
 
     for option in question.multiple_choice_options:
         assert option in page_content
