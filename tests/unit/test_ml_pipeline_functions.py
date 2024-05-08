@@ -29,10 +29,11 @@ def test_save_themes_to_answers():
     answers_df = pd.DataFrame(
         {
             "id": [answer1.id, answer2.id, answer3.id],
-            "Name": ["-1_x_y", "0_m_n", "0_m_n"],
+            "Top_n_words": [["x", "y"], ["m", "n"], ["m", "n"]],
+            "Topic": [-1, 1, 1],
         }
     )
     ml_pipeline.save_themes_to_answers(answers_df)
     themes_qs = models.Theme.objects.filter(question=question)
     assert themes_qs.count() == 2
-    assert "-1_x_y" in themes_qs.values_list("label", flat=True)
+    assert ["x", "y"] in themes_qs.values_list("keywords", flat=True)

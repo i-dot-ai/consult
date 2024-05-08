@@ -115,7 +115,7 @@ class ThemeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Theme
 
-    label = factory.LazyAttribute(lambda _o: generate_dummy_topic_keywords())
+    keywords = factory.LazyAttribute(lambda _o: generate_dummy_topic_keywords())
     summary = factory.LazyAttribute(lambda _o: faker.sentence())
 
 

@@ -55,14 +55,14 @@ def get_answers_and_topics(topic_model, answers_list: List[Dict[str, Union[UUID,
     # Assign topics to answers
     answers_df = topic_model.get_document_info(free_text_responses)
     answers_df["id"] = answers_id_list
-    answers_df = answers_df[["id", "Name"]]
+    answers_df = answers_df[["id", "Top_n_words", "Topic"]]
     return answers_df
 
 
 def save_themes_to_answers(answers_topics_df: pd.DataFrame) -> None:
     for row in answers_topics_df.itertuples():
         answer = models.Answer.objects.get(id=row.id)
-        theme_keywords = row.Top_n_keywords
+        theme_keywords = row.Top_n_words
         theme_number = row.Topic
         answer.save_theme_to_answer(keywords=theme_keywords, theme_number=theme_number)
 
