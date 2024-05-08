@@ -85,13 +85,6 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
             models.UniqueConstraint(fields=["keywords", "question"], name="unique_up_to_question"),
         ]
 
-    # def save(self, *args, **kwargs):
-    #     label_constituents = self.label.split("_")
-    #     self.keywords = label_constituents[1:]
-    #     topic_number = label_constituents[0]
-    #     self.is_outlier = topic_number == "-1"
-    #     super().save(*args, **kwargs)
-
 
 class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     multiple_choice = models.JSONField(null=True)  # Multiple choice can have more than one response
@@ -103,11 +96,12 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    def save_theme_to_answer(self, theme_label):
+    def save_theme_to_answer(self, keywords, theme_number):
+        if theme_number == -1:
+            is_outlier = True
+        else:
+            is_outlier = False
         question = self.question
-        theme, _ = Theme.objects.get_or_create(
-            question=question,
-            label=theme_label,
-        )
+        theme, _ = Theme.objects.get_or_create(question=question, keywords=keywords, is_outlier=is_outlier)
         self.theme = theme
         self.save()
