@@ -6,10 +6,16 @@
 {% block content %}
   <h1 class="govuk-heading-l">{{ page_title }}</h1>
   <div>
+    {% if number_of_themes %}
+      <p class="govuk-body">For this consultation there are {{number_of_themes}} themes, of which {{number_of_themes_with_summaries}} have summaries.</p>
+    {% else %}
+      <p class="govuk-body">There are no themes for this consultation.</p>
+    {% endif %}
 
     <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
       View on frontend
     </a>
+
   </div>
 
   <br />
