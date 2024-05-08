@@ -32,3 +32,11 @@ def test_managing_users_via_support(django_app):
 
     assert "User updated" in updated_user_page
     assert user_page.form["is_staff"].checked is True
+
+    users_page = django_app.get("/support/users/")
+    user_page = users_page.click("email@example.com")
+
+    user_page.form["is_staff"] = False
+    failed_user_page = user_page.form.submit()
+
+    assert "You cannot remove admin privileges from your own user" in failed_user_page

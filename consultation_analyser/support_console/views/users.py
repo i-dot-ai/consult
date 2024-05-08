@@ -5,8 +5,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from consultation_analyser.authentication.models import User
 
-from ..forms.new_user_form import NewUserForm
 from ..forms.edit_user_form import EditUserForm
+from ..forms.new_user_form import NewUserForm
 
 
 @staff_member_required
@@ -36,9 +36,9 @@ def show(request: HttpRequest, user_id: int):
     consultations = user.consultation_set.all()
 
     if not request.POST:
-        form = EditUserForm({"is_staff": user.is_staff})
+        form = EditUserForm({"user_id": user_id, "is_staff": user.is_staff})
     else:
-        form = EditUserForm(request.POST)
+        form = EditUserForm(request.POST, current_user=request.user)
         if form.is_valid():
             is_staff = form.cleaned_data["is_staff"]
             user.is_staff = is_staff
