@@ -72,8 +72,6 @@ class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
-    # Label summarises a topic from a topic model for a given question
-    label = models.CharField(max_length=256, blank=True)
     summary = models.TextField(blank=True)
     # Duplicates info in Answer model, but needed for uniqueness constraint.
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
@@ -84,15 +82,15 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["label", "question"], name="unique_up_to_question"),
+            models.UniqueConstraint(fields=["keywords", "question"], name="unique_up_to_question"),
         ]
 
-    def save(self, *args, **kwargs):
-        label_constituents = self.label.split("_")
-        self.keywords = label_constituents[1:]
-        topic_number = label_constituents[0]
-        self.is_outlier = topic_number == "-1"
-        super().save(*args, **kwargs)
+    # def save(self, *args, **kwargs):
+    #     label_constituents = self.label.split("_")
+    #     self.keywords = label_constituents[1:]
+    #     topic_number = label_constituents[0]
+    #     self.is_outlier = topic_number == "-1"
+    #     super().save(*args, **kwargs)
 
 
 class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
