@@ -12,7 +12,12 @@ from consultation_analyser.pipeline.processing import run_processing_pipeline
 def index(request: HttpRequest) -> HttpResponse:
     if request.POST:
         try:
-            dummy_data.DummyConsultation(include_themes=False, number_questions=2)
+            dummy_data.DummyConsultation(include_themes=False, number_questions=10)
+            # Assume that the consultation generated is the latest one.
+            # Likely to be true as this is only used in testing/dev environments.
+            consultations = models.Consultation.objects.all().order_by("created_at").last()
+            user = request.user
+            consultations.users.add(user)
             messages.success(request, "A dummy consultation has been generated")
         except RuntimeError as error:
             messages.error(request, error.args[0])
