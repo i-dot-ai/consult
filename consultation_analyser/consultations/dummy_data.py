@@ -48,15 +48,16 @@ class DummyConsultation:
 
                 # Set themes per question, multiple answers with the same theme
                 for q in questions:
-                    themes = [ThemeFactory() for _ in range(2, 6)]
-                    themes.append(ThemeFactory(is_outlier=True))  # include an outlier
+                    themes = [ThemeFactory() for _ in range(4)]
                     for a in _answers:
                         random_theme = random.choice(themes)
                         a.theme = random_theme
                         a.save()
                 # Force at least one answer to be an outlier
                 a = random.choice(_answers)
-                a.theme = themes[-1]
+                theme = a.theme
+                theme.is_outlier = True
+                theme.save()
 
             else:
                 _answers = [AnswerFactory(question=q, consultation_response=response, theme=None) for q in questions]

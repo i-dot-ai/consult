@@ -29,7 +29,7 @@ def test_save_themes_to_answers():
     answers_df = pd.DataFrame(
         {
             "id": [answer1.id, answer2.id, answer3.id],
-            "Top_n_words": [["x", "y"], ["m", "n"], ["m", "n"]],
+            "Top_n_words": ["x - y", "m - n", "m - n"],
             "Topic": [-1, 1, 1],
         }
     )

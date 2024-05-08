@@ -62,7 +62,7 @@ def get_answers_and_topics(topic_model, answers_list: List[Dict[str, Union[UUID,
 def save_themes_to_answers(answers_topics_df: pd.DataFrame) -> None:
     for row in answers_topics_df.itertuples():
         answer = models.Answer.objects.get(id=row.id)
-        theme_keywords = row.Top_n_words
+        theme_keywords = row.Top_n_words.split(" - ")
         theme_number = row.Topic
         answer.save_theme_to_answer(keywords=theme_keywords, theme_number=theme_number)
 

@@ -16,7 +16,7 @@ default_multiple_choice_options = ["Yes", "No", "Not sure"]
 def generate_dummy_topic_keywords():
     dummy_sentence = faker.sentence()
     words = dummy_sentence.lower().strip(".")
-    return words
+    return words.split(" ")
 
 
 class FakeConsultationData:
@@ -116,7 +116,7 @@ class ThemeFactory(factory.django.DjangoModelFactory):
         model = models.Theme
 
     keywords = factory.LazyAttribute(lambda _o: generate_dummy_topic_keywords())
-    dummy_data = factory.LazyAttribute(lambda _o: faker.sentence())
+    short_description = factory.LazyAttribute(lambda _o: faker.sentence())
     summary = factory.LazyAttribute(lambda _o: faker.sentence())
 
 

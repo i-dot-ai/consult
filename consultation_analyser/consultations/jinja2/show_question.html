@@ -61,7 +61,7 @@
               <select class="govuk-select" id="theme" name="theme">
                 <option {% if applied_filters.theme == "All" %}selected{% endif %}>All</option>
                 {% for theme in themes %}
-                  <option value="{{ theme.id }}" {% if applied_filters.theme|string == theme.id|string %}selected{% endif %}>{{ theme.summary }}</option>
+                  <option value="{{ theme.id }}" {% if applied_filters.theme|string == theme.id|string %}selected{% endif %}>{{ theme.short_description }}</option>
                 {% endfor %}
                 {#<option {% if applied_filters.theme == "No theme" %}selected{% endif %}>No theme</option>#}
               </select>
@@ -110,7 +110,7 @@
               <td class="govuk-table__cell">
                 <details class="govuk-details govuk-!-margin-bottom-0">
                   <summary class="govuk-details__summary govuk-!-margin-top-1">
-                    <span class="govuk-details__summary-text">{{ theme.summary }}</span>
+                    <span class="govuk-details__summary-text">{{ theme.short_description }}</span>
                   </summary>
                   <div class="govuk-details__text">
                     <p class="govuk-!-margin-bottom-0">This theme has the following keywords:</p>
