@@ -37,12 +37,7 @@ components:
       required:
         - name
         - questions
-        - id
       properties:
-        id:
-          type: string
-          format: uuid
-          description: The ID of the section
         name:
           type: string
           description: The name of the section
@@ -67,8 +62,14 @@ components:
       properties:
         id:
           type: string
-          format: uuid
-          description: The ID of this question
+          examples:
+          - '1'
+          - '2'
+          - '3'
+          - 'vii'
+          - 'Question 1'
+          - 'q1.2'
+          description: The number or other unique identifier for this question
         text:
           type: string
           description: The question text
@@ -98,8 +99,14 @@ components:
       properties:
         question_id:
           type: string
-          format: uuid
-          description: The ID of the question
+          examples:
+          - '1'
+          - '2'
+          - '3'
+          - 'vii'
+          - 'Question 1'
+          - 'q1.2'
+          description: The number or other unique identifier for the answered question
         multiple_choice:
           type: array
           description: Responses to the multiple choice part of the question, if any
@@ -124,10 +131,6 @@ components:
         - submitted_at
         - id
       properties:
-        id:
-          type: string
-          format: uuid
-          description: The ID of the response
         submitted_at:
           type: string
           format: date-time

@@ -123,10 +123,12 @@
   <h3 class="govuk-heading-s">6 May 2024</h3>
   <p class="govuk-body">v0.2</p>
   <ul class="govuk-list govuk-list--bullet">
+    <li>Question IDs no longer have to be UUIDs, they're just strings</li>
+    <li>Sections do not have IDs</li>
     <li>ConsultationResponse now has a mandatory submitted_at field, which is a datetime</li>
     <li>enforce presence of at least one Question, one Answer, one Section and one ConsultationResponse in a ConsultationWithResponses</li>
     <li>correct definition of Consultation to be an object, not an array</li>
-    <li>multiple_choice is now an optional, instead of a nullable, field on Answer</li>
+    <li>multiple_choice is now an optional instead of a nullable field on Answer</li>
   </ul>
 
   <h3 class="govuk-heading-s">28 March 2024</h3>
