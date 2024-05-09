@@ -3,7 +3,8 @@ from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
-from consultation_analyser.consultations import dummy_data, models
+from consultation_analyser.consultations import models
+from consultation_analyser.consultations.dummy_data import create_dummy_data
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.pipeline.processing import run_processing_pipeline
 
@@ -12,13 +13,9 @@ from consultation_analyser.pipeline.processing import run_processing_pipeline
 def index(request: HttpRequest) -> HttpResponse:
     if request.POST:
         try:
-            dummy_data.DummyConsultation(include_themes=False, number_questions=10)
-            # Assume that the consultation generated is the latest one.
-            # Likely to be true as this is only used in testing/dev environments.
-            consultation = models.Consultation.objects.all().order_by("created_at").last()
-            if consultation.name.startswith("Dummy consultation"):  # Double-check it's a dummy one.
-                user = request.user
-                consultation.users.add(user)
+            consultation = create_dummy_data(include_themes=False, number_questions=10)
+            user = request.user
+            consultation.users.add(user)
             messages.success(request, "A dummy consultation has been generated")
         except RuntimeError as error:
             messages.error(request, error.args[0])
