@@ -2,6 +2,10 @@
 
 The Consultation analyser is a machine learning and LLM-powered tool to automate the processing of public consultations.
 
+> [!IMPORTANT]
+> Incubation Project: This project is an incubation project; as such, we don't recommend using this for critical use cases yet. We are currently in a research stage, trialling the tool for case studies across the Civil Service. If you are a civil servant and wish to take part in our research stage, please register your interest [here](https://www.smartsurvey.co.uk/s/consultation-interest/).
+
+
 ## Setting up the application
 
 ### External dependencies
