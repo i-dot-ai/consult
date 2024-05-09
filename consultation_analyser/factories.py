@@ -118,6 +118,7 @@ class ThemeFactory(factory.django.DjangoModelFactory):
     keywords = factory.LazyAttribute(lambda _o: generate_dummy_topic_keywords())
     short_description = factory.LazyAttribute(lambda _o: faker.sentence())
     summary = factory.LazyAttribute(lambda _o: faker.sentence())
+    is_outlier = False
 
 
 class AnswerFactory(factory.django.DjangoModelFactory):
