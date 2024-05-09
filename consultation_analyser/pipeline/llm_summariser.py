@@ -24,5 +24,5 @@ def create_llm_summaries_for_consultation(consultation):
         else:
             theme_summary_data = dummy_generate_theme_summary(theme)
         theme.summary = theme_summary_data["summary"]
-        theme.short_description = theme_summary_data["phrase"]
+        theme.short_description = theme_summary_data["short_description"]
         theme.save()
