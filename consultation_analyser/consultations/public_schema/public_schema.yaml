@@ -27,21 +27,18 @@ components:
             - 'What shall we do about Kit Kats'
         sections:
           type: array
+          minItems: 1
           description: The sections of the consultation
           items:
             $ref: '#/components/schemas/Section'
     Section:
       type: object
       description: A Section contains a group of Questions. Consultations that do not have multiple sections should group all Questions under a single Section.
+      additionalProperties: false
       required:
         - name
         - questions
-        - id
       properties:
-        id:
-          type: string
-          format: uuid
-          description: The ID of the section
         name:
           type: string
           description: The name of the section
@@ -51,6 +48,7 @@ components:
             - 'When Kit Kats are consumed'
         questions:
           type: array
+          minItems: 1
           description: The questions in the consultation
           items:
             $ref: '#/components/schemas/Question'
@@ -62,11 +60,18 @@ components:
         - id
         - text
         - has_free_text
+      additionalProperties: false
       properties:
         id:
           type: string
-          format: uuid
-          description: The ID of this question
+          examples:
+          - '1'
+          - '2'
+          - '3'
+          - 'vii'
+          - 'Question 1'
+          - 'q1.2'
+          description: The number or other unique identifier for this question
         text:
           type: string
           description: The question text
@@ -91,18 +96,23 @@ components:
       type: object
       description: Each Answer is associated with a Question and belongs to a ConsultationResponse.
       required:
-        - multiple_choice
         - free_text
         - question_id
+      additionalProperties: false
       properties:
         question_id:
           type: string
-          format: uuid
-          description: The ID of the question
+          examples:
+          - '1'
+          - '2'
+          - '3'
+          - 'vii'
+          - 'Question 1'
+          - 'q1.2'
+          description: The number or other unique identifier for the answered question
         multiple_choice:
           type: array
           description: Responses to the multiple choice part of the question, if any
-          nullable: true
           items:
             type: string
             description: A selected option
@@ -121,19 +131,17 @@ components:
       description: A ConsultationResponse groups answers. For now it is also a placeholder for response-level information such as demographics, responding-in-the-capacity-of, etc.
       required:
         - answers
-        - submission_date
+        - submitted_at
         - id
+      additionalProperties: false
       properties:
-        id:
-          type: string
-          format: uuid
-          description: The ID of the response
-        submission_date:
+        submitted_at:
           type: string
           format: date-time
-          description: The submission date of the response
+          description: The submission date and time of the response
         answers:
           type: array
+          minItems: 1
           description: The answers in this response
           items:
             $ref: '#/components/schemas/Answer'
@@ -143,14 +151,15 @@ components:
       required:
         - consultation
         - consultation_responses
+      additionalProperties: false
       properties:
         consultation:
-          type: array
+          type: object
           description: The consultation
-          items:
-            $ref: '#/components/schemas/Consultation'
+          $ref: '#/components/schemas/Consultation'
         consultation_responses:
           type: array
+          minItems: 1
           description: The responses
           items:
             $ref: '#/components/schemas/ConsultationResponse'
