@@ -36,7 +36,7 @@ def test_get_question_responses_page(django_app):
         assert f"{answers[i].free_text}" in page_content
         assert f"{answers[i].multiple_choice[0]}" in page_content
         if answers[i].free_text:
-            assert f"{answers[i].theme.summary}" in page_content
+            assert f"{answers[i].theme.short_description}" in page_content
 
     # Opinions should appear in filter select-box
     for option in question.multiple_choice_options:

@@ -7,8 +7,8 @@ from consultation_analyser.consultations.views import filters
 
 def set_up_for_filters():
     question = factories.QuestionFactory()
-    theme1 = factories.ThemeFactory(label="1_dog_puppy")
-    theme2 = factories.ThemeFactory(label="2_cat_kitten")
+    theme1 = factories.ThemeFactory(keywords=["dog", "puppy"])
+    theme2 = factories.ThemeFactory(keywords=["cat", "kitten"])
     factories.AnswerFactory(
         theme=theme1, question=question, free_text="We love dogs.", multiple_choice=["Option 1", "Option 2"]
     )
@@ -56,4 +56,4 @@ def test_get_filtered_themes():
         question=question, filtered_answers=answers_queryset, applied_filters=applied_filters
     )
     assert queryset.count() == 1
-    assert queryset[0].label == "2_cat_kitten"
+    assert queryset[0].keywords == ["cat", "kitten"]

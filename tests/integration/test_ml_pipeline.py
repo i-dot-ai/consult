@@ -29,7 +29,6 @@ def test_save_themes_for_consultation():
         assert themes_for_q.exists()
     example_theme = themes_for_q.first()
     assert example_theme.keywords
-    assert example_theme.label
     # Summary not populated here - done in a separate step
 
     # Check no themes for question with no free text

@@ -27,5 +27,12 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     if request.POST:
         run_processing_pipeline(consultation)
         messages.success(request, "Themes have been generated for this consultation")
-    context = {"consultation": consultation}
+    themes_for_consultation = models.Theme.objects.filter(question__section__consultation=consultation)
+    number_of_themes = themes_for_consultation.count()
+    number_of_themes_with_summaries = themes_for_consultation.exclude(summary="").count()
+    context = {
+        "consultation": consultation,
+        "number_of_themes": number_of_themes,
+        "number_of_themes_with_summaries": number_of_themes_with_summaries,
+    }
     return render(request, "support_console/consultation.html", context=context)
