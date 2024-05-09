@@ -34,6 +34,7 @@ components:
     Section:
       type: object
       description: A Section contains a group of Questions. Consultations that do not have multiple sections should group all Questions under a single Section.
+      additionalProperties: false
       required:
         - name
         - questions
@@ -59,6 +60,7 @@ components:
         - id
         - text
         - has_free_text
+      additionalProperties: false
       properties:
         id:
           type: string
@@ -96,6 +98,7 @@ components:
       required:
         - free_text
         - question_id
+      additionalProperties: false
       properties:
         question_id:
           type: string
@@ -130,6 +133,7 @@ components:
         - answers
         - submitted_at
         - id
+      additionalProperties: false
       properties:
         submitted_at:
           type: string
@@ -147,6 +151,7 @@ components:
       required:
         - consultation
         - consultation_responses
+      additionalProperties: false
       properties:
         consultation:
           type: object
