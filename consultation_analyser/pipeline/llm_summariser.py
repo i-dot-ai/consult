@@ -10,7 +10,7 @@ from consultation_analyser.consultations.models import Theme
 def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
     made_up_short_description = (", ").join(theme.keywords)
     made_up_summary = f"Longer summary: {made_up_short_description}"
-    output = {"phrase": made_up_short_description, "summary": made_up_summary}
+    output = {"short_description": made_up_short_description, "summary": made_up_summary}
     return output
 
 
