@@ -58,7 +58,6 @@ def get_prompt_template():
     """
 
     return PromptTemplate.from_template(prompt_template)
-    # TODO - Do we want both "phrase" and "summary"?
 
 
 class ContentHandler(LLMContentHandler):
@@ -155,7 +154,7 @@ def generate_theme_summary(theme: Theme) -> str:
             prompt_template.format_prompt(prompt_inputs),
         )
         # TODO - this will error after 5 retries - are we ok with that?
-    return parsed_output.summary  # TODO - return the whole parsed_output dictionary, but we have to deal with it elsewhere - do we want both fields?
+    return parsed_output
 
 
 def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
