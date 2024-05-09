@@ -38,9 +38,9 @@ def get_prompt_template():
     Your task is to generate ONLY:
     1) A concise phrase that encapsulates both the prevalent keywords and the nuanced opinions conveyed in the responses.
     2) A summary of the opinions expressed in the responses.
-    You should generate a phrase and summary that reflects the MOST COMMON opinion expressed in the responses. \
+    You should generate a short description (a phrase) and summary that reflects the MOST COMMON opinion expressed in the responses. \
     You MUST return your answer in JSON format. DO NOT DEVIATE FROM THIS FORMAT. \
-    The response MUST be formatted with two fields: 'phrase' and 'summary'. \
+    The response MUST be formatted with two fields: 'short_description' and 'summary'. \
     IT IS ESSENTIAL THAT YOU FORMAT YOUR RESPONSE LIKE THIS.
 
     == QUESTION ==
@@ -83,7 +83,7 @@ class ContentHandler(LLMContentHandler):
 
 
 class ThemeSummaryOutput(BaseModel):
-    phrase: str
+    short_description: str
     summary: str
 
 
