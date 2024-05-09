@@ -76,10 +76,8 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     summary = models.TextField(blank=True)  # More detailed description
     # Duplicates info in Answer model, but needed for uniqueness constraint.
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
-
-    # Calculated fields
-    keywords = models.JSONField(default=list, editable=False)
-    is_outlier = models.BooleanField(default=False, editable=False)
+    keywords = models.JSONField(default=list)
+    is_outlier = models.BooleanField(default=False)
 
     class Meta:
         constraints = [
