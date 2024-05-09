@@ -97,11 +97,7 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    def save_theme_to_answer(self, keywords, theme_number):
-        if theme_number == -1:
-            is_outlier = True
-        else:
-            is_outlier = False
+    def save_theme_to_answer(self, keywords: list, is_outlier: bool):
         question = self.question
         theme, _ = Theme.objects.get_or_create(question=question, keywords=keywords, is_outlier=is_outlier)
         self.theme = theme
