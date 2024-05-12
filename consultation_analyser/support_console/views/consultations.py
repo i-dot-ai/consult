@@ -6,6 +6,7 @@ from django.shortcuts import render
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import create_dummy_data
 from consultation_analyser.hosting_environment import HostingEnvironment
+from consultation_analyser.pipeline.llm_summariser import NO_SUMMARY_STR, create_llm_summaries_for_consultation
 from consultation_analyser.pipeline.processing import run_processing_pipeline
 
 
@@ -36,8 +37,6 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
         messages.success(request, "Topic modelling has been run for this consultation")
     elif "llm_summarisation" in request.POST:
         print("LLM summarisation")
-        from consultation_analyser.pipeline.llm_summariser import create_llm_summaries_for_consultation
-
         create_llm_summaries_for_consultation(consultation)
         messages.success(request, "Summaries have been generated for themes using the LLM")
     elif "generate_themes" in request.POST:
@@ -45,7 +44,9 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
         messages.success(request, "Themes have been generated for this consultation")
     themes_for_consultation = models.Theme.objects.filter(question__section__consultation=consultation)
     number_of_themes = themes_for_consultation.count()
-    number_of_themes_with_summaries = themes_for_consultation.exclude(summary="").count()
+    number_of_themes_with_summaries = (
+        themes_for_consultation.exclude(summary="").exclude(summary=NO_SUMMARY_STR).count()
+    )
     context = {
         "consultation": consultation,
         "number_of_themes": number_of_themes,

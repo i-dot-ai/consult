@@ -11,7 +11,7 @@ from langchain.llms import SagemakerEndpoint
 from langchain.llms.sagemaker_endpoint import LLMContentHandler
 from langchain.output_parsers import PydanticOutputParser, RetryWithErrorOutputParser
 from langchain.prompts import PromptTemplate
-from langchain.pydantic_v1 import BaseModel
+from langchain.pydantic_v1 import BaseModel, ValidationError
 from langchain_core.exceptions import OutputParserException
 
 from consultation_analyser.consultations.decorators.sagemaker_endpoint_status_check import check_and_launch_sagemaker
@@ -20,6 +20,8 @@ from consultation_analyser.consultations.models import Answer, Theme
 MODEL_ENCODING = tiktoken.get_encoding(
     "cl100k_base"
 )  # TODO - where does this encoding come from, how do we associate it with model
+
+NO_SUMMARY_STR = "Unable to generate summary for this themes"
 
 
 def get_prompt_template():
@@ -110,6 +112,7 @@ def get_random_sample_of_responses_for_theme(theme: Theme, encoding: tiktoken.En
     return combined_responses_string
 
 
+# https://python.langchain.com/v0.1/docs/integrations/llms/sagemaker/
 def get_sagemaker_endpoint() -> SagemakerEndpoint:
     content_handler = ContentHandler()
     client = boto3.client("sagemaker-runtime", region_name=settings.AWS_REGION)
@@ -149,17 +152,21 @@ def generate_theme_summary(theme: Theme) -> str:
     try:
         parsed_output = parser.parse(llm_response)
     except OutputParserException as e:
-        parsed_output = retry_parser.parse_with_prompt(
-            llm_response,
-            prompt_template.format_prompt(prompt_inputs),
-        )
-        # TODO - this will error after 5 retries - are we ok with that?
+        try:
+            parsed_output = retry_parser.parse_with_prompt(
+                llm_response,
+                prompt_template.format_prompt(prompt_inputs),
+            )
+        except ValidationError as e:
+            parsed_output = {"short_description": NO_SUMMARY_STR, "summary": NO_SUMMARY_STR}
+        # TODO - how do we deal with these?
     return parsed_output
 
 
 def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
-    made_up_short_description = (", ").join(theme.keywords)
-    made_up_summary = f"Longer summary: {made_up_short_description}"
+    concatenated_keywords = (", ").join(theme.keywords)
+    made_up_short_description = f"Short description: {concatenated_keywords}"
+    made_up_summary = f"Longer summary: {concatenated_keywords}"
     output = {"short_description": made_up_short_description, "summary": made_up_summary}
     return output
 
