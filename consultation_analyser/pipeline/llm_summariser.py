@@ -59,7 +59,7 @@ def get_prompt_template():
     [/INST]
     """
 
-    return PromptTemplate.from_template(prompt_template)
+    return PromptTemplate.from_template(template=prompt_template)
 
 
 class ContentHandler(LLMContentHandler):
@@ -109,10 +109,11 @@ def get_random_sample_of_responses_for_theme(theme: Theme, encoding: tiktoken.En
             combined_responses_string = new_combined_responses_string
         i = i + 1
         append_more_results = under_token_limit and (i < number_responses)
+    print("=== token count ====")
+    print(token_count(text=new_combined_responses_string, encoding=encoding))
     return combined_responses_string
 
 
-# https://python.langchain.com/v0.1/docs/integrations/llms/sagemaker/
 def get_sagemaker_endpoint() -> SagemakerEndpoint:
     content_handler = ContentHandler()
     client = boto3.client("sagemaker-runtime", region_name=settings.AWS_REGION)
@@ -128,11 +129,10 @@ def get_sagemaker_endpoint() -> SagemakerEndpoint:
 def generate_theme_summary(theme: Theme) -> str:
     """For a given theme, generate a summary using an LLM."""
     prompt_template = get_prompt_template()
-    # TODO - issues with this sagemaker endpoint
     sagemaker_endpoint = get_sagemaker_endpoint()
-    print(f"sagemaker_endpoint: {sagemaker_endpoint}")
     llm_chain = LLMChain(llm=sagemaker_endpoint, prompt=prompt_template)
     # TODO - where is this max tokens coming from?
+    # max_tokens=2000
     sample_responses = get_random_sample_of_responses_for_theme(theme, encoding=MODEL_ENCODING, max_tokens=2000)
     prompt_inputs = {
         "consultation_name": theme.question.section.consultation.name,
@@ -140,8 +140,7 @@ def generate_theme_summary(theme: Theme) -> str:
         "keywords": ", ".join(theme.keywords),
         "responses": sample_responses,
     }
-    llm_response = llm_chain(prompt_inputs)
-    llm_response = llm_response["text"]
+    llm_response = llm_chain.run(prompt_inputs)
     parser = PydanticOutputParser(pydantic_object=ThemeSummaryOutput)
     retry_parser = RetryWithErrorOutputParser.from_llm(
         parser=parser,
@@ -153,10 +152,8 @@ def generate_theme_summary(theme: Theme) -> str:
         parsed_output = parser.parse(llm_response)
     except OutputParserException as e:
         try:
-            parsed_output = retry_parser.parse_with_prompt(
-                llm_response,
-                prompt_template.format_prompt(prompt_inputs),
-            )
+            prompt = prompt_template.format_prompt(**prompt_inputs)
+            parsed_output = retry_parser.parse_with_prompt(completion=llm_response, prompt_value=prompt)
         except ValidationError as e:
             parsed_output = {"short_description": NO_SUMMARY_STR, "summary": NO_SUMMARY_STR}
         # TODO - how do we deal with these?
