@@ -36,7 +36,6 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
             save_themes_for_consultation(consultation.id)
             messages.success(request, "Topic modelling has been run for this consultation")
         elif "llm_summarisation" in request.POST:
-            print("LLM summarisation")
             create_llm_summaries_for_consultation(consultation)
             messages.success(request, "Summaries have been generated for themes using the LLM")
         elif "generate_themes" in request.POST:
