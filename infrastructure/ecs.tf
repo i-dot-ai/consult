@@ -1,11 +1,9 @@
 locals {
   postgres_fqdn   = "${module.postgres.rds_instance_username}:${module.postgres.rds_instance_db_password}@${module.postgres.db_instance_address}/${module.postgres.db_instance_name}"
   secret_env_vars = jsondecode(data.aws_secretsmanager_secret_version.env_vars.secret_string)
-  env_vars = {
+  batch_env_vars = {
     "ENVIRONMENT"                          = terraform.workspace,
     "PRODUCTION_DEPLOYMENT"                = true,
-    "BATCH_JOB_QUEUE"                      = module.batch_job_definition.job_queue_name,
-    "BATCH_JOB_DEFINITION"                 = module.batch_job_definition.job_definition_name,
     "DJANGO_SECRET_KEY"                    = data.aws_secretsmanager_secret_version.django_secret.secret_string,
     "DEBUG"                                = local.secret_env_vars.DEBUG,
     "SAGEMAKER_ENDPOINT_NAME"              = local.secret_env_vars.SAGEMAKER_ENDPOINT_NAME
@@ -19,6 +17,12 @@ locals {
     "DB_HOST" : "${module.postgres.db_instance_address}",
     "DOMAIN_NAME" : "${local.host}"
   }
+
+
+  esc_env_vars = merge({
+    "BATCH_JOB_QUEUE"                      = module.batch_job_definition.job_queue_name,
+    "BATCH_JOB_DEFINITION"                 = module.batch_job_definition.job_definition_name,
+  }, local.batch_env_vars)
 }
 
 module "ecs" {
@@ -36,7 +40,7 @@ module "ecs" {
     timeout             = 6
     port                = 8000
   }
-  environment_variables = local.env_vars
+  environment_variables = local.esc_env_vars
 
   state_bucket                 = var.state_bucket
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
