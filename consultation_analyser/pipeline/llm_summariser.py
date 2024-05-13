@@ -11,7 +11,7 @@ from langchain.llms import SagemakerEndpoint
 from langchain.llms.sagemaker_endpoint import LLMContentHandler
 from langchain.output_parsers import PydanticOutputParser, RetryWithErrorOutputParser
 from langchain.prompts import PromptTemplate
-from langchain.pydantic_v1 import BaseModel, ValidationError
+from langchain.pydantic_v1 import BaseModel
 from langchain_core.exceptions import OutputParserException
 
 from consultation_analyser.consultations.models import Answer, Theme
@@ -22,6 +22,9 @@ MODEL_ENCODING = tiktoken.get_encoding(
 )  # TODO - where does this encoding come from, how do we associate it with model
 
 NO_SUMMARY_STR = "Unable to generate summary for this themes"
+
+
+# TODO - deal with Langchain warnings - update to newer methods.
 
 
 def get_prompt_template():
@@ -109,30 +112,26 @@ def get_random_sample_of_responses_for_theme(theme: Theme, encoding: tiktoken.En
             combined_responses_string = new_combined_responses_string
         i = i + 1
         append_more_results = under_token_limit and (i < number_responses)
-    print("=== token count ====")
-    print(token_count(text=new_combined_responses_string, encoding=encoding))
     return combined_responses_string
 
 
 def get_sagemaker_endpoint() -> SagemakerEndpoint:
     content_handler = ContentHandler()
-    client = boto3.client("sagemaker-runtime", region_name=settings.AWS_REGION)
+    client = boto3.client("sagemaker-runtime")
     sagemaker_endpoint = SagemakerEndpoint(
         endpoint_name=settings.SAGEMAKER_ENDPOINT_NAME,
         content_handler=content_handler,
         client=client,
-        region_name=settings.AWS_REGION,
     )
     return sagemaker_endpoint
 
 
-def generate_theme_summary(theme: Theme) -> str:
+def generate_theme_summary(theme: Theme) -> dict:
     """For a given theme, generate a summary using an LLM."""
     prompt_template = get_prompt_template()
     sagemaker_endpoint = get_sagemaker_endpoint()
-    llm_chain = LLMChain(llm=sagemaker_endpoint, prompt=prompt_template)
     # TODO - where is this max tokens coming from?
-    # max_tokens=2000
+    # max_tokens=2000 in original code
     sample_responses = get_random_sample_of_responses_for_theme(theme, encoding=MODEL_ENCODING, max_tokens=2000)
     prompt_inputs = {
         "consultation_name": theme.question.section.consultation.name,
@@ -140,23 +139,31 @@ def generate_theme_summary(theme: Theme) -> str:
         "keywords": ", ".join(theme.keywords),
         "responses": sample_responses,
     }
+
+    # TODO - tidy this up, we need to make sure that what we're sending is under token limit
+    prompt = prompt_template.format_prompt(**prompt_inputs)
+    input_count = token_count(prompt.to_string(), MODEL_ENCODING)
+    f"Input count: {input_count}"
+    llm_chain = LLMChain(llm=sagemaker_endpoint, prompt=prompt_template)
     llm_response = llm_chain.run(prompt_inputs)
     parser = PydanticOutputParser(pydantic_object=ThemeSummaryOutput)
     retry_parser = RetryWithErrorOutputParser.from_llm(
         parser=parser,
         llm=sagemaker_endpoint,
-        max_retries=5,
+        max_retries=2,
     )
-
+    # TODO - the number of retries - does this relate to the number of tokens
+    # Getting errors with too many input tokens, max_input_tokens = 8192
     try:
         parsed_output = parser.parse(llm_response)
+        parsed_output = {"short_description": parsed_output.short_description, "summary": parsed_output.summary}
     except OutputParserException as e:
         try:
-            prompt = prompt_template.format_prompt(**prompt_inputs)
             parsed_output = retry_parser.parse_with_prompt(completion=llm_response, prompt_value=prompt)
-        except ValidationError as e:
+            parsed_output = {"short_description": parsed_output.short_description, "summary": parsed_output.summary}
+        except OutputParserException as e:
             parsed_output = {"short_description": NO_SUMMARY_STR, "summary": NO_SUMMARY_STR}
-        # TODO - how do we deal with these?
+        # TODO - how do we deal with the cases where the output isn't a JSON format?
     return parsed_output
 
 
@@ -168,6 +175,8 @@ def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
     return output
 
 
+# TODO - actually do this at the start of the process consultation,
+# but check that it's ready at the start of the LLM summariser method
 @check_and_launch_sagemaker
 def create_llm_summaries_for_consultation(consultation):
     themes = Theme.objects.filter(question__section__consultation=consultation).filter(question__has_free_text=True)

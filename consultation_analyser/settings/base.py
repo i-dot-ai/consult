@@ -196,6 +196,3 @@ USE_SAGEMAKER_LLM = env.bool("USE_SAGEMAKER_LLM")
 
 # Authentication
 LOGIN_URL = "/sign-in/"
-
-# AWS settings
-AWS_REGION = env("AWS_REGION")
