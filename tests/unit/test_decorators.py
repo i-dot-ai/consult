@@ -2,7 +2,7 @@ from unittest.mock import MagicMock, patch
 
 import boto3
 
-from consultation_analyser.consultations.decorators.sagemaker_endpoint_status_check import check_and_launch_sagemaker
+from consultation_analyser.pipeline.decorators import check_and_launch_sagemaker
 
 
 @check_and_launch_sagemaker
