@@ -1,7 +1,7 @@
 from django.core.management.base import BaseCommand
 from django.utils.text import slugify
 
-from consultation_analyser.consultations.dummy_data import DummyConsultation
+from consultation_analyser.consultations.dummy_data import create_dummy_data
 
 
 class Command(BaseCommand):
@@ -15,8 +15,8 @@ class Command(BaseCommand):
         if options["name"]:
             name = options["name"]
             slug = slugify(name)
-            DummyConsultation(name=options["name"], slug=slug)
+            create_dummy_data(name=options["name"], slug=slug)
         else:
-            DummyConsultation()
+            create_dummy_data()
 
         self.stdout.write("Done.")
