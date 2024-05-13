@@ -1,7 +1,6 @@
 import pytest
 from django.conf import settings
 
-from consultation_analyser.consultations.models import Answer, Question
 from consultation_analyser.consultations.upload_consultation import upload_consultation
 from consultation_analyser.factories import UserFactory
 
@@ -20,19 +19,16 @@ def test_upload_consultation():
 
     assert consultation.consultationresponse_set.count() == 2
 
-    response = consultation.consultationresponse_set.all()[0]
-    r1_answers = Answer.objects.filter(consultation_response=response).all()
-    assert r1_answers.count() == 2
+    responses = consultation.consultationresponse_set.prefetch_related("answer_set", "answer_set__question").all()
 
-    response = consultation.consultationresponse_set.all()[1]
-    r2_answers = Answer.objects.filter(consultation_response=response).all()
-    assert r2_answers.count() == 2
+    for response in responses:
+        answers = response.answer_set.all()
+        assert answers.count() == 2
 
-    for a in Answer.objects.all():
-        q = a.question
-        assert a.free_text in ["Answer to Question 1", "Answer to Question 2"]
-        if q.text == "Question 1":
-            assert a.free_text == "Answer to Question 1"
-        elif q.text == "Question 2":
-            assert a.free_text == "Answer to Question 2"
-
+        for a in answers:
+            q = a.question
+            assert q.text in ["Question 1", "Question 2"]
+            if q.text == "Question 1":
+                assert a.free_text == "Answer to Question 1"
+            elif q.text == "Question 2":
+                assert a.free_text == "Answer to Question 2"
