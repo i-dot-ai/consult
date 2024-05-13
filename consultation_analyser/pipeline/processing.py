@@ -7,6 +7,7 @@ def process_consultation_themes(consultation):
     # Import only when needed
     from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
 
+    # TODO - rearrange these functions to run on batch
     save_themes_for_consultation(consultation.id)
     create_llm_summaries_for_consultation(consultation)
 
