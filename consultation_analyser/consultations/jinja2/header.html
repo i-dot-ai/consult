@@ -1,0 +1,56 @@
+  <header class="govuk-header iai-header" data-module="govuk-header">
+    <div class="govuk-header__container govuk-width-container">
+      <div class="govuk-header__logo">
+        <a href="https://www.gov.uk" class="govuk-header__link govuk-header__link--homepage">
+            <svg
+              focusable="false"
+              role="img"
+              class="govuk-header__logotype"
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 166.69 104.15"
+              height="30"
+              width="48"
+              aria-label="i.AI">
+            <title>i.AI</title>
+
+            <rect y="24.937px" width="22px" height="80px" x="0px"></rect>
+            <rect x="144.87" width="21.82" height="104.15"></rect>
+            <circle r="11" cx="11px" cy="11px"></circle>
+            <path d="M122.1,104.15,115,83.7H79.41l-6.75,20.45H48.52L87.06,0H108.6l38.15,104.15ZM97.44,27.8,85.76,63.55h23.1Z"></path>
+            <circle r="11" cx="36.700001px" class="cls-1" cy="93.682587px"></circle>
+          </svg>
+        </a>
+      </div>
+      <div class="govuk-header__content">
+        <a href="{{ app_config.path }}" class="govuk-header__link govuk-header__service-name">
+          {{ app_config.name }}
+        </a>
+      </div>
+    </div>
+
+    <div class="iai-phase-banner">
+      <div class="govuk-width-container">
+        {{ govukPhaseBanner({
+          "tag": {
+            "text": "Alpha"
+          },
+          "html": 'This is a new service – your <a class="govuk-link" href="https://www.smartsurvey.co.uk/s/GESFSF/">feedback</a> will help us to improve it.'
+        }) }}
+      </div>
+    </div>
+
+    <nav class="x-govuk-primary-navigation" aria-labelledby="primary-navigation-heading">
+      <div class="govuk-width-container">
+        <h2 class="govuk-visually-hidden" id="primary-navigation-heading">Navigation</h2>
+        <ul class="x-govuk-primary-navigation__list">
+          {% for link in app_config.menu_items %}
+            <li class="x-govuk-primary-navigation__item {% if page_title == link.text %}x-govuk-primary-navigation__item--current {% endif %}">
+              <a class="x-govuk-primary-navigation__link" {% if page_title == link.text %}aria-current="page"{% endif %} href="{{link.href}}">{{link.text}}</a>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
+    </nav>
+
+  </header>
+

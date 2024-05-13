@@ -9,7 +9,7 @@ from tests.helpers import sign_in
 @override_switch("FRONTEND_USER_LOGIN", True)
 def test_consultation_page(django_app):
     user = UserFactory()
-    consultation = ConsultationFactory(with_question=True, user=user)
+    consultation = ConsultationFactory(with_question=True, with_question__with_answer=True, user=user)
 
     sign_in(django_app, user.email)
 

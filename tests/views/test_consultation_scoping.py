@@ -17,7 +17,8 @@ def test_get_consultation_we_own():
     valid_request.user = user
     resp = consultations.show(valid_request, consultation_slug=consultation_we_own.slug)
 
-    assert resp.status_code == 200
+    assert resp.status_code == 302
+    assert resp.url == "/consultations/processing/"
 
 
 @pytest.mark.django_db

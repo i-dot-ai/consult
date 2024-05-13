@@ -7,8 +7,9 @@ $iai-colour-pink: #C50878;
 @import "node_modules/@x-govuk/govuk-prototype-components/x-govuk/all";
 
 .govuk-header__container {
-    border-color: $iai-colour-pink;
+    border-color: white;
 }
+
 .govuk-phase-banner__content__tag {
     background-color: $iai-colour-pink;
     color: white;
@@ -16,14 +17,18 @@ $iai-colour-pink: #C50878;
 
 .iai-header {
     border-bottom: 0;
+    background-color: $iai-colour-pink;
 }
+
 .iai-header .iai-phase-banner {
     background-color: white;
-    padding-top: 10px;
+    padding-top: 0px;
 }
+
 .iai-header .govuk-phase-banner {
     border-bottom: 0;
 }
+
 .iai-header .x-govuk-primary-navigation__link:hover {
     /*color: $iai-colour-pink !important;*/
     /*text-decoration: none;*/

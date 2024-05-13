@@ -1,9 +1,5 @@
-<<<<<<< HEAD
-from django.shortcuts import get_object_or_404, redirect
-=======
 from django.shortcuts import redirect, get_object_or_404
 from django.http.response import Http404
->>>>>>> d4a7ef9 (WIP)
 
 from .. import models
 

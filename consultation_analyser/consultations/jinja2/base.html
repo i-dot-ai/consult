@@ -32,20 +32,9 @@
 
   <a href="#main-content" class="govuk-skip-link" data-module="govuk-skip-link">Skip to main content</a>
 
-  {{ govukHeader({
-    "homepageUrl": "https://www.gov.uk",
-    "serviceName": app_config.name,
-    "serviceUrl": app_config.path,
-    'navigation': app_config.menu_items}) }}
+  {% include "header.html" %}
 
   <div class="govuk-width-container">
-
-    {{ govukPhaseBanner({
-      "tag": {
-        "text": "Alpha"
-      },
-      "html": 'This is a new service – your <a class="govuk-link" href="https://www.smartsurvey.co.uk/s/GESFSF/">feedback</a> will help us to improve it.'
-    }) }}
 
     {% block pre_main %}
     {% endblock %}
