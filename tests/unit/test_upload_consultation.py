@@ -21,9 +21,18 @@ def test_upload_consultation():
     assert consultation.consultationresponse_set.count() == 2
 
     response = consultation.consultationresponse_set.all()[0]
-    answers = Answer.objects.filter(consultation_response=response).all()
-    assert answers.count() == 2
+    r1_answers = Answer.objects.filter(consultation_response=response).all()
+    assert r1_answers.count() == 2
 
     response = consultation.consultationresponse_set.all()[1]
-    answers = Answer.objects.filter(consultation_response=response).all()
-    assert answers.count() == 2
+    r2_answers = Answer.objects.filter(consultation_response=response).all()
+    assert r2_answers.count() == 2
+
+    for a in Answer.objects.all():
+        q = a.question
+        assert a.free_text in ["Answer to Question 1", "Answer to Question 2"]
+        if q.text == "Question 1":
+            assert a.free_text == "Answer to Question 1"
+        elif q.text == "Question 2":
+            assert a.free_text == "Answer to Question 2"
+

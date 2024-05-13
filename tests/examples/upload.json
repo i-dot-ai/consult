@@ -6,13 +6,13 @@
         "name": "My section",
         "questions": [
           {
-            "id": "11111111-bbbb-48e0-8445-af588c63867e",
-            "text": "Free text Q",
+            "id": "question-1",
+            "text": "Question 1",
             "has_free_text": true
           },
           {
-            "id": "22222222-bbbb-4a4b-ad2f-bc82b9b6eec7",
-            "text": "Multichoice Q",
+            "id": "question-2",
+            "text": "Question 2",
             "has_free_text": true,
             "multiple_choice_options": [
               "a",
@@ -29,12 +29,12 @@
       "submitted_at": "2018-11-13T20:20:39+00:00",
       "answers": [
         {
-          "question_id": "11111111-bbbb-48e0-8445-af588c63867e",
-          "free_text": "Free answer"
+          "question_id": "question-1",
+          "free_text": "Answer to Question 1"
         },
         {
-          "question_id": "22222222-bbbb-4a4b-ad2f-bc82b9b6eec7",
-          "free_text": "Free answer 2",
+          "question_id": "question-2",
+          "free_text": "Answer to Question 2",
           "multiple_choice": [
             "b"
           ]
@@ -45,12 +45,12 @@
       "submitted_at": "2018-11-13T20:20:39+00:00",
       "answers": [
         {
-          "question_id": "11111111-bbbb-48e0-8445-af588c63867e",
-          "free_text": "Free answer from second resp"
+          "question_id": "question-1",
+          "free_text": "Answer to Question 1"
         },
         {
-          "question_id": "22222222-bbbb-4a4b-ad2f-bc82b9b6eec7",
-          "free_text": "Free answer 2 from second resp",
+          "question_id": "question-2",
+          "free_text": "Answer to Question 2",
           "multiple_choice": [
             "a"
           ]

@@ -25,6 +25,8 @@ def upload_consultation(file, user):
     consultation.save()
     consultation.users.set([user])
 
+    question_ids_map = {}
+
     for section_attrs in sections:
         section_attrs["consultation_id"] = consultation.id
         questions = section_attrs.pop("questions")
@@ -32,10 +34,12 @@ def upload_consultation(file, user):
         section = Section(**section_attrs)
         section.save()
         for question_attrs in questions:
+            supplied_id = question_attrs.pop("id")
             question_attrs["slug"] = slugify(question_attrs["text"])
             question_attrs["section_id"] = section.id
             question = Question(**question_attrs)
             question.save()
+            question_ids_map[supplied_id] = question.id
 
     for response_attrs in responses:
         answers = response_attrs.pop("answers")
@@ -44,6 +48,8 @@ def upload_consultation(file, user):
         response.save()
         for answer_attrs in answers:
             answer_attrs["consultation_response_id"] = response.id
+            question_id = answer_attrs.pop("question_id")
+            answer_attrs["question_id"] = question_ids_map[question_id]
             answer = Answer(**answer_attrs)
             answer.save()
 
