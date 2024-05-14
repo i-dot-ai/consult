@@ -14,9 +14,17 @@
       <p class="govuk-body">There are no themes for this consultation.</p>
     {% endif %}
 
-    <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
-      View on frontend
-    </a>
+    <p class="govuk-body">
+      <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
+        View on frontend
+      </a>
+    </p>
+
+    <p class="govuk-body">
+      <a href="{{ url('delete_consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-link--warning govuk-body">
+        Delete this consultation
+      </a>
+    </p>
 
   </div>
 
