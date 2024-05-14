@@ -143,8 +143,6 @@ def generate_theme_summary(theme: Theme) -> dict:
 
     # TODO - tidy this up, we need to make sure that what we're sending is under token limit
     prompt = prompt_template.format_prompt(**prompt_inputs)
-    input_count = token_count(prompt.to_string(), MODEL_ENCODING)
-    f"Input count: {input_count}"
     llm_chain = LLMChain(llm=sagemaker_endpoint, prompt=prompt_template)
     llm_response = llm_chain.run(prompt_inputs)
     parser = PydanticOutputParser(pydantic_object=ThemeSummaryOutput)

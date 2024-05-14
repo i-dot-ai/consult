@@ -50,14 +50,11 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     )
     number_of_themes_unable_to_summarise = themes_for_consultation.filter(summary=NO_SUMMARY_STR).count()
     number_of_themes_not_yet_summarised = themes_for_consultation.filter(summary="").count()
-    free_text_questions = models.Question.objects.filter(section__consultation=consultation).filter(has_free_text=True)
     context = {
         "consultation": consultation,
         "number_of_themes": number_of_themes,
         "number_of_themes_with_summaries": number_of_themes_with_summaries,
         "number_of_themes_unable_to_summarise": number_of_themes_unable_to_summarise,
         "number_of_themes_not_yet_summarised": number_of_themes_not_yet_summarised,
-        "themes": themes_for_consultation,
-        "free_text_questions": free_text_questions,
     }
     return render(request, "support_console/consultation.html", context=context)
