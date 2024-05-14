@@ -19,6 +19,16 @@
               "b",
               "c"
             ]
+          },
+          {
+            "id": "question-3",
+            "text": "Question 3",
+            "has_free_text": false,
+            "multiple_choice_options": [
+              "a",
+              "b",
+              "c"
+            ]
           }
         ]
       }
@@ -38,6 +48,12 @@
           "multiple_choice": [
             "b"
           ]
+        },
+        {
+          "question_id": "question-3",
+          "multiple_choice": [
+            "a"
+          ]
         }
       ]
     },
@@ -53,6 +69,12 @@
           "free_text": "Answer to Question 2",
           "multiple_choice": [
             "a"
+          ]
+        },
+        {
+          "question_id": "question-3",
+          "multiple_choice": [
+            "c"
           ]
         }
       ]
