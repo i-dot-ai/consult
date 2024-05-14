@@ -33,4 +33,4 @@ def test_upload_consultation():
             elif q.text == "Question 2":
                 assert a.free_text == "Answer to Question 2"
             elif q.text == "Question 3":
-                assert not a.free_text # there is no free text part
+                assert not a.free_text  # there is no free text part

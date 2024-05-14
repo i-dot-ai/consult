@@ -57,6 +57,6 @@ def test_generate_themes(django_app):
     login_page.form["password"] = "admin"  # pragma: allowlist secret
     consultation_page = login_page.form.submit().follow()
     assert "Test consultation" in consultation_page
-    consultation_page = consultation_page.form.submit("generate_themes")
+    consultation_page = consultation_page.forms[1].submit("generate_themes")
     generated_themes = Theme.objects.filter(answer__question__section__consultation__slug="test-consultation")
     assert generated_themes.exists()

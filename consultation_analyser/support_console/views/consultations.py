@@ -4,6 +4,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
 from consultation_analyser.consultations import models
+from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.dummy_data import create_dummy_data
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.pipeline.llm_summariser import NO_SUMMARY_STR, create_llm_summaries_for_consultation
@@ -43,8 +44,8 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
             messages.success(request, "Themes have been generated for this consultation")
         elif "download_json" in request.POST:
             consultation_json = consultation_to_json(consultation)
-            response = HttpResponse(consultation_json, content_type='application/json')
-            response['Content-Disposition'] = f"attachment; filename={consultation.slug}.json"
+            response = HttpResponse(consultation_json, content_type="application/json")
+            response["Content-Disposition"] = f"attachment; filename={consultation.slug}.json"
 
             return response
 
