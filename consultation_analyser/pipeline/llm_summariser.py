@@ -21,7 +21,8 @@ MODEL_ENCODING = tiktoken.get_encoding(
     "cl100k_base"
 )  # TODO - where does this encoding come from, how do we associate it with model
 
-NO_SUMMARY_STR = "Unable to generate summary for this themes"
+# TODO - what should this be, should we save in DB a flag if we can't generate summary?
+NO_SUMMARY_STR = "Unable to generate summary for this theme"
 
 
 # TODO - deal with Langchain warnings - update to newer methods.

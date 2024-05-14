@@ -7,7 +7,9 @@
   <h1 class="govuk-heading-l">{{ page_title }}</h1>
   <div>
     {% if number_of_themes %}
-      <p class="govuk-body">For this consultation there are {{number_of_themes}} themes, of which {{number_of_themes_with_summaries}} have summaries.</p>
+      <p class="govuk-body">For this consultation there are {{number_of_themes}} themes.</p>
+      <p class="govuk-body">Of these themes, {{number_of_themes_with_summaries}} have summaries, {{number_of_themes_unable_to_summarise}} themes we were unable to summarise, and {{number_of_themes_not_yet_summarised}} themes have not yet been summarised.</p>
+
     {% else %}
       <p class="govuk-body">There are no themes for this consultation.</p>
     {% endif %}
