@@ -1,3 +1,4 @@
+import time
 from unittest.mock import MagicMock, patch
 
 import boto3
@@ -24,16 +25,22 @@ def test_check_and_launch_sagemaker_endpoint_exists(settings):
         mock_sagemaker.describe_endpoint.assert_called()
 
 
+@patch("time.sleep", MagicMock(return_value=0))
 def test_check_and_launch_sagemaker_endpoint_not_exists(settings):
     settings.USE_SAGEMAKER_LLM = True
     with patch("boto3.client") as mock_client:
         # Create a mock SageMaker client
         mock_sagemaker = MagicMock()
         mock_client.return_value = mock_sagemaker
-        mock_sagemaker.describe_endpoint.side_effect = boto3.exceptions.botocore.exceptions.ClientError(
-            error_response={"Error": {"Code": "ValidationException", "Message": "Could not find endpoint"}},
-            operation_name="describe_endpoint",
-        )
+
+        mock_sagemaker.describe_endpoint.side_effect = [
+            boto3.exceptions.botocore.exceptions.ClientError(
+                error_response={"Error": {"Code": "ValidationException", "Message": "Could not find endpoint"}},
+                operation_name="describe_endpoint",
+            ),
+            {"EndpointName": "test-endpoint", "EndpointStatus": "Creating"},
+            {"EndpointName": "test-endpoint", "EndpointStatus": "InService"},
+        ]
         # Try decorated function
         result = dummy_function()
         assert result == "Function executed"
