@@ -5,8 +5,7 @@ import time
 import boto3
 from django.conf import settings
 
-logger = logging.getLogger()
-logger.setLevel("INFO")
+logger = logging.getLogger("django.server")
 
 
 def check_and_launch_sagemaker(func):

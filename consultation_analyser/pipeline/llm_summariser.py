@@ -2,6 +2,7 @@
 Use LLMs to generate summaries for themes.
 """
 import json
+import logging
 
 import boto3
 import tiktoken
@@ -16,6 +17,9 @@ from langchain_core.exceptions import OutputParserException
 
 from consultation_analyser.consultations.models import Answer, Theme
 from consultation_analyser.pipeline.decorators import check_and_launch_sagemaker
+
+logger = logging.getLogger("django.server")
+
 
 MODEL_ENCODING = tiktoken.get_encoding(
     "cl100k_base"
@@ -129,6 +133,7 @@ def get_sagemaker_endpoint() -> SagemakerEndpoint:
 
 def generate_theme_summary(theme: Theme) -> dict:
     """For a given theme, generate a summary using an LLM."""
+    logger.info(f"Starting LLM summarisation for theme with keywords: {' .'.join(theme.keywords)} ")
     prompt_template = get_prompt_template()
     sagemaker_endpoint = get_sagemaker_endpoint()
     # TODO - where is this max tokens coming from?
@@ -178,6 +183,7 @@ def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
 # but check that it's ready at the start of the LLM summariser method
 @check_and_launch_sagemaker
 def create_llm_summaries_for_consultation(consultation):
+    logger.info(f"Starting LLM summarisation for consultation: {consultation.name}")
     themes = Theme.objects.filter(question__section__consultation=consultation).filter(question__has_free_text=True)
     for theme in themes:
         if settings.USE_SAGEMAKER_LLM:

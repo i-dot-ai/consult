@@ -21,7 +21,7 @@ def test_check_and_launch_sagemaker_endpoint_exists(settings):
         result = dummy_function()
         assert result == "Function executed"
         mock_sagemaker.create_endpoint.assert_not_called()
-        mock_sagemaker.describe_endpoint.assert_called(EndpointName="test-endpoint")
+        mock_sagemaker.describe_endpoint.assert_called()
 
 
 def test_check_and_launch_sagemaker_endpoint_not_exists(settings):
@@ -37,7 +37,7 @@ def test_check_and_launch_sagemaker_endpoint_not_exists(settings):
         # Try decorated function
         result = dummy_function()
         assert result == "Function executed"
-        mock_sagemaker.describe_endpoint.assert_called(EndpointName="test-endpoint")
+        mock_sagemaker.describe_endpoint.assert_called_with(EndpointName="test-endpoint")
         mock_sagemaker.create_endpoint.assert_called_once_with(
             EndpointName="test-endpoint", EndpointConfigName="test-endpoint"
         )

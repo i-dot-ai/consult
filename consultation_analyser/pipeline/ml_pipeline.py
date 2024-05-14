@@ -1,3 +1,4 @@
+import logging
 from typing import Dict, List, Union
 from uuid import UUID
 
@@ -5,6 +6,9 @@ import numpy as np
 import pandas as pd
 
 from consultation_analyser.consultations import models
+
+logger = logging.getLogger("django.server")
+
 
 RANDOM_STATE = 12  # For reproducibility
 
@@ -69,6 +73,7 @@ def save_themes_to_answers(answers_topics_df: pd.DataFrame) -> None:
 
 
 def save_themes_for_question(question: models.Question) -> None:
+    logging.info(f"Get topics for question: {question.text}")
     # Order must remain the same - so convert to list
     answers_qs = models.Answer.objects.filter(question=question).order_by("created_at")
     answers_list = list(answers_qs.values("id", "free_text"))
@@ -79,6 +84,7 @@ def save_themes_for_question(question: models.Question) -> None:
 
 
 def save_themes_for_consultation(consultation_id: UUID) -> None:
+    logging.info(f"Starting topic modelling for consultation_id: {consultation_id}")
     questions = models.Question.objects.filter(section__consultation__id=consultation_id, has_free_text=True)
     for question in questions:
         save_themes_for_question(question)
