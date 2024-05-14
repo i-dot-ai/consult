@@ -52,8 +52,15 @@ class ConsultationFactory(factory.django.DjangoModelFactory):
                 consultation=consultation,
                 with_question=True,
                 with_question__with_answer=kwargs.get("with_answer"),
-                with_question__with_multiple_choice=kwargs.get("with_multiple_choice"),
-                with_question__with_free_text=kwargs.get("with_free_text"),
+            )
+
+    @factory.post_generation
+    def with_themes(consultation, creation_strategy, value, **kwargs):
+        if value is True:
+            SectionFactory(
+                consultation=consultation,
+                with_question=True,
+                with_question__with_answer=True,
             )
 
     @factory.post_generation
@@ -99,7 +106,7 @@ class QuestionFactory(factory.django.DjangoModelFactory):
     @factory.post_generation
     def with_answer(question, creation_strategy, value, **kwargs):
         if value is True:
-            answer = AnswerFactory(question=question)
+            answer = AnswerFactory(question=question, consultation_response__consultation=question.section.consultation)
             answer.save()
 
 
@@ -130,7 +137,7 @@ class AnswerFactory(factory.django.DjangoModelFactory):
 
     question = factory.SubFactory(QuestionFactory)
     consultation_response = factory.SubFactory(ConsultationResponseFactory)
-    theme = factory.LazyAttribute(lambda o: ThemeFactory() if o.free_text else None)
+    theme = factory.LazyAttribute(lambda o: ThemeFactory() if o.question.has_free_text else None)
 
     multiple_choice = factory.LazyAttribute(
         lambda o: [random.choice(o.question.multiple_choice_options)] if o.question.multiple_choice_options else None

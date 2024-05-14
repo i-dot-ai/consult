@@ -1,0 +1,61 @@
+{
+  "consultation": {
+    "name": "My consultation",
+    "sections": [
+      {
+        "name": "My section",
+        "questions": [
+          {
+            "id": "question-1",
+            "text": "Question 1",
+            "has_free_text": true
+          },
+          {
+            "id": "question-2",
+            "text": "Question 2",
+            "has_free_text": true,
+            "multiple_choice_options": [
+              "a",
+              "b",
+              "c"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "consultation_responses": [
+    {
+      "submitted_at": "2018-11-13T20:20:39+00:00",
+      "answers": [
+        {
+          "question_id": "question-1",
+          "free_text": "Answer to Question 1"
+        },
+        {
+          "question_id": "question-2",
+          "free_text": "Answer to Question 2",
+          "multiple_choice": [
+            "b"
+          ]
+        }
+      ]
+    },
+    {
+      "submitted_at": "2018-11-13T20:20:39+00:00",
+      "answers": [
+        {
+          "question_id": "question-1",
+          "free_text": "Answer to Question 1"
+        },
+        {
+          "question_id": "question-2",
+          "free_text": "Answer to Question 2",
+          "multiple_choice": [
+            "a"
+          ]
+        }
+      ]
+    }
+  ]
+}

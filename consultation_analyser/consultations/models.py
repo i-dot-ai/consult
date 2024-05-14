@@ -29,6 +29,9 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     slug = models.CharField(null=False, max_length=256)
     users = models.ManyToManyField(User)
 
+    def has_themes(self):
+        return Theme.objects.filter(answer__question__section__consultation=self).exists()
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
