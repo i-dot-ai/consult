@@ -15,7 +15,7 @@ def test_upload_consultation():
     assert consultation.section_set.count() == 1
 
     section = consultation.section_set.first()
-    assert section.question_set.count() == 2
+    assert section.question_set.count() == 3
 
     assert consultation.consultationresponse_set.count() == 2
 
@@ -23,12 +23,14 @@ def test_upload_consultation():
 
     for response in responses:
         answers = response.answer_set.all()
-        assert answers.count() == 2
+        assert answers.count() == 3
 
         for a in answers:
             q = a.question
-            assert q.text in ["Question 1", "Question 2"]
+            assert q.text in ["Question 1", "Question 2", "Question 3"]
             if q.text == "Question 1":
                 assert a.free_text == "Answer to Question 1"
             elif q.text == "Question 2":
                 assert a.free_text == "Answer to Question 2"
+            elif q.text == "Question 3":
+                assert not a.free_text # there is no free text part
