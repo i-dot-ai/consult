@@ -38,6 +38,13 @@
 
     <br>
     {{ govukButton({
+      'text': "Download JSON",
+      'name': "download_json"
+    }) }}
+  </form>
+
+  <form method="post" novalidate>{{ csrf_input }}
+    {{ govukButton({
       'text': "Generate themes",
       'name': "generate_themes"
     }) }}

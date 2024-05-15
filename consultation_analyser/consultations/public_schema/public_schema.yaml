@@ -96,7 +96,6 @@ components:
       type: object
       description: Each Answer is associated with a Question and belongs to a ConsultationResponse.
       required:
-        - free_text
         - question_id
       additionalProperties: false
       properties:
@@ -121,7 +120,6 @@ components:
         free_text:
           type: string
           description: The answer to the free text part of the question, if any
-          nullable: true
           examples:
             - I don't think this is a good idea at all
             - I would like to point out a few things
