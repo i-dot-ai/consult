@@ -35,6 +35,17 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
+    def delete(self, *args, **kwargs):
+        """
+        Delete Related theme objects that can become orphans
+        because deletes will not cascade from Answer because
+        the Theme in question could still be associated with
+        another Answer
+        """
+        Theme.objects.filter(answer__question__section__consultation=self).delete()
+
+        super().delete(*args, **kwargs)
+
 
 class Section(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)

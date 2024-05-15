@@ -33,6 +33,14 @@ $iai-colour-pink: #C50878;
     padding-top: 0;
 }
 
+.govuk-link.govuk-link--warning {
+  color: $govuk-error-colour;
+
+  &:visited {
+    color: $govuk-error-colour;
+  }
+}
+
 /* HOMEPAGE */
 
 .x-govuk-masthead {

@@ -1,7 +1,7 @@
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
@@ -24,6 +24,22 @@ def index(request: HttpRequest) -> HttpResponse:
     consultations = models.Consultation.objects.all()
     context = {"consultations": consultations, "development_env": HostingEnvironment.is_development_environment()}
     return render(request, "support_console/all-consultations.html", context=context)
+
+
+@staff_member_required
+def delete(request: HttpRequest, consultation_slug: str) -> HttpResponse:
+    consultation = models.Consultation.objects.get(slug=consultation_slug)
+    context = {
+        "consultation": consultation,
+    }
+
+    if request.POST:
+        if "confirm_deletion" in request.POST:
+            consultation.delete()
+            messages.success(request, "The consultation has been deleted")
+            return redirect("/support/consultations/")
+
+    return render(request, "support_console/delete-consultation.html", context=context)
 
 
 @staff_member_required

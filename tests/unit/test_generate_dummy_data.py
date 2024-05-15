@@ -18,6 +18,9 @@ def test_a_consultation_is_generated(settings):
     assert Question.objects.count() == 10
     assert Answer.objects.count() == 100
 
+    qs = Answer.objects.filter(theme__is_outlier=True)
+    assert qs.exists()
+
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("environment", ["preprod", "prod", "production"])
@@ -25,10 +28,3 @@ def test_the_tool_will_only_run_in_dev(environment):
     with patch.dict(os.environ, {"ENVIRONMENT": environment}):
         with pytest.raises(Exception, match=r"should only be run in development"):
             create_dummy_data()
-
-
-@pytest.mark.django_db
-def test_consultation_contains_outliers():
-    create_dummy_data()
-    qs = Answer.objects.filter(theme__is_outlier=True)
-    assert qs.exists()
