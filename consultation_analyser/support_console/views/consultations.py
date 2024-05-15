@@ -6,6 +6,7 @@ from django.shortcuts import render
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import create_dummy_data
 from consultation_analyser.hosting_environment import HostingEnvironment
+from consultation_analyser.pipeline.llm_summariser import NO_SUMMARY_STR, create_llm_summaries_for_consultation
 from consultation_analyser.pipeline.processing import run_processing_pipeline
 
 
@@ -27,15 +28,33 @@ def index(request: HttpRequest) -> HttpResponse:
 @staff_member_required
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     consultation = models.Consultation.objects.get(slug=consultation_slug)
-    if request.POST:
-        run_processing_pipeline(consultation)
-        messages.success(request, "Themes have been generated for this consultation")
+    try:
+        if "topic_modelling" in request.POST:
+            # Only import when need it - otherwise slow on start-up
+            from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
+
+            save_themes_for_consultation(consultation.id)
+            messages.success(request, "Topic modelling has been run for this consultation")
+        elif "llm_summarisation" in request.POST:
+            create_llm_summaries_for_consultation(consultation)
+            messages.success(request, "Summaries have been generated for themes using the LLM")
+        elif "generate_themes" in request.POST:
+            run_processing_pipeline(consultation)
+            messages.success(request, "Themes have been generated for this consultation")
+    except RuntimeError as error:
+        messages.error(request, error.args[0])
     themes_for_consultation = models.Theme.objects.filter(question__section__consultation=consultation)
     number_of_themes = themes_for_consultation.count()
-    number_of_themes_with_summaries = themes_for_consultation.exclude(summary="").count()
+    number_of_themes_with_summaries = (
+        themes_for_consultation.exclude(summary="").exclude(summary=NO_SUMMARY_STR).count()
+    )
+    number_of_themes_unable_to_summarise = themes_for_consultation.filter(summary=NO_SUMMARY_STR).count()
+    number_of_themes_not_yet_summarised = themes_for_consultation.filter(summary="").count()
     context = {
         "consultation": consultation,
         "number_of_themes": number_of_themes,
         "number_of_themes_with_summaries": number_of_themes_with_summaries,
+        "number_of_themes_unable_to_summarise": number_of_themes_unable_to_summarise,
+        "number_of_themes_not_yet_summarised": number_of_themes_not_yet_summarised,
     }
     return render(request, "support_console/consultation.html", context=context)
