@@ -13,7 +13,9 @@ from .decorators import user_can_see_consultation
 @login_required
 def index(request: HttpRequest) -> HttpResponse:
     consultations = request.user.consultation_set.all()
-    context = {"consultations": consultations}
+    user = request.user
+    is_staff = user.is_staff
+    context = {"consultations": consultations, "is_staff": is_staff}
     return render(request, "all-consultations.html", context)
 
 
