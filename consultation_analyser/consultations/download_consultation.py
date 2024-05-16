@@ -29,6 +29,7 @@ def consultation_to_json(consultation):
         questions = []
         for question in section.question_set.all():
             question_attrs = select_keys_from_model(question, ["text", "has_free_text", "multiple_choice_options"])
+            question_attrs["multiple_choice"] = question_attrs.pop("multiple_choice_options")
             question_attrs["id"] = str(question.id)
             questions.append(question_attrs)
 
