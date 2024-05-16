@@ -1,4 +1,7 @@
+import datetime
+
 import pytest
+from django.core.exceptions import ValidationError
 
 from consultation_analyser import factories
 from consultation_analyser.consultations import models
@@ -22,15 +25,35 @@ def test_save_theme_to_answer(input_keywords, is_outlier):
 
 
 @pytest.mark.django_db
-def test_multiple_choice_response_count():
-    question = factories.QuestionFactory(multiple_choice_options=["Yes", "No", "Maybe"])
-    answers = [
-        ["Yes"],
-        ["Yes"],
-        ["No"],
-        ["Maybe"],
-        ["No"],
-    ]
+def test_multiple_choice_validation():
+    a = factories.AnswerFactory()
 
-    for answer in answers:
-        factories.AnswerFactory(question=question, multiple_choice=answer)
+    a.multiple_choice = {"totally": "invalid"}
+
+    with pytest.raises(ValidationError):
+        a.full_clean()
+
+
+@pytest.mark.django_db
+def test_find_answer_multiple_choice_response():
+    q = factories.QuestionFactory(multiple_choice_questions=[("Do you agree?", ["Yes", "No", "Maybe"])])
+
+    factories.AnswerFactory(question=q, multiple_choice_answers=[("Do you agree?", ["Yes"])])
+    factories.AnswerFactory(question=q, multiple_choice_answers=[("Do you agree?", ["No"])])
+    factories.AnswerFactory(question=q, multiple_choice_answers=[("Do you agree?", ["No"])])
+
+    result = models.Answer.objects.filter_multiple_choice(question="Not a question", answer="Yes")
+
+    assert not result
+
+    result = models.Answer.objects.filter_multiple_choice(question="Do you agree?", answer="wrong")
+
+    assert not result
+
+    result = models.Answer.objects.filter_multiple_choice(question="Do you agree?", answer="Yes")
+
+    assert result.count() == 1
+
+    result = models.Answer.objects.filter_multiple_choice(question="Do you agree?", answer="No")
+
+    assert result.count() == 2
