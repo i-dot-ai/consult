@@ -14,7 +14,7 @@ def process_consultation_themes(consultation):
 
 def run_processing_pipeline(consultation):
     if HostingEnvironment.is_deployed():
-        job_name = f"Theme processing pipeline for consultation: {consultation.slug}"
+        job_name = f"generate-themes-{consultation.slug}"[:128]  # Must be <=128 , no spaces
         command = {"command": ["venv/bin/django-admin", "run_ml_pipeline", "--slug", consultation.slug]}
         batch_handler = BatchJobHandler()
         batch_handler.submit_job_batch(jobName=job_name, containerOverrides=command)
