@@ -17,10 +17,12 @@
 #
 # For each of the following questions, please generate 10 responses. Each response should be between 1 and 3 sentences long. Return each set of responses as YAML.
 - has_free_text: true
-  multiple_choice_options:
-  - 'Yes'
-  - 'No'
-  - I don't know
+  multiple_choice:
+    - question_text: Do you believe that 2 finger Kit Kats are better than 4 finger Kit Kats?
+      options:
+      - 'Yes'
+      - 'No'
+      - I don't know
   slug: two-finger-vs-four-finger-kit-kats
   text: Do you believe that 2 finger Kit Kats are better than 4 finger Kit Kats?
   answers:
@@ -35,10 +37,12 @@
   - "Four-finger Kit Kats are best for sharing, which makes them superior in social settings."
   - "It's all about personal preference, but I lean towards the 2 finger Kit Kats for a light snack."
 - has_free_text: true
-  multiple_choice_options:
-  - Dairy Milk
-  - Whole Nut
-  - I don't have a favorite
+  multiple_choice:
+    - question_text: What is your favorite type of Cadbury chocolate bar?
+      options:
+      - Dairy Milk
+      - Whole Nut
+      - I don't have a favorite
   slug: favorite-cadbury-chocolate-bar
   text: What is your favorite type of Cadbury chocolate bar?
   answers:
@@ -53,10 +57,12 @@
   - "Twirl, for its flaky layers and melt-in-the-mouth experience."
   - "The Wispa bar, for its aerated chocolate that's light yet chocolatey."
 - has_free_text: true
-  multiple_choice_options:
-  - 'Yes'
-  - 'No'
-  - I'm not sure
+  multiple_choice:
+    - question_text: Do you think the recipe for Mars bars has changed?
+      options:
+      - 'Yes'
+      - 'No'
+      - I'm not sure
   slug: mars-bar-recipe-change
   text: Do you think the recipe for Mars bars has changed over the years?
   answers:
@@ -71,10 +77,12 @@
   - "No, the core elements of the Mars bar – caramel, nougat, and chocolate – remain untouched."
   - "Potentially, but it's more likely that variations in flavor come from natural ingredient variations."
 - has_free_text: true
-  multiple_choice_options:
-  - 'Yes'
-  - 'No'
-  - Depends on my mood
+  multiple_choice:
+    - question_text: Is the Crunchie bar too sweet for your taste?
+      options:
+      - 'Yes'
+      - 'No'
+      - Depends on my mood
   slug: is-crunchie-too-sweet
   text: Is the Crunchie bar too sweet for your taste?
   answers:
@@ -89,10 +97,12 @@
   - "No, the sweet and crunchy contrast is what defines a Crunchie bar."
   - "It depends on the day; sometimes it's too sweet, and other times it's just right."
 - has_free_text: true
-  multiple_choice_options:
-  - Snickers
-  - Milky Way
-  - Neither
+  multiple_choice:
+    - question_text: Would you prefer a Snickers or a Milky Way?
+      options:
+      - Snickers
+      - Milky Way
+      - Neither
   slug: snickers-vs-milky-way
   text: Would you prefer a Snickers or a Milky Way?
   answers:
@@ -108,9 +118,12 @@
   - "Milky Way, it's the perfect choice for when I'm in the mood for something sweet and uncomplicated."
 - has_free_text: true
   multiple_choice_options:
-  - 'Yes'
-  - 'No'
-  - Somewhat
+  multiple_choice:
+    - question_text: Do you find the Double Decker bar to be satisfyingly filling?
+      options:
+      - 'Yes'
+      - 'No'
+      - Somewhat
   slug: double-decker-satisfaction
   text: Do you find the Double Decker bar to be satisfyingly filling?
   answers:
@@ -125,21 +138,25 @@
   - "Yes, the Double Decker bar is a meal in itself with its dense layers."
   - "Indeed, its size and the combination of ingredients offer a fulfilling experience."
 - has_free_text: false
-  multiple_choice_options:
-  - Yorkie
-  - Lion
-  - No preference
+  multiple_choice:
+    - question_text: Which is better, a Yorkie bar or a Lion bar?
+      options:
+      - Yorkie
+      - Lion
+      - No preference
   slug: yorkie-vs-lion-bar
   text: Which is better, a Yorkie bar or a Lion bar?
 - has_free_text: false
-  multiple_choice_options:
-  - With nuts
-  - Without nuts
-  - No preference
+  multiple_choice:
+    - question_text: Do you prefer chocolate bars with or without nuts?
+      options:
+      - With nuts
+      - Without nuts
+      - No preference
   slug: chocolate-bars-with-or-without-nuts
   text: Do you prefer chocolate bars with or without nuts?
 - has_free_text: true
-  multiple_choice_options: null
+  multiple_choice: null
   slug: frequency-of-eating-british-chocolate-bars
   text: How often do you eat British chocolate bars?
   answers:
@@ -154,7 +171,7 @@
   - "Every now and then, when I come across one that catches my eye."
   - "Sporadically, they're not my everyday choice but I indulge when the craving hits."
 - has_free_text: true
-  multiple_choice_options: null
+  multiple_choice: null
   slug: uniqueness-of-british-chocolate-bars
   text: What do you think makes British chocolate bars unique?
   answers:
