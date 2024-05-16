@@ -38,12 +38,6 @@
       </p>
     </div>
 
-    <div>
-      <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-body govuk-link govuk-link--no-visited-state">
-        {{ consultation.name }}
-      </a>
-    </div>
-
     <br>
     {{ govukButton({
       'text': "Download JSON",
