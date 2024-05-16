@@ -10,7 +10,7 @@ help:     ## Show this help.
 
 ## Schema documentation
 consultation_analyser/consultations/public_schema.py: consultation_analyser/consultations/public_schema/public_schema.yaml
-	poetry run datamodel-codegen --input $< --output $@ --use-schema-description
+	poetry run datamodel-codegen --input $< --output $@ --use-schema-description --output-model-type pydantic_v2.BaseModel
 
 .PRECIOUS: consultation_analyser/consultations/public_schema/%_schema.json
 consultation_analyser/consultations/public_schema/%_schema.json: consultation_analyser/consultations/public_schema.py
