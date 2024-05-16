@@ -34,7 +34,7 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
         QuestionFactory(
             text=q["text"],
             slug=q["slug"],
-            multiple_choice_options=q.get("multiple_choice_options", None),
+            multiple_choice_options=q.get("multiple_choice", None),
             has_free_text=q["has_free_text"],
             section=section,
         )
