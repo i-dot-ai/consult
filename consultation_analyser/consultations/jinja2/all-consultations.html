@@ -14,6 +14,12 @@
           </a>
         </li>
       {% endfor %}
+      <br>
+      {% if is_staff %}
+        <a href="/consultations/new/" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+          Upload a consultation
+        </a>
+      {% endif %}
     {% else %}
       <p class="govuk-body">You do not have any consultations</p>
       <a href="/consultations/new/" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
