@@ -39,8 +39,9 @@ def test_get_question_responses_page(django_app):
             assert f"{answers[i].theme.short_description}" in page_content
 
     # Opinions should appear in filter select-box
-    for option in question.multiple_choice_options:
-        assert option in page_content
+    for item in question.multiple_choice_options:
+        for opt in item["options"]:
+            assert opt in page_content
 
     # Check keyword filtering
     first_word_of_answer = answers[0].free_text.split()[0]
