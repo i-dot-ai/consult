@@ -43,6 +43,12 @@
       - Dairy Milk
       - Whole Nut
       - I don't have a favorite
+    - question_text: How many bars do you eat per month?
+      options:
+      - None
+      - Up to 5
+      - 5 to 10
+      - 10+
   slug: favorite-cadbury-chocolate-bar
   text: What is your favorite type of Cadbury chocolate bar?
   answers:

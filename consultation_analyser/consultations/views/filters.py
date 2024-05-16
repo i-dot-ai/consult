@@ -14,7 +14,9 @@ def get_applied_filters(request: HttpRequest) -> dict[str, str]:
 
 # TODO: rename this to Answers
 def get_filtered_responses(question: models.Question, applied_filters: dict[str, str]) -> QuerySet:
-    queryset = models.Answer.objects.filter(question=question, free_text__contains=applied_filters["keyword"])
+    queryset = models.Answer.objects.filter(question=question)
+    if applied_filters["keyword"] and applied_filters["keyword"] != "All" and applied_filters["keyword"] != "":
+        queryset = queryset.filter(free_text__contains=applied_filters["keyword"])
     if applied_filters["theme"] != "All":
         queryset = queryset.filter(theme=applied_filters["theme"])
     if applied_filters["opinion"] != "All":
