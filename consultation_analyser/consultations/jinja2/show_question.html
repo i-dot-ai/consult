@@ -74,8 +74,10 @@
               </label>
               <select class="govuk-select" id="opinion" name="opinion">
                 <option {% if applied_filters.opinion == "All" %}selected{% endif %}>All</option>
-                {% for option in question.multiple_choice_options %}
-                  <option {% if applied_filters.opinion == option %}selected{% endif %}>{{ option }}</option>
+                {% for item in question.multiple_choice_options %}
+                  {% for opt in item["options"] %}
+                    <option {% if applied_filters.opinion == opt %}selected{% endif %}>{{ opt }}</option>
+                  {% endfor %}
                 {% endfor %}
               </select>
             </div>

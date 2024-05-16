@@ -1,3 +1,5 @@
+import time
+
 import pytest
 
 from consultation_analyser import factories
@@ -6,14 +8,23 @@ from consultation_analyser.consultations.views import filters
 
 
 def set_up_for_filters():
-    question = factories.QuestionFactory()
+    question = factories.QuestionFactory(
+        multiple_choice_questions=[("Select the animals you like", ["Cats", "Dogs", "Rabbits"])]
+    )
+
     theme1 = factories.ThemeFactory(keywords=["dog", "puppy"])
     theme2 = factories.ThemeFactory(keywords=["cat", "kitten"])
     factories.AnswerFactory(
-        theme=theme1, question=question, free_text="We love dogs.", multiple_choice=["Option 1", "Option 2"]
+        theme=theme1,
+        question=question,
+        free_text="We love dogs.",
+        multiple_choice_answers=[("Select the animals you like", ["Cats", "Dogs"])],
     )
     factories.AnswerFactory(
-        theme=theme2, question=question, free_text="We like cats not dogs.", multiple_choice=["Option 1"]
+        theme=theme2,
+        question=question,
+        free_text="We like cats not dogs.",
+        multiple_choice_answers=[("Select the animals you like", ["Cats"])],
     )
     factories.AnswerFactory(theme=theme2, question=question, free_text="We love cats.")
     return question
@@ -24,8 +35,8 @@ def set_up_for_filters():
     [
         ({"theme": "All", "keyword": "", "opinion": "All"}, 3),
         ({"keyword": "dogs", "theme": "All", "opinion": "All"}, 2),
-        ({"keyword": "dogs", "theme": "All", "opinion": "Option 2"}, 1),
-        ({"keyword": "", "theme": "All", "opinion": "Option 1"}, 2),
+        ({"keyword": "dogs", "theme": "All", "opinion": "Dogs"}, 1),
+        ({"keyword": "", "theme": "All", "opinion": "Cats"}, 2),
     ],
 )
 @pytest.mark.django_db
