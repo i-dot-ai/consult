@@ -18,34 +18,36 @@
       <span class="govuk-caption-m">Showing <strong>all</strong> of <strong>{{ total_responses }} </strong> responses</span>
       <h1 class="govuk-heading-l">{{ page_title }}</h1>
       <p class="govuk-body">{{ question.text }}</p>
-
-      {% if multiple_choice_responses %}
-        <dl class="govuk-summary-list">
-          {% for response in multiple_choice_responses %}
-            <div class="govuk-summary-list__row">
-              <dt class="govuk-summary-list__key">
-                {{ response.answer }}
-              </dt>
-              <dd class="govuk-summary-list__value">
-                {{ response.percent }}%
-              </dd>
-            </div>
-          {% endfor %}
-        </dl>
-      {% endif %}
     </div>
-
-    {% if multiple_choice_responses %}
-      <div class="govuk-grid-column-one-third govuk-!-padding-0">
-        <donut-chart>
-          {% for response in multiple_choice_responses %}
-            <chart-item data-label="{{ response.answer }}" data-count="{{ response.percent }}"></chart-item>
-          {% endfor %}
-        </donut-chart>
-      </div>
-    {% endif %}
-
   </div>
+  {% if multiple_choice_questions %}
+    {% for question, responses in multiple_choice_questions.items() %}
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-two-thirds">
+          <h3 class="govuk-heading-s">{{ question }}</h3>
+          <dl class="govuk-summary-list">
+            {% for response in responses %}
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">
+                  {{ response.answer }}
+                </dt>
+                <dd class="govuk-summary-list__value">
+                  {{ response.percent }}%
+                </dd>
+              </div>
+            {% endfor %}
+          </dl>
+        </div>
+        <div class="govuk-grid-column-one-third govuk-!-padding-0">
+          <donut-chart>
+            {% for response in responses %}
+              <chart-item data-label="{{ response.answer }}" data-count="{{ response.percent }}"></chart-item>
+            {% endfor %}
+          </donut-chart>
+        </div>
+      </div>
+    {% endfor %}
+  {% endif %}
 
   <div class="govuk-grid-row">
 

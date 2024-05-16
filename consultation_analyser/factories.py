@@ -149,7 +149,9 @@ class ThemeFactory(factory.django.DjangoModelFactory):
 def get_multiple_choice_answers(current_answer):
     multiple_choice = []
     if current_answer.question.multiple_choice_options and not current_answer.multiple_choice_answers:
-        answers = [("Do you agree?", ["Yes"])]
+        answers = [
+            (q["question_text"], [random.choice(q["options"])]) for q in current_answer.question.multiple_choice_options
+        ]
     elif current_answer.question.multiple_choice_options:
         answers = current_answer.multiple_choice_answers
     else:
