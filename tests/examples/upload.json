@@ -14,20 +14,38 @@
             "id": "question-2",
             "text": "Question 2",
             "has_free_text": true,
-            "multiple_choice_options": [
-              "a",
-              "b",
-              "c"
+            "multiple_choice": [
+              {
+                "question_text": "Do you like A, B or C?",
+                "options": [
+                  "a",
+                  "b",
+                  "c"
+                ]
+              }
             ]
           },
           {
             "id": "question-3",
             "text": "Question 3",
             "has_free_text": false,
-            "multiple_choice_options": [
-              "a",
-              "b",
-              "c"
+            "multiple_choice": [
+              {
+                "question_text": "Do you like A, B or C?",
+                "options": [
+                  "a",
+                  "b",
+                  "c"
+                ]
+              },
+              {
+                "question_text": "Do you like D, E or F?",
+                "options": [
+                  "d",
+                  "e",
+                  "f"
+                ]
+              }
             ]
           }
         ]
@@ -46,13 +64,29 @@
           "question_id": "question-2",
           "free_text": "Answer to Question 2",
           "multiple_choice": [
-            "b"
+            {
+              "question_text": "Do you like A, B or C?",
+              "options": [
+                "a"
+              ]
+            }
           ]
         },
         {
           "question_id": "question-3",
           "multiple_choice": [
-            "a"
+            {
+              "question_text": "Do you like A, B or C?",
+              "options": [
+                "c"
+              ]
+            },
+            {
+              "question_text": "Do you like D, E or F?",
+              "options": [
+                "f"
+              ]
+            }
           ]
         }
       ]
@@ -68,13 +102,29 @@
           "question_id": "question-2",
           "free_text": "Answer to Question 2",
           "multiple_choice": [
-            "a"
+            {
+              "question_text": "Do you like A, B or C?",
+              "options": [
+                "a"
+              ]
+            }
           ]
         },
         {
           "question_id": "question-3",
           "multiple_choice": [
-            "c"
+            {
+              "question_text": "Do you like A, B or C?",
+              "options": [
+                "b"
+              ]
+            },
+            {
+              "question_text": "Do you like D, E or F?",
+              "options": [
+                "d"
+              ]
+            }
           ]
         }
       ]

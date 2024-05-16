@@ -51,6 +51,8 @@ def show(request: HttpRequest):
         RenderableSchema(public_schema.Section),
         RenderableSchema(public_schema.Question),
         RenderableSchema(public_schema.Answer),
+        RenderableSchema(public_schema.MultipleChoice),
+        RenderableSchema(public_schema.MultipleChoiceItem),
         RenderableSchema(public_schema.ConsultationResponse),
     ]
 
