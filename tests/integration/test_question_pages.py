@@ -13,7 +13,6 @@ from consultation_analyser.factories import (
     SectionFactory,
     UserFactory,
 )
-
 from tests.helpers import sign_in
 
 

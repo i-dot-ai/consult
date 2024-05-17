@@ -1,8 +1,8 @@
 import datetime
 
 import pytest
-from django.db import IntegrityError
 from django.core.exceptions import ValidationError
+from django.db import IntegrityError
 
 from consultation_analyser import factories
 from consultation_analyser.consultations import models

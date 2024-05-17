@@ -12,8 +12,7 @@ def set_up_for_filters():
     consultation_response = factories.ConsultationResponseFactory(consultation=consultation)
     section = factories.SectionFactory(consultation=consultation)
     question = factories.QuestionFactory(
-        multiple_choice_questions=[("Select the animals you like", ["Cats", "Dogs", "Rabbits"])],
-        section=section
+        multiple_choice_questions=[("Select the animals you like", ["Cats", "Dogs", "Rabbits"])], section=section
     )
 
     theme1 = factories.ThemeFactory(keywords=["dog", "puppy"], question=question)
