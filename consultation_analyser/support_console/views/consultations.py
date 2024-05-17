@@ -29,8 +29,8 @@ def index(request: HttpRequest) -> HttpResponse:
 
 
 @staff_member_required
-def delete(request: HttpRequest, consultation_slug: str) -> HttpResponse:
-    consultation = models.Consultation.objects.get(slug=consultation_slug)
+def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
+    consultation = models.Consultation.objects.get(id=consultation_id)
     context = {
         "consultation": consultation,
     }
