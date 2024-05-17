@@ -21,7 +21,8 @@ def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
         if HostingEnvironment.is_local():
             logger = logging.getLogger("django.server")
             logger.info(f"##################### Sending magic link to {email}: {magic_link}")
-        send_magic_link_email(email, magic_link)
+        else:
+            send_magic_link_email(email, magic_link)
     except User.DoesNotExist:
         pass
 
