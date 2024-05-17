@@ -21,7 +21,7 @@
     </p>
 
     <p class="govuk-body">
-      <a href="{{ url('delete_consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-link--warning govuk-body">
+      <a href="{{ url('delete_consultation', kwargs={'consultation_id': consultation.id}) }}" class="govuk-link govuk-link--warning govuk-body">
         Delete this consultation
       </a>
     </p>
@@ -36,12 +36,6 @@
       <p class="govuk-body">
         Generating themes runs topic modelling then LLM summarisation. You may wish to do these steps separately in testing.
       </p>
-    </div>
-
-    <div>
-      <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-body govuk-link govuk-link--no-visited-state">
-        {{ consultation.name }}
-      </a>
     </div>
 
     <br>
