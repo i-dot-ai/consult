@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
@@ -21,9 +23,9 @@ def index(request: HttpRequest) -> HttpResponse:
 
 @user_can_see_consultation
 @login_required
-def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
-    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    questions = models.Question.objects.filter(section__consultation__slug=consultation_slug)
+def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
+    consultation = get_object_or_404(models.Consultation, id=consultation_id)
+    questions = models.Question.objects.filter(section__consultation__id=consultation_id)
 
     context = {"questions": questions, "consultation": consultation}
 
