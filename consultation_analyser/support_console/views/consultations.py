@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from django.contrib import messages
 from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpRequest, HttpResponse
@@ -43,14 +45,14 @@ def delete(request: HttpRequest, consultation_slug: str) -> HttpResponse:
 
 
 @staff_member_required
-def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
-    consultation = models.Consultation.objects.get(slug=consultation_slug)
+def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
+    consultation = models.Consultation.objects.get(id=consultation_id)
     try:
         if "topic_modelling" in request.POST:
             # Only import when need it - otherwise slow on start-up
             from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
 
-            save_themes_for_consultation(consultation.id)
+            save_themes_for_consultation(consultation_id)
             messages.success(request, "Topic modelling has been run for this consultation")
         elif "llm_summarisation" in request.POST:
             create_llm_summaries_for_consultation(consultation)

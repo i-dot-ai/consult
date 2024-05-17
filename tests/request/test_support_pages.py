@@ -5,12 +5,12 @@ from consultation_analyser.factories import ConsultationFactory
 
 @pytest.mark.django_db
 def test_no_login_support_pages(client):
-    ConsultationFactory(slug="consultation-slug")
+    consultation = ConsultationFactory()
     support_urls = [
         "",
         "sign-out/",
         "consultations/",
-        "consultations/consultation-slug/",
+        f"consultations/{consultation.id}/",
     ]
     for url in support_urls:
         full_url = f"/support/{url}"

@@ -17,7 +17,7 @@
       {% for consultation in consultations %}
         <tr class="govuk-table__row">
           <td class="govuk-table__cell">
-            <a href="{{ url('support_consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-link--no-visited-state">
+            <a href="{{ url('support_consultation', kwargs={'consultation_id': consultation.id}) }}" class="govuk-link govuk-link--no-visited-state">
               {{ consultation.name }}
             </a>
           </td>
