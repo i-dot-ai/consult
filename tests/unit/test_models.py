@@ -26,21 +26,6 @@ def test_save_theme_to_answer(input_keywords, is_outlier):
 
 
 @pytest.mark.django_db
-def test_multiple_choice_response_count():
-    question = factories.QuestionFactory(multiple_choice_options=["Yes", "No", "Maybe"])
-    answers = [
-        ["Yes"],
-        ["Yes"],
-        ["No"],
-        ["Maybe"],
-        ["No"],
-    ]
-
-    for answer in answers:
-        factories.AnswerFactory(question=question, multiple_choice=answer)
-
-
-@pytest.mark.django_db
 def test_uniqueness_consultation_slugs():
     factories.ConsultationFactory(name="My new consultation", slug="my-new-consultation")
     with pytest.raises(IntegrityError):
