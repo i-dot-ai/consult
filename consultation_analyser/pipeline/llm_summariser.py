@@ -127,6 +127,7 @@ def get_sagemaker_endpoint() -> SagemakerEndpoint:
         endpoint_name=settings.SAGEMAKER_ENDPOINT_NAME,
         content_handler=content_handler,
         client=client,
+        region=settings.AWS_REGION,
     )
     return sagemaker_endpoint
 
