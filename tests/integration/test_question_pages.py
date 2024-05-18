@@ -4,7 +4,8 @@ import re
 import pytest
 from waffle.testutils import override_switch
 
-from consultation_analyser.factories import AnswerFactory, ConsultationFactory, UserFactory
+from consultation_analyser.consultations.models import Consultation
+from consultation_analyser.factories import AnswerFactory, ConsultationFactory, ConsultationResponseFactory, UserFactory
 from tests.helpers import sign_in
 
 
@@ -18,11 +19,12 @@ def test_get_question_summary_page(django_app):
 
     section = consultation.section_set.first()
     question = section.question_set.first()
+    consultation_response = ConsultationResponseFactory(consultation=consultation)
 
-    AnswerFactory(multiple_choice=["Yes"], question=question)
-    AnswerFactory(multiple_choice=["Yes"], question=question)
-    AnswerFactory(multiple_choice=["No"], question=question)
-    AnswerFactory(multiple_choice=["Maybe"], question=question)
+    AnswerFactory(multiple_choice=["Yes"], question=question, consultation_response=consultation_response)
+    AnswerFactory(multiple_choice=["Yes"], question=question, consultation_response=consultation_response)
+    AnswerFactory(multiple_choice=["No"], question=question, consultation_response=consultation_response)
+    AnswerFactory(multiple_choice=["Maybe"], question=question, consultation_response=consultation_response)
 
     question_summary_url = f"/consultations/{consultation.slug}/sections/{section.slug}/questions/{question.slug}/"
 
