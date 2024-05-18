@@ -33,7 +33,9 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         return Theme.objects.filter(answer__question__section__consultation=self).exists()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+        constraints = [
+            models.UniqueConstraint(fields=["slug"], name="unique_consultation_slug"),
+        ]
 
     def delete(self, *args, **kwargs):
         """
