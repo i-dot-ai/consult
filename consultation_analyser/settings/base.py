@@ -172,10 +172,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 # Django URL format
 APPEND_SLASH = True
 
-# AWS Batch
-BATCH_JOB_QUEUE = env("BATCH_JOB_QUEUE", default=None)
-BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION", default=None)
-
 # Feature flags
 WAFFLE_SWITCH_DEFAULT = False
 WAFFLE_CREATE_MISSING_SWITCHES = True
@@ -190,9 +186,12 @@ EMAIL_BACKEND = "django_gov_notify.backends.NotifyEmailBackend"
 GOVUK_NOTIFY_API_KEY = env("GOVUK_NOTIFY_API_KEY")
 GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID = env("GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID")
 
-# Sagemaker LLM
+# AWS variables
+BATCH_JOB_QUEUE = env("BATCH_JOB_QUEUE", default=None)
+BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION", default=None)
 SAGEMAKER_ENDPOINT_NAME = env("SAGEMAKER_ENDPOINT_NAME")
 USE_SAGEMAKER_LLM = env.bool("USE_SAGEMAKER_LLM")
+AWS_REGION = env("AWS_REGION")
 
 # Authentication
 LOGIN_URL = "/sign-in/"
