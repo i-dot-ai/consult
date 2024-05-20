@@ -122,7 +122,7 @@ def get_random_sample_of_responses_for_theme(theme: Theme, encoding: tiktoken.En
 
 def get_sagemaker_endpoint() -> SagemakerEndpoint:
     content_handler = ContentHandler()
-    client = boto3.client("sagemaker-runtime")
+    client = boto3.client("sagemaker-runtime", region_name=settings.AWS_REGION)
     sagemaker_endpoint = SagemakerEndpoint(
         endpoint_name=settings.SAGEMAKER_ENDPOINT_NAME,
         content_handler=content_handler,

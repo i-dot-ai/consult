@@ -63,6 +63,7 @@ jobs:
           GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID: dummy-template
           ENVIRONMENT: test
           USE_SAGEMAKER_LLM: False
+          AWS_REGION: eu-west-2
 
       - name: pytest
         run:
