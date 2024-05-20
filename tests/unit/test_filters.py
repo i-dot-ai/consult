@@ -41,7 +41,7 @@ def set_up_for_filters():
     factories.AnswerFactory(
         theme=theme2,
         question=question,
-        multiple_choice_answers=[("Select the animals you like", ["Rabbits"])],
+        multiple_choice=None,
         free_text=None,
         consultation_response=consultation_response,
     )
