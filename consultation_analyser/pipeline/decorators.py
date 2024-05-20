@@ -12,7 +12,7 @@ def check_and_launch_sagemaker(func):
     def wrapper(*args, **kwargs):
         if not settings.USE_SAGEMAKER_LLM:
             return func(*args, **kwargs)
-        sagemaker_client = boto3.client("sagemaker")
+        sagemaker_client = boto3.client("sagemaker", region=settings.AWS_REGION)
         endpoint_name = settings.SAGEMAKER_ENDPOINT_NAME
         try:
             sagemaker_client.describe_endpoint(EndpointName=endpoint_name)
