@@ -107,7 +107,7 @@ tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 .PHONY: docker_build
 docker_build: ## Pull previous container (if it exists) build the docker container
 	docker pull $(PREV_IMAGE) || true
-	docker build . -t $(IMAGE)
+	docker build . -t $(IMAGE) --cache-from=type=local,src=/tmp/.build-cache
 
 .PHONY: docker_run
 docker_run: ## Run the docker container
