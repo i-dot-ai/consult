@@ -32,10 +32,18 @@ def set_up_for_filters():
         consultation_response=consultation_response,
     )
     factories.AnswerFactory(
-        theme=theme2, question=question, free_text="We love cats.", consultation_response=consultation_response
+        theme=theme2,
+        question=question,
+        free_text="We love cats.",
+        consultation_response=consultation_response,
+        multiple_choice_answers=[("Select the animals you like", ["Cats"])],
     )
     factories.AnswerFactory(
-        theme=theme2, question=question, multiple_choice=None, free_text=None, consultation_response=consultation_response
+        theme=theme2,
+        question=question,
+        multiple_choice_answers=[("Select the animals you like", ["Rabbits"])],
+        free_text=None,
+        consultation_response=consultation_response,
     )
     return question
 
@@ -46,7 +54,7 @@ def set_up_for_filters():
         ({"theme": "All", "keyword": "", "opinion": "All"}, 4),
         ({"keyword": "dogs", "theme": "All", "opinion": "All"}, 2),
         ({"keyword": "dogs", "theme": "All", "opinion": "Dogs"}, 1),
-        ({"theme": "All", "keyword": "", "opinion": "Cats"}, 2),
+        ({"theme": "All", "keyword": "", "opinion": "Cats"}, 3),
     ],
 )
 @pytest.mark.django_db
