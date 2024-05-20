@@ -34,10 +34,10 @@ def test_user_uploads_consultation(django_app):
     # then I should see a success page
     assert "Consultation uploaded" in success_page
 
-    # and when I visit the consultation again I should still see the processing page
+    # and when I visit the consultation again I should still see a processing message
     consultation = user.consultation_set.first()
-    processing_page = django_app.get(f"/consultations/{consultation.slug}/").follow()
-    assert "Consultation processing" in processing_page
+    processing_page = django_app.get(f"/consultations/{consultation.slug}/")
+    assert "processing consultation" in processing_page
 
     save_themes_for_consultation(consultation.id)
 
