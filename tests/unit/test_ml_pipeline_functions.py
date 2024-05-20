@@ -22,10 +22,13 @@ def test_get_embeddings_for_question():
 
 @pytest.mark.django_db
 def test_save_themes_to_answers():
-    question = factories.QuestionFactory()
-    answer1 = factories.AnswerFactory(question=question, theme=None)
-    answer2 = factories.AnswerFactory(question=question, theme=None)
-    answer3 = factories.AnswerFactory(question=question, theme=None)
+    consultation = factories.ConsultationFactory()
+    consultation_response = factories.ConsultationResponseFactory(consultation=consultation)
+    section = factories.SectionFactory(consultation=consultation)
+    question = factories.QuestionFactory(section=section)
+    answer1 = factories.AnswerFactory(question=question, theme=None, consultation_response=consultation_response)
+    answer2 = factories.AnswerFactory(question=question, theme=None, consultation_response=consultation_response)
+    answer3 = factories.AnswerFactory(question=question, theme=None, consultation_response=consultation_response)
     answers_df = pd.DataFrame(
         {
             "id": [answer1.id, answer2.id, answer3.id],

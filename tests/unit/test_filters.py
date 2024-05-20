@@ -6,16 +6,29 @@ from consultation_analyser.consultations.views import filters
 
 
 def set_up_for_filters():
-    question = factories.QuestionFactory()
-    theme1 = factories.ThemeFactory(keywords=["dog", "puppy"])
-    theme2 = factories.ThemeFactory(keywords=["cat", "kitten"])
+    consultation = factories.ConsultationFactory()
+    consultation_response = factories.ConsultationResponseFactory(consultation=consultation)
+    section = factories.SectionFactory(consultation=consultation)
+    question = factories.QuestionFactory(section=section)
+    theme1 = factories.ThemeFactory(keywords=["dog", "puppy"], question=question)
+    theme2 = factories.ThemeFactory(keywords=["cat", "kitten"], question=question)
     factories.AnswerFactory(
-        theme=theme1, question=question, free_text="We love dogs.", multiple_choice=["Option 1", "Option 2"]
+        theme=theme1,
+        question=question,
+        free_text="We love dogs.",
+        multiple_choice=["Option 1", "Option 2"],
+        consultation_response=consultation_response,
     )
     factories.AnswerFactory(
-        theme=theme2, question=question, free_text="We like cats not dogs.", multiple_choice=["Option 1"]
+        theme=theme2,
+        question=question,
+        free_text="We like cats not dogs.",
+        multiple_choice=["Option 1"],
+        consultation_response=consultation_response,
     )
-    factories.AnswerFactory(theme=theme2, question=question, free_text="We love cats.")
+    factories.AnswerFactory(
+        theme=theme2, question=question, free_text="We love cats.", consultation_response=consultation_response
+    )
     return question
 
 
