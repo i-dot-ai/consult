@@ -37,7 +37,7 @@ def test_user_uploads_consultation(django_app):
     # and when I visit the consultation again I should still see a processing message
     consultation = user.consultation_set.first()
     processing_page = django_app.get(f"/consultations/{consultation.slug}/")
-    assert "processing consultation" in processing_page
+    assert "processing your consultation" in processing_page
 
     save_themes_for_consultation(consultation.id)
 
