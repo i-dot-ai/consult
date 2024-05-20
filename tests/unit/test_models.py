@@ -37,7 +37,9 @@ def test_uniqueness_consultation_slugs():
 
 @pytest.mark.django_db
 def test_multiple_choice_validation():
-    a = factories.AnswerFactory()
+    question = factories.QuestionFactory()
+    resp = factories.ConsultationResponseFactory(consultation=question.section.consultation)
+    a = factories.AnswerFactory(question=question, consultation_response=resp)
 
     a.multiple_choice = {"totally": "invalid"}
 
@@ -48,10 +50,13 @@ def test_multiple_choice_validation():
 @pytest.mark.django_db
 def test_find_answer_multiple_choice_response():
     q = factories.QuestionFactory(multiple_choice_questions=[("Do you agree?", ["Yes", "No", "Maybe"])])
+    resp = factories.ConsultationResponseFactory(consultation=q.section.consultation)
 
-    factories.AnswerFactory(question=q, multiple_choice_answers=[("Do you agree?", ["Yes"])])
-    factories.AnswerFactory(question=q, multiple_choice_answers=[("Do you agree?", ["No"])])
-    factories.AnswerFactory(question=q, multiple_choice_answers=[("Do you agree?", ["No"])])
+    factories.AnswerFactory(
+        question=q, consultation_response=resp, multiple_choice_answers=[("Do you agree?", ["Yes"])]
+    )
+    factories.AnswerFactory(question=q, consultation_response=resp, multiple_choice_answers=[("Do you agree?", ["No"])])
+    factories.AnswerFactory(question=q, consultation_response=resp, multiple_choice_answers=[("Do you agree?", ["No"])])
 
     result = models.Answer.objects.filter_multiple_choice(question="Not a question", answer="Yes")
 

@@ -35,7 +35,11 @@ def set_up_for_filters():
         theme=theme2, question=question, free_text="We love cats.", consultation_response=consultation_response
     )
     factories.AnswerFactory(
-        theme=theme2, question=question, multiple_choice=None, free_text=None, consultation_response=consultation_response
+        theme=theme2,
+        question=question,
+        multiple_choice=None,
+        free_text=None,
+        consultation_response=consultation_response,
     )
     return question
 
