@@ -21,5 +21,5 @@ class HostingEnvironment:
     @staticmethod
     def is_development_environment() -> bool:
         environment = env.str("ENVIRONMENT", "").upper()
-        development_environments = ["LOCAL", "TEST", "DEV", "DEVELOPMENT"]
+        development_environments = ["LOCAL", "TEST", "DEV", "DEVELOPMENT", "PREPROD"]
         return environment in development_environments
