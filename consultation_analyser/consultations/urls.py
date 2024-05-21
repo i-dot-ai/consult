@@ -12,7 +12,6 @@ urlpatterns = [
     path("privacy/", pages.privacy),
     path("consultations/", consultations.index, name="consultations"),
     path("consultations/new/", consultations.new, name="new_consultation"),
-    path("consultations/processing/", consultations.processing, name="consultation_processing"),
     path("consultations/<str:consultation_slug>/", consultations.show, name="consultation"),
     path("schema/<str:schema_name>.json", schema.raw_schema),
     path(
