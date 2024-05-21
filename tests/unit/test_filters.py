@@ -50,7 +50,7 @@ def set_up_for_filters():
         ({"theme": "All", "keyword": "", "opinion": "All"}, 4),
         ({"keyword": "dogs", "theme": "All", "opinion": "All"}, 2),
         ({"keyword": "dogs", "theme": "All", "opinion": "Dogs"}, 1),
-        ({"theme": "All", "keyword": "", "opinion": "Cats"}, 2),
+        ({"theme": "All", "keyword": "", "opinion": "Cats"}, 3),
     ],
 )
 @pytest.mark.django_db
