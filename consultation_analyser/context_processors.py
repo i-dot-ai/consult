@@ -1,6 +1,5 @@
 from dataclasses import dataclass
 
-import waffle
 from django.http import HttpRequest
 from django.urls import resolve
 from django.urls.exceptions import Resolver404
@@ -66,22 +65,21 @@ def app_config(request: HttpRequest):
             },
         ]
 
-        if waffle.switch_is_active("FRONTEND_USER_LOGIN"):
-            if request.user.is_authenticated:
-                menu_items.append(
-                    {
-                        "href": "/sign-out/",
-                        "text": "Sign out",
-                    }
-                )
-            else:
-                menu_items.append(
-                    {
-                        "href": "/sign-in/",
-                        "text": "Sign in",
-                        "active": request.path == "/sign-in/",
-                    }
-                )
+        if request.user.is_authenticated:
+            menu_items.append(
+                {
+                    "href": "/sign-out/",
+                    "text": "Sign out",
+                }
+            )
+        else:
+            menu_items.append(
+                {
+                    "href": "/sign-in/",
+                    "text": "Sign in",
+                    "active": request.path == "/sign-in/",
+                }
+            )
 
         app_config = AppConfig(name="Consultation analyser", path="/", menu_items=menu_items)
 
