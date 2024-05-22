@@ -10,7 +10,6 @@ from tests.helpers import sign_in
 
 
 @pytest.mark.django_db
-@override_switch("FRONTEND_USER_LOGIN", True)
 def test_user_uploads_consultation(django_app):
     # given i am a user without a consultation
     user = UserFactory()
