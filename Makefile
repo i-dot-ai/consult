@@ -82,8 +82,10 @@ AWS_REGION=eu-west-2
 APP_NAME=consultations
 ECR_URL=$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 ECR_REPO_URL=$(ECR_URL)/$(ECR_REPO_NAME)
+DOCKER_CACHE_BUCKET=i-dot-ai-docker-cache
 
 ECR_REPO_NAME=$(APP_NAME)
+DOCKER_BUILDER_CONTAINER=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
 
 AUTO_APPLY_RESOURCES = module.ecs.aws_ecs_task_definition.aws-ecs-task \
@@ -107,7 +109,9 @@ tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 .PHONY: docker_build
 docker_build: ## Pull previous container (if it exists) build the docker container
 	docker pull $(PREV_IMAGE) || true
-	docker build . -t $(IMAGE)
+	docker buildx build --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE)  \
+	--cache-to type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(IMAGE) \
+	--cache-from type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(IMAGE) .
 
 .PHONY: docker_run
 docker_run: ## Run the docker container
