@@ -38,7 +38,7 @@ def new(request: HttpRequest):
             send_magic_link_if_email_exists(request, email)
             return render(request, "magic_link/link_sent.html")
 
-    return render(request, "new_session.html", {"form": form})
+    return render(request, "consultations/sessions/new.html", {"form": form})
 
 
 def destroy(request: HttpRequest):

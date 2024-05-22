@@ -45,4 +45,4 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "total_responses": total_responses,
         "applied_filters": applied_filters,
     }
-    return render(request, "show_question.html", context)
+    return render(request, "consultations/questions/show.html", context)
