@@ -2,8 +2,8 @@ locals {
   postgres_fqdn   = "${module.postgres.rds_instance_username}:${module.postgres.rds_instance_db_password}@${module.postgres.db_instance_address}/${module.postgres.db_instance_name}"
   secret_env_vars = jsondecode(data.aws_secretsmanager_secret_version.env_vars.secret_string)
   batch_env_vars = {
-    "ENVIRONMENT"                          = terraform.workspace,
-    "PRODUCTION_DEPLOYMENT"                = true,
+    "ENVIRONMENT"            = terraform.workspace,
+    "PRODUCTION_DEPLOYMENT" = true,
     "DJANGO_SECRET_KEY"                    = data.aws_secretsmanager_secret_version.django_secret.secret_string,
     "DEBUG"                                = local.secret_env_vars.DEBUG,
     "SAGEMAKER_ENDPOINT_NAME"              = local.secret_env_vars.SAGEMAKER_ENDPOINT_NAME
@@ -21,16 +21,15 @@ locals {
 
 
   esc_env_vars = merge({
-    "BATCH_JOB_QUEUE"                      = module.batch_job_definition.job_queue_name,
-    "BATCH_JOB_DEFINITION"                 = module.batch_job_definition.job_definition_name,
+    "BATCH_JOB_QUEUE"      = module.batch_job_definition.job_queue_name,
+    "BATCH_JOB_DEFINITION" = module.batch_job_definition.job_definition_name,
   }, local.batch_env_vars)
 }
 
 module "ecs" {
   source             = "../../i-ai-core-infrastructure//modules/ecs"
-  project_name       = var.project_name
+  name               = local.name
   image_tag          = var.image_tag
-  prefix             = "i-dot-ai"
   ecr_repository_uri = var.ecr_repository_uri
   ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
   health_check = {
@@ -54,7 +53,7 @@ module "ecs" {
   ip_whitelist                 = var.external_ips
   create_listener              = true
   task_additional_iam_policy   = aws_iam_policy.this.arn
-  additional_tags = {
+  additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
   }
 }
@@ -73,7 +72,7 @@ resource "aws_route53_record" "type_a_record" {
 
 
 resource "aws_iam_policy" "this" {
-  name        = "i-dot-ai-${terraform.workspace}-ecs-${var.project_name}-additional"
+  name        = "${local.name}-additional-policy"
   description = "Additional permissions for consultations ECS task"
   policy      = data.aws_iam_policy_document.this.json
   tags = {

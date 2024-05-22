@@ -6,8 +6,7 @@ locals {
 module "batch_compute" {
   source          = "../../i-ai-core-infrastructure/modules/batch/batch_compute_environment"
   account_id      = var.account_id
-  project         = "i-dot-ai"
-  name            = "consultations"
+  name            = local.name
   region          = var.region
   vpc_id          = data.terraform_remote_state.vpc.outputs.vpc_id
   desired_vcpus   = 0
@@ -20,10 +19,7 @@ module "batch_compute" {
 
 module "batch_job_definition" {
   source                  = "../../i-ai-core-infrastructure/modules/batch/batch_job_definitons"
-  account_id              = var.account_id
-  project                 = "i-dot-ai"
-  name                    = "consultations"
-  region                  = var.region
+  name                    = local.name
   compute_environment_arn = [module.batch_compute.ec2_compute_environment_arn]
   state_bucket            = var.state_bucket
   image                   = "${local.batch_image_ecr_url}:${var.image_tag}"
