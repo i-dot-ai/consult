@@ -5,7 +5,6 @@ from django.contrib.auth import logout
 from django.http import HttpRequest
 from django.shortcuts import redirect, render
 from magic_link.models import MagicLink
-from waffle.decorators import waffle_switch
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.forms.sessions import NewSessionForm
@@ -27,7 +26,6 @@ def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
         pass
 
 
-@waffle_switch("FRONTEND_USER_LOGIN")
 def new(request: HttpRequest):
     if not request.POST:
         form = NewSessionForm()
