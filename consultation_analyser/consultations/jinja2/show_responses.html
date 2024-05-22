@@ -89,9 +89,11 @@
         <tbody class="govuk-table__body">
           {% for response in responses %}
             <tr class="govuk-table__row govuk-body-s">
-              {% if question.multiple_choice_options %}
+              {% if response.multiple_choice %}
                 <td class="govuk-table__cell">
-                  {{ response.multiple_choice[0] }}
+                  {% for item in response.multiple_choice %}
+                    <strong>{{ item["question_text"] }}</strong> {{ ", ".join(item["options"]) }}<br />
+                  {% endfor %}
                 </td>
               {% endif %}
               <td class="govuk-table__cell">

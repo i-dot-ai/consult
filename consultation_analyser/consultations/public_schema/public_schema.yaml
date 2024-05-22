@@ -84,14 +84,8 @@ components:
         has_free_text:
           type: boolean
           description: Does this question have a free text component?
-        multiple_choice_options:
-          type: array
-          description: The options for the multiple choice part of this question, if it has a multiple choice component
-          nullable: true
-          items:
-            type: string
-          examples:
-            - ["Yes", "No", "I don't know"]
+        multiple_choice:
+          $ref: '#/components/schemas/MultipleChoice'
     Answer:
       type: object
       description: Each Answer is associated with a Question and belongs to a ConsultationResponse.
@@ -110,13 +104,7 @@ components:
           - 'q1.2'
           description: The number or other unique identifier for the answered question
         multiple_choice:
-          type: array
-          description: Responses to the multiple choice part of the question, if any
-          items:
-            type: string
-            description: A selected option
-          examples:
-            - ["No"]
+          $ref: '#/components/schemas/MultipleChoice'
         free_text:
           type: string
           description: The answer to the free text part of the question, if any
@@ -124,6 +112,23 @@ components:
             - I don't think this is a good idea at all
             - I would like to point out a few things
             - I would like clarification on a few key points
+    MultipleChoice:
+      type: array
+      description: A list of multiple choice questions with arrays of options or arrays of answers
+      items:
+        type: object
+        description: A multiple choice question and its available (or selected, according to context) options
+        required:
+          - question_text
+          - options
+        properties:
+          question_text:
+            type: string
+          options:
+            type: array
+            items:
+              type: string
+            uniqueItems: true
     ConsultationResponse:
       type: object
       description: A ConsultationResponse groups answers. For now it is also a placeholder for response-level information such as demographics, responding-in-the-capacity-of, etc.
