@@ -25,7 +25,7 @@ def index(request: HttpRequest) -> HttpResponse:
             messages.error(request, error.args[0])
     consultations = models.Consultation.objects.all()
     context = {"consultations": consultations, "production_env": HostingEnvironment.is_production()}
-    return render(request, "support_console/all-consultations.html", context=context)
+    return render(request, "support_console/consultations/index.html", context=context)
 
 
 @staff_member_required
@@ -41,7 +41,7 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
             messages.success(request, "The consultation has been deleted")
             return redirect("/support/consultations/")
 
-    return render(request, "support_console/delete-consultation.html", context=context)
+    return render(request, "support_console/consultations/delete.html", context=context)
 
 
 @staff_member_required
@@ -83,4 +83,4 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
         "number_of_themes_unable_to_summarise": number_of_themes_unable_to_summarise,
         "number_of_themes_not_yet_summarised": number_of_themes_not_yet_summarised,
     }
-    return render(request, "support_console/consultation.html", context=context)
+    return render(request, "support_console/consultations/show.html", context=context)
