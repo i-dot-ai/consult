@@ -15,7 +15,7 @@ def index(request: HttpRequest) -> HttpResponse:
     user = request.user
     is_staff = user.is_staff
     context = {"consultations": consultations, "is_staff": is_staff}
-    return render(request, "all-consultations.html", context)
+    return render(request, "consultations/consultations/index.html", context)
 
 
 @user_can_see_consultation
@@ -26,7 +26,7 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
 
     context = {"questions": questions, "consultation": consultation}
 
-    return render(request, "consultation.html", context)
+    return render(request, "consultations/consultations/show.html", context)
 
 
 @login_required
@@ -37,6 +37,6 @@ def new(request: HttpRequest):
         form = ConsultationUploadForm(request.POST, request.FILES)
         if form.is_valid():
             upload_consultation(request.FILES["consultation_json"], request.user)
-            return render(request, "consultation-uploaded.html", {})
+            return render(request, "consultations/consultations/uploaded.html", {})
 
-    return render(request, "new-consultation.html", {"form": form})
+    return render(request, "consultations/consultations/new.html", {"form": form})

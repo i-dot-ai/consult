@@ -21,8 +21,8 @@ urlpatterns = [
     ),
     path(
         "consultations/<str:consultation_slug>/sections/<str:section_slug>/responses/<str:question_slug>/",
-        responses.show,
-        name="show_question_responses",
+        responses.index,
+        name="question_responses",
     ),
     # authentication
     path("sign-in/", sessions.new),

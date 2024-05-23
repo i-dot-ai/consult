@@ -3,20 +3,20 @@ from django.shortcuts import render
 
 
 def home(request: HttpRequest):
-    return render(request, "home.html")
+    return render(request, "static_pages/home.html")
 
 
 def privacy(request: HttpRequest):
-    return render(request, "privacy.html")
+    return render(request, "static_pages/privacy.html")
 
 
 def data_sharing(request: HttpRequest):
-    return render(request, "data_sharing.html")
+    return render(request, "static_pages/data_sharing.html")
 
 
 def how_it_works(request: HttpRequest):
-    return render(request, "how_it_works.html")
+    return render(request, "static_pages/how_it_works.html")
 
 
 def get_involved(request: HttpRequest):
-    return render(request, "get_involved.html")
+    return render(request, "static_pages/get_involved.html")

@@ -58,6 +58,6 @@ def show(request: HttpRequest):
 
     return render(
         request,
-        "schema.html",
+        "static_pages/schema.html",
         {"json_schemas": json_schemas, "json_examples": json_examples, "entity_schemas": entity_schemas},
     )
