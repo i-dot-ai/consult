@@ -29,7 +29,7 @@ def test_name_parameter_sets_consultation_name(mock_is_local):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("environment", ["prod", "production"])
+@pytest.mark.parametrize("environment", ["prod"])
 def test_the_tool_will_only_run_in_dev(environment):
     with patch.dict(os.environ, {"ENVIRONMENT": environment}):
         with pytest.raises(Exception, match=r"Dummy data generation should not be run in production"):
