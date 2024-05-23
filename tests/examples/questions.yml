@@ -26,6 +26,21 @@
   slug: two-finger-vs-four-finger-kit-kats
   text: Do you believe that 2 finger Kit Kats are better than 4 finger Kit Kats?
   answers:
+  - "I find the 2 finger Kit Kats to be just the right size for a quick pick-me-up during the day."
+  - "When it comes to enjoying Kit Kats, the more, the merrier! That's why I prefer the 4 finger ones."
+  - "Two fingers or four, as long as it's Kit Kat, I'm in heaven!"
+  - "For those watching their calorie intake, the 2 finger Kit Kats are a guilt-free indulgence."
+  - "Four fingers mean more chocolatey goodness in every bite, making them my top choice."
+  - "I like to mix it up depending on my mood - sometimes it's 2 fingers, sometimes it's 4."
+  - "Whether it's 2 fingers or 4, a Kit Kat is always a delightful treat."
+  - "The 2 finger Kit Kats are perfect for a light snack between meals."
+  - "There's something about breaking off a piece of a 4 finger Kit Kat that feels incredibly satisfying."
+  - "I appreciate the convenience of the 2 finger Kit Kats when I'm on the move."
+  - "The 4 finger Kit Kats have just the right ratio of chocolate to wafer, making them irresistible."
+  - "Two fingers are great for a quick fix, but nothing beats the indulgence of a 4 finger Kit Kat."
+  - "I like to savor each bite, which is why I prefer the 2 finger Kit Kats - they make me slow down and enjoy."
+  - "I enjoy the challenge of breaking apart the 4 finger Kit Kats into perfect individual pieces."
+  - "The 2 finger Kit Kats are ideal for those moments when you need just a little sweetness."
   - "Two-finger Kit Kats are perfect for a small snack, making them superior in moderation."
   - "Four-finger Kit Kats offer more satisfaction in one go, making them better for serious cravings."
   - "It depends on the occasion; 2 fingers for a quick treat, 4 fingers for sharing or indulging."
@@ -41,7 +56,7 @@
     - question_text: What is your favorite type of Cadbury chocolate bar?
       options:
       - Dairy Milk
-      - Whole Nut
+      - Something else
       - I don't have a favorite
     - question_text: How many bars do you eat per month?
       options:
@@ -49,9 +64,20 @@
       - Up to 5
       - 5 to 10
       - 10+
-  slug: favorite-cadbury-chocolate-bar
-  text: What is your favorite type of Cadbury chocolate bar?
+  slug: favourite-cadbury-chocolate-bar
+  text: What is your favourite Cadbury chocolate bar?
   answers:
+  - "I can't resist the smooth and creamy indulgence of Cadbury's Dairy Milk Silk."
+  - "The Picnic bar is my favorite with its mix of nuts, caramel, and crispy rice, providing a variety of textures and flavors."
+  - "Cadbury's Boost, for its combination of caramel, biscuit, and chocolate that packs a satisfying crunch."
+  - "For me, nothing beats the nostalgic taste of a Cadbury's Crunchie."
+  - "The classic Cadbury Fudge bar is my go-to for a simple, yet satisfying treat."
+  - "I enjoy the playful combination of flavors in Cadbury's Marvellous Creations Jelly Popping Candy Shells."
+  - "There's something comforting about the creamy milk chocolate and biscuit crunch of a Cadbury's Dairy Milk Biscuit."
+  - "The Cadbury's Turkish Delight bar is my favorite for its unique blend of rose-flavored Turkish delight enrobed in chocolate."
+  - "I love the burst of flavor from Cadbury's Dairy Milk Fruit & Nut - it's like a mini tropical getaway in every bite."
+  - "For a rich and indulgent experience, I always reach for Cadbury's Dairy Milk Caramel."
+  - "The Cadbury's Time Out bar is perfect when I need a break - layers of wafer and chocolate that melt away stress."
   - "Dairy Milk is a classic favorite for its smooth and creamy taste."
   - "The Fruit & Nut bar combines the best of both worlds with its chewy and crunchy textures."
   - "Caramel, for its perfect blend of sweet milk chocolate and gooey caramel."
@@ -72,6 +98,16 @@
   slug: mars-bar-recipe-change
   text: Do you think the recipe for Mars bars has changed over the years?
   answers:
+  - "Given the evolving consumer preferences towards healthier options, it's possible Mars has adjusted their recipe to reduce sugar content or use alternative ingredients."
+  - "The Mars bar might have undergone subtle changes in recipe formulation to comply with dietary guidelines or address allergen concerns."
+  - "If there have been any alterations, they could be related to sourcing more sustainable ingredients or ensuring ethical production practices."
+  - "It's common for food manufacturers to periodically reformulate recipes to optimize flavor, texture, and shelf life, which could explain any perceived changes in Mars bars."
+  - "External factors like fluctuations in cocoa or sugar prices might have prompted Mars to tweak their recipe to maintain affordability without compromising quality."
+  - "While the core components of Mars bars likely remain consistent, advancements in food technology could have led to refinements in the manufacturing process, influencing the overall taste and texture."
+  - "Consumer feedback and market trends might have influenced Mars to adapt their recipe to cater to shifting tastes and preferences, resulting in minor recipe adjustments over time."
+  - "Changes in the global food industry, such as regulations on food additives or ingredient labeling, could have necessitated modifications to the Mars bar recipe."
+  - "Any modifications to the Mars bar recipe would likely be thoroughly tested to ensure they meet the brand's standards for taste, consistency, and consumer satisfaction."
+  - "It's plausible that variations in the recipe could be due to regional differences in ingredient availability or regulations, resulting in subtle differences in taste between markets."
   - "Yes, it seems to taste slightly different, perhaps due to changes in ingredient sourcing."
   - "No, Mars bars have maintained their iconic taste throughout the years."
   - "There might have been minor adjustments for health regulations or cost-saving."
@@ -92,6 +128,17 @@
   slug: is-crunchie-too-sweet
   text: Is the Crunchie bar too sweet for your taste?
   answers:
+  - "While I enjoy the Crunchie bar occasionally, I do find the sweetness a tad overpowering at times."
+  - "For those with a sweet tooth, the Crunchie bar hits the spot perfectly with its sugary goodness."
+  - "It's subjective; some may find it too sweet, but others, like myself, appreciate its sugary kick."
+  - "I find the sweetness of the Crunchie bar balanced by its airy texture, creating a delightful treat."
+  - "As someone who prefers less sweetness in their chocolates, I find the Crunchie bar a bit too sugary for my taste."
+  - "The Crunchie bar's sweetness is just right for those moments when you need a sugary pick-me-up."
+  - "I enjoy the Crunchie bar's sweetness, especially when paired with a glass of cold milk to temper it."
+  - "While I appreciate the Crunchie bar's unique texture, I do wish it were slightly less sweet."
+  - "The Crunchie bar's sweetness can be intense, but it's part of what makes it so addictive."
+  - "I've grown accustomed to the sweetness of the Crunchie bar over the years, and it's become a guilty pleasure of mine."
+  - "The Crunchie bar's sweetness is perfect for satisfying cravings, but I can see how it might be too much for some."
   - "Yes, the combination of honeycomb and chocolate can be overwhelmingly sweet."
   - "No, the sweetness level is perfect for satisfying a sweet tooth craving."
   - "It's on the edge, but the unique texture of the honeycomb center makes up for it."
@@ -112,6 +159,17 @@
   slug: snickers-vs-milky-way
   text: Would you prefer a Snickers or a Milky Way?
   answers:
+  - "Snickers, because it's like a meal in a bar with its hearty combination of flavors and textures."
+  - "Milky Way, for its simplicity and smoothness, making it an easy treat to enjoy anytime."
+  - "Snickers, as the caramel and nougat combination with peanuts offers a more dynamic flavor profile."
+  - "Milky Way, for its gentler sweetness and softer texture, perfect for a light indulgence."
+  - "Snickers, because the chewiness of the caramel and crunchiness of the peanuts make each bite satisfyingly complex."
+  - "Milky Way, it's like a cloud of sweetness that melts in your mouth, leaving you feeling content."
+  - "Snickers, for its bold and robust taste that packs a punch with every bite."
+  - "Milky Way, because sometimes simplicity is key when it comes to satisfying a sweet craving."
+  - "Snickers, as the combination of flavors and textures creates a more fulfilling snacking experience."
+  - "Milky Way, it's the epitome of comfort food - smooth, creamy, and utterly delightful."
+  - "Snickers, it's the ultimate indulgence with its perfect balance of sweet, salty, and nutty."
   - "Snickers, for its satisfying combination of nuts, caramel, and nougat."
   - "Milky Way, for its smooth and creamy caramel and nougat without the crunch."
   - "Snickers, because the nuts provide a good texture contrast and make it more filling."
@@ -133,6 +191,16 @@
   slug: double-decker-satisfaction
   text: Do you find the Double Decker bar to be satisfyingly filling?
   answers:
+  - "Without a doubt, the Double Decker bar is my go-to when I need something substantial to keep me going."
+  - "Yes, its dense composition and dual layers make it one of the most satisfying chocolate bars out there."
+  - "Absolutely, the Double Decker's combination of nougat and crispy cereal is a winning formula for a filling snack."
+  - "For sure, I always feel satisfied after indulging in a Double Decker bar - it's like a mini meal in itself."
+  - "Definitely, its unique texture and rich taste make it a truly satisfying treat."
+  - "Yes, the Double Decker bar's substantial size and mix of flavors ensure that hunger is kept at bay."
+  - "Absolutely, it's hard to resist the hearty satisfaction that comes with each bite of a Double Decker bar."
+  - "Without question, the Double Decker bar always leaves me feeling pleasantly full and content."
+  - "Yes, its layers of nougat and crispiness provide a satisfyingly substantial snack."
+  - "Definitely, the Double Decker bar's combination of textures and flavors makes it a filling delight."
   - "Yes, its combination of nougat and crispy cereal makes it exceptionally satisfying."
   - "Absolutely, it's like two treats in one, making it a hearty snack."
   - "Yes, the layers provide a fulfilling eating experience that lasts."
