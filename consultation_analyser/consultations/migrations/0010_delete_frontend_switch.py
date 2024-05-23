@@ -5,8 +5,11 @@ from django.db import migrations
 
 def delete_switch(apps, schema_editor):
     Switch = apps.get_model("waffle", "Switch")
-    switch = Switch.objects.get(name="FRONTEND_USER_LOGIN")
-    switch.delete()
+    try:
+        switch = Switch.objects.get(name="FRONTEND_USER_LOGIN")
+        switch.delete()
+    except Switch.DoesNotExist:
+        pass
 
 
 class Migration(migrations.Migration):
