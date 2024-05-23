@@ -24,7 +24,7 @@ def index(request: HttpRequest) -> HttpResponse:
         except RuntimeError as error:
             messages.error(request, error.args[0])
     consultations = models.Consultation.objects.all()
-    context = {"consultations": consultations, "development_env": HostingEnvironment.is_development_environment()}
+    context = {"consultations": consultations, "production_env": HostingEnvironment.is_production()}
     return render(request, "support_console/all-consultations.html", context=context)
 
 

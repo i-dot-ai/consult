@@ -16,8 +16,8 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 def create_dummy_data(responses=10, include_themes=True, number_questions=10, **options):
     if number_questions > 10:
         raise RuntimeError("You can't have more than 10 questions")
-    if not HostingEnvironment.is_development_environment():
-        raise RuntimeError("Dummy data generation should only be run in development")
+    if HostingEnvironment.is_production():
+        raise RuntimeError("Dummy data generation should not be run in production")
 
     # Timestamp to avoid duplicates - set these as default options
     timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")

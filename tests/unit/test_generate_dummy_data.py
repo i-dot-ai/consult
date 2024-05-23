@@ -23,8 +23,8 @@ def test_a_consultation_is_generated(settings):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("environment", ["preprod", "prod", "production"])
+@pytest.mark.parametrize("environment", ["prod"])
 def test_the_tool_will_only_run_in_dev(environment):
     with patch.dict(os.environ, {"ENVIRONMENT": environment}):
-        with pytest.raises(Exception, match=r"should only be run in development"):
+        with pytest.raises(Exception, match=r"Dummy data generation should not be run in production"):
             create_dummy_data()
