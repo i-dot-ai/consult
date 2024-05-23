@@ -10,6 +10,10 @@ def render_form(form, request):
     return render_to_string("form.html", context={"form": form}, request=request, using="django")
 
 
+def datetime(datetime_object):
+    return datetime_object.strftime("%d %B %Y at %H:%M")
+
+
 def environment(**options):
     current_loader = options["loader"]
     loader_with_govuk_frontend = ChoiceLoader(
@@ -24,7 +28,7 @@ def environment(**options):
 
     env = Environment(**options, extensions=[CompressorExtension])  # nosec
 
-    tags = {"static": static, "url": reverse, "render_form": render_form}
+    tags = {"static": static, "url": reverse, "render_form": render_form, "datetime": datetime}
 
     env.globals.update(tags)
 
