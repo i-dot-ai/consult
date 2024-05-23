@@ -15,13 +15,12 @@ class HostingEnvironment:
     @staticmethod
     def is_deployed() -> bool:
         environment = env.str("ENVIRONMENT", "").upper()
-        deployed_envs = ["DEV", "DEVELOPMENT", "PREPROD", "PROD", "PRODUCTION"]
+        deployed_envs = ["DEV", "DEVELOPMENT", "PREPROD", "PROD"]
         return environment in deployed_envs
 
     @staticmethod
     def is_production() -> bool:
-        environment = env.str("ENVIRONMENT", "").upper()
-        return environment in ["PROD", "PRODUCTION"]
+        return env.str("ENVIRONMENT", "").upper() == "PROD"
 
     @staticmethod
     def is_development_environment() -> bool:
