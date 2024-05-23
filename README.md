@@ -19,9 +19,14 @@ Populate `.env` by copying `.env.example` and filling in required values.
 
 ### Python
 
-Ensure you have `python > 3.10` and `poetry` installed, then run `poetry install`.
+Ensure you have `python > 3.12`, `poetry` and `npm` installed, then run `poetry install`.
 
 ### Database setup
+
+```
+brew services start postgresql
+```
+This will run the postgresql locally.
 
 ```
 make dev_environment
@@ -29,7 +34,13 @@ make dev_environment
 
 This will set up dev and test databases with dummy data. See the definition of that make task for the various steps.
 
+```
+make dev_admin_user
+```
+This will set up the admin account to dev environment.
+
 You will have an staff user (i.e. one that can access the admin) created with the username `email@example.com` and the password `admin`.
+
 
 Confirm everything is working with
 
