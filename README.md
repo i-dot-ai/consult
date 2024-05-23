@@ -19,7 +19,7 @@ Populate `.env` by copying `.env.example` and filling in required values.
 
 ### Python
 
-Ensure you have `python > 3.12`, `poetry` and `npm` installed, then run `poetry install`.
+Ensure you have `python >= 3.12`, `poetry` and `npm` installed, then run `poetry install`.
 
 ### Database setup
 
