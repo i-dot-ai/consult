@@ -14,6 +14,7 @@ from langchain.pydantic_v1 import BaseModel
 from langchain_community.llms import SagemakerEndpoint
 from langchain_community.llms.sagemaker_endpoint import LLMContentHandler
 from langchain_core.exceptions import OutputParserException
+from langchain_core.prompt_values import StringPromptValue
 
 from consultation_analyser.consultations.models import Answer, Theme
 from consultation_analyser.pipeline.decorators import check_and_launch_sagemaker
@@ -134,6 +135,30 @@ def get_sagemaker_endpoint() -> SagemakerEndpoint:
     return sagemaker_endpoint
 
 
+def retry_prompt_parsing(
+    prompt: StringPromptValue, completion: str, sagemaker_endpoint: SagemakerEndpoint, parser: PydanticOutputParser
+) -> dict:
+    retry_parser = RetryWithErrorOutputParser.from_llm(
+        parser=parser,
+        llm=sagemaker_endpoint,
+        max_retries=3,
+    )
+    number_of_restarts = 0
+    parsed_output_dictionary = {"short_description": NO_SUMMARY_STR, "summary": NO_SUMMARY_STR}
+    # When retrying, previous prompt is also passed in making the prompt longer.
+    # We get errors with too many input tokens, max_input_tokens = 8192 - so restart the retry parser.
+    while number_of_restarts < 5:
+        try:
+            parsed_output = retry_parser.parse_with_prompt(completion=completion, prompt_value=prompt)
+            parsed_output_dictionary = {
+                "short_description": parsed_output.short_description,
+                "summary": parsed_output.summary,
+            }
+        except (ValueError, OutputParserException) as e:
+            number_of_restarts = number_of_restarts + 1
+    return parsed_output_dictionary
+
+
 def generate_theme_summary(theme: Theme) -> dict:
     """For a given theme, generate a summary using an LLM."""
     logger.info(f"Starting LLM summarisation for theme with keywords: {' .'.join(theme.keywords)} ")
@@ -150,19 +175,10 @@ def generate_theme_summary(theme: Theme) -> dict:
         "keywords": ", ".join(theme.keywords),
         "responses": sample_responses,
     }
-
-    # TODO - tidy this up, we need to make sure that what we're sending is under token limit
     prompt = prompt_template.format_prompt(**prompt_inputs)
     llm_chain = LLMChain(llm=sagemaker_endpoint, prompt=prompt_template)
     llm_response = llm_chain.run(prompt_inputs)
     parser = PydanticOutputParser(pydantic_object=ThemeSummaryOutput)
-    retry_parser = RetryWithErrorOutputParser.from_llm(
-        parser=parser,
-        llm=sagemaker_endpoint,
-        max_retries=2,
-    )
-    # When retrying, previous prompt is also passed in making the prompt longer.
-    # Getting errors with too many input tokens, max_input_tokens = 8192
     try:
         parsed_output = parser.parse(llm_response)
         parsed_output = {
@@ -170,17 +186,9 @@ def generate_theme_summary(theme: Theme) -> dict:
             "summary": parsed_output.summary,
         }
     except OutputParserException as e:
-        try:
-            parsed_output = retry_parser.parse_with_prompt(
-                completion=llm_response, prompt_value=prompt
-            )
-            parsed_output = {
-                "short_description": parsed_output.short_description,
-                "summary": parsed_output.summary,
-            }
-        except OutputParserException as e:
-            parsed_output = {"short_description": NO_SUMMARY_STR, "summary": NO_SUMMARY_STR}
-        # TODO - how do we deal with the cases where the output isn't a JSON format?
+        parsed_output = retry_prompt_parsing(
+            parser=parser, sagemaker_endpoint=sagemaker_endpoint, completion=llm_response, prompt=prompt
+        )
     return parsed_output
 
 
