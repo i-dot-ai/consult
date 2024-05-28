@@ -8,11 +8,11 @@ import boto3
 import tiktoken
 from django.conf import settings
 from langchain.chains.llm import LLMChain
-from langchain.llms import SagemakerEndpoint
-from langchain.llms.sagemaker_endpoint import LLMContentHandler
 from langchain.output_parsers import PydanticOutputParser, RetryWithErrorOutputParser
 from langchain.prompts import PromptTemplate
 from langchain.pydantic_v1 import BaseModel
+from langchain_community.llms import SagemakerEndpoint
+from langchain_community.llms.sagemaker_endpoint import LLMContentHandler
 from langchain_core.exceptions import OutputParserException
 
 from consultation_analyser.consultations.models import Answer, Theme
