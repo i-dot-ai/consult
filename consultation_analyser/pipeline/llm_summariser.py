@@ -135,19 +135,20 @@ def get_sagemaker_endpoint() -> SagemakerEndpoint:
     return sagemaker_endpoint
 
 
+# TODO - what is the optimal number of retries/restarts
 def retry_prompt_parsing(
     prompt: StringPromptValue, completion: str, sagemaker_endpoint: SagemakerEndpoint, parser: PydanticOutputParser
 ) -> dict:
     retry_parser = RetryWithErrorOutputParser.from_llm(
         parser=parser,
         llm=sagemaker_endpoint,
-        max_retries=3,
+        max_retries=4,
     )
     number_of_restarts = 0
     parsed_output_dictionary = {"short_description": NO_SUMMARY_STR, "summary": NO_SUMMARY_STR}
     # When retrying, previous prompt is also passed in making the prompt longer.
     # We get errors with too many input tokens, max_input_tokens = 8192 - so restart the retry parser.
-    while number_of_restarts < 5:
+    while number_of_restarts < 6:
         try:
             parsed_output = retry_parser.parse_with_prompt(completion=completion, prompt_value=prompt)
             parsed_output_dictionary = {
@@ -161,7 +162,7 @@ def retry_prompt_parsing(
 
 def generate_theme_summary(theme: Theme) -> dict:
     """For a given theme, generate a summary using an LLM."""
-    logger.info(f"Starting LLM summarisation for theme with keywords: {' .'.join(theme.keywords)} ")
+    logger.info(f"Starting LLM summarisation for theme with keywords: {theme.keywords} ")
     prompt_template = get_prompt_template()
     sagemaker_endpoint = get_sagemaker_endpoint()
     # TODO - where is this max tokens coming from?
@@ -215,4 +216,5 @@ def create_llm_summaries_for_consultation(consultation):
             theme_summary_data = dummy_generate_theme_summary(theme)
         theme.summary = theme_summary_data["summary"]
         theme.short_description = theme_summary_data["short_description"]
+        logger.info(f"Theme description: {theme.short_description}")
         theme.save()
