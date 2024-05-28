@@ -29,9 +29,6 @@ MODEL_ENCODING = tiktoken.get_encoding(
 NO_SUMMARY_STR = "Unable to generate summary for this theme"
 
 
-# TODO - deal with Langchain warnings - update to newer methods.
-
-
 def get_prompt_template():
     # TODO - what is the best way to get info about the policy area into the prompt.
     # TODO - this might need tweaking on the first run.
@@ -121,7 +118,7 @@ def get_random_sample_of_responses_for_theme(
 def get_sagemaker_endpoint() -> SagemakerEndpoint:
     content_handler = ContentHandler()
     client = boto3.client("sagemaker-runtime", region_name=settings.AWS_REGION)
-    # TODO - what are these parameters? Where do they come from?
+    # TODO - What should these parameters be?
     model_kwargs = {
         "temperature": 0.8,
         "max_new_tokens": 2048,
@@ -164,7 +161,7 @@ def generate_theme_summary(theme: Theme) -> dict:
         llm=sagemaker_endpoint,
         max_retries=2,
     )
-    # TODO - the number of retries - does this relate to the number of tokens
+    # When retrying, previous prompt is also passed in making the prompt longer.
     # Getting errors with too many input tokens, max_input_tokens = 8192
     try:
         parsed_output = parser.parse(llm_response)
