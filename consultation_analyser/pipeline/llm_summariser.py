@@ -74,16 +74,8 @@ class ContentHandler(LLMContentHandler):
     content_type = "application/json"
     accepts = "application/json"
 
-    def transform_input(self, inputs: str, model_kwargs) -> bytes:
-        # TODO - what is they type of the model_kwargs?
-        # TODO - what are these parameters? Where do they come from?
-        parameters = {
-            "temperature": 0.8,
-            "max_new_tokens": 2048,
-            "repetition_penalty": 1.03,
-            "stop": ["###", "</s>"],
-        }
-        input_str = json.dumps({"inputs": inputs, "parameters": parameters})
+    def transform_input(self, inputs: str, model_kwargs: dict) -> bytes:
+        input_str = json.dumps({"inputs": inputs, "parameters": model_kwargs})
         return input_str.encode("utf-8")
 
     def transform_output(self, output) -> str:
@@ -129,9 +121,17 @@ def get_random_sample_of_responses_for_theme(
 def get_sagemaker_endpoint() -> SagemakerEndpoint:
     content_handler = ContentHandler()
     client = boto3.client("sagemaker-runtime", region_name=settings.AWS_REGION)
+    # TODO - what are these parameters? Where do they come from?
+    model_kwargs = {
+        "temperature": 0.8,
+        "max_new_tokens": 2048,
+        "repetition_penalty": 1.03,
+        "stop": ["###", "</s>"],
+    }
     sagemaker_endpoint = SagemakerEndpoint(
         endpoint_name=settings.SAGEMAKER_ENDPOINT_NAME,
         content_handler=content_handler,
+        model_kwargs=model_kwargs,
         client=client,
     )
     return sagemaker_endpoint
