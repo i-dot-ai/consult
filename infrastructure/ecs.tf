@@ -90,11 +90,19 @@ data "aws_iam_policy_document" "this" {
     effect = "Allow"
     actions = [
       "batch:DescribeJobQueues",
-      "batch:SubmitJob",
-      "sagemaker:CreateEndpoint",
+      "batch:SubmitJob"
     ]
     resources = [
       "*",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "sagemaker:CreateEndpoint",
+    ]
+    resources = [
+      "*"
     ]
   }
 }
