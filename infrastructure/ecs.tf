@@ -91,7 +91,7 @@ data "aws_iam_policy_document" "this" {
     actions = [
       "batch:DescribeJobQueues",
       "batch:SubmitJob",
-      "batch:CreateEndpoint",
+      "sagemaker:CreateEndpoint",
     ]
     resources = [
       "*",
