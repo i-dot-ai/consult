@@ -6,7 +6,6 @@ from tests.helpers import sign_in
 
 
 @pytest.mark.django_db
-@override_switch("FRONTEND_USER_LOGIN", True)
 def test_managing_users_via_support(django_app):
     # given I am an admin user
     user = UserFactory(

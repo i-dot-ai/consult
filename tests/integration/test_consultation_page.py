@@ -6,7 +6,6 @@ from tests.helpers import sign_in
 
 
 @pytest.mark.django_db
-@override_switch("FRONTEND_USER_LOGIN", True)
 def test_consultation_page(django_app):
     user = UserFactory()
     consultation = ConsultationFactory(with_themes=True, user=user)
