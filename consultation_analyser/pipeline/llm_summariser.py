@@ -1,6 +1,7 @@
 """
 Use LLMs to generate summaries for themes.
 """
+
 import json
 import logging
 
@@ -160,7 +161,10 @@ def generate_theme_summary(theme: Theme) -> dict:
             retry_if_exception_type=errors, wait_exponential_jitter=False, stop_after_attempt=10
         )
         parsed_output = llm_chain.invoke(prompt_inputs)
-        parsed_output = {"short_description": parsed_output.short_description, "summary": parsed_output.summary}
+        parsed_output = {
+            "short_description": parsed_output.short_description,
+            "summary": parsed_output.summary,
+        }
     except errors as e:
         parsed_output = {"short_description": NO_SUMMARY_STR, "summary": NO_SUMMARY_STR}
     return parsed_output
