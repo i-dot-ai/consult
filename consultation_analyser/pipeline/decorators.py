@@ -23,7 +23,9 @@ def check_and_launch_sagemaker(func):
                 EndpointConfigName=endpoint_name,
             )
         start_time = datetime.datetime.now()
-        endpoint_status = sagemaker_client.describe_endpoint(EndpointName=endpoint_name)["EndpointStatus"]
+        endpoint_status = sagemaker_client.describe_endpoint(EndpointName=endpoint_name)[
+            "EndpointStatus"
+        ]
         while endpoint_status != "InService":
             logger.info(f"Endpoint is being created...")
             time.sleep(15)
@@ -31,7 +33,9 @@ def check_and_launch_sagemaker(func):
             logger.info(f"Seconds elapsed {duration}.")
             if duration > 60 * 15:
                 raise RuntimeError(f"Error creating Sagemaker endpoint after {duration} seconds.")
-            endpoint_status = sagemaker_client.describe_endpoint(EndpointName=endpoint_name)["EndpointStatus"]
+            endpoint_status = sagemaker_client.describe_endpoint(EndpointName=endpoint_name)[
+                "EndpointStatus"
+            ]
         logger.info(f"Endpoint {endpoint_name} is 'InService' i.e. ready to use.")
         return func(*args, **kwargs)
 

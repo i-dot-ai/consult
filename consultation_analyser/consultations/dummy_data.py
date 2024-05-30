@@ -36,7 +36,9 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
         QuestionFactory(
             text=q["text"],
             slug=q["slug"],
-            multiple_choice_questions=[(x["question_text"], x["options"]) for x in (q.get("multiple_choice") or [])],
+            multiple_choice_questions=[
+                (x["question_text"], x["options"]) for x in (q.get("multiple_choice") or [])
+            ],
             has_free_text=q["has_free_text"],
             section=section,
         )
@@ -49,10 +51,17 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
             if q.has_free_text:
                 free_text_answer = fake_consultation_data.get_free_text_answer(q.slug)
                 answers.append(
-                    AnswerFactory(question=q, consultation_response=response, free_text=free_text_answer, theme=None)
+                    AnswerFactory(
+                        question=q,
+                        consultation_response=response,
+                        free_text=free_text_answer,
+                        theme=None,
+                    )
                 )
             else:
-                answers.append(AnswerFactory(question=q, consultation_response=response, theme=None))
+                answers.append(
+                    AnswerFactory(question=q, consultation_response=response, theme=None)
+                )
         if include_themes:
             # _answers = [AnswerFactory(question=q, consultation_response=response) for q in questions]
 

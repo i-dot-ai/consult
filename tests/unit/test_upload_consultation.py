@@ -19,7 +19,9 @@ def test_upload_consultation():
 
     assert consultation.consultationresponse_set.count() == 2
 
-    responses = consultation.consultationresponse_set.prefetch_related("answer_set", "answer_set__question").all()
+    responses = consultation.consultationresponse_set.prefetch_related(
+        "answer_set", "answer_set__question"
+    ).all()
 
     for response in responses:
         answers = response.answer_set.all()

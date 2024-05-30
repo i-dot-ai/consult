@@ -10,5 +10,9 @@ urlpatterns = [
     path("users/<int:user_id>", users.show),
     path("consultations/", consultations.index),
     path("consultations/<uuid:consultation_id>/", consultations.show, name="support_consultation"),
-    path("consultations/<uuid:consultation_id>/delete", consultations.delete, name="delete_consultation"),
+    path(
+        "consultations/<uuid:consultation_id>/delete",
+        consultations.delete,
+        name="delete_consultation",
+    ),
 ]

@@ -1,13 +1,16 @@
 import pytest
 
-from consultation_analyser.consultations.models import Consultation, ConsultationResponse, Question, Theme
-from consultation_analyser.factories import AnswerFactory, ConsultationFactory, UserFactory
+from consultation_analyser.factories import UserFactory
 
 
 @pytest.mark.django_db
 def test_logging_in_to_support(django_app):
     # given I am an admin user
-    UserFactory(email="email@example.com", password="admin", is_staff=True)  # pragma: allowlist secret
+    UserFactory(
+        email="email@example.com",
+        password="admin",  # pragma: allowlist secret
+        is_staff=True,
+    )
 
     # when I visit support
     login_page = django_app.get("/support").follow().follow()  # 2 redirects

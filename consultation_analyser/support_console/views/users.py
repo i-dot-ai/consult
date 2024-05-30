@@ -47,5 +47,7 @@ def show(request: HttpRequest, user_id: int):
             return redirect(request.path_info)
 
     return render(
-        request, "support_console/users/show.html", {"user": user, "consultations": consultations, "form": form}
+        request,
+        "support_console/users/show.html",
+        {"user": user, "consultations": consultations, "form": form},
     )

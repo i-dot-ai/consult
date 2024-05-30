@@ -26,5 +26,7 @@ def test_a_consultation_is_generated(settings):
 @pytest.mark.parametrize("environment", ["prod"])
 def test_the_tool_will_only_run_in_dev(environment):
     with patch.dict(os.environ, {"ENVIRONMENT": environment}):
-        with pytest.raises(Exception, match=r"Dummy data generation should not be run in production"):
+        with pytest.raises(
+            Exception, match=r"Dummy data generation should not be run in production"
+        ):
             create_dummy_data()

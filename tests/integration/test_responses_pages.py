@@ -3,7 +3,12 @@ import html
 import pytest
 from waffle.testutils import override_switch
 
-from consultation_analyser.factories import AnswerFactory, ConsultationFactory, ConsultationResponseFactory, UserFactory
+from consultation_analyser.factories import (
+    AnswerFactory,
+    ConsultationFactory,
+    ConsultationResponseFactory,
+    UserFactory,
+)
 from tests.helpers import sign_in
 
 
@@ -28,7 +33,9 @@ def test_get_question_responses_page(django_app):
     answer = AnswerFactory(question=question, consultation_response=consultation_response)
     multiple_choice = answer.multiple_choice[0]
 
-    question_responses_url = f"/consultations/{consultation.slug}/sections/{section.slug}/responses/{question.slug}/"
+    question_responses_url = (
+        f"/consultations/{consultation.slug}/sections/{section.slug}/responses/{question.slug}/"
+    )
     responses_page = django_app.get(question_responses_url)
     page_content = html.unescape(str(responses_page.content))
 
@@ -37,7 +44,10 @@ def test_get_question_responses_page(django_app):
 
     # Check responses appear
     assert f"{answer.free_text}" in page_content
-    assert f"<strong>{multiple_choice["question_text"]}</strong> {multiple_choice["options"][0]}" in page_content
+    assert (
+        f"<strong>{multiple_choice["question_text"]}</strong> {multiple_choice["options"][0]}"
+        in page_content
+    )
     if answer.free_text:
         assert f"{answer.theme.short_description}" in page_content
 

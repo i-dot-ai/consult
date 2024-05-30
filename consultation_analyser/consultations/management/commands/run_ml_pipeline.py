@@ -8,7 +8,9 @@ class Command(BaseCommand):
     help = "Run the machine learning pipeline to generate themes for the consultation"
 
     def add_arguments(self, parser):
-        parser.add_argument("--consultation_slug", action="store", help="The slug for the consultation", type=str)
+        parser.add_argument(
+            "--consultation_slug", action="store", help="The slug for the consultation", type=str
+        )
 
     def handle(self, *args, **options):
         if options["consultation_slug"]:

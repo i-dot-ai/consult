@@ -20,7 +20,9 @@ def lambda_handler(event: Dict, context):
                 "Batch queue to check not found, please tag the alarm with Value 'BatchQueueName', and the Value being the name of the batch queue to check"
             )
         sagemaker_endpoint_name = alarm_name[: alarm_name.find("_CPU_Low")]
-        logger.info(f"Lambda started for alarm {alarm_name}, endpoint {sagemaker_endpoint_name} and queue {queue_name}")
+        logger.info(
+            f"Lambda started for alarm {alarm_name}, endpoint {sagemaker_endpoint_name} and queue {queue_name}"
+        )
         client = boto3.client("batch")
         jobs = client.list_jobs(jobQueue=queue_name)
 

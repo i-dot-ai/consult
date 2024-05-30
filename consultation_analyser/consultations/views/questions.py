@@ -14,7 +14,9 @@ from .filters import get_applied_filters, get_filtered_responses, get_filtered_t
 @login_required
 def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
     question = models.Question.objects.get(
-        slug=question_slug, section__slug=section_slug, section__consultation__slug=consultation_slug
+        slug=question_slug,
+        section__slug=section_slug,
+        section__consultation__slug=consultation_slug,
     )
     applied_filters = get_applied_filters(request)
     responses = get_filtered_responses(question, applied_filters)
@@ -28,8 +30,12 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
             for multichoice in question.multiple_choice_options:
                 resps = []
                 for opt in multichoice["options"]:
-                    count = responses.filter_multiple_choice(question=multichoice["question_text"], answer=opt).count()
-                    resps.append({"answer": opt, "percent": round((float(count) / total_responses) * 100)})
+                    count = responses.filter_multiple_choice(
+                        question=multichoice["question_text"], answer=opt
+                    ).count()
+                    resps.append(
+                        {"answer": opt, "percent": round((float(count) / total_responses) * 100)}
+                    )
 
                 multiple_choice_questions[multichoice["question_text"]] = resps
 

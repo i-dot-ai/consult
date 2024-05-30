@@ -91,7 +91,9 @@ class ConsultationResponse(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
     )
-    submitted_at: AwareDatetime = Field(..., description="The submission date and time of the response")
+    submitted_at: AwareDatetime = Field(
+        ..., description="The submission date and time of the response"
+    )
     answers: List[Answer] = Field(..., description="The answers in this response", min_length=1)
 
 
@@ -112,7 +114,9 @@ class Section(BaseModel):
             "When Kit Kats are consumed",
         ],
     )
-    questions: List[Question] = Field(..., description="The questions in the consultation", min_length=1)
+    questions: List[Question] = Field(
+        ..., description="The questions in the consultation", min_length=1
+    )
 
 
 class Consultation(BaseModel):
@@ -132,7 +136,9 @@ class Consultation(BaseModel):
             "What shall we do about Kit Kats",
         ],
     )
-    sections: List[Section] = Field(..., description="The sections of the consultation", min_length=1)
+    sections: List[Section] = Field(
+        ..., description="The sections of the consultation", min_length=1
+    )
 
 
 class ConsultationWithResponses(BaseModel):
@@ -144,4 +150,6 @@ class ConsultationWithResponses(BaseModel):
         extra="forbid",
     )
     consultation: Consultation = Field(..., description="The consultation")
-    consultation_responses: List[ConsultationResponse] = Field(..., description="The responses", min_length=1)
+    consultation_responses: List[ConsultationResponse] = Field(
+        ..., description="The responses", min_length=1
+    )

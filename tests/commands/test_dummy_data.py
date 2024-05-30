@@ -32,7 +32,9 @@ def test_name_parameter_sets_consultation_name(mock_is_local):
 @pytest.mark.parametrize("environment", ["prod"])
 def test_the_tool_will_only_run_in_dev(environment):
     with patch.dict(os.environ, {"ENVIRONMENT": environment}):
-        with pytest.raises(Exception, match=r"Dummy data generation should not be run in production"):
+        with pytest.raises(
+            Exception, match=r"Dummy data generation should not be run in production"
+        ):
             call_command(
                 "generate_dummy_data",
                 name="My special consultation",

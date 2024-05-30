@@ -7,7 +7,10 @@ class NewSessionForm(forms.Form):
     email = forms.EmailField(
         label="Email address",
         help_text="Enter your email address to generate a link to sign in",
-        error_messages={"required": "Your email address is required", "invalid": "Enter a valid email address"},
+        error_messages={
+            "required": "Your email address is required",
+            "invalid": "Enter a valid email address",
+        },
     )
 
     def __init__(self, *args, **kwargs):

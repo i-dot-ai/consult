@@ -50,9 +50,7 @@ def test_get_question_summary_page(django_app):
 
     sign_in(django_app, user.email)
 
-    question_summary_url = (
-        f"/consultations/{consultation.slug}/sections/{question.section.slug}/questions/{question.slug}/"
-    )
+    question_summary_url = f"/consultations/{consultation.slug}/sections/{question.section.slug}/questions/{question.slug}/"
 
     question_page = django_app.get(question_summary_url)
     page_content = html.unescape(str(question_page.content))
