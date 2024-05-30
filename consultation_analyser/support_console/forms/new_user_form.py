@@ -15,7 +15,10 @@ class NewUserForm(forms.Form):
     email = forms.EmailField(
         label="Email address",
         help_text="Enter the email of the user to invite",
-        error_messages={"required": "Your email address is required", "invalid": "Enter a valid email address"},
+        error_messages={
+            "required": "Your email address is required",
+            "invalid": "Enter a valid email address",
+        },
         validators=[validate_unique_email],
     )
 

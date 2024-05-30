@@ -9,7 +9,11 @@ from tests.helpers import sign_in
 @override_switch("FRONTEND_USER_LOGIN", True)
 def test_managing_users_via_support(django_app):
     # given I am an admin user
-    user = UserFactory(email="email@example.com", password="admin", is_staff=True)  # pragma: allowlist secret
+    user = UserFactory(
+        email="email@example.com",
+        password="admin",  # pragma: allowlist secret
+        is_staff=True,
+    )
     sign_in(django_app, user.email)
 
     users_page = django_app.get("/support/users/")

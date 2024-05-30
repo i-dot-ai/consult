@@ -34,6 +34,8 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name="theme",
-            constraint=models.UniqueConstraint(fields=("keywords", "question"), name="unique_up_to_question"),
+            constraint=models.UniqueConstraint(
+                fields=("keywords", "question"), name="unique_up_to_question"
+            ),
         ),
     ]

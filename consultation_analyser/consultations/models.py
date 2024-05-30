@@ -71,12 +71,16 @@ class Section(UUIDPrimaryKeyModel, TimeStampedModel):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["slug", "consultation"], name="unique_section_consultation"),
+            models.UniqueConstraint(
+                fields=["slug", "consultation"], name="unique_section_consultation"
+            ),
         ]
 
 
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
-    text = models.CharField(null=False, max_length=None)  # no idea what's a sensible value for max_length
+    text = models.CharField(
+        null=False, max_length=None
+    )  # no idea what's a sensible value for max_length
     slug = models.CharField(null=False, max_length=256)
     has_free_text = models.BooleanField(default=False)
     multiple_choice_options = models.JSONField(
@@ -151,6 +155,8 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def save_theme_to_answer(self, keywords: list, is_outlier: bool):
         question = self.question
-        theme, _ = Theme.objects.get_or_create(question=question, keywords=keywords, is_outlier=is_outlier)
+        theme, _ = Theme.objects.get_or_create(
+            question=question, keywords=keywords, is_outlier=is_outlier
+        )
         self.theme = theme
         self.save()

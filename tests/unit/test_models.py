@@ -8,14 +8,18 @@ from consultation_analyser import factories
 from consultation_analyser.consultations import models
 
 
-@pytest.mark.parametrize("input_keywords,is_outlier", [(["key", "lock"], False), (["dog", "cat"], True)])
+@pytest.mark.parametrize(
+    "input_keywords,is_outlier", [(["key", "lock"], False), (["dog", "cat"], True)]
+)
 @pytest.mark.django_db
 def test_save_theme_to_answer(input_keywords, is_outlier):
     consultation = factories.ConsultationFactory()
     consultation_response = factories.ConsultationResponseFactory(consultation=consultation)
     section = factories.SectionFactory(consultation=consultation)
     question = factories.QuestionFactory(has_free_text=True, section=section)
-    answer = factories.AnswerFactory(question=question, theme=None, consultation_response=consultation_response)
+    answer = factories.AnswerFactory(
+        question=question, theme=None, consultation_response=consultation_response
+    )
     # Check theme created and saved to answer
     answer.save_theme_to_answer(keywords=input_keywords, is_outlier=is_outlier)
     theme = models.Theme.objects.get(keywords=input_keywords)
@@ -49,14 +53,20 @@ def test_multiple_choice_validation():
 
 @pytest.mark.django_db
 def test_find_answer_multiple_choice_response():
-    q = factories.QuestionFactory(multiple_choice_questions=[("Do you agree?", ["Yes", "No", "Maybe"])])
+    q = factories.QuestionFactory(
+        multiple_choice_questions=[("Do you agree?", ["Yes", "No", "Maybe"])]
+    )
     resp = factories.ConsultationResponseFactory(consultation=q.section.consultation)
 
     factories.AnswerFactory(
         question=q, consultation_response=resp, multiple_choice_answers=[("Do you agree?", ["Yes"])]
     )
-    factories.AnswerFactory(question=q, consultation_response=resp, multiple_choice_answers=[("Do you agree?", ["No"])])
-    factories.AnswerFactory(question=q, consultation_response=resp, multiple_choice_answers=[("Do you agree?", ["No"])])
+    factories.AnswerFactory(
+        question=q, consultation_response=resp, multiple_choice_answers=[("Do you agree?", ["No"])]
+    )
+    factories.AnswerFactory(
+        question=q, consultation_response=resp, multiple_choice_answers=[("Do you agree?", ["No"])]
+    )
 
     result = models.Answer.objects.filter_multiple_choice(question="Not a question", answer="Yes")
 

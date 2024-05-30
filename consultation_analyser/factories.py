@@ -120,7 +120,9 @@ class QuestionFactory(factory.django.DjangoModelFactory):
     @factory.post_generation
     def with_answer(question, creation_strategy, value, **kwargs):
         if value is True:
-            answer = AnswerFactory(question=question, consultation_response__consultation=question.section.consultation)
+            answer = AnswerFactory(
+                question=question, consultation_response__consultation=question.section.consultation
+            )
             answer.save()
 
     @factory.post_generation
@@ -148,9 +150,13 @@ class ThemeFactory(factory.django.DjangoModelFactory):
 
 def get_multiple_choice_answers(current_answer):
     multiple_choice = []
-    if current_answer.question.multiple_choice_options and not current_answer.multiple_choice_answers:
+    if (
+        current_answer.question.multiple_choice_options
+        and not current_answer.multiple_choice_answers
+    ):
         answers = [
-            (q["question_text"], [random.choice(q["options"])]) for q in current_answer.question.multiple_choice_options
+            (q["question_text"], [random.choice(q["options"])])
+            for q in current_answer.question.multiple_choice_options
         ]
     elif current_answer.question.multiple_choice_options:
         answers = current_answer.multiple_choice_answers
@@ -168,7 +174,9 @@ class AnswerFactory(factory.django.DjangoModelFactory):
         model = models.Answer
         skip_postgeneration_save = True
 
-    free_text = factory.LazyAttribute(lambda o: faker.sentence() if o.question.has_free_text else None)
+    free_text = factory.LazyAttribute(
+        lambda o: faker.sentence() if o.question.has_free_text else None
+    )
 
     question = factory.SubFactory(QuestionFactory)
     consultation_response = factory.SubFactory(ConsultationResponseFactory)

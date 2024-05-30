@@ -101,7 +101,9 @@ def token_count(text: str, encoding: tiktoken.Encoding) -> int:
 
 
 # TODO - max tokens also to be associated with model
-def get_random_sample_of_responses_for_theme(theme: Theme, encoding: tiktoken.Encoding, max_tokens: int) -> str:
+def get_random_sample_of_responses_for_theme(
+    theme: Theme, encoding: tiktoken.Encoding, max_tokens: int
+) -> str:
     responses_for_theme = Answer.objects.filter(theme=theme).order_by("?")
     free_text_responses_for_theme = responses_for_theme.values_list("free_text", flat=True)
     number_responses = responses_for_theme.count()
@@ -111,8 +113,12 @@ def get_random_sample_of_responses_for_theme(theme: Theme, encoding: tiktoken.En
     # TODO - how else might we want to separate documents (aka responses)?
     separator = "\n"
     while append_more_results:
-        new_combined_responses_string = separator.join([combined_responses_string, free_text_responses_for_theme[i]])
-        under_token_limit = token_count(text=new_combined_responses_string, encoding=encoding) < max_tokens
+        new_combined_responses_string = separator.join(
+            [combined_responses_string, free_text_responses_for_theme[i]]
+        )
+        under_token_limit = (
+            token_count(text=new_combined_responses_string, encoding=encoding) < max_tokens
+        )
         if under_token_limit:
             combined_responses_string = new_combined_responses_string
         i = i + 1
@@ -138,7 +144,9 @@ def generate_theme_summary(theme: Theme) -> dict:
     sagemaker_endpoint = get_sagemaker_endpoint()
     # TODO - where is this max tokens coming from?
     # max_tokens=2000 in original code
-    sample_responses = get_random_sample_of_responses_for_theme(theme, encoding=MODEL_ENCODING, max_tokens=2000)
+    sample_responses = get_random_sample_of_responses_for_theme(
+        theme, encoding=MODEL_ENCODING, max_tokens=2000
+    )
     prompt_inputs = {
         "consultation_name": theme.question.section.consultation.name,
         "question": theme.question.text,
@@ -160,11 +168,19 @@ def generate_theme_summary(theme: Theme) -> dict:
     # Getting errors with too many input tokens, max_input_tokens = 8192
     try:
         parsed_output = parser.parse(llm_response)
-        parsed_output = {"short_description": parsed_output.short_description, "summary": parsed_output.summary}
+        parsed_output = {
+            "short_description": parsed_output.short_description,
+            "summary": parsed_output.summary,
+        }
     except OutputParserException as e:
         try:
-            parsed_output = retry_parser.parse_with_prompt(completion=llm_response, prompt_value=prompt)
-            parsed_output = {"short_description": parsed_output.short_description, "summary": parsed_output.summary}
+            parsed_output = retry_parser.parse_with_prompt(
+                completion=llm_response, prompt_value=prompt
+            )
+            parsed_output = {
+                "short_description": parsed_output.short_description,
+                "summary": parsed_output.summary,
+            }
         except OutputParserException as e:
             parsed_output = {"short_description": NO_SUMMARY_STR, "summary": NO_SUMMARY_STR}
         # TODO - how do we deal with the cases where the output isn't a JSON format?
@@ -184,7 +200,9 @@ def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
 @check_and_launch_sagemaker
 def create_llm_summaries_for_consultation(consultation):
     logger.info(f"Starting LLM summarisation for consultation: {consultation.name}")
-    themes = Theme.objects.filter(question__section__consultation=consultation).filter(question__has_free_text=True)
+    themes = Theme.objects.filter(question__section__consultation=consultation).filter(
+        question__has_free_text=True
+    )
     for theme in themes:
         if settings.USE_SAGEMAKER_LLM:
             theme_summary_data = generate_theme_summary(theme)

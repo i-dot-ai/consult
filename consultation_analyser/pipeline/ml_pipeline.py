@@ -14,7 +14,8 @@ RANDOM_STATE = 12  # For reproducibility
 
 
 def get_embeddings_for_question(
-    answers_list: List[Dict[str, Union[UUID, str]]], embedding_model_name: str = "thenlper/gte-small"
+    answers_list: List[Dict[str, Union[UUID, str]]],
+    embedding_model_name: str = "thenlper/gte-small",
 ) -> List[Dict[str, Union[UUID, str, np.ndarray]]]:
     from sentence_transformers import SentenceTransformer
 
@@ -22,7 +23,9 @@ def get_embeddings_for_question(
     embedding_model = SentenceTransformer(embedding_model_name)
     embeddings = embedding_model.encode(free_text_responses)
     z = zip(answers_list, embeddings)
-    answers_list_with_embeddings = [dict(list(d.items()) + [("embedding", embedding)]) for d, embedding in z]
+    answers_list_with_embeddings = [
+        dict(list(d.items()) + [("embedding", embedding)]) for d, embedding in z
+    ]
     return answers_list_with_embeddings
 
 
@@ -38,7 +41,12 @@ def get_topic_model(answers_list_with_embeddings: List[Dict[str, Union[UUID, str
     embeddings = np.array(embeddings_list)
     # Set random_state so that we can reproduce the results
     umap_model = UMAP(
-        n_neighbors=15, n_components=5, min_dist=0.0, metric="cosine", n_jobs=1, random_state=RANDOM_STATE
+        n_neighbors=15,
+        n_components=5,
+        min_dist=0.0,
+        metric="cosine",
+        n_jobs=1,
+        random_state=RANDOM_STATE,
     )
     hdbscan_model = HDBSCAN(
         min_cluster_size=3, metric="euclidean", cluster_selection_method="eom", prediction_data=True
@@ -46,13 +54,18 @@ def get_topic_model(answers_list_with_embeddings: List[Dict[str, Union[UUID, str
     vectorizer_model = CountVectorizer(stop_words="english")
     ctfidf_model = ClassTfidfTransformer()
     topic_model = BERTopic(
-        umap_model=umap_model, hdbscan_model=hdbscan_model, vectorizer_model=vectorizer_model, ctfidf_model=ctfidf_model
+        umap_model=umap_model,
+        hdbscan_model=hdbscan_model,
+        vectorizer_model=vectorizer_model,
+        ctfidf_model=ctfidf_model,
     )
     topic_model.fit_transform(free_text_responses_list, embeddings=embeddings)
     return topic_model
 
 
-def get_answers_and_topics(topic_model, answers_list: List[Dict[str, Union[UUID, str]]]) -> pd.DataFrame:
+def get_answers_and_topics(
+    topic_model, answers_list: List[Dict[str, Union[UUID, str]]]
+) -> pd.DataFrame:
     # Answers free text/IDs need to be in the same order
     free_text_responses = [answer["free_text"] for answer in answers_list]
     answers_id_list = [answer["id"] for answer in answers_list]
@@ -85,6 +98,8 @@ def save_themes_for_question(question: models.Question) -> None:
 
 def save_themes_for_consultation(consultation_id: UUID) -> None:
     logging.info(f"Starting topic modelling for consultation_id: {consultation_id}")
-    questions = models.Question.objects.filter(section__consultation__id=consultation_id, has_free_text=True)
+    questions = models.Question.objects.filter(
+        section__consultation__id=consultation_id, has_free_text=True
+    )
     for question in questions:
         save_themes_for_question(question)

@@ -23,7 +23,11 @@ class Migration(migrations.Migration):
             field=models.JSONField(
                 blank=True,
                 null=True,
-                validators=[consultation_analyser.consultations.models.MultipleChoiceSchemaValidator(limit_value=None)],
+                validators=[
+                    consultation_analyser.consultations.models.MultipleChoiceSchemaValidator(
+                        limit_value=None
+                    )
+                ],
             ),
         ),
         migrations.AlterField(
@@ -42,7 +46,11 @@ class Migration(migrations.Migration):
             field=models.JSONField(
                 blank=True,
                 null=True,
-                validators=[consultation_analyser.consultations.models.MultipleChoiceSchemaValidator(limit_value=None)],
+                validators=[
+                    consultation_analyser.consultations.models.MultipleChoiceSchemaValidator(
+                        limit_value=None
+                    )
+                ],
             ),
         ),
     ]
