@@ -63,11 +63,12 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
                     AnswerFactory(question=q, consultation_response=response, theme=None)
                 )
         if include_themes:
-            # _answers = [AnswerFactory(question=q, consultation_response=response) for q in questions]
-
             # Set themes per question, multiple answers with the same theme
             for q in questions:
                 themes = [ThemeFactory() for _ in range(4)]
+                outlier = ThemeFactory(theme_number=-1)
+                themes.add(outlier)
+
                 for a in answers:
                     random_theme = random.choice(themes)
                     a.theme = random_theme
@@ -75,6 +76,6 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
             # Force at least one answer to be an outlier
             a = random.choice(answers)
             theme = a.theme
-            theme.is_outlier = True
+            theme = outlier
             theme.save()
     return consultation

@@ -145,7 +145,7 @@ class ThemeFactory(factory.django.DjangoModelFactory):
     keywords = factory.LazyAttribute(lambda _o: generate_dummy_topic_keywords())
     short_description = factory.LazyAttribute(lambda _o: faker.sentence())
     summary = factory.LazyAttribute(lambda _o: faker.sentence())
-    is_outlier = False
+    theme_number = factory.LazyAttribute(lambda _o: random.randint(1, 10))
 
 
 def get_multiple_choice_answers(current_answer):

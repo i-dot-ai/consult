@@ -81,8 +81,7 @@ def save_themes_to_answers(answers_topics_df: pd.DataFrame) -> None:
         answer = models.Answer.objects.get(id=row.id)
         theme_keywords = row.Top_n_words.split(" - ")
         theme_number = row.Topic
-        is_outlier = theme_number == -1
-        answer.save_theme_to_answer(keywords=theme_keywords, is_outlier=is_outlier)
+        answer.save_theme_to_answer(keywords=theme_keywords, theme_number=theme_number)
 
 
 def save_themes_for_question(question: models.Question) -> None:

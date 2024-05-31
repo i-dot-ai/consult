@@ -111,11 +111,16 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     # Duplicates info in Answer model, but needed for uniqueness constraint.
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
     keywords = models.JSONField(default=list)
-    is_outlier = models.BooleanField(default=False)
+    theme_number = models.IntegerField(null=True)  # Topic ID from BERTopic
+    is_outlier = models.GeneratedField(
+        expression=models.Q(theme_number=-1), output_field=models.BooleanField(), db_persist=True
+    )
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["keywords", "question"], name="unique_up_to_question"),
+            models.UniqueConstraint(
+                fields=["theme_number", "question"], name="unique_up_to_question"
+            ),
         ]
 
 
