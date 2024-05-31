@@ -14,8 +14,8 @@ def set_up_for_filters():
         section=section,
     )
 
-    theme1 = factories.ThemeFactory(keywords=["dog", "puppy"], question=question)
-    theme2 = factories.ThemeFactory(keywords=["cat", "kitten"], question=question)
+    theme1 = factories.ThemeFactory(theme_number=1, keywords=["dog", "puppy"], question=question)
+    theme2 = factories.ThemeFactory(theme_number=2, keywords=["cat", "kitten"], question=question)
     factories.AnswerFactory(
         theme=theme1,
         question=question,
