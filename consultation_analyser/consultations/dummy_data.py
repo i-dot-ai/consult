@@ -67,7 +67,7 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
             for q in questions:
                 themes = [ThemeFactory() for _ in range(4)]
                 outlier = ThemeFactory(theme_number=-1)
-                themes.add(outlier)
+                themes.append(outlier)
 
                 for a in answers:
                     random_theme = random.choice(themes)

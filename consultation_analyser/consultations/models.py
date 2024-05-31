@@ -155,10 +155,10 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    def save_theme_to_answer(self, keywords: list, is_outlier: bool):
+    def save_theme_to_answer(self, keywords: list, theme_number: int):
         question = self.question
         theme, _ = Theme.objects.get_or_create(
-            question=question, keywords=keywords, is_outlier=is_outlier
+            question=question, keywords=keywords, theme_number=theme_number
         )
         self.theme = theme
         self.save()

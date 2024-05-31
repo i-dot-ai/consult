@@ -7,8 +7,7 @@ from consultation_analyser.consultations import models
 
 
 @pytest.mark.parametrize(
-    "input_keywords,theme_number",
-    "is_outlier",
+    "input_keywords,theme_number,is_outlier",
     [(["key", "lock"], 2, False), (["dog", "cat"], -1, True)],
 )
 @pytest.mark.django_db

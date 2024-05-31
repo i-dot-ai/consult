@@ -14,7 +14,9 @@ def save_themes_for_consultation(consultation_id: UUID) -> None:
         .all()
     )
 
+    theme_number = -1
     for answer in answers.all():
         random_themes = faker.words()
         for theme in random_themes:
-            answer.save_theme_to_answer(theme, theme.theme_number)
+            answer.save_theme_to_answer(theme, theme_number)
+            theme_number += 1
