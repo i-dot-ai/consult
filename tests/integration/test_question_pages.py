@@ -2,9 +2,7 @@ import html
 import re
 
 import pytest
-from waffle.testutils import override_switch
 
-from consultation_analyser.consultations import models
 from consultation_analyser.factories import (
     AnswerFactory,
     ConsultationFactory,

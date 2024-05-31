@@ -1,7 +1,6 @@
 import html
 
 import pytest
-from waffle.testutils import override_switch
 
 from consultation_analyser.factories import (
     AnswerFactory,
@@ -63,4 +62,4 @@ def test_get_question_responses_page(django_app):
         page_content = html.unescape(str(responses_page.content))
         assert keyword in page_content
         if keyword == "ThisWordWontAppear":
-            assert f"Showing <strong>0</strong> of <strong>1</strong> reponses"
+            assert "Showing <strong>0</strong> of <strong>1</strong> reponses"

@@ -1,5 +1,5 @@
 from django.http import HttpRequest
-from django.shortcuts import redirect, render, reverse
+from django.shortcuts import redirect, reverse
 
 from .pages import home
 

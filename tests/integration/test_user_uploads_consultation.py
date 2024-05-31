@@ -1,7 +1,5 @@
 import pytest
 from django.conf import settings
-from django.core import mail
-from waffle.testutils import override_switch
 from webtest import Upload
 
 from consultation_analyser.factories import UserFactory
