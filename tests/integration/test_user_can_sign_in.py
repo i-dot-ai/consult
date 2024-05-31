@@ -25,4 +25,3 @@ def test_user_can_sign_in(django_app):
 
     signed_out_homepage = homepage.click("Sign out", index=0).follow()
     assert "Sign in" in signed_out_homepage
-

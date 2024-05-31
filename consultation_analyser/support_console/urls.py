@@ -1,10 +1,10 @@
-from django.urls import path
 from django.shortcuts import redirect
+from django.urls import path
 
 from .views import consultations, pages, users
 
 urlpatterns = [
-    path("", lambda request: redirect('/support/consultations/')),
+    path("", lambda request: redirect("/support/consultations/")),
     path("sign-out/", pages.sign_out),
     path("users/", users.index),
     path("users/new/", users.new),

@@ -54,7 +54,7 @@ def app_config(request: HttpRequest):
                     "href": "/sign-out/",
                     "text": "Sign out",
                     "classes": "x-govuk-primary-navigation__item--right",
-                }
+                },
             ]
         else:
             menu_items = [
@@ -83,7 +83,7 @@ def app_config(request: HttpRequest):
                     "text": "Sign in",
                     "active": request.path == "/sign-in/",
                     "classes": "x-govuk-primary-navigation__item--right",
-                }
+                },
             ]
 
         app_config = AppConfig(name="Consultation analyser", path="/", menu_items=menu_items)
