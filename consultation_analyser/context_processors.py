@@ -38,48 +38,53 @@ def app_config(request: HttpRequest):
                 {
                     "href": "/support/sign-out/",
                     "text": "Sign out",
+                    "classes": "x-govuk-primary-navigation__item--right",
                 },
             ],
         )
     else:
-        menu_items = [
-            {
-                "href": "/how-it-works/",
-                "text": "How it works",
-                "active": request.path == "/how-it-works/",
-            },
-            {
-                "href": "/schema/",
-                "text": "Data schema",
-                "active": request.path == "/schema/",
-            },
-            {
-                "href": "/data-sharing/",
-                "text": "Data sharing",
-                "active": request.path == "/data-sharing/",
-            },
-            {
-                "href": "/get-involved/",
-                "text": "Get involved",
-                "active": request.path == "/get-involved/",
-            },
-        ]
-
         if request.user.is_authenticated:
-            menu_items.append(
+            menu_items = [
+                {
+                    "href": "/consultations/",
+                    "text": "Consultations",
+                    "active": request.path.startswith("/consultations"),
+                },
                 {
                     "href": "/sign-out/",
                     "text": "Sign out",
+                    "classes": "x-govuk-primary-navigation__item--right",
                 }
-            )
+            ]
         else:
-            menu_items.append(
+            menu_items = [
+                {
+                    "href": "/how-it-works/",
+                    "text": "How it works",
+                    "active": request.path == "/how-it-works/",
+                },
+                {
+                    "href": "/schema/",
+                    "text": "Data schema",
+                    "active": request.path == "/schema/",
+                },
+                {
+                    "href": "/data-sharing/",
+                    "text": "Data sharing",
+                    "active": request.path == "/data-sharing/",
+                },
+                {
+                    "href": "/get-involved/",
+                    "text": "Get involved",
+                    "active": request.path == "/get-involved/",
+                },
                 {
                     "href": "/sign-in/",
                     "text": "Sign in",
                     "active": request.path == "/sign-in/",
+                    "classes": "x-govuk-primary-navigation__item--right",
                 }
-            )
+            ]
 
         app_config = AppConfig(name="Consultation analyser", path="/", menu_items=menu_items)
 

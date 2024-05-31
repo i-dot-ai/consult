@@ -72,8 +72,8 @@
         <h2 class="govuk-visually-hidden" id="primary-navigation-heading">Navigation</h2>
         <ul class="x-govuk-primary-navigation__list">
           {% for link in app_config.menu_items %}
-            <li class="x-govuk-primary-navigation__item {% if page_title == link.text %}x-govuk-primary-navigation__item--current {% endif %}">
-              <a class="x-govuk-primary-navigation__link" {% if page_title == link.text %}aria-current="page"{% endif %} href="{{link.href}}">{{link.text}}</a>
+            <li class="x-govuk-primary-navigation__item {{ link.get('classes', '') }} {% if link.active %}x-govuk-primary-navigation__item--current {% endif %}">
+              <a class="x-govuk-primary-navigation__link" {% if link.active %}aria-current="page"{% endif %} href="{{link.href}}">{{link.text}}</a>
             </li>
           {% endfor %}
         </ul>
