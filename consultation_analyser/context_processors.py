@@ -47,7 +47,7 @@ def app_config(request: HttpRequest):
             menu_items = [
                 {
                     "href": "/consultations/",
-                    "text": "Consultations",
+                    "text": "Your consultations",
                     "active": request.path.startswith("/consultations"),
                 },
                 {
