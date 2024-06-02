@@ -3,14 +3,18 @@ import json
 from django.conf import settings
 from django.core.files.uploadedfile import SimpleUploadedFile
 
-from consultation_analyser.consultations.forms.consultation_upload_form import ConsultationUploadForm
+from consultation_analyser.consultations.forms.consultation_upload_form import (
+    ConsultationUploadForm,
+)
 from consultation_analyser.consultations.public_schema import Question, Section
 
 
 def test_consultation_upload_form_is_valid_for_example_json():
     file_path = settings.BASE_DIR / "tests" / "examples" / "upload.json"
     with open(file_path, "rb") as f:
-        uploaded_file = SimpleUploadedFile(file_path.name, f.read(), content_type="application/json")
+        uploaded_file = SimpleUploadedFile(
+            file_path.name, f.read(), content_type="application/json"
+        )
 
     form = ConsultationUploadForm({}, {"consultation_json": uploaded_file})
 
@@ -29,7 +33,9 @@ def test_consultation_upload_form_is_invalid_with_clashing_section_names():
 
         json_to_upload = json.dumps(contents)
 
-        uploaded_file = SimpleUploadedFile(file_path.name, str.encode(json_to_upload), content_type="application/json")
+        uploaded_file = SimpleUploadedFile(
+            file_path.name, str.encode(json_to_upload), content_type="application/json"
+        )
 
     form = ConsultationUploadForm({}, {"consultation_json": uploaded_file})
 

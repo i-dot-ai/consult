@@ -9,7 +9,10 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.dummy_data import create_dummy_data
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.pipeline.llm_summariser import NO_SUMMARY_STR, create_llm_summaries_for_consultation
+from consultation_analyser.pipeline.llm_summariser import (
+    NO_SUMMARY_STR,
+    create_llm_summaries_for_consultation,
+)
 from consultation_analyser.pipeline.processing import run_processing_pipeline
 
 
@@ -24,8 +27,8 @@ def index(request: HttpRequest) -> HttpResponse:
         except RuntimeError as error:
             messages.error(request, error.args[0])
     consultations = models.Consultation.objects.all()
-    context = {"consultations": consultations, "development_env": HostingEnvironment.is_development_environment()}
-    return render(request, "support_console/all-consultations.html", context=context)
+    context = {"consultations": consultations, "production_env": HostingEnvironment.is_production()}
+    return render(request, "support_console/consultations/index.html", context=context)
 
 
 @staff_member_required
@@ -41,7 +44,7 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
             messages.success(request, "The consultation has been deleted")
             return redirect("/support/consultations/")
 
-    return render(request, "support_console/delete-consultation.html", context=context)
+    return render(request, "support_console/consultations/delete.html", context=context)
 
 
 @staff_member_required
@@ -69,12 +72,16 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
     except RuntimeError as error:
         messages.error(request, error.args[0])
-    themes_for_consultation = models.Theme.objects.filter(question__section__consultation=consultation)
+    themes_for_consultation = models.Theme.objects.filter(
+        question__section__consultation=consultation
+    )
     number_of_themes = themes_for_consultation.count()
     number_of_themes_with_summaries = (
         themes_for_consultation.exclude(summary="").exclude(summary=NO_SUMMARY_STR).count()
     )
-    number_of_themes_unable_to_summarise = themes_for_consultation.filter(summary=NO_SUMMARY_STR).count()
+    number_of_themes_unable_to_summarise = themes_for_consultation.filter(
+        summary=NO_SUMMARY_STR
+    ).count()
     number_of_themes_not_yet_summarised = themes_for_consultation.filter(summary="").count()
     context = {
         "consultation": consultation,
@@ -83,4 +90,4 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
         "number_of_themes_unable_to_summarise": number_of_themes_unable_to_summarise,
         "number_of_themes_not_yet_summarised": number_of_themes_not_yet_summarised,
     }
-    return render(request, "support_console/consultation.html", context=context)
+    return render(request, "support_console/consultations/show.html", context=context)

@@ -9,8 +9,14 @@ from consultation_analyser.pipeline import ml_pipeline
 
 def test_get_embeddings_for_question():
     answers_list = [
-        {"id": 1, "free_text": "The creaminess of the chocolate, thanks to the higher milk content."},
-        {"id": 2, "free_text": "The creaminess of the chocolate, thanks to the higher milk content."},
+        {
+            "id": 1,
+            "free_text": "The creaminess of the chocolate, thanks to the higher milk content.",
+        },
+        {
+            "id": 2,
+            "free_text": "The creaminess of the chocolate, thanks to the higher milk content.",
+        },
         {"id": 3, "free_text": "The balance of sweetness, not too overpowering but just right."},
     ]
     output = ml_pipeline.get_embeddings_for_question(answers_list)
@@ -26,9 +32,15 @@ def test_save_themes_to_answers():
     consultation_response = factories.ConsultationResponseFactory(consultation=consultation)
     section = factories.SectionFactory(consultation=consultation)
     question = factories.QuestionFactory(section=section)
-    answer1 = factories.AnswerFactory(question=question, theme=None, consultation_response=consultation_response)
-    answer2 = factories.AnswerFactory(question=question, theme=None, consultation_response=consultation_response)
-    answer3 = factories.AnswerFactory(question=question, theme=None, consultation_response=consultation_response)
+    answer1 = factories.AnswerFactory(
+        question=question, theme=None, consultation_response=consultation_response
+    )
+    answer2 = factories.AnswerFactory(
+        question=question, theme=None, consultation_response=consultation_response
+    )
+    answer3 = factories.AnswerFactory(
+        question=question, theme=None, consultation_response=consultation_response
+    )
     answers_df = pd.DataFrame(
         {
             "id": [answer1.id, answer2.id, answer3.id],

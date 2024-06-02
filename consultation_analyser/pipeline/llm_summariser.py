@@ -1,6 +1,7 @@
 """
 Use LLMs to generate summaries for themes.
 """
+
 import json
 import logging
 
@@ -8,12 +9,13 @@ import boto3
 import tiktoken
 from django.conf import settings
 from langchain.chains.llm import LLMChain
-from langchain.llms import SagemakerEndpoint
-from langchain.llms.sagemaker_endpoint import LLMContentHandler
 from langchain.output_parsers import PydanticOutputParser, RetryWithErrorOutputParser
 from langchain.prompts import PromptTemplate
 from langchain.pydantic_v1 import BaseModel
+from langchain_community.llms import SagemakerEndpoint
+from langchain_community.llms.sagemaker_endpoint import LLMContentHandler
 from langchain_core.exceptions import OutputParserException
+from langchain_core.prompt_values import StringPromptValue
 
 from consultation_analyser.consultations.models import Answer, Theme
 from consultation_analyser.pipeline.decorators import check_and_launch_sagemaker
@@ -27,9 +29,6 @@ MODEL_ENCODING = tiktoken.get_encoding(
 
 # TODO - what should this be, should we save in DB a flag if we can't generate summary?
 NO_SUMMARY_STR = "Unable to generate summary for this theme"
-
-
-# TODO - deal with Langchain warnings - update to newer methods.
 
 
 def get_prompt_template():
@@ -74,16 +73,8 @@ class ContentHandler(LLMContentHandler):
     content_type = "application/json"
     accepts = "application/json"
 
-    def transform_input(self, inputs: str, model_kwargs) -> bytes:
-        # TODO - what is they type of the model_kwargs?
-        # TODO - what are these parameters? Where do they come from?
-        parameters = {
-            "temperature": 0.8,
-            "max_new_tokens": 2048,
-            "repetition_penalty": 1.03,
-            "stop": ["###", "</s>"],
-        }
-        input_str = json.dumps({"inputs": inputs, "parameters": parameters})
+    def transform_input(self, inputs: str, model_kwargs: dict) -> bytes:
+        input_str = json.dumps({"inputs": inputs, "parameters": model_kwargs})
         return input_str.encode("utf-8")
 
     def transform_output(self, output) -> str:
@@ -101,7 +92,9 @@ def token_count(text: str, encoding: tiktoken.Encoding) -> int:
 
 
 # TODO - max tokens also to be associated with model
-def get_random_sample_of_responses_for_theme(theme: Theme, encoding: tiktoken.Encoding, max_tokens: int) -> str:
+def get_random_sample_of_responses_for_theme(
+    theme: Theme, encoding: tiktoken.Encoding, max_tokens: int
+) -> str:
     responses_for_theme = Answer.objects.filter(theme=theme).order_by("?")
     free_text_responses_for_theme = responses_for_theme.values_list("free_text", flat=True)
     number_responses = responses_for_theme.count()
@@ -111,8 +104,12 @@ def get_random_sample_of_responses_for_theme(theme: Theme, encoding: tiktoken.En
     # TODO - how else might we want to separate documents (aka responses)?
     separator = "\n"
     while append_more_results:
-        new_combined_responses_string = separator.join([combined_responses_string, free_text_responses_for_theme[i]])
-        under_token_limit = token_count(text=new_combined_responses_string, encoding=encoding) < max_tokens
+        new_combined_responses_string = separator.join(
+            [combined_responses_string, free_text_responses_for_theme[i]]
+        )
+        under_token_limit = (
+            token_count(text=new_combined_responses_string, encoding=encoding) < max_tokens
+        )
         if under_token_limit:
             combined_responses_string = new_combined_responses_string
         i = i + 1
@@ -123,9 +120,17 @@ def get_random_sample_of_responses_for_theme(theme: Theme, encoding: tiktoken.En
 def get_sagemaker_endpoint() -> SagemakerEndpoint:
     content_handler = ContentHandler()
     client = boto3.client("sagemaker-runtime", region_name=settings.AWS_REGION)
+    # TODO - What should these parameters be?
+    model_kwargs = {
+        "temperature": 0.8,
+        "max_new_tokens": 2048,
+        "repetition_penalty": 1.03,
+        "stop": ["###", "</s>"],
+    }
     sagemaker_endpoint = SagemakerEndpoint(
         endpoint_name=settings.SAGEMAKER_ENDPOINT_NAME,
         content_handler=content_handler,
+        model_kwargs=model_kwargs,
         client=client,
     )
     return sagemaker_endpoint
@@ -133,41 +138,35 @@ def get_sagemaker_endpoint() -> SagemakerEndpoint:
 
 def generate_theme_summary(theme: Theme) -> dict:
     """For a given theme, generate a summary using an LLM."""
-    logger.info(f"Starting LLM summarisation for theme with keywords: {' .'.join(theme.keywords)} ")
+    logger.info(f"Starting LLM summarisation for theme with keywords: {theme.keywords} ")
     prompt_template = get_prompt_template()
     sagemaker_endpoint = get_sagemaker_endpoint()
     # TODO - where is this max tokens coming from?
     # max_tokens=2000 in original code
-    sample_responses = get_random_sample_of_responses_for_theme(theme, encoding=MODEL_ENCODING, max_tokens=2000)
+    sample_responses = get_random_sample_of_responses_for_theme(
+        theme, encoding=MODEL_ENCODING, max_tokens=2000
+    )
     prompt_inputs = {
         "consultation_name": theme.question.section.consultation.name,
         "question": theme.question.text,
         "keywords": ", ".join(theme.keywords),
         "responses": sample_responses,
     }
-
-    # TODO - tidy this up, we need to make sure that what we're sending is under token limit
-    prompt = prompt_template.format_prompt(**prompt_inputs)
-    llm_chain = LLMChain(llm=sagemaker_endpoint, prompt=prompt_template)
-    llm_response = llm_chain.run(prompt_inputs)
     parser = PydanticOutputParser(pydantic_object=ThemeSummaryOutput)
-    retry_parser = RetryWithErrorOutputParser.from_llm(
-        parser=parser,
-        llm=sagemaker_endpoint,
-        max_retries=2,
-    )
-    # TODO - the number of retries - does this relate to the number of tokens
-    # Getting errors with too many input tokens, max_input_tokens = 8192
+    errors = (OutputParserException, ValueError)
     try:
-        parsed_output = parser.parse(llm_response)
-        parsed_output = {"short_description": parsed_output.short_description, "summary": parsed_output.summary}
-    except OutputParserException as e:
-        try:
-            parsed_output = retry_parser.parse_with_prompt(completion=llm_response, prompt_value=prompt)
-            parsed_output = {"short_description": parsed_output.short_description, "summary": parsed_output.summary}
-        except OutputParserException as e:
-            parsed_output = {"short_description": NO_SUMMARY_STR, "summary": NO_SUMMARY_STR}
-        # TODO - how do we deal with the cases where the output isn't a JSON format?
+        llm_chain = prompt_template | sagemaker_endpoint | parser
+        # TODO - are the outputs of this as good as the RetryWithErrorOutputParser?
+        llm_chain = llm_chain.with_retry(
+            retry_if_exception_type=errors, wait_exponential_jitter=False, stop_after_attempt=10
+        )
+        parsed_output = llm_chain.invoke(prompt_inputs)
+        parsed_output = {
+            "short_description": parsed_output.short_description,
+            "summary": parsed_output.summary,
+        }
+    except errors as e:
+        parsed_output = {"short_description": NO_SUMMARY_STR, "summary": NO_SUMMARY_STR}
     return parsed_output
 
 
@@ -184,7 +183,9 @@ def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
 @check_and_launch_sagemaker
 def create_llm_summaries_for_consultation(consultation):
     logger.info(f"Starting LLM summarisation for consultation: {consultation.name}")
-    themes = Theme.objects.filter(question__section__consultation=consultation).filter(question__has_free_text=True)
+    themes = Theme.objects.filter(question__section__consultation=consultation).filter(
+        question__has_free_text=True
+    )
     for theme in themes:
         if settings.USE_SAGEMAKER_LLM:
             theme_summary_data = generate_theme_summary(theme)
@@ -192,4 +193,5 @@ def create_llm_summaries_for_consultation(consultation):
             theme_summary_data = dummy_generate_theme_summary(theme)
         theme.summary = theme_summary_data["summary"]
         theme.short_description = theme_summary_data["short_description"]
+        logger.info(f"Theme description: {theme.short_description}")
         theme.save()

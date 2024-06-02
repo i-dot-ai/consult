@@ -9,10 +9,14 @@ def user_can_see_consultation(view_function):
         slug = kwargs.get("consultation_slug")
 
         # will kick out users by throwing a 404 if they don't own the consultation
-        consultation = get_object_or_404(models.Consultation.objects.filter(slug=slug, users__in=[request.user]))
+        consultation = get_object_or_404(
+            models.Consultation.objects.filter(slug=slug, users__in=[request.user])
+        )
 
         if not consultation.has_themes():
-            messages.info(request, "We are processing your consultation. Themes have not been generated yet.")
+            messages.info(
+                request, "We are processing your consultation. Themes have not been generated yet."
+            )
 
         return view_function(request, *args, **kwargs)
 

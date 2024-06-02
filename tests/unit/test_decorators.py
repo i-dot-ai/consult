@@ -17,7 +17,10 @@ def test_check_and_launch_sagemaker_endpoint_exists(settings):
         # Create a mock SageMaker client
         mock_sagemaker = MagicMock()
         mock_client.return_value = mock_sagemaker
-        mock_sagemaker.describe_endpoint.return_value = {"EndpointName": "test-endpoint", "EndpointStatus": "InService"}
+        mock_sagemaker.describe_endpoint.return_value = {
+            "EndpointName": "test-endpoint",
+            "EndpointStatus": "InService",
+        }
         # Try the decorated function
         result = dummy_function()
         assert result == "Function executed"
@@ -35,7 +38,9 @@ def test_check_and_launch_sagemaker_endpoint_not_exists(settings):
 
         mock_sagemaker.describe_endpoint.side_effect = [
             boto3.exceptions.botocore.exceptions.ClientError(
-                error_response={"Error": {"Code": "ValidationException", "Message": "Could not find endpoint"}},
+                error_response={
+                    "Error": {"Code": "ValidationException", "Message": "Could not find endpoint"}
+                },
                 operation_name="describe_endpoint",
             ),
             {"EndpointName": "test-endpoint", "EndpointStatus": "Creating"},

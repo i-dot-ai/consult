@@ -12,7 +12,7 @@ from ..forms.new_user_form import NewUserForm
 @staff_member_required
 def index(request: HttpRequest):
     users = User.objects.all().order_by("-created_at")
-    return render(request, "support_console/all-users.html", {"users": users})
+    return render(request, "support_console/users/index.html", {"users": users})
 
 
 @staff_member_required
@@ -27,7 +27,7 @@ def new(request: HttpRequest):
             messages.success(request, "User added")
             return redirect("/support/users")
 
-    return render(request, "support_console/new-user.html", {"form": form})
+    return render(request, "support_console/users/new.html", {"form": form})
 
 
 @staff_member_required
@@ -46,4 +46,8 @@ def show(request: HttpRequest, user_id: int):
             messages.success(request, "User updated")
             return redirect(request.path_info)
 
-    return render(request, "support_console/user.html", {"user": user, "consultations": consultations, "form": form})
+    return render(
+        request,
+        "support_console/users/show.html",
+        {"user": user, "consultations": consultations, "form": form},
+    )

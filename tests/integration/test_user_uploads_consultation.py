@@ -10,7 +10,6 @@ from tests.helpers import sign_in
 
 
 @pytest.mark.django_db
-@override_switch("FRONTEND_USER_LOGIN", True)
 def test_user_uploads_consultation(django_app):
     # given i am a user without a consultation
     user = UserFactory()
@@ -28,7 +27,9 @@ def test_user_uploads_consultation(django_app):
         binary_data = str.encode(f.read())
 
     # and when I provide my JSON and submit the form
-    upload_page.form["consultation_json"] = Upload("consultation.json", binary_data, "application/json")
+    upload_page.form["consultation_json"] = Upload(
+        "consultation.json", binary_data, "application/json"
+    )
     success_page = upload_page.form.submit()
 
     # then I should see a success page

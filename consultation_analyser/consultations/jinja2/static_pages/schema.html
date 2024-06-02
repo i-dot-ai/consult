@@ -108,7 +108,11 @@
         <tbody class="govuk-table__body">
           {% for row in schema.rows() %}
             <tr class="govuk-table__row">
-              <th scope="row" class="govuk-table__header">{{ row['name'] }}</th>
+              <th scope="row" class="govuk-table__header">
+                {% if row['name'] != "root" %}
+                  {{ row["name"] }}
+                {% endif %}
+              </th>
               <td class="govuk-table__cell"><code>{{ row['datatype'] }}</code></td>
               <td class="govuk-table__cell">{{ row['description'] }}</td>
             </tr>
@@ -119,6 +123,12 @@
   {% endfor %}
 
   <h2 class="govuk-heading-l">Changelog</h2>
+
+  <h3 class="govuk-heading-s">15 May 2024</h3>
+  <p class="govuk-body">v0.3</p>
+  <ul class="govuk-list govuk-list--bullet">
+    <li>MultipleChoice now has a schema, the same for both Questions and Answers</li>
+  </ul>
 
   <h3 class="govuk-heading-s">6 May 2024</h3>
   <p class="govuk-body">v0.2</p>

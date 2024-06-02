@@ -22,7 +22,7 @@
             </a>
           </td>
           <td class="govuk-table__cell">
-            {{ consultation.created_at }}
+            {{ datetime(consultation.created_at) }}
           </td>
         </tr>
       {% endfor %}
@@ -31,7 +31,7 @@
     <p class="govuk-body">There are no consultations in the system.</p>
   {% endif %}
   <form method="post" novalidate>{{ csrf_input }}
-    {% if development_env %}
+    {% if not production_env %}
       {{ govukButton({
         'text': "Generate dummy consultation",
         'name': "generate_dummy_consultation"

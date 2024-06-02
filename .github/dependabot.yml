@@ -10,9 +10,6 @@ updates:
       # Don't update to 2.3 as doesn't work on older Macs
       - dependency-name: "torch"
         versions: ["2.3"]
-      # Don't update to 1.x yet, as we need to refactor some of the code
-      - dependency-name: "langchain"
-        versions: ["1.x"]
     groups:
       pip-updates:
         update-types:

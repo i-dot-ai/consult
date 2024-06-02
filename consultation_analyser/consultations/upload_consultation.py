@@ -36,6 +36,7 @@ def upload_consultation(file, user):
         for question_attrs in questions:
             supplied_id = question_attrs.pop("id")
             question_attrs["slug"] = slugify(question_attrs["text"])
+            question_attrs["multiple_choice_options"] = question_attrs.pop("multiple_choice")
             question_attrs["section_id"] = section.id
             question = Question(**question_attrs)
             question.save()

@@ -42,7 +42,7 @@
                   {{ consultation.name }}
                 </td>
                 <td class="govuk-table__cell">
-                  {{ consultation.created_at }}
+                  {{ datetime(consultation.created_at) }}
                 </td>
                 <td class="govuk-table__cell">
                   <a class="govuk-link" href="/support/consultations/{{ consultation.slug }}">View in support</a><br />
