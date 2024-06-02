@@ -2,8 +2,8 @@ locals {
   postgres_fqdn   = "${module.postgres.rds_instance_username}:${module.postgres.rds_instance_db_password}@${module.postgres.db_instance_address}/${module.postgres.db_instance_name}"
   secret_env_vars = jsondecode(data.aws_secretsmanager_secret_version.env_vars.secret_string)
   batch_env_vars = {
-    "ENVIRONMENT"            = terraform.workspace,
-    "PRODUCTION_DEPLOYMENT" = true,
+    "ENVIRONMENT"                          = terraform.workspace,
+    "PRODUCTION_DEPLOYMENT"                = true,
     "DJANGO_SECRET_KEY"                    = data.aws_secretsmanager_secret_version.django_secret.secret_string,
     "DEBUG"                                = local.secret_env_vars.DEBUG,
     "SAGEMAKER_ENDPOINT_NAME"              = local.secret_env_vars.SAGEMAKER_ENDPOINT_NAME

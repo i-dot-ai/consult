@@ -1,7 +1,3 @@
-locals {
-  dev_flag = var.env != "prod" ? true : false
-}
-
 module "postgres" {
   source                  = "../../i-ai-core-infrastructure//modules/postgres"
   vpc_id                  = data.terraform_remote_state.vpc.outputs.vpc_id

@@ -1,4 +1,3 @@
-
 locals {
   batch_image_ecr_url = var.ecr_repository_uri
 }
