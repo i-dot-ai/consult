@@ -1,3 +1,4 @@
+import math
 import random
 
 import factory
@@ -22,7 +23,8 @@ class FakeConsultationData:
         with open("./tests/examples/questions.yml", "r") as f:
             questions = yaml.safe_load(f)
             slugs = [q["slug"] for q in questions]
-            self.questions = dict(zip(slugs, questions))
+            self.questions = dict(
+                zip(slugs, questions))
 
     def question(self):
         return random.choice(list(self.questions.values()))
