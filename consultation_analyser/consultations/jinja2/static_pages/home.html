@@ -1,6 +1,6 @@
-{% extends "base_content_page.html" %}
+{% extends "base.html" %}
 
-{% block content %}
+{% block pre_content %}
 
 <div class="x-govuk-masthead x-govuk-masthead--pink">
     <div class="govuk-width-container">
@@ -35,6 +35,10 @@
     </div>
   </div>
 
+{% endblock %}
+
+{% block content %}
+
   <div class="govuk-main-wrapper">
     {# icons from https://iconoir.com/ #}
     {% set processList = [
@@ -65,25 +69,21 @@
         }
     ] %}
 
-    <div class="govuk-width-container govuk-!-margin-top-5 govuk-!-padding-top-5">
-        <div class="govuk-grid-row">
-        <div class="govuk-grid-column-full">
-            <h2 class="govuk-heading-l">How the process works</h2>
-            <ul class="iai-processlist">
-            {% for process in processList %}
-                <li class="iai-processlist__item">
-                {{process.icon|safe}}
-                <div class="iai-processlist__text">
-                    <h3 class="govuk-heading-m govuk-!-margin-0">{{process.title}}</h3>
-                    <p class="govuk-body govuk-!-margin-bottom-1 govuk-!-margin-top-1">{{process.text|safe}}</p>
-                </div>
-                </li>
-            {% endfor %}
-            </ul>
-        </div>
-        </div>
-    </div>
-
-</div>
+      <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+          <h2 class="govuk-heading-l">How the process works</h2>
+          <ul class="iai-processlist">
+          {% for process in processList %}
+              <li class="iai-processlist__item">
+              {{process.icon|safe}}
+              <div class="iai-processlist__text">
+                  <h3 class="govuk-heading-m govuk-!-margin-0">{{process.title}}</h3>
+                  <p class="govuk-body govuk-!-margin-bottom-1 govuk-!-margin-top-1">{{process.text|safe}}</p>
+              </div>
+              </li>
+          {% endfor %}
+          </ul>
+      </div>
+      </div>
 
 {% endblock %}

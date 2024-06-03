@@ -7,7 +7,7 @@
 {% block content %}
   <h1 class="govuk-heading-l">{{ page_title }}</h1>
 
-  <a href="/support/users/new" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+  <a href="/support/users/new/" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
     Add a new user
   </a>
 
@@ -23,7 +23,7 @@
     {% for user in users %}
       <tr class="govuk-table__row">
         <td class="govuk-table__cell">
-          <a class="govuk-link" href="/support/users/{{ user.id }}">{{ user.email }}</a>
+          <a class="govuk-link" href="/support/users/{{ user.id }}/">{{ user.email }}</a>
         </td>
         <td class="govuk-table__cell">
           {{ datetime(user.created_at) }}

@@ -67,6 +67,10 @@ $iai-colour-pink: #C50878;
     border-bottom-color: govuk-colour("dark-grey");
 }
 
+.x-govuk-primary-navigation__item--right {
+    float: right;
+}
+
 .iai-processlist {
     padding: 0;
 }

@@ -27,6 +27,9 @@ def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
 
 
 def new(request: HttpRequest):
+    if request.user.is_authenticated:
+        return redirect("/")
+
     if not request.POST:
         form = NewSessionForm()
     else:

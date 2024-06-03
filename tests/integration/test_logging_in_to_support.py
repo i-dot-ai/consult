@@ -13,7 +13,7 @@ def test_logging_in_to_support(django_app):
     )
 
     # when I visit support
-    login_page = django_app.get("/support").follow().follow()  # 2 redirects
+    login_page = django_app.get("/support/").follow().follow()  # 2 redirects
 
     # and I sign in to support
     login_page.form["username"] = "email@example.com"  # Django field is called "username"
