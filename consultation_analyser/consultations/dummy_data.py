@@ -65,7 +65,7 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
         if include_themes:
             # Set themes per question, multiple answers with the same theme
             for q in questions:
-                themes = [ThemeFactory(theme_number=i) for i in range(-1, 4)]
+                themes = [ThemeFactory(topic_id=i) for i in range(-1, 4)]
                 for a in answers:
                     random_theme = random.choice(themes)
                     a.theme = random_theme

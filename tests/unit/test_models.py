@@ -7,11 +7,11 @@ from consultation_analyser.consultations import models
 
 
 @pytest.mark.parametrize(
-    "input_keywords,theme_number,is_outlier",
+    "input_keywords,topic_id,is_outlier",
     [(["key", "lock"], 2, False), (["dog", "cat"], -1, True)],
 )
 @pytest.mark.django_db
-def test_save_theme_to_answer(input_keywords, theme_number, is_outlier):
+def test_save_theme_to_answer(input_keywords, topic_id, is_outlier):
     consultation = factories.ConsultationFactory()
     consultation_response = factories.ConsultationResponseFactory(consultation=consultation)
     section = factories.SectionFactory(consultation=consultation)
@@ -20,14 +20,14 @@ def test_save_theme_to_answer(input_keywords, theme_number, is_outlier):
         question=question, theme=None, consultation_response=consultation_response
     )
     # Check theme created and saved to answer
-    answer.save_theme_to_answer(keywords=input_keywords, theme_number=theme_number)
-    theme = models.Theme.objects.get(keywords=input_keywords)
-    assert theme.keywords == input_keywords
+    answer.save_theme_to_answer(topic_keywords=input_keywords, topic_id=topic_id)
+    theme = models.Theme.objects.get(topic_keywords=input_keywords)
+    assert theme.topic_keywords == input_keywords
     assert theme.is_outlier == is_outlier
-    assert answer.theme.keywords == input_keywords
+    assert answer.theme.topic_keywords == input_keywords
     # Check no duplicate created
-    answer.save_theme_to_answer(keywords=input_keywords, theme_number=theme_number)
-    themes_qs = models.Theme.objects.filter(keywords=input_keywords, question=question)
+    answer.save_theme_to_answer(topic_keywords=input_keywords, topic_id=topic_id)
+    themes_qs = models.Theme.objects.filter(topic_keywords=input_keywords, question=question)
     assert themes_qs.count() == 1
 
 

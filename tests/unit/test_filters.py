@@ -14,8 +14,8 @@ def set_up_for_filters():
         section=section,
     )
 
-    theme1 = factories.ThemeFactory(theme_number=1, keywords=["dog", "puppy"], question=question)
-    theme2 = factories.ThemeFactory(theme_number=2, keywords=["cat", "kitten"], question=question)
+    theme1 = factories.ThemeFactory(topic_id=1, topic_keywords=["dog", "puppy"], question=question)
+    theme2 = factories.ThemeFactory(topic_id=2, topic_keywords=["cat", "kitten"], question=question)
     factories.AnswerFactory(
         theme=theme1,
         question=question,
@@ -84,4 +84,4 @@ def test_get_filtered_themes():
         question=question, filtered_answers=answers_queryset, applied_filters=applied_filters
     )
     assert queryset.count() == 1
-    assert queryset[0].keywords == ["cat", "kitten"]
+    assert queryset[0].topic_keywords == ["cat", "kitten"]

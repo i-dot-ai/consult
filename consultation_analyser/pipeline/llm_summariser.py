@@ -136,7 +136,7 @@ def get_sagemaker_endpoint() -> SagemakerEndpoint:
 
 def generate_theme_summary(theme: Theme) -> dict:
     """For a given theme, generate a summary using an LLM."""
-    logger.info(f"Starting LLM summarisation for theme with keywords: {theme.keywords} ")
+    logger.info(f"Starting LLM summarisation for theme with keywords: {theme.topic_keywords} ")
     prompt_template = get_prompt_template()
     sagemaker_endpoint = get_sagemaker_endpoint()
     # TODO - where is this max tokens coming from?
@@ -147,7 +147,7 @@ def generate_theme_summary(theme: Theme) -> dict:
     prompt_inputs = {
         "consultation_name": theme.question.section.consultation.name,
         "question": theme.question.text,
-        "keywords": ", ".join(theme.keywords),
+        "keywords": ", ".join(theme.topic_keywords),
         "responses": sample_responses,
     }
     parser = PydanticOutputParser(pydantic_object=ThemeSummaryOutput)
@@ -169,7 +169,7 @@ def generate_theme_summary(theme: Theme) -> dict:
 
 
 def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
-    concatenated_keywords = (", ").join(theme.keywords)
+    concatenated_keywords = (", ").join(theme.topic_keywords)
     made_up_short_description = f"Short description: {concatenated_keywords}"
     made_up_summary = f"Longer summary: {concatenated_keywords}"
     output = {"short_description": made_up_short_description, "summary": made_up_summary}

@@ -79,9 +79,9 @@ def get_answers_and_topics(
 def save_themes_to_answers(answers_topics_df: pd.DataFrame) -> None:
     for row in answers_topics_df.itertuples():
         answer = models.Answer.objects.get(id=row.id)
-        theme_keywords = row.Top_n_words.split(" - ")
-        theme_number = row.Topic
-        answer.save_theme_to_answer(keywords=theme_keywords, theme_number=theme_number)
+        topic_keywords = row.Top_n_words.split(" - ")
+        topic_id = row.Topic
+        answer.save_theme_to_answer(topic_keywords=topic_keywords, topic_id=topic_id)
 
 
 def save_themes_for_question(question: models.Question) -> None:
