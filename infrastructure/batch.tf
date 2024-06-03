@@ -16,6 +16,7 @@ module "batch_compute" {
   private_subnets = data.terraform_remote_state.vpc.outputs.private_subnets
   state_bucket    = var.state_bucket
   instance_type   = "g5.xlarge"
+  ecs_instance_role = aws_iam_role.ecsInstanceRole.name
 }
 
 module "batch_job_definition" {
