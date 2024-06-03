@@ -145,7 +145,7 @@ class ThemeFactory(factory.django.DjangoModelFactory):
     topic_keywords = factory.LazyAttribute(lambda _o: generate_dummy_topic_keywords())
     short_description = factory.LazyAttribute(lambda _o: faker.sentence())
     summary = factory.LazyAttribute(lambda _o: faker.sentence())
-    topic_id = factory.LazyAttribute(lambda _o: random.randint(1, 10))
+    topic_id = factory.Sequence(lambda n: n - 1)  # Hack to get topics to include outliers -1
 
 
 def get_multiple_choice_answers(current_answer):
