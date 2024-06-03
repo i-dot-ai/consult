@@ -8,13 +8,11 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">How it works</h1>
-      <p class="govuk-body">How the AI finds the themes and summarises them:</p>
+      <p class="govuk-body">How AI finds themes in the consultation and summarises them:</p>
       <ul class="govuk-list govuk-list--bullet">
-        <li>Responses to the consultation are organised by similar themes for each question.</li>
-        <li>These themes generate a list of consultation themes.</li>
-        <li>Individual lists of themes are combined into one list for the entire consultation.</li>
-        <li>The LLM checks each response to see which theme it contains.</li>
-        <li>The LLM generates a summary of the responses’ themes.</li>
+        <li>For each question, free-text responses are clustered into themes using a machine learning technique called topic modelling</li>
+        <li>For each theme, a large language model (LLM) is used to create a human-readable summary</li>
+        <li>The tool uses an internally hosted LLM suitable for Official-Sensitive data</li>
       </ul>
       <p class="govuk-body">You can see the code on <a class="govuk-link" href="https://github.com/i-dot-ai/consultation-analyser">https://github.com/i-dot-ai/consultation-analyser</a></p>
     </div>
