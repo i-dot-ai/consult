@@ -55,6 +55,7 @@ ruff = "^0.4.7"
 pre-commit = "^3.7.1"
 factory_boy = "^3.3.0"
 django-extensions = "^3.2.3"
+mypy = "^1.9.0"
 
 [tool.mypy]
 files = '**/*.py'
