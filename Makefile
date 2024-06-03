@@ -167,7 +167,7 @@ tf_plan: ## Plan terraform
 .PHONY: tf_apply
 tf_apply: ## Apply terraform
 	make tf_set_workspace && \
-	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} ${args}
 
 .PHONY: tf_init_universal
 tf_init_universal: ## Initialise terraform
@@ -191,7 +191,7 @@ tf_destroy: ## Destroy terraform
 .PHONY: tf_import
 tf_import:
 	make tf_set_workspace && \
-	terraform -chdir=./infrastructure import -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${name} ${id}
+	terraform -chdir=./infrastructure import -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} ${name} ${id}
 
 # Release commands to deploy your app to AWS
 .PHONY: release
