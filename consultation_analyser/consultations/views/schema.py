@@ -20,6 +20,7 @@ def raw_schema(request: HttpRequest, schema_name: str):
         "consultation_schema": f"{SCHEMA_DIR}/consultation_schema.json",
         "consultation_response_schema": f"{SCHEMA_DIR}/consultation_response_schema.json",
         "consultation_with_responses_schema": f"{SCHEMA_DIR}/consultation_with_responses_schema.json",
+        "consultation_with_responses_and_themes_schema": f"{SCHEMA_DIR}/consultation_with_responses_and_themes_schema.json",
     }
 
     # this is here so we don't use untrusted input to traverse the filesystem
