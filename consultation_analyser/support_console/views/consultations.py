@@ -62,7 +62,7 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
             messages.success(request, "Themes have been sent to the LLM for summarisation")
         elif "generate_themes" in request.POST:
             run_processing_pipeline(consultation)
-            messages.success(request, "Consultation data has been sent for processing and generating themes")
+            messages.success(request, "Consultation data has been sent for processing")
         elif "download_json" in request.POST:
             consultation_json = consultation_to_json(consultation)
             response = HttpResponse(consultation_json, content_type="application/json")
