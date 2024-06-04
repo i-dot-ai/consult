@@ -24,7 +24,7 @@ data "aws_iam_policy_document" "ecs_assume_batch_policy_document" {
   statement {
     actions = ["sts:AssumeRole"]
     resources = [
-      "arn:aws:iam::671657536603:role/AWSServiceRoleForBatch"
+      "arn:aws:iam::${account_id}:role/AWSServiceRoleForBatch"
     ]
     effect = "Allow"
   }
