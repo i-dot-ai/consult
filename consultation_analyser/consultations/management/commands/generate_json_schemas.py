@@ -22,3 +22,7 @@ class Command(BaseCommand):
         schema = public_schema.ConsultationWithResponses.model_json_schema()
         with open(f"{schema_folder}/consultation_with_responses_schema.json", "w") as f:
             json.dump(schema, f)
+
+        schema = public_schema.ConsultationWithResponsesAndThemes.model_json_schema()
+        with open(f"{schema_folder}/consultation_with_responses_and_themes_schema.json", "w") as f:
+            json.dump(schema, f)
