@@ -5,6 +5,7 @@ from consultation_analyser.consultations.models import Theme
 
 from consultation_analyser.consultations.public_schema import (
     ConsultationWithResponsesAndThemes,
+    ConsultationWithResponses,
 )
 
 
@@ -23,15 +24,15 @@ def consultation_to_json(consultation):
 
     attrs = {}
 
-    attrs["themes"] = []
-    themes = Theme.objects.filter(answer__question__section__consultation=consultation)
-    for theme in themes:
+    themes = []
+    theme_records = Theme.objects.filter(answer__question__section__consultation=consultation)
+    for theme in theme_records:
         theme_attrs = select_keys_from_model(
             theme, ["topic_id", "topic_keywords", "summary", "short_description"]
         )
 
         theme_attrs["id"] = str(theme.id)
-        attrs["themes"].append(theme_attrs)
+        themes.append(theme_attrs)
 
     attrs["consultation"] = select_keys_from_model(consultation, ["name"])
 
@@ -69,6 +70,10 @@ def consultation_to_json(consultation):
         attrs["consultation_responses"].append(response_attrs)
 
     # raise if we're invalid
-    ConsultationWithResponsesAndThemes(**attrs)
+    if themes:
+        attrs["themes"] = themes
+        ConsultationWithResponsesAndThemes(**attrs)
+    else:
+        ConsultationWithResponses(**attrs)
 
     return json.dumps(attrs)
