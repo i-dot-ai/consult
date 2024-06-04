@@ -35,7 +35,7 @@ def test_save_themes_for_consultation():
         themes_for_q = models.Theme.objects.filter(question=q)
         assert themes_for_q.exists()
     example_theme = themes_for_q.first()
-    assert example_theme.keywords
+    assert example_theme.topic_keywords
     # Summary not populated here - done in a separate step
 
     # Check no themes for question with no free text

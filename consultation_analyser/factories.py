@@ -142,10 +142,10 @@ class ThemeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Theme
 
-    keywords = factory.LazyAttribute(lambda _o: generate_dummy_topic_keywords())
+    topic_keywords = factory.LazyAttribute(lambda _o: generate_dummy_topic_keywords())
     short_description = factory.LazyAttribute(lambda _o: faker.sentence())
     summary = factory.LazyAttribute(lambda _o: faker.sentence())
-    is_outlier = False
+    topic_id = factory.Sequence(lambda n: n - 1)  # Hack to get topics to include outliers -1
 
 
 def get_multiple_choice_answers(current_answer):

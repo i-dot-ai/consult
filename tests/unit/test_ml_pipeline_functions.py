@@ -51,4 +51,4 @@ def test_save_themes_to_answers():
     ml_pipeline.save_themes_to_answers(answers_df)
     themes_qs = models.Theme.objects.filter(question=question)
     assert themes_qs.count() == 2
-    assert ["x", "y"] in themes_qs.values_list("keywords", flat=True)
+    assert ["x", "y"] in themes_qs.values_list("topic_keywords", flat=True)

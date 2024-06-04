@@ -61,7 +61,7 @@ def test_get_question_summary_page(django_app):
         for opt in item["options"]:
             assert opt in page_content
 
-    for keyword in answer.theme.keywords:
+    for keyword in answer.theme.topic_keywords:
         assert keyword in page_content
 
     assert re.search(r"Yes\s+50%", question_page.html.text)

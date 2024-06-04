@@ -106,16 +106,21 @@ class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
+    # LLM generates short_description and summary
     short_description = models.TextField(blank=True)
     summary = models.TextField(blank=True)  # More detailed description
     # Duplicates info in Answer model, but needed for uniqueness constraint.
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
-    keywords = models.JSONField(default=list)
-    is_outlier = models.BooleanField(default=False)
+    # Topic keywords and ID come from BERTopic
+    topic_keywords = models.JSONField(default=list)
+    topic_id = models.IntegerField(null=True)  # Topic ID from BERTopic
+    is_outlier = models.GeneratedField(
+        expression=models.Q(topic_id=-1), output_field=models.BooleanField(), db_persist=True
+    )
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["keywords", "question"], name="unique_up_to_question"),
+            models.UniqueConstraint(fields=["topic_id", "question"], name="unique_up_to_question"),
         ]
 
 
@@ -150,10 +155,10 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    def save_theme_to_answer(self, keywords: list, is_outlier: bool):
+    def save_theme_to_answer(self, topic_keywords: list, topic_id: int):
         question = self.question
         theme, _ = Theme.objects.get_or_create(
-            question=question, keywords=keywords, is_outlier=is_outlier
+            question=question, topic_keywords=topic_keywords, topic_id=topic_id
         )
         self.theme = theme
         self.save()
