@@ -7,6 +7,7 @@ from django.conf import settings
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.upload_consultation import upload_consultation
 from consultation_analyser.factories import UserFactory
+from consultation_analyser.pipeline.dummy_pipeline import save_themes_for_consultation
 
 
 @pytest.mark.django_db
@@ -15,6 +16,7 @@ def test_consultation_to_json(django_app):
     file = open(settings.BASE_DIR / "tests" / "examples" / "upload.json", "rb")
 
     consultation = upload_consultation(file, user)
+    save_themes_for_consultation(consultation.id)
 
     consultation_json = json.loads(consultation_to_json(consultation))
 
@@ -26,9 +28,16 @@ def test_consultation_to_json(django_app):
     assert len(consultation_json["consultation_responses"]) == 2
     assert len(consultation_json["consultation_responses"][0]["answers"]) == 3
 
+    # dummy theme process assigns on theme per question
+    # and we'll only create themes for free_text answers,
+    # of which there are 4 in the test data
+    assert len(consultation_json["themes"]) == 4
+
     consultation_json["consultation"]["name"] = "My consultation reuploaded"
 
-    file_to_reupload = io.StringIO(json.dumps(consultation_json))
+    reuploadable_without_themes = consultation_json.copy()
+    reuploadable_without_themes.pop("themes")
+    file_to_reupload = io.StringIO(json.dumps(reuploadable_without_themes))
 
     # This will bail if anything goes wrong
     reuploaded = upload_consultation(file_to_reupload, user)

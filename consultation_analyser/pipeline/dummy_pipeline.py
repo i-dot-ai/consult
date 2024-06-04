@@ -15,8 +15,7 @@ def save_themes_for_consultation(consultation_id: UUID) -> None:
     )
 
     topic_id = -1
-    for answer in answers.all():
-        random_themes = faker.words()
-        for theme in random_themes:
-            answer.save_theme_to_answer(theme, topic_id)
-            topic_id += 1
+    for answer in answers:
+        topic_keywords = faker.words(4)
+        answer.save_theme_to_answer(topic_keywords, topic_id)
+        topic_id += 1
