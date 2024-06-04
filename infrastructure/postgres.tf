@@ -11,5 +11,5 @@ module "postgres" {
   state_bucket            = var.state_bucket
   service_sg_ids          = [module.ecs.ecs_sg_id]
   publicly_accessible     = var.publicly_accessible
-  securelist_ips          = var.developer_ips
+  securelist_ips          = concat(var.developer_ips, var.internal_ips)
 }
