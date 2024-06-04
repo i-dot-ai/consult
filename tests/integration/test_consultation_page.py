@@ -1,5 +1,4 @@
 import pytest
-from waffle.testutils import override_switch
 
 from consultation_analyser.factories import ConsultationFactory, UserFactory
 from tests.helpers import sign_in

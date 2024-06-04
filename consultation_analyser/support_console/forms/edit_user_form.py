@@ -2,8 +2,6 @@ from crispy_forms_gds.helper import FormHelper
 from crispy_forms_gds.layout import Field, Layout, Submit
 from django import forms
 
-from consultation_analyser.authentication.models import User
-
 
 class EditUserForm(forms.Form):
     is_staff = forms.BooleanField(

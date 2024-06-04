@@ -8,14 +8,12 @@ import logging
 import boto3
 import tiktoken
 from django.conf import settings
-from langchain.chains.llm import LLMChain
-from langchain.output_parsers import PydanticOutputParser, RetryWithErrorOutputParser
+from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts import PromptTemplate
 from langchain.pydantic_v1 import BaseModel
 from langchain_community.llms import SagemakerEndpoint
 from langchain_community.llms.sagemaker_endpoint import LLMContentHandler
 from langchain_core.exceptions import OutputParserException
-from langchain_core.prompt_values import StringPromptValue
 
 from consultation_analyser.consultations.models import Answer, Theme
 from consultation_analyser.pipeline.decorators import check_and_launch_sagemaker
@@ -165,7 +163,7 @@ def generate_theme_summary(theme: Theme) -> dict:
             "short_description": parsed_output.short_description,
             "summary": parsed_output.summary,
         }
-    except errors as e:
+    except errors:
         parsed_output = {"short_description": NO_SUMMARY_STR, "summary": NO_SUMMARY_STR}
     return parsed_output
 

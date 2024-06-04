@@ -1,7 +1,5 @@
 import pytest
 
-from consultation_analyser.factories import ConsultationFactory
-
 
 @pytest.mark.django_db
 def test_nav_links(django_app):

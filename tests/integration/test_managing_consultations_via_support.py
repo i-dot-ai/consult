@@ -1,7 +1,6 @@
 import json
 
 import pytest
-from waffle.testutils import override_switch
 
 from consultation_analyser.consultations.models import Consultation
 from consultation_analyser.factories import UserFactory

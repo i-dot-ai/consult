@@ -1,13 +1,10 @@
-import json
 import uuid
-from collections import Counter
 from dataclasses import dataclass
-from functools import reduce
 
 import pydantic
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
-from django.db import connection, models
+from django.db import models
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import public_schema

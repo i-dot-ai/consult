@@ -27,7 +27,7 @@ def check_and_launch_sagemaker(func):
             "EndpointStatus"
         ]
         while endpoint_status != "InService":
-            logger.info(f"Endpoint is being created...")
+            logger.info("Endpoint is being created...")
             time.sleep(15)
             duration = (datetime.datetime.now() - start_time).total_seconds()
             logger.info(f"Seconds elapsed {duration}.")
