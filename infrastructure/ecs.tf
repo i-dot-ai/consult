@@ -32,6 +32,7 @@ module "ecs" {
   image_tag          = var.image_tag
   ecr_repository_uri = var.ecr_repository_uri
   ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
+  ecs_cluster_name   = data.terraform_remote_state.platform.outputs.ecs_cluster_name
   health_check = {
     healthy_threshold   = 3
     unhealthy_threshold = 3

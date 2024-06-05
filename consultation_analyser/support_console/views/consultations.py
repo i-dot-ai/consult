@@ -56,13 +56,13 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
             from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
 
             save_themes_for_consultation(consultation_id)
-            messages.success(request, "Topic modelling has been run for this consultation")
+            messages.success(request, "Topic modelling has started for this consultation")
         elif "llm_summarisation" in request.POST:
             create_llm_summaries_for_consultation(consultation)
-            messages.success(request, "Summaries have been generated for themes using the LLM")
+            messages.success(request, "Themes have been sent to the LLM for summarisation")
         elif "generate_themes" in request.POST:
             run_processing_pipeline(consultation)
-            messages.success(request, "Themes have been generated for this consultation")
+            messages.success(request, "Consultation data has been sent for processing")
         elif "download_json" in request.POST:
             consultation_json = consultation_to_json(consultation)
             response = HttpResponse(consultation_json, content_type="application/json")
