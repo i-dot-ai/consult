@@ -53,11 +53,10 @@ module "ecs" {
   route53_record_name          = aws_route53_record.type_a_record.name
   ip_whitelist                 = var.external_ips
   create_listener              = true
-  task_additional_iam_policy   = aws_iam_policy.this.arn
+  task_additional_iam_policy   = aws_iam_policy.ecs.arn
   additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
   }
-  ecs_cluster_name = data.terraform_remote_state.platform.outputs.ecs_cluster_name
 }
 
 resource "aws_route53_record" "type_a_record" {
@@ -73,17 +72,17 @@ resource "aws_route53_record" "type_a_record" {
 }
 
 
-resource "aws_iam_policy" "this" {
-  name        = "${local.name}-additional-policy"
+resource "aws_iam_policy" "ecs" {
+  name        = "${local.name}-ecs-additional-policy"
   description = "Additional permissions for consultations ECS task"
-  policy      = data.aws_iam_policy_document.this.json
+  policy      = data.aws_iam_policy_document.ecs.json
   tags = {
     Environment = terraform.workspace
     Deployed    = "github"
   }
 }
 
-data "aws_iam_policy_document" "this" {
+data "aws_iam_policy_document" "ecs" {
   # checkov:skip=CKV_AWS_109:KMS policies can't be restricted
   # checkov:skip=CKV_AWS_111:KMS policies can't be restricted
 
