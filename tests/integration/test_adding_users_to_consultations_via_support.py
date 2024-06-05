@@ -29,3 +29,14 @@ def test_adding_users_to_consultations_via_support(django_app):
     assert f"{user.email} has been removed from this consultation" in consultation_page
 
     assert "There are no users associated with this consultation" in consultation_page
+
+    add_user_page = consultation_page.click("Add users")
+
+    add_user_page.form["users"] = [user.id]
+    consultation_page = add_user_page.form.submit().follow()
+
+    assert "Users updated" in consultation_page
+
+    add_user_page = consultation_page.click("Add users")
+
+    assert "There are no more users available to add" in add_user_page

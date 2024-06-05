@@ -21,4 +21,9 @@ urlpatterns = [
         consultations_users.delete,
         name="remove_user",
     ),
+    path(
+        "consultations/<uuid:consultation_id>/users/new/",
+        consultations_users.new,
+        name="add_user",
+    ),
 ]

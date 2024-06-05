@@ -67,6 +67,10 @@
     <p class="govuk-body">There are no users associated with this consultation</p>
   {% endif %}
 
+  <a href="{{ url("add_user", kwargs={"consultation_id": consultation.id}) }}" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+    Add users
+  </a>
+
   <form method="post" novalidate>{{ csrf_input }}
     <h2 class="govuk-heading-m">Generate themes</h2>
     <div>

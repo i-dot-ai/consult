@@ -7,6 +7,32 @@ from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from consultation_analyser.consultations import models
+from consultation_analyser.support_console.forms.add_users_to_consultation_form import (
+    AddUsersToConsultationForm,
+)
+
+
+@staff_member_required
+def new(request: HttpRequest, consultation_id: UUID):
+    consultation = models.Consultation.objects.get(id=consultation_id)
+    users = models.User.objects.exclude(id__in=[u.id for u in consultation.users.all()]).all()
+
+    if request.POST:
+        form = AddUsersToConsultationForm(request.POST, users=users, consultation=consultation)
+        if form.is_valid():
+            users = form.cleaned_data["users"]
+            for user in users:
+                consultation.users.add(user)
+                messages.success(request, "Users updated")
+                return redirect(
+                    reverse("support_consultation", kwargs={"consultation_id": consultation.id})
+                )
+    else:
+        form = AddUsersToConsultationForm(users=users, consultation=consultation)
+
+    context = {"form": form}
+
+    return render(request, "support_console/consultations_users/new.html", context=context)
 
 
 @staff_member_required
