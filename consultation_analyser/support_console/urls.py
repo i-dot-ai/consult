@@ -1,7 +1,7 @@
 from django.shortcuts import redirect
 from django.urls import path
 
-from .views import consultations, pages, users
+from .views import consultations, consultations_users, pages, users
 
 urlpatterns = [
     path("", lambda request: redirect("/support/consultations/")),
@@ -15,5 +15,10 @@ urlpatterns = [
         "consultations/<uuid:consultation_id>/delete/",
         consultations.delete,
         name="delete_consultation",
+    ),
+    path(
+        "consultations/<uuid:consultation_id>/users/<int:user_id>/remove/",
+        consultations_users.delete,
+        name="remove_user",
     ),
 ]

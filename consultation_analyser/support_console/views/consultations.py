@@ -85,6 +85,7 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     number_of_themes_not_yet_summarised = themes_for_consultation.filter(summary="").count()
     context = {
         "consultation": consultation,
+        "users": consultation.users.all(),
         "number_of_themes": number_of_themes,
         "number_of_themes_with_summaries": number_of_themes_with_summaries,
         "number_of_themes_unable_to_summarise": number_of_themes_unable_to_summarise,

@@ -28,8 +28,44 @@
 
   </div>
 
-  <br />
-
+  <h2 class="govuk-heading-m">Users</h2>
+  {% if users %}
+  <table class="govuk-table">
+    <thead class="govuk-table__head">
+      <tr class="govuk-table__row">
+        <th scope="col" class="govuk-table__header">Email</th>
+        <th scope="col" class="govuk-table__header">Created at</th>
+        <th scope="col" class="govuk-table__header">Can access support console</th>
+        <th scope="col" class="govuk-table__header">Actions</th>
+      </tr>
+    </thead>
+    <tbody class="govuk-table__body">
+    {% for user in users %}
+      <tr class="govuk-table__row">
+        <td class="govuk-table__cell">
+          <a class="govuk-link" href="/support/users/{{ user.id }}/">{{ user.email }}</a>
+        </td>
+        <td class="govuk-table__cell">
+          {{ datetime(user.created_at) }}
+        </td>
+        <td class="govuk-table__cell">
+          {% if user.is_staff %}
+            Yes
+          {% else %}
+            No
+          {% endif %}
+        </td>
+        <td class="govuk-table__cell">
+          <a href="{{ url('remove_user', kwargs={'consultation_id': consultation.id, 'user_id': user.id}) }}" class="govuk-link govuk-link--warning govuk-body">
+            Remove
+          </a>
+        </td>
+      </tr>
+    {% endfor %}
+  </table>
+  {% else %}
+    <p class="govuk-body">There are no users associated with this consultation</p>
+  {% endif %}
 
   <form method="post" novalidate>{{ csrf_input }}
     <h2 class="govuk-heading-m">Generate themes</h2>
