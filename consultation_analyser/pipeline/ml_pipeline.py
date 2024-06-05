@@ -17,6 +17,7 @@ def get_embeddings_for_question(
     answers_list: List[Dict[str, Union[UUID, str]]],
     embedding_model_name: str = "thenlper/gte-small",
 ) -> List[Dict[str, Union[UUID, str, np.ndarray]]]:
+    logging.info("Getting embeddings...")
     from sentence_transformers import SentenceTransformer
 
     free_text_responses = [answer["free_text"] for answer in answers_list]
@@ -36,6 +37,7 @@ def get_topic_model(answers_list_with_embeddings: List[Dict[str, Union[UUID, str
     from sklearn.feature_extraction.text import CountVectorizer
     from umap.umap_ import UMAP
 
+    logging.info("Getting topic model...")
     free_text_responses_list = [answer["free_text"] for answer in answers_list_with_embeddings]
     embeddings_list = [answer["embedding"] for answer in answers_list_with_embeddings]
     embeddings = np.array(embeddings_list)
@@ -77,6 +79,7 @@ def get_answers_and_topics(
 
 
 def save_themes_to_answers(answers_topics_df: pd.DataFrame) -> None:
+    logging.info("Saving themes to answers...")
     for row in answers_topics_df.itertuples():
         answer = models.Answer.objects.get(id=row.id)
         topic_keywords = row.Top_n_words.split(" - ")
