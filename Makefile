@@ -172,7 +172,7 @@ tf_set_or_create_workspace:
 
 .PHONY: tf_init
 tf_init: ## Initialise terraform
-	terraform -chdir=./infrastructure init -backend-config=$(TF_BACKEND_CONFIG)
+	terraform -chdir=./infrastructure init -backend-config=$(TF_BACKEND_CONFIG) ${args}
 
 .PHONY: tf_plan
 tf_plan: ## Plan terraform
