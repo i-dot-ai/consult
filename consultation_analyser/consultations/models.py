@@ -149,7 +149,7 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     consultation_response = models.ForeignKey(ConsultationResponse, on_delete=models.CASCADE)
     theme = models.ForeignKey(
-        Theme, on_delete=models.CASCADE, null=True, blank=True
+        Theme, on_delete=models.SET_NULL, null=True, blank=True
     )  # For now, just one theme per answer
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):

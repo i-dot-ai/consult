@@ -4,6 +4,8 @@ export AWS_REGION
 export ECR_REPO_NAME
 export APP_NAME
 
+SCHEMAS := consultation consultation_response consultation_with_responses consultation_with_responses_and_themes
+
 .PHONY: help
 help:     ## Show this help.
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-30s\033[0m %s\n", $$1, $$2}'
@@ -20,7 +22,7 @@ consultation_analyser/consultations/public_schema/%_example.json: consultation_a
 	npx generate-json $^ $@ none $(PWD)/json-schema-faker-options.js
 
 .PHONY: schema_docs
-schema_docs: consultation_analyser/consultations/public_schema/consultation_example.json consultation_analyser/consultations/public_schema/consultation_response_example.json consultation_analyser/consultations/public_schema/consultation_with_responses_example.json ## Generate examples and JSON schemas for the documentation
+schema_docs: $(foreach part,$(SCHEMAS), consultation_analyser/consultations/public_schema/$(part)_example.json)
 
 .PHONY: setup_dev_db
 setup_dev_db: ## Set up the development db on a local postgres

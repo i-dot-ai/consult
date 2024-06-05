@@ -103,6 +103,10 @@ components:
           - 'Question 1'
           - 'q1.2'
           description: The number or other unique identifier for the answered question
+        theme_id:
+          type: string
+          format: uuid
+          description: The associated Theme, if any. Omit if uploading.
         multiple_choice:
           $ref: '#/components/schemas/MultipleChoice'
         free_text:
@@ -166,4 +170,74 @@ components:
           description: The responses
           items:
             $ref: '#/components/schemas/ConsultationResponse'
+    ConsultationWithResponsesAndThemes:
+      type: object
+      description: A Consultation and its ConsultationResponses, plus Themes assigned by the tool
+      required:
+        - consultation
+        - consultation_responses
+        - themes
+      additionalProperties: false
+      properties:
+        consultation:
+          type: object
+          description: The consultation
+          $ref: '#/components/schemas/Consultation'
+        consultation_responses:
+          type: array
+          minItems: 1
+          description: The responses
+          items:
+            $ref: '#/components/schemas/ConsultationResponse'
+        themes:
+          type: array
+          minItems: 1
+          description: The themes
+          items:
+            $ref: '#/components/schemas/Theme'
+    Theme:
+      type: object
+      description: A theme, assigned by AI
+      required:
+        - id
+        - topic_id
+        - topic_keywords
+        - summary
+        - short_description
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        topic_id:
+          type: integer
+        topic_keywords:
+          type: array
+          description: The keywords in the theme
+          items:
+            type: string
+            examples:
+              - birds
+              - animals
+              - food
+              - rivers
+              - economy
+              - lakes
+              - farming
+        short_description:
+          type: string
+          examples:
+            - Concern about the price of sugar
+            - Risk to wildlife habitats
+            - Overall quality of outdoor space in the area
+        summary:
+          type: string
+          description: A free-text summary of the theme
+          examples:
+            - Respondents identified potential impact on the price of sugar,
+              noting that proposed new legislation was very likely to drive it
+              higher
+            - Respondents flagged concerns around the conservation of habitats
+              in the area and local biodiversity in general
+
 

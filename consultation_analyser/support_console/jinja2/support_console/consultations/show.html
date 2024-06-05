@@ -30,22 +30,14 @@
 
   <br />
 
-  <form method="post" novalidate>{{ csrf_input }}
 
+  <form method="post" novalidate>{{ csrf_input }}
+    <h2 class="govuk-heading-m">Generate themes</h2>
     <div>
       <p class="govuk-body">
         Generating themes runs topic modelling then LLM summarisation. You may wish to do these steps separately in testing.
       </p>
     </div>
-
-    <br>
-    {{ govukButton({
-      'text': "Download JSON",
-      'name': "download_json"
-    }) }}
-  </form>
-
-  <form method="post" novalidate>{{ csrf_input }}
     {{ govukButton({
       'text': "Generate themes",
       'name': "generate_themes"
@@ -63,6 +55,16 @@
       'classes': "govuk-button--secondary"
     }) }}
 
+    <h2 class="govuk-heading-m">Download JSON</h2>
+    {% if number_of_themes %}
+      <p class="govuk-body">This consultation has themes, so the JSON will be in the <a class="govuk-link" href="/schema/consultation_with_responses_and_themes_schema.json">ConsultationWithResponsesAndThemes</a> format.</p>
+    {% else %}
+      <p class="govuk-body">This consultations has no themes, this JSON will be in the <a class="govuk-link" href="/schema/consultation_with_responses_schema.json">ConsultationWithResponses</a> format.</p>
+    {% endif %}
+    {{ govukButton({
+      'text': "Download JSON",
+      'name': "download_json"
+    }) }}
 
   </form>
 
