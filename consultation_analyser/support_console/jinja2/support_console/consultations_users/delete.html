@@ -4,12 +4,13 @@
 {% set page_title = "Remove user from consultation" %}
 
 {% block content %}
-  <h1 class="govuk-heading-l">{{ page_title }}</h1>
-  <div>
-    <p class="govuk-body">Are you sure you want to remove <strong>{{ user.email }}</strong> from <strong>{{ consultation.name }}</strong>?</p>
+<div class="govuk-width-container ">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">{{ page_title }}</h1>
+      <p class="govuk-body">Are you sure you want to remove <strong>{{ user.email }}</strong> from <strong>{{ consultation.name }}</strong>?</p>
+    </div>
   </div>
-
-  <br />
 
   <form method="post" novalidate>
     {{ csrf_input }}
@@ -20,4 +21,5 @@
     }) }}
   </form>
 
+</div>
 {% endblock %}

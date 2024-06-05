@@ -4,108 +4,114 @@
 {% set page_title = consultation.name %}
 
 {% block content %}
-  <h1 class="govuk-heading-l">{{ page_title }}</h1>
-  <div>
-    {% if number_of_themes %}
-      <p class="govuk-body">For this consultation there are {{number_of_themes}} themes.</p>
-      <p class="govuk-body">Of these themes, {{number_of_themes_with_summaries}} have summaries, {{number_of_themes_unable_to_summarise}} themes we were unable to summarise, and {{number_of_themes_not_yet_summarised}} themes have not yet been summarised.</p>
+<div class="govuk-width-container ">
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">{{ page_title }}</h1>
+        {% if number_of_themes %}
+          <p class="govuk-body">For this consultation there are {{number_of_themes}} themes.</p>
+          <p class="govuk-body">Of these themes, {{number_of_themes_with_summaries}} have summaries, {{number_of_themes_unable_to_summarise}} themes we were unable to summarise, and {{number_of_themes_not_yet_summarised}} themes have not yet been summarised.</p>
 
-    {% else %}
-      <p class="govuk-body">There are no themes for this consultation.</p>
-    {% endif %}
+        {% else %}
+          <p class="govuk-body">There are no themes for this consultation.</p>
+        {% endif %}
 
-    <p class="govuk-body">
-      <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
-        View on frontend
-      </a>
-    </p>
+        <p class="govuk-body">
+          <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
+            View on frontend
+          </a>
+        </p>
 
-    <p class="govuk-body">
-      <a href="{{ url('delete_consultation', kwargs={'consultation_id': consultation.id}) }}" class="govuk-link govuk-link--warning govuk-body">
-        Delete this consultation
-      </a>
-    </p>
-
+        <p class="govuk-body">
+          <a href="{{ url('delete_consultation', kwargs={'consultation_id': consultation.id}) }}" class="govuk-link govuk-link--warning govuk-body">
+            Delete this consultation
+          </a>
+        </p>
+    </div>
   </div>
 
-  <h2 class="govuk-heading-m">Users</h2>
-  {% if users %}
-  <table class="govuk-table">
-    <thead class="govuk-table__head">
-      <tr class="govuk-table__row">
-        <th scope="col" class="govuk-table__header">Email</th>
-        <th scope="col" class="govuk-table__header">Created at</th>
-        <th scope="col" class="govuk-table__header">Can access support console</th>
-        <th scope="col" class="govuk-table__header">Actions</th>
-      </tr>
-    </thead>
-    <tbody class="govuk-table__body">
-    {% for user in users %}
-      <tr class="govuk-table__row">
-        <td class="govuk-table__cell">
-          <a class="govuk-link" href="/support/users/{{ user.id }}/">{{ user.email }}</a>
-        </td>
-        <td class="govuk-table__cell">
-          {{ datetime(user.created_at) }}
-        </td>
-        <td class="govuk-table__cell">
-          {% if user.is_staff %}
-            Yes
-          {% else %}
-            No
-          {% endif %}
-        </td>
-        <td class="govuk-table__cell">
-          <a href="{{ url('remove_user', kwargs={'consultation_id': consultation.id, 'user_id': user.id}) }}" class="govuk-link govuk-link--warning govuk-body">
-            Remove
-          </a>
-        </td>
-      </tr>
-    {% endfor %}
-  </table>
-  {% else %}
-    <p class="govuk-body">There are no users associated with this consultation</p>
-  {% endif %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h2 class="govuk-heading-m">Users</h2>
+      {% if users %}
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Email</th>
+            <th scope="col" class="govuk-table__header">Created at</th>
+            <th scope="col" class="govuk-table__header">Can access support console</th>
+            <th scope="col" class="govuk-table__header">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+        {% for user in users %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+              <a class="govuk-link" href="/support/users/{{ user.id }}/">{{ user.email }}</a>
+            </td>
+            <td class="govuk-table__cell">
+              {{ datetime(user.created_at) }}
+            </td>
+            <td class="govuk-table__cell">
+              {% if user.is_staff %}
+                Yes
+              {% else %}
+                No
+              {% endif %}
+            </td>
+            <td class="govuk-table__cell">
+              <a href="{{ url('remove_user', kwargs={'consultation_id': consultation.id, 'user_id': user.id}) }}" class="govuk-link govuk-link--warning govuk-body">
+                Remove
+              </a>
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+      {% else %}
+        <p class="govuk-body">There are no users associated with this consultation</p>
+      {% endif %}
 
-  <a href="{{ url("add_user", kwargs={"consultation_id": consultation.id}) }}" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
-    Add users
-  </a>
+      <a href="{{ url("add_user", kwargs={"consultation_id": consultation.id}) }}" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
+        Add users
+      </a>
 
-  <form method="post" novalidate>{{ csrf_input }}
-    <h2 class="govuk-heading-m">Generate themes</h2>
-    <div>
-      <p class="govuk-body">
-        Generating themes runs topic modelling then LLM summarisation. You may wish to do these steps separately in testing.
-      </p>
+      <form method="post" novalidate>{{ csrf_input }}
+        <h2 class="govuk-heading-m">Generate themes</h2>
+        <div>
+          <p class="govuk-body">
+            Generating themes runs topic modelling then LLM summarisation. You may wish to do these steps separately in testing.
+          </p>
+        </div>
+        {{ govukButton({
+          'text': "Generate themes",
+          'name': "generate_themes"
+        }) }}
+
+        {{ govukButton({
+          'text': "Run topic modelling",
+          'name': "topic_modelling",
+          'classes': "govuk-button--secondary"
+        }) }}
+
+        {{ govukButton({
+          'text': "Run LLM summarisation",
+          'name': "llm_summarisation",
+          'classes': "govuk-button--secondary"
+        }) }}
+
+        <h2 class="govuk-heading-m">Download JSON</h2>
+        {% if number_of_themes %}
+          <p class="govuk-body">This consultation has themes, so the JSON will be in the <a class="govuk-link" href="/schema/consultation_with_responses_and_themes_schema.json">ConsultationWithResponsesAndThemes</a> format.</p>
+        {% else %}
+          <p class="govuk-body">This consultations has no themes, this JSON will be in the <a class="govuk-link" href="/schema/consultation_with_responses_schema.json">ConsultationWithResponses</a> format.</p>
+        {% endif %}
+        {{ govukButton({
+          'text': "Download JSON",
+          'name': "download_json"
+        }) }}
+
+      </form>
     </div>
-    {{ govukButton({
-      'text': "Generate themes",
-      'name': "generate_themes"
-    }) }}
-
-    {{ govukButton({
-      'text': "Run topic modelling",
-      'name': "topic_modelling",
-      'classes': "govuk-button--secondary"
-    }) }}
-
-    {{ govukButton({
-      'text': "Run LLM summarisation",
-      'name': "llm_summarisation",
-      'classes': "govuk-button--secondary"
-    }) }}
-
-    <h2 class="govuk-heading-m">Download JSON</h2>
-    {% if number_of_themes %}
-      <p class="govuk-body">This consultation has themes, so the JSON will be in the <a class="govuk-link" href="/schema/consultation_with_responses_and_themes_schema.json">ConsultationWithResponsesAndThemes</a> format.</p>
-    {% else %}
-      <p class="govuk-body">This consultations has no themes, this JSON will be in the <a class="govuk-link" href="/schema/consultation_with_responses_schema.json">ConsultationWithResponses</a> format.</p>
-    {% endif %}
-    {{ govukButton({
-      'text': "Download JSON",
-      'name': "download_json"
-    }) }}
-
-  </form>
+  </div>
 
 {% endblock %}
