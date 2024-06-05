@@ -57,7 +57,7 @@ module "ecs" {
   additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
   }
-  
+  ecs_cluster_name = data.terraform_remote_state.platform.outputs.ecs_cluster_name
 }
 
 resource "aws_route53_record" "type_a_record" {
