@@ -9,7 +9,9 @@ from consultation_analyser.factories import (
     SectionFactory,
     ThemeFactory,
 )
-from consultation_analyser.pipeline.llm_summariser import get_random_sample_of_responses_for_theme
+from consultation_analyser.pipeline.backends.langchain_llm_backend import (
+    get_random_sample_of_responses_for_theme,
+)
 
 
 @pytest.mark.django_db

@@ -9,10 +9,10 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.dummy_data import create_dummy_data
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.pipeline.llm_summariser import (
+from consultation_analyser.pipeline.backends.types import (
     NO_SUMMARY_STR,
-    create_llm_summaries_for_consultation,
 )
+from consultation_analyser.pipeline.llm_summariser import create_llm_summaries_for_consultation
 from consultation_analyser.pipeline.processing import run_processing_pipeline
 
 

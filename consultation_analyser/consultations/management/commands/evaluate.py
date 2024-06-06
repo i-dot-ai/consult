@@ -10,12 +10,10 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.upload_consultation import upload_consultation
 from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
+from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
 from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
-from consultation_analyser.pipeline.llm_summariser import (
-    get_dummy_llm,
-    get_ollama_llm,
-    get_sagemaker_endpoint,
-)
+from consultation_analyser.pipeline.backends.ollama_llm_backend import OllamaLLMBackend
+from consultation_analyser.pipeline.backends.sagemaker_llm_backend import SagemakerLLMBackend
 from consultation_analyser.pipeline.processing import process_consultation_themes
 
 
@@ -91,19 +89,18 @@ class Command(BaseCommand):
         llm_choice = options.get("llm", "fake")
 
         if llm_choice == "fake" or not llm_choice:
-            llm = get_dummy_llm()
-            print("Using dummy llm for summaries")
+            llm_backend = DummyLLMBackend()
         elif llm_choice == "sagemaker":
-            llm = get_sagemaker_endpoint()
-            print("Using sagemaker llm for summaries")
+            llm_backend = SagemakerLLMBackend()
         elif llm_choice.startswith("ollama"):
             model = llm_choice.split("/")[1]
-            llm = get_ollama_llm(model)
-            print(f"Using {model} on ollama for summaries")
+            llm_backend = OllamaLLMBackend(model)
         else:
             raise Exception(f"Invalid --llm specified: {llm_choice}")
 
-        process_consultation_themes(consultation, topic_backend=topic_backend, llm=llm)
+        process_consultation_themes(
+            consultation, topic_backend=topic_backend, llm_backend=llm_backend
+        )
 
         # export it to JSON
         json_with_themes = consultation_to_json(consultation)
