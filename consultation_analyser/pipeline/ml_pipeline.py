@@ -4,11 +4,9 @@ from uuid import UUID
 
 import numpy as np
 import pandas as pd
-
 from django.conf import settings
 
 from consultation_analyser.consultations import models
-
 
 logger = logging.getLogger("django.server")
 

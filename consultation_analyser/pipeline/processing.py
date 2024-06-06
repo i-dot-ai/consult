@@ -1,9 +1,9 @@
+
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.pipeline.batch_calls import BatchJobHandler
-from consultation_analyser.pipeline.llm_summariser import create_llm_summaries_for_consultation, get_sagemaker_endpoint
-from langchain_community.llms.fake import FakeListLLM
-
-from django.conf import settings
+from consultation_analyser.pipeline.llm_summariser import (
+    create_llm_summaries_for_consultation,
+)
 
 
 def process_consultation_themes(consultation, embedding_model_name=None, llm=None):

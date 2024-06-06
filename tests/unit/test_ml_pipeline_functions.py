@@ -1,12 +1,11 @@
 import numpy as np
 import pandas as pd
 import pytest
+from django.conf import settings
 
 from consultation_analyser import factories
 from consultation_analyser.consultations import models
 from consultation_analyser.pipeline import ml_pipeline
-
-from django.conf import settings
 
 
 def test_get_embeddings_for_question():

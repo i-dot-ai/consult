@@ -1,19 +1,16 @@
-import os
 import json
+import os
 
-from django.core.management.base import BaseCommand
 from django.conf import settings
+from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
-
-from consultation_analyser.consultations import models
-from consultation_analyser.consultations.upload_consultation import upload_consultation
-from consultation_analyser.consultations.download_consultation import consultation_to_json
-
-from consultation_analyser.pipeline.processing import process_consultation_themes
+from langchain_community.llms.fake import FakeListLLM
 
 from consultation_analyser.authentication.models import User
-
-from langchain_community.llms.fake import FakeListLLM
+from consultation_analyser.consultations import models
+from consultation_analyser.consultations.download_consultation import consultation_to_json
+from consultation_analyser.consultations.upload_consultation import upload_consultation
+from consultation_analyser.pipeline.processing import process_consultation_themes
 
 
 class Command(BaseCommand):

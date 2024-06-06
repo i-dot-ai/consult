@@ -1,7 +1,7 @@
-import pytest
 import json
-
 from pathlib import Path
+
+import pytest
 from django.conf import settings
 from django.core.management import call_command
 
