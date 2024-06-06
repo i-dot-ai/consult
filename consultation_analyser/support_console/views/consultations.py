@@ -53,9 +53,10 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     try:
         if "topic_modelling" in request.POST:
             # Only import when need it - otherwise slow on start-up
+            from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
             from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
 
-            save_themes_for_consultation(consultation_id)
+            save_themes_for_consultation(consultation_id, BERTopicBackend())
             messages.success(request, "Topic modelling has started for this consultation")
         elif "llm_summarisation" in request.POST:
             create_llm_summaries_for_consultation(consultation)

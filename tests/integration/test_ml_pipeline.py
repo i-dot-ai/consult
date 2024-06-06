@@ -2,6 +2,7 @@ import pytest
 
 from consultation_analyser import factories
 from consultation_analyser.consultations import models
+from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
 from consultation_analyser.pipeline.ml_pipeline import (
     save_themes_for_consultation,
 )
@@ -28,7 +29,7 @@ def test_save_themes_for_consultation():
             for q in questions
         ]
 
-    save_themes_for_consultation(consultation.id)
+    save_themes_for_consultation(consultation.id, BERTopicBackend())
 
     # Check we've generated themes for questions with full text responses, and check fields populated
     for q in [free_text_question1, free_text_question2]:

@@ -9,12 +9,14 @@ from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.upload_consultation import upload_consultation
-from consultation_analyser.pipeline.processing import process_consultation_themes
+from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
+from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
 from consultation_analyser.pipeline.llm_summariser import (
     get_dummy_llm,
-    get_sagemaker_endpoint,
     get_ollama_llm,
+    get_sagemaker_endpoint,
 )
+from consultation_analyser.pipeline.processing import process_consultation_themes
 
 
 class Command(BaseCommand):
@@ -77,9 +79,11 @@ class Command(BaseCommand):
             raise Exception("You need to specify an input file")
 
         embedding_model = options.get("embedding_model", None)
-        if embedding_model:
+        if embedding_model == "fake":
+            topic_backend = DummyTopicBackend()
             print(f"Using {embedding_model} for BERTopic embeddings")
         else:
+            topic_backend = BERTopicBackend()
             print(
                 f"Using default {settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL} for BERTopic embeddings"
             )
@@ -99,7 +103,7 @@ class Command(BaseCommand):
         else:
             raise Exception(f"Invalid --llm specified: {llm_choice}")
 
-        process_consultation_themes(consultation, embedding_model_name=embedding_model, llm=llm)
+        process_consultation_themes(consultation, topic_backend=topic_backend, llm=llm)
 
         # export it to JSON
         json_with_themes = consultation_to_json(consultation)

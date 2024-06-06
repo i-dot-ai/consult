@@ -3,7 +3,8 @@ from django.conf import settings
 from webtest import Upload
 
 from consultation_analyser.factories import UserFactory
-from consultation_analyser.pipeline.dummy_pipeline import save_themes_for_consultation
+from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
+from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
 from tests.helpers import sign_in
 
 
@@ -38,7 +39,7 @@ def test_user_uploads_consultation(django_app):
     processing_page = django_app.get(f"/consultations/{consultation.slug}/")
     assert "processing your consultation" in processing_page
 
-    save_themes_for_consultation(consultation.id)
+    save_themes_for_consultation(consultation.id, DummyTopicBackend())
 
     consultation_page = django_app.get(f"/consultations/{consultation.slug}/")
     assert consultation.name in consultation_page

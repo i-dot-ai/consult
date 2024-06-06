@@ -1,19 +1,17 @@
-
 from consultation_analyser.hosting_environment import HostingEnvironment
+from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
 from consultation_analyser.pipeline.batch_calls import BatchJobHandler
 from consultation_analyser.pipeline.llm_summariser import (
     create_llm_summaries_for_consultation,
 )
+from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
 
 
-def process_consultation_themes(consultation, embedding_model_name=None, llm=None):
-    # Import only when needed
-    from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
+def process_consultation_themes(consultation, topic_backend=None, llm=None):
+    if not topic_backend:
+        topic_backend = BERTopicBackend()
 
-    if embedding_model_name:
-        save_themes_for_consultation(consultation.id, embedding_model_name)
-    else:
-        save_themes_for_consultation(consultation.id)
+    save_themes_for_consultation(consultation.id, topic_backend)
 
     if llm:
         create_llm_summaries_for_consultation(consultation, llm)

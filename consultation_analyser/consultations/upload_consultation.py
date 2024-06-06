@@ -49,7 +49,7 @@ def upload_consultation(file, user):
         response.save()
         for answer_attrs in answers:
             if answer_attrs.get("theme_id"):
-                answer_attrs.pop("theme_id") # discard this if present
+                answer_attrs.pop("theme_id")  # discard this if present
             answer_attrs["consultation_response_id"] = response.id
             question_id = answer_attrs.pop("question_id")
             answer_attrs["question_id"] = question_ids_map[question_id]

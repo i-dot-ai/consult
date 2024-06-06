@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
+
 from consultation_analyser.consultations import models
+
 from .types import TopicAssignment
 
 

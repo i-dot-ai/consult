@@ -1,17 +1,21 @@
+from typing import Dict, List, Union
 from uuid import UUID
-from typing import List, Union, Dict
 
 import numpy as np
 import pandas as pd
-from consultation_analyser.consultations import models
-from .types import TopicAssignment
-from .topic_backend import TopicBackend
-
 from django.conf import settings
+
+from consultation_analyser.consultations import models
+
+from .topic_backend import TopicBackend
+from .types import TopicAssignment
 
 
 class BERTopicBackend(TopicBackend):
-    def __init__(self, embedding_model: str):
+    def __init__(self, embedding_model: str = None):
+        if not embedding_model:
+            embedding_model = settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL
+
         self.embedding_model = embedding_model
         self.random_state = 12  # For reproducibility
 
