@@ -12,4 +12,7 @@ module "postgres" {
   service_sg_ids          = [module.ecs.ecs_sg_id]
   publicly_accessible     = var.publicly_accessible
   securelist_ips          = concat(var.developer_ips, var.internal_ips)
+  secret_tags = {
+    SecretPurpose : "general"
+  }
 }
