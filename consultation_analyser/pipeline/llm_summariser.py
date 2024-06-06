@@ -12,6 +12,7 @@ from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts import PromptTemplate
 from langchain.pydantic_v1 import BaseModel
 from langchain_community.llms import SagemakerEndpoint
+from langchain_community.llms import Ollama
 from langchain_community.llms.fake import FakeListLLM
 from langchain_community.llms.sagemaker_endpoint import LLMContentHandler
 from langchain_core.exceptions import OutputParserException
@@ -142,6 +143,10 @@ def get_dummy_llm():
             '{"short description": "Example short description", "summary": "Example summary"}'
         ]
     )
+
+
+def get_ollama_llm(model_name: str):
+    return Ollama(model=model_name)
 
 
 def generate_theme_summary(theme: Theme, llm) -> dict:

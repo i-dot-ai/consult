@@ -10,7 +10,11 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.upload_consultation import upload_consultation
 from consultation_analyser.pipeline.processing import process_consultation_themes
-from consultation_analyser.pipeline.llm_summariser import get_dummy_llm
+from consultation_analyser.pipeline.llm_summariser import (
+    get_dummy_llm,
+    get_sagemaker_endpoint,
+    get_ollama_llm,
+)
 
 
 class Command(BaseCommand):
@@ -27,6 +31,12 @@ class Command(BaseCommand):
             "--embedding_model",
             action="store",
             help="The embedding model to use in BERTopic. Pass 'fake' to get fake topics",
+            type=str,
+        )
+        parser.add_argument(
+            "--llm",
+            action="store",
+            help="The llm to use for summarising. Will be fake by default. Pass 'sagemaker' or 'ollama/model' to specify a model",
             type=str,
         )
         parser.add_argument(
@@ -51,12 +61,13 @@ class Command(BaseCommand):
             name = input_json["consultation"]["name"]
             old_consultation = models.Consultation.objects.get(name=name)
             old_consultation.delete()
+            print("Removed original consultation")
 
         try:
             consultation = upload_consultation(open(input_file), user)
         except IntegrityError as e:
             print(e)
-            print (
+            print(
                 "This consultation already exists. To remove it and start with a fresh copy pass --clean."
             )
             exit()
@@ -66,11 +77,29 @@ class Command(BaseCommand):
             raise Exception("You need to specify an input file")
 
         embedding_model = options.get("embedding_model", None)
-        llm = get_dummy_llm()
+        if embedding_model:
+            print(f"Using {embedding_model} for BERTopic embeddings")
+        else:
+            print(
+                f"Using default {settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL} for BERTopic embeddings"
+            )
 
-        process_consultation_themes(
-            consultation, embedding_model_name=embedding_model, llm=llm
-        )
+        llm_choice = options.get("llm", "fake")
+
+        if llm_choice == "fake" or not llm_choice:
+            llm = get_dummy_llm()
+            print("Using dummy llm for summaries")
+        elif llm_choice == "sagemaker":
+            llm = get_sagemaker_endpoint()
+            print("Using sagemaker llm for summaries")
+        elif llm_choice.startswith("ollama"):
+            model = llm_choice.split("/")[1]
+            llm = get_ollama_llm(model)
+            print(f"Using {model} on ollama for summaries")
+        else:
+            raise Exception(f"Invalid --llm specified: {llm_choice}")
+
+        process_consultation_themes(consultation, embedding_model_name=embedding_model, llm=llm)
 
         # export it to JSON
         json_with_themes = consultation_to_json(consultation)
