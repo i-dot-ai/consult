@@ -10,12 +10,6 @@ def process_consultation_themes(consultation, embedding_model_name=None, llm=Non
     # Import only when needed
     from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
 
-    if not llm:
-        if settings.USE_SAGEMAKER_LLM:
-            llm = get_sagemaker_endpoint()
-        else:
-            FakeListLLM(responses=["resp1", "resp2", "resp3"])
-
     if embedding_model_name:
         save_themes_for_consultation(consultation.id, embedding_model_name)
     else:

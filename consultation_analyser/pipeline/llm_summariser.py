@@ -12,6 +12,7 @@ from langchain.output_parsers import PydanticOutputParser
 from langchain.prompts import PromptTemplate
 from langchain.pydantic_v1 import BaseModel
 from langchain_community.llms import SagemakerEndpoint
+from langchain_community.llms.fake import FakeListLLM
 from langchain_community.llms.sagemaker_endpoint import LLMContentHandler
 from langchain_core.exceptions import OutputParserException
 
@@ -175,6 +176,15 @@ def create_llm_summaries_for_consultation(consultation, llm=None):
     themes = Theme.objects.filter(question__section__consultation=consultation).filter(
         question__has_free_text=True
     )
+
+    if not llm:
+        if settings.USE_SAGEMAKER_LLM:
+            llm = get_sagemaker_endpoint()
+        else:
+            llm = FakeListLLM(responses=[
+                '{"short description": "Example short description", "summary": "Example summary"}'
+            ])
+
     for theme in themes:
         theme_summary_data = generate_theme_summary(theme, llm)
         theme.summary = theme_summary_data["summary"]
