@@ -4,13 +4,13 @@ import os
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
-from langchain_community.llms.fake import FakeListLLM
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.upload_consultation import upload_consultation
 from consultation_analyser.pipeline.processing import process_consultation_themes
+from consultation_analyser.pipeline.llm_summariser import get_dummy_llm
 
 
 class Command(BaseCommand):
@@ -66,10 +66,8 @@ class Command(BaseCommand):
             raise Exception("You need to specify an input file")
 
         embedding_model = options.get("embedding_model", None)
+        llm = get_dummy_llm()
 
-        llm = FakeListLLM(responses=[
-            '{"short description": "Example short description", "summary": "Example summary"}'
-        ])
         process_consultation_themes(
             consultation, embedding_model_name=embedding_model, llm=llm
         )

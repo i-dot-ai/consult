@@ -116,8 +116,6 @@ def get_random_sample_of_responses_for_theme(
     return combined_responses_string
 
 
-# TODO - actually do this at the start of the process consultation,
-# but check that it's ready at the start of the LLM summariser method
 @check_and_launch_sagemaker
 def get_sagemaker_endpoint() -> SagemakerEndpoint:
     content_handler = ContentHandler()
@@ -136,6 +134,14 @@ def get_sagemaker_endpoint() -> SagemakerEndpoint:
         client=client,
     )
     return sagemaker_endpoint
+
+
+def get_dummy_llm():
+    return FakeListLLM(
+        responses=[
+            '{"short description": "Example short description", "summary": "Example summary"}'
+        ]
+    )
 
 
 def generate_theme_summary(theme: Theme, llm) -> dict:
@@ -181,9 +187,7 @@ def create_llm_summaries_for_consultation(consultation, llm=None):
         if settings.USE_SAGEMAKER_LLM:
             llm = get_sagemaker_endpoint()
         else:
-            llm = FakeListLLM(responses=[
-                '{"short description": "Example short description", "summary": "Example summary"}'
-            ])
+            llm = get_dummy_llm()
 
     for theme in themes:
         theme_summary_data = generate_theme_summary(theme, llm)
