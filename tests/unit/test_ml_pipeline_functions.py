@@ -6,6 +6,8 @@ from consultation_analyser import factories
 from consultation_analyser.consultations import models
 from consultation_analyser.pipeline import ml_pipeline
 
+from django.conf import settings
+
 
 def test_get_embeddings_for_question():
     answers_list = [
@@ -19,7 +21,7 @@ def test_get_embeddings_for_question():
         },
         {"id": 3, "free_text": "The balance of sweetness, not too overpowering but just right."},
     ]
-    output = ml_pipeline.get_embeddings_for_question(answers_list)
+    output = ml_pipeline.get_embeddings_for_question(answers_list, settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL)
     assert len(output) == 3
     assert "embedding" in output[0].keys()
     assert np.array_equal(output[0]["embedding"], output[1]["embedding"])

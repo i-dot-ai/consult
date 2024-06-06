@@ -68,7 +68,7 @@ class Command(BaseCommand):
         if not input_file:
             raise Exception("You need to specify an input file")
 
-        embedding_model = options.get("embedding_model", "thenlper/gte-small")
+        embedding_model = options.get("embedding_model", None)
 
         llm = FakeListLLM(responses=[
             '{"short description": "Example short description", "summary": "Example summary"}'
