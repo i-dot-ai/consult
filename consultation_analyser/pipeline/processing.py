@@ -1,15 +1,30 @@
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.pipeline.batch_calls import BatchJobHandler
-from consultation_analyser.pipeline.llm_summariser import create_llm_summaries_for_consultation
+from consultation_analyser.pipeline.llm_summariser import create_llm_summaries_for_consultation, get_sagemaker_endpoint
+from langchain_community.llms.fake import FakeListLLM
+
+from django.conf import settings
 
 
-def process_consultation_themes(consultation):
+def process_consultation_themes(consultation, embedding_model_name=None, llm=None):
     # Import only when needed
     from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
 
-    # TODO - rearrange these functions to run on batch
-    save_themes_for_consultation(consultation.id)
-    create_llm_summaries_for_consultation(consultation)
+    if not llm:
+        if settings.USE_SAGEMAKER_LLM:
+            llm = get_sagemaker_endpoint()
+        else:
+            FakeListLLM(responses=["resp1", "resp2", "resp3"])
+
+    if embedding_model_name:
+        save_themes_for_consultation(consultation.id, embedding_model_name)
+    else:
+        save_themes_for_consultation(consultation.id)
+
+    if llm:
+        create_llm_summaries_for_consultation(consultation, llm)
+    else:
+        create_llm_summaries_for_consultation(consultation)
 
 
 def run_processing_pipeline(consultation):

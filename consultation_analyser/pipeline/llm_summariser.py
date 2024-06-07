@@ -115,6 +115,9 @@ def get_random_sample_of_responses_for_theme(
     return combined_responses_string
 
 
+# TODO - actually do this at the start of the process consultation,
+# but check that it's ready at the start of the LLM summariser method
+@check_and_launch_sagemaker
 def get_sagemaker_endpoint() -> SagemakerEndpoint:
     content_handler = ContentHandler()
     client = boto3.client("sagemaker-runtime", region_name=settings.AWS_REGION)
@@ -134,11 +137,10 @@ def get_sagemaker_endpoint() -> SagemakerEndpoint:
     return sagemaker_endpoint
 
 
-def generate_theme_summary(theme: Theme) -> dict:
+def generate_theme_summary(theme: Theme, llm) -> dict:
     """For a given theme, generate a summary using an LLM."""
     logger.info(f"Starting LLM summarisation for theme with keywords: {theme.topic_keywords} ")
     prompt_template = get_prompt_template()
-    sagemaker_endpoint = get_sagemaker_endpoint()
     # TODO - where is this max tokens coming from?
     # max_tokens=2000 in original code
     sample_responses = get_random_sample_of_responses_for_theme(
@@ -153,7 +155,7 @@ def generate_theme_summary(theme: Theme) -> dict:
     parser = PydanticOutputParser(pydantic_object=ThemeSummaryOutput)
     errors = (OutputParserException, ValueError)
     try:
-        llm_chain = prompt_template | sagemaker_endpoint | parser
+        llm_chain = prompt_template | llm | parser
         # TODO - are the outputs of this as good as the RetryWithErrorOutputParser?
         llm_chain = llm_chain.with_retry(
             retry_if_exception_type=errors, wait_exponential_jitter=False, stop_after_attempt=10
@@ -168,27 +170,13 @@ def generate_theme_summary(theme: Theme) -> dict:
     return parsed_output
 
 
-def dummy_generate_theme_summary(theme: Theme) -> dict[str, str]:
-    concatenated_keywords = (", ").join(theme.topic_keywords)
-    made_up_short_description = f"Short description: {concatenated_keywords}"
-    made_up_summary = f"Longer summary: {concatenated_keywords}"
-    output = {"short_description": made_up_short_description, "summary": made_up_summary}
-    return output
-
-
-# TODO - actually do this at the start of the process consultation,
-# but check that it's ready at the start of the LLM summariser method
-@check_and_launch_sagemaker
-def create_llm_summaries_for_consultation(consultation):
+def create_llm_summaries_for_consultation(consultation, llm=None):
     logger.info(f"Starting LLM summarisation for consultation: {consultation.name}")
     themes = Theme.objects.filter(question__section__consultation=consultation).filter(
         question__has_free_text=True
     )
     for theme in themes:
-        if settings.USE_SAGEMAKER_LLM:
-            theme_summary_data = generate_theme_summary(theme)
-        else:
-            theme_summary_data = dummy_generate_theme_summary(theme)
+        theme_summary_data = generate_theme_summary(theme, llm)
         theme.summary = theme_summary_data["summary"]
         theme.short_description = theme_summary_data["short_description"]
         logger.info(f"Theme description: {theme.short_description}")

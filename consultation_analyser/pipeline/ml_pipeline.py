@@ -15,7 +15,7 @@ RANDOM_STATE = 12  # For reproducibility
 
 def get_embeddings_for_question(
     answers_list: List[Dict[str, Union[UUID, str]]],
-    embedding_model_name: str = "thenlper/gte-small",
+    embedding_model_name: str,
 ) -> List[Dict[str, Union[UUID, str, np.ndarray]]]:
     from sentence_transformers import SentenceTransformer
 
@@ -84,21 +84,30 @@ def save_themes_to_answers(answers_topics_df: pd.DataFrame) -> None:
         answer.save_theme_to_answer(topic_keywords=topic_keywords, topic_id=topic_id)
 
 
-def save_themes_for_question(question: models.Question) -> None:
+def save_themes_for_question(question: models.Question, embedding_model_name: str) -> None:
     logging.info(f"Get topics for question: {question.text}")
     # Order must remain the same - so convert to list
     answers_qs = models.Answer.objects.filter(question=question).order_by("created_at")
+
+    if embedding_model_name == "fake":
+        from faker import Faker
+        import random
+        f = Faker()
+        for i, answer in enumerate(answers_qs):
+            answer.save_theme_to_answer(topic_keywords=f.words(4), topic_id=i)
+        return
+
     answers_list = list(answers_qs.values("id", "free_text"))
-    answers_list_with_embeddings = get_embeddings_for_question(answers_list)
+    answers_list_with_embeddings = get_embeddings_for_question(answers_list, embedding_model_name=embedding_model_name)
     topic_model = get_topic_model(answers_list_with_embeddings)
     answers_topics_df = get_answers_and_topics(topic_model, answers_list_with_embeddings)
     save_themes_to_answers(answers_topics_df)
 
 
-def save_themes_for_consultation(consultation_id: UUID) -> None:
+def save_themes_for_consultation(consultation_id: UUID, embedding_model_name="thenlper/gte-small") -> None:
     logging.info(f"Starting topic modelling for consultation_id: {consultation_id}")
     questions = models.Question.objects.filter(
         section__consultation__id=consultation_id, has_free_text=True
     )
     for question in questions:
-        save_themes_for_question(question)
+        save_themes_for_question(question, embedding_model_name)
