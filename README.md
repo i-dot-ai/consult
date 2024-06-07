@@ -115,6 +115,23 @@ The govuk assets are versioned in the `npm` package. `make dev_environment`
 includes a step to copy them to the `frontend` folder from where `runserver`
 can serve them; you can rerun this with `make govuk_frontend`.
 
+## Obtaining outputs programatically
+
+The `evaluate` command will accept a JSON file containing a `ConsultationWithResponses` and emit a JSON file containing a `ConsultationWithResponsesAndThemes`.
+
+Invoke the command like this, replacing the input file with your JSON.
+```
+poetry run manage.py evaluate --input=tests/examples/chocolate.json --clean
+```
+
+Options available for this command are:
+
+`--clean`: delete this consultation if it already exists in the database.
+`--llm`: which llm to use. Pass `fake`, `sagemaker`, or `ollama/model_name`.
+`--embdedding_model`: pass the model for `SentenceTransformers` to use in the `BERTopic` pipeline. If `fake` is passed, random topics will be generated.
+
+The resulting file will be placed in `tmp/evals` and its path will be printed on the console.
+
 ## Schema documentation
 
 The data schema for consultations supplied to the tool is defined in `consultation_analyser/consultations/public_schema/public_schema.yaml`.
