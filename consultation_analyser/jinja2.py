@@ -3,6 +3,7 @@ from django.template.loader import render_to_string
 from django.templatetags.static import static
 from django.urls import reverse
 from jinja2 import ChoiceLoader, Environment, PackageLoader, PrefixLoader
+from django.contrib.humanize.templatetags.humanize import intcomma
 
 
 def render_form(form, request):
@@ -30,7 +31,14 @@ def environment(**options):
 
     env = Environment(**options, extensions=[CompressorExtension])  # nosec
 
-    tags = {"static": static, "url": reverse, "render_form": render_form, "datetime": datetime}
+    tags = {
+        "static": static,
+        "url": reverse,
+        "render_form": render_form,
+        "datetime": datetime,
+    }
+
+    env.filters['intcomma'] = intcomma
 
     env.globals.update(tags)
 

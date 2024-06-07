@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "compressor",
     "crispy_forms",
     "crispy_forms_gds",
+    "django.contrib.humanize",
 ]
 
 
