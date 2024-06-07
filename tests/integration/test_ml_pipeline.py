@@ -3,9 +3,32 @@ import pytest
 from consultation_analyser import factories
 from consultation_analyser.consultations import models
 from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
+from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
 from consultation_analyser.pipeline.ml_pipeline import (
     save_themes_for_consultation,
 )
+
+
+@pytest.mark.django_db
+def test_distinct_topics_assigned():
+    consultation = factories.ConsultationFactory(name="My new consultation")
+    section = factories.SectionFactory(name="Base section", consultation=consultation)
+    q = factories.QuestionFactory(has_free_text=True, text="Do you like wolves?", section=section)
+
+    # identical answers
+    for r in range(10):
+        response = factories.ConsultationResponseFactory(consultation=consultation)
+        factories.AnswerFactory(
+            question=q,
+            consultation_response=response,
+            theme=None,
+            free_text="I love wolves, they are fluffy and cute",
+        )
+
+    save_themes_for_consultation(consultation.id, BERTopicBackend())
+
+    # all answers should get the same theme
+    assert models.Theme.objects.count() == 1
 
 
 @pytest.mark.django_db
@@ -29,7 +52,7 @@ def test_save_themes_for_consultation():
             for q in questions
         ]
 
-    save_themes_for_consultation(consultation.id, BERTopicBackend())
+    save_themes_for_consultation(consultation.id, DummyTopicBackend())
 
     # Check we've generated themes for questions with full text responses, and check fields populated
     for q in [free_text_question1, free_text_question2]:
