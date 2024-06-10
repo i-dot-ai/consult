@@ -1,4 +1,5 @@
 import json
+import logging
 import os
 import time
 
@@ -16,6 +17,9 @@ from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTop
 from consultation_analyser.pipeline.backends.ollama_llm_backend import OllamaLLMBackend
 from consultation_analyser.pipeline.backends.sagemaker_llm_backend import SagemakerLLMBackend
 from consultation_analyser.pipeline.processing import process_consultation_themes
+
+
+logger = logging.getLogger("pipeline")
 
 
 class Command(BaseCommand):
@@ -58,6 +62,8 @@ class Command(BaseCommand):
 
         user = User.objects.filter(email="email@example.com").first()
 
+        logger.info(f"Called evaluate with {options}")
+
         # upload, cleaning if required
         clean = options["clean"]
         if clean:
@@ -65,13 +71,13 @@ class Command(BaseCommand):
             name = input_json["consultation"]["name"]
             old_consultation = models.Consultation.objects.get(name=name)
             old_consultation.delete()
-            print("Removed original consultation")
+            logger.info("Removed original consultation")
 
         try:
             consultation = upload_consultation(open(input_file), user)
         except IntegrityError as e:
-            print(e)
-            print(
+            logger.info(e)
+            logger.info(
                 "This consultation already exists. To remove it and start with a fresh copy pass --clean."
             )
             exit()
@@ -83,15 +89,11 @@ class Command(BaseCommand):
         embedding_model = options.get("embedding_model", None)
         if embedding_model == "fake":
             topic_backend = DummyTopicBackend()
-            print("Using fake topic model")
+            logger.info("Using fake topic model")
         elif embedding_model:
             topic_backend = BERTopicBackend(embedding_model=embedding_model)
-            print(f"Using {embedding_model} for BERTopic embeddings")
         else:
             topic_backend = BERTopicBackend()
-            print(
-                f"Using default {settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL} for BERTopic embeddings"
-            )
 
         llm_choice = options.get("llm", "fake")
 
@@ -126,4 +128,4 @@ class Command(BaseCommand):
         f.write(json_with_themes)
         f.close()
 
-        print(f"Output: {output_dir}")
+        logger.info(f"Wrote themes and topic model to {output_dir}")
