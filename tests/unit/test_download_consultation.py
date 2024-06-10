@@ -7,7 +7,8 @@ from django.conf import settings
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.upload_consultation import upload_consultation
 from consultation_analyser.factories import UserFactory
-from consultation_analyser.pipeline.dummy_pipeline import save_themes_for_consultation
+from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
+from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
 
 
 @pytest.mark.django_db
@@ -16,7 +17,7 @@ def test_consultation_to_json(django_app):
     file = open(settings.BASE_DIR / "tests" / "examples" / "upload.json", "rb")
 
     consultation = upload_consultation(file, user)
-    save_themes_for_consultation(consultation.id)
+    save_themes_for_consultation(consultation.id, DummyTopicBackend())
 
     consultation_json = json.loads(consultation_to_json(consultation))
 

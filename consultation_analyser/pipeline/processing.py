@@ -1,15 +1,22 @@
 from consultation_analyser.hosting_environment import HostingEnvironment
+from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
+from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
 from consultation_analyser.pipeline.batch_calls import BatchJobHandler
-from consultation_analyser.pipeline.llm_summariser import create_llm_summaries_for_consultation
+from consultation_analyser.pipeline.llm_summariser import (
+    create_llm_summaries_for_consultation,
+)
+from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
 
 
-def process_consultation_themes(consultation):
-    # Import only when needed
-    from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
+def process_consultation_themes(consultation, topic_backend=None, llm_backend=None):
+    if not topic_backend:
+        topic_backend = BERTopicBackend()
 
-    # TODO - rearrange these functions to run on batch
-    save_themes_for_consultation(consultation.id)
-    create_llm_summaries_for_consultation(consultation)
+    if not llm_backend:
+        llm_backend = DummyLLMBackend()
+
+    save_themes_for_consultation(consultation.id, topic_backend)
+    create_llm_summaries_for_consultation(consultation, llm_backend)
 
 
 def run_processing_pipeline(consultation):

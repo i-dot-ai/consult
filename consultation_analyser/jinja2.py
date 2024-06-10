@@ -1,4 +1,5 @@
 from compressor.contrib.jinja2ext import CompressorExtension
+from django.contrib.humanize.templatetags.humanize import intcomma
 from django.template.loader import render_to_string
 from django.templatetags.static import static
 from django.urls import reverse
@@ -30,7 +31,14 @@ def environment(**options):
 
     env = Environment(**options, extensions=[CompressorExtension])  # nosec
 
-    tags = {"static": static, "url": reverse, "render_form": render_form, "datetime": datetime}
+    tags = {
+        "static": static,
+        "url": reverse,
+        "render_form": render_form,
+        "datetime": datetime,
+    }
+
+    env.filters["intcomma"] = intcomma
 
     env.globals.update(tags)
 

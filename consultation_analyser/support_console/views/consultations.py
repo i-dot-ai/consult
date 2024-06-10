@@ -9,10 +9,10 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.dummy_data import create_dummy_data
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.pipeline.llm_summariser import (
+from consultation_analyser.pipeline.backends.types import (
     NO_SUMMARY_STR,
-    create_llm_summaries_for_consultation,
 )
+from consultation_analyser.pipeline.llm_summariser import create_llm_summaries_for_consultation
 from consultation_analyser.pipeline.processing import run_processing_pipeline
 
 
@@ -53,12 +53,15 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     try:
         if "topic_modelling" in request.POST:
             # Only import when need it - otherwise slow on start-up
+            from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
             from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
 
-            save_themes_for_consultation(consultation_id)
+            save_themes_for_consultation(consultation_id, BERTopicBackend())
             messages.success(request, "Topic modelling has started for this consultation")
         elif "llm_summarisation" in request.POST:
-            create_llm_summaries_for_consultation(consultation)
+            from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
+
+            create_llm_summaries_for_consultation(consultation, DummyLLMBackend())
             messages.success(request, "Themes have been sent to the LLM for summarisation")
         elif "generate_themes" in request.POST:
             run_processing_pipeline(consultation)
@@ -73,8 +76,8 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     except RuntimeError as error:
         messages.error(request, error.args[0])
     themes_for_consultation = models.Theme.objects.filter(
-        question__section__consultation=consultation
-    )
+        answer__question__section__consultation=consultation
+    ).distinct()
     number_of_themes = themes_for_consultation.count()
     number_of_themes_with_summaries = (
         themes_for_consultation.exclude(summary="").exclude(summary=NO_SUMMARY_STR).count()

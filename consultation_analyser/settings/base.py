@@ -50,6 +50,7 @@ INSTALLED_APPS = [
     "compressor",
     "crispy_forms",
     "crispy_forms_gds",
+    "django.contrib.humanize",
 ]
 
 
@@ -192,6 +193,9 @@ BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION", default=None)
 SAGEMAKER_ENDPOINT_NAME = env("SAGEMAKER_ENDPOINT_NAME")
 USE_SAGEMAKER_LLM = env.bool("USE_SAGEMAKER_LLM")
 AWS_REGION = env("AWS_REGION")
+
+# BERTopic
+BERTOPIC_DEFAULT_EMBEDDING_MODEL = "thenlper/gte-small"
 
 # Authentication
 LOGIN_URL = "/sign-in/"
