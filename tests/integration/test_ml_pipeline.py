@@ -1,3 +1,4 @@
+import os.path
 import pytest
 
 from consultation_analyser import factories
@@ -10,7 +11,7 @@ from consultation_analyser.pipeline.ml_pipeline import (
 
 
 @pytest.mark.django_db
-def test_distinct_topics_assigned():
+def test_topic_model_end_to_end(tmp_path):
     consultation = factories.ConsultationFactory(name="My new consultation")
     section = factories.SectionFactory(name="Base section", consultation=consultation)
     q = factories.QuestionFactory(has_free_text=True, text="Do you like wolves?", section=section)
@@ -25,7 +26,11 @@ def test_distinct_topics_assigned():
             free_text="I love wolves, they are fluffy and cute",
         )
 
-    save_themes_for_consultation(consultation.id, BERTopicBackend())
+    backend = BERTopicBackend()
+    save_themes_for_consultation(consultation.id, backend)
+
+    backend.save_topic_model(tmp_path)
+    assert(os.path.isfile(tmp_path / "bertopic/topic_embeddings.safetensors"))
 
     # all answers should get the same theme
     assert models.Theme.objects.count() == 1

@@ -1,3 +1,4 @@
+import os
 import json
 from pathlib import Path
 
@@ -10,7 +11,7 @@ from consultation_analyser.factories import UserFactory
 
 
 @pytest.mark.django_db
-def test_local_eval():
+def test_local_eval(tmp_path):
     UserFactory(email="email@example.com")
 
     file_path = settings.BASE_DIR / "tests" / "examples" / "chocolate.json"
@@ -19,7 +20,9 @@ def test_local_eval():
 
     output_folder = Path("tmp/eval/dummy-chocolate-consultation")
     json_with_themes_path = output_folder / "consultation_with_themes.json"
-    # timings = output_folder / "timings.json"
+    serialized_model = output_folder / "GENERATED_WITH_DUMMY_TOPIC_MODEL.txt"
+
+    assert os.path.isfile(serialized_model)
 
     with_themes = json.loads(open(json_with_themes_path).read())
 

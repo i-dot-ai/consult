@@ -109,6 +109,8 @@ class Command(BaseCommand):
         output_dir = settings.BASE_DIR / "tmp" / "eval" / consultation.slug
         os.makedirs(output_dir, exist_ok=True)
 
+        topic_backend.save_topic_model(output_dir)
+
         f = open(output_dir / "consultation_with_themes.json", "w")
         f.write(json_with_themes)
         f.close()

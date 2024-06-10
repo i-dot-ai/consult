@@ -1,3 +1,5 @@
+import os
+from pathlib import Path
 from typing import Dict, List, Union, Optional
 from uuid import UUID
 
@@ -18,13 +20,14 @@ class BERTopicBackend(TopicBackend):
 
         self.embedding_model = embedding_model
         self.random_state = 12  # For reproducibility
+        self.topic_model = None
 
     def get_topics(self, question: models.Question) -> list[TopicAssignment]:
         answers_qs = models.Answer.objects.filter(question=question).order_by("created_at")
         answers_list = list(answers_qs.values("id", "free_text"))
         answers_list_with_embeddings = self.__get_embeddings_for_question(answers_list)
-        topic_model = self.__get_topic_model(answers_list_with_embeddings)
-        answers_topics_df = self.__get_answers_and_topics(topic_model, answers_list_with_embeddings)
+        self.topic_model = self.__get_topic_model(answers_list_with_embeddings)
+        answers_topics_df = self.__get_answers_and_topics(self.topic_model, answers_list_with_embeddings)
 
         assignments = []
         for row in answers_topics_df.itertuples():
@@ -36,6 +39,12 @@ class BERTopicBackend(TopicBackend):
             )
 
         return assignments
+
+    def save_topic_model(self, output_dir) -> None:
+        output_dir = Path(output_dir) / "bertopic"
+        os.makedirs(output_dir)
+        self.topic_model.save(output_dir, serialization="safetensors", save_ctfidf=True,
+                              save_embedding_model=self.embedding_model)
 
     def __get_embeddings_for_question(
         self,
