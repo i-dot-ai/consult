@@ -44,17 +44,20 @@ class Command(BaseCommand):
             action="store_true",
             help="Whether to delete an existing matching consultation first",
         )
+        parser.add_argument(
+            "--output_dir",
+            action="store",
+            help="The output directory - defaults to tmp/eval/$consultation-slug",
+        )
 
     def handle(self, *args, **options):
         input_file = options["input"]
         if not input_file:
             raise Exception("You need to specify an input file")
 
-        # TODO deal with existing consultation and make sure user knows it will be deleted
-
         user = User.objects.filter(email="email@example.com").first()
-        # upload the consultation
 
+        # upload, cleaning if required
         clean = options["clean"]
         if clean:
             input_json = json.loads(open(input_file).read())
@@ -79,7 +82,7 @@ class Command(BaseCommand):
         embedding_model = options.get("embedding_model", None)
         if embedding_model == "fake":
             topic_backend = DummyTopicBackend()
-            print(f"Using {embedding_model} for BERTopic embeddings")
+            print("Using fake topic model")
         else:
             topic_backend = BERTopicBackend()
             print(
@@ -105,8 +108,10 @@ class Command(BaseCommand):
         # export it to JSON
         json_with_themes = consultation_to_json(consultation)
 
-        # write it to a well known place
-        output_dir = settings.BASE_DIR / "tmp" / "eval" / consultation.slug
+        # write it
+        output_dir = options.get("output_dir")
+        if not output_dir:
+            output_dir = settings.BASE_DIR / "tmp" / "eval" / consultation.slug
         os.makedirs(output_dir, exist_ok=True)
 
         topic_backend.save_topic_model(output_dir)

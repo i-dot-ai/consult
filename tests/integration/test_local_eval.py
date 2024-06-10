@@ -16,11 +16,10 @@ def test_local_eval(tmp_path):
 
     file_path = settings.BASE_DIR / "tests" / "examples" / "chocolate.json"
 
-    call_command("evaluate", input=file_path, embedding_model="fake")
+    call_command("evaluate", input=file_path, embedding_model="fake", output_dir=tmp_path)
 
-    output_folder = Path("tmp/eval/dummy-chocolate-consultation")
-    json_with_themes_path = output_folder / "consultation_with_themes.json"
-    serialized_model = output_folder / "GENERATED_WITH_DUMMY_TOPIC_MODEL.txt"
+    json_with_themes_path = tmp_path / "consultation_with_themes.json"
+    serialized_model = tmp_path / "GENERATED_WITH_DUMMY_TOPIC_MODEL.txt"
 
     assert os.path.isfile(serialized_model)
 
