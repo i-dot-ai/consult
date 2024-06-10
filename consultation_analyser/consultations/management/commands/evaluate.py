@@ -1,8 +1,8 @@
 import json
 import logging
 import os
-from pathlib import Path
 import time
+from pathlib import Path
 from typing import Optional
 
 from django.conf import settings
@@ -19,7 +19,6 @@ from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTop
 from consultation_analyser.pipeline.backends.ollama_llm_backend import OllamaLLMBackend
 from consultation_analyser.pipeline.backends.sagemaker_llm_backend import SagemakerLLMBackend
 from consultation_analyser.pipeline.processing import process_consultation_themes
-
 
 logger = logging.getLogger("pipeline")
 
@@ -64,7 +63,9 @@ class Command(BaseCommand):
         output_dir = self.__get_output_dir(
             output_dir=options["output_dir"], consultation=consultation
         )
-        topic_backend = self.__get_topic_backend(embedding_model=options["embedding_model"], persistence_path=output_dir)
+        topic_backend = self.__get_topic_backend(
+            embedding_model=options["embedding_model"], persistence_path=output_dir
+        )
         llm_backend = self.__get_llm(llm_identifier=options["llm"])
 
         process_consultation_themes(
@@ -99,7 +100,9 @@ class Command(BaseCommand):
 
         return consultation
 
-    def __get_topic_backend(self, persistence_path: Path = None, embedding_model: Optional[str] = ""):
+    def __get_topic_backend(
+        self, persistence_path: Path = None, embedding_model: Optional[str] = ""
+    ):
         if embedding_model == "fake":
             topic_backend = DummyTopicBackend()
             logger.info("Using fake topic model")

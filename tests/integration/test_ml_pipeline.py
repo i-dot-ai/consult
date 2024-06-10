@@ -1,5 +1,3 @@
-import os.path
-
 import pytest
 
 from consultation_analyser import factories

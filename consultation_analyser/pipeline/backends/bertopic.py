@@ -18,9 +18,7 @@ logger = logging.getLogger("pipeline")
 
 class BERTopicBackend(TopicBackend):
     def __init__(
-        self,
-        embedding_model: Optional[str] = None,
-        persistence_path: Optional[str] = None
+        self, embedding_model: Optional[str] = None, persistence_path: Optional[str] = None
     ):
         if not embedding_model:
             embedding_model = settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL

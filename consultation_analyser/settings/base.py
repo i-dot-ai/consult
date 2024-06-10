@@ -12,8 +12,8 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import logging
 import os
-from pathlib import Path
 import sys
+from pathlib import Path
 
 import environ
 
