@@ -13,6 +13,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 import logging
 import os
 from pathlib import Path
+import sys
 
 import environ
 
@@ -164,6 +165,30 @@ STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "pipeline": {
+            "()": "django.utils.log.ServerFormatter",
+            "format": "[{server_time}] {name}: {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "stdout": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
+            "formatter": "pipeline",
+        }
+    },
+    "loggers": {
+        "pipeline": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
+    },
+}
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
