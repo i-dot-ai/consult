@@ -61,8 +61,10 @@ class Command(BaseCommand):
         logger.info(f"Called evaluate with {options}")
 
         consultation = self.__load_consultation(input_file=options["input"], clean=options["clean"])
-        output_dir = self.__get_output_dir(output_dir=options["output_dir"], consultation=consultation)
-        topic_backend = self.__get_topic_backend(embedding_model=options["embedding_model"])
+        output_dir = self.__get_output_dir(
+            output_dir=options["output_dir"], consultation=consultation
+        )
+        topic_backend = self.__get_topic_backend(embedding_model=options["embedding_model"], persistence_path=output_dir)
         llm_backend = self.__get_llm(llm_identifier=options["llm"])
 
         process_consultation_themes(
@@ -97,14 +99,16 @@ class Command(BaseCommand):
 
         return consultation
 
-    def __get_topic_backend(self, embedding_model: Optional[str] = ""):
+    def __get_topic_backend(self, persistence_path: Path = None, embedding_model: Optional[str] = ""):
         if embedding_model == "fake":
             topic_backend = DummyTopicBackend()
             logger.info("Using fake topic model")
         elif embedding_model:
-            topic_backend = BERTopicBackend(embedding_model=embedding_model)
+            topic_backend = BERTopicBackend(
+                embedding_model=embedding_model, persistence_path=persistence_path / "bertopic"
+            )
         else:
-            topic_backend = BERTopicBackend()
+            topic_backend = BERTopicBackend(persistence_path=persistence_path / "bertopic")
 
         return topic_backend
 
@@ -134,4 +138,3 @@ class Command(BaseCommand):
         f = open(output_dir / "consultation_with_themes.json", "w")
         f.write(json_with_themes)
         f.close()
-

@@ -17,7 +17,11 @@ logger = logging.getLogger("pipeline")
 
 
 class BERTopicBackend(TopicBackend):
-    def __init__(self, embedding_model: Optional[str] = None):
+    def __init__(
+        self,
+        embedding_model: Optional[str] = None,
+        persistence_path: Optional[str] = None
+    ):
         if not embedding_model:
             embedding_model = settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL
 
@@ -26,6 +30,7 @@ class BERTopicBackend(TopicBackend):
         self.embedding_model = embedding_model
         self.random_state = 12  # For reproducibility
         self.topic_model = None
+        self.persistence_path = persistence_path
 
     def get_topics(self, question: models.Question) -> list[TopicAssignment]:
         answers_qs = models.Answer.objects.filter(question=question).order_by("created_at")
@@ -51,15 +56,16 @@ class BERTopicBackend(TopicBackend):
             )
 
         logger.info(f"Returning {len(assignments)} assignments")
-        return assignments
 
-    def save_topic_model(self, output_dir) -> None:
-        if not self.topic_model:
-            raise Exception(
-                "You cannot save the BERTopic topic model until you've called get_topics"
+        if self.persistence_path:
+            self.__persist(
+                subpath=question.slug,
             )
 
-        output_dir = Path(output_dir) / "bertopic"
+        return assignments
+
+    def __persist(self, subpath: str):
+        output_dir = Path(self.persistence_path) / subpath
         os.makedirs(output_dir, exist_ok=True)
         self.topic_model.save(
             output_dir,
@@ -67,6 +73,8 @@ class BERTopicBackend(TopicBackend):
             save_ctfidf=True,
             save_embedding_model=self.embedding_model,
         )
+
+        logger.info(f"BERTopic model persisted to {output_dir}")
 
     def __get_embeddings_for_question(
         self,
