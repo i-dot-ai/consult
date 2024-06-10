@@ -18,7 +18,7 @@ logger = logging.getLogger("pipeline")
 
 class BERTopicBackend(TopicBackend):
     def __init__(
-        self, embedding_model: Optional[str] = None, persistence_path: Optional[str] = None
+        self, embedding_model: Optional[str] = None, persistence_path: Optional[Path] = None
     ):
         if not embedding_model:
             embedding_model = settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL
@@ -63,8 +63,16 @@ class BERTopicBackend(TopicBackend):
         return assignments
 
     def __persist(self, subpath: str):
+        # satisfy mypy
+        if not self.persistence_path:
+            return
+
         output_dir = Path(self.persistence_path) / subpath
         os.makedirs(output_dir, exist_ok=True)
+
+        if not self.topic_model:
+            raise Exception("You cannot persist the topic model until you have run get_topics")
+
         self.topic_model.save(
             output_dir,
             serialization="safetensors",

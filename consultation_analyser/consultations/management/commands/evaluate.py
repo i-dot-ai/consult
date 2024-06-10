@@ -64,7 +64,7 @@ class Command(BaseCommand):
             output_dir=options["output_dir"], consultation=consultation
         )
         topic_backend = self.__get_topic_backend(
-            embedding_model=options["embedding_model"], persistence_path=output_dir
+            embedding_model=options["embedding_model"], persistence_path=output_dir / "bertopic"
         )
         llm_backend = self.__get_llm(llm_identifier=options["llm"])
 
@@ -101,38 +101,36 @@ class Command(BaseCommand):
         return consultation
 
     def __get_topic_backend(
-        self, persistence_path: Path = None, embedding_model: Optional[str] = ""
+        self, persistence_path: Optional[Path] = None, embedding_model: Optional[str] = ""
     ):
         if embedding_model == "fake":
-            topic_backend = DummyTopicBackend()
             logger.info("Using fake topic model")
+            return DummyTopicBackend()
         elif embedding_model:
-            topic_backend = BERTopicBackend(
-                embedding_model=embedding_model, persistence_path=persistence_path / "bertopic"
+            return BERTopicBackend(
+                embedding_model=embedding_model, persistence_path=persistence_path
             )
         else:
-            topic_backend = BERTopicBackend(persistence_path=persistence_path / "bertopic")
-
-        return topic_backend
+            return BERTopicBackend(persistence_path=persistence_path)
 
     def __get_llm(self, llm_identifier: Optional[str] = "fake"):
         if llm_identifier == "fake" or not llm_identifier:
-            llm = DummyLLMBackend()
+            return DummyLLMBackend()
         elif llm_identifier == "sagemaker":
-            llm = SagemakerLLMBackend()
+            return SagemakerLLMBackend()
         elif llm_identifier.startswith("ollama"):
-            model = llm.split("/")[1]
-            llm = OllamaLLMBackend(model)
+            model = llm_identifier.split("/")[1]
+            return OllamaLLMBackend(model)
         else:
             raise Exception(f"Invalid --llm specified: {llm_identifier}")
-
-        return llm
 
     def __get_output_dir(self, consultation: models.Consultation, output_dir: Optional[str] = None):
         if not output_dir:
             output_dir = (
                 settings.BASE_DIR / "tmp" / "eval" / f"{consultation.slug}-{int(time.time())}"
             )
+
+        assert output_dir # mypy
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
 
