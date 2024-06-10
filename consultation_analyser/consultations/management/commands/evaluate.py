@@ -1,7 +1,9 @@
 import json
 import logging
 import os
+from pathlib import Path
 import time
+from typing import Optional
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -56,16 +58,26 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        input_file = options["input"]
+        logger.info(f"Called evaluate with {options}")
+
+        consultation = self.__load_consultation(input_file=options["input"], clean=options["clean"])
+        output_dir = self.__get_output_dir(output_dir=options["output_dir"], consultation=consultation)
+        topic_backend = self.__get_topic_backend(embedding_model=options["embedding_model"])
+        llm_backend = self.__get_llm(llm_identifier=options["llm"])
+
+        process_consultation_themes(
+            consultation, topic_backend=topic_backend, llm_backend=llm_backend
+        )
+
+        self.__save_consultation_with_themes(output_dir=output_dir, consultation=consultation)
+
+        logger.info(f"Wrote results to {output_dir}")
+
+    def __load_consultation(self, input_file: str, clean: Optional[bool]):
         if not input_file:
             raise Exception("You need to specify an input file")
 
-        user = User.objects.filter(email="email@example.com").first()
-
-        logger.info(f"Called evaluate with {options}")
-
         # upload, cleaning if required
-        clean = options["clean"]
         if clean:
             input_json = json.loads(open(input_file).read())
             name = input_json["consultation"]["name"]
@@ -74,6 +86,7 @@ class Command(BaseCommand):
             logger.info("Removed original consultation")
 
         try:
+            user = User.objects.filter(email="email@example.com").first()
             consultation = upload_consultation(open(input_file), user)
         except IntegrityError as e:
             logger.info(e)
@@ -82,11 +95,9 @@ class Command(BaseCommand):
             )
             exit()
 
-        input_file = options["input"]
-        if not input_file:
-            raise Exception("You need to specify an input file")
+        return consultation
 
-        embedding_model = options.get("embedding_model", None)
+    def __get_topic_backend(self, embedding_model: Optional[str] = ""):
         if embedding_model == "fake":
             topic_backend = DummyTopicBackend()
             logger.info("Using fake topic model")
@@ -95,37 +106,32 @@ class Command(BaseCommand):
         else:
             topic_backend = BERTopicBackend()
 
-        llm_choice = options.get("llm", "fake")
+        return topic_backend
 
-        if llm_choice == "fake" or not llm_choice:
-            llm_backend = DummyLLMBackend()
-        elif llm_choice == "sagemaker":
-            llm_backend = SagemakerLLMBackend()
-        elif llm_choice.startswith("ollama"):
-            model = llm_choice.split("/")[1]
-            llm_backend = OllamaLLMBackend(model)
+    def __get_llm(self, llm_identifier: Optional[str] = "fake"):
+        if llm_identifier == "fake" or not llm_identifier:
+            llm = DummyLLMBackend()
+        elif llm_identifier == "sagemaker":
+            llm = SagemakerLLMBackend()
+        elif llm_identifier.startswith("ollama"):
+            model = llm.split("/")[1]
+            llm = OllamaLLMBackend(model)
         else:
-            raise Exception(f"Invalid --llm specified: {llm_choice}")
+            raise Exception(f"Invalid --llm specified: {llm_identifier}")
 
-        process_consultation_themes(
-            consultation, topic_backend=topic_backend, llm_backend=llm_backend
-        )
+        return llm
 
-        # export it to JSON
-        json_with_themes = consultation_to_json(consultation)
-
-        # write it
-        output_dir = options.get("output_dir")
+    def __get_output_dir(self, consultation: models.Consultation, output_dir: Optional[str] = None):
         if not output_dir:
             output_dir = (
                 settings.BASE_DIR / "tmp" / "eval" / f"{consultation.slug}-{int(time.time())}"
             )
         os.makedirs(output_dir, exist_ok=True)
+        return output_dir
 
-        topic_backend.save_topic_model(output_dir)
-
+    def __save_consultation_with_themes(self, output_dir: Path, consultation: models.Consultation):
+        json_with_themes = consultation_to_json(consultation)
         f = open(output_dir / "consultation_with_themes.json", "w")
         f.write(json_with_themes)
         f.close()
 
-        logger.info(f"Wrote themes and topic model to {output_dir}")
