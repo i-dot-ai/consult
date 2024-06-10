@@ -1,4 +1,4 @@
-from typing import Dict, List, Union
+from typing import Dict, List, Union, Optional
 from uuid import UUID
 
 import numpy as np
@@ -12,7 +12,7 @@ from .types import TopicAssignment
 
 
 class BERTopicBackend(TopicBackend):
-    def __init__(self, embedding_model: str = None):
+    def __init__(self, embedding_model: Optional[str] = None):
         if not embedding_model:
             embedding_model = settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL
 
