@@ -1,4 +1,5 @@
 import logging
+
 from faker import Faker
 
 from consultation_analyser.consultations import models
@@ -7,6 +8,7 @@ from .topic_backend import TopicBackend
 from .types import TopicAssignment
 
 logger = logging.getLogger("django.server")
+
 
 class DummyTopicBackend(TopicBackend):
     def get_topics(self, question: models.Question) -> list[TopicAssignment]:
@@ -28,4 +30,3 @@ class DummyTopicBackend(TopicBackend):
         f = open(output_dir / "GENERATED_WITH_DUMMY_TOPIC_MODEL.txt", "w")
         f.write("This output was generated with a dummy topic model")
         f.close()
-

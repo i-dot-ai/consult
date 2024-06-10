@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-from typing import Dict, List, Union, Optional
+from typing import Dict, List, Optional, Union
 from uuid import UUID
 
 import numpy as np
@@ -27,7 +27,9 @@ class BERTopicBackend(TopicBackend):
         answers_list = list(answers_qs.values("id", "free_text"))
         answers_list_with_embeddings = self.__get_embeddings_for_question(answers_list)
         self.topic_model = self.__get_topic_model(answers_list_with_embeddings)
-        answers_topics_df = self.__get_answers_and_topics(self.topic_model, answers_list_with_embeddings)
+        answers_topics_df = self.__get_answers_and_topics(
+            self.topic_model, answers_list_with_embeddings
+        )
 
         assignments = []
         for row in answers_topics_df.itertuples():
@@ -42,12 +44,18 @@ class BERTopicBackend(TopicBackend):
 
     def save_topic_model(self, output_dir) -> None:
         if not self.topic_model:
-            raise Exception("You cannot save the BERTopic topic model until you've called get_topics")
+            raise Exception(
+                "You cannot save the BERTopic topic model until you've called get_topics"
+            )
 
         output_dir = Path(output_dir) / "bertopic"
         os.makedirs(output_dir, exist_ok=True)
-        self.topic_model.save(output_dir, serialization="safetensors", save_ctfidf=True,
-                              save_embedding_model=self.embedding_model)
+        self.topic_model.save(
+            output_dir,
+            serialization="safetensors",
+            save_ctfidf=True,
+            save_embedding_model=self.embedding_model,
+        )
 
     def __get_embeddings_for_question(
         self,

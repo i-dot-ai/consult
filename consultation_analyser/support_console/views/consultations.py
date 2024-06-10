@@ -60,6 +60,7 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
             messages.success(request, "Topic modelling has started for this consultation")
         elif "llm_summarisation" in request.POST:
             from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
+
             create_llm_summaries_for_consultation(consultation, DummyLLMBackend())
             messages.success(request, "Themes have been sent to the LLM for summarisation")
         elif "generate_themes" in request.POST:

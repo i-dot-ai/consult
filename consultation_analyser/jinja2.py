@@ -1,9 +1,9 @@
 from compressor.contrib.jinja2ext import CompressorExtension
+from django.contrib.humanize.templatetags.humanize import intcomma
 from django.template.loader import render_to_string
 from django.templatetags.static import static
 from django.urls import reverse
 from jinja2 import ChoiceLoader, Environment, PackageLoader, PrefixLoader
-from django.contrib.humanize.templatetags.humanize import intcomma
 
 
 def render_form(form, request):
@@ -38,7 +38,7 @@ def environment(**options):
         "datetime": datetime,
     }
 
-    env.filters['intcomma'] = intcomma
+    env.filters["intcomma"] = intcomma
 
     env.globals.update(tags)
 

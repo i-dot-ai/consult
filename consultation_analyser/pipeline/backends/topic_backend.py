@@ -13,4 +13,3 @@ class TopicBackend(ABC):
     @abstractmethod
     def save_topic_model(self, output_dir):
         pass
-

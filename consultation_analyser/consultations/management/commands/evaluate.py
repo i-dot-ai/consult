@@ -86,9 +86,7 @@ class Command(BaseCommand):
             print("Using fake topic model")
         elif embedding_model:
             topic_backend = BERTopicBackend(embedding_model=embedding_model)
-            print(
-                f"Using {embedding_model} for BERTopic embeddings"
-            )
+            print(f"Using {embedding_model} for BERTopic embeddings")
         else:
             topic_backend = BERTopicBackend()
             print(
@@ -117,7 +115,9 @@ class Command(BaseCommand):
         # write it
         output_dir = options.get("output_dir")
         if not output_dir:
-            output_dir = settings.BASE_DIR / "tmp" / "eval" / f"{consultation.slug}-{int(time.time())}"
+            output_dir = (
+                settings.BASE_DIR / "tmp" / "eval" / f"{consultation.slug}-{int(time.time())}"
+            )
         os.makedirs(output_dir, exist_ok=True)
 
         topic_backend.save_topic_model(output_dir)
