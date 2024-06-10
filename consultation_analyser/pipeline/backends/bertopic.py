@@ -42,7 +42,7 @@ class BERTopicBackend(TopicBackend):
 
     def save_topic_model(self, output_dir) -> None:
         output_dir = Path(output_dir) / "bertopic"
-        os.makedirs(output_dir)
+        os.makedirs(output_dir, exist_ok=True)
         self.topic_model.save(output_dir, serialization="safetensors", save_ctfidf=True,
                               save_embedding_model=self.embedding_model)
 
