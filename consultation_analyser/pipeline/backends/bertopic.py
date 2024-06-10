@@ -41,6 +41,9 @@ class BERTopicBackend(TopicBackend):
         return assignments
 
     def save_topic_model(self, output_dir) -> None:
+        if not self.topic_model:
+            raise Exception("You cannot save the BERTopic topic model until you've called get_topics")
+
         output_dir = Path(output_dir) / "bertopic"
         os.makedirs(output_dir, exist_ok=True)
         self.topic_model.save(output_dir, serialization="safetensors", save_ctfidf=True,
