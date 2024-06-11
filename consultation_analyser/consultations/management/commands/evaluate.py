@@ -1,6 +1,9 @@
 import json
+import logging
 import os
 import time
+from pathlib import Path
+from typing import Optional
 
 from django.conf import settings
 from django.core.management.base import BaseCommand
@@ -16,6 +19,8 @@ from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTop
 from consultation_analyser.pipeline.backends.ollama_llm_backend import OllamaLLMBackend
 from consultation_analyser.pipeline.backends.sagemaker_llm_backend import SagemakerLLMBackend
 from consultation_analyser.pipeline.processing import process_consultation_themes
+
+logger = logging.getLogger("pipeline")
 
 
 class Command(BaseCommand):
@@ -52,78 +57,85 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        input_file = options["input"]
-        if not input_file:
-            raise Exception("You need to specify an input file")
+        logger.info(f"Called evaluate with {options}")
 
-        user = User.objects.filter(email="email@example.com").first()
-
-        # upload, cleaning if required
-        clean = options["clean"]
-        if clean:
-            input_json = json.loads(open(input_file).read())
-            name = input_json["consultation"]["name"]
-            old_consultation = models.Consultation.objects.get(name=name)
-            old_consultation.delete()
-            print("Removed original consultation")
-
-        try:
-            consultation = upload_consultation(open(input_file), user)
-        except IntegrityError as e:
-            print(e)
-            print(
-                "This consultation already exists. To remove it and start with a fresh copy pass --clean."
-            )
-            exit()
-
-        input_file = options["input"]
-        if not input_file:
-            raise Exception("You need to specify an input file")
-
-        embedding_model = options.get("embedding_model", None)
-        if embedding_model == "fake":
-            topic_backend = DummyTopicBackend()
-            print("Using fake topic model")
-        elif embedding_model:
-            topic_backend = BERTopicBackend(embedding_model=embedding_model)
-            print(f"Using {embedding_model} for BERTopic embeddings")
-        else:
-            topic_backend = BERTopicBackend()
-            print(
-                f"Using default {settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL} for BERTopic embeddings"
-            )
-
-        llm_choice = options.get("llm", "fake")
-
-        if llm_choice == "fake" or not llm_choice:
-            llm_backend = DummyLLMBackend()
-        elif llm_choice == "sagemaker":
-            llm_backend = SagemakerLLMBackend()
-        elif llm_choice.startswith("ollama"):
-            model = llm_choice.split("/")[1]
-            llm_backend = OllamaLLMBackend(model)
-        else:
-            raise Exception(f"Invalid --llm specified: {llm_choice}")
+        consultation = self.__load_consultation(input_file=options["input"], clean=options["clean"])
+        output_dir = self.__get_output_dir(
+            output_dir=options["output_dir"], consultation=consultation
+        )
+        topic_backend = self.__get_topic_backend(
+            embedding_model=options["embedding_model"], persistence_path=output_dir / "bertopic"
+        )
+        llm_backend = self.__get_llm(llm_identifier=options["llm"])
 
         process_consultation_themes(
             consultation, topic_backend=topic_backend, llm_backend=llm_backend
         )
 
-        # export it to JSON
-        json_with_themes = consultation_to_json(consultation)
+        self.__save_consultation_with_themes(output_dir=output_dir, consultation=consultation)
 
-        # write it
-        output_dir = options.get("output_dir")
+        logger.info(f"Wrote results to {output_dir}")
+
+    def __load_consultation(self, input_file: str, clean: Optional[bool]):
+        if not input_file:
+            raise Exception("You need to specify an input file")
+
+        # upload, cleaning if required
+        if clean:
+            input_json = json.loads(open(input_file).read())
+            name = input_json["consultation"]["name"]
+            old_consultation = models.Consultation.objects.get(name=name)
+            old_consultation.delete()
+            logger.info("Removed original consultation")
+
+        try:
+            user = User.objects.filter(email="email@example.com").first()
+            consultation = upload_consultation(open(input_file), user)
+        except IntegrityError as e:
+            logger.info(e)
+            logger.info(
+                "This consultation already exists. To remove it and start with a fresh copy pass --clean."
+            )
+            exit()
+
+        return consultation
+
+    def __get_topic_backend(
+        self, persistence_path: Optional[Path] = None, embedding_model: Optional[str] = ""
+    ):
+        if embedding_model == "fake":
+            logger.info("Using fake topic model")
+            return DummyTopicBackend()
+        elif embedding_model:
+            return BERTopicBackend(
+                embedding_model=embedding_model, persistence_path=persistence_path
+            )
+        else:
+            return BERTopicBackend(persistence_path=persistence_path)
+
+    def __get_llm(self, llm_identifier: Optional[str] = "fake"):
+        if llm_identifier == "fake" or not llm_identifier:
+            return DummyLLMBackend()
+        elif llm_identifier == "sagemaker":
+            return SagemakerLLMBackend()
+        elif llm_identifier.startswith("ollama"):
+            model = llm_identifier.split("/")[1]
+            return OllamaLLMBackend(model)
+        else:
+            raise Exception(f"Invalid --llm specified: {llm_identifier}")
+
+    def __get_output_dir(self, consultation: models.Consultation, output_dir: Optional[str] = None):
         if not output_dir:
             output_dir = (
                 settings.BASE_DIR / "tmp" / "eval" / f"{consultation.slug}-{int(time.time())}"
             )
+
+        assert output_dir # mypy
         os.makedirs(output_dir, exist_ok=True)
+        return output_dir
 
-        topic_backend.save_topic_model(output_dir)
-
+    def __save_consultation_with_themes(self, output_dir: Path, consultation: models.Consultation):
+        json_with_themes = consultation_to_json(consultation)
         f = open(output_dir / "consultation_with_themes.json", "w")
         f.write(json_with_themes)
         f.close()
-
-        print(f"Output: {output_dir}")

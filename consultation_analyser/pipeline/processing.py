@@ -1,3 +1,5 @@
+import logging
+
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
 from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
@@ -6,6 +8,8 @@ from consultation_analyser.pipeline.llm_summariser import (
     create_llm_summaries_for_consultation,
 )
 from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
+
+logger = logging.getLogger("pipeline")
 
 
 def process_consultation_themes(consultation, topic_backend=None, llm_backend=None):

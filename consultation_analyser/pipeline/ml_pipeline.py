@@ -5,12 +5,13 @@ from consultation_analyser.consultations import models
 
 from .backends.topic_backend import TopicBackend
 
-logger = logging.getLogger("django.server")
+logger = logging.getLogger("pipeline")
 
 
 def save_themes_for_question(question: models.Question, topic_backend: TopicBackend) -> None:
     logging.info(f"Get topics for question: {question.text}")
     assignments = topic_backend.get_topics(question)
+
     for assignment in assignments:
         assignment.answer.save_theme_to_answer(
             topic_keywords=assignment.topic_keywords, topic_id=assignment.topic_id

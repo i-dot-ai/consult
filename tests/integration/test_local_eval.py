@@ -1,5 +1,4 @@
 import json
-import os
 
 import pytest
 from django.conf import settings
@@ -18,9 +17,6 @@ def test_local_eval(tmp_path):
     call_command("evaluate", input=file_path, embedding_model="fake", output_dir=tmp_path)
 
     json_with_themes_path = tmp_path / "consultation_with_themes.json"
-    serialized_model = tmp_path / "GENERATED_WITH_DUMMY_TOPIC_MODEL.txt"
-
-    assert os.path.isfile(serialized_model)
 
     with_themes = json.loads(open(json_with_themes_path).read())
 

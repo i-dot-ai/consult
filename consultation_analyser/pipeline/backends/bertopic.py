@@ -1,3 +1,4 @@
+import logging
 import os
 from pathlib import Path
 from typing import Dict, List, Optional, Union
@@ -12,21 +13,33 @@ from consultation_analyser.consultations import models
 from .topic_backend import TopicBackend
 from .types import TopicAssignment
 
+logger = logging.getLogger("pipeline")
+
 
 class BERTopicBackend(TopicBackend):
-    def __init__(self, embedding_model: Optional[str] = None):
+    def __init__(
+        self, embedding_model: Optional[str] = None, persistence_path: Optional[Path] = None
+    ):
         if not embedding_model:
             embedding_model = settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL
+
+        logger.info(f"BERTopic using embedding_model: {embedding_model}")
 
         self.embedding_model = embedding_model
         self.random_state = 12  # For reproducibility
         self.topic_model = None
+        self.persistence_path = persistence_path
 
     def get_topics(self, question: models.Question) -> list[TopicAssignment]:
         answers_qs = models.Answer.objects.filter(question=question).order_by("created_at")
         answers_list = list(answers_qs.values("id", "free_text"))
+
+        logger.info("BERTopic embedding")
         answers_list_with_embeddings = self.__get_embeddings_for_question(answers_list)
+
+        logger.info("BERTopic topic model generation")
         self.topic_model = self.__get_topic_model(answers_list_with_embeddings)
+
         answers_topics_df = self.__get_answers_and_topics(
             self.topic_model, answers_list_with_embeddings
         )
@@ -40,22 +53,34 @@ class BERTopicBackend(TopicBackend):
                 TopicAssignment(topic_id=topic_id, topic_keywords=topic_keywords, answer=answer)
             )
 
-        return assignments
+        logger.info(f"Returning {len(assignments)} assignments")
 
-    def save_topic_model(self, output_dir) -> None:
-        if not self.topic_model:
-            raise Exception(
-                "You cannot save the BERTopic topic model until you've called get_topics"
+        if self.persistence_path:
+            self.__persist(
+                subpath=question.slug,
             )
 
-        output_dir = Path(output_dir) / "bertopic"
+        return assignments
+
+    def __persist(self, subpath: str):
+        # satisfy mypy
+        if not self.persistence_path:
+            return
+
+        output_dir = Path(self.persistence_path) / subpath
         os.makedirs(output_dir, exist_ok=True)
+
+        if not self.topic_model:
+            raise Exception("You cannot persist the topic model until you have run get_topics")
+
         self.topic_model.save(
             output_dir,
             serialization="safetensors",
             save_ctfidf=True,
             save_embedding_model=self.embedding_model,
         )
+
+        logger.info(f"BERTopic model persisted to {output_dir}")
 
     def __get_embeddings_for_question(
         self,
@@ -84,7 +109,6 @@ class BERTopicBackend(TopicBackend):
         free_text_responses_list = [answer["free_text"] for answer in answers_list_with_embeddings]
         embeddings_list = [answer["embedding"] for answer in answers_list_with_embeddings]
         embeddings = np.array(embeddings_list)
-        # Set random_state so that we can reproduce the results
         umap_model = UMAP(
             n_neighbors=15,
             n_components=5,

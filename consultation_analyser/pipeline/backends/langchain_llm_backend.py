@@ -11,7 +11,7 @@ from consultation_analyser.consultations import models
 from .llm_backend import LLMBackend
 from .types import NO_SUMMARY_STR, ThemeSummary
 
-logger = logging.getLogger("django.server")
+logger = logging.getLogger("pipeline")
 
 
 class LangchainLLMBackend(LLMBackend):
@@ -23,7 +23,6 @@ class LangchainLLMBackend(LLMBackend):
         self.max_tokens = 2000
 
     def summarise_theme(self, theme: models.Theme) -> ThemeSummary:
-        logger.info(f"Starting LLM summarisation for theme with keywords: {theme.topic_keywords} ")
         prompt_template = self.__get_prompt_template()
 
         sample_responses = get_random_sample_of_responses_for_theme(
@@ -38,6 +37,7 @@ class LangchainLLMBackend(LLMBackend):
         }
 
         parser = PydanticOutputParser(pydantic_object=ThemeSummary)
+        parser.parse('{"short_description": "foo", "summary": "bar"}')
         errors = (OutputParserException, ValueError)
         try:
             llm_chain = prompt_template | self.llm | parser
@@ -53,6 +53,8 @@ class LangchainLLMBackend(LLMBackend):
 
             return ThemeSummary(**output)
         except errors:
+            for e in errors:
+                logger.info(e.error)
             return ThemeSummary(
                 **{
                     "short_description": NO_SUMMARY_STR,

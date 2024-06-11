@@ -1,5 +1,3 @@
-import os.path
-
 import pytest
 
 from consultation_analyser import factories
@@ -29,9 +27,6 @@ def test_topic_model_end_to_end(tmp_path):
 
     backend = BERTopicBackend()
     save_themes_for_consultation(consultation.id, backend)
-
-    backend.save_topic_model(tmp_path)
-    assert os.path.isfile(tmp_path / "bertopic/topic_embeddings.safetensors")
 
     # all answers should get the same theme
     assert models.Theme.objects.count() == 1

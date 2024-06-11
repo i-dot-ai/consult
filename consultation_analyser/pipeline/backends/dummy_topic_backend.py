@@ -25,8 +25,3 @@ class DummyTopicBackend(TopicBackend):
             topic_id += 1
 
         return assignments
-
-    def save_topic_model(self, output_dir) -> None:
-        f = open(output_dir / "GENERATED_WITH_DUMMY_TOPIC_MODEL.txt", "w")
-        f.write("This output was generated with a dummy topic model")
-        f.close()
