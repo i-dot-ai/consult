@@ -2,24 +2,52 @@ import html
 import re
 
 import pytest
-from waffle.testutils import override_switch
 
-from consultation_analyser.factories import AnswerFactory, ConsultationFactory
+from consultation_analyser.factories import (
+    AnswerFactory,
+    ConsultationFactory,
+    ConsultationResponseFactory,
+    QuestionFactory,
+    SectionFactory,
+    UserFactory,
+)
+from tests.helpers import sign_in
 
 
-@override_switch("CONSULTATION_PROCESSING", True)
 @pytest.mark.django_db
 def test_get_question_summary_page(django_app):
-    consultation = ConsultationFactory(with_question=True, with_question__with_free_text=True)
-    section = consultation.section_set.first()
-    question = section.question_set.first()
+    user = UserFactory()
+    consultation = ConsultationFactory(user=user)
+    section = SectionFactory(consultation=consultation)
+    question = QuestionFactory(
+        section=section, multiple_choice_questions=[("What do you think?", ["Yes", "No", "Maybe"])]
+    )
+    consultation_response = ConsultationResponseFactory(consultation=consultation)
 
-    AnswerFactory(multiple_choice_responses=["Yes"], question=question)
-    AnswerFactory(multiple_choice_responses=["Yes"], question=question)
-    AnswerFactory(multiple_choice_responses=["No"], question=question)
-    AnswerFactory(multiple_choice_responses=["Maybe"], question=question)
+    AnswerFactory(
+        multiple_choice_answers=[("What do you think?", ["Yes"])],
+        question=question,
+        consultation_response=consultation_response,
+    )
+    AnswerFactory(
+        multiple_choice_answers=[("What do you think?", ["Yes"])],
+        question=question,
+        consultation_response=consultation_response,
+    )
+    AnswerFactory(
+        multiple_choice_answers=[("What do you think?", ["No"])],
+        question=question,
+        consultation_response=consultation_response,
+    )
+    AnswerFactory(
+        multiple_choice_answers=[("What do you think?", ["Maybe"])],
+        question=question,
+        consultation_response=consultation_response,
+    )
 
-    question_summary_url = f"/consultations/{consultation.slug}/sections/{section.slug}/questions/{question.slug}/"
+    sign_in(django_app, user.email)
+
+    question_summary_url = f"/consultations/{consultation.slug}/sections/{question.section.slug}/questions/{question.slug}/"
 
     question_page = django_app.get(question_summary_url)
     page_content = html.unescape(str(question_page.content))
@@ -27,12 +55,13 @@ def test_get_question_summary_page(django_app):
     assert question.text in page_content
 
     answer = question.answer_set.first()
-    assert answer.theme.summary in page_content
+    assert answer.theme.short_description in page_content
 
-    for option in question.multiple_choice_options:
-        assert option in page_content
+    for item in question.multiple_choice_options:
+        for opt in item["options"]:
+            assert opt in page_content
 
-    for keyword in answer.theme.keywords:
+    for keyword in answer.theme.topic_keywords:
         assert keyword in page_content
 
     assert re.search(r"Yes\s+50%", question_page.html.text)

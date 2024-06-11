@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+
+{% set page_title = "Add users to consultation" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        {{ render_form(form, request) }}
+
+        {% if not form.has_users %}
+          <p class="govuk-body">There are no more users available to add. <a href="{{ url("support_consultation", kwargs={ "consultation_id": form.consultation.id }) }}">Go back to the consultation</a>.</p>
+        {% endif %}
+    </div>
+  </div>
+{% endblock %}

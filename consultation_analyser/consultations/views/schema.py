@@ -20,6 +20,7 @@ def raw_schema(request: HttpRequest, schema_name: str):
         "consultation_schema": f"{SCHEMA_DIR}/consultation_schema.json",
         "consultation_response_schema": f"{SCHEMA_DIR}/consultation_response_schema.json",
         "consultation_with_responses_schema": f"{SCHEMA_DIR}/consultation_with_responses_schema.json",
+        "consultation_with_responses_and_themes_schema": f"{SCHEMA_DIR}/consultation_with_responses_and_themes_schema.json",
     }
 
     # this is here so we don't use untrusted input to traverse the filesystem
@@ -32,7 +33,9 @@ def raw_schema(request: HttpRequest, schema_name: str):
 def show(request: HttpRequest):
     json_schemas = {
         "consultation": pretty_format_json(open(f"{SCHEMA_DIR}/consultation_schema.json").read()),
-        "consultation_response": pretty_format_json(open(f"{SCHEMA_DIR}/consultation_response_schema.json").read()),
+        "consultation_response": pretty_format_json(
+            open(f"{SCHEMA_DIR}/consultation_response_schema.json").read()
+        ),
         "consultation_with_responses": pretty_format_json(
             open(f"{SCHEMA_DIR}/consultation_with_responses_schema.json").read()
         ),
@@ -40,7 +43,9 @@ def show(request: HttpRequest):
 
     json_examples = {
         "consultation": pretty_format_json(open(f"{SCHEMA_DIR}/consultation_example.json").read()),
-        "consultation_response": pretty_format_json(open(f"{SCHEMA_DIR}/consultation_response_example.json").read()),
+        "consultation_response": pretty_format_json(
+            open(f"{SCHEMA_DIR}/consultation_response_example.json").read()
+        ),
         "consultation_with_responses": pretty_format_json(
             open(f"{SCHEMA_DIR}/consultation_with_responses_example.json").read()
         ),
@@ -51,11 +56,17 @@ def show(request: HttpRequest):
         RenderableSchema(public_schema.Section),
         RenderableSchema(public_schema.Question),
         RenderableSchema(public_schema.Answer),
+        RenderableSchema(public_schema.MultipleChoice),
+        RenderableSchema(public_schema.MultipleChoiceItem),
         RenderableSchema(public_schema.ConsultationResponse),
     ]
 
     return render(
         request,
-        "schema.html",
-        {"json_schemas": json_schemas, "json_examples": json_examples, "entity_schemas": entity_schemas},
+        "static_pages/schema.html",
+        {
+            "json_schemas": json_schemas,
+            "json_examples": json_examples,
+            "entity_schemas": entity_schemas,
+        },
     )

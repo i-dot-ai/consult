@@ -3,25 +3,18 @@ import random
 import factory
 import faker as _faker
 import yaml
+from django.utils import timezone
 
 from consultation_analyser.authentication import models as authentication_models
 from consultation_analyser.consultations import models
 
 faker = _faker.Faker()
 
-default_multiple_choice_options = ["Yes", "No", "Not sure"]
 
-
-def generate_dummy_topic_label(is_outlier=False):
+def generate_dummy_topic_keywords():
     dummy_sentence = faker.sentence()
     words = dummy_sentence.lower().strip(".")
-    words_joined = words.replace(" ", "_")
-    if is_outlier:
-        topic_number = -1
-    else:
-        topic_number = random.randint(0, 3)
-    output = f"{topic_number}_{words_joined}"
-    return output
+    return words.split(" ")
 
 
 class FakeConsultationData:
@@ -57,9 +50,21 @@ class ConsultationFactory(factory.django.DjangoModelFactory):
                 consultation=consultation,
                 with_question=True,
                 with_question__with_answer=kwargs.get("with_answer"),
-                with_question__with_multiple_choice=kwargs.get("with_multiple_choice"),
-                with_question__with_free_text=kwargs.get("with_free_text"),
             )
+
+    @factory.post_generation
+    def with_themes(consultation, creation_strategy, value, **kwargs):
+        if value is True:
+            SectionFactory(
+                consultation=consultation,
+                with_question=True,
+                with_question__with_answer=True,
+            )
+
+    @factory.post_generation
+    def user(consultation, creation_strategy, value, **kwargs):
+        if value:
+            consultation.users.set([value])
 
 
 class SectionFactory(factory.django.DjangoModelFactory):
@@ -85,6 +90,19 @@ class SectionFactory(factory.django.DjangoModelFactory):
             )
 
 
+def get_multiple_choice_questions(current_question):
+    if not current_question.multiple_choice_questions:
+        questions = [("Do you agree?", ["Yes", "No", "Maybe"])]
+    else:
+        questions = current_question.multiple_choice_questions
+
+    multiple_choice = []
+    for question, options in questions:
+        multiple_choice.append({"question_text": question, "options": options})
+
+    return multiple_choice
+
+
 class QuestionFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Question
@@ -92,19 +110,29 @@ class QuestionFactory(factory.django.DjangoModelFactory):
 
     text = faker.sentence()
     slug = faker.slug()
-    multiple_choice_options = ["Yes", "No", "Maybe"]
+    multiple_choice_options = factory.LazyAttribute(get_multiple_choice_questions)
     has_free_text = True
     section = factory.SubFactory(SectionFactory)
+
+    class Params:
+        multiple_choice_questions = None
 
     @factory.post_generation
     def with_answer(question, creation_strategy, value, **kwargs):
         if value is True:
-            answer = AnswerFactory(question=question)
+            answer = AnswerFactory(
+                question=question, consultation_response__consultation=question.section.consultation
+            )
             answer.save()
+
+    @factory.post_generation
+    def validate_json_fields(question, creation_strategy, extracted, **kwargs):
+        question.full_clean()
 
 
 class ConsultationResponseFactory(factory.django.DjangoModelFactory):
     consultation = factory.SubFactory(ConsultationFactory)
+    submitted_at = timezone.now()
 
     class Meta:
         model = models.ConsultationResponse
@@ -114,11 +142,31 @@ class ThemeFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Theme
 
-    label = factory.LazyAttribute(lambda _o: generate_dummy_topic_label())
-    summary = faker.sentence()
+    topic_keywords = factory.LazyAttribute(lambda _o: generate_dummy_topic_keywords())
+    short_description = factory.LazyAttribute(lambda _o: faker.sentence())
+    summary = factory.LazyAttribute(lambda _o: faker.sentence())
+    topic_id = factory.Sequence(lambda n: n - 1)  # Hack to get topics to include outliers -1
 
-    class Params:
-        is_outlier = factory.Trait(label=factory.LazyAttribute(lambda _o: generate_dummy_topic_label(is_outlier=True)))
+
+def get_multiple_choice_answers(current_answer):
+    multiple_choice = []
+    if (
+        current_answer.question.multiple_choice_options
+        and not current_answer.multiple_choice_answers
+    ):
+        answers = [
+            (q["question_text"], [random.choice(q["options"])])
+            for q in current_answer.question.multiple_choice_options
+        ]
+    elif current_answer.question.multiple_choice_options:
+        answers = current_answer.multiple_choice_answers
+    else:
+        return None
+
+    for question, options in answers:
+        multiple_choice.append({"question_text": question, "options": options})
+
+    return multiple_choice
 
 
 class AnswerFactory(factory.django.DjangoModelFactory):
@@ -126,15 +174,22 @@ class AnswerFactory(factory.django.DjangoModelFactory):
         model = models.Answer
         skip_postgeneration_save = True
 
-    free_text = factory.LazyAttribute(lambda o: faker.sentence() if o.question.has_free_text else None)
+    free_text = factory.LazyAttribute(
+        lambda o: faker.sentence() if o.question.has_free_text else None
+    )
 
     question = factory.SubFactory(QuestionFactory)
     consultation_response = factory.SubFactory(ConsultationResponseFactory)
-    theme = factory.LazyAttribute(lambda o: ThemeFactory() if o.free_text else None)
+    theme = factory.LazyAttribute(lambda o: ThemeFactory() if o.question.has_free_text else None)
 
-    multiple_choice_responses = factory.LazyAttribute(
-        lambda o: [random.choice(o.question.multiple_choice_options)] if o.question.multiple_choice_options else None
-    )
+    multiple_choice = factory.LazyAttribute(get_multiple_choice_answers)
+
+    class Params:
+        multiple_choice_answers = None
+
+    @factory.post_generation
+    def validate_json_fields(answer, creation_strategy, extracted, **kwargs):
+        answer.full_clean()
 
 
 # this delegates all creation to the create_user method on User

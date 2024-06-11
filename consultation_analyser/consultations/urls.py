@@ -1,16 +1,17 @@
 from django.urls import include, path
 from magic_link import urls as magic_link_urls
 
-from .views import consultations, pages, questions, responses, schema, sessions
+from .views import consultations, pages, questions, responses, root, schema, sessions
 
 urlpatterns = [
-    path("", pages.home),
+    path("", root.root),
     path("how-it-works/", pages.how_it_works),
     path("schema/", schema.show),
     path("data-sharing/", pages.data_sharing),
     path("get-involved/", pages.get_involved),
     path("privacy/", pages.privacy),
-    path("consultations/", consultations.show_all),
+    path("consultations/", consultations.index, name="consultations"),
+    path("consultations/new/", consultations.new, name="new_consultation"),
     path("consultations/<str:consultation_slug>/", consultations.show, name="consultation"),
     path("schema/<str:schema_name>.json", schema.raw_schema),
     path(
@@ -20,13 +21,11 @@ urlpatterns = [
     ),
     path(
         "consultations/<str:consultation_slug>/sections/<str:section_slug>/responses/<str:question_slug>/",
-        responses.show,
-        name="show_question_responses",
+        responses.index,
+        name="question_responses",
     ),
-    path("batch-example/", pages.batch_example, name="batch_example"),
     # authentication
     path("sign-in/", sessions.new),
     path("sign-out/", sessions.destroy),
     path("magic-link/", include(magic_link_urls)),
-    path("batch-example", pages.batch_example, name="batch_example"),
 ]

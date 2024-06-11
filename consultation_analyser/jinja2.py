@@ -1,5 +1,5 @@
-import jinja2
 from compressor.contrib.jinja2ext import CompressorExtension
+from django.contrib.humanize.templatetags.humanize import intcomma
 from django.template.loader import render_to_string
 from django.templatetags.static import static
 from django.urls import reverse
@@ -10,10 +10,17 @@ def render_form(form, request):
     return render_to_string("form.html", context={"form": form}, request=request, using="django")
 
 
+def datetime(datetime_object):
+    return datetime_object.strftime("%d %B %Y at %H:%M")
+
+
 def environment(**options):
     current_loader = options["loader"]
     loader_with_govuk_frontend = ChoiceLoader(
-        [current_loader, PrefixLoader({"govuk_frontend_jinja": PackageLoader("govuk_frontend_jinja")})]
+        [
+            current_loader,
+            PrefixLoader({"govuk_frontend_jinja": PackageLoader("govuk_frontend_jinja")}),
+        ]
     )
     options["loader"] = loader_with_govuk_frontend
 
@@ -24,7 +31,14 @@ def environment(**options):
 
     env = Environment(**options, extensions=[CompressorExtension])  # nosec
 
-    tags = {"static": static, "url": reverse, "render_form": render_form}
+    tags = {
+        "static": static,
+        "url": reverse,
+        "render_form": render_form,
+        "datetime": datetime,
+    }
+
+    env.filters["intcomma"] = intcomma
 
     env.globals.update(tags)
 

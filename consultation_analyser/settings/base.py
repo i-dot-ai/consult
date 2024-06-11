@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import logging
 import os
+import sys
 from pathlib import Path
 
 import environ
@@ -26,8 +27,8 @@ env = environ.Env(DEBUG=(bool, False))
 
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
+ENVIRONMENT = env("ENVIRONMENT")
 
-SAGEMAKER_ENDPOINT_NAME = env("SAGEMAKER_ENDPOINT_NAME")
 
 ALLOWED_HOSTS: list[str] = [os.getenv("DOMAIN_NAME", "0.0.0.0"), "*"]  # nosec
 
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     "compressor",
     "crispy_forms",
     "crispy_forms_gds",
+    "django.contrib.humanize",
 ]
 
 
@@ -164,6 +166,30 @@ STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
 
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "pipeline": {
+            "()": "django.utils.log.ServerFormatter",
+            "format": "[{server_time}] {name}: {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "stdout": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
+            "formatter": "pipeline",
+        }
+    },
+    "loggers": {
+        "pipeline": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
+    },
+}
+
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
@@ -171,10 +197,6 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Django URL format
 APPEND_SLASH = True
-
-# AWS Batch
-BATCH_JOB_QUEUE = env("BATCH_JOB_QUEUE")
-BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION")
 
 # Feature flags
 WAFFLE_SWITCH_DEFAULT = False
@@ -189,3 +211,16 @@ CRISPY_TEMPLATE_PACK = "gds"
 EMAIL_BACKEND = "django_gov_notify.backends.NotifyEmailBackend"
 GOVUK_NOTIFY_API_KEY = env("GOVUK_NOTIFY_API_KEY")
 GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID = env("GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID")
+
+# AWS variables
+BATCH_JOB_QUEUE = env("BATCH_JOB_QUEUE", default=None)
+BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION", default=None)
+SAGEMAKER_ENDPOINT_NAME = env("SAGEMAKER_ENDPOINT_NAME")
+USE_SAGEMAKER_LLM = env.bool("USE_SAGEMAKER_LLM")
+AWS_REGION = env("AWS_REGION")
+
+# BERTopic
+BERTOPIC_DEFAULT_EMBEDDING_MODEL = "thenlper/gte-small"
+
+# Authentication
+LOGIN_URL = "/sign-in/"

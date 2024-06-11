@@ -27,21 +27,18 @@ components:
             - 'What shall we do about Kit Kats'
         sections:
           type: array
+          minItems: 1
           description: The sections of the consultation
           items:
             $ref: '#/components/schemas/Section'
     Section:
       type: object
       description: A Section contains a group of Questions. Consultations that do not have multiple sections should group all Questions under a single Section.
+      additionalProperties: false
       required:
         - name
         - questions
-        - id
       properties:
-        id:
-          type: string
-          format: uuid
-          description: The ID of the section
         name:
           type: string
           description: The name of the section
@@ -51,6 +48,7 @@ components:
             - 'When Kit Kats are consumed'
         questions:
           type: array
+          minItems: 1
           description: The questions in the consultation
           items:
             $ref: '#/components/schemas/Question'
@@ -62,11 +60,18 @@ components:
         - id
         - text
         - has_free_text
+      additionalProperties: false
       properties:
         id:
           type: string
-          format: uuid
-          description: The ID of this question
+          examples:
+          - '1'
+          - '2'
+          - '3'
+          - 'vii'
+          - 'Question 1'
+          - 'q1.2'
+          description: The number or other unique identifier for this question
         text:
           type: string
           description: The question text
@@ -79,61 +84,71 @@ components:
         has_free_text:
           type: boolean
           description: Does this question have a free text component?
-        multiple_choice_options:
-          type: array
-          description: The options for the multiple choice part of this question, if it has a multiple choice component
-          nullable: true
-          items:
-            type: string
-          examples:
-            - ["Yes", "No", "I don't know"]
+        multiple_choice:
+          $ref: '#/components/schemas/MultipleChoice'
     Answer:
       type: object
       description: Each Answer is associated with a Question and belongs to a ConsultationResponse.
       required:
-        - multiple_choice
-        - free_text
         - question_id
+      additionalProperties: false
       properties:
         question_id:
           type: string
-          format: uuid
-          description: The ID of the question
-        multiple_choice:
-          type: array
-          description: Responses to the multiple choice part of the question, if any
-          nullable: true
-          items:
-            type: string
-            description: A selected option
           examples:
-            - ["No"]
+          - '1'
+          - '2'
+          - '3'
+          - 'vii'
+          - 'Question 1'
+          - 'q1.2'
+          description: The number or other unique identifier for the answered question
+        theme_id:
+          type: string
+          format: uuid
+          description: The associated Theme, if any. Omit if uploading.
+        multiple_choice:
+          $ref: '#/components/schemas/MultipleChoice'
         free_text:
           type: string
           description: The answer to the free text part of the question, if any
-          nullable: true
           examples:
             - I don't think this is a good idea at all
             - I would like to point out a few things
             - I would like clarification on a few key points
+    MultipleChoice:
+      type: array
+      description: A list of multiple choice questions with arrays of options or arrays of answers
+      items:
+        type: object
+        description: A multiple choice question and its available (or selected, according to context) options
+        required:
+          - question_text
+          - options
+        properties:
+          question_text:
+            type: string
+          options:
+            type: array
+            items:
+              type: string
+            uniqueItems: true
     ConsultationResponse:
       type: object
       description: A ConsultationResponse groups answers. For now it is also a placeholder for response-level information such as demographics, responding-in-the-capacity-of, etc.
       required:
         - answers
-        - submission_date
+        - submitted_at
         - id
+      additionalProperties: false
       properties:
-        id:
-          type: string
-          format: uuid
-          description: The ID of the response
-        submission_date:
+        submitted_at:
           type: string
           format: date-time
-          description: The submission date of the response
+          description: The submission date and time of the response
         answers:
           type: array
+          minItems: 1
           description: The answers in this response
           items:
             $ref: '#/components/schemas/Answer'
@@ -143,15 +158,86 @@ components:
       required:
         - consultation
         - consultation_responses
+      additionalProperties: false
       properties:
         consultation:
-          type: array
+          type: object
           description: The consultation
-          items:
-            $ref: '#/components/schemas/Consultation'
+          $ref: '#/components/schemas/Consultation'
         consultation_responses:
           type: array
+          minItems: 1
           description: The responses
           items:
             $ref: '#/components/schemas/ConsultationResponse'
+    ConsultationWithResponsesAndThemes:
+      type: object
+      description: A Consultation and its ConsultationResponses, plus Themes assigned by the tool
+      required:
+        - consultation
+        - consultation_responses
+        - themes
+      additionalProperties: false
+      properties:
+        consultation:
+          type: object
+          description: The consultation
+          $ref: '#/components/schemas/Consultation'
+        consultation_responses:
+          type: array
+          minItems: 1
+          description: The responses
+          items:
+            $ref: '#/components/schemas/ConsultationResponse'
+        themes:
+          type: array
+          minItems: 1
+          description: The themes
+          items:
+            $ref: '#/components/schemas/Theme'
+    Theme:
+      type: object
+      description: A theme, assigned by AI
+      required:
+        - id
+        - topic_id
+        - topic_keywords
+        - summary
+        - short_description
+      additionalProperties: false
+      properties:
+        id:
+          type: string
+          format: uuid
+        topic_id:
+          type: integer
+        topic_keywords:
+          type: array
+          description: The keywords in the theme
+          items:
+            type: string
+            examples:
+              - birds
+              - animals
+              - food
+              - rivers
+              - economy
+              - lakes
+              - farming
+        short_description:
+          type: string
+          examples:
+            - Concern about the price of sugar
+            - Risk to wildlife habitats
+            - Overall quality of outdoor space in the area
+        summary:
+          type: string
+          description: A free-text summary of the theme
+          examples:
+            - Respondents identified potential impact on the price of sugar,
+              noting that proposed new legislation was very likely to drive it
+              higher
+            - Respondents flagged concerns around the conservation of habitats
+              in the area and local biodiversity in general
+
 

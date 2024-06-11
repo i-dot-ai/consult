@@ -1,15 +1,38 @@
 locals {
   postgres_fqdn   = "${module.postgres.rds_instance_username}:${module.postgres.rds_instance_db_password}@${module.postgres.db_instance_address}/${module.postgres.db_instance_name}"
   secret_env_vars = jsondecode(data.aws_secretsmanager_secret_version.env_vars.secret_string)
+  batch_env_vars = {
+    "ENVIRONMENT"                          = terraform.workspace,
+    "PRODUCTION_DEPLOYMENT"                = true,
+    "DJANGO_SECRET_KEY"                    = data.aws_secretsmanager_secret_version.django_secret.secret_string,
+    "DEBUG"                                = local.secret_env_vars.DEBUG,
+    "SAGEMAKER_ENDPOINT_NAME"              = local.secret_env_vars.SAGEMAKER_ENDPOINT_NAME
+    "GOVUK_NOTIFY_API_KEY"                 = local.secret_env_vars.GOVUK_NOTIFY_API_KEY,
+    "GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID" = local.secret_env_vars.GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID,
+    "USE_SAGEMAKER_LLM"                    = local.secret_env_vars.USE_SAGEMAKER_LLM,
+    "SENTRY_DSN"                           = local.secret_env_vars.SENTRY_DSN,
+    "AWS_REGION"                           = local.secret_env_vars.AWS_REGION,
+    "DB_NAME" : "${module.postgres.db_instance_name}",
+    "DB_USER" : "${module.postgres.rds_instance_username}",
+    "DB_PASSWORD" : "${module.postgres.rds_instance_db_password}",
+    "DB_HOST" : "${module.postgres.db_instance_address}",
+    "DOMAIN_NAME" : "${local.host}"
+  }
+
+
+  esc_env_vars = merge({
+    "BATCH_JOB_QUEUE"      = module.batch_job_definition.job_queue_name,
+    "BATCH_JOB_DEFINITION" = module.batch_job_definition.job_definition_name,
+  }, local.batch_env_vars)
 }
 
 module "ecs" {
   source             = "../../i-ai-core-infrastructure//modules/ecs"
-  project_name       = var.project_name
+  name               = local.name
   image_tag          = var.image_tag
-  prefix             = "i-dot-ai"
   ecr_repository_uri = var.ecr_repository_uri
   ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
+  ecs_cluster_name   = data.terraform_remote_state.platform.outputs.ecs_cluster_name
   health_check = {
     healthy_threshold   = 3
     unhealthy_threshold = 3
@@ -18,22 +41,7 @@ module "ecs" {
     timeout             = 6
     port                = 8000
   }
-  environment_variables = {
-    "ENVIRONMENT"             = terraform.workspace,
-    "PRODUCTION_DEPLOYMENT"   = true,
-    "BATCH_JOB_QUEUE"         = module.batch_job_definition.job_queue_name,
-    "BATCH_JOB_DEFINITION"    = module.batch_job_definition.job_definition_name,
-    "DJANGO_SECRET_KEY"       = data.aws_secretsmanager_secret_version.django_secret.secret_string,
-    "DEBUG"                   = local.secret_env_vars.DEBUG,
-    "SAGEMAKER_ENDPOINT_NAME" = local.secret_env_vars.SAGEMAKER_ENDPOINT_NAME
-    "GOVUK_NOTIFY_API_KEY"                 = local.secret_env_vars.GOVUK_NOTIFY_API_KEY,
-    "GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID" = local.secret_env_vars.GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID,
-    "DB_NAME" : "${module.postgres.db_instance_name}",
-    "DB_USER" : "${module.postgres.rds_instance_username}",
-    "DB_PASSWORD" : "${module.postgres.rds_instance_db_password}",
-    "DB_HOST" : "${module.postgres.db_instance_address}",
-    "DOMAIN_NAME" : "${local.host}"
-  }
+  environment_variables = local.esc_env_vars
 
   state_bucket                 = var.state_bucket
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
@@ -45,8 +53,8 @@ module "ecs" {
   route53_record_name          = aws_route53_record.type_a_record.name
   ip_whitelist                 = var.external_ips
   create_listener              = true
-  task_additional_iam_policy   = aws_iam_policy.this.arn
-  additional_tags = {
+  task_additional_iam_policy   = aws_iam_policy.ecs.arn
+  additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
   }
 }
@@ -64,17 +72,17 @@ resource "aws_route53_record" "type_a_record" {
 }
 
 
-resource "aws_iam_policy" "this" {
-  name        = "i-dot-ai-${terraform.workspace}-ecs-${var.project_name}-additional"
+resource "aws_iam_policy" "ecs" {
+  name        = "${local.name}-ecs-additional-policy"
   description = "Additional permissions for consultations ECS task"
-  policy      = data.aws_iam_policy_document.this.json
+  policy      = data.aws_iam_policy_document.ecs.json
   tags = {
     Environment = terraform.workspace
     Deployed    = "github"
   }
 }
 
-data "aws_iam_policy_document" "this" {
+data "aws_iam_policy_document" "ecs" {
   # checkov:skip=CKV_AWS_109:KMS policies can't be restricted
   # checkov:skip=CKV_AWS_111:KMS policies can't be restricted
 
@@ -86,6 +94,15 @@ data "aws_iam_policy_document" "this" {
     ]
     resources = [
       "*",
+    ]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "sagemaker:CreateEndpoint",
+    ]
+    resources = [
+      "*"
     ]
   }
 }

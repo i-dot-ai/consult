@@ -6,26 +6,54 @@ from consultation_analyser.consultations.views import filters
 
 
 def set_up_for_filters():
-    question = factories.QuestionFactory()
-    theme1 = factories.ThemeFactory(label="1_dog_puppy")
-    theme2 = factories.ThemeFactory(label="2_cat_kitten")
+    consultation = factories.ConsultationFactory()
+    consultation_response = factories.ConsultationResponseFactory(consultation=consultation)
+    section = factories.SectionFactory(consultation=consultation)
+    question = factories.QuestionFactory(
+        multiple_choice_questions=[("Select the animals you like", ["Cats", "Dogs", "Rabbits"])],
+        section=section,
+    )
+
+    theme1 = factories.ThemeFactory(topic_keywords=["dog", "puppy"], question=question)
+    theme2 = factories.ThemeFactory(topic_keywords=["cat", "kitten"], question=question)
     factories.AnswerFactory(
-        theme=theme1, question=question, free_text="We love dogs.", multiple_choice_responses=["Option 1", "Option 2"]
+        theme=theme1,
+        question=question,
+        free_text="We love dogs.",
+        multiple_choice_answers=[("Select the animals you like", ["Cats", "Dogs"])],
+        consultation_response=consultation_response,
     )
     factories.AnswerFactory(
-        theme=theme2, question=question, free_text="We like cats not dogs.", multiple_choice_responses=["Option 1"]
+        theme=theme2,
+        question=question,
+        free_text="We like cats not dogs.",
+        multiple_choice_answers=[("Select the animals you like", ["Cats"])],
+        consultation_response=consultation_response,
     )
-    factories.AnswerFactory(theme=theme2, question=question, free_text="We love cats.")
+    factories.AnswerFactory(
+        theme=theme2,
+        question=question,
+        free_text="We love cats.",
+        consultation_response=consultation_response,
+        multiple_choice_answers=[("Select the animals you like", ["Cats"])],
+    )
+    factories.AnswerFactory(
+        theme=theme2,
+        question=question,
+        multiple_choice_answers=[("Select the animals you like", ["Rabbits"])],
+        free_text=None,
+        consultation_response=consultation_response,
+    )
     return question
 
 
 @pytest.mark.parametrize(
     "applied_filters,expected_count",
     [
-        ({"theme": "All", "keyword": "", "opinion": "All"}, 3),
+        ({"theme": "All", "keyword": "", "opinion": "All"}, 4),
         ({"keyword": "dogs", "theme": "All", "opinion": "All"}, 2),
-        ({"keyword": "dogs", "theme": "All", "opinion": "Option 2"}, 1),
-        ({"keyword": "", "theme": "All", "opinion": "Option 1"}, 2),
+        ({"keyword": "dogs", "theme": "All", "opinion": "Dogs"}, 1),
+        ({"theme": "All", "keyword": "", "opinion": "Cats"}, 3),
     ],
 )
 @pytest.mark.django_db
@@ -56,4 +84,4 @@ def test_get_filtered_themes():
         question=question, filtered_answers=answers_queryset, applied_filters=applied_filters
     )
     assert queryset.count() == 1
-    assert queryset[0].label == "2_cat_kitten"
+    assert queryset[0].topic_keywords == ["cat", "kitten"]

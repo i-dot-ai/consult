@@ -9,11 +9,6 @@ variable "app-replica-count-desired" {
   description = "The desired number of replicas"
 }
 
-# variable "cloudwatch_log_group" {
-#   type        = string
-#   description = "CloudWatch log group name"
-# }
-
 variable "container_port" {
   type        = number
   description = "The port to run the application on"
@@ -22,7 +17,7 @@ variable "container_port" {
 
 variable "cpu" {
   type        = number
-  default     = 512
+  default     = 1024
   description = "The cpu resource to give to the task"
 }
 
@@ -96,7 +91,7 @@ variable "image_tag" {
 variable "memory" {
   type        = number
   description = "The memory resource to give to the task"
-  default     = 1024
+  default     = 2048
 }
 
 variable "prefix" {
@@ -121,26 +116,23 @@ variable "state_bucket" {
   description = "Name of the S3 bucket to use a terraform state"
 }
 
-
-variable "rules" {
-  description = "The rules to add to this WAF"
-  type        = list(object({}))
-  default     = []
-}
-
-variable "use_case" {
-  description = "Use case/resource for WAF"
-  type        = string
-  default     = "load_balancer"
-}
-
 variable "scope" {
   description = "Scope of the WAF, either 'CLOUDFRONT' or 'REGIONAL'"
   type        = string
   default     = "REGIONAL"
 }
 
+variable "team_name" {
+  type        = string
+  description = "The name of the team"
+}
+
 variable "universal_tags" {
   type        = map(string)
   description = "Map to tag resources with"
+}
+
+variable "publicly_accessible" {
+  type        = bool
+  description = "Flag to determine if the database is publicly accessible"
 }

@@ -4,13 +4,15 @@ export AWS_REGION
 export ECR_REPO_NAME
 export APP_NAME
 
+SCHEMAS := consultation consultation_response consultation_with_responses consultation_with_responses_and_themes
+
 .PHONY: help
 help:     ## Show this help.
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-30s\033[0m %s\n", $$1, $$2}'
 
 ## Schema documentation
 consultation_analyser/consultations/public_schema.py: consultation_analyser/consultations/public_schema/public_schema.yaml
-	poetry run datamodel-codegen --input $< --output $@ --use-schema-description
+	poetry run datamodel-codegen --input $< --output $@ --use-schema-description --output-model-type pydantic_v2.BaseModel
 
 .PRECIOUS: consultation_analyser/consultations/public_schema/%_schema.json
 consultation_analyser/consultations/public_schema/%_schema.json: consultation_analyser/consultations/public_schema.py
@@ -20,7 +22,7 @@ consultation_analyser/consultations/public_schema/%_example.json: consultation_a
 	npx generate-json $^ $@ none $(PWD)/json-schema-faker-options.js
 
 .PHONY: schema_docs
-schema_docs: consultation_analyser/consultations/public_schema/consultation_example.json consultation_analyser/consultations/public_schema/consultation_response_example.json consultation_analyser/consultations/public_schema/consultation_with_responses_example.json ## Generate examples and JSON schemas for the documentation
+schema_docs: $(foreach part,$(SCHEMAS), consultation_analyser/consultations/public_schema/$(part)_example.json)
 
 .PHONY: setup_dev_db
 setup_dev_db: ## Set up the development db on a local postgres
@@ -61,6 +63,19 @@ serve: ## Run the server
 test: ## Run the tests
 	poetry run pytest tests/
 
+.PHONY: check-python-code
+check-python-code: ## Check Python code - linting and mypy
+	poetry run ruff check --select I .
+	poetry run ruff check .
+	# Re-add mypy here and remove from pre-commit once errors fixed
+	# poetry run mypy . --ignore-missing-imports
+
+.PHONY: format-python-code
+format-python-code: ## Format Python code including sorting imports
+	poetry run ruff check --select I . --fix
+	poetry run ruff check . --fix
+	poetry run ruff format .
+
 .PHONY: govuk_frontend
 govuk_frontend: ## Pull govuk-frontend
 	npm install
@@ -82,8 +97,10 @@ AWS_REGION=eu-west-2
 APP_NAME=consultations
 ECR_URL=$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 ECR_REPO_URL=$(ECR_URL)/$(ECR_REPO_NAME)
+DOCKER_CACHE_BUCKET=i-dot-ai-docker-cache
 
 ECR_REPO_NAME=$(APP_NAME)
+DOCKER_BUILDER_CONTAINER=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
 
 AUTO_APPLY_RESOURCES = module.ecs.aws_ecs_task_definition.aws-ecs-task \
@@ -107,7 +124,9 @@ tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 .PHONY: docker_build
 docker_build: ## Pull previous container (if it exists) build the docker container
 	docker pull $(PREV_IMAGE) || true
-	docker build . -t $(IMAGE)
+	docker buildx build --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE)  \
+	--cache-to type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(IMAGE) \
+	--cache-from type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(IMAGE) .
 
 .PHONY: docker_run
 docker_run: ## Run the docker container
@@ -153,7 +172,7 @@ tf_set_or_create_workspace:
 
 .PHONY: tf_init
 tf_init: ## Initialise terraform
-	terraform -chdir=./infrastructure init -backend-config=$(TF_BACKEND_CONFIG)
+	terraform -chdir=./infrastructure init -backend-config=$(TF_BACKEND_CONFIG) ${args}
 
 .PHONY: tf_plan
 tf_plan: ## Plan terraform
@@ -163,7 +182,7 @@ tf_plan: ## Plan terraform
 .PHONY: tf_apply
 tf_apply: ## Apply terraform
 	make tf_set_workspace && \
-	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} ${args}
 
 .PHONY: tf_init_universal
 tf_init_universal: ## Initialise terraform
@@ -184,7 +203,14 @@ tf_destroy: ## Destroy terraform
 	make tf_set_workspace && \
 	terraform -chdir=./infrastructure destroy -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
+.PHONY: tf_import
+tf_import:
+	make tf_set_workspace && \
+	terraform -chdir=./infrastructure import -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} ${name} ${id}
+
 # Release commands to deploy your app to AWS
 .PHONY: release
 release: ## Deploy app
 	chmod +x ./infrastructure/scripts/release.sh && ./infrastructure/scripts/release.sh $(env)
+
+

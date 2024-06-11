@@ -33,6 +33,14 @@ $iai-colour-pink: #C50878;
     padding-top: 0;
 }
 
+.govuk-link.govuk-link--warning {
+  color: $govuk-error-colour;
+
+  &:visited {
+    color: $govuk-error-colour;
+  }
+}
+
 /* HOMEPAGE */
 
 .x-govuk-masthead {
@@ -57,6 +65,10 @@ $iai-colour-pink: #C50878;
 }
 .x-govuk-primary-navigation__item--current {
     border-bottom-color: govuk-colour("dark-grey");
+}
+
+.x-govuk-primary-navigation__item--right {
+    float: right;
 }
 
 .iai-processlist {

@@ -1,9 +1,23 @@
 import uuid
-from collections import Counter
 from dataclasses import dataclass
-from functools import reduce
 
+import pydantic
+from django.core.exceptions import ValidationError
+from django.core.validators import BaseValidator
 from django.db import models
+
+from consultation_analyser.authentication.models import User
+from consultation_analyser.consultations import public_schema
+
+
+class MultipleChoiceSchemaValidator(BaseValidator):
+    def compare(self, value, _limit_value):
+        if not value:
+            return
+        try:
+            public_schema.MultipleChoice(value)
+        except pydantic.ValidationError as e:
+            raise ValidationError(e.json())
 
 
 class UUIDPrimaryKeyModel(models.Model):
@@ -25,9 +39,26 @@ class TimeStampedModel(models.Model):
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     name = models.CharField(max_length=256)
     slug = models.CharField(null=False, max_length=256)
+    users = models.ManyToManyField(User)
+
+    def has_themes(self):
+        return Theme.objects.filter(answer__question__section__consultation=self).exists()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+        constraints = [
+            models.UniqueConstraint(fields=["slug"], name="unique_consultation_slug"),
+        ]
+
+    def delete(self, *args, **kwargs):
+        """
+        Delete Related theme objects that can become orphans
+        because deletes will not cascade from Answer because
+        the Theme in question could still be associated with
+        another Answer
+        """
+        Theme.objects.filter(answer__question__section__consultation=self).delete()
+
+        super().delete(*args, **kwargs)
 
 
 class Section(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -37,15 +68,21 @@ class Section(UUIDPrimaryKeyModel, TimeStampedModel):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["slug", "consultation"], name="unique_section_consultation"),
+            models.UniqueConstraint(
+                fields=["slug", "consultation"], name="unique_section_consultation"
+            ),
         ]
 
 
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
-    text = models.CharField(null=False, max_length=None)  # no idea what's a sensible value for max_length
+    text = models.CharField(
+        null=False, max_length=None
+    )  # no idea what's a sensible value for max_length
     slug = models.CharField(null=False, max_length=256)
     has_free_text = models.BooleanField(default=False)
-    multiple_choice_options = models.JSONField(null=True)
+    multiple_choice_options = models.JSONField(
+        null=True, blank=True, validators=[MultipleChoiceSchemaValidator(limit_value=None)]
+    )
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
 
     @dataclass
@@ -62,50 +99,66 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    submitted_at = models.DateTimeField(editable=False, null=False)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
-    # Label summarises a topic from a topic model for a given question
-    label = models.CharField(max_length=256, blank=True)
-    summary = models.TextField(blank=True)
+    # LLM generates short_description and summary
+    short_description = models.TextField(blank=True)
+    summary = models.TextField(blank=True)  # More detailed description
     # Duplicates info in Answer model, but needed for uniqueness constraint.
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
-
-    # Calculated fields
-    keywords = models.JSONField(default=list, editable=False)
-    is_outlier = models.BooleanField(default=False, editable=False)
+    # Topic keywords and ID come from BERTopic
+    topic_keywords = models.JSONField(default=list)
+    topic_id = models.IntegerField(null=True)  # Topic ID from BERTopic
+    is_outlier = models.GeneratedField(
+        expression=models.Q(topic_id=-1), output_field=models.BooleanField(), db_persist=True
+    )
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["label", "question"], name="unique_up_to_question"),
+            models.UniqueConstraint(fields=["topic_id", "question"], name="unique_up_to_question"),
         ]
 
-    def save(self, *args, **kwargs):
-        label_constituents = self.label.split("_")
-        self.keywords = label_constituents[1:]
-        topic_number = label_constituents[0]
-        self.is_outlier = topic_number == "-1"
-        super().save(*args, **kwargs)
+
+class AnswerQuerySet(models.QuerySet):
+    MULTIPLE_CHOICE_QUERY = """
+        EXISTS (
+            SELECT 1
+            FROM jsonb_array_elements(multiple_choice) AS elem,
+                 jsonb_array_elements_text(elem -> 'options') AS opt
+            WHERE elem ->> 'question_text' = %s
+              AND opt = %s
+        )
+    """
+
+    def filter_multiple_choice(self, question, answer):
+        return self.extra(where=[self.MULTIPLE_CHOICE_QUERY], params=[question, answer])  # nosec
 
 
 class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
-    multiple_choice_responses = models.JSONField(null=True)  # Multiple choice can have more than one response
-    free_text = models.TextField(null=True)
+    objects = AnswerQuerySet.as_manager()
+
+    multiple_choice = models.JSONField(
+        null=True, blank=True, validators=[MultipleChoiceSchemaValidator(limit_value=None)]
+    )
+    free_text = models.TextField(null=True, blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     consultation_response = models.ForeignKey(ConsultationResponse, on_delete=models.CASCADE)
-    theme = models.ForeignKey(Theme, on_delete=models.CASCADE, null=True)  # For now, just one theme per answer
+    theme = models.ForeignKey(
+        Theme, on_delete=models.SET_NULL, null=True, blank=True
+    )  # For now, just one theme per answer
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    def save_theme_to_answer(self, theme_label):
+    def save_theme_to_answer(self, topic_keywords: list, topic_id: int):
         question = self.question
         theme, _ = Theme.objects.get_or_create(
-            question=question,
-            label=theme_label,
+            question=question, topic_keywords=topic_keywords, topic_id=topic_id
         )
         self.theme = theme
         self.save()
