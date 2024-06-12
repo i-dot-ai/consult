@@ -17,7 +17,7 @@ def sign_in(django_app, email):
 
     sign_in_email = mail.outbox[0]
 
-    assert sign_in_email.subject == "Sign in to Consultation analyser"
+    assert sign_in_email.subject == "Sign in to Consult"
     url = re.search("(?P<url>https?://\\S+)", sign_in_email.body).group("url")
 
     successful_sign_in_page = django_app.get(url)
