@@ -21,6 +21,12 @@ variable "cpu" {
   description = "The cpu resource to give to the task"
 }
 
+variable "vcpus" {
+  type        = number
+  description = "The number of vcpus to give to the task."
+  default     = 2
+}
+
 variable "developer_ips" {
   type        = list(string)
   description = "List of developer IPs"

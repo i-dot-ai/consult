@@ -17,14 +17,16 @@ module "batch_compute" {
 }
 
 module "batch_job_definition" {
-  source                  = "../../i-ai-core-infrastructure/modules/batch/batch_job_definitons"
-  name                    = local.name
-  compute_environment_arn = [module.batch_compute.ec2_compute_environment_arn]
-  state_bucket            = var.state_bucket
-  image                   = "${local.batch_image_ecr_url}:${var.image_tag}"
-  fargate_flag            = false
-  env_vars                = local.batch_env_vars
-  additional_iam_policy   = aws_iam_policy.batch.arn
+  source                   = "../../i-ai-core-infrastructure/modules/batch/batch_job_definitons"
+  name                     = local.name
+  compute_environment_arn  = [module.batch_compute.ec2_compute_environment_arn]
+  state_bucket             = var.state_bucket
+  image                    = "${local.batch_image_ecr_url}:${var.image_tag}"
+  fargate_flag             = false
+  env_vars                 = local.batch_env_vars
+  additional_iam_policy    = aws_iam_policy.batch.arn
+  task_memory_requirements = local.memory
+  task_vcpu_requirements   = local.vcpus
 }
 
 
