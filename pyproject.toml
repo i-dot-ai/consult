@@ -16,6 +16,7 @@ filterwarnings = [
   "ignore::django.utils.deprecation.RemovedInDjango51Warning:.*compressor.*",
   "ignore::pydantic.warnings.PydanticDeprecatedSince20",
   "ignore::FutureWarning:.*huggingface_hub.*",
+  "ignore::SyntaxWarning:.*sentence_transformers.*",
 ]
 
 [tool.poetry.dependencies]
