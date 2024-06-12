@@ -8,6 +8,7 @@ version = "0.1.0"
 description = ""
 authors = ["i.AI <i-dot-ai-enquiries@cabinetoffice.gov.uk>"]
 readme = "README.md"
+package-mode = false
 
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "consultation_analyser.settings.test"
