@@ -211,6 +211,12 @@ tf_import:
 # Release commands to deploy your app to AWS
 .PHONY: release
 release: ## Deploy app
+## bail if env is not set
+	@if [ -z "$(env)" ]; then \
+		echo "make release requires an env= argument"; \
+		exit 1; \
+	fi
+
 	chmod +x ./infrastructure/scripts/release.sh && ./infrastructure/scripts/release.sh $(env)
 
 
