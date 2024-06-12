@@ -1,8 +1,9 @@
 from django.core.management.base import BaseCommand
 
 from consultation_analyser.consultations import models
-from consultation_analyser.pipeline.processing import process_consultation_themes
 from consultation_analyser.pipeline.backends.sagemaker_llm_backend import SagemakerLLMBackend
+from consultation_analyser.pipeline.processing import process_consultation_themes
+
 
 class Command(BaseCommand):
     help = "Run the machine learning pipeline to generate themes for the consultation"
