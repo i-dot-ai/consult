@@ -1,5 +1,5 @@
 locals {
-  postgres_fqdn   = "${module.postgres.rds_instance_username}:${module.postgres.rds_instance_db_password}@${module.postgres.db_instance_address}/${module.postgres.db_instance_name}"
+  rds_fqdn        = "${module.rds.rds_instance_username}:${module.rds.rds_instance_db_password}@${module.rds.db_instance_address}/${module.rds.db_instance_name}"
   secret_env_vars = jsondecode(data.aws_secretsmanager_secret_version.env_vars.secret_string)
   batch_env_vars = {
     "ENVIRONMENT"                          = terraform.workspace,
@@ -12,10 +12,10 @@ locals {
     "USE_SAGEMAKER_LLM"                    = local.secret_env_vars.USE_SAGEMAKER_LLM,
     "SENTRY_DSN"                           = local.secret_env_vars.SENTRY_DSN,
     "AWS_REGION"                           = local.secret_env_vars.AWS_REGION,
-    "DB_NAME" : "${module.postgres.db_instance_name}",
-    "DB_USER" : "${module.postgres.rds_instance_username}",
-    "DB_PASSWORD" : "${module.postgres.rds_instance_db_password}",
-    "DB_HOST" : "${module.postgres.db_instance_address}",
+    "DB_NAME" : "${module.rds.db_instance_name}",
+    "DB_USER" : "${module.rds.rds_instance_username}",
+    "DB_PASSWORD" : "${module.rds.rds_instance_db_password}",
+    "DB_HOST" : "${module.rds.db_instance_address}",
     "DOMAIN_NAME" : "${local.host}"
   }
 
