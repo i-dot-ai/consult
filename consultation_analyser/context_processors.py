@@ -43,6 +43,7 @@ def app_config(request: HttpRequest):
                     "classes": "x-govuk-primary-navigation__item--right",
                 },
             ],
+            release_hash=settings.RELEASE_HASH
         )
     else:
         if request.user.is_authenticated:
