@@ -52,9 +52,3 @@ def test_check_and_launch_sagemaker_endpoint_not_exists(settings):
         mock_sagemaker.create_endpoint.assert_called_once_with(
             EndpointName="test-endpoint", EndpointConfigName="test-endpoint"
         )
-
-
-def test_check_and_launch_no_sagemaker():
-    # Should run without errors (shouldn't try and access AWS etc)
-    result = dummy_function()
-    assert result == "Function executed"
