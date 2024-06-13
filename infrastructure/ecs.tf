@@ -11,8 +11,8 @@ locals {
     "USE_SAGEMAKER_LLM"                    = local.secret_env_vars.USE_SAGEMAKER_LLM,
     "SENTRY_DSN"                           = local.secret_env_vars.SENTRY_DSN,
     "AWS_REGION"                           = local.secret_env_vars.AWS_REGION,
-    "DOMAIN_NAME"                          = "${local.host}",
-    "DATABASE_URL"                         = "${module.rds.rds_instance_username}:${module.rds.rds_instance_db_password}@${module.rds.db_instance_address}/${module.rds.db_instance_name}"
+    "DATABASE_URL"                         = local.rds_fqdn,
+    "DOMAIN_NAME"                          = "${local.host}"
   }
 
 
