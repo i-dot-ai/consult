@@ -6,15 +6,14 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    ignore:
-      # Don't update to 2.3 as doesn't work on older Macs
-      - dependency-name: "torch"
-        versions: ["2.3"]
     groups:
       pip-updates:
         update-types:
           - "minor"
           - "patch"
+    ignore:
+      # Don't update as doesn't work on older Macs
+      - dependency-name: "torch"
 
   - package-ecosystem: "npm"
     directory: "/"
