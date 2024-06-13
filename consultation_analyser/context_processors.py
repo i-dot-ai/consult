@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
+from django.conf import settings
 from django.http import HttpRequest
 from django.urls import resolve
 from django.urls.exceptions import Resolver404
-from django.conf import settings
 
 
 @dataclass
