@@ -14,11 +14,8 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.upload_consultation import upload_consultation
 from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
-from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
 from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
-from consultation_analyser.pipeline.backends.ollama_llm_backend import OllamaLLMBackend
-from consultation_analyser.pipeline.backends.sagemaker_llm_backend import SagemakerLLMBackend
-from consultation_analyser.pipeline.processing import process_consultation_themes
+from consultation_analyser.pipeline.processing import process_consultation_themes, get_llm_backend
 
 logger = logging.getLogger("pipeline")
 
@@ -66,7 +63,7 @@ class Command(BaseCommand):
         topic_backend = self.__get_topic_backend(
             embedding_model=options["embedding_model"], persistence_path=output_dir / "bertopic"
         )
-        llm_backend = self.__get_llm(llm_identifier=options["llm"])
+        llm_backend = get_llm_backend(llm_identifier=options["llm"])
 
         process_consultation_themes(
             consultation, topic_backend=topic_backend, llm_backend=llm_backend
@@ -112,17 +109,6 @@ class Command(BaseCommand):
             )
         else:
             return BERTopicBackend(persistence_path=persistence_path)
-
-    def __get_llm(self, llm_identifier: Optional[str] = "fake"):
-        if llm_identifier == "fake" or not llm_identifier:
-            return DummyLLMBackend()
-        elif llm_identifier == "sagemaker":
-            return SagemakerLLMBackend()
-        elif llm_identifier.startswith("ollama"):
-            model = llm_identifier.split("/")[1]
-            return OllamaLLMBackend(model)
-        else:
-            raise Exception(f"Invalid --llm specified: {llm_identifier}")
 
     def __get_output_dir(self, consultation: models.Consultation, output_dir: Optional[str] = None):
         if not output_dir:
