@@ -130,7 +130,7 @@ class Command(BaseCommand):
                 settings.BASE_DIR / "tmp" / "eval" / f"{consultation.slug}-{int(time.time())}"
             )
 
-        assert output_dir # mypy
+        assert output_dir  # mypy
         os.makedirs(output_dir, exist_ok=True)
         return output_dir
 

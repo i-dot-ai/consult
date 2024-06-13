@@ -63,7 +63,7 @@ class BERTopicBackend(TopicBackend):
         return assignments
 
     def __persist(self, subpath: str):
-        # satisfy mypy
+        # satisfy mypy
         if not self.persistence_path:
             return
 
