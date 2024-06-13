@@ -16,13 +16,13 @@ def app_config(request: HttpRequest):
     try:
         resolved_url = resolve(request.path)
     except Resolver404:
-        return {"app_config": AppConfig(name="Consultation analyser", path="/", menu_items=[])}
+        return {"app_config": AppConfig(name="Consult", path="/", menu_items=[])}
 
     current_app = resolved_url.func.__module__.split(".")[1]
 
     if current_app == "support_console":
         app_config = AppConfig(
-            name="Consultation analyser support console",
+            name="Consult support console",
             path="/support/",
             menu_items=[
                 {
@@ -86,6 +86,6 @@ def app_config(request: HttpRequest):
                 },
             ]
 
-        app_config = AppConfig(name="Consultation analyser", path="/", menu_items=menu_items)
+        app_config = AppConfig(name="Consult", path="/", menu_items=menu_items)
 
     return {"app_config": app_config}

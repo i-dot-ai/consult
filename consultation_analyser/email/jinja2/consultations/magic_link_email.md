@@ -1,3 +1,3 @@
-Click here to sign in to the Consultation analyser
+Click here to sign in to Consult
 
 {{ magic_link }}

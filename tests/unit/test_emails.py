@@ -10,6 +10,6 @@ def test_magic_link_email():
     )
 
     sent_mail = mail.outbox[0]
-    assert sent_mail.subject == "Sign in to Consultation analyser"
+    assert sent_mail.subject == "Sign in to Consult"
     assert ["email@example.com"] == sent_mail.to
     assert "https://example.com" in sent_mail.body

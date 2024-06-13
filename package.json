@@ -1,7 +1,7 @@
 {
-  "name": "consultation-analyser",
+  "name": "consult",
   "version": "1.0.0",
-  "description": "Frontend dependencies for i.AI consultation analyser",
+  "description": "Frontend dependencies for i.AI Consult",
   "main": "index.js",
   "directories": {
     "test": "tests"
