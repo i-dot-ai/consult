@@ -79,24 +79,12 @@
         <h2 class="govuk-heading-m">Generate themes</h2>
         <div>
           <p class="govuk-body">
-            Generating themes runs topic modelling then LLM summarisation. You may wish to do these steps separately in testing.
+            Generating themes runs topic modelling then LLM summarisation.
           </p>
         </div>
         {{ govukButton({
           'text': "Generate themes",
           'name': "generate_themes"
-        }) }}
-
-        {{ govukButton({
-          'text': "Run topic modelling",
-          'name': "topic_modelling",
-          'classes': "govuk-button--secondary"
-        }) }}
-
-        {{ govukButton({
-          'text': "Run LLM summarisation",
-          'name': "llm_summarisation",
-          'classes': "govuk-button--secondary"
         }) }}
 
         <h2 class="govuk-heading-m">Download JSON</h2>

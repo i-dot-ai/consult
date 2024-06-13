@@ -15,7 +15,7 @@ from consultation_analyser.consultations.download_consultation import consultati
 from consultation_analyser.consultations.upload_consultation import upload_consultation
 from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
 from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
-from consultation_analyser.pipeline.processing import process_consultation_themes, get_llm_backend
+from consultation_analyser.pipeline.processing import get_llm_backend, process_consultation_themes
 
 logger = logging.getLogger("pipeline")
 
