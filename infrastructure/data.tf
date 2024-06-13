@@ -2,6 +2,8 @@ locals {
   record_prefix = var.env == "prod" ? var.project_name : "${var.project_name}-${var.env}"
   host          = terraform.workspace == "prod" ? "${var.project_name}.ai.cabinetoffice.gov.uk" : "${var.project_name}-${terraform.workspace}.ai.cabinetoffice.gov.uk"
   name          = "${var.team_name}-${var.env}-${var.project_name}"
+  memory        = 2048
+  vcpus         = 2
 }
 
 data "terraform_remote_state" "vpc" {

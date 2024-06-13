@@ -1,5 +1,5 @@
-module "postgres" {
-  source                  = "../../i-ai-core-infrastructure//modules/postgres"
+module "rds" {
+  source                  = "../../i-ai-core-infrastructure//modules/rds"
   vpc_id                  = data.terraform_remote_state.vpc.outputs.vpc_id
   public_subnet_ids_list  = data.terraform_remote_state.vpc.outputs.public_subnets
   private_subnet_ids_list = data.terraform_remote_state.vpc.outputs.private_subnets
