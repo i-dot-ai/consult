@@ -38,6 +38,16 @@ $iai-colour-pink: #C50878;
     padding-top: 0;
 }
 
+.iai-release-tag-badge {
+    background-color: transparent;
+    color: lightgray;
+    padding: 10px 10px;
+    font-size: 12px;
+    white-space: nowrap;
+    max-width: fit-content;
+    float: inline-end;
+}
+
 .govuk-link.govuk-link--warning {
   color: $govuk-error-colour;
 

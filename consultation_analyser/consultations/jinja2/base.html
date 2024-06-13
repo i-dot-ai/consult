@@ -38,9 +38,10 @@
           {{ app_config.name }}
         </a>
       </div>
+      <div class="iai-release-tag-badge">{{app_config.release_hash}}</div>
     </div>
 
-    <div class="iai-phase-banner">
+    <div class="iai-phase-banner"> 
       <div class="govuk-width-container">
         {{ govukPhaseBanner({
           "tag": {
@@ -94,7 +95,7 @@
           {
             "href": "https://www.smartsurvey.co.uk/s/consultation-interest/",
             "text": "Register your interest"
-          },
+          }
         ]
       }
     ],
@@ -107,7 +108,6 @@
       ]
     }
   }) }}
-
 </body>
 
 </html>

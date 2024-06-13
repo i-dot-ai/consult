@@ -12,7 +12,8 @@ locals {
     "SENTRY_DSN"                           = local.secret_env_vars.SENTRY_DSN,
     "AWS_REGION"                           = local.secret_env_vars.AWS_REGION,
     "DATABASE_URL"                         = local.rds_fqdn,
-    "DOMAIN_NAME"                          = "${local.host}"
+    "DOMAIN_NAME"                          = "${local.host}",
+    "RELEASE_HASH"                         = substr(var.image_tag, 0, 6)
   }
 
 

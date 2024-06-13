@@ -3,6 +3,7 @@ from dataclasses import dataclass
 from django.http import HttpRequest
 from django.urls import resolve
 from django.urls.exceptions import Resolver404
+from django.conf import settings
 
 
 @dataclass
@@ -10,13 +11,14 @@ class AppConfig:
     name: str
     path: str
     menu_items: list
+    release_hash: str
 
 
 def app_config(request: HttpRequest):
     try:
         resolved_url = resolve(request.path)
     except Resolver404:
-        return {"app_config": AppConfig(name="Consult", path="/", menu_items=[])}
+        return {"app_config": AppConfig(name="Consult", path="/", menu_items=[], release_hash=settings.RELEASE_HASH)}
 
     current_app = resolved_url.func.__module__.split(".")[1]
 
@@ -86,6 +88,6 @@ def app_config(request: HttpRequest):
                 },
             ]
 
-        app_config = AppConfig(name="Consult", path="/", menu_items=menu_items)
+        app_config = AppConfig(name="Consult", path="/", menu_items=menu_items, release_hash=settings.RELEASE_HASH)
 
     return {"app_config": app_config}

@@ -28,6 +28,7 @@ env = environ.Env(DEBUG=(bool, False))
 SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
 ENVIRONMENT = env("ENVIRONMENT")
+RELEASE_HASH = os.getenv("RELEASE_HASH", "Local Build")
 
 
 ALLOWED_HOSTS: list[str] = [os.getenv("DOMAIN_NAME", "0.0.0.0"), "*"]  # nosec
