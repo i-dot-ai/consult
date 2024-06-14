@@ -21,7 +21,7 @@ logger = logging.getLogger("pipeline")
 
 
 class Command(BaseCommand):
-    help = "Run the pipeline, write evaluation JSON"
+    help = "Run the pipeline, write JSON with outputs for evaluation"
 
     def add_arguments(self, parser):
         parser.add_argument(
@@ -113,7 +113,7 @@ class Command(BaseCommand):
     def __get_output_dir(self, consultation: models.Consultation, output_dir: Optional[str] = None):
         if not output_dir:
             output_dir = (
-                settings.BASE_DIR / "tmp" / "eval" / f"{consultation.slug}-{int(time.time())}"
+                settings.BASE_DIR / "tmp" / "outputs" / f"{consultation.slug}-{int(time.time())}"
             )
 
         assert output_dir  # mypy

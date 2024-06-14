@@ -14,7 +14,7 @@ def test_local_eval(tmp_path):
 
     file_path = settings.BASE_DIR / "tests" / "examples" / "chocolate.json"
 
-    call_command("evaluate", input=file_path, embedding_model="fake", output_dir=tmp_path)
+    call_command("generate_themes", input=file_path, embedding_model="fake", output_dir=tmp_path)
 
     json_with_themes_path = tmp_path / "consultation_with_themes.json"
 
