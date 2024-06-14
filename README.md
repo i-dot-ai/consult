@@ -121,7 +121,7 @@ The `generate_themes` command will accept a JSON file containing a `Consultation
 
 Invoke the command like this, replacing the input file with your JSON.
 ```
-poetry run manage.py evaluate --input=tests/examples/chocolate.json --clean
+poetry run python manage.py generate_themes --input=tests/examples/chocolate.json --clean
 ```
 
 Options available for this command are:
