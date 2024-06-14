@@ -1,5 +1,5 @@
 locals {
-  rds_fqdn        = "${module.rds.rds_instance_username}:${module.rds.rds_instance_db_password}@${module.rds.db_instance_address}/${module.rds.db_instance_name}"
+  rds_fqdn        = "postgres://${module.rds.rds_instance_username}:${module.rds.rds_instance_db_password}@${module.rds.db_instance_address}/${module.rds.db_instance_name}"
   secret_env_vars = jsondecode(data.aws_secretsmanager_secret_version.env_vars.secret_string)
   batch_env_vars = {
     "ENVIRONMENT"                          = terraform.workspace,
