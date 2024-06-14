@@ -156,10 +156,10 @@ docker_update_tag:
 docker_echo:
 	echo $($(value))
 
-ifeq ($(instance),postgres) then
+ifeq ($(instance),postgres)
 CONFIG_DIR=../../../consultation-analyser-infra-config
 tf_build_args=
-else ifeq ($(instance),universal) then
+else ifeq ($(instance),universal)
 CONFIG_DIR=../../../consultation-analyser-infra-config
 env=prod
 else
@@ -215,7 +215,7 @@ tf_destroy: ## Destroy terraform
 .PHONY: tf_import
 tf_import:
 	make tf_set_workspace && \
-	terraform -chdir=./infrastructure/$(instance) import ${tf_build_args} -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${name} ${id} 
+	terraform -chdir=./infrastructure/$(instance) import ${tf_build_args} -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${name} ${id}
 
 # Release commands to deploy your app to AWS
 .PHONY: release
