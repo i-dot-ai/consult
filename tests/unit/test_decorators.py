@@ -10,8 +10,7 @@ def dummy_function():
     return "Function executed"
 
 
-def test_check_and_launch_sagemaker_endpoint_exists(settings):
-    settings.USE_SAGEMAKER_LLM = True
+def test_check_and_launch_sagemaker_endpoint_exists():
     with patch("boto3.client") as mock_client:
         # Create a mock SageMaker client
         mock_sagemaker = MagicMock()
@@ -28,8 +27,7 @@ def test_check_and_launch_sagemaker_endpoint_exists(settings):
 
 
 @patch("time.sleep", MagicMock(return_value=0))
-def test_check_and_launch_sagemaker_endpoint_not_exists(settings):
-    settings.USE_SAGEMAKER_LLM = True
+def test_check_and_launch_sagemaker_endpoint_not_exists():
     with patch("boto3.client") as mock_client:
         # Create a mock SageMaker client
         mock_sagemaker = MagicMock()

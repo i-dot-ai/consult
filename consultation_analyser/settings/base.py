@@ -203,12 +203,8 @@ BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION", default=None)
 SAGEMAKER_ENDPOINT_NAME = env("SAGEMAKER_ENDPOINT_NAME")
 AWS_REGION = env("AWS_REGION")
 
-# LLM
-if env("USE_SAGEMAKER_LLM"):
-    LLM_BACKEND = "sagemaker"
-else:
-    LLM_BACKEND = "fake"
-
+# ML pipeline
+LLM_BACKEND = env("LLM_BACKEND")
 BERTOPIC_DEFAULT_EMBEDDING_MODEL = "thenlper/gte-small"
 
 # Authentication

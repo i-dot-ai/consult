@@ -8,7 +8,7 @@ locals {
     "SAGEMAKER_ENDPOINT_NAME"              = local.secret_env_vars.SAGEMAKER_ENDPOINT_NAME
     "GOVUK_NOTIFY_API_KEY"                 = local.secret_env_vars.GOVUK_NOTIFY_API_KEY,
     "GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID" = local.secret_env_vars.GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID,
-    "USE_SAGEMAKER_LLM"                    = local.secret_env_vars.USE_SAGEMAKER_LLM,
+    "LLM_BACKEND"                          = local.secret_env_vars.LLM_BACKEND,
     "SENTRY_DSN"                           = local.secret_env_vars.SENTRY_DSN,
     "AWS_REGION"                           = local.secret_env_vars.AWS_REGION,
     "DATABASE_URL"                         = local.rds_fqdn,
