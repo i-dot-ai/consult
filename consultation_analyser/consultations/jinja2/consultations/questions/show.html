@@ -124,6 +124,9 @@
                       {% endfor %}
                     </ul>
                   </div>
+                  <p class="govuk-body"><a class="govuk-link" href="{{ url("question_responses", kwargs={"consultation_slug":
+                      consultation_slug, "question_slug" : question.slug, "section_slug" : question.section.slug},
+                      query_kwargs={"theme": theme.id}) }}">View responses</a></p>
                 </details>
               </td>
               <td class="govuk-table__cell">
