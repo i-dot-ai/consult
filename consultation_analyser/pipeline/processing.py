@@ -48,7 +48,7 @@ def process_consultation_themes(consultation, topic_backend=None, llm_backend=No
         topic_backend = BERTopicBackend()
 
     if not llm_backend:
-        llm_backend = get_llm_backend()
+        llm_backend = get_llm_backend(llm_backend)
 
     save_themes_for_consultation(consultation.id, topic_backend)
     create_llm_summaries_for_consultation(consultation, llm_backend)

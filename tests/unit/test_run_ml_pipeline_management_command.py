@@ -5,10 +5,8 @@ import pytest
 from django.core.management import call_command
 
 from consultation_analyser.consultations.models import Consultation
-from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
-from consultation_analyser.pipeline.backends.sagemaker_llm_backend import SagemakerLLMBackend
 
-@patch("consultation_analyser.pipeline.backends.sagemaker_llm_backend.SagemakerLLMBackend", DummyLLMBackend)
+
 @pytest.mark.django_db
 def test_command_with_valid_slug():
     Consultation.objects.create(slug="test-consultation", name="Test Consultation")
