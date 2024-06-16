@@ -1,14 +1,19 @@
-from typing import Optional
+import faker
 
-from langchain_community.llms import FakeListLLM
+from consultation_analyser.consultations import models
 
-from .langchain_llm_backend import LangchainLLMBackend
+from .llm_backend import LLMBackend
+from .types import ThemeSummary
 
 
-class DummyLLMBackend(LangchainLLMBackend):
-    def __init__(self, responses: Optional[list[str]] = None):
-        resp = '{ "short_description": "Example short description", "summary": "Example summary" }'
-        if not responses:
-            responses = [resp]
-        llm = FakeListLLM(responses=responses)
-        super().__init__(llm)
+class DummyLLMBackend(LLMBackend):
+    def __init__(self):
+        self.faker = faker.Faker()
+
+    def summarise_theme(self, theme: models.Theme) -> ThemeSummary:
+        return ThemeSummary(
+            **{
+                "short_description": ", ".join(theme.topic_keywords),
+                "summary": self.faker.sentence(),
+            }
+        )
