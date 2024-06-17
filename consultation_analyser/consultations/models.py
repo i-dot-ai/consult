@@ -162,3 +162,24 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         )
         self.theme = theme
         self.save()
+
+
+class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    run_started = models.DateTimeField()
+    run_ended = models.DateTimeField()
+    # TODO - Other processing metadata
+    # Info on LLM parameters?
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class TopicModel(UUIDPrimaryKeyModel, TimeStampedModel):
+    processing_run = models.ForeignKey(ProcessingRun, on_delete=models.CASCADE)
+    link_to_model = models.CharField(max_length=1000, null=True, blank=True) # How long should the field be?
+    # TODO -  Some other metadata on the model TBC
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
