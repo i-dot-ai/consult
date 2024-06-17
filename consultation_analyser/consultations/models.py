@@ -118,15 +118,17 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class TopicModel(UUIDPrimaryKeyModel, TimeStampedModel):
     processing_run = models.ForeignKey(ProcessingRun, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
     link_to_model = models.CharField(max_length=1000, null=True, blank=True) # How long should the field be?
     # TODO -  Some other metadata on the model TBC
 
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=["processing_run", "question"], name="unique_topic_model_question_run"),
+        ] # Theme is one-to-one with a topic from the topic model
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
-
     topic_model = models.ForeignKey(TopicModel, on_delete=models.CASCADE, null=True)
     # LLM generates short_description and summary
     short_description = models.TextField(blank=True)
