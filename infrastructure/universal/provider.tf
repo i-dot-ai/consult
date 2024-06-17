@@ -20,7 +20,9 @@ provider "random" {
 provider "aws" {
   default_tags {
     tags = {
-      Environment = "prod"
+      platform:environment    = "prod"
+      platform:repository     = "https://github.com/i-dot-ai/consultation-analyser"
+      platform:security-level = "base"
     }
   }
 }
