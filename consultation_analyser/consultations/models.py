@@ -110,7 +110,7 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
     run_started = models.DateTimeField()
     run_ended = models.DateTimeField()
     # TODO - Other processing metadata
-    # Info on LLM parameters?
+    # Info on LLM parameters?
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
@@ -119,13 +119,17 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
 class TopicModel(UUIDPrimaryKeyModel, TimeStampedModel):
     processing_run = models.ForeignKey(ProcessingRun, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
-    link_to_model = models.CharField(max_length=1000, null=True, blank=True) # How long should the field be?
+    link_to_model = models.CharField(
+        max_length=1000, null=True, blank=True
+    )  # How long should the field be?
     # TODO -  Some other metadata on the model TBC
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["processing_run", "question"], name="unique_topic_model_question_run"),
-        ] # Theme is one-to-one with a topic from the topic model
+            models.UniqueConstraint(
+                fields=["processing_run", "question"], name="unique_topic_model_question_run"
+            ),
+        ]  # Theme is one-to-one with a topic from the topic model
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -143,7 +147,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta:
         constraints = [
             models.UniqueConstraint(fields=["topic_id", "topic_model"], name="unique_id_per_model"),
-        ] # Theme is one-to-one with a topic from the topic model
+        ]  # Theme is one-to-one with a topic from the topic model
 
 
 class AnswerQuerySet(models.QuerySet):
