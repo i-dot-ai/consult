@@ -105,7 +105,28 @@ class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
+class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    run_started = models.DateTimeField()
+    run_ended = models.DateTimeField()
+    # TODO - Other processing metadata
+    # Info on LLM parameters?
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class TopicModel(UUIDPrimaryKeyModel, TimeStampedModel):
+    processing_run = models.ForeignKey(ProcessingRun, on_delete=models.CASCADE)
+    link_to_model = models.CharField(max_length=1000, null=True, blank=True) # How long should the field be?
+    # TODO -  Some other metadata on the model TBC
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
+    topic_model = models.ForeignKey(TopicModel, on_delete=models.CASCADE, null=True)
     # LLM generates short_description and summary
     short_description = models.TextField(blank=True)
     summary = models.TextField(blank=True)  # More detailed description
@@ -117,6 +138,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     is_outlier = models.GeneratedField(
         expression=models.Q(topic_id=-1), output_field=models.BooleanField(), db_persist=True
     )
+
 
     class Meta:
         constraints = [
@@ -162,24 +184,3 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         )
         self.theme = theme
         self.save()
-
-
-class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
-    run_started = models.DateTimeField()
-    run_ended = models.DateTimeField()
-    # TODO - Other processing metadata
-    # Info on LLM parameters?
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
-
-
-class TopicModel(UUIDPrimaryKeyModel, TimeStampedModel):
-    processing_run = models.ForeignKey(ProcessingRun, on_delete=models.CASCADE)
-    link_to_model = models.CharField(max_length=1000, null=True, blank=True) # How long should the field be?
-    # TODO -  Some other metadata on the model TBC
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
-
