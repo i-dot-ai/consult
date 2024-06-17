@@ -126,12 +126,11 @@ class TopicModel(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
+
     topic_model = models.ForeignKey(TopicModel, on_delete=models.CASCADE, null=True)
     # LLM generates short_description and summary
     short_description = models.TextField(blank=True)
     summary = models.TextField(blank=True)  # More detailed description
-    # Duplicates info in Answer model, but needed for uniqueness constraint.
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
     # Topic keywords and ID come from BERTopic
     topic_keywords = models.JSONField(default=list)
     topic_id = models.IntegerField(null=True)  # Topic ID from BERTopic
@@ -139,11 +138,10 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
         expression=models.Q(topic_id=-1), output_field=models.BooleanField(), db_persist=True
     )
 
-
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["topic_id", "question"], name="unique_up_to_question"),
-        ]
+            models.UniqueConstraint(fields=["topic_id", "topic_model"], name="unique_id_per_model"),
+        ] # Theme is one-to-one with a topic from the topic model
 
 
 class AnswerQuerySet(models.QuerySet):
