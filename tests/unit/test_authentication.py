@@ -24,3 +24,13 @@ def test_create_user_with_duplicate_email():
     with pytest.raises(ValidationError):
         # we don't respect case
         User.objects.create_user(email="EMAIL@example.com")
+
+
+@pytest.mark.django_db
+def test_create_user_idempotent():
+    User.objects.create_user(email="email@example.com")
+
+    # no error thrown
+    User.objects.create_user(email="email@example.com", idempotent=True)
+
+    assert User.objects.count() == 1

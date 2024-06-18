@@ -1,22 +1,31 @@
 import uuid
 
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.core.exceptions import ValidationError
 from django.db import models
 
 
 class UserManager(BaseUserManager):
-    def create_user(self, email, password=None, is_staff=False):
+    def create_user(self, email, password=None, is_staff=False, idempotent=False):
         # If there's no pw, assign a long random one that won't be used
         if password is None:
             password = str(uuid.uuid4())
 
-        user = self.model(
-            email=self.normalize_email(email).lower(),
-            is_staff=is_staff,
-        )
+        try:
+            user = self.model(
+                email=self.normalize_email(email).lower(),
+                is_staff=is_staff,
+            )
 
-        user.set_password(password)
-        user.full_clean()
+            user.set_password(password)
+            user.full_clean()
+
+        except ValidationError as e:
+            # only swallow exception if this is an email conflict and we've chosen to ignore it
+            if idempotent and (["User with this Email address already exists."] == e.messages):
+                return user
+            else:
+                raise e
 
         user.save(using=self._db)
         return user
