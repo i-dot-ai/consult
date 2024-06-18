@@ -51,9 +51,10 @@ class LangchainLLMBackend(LLMBackend):
             }
 
             return ThemeSummary(**output)
-        except errors:
-            for e in errors:
-                logger.info(e.error)
+        except errors as e:
+            logger.info(f"Failed to summarise theme with keywords: {theme.topic_keywords}.")
+            error_message = e.args[0] if e.args else ""
+            logger.info(error_message)
             return ThemeSummary(
                 **{
                     "short_description": NO_SUMMARY_STR,
