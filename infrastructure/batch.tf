@@ -14,6 +14,7 @@ module "batch_compute" {
   private_subnets = data.terraform_remote_state.vpc.outputs.private_subnets
   state_bucket    = var.state_bucket
   instance_type   = "g5.xlarge"
+  additional_iam_policy   = aws_iam_policy.batch.arn
 }
 
 module "batch_job_definition" {
@@ -49,6 +50,7 @@ data "aws_iam_policy_document" "batch" {
     actions = [
       "sagemaker:CreateEndpoint",
       "sagemaker:InvokeEndpoint",
+      "sagemaker:DescribeEndpoint"
     ]
     resources = [
       "*"
