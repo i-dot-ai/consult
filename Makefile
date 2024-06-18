@@ -123,7 +123,7 @@ MAIN_IMAGE_TAG=$$(git rev-parse origin/main)
 docker_build: ## Cache from the previous image and the head of main
 	docker buildx build --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE)  \
 	--cache-to type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(IMAGE) \
-	--cache-from type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(ECR_REPO_URL):$(PREV_IMAGE_TAG) .
+	--cache-from type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(ECR_REPO_URL):$(PREV_IMAGE_TAG) \
 	--cache-from type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(ECR_REPO_URL):$(MAIN_IMAGE_TAG) .
 
 .PHONY: docker_run
