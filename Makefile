@@ -117,14 +117,14 @@ target_modules = $(foreach resource,$(AUTO_APPLY_RESOURCES),-target $(resource))
 IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 
 PREV_IMAGE_TAG=$$(git rev-parse HEAD~1)
-PREV_IMAGE=$(ECR_REPO_URL):$(PREV_IMAGE_TAG)
+MAIN_IMAGE_TAG=$$(git rev-parse origin/main)
 
 .PHONY: docker_build
-docker_build: ## Pull previous container (if it exists) build the docker container
-	docker pull $(PREV_IMAGE) || true
+docker_build: ## Cache from the previous image and the head of main
 	docker buildx build --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE)  \
 	--cache-to type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(IMAGE) \
-	--cache-from type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(IMAGE) .
+	--cache-from type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(ECR_REPO_URL):$(PREV_IMAGE_TAG) .
+	--cache-from type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(ECR_REPO_URL):$(MAIN_IMAGE_TAG) .
 
 .PHONY: docker_run
 docker_run: ## Run the docker container
