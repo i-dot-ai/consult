@@ -1,4 +1,3 @@
-# Tests for dummy ML pipeline
 from io import StringIO
 
 import pytest

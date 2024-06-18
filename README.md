@@ -117,11 +117,11 @@ can serve them; you can rerun this with `make govuk_frontend`.
 
 ## Obtaining outputs programatically
 
-The `evaluate` command will accept a JSON file containing a `ConsultationWithResponses` and emit a JSON file containing a `ConsultationWithResponsesAndThemes`.
+The `generate_themes` command will accept a JSON file containing a `ConsultationWithResponses` and emit a JSON file containing a `ConsultationWithResponsesAndThemes`.
 
 Invoke the command like this, replacing the input file with your JSON.
 ```
-poetry run manage.py evaluate --input=tests/examples/chocolate.json --clean
+poetry run python manage.py generate_themes --input=tests/examples/chocolate.json --clean
 ```
 
 Options available for this command are:
@@ -130,7 +130,7 @@ Options available for this command are:
 `--llm`: which llm to use. Pass `fake`, `sagemaker`, or `ollama/model_name`.
 `--embdedding_model`: pass the model for `SentenceTransformers` to use in the `BERTopic` pipeline. If `fake` is passed, random topics will be generated.
 
-The resulting file will be placed in `tmp/evals` and its path will be printed on the console.
+The resulting file will be placed in `tmp/outputs` and its path will be printed on the console.
 
 ## Schema documentation
 

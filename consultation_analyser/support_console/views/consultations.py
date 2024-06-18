@@ -12,7 +12,6 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.pipeline.backends.types import (
     NO_SUMMARY_STR,
 )
-from consultation_analyser.pipeline.llm_summariser import create_llm_summaries_for_consultation
 from consultation_analyser.pipeline.processing import run_processing_pipeline
 
 
@@ -51,19 +50,7 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
     try:
-        if "topic_modelling" in request.POST:
-            # Only import when need it - otherwise slow on start-up
-            from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
-            from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
-
-            save_themes_for_consultation(consultation_id, BERTopicBackend())
-            messages.success(request, "Topic modelling has started for this consultation")
-        elif "llm_summarisation" in request.POST:
-            from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
-
-            create_llm_summaries_for_consultation(consultation, DummyLLMBackend())
-            messages.success(request, "Themes have been sent to the LLM for summarisation")
-        elif "generate_themes" in request.POST:
+        if "generate_themes" in request.POST:
             run_processing_pipeline(consultation)
             messages.success(request, "Consultation data has been sent for processing")
         elif "download_json" in request.POST:
