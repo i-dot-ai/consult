@@ -45,20 +45,6 @@
               </select>
             </div>
 
-          {% if question.multiple_choice_options %}
-            <div class="govuk-form-group">
-              <label class="govuk-label" for="opinion">
-                Opinion
-              </label>
-              <select class="govuk-select" id="opinion" name="opinion">
-                <option {% if applied_filters.opinion == "All" %}selected{% endif %}>All</option>
-                {% for option in question.multiple_choice_options %}
-                  <option {% if applied_filters.opinion == option %}selected{% endif %}>{{ option }}</option>
-                {% endfor %}
-              </select>
-            </div>
-          {% endif %}
-
           {{ govukButton({
             "text": "Apply filters",
             "classes": "govuk-!-margin-bottom-2"

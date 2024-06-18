@@ -49,11 +49,6 @@ def test_get_question_responses_page(django_app):
     if answer.free_text:
         assert f"{answer.theme.short_description}" in page_content
 
-    # Opinions should appear in filter select-box
-    for item in question.multiple_choice_options:
-        for opt in item["options"]:
-            assert opt in page_content
-
     # Check keyword filtering
     first_word_of_answer = answer.free_text.split()[0]
     keywords = ["ThisWordWontAppear", first_word_of_answer]
