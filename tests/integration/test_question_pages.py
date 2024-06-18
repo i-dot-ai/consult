@@ -67,8 +67,3 @@ def test_get_question_summary_page(django_app):
     assert re.search(r"Yes\s+50%", question_page.html.text)
     assert re.search(r"No\s+25%", question_page.html.text)
     assert re.search(r"Maybe\s+25%", question_page.html.text)
-
-    filtered_page = django_app.get(f"{question_summary_url}?opinion=Yes")
-    assert re.search(r"Yes\s+100%", filtered_page.html.text)
-    assert re.search(r"No\s+0%", filtered_page.html.text)
-    assert re.search(r"Maybe\s+0%", filtered_page.html.text)

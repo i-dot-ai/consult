@@ -4,7 +4,17 @@ from django.template.loader import render_to_string
 from django.templatetags.static import static
 from django.urls import reverse
 from django.utils import timezone
+from django.utils.http import urlencode
 from jinja2 import ChoiceLoader, Environment, PackageLoader, PrefixLoader
+
+
+def reverse_with_query_kwargs(viewname, kwargs=None, query_kwargs=None):
+    url = reverse(viewname, kwargs=kwargs)
+
+    if query_kwargs:
+        return f"{url}?{urlencode(query_kwargs)}"
+
+    return url
 
 
 def render_form(form, request):
@@ -36,7 +46,7 @@ def environment(**options):
 
     tags = {
         "static": static,
-        "url": reverse,
+        "url": reverse_with_query_kwargs,
         "render_form": render_form,
         "datetime": datetime,
     }
