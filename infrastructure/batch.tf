@@ -26,7 +26,7 @@ module "batch_job_definition" {
   fargate_flag            = false
   env_vars                = local.batch_env_vars
   additional_iam_policy   = aws_iam_policy.batch.arn
-  task_memory_requirements = local.memory
+  task_memory_requirements = 8192
   task_vcpu_requirements   = local.vcpus
 }
 
