@@ -50,6 +50,7 @@ data "aws_iam_policy_document" "batch" {
     actions = [
       "sagemaker:CreateEndpoint",
       "sagemaker:InvokeEndpoint",
+      "sagemaker:DescribeEndpoint"
     ]
     resources = [
       "*"
