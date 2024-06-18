@@ -37,7 +37,6 @@ class LangchainLLMBackend(LLMBackend):
         }
 
         parser = PydanticOutputParser(pydantic_object=ThemeSummary)
-        parser.parse('{"short_description": "foo", "summary": "bar"}')
         errors = (OutputParserException, ValueError)
         try:
             llm_chain = prompt_template | self.llm | parser
