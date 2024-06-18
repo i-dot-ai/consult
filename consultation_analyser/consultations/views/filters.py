@@ -8,7 +8,6 @@ def get_applied_filters(request: HttpRequest) -> dict[str, str]:
     return {
         "keyword": request.GET.get("keyword", ""),
         "theme": request.GET.get("theme", "All"),
-        "opinion": request.GET.get("opinion", "All"),
     }
 
 
@@ -23,11 +22,6 @@ def get_filtered_responses(question: models.Question, applied_filters: dict[str,
         queryset = queryset.filter(free_text__contains=applied_filters["keyword"])
     if applied_filters["theme"] != "All":
         queryset = queryset.filter(theme=applied_filters["theme"])
-    if applied_filters["opinion"] != "All":
-        queryset = queryset.filter_multiple_choice(
-            question=question.multiple_choice_options[0]["question_text"],
-            answer=applied_filters["opinion"],
-        )
     return queryset
 
 
@@ -39,8 +33,4 @@ def get_filtered_themes(
     )
     if applied_filters["theme"] != "All":
         queryset = queryset.filter(id=applied_filters["theme"])
-    if applied_filters["opinion"] != "All":
-        unique_themes = filtered_answers.values("theme").distinct()
-        unique_themes_list = [item["theme"] for item in unique_themes]
-        queryset = queryset.filter(id__in=unique_themes_list)
     return queryset
