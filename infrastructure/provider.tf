@@ -20,10 +20,10 @@ provider "random" {
 provider "aws" {
   default_tags {
     tags = {
-      platform:environment    = terraform.workspace
-      platform:deployed-via   = "github"
-      platform:repository     = "https://github.com/i-dot-ai/consultation-analyser"
-      platform:security-level = "base"
+      "platform:environment"    = terraform.workspace
+      "platform:deployed-via"   = "github"
+      "platform:repository"     = "https://github.com/i-dot-ai/consultation-analyser"
+      "platform:security-level" = "base"
 
       Organisation = "co"
       Department = "i-dot-ai"
