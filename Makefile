@@ -119,8 +119,6 @@ IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 PREV_IMAGE_TAG=$$(git rev-parse HEAD~1)
 PREV_IMAGE=$(ECR_REPO_URL):$(PREV_IMAGE_TAG)
 
-tf_build_args=-var "image_tag=$(IMAGE_TAG)"
-
 .PHONY: docker_build
 docker_build: ## Pull previous container (if it exists) build the docker container
 	docker pull $(PREV_IMAGE) || true
@@ -158,31 +156,42 @@ docker_update_tag:
 docker_echo:
 	echo $($(value))
 
+ifeq ($(instance),postgres)
+CONFIG_DIR=../../../consultation-analyser-infra-config
+tf_build_args=
+else ifeq ($(instance),universal)
+CONFIG_DIR=../../../consultation-analyser-infra-config
+env=prod
+else
 CONFIG_DIR=../../consultation-analyser-infra-config
+tf_build_args=-var "image_tag=$(IMAGE_TAG)"
+endif
+
 TF_BACKEND_CONFIG=$(CONFIG_DIR)/backend.hcl
 
+
 tf_new_workspace:
-	terraform -chdir=./infrastructure workspace new $(env)
+	terraform -chdir=./infrastructure/$(instance)  workspace new $(env)
 
 tf_set_workspace:
-	terraform -chdir=./infrastructure workspace select $(env)
+	terraform -chdir=./infrastructure/$(instance) workspace select $(env)
 
 tf_set_or_create_workspace:
 	make tf_set_workspace || make tf_new_workspace
 
 .PHONY: tf_init
 tf_init: ## Initialise terraform
-	terraform -chdir=./infrastructure init -backend-config=$(TF_BACKEND_CONFIG)
+	terraform -chdir=./infrastructure/$(instance) init -backend-config=$(TF_BACKEND_CONFIG) ${args} -upgrade
 
 .PHONY: tf_plan
 tf_plan: ## Plan terraform
 	make tf_set_workspace && \
-	terraform -chdir=./infrastructure plan -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+	terraform -chdir=./infrastructure/$(instance) plan -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
 .PHONY: tf_apply
 tf_apply: ## Apply terraform
 	make tf_set_workspace && \
-	terraform -chdir=./infrastructure apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} ${args}
+	terraform -chdir=./infrastructure/$(instance) apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} ${args}
 
 .PHONY: tf_init_universal
 tf_init_universal: ## Initialise terraform
@@ -206,11 +215,15 @@ tf_destroy: ## Destroy terraform
 .PHONY: tf_import
 tf_import:
 	make tf_set_workspace && \
-	terraform -chdir=./infrastructure import -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} ${name} ${id}
+	terraform -chdir=./infrastructure/$(instance) import ${tf_build_args} -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${name} ${id}
 
 # Release commands to deploy your app to AWS
 .PHONY: release
 release: ## Deploy app
+## bail if env is not set
+	@if [ -z "$(env)" ]; then \
+		echo "make release requires an env= argument"; \
+		exit 1; \
+	fi
+
 	chmod +x ./infrastructure/scripts/release.sh && ./infrastructure/scripts/release.sh $(env)
-
-

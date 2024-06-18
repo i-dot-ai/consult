@@ -1,6 +1,6 @@
-# Consultation analyser
+# Consult
 
-The Consultation analyser is a machine learning and LLM-powered tool to automate the processing of public consultations.
+Consult is a machine learning and LLM-powered tool to automate the processing of public consultations.
 
 > [!IMPORTANT]
 > Incubation Project: This project is an incubation project; as such, we don't recommend using this for critical use cases yet. We are currently in a research stage, trialling the tool for case studies across the Civil Service. If you are a civil servant and wish to take part in our research stage, please register your interest [here](https://www.smartsurvey.co.uk/s/consultation-interest/).
@@ -114,6 +114,23 @@ for our CSS.
 The govuk assets are versioned in the `npm` package. `make dev_environment`
 includes a step to copy them to the `frontend` folder from where `runserver`
 can serve them; you can rerun this with `make govuk_frontend`.
+
+## Obtaining outputs programatically
+
+The `generate_themes` command will accept a JSON file containing a `ConsultationWithResponses` and emit a JSON file containing a `ConsultationWithResponsesAndThemes`.
+
+Invoke the command like this, replacing the input file with your JSON.
+```
+poetry run python manage.py generate_themes --input=tests/examples/chocolate.json --clean
+```
+
+Options available for this command are:
+
+`--clean`: delete this consultation if it already exists in the database.
+`--llm`: which llm to use. Pass `fake`, `sagemaker`, or `ollama/model_name`.
+`--embdedding_model`: pass the model for `SentenceTransformers` to use in the `BERTopic` pipeline. If `fake` is passed, random topics will be generated.
+
+The resulting file will be placed in `tmp/outputs` and its path will be printed on the console.
 
 ## Schema documentation
 

@@ -1,22 +1,18 @@
 locals {
-  postgres_fqdn   = "${module.postgres.rds_instance_username}:${module.postgres.rds_instance_db_password}@${module.postgres.db_instance_address}/${module.postgres.db_instance_name}"
+  rds_fqdn        = "postgres://${module.rds.rds_instance_username}:${module.rds.rds_instance_db_password}@${module.rds.db_instance_address}/${module.rds.db_instance_name}"
   secret_env_vars = jsondecode(data.aws_secretsmanager_secret_version.env_vars.secret_string)
   batch_env_vars = {
     "ENVIRONMENT"                          = terraform.workspace,
-    "PRODUCTION_DEPLOYMENT"                = true,
     "DJANGO_SECRET_KEY"                    = data.aws_secretsmanager_secret_version.django_secret.secret_string,
     "DEBUG"                                = local.secret_env_vars.DEBUG,
     "SAGEMAKER_ENDPOINT_NAME"              = local.secret_env_vars.SAGEMAKER_ENDPOINT_NAME
     "GOVUK_NOTIFY_API_KEY"                 = local.secret_env_vars.GOVUK_NOTIFY_API_KEY,
     "GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID" = local.secret_env_vars.GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID,
-    "USE_SAGEMAKER_LLM"                    = local.secret_env_vars.USE_SAGEMAKER_LLM,
+    "LLM_BACKEND"                          = local.secret_env_vars.LLM_BACKEND,
     "SENTRY_DSN"                           = local.secret_env_vars.SENTRY_DSN,
     "AWS_REGION"                           = local.secret_env_vars.AWS_REGION,
-    "DB_NAME" : "${module.postgres.db_instance_name}",
-    "DB_USER" : "${module.postgres.rds_instance_username}",
-    "DB_PASSWORD" : "${module.postgres.rds_instance_db_password}",
-    "DB_HOST" : "${module.postgres.db_instance_address}",
-    "DOMAIN_NAME" : "${local.host}"
+    "DATABASE_URL"                         = local.rds_fqdn,
+    "DOMAIN_NAME"                          = "${local.host}"
   }
 
 

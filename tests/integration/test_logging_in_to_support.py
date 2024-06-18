@@ -21,8 +21,8 @@ def test_logging_in_to_support(django_app):
     support_home = login_page.form.submit().follow()
 
     # then I should see the support console page
-    assert "Consultation analyser support console" in support_home
+    assert "Consult support console" in support_home
 
     logged_out_page = support_home.click("Sign out")
 
-    assert "Consultation analyser support console" not in logged_out_page
+    assert "Consult support console" not in logged_out_page

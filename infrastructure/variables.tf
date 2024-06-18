@@ -17,8 +17,14 @@ variable "container_port" {
 
 variable "cpu" {
   type        = number
-  default     = 512
+  default     = 1024
   description = "The cpu resource to give to the task"
+}
+
+variable "vcpus" {
+  type        = number
+  description = "The number of vcpus to give to the task."
+  default     = 2
 }
 
 variable "developer_ips" {
@@ -91,7 +97,7 @@ variable "image_tag" {
 variable "memory" {
   type        = number
   description = "The memory resource to give to the task"
-  default     = 1024
+  default     = 2048
 }
 
 variable "prefix" {

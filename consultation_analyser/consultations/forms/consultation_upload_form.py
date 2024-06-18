@@ -1,4 +1,5 @@
 import json
+import logging
 from collections import Counter
 
 from crispy_forms_gds.helper import FormHelper
@@ -10,6 +11,8 @@ from jsonschema import validate
 from jsonschema.validators import Draft202012Validator
 
 from consultation_analyser.consultations.views.schema import SCHEMA_DIR  # refactor this
+
+logger = logging.getLogger("django.server")
 
 
 class DuplicateSectionValidationError(Exception):
@@ -33,12 +36,15 @@ def validate_section_uniqueness(uploaded_json):
 
 
 def validate_consultation_json(value):
+    logger.info("Reading file")
     uploaded_json = json.loads(value.read())
     with open(f"{SCHEMA_DIR}/consultation_with_responses_schema.json") as f:
         schema = json.loads(f.read())
 
     try:
+        logger.info("Validating schema")
         validate(uploaded_json, schema, format_checker=Draft202012Validator.FORMAT_CHECKER)
+        logger.info("Validating section uniqueness")
         validate_section_uniqueness(uploaded_json)
     except jsonschema_exceptions.ValidationError as e:
         path = [str(el) for el in e.path]

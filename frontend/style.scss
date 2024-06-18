@@ -9,6 +9,11 @@ $iai-colour-pink: #C50878;
 .govuk-header__container {
     border-color: $iai-colour-pink;
 }
+
+.govuk-header__content {
+    padding-left: 0;
+}
+
 .govuk-phase-banner__content__tag {
     background-color: $iai-colour-pink;
     color: white;

@@ -1,7 +1,9 @@
 from compressor.contrib.jinja2ext import CompressorExtension
+from django.contrib.humanize.templatetags.humanize import intcomma
 from django.template.loader import render_to_string
 from django.templatetags.static import static
 from django.urls import reverse
+from django.utils import timezone
 from jinja2 import ChoiceLoader, Environment, PackageLoader, PrefixLoader
 
 
@@ -10,7 +12,9 @@ def render_form(form, request):
 
 
 def datetime(datetime_object):
-    return datetime_object.strftime("%d %B %Y at %H:%M")
+    tz = timezone.get_current_timezone()
+    with_tz = datetime_object.astimezone(tz)
+    return with_tz.strftime("%d %B %Y at %H:%M")
 
 
 def environment(**options):
@@ -30,7 +34,14 @@ def environment(**options):
 
     env = Environment(**options, extensions=[CompressorExtension])  # nosec
 
-    tags = {"static": static, "url": reverse, "render_form": render_form, "datetime": datetime}
+    tags = {
+        "static": static,
+        "url": reverse,
+        "render_form": render_form,
+        "datetime": datetime,
+    }
+
+    env.filters["intcomma"] = intcomma
 
     env.globals.update(tags)
 

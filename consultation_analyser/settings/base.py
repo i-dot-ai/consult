@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/5.0/ref/settings/
 
 import logging
 import os
+import sys
 from pathlib import Path
 
 import environ
@@ -50,6 +51,7 @@ INSTALLED_APPS = [
     "compressor",
     "crispy_forms",
     "crispy_forms_gds",
+    "django.contrib.humanize",
 ]
 
 
@@ -102,22 +104,7 @@ AUTH_USER_MODEL = "authentication.User"
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-PRODUCTION_DEPLOYMENT = os.environ.get("PRODUCTION_DEPLOYMENT", False)
-
-if PRODUCTION_DEPLOYMENT:
-    DATABASES = {
-        "default": {
-            "ENGINE": "django.db.backends.postgresql_psycopg2",
-            "NAME": os.getenv("DB_NAME"),
-            "USER": os.getenv("DB_USER"),
-            "PASSWORD": os.getenv("DB_PASSWORD"),
-            "HOST": os.getenv("DB_HOST"),
-            "PORT": 5432,
-        }
-    }
-else:
-    DATABASES = {"default": env.db()}
-
+DATABASES = {"default": env.db()}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -143,7 +130,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-gb"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Europe/London"
 
 USE_I18N = True
 
@@ -163,6 +150,30 @@ STATICFILES_FINDERS = [
     "django.contrib.staticfiles.finders.FileSystemFinder",
     "django.contrib.staticfiles.finders.AppDirectoriesFinder",
 ]
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "pipeline": {
+            "()": "django.utils.log.ServerFormatter",
+            "format": "[{server_time}] {name}: {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "stdout": {
+            "level": "INFO",
+            "class": "logging.StreamHandler",
+            "stream": sys.stdout,
+            "formatter": "pipeline",
+        }
+    },
+    "loggers": {
+        "pipeline": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
+    },
+}
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
@@ -190,8 +201,11 @@ GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID = env("GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID
 BATCH_JOB_QUEUE = env("BATCH_JOB_QUEUE", default=None)
 BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION", default=None)
 SAGEMAKER_ENDPOINT_NAME = env("SAGEMAKER_ENDPOINT_NAME")
-USE_SAGEMAKER_LLM = env.bool("USE_SAGEMAKER_LLM")
 AWS_REGION = env("AWS_REGION")
+
+# ML pipeline
+LLM_BACKEND = env("LLM_BACKEND")
+BERTOPIC_DEFAULT_EMBEDDING_MODEL = "thenlper/gte-small"
 
 # Authentication
 LOGIN_URL = "/sign-in/"

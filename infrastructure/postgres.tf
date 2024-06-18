@@ -1,5 +1,5 @@
-module "postgres" {
-  source                  = "../../i-ai-core-infrastructure//modules/postgres"
+module "rds" {
+  source                  = "../../i-ai-core-infrastructure//modules/rds"
   vpc_id                  = data.terraform_remote_state.vpc.outputs.vpc_id
   public_subnet_ids_list  = data.terraform_remote_state.vpc.outputs.public_subnets
   private_subnet_ids_list = data.terraform_remote_state.vpc.outputs.private_subnets
@@ -12,4 +12,7 @@ module "postgres" {
   service_sg_ids          = [module.ecs.ecs_sg_id]
   publicly_accessible     = var.publicly_accessible
   securelist_ips          = concat(var.developer_ips, var.internal_ips)
+  secret_tags = {
+    SecretPurpose : "general"
+  }
 }

@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: i.AI Consultation analyser
+  title: i.AI Consult
   version: v0.1
 paths:
   /:

@@ -14,7 +14,7 @@ def send_templated_email(
 def send_magic_link_email(to: str, magic_link: str) -> None:
     send_templated_email(
         to=[to],
-        subject="Sign in to Consultation analyser",
+        subject="Sign in to Consult",
         template="consultations/magic_link_email.md",
         template_args={"magic_link": magic_link},
     )
