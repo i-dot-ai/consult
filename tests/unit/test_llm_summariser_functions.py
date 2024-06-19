@@ -1,3 +1,5 @@
+import string
+
 import pytest
 import tiktoken
 
@@ -44,3 +46,26 @@ def test_get_random_sample_of_responses_for_theme():
     )
     assert len(encoding.encode(combined_responses)) < 30, combined_responses
     assert combined_responses.count(text) > 1, combined_responses
+
+
+@pytest.mark.django_db
+def test_get_random_sample_of_responses_for_theme_does_not_repeat():
+    encoding = tiktoken.get_encoding("cl100k_base")  # Use arbitrary encoding model
+    consultation = ConsultationFactory()
+    consultation_response = ConsultationResponseFactory(consultation=consultation)
+    section = SectionFactory(consultation=consultation)
+    question = QuestionFactory(has_free_text=True, section=section)
+    theme = ThemeFactory(question=question)
+
+    answers = list(string.ascii_lowercase)  # get 27 distinct answers
+    for a in answers:
+        AnswerFactory(
+            question=question, theme=theme, free_text=a, consultation_response=consultation_response
+        )
+
+    combined_responses = get_random_sample_of_responses_for_theme(
+        theme, encoding=encoding, max_tokens=100
+    )
+
+    selected_answers = "".join(combined_responses.splitlines())
+    assert len(selected_answers) == len(set(selected_answers))

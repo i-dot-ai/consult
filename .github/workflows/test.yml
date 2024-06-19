@@ -11,7 +11,7 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: python:3.12
+    container: python:3.12.3
 
     services:
       postgres:
@@ -30,11 +30,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-
-      - name: install python
-        uses: actions/setup-python@v5
-        with:
-          python-version-file: 'pyproject.toml'
 
       - name: install poetry & deps
         run: |
