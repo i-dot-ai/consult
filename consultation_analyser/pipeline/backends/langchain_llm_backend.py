@@ -66,7 +66,6 @@ class LangchainLLMBackend(LLMBackend):
         # TODO - what is the best way to get info about the policy area into the prompt.
         # TODO - this might need tweaking on the first run.
         prompt_template = """
-        <s>[INST]
         You are serving as an expert AI assisting UK government \
         policy officers in analyzing public opinions on new policies. \
         The topic of the new policy is {consultation_name}. \
@@ -81,20 +80,21 @@ class LangchainLLMBackend(LLMBackend):
         You should generate a short description (a phrase) and summary that reflects the MOST COMMON opinion expressed in the responses. \
         You MUST return your answer in JSON format. DO NOT DEVIATE FROM THIS FORMAT. \
         The response MUST be formatted with two fields: 'short_description' and 'summary'. \
-        IT IS ESSENTIAL THAT YOU FORMAT YOUR RESPONSE LIKE THIS.
+        IT IS ESSENTIAL THAT YOU FORMAT YOUR RESPONSE AS JSON. INCLUDE NO OTHER MATERIAL.
 
         == QUESTION ==
         {question}
+        == QUESTION ENDS ==
 
         == KEYWORDS ==
         {keywords}
+        == KEYWORDS END ==
 
         == SAMPLE RESPONSES ==
         {responses}
+        == SAMPLE RESPONSES END ==
 
         Ensure that the phrase you generate does not include any of the following phrases or their equivalents: "Support for ...", "Agreement with the policy", "Disagreement with the policy", "Policies", "Opinions on ...", "Agreement with proposed policy", "Disagreement with proposed policy".
-
-        [/INST]
         """
 
         return PromptTemplate.from_template(template=prompt_template)
@@ -105,12 +105,17 @@ def get_random_sample_of_responses_for_theme(
 ) -> str:
     responses_for_theme = models.Answer.objects.filter(theme=theme).order_by("?")
     free_text_responses_for_theme = responses_for_theme.values_list("free_text", flat=True)
+
+    # TWILIGHT ZONE: https://code.djangoproject.com/ticket/30655
+    len(free_text_responses_for_theme)  # calling this prevents dupes in the output!
+    # ENDS
+
     number_responses = responses_for_theme.count()
     combined_responses_string = ""
     i = 0
     append_more_results = True
     # TODO - how else might we want to separate documents (aka responses)?
-    separator = "\n"
+    separator = "\n\n"
     while append_more_results:
         new_combined_responses_string = separator.join(
             [combined_responses_string, free_text_responses_for_theme[i]]
