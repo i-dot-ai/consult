@@ -16,7 +16,7 @@ locals {
   }
 
 
-  esc_env_vars = merge({
+  ecs_env_vars = merge({
     "BATCH_JOB_QUEUE"      = module.batch_job_definition.job_queue_name,
     "BATCH_JOB_DEFINITION" = module.batch_job_definition.job_definition_name,
   }, local.batch_env_vars)
@@ -37,7 +37,7 @@ module "ecs" {
     timeout             = 6
     port                = 8000
   }
-  environment_variables = local.esc_env_vars
+  environment_variables = local.ecs_env_vars
 
   state_bucket                 = var.state_bucket
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
