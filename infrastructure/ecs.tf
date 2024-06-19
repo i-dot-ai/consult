@@ -1,7 +1,7 @@
 locals {
   rds_fqdn        = "postgres://${module.rds.rds_instance_username}:${module.rds.rds_instance_db_password}@${module.rds.db_instance_address}/${module.rds.db_instance_name}"
   secret_env_vars = jsondecode(data.aws_secretsmanager_secret_version.env_vars.secret_string)
-  batch_env_vars = {
+  base_env_vars = {
     "ENVIRONMENT"                          = terraform.workspace,
     "DJANGO_SECRET_KEY"                    = data.aws_secretsmanager_secret_version.django_secret.secret_string,
     "DEBUG"                                = local.secret_env_vars.DEBUG,
@@ -15,11 +15,15 @@ locals {
     "DOMAIN_NAME"                          = "${local.host}"
   }
 
+  batch_env_vars = merge(local.base_env_vars, {
+    "EXECUTION_CONTEXT"    = "batch"
+  })
 
-  ecs_env_vars = merge({
+  ecs_env_vars = merge(local.base_env_vars, {
     "BATCH_JOB_QUEUE"      = module.batch_job_definition.job_queue_name,
     "BATCH_JOB_DEFINITION" = module.batch_job_definition.job_definition_name,
-  }, local.batch_env_vars)
+    "EXECUTION_CONTEXT"    = "ecs"
+  })
 }
 
 module "ecs" {
