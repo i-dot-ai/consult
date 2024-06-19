@@ -6,10 +6,12 @@ CSRF_TRUSTED_ORIGINS = ["https://" + env("DOMAIN_NAME")]
 
 SENTRY_DSN = env("SENTRY_DSN")
 EXECUTION_CONTENT = env("EXECUTION_CONTENT")
+GIT_SHA = env("GIT_SHA")
 
 sentry_sdk.init(
     dsn=SENTRY_DSN,
     environment=ENVIRONMENT,
+    release=GIT_SHA,
 )
 
 sentry_sdk.set_tags({"execution_context": EXECUTION_CONTENT})

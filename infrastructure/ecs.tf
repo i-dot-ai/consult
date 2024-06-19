@@ -13,6 +13,7 @@ locals {
     "AWS_REGION"                           = local.secret_env_vars.AWS_REGION,
     "DATABASE_URL"                         = local.rds_fqdn,
     "DOMAIN_NAME"                          = "${local.host}"
+    "GIT_SHA"                              = var.image_tag
   }
 
   batch_env_vars = merge(local.base_env_vars, {
