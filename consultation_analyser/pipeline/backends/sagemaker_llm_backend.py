@@ -37,6 +37,7 @@ class SagemakerLLMBackend(LangchainLLMBackend):
             "max_new_tokens": 2048,
             "repetition_penalty": 1.03,
             "stop": ["###", "</s>"],
+            "return_full_text": False,
         }
         sagemaker_endpoint = SagemakerEndpoint(
             endpoint_name=settings.SAGEMAKER_ENDPOINT_NAME,
