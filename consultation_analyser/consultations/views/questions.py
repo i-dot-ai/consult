@@ -1,5 +1,5 @@
 from django.contrib.auth.decorators import login_required
-from django.db.models import Max
+from django.db.models import Count, Max
 from django.http import HttpRequest
 from django.shortcuts import render
 
@@ -18,7 +18,11 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
     )
     applied_filters = get_applied_filters(request)
     responses = get_filtered_responses(question, applied_filters)
-    filtered_themes = get_filtered_themes(question, responses, applied_filters)
+    filtered_themes = (
+        get_filtered_themes(question, responses, applied_filters)
+        .annotate(answer_count=Count("answer"))
+        .order_by("-answer_count")
+    )
 
     # Get counts
     total_responses = responses.count()
