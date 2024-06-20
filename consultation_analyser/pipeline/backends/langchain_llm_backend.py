@@ -66,21 +66,21 @@ class LangchainLLMBackend(LLMBackend):
         # TODO - what is the best way to get info about the policy area into the prompt.
         # TODO - this might need tweaking on the first run.
         prompt_template = """
-        You are serving as an expert AI assisting UK government \
-        policy officers in analyzing public opinions on new policies. \
-        The topic of the new policy is {consultation_name}. \
-        We want you to distill key sentiments and arguments expressed in the responses. \
-        We conducted a survey, and responses to a specific question have been categorized under a single common theme.\
-        We have provided a sample of responses for the theme and frequently occurring key words. \
-        We have also provided some background information about the chapter of the survey in which the question was asked. \
-        Instead of general agreement/disagreement, focus on capturing specific perspectives. \
-        Your task is to generate ONLY:
-        1) A concise phrase that encapsulates both the prevalent keywords and the nuanced opinions conveyed in the responses.
-        2) A summary of the opinions expressed in the responses.
-        You should generate a short description (a phrase) and summary that reflects the MOST COMMON opinion expressed in the responses. \
-        You MUST return your answer in JSON format. DO NOT DEVIATE FROM THIS FORMAT. \
-        The response MUST be formatted with two fields: 'short_description' and 'summary'. \
-        IT IS ESSENTIAL THAT YOU FORMAT YOUR RESPONSE AS JSON. INCLUDE NO OTHER MATERIAL.
+        [INST]You are serving as an expert AI assisting UK government
+        policy officers in analyzing public opinions on new policies.
+        The topic of the new policy is {consultation_name}.
+        We conducted a survey, and answers to a specific question have been categorized under a single common theme.
+        We have provided a sample of answers for the theme and frequently occurring key words.
+        We want you to distill key sentiments and arguments expressed in the answers.
+        We have also provided some background information about the chapter of the survey in which the question was asked.
+        Instead of general agreement/disagreement, focus on capturing specific perspectives.
+        You should generate a short description (a phrase) and summary that reflects the MOST COMMON opinion expressed
+        in the answers.
+        1) 'short_description': A concise phrase that encapsulates both the prevalent keywords and the nuanced opinions
+        conveyed in the answers.
+        2) 'summary': A summary of the opinions expressed in the answers.
+        Ensure that the short_description does not include any of the following phrases or their equivalents: "Support for ...", "Agreement with the policy", "Disagreement with the policy", "Policies", "Opinions on ...", "Agreement with proposed policy", "Disagreement with proposed policy".
+
 
         == QUESTION ==
         {question}
@@ -90,11 +90,24 @@ class LangchainLLMBackend(LLMBackend):
         {keywords}
         == KEYWORDS END ==
 
-        == SAMPLE RESPONSES ==
+        == SAMPLE ANSWERS TO THE QUESTION ==
         {responses}
-        == SAMPLE RESPONSES END ==
+        == SAMPLE ANSWERS END ==
 
-        Ensure that the phrase you generate does not include any of the following phrases or their equivalents: "Support for ...", "Agreement with the policy", "Disagreement with the policy", "Policies", "Opinions on ...", "Agreement with proposed policy", "Disagreement with proposed policy".
+        You MUST return your answer in JSON format. DO NOT DEVIATE FROM THIS FORMAT.
+        The response should include two fields: 'short_description' and 'summary'.
+
+        Example JSON:
+
+        {{
+            "short_description": 'the short_description you have generated',
+            "summary": 'the summary you have generated',
+        }}
+
+        IT IS ESSENTIAL THAT YOU FORMAT YOUR RESPONSE AS JSON. INCLUDE NO OTHER MATERIAL.
+
+        The JSON:
+        [/INST]
         """
 
         return PromptTemplate.from_template(template=prompt_template)
