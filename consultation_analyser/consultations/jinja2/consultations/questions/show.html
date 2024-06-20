@@ -101,6 +101,8 @@
                     <span class="govuk-details__summary-text">{{ theme.short_description }}</span>
                   </summary>
                   <div class="govuk-details__text">
+                    <p class="govuk-!-margin-bottom-0">{{ theme.summary }}</p>
+                    <br>
                     <p class="govuk-!-margin-bottom-0">This theme has the following keywords:</p>
                     <ul class="iai-inline-list govuk-!-margin-top-1">
                       {% for word in theme.topic_keywords %}
