@@ -105,22 +105,44 @@ class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
-class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
-    # LLM generates short_description and summary
-    short_description = models.TextField(blank=True)
-    summary = models.TextField(blank=True)  # More detailed description
-    # Duplicates info in Answer model, but needed for uniqueness constraint.
+class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    # TODO - add more processing run metadata
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class TopicModel(UUIDPrimaryKeyModel, TimeStampedModel):
+    processing_run = models.ForeignKey(ProcessingRun, on_delete=models.CASCADE)
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
-    # Topic keywords and ID come from BERTopic
+    # TODO -  Some other metadata on the model TBC and link to saved model
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["processing_run", "question"], name="unique_topic_model_question_run"
+            ),
+        ]
+
+
+class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
+    # Topic model, keywords and ID come from BERTopic
+    topic_model = models.ForeignKey(TopicModel, on_delete=models.CASCADE, null=True)
     topic_keywords = models.JSONField(default=list)
     topic_id = models.IntegerField(null=True)  # Topic ID from BERTopic
     is_outlier = models.GeneratedField(
         expression=models.Q(topic_id=-1), output_field=models.BooleanField(), db_persist=True
     )
+    # LLM generates short_description and summary
+    short_description = models.TextField(blank=True)
+    summary = models.TextField(blank=True)  # More detailed description
+    # Duplicates info in Answer model, but needed for uniqueness constraint.
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["topic_id", "question"], name="unique_up_to_question"),
+            models.UniqueConstraint(fields=["topic_id", "topic_model"], name="unique_id_per_model"),
         ]
 
 
@@ -162,24 +184,3 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         )
         self.theme = theme
         self.save()
-
-
-class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
-    # TODO - add more processing run metadata
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
-
-
-class TopicModel(UUIDPrimaryKeyModel, TimeStampedModel):
-    processing_run = models.ForeignKey(ProcessingRun, on_delete=models.CASCADE)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
-    # TODO -  Some other metadata on the model TBC and link to saved model
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(
-                fields=["processing_run", "question"], name="unique_topic_model_question_run"
-            ),
-        ]
