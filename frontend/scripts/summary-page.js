@@ -39,8 +39,11 @@ class donutChart extends HTMLElement {
         const options = {
             color: [
                 '#12436D',
+                '#28A197',
                 '#801650',
-                '#F46A25'
+                '#F46A25',
+                '#3D3D3D',
+                '#A285D1'
             ],
             tooltip: {
                 formatter: '{b} ({c}%)',
