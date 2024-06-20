@@ -162,3 +162,24 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         )
         self.theme = theme
         self.save()
+
+
+class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    # TODO - add more processing run metadata
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class TopicModel(UUIDPrimaryKeyModel, TimeStampedModel):
+    processing_run = models.ForeignKey(ProcessingRun, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
+    # TODO -  Some other metadata on the model TBC and link to saved model
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["processing_run", "question"], name="unique_topic_model_question_run"
+            ),
+        ]
