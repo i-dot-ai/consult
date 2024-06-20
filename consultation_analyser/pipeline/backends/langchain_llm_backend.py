@@ -66,21 +66,46 @@ class LangchainLLMBackend(LLMBackend):
         # TODO - what is the best way to get info about the policy area into the prompt.
         # TODO - this might need tweaking on the first run.
         prompt_template = """
-        You are serving as an expert AI assisting UK government \
-        policy officers in analyzing public opinions on new policies. \
-        The topic of the new policy is {consultation_name}. \
-        We want you to distill key sentiments and arguments expressed in the responses. \
-        We conducted a survey, and responses to a specific question have been categorized under a single common theme.\
-        We have provided a sample of responses for the theme and frequently occurring key words. \
-        We have also provided some background information about the chapter of the survey in which the question was asked. \
-        Instead of general agreement/disagreement, focus on capturing specific perspectives. \
-        Your task is to generate ONLY:
-        1) A concise phrase that encapsulates both the prevalent keywords and the nuanced opinions conveyed in the responses.
-        2) A summary of the opinions expressed in the responses.
-        You should generate a short description (a phrase) and summary that reflects the MOST COMMON opinion expressed in the responses. \
-        You MUST return your answer in JSON format. DO NOT DEVIATE FROM THIS FORMAT. \
-        The response MUST be formatted with two fields: 'short_description' and 'summary'. \
+        <s>[INST] You are serving as an expert AI assisting UK government policy officers in analyzing public opinions on new policies.
+
+        We conducted a consultation, and answers to a specific question have been grouped under a single common theme.
+        We have provided a sample of answers for the theme and frequently occurring keywords.
+        We want you to distill key arguments expressed in the answers.
+
+        Your task is to generate a valid JSON object containing "short_description" and "summary" fields based on the given information.
+
         IT IS ESSENTIAL THAT YOU FORMAT YOUR RESPONSE AS JSON. INCLUDE NO OTHER MATERIAL.
+
+        For example, given the following information in CONSULTATION NAME, QUESTION, KEYWORDS and SAMPLE ANSWERS TO THE QUESTION blocks:
+
+        == CONSULTATION NAME ==
+        Consultation on changing the recipe of Cadbury's chocolate bars
+        == CONSULTATION NAME ENDS ==
+
+        == QUESTION ==
+        What is the most important quality of Dairy Milk?
+        == QUESTION ENDS ==
+
+        == KEYWORDS ==
+        creamy,sweet,delicious,flavourful,mouthfeel
+        == KEYWORDS END ==
+
+        == SAMPLE ANSWERS TO THE QUESTION ==
+        I find Dairy Milk to be creamy and delicious.
+
+        Just the right balance of sweetness and creamy texture.
+
+        For me the creaminess of Dairy Milk gives it the edge
+        == SAMPLE ANSWERS END ==
+
+        Would become: [/INST]
+        {{
+            "short_description": 'The creaminess of Dairy Milk',
+            "summary": 'Answers emphasised how creamy Dairy Milk is',
+        }}</s>
+        [INST] == CONSULTATION NAME ==
+        {consultation_name}
+        == CONSULTATION NAME ENDS ==
 
         == QUESTION ==
         {question}
@@ -90,11 +115,9 @@ class LangchainLLMBackend(LLMBackend):
         {keywords}
         == KEYWORDS END ==
 
-        == SAMPLE RESPONSES ==
+        == SAMPLE ANSWERS TO THE QUESTION ==
         {responses}
-        == SAMPLE RESPONSES END ==
-
-        Ensure that the phrase you generate does not include any of the following phrases or their equivalents: "Support for ...", "Agreement with the policy", "Disagreement with the policy", "Policies", "Opinions on ...", "Agreement with proposed policy", "Disagreement with proposed policy".
+        == SAMPLE ANSWERS END == [/INST]
         """
 
         return PromptTemplate.from_template(template=prompt_template)
