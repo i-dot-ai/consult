@@ -132,6 +132,11 @@ Options available for this command are:
 
 The resulting file will be placed in `tmp/outputs` and its path will be printed on the console.
 
+If you are using SageMaker you will need to specify the name of your endpoint in the enviroment variable `SAGEMAKER_ENDPOINT_NAME`.
+
+If you are using Ollama, you will have to install the app (e.g. `brew install ollama`) and have it running `ollama serve`. You will need to run your models e.g. `ollama run mistral`.
+
+
 ## Schema documentation
 
 The data schema for consultations supplied to the tool is defined in `consultation_analyser/consultations/public_schema/public_schema.yaml`.
