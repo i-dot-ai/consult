@@ -16,7 +16,7 @@ def index(request: HttpRequest, consultation_slug: str, section_slug: str, quest
         section__slug=section_slug,
         section__consultation__slug=consultation_slug,
     )
-    themes_for_question = models.Theme.objects.filter(answer__question=question)
+    themes_for_question = models.Theme.objects.filter(answer__question=question).distinct()
     total_responses = models.Answer.objects.filter(question=question).count()
     applied_filters = get_applied_filters(request)
     responses = get_filtered_responses(question, applied_filters)
