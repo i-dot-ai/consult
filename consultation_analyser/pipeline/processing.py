@@ -8,11 +8,14 @@ from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
 from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
 from consultation_analyser.pipeline.backends.ollama_llm_backend import OllamaLLMBackend
 from consultation_analyser.pipeline.backends.sagemaker_llm_backend import SagemakerLLMBackend
+from consultation_analyser.pipeline.backends.topic_backend import TopicBackend
 from consultation_analyser.pipeline.batch_calls import BatchJobHandler
 from consultation_analyser.pipeline.llm_summariser import (
     create_llm_summaries_for_consultation,
 )
 from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
+from consultation_analyser.consultations.models import Consultation
+
 
 
 def get_llm_backend(llm_identifier: Optional[str] = None):
@@ -43,14 +46,13 @@ def get_llm_backend(llm_identifier: Optional[str] = None):
         )
 
 
-def process_consultation_themes(consultation, topic_backend=None, llm_backend=None):
+def process_consultation_themes(consultation: Consultation, topic_backend: Optional[TopicBackend] = None, llm_identifier: Optional[str] = None):
     if not topic_backend:
         topic_backend = BERTopicBackend()
-
-    if not llm_backend:
-        llm_backend = get_llm_backend(llm_backend)
-
     save_themes_for_consultation(consultation.id, topic_backend)
+
+    if not llm_identifier:
+        llm_backend = get_llm_backend(llm_identifier)
     create_llm_summaries_for_consultation(consultation, llm_backend)
 
 
