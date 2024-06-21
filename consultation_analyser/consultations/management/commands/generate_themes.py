@@ -63,10 +63,10 @@ class Command(BaseCommand):
         topic_backend = self.__get_topic_backend(
             embedding_model=options["embedding_model"], persistence_path=output_dir / "bertopic"
         )
-        llm_backend = get_llm_backend(llm_identifier=options["llm"])
+        llm_identifier=options["llm"]
 
         process_consultation_themes(
-            consultation, topic_backend=topic_backend, llm_backend=llm_backend
+            consultation, topic_backend=topic_backend, llm_identifier=llm_identifier
         )
 
         self.__save_consultation_with_themes(output_dir=output_dir, consultation=consultation)
