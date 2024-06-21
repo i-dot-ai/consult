@@ -15,7 +15,7 @@ from consultation_analyser.consultations.download_consultation import consultati
 from consultation_analyser.consultations.upload_consultation import upload_consultation
 from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
 from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
-from consultation_analyser.pipeline.processing import get_llm_backend, process_consultation_themes
+from consultation_analyser.pipeline.processing import process_consultation_themes
 
 logger = logging.getLogger("pipeline")
 
@@ -63,7 +63,7 @@ class Command(BaseCommand):
         topic_backend = self.__get_topic_backend(
             embedding_model=options["embedding_model"], persistence_path=output_dir / "bertopic"
         )
-        llm_identifier=options["llm"]
+        llm_identifier = options["llm"]
 
         process_consultation_themes(
             consultation, topic_backend=topic_backend, llm_identifier=llm_identifier
