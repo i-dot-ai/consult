@@ -123,7 +123,7 @@ class BERTopicBackend(TopicBackend):
             cluster_selection_method="eom",
             prediction_data=True,
         )
-        vectorizer_model = CountVectorizer(stop_words="english")
+        vectorizer_model = CountVectorizer(stop_words="english", ngram_range=(1, 2))
         ctfidf_model = ClassTfidfTransformer()
         topic_model = BERTopic(
             umap_model=umap_model,
