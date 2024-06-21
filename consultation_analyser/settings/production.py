@@ -1,16 +1,16 @@
 import sentry_sdk
 
-from consultation_analyser.settings import base
+from consultation_analyser.settings.base import *  # noqa
 
-CSRF_TRUSTED_ORIGINS = ["https://" + base.env("DOMAIN_NAME")]
+CSRF_TRUSTED_ORIGINS = ["https://" + env("DOMAIN_NAME")] # noqa: F405
 
-SENTRY_DSN = base.env("SENTRY_DSN")
-EXECUTION_CONTEXT = base.env("EXECUTION_CONTEXT")
-GIT_SHA = base.env("GIT_SHA")
+SENTRY_DSN = env("SENTRY_DSN") # noqa: F405
+EXECUTION_CONTEXT = env("EXECUTION_CONTEXT") # noqa: F405
+GIT_SHA = env("GIT_SHA") # noqa: F405
 
 sentry_sdk.init(
     dsn=SENTRY_DSN,
-    environment=base.ENVIRONMENT,
+    environment=ENVIRONMENT, # noqa: F405
     release=GIT_SHA,
 )
 
