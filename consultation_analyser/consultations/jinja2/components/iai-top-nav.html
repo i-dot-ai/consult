@@ -1,4 +1,4 @@
-{% macro iaiTopNav(product_name, menu_items, home_path="/") %}
+{% macro iaiTopNav(product_name, menu_items, phase, home_path="/") %}
 
 <header class="iai-top-nav">
     <div class="iai-top-nav__container">
@@ -9,6 +9,9 @@
             <div class="iai-top-nav__product-name">
                 <a class="iai-top-nav__product-link" href="{{ home_path }}">{{ product_name }}</a>
             </div>
+            {% if phase %}
+                <div class="iai-top-nav__phase">{{ phase }}</div>
+            {% endif %}
         </div>
         <nav aria-label="Menu" class="iai-top-nav__nav govuk-width-container">
             <ul id="navigation" class="govuk-header__navigation-list">
