@@ -3,7 +3,6 @@ import logging
 from consultation_analyser.consultations.models import Answer, Question, Theme
 from consultation_analyser.pipeline.backends.llm_backend import LLMBackend
 
-
 logger = logging.getLogger("pipeline")
 
 
@@ -37,6 +36,8 @@ def create_llm_summaries_for_consultation(consultation, llm_backend: LLMBackend)
             theme, _ = Theme.objects.get_or_create(
                 question=question, topic_id=None, short_description="No free text response"
             )
-            logger.info(f"There are answers with no free text responses for question: {theme.question.text}")
+            logger.info(
+                f"There are answers with no free text responses for question: {theme.question.text}"
+            )
             answer.theme = theme
             answer.save()

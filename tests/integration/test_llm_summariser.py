@@ -1,9 +1,9 @@
 import pytest
 
 from consultation_analyser import factories
+from consultation_analyser.consultations.models import Theme
 from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
 from consultation_analyser.pipeline.llm_summariser import create_llm_summaries_for_consultation
-from consultation_analyser.consultations.models import Theme
 
 
 @pytest.mark.django_db
@@ -12,11 +12,27 @@ def test_create_llm_summaries_for_consultation():
     response = factories.ConsultationResponseFactory(consultation=consultation)
     section = factories.SectionFactory(consultation=consultation)
     question = factories.QuestionFactory(section=section, has_free_text=True)
-    outlier_theme = factories.ThemeFactory(question=question, topic_id=-1, short_description="", summary="")
-    normal_theme = factories.ThemeFactory(question=question, topic_id=2, short_description="", summary="")
-    factories.AnswerFactory(theme=outlier_theme, free_text="this is an outlier", question=question, consultation_response=response)
-    factories.AnswerFactory(theme=normal_theme, free_text="this is a normal response", question=question, consultation_response=response)
-    factories.AnswerFactory(theme=None, free_text="", question=question, consultation_response=response)
+    outlier_theme = factories.ThemeFactory(
+        question=question, topic_id=-1, short_description="", summary=""
+    )
+    normal_theme = factories.ThemeFactory(
+        question=question, topic_id=2, short_description="", summary=""
+    )
+    factories.AnswerFactory(
+        theme=outlier_theme,
+        free_text="this is an outlier",
+        question=question,
+        consultation_response=response,
+    )
+    factories.AnswerFactory(
+        theme=normal_theme,
+        free_text="this is a normal response",
+        question=question,
+        consultation_response=response,
+    )
+    factories.AnswerFactory(
+        theme=None, free_text="", question=question, consultation_response=response
+    )
 
     assert not outlier_theme.summary
     assert not outlier_theme.short_description
