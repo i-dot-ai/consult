@@ -9,6 +9,8 @@ from consultation_analyser.factories import (
     QuestionFactory,
     SectionFactory,
     ThemeFactory,
+    ProcessingRunFactory,
+    TopicModelMetadataFactory
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
 
@@ -55,7 +57,6 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
                         question=q,
                         consultation_response=response,
                         free_text=free_text_answer,
-                        theme=None,
                     )
                 )
                 # Force some answers to have no free text response
@@ -70,19 +71,23 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
                     )
             else:
                 answers.append(
-                    AnswerFactory(question=q, consultation_response=response, theme=None)
+                    AnswerFactory(question=q, consultation_response=response)
                 )
 
         if include_themes:
+            processing_run = ProcessingRunFactory(consultation=consultation)
             # Set themes per question, multiple answers with the same theme
             for q in questions:
-                themes = [ThemeFactory(topic_id=i) for i in range(-1, 4)]
+                topic_model_metadata = TopicModelMetadataFactory(processing_run=processing_run, question=q)
+                themes = [ThemeFactory(topic_id=i, topic_model_metadata=topic_model_metadata) for i in range(-1, 4)]
                 for a in answers:
                     random_theme = random.choice(themes)
-                    a.theme = random_theme
+                    a.theme.add(random_theme)
                     a.save()
             # Force at least one answer to be an outlier
             a = random.choice(answers)
-            a.theme = themes[0]
+            latest_theme = a.theme.all().order_by("created_at").last()
+            a.theme.remove(latest_theme)
+            a.theme.add(themes[0])
             a.save()
     return consultation

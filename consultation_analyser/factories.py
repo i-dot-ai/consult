@@ -195,7 +195,6 @@ class AnswerFactory(factory.django.DjangoModelFactory):
 
     question = factory.SubFactory(QuestionFactory)
     consultation_response = factory.SubFactory(ConsultationResponseFactory)
-    theme = factory.LazyAttribute(lambda o: ThemeFactory() if o.question.has_free_text else None)
 
     multiple_choice = factory.LazyAttribute(get_multiple_choice_answers)
 
