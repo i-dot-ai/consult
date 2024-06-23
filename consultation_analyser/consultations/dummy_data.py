@@ -58,6 +58,16 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
                         theme=None,
                     )
                 )
+                # Force some answers to have no free text response
+                if random.randrange(1, 4) == 1:
+                    answers.append(
+                        AnswerFactory(
+                            question=q,
+                            consultation_response=response,
+                            free_text="",
+                            theme=None,
+                        )
+                    )
             else:
                 answers.append(
                     AnswerFactory(question=q, consultation_response=response, theme=None)
