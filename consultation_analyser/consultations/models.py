@@ -137,8 +137,6 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     # LLM generates short_description and summary
     short_description = models.TextField(blank=True)
     summary = models.TextField(blank=True)  # More detailed description
-    # Duplicates info in Answer model, but needed for uniqueness constraint.
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
 
     class Meta:
         constraints = [
