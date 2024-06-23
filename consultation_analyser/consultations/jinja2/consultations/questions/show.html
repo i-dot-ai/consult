@@ -103,12 +103,14 @@
                   <div class="govuk-details__text">
                     <p class="govuk-!-margin-bottom-0">{{ theme.summary }}</p>
                     <br>
-                    <p class="govuk-!-margin-bottom-0">This theme has the following keywords:</p>
-                    <ul class="iai-inline-list govuk-!-margin-top-1">
-                      {% for word in theme.topic_keywords %}
-                        <li class="iai-inline-list__item">{{ word }}</li>
-                      {% endfor %}
-                    </ul>
+                    {% if theme.topic_keywords %}
+                      <p class="govuk-!-margin-bottom-0">This theme has the following keywords:</p>
+                      <ul class="iai-inline-list govuk-!-margin-top-1">
+                        {% for word in theme.topic_keywords %}
+                          <li class="iai-inline-list__item">{{ word }}</li>
+                        {% endfor %}
+                      </ul>
+                    {% endif %}
                   </div>
                   <p class="govuk-body"><a class="govuk-link" href="{{ url("question_responses", kwargs={"consultation_slug":
                       consultation_slug, "question_slug" : question.slug, "section_slug" : question.section.slug},
