@@ -40,12 +40,13 @@ def test_create_llm_summaries_for_consultation():
     create_llm_summaries_for_consultation(consultation, DummyLLMBackend())
 
     outlier_theme.refresh_from_db()
-    assert not outlier_theme.summary
     assert outlier_theme.short_description == "Outliers"
+    assert outlier_theme.summary
 
     normal_theme.refresh_from_db()
     assert normal_theme.summary
     assert normal_theme.short_description
 
     no_responses_theme = Theme.objects.get(topic_id=None)
-    no_responses_theme.short_description == "No free text response"
+    assert no_responses_theme.short_description == "No free text response"
+    assert no_responses_theme.summary
