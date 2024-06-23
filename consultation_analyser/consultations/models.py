@@ -157,6 +157,8 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def save_theme_to_answer(self, topic_keywords: list, topic_id: int):
         question = self.question
+        if topic_id == -1:
+            topic_keywords = [] # Topic keywords make no sense for outliers
         theme, _ = Theme.objects.get_or_create(
             question=question, topic_keywords=topic_keywords, topic_id=topic_id
         )
