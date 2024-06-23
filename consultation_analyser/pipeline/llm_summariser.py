@@ -6,7 +6,6 @@ from consultation_analyser.pipeline.backends.llm_backend import LLMBackend
 logger = logging.getLogger("pipeline")
 
 
-
 def create_themes_for_answers_no_free_text(consultation):
     """
     If there are answers with empty free text (for questions that have free text) -
@@ -29,7 +28,6 @@ def create_themes_for_answers_no_free_text(consultation):
             )
             answer.theme = theme
             answer.save()
-
 
 
 def create_llm_summaries_for_consultation(consultation, llm_backend: LLMBackend):
