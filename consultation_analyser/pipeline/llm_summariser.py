@@ -35,7 +35,10 @@ def create_llm_summaries_for_consultation(consultation, llm_backend: LLMBackend)
         empty_answers = Answer.objects.filter(question=question).filter(free_text="")
         for answer in empty_answers:
             theme, _ = Theme.objects.get_or_create(
-                question=question, topic_id=None, short_description="No free text response", summary="The respondent did not answer the free text part of this question."
+                question=question,
+                topic_id=None,
+                short_description="No free text response",
+                summary="The respondent did not answer the free text part of this question.",
             )
             logger.info(
                 f"There are answers with no free text responses for question: {theme.question.text}"
