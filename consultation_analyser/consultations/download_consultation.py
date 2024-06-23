@@ -16,7 +16,8 @@ def select_keys_from_model(model, keys):
 
 def consultation_to_json(consultation):
     """
-    Return the consultation in a format compliant with the public schema
+    Return the consultation in a format compliant with the public schema.
+    Return the latest theme for each answer.
 
     Raises:
         pydantic.ValidationError: if the generated JSON is not compliant
@@ -62,7 +63,9 @@ def consultation_to_json(consultation):
                 answer, ["question", "multiple_choice", "free_text"]
             )
 
-            answer_attrs["theme_id"] = str(answer.theme.id) if answer.theme else None
+            answer_attrs["theme_id"] = (
+                str(answer.theme_from_latest_run.id) if answer.theme_from_latest_run else None
+            )
             answer_attrs["question_id"] = str(answer_attrs.pop("question"))
             answers.append(answer_attrs)
 
@@ -73,6 +76,7 @@ def consultation_to_json(consultation):
     if themes:
         attrs["themes"] = themes
         ConsultationWithResponsesAndThemes(**attrs)
+        pass
     else:
         ConsultationWithResponses(**attrs)
 

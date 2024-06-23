@@ -186,8 +186,13 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
             topic_keywords=topic_keywords,
             topic_id=topic_id,
         )
-        self.theme = theme
-        self.save()
+        self.theme.add(theme)
 
-    def get_theme_from_latest_run(self):
-        self.theme.all().order_by("topic_model_metadata__processing_run__created_at")
+    @property
+    def theme_from_latest_run(self):
+        if not self.theme:
+            return None
+        lastest = (
+            self.theme.all().order_by("topic_model_metadata__processing_run__created_at").last()
+        )
+        return lastest

@@ -12,33 +12,35 @@ def set_up_for_filters():
     question = factories.QuestionFactory(
         section=section,
     )
+    processing_run = factories.ProcessingRunFactory(consultation=consultation)
+    topic_model_meta = factories.TopicModelMetadataFactory(question=question, processing_run=processing_run)
 
-    theme1 = factories.ThemeFactory(topic_keywords=["dog", "puppy"], question=question)
-    theme2 = factories.ThemeFactory(topic_keywords=["cat", "kitten"], question=question)
-    factories.AnswerFactory(
-        theme=theme1,
+    theme1 = factories.ThemeFactory(topic_keywords=["dog", "puppy"], topic_model_metadata=topic_model_meta)
+    theme2 = factories.ThemeFactory(topic_keywords=["cat", "kitten"], topic_model_metadata=topic_model_meta)
+    answer1 = factories.AnswerFactory(
         question=question,
         free_text="We love dogs.",
         consultation_response=consultation_response,
     )
-    factories.AnswerFactory(
-        theme=theme2,
+    answer1.theme.add(theme1)
+    answer2 = factories.AnswerFactory(
         question=question,
         free_text="We like cats not dogs.",
         consultation_response=consultation_response,
     )
-    factories.AnswerFactory(
-        theme=theme2,
+    answer2.theme.add(theme2)
+    answer3 = factories.AnswerFactory(
         question=question,
         free_text="We love cats.",
         consultation_response=consultation_response,
     )
-    factories.AnswerFactory(
-        theme=theme2,
+    answer3.theme.add(theme2)
+    answer4 = factories.AnswerFactory(
         question=question,
         free_text=None,
         consultation_response=consultation_response,
     )
+    answer4.theme.add(theme2)
     return question
 
 

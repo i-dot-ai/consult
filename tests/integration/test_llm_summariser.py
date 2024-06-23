@@ -11,8 +11,15 @@ def test_create_llm_summaries_for_consultation():
     response = factories.ConsultationResponseFactory(consultation=consultation)
     section = factories.SectionFactory(consultation=consultation)
     question = factories.QuestionFactory(section=section, has_free_text=True)
-    theme = factories.ThemeFactory(question=question, short_description="", summary="")
-    factories.AnswerFactory(theme=theme, question=question, consultation_response=response)
+    processing_run = factories.ProcessingRunFactory(consultation=consultation)
+    tm_metadata = factories.TopicModelMetadataFactory(
+        processing_run=processing_run, question=question
+    )
+    theme = factories.ThemeFactory(
+        topic_model_metadata=tm_metadata, short_description="", summary=""
+    )
+    answer = factories.AnswerFactory(question=question, consultation_response=response)
+    answer.theme.add(theme)
 
     assert not theme.summary
     assert not theme.short_description

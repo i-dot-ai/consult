@@ -6,11 +6,11 @@ from consultation_analyser.factories import (
     ConsultationFactory,
     ConsultationResponseFactory,
     FakeConsultationData,
+    ProcessingRunFactory,
     QuestionFactory,
     SectionFactory,
     ThemeFactory,
-    ProcessingRunFactory,
-    TopicModelMetadataFactory
+    TopicModelMetadataFactory,
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
 
@@ -70,16 +70,18 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
                         )
                     )
             else:
-                answers.append(
-                    AnswerFactory(question=q, consultation_response=response)
-                )
-
+                answers.append(AnswerFactory(question=q, consultation_response=response))
         if include_themes:
             processing_run = ProcessingRunFactory(consultation=consultation)
             # Set themes per question, multiple answers with the same theme
             for q in questions:
-                topic_model_metadata = TopicModelMetadataFactory(processing_run=processing_run, question=q)
-                themes = [ThemeFactory(topic_id=i, topic_model_metadata=topic_model_metadata) for i in range(-1, 4)]
+                topic_model_metadata = TopicModelMetadataFactory(
+                    processing_run=processing_run, question=q
+                )
+                themes = [
+                    ThemeFactory(topic_id=i, topic_model_metadata=topic_model_metadata)
+                    for i in range(-1, 4)
+                ]
                 for a in answers:
                     random_theme = random.choice(themes)
                     a.theme.add(random_theme)

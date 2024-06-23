@@ -10,7 +10,10 @@ from consultation_analyser.factories import (
     QuestionFactory,
     SectionFactory,
     ThemeFactory,
+    ProcessingRunFactory,
+    TopicModelMetadataFactory
 )
+
 from consultation_analyser.pipeline.backends.langchain_llm_backend import (
     get_random_sample_of_responses_for_theme,
 )
@@ -23,11 +26,14 @@ def test_get_random_sample_of_responses_for_theme():
     consultation_response = ConsultationResponseFactory(consultation=consultation)
     section = SectionFactory(consultation=consultation)
     question = QuestionFactory(has_free_text=True, section=section)
-    theme = ThemeFactory(question=question)
+    processing_run = ProcessingRunFactory(consultation=consultation)
+    topic_model_meta = TopicModelMetadataFactory(processing_run=processing_run, question=question)
+    theme = ThemeFactory(topic_model_metadata=topic_model_meta)
     text = "Here are my strong opinions on chocolate. I love KitKats."  # 14 tokens
-    AnswerFactory(
-        question=question, theme=theme, free_text=text, consultation_response=consultation_response
+    answer = AnswerFactory(
+        question=question, free_text=text, consultation_response=consultation_response
     )
+    answer.theme.add(theme)
     combined_responses = get_random_sample_of_responses_for_theme(
         theme, encoding=encoding, max_tokens=40
     )
@@ -35,12 +41,12 @@ def test_get_random_sample_of_responses_for_theme():
 
     # Now test that we combine multiple responses but don't exceed limit.
     for i in range(3):
-        AnswerFactory(
+        ans = AnswerFactory(
             question=question,
-            theme=theme,
             free_text=text,
             consultation_response=consultation_response,
         )
+        ans.theme.add(theme)
     combined_responses = get_random_sample_of_responses_for_theme(
         theme, encoding=encoding, max_tokens=40
     )
@@ -55,13 +61,16 @@ def test_get_random_sample_of_responses_for_theme_does_not_repeat():
     consultation_response = ConsultationResponseFactory(consultation=consultation)
     section = SectionFactory(consultation=consultation)
     question = QuestionFactory(has_free_text=True, section=section)
-    theme = ThemeFactory(question=question)
+    processing_run = ProcessingRunFactory(consultation=consultation)
+    topic_model_meta = TopicModelMetadataFactory(processing_run=processing_run, question=question)
+    theme = ThemeFactory(topic_model_metadata=topic_model_meta)
 
     answers = list(string.ascii_lowercase)  # get 27 distinct answers
     for a in answers:
-        AnswerFactory(
-            question=question, theme=theme, free_text=a, consultation_response=consultation_response
+        ans = AnswerFactory(
+            question=question, free_text=a, consultation_response=consultation_response
         )
+        ans.theme.add(theme)
 
     combined_responses = get_random_sample_of_responses_for_theme(
         theme, encoding=encoding, max_tokens=100

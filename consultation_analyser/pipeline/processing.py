@@ -52,8 +52,9 @@ def process_consultation_themes(consultation, topic_backend=None, llm_backend=No
         llm_backend = get_llm_backend(llm_backend)
 
     # TODO - add more metadata to processing run
-    ProcessingRun(consultation=consultation).save()
-    save_themes_for_consultation(consultation.id, topic_backend)
+    processing_run = ProcessingRun(consultation=consultation)
+    processing_run.save()
+    save_themes_for_consultation(consultation.id, topic_backend, processing_run)
     create_llm_summaries_for_consultation(consultation, llm_backend)
 
 

@@ -7,8 +7,11 @@ from consultation_analyser.factories import (
     AnswerFactory,
     ConsultationFactory,
     ConsultationResponseFactory,
+    ProcessingRunFactory,
     QuestionFactory,
     SectionFactory,
+    ThemeFactory,
+    TopicModelMetadataFactory,
     UserFactory,
 )
 from tests.helpers import sign_in
@@ -23,27 +26,38 @@ def test_get_question_summary_page(django_app):
         section=section, multiple_choice_questions=[("What do you think?", ["Yes", "No", "Maybe"])]
     )
     consultation_response = ConsultationResponseFactory(consultation=consultation)
+    processing_run = ProcessingRunFactory(consultation=consultation)
+    topic_model_metadata = TopicModelMetadataFactory(
+        processing_run=processing_run, question=question
+    )
+    theme = ThemeFactory(
+        short_description="short description", topic_model_metadata=topic_model_metadata
+    )
 
-    AnswerFactory(
+    answer = AnswerFactory(
         multiple_choice_answers=[("What do you think?", ["Yes"])],
         question=question,
         consultation_response=consultation_response,
     )
-    AnswerFactory(
+    answer.theme.add(theme)
+    answer = AnswerFactory(
         multiple_choice_answers=[("What do you think?", ["Yes"])],
         question=question,
         consultation_response=consultation_response,
     )
-    AnswerFactory(
+    answer.theme.add(theme)
+    answer = AnswerFactory(
         multiple_choice_answers=[("What do you think?", ["No"])],
         question=question,
         consultation_response=consultation_response,
     )
-    AnswerFactory(
+    answer.theme.add(theme)
+    answer = AnswerFactory(
         multiple_choice_answers=[("What do you think?", ["Maybe"])],
         question=question,
         consultation_response=consultation_response,
     )
+    answer.theme.add(theme)
 
     sign_in(django_app, user.email)
 
@@ -55,13 +69,13 @@ def test_get_question_summary_page(django_app):
     assert question.text in page_content
 
     answer = question.answer_set.first()
-    assert answer.theme.short_description in page_content
+    assert answer.theme_from_latest_run.short_description in page_content
 
     for item in question.multiple_choice_options:
         for opt in item["options"]:
             assert opt in page_content
 
-    for keyword in answer.theme.topic_keywords:
+    for keyword in answer.theme_from_latest_run.topic_keywords:
         assert keyword in page_content
 
     assert re.search(r"Yes\s+50%", question_page.html.text)
