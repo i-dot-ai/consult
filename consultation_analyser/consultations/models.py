@@ -115,6 +115,7 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class TopicModel(UUIDPrimaryKeyModel, TimeStampedModel):
     processing_run = models.ForeignKey(ProcessingRun, on_delete=models.CASCADE)
+    # Question needed for uniqueness constraint
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
     # TODO -  Some other metadata on the model TBC and link to saved model
 
@@ -168,9 +169,7 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     free_text = models.TextField(null=True, blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     consultation_response = models.ForeignKey(ConsultationResponse, on_delete=models.CASCADE)
-    theme = models.ForeignKey(
-        Theme, on_delete=models.SET_NULL, null=True, blank=True
-    )  # For now, just one theme per answer
+    theme = models.ManyToManyField(Theme)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
