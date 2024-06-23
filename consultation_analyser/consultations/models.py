@@ -174,10 +174,9 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    def save_theme_to_answer(self, topic_keywords: list, topic_id: int):
-        question = self.question
+    def save_theme_to_answer(self, topic_keywords: list, topic_id: int, topic_model: TopicModel):
         theme, _ = Theme.objects.get_or_create(
-            question=question, topic_keywords=topic_keywords, topic_id=topic_id
+            topic_model=topic_model, topic_keywords=topic_keywords, topic_id=topic_id
         )
         self.theme = theme
         self.save()
