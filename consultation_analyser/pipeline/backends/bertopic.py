@@ -34,7 +34,6 @@ class BERTopicBackend(TopicBackend):
         answers_qs = (
             models.Answer.objects.filter(question=question)
             .exclude(free_text="")
-            .exclude(free_text__isnull=True)
             .order_by("created_at")
         )
         answers_list = list(answers_qs.values("id", "free_text"))
