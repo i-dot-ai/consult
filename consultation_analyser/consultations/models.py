@@ -113,7 +113,7 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
-class TopicModel(UUIDPrimaryKeyModel, TimeStampedModel):
+class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
     processing_run = models.ForeignKey(ProcessingRun, on_delete=models.CASCADE)
     # Question needed for uniqueness constraint
     question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
@@ -129,7 +129,9 @@ class TopicModel(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     # Topic model, keywords and ID come from BERTopic
-    topic_model = models.ForeignKey(TopicModel, on_delete=models.CASCADE, null=True)
+    topic_model_metadata = models.ForeignKey(
+        TopicModelMetadata, on_delete=models.CASCADE, null=True
+    )
     topic_keywords = models.JSONField(default=list)
     topic_id = models.IntegerField(null=True)  # Topic ID from BERTopic
     is_outlier = models.GeneratedField(
@@ -141,7 +143,9 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
 
     class Meta:
         constraints = [
-            models.UniqueConstraint(fields=["topic_id", "topic_model"], name="unique_id_per_model"),
+            models.UniqueConstraint(
+                fields=["topic_id", "topic_model_metadata"], name="unique_id_per_model"
+            ),
         ]
 
 
@@ -174,9 +178,13 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    def save_theme_to_answer(self, topic_keywords: list, topic_id: int, topic_model: TopicModel):
+    def save_theme_to_answer(
+        self, topic_keywords: list, topic_id: int, topic_model_metadata: TopicModelMetadata
+    ):
         theme, _ = Theme.objects.get_or_create(
-            topic_model=topic_model, topic_keywords=topic_keywords, topic_id=topic_id
+            topic_model_metadata=topic_model_metadata,
+            topic_keywords=topic_keywords,
+            topic_id=topic_id,
         )
         self.theme = theme
         self.save()
