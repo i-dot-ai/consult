@@ -188,3 +188,6 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         )
         self.theme = theme
         self.save()
+
+    def get_theme_from_latest_run(self):
+        self.theme.all().order_by("topic_model_metadata__processing_run__created_at")
