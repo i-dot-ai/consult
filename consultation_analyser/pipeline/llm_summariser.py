@@ -16,11 +16,15 @@ def create_llm_summaries_for_consultation(consultation, llm_backend: LLMBackend)
         question__has_free_text=True
     )
 
-    theme: ThemeSummary
     for theme in themes:
         logger.info(f"Starting LLM summarisation for theme with keywords: {theme.topic_keywords}")
-        theme_summary_data = llm_backend.summarise_theme(theme)
-        theme.summary = theme_summary_data.summary
-        theme.short_description = theme_summary_data.short_description
+        if theme.is_outlier:
+            theme.short_description = "Outliers"
+            theme.summary = "These are responses that don't fit into the identified themes."
+        else:
+            theme_summary_data = llm_backend.summarise_theme(theme)
+            theme.summary = theme_summary_data.summary
+            theme.short_description = theme_summary_data.short_description
         logger.info(f"Theme description: {theme.short_description}")
         theme.save()
+    logger.info("Ending LLM summarisation")
