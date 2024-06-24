@@ -64,7 +64,7 @@ def consultation_to_json(consultation):
             )
 
             answer_attrs["theme_id"] = (
-                str(answer.theme_from_latest_run.id) if answer.theme_from_latest_run else None
+                str(answer.latest_theme.id) if answer.latest_theme else None
             )
             answer_attrs["question_id"] = str(answer_attrs.pop("question"))
             answers.append(answer_attrs)
