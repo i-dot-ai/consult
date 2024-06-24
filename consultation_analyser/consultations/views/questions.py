@@ -11,6 +11,49 @@ from .filters import get_applied_filters, get_filtered_responses, get_filtered_t
 @user_can_see_consultation
 @login_required
 def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
+    outlier_id = None
+    no_response_id = None
+    outlier_count = None
+    no_response_count = None
+
+    data = request.GET
+    chosen_theme_id = data.get("theme", None)
+    if chosen_theme_id:
+        chosen_theme = models.Theme.objects.get(id=chosen_theme_id)
+        if chosen_theme.is_outlier:
+            outlier_id = chosen_theme_id
+            outlier_count = models.Answer.objects.filter(theme=chosen_theme).count()
+        elif chosen_theme.is_no_response:
+            no_response_id = chosen_theme_id
+            no_response_count = models.Answer.objects.filter(theme=chosen_theme).count()
+    else:
+        try:
+            outlier_theme = models.Theme.objects.get(
+                question__slug=question_slug,
+                question__section__slug=section_slug,
+                question__section__consultation__slug=consultation_slug,
+                is_outlier=True,
+            )
+            outlier_id = outlier_theme.id
+            print(f"outlier_id: {outlier_id}")
+            outlier_count = models.Answer.objects.filter(theme=outlier_theme).count()
+            print(
+                models.Answer.objects.filter(question__slug=question_slug, theme__is_outlier=True)
+            )
+        except models.Theme.DoesNotExist:
+            pass
+        try:
+            no_response_theme = models.Theme.objects.get(
+                question__slug=question_slug,
+                question__section__slug=section_slug,
+                question__section__consultation__slug=consultation_slug,
+                is_no_response=True,
+            )
+            no_response_id = no_response_theme.id
+            no_response_count = models.Answer.objects.filter(theme=outlier_theme).count()
+        except models.Theme.DoesNotExist:
+            pass
+
     question = models.Question.objects.get(
         slug=question_slug,
         section__slug=section_slug,
@@ -52,5 +95,9 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "highest_theme_count": highest_theme_count,
         "total_responses": total_responses,
         "applied_filters": applied_filters,
+        "outlier_id": outlier_id,
+        "outlier_count": outlier_count,
+        "no_response_id": no_response_id,
+        "no_response_count": no_response_count,
     }
     return render(request, "consultations/questions/show.html", context)

@@ -48,6 +48,18 @@
       </div>
     {% endfor %}
   {% endif %}
+  <p class="govuk-body">
+  {% if outlier_id %}
+    There were <a class="govuk-link" href="{{ url("question_responses", kwargs={"consultation_slug":
+      consultation_slug, "question_slug" : question.slug, "section_slug" : question.section.slug},
+      query_kwargs={"theme": outlier_id}) }}">{{ outlier_count }} responses that were outliers</a> and did not fit into a theme.
+  {% endif %}
+  {% if no_response_id %}
+    There were <a class="govuk-link" href="{{ url("question_responses", kwargs={"consultation_slug":
+      consultation_slug, "question_slug" : question.slug, "section_slug" : question.section.slug},
+      query_kwargs={"theme": no_response_id}) }}"> {{ no_response_count }} responses with no free text</a> which were excluded from the theme analysis.
+  {% endif %}
+  </p>
 
   <div class="govuk-grid-row">
 
@@ -94,38 +106,40 @@
         </thead>
         <tbody class="govuk-table__body">
           {% for theme in themes %}
-            <tr class="govuk-table__row">
-              <td class="govuk-table__cell">
-                <details class="govuk-details govuk-!-margin-bottom-0">
-                  <summary class="govuk-details__summary govuk-!-margin-top-1">
-                    <span class="govuk-details__summary-text">{{ theme.short_description }}</span>
-                  </summary>
-                  <div class="govuk-details__text">
-                    <p class="govuk-!-margin-bottom-0">{{ theme.summary }}</p>
-                    <br>
-                    {% if theme.topic_keywords %}
-                      <p class="govuk-!-margin-bottom-0">This theme has the following keywords:</p>
-                      <ul class="iai-inline-list govuk-!-margin-top-1">
-                        {% for word in theme.topic_keywords %}
-                          <li class="iai-inline-list__item">{{ word }}</li>
-                        {% endfor %}
-                      </ul>
+            {% if not (theme.is_outlier or theme.is_no_response) %}
+              <tr class="govuk-table__row">
+                <td class="govuk-table__cell">
+                  <details class="govuk-details govuk-!-margin-bottom-0">
+                    <summary class="govuk-details__summary govuk-!-margin-top-1">
+                      <span class="govuk-details__summary-text">{{ theme.short_description }}</span>
+                    </summary>
+                    <div class="govuk-details__text">
+                      <p class="govuk-!-margin-bottom-0">{{ theme.summary }}</p>
+                      <br>
+                      {% if theme.topic_keywords %}
+                        <p class="govuk-!-margin-bottom-0">This theme has the following keywords:</p>
+                        <ul class="iai-inline-list govuk-!-margin-top-1">
+                          {% for word in theme.topic_keywords %}
+                            <li class="iai-inline-list__item">{{ word }}</li>
+                          {% endfor %}
+                        </ul>
+                      {% endif %}
+                    </div>
+                    <p class="govuk-body"><a class="govuk-link" href="{{ url("question_responses", kwargs={"consultation_slug":
+                        consultation_slug, "question_slug" : question.slug, "section_slug" : question.section.slug},
+                        query_kwargs={"theme": theme.id}) }}">View responses</a></p>
+                  </details>
+                </td>
+                <td class="govuk-table__cell">
+                  <bar-animation class="iai-bar">
+                    <span class="iai-bar__value">{{ theme.answer_count }}</span>
+                    {% if theme.answer_count and highest_theme_count %}
+                      <span class="iai-bar__bar js-bar" style="width: {{ (theme.answer_count / highest_theme_count) * 100 }}%;"></span>
                     {% endif %}
-                  </div>
-                  <p class="govuk-body"><a class="govuk-link" href="{{ url("question_responses", kwargs={"consultation_slug":
-                      consultation_slug, "question_slug" : question.slug, "section_slug" : question.section.slug},
-                      query_kwargs={"theme": theme.id}) }}">View responses</a></p>
-                </details>
-              </td>
-              <td class="govuk-table__cell">
-                <bar-animation class="iai-bar">
-                  <span class="iai-bar__value">{{ theme.answer_count }}</span>
-                  {% if theme.answer_count and highest_theme_count %}
-                    <span class="iai-bar__bar js-bar" style="width: {{ (theme.answer_count / highest_theme_count) * 100 }}%;"></span>
-                  {% endif %}
-                </bar-animation>
-              </td>
-            </tr>
+                  </bar-animation>
+                </td>
+              </tr>
+            {% endif %}
           {% endfor %}
         </tbody>
       </table>
