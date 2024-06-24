@@ -13,10 +13,16 @@ def set_up_for_filters():
         section=section,
     )
     processing_run = factories.ProcessingRunFactory(consultation=consultation)
-    topic_model_meta = factories.TopicModelMetadataFactory(question=question, processing_run=processing_run)
+    topic_model_meta = factories.TopicModelMetadataFactory(
+        question=question, processing_run=processing_run
+    )
 
-    theme1 = factories.ThemeFactory(topic_keywords=["dog", "puppy"], topic_model_metadata=topic_model_meta)
-    theme2 = factories.ThemeFactory(topic_keywords=["cat", "kitten"], topic_model_metadata=topic_model_meta)
+    theme1 = factories.ThemeFactory(
+        topic_keywords=["dog", "puppy"], topic_model_metadata=topic_model_meta
+    )
+    theme2 = factories.ThemeFactory(
+        topic_keywords=["cat", "kitten"], topic_model_metadata=topic_model_meta
+    )
     answer1 = factories.AnswerFactory(
         question=question,
         free_text="We love dogs.",

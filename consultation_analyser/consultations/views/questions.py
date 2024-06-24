@@ -43,7 +43,9 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
 
     highest_theme_count = filtered_themes.aggregate(Max("answer_count"))["answer_count__max"]
 
-    blank_free_text_count = models.Answer.objects.filter(question=question).filter(free_text="").count()
+    blank_free_text_count = (
+        models.Answer.objects.filter(question=question).filter(free_text="").count()
+    )
 
     context = {
         "consultation_slug": consultation_slug,

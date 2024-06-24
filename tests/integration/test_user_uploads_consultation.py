@@ -2,7 +2,7 @@ import pytest
 from django.conf import settings
 from webtest import Upload
 
-from consultation_analyser.factories import UserFactory, ProcessingRunFactory
+from consultation_analyser.factories import ProcessingRunFactory, UserFactory
 from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
 from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
 from tests.helpers import sign_in

@@ -6,7 +6,7 @@ from django.conf import settings
 
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.upload_consultation import upload_consultation
-from consultation_analyser.factories import UserFactory, ProcessingRunFactory
+from consultation_analyser.factories import ProcessingRunFactory, UserFactory
 from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
 from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
 

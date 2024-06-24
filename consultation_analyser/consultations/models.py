@@ -98,11 +98,17 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
     @property
     def latest_themes(self):
-        corresponding_processing_runs = ProcessingRun.objects.filter(consultation=self.section.consultation).order_by("created_at")
+        corresponding_processing_runs = ProcessingRun.objects.filter(
+            consultation=self.section.consultation
+        ).order_by("created_at")
         if corresponding_processing_runs:
             latest = corresponding_processing_runs.last()
-            topic_model_metdata = TopicModelMetadata.objects.get(question=self, processing_run=latest)
-            latest_themes_for_question = Theme.objects.filter(topic_model_metadata=topic_model_metdata)
+            topic_model_metdata = TopicModelMetadata.objects.get(
+                question=self, processing_run=latest
+            )
+            latest_themes_for_question = Theme.objects.filter(
+                topic_model_metadata=topic_model_metdata
+            )
             return latest_themes_for_question
         return Theme.objects.none()
 

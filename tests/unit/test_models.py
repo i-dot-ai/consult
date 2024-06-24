@@ -16,19 +16,21 @@ def test_save_theme_to_answer(input_keywords, topic_id, is_outlier):
     consultation_response = factories.ConsultationResponseFactory(consultation=consultation)
     section = factories.SectionFactory(consultation=consultation)
     question = factories.QuestionFactory(has_free_text=True, section=section)
-    answer = factories.AnswerFactory(
-        question=question, consultation_response=consultation_response
-    )
+    answer = factories.AnswerFactory(question=question, consultation_response=consultation_response)
     processing_run = factories.ProcessingRunFactory(consultation=consultation)
     tm = factories.TopicModelMetadataFactory(processing_run=processing_run, question=question)
     # Check theme created and saved to answer
-    answer.save_theme_to_answer(topic_keywords=input_keywords, topic_id=topic_id, topic_model_metadata=tm)
+    answer.save_theme_to_answer(
+        topic_keywords=input_keywords, topic_id=topic_id, topic_model_metadata=tm
+    )
     theme = models.Theme.objects.get(topic_keywords=input_keywords)
     assert theme.topic_keywords == input_keywords
     assert theme.is_outlier == is_outlier
     assert theme in answer.theme.all()
     # Check no duplicate created
-    answer.save_theme_to_answer(topic_keywords=input_keywords, topic_id=topic_id, topic_model_metadata=tm)
+    answer.save_theme_to_answer(
+        topic_keywords=input_keywords, topic_id=topic_id, topic_model_metadata=tm
+    )
     themes_qs = models.Theme.objects.filter(topic_keywords=input_keywords)
     assert themes_qs.count() == 1
 
@@ -122,5 +124,3 @@ def test_latest_themes_for_answer():
 
     assert theme2 in question.latest_themes
     assert theme1 not in question.latest_themes
-
-

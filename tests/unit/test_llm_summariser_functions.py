@@ -7,13 +7,12 @@ from consultation_analyser.factories import (
     AnswerFactory,
     ConsultationFactory,
     ConsultationResponseFactory,
+    ProcessingRunFactory,
     QuestionFactory,
     SectionFactory,
     ThemeFactory,
-    ProcessingRunFactory,
-    TopicModelMetadataFactory
+    TopicModelMetadataFactory,
 )
-
 from consultation_analyser.pipeline.backends.langchain_llm_backend import (
     get_random_sample_of_responses_for_theme,
 )
