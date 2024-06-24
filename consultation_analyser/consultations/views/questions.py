@@ -43,9 +43,13 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
 
     highest_theme_count = filtered_themes.aggregate(Max("answer_count"))["answer_count__max"]
 
-    blank_free_text_count = (
-        models.Answer.objects.filter(question=question).filter(free_text="").count()
-    )
+    blank_free_text_count = models.Answer.objects.filter(question=question).filter(free_text="").count()
+    outliers_count = models.Answer.objects.filter(question=question).filter(theme__is_outlier=True).count()
+    if outliers_count:
+        theme = models.Theme.objects.filter(question=question).get(is_outlier=True)
+        outlier_theme_id = theme.id
+    else:
+        outlier_theme_id = None
 
     context = {
         "consultation_slug": consultation_slug,
@@ -57,5 +61,8 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "total_responses": total_responses,
         "applied_filters": applied_filters,
         "blank_free_text_count": blank_free_text_count,
+        "outliers_count": outliers_count,
+        "outlier_theme_id": outlier_theme_id
+
     }
     return render(request, "consultations/questions/show.html", context)
