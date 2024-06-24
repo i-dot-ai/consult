@@ -107,7 +107,8 @@ def test_latest_themes_for_question():
 def test_latest_themes_for_answer():
     question = factories.QuestionFactory(has_free_text=True)
     consultation = question.section.consultation
-    answer = factories.AnswerFactory(question=question)
+    response = factories.ConsultationResponseFactory(consultation=consultation)
+    answer = factories.AnswerFactory(question=question, consultation_response=response)
     assert not answer.latest_theme
 
     processing_run1 = factories.ProcessingRunFactory(consultation=consultation)

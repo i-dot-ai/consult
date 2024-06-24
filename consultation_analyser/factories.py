@@ -53,15 +53,6 @@ class ConsultationFactory(factory.django.DjangoModelFactory):
             )
 
     @factory.post_generation
-    def with_themes(consultation, creation_strategy, value, **kwargs):
-        if value is True:
-            SectionFactory(
-                consultation=consultation,
-                with_question=True,
-                with_question__with_answer=True,
-            )
-
-    @factory.post_generation
     def user(consultation, creation_strategy, value, **kwargs):
         if value:
             consultation.users.set([value])
