@@ -49,19 +49,6 @@
     {% endfor %}
   {% endif %}
 
-  <p class="govuk-body">
-    {% if outlier_id %}
-      There were <a class="govuk-link" href="{{ url("question_responses", kwargs={"consultation_slug":
-        consultation_slug, "question_slug" : question.slug, "section_slug" : question.section.slug},
-        query_kwargs={"theme": outlier_id}) }}">{{ outlier_count }} responses that were outliers</a> and did not fit into a theme.
-    {% endif %}
-    {% if no_response_id %}
-      There were <a class="govuk-link" href="{{ url("question_responses", kwargs={"consultation_slug":
-        consultation_slug, "question_slug" : question.slug, "section_slug" : question.section.slug},
-        query_kwargs={"theme": no_response_id}) }}"> {{ no_response_count }} responses with no free text</a> which were excluded from the theme analysis.
-    {% endif %}
-  </p>
-
   <div class="govuk-grid-row">
 
     <div class="govuk-grid-column-one-third">
@@ -144,6 +131,18 @@
           {% endfor %}
         </tbody>
       </table>
+      <p class="govuk-body">
+        {% if outlier_id %}
+          There were <a class="govuk-link" href="{{ url("question_responses", kwargs={"consultation_slug":
+            consultation_slug, "question_slug" : question.slug, "section_slug" : question.section.slug},
+            query_kwargs={"theme": outlier_id}) }}">{{ outlier_count }} responses that were outliers</a> and did not fit into a theme.
+        {% endif %}
+        {% if no_response_id %}
+          There were <a class="govuk-link" href="{{ url("question_responses", kwargs={"consultation_slug":
+            consultation_slug, "question_slug" : question.slug, "section_slug" : question.section.slug},
+            query_kwargs={"theme": no_response_id}) }}"> {{ no_response_count }} responses with no free text</a> which were excluded from the theme analysis.
+        {% endif %}
+      </p>
     </div>
 
   </div>

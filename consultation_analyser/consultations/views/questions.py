@@ -8,17 +8,16 @@ from .decorators import user_can_see_consultation
 from .filters import get_applied_filters, get_filtered_responses, get_filtered_themes
 
 
-@user_can_see_consultation
-@login_required
-def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
+def get_special_case_themes(
+    data: dict, consultation_slug: str, section_slug: str, question_slug: str
+) -> dict:
     outlier_id = None
     no_response_id = None
     outlier_count = None
     no_response_count = None
 
-    data = request.GET
-    chosen_theme_id = data.get("theme", None)
-    if chosen_theme_id:
+    chosen_theme_id = data.get("theme", "All")
+    if chosen_theme_id != "All":
         chosen_theme = models.Theme.objects.get(id=chosen_theme_id)
         if chosen_theme.is_outlier:
             outlier_id = chosen_theme_id
@@ -49,6 +48,25 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
             no_response_count = models.Answer.objects.filter(theme=no_response_theme).count()
         except models.Theme.DoesNotExist:
             pass
+    output = {
+        "outlier_id": outlier_id,
+        "no_response_id": no_response_id,
+        "outlier_count": outlier_count,
+        "no_response_count": no_response_count,
+    }
+    return output
+
+
+@user_can_see_consultation
+@login_required
+def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
+    data = request.GET
+    special_case_info = get_special_case_themes(
+        data=data,
+        consultation_slug=consultation_slug,
+        section_slug=section_slug,
+        question_slug=question_slug,
+    )
 
     question = models.Question.objects.get(
         slug=question_slug,
@@ -91,9 +109,6 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "highest_theme_count": highest_theme_count,
         "total_responses": total_responses,
         "applied_filters": applied_filters,
-        "outlier_id": outlier_id,
-        "outlier_count": outlier_count,
-        "no_response_id": no_response_id,
-        "no_response_count": no_response_count,
     }
+    context.update(special_case_info)
     return render(request, "consultations/questions/show.html", context)
