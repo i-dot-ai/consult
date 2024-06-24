@@ -43,6 +43,8 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
 
     highest_theme_count = filtered_themes.aggregate(Max("answer_count"))["answer_count__max"]
 
+    number_blank = models.Answer.objects.filter(question=question).filter(free_text="").count()
+
     context = {
         "consultation_slug": consultation_slug,
         "question": question,
@@ -52,5 +54,6 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "highest_theme_count": highest_theme_count,
         "total_responses": total_responses,
         "applied_filters": applied_filters,
+        "number_blank": number_blank
     }
     return render(request, "consultations/questions/show.html", context)

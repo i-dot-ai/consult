@@ -127,6 +127,9 @@
           {% endfor %}
         </tbody>
       </table>
+      {% if question.has_free_text and number_blank %}
+        <p class="govuk-body">There were {{ number_blank }} responses with no free text, and these have been excluded from the theme analysis.</p>
+      {% endif %}
     </div>
 
   </div>
