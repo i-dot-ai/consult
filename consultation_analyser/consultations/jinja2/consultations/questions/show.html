@@ -55,7 +55,6 @@
       <div class="iai-filters govuk-!-margin-bottom-5">
         <h2 class="govuk-heading-m">Filters</h2>
         <form>
-
           <div class="govuk-form-group">
               <label class="govuk-label" for="theme">
                 Theme
@@ -127,11 +126,14 @@
           {% endfor %}
         </tbody>
       </table>
-      {% if question.has_free_text and number_blank %}
-        <p class="govuk-body">There were {{ number_blank }} responses with no free text, and these have been excluded from the theme analysis.</p>
+      {% if blank_free_text_count and question.has_free_text %}
+        {% if blank_free_text_count == 1 %}
+          <p class="govuk-body">There is {{ blank_free_text_count }} response with no free text and this has been excluded from the theme analysis.</p>
+        {% else %}
+          <p class="govuk-body">There were {{ blank_free_text_count }} responses with no free text, and these have been excluded from the theme analysis.</p>
+        {% endif %}
       {% endif %}
     </div>
-
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/echarts@5.5.0/dist/echarts.min.js"></script>
