@@ -90,7 +90,6 @@ def test_find_answer_multiple_choice_response():
 def test_latest_themes_for_question():
     question = factories.QuestionFactory(has_free_text=True)
     consultation = question.section.consultation
-
     assert not question.latest_themes
 
     processing_run1 = factories.ProcessingRunFactory(consultation=consultation)
@@ -104,4 +103,23 @@ def test_latest_themes_for_question():
     assert theme1 not in question.latest_themes
 
 
-# def test_latest_theme_for_answer():
+@pytest.mark.django_db
+def test_latest_themes_for_answer():
+    question = factories.QuestionFactory(has_free_text=True)
+    consultation = question.section.consultation
+    answer = factories.AnswerFactory(question=question)
+    assert not answer.latest_theme
+
+    processing_run1 = factories.ProcessingRunFactory(consultation=consultation)
+    tm1 = factories.TopicModelMetadataFactory(processing_run=processing_run1, question=question)
+    theme1 = factories.ThemeFactory(topic_model_metadata=tm1)
+    answer.theme.add(theme1)
+    processing_run2 = factories.ProcessingRunFactory(consultation=consultation)
+    tm2 = factories.TopicModelMetadataFactory(processing_run=processing_run2, question=question)
+    theme2 = factories.ThemeFactory(topic_model_metadata=tm2)
+    answer.theme.add(theme2)
+
+    assert theme2 in question.latest_themes
+    assert theme1 not in question.latest_themes
+
+
