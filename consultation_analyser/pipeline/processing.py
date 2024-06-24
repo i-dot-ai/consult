@@ -3,6 +3,7 @@ from typing import Optional
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+from consultation_analyser.consultations.models import Theme
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
 from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
@@ -44,6 +45,10 @@ def get_llm_backend(llm_identifier: Optional[str] = None):
 
 
 def process_consultation_themes(consultation, topic_backend=None, llm_backend=None):
+    # TODO - remove once we have the concept of processing runs
+    # Delete existing rogue themes so they don't exist in the background
+    Theme.objects.filter(question__section__consultation=consultation).delete()
+
     if not topic_backend:
         topic_backend = BERTopicBackend()
 
