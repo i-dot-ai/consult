@@ -54,6 +54,6 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "highest_theme_count": highest_theme_count,
         "total_responses": total_responses,
         "applied_filters": applied_filters,
-        "number_blank": number_blank
+        "number_blank": number_blank,
     }
     return render(request, "consultations/questions/show.html", context)
