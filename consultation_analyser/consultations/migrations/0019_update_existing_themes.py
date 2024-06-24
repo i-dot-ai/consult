@@ -44,7 +44,6 @@ def add_relationships_for_existing_themes(apps, schema_editor):
     # Get only themes that are linked to existing answers
     linked_theme_ids = set(Answer.objects.all().values_list("theme_id", flat=True))
     unlinked_theme_ids = all_theme_ids.difference(linked_theme_ids)
-    print(f"unlinked_theme_ids: {unlinked_theme_ids}")
     # Consultations we want to update themes on
     consultation_ids = set(
         Theme.objects.filter(id__in=linked_theme_ids).values_list(
