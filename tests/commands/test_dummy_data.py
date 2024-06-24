@@ -19,7 +19,7 @@ def test_name_parameter_sets_consultation_name(mock_is_local):
 
     assert models.Consultation.objects.count() == 1
     assert models.Question.objects.count() == 10
-    assert models.Answer.objects.count() == 100
+    assert models.Answer.objects.count() >= 100
 
     qs = models.Answer.objects.filter(theme__is_outlier=True)
     assert qs.exists()

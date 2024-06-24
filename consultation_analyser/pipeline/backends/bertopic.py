@@ -31,7 +31,11 @@ class BERTopicBackend(TopicBackend):
         self.persistence_path = persistence_path
 
     def get_topics(self, question: models.Question) -> list[TopicAssignment]:
-        answers_qs = models.Answer.objects.filter(question=question).order_by("created_at")
+        answers_qs = (
+            models.Answer.objects.filter(question=question)
+            .exclude(free_text="")
+            .order_by("created_at")
+        )
         answers_list = list(answers_qs.values("id", "free_text"))
 
         logger.info("BERTopic embedding")
