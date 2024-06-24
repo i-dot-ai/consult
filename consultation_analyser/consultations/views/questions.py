@@ -35,11 +35,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
                 is_outlier=True,
             )
             outlier_id = outlier_theme.id
-            print(f"outlier_id: {outlier_id}")
             outlier_count = models.Answer.objects.filter(theme=outlier_theme).count()
-            print(
-                models.Answer.objects.filter(question__slug=question_slug, theme__is_outlier=True)
-            )
         except models.Theme.DoesNotExist:
             pass
         try:
@@ -50,7 +46,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
                 is_no_response=True,
             )
             no_response_id = no_response_theme.id
-            no_response_count = models.Answer.objects.filter(theme=outlier_theme).count()
+            no_response_count = models.Answer.objects.filter(theme=no_response_theme).count()
         except models.Theme.DoesNotExist:
             pass
 
