@@ -26,7 +26,7 @@ def test_save_theme_to_answer(input_keywords, topic_id, is_outlier):
     theme = models.Theme.objects.get(topic_keywords=input_keywords)
     assert theme.topic_keywords == input_keywords
     assert theme.is_outlier == is_outlier
-    assert theme in answer.theme.all()
+    assert theme in answer.themes.all()
     # Check no duplicate created
     answer.save_theme_to_answer(
         topic_keywords=input_keywords, topic_id=topic_id, topic_model_metadata=tm
@@ -116,11 +116,11 @@ def test_latest_themes_for_answer():
     processing_run1 = factories.ProcessingRunFactory(consultation=consultation)
     tm1 = factories.TopicModelMetadataFactory(processing_run=processing_run1, question=question)
     theme1 = factories.ThemeFactory(topic_model_metadata=tm1)
-    answer.theme.add(theme1)
+    answer.themes.add(theme1)
     processing_run2 = factories.ProcessingRunFactory(consultation=consultation)
     tm2 = factories.TopicModelMetadataFactory(processing_run=processing_run2, question=question)
     theme2 = factories.ThemeFactory(topic_model_metadata=tm2)
-    answer.theme.add(theme2)
+    answer.themes.add(theme2)
 
     assert theme2 in question.latest_themes
     assert theme1 not in question.latest_themes

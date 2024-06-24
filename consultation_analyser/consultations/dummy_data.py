@@ -82,12 +82,12 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
                 ]
                 for a in answers:
                     random_theme = random.choice(themes)
-                    a.theme.add(random_theme)
+                    a.themes.add(random_theme)
                     a.save()
             # Force at least one answer to be an outlier
             a = random.choice(answers)
-            latest_theme = a.theme.all().order_by("created_at").last()
-            a.theme.remove(latest_theme)
-            a.theme.add(themes[0])
+            latest_theme = a.themes.all().order_by("created_at").last()
+            a.themes.remove(latest_theme)
+            a.themes.add(themes[0])
             a.save()
     return consultation

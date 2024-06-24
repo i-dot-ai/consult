@@ -28,25 +28,25 @@ def set_up_for_filters():
         free_text="We love dogs.",
         consultation_response=consultation_response,
     )
-    answer1.theme.add(theme1)
+    answer1.themes.add(theme1)
     answer2 = factories.AnswerFactory(
         question=question,
         free_text="We like cats not dogs.",
         consultation_response=consultation_response,
     )
-    answer2.theme.add(theme2)
+    answer2.themes.add(theme2)
     answer3 = factories.AnswerFactory(
         question=question,
         free_text="We love cats.",
         consultation_response=consultation_response,
     )
-    answer3.theme.add(theme2)
+    answer3.themes.add(theme2)
     answer4 = factories.AnswerFactory(
         question=question,
         free_text=None,
         consultation_response=consultation_response,
     )
-    answer4.theme.add(theme2)
+    answer4.themes.add(theme2)
     return question
 
 

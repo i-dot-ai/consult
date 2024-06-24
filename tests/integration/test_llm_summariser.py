@@ -19,7 +19,7 @@ def test_create_llm_summaries_for_consultation():
         topic_model_metadata=tm_metadata, short_description="", summary=""
     )
     answer = factories.AnswerFactory(question=question, consultation_response=response)
-    answer.theme.add(theme)
+    answer.themes.add(theme)
 
     assert not theme.summary
     assert not theme.short_description

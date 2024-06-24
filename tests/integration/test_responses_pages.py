@@ -38,7 +38,7 @@ def test_get_question_responses_page(django_app):
         short_description="short description", topic_model_metadata=topic_model_metadata
     )
     answer = AnswerFactory(question=question, consultation_response=consultation_response)
-    answer.theme.add(theme)
+    answer.themes.add(theme)
     multiple_choice = answer.multiple_choice[0]
 
     question_responses_url = (

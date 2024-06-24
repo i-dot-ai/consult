@@ -189,7 +189,7 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     free_text = models.TextField(null=True, blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     consultation_response = models.ForeignKey(ConsultationResponse, on_delete=models.CASCADE)
-    theme = models.ManyToManyField(Theme)
+    themes = models.ManyToManyField(Theme)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
@@ -202,13 +202,13 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
             topic_keywords=topic_keywords,
             topic_id=topic_id,
         )
-        self.theme.add(theme)
+        self.themes.add(theme)
 
     @property
     def latest_theme(self):
-        if not self.theme:
+        if not self.themes:
             return None
         lastest = (
-            self.theme.all().order_by("topic_model_metadata__processing_run__created_at").last()
+            self.themes.all().order_by("topic_model_metadata__processing_run__created_at").last()
         )
         return lastest

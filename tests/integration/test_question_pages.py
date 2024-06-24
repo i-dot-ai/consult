@@ -39,25 +39,25 @@ def test_get_question_summary_page(django_app):
         question=question,
         consultation_response=consultation_response,
     )
-    answer.theme.add(theme)
+    answer.themes.add(theme)
     answer = AnswerFactory(
         multiple_choice_answers=[("What do you think?", ["Yes"])],
         question=question,
         consultation_response=consultation_response,
     )
-    answer.theme.add(theme)
+    answer.themes.add(theme)
     answer = AnswerFactory(
         multiple_choice_answers=[("What do you think?", ["No"])],
         question=question,
         consultation_response=consultation_response,
     )
-    answer.theme.add(theme)
+    answer.themes.add(theme)
     answer = AnswerFactory(
         multiple_choice_answers=[("What do you think?", ["Maybe"])],
         question=question,
         consultation_response=consultation_response,
     )
-    answer.theme.add(theme)
+    answer.themes.add(theme)
 
     sign_in(django_app, user.email)
 

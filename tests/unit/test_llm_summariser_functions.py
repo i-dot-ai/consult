@@ -32,7 +32,7 @@ def test_get_random_sample_of_responses_for_theme():
     answer = AnswerFactory(
         question=question, free_text=text, consultation_response=consultation_response
     )
-    answer.theme.add(theme)
+    answer.themes.add(theme)
     combined_responses = get_random_sample_of_responses_for_theme(
         theme, encoding=encoding, max_tokens=40
     )
@@ -45,7 +45,7 @@ def test_get_random_sample_of_responses_for_theme():
             free_text=text,
             consultation_response=consultation_response,
         )
-        ans.theme.add(theme)
+        ans.themes.add(theme)
     combined_responses = get_random_sample_of_responses_for_theme(
         theme, encoding=encoding, max_tokens=40
     )
@@ -69,7 +69,7 @@ def test_get_random_sample_of_responses_for_theme_does_not_repeat():
         ans = AnswerFactory(
             question=question, free_text=a, consultation_response=consultation_response
         )
-        ans.theme.add(theme)
+        ans.themes.add(theme)
 
     combined_responses = get_random_sample_of_responses_for_theme(
         theme, encoding=encoding, max_tokens=100
