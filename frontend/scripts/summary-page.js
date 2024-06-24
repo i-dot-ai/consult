@@ -67,7 +67,7 @@ class donutChart extends HTMLElement {
                     label: {
                         align: 'left',
                         color: '#fff',
-                        fontSize: 13,
+                        fontSize: 10,
                         fontWeight: 'bold',
                         formatter: [
                             '{b}',
