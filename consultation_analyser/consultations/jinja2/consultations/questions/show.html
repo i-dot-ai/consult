@@ -1,71 +1,45 @@
 {% extends "base.html" %}
 {%- from 'govuk_frontend_jinja/components/back-link/macro.html' import govukBackLink -%}
+{%- from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs -%}
 {%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
 
 {% set page_title = "Question summary" %}
 
-{% block pre_main %}
-  {{ govukBackLink({
-    "text": "Back to all questions",
-    "href": "/consultations/" + consultation_slug
-  }) }}
-{% endblock %}
+
 
 {% block content %}
 
-  <div class="govuk-grid-row">
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Consultations",
+        "href": "/consultations",
+      },
+      {
+        "text": "All questions",
+        "href": "/consultations/" + consultation_slug
+      }
+    ]
+  }) }}
+
+  <div class="govuk-grid-row iai-display-flex iai-display-flex--stretch">
     <div class="govuk-grid-column-two-thirds">
-      <span class="govuk-caption-m">Showing <strong>all</strong> of <strong>{{ total_responses }} </strong> responses</span>
-      <h1 class="govuk-heading-l">{{ page_title }}</h1>
-      <p class="govuk-body">{{ question.text }}</p>
-    </div>
-  </div>
-  {% if multiple_choice_stats %}
-    {% for multiple_choice in multiple_choice_stats %}
-      <div class="govuk-grid-row">
-        <div class="govuk-grid-column-two-thirds">
-          {# Show multiple-choice question title only if it's not the same as the overall question title #}
-          {% if multiple_choice.question != question.text %}
-            <h2 class="govuk-heading-s">{{ multiple_choice.question }}</h2>
-          {% endif %}
-          <dl class="govuk-summary-list">
-            {% for option in multiple_choice.counts.keys() %}
-              <div class="govuk-summary-list__row">
-                <dt class="govuk-summary-list__key">
-                  {{ option }}
-                </dt>
-                <dd class="govuk-summary-list__value">
-                  {{ multiple_choice.counts[option] }}
-                </dd>
-                {% if not multiple_choice.has_multiple_selections %}
-                  <dd class="govuk-summary-list__value">
-                    {{ multiple_choice.percentages()[option] }}%
-                  </dd>
-                {% endif %}
-              </div>
-            {% endfor %}
-          </dl>
-        </div>
-        <div class="govuk-grid-column-one-third govuk-!-padding-0">
-          {% if not multiple_choice.has_multiple_selections %}
-            <donut-chart>
-              {% for option in multiple_choice.counts.keys() %}
-                <chart-item data-label="{{ option }}" data-count="{{ multiple_choice.percentages()[option] }}"></chart-item>
-              {% endfor %}
-            </donut-chart>
-          {% endif %}
+      <div class="iai-panel">
+        <div class="govuk-!-padding-left-2 govuk-!-padding-right-2">
+          <h1 class="govuk-heading-m iai-text-400">
+            <span class="govuk-body-s govuk-!-display-block">Question</span>
+            {{ question.text }}
+          </h1>
         </div>
       </div>
-    {% endfor %}
-  {% endif %}
-
-  <div class="govuk-grid-row">
-
+    </div>
     <div class="govuk-grid-column-one-third">
-      <div class="iai-filters govuk-!-margin-bottom-5">
-        <h2 class="govuk-heading-m">Filters</h2>
-        <form>
-          <div class="govuk-form-group">
+      <div class="iai-panel">
+        <div class="govuk-!-padding-left-2 govuk-!-padding-right-2">
+          <h2 class="govuk-heading-s">Filters</h2>
+          <form>
+
+            <div class="govuk-form-group">
               <label class="govuk-label" for="theme">
                 Theme
               </label>
@@ -78,18 +52,64 @@
               </select>
             </div>
 
-          {{ govukButton({
-            "text": "Apply filters",
-            "classes": "govuk-!-margin-bottom-2"
-          }) }}
-          <div class="govuk-!-padding-2">
-            <a class="govuk-body" href="?">Clear filters</a>
-          </div>
+            <div class="iai-display-flex">
+              {{ govukButton({
+                "text": "Apply filters",
+                "classes": "govuk-!-margin-bottom-0"
+              }) }}
+              <div class="govuk-!-padding-2">
+                <a class="govuk-body-s" href="?">Clear filters</a>
+              </div>
+            </div>
 
-        </form>
+          </form>
+        </div>
       </div>
     </div>
+  </div>
 
+
+  <div class="govuk-grid-row govuk-!-margin-top-6 iai-display-flex iai-display-flex--stretch">
+    <div class="govuk-grid-column-one-third">
+      <div class="iai-panel">
+        <div class="govuk-!-padding-left-2 govuk-!-padding-right-2">
+          <h2 class="govuk-heading-s">Question summary</h2>
+          <p class="govuk-body">Showing <strong>all</strong> of <strong>{{ total_responses }} </strong> responses</p>
+        </div>
+
+        {% if multiple_choice_stats %}
+          {% for multiple_choice in multiple_choice_stats %}
+            {% if not multiple_choice.has_multiple_selections %}
+              <donut-chart>
+                {% for option in multiple_choice.counts.keys() %}
+                  <chart-item data-label="{{ option }}" data-count="{{ multiple_choice.percentages[option] }}"></chart-item>
+                {% endfor %}
+              </donut-chart>
+            {% endif %}
+            <div class="govuk-!-padding-left-2 govuk-!-padding-right-2">
+              <dl class="govuk-summary-list iai-chart-text">
+                {% for response in responses %}
+                  {% for option in multiple_choice.counts.keys() %}
+                    <div class="govuk-summary-list__row">
+                      <dt class="govuk-summary-list__key">
+                        {{ option }}
+                      </dt>
+                      <dd class="govuk-summary-list__value">
+                        {{ multiple_choice.counts[option] }}
+                      </dd>
+                      {% if not multiple_choice.has_multiple_selections %}
+                        <dd class="govuk-summary-list__value">
+                          {{ multiple_choice.percentages()[option] }}%
+                        </dd>
+                      {% endif %}
+                    </div>
+                  {% endfor %}
+                {% endfor %}
+              </dl>
+            </div>
+          {% endif %}
+      </div>
+    </div>
     <div class="govuk-grid-column-two-thirds">
       <table class="govuk-table">
         <caption class="govuk-table__caption govuk-table__caption--s">
@@ -134,7 +154,7 @@
                   </bar-animation>
                 </td>
               </tr>
-            {% endif %}
+            {% endfor %}
           {% endfor %}
         </tbody>
       </table>
@@ -145,18 +165,6 @@
           <p class="govuk-body">There are {{ blank_free_text_count }} responses with no free text, and these have been excluded from the theme analysis.</p>
         {% endif %}
       {% endif %}
-
-      {% if outliers_count %}
-        {% with link=url("question_responses", kwargs={"consultation_slug": consultation_slug, "question_slug" : question.slug,
-            "section_slug" : question.section.slug}, query_kwargs={"theme": outlier_theme_id}) %}
-          {% if outliers_count == 1 %}
-            <p class="govuk-body">There is <a class="govuk-link" href="{{ link }}">{{ outliers_count }} response which is an outlier</a> and does not fit into any of the existing themes.</p>
-          {% else %}
-            <p class="govuk-body">There are <a class="govuk-link" href="{{ link }}">{{ outliers_count }} responses which are outliers</a> and do not fit into any of the existing themes.</p>
-          {% endif %}
-        {% endwith %}
-      {% endif %}
-
     </div>
   </div>
 
