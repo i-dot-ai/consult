@@ -3,7 +3,6 @@ import logging
 from consultation_analyser.consultations.models import Theme
 from consultation_analyser.pipeline.backends.llm_backend import LLMBackend
 
-
 logger = logging.getLogger("pipeline")
 
 
