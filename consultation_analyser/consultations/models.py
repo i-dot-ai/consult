@@ -117,6 +117,9 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     is_outlier = models.GeneratedField(
         expression=models.Q(topic_id=-1), output_field=models.BooleanField(), db_persist=True
     )
+    is_no_response = models.GeneratedField(
+        expression=models.Q(topic_id=None), output_field=models.BooleanField(), db_persist=True
+    ) # This corresponds to answers that have no free text response (even if q is free text q)
 
     class Meta:
         constraints = [
