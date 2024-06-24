@@ -196,3 +196,8 @@ pre code {
     font-size: 1rem;
     margin: 0.25rem 0;
 }
+
+.govuk-notification-banner--warning {
+  background-color: govuk-colour("red");
+  border-color: govuk-colour("red");
+}

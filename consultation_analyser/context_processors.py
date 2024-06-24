@@ -10,6 +10,7 @@ class AppConfig:
     name: str
     path: str
     menu_items: list
+    show_provisional_data_warning: bool = False
 
 
 def app_config(request: HttpRequest):
@@ -86,6 +87,14 @@ def app_config(request: HttpRequest):
                 },
             ]
 
-        app_config = AppConfig(name="Consult", path="/", menu_items=menu_items)
+        show_provisional_data_warning = request.user.is_authenticated and request.path.startswith(
+            "/consultations"
+        )
+        app_config = AppConfig(
+            name="Consult",
+            path="/",
+            menu_items=menu_items,
+            show_provisional_data_warning=show_provisional_data_warning,
+        )
 
     return {"app_config": app_config}
