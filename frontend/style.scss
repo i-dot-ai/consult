@@ -141,6 +141,13 @@ $iai-colour-pink: #C50878;
 }
 
 /** CONSULTATION PAGE **/
+.con-question-list {
+    border-radius: 0.25rem;
+    background-color: white;
+}
+.con-question-list__item {
+    border-top: 1px solid #E5E7EB;
+}
 .iai-key-finding {
     align-items: center;
     background-color: govuk-colour("light-grey");
