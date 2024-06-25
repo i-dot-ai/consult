@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 
+from django.conf import settings
 from django.http import HttpRequest
 from django.urls import resolve
 from django.urls.exceptions import Resolver404
@@ -11,6 +12,26 @@ class AppConfig:
     path: str
     menu_items: list
     show_provisional_data_warning: bool = False
+
+
+@dataclass
+class Version:
+    sha: str
+
+    def version_string(self):
+        if self.sha:
+            return f"Version: {self.sha[:8]}"
+        else:
+            # Jinja2 will not print this, which is what we want
+            return ""
+
+    def url(self):
+        if self.sha:
+            return f"https://github.com/i-dot-ai/consultation-analyser/commit/{self.sha}"
+
+
+def version(request: HttpRequest):
+    return {"version": Version(sha=settings.GIT_SHA)}
 
 
 def app_config(request: HttpRequest):
