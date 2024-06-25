@@ -23,10 +23,10 @@ def new(request: HttpRequest, consultation_id: UUID):
             users = form.cleaned_data["users"]
             for user in users:
                 consultation.users.add(user)
-                messages.success(request, "Users updated")
-                return redirect(
-                    reverse("support_consultation", kwargs={"consultation_id": consultation.id})
-                )
+            messages.success(request, "Users updated")
+            return redirect(
+                reverse("support_consultation", kwargs={"consultation_id": consultation.id})
+            )
     else:
         form = AddUsersToConsultationForm(users=users, consultation=consultation)
 
