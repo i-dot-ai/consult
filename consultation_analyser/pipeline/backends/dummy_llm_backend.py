@@ -10,7 +10,7 @@ class DummyLLMBackend(LLMBackend):
     def __init__(self):
         self.faker = faker.Faker()
 
-    def summarise_theme(self, theme: models.OldTheme) -> ThemeSummary:
+    def summarise_theme(self, theme: models.Theme) -> ThemeSummary:
         return ThemeSummary(
             **{
                 "short_description": ", ".join(theme.topic_keywords),

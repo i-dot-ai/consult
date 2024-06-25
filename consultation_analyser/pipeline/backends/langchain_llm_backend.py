@@ -22,7 +22,7 @@ class LangchainLLMBackend(LLMBackend):
         )  # TODO - where does this encoding come from, how do we associate it with model
         self.max_tokens = 2000
 
-    def summarise_theme(self, theme: models.OldTheme) -> ThemeSummary:
+    def summarise_theme(self, theme: models.Theme) -> ThemeSummary:
         prompt_template = self.__get_prompt_template()
 
         sample_responses = get_random_sample_of_responses_for_theme(
@@ -30,8 +30,8 @@ class LangchainLLMBackend(LLMBackend):
         )
 
         prompt_inputs = {
-            "consultation_name": theme.question.section.consultation.name,
-            "question": theme.question.text,
+            "consultation_name": theme.topic_model.question.section.consultation.name,
+            "question": theme.topic_model.question.text,
             "keywords": ", ".join(theme.topic_keywords),
             "responses": sample_responses,
         }
@@ -124,9 +124,9 @@ class LangchainLLMBackend(LLMBackend):
 
 
 def get_random_sample_of_responses_for_theme(
-    theme: models.OldTheme, encoding: tiktoken.Encoding, max_tokens: int
+    theme: models.Theme, encoding: tiktoken.Encoding, max_tokens: int
 ) -> str:
-    responses_for_theme = models.Answer.objects.filter(theme=theme).order_by("?")
+    responses_for_theme = models.Answer.objects.filter(themes=theme).order_by("?")
     free_text_responses_for_theme = responses_for_theme.values_list("free_text", flat=True)
 
     # TWILIGHT ZONE: https://code.djangoproject.com/ticket/30655

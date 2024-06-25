@@ -166,6 +166,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
 
+# Here for legacy reasons, can be deleted once we are using processing run approach
 class OldTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     # LLM generates short_description and summary
     short_description = models.TextField(blank=True)
@@ -217,11 +218,10 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    def save_theme_to_answer(self, topic_keywords: list, topic_id: int):
-        question = self.question
-        theme, _ = OldTheme.objects.get_or_create(
-            question=question, topic_keywords=topic_keywords, topic_id=topic_id
+    def save_theme_to_answer(self, topic_keywords: list, topic_id: int, topic_model_metadata: TopicModelMetadata):
+        theme, _ = Theme.objects.get_or_create(
+            topic_keywords=topic_keywords, topic_id=topic_id, topic_model_metadata=topic_model_metadata
         )
-        self.theme = theme
+        self.themes.add(theme)
         self.save()
 

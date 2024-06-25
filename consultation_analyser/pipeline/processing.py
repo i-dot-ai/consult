@@ -13,6 +13,7 @@ from consultation_analyser.pipeline.llm_summariser import (
     create_llm_summaries_for_consultation,
 )
 from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
+from consultation_analyser.consultations.models import ProcessingRun
 
 
 def get_llm_backend(llm_identifier: Optional[str] = None):
@@ -44,14 +45,18 @@ def get_llm_backend(llm_identifier: Optional[str] = None):
 
 
 def process_consultation_themes(consultation, topic_backend=None, llm_backend=None):
+    processing_run = ProcessingRun(consultation=consultation)
+    processing_run.save()
+    # TODO - add more metadata to processing run
+
     if not topic_backend:
         topic_backend = BERTopicBackend()
 
     if not llm_backend:
         llm_backend = get_llm_backend(llm_backend)
 
-    save_themes_for_consultation(consultation.id, topic_backend)
-    create_llm_summaries_for_consultation(consultation, llm_backend)
+    save_themes_for_consultation(consultation.id, topic_backend, processing_run)
+    create_llm_summaries_for_consultation(consultation, llm_backend, processing_run)
 
 
 def run_processing_pipeline(consultation):
