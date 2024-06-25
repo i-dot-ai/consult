@@ -138,10 +138,25 @@ class ConsultationResponseFactory(factory.django.DjangoModelFactory):
         model = models.ConsultationResponse
 
 
+class ProcessingRunFactory(factory.django.DjangoModelFactory):
+    consultation = factory.SubFactory(ConsultationFactory)
+
+    class Meta:
+        model = models.ProcessingRun
+
+
+class TopicModelMetadataFactory(factory.django.DjangoModelFactory):
+    processing_run = factory.SubFactory(ProcessingRunFactory)
+
+    class Meta:
+        model = models.TopicModelMetadata
+
+
 class ThemeFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.OldTheme
+        model = models.Theme
 
+    topic_model_metadata = factory.SubFactory(TopicModelMetadataFactory)
     topic_keywords = factory.LazyAttribute(lambda _o: generate_dummy_topic_keywords())
     short_description = factory.LazyAttribute(lambda _o: faker.sentence())
     summary = factory.LazyAttribute(lambda _o: faker.sentence())
