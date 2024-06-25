@@ -70,7 +70,7 @@ class donutChart extends HTMLElement {
                         fontSize: 10,
                         fontWeight: 'bold',
                         formatter: [
-                            '{b}',
+                            //'{b}',
                             '\n{percent|{c}%}'
                         ].join('\n'),
                         lineHeight: 14,
