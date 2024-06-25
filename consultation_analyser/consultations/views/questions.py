@@ -1,7 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Max
 from django.http import HttpRequest
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 
 from .. import models
 from .decorators import user_can_see_consultation
@@ -11,6 +11,7 @@ from .filters import get_applied_filters, get_filtered_responses, get_filtered_t
 @user_can_see_consultation
 @login_required
 def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
+    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     question = models.Question.objects.get(
         slug=question_slug,
         section__slug=section_slug,
@@ -57,6 +58,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
 
     context = {
         "consultation_slug": consultation_slug,
+        "consultation_name": consultation.name,
         "question": question,
         "multiple_choice_questions": multiple_choice_questions,
         "responses": responses,
