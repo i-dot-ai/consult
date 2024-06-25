@@ -28,9 +28,8 @@ def get_filtered_responses(question: models.Question, applied_filters: dict[str,
 def get_filtered_themes(
     question: models.Question, filtered_answers: QuerySet, applied_filters: dict[str, str]
 ) -> QuerySet:
-    queryset = models.OldTheme.objects.filter(answer__question=question).annotate(
-        answer_count=Count("answer")
-    )
+    queryset = question.latest_themes # By default, get latest themes
+    queryset = queryset.annotate(answer_count=Count("answer"))
     if applied_filters["theme"] != "All":
         queryset = queryset.filter(id=applied_filters["theme"])
     return queryset

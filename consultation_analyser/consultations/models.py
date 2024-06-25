@@ -102,9 +102,8 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
             latest_processing_run = ProcessingRun.objects.filter(consultation=self.section.consultation).order_by("created_at").last()
             latest_themes = Theme.objects.filter(topic_model__processing_run=latest_processing_run).filter(topic_model__question=self)
             return latest_themes
-        except ProcessingRun.DoesNotExist: # TODO - remove OldTheme in future
-            old_theme_ids = self.answer_set.values_list("old_theme__id", flat=True)
-            return OldTheme.objects.filter(id__in=old_theme_ids)
+        except ProcessingRun.DoesNotExist:
+            return Theme.objects.none()
 
 
 class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -226,10 +225,11 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         try:
             latest_processing_run = ProcessingRun.objects.filter(consultation=consultation).order_by("created_at").last()
         except ProcessingRun.DoesNotExist:
-            return self.old_theme #TODO - remove in future
+            return None
         try:
             latest = self.themes.get(topic_model_metadata__processing_run=latest_processing_run)
         except Theme.DoesNotExist:
             latest = None
         return latest
+
 
