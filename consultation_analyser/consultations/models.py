@@ -105,6 +105,50 @@ class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
+class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    # TODO - add more processing run metadata
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
+    processing_run = models.ForeignKey(ProcessingRun, on_delete=models.CASCADE)
+    # Question needed for uniqueness constraint
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
+    # TODO -  Some other metadata on the model TBC and link to saved model
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["processing_run", "question"], name="unique_topic_model_question_run"
+            ),
+        ]
+
+
+class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
+    # Topic model, keywords and ID come from BERTopic
+    topic_model_metadata = models.ForeignKey(
+        TopicModelMetadata, on_delete=models.CASCADE, null=True
+    )
+    topic_keywords = models.JSONField(default=list)
+    topic_id = models.IntegerField(null=True)  # Topic ID from BERTopic
+    is_outlier = models.GeneratedField(
+        expression=models.Q(topic_id=-1), output_field=models.BooleanField(), db_persist=True
+    )
+    # LLM generates short_description and summary
+    short_description = models.TextField(blank=True)
+    summary = models.TextField(blank=True)  # More detailed description
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=["topic_id", "topic_model_metadata"], name="unique_id_per_model"
+            ),
+        ]
+
+
 class OldTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     # LLM generates short_description and summary
     short_description = models.TextField(blank=True)
@@ -150,7 +194,8 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation_response = models.ForeignKey(ConsultationResponse, on_delete=models.CASCADE)
     old_theme = models.ForeignKey(
         OldTheme, on_delete=models.SET_NULL, null=True, blank=True
-    )  # For now, just one theme per answer
+    )  # Legacy themes, soon won't be needed when we move to processing runs
+    themes = models.ManyToManyField(Theme)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
