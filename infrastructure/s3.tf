@@ -5,5 +5,5 @@ module "app_bucket" {
   state_bucket   = var.state_bucket
   log_bucket     = data.terraform_remote_state.platform.outputs.log_bucket
   kms_key        = data.terraform_remote_state.platform.outputs.kms_key_arn
-  source_ips     = concat(var.internal_ips, var.developer_ips, var.external_ips)
+  source_ips     = concat(var.internal_ips, var.developer_ips)
 }
