@@ -7,11 +7,8 @@
 
 {% block content %}
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-m">{{ page_title }}</h1>
-      <p class="govuk-body">{{ question.text }}</p>
-      {{ govukBreadcrumbs({
+  <p class="govuk-heading-m">{{ consultation_name }}</p>
+  {{ govukBreadcrumbs({
     "items": [
       {
         "text": "Consultations",
@@ -23,6 +20,15 @@
       }
     ]
   }) }}
+
+  <div class="govuk-grid-row govuk-!-margin-top-5">
+    <div class="govuk-grid-column-full">
+      <div class="iai-panel">
+        <h1 class="govuk-heading-m govuk-!-font-weight-regular">
+          <span class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">Response explorer</span>
+          {{ question.text }}
+        </h1>
+      </div>
     </div>
   </div>
 
@@ -30,7 +36,7 @@
 
     <div class="govuk-grid-column-one-quarter">
       <div class="iai-panel govuk-!-margin-bottom-5">
-        <h2 class="govuk-heading-s">Filters</h2>
+        <h2 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">Filters</h2>
         <form>
 
           <div class="govuk-form-group">
@@ -67,8 +73,8 @@
       <div class="iai-panel">
         <table class="govuk-table">
           <caption class="govuk-table__caption govuk-table__caption--m govuk-!-margin-bottom-0">
-            <h2 class="govuk-heading-s govuk-!-margin-bottom-0">Responses</h2>
-            <span class="iai-table-subhead govuk-body govuk-!-margin-top-1">(Showing <strong>{{ responses|length }}</strong> of <strong>{{ total_responses }}</strong> responses)</span>
+            <h2 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold govuk-!-margin-bottom-0">Responses</h2>
+            <span class="iai-table-subhead govuk-body-s govuk-!-margin-top-1">(Showing <strong>{{ responses|length }}</strong> of <strong>{{ total_responses }}</strong> responses)</span>
           </caption>
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
