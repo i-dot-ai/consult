@@ -3,7 +3,6 @@ resource "aws_secretsmanager_secret" "django_secret" {
   description = "Django secret for ${local.name}"
   tags = {
     SecretPurpose = "general" # pragma: allowlist secret
-    "platform:secret-purpose" = "general"
   }
 }
 
