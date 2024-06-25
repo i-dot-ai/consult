@@ -7,6 +7,9 @@ from consultation_analyser.factories import (
     ConsultationFactory,
     ConsultationResponseFactory,
     UserFactory,
+    ThemeFactory,
+    ProcessingRunFactory,
+    TopicModelMetadataFactory
 )
 from tests.helpers import sign_in
 
@@ -29,6 +32,10 @@ def test_get_question_responses_page(django_app):
     question = section.question_set.first()
 
     answer = AnswerFactory(question=question, consultation_response=consultation_response)
+    processing_run = ProcessingRunFactory(consultation=consultation)
+    topic_model_meta = TopicModelMetadataFactory(processing_run=processing_run, question=question)
+    theme = ThemeFactory(topic_model_metadata=topic_model_meta)
+    answer.themes.add(theme)
     multiple_choice = answer.multiple_choice[0]
 
     question_responses_url = (
@@ -47,7 +54,7 @@ def test_get_question_responses_page(django_app):
         in page_content
     )
     if answer.free_text:
-        assert f"{answer.theme.short_description}" in page_content
+        assert f"{answer.latest_theme.short_description}" in page_content
 
     # Check keyword filtering
     first_word_of_answer = answer.free_text.split()[0]
