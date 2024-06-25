@@ -64,8 +64,8 @@ def consultation_to_json(consultation):
             answer_attrs = select_keys_from_model(
                 answer, ["question", "multiple_choice", "free_text"]
             )
-
-            answer_attrs["theme_id"] = str(answer.theme.id) if answer.theme else None
+            latest_theme = answer.latest_theme
+            answer_attrs["theme_id"] = str(latest_theme.id) if latest_theme else None
             answer_attrs["question_id"] = str(answer_attrs.pop("question"))
             answers.append(answer_attrs)
 
