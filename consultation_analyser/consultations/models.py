@@ -98,20 +98,13 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
     @property
     def latest_themes(self):
-        corresponding_processing_runs = ProcessingRun.objects.filter(
-            consultation=self.section.consultation
-        ).order_by("created_at")
-        if corresponding_processing_runs:
-            latest = corresponding_processing_runs.last()
-            topic_model_metdata = TopicModelMetadata.objects.get(
-                question=self, processing_run=latest
-            )
-            latest_themes_for_question = Theme.objects.filter(
-                topic_model_metadata=topic_model_metdata
-            )
-            return latest_themes_for_question
-        # TODO - get the lastest OldThemes?
-        return Theme.objects.none()
+        try:
+            latest_processing_run = ProcessingRun.objects.filter(consultation=self.section.consultation).order_by("created_at").last()
+            latest_themes = Theme.objects.filter(topic_model__processing_run=latest_processing_run).filter(topic_model__question=self)
+            return latest_themes
+        except ProcessingRun.DoesNotExist: # TODO - remove OldTheme in future
+            old_theme_ids = self.answer_set.values_list("old_theme__id", flat=True)
+            return OldTheme.objects.filter(id__in=old_theme_ids)
 
 
 class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -166,7 +159,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
 
-# Here for legacy reasons, can be deleted once we are using processing run approach
+# TODO - Here for legacy reasons, can be deleted once we are using processing run approach
 class OldTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     # LLM generates short_description and summary
     short_description = models.TextField(blank=True)
@@ -224,4 +217,19 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         )
         self.themes.add(theme)
         self.save()
+
+    @property
+    def latest_theme(self):
+        # Get the theme from the latest processing run, may be none if there was no theme for this response.
+        # If no processing runs - check for 'OldThemes' - in future this can be deleted when we use processing runs for everything.
+        consultation = self.question.section.consultation
+        try:
+            latest_processing_run = ProcessingRun.objects.filter(consultation=consultation).order_by("created_at").last()
+        except ProcessingRun.DoesNotExist:
+            return self.old_theme #TODO - remove in future
+        try:
+            latest = self.themes.get(topic_model_metadata__processing_run=latest_processing_run)
+        except Theme.DoesNotExist:
+            latest = None
+        return latest
 
