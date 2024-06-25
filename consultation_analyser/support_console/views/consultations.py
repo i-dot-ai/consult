@@ -9,9 +9,6 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.dummy_data import create_dummy_data
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.pipeline.backends.types import (
-    NO_SUMMARY_STR,
-)
 from consultation_analyser.pipeline.processing import run_processing_pipeline
 
 
@@ -62,25 +59,9 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
     except RuntimeError as error:
         messages.error(request, error.args[0])
-    # TODO - find a better way to summarise themes
-    # Themes should be given by question anyway
-    # themes_for_consultation = models.OldTheme.objects.filter(
-    #     answer__question__section__consultation=consultation
-    # ).distinct()
-    # number_of_themes = themes_for_consultation.count()
-    # number_of_themes_with_summaries = (
-    #     themes_for_consultation.exclude(summary="").exclude(summary=NO_SUMMARY_STR).count()
-    # )
-    # number_of_themes_unable_to_summarise = themes_for_consultation.filter(
-    #     summary=NO_SUMMARY_STR
-    # ).count()
-    # number_of_themes_not_yet_summarised = themes_for_consultation.filter(summary="").count()
+    # TODO - find a better way to summarise themes by question
     context = {
         "consultation": consultation,
         "users": consultation.users.all(),
-        # "number_of_themes": number_of_themes,
-        # "number_of_themes_with_summaries": number_of_themes_with_summaries,
-        # "number_of_themes_unable_to_summarise": number_of_themes_unable_to_summarise,
-        # "number_of_themes_not_yet_summarised": number_of_themes_not_yet_summarised,
     }
     return render(request, "support_console/consultations/show.html", context=context)

@@ -3,10 +3,16 @@ import logging
 from consultation_analyser.consultations.models import ProcessingRun, Theme
 from consultation_analyser.pipeline.backends.llm_backend import LLMBackend
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> cf501de (format code)
 logger = logging.getLogger("pipeline")
 
 
-def create_llm_summaries_for_consultation(consultation, llm_backend: LLMBackend, processing_run: ProcessingRun):
+def create_llm_summaries_for_consultation(
+    consultation, llm_backend: LLMBackend, processing_run: ProcessingRun
+):
     logger.info(
         f"Starting LLM summarisation for consultation: {consultation.name} with backend {llm_backend.__class__.__name__}"
     )

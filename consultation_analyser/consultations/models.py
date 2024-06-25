@@ -42,7 +42,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     users = models.ManyToManyField(User)
 
     def has_themes(self):
-        return OldTheme.objects.filter(answer__question__section__consultation=self).exists()
+        return Theme.objects.filter(topic_model_metadata__process_run__consultation=self).exists()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -56,7 +56,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         the Theme in question could still be associated with
         another Answer
         """
-        OldTheme.objects.filter(answer__question__section__consultation=self).delete()
+        Theme.objects.filter(answer__question__section__consultation=self).delete()
 
         super().delete(*args, **kwargs)
 
@@ -99,8 +99,14 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     @property
     def latest_themes(self):
         try:
-            latest_processing_run = ProcessingRun.objects.filter(consultation=self.section.consultation).order_by("created_at").last()
-            latest_themes = Theme.objects.filter(topic_model__processing_run=latest_processing_run).filter(topic_model__question=self)
+            latest_processing_run = (
+                ProcessingRun.objects.filter(consultation=self.section.consultation)
+                .order_by("created_at")
+                .last()
+            )
+            latest_themes = Theme.objects.filter(
+                topic_model__processing_run=latest_processing_run
+            ).filter(topic_model__question=self)
             return latest_themes
         except ProcessingRun.DoesNotExist:
             return Theme.objects.none()
@@ -158,7 +164,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
 
-# TODO - Here for legacy reasons, can be deleted once we are using processing run approach
+# TODO - Here for legacy reasons, can be deleted once we are using processing run approach
 class OldTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     # LLM generates short_description and summary
     short_description = models.TextField(blank=True)
@@ -210,20 +216,26 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    def save_theme_to_answer(self, topic_keywords: list, topic_id: int, topic_model_metadata: TopicModelMetadata):
+    def save_theme_to_answer(
+        self, topic_keywords: list, topic_id: int, topic_model_metadata: TopicModelMetadata
+    ):
         theme, _ = Theme.objects.get_or_create(
-            topic_keywords=topic_keywords, topic_id=topic_id, topic_model_metadata=topic_model_metadata
+            topic_keywords=topic_keywords,
+            topic_id=topic_id,
+            topic_model_metadata=topic_model_metadata,
         )
         self.themes.add(theme)
         self.save()
 
     @property
     def latest_theme(self):
-        # Get the theme from the latest processing run, may be none if there was no theme for this response.
-        # If no processing runs - check for 'OldThemes' - in future this can be deleted when we use processing runs for everything.
         consultation = self.question.section.consultation
         try:
-            latest_processing_run = ProcessingRun.objects.filter(consultation=consultation).order_by("created_at").last()
+            latest_processing_run = (
+                ProcessingRun.objects.filter(consultation=consultation)
+                .order_by("created_at")
+                .last()
+            )
         except ProcessingRun.DoesNotExist:
             return None
         try:
@@ -231,5 +243,3 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         except Theme.DoesNotExist:
             latest = None
         return latest
-
-

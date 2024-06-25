@@ -3,6 +3,7 @@ from typing import Optional
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+from consultation_analyser.consultations.models import ProcessingRun
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
 from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
@@ -13,7 +14,6 @@ from consultation_analyser.pipeline.llm_summariser import (
     create_llm_summaries_for_consultation,
 )
 from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
-from consultation_analyser.consultations.models import ProcessingRun
 
 
 def get_llm_backend(llm_identifier: Optional[str] = None):
