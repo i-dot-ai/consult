@@ -21,13 +21,13 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
 
-      <h2 class="govuk-heading-s govuk-!-margin-bottom-0">All questions</h2>
-      <ul class="iai-questions govuk-body govuk-!-padding-0">
-        {% for q in questions %}
-          <li class="iai-panel govuk-!-margin-top-3">
-            <div class="iai-display-flex govuk-!-padding-left-3 govuk-!-padding-right-3">
+      <div class="con-question-list">
+        <h2 class="govuk-body govuk-!-font-weight-bold govuk-!-padding-bottom-1 govuk-!-padding-top-5 govuk-!-padding-left-7 govuk-!-padding-right-7">All questions</h2>
+        <ul class="iai-questions govuk-body govuk-!-padding-0">
+          {% for q in questions %}
+            <li class="con-question-list__item iai-display-flex govuk-!-padding-top-4 govuk-!-padding-bottom-4 govuk-!-padding-left-7 govuk-!-padding-right-7">
               <p class="govuk-!-margin-bottom-1 govuk-!-margin-top-0">{{ q.text }}</p>
-              <div class="iai-display-flex">
+              <div class="iai-display-flex govuk-!-margin-left-3">
                 <a class="iai-icon-button iai-icon-button--with-circle" href="{{ url('show_question', kwargs={'question_slug': q.slug, 'section_slug': q.section.slug, 'consultation_slug': q.section.consultation.slug}) }}">
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="none" focusable="false" aria-hidden="true">
                     <path d="M15 2H9C8.44772 2 8 2.44772 8 3V5C8 5.55228 8.44772 6 9 6H15C15.5523 6 16 5.55228 16 5V3C16 2.44772 15.5523 2 15 2Z" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
@@ -49,10 +49,10 @@
                   <span class="govuk-visually-hidden"> - {{ q.text }}</span>
                 </a>
               </div>
-            </div>
-          </li>
-        {% endfor %}
-      </ul>
+            </li>
+          {% endfor %}
+        </ul>
+      </div>
 
     </div>
   </div>
