@@ -34,7 +34,7 @@ def sign_in(django_app, email):
 
 
 @contextmanager
-def mock_sagemaker(available=True):
+def mock_sagemaker(state="active"):
     with patch("boto3.client") as mock_client:
         mock_sagemaker = MagicMock()
         mock_client.return_value = mock_sagemaker
@@ -48,12 +48,17 @@ def mock_sagemaker(available=True):
 
         mock_sagemaker.invoke_endpoint.return_value = mock_resp
 
-        if available:
+        if state == "active":
             mock_sagemaker.describe_endpoint.return_value = {
                 "EndpointName": "test-endpoint",
                 "EndpointStatus": "InService",
             }
-        else:
+        elif state == "failed":
+            mock_sagemaker.describe_endpoint.return_value = {
+                "EndpointName": "test-endpoint",
+                "EndpointStatus": "Failed",
+            }
+        elif state == "inactive":
             mock_sagemaker.describe_endpoint.side_effect = [
                 boto3.exceptions.botocore.exceptions.ClientError(
                     error_response={

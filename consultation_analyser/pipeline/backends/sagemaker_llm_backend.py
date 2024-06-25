@@ -1,9 +1,9 @@
-import json
 import datetime
-import time
-import boto3
+import json
 import logging
+import time
 
+import boto3
 from django.conf import settings
 from langchain_community.llms import SagemakerEndpoint
 from langchain_community.llms.sagemaker_endpoint import LLMContentHandler
@@ -11,6 +11,10 @@ from langchain_community.llms.sagemaker_endpoint import LLMContentHandler
 from .langchain_llm_backend import LangchainLLMBackend
 
 logger = logging.getLogger("pipeline")
+
+
+class SagemakerFailureException(Exception):
+    pass
 
 
 def check_and_launch_sagemaker(func):
@@ -30,12 +34,13 @@ def check_and_launch_sagemaker(func):
                 EndpointConfigName=endpoint_name,
             )
         start_time = datetime.datetime.now()
-        endpoint_status = sagemaker_client.describe_endpoint(EndpointName=endpoint_name)[
-            "EndpointStatus"
-        ]
+        endpoint_details = sagemaker_client.describe_endpoint(EndpointName=endpoint_name)
+        endpoint_status = endpoint_details["EndpointStatus"]
 
         while endpoint_status != "InService":
-            logger.info(f"{endpoint_status=}")
+            if endpoint_status == "Failed":
+                raise SagemakerFailureException(endpoint_details)
+
             time.sleep(15)
             duration = (datetime.datetime.now() - start_time).total_seconds()
             logger.info(f"Seconds elapsed {duration}")
@@ -44,6 +49,7 @@ def check_and_launch_sagemaker(func):
             endpoint_status = sagemaker_client.describe_endpoint(EndpointName=endpoint_name)[
                 "EndpointStatus"
             ]
+
         if not initialized:
             logger.info(f"Endpoint {endpoint_name} is 'InService' i.e. ready to use")
             initialized = True
