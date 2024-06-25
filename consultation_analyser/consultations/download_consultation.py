@@ -2,7 +2,7 @@ import json
 
 from django.forms.models import model_to_dict
 
-from consultation_analyser.consultations.models import OldTheme
+from consultation_analyser.consultations.models import Theme, ProcessingRun
 from consultation_analyser.consultations.public_schema import (
     ConsultationWithResponses,
     ConsultationWithResponsesAndThemes,
@@ -25,14 +25,17 @@ def consultation_to_json(consultation):
     attrs = {}
 
     themes = []
-    theme_records = OldTheme.objects.filter(answer__question__section__consultation=consultation)
-    for theme in theme_records:
-        theme_attrs = select_keys_from_model(
-            theme, ["topic_id", "topic_keywords", "summary", "short_description"]
-        )
+    processing_runs = ProcessingRun.objects.filter(consultation=consultation).order_by("created_at")
+    if processing_runs:
+        latest_processing_run = processing_runs.last()
+        theme_records = Theme.objects.filter(topic_model_metadata__processing_run=latest_processing_run)
+        for theme in theme_records:
+            theme_attrs = select_keys_from_model(
+                theme, ["topic_id", "topic_keywords", "summary", "short_description"]
+            )
 
-        theme_attrs["id"] = str(theme.id)
-        themes.append(theme_attrs)
+            theme_attrs["id"] = str(theme.id)
+            themes.append(theme_attrs)
 
     attrs["consultation"] = select_keys_from_model(consultation, ["name"])
 
