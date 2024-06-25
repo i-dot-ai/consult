@@ -21,13 +21,13 @@ def test_save_theme_to_answer(input_keywords, topic_id, is_outlier):
     )
     # Check theme created and saved to answer
     answer.save_theme_to_answer(topic_keywords=input_keywords, topic_id=topic_id)
-    theme = models.Theme.objects.get(topic_keywords=input_keywords)
+    theme = models.OldTheme.objects.get(topic_keywords=input_keywords)
     assert theme.topic_keywords == input_keywords
     assert theme.is_outlier == is_outlier
     assert answer.theme.topic_keywords == input_keywords
     # Check no duplicate created
     answer.save_theme_to_answer(topic_keywords=input_keywords, topic_id=topic_id)
-    themes_qs = models.Theme.objects.filter(topic_keywords=input_keywords, question=question)
+    themes_qs = models.OldTheme.objects.filter(topic_keywords=input_keywords, question=question)
     assert themes_qs.count() == 1
 
 

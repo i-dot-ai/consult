@@ -140,7 +140,7 @@ class ConsultationResponseFactory(factory.django.DjangoModelFactory):
 
 class ThemeFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Theme
+        model = models.OldTheme
 
     topic_keywords = factory.LazyAttribute(lambda _o: generate_dummy_topic_keywords())
     short_description = factory.LazyAttribute(lambda _o: faker.sentence())

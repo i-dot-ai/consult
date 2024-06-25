@@ -61,7 +61,7 @@ def test_get_filtered_responses(applied_filters, expected_count):
 def test_get_filtered_responses_themes():
     # Separate test, we need to get the theme ID from the generated theme
     question = set_up_for_filters()
-    theme1 = models.Theme.objects.all().order_by("created_at").first()
+    theme1 = models.OldTheme.objects.all().order_by("created_at").first()
     applied_filters = {"keyword": "", "theme": theme1.id}
     queryset = filters.get_filtered_responses(question, applied_filters=applied_filters)
     assert queryset.count() == 1
@@ -72,7 +72,7 @@ def test_get_filtered_responses_themes():
 def test_get_filtered_themes():
     question = set_up_for_filters()
     answers_queryset = models.Answer.objects.all()
-    theme2 = models.Theme.objects.all().order_by("created_at").last()
+    theme2 = models.OldTheme.objects.all().order_by("created_at").last()
     applied_filters = {"keyword": "", "theme": theme2.id}
     queryset = filters.get_filtered_themes(
         question=question, filtered_answers=answers_queryset, applied_filters=applied_filters

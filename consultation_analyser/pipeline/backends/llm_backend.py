@@ -7,5 +7,5 @@ from .types import ThemeSummary
 
 class LLMBackend(ABC):
     @abstractmethod
-    def summarise_theme(self, theme: models.Theme) -> ThemeSummary:
+    def summarise_theme(self, theme: models.OldTheme) -> ThemeSummary:
         pass

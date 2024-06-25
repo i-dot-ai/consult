@@ -62,7 +62,7 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
     except RuntimeError as error:
         messages.error(request, error.args[0])
-    themes_for_consultation = models.Theme.objects.filter(
+    themes_for_consultation = models.OldTheme.objects.filter(
         answer__question__section__consultation=consultation
     ).distinct()
     number_of_themes = themes_for_consultation.count()

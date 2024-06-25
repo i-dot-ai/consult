@@ -2,7 +2,7 @@ import json
 
 from django.forms.models import model_to_dict
 
-from consultation_analyser.consultations.models import Theme
+from consultation_analyser.consultations.models import OldTheme
 from consultation_analyser.consultations.public_schema import (
     ConsultationWithResponses,
     ConsultationWithResponsesAndThemes,
@@ -25,7 +25,7 @@ def consultation_to_json(consultation):
     attrs = {}
 
     themes = []
-    theme_records = Theme.objects.filter(answer__question__section__consultation=consultation)
+    theme_records = OldTheme.objects.filter(answer__question__section__consultation=consultation)
     for theme in theme_records:
         theme_attrs = select_keys_from_model(
             theme, ["topic_id", "topic_keywords", "summary", "short_description"]

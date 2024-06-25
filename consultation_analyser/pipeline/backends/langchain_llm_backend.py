@@ -22,7 +22,7 @@ class LangchainLLMBackend(LLMBackend):
         )  # TODO - where does this encoding come from, how do we associate it with model
         self.max_tokens = 2000
 
-    def summarise_theme(self, theme: models.Theme) -> ThemeSummary:
+    def summarise_theme(self, theme: models.OldTheme) -> ThemeSummary:
         prompt_template = self.__get_prompt_template()
 
         sample_responses = get_random_sample_of_responses_for_theme(
@@ -124,7 +124,7 @@ class LangchainLLMBackend(LLMBackend):
 
 
 def get_random_sample_of_responses_for_theme(
-    theme: models.Theme, encoding: tiktoken.Encoding, max_tokens: int
+    theme: models.OldTheme, encoding: tiktoken.Encoding, max_tokens: int
 ) -> str:
     responses_for_theme = models.Answer.objects.filter(theme=theme).order_by("?")
     free_text_responses_for_theme = responses_for_theme.values_list("free_text", flat=True)

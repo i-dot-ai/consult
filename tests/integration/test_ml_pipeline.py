@@ -29,7 +29,7 @@ def test_topic_model_end_to_end(tmp_path):
     save_themes_for_consultation(consultation.id, backend)
 
     # all answers should get the same theme
-    assert models.Theme.objects.count() == 1
+    assert models.OldTheme.objects.count() == 1
 
 
 @pytest.mark.django_db
@@ -57,12 +57,12 @@ def test_save_themes_for_consultation():
 
     # Check we've generated themes for questions with full text responses, and check fields populated
     for q in [free_text_question1, free_text_question2]:
-        themes_for_q = models.Theme.objects.filter(question=q)
+        themes_for_q = models.OldTheme.objects.filter(question=q)
         assert themes_for_q.exists()
     example_theme = themes_for_q.first()
     assert example_theme.topic_keywords
     # Summary not populated here - done in a separate step
 
     # Check no themes for question with no free text
-    themes_for_q = models.Theme.objects.filter(question=no_free_text_question)
+    themes_for_q = models.OldTheme.objects.filter(question=no_free_text_question)
     assert not themes_for_q.exists()

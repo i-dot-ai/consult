@@ -42,7 +42,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     users = models.ManyToManyField(User)
 
     def has_themes(self):
-        return Theme.objects.filter(answer__question__section__consultation=self).exists()
+        return OldTheme.objects.filter(answer__question__section__consultation=self).exists()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -56,7 +56,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         the Theme in question could still be associated with
         another Answer
         """
-        Theme.objects.filter(answer__question__section__consultation=self).delete()
+        OldTheme.objects.filter(answer__question__section__consultation=self).delete()
 
         super().delete(*args, **kwargs)
 
@@ -105,7 +105,7 @@ class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
-class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
+class OldTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     # LLM generates short_description and summary
     short_description = models.TextField(blank=True)
     summary = models.TextField(blank=True)  # More detailed description
@@ -148,8 +148,8 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     free_text = models.TextField(null=True, blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     consultation_response = models.ForeignKey(ConsultationResponse, on_delete=models.CASCADE)
-    theme = models.ForeignKey(
-        Theme, on_delete=models.SET_NULL, null=True, blank=True
+    old_theme = models.ForeignKey(
+        OldTheme, on_delete=models.SET_NULL, null=True, blank=True
     )  # For now, just one theme per answer
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
@@ -157,7 +157,7 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def save_theme_to_answer(self, topic_keywords: list, topic_id: int):
         question = self.question
-        theme, _ = Theme.objects.get_or_create(
+        theme, _ = OldTheme.objects.get_or_create(
             question=question, topic_keywords=topic_keywords, topic_id=topic_id
         )
         self.theme = theme

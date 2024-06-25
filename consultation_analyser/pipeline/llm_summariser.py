@@ -1,6 +1,6 @@
 import logging
 
-from consultation_analyser.consultations.models import Theme
+from consultation_analyser.consultations.models import OldTheme
 from consultation_analyser.pipeline.backends.llm_backend import LLMBackend
 
 logger = logging.getLogger("pipeline")
@@ -10,7 +10,7 @@ def create_llm_summaries_for_consultation(consultation, llm_backend: LLMBackend)
     logger.info(
         f"Starting LLM summarisation for consultation: {consultation.name} with backend {llm_backend.__class__.__name__}"
     )
-    themes = Theme.objects.filter(question__section__consultation=consultation).filter(
+    themes = OldTheme.objects.filter(question__section__consultation=consultation).filter(
         question__has_free_text=True
     )
 
