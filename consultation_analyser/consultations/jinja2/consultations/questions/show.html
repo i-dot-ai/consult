@@ -137,15 +137,14 @@
       {% endif %}
 
       {% if outliers_count %}
-        {% if outliers_count == 1 %}
-          <p class="govuk-body">There is <a class="govuk-link" href="{{ url("question_responses", kwargs={"consultation_slug":
-            consultation_slug, "question_slug" : question.slug, "section_slug" : question.section.slug},
-            query_kwargs={"theme": outlier_theme_id}) }}">{{ outliers_count }} response which is an outlier</a> and does not fit into any of the existing themes.</p>
-        {% else %}
-          <p class="govuk-body">There are <a class="govuk-link" href="{{ url("question_responses", kwargs={"consultation_slug":
-            consultation_slug, "question_slug" : question.slug, "section_slug" : question.section.slug},
-            query_kwargs={"theme": outlier_theme_id}) }}">{{ outliers_count }} responses which are outliers</a> and do not fit into any of the existing themes.</p>
-        {% endif %}
+        {% with link=url("question_responses", kwargs={"consultation_slug": consultation_slug, "question_slug" : question.slug,
+            "section_slug" : question.section.slug}, query_kwargs={"theme": outlier_theme_id}) %}
+          {% if outliers_count == 1 %}
+            <p class="govuk-body">There is <a class="govuk-link" href="{{ link }}">{{ outliers_count }} response which is an outlier</a> and does not fit into any of the existing themes.</p>
+          {% else %}
+            <p class="govuk-body">There are <a class="govuk-link" href="{{ link }}">{{ outliers_count }} responses which are outliers</a> and do not fit into any of the existing themes.</p>
+          {% endif %}
+        {% endwith %}
       {% endif %}
 
     </div>
