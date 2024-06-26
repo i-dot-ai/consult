@@ -49,20 +49,23 @@ def test_save_themes_for_consultation():
     for r in range(10):
         response = factories.ConsultationResponseFactory(consultation=consultation)
         [
-            factories.AnswerFactory(question=q, consultation_response=response, theme=None)
+            factories.AnswerFactory(question=q, consultation_response=response)
             for q in questions
         ]
+
+    processing_runs_for_consultation = models.ProcessingRun.objects.filter(consultation=consultation)
+    assert not processing_runs_for_consultation
 
     save_themes_for_consultation(consultation.id, DummyTopicBackend())
 
     # Check we've generated themes for questions with full text responses, and check fields populated
     for q in [free_text_question1, free_text_question2]:
-        themes_for_q = models.OldTheme.objects.filter(question=q)
+        themes_for_q = q.latest_themes
         assert themes_for_q.exists()
     example_theme = themes_for_q.first()
     assert example_theme.topic_keywords
     # Summary not populated here - done in a separate step
 
     # Check no themes for question with no free text
-    themes_for_q = models.OldTheme.objects.filter(question=no_free_text_question)
+    themes_for_q = models.Theme.objects.filter(topic_model_metadata__question=no_free_text_question)
     assert not themes_for_q.exists()
