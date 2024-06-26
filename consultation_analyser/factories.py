@@ -146,7 +146,6 @@ class ProcessingRunFactory(factory.django.DjangoModelFactory):
 
 
 class TopicModelMetadataFactory(factory.django.DjangoModelFactory):
-
     class Meta:
         model = models.TopicModelMetadata
 

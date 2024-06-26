@@ -21,7 +21,9 @@ def test_save_theme_to_answer(input_keywords, topic_id, is_outlier):
     )
     processing_run = factories.ProcessingRunFactory(consultation=consultation)
     #  Check theme created and saved to answer
-    answer.save_theme_to_answer(topic_keywords=input_keywords, topic_id=topic_id, processing_run=processing_run)
+    answer.save_theme_to_answer(
+        topic_keywords=input_keywords, topic_id=topic_id, processing_run=processing_run
+    )
     theme = models.Theme.objects.get(topic_keywords=input_keywords)
     assert theme.topic_keywords == input_keywords
     assert theme.is_outlier == is_outlier

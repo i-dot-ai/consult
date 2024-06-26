@@ -21,7 +21,7 @@ def save_themes_for_question(
             topic_keywords=assignment.topic_keywords,
             topic_id=assignment.topic_id,
             processing_run=processing_run,
-            topic_model_metadata=topic_model_metadata
+            topic_model_metadata=topic_model_metadata,
         )
 
 

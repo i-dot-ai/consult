@@ -104,9 +104,9 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
                 .order_by("created_at")
                 .last()
             )
-            latest_themes = Theme.objects.filter(
-                processing_run=latest_processing_run
-            ).filter(answer__question=self)
+            latest_themes = Theme.objects.filter(processing_run=latest_processing_run).filter(
+                answer__question=self
+            )
             return latest_themes
         except ProcessingRun.DoesNotExist:
             return Theme.objects.none()
@@ -136,9 +136,7 @@ class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
-    processing_run = models.ForeignKey(
-        ProcessingRun, on_delete=models.CASCADE, null=True
-    )
+    processing_run = models.ForeignKey(ProcessingRun, on_delete=models.CASCADE, null=True)
     # Topic model, keywords and ID come from BERTopic
     topic_model_metadata = models.ForeignKey(
         TopicModelMetadata, on_delete=models.CASCADE, null=True
@@ -190,13 +188,17 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
     def save_theme_to_answer(
-        self, topic_keywords: list, topic_id: int, processing_run: ProcessingRun, topic_model_metadata: TopicModelMetadata
+        self,
+        topic_keywords: list,
+        topic_id: int,
+        processing_run: ProcessingRun,
+        topic_model_metadata: TopicModelMetadata,
     ):
-
         theme, _ = Theme.objects.get_or_create(
             topic_keywords=topic_keywords,
             topic_id=topic_id,
-            processing_run=processing_run, topic_model_metadata=topic_model_metadata
+            processing_run=processing_run,
+            topic_model_metadata=topic_model_metadata,
         )
         self.themes.add(theme)
         self.save()

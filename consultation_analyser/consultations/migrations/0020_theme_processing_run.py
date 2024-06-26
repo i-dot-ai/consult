@@ -5,7 +5,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("consultations", "0019_alter_topicmodelmetadata_options_and_more"),
     ]

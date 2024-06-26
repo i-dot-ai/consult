@@ -48,12 +48,11 @@ def test_save_themes_for_consultation():
     questions = [free_text_question1, free_text_question2, no_free_text_question]
     for r in range(10):
         response = factories.ConsultationResponseFactory(consultation=consultation)
-        [
-            factories.AnswerFactory(question=q, consultation_response=response)
-            for q in questions
-        ]
+        [factories.AnswerFactory(question=q, consultation_response=response) for q in questions]
 
-    processing_runs_for_consultation = models.ProcessingRun.objects.filter(consultation=consultation)
+    processing_runs_for_consultation = models.ProcessingRun.objects.filter(
+        consultation=consultation
+    )
     assert not processing_runs_for_consultation
 
     save_themes_for_consultation(consultation.id, DummyTopicBackend())
