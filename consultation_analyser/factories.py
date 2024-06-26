@@ -194,12 +194,20 @@ class AnswerFactory(factory.django.DjangoModelFactory):
 
     question = factory.SubFactory(QuestionFactory)
     consultation_response = factory.SubFactory(ConsultationResponseFactory)
-    theme = factory.LazyAttribute(lambda o: ThemeFactory() if o.question.has_free_text else None)
 
     multiple_choice = factory.LazyAttribute(get_multiple_choice_answers)
 
     class Params:
         multiple_choice_answers = None
+
+    @factory.post_generation
+    def themes(self, create, extracted, **kwargs):
+        with_themes = kwargs.get("with_themes", False)
+        if not create:
+            return
+        elif with_themes:
+            theme = ThemeFactory.create()
+            self.theme.add(theme)
 
     @factory.post_generation
     def validate_json_fields(answer, creation_strategy, extracted, **kwargs):
