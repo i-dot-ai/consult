@@ -26,7 +26,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--input",
+            "--input_file",
             action="store",
             help="A path to a JSON file containing a ConsultationWithResponses",
             type=str,
@@ -64,7 +64,7 @@ class Command(BaseCommand):
 
         consultation = self.__load_consultation(
             consultation_slug=options["consultation_slug"],
-            input_file=options["input"],
+            input_file=options["input_file"],
             clean=options["clean"],
         )
         output_dir = self.__get_output_dir(
