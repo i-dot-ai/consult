@@ -105,8 +105,8 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
                 .last()
             )
             latest_themes = Theme.objects.filter(
-                topic_model__processing_run=latest_processing_run
-            ).filter(topic_model__question=self)
+                processing_run=latest_processing_run
+            ).filter(answer__question=self)
             return latest_themes
         except ProcessingRun.DoesNotExist:
             return Theme.objects.none()
@@ -213,12 +213,12 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
     def save_theme_to_answer(
-        self, topic_keywords: list, topic_id: int, topic_model_metadata: TopicModelMetadata
+        self, topic_keywords: list, topic_id: int, processing_run: ProcessingRun
     ):
         theme, _ = Theme.objects.get_or_create(
             topic_keywords=topic_keywords,
             topic_id=topic_id,
-            topic_model_metadata=topic_model_metadata,
+            processing_run=processing_run,
         )
         self.themes.add(theme)
         self.save()
@@ -235,7 +235,7 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         except ProcessingRun.DoesNotExist:
             return None
         try:
-            latest = self.themes.get(topic_model_metadata__processing_run=latest_processing_run)
+            latest = self.themes.get(processing_run=latest_processing_run)
         except Theme.DoesNotExist:
             latest = None
         return latest
