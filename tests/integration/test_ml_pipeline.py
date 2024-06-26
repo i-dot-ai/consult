@@ -67,5 +67,5 @@ def test_save_themes_for_consultation():
     # Summary not populated here - done in a separate step
 
     # Check no themes for question with no free text
-    themes_for_q = models.Theme.objects.filter(topic_model_metadata__question=no_free_text_question)
+    themes_for_q = models.Theme.objects.filter(answer__question=no_free_text_question)
     assert not themes_for_q.exists()

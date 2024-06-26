@@ -190,12 +190,13 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
     def save_theme_to_answer(
-        self, topic_keywords: list, topic_id: int, processing_run: ProcessingRun
+        self, topic_keywords: list, topic_id: int, processing_run: ProcessingRun, topic_model_metadata: TopicModelMetadata
     ):
+
         theme, _ = Theme.objects.get_or_create(
             topic_keywords=topic_keywords,
             topic_id=topic_id,
-            processing_run=processing_run,
+            processing_run=processing_run, topic_model_metadata=topic_model_metadata
         )
         self.themes.add(theme)
         self.save()

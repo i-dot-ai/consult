@@ -12,9 +12,7 @@ def save_themes_for_question(
     question: models.Question, topic_backend: TopicBackend, processing_run: models.ProcessingRun
 ) -> None:
     logging.info(f"Get topics for question: {question.text}")
-    topic_model_metadata = models.TopicModelMetadata(
-        question=question, processing_run=processing_run
-    )
+    topic_model_metadata = models.TopicModelMetadata()
     # TODO - add more metadata to the topic model
     assignments = topic_backend.get_topics(question)
 
@@ -22,7 +20,8 @@ def save_themes_for_question(
         assignment.answer.save_theme_to_answer(
             topic_keywords=assignment.topic_keywords,
             topic_id=assignment.topic_id,
-            topic_model_metadata=topic_model_metadata,
+            processing_run=processing_run,
+            topic_model_metadata=topic_model_metadata
         )
 
 
