@@ -21,7 +21,6 @@ def test_topic_model_end_to_end(tmp_path):
         factories.AnswerFactory(
             question=q,
             consultation_response=response,
-            theme=None,
             free_text="I love wolves, they are fluffy and cute",
         )
 
@@ -29,7 +28,7 @@ def test_topic_model_end_to_end(tmp_path):
     save_themes_for_consultation(consultation.id, backend)
 
     # all answers should get the same theme
-    assert models.OldTheme.objects.count() == 1
+    assert models.Theme.objects.count() == 1
 
 
 @pytest.mark.django_db

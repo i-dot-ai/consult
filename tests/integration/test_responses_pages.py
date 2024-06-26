@@ -8,7 +8,6 @@ from consultation_analyser.factories import (
     ConsultationResponseFactory,
     ProcessingRunFactory,
     ThemeFactory,
-    TopicModelMetadataFactory,
     UserFactory,
 )
 from tests.helpers import sign_in
@@ -33,8 +32,7 @@ def test_get_question_responses_page(django_app):
 
     answer = AnswerFactory(question=question, consultation_response=consultation_response)
     processing_run = ProcessingRunFactory(consultation=consultation)
-    topic_model_meta = TopicModelMetadataFactory(processing_run=processing_run, question=question)
-    theme = ThemeFactory(topic_model_metadata=topic_model_meta)
+    theme = ThemeFactory(processing_run=processing_run)
     answer.themes.add(theme)
     multiple_choice = answer.multiple_choice[0]
 

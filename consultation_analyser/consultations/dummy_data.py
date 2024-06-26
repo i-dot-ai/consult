@@ -77,8 +77,11 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
             # Set themes per question, multiple answers with the same theme
             processing_run = ProcessingRunFactory(consultation=consultation)
             for q in questions:
-                tm = TopicModelMetadataFactory(processing_run=processing_run, question=q)
-                themes = [ThemeFactory(topic_model_metadata=tm, topic_id=i) for i in range(-1, 4)]
+                tm = TopicModelMetadataFactory()
+                themes = [
+                    ThemeFactory(topic_model_metadata=tm, topic_id=i, processing_run=processing_run)
+                    for i in range(-1, 4)
+                ]
                 for a in answers[1:]:
                     random_theme = random.choice(themes)
                     a.themes.add(random_theme)

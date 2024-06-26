@@ -11,7 +11,6 @@ from consultation_analyser.factories import (
     QuestionFactory,
     SectionFactory,
     ThemeFactory,
-    TopicModelMetadataFactory,
     UserFactory,
 )
 from tests.helpers import sign_in
@@ -28,10 +27,8 @@ def test_get_question_summary_page(django_app):
     consultation_response = ConsultationResponseFactory(consultation=consultation)
     processing_run1 = ProcessingRunFactory(consultation=consultation)
     processing_run2 = ProcessingRunFactory(consultation=consultation)
-    topic_model_meta1 = TopicModelMetadataFactory(processing_run=processing_run1, question=question)
-    topic_model_meta2 = TopicModelMetadataFactory(processing_run=processing_run2, question=question)
-    theme1 = ThemeFactory(topic_model_metadata=topic_model_meta1)
-    theme2 = ThemeFactory(topic_model_metadata=topic_model_meta2)
+    theme1 = ThemeFactory(processing_run=processing_run1)
+    theme2 = ThemeFactory(processing_run=processing_run2)
     ans = AnswerFactory(
         multiple_choice_answers=[("What do you think?", ["Yes"])],
         question=question,
