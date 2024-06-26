@@ -79,6 +79,8 @@ class Command(BaseCommand):
             consultation, topic_backend=topic_backend, llm_backend=llm_backend
         )
 
+        logger.info(f"Generated themes for consultation {consultation.name}")
+
         self.__save_consultation_with_themes(output_dir=output_dir, consultation=consultation)
 
         logger.info(f"Wrote results to {output_dir}")
