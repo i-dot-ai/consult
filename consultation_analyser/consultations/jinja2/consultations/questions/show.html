@@ -107,17 +107,18 @@
     <div class="govuk-grid-column-two-thirds">
       <div class="iai-panel">
         <div class="govuk-!-padding-left-2 govuk-!-padding-right-2">
-          <table class="govuk-table">
+          <table class="iai-themes-list">
             <caption class="govuk-table__caption govuk-table__caption--s">
               <h2 class="govuk-heading-s govuk-!-margin-bottom-2 govuk-!-margin-top-0">Prevalent themes</h2>
             </caption>
-            <thead class="govuk-table__head">
-              <tr class="govuk-table__row">
-                <th scope="col" class="govuk-table__header">Theme</th>
-                <th scope="col" class="govuk-table__header">Number of respondents</th>
+            <thead class="">
+              <tr class="iai-themes-list__header">
+                <th scope="col" class="iai-themes-list__cell iai-themes-list__cell--header iai-themes-list__cell--number">Number of respondents</th>
+                <th scope="col" class="iai-themes-list__cell iai-themes-list__cell--header iai-themes-list__cell--theme">Theme</th>
+                <th scope="col" class="govuk-visually-hidden">Detail</th>
               </tr>
             </thead>
-            <tbody class="govuk-table__body">
+            <tbody class="">
               {% for theme in themes %}
                 {% if not theme.is_outlier %}
                   <tr class="govuk-table__row">
