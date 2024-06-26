@@ -53,11 +53,20 @@ class Command(BaseCommand):
             action="store",
             help="The output directory - defaults to tmp/eval/$consultation-slug-$unixtime",
         )
+        parser.add_argument(
+            "--consultation_slug",
+            action="store",
+            help="The slug of the consultation to process",
+        )
 
     def handle(self, *args, **options):
         logger.info(f"Called evaluate with {options}")
 
-        consultation = self.__load_consultation(input_file=options["input"], clean=options["clean"])
+        consultation = self.__load_consultation(
+            consultation_slug=options["consultation_slug"],
+            input_file=options["input"],
+            clean=options["clean"],
+        )
         output_dir = self.__get_output_dir(
             output_dir=options["output_dir"], consultation=consultation
         )
@@ -74,9 +83,12 @@ class Command(BaseCommand):
 
         logger.info(f"Wrote results to {output_dir}")
 
-    def __load_consultation(self, input_file: str, clean: Optional[bool]):
-        if not input_file:
-            raise Exception("You need to specify an input file")
+    def __load_consultation(self, consultation_slug: str, input_file: str, clean: Optional[bool]):
+        if (not input_file and not consultation_slug) or (input_file and consultation_slug):
+            raise Exception("Please specify either --input or --consultation_slug")
+
+        if consultation_slug:
+            return models.Consultation.objects.get(slug=consultation_slug)
 
         # upload, cleaning if required
         if clean:
