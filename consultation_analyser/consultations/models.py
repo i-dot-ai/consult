@@ -160,26 +160,6 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
 
-# TODO - Here for legacy reasons, can be deleted once we are using processing run approach
-class OldTheme(UUIDPrimaryKeyModel, TimeStampedModel):
-    # LLM generates short_description and summary
-    short_description = models.TextField(blank=True)
-    summary = models.TextField(blank=True)  # More detailed description
-    # Duplicates info in Answer model, but needed for uniqueness constraint.
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, null=True)
-    # Topic keywords and ID come from BERTopic
-    topic_keywords = models.JSONField(default=list)
-    topic_id = models.IntegerField(null=True)  # Topic ID from BERTopic
-    is_outlier = models.GeneratedField(
-        expression=models.Q(topic_id=-1), output_field=models.BooleanField(), db_persist=True
-    )
-
-    class Meta:
-        constraints = [
-            models.UniqueConstraint(fields=["topic_id", "question"], name="unique_up_to_question"),
-        ]
-
-
 class AnswerQuerySet(models.QuerySet):
     MULTIPLE_CHOICE_QUERY = """
         EXISTS (
@@ -204,9 +184,6 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     free_text = models.TextField(null=True, blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     consultation_response = models.ForeignKey(ConsultationResponse, on_delete=models.CASCADE)
-    old_theme = models.ForeignKey(
-        OldTheme, on_delete=models.SET_NULL, null=True, blank=True
-    )  # Legacy themes, soon won't be needed when we move to processing runs
     themes = models.ManyToManyField(Theme)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
