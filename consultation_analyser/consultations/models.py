@@ -42,7 +42,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     users = models.ManyToManyField(User)
 
     def has_themes(self):
-        return Theme.objects.filter(topic_model_metadata__process_run__consultation=self).exists()
+        return Theme.objects.filter(processing_run__consultation=self).exists()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -104,8 +104,10 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
                 .order_by("created_at")
                 .last()
             )
-            latest_themes = Theme.objects.filter(processing_run=latest_processing_run).filter(
-                answer__question=self
+            latest_themes = (
+                Theme.objects.filter(processing_run=latest_processing_run)
+                .filter(answer__question=self)
+                .distinct()
             )
             return latest_themes
         except ProcessingRun.DoesNotExist:

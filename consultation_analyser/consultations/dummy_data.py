@@ -69,7 +69,7 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
                     ans.themes.clear()
                     answers.append(ans)
             else:
-                ans = AnswerFactory(question=q, consultation_response=response, theme=None)
+                ans = AnswerFactory(question=q, consultation_response=response)
                 ans.themes.clear()
                 answers.append(ans)
 
@@ -87,6 +87,6 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
                     a.themes.add(random_theme)
                     a.save()
             # Force at least one answer to be an outlier
-            a[0].themes.add(themes[0])
-            a.save()
+            answers[0].themes.add(themes[0])
+            answers[0].save()
     return consultation

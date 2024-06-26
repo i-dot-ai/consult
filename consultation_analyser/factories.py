@@ -207,7 +207,7 @@ class AnswerFactory(factory.django.DjangoModelFactory):
             return
         elif with_themes:
             theme = ThemeFactory.create()
-            self.theme.add(theme)
+            self.themes.add(theme)
 
     @factory.post_generation
     def validate_json_fields(answer, creation_strategy, extracted, **kwargs):

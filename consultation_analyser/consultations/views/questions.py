@@ -22,7 +22,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         get_filtered_themes(question, responses, applied_filters)
         .annotate(answer_count=Count("answer"))
         .order_by("-answer_count")
-    )
+    )  # Gets latest themes only
 
     # Get counts
     total_responses = responses.count()
@@ -46,14 +46,13 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
     blank_free_text_count = (
         models.Answer.objects.filter(question=question).filter(free_text="").count()
     )
-    outliers_count = (
-        models.Answer.objects.filter(question=question).filter(theme__is_outlier=True).count()
-    )
-    if outliers_count:
-        theme = models.Theme.objects.filter(question=question).get(is_outlier=True)
-        outlier_theme_id = theme.id
+
+    outlier_themes = question.latest_themes.filter(is_outlier=True)
+    if outlier_themes:
+        outlier_theme = outlier_themes.first().id
     else:
-        outlier_theme_id = None
+        outlier_theme = None
+    outliers_count = models.Answer.objects.filter(themes=outlier_theme).count()
 
     context = {
         "consultation_slug": consultation_slug,
@@ -66,6 +65,6 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "applied_filters": applied_filters,
         "blank_free_text_count": blank_free_text_count,
         "outliers_count": outliers_count,
-        "outlier_theme_id": outlier_theme_id,
+        "outlier_theme_id": outlier_theme.id if outlier_theme else "",
     }
     return render(request, "consultations/questions/show.html", context)

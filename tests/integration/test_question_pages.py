@@ -34,29 +34,29 @@ def test_get_question_summary_page(django_app):
         question=question,
         consultation_response=consultation_response,
     )
-    ans.theme.add(theme1)
-    ans.theme.add(theme2)
+    ans.themes.add(theme1)
+    ans.themes.add(theme2)
     ans = AnswerFactory(
         multiple_choice_answers=[("What do you think?", ["Yes"])],
         question=question,
         consultation_response=consultation_response,
     )
-    ans.theme.add(theme1)
-    ans.theme.add(theme2)
+    ans.themes.add(theme1)
+    ans.themes.add(theme2)
     ans = AnswerFactory(
         multiple_choice_answers=[("What do you think?", ["No"])],
         question=question,
         consultation_response=consultation_response,
     )
-    ans.theme.add(theme1)
-    ans.theme.add(theme2)
+    ans.themes.add(theme1)
+    ans.themes.add(theme2)
     ans = AnswerFactory(
         multiple_choice_answers=[("What do you think?", ["Maybe"])],
         question=question,
         consultation_response=consultation_response,
     )
-    ans.theme.add(theme1)
-    ans.theme.add(theme2)
+    ans.themes.add(theme1)
+    ans.themes.add(theme2)
 
     sign_in(django_app, user.email)
 

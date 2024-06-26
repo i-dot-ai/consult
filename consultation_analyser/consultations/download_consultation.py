@@ -28,9 +28,7 @@ def consultation_to_json(consultation):
     processing_runs = ProcessingRun.objects.filter(consultation=consultation).order_by("created_at")
     if processing_runs:
         latest_processing_run = processing_runs.last()
-        theme_records = Theme.objects.filter(
-            topic_model_metadata__processing_run=latest_processing_run
-        )
+        theme_records = Theme.objects.filter(processing_run=latest_processing_run)
         for theme in theme_records:
             theme_attrs = select_keys_from_model(
                 theme, ["topic_id", "topic_keywords", "summary", "short_description"]

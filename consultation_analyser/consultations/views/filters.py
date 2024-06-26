@@ -21,7 +21,7 @@ def get_filtered_responses(question: models.Question, applied_filters: dict[str,
     ):
         queryset = queryset.filter(free_text__contains=applied_filters["keyword"])
     if applied_filters["theme"] != "All":
-        queryset = queryset.filter(theme=applied_filters["theme"])
+        queryset = queryset.filter(themes=applied_filters["theme"])
     return queryset
 
 
