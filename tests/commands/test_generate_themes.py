@@ -4,9 +4,14 @@ import pytest
 from django.conf import settings
 from django.core.management import call_command
 
+from consultation_analyser.consultations.models import Question, Theme
 from consultation_analyser.consultations.public_schema import ConsultationWithResponsesAndThemes
-from consultation_analyser.consultations.models import Theme, Question
-from consultation_analyser.factories import UserFactory, ConsultationFactory, ConsultationResponseFactory, AnswerFactory
+from consultation_analyser.factories import (
+    AnswerFactory,
+    ConsultationFactory,
+    ConsultationResponseFactory,
+    UserFactory,
+)
 
 
 @pytest.mark.django_db
@@ -15,7 +20,9 @@ def test_generate_themes(tmp_path):
 
     file_path = settings.BASE_DIR / "tests" / "examples" / "chocolate.json"
 
-    call_command("generate_themes", input=file_path, embedding_model="fake", output_dir=tmp_path)
+    call_command(
+        "generate_themes", input_file=file_path, embedding_model="fake", output_dir=tmp_path
+    )
 
     json_with_themes_path = tmp_path / "consultation_with_themes.json"
 
@@ -33,7 +40,11 @@ def test_generate_themes_clean(tmp_path):
 
     # should not throw
     call_command(
-        "generate_themes", input=file_path, embedding_model="fake", clean=True, output_dir=tmp_path
+        "generate_themes",
+        input_file=file_path,
+        embedding_model="fake",
+        clean=True,
+        output_dir=tmp_path,
     )
 
     # we're OK if we make it this far
@@ -51,18 +62,25 @@ def test_generate_themes_with_consultation_slug(tmp_path):
 
     assert Theme.objects.count() == 0
 
-    with pytest.raises(Exception, match="specify either --input or --consultation_slug"):
+    with pytest.raises(Exception, match="specify either --input_file or --consultation_slug"):
         call_command(
-            "generate_themes", consultation_slug="test-slug", input=file_path, embedding_model="fake", clean=True, output_dir=tmp_path
+            "generate_themes",
+            consultation_slug="test-slug",
+            input_file=file_path,
+            embedding_model="fake",
+            clean=True,
+            output_dir=tmp_path,
         )
 
-    with pytest.raises(Exception, match="specify either --input or --consultation_slug"):
-        call_command(
-            "generate_themes", embedding_model="fake", clean=True, output_dir=tmp_path
-        )
+    with pytest.raises(Exception, match="specify either --input_file or --consultation_slug"):
+        call_command("generate_themes", embedding_model="fake", clean=True, output_dir=tmp_path)
 
     call_command(
-        "generate_themes", consultation_slug="test-slug", embedding_model="fake", clean=True, output_dir=tmp_path
+        "generate_themes",
+        consultation_slug="test-slug",
+        embedding_model="fake",
+        clean=True,
+        output_dir=tmp_path,
     )
 
     assert Theme.objects.count() == 1

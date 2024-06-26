@@ -26,7 +26,7 @@ class Command(BaseCommand):
 
     def add_arguments(self, parser):
         parser.add_argument(
-            "--input",
+            "--input_file",
             action="store",
             help="A path to a JSON file containing a ConsultationWithResponses",
             type=str,
@@ -60,11 +60,11 @@ class Command(BaseCommand):
         )
 
     def handle(self, *args, **options):
-        logger.info(f"Called evaluate with {options}")
+        logger.info(f"Called generate_themes with {options}")
 
         consultation = self.__load_consultation(
             consultation_slug=options["consultation_slug"],
-            input_file=options["input"],
+            input_file=options["input_file"],
             clean=options["clean"],
         )
         output_dir = self.__get_output_dir(
@@ -87,7 +87,7 @@ class Command(BaseCommand):
 
     def __load_consultation(self, consultation_slug: str, input_file: str, clean: Optional[bool]):
         if (not input_file and not consultation_slug) or (input_file and consultation_slug):
-            raise Exception("Please specify either --input or --consultation_slug")
+            raise Exception("Please specify either --input_file or --consultation_slug")
 
         if consultation_slug:
             return models.Consultation.objects.get(slug=consultation_slug)
