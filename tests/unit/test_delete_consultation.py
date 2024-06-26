@@ -1,7 +1,13 @@
 import pytest
 
 from consultation_analyser.consultations import models
-from consultation_analyser.factories import ConsultationFactory, ProcessingRunFactory, ThemeFactory, ConsultationResponseFactory, QuestionFactory, AnswerFactory, SectionFactory
+from consultation_analyser.factories import (
+    AnswerFactory,
+    ConsultationResponseFactory,
+    ProcessingRunFactory,
+    QuestionFactory,
+    ThemeFactory,
+)
 
 
 @pytest.mark.django_db
