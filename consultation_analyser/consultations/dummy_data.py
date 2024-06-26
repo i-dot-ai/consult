@@ -6,11 +6,11 @@ from consultation_analyser.factories import (
     ConsultationFactory,
     ConsultationResponseFactory,
     FakeConsultationData,
+    ProcessingRunFactory,
     QuestionFactory,
     SectionFactory,
     ThemeFactory,
-    ProcessingRunFactory,
-    TopicModelMetadataFactory
+    TopicModelMetadataFactory,
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
 

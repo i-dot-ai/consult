@@ -6,10 +6,10 @@ from consultation_analyser.factories import (
     AnswerFactory,
     ConsultationFactory,
     ConsultationResponseFactory,
-    UserFactory,
-    ThemeFactory,
     ProcessingRunFactory,
-    TopicModelMetadataFactory
+    ThemeFactory,
+    TopicModelMetadataFactory,
+    UserFactory,
 )
 from tests.helpers import sign_in
 

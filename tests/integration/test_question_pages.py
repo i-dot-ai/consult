@@ -7,12 +7,12 @@ from consultation_analyser.factories import (
     AnswerFactory,
     ConsultationFactory,
     ConsultationResponseFactory,
+    ProcessingRunFactory,
     QuestionFactory,
     SectionFactory,
-    UserFactory,
-    ProcessingRunFactory,
+    ThemeFactory,
     TopicModelMetadataFactory,
-    ThemeFactory
+    UserFactory,
 )
 from tests.helpers import sign_in
 
@@ -27,7 +27,7 @@ def test_get_question_summary_page(django_app):
     )
     consultation_response = ConsultationResponseFactory(consultation=consultation)
     processing_run1 = ProcessingRunFactory(consultation=consultation)
-    processing_run2= ProcessingRunFactory(consultation=consultation)
+    processing_run2 = ProcessingRunFactory(consultation=consultation)
     topic_model_meta1 = TopicModelMetadataFactory(processing_run=processing_run1, question=question)
     topic_model_meta2 = TopicModelMetadataFactory(processing_run=processing_run2, question=question)
     theme1 = ThemeFactory(topic_model_metadata=topic_model_meta1)
