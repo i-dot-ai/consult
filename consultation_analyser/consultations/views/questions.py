@@ -49,7 +49,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
 
     outlier_themes = question.latest_themes.filter(is_outlier=True)
     if outlier_themes:
-        outlier_theme = outlier_themes.first().id
+        outlier_theme = outlier_themes.first()
     else:
         outlier_theme = None
     outliers_count = models.Answer.objects.filter(themes=outlier_theme).count()
