@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Optional
 
 from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
 
@@ -81,9 +82,12 @@ class Command(BaseCommand):
         if clean:
             input_json = json.loads(open(input_file).read())
             name = input_json["consultation"]["name"]
-            old_consultation = models.Consultation.objects.get(name=name)
-            old_consultation.delete()
-            logger.info("Removed original consultation")
+            try:
+                old_consultation = models.Consultation.objects.get(name=name)
+                old_consultation.delete()
+                logger.info("Removed original consultation")
+            except ObjectDoesNotExist:
+                logger.info("No existing consultation to clean, moving on")
 
         try:
             user = User.objects.filter(email="email@example.com").first()

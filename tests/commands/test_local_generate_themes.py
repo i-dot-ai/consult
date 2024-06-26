@@ -9,7 +9,7 @@ from consultation_analyser.factories import UserFactory
 
 
 @pytest.mark.django_db
-def test_local_eval(tmp_path):
+def test_local_generate_themes(tmp_path):
     UserFactory(email="email@example.com")
 
     file_path = settings.BASE_DIR / "tests" / "examples" / "chocolate.json"
@@ -22,3 +22,18 @@ def test_local_eval(tmp_path):
 
     # Bail if it's invalid
     ConsultationWithResponsesAndThemes(**with_themes)
+
+
+@pytest.mark.django_db
+def test_generate_themes_clean(tmp_path):
+    UserFactory(email="email@example.com")
+
+    file_path = settings.BASE_DIR / "tests" / "examples" / "chocolate.json"
+
+    # should not throw
+    call_command(
+        "generate_themes", input=file_path, embedding_model="fake", clean=True, output_dir=tmp_path
+    )
+
+    # we're OK if we make it this far
+    assert True
