@@ -79,6 +79,7 @@ TEMPLATES = [
             "environment": "consultation_analyser.jinja2.environment",
             "context_processors": [
                 "consultation_analyser.context_processors.app_config",
+                "consultation_analyser.context_processors.version",
                 "django.contrib.messages.context_processors.messages",
             ],
         },
@@ -209,3 +210,6 @@ BERTOPIC_DEFAULT_EMBEDDING_MODEL = "thenlper/gte-small"
 
 # Authentication
 LOGIN_URL = "/sign-in/"
+
+# version info
+GIT_SHA = env("GIT_SHA", default=None)
