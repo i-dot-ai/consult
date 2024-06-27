@@ -1,7 +1,8 @@
 import logging
 import os
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Optional, Union
+from typing import List, Optional
 from uuid import UUID
 
 import numpy as np
@@ -14,6 +15,19 @@ from .topic_backend import TopicBackend
 from .types import TopicAssignment
 
 logger = logging.getLogger("pipeline")
+
+
+@dataclass
+class Answer:
+    id: UUID
+    free_text: str
+
+
+@dataclass
+class AnswerWithEmbeddings:
+    id: UUID
+    free_text: str
+    embedding: list[float]
 
 
 class BERTopicBackend(TopicBackend):
@@ -36,7 +50,7 @@ class BERTopicBackend(TopicBackend):
             .exclude(free_text="")
             .order_by("created_at")
         )
-        answers_list = list(answers_qs.values("id", "free_text"))
+        answers_list = [Answer(**attrs) for attrs in list(answers_qs.values("id", "free_text"))]
 
         logger.info("BERTopic embedding")
         answers_list_with_embeddings = self.__get_embeddings_for_question(answers_list)
@@ -45,7 +59,7 @@ class BERTopicBackend(TopicBackend):
         self.topic_model = self.__get_topic_model(answers_list_with_embeddings)
 
         answers_topics_df = self.__get_answers_and_topics(
-            self.topic_model, answers_list_with_embeddings
+            self.topic_model, answers_list
         )
 
         assignments = []
@@ -61,12 +75,12 @@ class BERTopicBackend(TopicBackend):
 
         if self.persistence_path:
             self.__persist(
-                subpath=question.slug,
+                subpath=question.slug, answers_list_with_embeddings=answers_list_with_embeddings
             )
 
         return assignments
 
-    def __persist(self, subpath: str):
+    def __persist(self, subpath: str, answers_list_with_embeddings):
         # satisfy mypy
         if not self.persistence_path:
             return
@@ -88,30 +102,28 @@ class BERTopicBackend(TopicBackend):
 
     def __get_embeddings_for_question(
         self,
-        answers_list: List[Dict[str, Union[UUID, str]]],
-    ) -> List[Dict[str, Union[UUID, str, np.ndarray]]]:
+        answers_list: List[Answer],
+    ) -> List[AnswerWithEmbeddings]:
         from sentence_transformers import SentenceTransformer
 
-        free_text_responses = [answer["free_text"] for answer in answers_list]
+        free_text_responses = [answer.free_text for answer in answers_list]
         embedding_model = SentenceTransformer(self.embedding_model)
         embeddings = embedding_model.encode(free_text_responses)
         z = zip(answers_list, embeddings)
         answers_list_with_embeddings = [
-            dict(list(d.items()) + [("embedding", embedding)]) for d, embedding in z
+            AnswerWithEmbeddings(answer.id, answer.free_text, embedding) for answer, embedding in z
         ]
         return answers_list_with_embeddings
 
-    def __get_topic_model(
-        self, answers_list_with_embeddings: List[Dict[str, Union[UUID, str, np.ndarray]]]
-    ):
+    def __get_topic_model(self, answers_list_with_embeddings: List[AnswerWithEmbeddings]):
         from bertopic import BERTopic
         from bertopic.vectorizers import ClassTfidfTransformer
         from hdbscan import HDBSCAN
         from sklearn.feature_extraction.text import CountVectorizer
         from umap.umap_ import UMAP
 
-        free_text_responses_list = [answer["free_text"] for answer in answers_list_with_embeddings]
-        embeddings_list = [answer["embedding"] for answer in answers_list_with_embeddings]
+        free_text_responses_list = [answer.free_text for answer in answers_list_with_embeddings]
+        embeddings_list = [answer.embedding for answer in answers_list_with_embeddings]
         embeddings = np.array(embeddings_list)
         umap_model = UMAP(
             n_neighbors=15,
@@ -138,12 +150,10 @@ class BERTopicBackend(TopicBackend):
         topic_model.fit_transform(free_text_responses_list, embeddings=embeddings)
         return topic_model
 
-    def __get_answers_and_topics(
-        self, topic_model, answers_list: List[Dict[str, Union[UUID, str]]]
-    ) -> pd.DataFrame:
+    def __get_answers_and_topics(self, topic_model, answers_list: List[Answer]) -> pd.DataFrame:
         # Answers free text/IDs need to be in the same order
-        free_text_responses = [answer["free_text"] for answer in answers_list]
-        answers_id_list = [answer["id"] for answer in answers_list]
+        free_text_responses = [answer.free_text for answer in answers_list]
+        answers_id_list = [answer.id for answer in answers_list]
         # Assign topics to answers
         answers_df = topic_model.get_document_info(free_text_responses)
         answers_df["id"] = answers_id_list
