@@ -184,3 +184,6 @@ frontend/django_extensions
 *.tfstate.*
 
 tmp
+
+# Ignore notebooks for now
+*.ipynb
