@@ -79,6 +79,9 @@
         </div>
         {% if multiple_choice_questions %}
           {% for question, responses in multiple_choice_questions.items() %}
+            <div class="govuk-!-padding-left-2 govuk-!-padding-right-2">
+              <h3 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">{{ question }}</h3>
+            </div>
             <div>
               <donut-chart>
                 {% for response in responses %}
@@ -94,7 +97,7 @@
                       {{ response.answer }}
                     </dt>
                     <dd class="govuk-summary-list__value">
-                      {{ response.percent }}%
+                      <strong>{{ response.count }}</strong> ({{ response.percent }}%)
                     </dd>
                   </div>
                 {% endfor %}
