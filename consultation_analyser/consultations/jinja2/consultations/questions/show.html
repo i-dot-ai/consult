@@ -77,9 +77,11 @@
           <h2 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">Question summary</h2>
           <p class="govuk-body">Showing <strong>all</strong> of <strong>{{ total_responses }} </strong> responses</p>
         </div>
-
         {% if multiple_choice_stats %}
           {% for multiple_choice in multiple_choice_stats %}
+            <div class="govuk-!-padding-left-2 govuk-!-padding-right-2">
+              <h3 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">{{ multiple_choice.question }}</h3>
+            </div>
             {% if not multiple_choice.has_multiple_selections %}
               <donut-chart>
                 {% for option in multiple_choice.counts.keys() %}
@@ -89,7 +91,6 @@
             {% endif %}
             <div class="govuk-!-padding-left-2 govuk-!-padding-right-2">
               <dl class="govuk-summary-list iai-chart-text">
-                {% for response in responses %}
                   {% for option in multiple_choice.counts.keys() %}
                     <div class="govuk-summary-list__row">
                       <dt class="govuk-summary-list__key">
@@ -105,7 +106,6 @@
                       {% endif %}
                     </div>
                   {% endfor %}
-                {% endfor %}
               </dl>
             </div>
           {% endif %}
@@ -165,7 +165,7 @@
                             {% endfor %}
                           </ul>
                         </span>
-                      </span> 
+                      </span>
                     </td>
                   </tr>
                 {% endif %}
