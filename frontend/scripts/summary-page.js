@@ -67,11 +67,12 @@ class DonutChart extends HTMLElement {
                     label: {
                         align: 'left',
                         color: '#fff',
-                        fontSize: 10,
+                        fontSize: 14,
                         fontWeight: 'bold',
                         formatter: [
                             //'{b}',
-                            '\n{percent|{c}%}'
+                            //'\n{percent|{c}%}'
+                            '{c}%'
                         ].join('\n'),
                         lineHeight: 14,
                         position: 'inside',
