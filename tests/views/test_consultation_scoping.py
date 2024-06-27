@@ -9,7 +9,7 @@ from consultation_analyser.factories import ConsultationFactory, UserFactory
 @pytest.mark.django_db
 def test_get_consultation_we_own():
     user = UserFactory()
-    consultation_we_own = ConsultationFactory(user=user, with_themes=True)
+    consultation_we_own = ConsultationFactory(user=user)
 
     request_factory = RequestFactory()
 
