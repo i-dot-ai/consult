@@ -27,11 +27,12 @@ def save_themes_for_question(
 
 
 def save_themes_for_consultation(
-    consultation_id: UUID, topic_backend: TopicBackend, processing_run: models.ProcessingRun
+    topic_backend: TopicBackend, processing_run: models.ProcessingRun
 ) -> None:
-    logging.info(f"Starting topic modelling for consultation_id: {consultation_id}")
+    consultation = processing_run.consultation
+    logging.info(f"Starting topic modelling for consultation: {consultation.name}")
     questions = models.Question.objects.filter(
-        section__consultation__id=consultation_id, has_free_text=True
+        section__consultation=consultation, has_free_text=True
     )
 
     for question in questions:

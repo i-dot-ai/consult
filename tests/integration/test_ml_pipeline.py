@@ -26,7 +26,7 @@ def test_topic_model_end_to_end(tmp_path):
 
     backend = BERTopicBackend()
     processing_run = factories.ProcessingRunFactory(consultation=consultation)
-    save_themes_for_consultation(consultation.id, backend, processing_run)
+    save_themes_for_consultation(backend, processing_run)
 
     # all answers should get the same theme
     assert models.Theme.objects.count() == 1
@@ -53,7 +53,7 @@ def test_save_themes_for_consultation():
     processing_run = factories.ProcessingRunFactory(consultation=consultation)
     assert not models.Theme.objects.filter(processing_run__consultation=consultation).exists()
 
-    save_themes_for_consultation(consultation.id, DummyTopicBackend(), processing_run)
+    save_themes_for_consultation(DummyTopicBackend(), processing_run)
 
     # Check we've generated themes for questions with full text responses, and check fields populated
     for q in [free_text_question1, free_text_question2]:

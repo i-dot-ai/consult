@@ -40,7 +40,7 @@ def test_user_uploads_consultation(django_app):
     processing_page = django_app.get(f"/consultations/{consultation.slug}/")
     assert "processing your consultation" in processing_page
 
-    save_themes_for_consultation(consultation.id, DummyTopicBackend(), processing_run)
+    save_themes_for_consultation(DummyTopicBackend(), processing_run)
 
     consultation_page = django_app.get(f"/consultations/{consultation.slug}/")
     assert consultation.name in consultation_page
