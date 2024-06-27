@@ -78,6 +78,6 @@ def test_get_question_summary_page(django_app):
     for keyword in latest_theme.topic_keywords:
         assert keyword in page_content
 
-    assert re.search(r"Yes\s+2\s+50%", question_page.html.text)
-    assert re.search(r"No\s+1\s+25%", question_page.html.text)
-    assert re.search(r"Maybe\s+1\s+25%", question_page.html.text)
+    assert re.search(r"Yes\s+2 \(50%\)", question_page.html.text)
+    assert re.search(r"No\s+1 \(25%\)", question_page.html.text)
+    assert re.search(r"Maybe\s+1 \(25%\)", question_page.html.text)

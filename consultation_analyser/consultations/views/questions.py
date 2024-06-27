@@ -50,7 +50,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
                         question=multichoice["question_text"], answer=opt
                     ).count()
                     resps.append(
-                        {"answer": opt, "count": total_responses, "percent": round((float(count) / total_responses) * 100)}
+                        {"answer": opt, "count": count, "percent": round((float(count) / total_responses) * 100)}
                     )
 
                 multiple_choice_questions[multichoice["question_text"]] = resps
