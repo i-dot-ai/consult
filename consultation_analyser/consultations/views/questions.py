@@ -37,25 +37,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
 
     # Get counts
     total_responses = responses.count()
-<<<<<<< HEAD
     multiple_choice_stats = question.multiple_choice_stats()
-=======
-    multiple_choice_questions = {}
-    if total_responses:
-        if question.multiple_choice_options:
-            for multichoice in question.multiple_choice_options:
-                resps = []
-                for opt in multichoice["options"]:
-                    count = responses.filter_multiple_choice(
-                        question=multichoice["question_text"], answer=opt
-                    ).count()
-                    resps.append(
-                        {"answer": opt, "count": total_responses, "percent": round((float(count) / total_responses) * 100)}
-                    )
-
-                multiple_choice_questions[multichoice["question_text"]] = resps
->>>>>>> 792ce3b1 (Update Question Summary panel)
-
     highest_theme_count = filtered_themes.aggregate(Max("answer_count"))["answer_count__max"]
 
     blank_free_text_count = (
