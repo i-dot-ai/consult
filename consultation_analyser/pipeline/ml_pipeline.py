@@ -1,5 +1,4 @@
 import logging
-from uuid import UUID
 
 from consultation_analyser.consultations import models
 
@@ -26,7 +25,7 @@ def save_themes_for_question(
         )
 
 
-def save_themes_for_consultation(
+def save_themes_for_processing_run(
     topic_backend: TopicBackend, processing_run: models.ProcessingRun
 ) -> None:
     consultation = processing_run.consultation

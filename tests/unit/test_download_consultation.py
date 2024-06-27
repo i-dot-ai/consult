@@ -8,7 +8,7 @@ from consultation_analyser.consultations.download_consultation import consultati
 from consultation_analyser.consultations.upload_consultation import upload_consultation
 from consultation_analyser.factories import ProcessingRunFactory, UserFactory
 from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
-from consultation_analyser.pipeline.ml_pipeline import save_themes_for_consultation
+from consultation_analyser.pipeline.ml_pipeline import save_themes_for_processing_run
 
 
 @pytest.mark.django_db
@@ -18,9 +18,7 @@ def test_consultation_to_json(django_app):
 
     consultation = upload_consultation(file, user)
     processing_run = ProcessingRunFactory(consultation=consultation)
-    save_themes_for_consultation(
-        consultation.id, DummyTopicBackend(), processing_run=processing_run
-    )
+    save_themes_for_processing_run(DummyTopicBackend(), processing_run=processing_run)
 
     consultation_json = json.loads(consultation_to_json(consultation))
 

@@ -5,7 +5,7 @@ from consultation_analyser.consultations import models
 from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
 from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
 from consultation_analyser.pipeline.ml_pipeline import (
-    save_themes_for_consultation,
+    save_themes_for_processing_run,
 )
 
 
@@ -26,14 +26,14 @@ def test_topic_model_end_to_end(tmp_path):
 
     backend = BERTopicBackend()
     processing_run = factories.ProcessingRunFactory(consultation=consultation)
-    save_themes_for_consultation(backend, processing_run)
+    save_themes_for_processing_run(backend, processing_run)
 
     # all answers should get the same theme
     assert models.Theme.objects.count() == 1
 
 
 @pytest.mark.django_db
-def test_save_themes_for_consultation():
+def test_save_themes_for_processing_run():
     consultation = factories.ConsultationFactory(name="My new consultation")
     section = factories.SectionFactory(name="Base section", consultation=consultation)
     free_text_question1 = factories.QuestionFactory(
@@ -53,7 +53,7 @@ def test_save_themes_for_consultation():
     processing_run = factories.ProcessingRunFactory(consultation=consultation)
     assert not models.Theme.objects.filter(processing_run__consultation=consultation).exists()
 
-    save_themes_for_consultation(DummyTopicBackend(), processing_run)
+    save_themes_for_processing_run(DummyTopicBackend(), processing_run)
 
     # Check we've generated themes for questions with full text responses, and check fields populated
     for q in [free_text_question1, free_text_question2]:
