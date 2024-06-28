@@ -25,6 +25,8 @@ locals {
     "BATCH_JOB_DEFINITION" = module.batch_job_definition.job_definition_name,
     "EXECUTION_CONTEXT"    = "ecs"
   })
+
+  additional_policy_arns = {for idx, arn in [aws_iam_policy.ecs.arn] : idx => arn}
 }
 
 module "ecs" {
@@ -54,7 +56,7 @@ module "ecs" {
   route53_record_name          = aws_route53_record.type_a_record.name
   ip_whitelist                 = var.external_ips
   create_listener              = true
-  task_additional_iam_policy   = aws_iam_policy.ecs.arn
+  task_additional_iam_policies = local.additional_policy_arns
   additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
   }
