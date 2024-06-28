@@ -21,8 +21,10 @@ class DonutChart extends HTMLElement {
          * @param {boolean} firstTime
          */
         const sizeChart = (firstTime) => {
+            this.style.display = 'none';
             this.style.width = `${this.parentElement?.scrollWidth}px`;
             this.style.height = `${this.parentElement?.scrollWidth}px`;
+            this.style.display = 'block';
             if (!firstTime) {
                 const box = this.getBoundingClientRect();
                 chart.resize({
