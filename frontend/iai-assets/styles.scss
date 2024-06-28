@@ -76,17 +76,34 @@ body:has(.iai-environment-warning) main {
 }
 
 /* GRID */
+.iai-grid {
+  display: grid;
+  gap: 1.5rem;
+}
 @media (min-width: 1020px) {
   .iai-grid {
-    display: grid;
-    gap: 1.5rem;
     grid-template-columns: repeat(12, 1fr);
+  }
+  .iai-grid__row-1 {
+    grid-row: 1;
+  }
+  .iai-grid__start-1-span-4 {
+    grid-column: 1/span 4;
+  }
+  .iai-grid__start-1-span-8 {
+    grid-column: 1/span 8;
   }
   .iai-grid__start-2-span-10 {
     grid-column: 2/span 10;
   }
   .iai-grid__start-3-span-8 {
     grid-column: 3/span 8;
+  }
+  .iai-grid__start-5-span-8 {
+    grid-column: 5/span 8;
+  }
+  .iai-grid__start-9-span-4 {
+    grid-column: 9/span 4;
   }
 }
 @media (min-width: 1200px) {
@@ -222,6 +239,7 @@ body:has(.iai-environment-warning) main {
 
 .iai-panel .govuk-button {
   min-height: 3rem;
+  width: auto;
 }
 
 .iai-large-button {
