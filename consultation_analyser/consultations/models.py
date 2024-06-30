@@ -60,6 +60,12 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
 
         super().delete(*args, **kwargs)
 
+    @property
+    def latest_processing_run(self):
+        processing_runs = ProcessingRun.objects.filter(consultation=self).order_by("created_at")
+        latest = processing_runs.last() if processing_runs else None
+        return latest
+
 
 class Section(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
@@ -125,6 +131,14 @@ class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
 class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     # TODO - add more processing run metadata
+
+    def get_themes_for_answer(self, answer_id):
+        # At the moment, at most one theme per answer and run but
+        # likely to change in future.
+        return Theme.objects.filter(processing_run=self, answer__id=answer_id)
+
+    def get_themes_for_question(self, question_id):
+        return Theme.objects.filter(processing_run=self, answer__question_id=question_id).distinct()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass

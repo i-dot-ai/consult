@@ -16,10 +16,14 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         section__slug=section_slug,
         section__consultation__slug=consultation_slug,
     )
+    consultation = question.section.consultation
+    # TODO - for now default to latest processing run
+    processing_run = consultation.latest_processing_run
+
     applied_filters = get_applied_filters(request)
     responses = get_filtered_responses(question, applied_filters)
     filtered_themes = (
-        get_filtered_themes(question, responses, applied_filters)
+        get_filtered_themes(question, applied_filters, processing_run=processing_run)
         .annotate(answer_count=Count("answer"))
         .order_by("-answer_count")
     )  # Gets latest themes only
@@ -47,7 +51,9 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         models.Answer.objects.filter(question=question).filter(free_text="").count()
     )
 
-    outlier_themes = question.latest_themes.filter(is_outlier=True)
+    outlier_themes = processing_run.get_themes_for_question(question_id=question.id).filter(
+        is_outlier=True
+    )
     if outlier_themes:
         outlier_theme = outlier_themes.first()
     else:

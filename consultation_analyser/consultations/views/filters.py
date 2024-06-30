@@ -26,9 +26,12 @@ def get_filtered_responses(question: models.Question, applied_filters: dict[str,
 
 
 def get_filtered_themes(
-    question: models.Question, filtered_answers: QuerySet, applied_filters: dict[str, str]
+    question: models.Question, applied_filters: dict[str, str], processing_run: models.ProcessingRun
 ) -> QuerySet:
-    queryset = question.latest_themes  # By default, get latest themes
+    if processing_run:
+        queryset = processing_run.get_themes_for_question(question_id=question.id)
+    else:
+        queryset = models.Theme.objects.none()
     queryset = queryset.annotate(answer_count=Count("answer"))
     if applied_filters["theme"] != "All":
         queryset = queryset.filter(id=applied_filters["theme"])

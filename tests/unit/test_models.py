@@ -94,44 +94,35 @@ def test_find_answer_multiple_choice_response():
     assert result.count() == 2
 
 
-def set_up_question():
+def set_up_consultation():
     consultation = factories.ConsultationFactory()
     consultation_response = factories.ConsultationResponseFactory(consultation=consultation)
     section = factories.SectionFactory(consultation=consultation)
-    question = factories.QuestionFactory(section=section)
-    for i in range(3):
-        factories.AnswerFactory(consultation_response=consultation_response, question=question)
-    return question
-
-
-def dummy_ml_run(question):
-    topic_model_meta = factories.TopicModelMetadataFactory()
-    processing_run = factories.ProcessingRunFactory(consultation=question.section.consultation)
-    theme = factories.ThemeFactory(
-        topic_model_metadata=topic_model_meta, processing_run=processing_run
+    question = factories.QuestionFactory(section=section, text="Question 1?")
+    answer = factories.AnswerFactory(
+        question=question, consultation_response=consultation_response, free_text="Answer 1"
     )
-    for answer in question.answer_set.all():
+    for i in range(3):
+        processing_run = factories.ProcessingRunFactory(consultation=consultation)
+        theme = factories.ThemeFactory(
+            processing_run=processing_run, short_description=f"Theme {i}"
+        )
         answer.themes.add(theme)
-    return theme
+    return consultation
 
 
 @pytest.mark.django_db
-def test_question_get_latest_themes():
-    question = set_up_question()
-    first_theme = dummy_ml_run(question)
-    second_theme = dummy_ml_run(question)
-    last_theme = dummy_ml_run(question)
-    assert question.latest_themes.count() == 1
-    assert last_theme in question.latest_themes
-    assert first_theme not in question.latest_themes
-    assert second_theme not in question.latest_themes
-
-
-@pytest.mark.django_db
-def test_answer_get_latest_themes():
-    question = set_up_question()
-    first_theme = dummy_ml_run(question)
-    last_theme = dummy_ml_run(question)
-    answer = question.answer_set.first()
-    assert answer.latest_theme == last_theme
-    assert answer.latest_theme != first_theme
+def test_latest_processing_run():
+    consultation1 = factories.ConsultationFactory()
+    assert not consultation1.latest_processing_run
+    consultation2 = set_up_consultation()
+    answer = models.Answer.objects.get(free_text="Answer 1")
+    question = models.Question.objects.get(text="Question 1?")
+    latest_run = consultation2.latest_processing_run
+    assert latest_run
+    themes = latest_run.get_themes_for_answer(answer.id)
+    assert themes.last().short_description == "Theme 2"
+    assert "Theme 0" not in themes.values_list("short_description", flat=True)
+    themes = latest_run.get_themes_for_question(question.id)
+    assert themes.count() == 1  # Ensure distinct
+    assert themes.last().short_description == "Theme 2"

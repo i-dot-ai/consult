@@ -40,8 +40,8 @@ class ConsultationFactory(factory.django.DjangoModelFactory):
         model = models.Consultation
         skip_postgeneration_save = True
 
-    name = faker.sentence()
-    slug = faker.slug()
+    name = factory.LazyAttribute(lambda _o: faker.sentence())
+    slug = factory.LazyAttribute(lambda _o: faker.slug())
 
     @factory.post_generation
     def with_question(consultation, creation_strategy, value, **kwargs):
