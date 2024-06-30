@@ -51,14 +51,15 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         models.Answer.objects.filter(question=question).filter(free_text="").count()
     )
 
-    outlier_themes = processing_run.get_themes_for_question(question_id=question.id).filter(
-        is_outlier=True
-    )
-    if outlier_themes:
-        outlier_theme = outlier_themes.first()
-    else:
-        outlier_theme = None
-    outliers_count = models.Answer.objects.filter(themes=outlier_theme).count()
+    outlier_theme = None
+    outliers_count = 0
+    if processing_run:
+        outlier_themes = processing_run.get_themes_for_question(question_id=question.id).filter(
+            is_outlier=True
+        )
+        if outlier_themes:
+            outlier_theme = outlier_themes.first()
+            outliers_count = models.Answer.objects.filter(themes=outlier_theme).count()
 
     context = {
         "consultation_slug": consultation_slug,

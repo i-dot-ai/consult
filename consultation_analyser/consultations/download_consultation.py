@@ -2,7 +2,7 @@ import json
 
 from django.forms.models import model_to_dict
 
-from consultation_analyser.consultations.models import ProcessingRun, Theme
+from consultation_analyser.consultations.models import Theme
 from consultation_analyser.consultations.public_schema import (
     ConsultationWithResponses,
     ConsultationWithResponsesAndThemes,
@@ -16,7 +16,8 @@ def select_keys_from_model(model, keys):
 
 def consultation_to_json(consultation):
     """
-    Return the consultation in a format compliant with the public schema
+    Return the consultation in a format compliant with the public schema.
+    For now, always get the latest themes.
 
     Raises:
         pydantic.ValidationError: if the generated JSON is not compliant
@@ -25,9 +26,8 @@ def consultation_to_json(consultation):
     attrs = {}
 
     themes = []
-    processing_runs = ProcessingRun.objects.filter(consultation=consultation).order_by("created_at")
-    if processing_runs:
-        latest_processing_run = processing_runs.last()
+    latest_processing_run = consultation.latest_processing_run
+    if latest_processing_run:
         theme_records = Theme.objects.filter(processing_run=latest_processing_run)
         for theme in theme_records:
             theme_attrs = select_keys_from_model(
@@ -64,7 +64,11 @@ def consultation_to_json(consultation):
             answer_attrs = select_keys_from_model(
                 answer, ["question", "multiple_choice", "free_text"]
             )
-            latest_theme = answer.latest_theme
+            # TODO - for now, the assumption is at most one theme per answer
+            latest_theme = None
+            if latest_processing_run:
+                themes_for_answer = latest_processing_run.get_themes_for_answer(answer_id=answer.id)
+                latest_theme = themes_for_answer.last()
             answer_attrs["theme_id"] = str(latest_theme.id) if latest_theme else None
             answer_attrs["question_id"] = str(answer_attrs.pop("question"))
             answers.append(answer_attrs)

@@ -29,7 +29,9 @@ def test_save_theme_to_answer(input_keywords, topic_id, is_outlier):
     theme = models.Theme.objects.get(topic_keywords=input_keywords)
     assert theme.topic_keywords == input_keywords
     assert theme.is_outlier == is_outlier
-    assert answer.latest_theme.topic_keywords == input_keywords
+    latest_themes_for_answer = processing_run.get_themes_for_answer(answer_id=answer.id)
+    # At the moment, we only have at most one theme for answer and processing run
+    assert latest_themes_for_answer.last().topic_keywords == input_keywords
     # Check no duplicate created
     answer.save_theme_to_answer(
         topic_keywords=input_keywords,

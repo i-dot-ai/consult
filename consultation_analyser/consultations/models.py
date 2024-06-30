@@ -102,23 +102,6 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
             models.UniqueConstraint(fields=["slug", "section"], name="unique_question_section"),
         ]
 
-    @property
-    def latest_themes(self):
-        try:
-            latest_processing_run = (
-                ProcessingRun.objects.filter(consultation=self.section.consultation)
-                .order_by("created_at")
-                .last()
-            )
-            latest_themes = (
-                Theme.objects.filter(processing_run=latest_processing_run)
-                .filter(answer__question=self)
-                .distinct()
-            )
-            return latest_themes
-        except ProcessingRun.DoesNotExist:
-            return Theme.objects.none()
-
 
 class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
@@ -218,20 +201,3 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         )
         self.themes.add(theme)
         self.save()
-
-    @property
-    def latest_theme(self):
-        consultation = self.question.section.consultation
-        try:
-            latest_processing_run = (
-                ProcessingRun.objects.filter(consultation=consultation)
-                .order_by("created_at")
-                .last()
-            )
-        except ProcessingRun.DoesNotExist:
-            return None
-        try:
-            latest = self.themes.get(processing_run=latest_processing_run)
-        except Theme.DoesNotExist:
-            latest = None
-        return latest

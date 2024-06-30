@@ -57,7 +57,7 @@ def test_save_themes_for_processing_run():
 
     # Check we've generated themes for questions with full text responses, and check fields populated
     for q in [free_text_question1, free_text_question2]:
-        themes_for_q = q.latest_themes
+        themes_for_q = processing_run.get_themes_for_question(question_id=q.id)
         assert themes_for_q.exists()
     example_theme = themes_for_q.first()
     assert example_theme.topic_keywords

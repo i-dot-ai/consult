@@ -68,13 +68,14 @@ def test_get_question_summary_page(django_app):
     assert question.text in page_content
 
     answer = question.answer_set.first()
-    assert answer.latest_theme.short_description in page_content
+    latest_theme = processing_run2.get_themes_for_answer(answer_id=answer.id).last()
+    assert latest_theme.short_description in page_content
 
     for item in question.multiple_choice_options:
         for opt in item["options"]:
             assert opt in page_content
 
-    for keyword in answer.latest_theme.topic_keywords:
+    for keyword in latest_theme.topic_keywords:
         assert keyword in page_content
 
     assert re.search(r"Yes\s+50%", question_page.html.text)

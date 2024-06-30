@@ -52,7 +52,8 @@ def test_get_question_responses_page(django_app):
         in page_content
     )
     if answer.free_text:
-        assert f"{answer.latest_theme.short_description}" in page_content
+        latest_theme_for_answer = processing_run.get_themes_for_answer(answer_id=answer.id).last()
+        assert f"{latest_theme_for_answer.short_description}" in page_content
 
     # Check keyword filtering
     first_word_of_answer = answer.free_text.split()[0]
