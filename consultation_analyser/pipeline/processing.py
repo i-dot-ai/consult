@@ -11,7 +11,7 @@ from consultation_analyser.pipeline.backends.ollama_llm_backend import OllamaLLM
 from consultation_analyser.pipeline.backends.sagemaker_llm_backend import SagemakerLLMBackend
 from consultation_analyser.pipeline.batch_calls import BatchJobHandler
 from consultation_analyser.pipeline.llm_summariser import (
-    create_llm_summaries_for_consultation,
+    create_llm_summaries_for_processing_run,
 )
 from consultation_analyser.pipeline.ml_pipeline import save_themes_for_processing_run
 
@@ -56,7 +56,7 @@ def process_consultation_themes(consultation, topic_backend=None, llm_backend=No
         llm_backend = get_llm_backend(llm_backend)
 
     save_themes_for_processing_run(topic_backend, processing_run)
-    create_llm_summaries_for_consultation(consultation, llm_backend, processing_run)
+    create_llm_summaries_for_processing_run(llm_backend, processing_run)
 
 
 def run_processing_pipeline(consultation):
