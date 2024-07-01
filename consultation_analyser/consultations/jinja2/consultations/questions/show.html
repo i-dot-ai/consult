@@ -21,12 +21,15 @@
     </div>
   </div>
   {% if multiple_choice_questions %}
-    {% for question, responses in multiple_choice_questions.items() %}
+    {% for multiple_choice_question, multiple_choice_responses in multiple_choice_questions.items() %}
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
-          <h3 class="govuk-heading-s">{{ question }}</h3>
+          {# Show multiple-choice question title only if it's not the same as the overall question title #}
+          {% if multiple_choice_question != question.text %}
+            <h2 class="govuk-heading-s">{{ multiple_choice_question }}</h2>
+          {% endif %}
           <dl class="govuk-summary-list">
-            {% for response in responses %}
+            {% for response in multiple_choice_responses %}
               <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">
                   {{ response.answer }}
@@ -40,7 +43,7 @@
         </div>
         <div class="govuk-grid-column-one-third govuk-!-padding-0">
           <donut-chart>
-            {% for response in responses %}
+            {% for response in multiple_choice_responses %}
               <chart-item data-label="{{ response.answer }}" data-count="{{ response.percent }}"></chart-item>
             {% endfor %}
           </donut-chart>
