@@ -2,7 +2,6 @@ import json
 
 from django.forms.models import model_to_dict
 
-from consultation_analyser.consultations.models import Theme
 from consultation_analyser.consultations.public_schema import (
     ConsultationWithResponses,
     ConsultationWithResponsesAndThemes,
