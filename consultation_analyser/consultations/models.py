@@ -115,17 +115,19 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     # TODO - add more processing run metadata
 
-    def get_themes_for_answer(self, answer_id):
-        # At the moment, at most one theme per answer and run but
-        # likely to change in future.
-        return Theme.objects.filter(processing_run=self, answer__id=answer_id)
-
-    def get_themes_for_question(self, question_id):
-        return Theme.objects.filter(processing_run=self, answer__question_id=question_id).distinct()
-
     @property
     def themes(self):
         return Theme.objects.filter(processing_run=self).distinct()
+
+    def get_themes_for_answer(self, answer_id):
+        # At the moment, at most one theme per answer and run but
+        # likely to change in future.
+        return self.themes.filter(answer__id=answer_id)
+
+    def get_themes_for_question(self, question_id):
+        return self.themes.filter(processing_run=self, answer__question_id=question_id).distinct()
+
+
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
