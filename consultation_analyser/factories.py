@@ -201,12 +201,10 @@ class AnswerFactory(factory.django.DjangoModelFactory):
         multiple_choice_answers = None
 
     @factory.post_generation
-    def themes(self, create, extracted, **kwargs):
-        with_themes = kwargs.get("with_themes", False)
-        if not create:
-            return
-        elif with_themes:
-            theme = ThemeFactory.create()
+    def with_themes(self, creation_strategy, value, **kwargs):
+        if value is True:
+            processing_run = ProcessingRunFactory(consultation=self.question.section.consultation)
+            theme = ThemeFactory(processing_run=processing_run)
             self.themes.add(theme)
 
     @factory.post_generation
