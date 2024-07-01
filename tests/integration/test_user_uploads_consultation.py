@@ -34,11 +34,11 @@ def test_user_uploads_consultation(django_app):
     # then I should see a success page
     assert "Consultation uploaded" in success_page
 
-    # and when I visit the consultation again I should still see a processing message
+    # and when I visit the consultation again I shouldn't still see a processing message
     consultation = user.consultation_set.first()
     processing_run = ProcessingRunFactory(consultation=consultation)
     processing_page = django_app.get(f"/consultations/{consultation.slug}/")
-    assert "processing your consultation" in processing_page
+    assert "processing your consultation" not in processing_page
 
     save_themes_for_processing_run(DummyTopicBackend(), processing_run)
 
