@@ -47,21 +47,12 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
 
 def get_overall_number_themes_latest_run(consultation):
-    total_themes = 0
-    total_with_summaries = 0
     processing_run = consultation.latest_processing_run
-
-    if not processing_run:
-        return total_themes, total_with_summaries
-
-    free_text_questions = models.Question.objects.filter(section__consultation=consultation)
-    for question in free_text_questions:
-        qs = processing_run.get_themes_for_question(question.id)
-        number_themes = qs.count()
-        number_with_summaries = qs.exclude(summary="").exclude(summary=NO_SUMMARY_STR).count()
-        total_themes = total_themes + number_themes
-        total_with_summaries = total_with_summaries + number_with_summaries
-        return total_themes, total_with_summaries
+    total_themes = processing_run.themes.count()
+    total_with_summaries = (
+        processing_run.themes.exclude(summary="").exclude(summary=NO_SUMMARY_STR).count()
+    )
+    return total_themes, total_with_summaries
 
 
 @staff_member_required

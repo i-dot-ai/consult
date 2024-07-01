@@ -6,9 +6,7 @@ from consultation_analyser.pipeline.backends.llm_backend import LLMBackend
 logger = logging.getLogger("pipeline")
 
 
-def create_llm_summaries_for_processing_run(
-    llm_backend: LLMBackend, processing_run: ProcessingRun
-):
+def create_llm_summaries_for_processing_run(llm_backend: LLMBackend, processing_run: ProcessingRun):
     consultation = processing_run.consultation
     logger.info(
         f"Starting LLM summarisation for consultation: {consultation.name} with backend {llm_backend.__class__.__name__}"
