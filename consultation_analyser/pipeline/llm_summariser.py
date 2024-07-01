@@ -12,9 +12,8 @@ def create_llm_summaries_for_consultation(
     logger.info(
         f"Starting LLM summarisation for consultation: {consultation.name} with backend {llm_backend.__class__.__name__}"
     )
-    themes = Theme.objects.filter(processing_run=processing_run)
 
-    for theme in themes:
+    for theme in processing_run.themes:
         logger.info(f"Starting LLM summarisation for theme with keywords: {theme.topic_keywords}")
         if theme.is_outlier:
             theme.short_description = "Outliers"

@@ -123,6 +123,10 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
     def get_themes_for_question(self, question_id):
         return Theme.objects.filter(processing_run=self, answer__question_id=question_id).distinct()
 
+    @property
+    def themes(self):
+        return Theme.objects.filter(processing_run=self).distinct()
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 

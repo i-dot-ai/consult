@@ -28,8 +28,7 @@ def consultation_to_json(consultation):
     themes = []
     latest_processing_run = consultation.latest_processing_run
     if latest_processing_run:
-        theme_records = Theme.objects.filter(processing_run=latest_processing_run)
-        for theme in theme_records:
+        for theme in latest_processing_run.themes:
             theme_attrs = select_keys_from_model(
                 theme, ["topic_id", "topic_keywords", "summary", "short_description"]
             )
