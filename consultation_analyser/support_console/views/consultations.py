@@ -46,12 +46,15 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     return render(request, "support_console/consultations/delete.html", context=context)
 
 
-def get_overall_number_themes_latest_run(consultation):
-    processing_run = consultation.latest_processing_run
-    total_themes = processing_run.themes.count()
-    total_with_summaries = (
-        processing_run.themes.exclude(summary="").exclude(summary=NO_SUMMARY_STR).count()
-    )
+def get_number_themes_latest_run(consultation):
+    total_themes = 0
+    total_with_summaries = 0
+    if consultation.has_processing_run():
+        processing_run = consultation.latest_processing_run
+        total_themes = processing_run.themes.count()
+        total_with_summaries = (
+            processing_run.themes.exclude(summary="").exclude(summary=NO_SUMMARY_STR).count()
+        )
     return total_themes, total_with_summaries
 
 
@@ -72,7 +75,7 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     except RuntimeError as error:
         messages.error(request, error.args[0])
 
-    total_themes, total_with_summaries = get_overall_number_themes_latest_run(consultation)
+    total_themes, total_with_summaries = get_number_themes_latest_run(consultation)
     # TODO - find a better way to summarise themes by question
     context = {
         "consultation": consultation,

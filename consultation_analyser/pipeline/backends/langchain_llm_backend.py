@@ -29,9 +29,10 @@ class LangchainLLMBackend(LLMBackend):
             theme, encoding=self.model_encoding, max_tokens=self.max_tokens
         )
 
+        question = models.Answer.objects.filter(themes=theme).first().question
         prompt_inputs = {
-            "consultation_name": theme.topic_model.question.section.consultation.name,
-            "question": theme.topic_model.question.text,
+            "consultation_name": theme.processing_run.consultation.name,
+            "question": question.text,
             "keywords": ", ".join(theme.topic_keywords),
             "responses": sample_responses,
         }

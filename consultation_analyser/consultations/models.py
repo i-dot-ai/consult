@@ -41,8 +41,8 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     slug = models.CharField(null=False, max_length=256)
     users = models.ManyToManyField(User)
 
-    def has_themes(self):
-        return Theme.objects.filter(processing_run__consultation=self).exists()
+    def has_processing_run(self):
+        return ProcessingRun.objects.filter(consultation=self).exists()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -126,8 +126,6 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def get_themes_for_question(self, question_id):
         return self.themes.filter(processing_run=self, answer__question_id=question_id).distinct()
-
-
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
