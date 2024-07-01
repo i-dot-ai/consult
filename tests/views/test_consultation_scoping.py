@@ -5,7 +5,6 @@ from django.test import RequestFactory
 from consultation_analyser.consultations.views import consultations
 from consultation_analyser.factories import ConsultationFactory, UserFactory
 
-
 # TODO - fix for messages
 # @pytest.mark.django_db
 # def test_get_consultation_we_own():

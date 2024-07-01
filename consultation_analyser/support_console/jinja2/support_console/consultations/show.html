@@ -8,6 +8,12 @@
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">{{ page_title }}</h1>
+        {% if total_themes %}
+          <p class="govuk-body">In the latest run of the theme generation, there are {{total_themes | intcomma}} themes for this consultation.</p>
+          <p class="govuk-body">Of these themes, {{total_with_summaries | intcomma}} have summaries.</p>
+        {% else %}
+          <p class="govuk-body">There are no themes for this consultation.</p>
+        {% endif %}
 
         <p class="govuk-body">
           <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
