@@ -84,21 +84,25 @@
             <h2 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">Question summary</h2>
             <p class="govuk-body">Showing <strong>all</strong> of <strong>{{ total_responses }} </strong> responses</p>
           </div>
-          {% if multiple_choice_questions %}
-            {% for question, responses in multiple_choice_questions.items() %}
-              <div class="govuk-!-padding-left-2 govuk-!-padding-right-2">
-                <h3 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">{{ question }}</h3>
-              </div>
+            {% for multiple_choice_question, multiple_choice_responses in multiple_choice_questions.items() %}
+              
+              {# Show multiple-choice question title only if it's not the same as the overall question title #}
+              {% if multiple_choice_question != question.text %}
+                <div class="govuk-!-padding-left-2 govuk-!-padding-right-2">
+                  <h3 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">{{ multiple_choice_question }}</h3>
+                </div>
+              {% endif %}
+
               <div>
                 <donut-chart>
-                  {% for response in responses %}
+                  {% for response in multiple_choice_responses %}
                     <chart-item data-label="{{ response.answer }}" data-count="{{ response.percent }}"></chart-item>
                   {% endfor %}
                 </donut-chart>
               </div>
               <div class="govuk-!-padding-left-2 govuk-!-padding-right-2">
                 <dl class="govuk-summary-list iai-chart-text">
-                  {% for response in responses %}
+                  {% for response in multiple_choice_responses %}
                     <div class="govuk-summary-list__row">
                       <dt class="govuk-summary-list__key">
                         {{ response.answer }}
@@ -111,7 +115,6 @@
                 </dl>
               </div>
             {% endfor %}
-          {% endif %}
         </div>
       </div>
 
