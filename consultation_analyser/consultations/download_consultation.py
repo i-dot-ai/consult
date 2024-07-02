@@ -63,11 +63,10 @@ def consultation_to_json(consultation):
                 answer, ["question", "multiple_choice", "free_text"]
             )
             # TODO - for now, the assumption is at most one theme per answer
-            latest_theme = None
             if latest_processing_run:
                 themes_for_answer = latest_processing_run.get_themes_for_answer(answer_id=answer.id)
                 latest_theme = themes_for_answer.last()
-            answer_attrs["theme_id"] = str(latest_theme.id) if latest_theme else None
+                answer_attrs["theme_id"] = str(latest_theme.id) if latest_theme else None
             answer_attrs["question_id"] = str(answer_attrs.pop("question"))
             answers.append(answer_attrs)
 
