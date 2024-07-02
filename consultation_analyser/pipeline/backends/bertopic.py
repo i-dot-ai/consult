@@ -30,6 +30,16 @@ class AnswerWithEmbeddings:
     embedding: list[float]
 
 
+@dataclass
+class AnswerWithEmbeddings2Dim:
+    id: UUID
+    free_text: str
+    embedding: list[float]
+    two_dim_embedding: list[float]
+
+
+
+
 class BERTopicBackend(TopicBackend):
     def __init__(
         self, embedding_model: Optional[str] = None, persistence_path: Optional[Path] = None
@@ -58,27 +68,30 @@ class BERTopicBackend(TopicBackend):
         logger.info("BERTopic topic model generation")
         self.topic_model = self.__get_topic_model(answers_list_with_embeddings)
 
-        answers_topics_df = self.__get_answers_and_topics(self.topic_model, answers_list)
+        answers_list_with_embeddings_2dim = self.__get_2dim_embeddings(answers_list_with_embeddings)
+        answers_topics_df = self.__get_answers_and_topics(self.topic_model, answers_list_with_embeddings_2dim)
 
         assignments = []
         for row in answers_topics_df.itertuples():
             answer = models.Answer.objects.get(id=row.id)
             topic_keywords = row.Top_n_words.split(" - ")
             topic_id = row.Topic
+            x_coordinate = row.x_coordinate
+            y_coordinate = row.y_coordinate
             assignments.append(
-                TopicAssignment(topic_id=topic_id, topic_keywords=topic_keywords, answer=answer)
+                TopicAssignment(topic_id=topic_id, topic_keywords=topic_keywords, answer=answer, x_coordinate=x_coordinate, y_coordinate=y_coordinate)
             )
 
         logger.info(f"Returning {len(assignments)} assignments")
 
         if self.persistence_path:
             self.__persist(
-                subpath=question.slug, answers_list_with_embeddings=answers_list_with_embeddings
+                subpath=question.slug
             )
 
         return assignments
 
-    def __persist(self, subpath: str, answers_list_with_embeddings):
+    def __persist(self, subpath: str): # noqa
         # satisfy mypy
         if not self.persistence_path:
             return
@@ -121,6 +134,7 @@ class BERTopicBackend(TopicBackend):
         from umap.umap_ import UMAP
 
         free_text_responses_list = [answer.free_text for answer in answers_list_with_embeddings]
+
         embeddings_list = [answer.embedding for answer in answers_list_with_embeddings]
         embeddings = np.array(embeddings_list)
         umap_model = UMAP(
@@ -148,12 +162,29 @@ class BERTopicBackend(TopicBackend):
         topic_model.fit_transform(free_text_responses_list, embeddings=embeddings)
         return topic_model
 
-    def __get_answers_and_topics(self, topic_model, answers_list: List[Answer]) -> pd.DataFrame:
+    def __get_2dim_embeddings(self, answers_list_with_embeddings: List[AnswerWithEmbeddings]) -> List[AnswerWithEmbeddings2Dim]:
+        from umap.umap_ import UMAP
+        embeddings_list = [answer.embedding for answer in answers_list_with_embeddings]
+        embeddings = np.array(embeddings_list)
+        two_dim_embeddings = UMAP(n_neighbors=15, n_components=2, min_dist=0.0, metric='cosine', random_state=12).fit_transform(embeddings)
+        z = zip(answers_list_with_embeddings, two_dim_embeddings)
+        answers_list_with_2dim_embeddings = [
+            AnswerWithEmbeddings2Dim(answer.id, answer.free_text, answer.embedding, two_dim_embedding) for answer, two_dim_embedding in z
+        ]
+        return answers_list_with_2dim_embeddings
+
+
+    def __get_answers_and_topics(self, topic_model, answers_list_with_embeddings: List[AnswerWithEmbeddings2Dim]) -> pd.DataFrame:
         # Answers free text/IDs need to be in the same order
-        free_text_responses = [answer.free_text for answer in answers_list]
-        answers_id_list = [answer.id for answer in answers_list]
+        free_text_responses = [answer.free_text for answer in answers_list_with_embeddings]
+        answers_id_list = [answer.id for answer in answers_list_with_embeddings]
+        # 2dim embeddings for plotting
+        answers_x_coordinates = [answer.two_dim_embedding[0] for answer in answers_list_with_embeddings]
+        answers_y_coordinates = [answer.two_dim_embedding[1] for answer in answers_list_with_embeddings]
         # Assign topics to answers
         answers_df = topic_model.get_document_info(free_text_responses)
+        answers_df["x_coordinate"] = answers_x_coordinates
+        answers_df["y_coordinate"] = answers_y_coordinates
         answers_df["id"] = answers_id_list
-        answers_df = answers_df[["id", "Top_n_words", "Topic"]]
+        answers_df = answers_df[["id", "Top_n_words", "Topic", "x_coordinate", "y_coordinate"]]
         return answers_df
