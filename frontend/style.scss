@@ -6,37 +6,6 @@ $iai-colour-pink: #C50878;
 @import "node_modules/govuk-frontend/dist/govuk/all";
 @import "node_modules/@x-govuk/govuk-prototype-components/x-govuk/all";
 
-.govuk-header__container {
-    border-color: $iai-colour-pink;
-}
-
-.govuk-header__content {
-    padding-left: 0;
-}
-
-.govuk-phase-banner__content__tag {
-    background-color: $iai-colour-pink;
-    color: white;
-}
-
-.iai-header {
-    border-bottom: 0;
-}
-.iai-header .iai-phase-banner {
-    background-color: white;
-    padding-top: 10px;
-}
-.iai-header .govuk-phase-banner {
-    border-bottom: 0;
-}
-.iai-header .x-govuk-primary-navigation__link:hover {
-    /*color: $iai-colour-pink !important;*/
-    /*text-decoration: none;*/
-}
-
-.iai-header + .govuk-main-wrapper:has(.x-govuk-masthead) {
-    padding-top: 0;
-}
 
 .govuk-link.govuk-link--warning {
   color: $govuk-error-colour;
@@ -100,17 +69,6 @@ $iai-colour-pink: #C50878;
 }
 
 
-/** QUESTION SUMMARY PAGE **/
-.iai-inline-list {
-    display: flex;
-    flex-wrap: wrap;
-    padding: 0;
-}
-.iai-inline-list__item {
-    margin-left: 2rem;
-}
-
-
 /** CONSULTATION PAGE **/
 .con-question-list {
     border-radius: 0.25rem;
@@ -119,42 +77,9 @@ $iai-colour-pink: #C50878;
 .con-question-list__item {
     border-top: 1px solid #E5E7EB;
 }
-.iai-key-finding {
-    align-items: center;
-    background-color: govuk-colour("light-grey");
-    display: flex;
-    padding: 1.25rem;
-}
-.iai-key-finding__chart {
-    flex-shrink: 0;
-    margin-right: 1.25rem;
-    width: 5rem;
-}
 
-.iai-questions__item {
-    background-color: govuk-colour("light-grey");
-    list-style-type: none;
-    padding: 1.25rem;
-}
-.iai-questions__links {
-    display: flex;
-    gap: 1.25rem;
-}
 
 /** RESPONSES PAGE **/
-
-.iai-filters {
-    background-color: govuk-colour("light-grey");
-    padding: 1rem;
-}
-@media (min-width: 641px) {
-    .iai-filters {
-      max-width: 14rem;
-    }
-}
-.iai-filters .govuk-form-group {
-    /*margin-bottom: 1.5rem;*/
-}
 
 .iai-table-subhead {
     display: block;
