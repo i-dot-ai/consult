@@ -72,6 +72,6 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "applied_filters": applied_filters,
         "blank_free_text_count": blank_free_text_count,
         "outliers_count": outliers_count,
-        "outlier_theme_id": outlier_theme.id if outlier_theme else "",
+        "outlier_theme_id": outlier_theme.id if outlier_theme else None,
     }
     return render(request, "consultations/questions/show.html", context)
