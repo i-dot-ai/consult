@@ -133,6 +133,7 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
     # TODO -  Some other metadata on the model TBC and link to saved model
+    scatter_plot_data = models.JSONField(default=list)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
