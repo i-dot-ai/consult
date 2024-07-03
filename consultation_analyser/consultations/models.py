@@ -96,6 +96,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
                 jsonb_array_elements_text(elem -> 'options') AS option
         WHERE question_id = %s
         GROUP BY question_id, option, question
+        ORDER BY option ASC
     """
 
     def multiple_choice_stats(self) -> list[MultipleChoiceQuestionStats]:
