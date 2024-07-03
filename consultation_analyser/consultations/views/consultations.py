@@ -1,6 +1,7 @@
 import logging
 import time
 
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
@@ -12,6 +13,9 @@ from ..forms.consultation_upload_form import ConsultationUploadForm
 from .decorators import user_can_see_consultation
 
 logger = logging.getLogger("django.server")
+
+
+NO_THEMES_YET_MESSAGE = "We are processing your consultation. Themes have not been generated yet."
 
 
 @login_required
@@ -28,8 +32,10 @@ def index(request: HttpRequest) -> HttpResponse:
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     questions = models.Question.objects.filter(section__consultation__slug=consultation_slug)
-
     context = {"questions": questions, "consultation": consultation}
+
+    if not consultation.has_processing_run():
+        messages.info(request, NO_THEMES_YET_MESSAGE)
 
     return render(request, "consultations/consultations/show.html", context)
 
