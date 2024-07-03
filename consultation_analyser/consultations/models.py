@@ -1,3 +1,4 @@
+import itertools
 import uuid
 from dataclasses import dataclass
 
@@ -80,21 +81,45 @@ class Section(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
 
+@dataclass
+class MultipleChoiceQuestionStats:
+    question: str
+    counts: dict[str, int]
+    percentages: dict[str, int]
+
+
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     MULTIPLE_CHOICE_COUNTS_QUERY = """
-        SELECT question_id as id, option, COUNT(*) as count
+        SELECT question_id as id, elem ->> 'question_text' as question, option, COUNT(*) as count
         FROM    consultations_answer,
                 jsonb_array_elements(multiple_choice) AS elem,
                 jsonb_array_elements_text(elem -> 'options') AS option
-        WHERE elem ->> 'question_text' = %s AND question_id = %s
-        GROUP BY question_id, option
+        WHERE question_id = %s
+        GROUP BY question_id, option, question
     """
 
-    def multiple_choice_counts(self, multiple_choice_question):
-        counts = type(self).objects.raw(
-            self.MULTIPLE_CHOICE_COUNTS_QUERY, params=[multiple_choice_question, str(self.id)]
-        )
-        return [{"option": count.option, "count": count.count} for count in counts]
+    def multiple_choice_stats(self) -> list[MultipleChoiceQuestionStats]:
+        counts = type(self).objects.raw(self.MULTIPLE_CHOICE_COUNTS_QUERY, params=[str(self.id)])
+
+        values = [
+            {"question": count.question, "option": count.option, "count": count.count}
+            for count in counts
+        ]
+
+        output = []
+        for q, stats in itertools.groupby(values, lambda group: group["question"]):
+            stats = list(stats)  # necessary as we need to iterate over this generator twice
+
+            counts = {opt["option"]: opt["count"] for opt in stats}
+            total = sum(counts.values())
+
+            percents = {opt["option"]: round((float(opt["count"]) / total) * 100) for opt in stats}
+
+            output.append(
+                MultipleChoiceQuestionStats(question=q, counts=counts, percentages=percents)
+            )
+
+        return output
 
     text = models.CharField(
         null=False, max_length=None
@@ -105,12 +130,6 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         null=True, blank=True, validators=[MultipleChoiceSchemaValidator(limit_value=None)]
     )
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
-
-    @dataclass
-    class MultipleChoiceResponseCount:
-        answer: str
-        count: int
-        percent: float
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
