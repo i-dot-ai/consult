@@ -4,7 +4,7 @@ from consultation_analyser import factories
 
 
 @pytest.mark.django_db
-def test_get_multiple_choice_counts():
+def test_get_multiple_choice_stats():
     consultation = factories.ConsultationFactory()
     section = factories.SectionFactory()
     question = factories.QuestionFactory(
@@ -41,3 +41,30 @@ def test_get_multiple_choice_counts():
     assert stats.percentages["Rain"] == 40
     assert stats.percentages["Snow"] == 20
     assert stats.percentages["Sun"] == 40
+
+    assert stats.has_multiple_selections
+
+
+@pytest.mark.django_db
+def test_get_multiple_choice_has_multiple_selections():
+    consultation = factories.ConsultationFactory()
+    section = factories.SectionFactory()
+    question = factories.QuestionFactory(
+        section=section, multiple_choice_questions=[("What do you like?", ["Rain", "Sun", "Snow"])]
+    )
+
+    for a in [
+        ["Rain"],
+        ["Sun"],
+        ["Snow"],
+    ]:
+        factories.AnswerFactory(
+            multiple_choice_answers=[("What do you like?", a)],
+            question=question,
+            consultation_response=factories.ConsultationResponseFactory(consultation=consultation),
+        )
+
+    result = question.multiple_choice_stats()
+    stats = result[0]
+
+    assert not stats.has_multiple_selections

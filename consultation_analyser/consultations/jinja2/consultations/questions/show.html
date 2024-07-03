@@ -45,11 +45,13 @@
           </dl>
         </div>
         <div class="govuk-grid-column-one-third govuk-!-padding-0">
-          <donut-chart>
-            {% for option in multiple_choice.counts.keys() %}
-              <chart-item data-label="{{ option }}" data-count="{{ multiple_choice.percentages[option] }}"></chart-item>
-            {% endfor %}
-          </donut-chart>
+          {% if not multiple_choice.has_multiple_selections %}
+            <donut-chart>
+              {% for option in multiple_choice.counts.keys() %}
+                <chart-item data-label="{{ option }}" data-count="{{ multiple_choice.percentages[option] }}"></chart-item>
+              {% endfor %}
+            </donut-chart>
+          {% endif %}
         </div>
       </div>
     {% endfor %}

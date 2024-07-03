@@ -5,7 +5,7 @@ from dataclasses import dataclass
 import pydantic
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
-from django.db import models
+from django.db import connection, models
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import public_schema
@@ -86,6 +86,7 @@ class MultipleChoiceQuestionStats:
     question: str
     counts: dict[str, int]
     percentages: dict[str, int]
+    has_multiple_selections: bool
 
 
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -96,7 +97,20 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
                 jsonb_array_elements_text(elem -> 'options') AS option
         WHERE question_id = %s
         GROUP BY question_id, option, question
-        ORDER BY option ASC
+        ORDER BY question, option ASC
+    """
+
+    # until we explicitly annotate these questions, use the presence
+    # of multiple selections to infer whether they're supported
+    HAS_MULTIPLE_SELECTIONS_QUERY = """
+        SELECT EXISTS (
+            SELECT 1
+            FROM consultations_answer,
+                 jsonb_array_elements(multiple_choice) AS elem
+            WHERE question_id = %s
+            AND elem ->> 'question_text' = %s
+            AND jsonb_array_length(elem -> 'options') > 1
+        ) AS has_multiple_selections;
     """
 
     def multiple_choice_stats(self) -> list[MultipleChoiceQuestionStats]:
@@ -116,8 +130,19 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
             percents = {opt["option"]: round((float(opt["count"]) / total) * 100) for opt in statsl}
 
+            with connection.cursor() as cursor:
+                # it's a bit inefficient to do another query here but I've preferred
+                # two small simple queries over one big complicated query
+                cursor.execute(self.HAS_MULTIPLE_SELECTIONS_QUERY, [str(self.id), q])
+                has_multiple_selections = cursor.fetchone()[0]
+
             output.append(
-                MultipleChoiceQuestionStats(question=q, counts=counts, percentages=percents)
+                MultipleChoiceQuestionStats(
+                    question=q,
+                    counts=counts,
+                    percentages=percents,
+                    has_multiple_selections=has_multiple_selections,
+                )
             )
 
         return output
