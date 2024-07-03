@@ -7,16 +7,12 @@ from consultation_analyser.factories import ConsultationFactory, UserFactory
 
 
 @pytest.mark.django_db
-def test_get_consultation_we_own():
+def test_get_consultation_we_own(client):
     user = UserFactory()
     consultation_we_own = ConsultationFactory(user=user, with_themes=True)
-
-    request_factory = RequestFactory()
-    valid_request = request_factory.get("/consultations/slug-does-not-matter-here/")
-    valid_request.user = user
-
-    resp = consultations.show(valid_request, consultation_slug=consultation_we_own.slug)
-    assert resp.status_code == 200
+    client.force_login(user)
+    response = client.get(f"/consultations/{consultation_we_own.slug}/")
+    assert response.status_code == 200
 
 
 @pytest.mark.django_db
