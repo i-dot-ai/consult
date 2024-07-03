@@ -1,5 +1,4 @@
 import pytest
-
 from django.db import IntegrityError
 
 from consultation_analyser import factories

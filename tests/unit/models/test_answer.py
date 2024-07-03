@@ -1,6 +1,7 @@
 import pytest
-from consultation_analyser import factories
 from django.core.exceptions import ValidationError
+
+from consultation_analyser import factories
 from consultation_analyser.consultations import models
 
 
@@ -52,6 +53,7 @@ def test_multiple_choice_validation():
     with pytest.raises(ValidationError):
         a.full_clean()
 
+
 @pytest.mark.django_db
 def test_find_answer_multiple_choice_response():
     q = factories.QuestionFactory(
@@ -80,4 +82,3 @@ def test_find_answer_multiple_choice_response():
 
     result = models.Answer.objects.filter_multiple_choice(question="Do you agree?", answer="No")
     assert result.count() == 2
-

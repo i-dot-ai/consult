@@ -109,12 +109,12 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
         output = []
         for q, stats in itertools.groupby(values, lambda group: group["question"]):
-            stats = list(stats)  # necessary as we need to iterate over this generator twice
+            statsl = list(stats)  # necessary as we need to iterate over this generator twice
 
-            counts = {opt["option"]: opt["count"] for opt in stats}
+            counts = {opt["option"]: opt["count"] for opt in statsl}
             total = sum(counts.values())
 
-            percents = {opt["option"]: round((float(opt["count"]) / total) * 100) for opt in stats}
+            percents = {opt["option"]: round((float(opt["count"]) / total) * 100) for opt in statsl}
 
             output.append(
                 MultipleChoiceQuestionStats(question=q, counts=counts, percentages=percents)
