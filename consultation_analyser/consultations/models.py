@@ -81,6 +81,21 @@ class Section(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
+    MULTIPLE_CHOICE_COUNTS_QUERY = """
+        SELECT question_id as id, option, COUNT(*) as count
+        FROM    consultations_answer,
+                jsonb_array_elements(multiple_choice) AS elem,
+                jsonb_array_elements_text(elem -> 'options') AS option
+        WHERE elem ->> 'question_text' = %s AND question_id = %s
+        GROUP BY question_id, option
+    """
+
+    def multiple_choice_counts(self, multiple_choice_question):
+        counts = type(self).objects.raw(
+            self.MULTIPLE_CHOICE_COUNTS_QUERY, params=[multiple_choice_question, str(self.id)]
+        )
+        return [{"option": count.option, "count": count.count} for count in counts]
+
     text = models.CharField(
         null=False, max_length=None
     )  # no idea what's a sensible value for max_length
@@ -177,11 +192,12 @@ class AnswerQuerySet(models.QuerySet):
 
 
 class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
-    objects = AnswerQuerySet.as_manager()
-
     multiple_choice = models.JSONField(
         null=True, blank=True, validators=[MultipleChoiceSchemaValidator(limit_value=None)]
     )
+
+    objects = AnswerQuerySet.as_manager()
+
     free_text = models.TextField(null=True, blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     consultation_response = models.ForeignKey(ConsultationResponse, on_delete=models.CASCADE)
