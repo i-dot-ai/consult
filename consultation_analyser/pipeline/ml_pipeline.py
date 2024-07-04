@@ -38,8 +38,10 @@ def save_themes_for_question(
             topic_model_metadata=topic_model_metadata,
         )
 
-    # scatter_plot_data = [topic_assignment_to_dict(assignment) for assignment in assignments]
-    # TODO - save to topic metadata
+    scatter_plot_coords = [topic_assignment_to_dict(assignment) for assignment in assignments]
+    scatter_plot_data = {"data": scatter_plot_coords}
+    topic_model_metadata.scatter_plot_data = scatter_plot_data
+    topic_model_metadata.save()
 
 
 def save_themes_for_processing_run(
