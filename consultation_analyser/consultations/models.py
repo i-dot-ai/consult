@@ -205,8 +205,19 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
-    # TODO -  Some other metadata on the model TBC and link to saved model
     scatter_plot_data = models.JSONField(default=dict)
+
+    def get_scatter_plot_data_with_detail(self) -> dict:
+        if "data" not in self.scatter_plot_data:
+            return {}
+        data = self.scatter_plot_data["data"]
+        related_themes_qs = Theme.objects.filter(topic_model_metadata=self).distinct()
+        for coordinate in data:
+            topic_id = coordinate["topic_id"]
+            theme = related_themes_qs.get(topic_id=topic_id)
+            coordinate["short_description"] = theme.short_description
+            coordinate["summary"] = theme.summary
+        return data
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
