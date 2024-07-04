@@ -1,9 +1,11 @@
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import HttpRequest
 from django.shortcuts import render
 
 from .. import models
+from .consultations import NO_THEMES_YET_MESSAGE
 from .decorators import user_can_see_consultation
 from .filters import get_applied_filters, get_filtered_responses
 
@@ -17,6 +19,9 @@ def index(request: HttpRequest, consultation_slug: str, section_slug: str, quest
         section__consultation__slug=consultation_slug,
     )
     consultation = question.section.consultation
+    if not consultation.has_processing_run():
+        messages.info(request, NO_THEMES_YET_MESSAGE)
+
     # TODO - for now, get themes from latest processing run
     latest_processing_run = consultation.latest_processing_run
     if latest_processing_run:
