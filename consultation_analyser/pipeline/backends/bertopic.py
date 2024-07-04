@@ -28,6 +28,7 @@ class AnswerWithEmbeddings:
     id: UUID
     free_text: str
     embedding: list[float]
+    two_dim_embedding: list[float]
 
 
 class BERTopicBackend(TopicBackend):
@@ -46,7 +47,11 @@ class BERTopicBackend(TopicBackend):
         self.random_state = 12  # For reproducibility
         self.topic_model = None
         self.persistence_path = persistence_path
+<<<<<<< HEAD
         self.device = device
+=======
+        self.n_neighbors = 15
+>>>>>>> 1e80d6e (Add 2d embeddings for plotting.)
 
     def get_topics(self, question: models.Question) -> list[TopicAssignment]:
         answers_qs = (
@@ -106,13 +111,22 @@ class BERTopicBackend(TopicBackend):
         self, answers_list: List[Answer]
     ) -> List[AnswerWithEmbeddings]:
         from sentence_transformers import SentenceTransformer
+        from umap.umap_ import UMAP
 
         free_text_responses = [answer.free_text for answer in answers_list]
         embedding_model = SentenceTransformer(self.embedding_model)
-        embeddings = embedding_model.encode(free_text_responses, device=self.device)
-        z = zip(answers_list, embeddings)
+        embeddings = embedding_model.encode(free_text_responses)
+        two_dim_embeddings = UMAP(
+            n_neighbors=self.n_neighbors,
+            n_components=2,
+            min_dist=0.0,
+            metric="cosine",
+            random_state=self.random_state,
+        ).fit_transform(embeddings)
+        z = zip(answers_list, embeddings, two_dim_embeddings)
         answers_list_with_embeddings = [
-            AnswerWithEmbeddings(answer.id, answer.free_text, embedding) for answer, embedding in z
+            AnswerWithEmbeddings(answer.id, answer.free_text, embedding, two_dim_embedding)
+            for answer, embedding, two_dim_embedding in z
         ]
         return answers_list_with_embeddings
 
@@ -127,7 +141,7 @@ class BERTopicBackend(TopicBackend):
         embeddings_list = [answer.embedding for answer in answers_list_with_embeddings]
         embeddings = np.array(embeddings_list)
         umap_model = UMAP(
-            n_neighbors=15,
+            n_neighbors=self.n_neighbors,
             n_components=5,
             min_dist=0.0,
             metric="cosine",
