@@ -13,7 +13,7 @@ module "batch_compute" {
   max_vcpus       = 20
   private_subnets = data.terraform_remote_state.vpc.outputs.private_subnets
   state_bucket    = var.state_bucket
-  instance_type   = "g5.xlarge"
+  instance_type   = "g5.8xlarge"
   additional_iam_policy   = aws_iam_policy.batch.arn
 }
 
