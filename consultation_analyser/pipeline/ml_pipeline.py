@@ -3,8 +3,20 @@ import logging
 from consultation_analyser.consultations import models
 
 from .backends.topic_backend import TopicBackend
+from .backends.types import TopicAssignment
 
 logger = logging.getLogger("pipeline")
+
+
+def topic_assignment_to_dict(assignment: TopicAssignment) -> dict[str, str | int | float]:
+    output = {
+        "answer_id": str(assignment.answer.id),
+        "answer_free_text": assignment.answer.free_text,
+        "topic_id": assignment.topic_id,
+        "x_coordinate": assignment.x_coordinate,
+        "y_coordinate": assignment.y_coordinate,
+    }
+    return output
 
 
 def save_themes_for_question(
@@ -25,6 +37,9 @@ def save_themes_for_question(
             processing_run=processing_run,
             topic_model_metadata=topic_model_metadata,
         )
+
+    # scatter_plot_data = [topic_assignment_to_dict(assignment) for assignment in assignments]
+    # TODO - save to topic metadata
 
 
 def save_themes_for_processing_run(

@@ -12,6 +12,8 @@ class TopicAssignment:
     topic_id: int
     topic_keywords: list[str]
     answer: models.Answer
+    x_coordinate: float
+    y_coordinate: float
 
 
 class ThemeSummary(BaseModel):
