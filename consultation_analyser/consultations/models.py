@@ -84,7 +84,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     text = models.CharField(
         null=False, max_length=None
     )  # no idea what's a sensible value for max_length
-    slug = models.CharField(null=False, max_length=256)
+    slug = models.CharField(null=False, max_length=None)
     has_free_text = models.BooleanField(default=False)
     multiple_choice_options = models.JSONField(
         null=True, blank=True, validators=[MultipleChoiceSchemaValidator(limit_value=None)]
