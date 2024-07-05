@@ -19,16 +19,24 @@ def topic_assignment_to_dict(assignment: TopicAssignment) -> dict[str, str | int
     return output
 
 
+def get_scatter_plot_data(assignments: list[TopicAssignment]) -> dict[str, list]:
+    scatter_plot_coords = [topic_assignment_to_dict(assignment) for assignment in assignments]
+    scatter_plot_data = {"data": scatter_plot_coords}
+    return scatter_plot_data
+
+
 def save_themes_for_question(
     question: models.Question,
     topic_backend: TopicBackend,
     processing_run: models.ProcessingRun,
 ) -> None:
     logging.info(f"Get topics for question: {question.text}")
-    topic_model_metadata = models.TopicModelMetadata()
+    assignments = topic_backend.get_topics(question)
+
+    data = get_scatter_plot_data(assignments)
+    topic_model_metadata = models.TopicModelMetadata(scatter_plot_data=data)
     topic_model_metadata.save()
 
-    assignments = topic_backend.get_topics(question)
     for assignment in assignments:
         assignment.answer.save_theme_to_answer(
             topic_keywords=assignment.topic_keywords,
@@ -36,11 +44,6 @@ def save_themes_for_question(
             processing_run=processing_run,
             topic_model_metadata=topic_model_metadata,
         )
-
-    scatter_plot_coords = [topic_assignment_to_dict(assignment) for assignment in assignments]
-    scatter_plot_data = {"data": scatter_plot_coords}
-    topic_model_metadata.scatter_plot_data = scatter_plot_data
-    topic_model_metadata.save()
 
 
 def save_themes_for_processing_run(
