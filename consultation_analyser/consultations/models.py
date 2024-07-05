@@ -208,9 +208,9 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
 class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
     scatter_plot_data = models.JSONField(default=dict)
 
-    def get_scatter_plot_data_with_detail(self) -> dict:
+    def get_scatter_plot_data_with_detail(self) -> list:
         if "data" not in self.scatter_plot_data:
-            return {}
+            return []
         data = self.scatter_plot_data["data"]
         related_themes_qs = Theme.objects.filter(topic_model_metadata=self).distinct()
         for coordinate in data:
