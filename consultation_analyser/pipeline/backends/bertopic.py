@@ -35,7 +35,7 @@ class BERTopicBackend(TopicBackend):
         self,
         embedding_model: Optional[str] = None,
         persistence_path: Optional[Path] = None,
-        device: str = None,
+        device: Optional[str] = None,
     ):
         if not embedding_model:
             embedding_model = settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL
