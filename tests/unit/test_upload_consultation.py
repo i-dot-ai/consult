@@ -34,5 +34,9 @@ def test_upload_consultation():
                 assert a.free_text == "Answer to Question 1"
             elif q.text == "Question 2":
                 assert a.free_text == "Answer to Question 2"
+                assert a.multiple_choice == [
+                    {"question_text": "Do you like A, B or C?", "options": ["a"]}
+                ]
             elif q.text == "Question 3":
                 assert not a.free_text  # there is no free text part
+                assert len(a.multiple_choice) == 2
