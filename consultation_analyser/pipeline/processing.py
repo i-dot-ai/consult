@@ -60,7 +60,7 @@ def process_consultation_themes(consultation, topic_backend=None, llm_backend=No
     # TODO - add more metadata to processing run
 
     if not topic_backend:
-        topic_backend = BERTopicBackend()
+        topic_backend = BERTopicBackend(device=device)
 
     if not llm_backend:
         llm_backend = get_llm_backend(llm_backend)

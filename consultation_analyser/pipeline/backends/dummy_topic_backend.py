@@ -28,7 +28,7 @@ def random_partition(lst):
 
 
 class DummyTopicBackend(TopicBackend):
-    def get_topics(self, question: models.Question, device=None) -> list[TopicAssignment]:
+    def get_topics(self, question: models.Question) -> list[TopicAssignment]:
         faker = Faker()
         answers = models.Answer.objects.filter(question=question).order_by("created_at")
 

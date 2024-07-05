@@ -32,7 +32,7 @@ class AnswerWithEmbeddings:
 
 class BERTopicBackend(TopicBackend):
     def __init__(
-        self, embedding_model: Optional[str] = None, persistence_path: Optional[Path] = None
+        self, embedding_model: Optional[str] = None, persistence_path: Optional[Path] = None, device: str = None
     ):
         if not embedding_model:
             embedding_model = settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL
@@ -43,6 +43,7 @@ class BERTopicBackend(TopicBackend):
         self.random_state = 12  # For reproducibility
         self.topic_model = None
         self.persistence_path = persistence_path
+        self.device = device
 
     def get_topics(self, question: models.Question, device=None) -> list[TopicAssignment]:
         answers_qs = (
@@ -54,7 +55,7 @@ class BERTopicBackend(TopicBackend):
 
         logger.info("BERTopic embedding")
         answers_list_with_embeddings = self.__get_embeddings_for_question(
-            answers_list, device=device
+            answers_list
         )
 
         logger.info("BERTopic topic model generation")
@@ -101,13 +102,13 @@ class BERTopicBackend(TopicBackend):
         logger.info(f"BERTopic model persisted to {output_dir}")
 
     def __get_embeddings_for_question(
-        self, answers_list: List[Answer], device=None
+        self, answers_list: List[Answer]
     ) -> List[AnswerWithEmbeddings]:
         from sentence_transformers import SentenceTransformer
 
         free_text_responses = [answer.free_text for answer in answers_list]
         embedding_model = SentenceTransformer(self.embedding_model)
-        embeddings = embedding_model.encode(free_text_responses, device=device)
+        embeddings = embedding_model.encode(free_text_responses, device=self.device)
         z = zip(answers_list, embeddings)
         answers_list_with_embeddings = [
             AnswerWithEmbeddings(answer.id, answer.free_text, embedding) for answer, embedding in z

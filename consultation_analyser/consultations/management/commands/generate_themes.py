@@ -72,7 +72,7 @@ class Command(BaseCommand):
             embedding_model=options["embedding_model"], persistence_path=output_dir / "bertopic"
         )
         llm_backend = get_llm_backend(llm_identifier=options["llm"])
-        device = self.__check_device(options["device"])
+        device = self.__check_device(options["device"]) if options["device"] else None
 
         process_consultation_themes(
             consultation, topic_backend=topic_backend, llm_backend=llm_backend, device=device
@@ -156,6 +156,6 @@ class Command(BaseCommand):
         if device == requested_device:
             logger.info(f"Device '{requested_device}' is available.")
         else:
-            logger.info(f"Device '{requested_device}' is unavailable, defaulting to {device}")
+            logger.info(f"Device '{requested_device}' is unavailable, defaulting to '{device}'")
 
         return device
