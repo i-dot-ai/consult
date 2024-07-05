@@ -43,6 +43,17 @@ class DummyTopicBackend(TopicBackend):
                     TopicAssignment(topic_id=topic_id, topic_keywords=topic_keywords, answer=answer)
                 )
 
+            x_coordinate = faker.pyfloat()
+            y_coordinate = faker.pyfloat()
+            assignments.append(
+                TopicAssignment(
+                    topic_id=topic_id,
+                    topic_keywords=topic_keywords,
+                    answer=answer,
+                    x_coordinate=x_coordinate,
+                    y_coordinate=y_coordinate,
+                )
+            )
             topic_id += 1
 
         return assignments
