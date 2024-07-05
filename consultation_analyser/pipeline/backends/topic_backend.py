@@ -7,5 +7,5 @@ from .types import TopicAssignment
 
 class TopicBackend(ABC):
     @abstractmethod
-    def get_topics(self, question: models.Question) -> list[TopicAssignment]:
+    def get_topics(self, question: models.Question, device=None) -> list[TopicAssignment]:
         pass

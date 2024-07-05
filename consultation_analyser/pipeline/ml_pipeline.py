@@ -8,7 +8,10 @@ logger = logging.getLogger("pipeline")
 
 
 def save_themes_for_question(
-    question: models.Question, topic_backend: TopicBackend, processing_run: models.ProcessingRun
+    question: models.Question,
+    topic_backend: TopicBackend,
+    processing_run: models.ProcessingRun,
+    device=None,
 ) -> None:
     logging.info(f"Get topics for question: {question.text}")
     topic_model_metadata = models.TopicModelMetadata()
@@ -26,7 +29,7 @@ def save_themes_for_question(
 
 
 def save_themes_for_processing_run(
-    topic_backend: TopicBackend, processing_run: models.ProcessingRun
+    topic_backend: TopicBackend, processing_run: models.ProcessingRun, device=None
 ) -> None:
     consultation = processing_run.consultation
     logging.info(f"Starting topic modelling for consultation: {consultation.name}")
@@ -36,5 +39,5 @@ def save_themes_for_processing_run(
 
     for question in questions:
         save_themes_for_question(
-            question, topic_backend=topic_backend, processing_run=processing_run
+            question, topic_backend=topic_backend, processing_run=processing_run, device=device
         )

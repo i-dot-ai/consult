@@ -44,7 +44,7 @@ class BERTopicBackend(TopicBackend):
         self.topic_model = None
         self.persistence_path = persistence_path
 
-    def get_topics(self, question: models.Question) -> list[TopicAssignment]:
+    def get_topics(self, question: models.Question, device=None) -> list[TopicAssignment]:
         answers_qs = (
             models.Answer.objects.filter(question=question)
             .exclude(free_text="")
@@ -53,7 +53,9 @@ class BERTopicBackend(TopicBackend):
         answers_list = [Answer(**attrs) for attrs in list(answers_qs.values("id", "free_text"))]
 
         logger.info("BERTopic embedding")
-        answers_list_with_embeddings = self.__get_embeddings_for_question(answers_list)
+        answers_list_with_embeddings = self.__get_embeddings_for_question(
+            answers_list, device=device
+        )
 
         logger.info("BERTopic topic model generation")
         self.topic_model = self.__get_topic_model(answers_list_with_embeddings)
@@ -99,14 +101,13 @@ class BERTopicBackend(TopicBackend):
         logger.info(f"BERTopic model persisted to {output_dir}")
 
     def __get_embeddings_for_question(
-        self,
-        answers_list: List[Answer],
+        self, answers_list: List[Answer], device=None
     ) -> List[AnswerWithEmbeddings]:
         from sentence_transformers import SentenceTransformer
 
         free_text_responses = [answer.free_text for answer in answers_list]
         embedding_model = SentenceTransformer(self.embedding_model)
-        embeddings = embedding_model.encode(free_text_responses)
+        embeddings = embedding_model.encode(free_text_responses, device=device)
         z = zip(answers_list, embeddings)
         answers_list_with_embeddings = [
             AnswerWithEmbeddings(answer.id, answer.free_text, embedding) for answer, embedding in z

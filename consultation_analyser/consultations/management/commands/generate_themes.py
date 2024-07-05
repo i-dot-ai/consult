@@ -1,10 +1,12 @@
 import json
 import logging
 import os
+import platform
 import time
 from pathlib import Path
 from typing import Optional
 
+import torch
 from django.conf import settings
 from django.core.management.base import BaseCommand
 from django.db.utils import IntegrityError
@@ -52,6 +54,12 @@ class Command(BaseCommand):
             action="store",
             help="The output directory - defaults to tmp/eval/$consultation-slug-$unixtime",
         )
+        parser.add_argument(
+            "--device",
+            action="store",
+            help="The device to target the embedding at. For example: 'cpu', 'cuda', 'mps'",
+            type=str,
+        )
 
     def handle(self, *args, **options):
         logger.info(f"Called evaluate with {options}")
@@ -64,9 +72,10 @@ class Command(BaseCommand):
             embedding_model=options["embedding_model"], persistence_path=output_dir / "bertopic"
         )
         llm_backend = get_llm_backend(llm_identifier=options["llm"])
+        device = self.__check_device(options["device"])
 
         process_consultation_themes(
-            consultation, topic_backend=topic_backend, llm_backend=llm_backend
+            consultation, topic_backend=topic_backend, llm_backend=llm_backend, device=device
         )
 
         self.__save_consultation_with_themes(output_dir=output_dir, consultation=consultation)
@@ -125,3 +134,28 @@ class Command(BaseCommand):
         f = open(output_dir / "consultation_with_themes.json", "w")
         f.write(json_with_themes)
         f.close()
+
+    def __check_device(self, requested_device):
+        logger.info(f"Checking {requested_device} is available...")
+        devices = ["cpu"]
+
+        # Check for CUDA devices
+        if torch.cuda.is_available():
+            devices.append("cuda")
+
+        # Check for MPS devices (Apple Silicon) only if running on macOS
+        if (
+            platform.system() == "Darwin"
+            and torch.backends.mps.is_available()
+            and torch.backends.mps.is_built()
+        ):
+            devices.append("mps")
+
+        # Return requested device if available, else return CPU
+        device = requested_device if requested_device in devices else "cpu"
+        if device == requested_device:
+            logger.info(f"Device '{requested_device}' is available.")
+        else:
+            logger.info(f"Device '{requested_device}' is unavailable, defaulting to {device}")
+
+        return device
