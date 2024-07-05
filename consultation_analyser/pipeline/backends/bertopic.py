@@ -32,7 +32,10 @@ class AnswerWithEmbeddings:
 
 class BERTopicBackend(TopicBackend):
     def __init__(
-        self, embedding_model: Optional[str] = None, persistence_path: Optional[Path] = None, device: str = None
+        self,
+        embedding_model: Optional[str] = None,
+        persistence_path: Optional[Path] = None,
+        device: str = None,
     ):
         if not embedding_model:
             embedding_model = settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL
@@ -54,9 +57,7 @@ class BERTopicBackend(TopicBackend):
         answers_list = [Answer(**attrs) for attrs in list(answers_qs.values("id", "free_text"))]
 
         logger.info("BERTopic embedding")
-        answers_list_with_embeddings = self.__get_embeddings_for_question(
-            answers_list
-        )
+        answers_list_with_embeddings = self.__get_embeddings_for_question(answers_list)
 
         logger.info("BERTopic topic model generation")
         self.topic_model = self.__get_topic_model(answers_list_with_embeddings)
