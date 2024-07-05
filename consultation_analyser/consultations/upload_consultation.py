@@ -67,13 +67,17 @@ def upload_consultation(file, user):
 
     file.seek(0)
     responses_handle = ijson.items(file, "consultation_responses.item")
-    responses_to_process = []
 
     for i, response in enumerate(responses_handle):
+        if i == 0:
+            responses_to_process = []
+
         responses_to_process.append(response)
+
         if i % 500 == 0:
             process_response_batch(responses_to_process, consultation.id, question_ids_map)
             responses_to_process = []
+            timer.time("Response batch processed")
 
     timer.time("created Responses")
 
