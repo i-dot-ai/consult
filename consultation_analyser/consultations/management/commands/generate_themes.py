@@ -136,7 +136,7 @@ class Command(BaseCommand):
         f.close()
 
     def __check_device(self, requested_device):
-        logger.info(f"Checking {requested_device} is available...")
+        logger.info(f"Checking '{requested_device}' is available...")
         devices = ["cpu"]
 
         # Check for CUDA devices
