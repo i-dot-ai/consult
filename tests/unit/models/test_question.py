@@ -1,6 +1,7 @@
 import pytest
 
 from consultation_analyser import factories
+from consultation_analyser.consultations.models import MultipleChoiceNotProportionalError
 
 
 @pytest.mark.django_db
@@ -38,11 +39,10 @@ def test_get_multiple_choice_stats():
     assert stats.counts["Snow"] == 2
     assert stats.counts["Sun"] == 4
 
-    assert stats.percentages["Rain"] == 40
-    assert stats.percentages["Snow"] == 20
-    assert stats.percentages["Sun"] == 40
-
     assert stats.has_multiple_selections
+
+    with pytest.raises(MultipleChoiceNotProportionalError):
+        stats.percentages()
 
 
 @pytest.mark.django_db
@@ -68,3 +68,9 @@ def test_get_multiple_choice_has_multiple_selections():
     stats = result[0]
 
     assert not stats.has_multiple_selections
+
+    percentages = stats.percentages()
+
+    assert percentages["Rain"] == 33
+    assert percentages["Snow"] == 33
+    assert percentages["Sun"] == 33

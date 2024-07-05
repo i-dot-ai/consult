@@ -37,9 +37,11 @@
                 <dd class="govuk-summary-list__value">
                   {{ multiple_choice.counts[option] }}
                 </dd>
-                <dd class="govuk-summary-list__value">
-                  {{ multiple_choice.percentages[option] }}%
-                </dd>
+                {% if not multiple_choice.has_multiple_selections %}
+                  <dd class="govuk-summary-list__value">
+                    {{ multiple_choice.percentages()[option] }}%
+                  </dd>
+                {% endif %}
               </div>
             {% endfor %}
           </dl>

@@ -81,12 +81,28 @@ class Section(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
 
+class MultipleChoiceNotProportionalError(Exception):
+    pass
+
+
 @dataclass
 class MultipleChoiceQuestionStats:
     question: str
     counts: dict[str, int]
-    percentages: dict[str, int]
+    total_responses: int
     has_multiple_selections: bool
+
+    def percentages(self):
+        if self.has_multiple_selections:
+            raise MultipleChoiceNotProportionalError(
+                "It does not make sense to calculate percentages for a mutliple choice question supporting multiple selections"
+            )
+        else:
+            print(self.counts)
+            return {
+                option: round((float(count) / self.total_responses) * 100)
+                for option, count in self.counts.items()
+            }
 
 
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -126,9 +142,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
             statsl = list(stats)  # necessary as we need to iterate over this generator twice
 
             counts = {opt["option"]: opt["count"] for opt in statsl}
-            total = sum(counts.values())
-
-            percents = {opt["option"]: round((float(opt["count"]) / total) * 100) for opt in statsl}
+            total_responses = sum(counts.values())
 
             with connection.cursor() as cursor:
                 # it's a bit inefficient to do another query here but I've preferred
@@ -140,7 +154,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
                 MultipleChoiceQuestionStats(
                     question=q,
                     counts=counts,
-                    percentages=percents,
+                    total_responses=total_responses,
                     has_multiple_selections=has_multiple_selections,
                 )
             )
