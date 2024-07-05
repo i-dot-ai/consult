@@ -25,9 +25,8 @@ def save_themes_for_question(
     logging.info(f"Get topics for question: {question.text}")
     topic_model_metadata = models.TopicModelMetadata()
     topic_model_metadata.save()
-    # TODO - add more metadata to the topic model
-    assignments = topic_backend.get_topics(question)
 
+    assignments = topic_backend.get_topics(question)
     for assignment in assignments:
         assignment.answer.save_theme_to_answer(
             topic_keywords=assignment.topic_keywords,

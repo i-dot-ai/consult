@@ -59,6 +59,11 @@ def test_save_themes_for_processing_run():
     for q in [free_text_question1, free_text_question2]:
         themes_for_q = processing_run.get_themes_for_question(question_id=q.id)
         assert themes_for_q.exists()
+        # Check data in topic model metadata
+        topic_model_meta = themes_for_q.first().topic_model_metadata
+        assert "data" in topic_model_meta.scatter_plot_data
+        assert "x_coordinate" in topic_model_meta.scatter_plot_data["data"][0]
+
     example_theme = themes_for_q.first()
     assert example_theme.topic_keywords
     # Summary not populated here - done in a separate step
