@@ -36,6 +36,8 @@ module "ecs" {
   ecr_repository_uri = var.ecr_repository_uri
   ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
   ecs_cluster_name   = data.terraform_remote_state.platform.outputs.ecs_cluster_name
+  memory             = local.ecs_memory
+  cpu                = local.ecs_cpus
   health_check = {
     healthy_threshold   = 3
     unhealthy_threshold = 3
@@ -60,6 +62,7 @@ module "ecs" {
   additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
   }
+
 }
 
 resource "aws_route53_record" "type_a_record" {
