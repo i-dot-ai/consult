@@ -207,17 +207,35 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
 class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
     scatter_plot_data = models.JSONField(default=dict)
 
-    def get_scatter_plot_data_with_detail(self) -> list:
+    def get_scatter_plot_data_with_detail(self, topic_id_list: list[int]) -> list[dict]:
+        """
+        Get list of dictionaries, each dictionary with data for scatter plot.
+        This appends any extra fields as needed onto the data in the scatter_plot_data field.
+
+        Filter by the list of topic_ids passed in.
+        """
         if "data" not in self.scatter_plot_data:
             return []
+
         data = self.scatter_plot_data["data"]
-        related_themes_qs = Theme.objects.filter(topic_model_metadata=self).distinct()
+        related_themes_qs = (
+            Theme.objects.filter(topic_model_metadata=self)
+            .filter(topic_id__in=topic_id_list)
+            .distinct()
+        )
+        updated_data = []
         for coordinate in data:
             topic_id = coordinate["topic_id"]
-            theme = related_themes_qs.get(topic_id=topic_id)
-            coordinate["short_description"] = theme.short_description
-            coordinate["summary"] = theme.summary
-        return data
+            try:
+                theme = related_themes_qs.get(topic_id=topic_id)
+            except Theme.DoesNotExist:
+                theme = None
+            if theme:
+                updated_coordinate = coordinate
+                updated_coordinate["short_description"] = theme.short_description
+                updated_coordinate["summary"] = theme.summary
+                updated_data.append(updated_coordinate)
+        return updated_data
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
