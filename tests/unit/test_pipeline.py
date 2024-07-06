@@ -1,6 +1,7 @@
 import pytest
 
 from consultation_analyser import factories
+from consultation_analyser.consultations import models
 from consultation_analyser.pipeline.backends.types import TopicAssignment
 from consultation_analyser.pipeline.ml_pipeline import (
     get_scatter_plot_data,
@@ -52,38 +53,82 @@ def test_get_scatter_plot_data():
     assert len(data) == len(expected)
 
 
-@pytest.mark.django_db
-def test_get_scatter_plot_data_with_detail():
+def set_up_scatter_data() -> models.TopicModelMetadata:
     question = factories.QuestionFactory()
     consultation = question.section.consultation
     processing_run = factories.ProcessingRunFactory(consultation=consultation)
     consultation = processing_run.consultation
     consultation_resp = factories.ConsultationResponseFactory(consultation=consultation)
-    theme = factories.ThemeFactory(
+    theme1 = factories.ThemeFactory(
         topic_id=1,
         short_description="short description",
         summary="This is a much longer descriptive summary.",
         processing_run=processing_run,
     )
-    answer = factories.AnswerFactory(question=question, consultation_response=consultation_resp)
-    answer.themes.add(theme)
+    topic_model_meta = theme1.topic_model_metadata
+    theme2 = factories.ThemeFactory(
+        topic_id=2,
+        short_description="short description 2",
+        summary="descriptive summary 2",
+        processing_run=processing_run,
+        topic_model_metadata=topic_model_meta,
+    )
+
+    answer1 = factories.AnswerFactory(question=question, consultation_response=consultation_resp)
+    answer1.themes.add(theme1)
+    answer2 = factories.AnswerFactory(
+        question=question, consultation_response=consultation_resp, free_text="free text 2"
+    )
+    answer2.themes.add(theme1)
+    answer3 = factories.AnswerFactory(question=question, consultation_response=consultation_resp)
+    answer3.themes.add(theme2)
     scatter_data = {
         "data": [
             {
                 "x_coordinate": 1,
                 "y_coordinate": 2,
-                "answer_id": str(answer.id),
-                "answer_free_text": answer.free_text,
+                "answer_id": str(answer1.id),
+                "answer_free_text": answer1.free_text,
                 "topic_id": 1,
-            }
+            },
+            {
+                "x_coordinate": 3,
+                "y_coordinate": 5,
+                "answer_id": str(answer2.id),
+                "answer_free_text": answer2.free_text,
+                "topic_id": 1,
+            },
+            {
+                "x_coordinate": 1.3,
+                "y_coordinate": 4.6,
+                "answer_id": str(answer3.id),
+                "answer_free_text": answer3.free_text,
+                "topic_id": 2,
+            },
         ]
     }
-    topic_model_meta = theme.topic_model_metadata
+    topic_model_meta = theme1.topic_model_metadata
     topic_model_meta.scatter_plot_data = scatter_data
     topic_model_meta.save()
+    return topic_model_meta
 
-    updated_data = topic_model_meta.get_scatter_plot_data_with_detail()
-    assert len(updated_data) == 1
+
+@pytest.mark.django_db
+def test_get_scatter_plot_data_with_detail():
+    topic_model_meta = set_up_scatter_data()
+    updated_data = topic_model_meta.get_scatter_plot_data_with_detail(topic_id_list=[1, 2])
+    assert len(updated_data) == 3
     assert "x_coordinate" in updated_data[0]
     assert "short_description" in updated_data[0]
     assert updated_data[0]["short_description"] == "short description"
+    assert updated_data[1]["short_description"] == "short description"
+    assert updated_data[2]["summary"] == "descriptive summary 2"
+
+    updated_data = topic_model_meta.get_scatter_plot_data_with_detail(
+        topic_id_list=[
+            1,
+        ]
+    )
+    assert len(updated_data) == 2
+    assert updated_data[0]["y_coordinate"] == 2
+    assert updated_data[1]["answer_free_text"] == "free text 2"

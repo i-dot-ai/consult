@@ -34,6 +34,14 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         .order_by("-answer_count")
     )  # Gets latest themes only
 
+    scatter_plot_data = {}
+    if filtered_themes:
+        filtered_themes_topic_ids = filtered_themes.values_list("topic_id", flat=True)
+        topic_model_metadata = filtered_themes.last().topic_model_metadata
+        scatter_plot_data = topic_model_metadata.get_scatter_plot_data_with_detail(
+            filtered_themes_topic_ids
+        )
+
     # Get counts
     total_responses = responses.count()
     multiple_choice_stats = question.multiple_choice_stats()
@@ -66,5 +74,6 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "blank_free_text_count": blank_free_text_count,
         "outliers_count": outliers_count,
         "outlier_theme_id": outlier_theme.id if outlier_theme else None,
+        "scatter_plot_data": scatter_plot_data,
     }
     return render(request, "consultations/questions/show.html", context)
