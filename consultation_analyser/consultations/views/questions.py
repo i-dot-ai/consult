@@ -1,10 +1,17 @@
+<<<<<<< HEAD
 from typing import Dict, List, Tuple
 
+=======
+from itertools import cycle
+
+import plotly.graph_objects as go
+>>>>>>> 8d21452 (Add a basic plotly scatter chart.)
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Max, QuerySet
 from django.http import HttpRequest
 from django.shortcuts import render
+from plotly.offline import plot
 
 from .. import models
 from .consultations import NO_THEMES_YET_MESSAGE
@@ -42,6 +49,44 @@ def get_outliers_info(processing_run: models.ProcessingRun, question: models.Que
     return outlier_theme, outliers_count
 
 
+def get_theme_colour_map(topic_ids: list) -> dict:
+    colour_map = {}
+    if -1 in topic_ids:
+        colour_map = {-1: "lightgray"}
+        topic_ids.remove(-1)
+    colours = ["#12436D", "#28A197", "#801650", "#F46A25", "#3D3D3D", "#A285D1"]
+    z = zip(topic_ids, cycle(colours))
+    for theme_id, colour in z:
+        colour_map[theme_id] = colour
+    return colour_map
+
+
+def make_scatter_plot(points: list[dict], colour_map: dict) -> str:
+    x_coordinates = [point["x_coordinate"] for point in points]
+    y_coordinates = [point["y_coordinate"] for point in points]
+    fig = go.Figure()
+    fig.add_trace(
+        go.Scatter(
+            x=x_coordinates,
+            y=y_coordinates,
+            mode="markers",
+            marker=dict(color=[colour_map[point["topic_id"]] for point in points]),
+            hovertext=[
+                f'Theme: {point["short_description"]} \n Response: " {point["answer_free_text"]}  " '
+                for point in points
+            ],
+        )
+    )
+    fig.update_layout(
+        paper_bgcolor="rgba(0,0,0,0)",
+        plot_bgcolor="rgba(0,0,0,0)",
+    )
+    fig.update_xaxes(visible=False)
+    fig.update_yaxes(visible=False)
+    plot_div = plot(fig, output_type="div")
+    return plot_div
+
+
 @user_can_see_consultation
 @login_required
 def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
@@ -66,10 +111,22 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         .order_by("-answer_count")
     )  # Gets latest themes only
 
+<<<<<<< HEAD
     if filtered_themes:
         scatter_plot_data = filter_scatter_plot_data(filtered_themes)
     else:
         scatter_plot_data = []
+=======
+    all_topic_ids = (
+        processing_run.get_themes_for_question(question)
+        .order_by("topic_id")
+        .distinct()
+        .values_list("topic_id", flat=True)
+    )
+    colour_map = get_theme_colour_map(list(all_topic_ids))
+    scatter_plot_data = get_scatter_plot_data(filtered_themes)
+    plot_div = make_scatter_plot(scatter_plot_data, colour_map)
+>>>>>>> 8d21452 (Add a basic plotly scatter chart.)
 
     # Get counts
     total_responses = responses.count()
@@ -97,6 +154,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "blank_free_text_count": blank_free_text_count,
         "outliers_count": outliers_count,
         "outlier_theme_id": outlier_theme.id if outlier_theme else None,
-        "scatter_plot_data": scatter_plot_data,
+        # "scatter_plot_data": scatter_plot_data,
+        "scatter_plot": plot_div,
     }
     return render(request, "consultations/questions/show.html", context)
