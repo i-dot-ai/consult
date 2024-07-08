@@ -6,9 +6,6 @@
 ### Resources and status
 * **RDS Postgres DB** - fully integrated
   * Credentials can be found in Secrets Manager (when `ai-engineer-role` or `developer` is assumed). Navigate to this by searching for secrets manager in the console or using the aws cli commands for the relevant secrets
-* **Sagemaker**
-  * Endpoint needs to be spun up when read to be integrated into the app. Ask an engineer to help you do this (Elliot Moore)
-  * Work is ongoing to spin these up and down as and when they are being used to  save costs. In the interim, if testing, please ensure that you delete endpoints post use. You can use the boto docs to find the relevant bits for this.
 * **Batch**
   * Place holder code provided on how to use batch in this (PR)[https://github.com/i-dot-ai/consultation-analyser/pull/48/files]. Submit job function documentation is also available in boto documentation. Unit tests available for this code as well.
 * **GitHub Actions**

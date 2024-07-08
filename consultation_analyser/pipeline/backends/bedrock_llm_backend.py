@@ -1,3 +1,4 @@
+from django.conf import settings
 from langchain_aws import BedrockLLM
 
 from .langchain_llm_backend import LangchainLLMBackend
