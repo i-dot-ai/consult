@@ -95,7 +95,7 @@ class MultipleChoiceQuestionStats:
     def percentages(self):
         if self.has_multiple_selections:
             raise MultipleChoiceNotProportionalError(
-                "It does not make sense to calculate percentages for a mutliple choice question supporting multiple selections"
+                "It does not make sense to calculate percentages for a multiple choice question supporting multiple selections"
             )
         else:
             print(self.counts)
