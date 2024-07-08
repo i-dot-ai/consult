@@ -44,13 +44,14 @@ resource "aws_iam_policy" "batch" {
 data "aws_iam_policy_document" "batch" {
   # checkov:skip=CKV_AWS_109:KMS policies can't be restricted
   # checkov:skip=CKV_AWS_111:KMS policies can't be restricted
+  # checkov:skip=CKV_AWS_356:Allow for policies to not have resource limits
 
   statement {
     effect = "Allow"
     actions = [
-      "sagemaker:CreateEndpoint",
-      "sagemaker:InvokeEndpoint",
-      "sagemaker:DescribeEndpoint"
+      "bedrock:Invoke*",
+      "bedrock:Get*",
+      "bedrock:List*"
     ]
     resources = [
       "*"

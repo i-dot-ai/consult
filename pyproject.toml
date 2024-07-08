@@ -51,6 +51,7 @@ torch = "~2.2"
 jsonschema = { extras = ["format"], version = "^4.22.0" }
 tiktoken = "^0.7.0"
 langchain-community = "^0.2.6"
+langchain-aws = "^0.1.9"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.5.0"
@@ -62,6 +63,7 @@ mypy = "^1.10.1"
 [tool.mypy]
 files = '**/*.py'
 exclude = ['^consultation_analyser/consultations/migrations/']
+
 
 
 
