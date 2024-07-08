@@ -127,12 +127,12 @@ poetry run python manage.py generate_themes --input=tests/examples/chocolate.jso
 Options available for this command are:
 
 `--clean`: delete this consultation if it already exists in the database.
-`--llm`: which llm to use. Pass `fake`, `sagemaker`, or `ollama/model_name`.
+`--llm`: which llm to use. Pass `fake`, `bedrock`, or `ollama/model_name`.
 `--embdedding_model`: pass the model for `SentenceTransformers` to use in the `BERTopic` pipeline. If `fake` is passed, random topics will be generated.
 
 The resulting file will be placed in `tmp/outputs` and its path will be printed on the console.
 
-If you are using SageMaker you will need to specify the name of your endpoint in the enviroment variable `SAGEMAKER_ENDPOINT_NAME`.
+If you are using Bedrock you will need to assume the `ai-engineer-role` in your shell before running this command.
 
 If you are using Ollama, you will have to install the app (e.g. `brew install ollama`) and have it running `ollama serve`. You will need to run your models e.g. `ollama run mistral`.
 

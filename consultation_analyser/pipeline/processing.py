@@ -5,11 +5,10 @@ from django.core.exceptions import ImproperlyConfigured
 
 from consultation_analyser.consultations.models import ProcessingRun
 from consultation_analyser.hosting_environment import HostingEnvironment
+from consultation_analyser.pipeline.backends.bedrock_llm_backend import BedrockLLMBackend
 from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
 from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
 from consultation_analyser.pipeline.backends.ollama_llm_backend import OllamaLLMBackend
-from consultation_analyser.pipeline.backends.sagemaker_llm_backend import SagemakerLLMBackend
-from consultation_analyser.pipeline.backends.bedrock_llm_backend import BedrockLLMBackend
 from consultation_analyser.pipeline.batch_calls import BatchJobHandler
 from consultation_analyser.pipeline.llm_summariser import (
     create_llm_summaries_for_processing_run,
@@ -23,7 +22,7 @@ def get_llm_backend(llm_identifier: Optional[str] = None):
     Will resolve llm_identifier to be settings.LLM_BACKEND unless llm_identifier is passed.
 
     Args:
-        llm_identifier: A string, either "fake", "sagemaker" or "ollama/$model_name". Optional.
+        llm_identifier: A string, either "fake", "bedrock" or "ollama/$model_name". Optional.
 
     Raises:
         ImproperlyConfigured: the resolved llm_identifier does not belong to the above list of possible identifiers.
@@ -34,8 +33,6 @@ def get_llm_backend(llm_identifier: Optional[str] = None):
 
     if llm_identifier == "fake" or not llm_identifier:
         return DummyLLMBackend()
-    elif llm_identifier == "sagemaker":
-        return SagemakerLLMBackend()
     elif llm_identifier == "bedrock":
         return BedrockLLMBackend()
     elif llm_identifier.startswith("ollama"):
