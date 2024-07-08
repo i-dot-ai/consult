@@ -207,20 +207,16 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
 class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
     scatter_plot_data = models.JSONField(default=dict)
 
-    def get_scatter_plot_data_with_detail(self, topic_id_list: list[int]) -> list[dict]:
+    def add_llm_summarisation_detail(self):
         """
-        Get list of dictionaries, each dictionary with data for scatter plot.
-        This appends any extra fields as needed onto the data in the scatter_plot_data field.
-
-        Filter by the list of topic_ids passed in.
+        Appends extra data from LLM summarisation onto the scatter plot data.
         """
         if "data" not in self.scatter_plot_data:
-            return []
+            return
 
         data = self.scatter_plot_data["data"]
         related_themes_qs = (
             Theme.objects.filter(topic_model_metadata=self)
-            .filter(topic_id__in=topic_id_list)
             .distinct()
         )
         updated_data = []
@@ -235,7 +231,11 @@ class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
                 updated_coordinate["short_description"] = theme.short_description
                 updated_coordinate["summary"] = theme.summary
                 updated_data.append(updated_coordinate)
-        return updated_data
+
+        self.scatter_plot_data = {"data": updated_data}
+        self.save()
+        return
+
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
