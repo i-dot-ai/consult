@@ -12,7 +12,7 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.pipeline.backends.types import (
     NO_SUMMARY_STR,
 )
-from consultation_analyser.pipeline.processing import run_processing_pipeline
+from consultation_analyser.pipeline.processing import run_llm_summariser, run_processing_pipeline
 
 
 @staff_member_required
@@ -65,11 +65,18 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
         if "generate_themes" in request.POST:
             run_processing_pipeline(consultation)
             messages.success(request, "Consultation data has been sent for processing")
+        elif "llm_summarisation" in request.POST:
+            try:
+                run_llm_summariser(consultation)
+                messages.success(
+                    request, "(Re-)running LLM summarisation on the latest processing run"
+                )
+            except models.ProcessingRun.DoesNotExist:
+                messages.error(request, "Cannot run LLM summarisation as no topics created")
         elif "download_json" in request.POST:
             consultation_json = consultation_to_json(consultation)
             response = HttpResponse(consultation_json, content_type="application/json")
             response["Content-Disposition"] = f"attachment; filename={consultation.slug}.json"
-
             return response
 
     except RuntimeError as error:
