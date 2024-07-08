@@ -5,7 +5,6 @@ import ijson
 import psutil
 from django.utils.text import slugify
 
-
 from .models import Answer, Consultation, ConsultationResponse, Question, Section
 
 logger = logging.getLogger("upload")

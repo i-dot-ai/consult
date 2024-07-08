@@ -1,8 +1,8 @@
 import json
-import ijson
 import logging
 from collections import Counter
 
+import ijson
 from crispy_forms_gds.helper import FormHelper
 from crispy_forms_gds.layout import Button, Layout
 from django import forms
