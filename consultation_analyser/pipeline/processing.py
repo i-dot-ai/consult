@@ -9,6 +9,7 @@ from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
 from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
 from consultation_analyser.pipeline.backends.ollama_llm_backend import OllamaLLMBackend
 from consultation_analyser.pipeline.backends.sagemaker_llm_backend import SagemakerLLMBackend
+from consultation_analyser.pipeline.backends.bedrock_llm_backend import BedrockLLMBackend
 from consultation_analyser.pipeline.batch_calls import BatchJobHandler
 from consultation_analyser.pipeline.llm_summariser import (
     create_llm_summaries_for_processing_run,
@@ -35,6 +36,8 @@ def get_llm_backend(llm_identifier: Optional[str] = None):
         return DummyLLMBackend()
     elif llm_identifier == "sagemaker":
         return SagemakerLLMBackend()
+    elif llm_identifier == "bedrock":
+        return BedrockLLMBackend()
     elif llm_identifier.startswith("ollama"):
         model = llm_identifier.split("/")[1]
         return OllamaLLMBackend(model)
