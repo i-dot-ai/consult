@@ -100,6 +100,18 @@ variable "memory" {
   default     = 2048
 }
 
+variable "ecs_memory" {
+  type        = number
+  description = "The memory resource to give to the ecs"
+  default     = 2048
+}
+
+variable "ecs_cpus" {
+  type        = number
+  description = "The cpu resource to give to the task"
+  default     = 1
+}
+
 variable "prefix" {
   type        = string
   description = "value to prefix resources with"

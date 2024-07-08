@@ -9,6 +9,22 @@ from consultation_analyser.consultations.forms.consultation_upload_form import (
 from consultation_analyser.consultations.public_schema import Question, Section
 
 
+def test_consultation_upload_form_is_invalid_for_invalid_json():
+    uploaded_file = SimpleUploadedFile("my_invalid.json", b"{}", content_type="application/json")
+    form = ConsultationUploadForm({}, {"consultation_json": uploaded_file})
+
+    assert not form.is_valid()
+
+    bad_json = {"consultation": ["banana"]}
+    uploaded_file = SimpleUploadedFile(
+        "my_invalid.json", json.dumps(bad_json).encode("utf-8"), content_type="application/json"
+    )
+    form = ConsultationUploadForm({}, {"consultation_json": uploaded_file})
+
+    assert not form.is_valid()
+    assert form.errors == {"consultation_json": ["consultation_responses > [] should be non-empty"]}
+
+
 def test_consultation_upload_form_is_valid_for_example_json():
     file_path = settings.BASE_DIR / "tests" / "examples" / "upload.json"
     with open(file_path, "rb") as f:

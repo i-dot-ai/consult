@@ -12,7 +12,7 @@ from .. import models
 from ..forms.consultation_upload_form import ConsultationUploadForm
 from .decorators import user_can_see_consultation
 
-logger = logging.getLogger("django.server")
+logger = logging.getLogger("upload")
 
 
 NO_THEMES_YET_MESSAGE = "We are processing your consultation. Themes have not been generated yet."

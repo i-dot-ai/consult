@@ -2,6 +2,7 @@ import json
 import logging
 from collections import Counter
 
+import ijson
 from crispy_forms_gds.helper import FormHelper
 from crispy_forms_gds.layout import Button, Layout
 from django import forms
@@ -37,15 +38,31 @@ def validate_section_uniqueness(uploaded_json):
 
 def validate_consultation_json(value):
     logger.info("Reading file")
-    uploaded_json = json.loads(value.read())
     with open(f"{SCHEMA_DIR}/consultation_with_responses_schema.json") as f:
         schema = json.loads(f.read())
 
+    sampled_json = {}
+    consultation_handle = ijson.items(value, "consultation")
+    for c in consultation_handle:
+        sampled_json["consultation"] = c
+
+    value.seek(0)
+
+    responses_handle = ijson.items(value, "consultation_responses.item")
+    sampled_responses = []
+    for i, resp in enumerate(responses_handle):
+        if i < 100:
+            sampled_responses.append(resp)
+        else:
+            break
+
+    sampled_json["consultation_responses"] = sampled_responses
+
     try:
         logger.info("Validating schema")
-        validate(uploaded_json, schema, format_checker=Draft202012Validator.FORMAT_CHECKER)
+        validate(sampled_json, schema, format_checker=Draft202012Validator.FORMAT_CHECKER)
         logger.info("Validating section uniqueness")
-        validate_section_uniqueness(uploaded_json)
+        validate_section_uniqueness(sampled_json)
     except jsonschema_exceptions.ValidationError as e:
         path = [str(el) for el in e.path]
         raise django_exceptions.ValidationError(f"{' > '.join(path)} > {e.message}")
