@@ -39,7 +39,7 @@ class Command(BaseCommand):
         parser.add_argument(
             "--llm",
             action="store",
-            help="The llm to use for summarising. Will be fake by default. Pass 'sagemaker' or 'ollama/model' to specify a model",
+            help="The llm to use for summarising. Will be fake by default. Pass 'fake', 'bedrock' or 'ollama/model' to specify a model",
             type=str,
         )
         parser.add_argument(
