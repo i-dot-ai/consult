@@ -101,4 +101,15 @@ data "aws_iam_policy_document" "ecs" {
       "*",
     ]
   }
+  statement {
+    effect = "Allow"
+    actions = [
+       "bedrock:Invoke*",
+       "bedrock:Get*",
+       "bedrock:List*"
+    ]
+    resources = [
+      "*"
+    ]
+  }
 }
