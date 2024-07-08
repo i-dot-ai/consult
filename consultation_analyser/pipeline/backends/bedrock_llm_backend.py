@@ -9,7 +9,7 @@ class BedrockLLMBackend(LangchainLLMBackend):
         llm = BedrockLLM(
             # hardcoding this because the kwargs and model 
             # are coupled - can generalise later
-            credentials_profile_name = "i-dot-ai-dev-consultations-ec2-batch-execution-role"
+            credentials_profile_name = "i-dot-ai-dev-consultations-ec2-batch-execution-role",
             model_id="mistral.mistral-large-2402-v1:0", 
             region_name=settings.AWS_REGION,
             model_kwargs={
