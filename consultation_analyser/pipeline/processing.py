@@ -44,6 +44,16 @@ def get_llm_backend(llm_identifier: Optional[str] = None):
         )
 
 
+def summarise_with_llm(consultation, processing_run=None, llm_backend=None):
+    if not llm_backend:
+        llm_backend = get_llm_backend(llm_backend)
+    if not processing_run:
+        processing_run = consultation.latest_processing_run
+    if not processing_run:
+        raise ProcessingRun.DoesNotExist("There are no existing runs for this consultation")
+    create_llm_summaries_for_processing_run(llm_backend, processing_run)
+
+
 def process_consultation_themes(consultation, topic_backend=None, llm_backend=None):
     processing_run = ProcessingRun(consultation=consultation)
     processing_run.save()
@@ -56,7 +66,7 @@ def process_consultation_themes(consultation, topic_backend=None, llm_backend=No
         llm_backend = get_llm_backend(llm_backend)
 
     save_themes_for_processing_run(topic_backend, processing_run)
-    create_llm_summaries_for_processing_run(llm_backend, processing_run)
+    summarise_with_llm(consultation, processing_run, llm_backend)
 
 
 def run_processing_pipeline(consultation):
@@ -74,3 +84,20 @@ def run_processing_pipeline(consultation):
         batch_handler.submit_job_batch(jobName=job_name, containerOverrides=command)
     else:
         process_consultation_themes(consultation)
+
+
+def run_llm_summariser(consultation):
+    if HostingEnvironment.is_deployed():
+        job_name = f"llm-summariser-{consultation.slug}"[:128]  # Must be <=128 , no spaces
+        command = {
+            "command": [
+                "venv/bin/django-admin",
+                "run_llm_summariser",
+                "--consultation_slug",
+                consultation.slug,
+            ]
+        }
+        batch_handler = BatchJobHandler()
+        batch_handler.submit_job_batch(jobName=job_name, containerOverrides=command)
+    else:
+        summarise_with_llm(consultation)
