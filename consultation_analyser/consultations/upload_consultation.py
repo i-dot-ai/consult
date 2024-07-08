@@ -78,6 +78,10 @@ def upload_consultation(file, user):
             responses_to_process = []
             timer.time("Response batch processed")
 
+    # pick up any remaining responses to process
+    if responses_to_process:
+        process_response_batch(responses_to_process, consultation.id, question_ids_map)
+
     timer.time("created Responses")
 
     return consultation

@@ -7,7 +7,7 @@ from consultation_analyser.factories import UserFactory
 
 @pytest.mark.django_db
 def test_upload_consultation():
-    file = open(settings.BASE_DIR / "tests" / "examples" / "upload.json", "r")
+    file = open(settings.BASE_DIR / "tests" / "examples" / "upload.json", "rb")
     user = UserFactory()
 
     consultation = upload_consultation(file, user)
