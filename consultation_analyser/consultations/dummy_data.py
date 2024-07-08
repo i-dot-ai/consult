@@ -73,6 +73,18 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
                 ans.themes.clear()
                 answers.append(ans)
 
+        # cause the last question to have answers with two responses to the multiple choice
+        # so that we always have a path to test this through the frontend
+        q = questions[-1]
+        question_mc = q.multiple_choice_options[0]
+        possibles = question_mc["options"].copy()
+        for a in q.answer_set.all():
+            answer_mc = a.multiple_choice[0]
+            random.shuffle(possibles)
+            answer_mc["options"] = possibles[:2]
+            a.multiple_choice = [answer_mc]
+            a.save()
+
         if include_themes:
             # Set themes per question, multiple answers with the same theme
             processing_run = ProcessingRunFactory(consultation=consultation)

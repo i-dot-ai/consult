@@ -20,33 +20,40 @@
       <p class="govuk-body">{{ question.text }}</p>
     </div>
   </div>
-  {% if multiple_choice_questions %}
-    {% for multiple_choice_question, multiple_choice_responses in multiple_choice_questions.items() %}
+  {% if multiple_choice_stats %}
+    {% for multiple_choice in multiple_choice_stats %}
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-two-thirds">
           {# Show multiple-choice question title only if it's not the same as the overall question title #}
-          {% if multiple_choice_question != question.text %}
-            <h2 class="govuk-heading-s">{{ multiple_choice_question }}</h2>
+          {% if multiple_choice.question != question.text %}
+            <h2 class="govuk-heading-s">{{ multiple_choice.question }}</h2>
           {% endif %}
           <dl class="govuk-summary-list">
-            {% for response in multiple_choice_responses %}
+            {% for option in multiple_choice.counts.keys() %}
               <div class="govuk-summary-list__row">
                 <dt class="govuk-summary-list__key">
-                  {{ response.answer }}
+                  {{ option }}
                 </dt>
                 <dd class="govuk-summary-list__value">
-                  {{ response.percent }}%
+                  {{ multiple_choice.counts[option] }}
                 </dd>
+                {% if not multiple_choice.has_multiple_selections %}
+                  <dd class="govuk-summary-list__value">
+                    {{ multiple_choice.percentages()[option] }}%
+                  </dd>
+                {% endif %}
               </div>
             {% endfor %}
           </dl>
         </div>
         <div class="govuk-grid-column-one-third govuk-!-padding-0">
-          <donut-chart>
-            {% for response in multiple_choice_responses %}
-              <chart-item data-label="{{ response.answer }}" data-count="{{ response.percent }}"></chart-item>
-            {% endfor %}
-          </donut-chart>
+          {% if not multiple_choice.has_multiple_selections %}
+            <donut-chart>
+              {% for option in multiple_choice.counts.keys() %}
+                <chart-item data-label="{{ option }}" data-count="{{ multiple_choice.percentages[option] }}"></chart-item>
+              {% endfor %}
+            </donut-chart>
+          {% endif %}
         </div>
       </div>
     {% endfor %}

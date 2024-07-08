@@ -1,10 +1,11 @@
+import itertools
 import uuid
 from dataclasses import dataclass
 
 import pydantic
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
-from django.db import models
+from django.db import connection, models
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import public_schema
@@ -80,7 +81,86 @@ class Section(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
 
+class MultipleChoiceNotProportionalError(Exception):
+    pass
+
+
+@dataclass
+class MultipleChoiceQuestionStats:
+    question: str
+    counts: dict[str, int]
+    total_responses: int
+    has_multiple_selections: bool
+
+    def percentages(self):
+        if self.has_multiple_selections:
+            raise MultipleChoiceNotProportionalError(
+                "It does not make sense to calculate percentages for a multiple choice question supporting multiple selections"
+            )
+        else:
+            print(self.counts)
+            return {
+                option: round((float(count) / self.total_responses) * 100)
+                for option, count in self.counts.items()
+            }
+
+
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
+    MULTIPLE_CHOICE_COUNTS_QUERY = """
+        SELECT question_id as id, elem ->> 'question_text' as question, option, COUNT(*) as count
+        FROM    consultations_answer,
+                jsonb_array_elements(multiple_choice) AS elem,
+                jsonb_array_elements_text(elem -> 'options') AS option
+        WHERE question_id = %s
+        GROUP BY question_id, option, question
+        ORDER BY question, option ASC
+    """
+
+    # until we explicitly annotate these questions, use the presence
+    # of multiple selections to infer whether they're supported
+    HAS_MULTIPLE_SELECTIONS_QUERY = """
+        SELECT EXISTS (
+            SELECT 1
+            FROM consultations_answer,
+                 jsonb_array_elements(multiple_choice) AS elem
+            WHERE question_id = %s
+            AND elem ->> 'question_text' = %s
+            AND jsonb_array_length(elem -> 'options') > 1
+        ) AS has_multiple_selections;
+    """
+
+    def multiple_choice_stats(self) -> list[MultipleChoiceQuestionStats]:
+        counts = type(self).objects.raw(self.MULTIPLE_CHOICE_COUNTS_QUERY, params=[str(self.id)])
+
+        values = [
+            {"question": count.question, "option": count.option, "count": count.count}
+            for count in counts
+        ]
+
+        output = []
+        for q, stats in itertools.groupby(values, lambda group: group["question"]):
+            statsl = list(stats)  # necessary as we need to iterate over this generator twice
+
+            counts = {opt["option"]: opt["count"] for opt in statsl}
+            total_responses = sum(counts.values())
+
+            with connection.cursor() as cursor:
+                # it's a bit inefficient to do another query here but I've preferred
+                # two small simple queries over one big complicated query
+                cursor.execute(self.HAS_MULTIPLE_SELECTIONS_QUERY, [str(self.id), q])
+                has_multiple_selections = cursor.fetchone()[0]
+
+            output.append(
+                MultipleChoiceQuestionStats(
+                    question=q,
+                    counts=counts,
+                    total_responses=total_responses,
+                    has_multiple_selections=has_multiple_selections,
+                )
+            )
+
+        return output
+
     text = models.CharField(
         null=False, max_length=None
     )  # no idea what's a sensible value for max_length
@@ -90,12 +170,6 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         null=True, blank=True, validators=[MultipleChoiceSchemaValidator(limit_value=None)]
     )
     section = models.ForeignKey(Section, on_delete=models.CASCADE)
-
-    @dataclass
-    class MultipleChoiceResponseCount:
-        answer: str
-        count: int
-        percent: float
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -177,11 +251,12 @@ class AnswerQuerySet(models.QuerySet):
 
 
 class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
-    objects = AnswerQuerySet.as_manager()
-
     multiple_choice = models.JSONField(
         null=True, blank=True, validators=[MultipleChoiceSchemaValidator(limit_value=None)]
     )
+
+    objects = AnswerQuerySet.as_manager()
+
     free_text = models.TextField(null=True, blank=True)
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     consultation_response = models.ForeignKey(ConsultationResponse, on_delete=models.CASCADE)
