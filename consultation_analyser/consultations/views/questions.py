@@ -1,11 +1,8 @@
-<<<<<<< HEAD
 from typing import Dict, List, Tuple
 
-=======
 from itertools import cycle
 
 import plotly.graph_objects as go
->>>>>>> 8d21452 (Add a basic plotly scatter chart.)
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Max, QuerySet
@@ -111,12 +108,10 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         .order_by("-answer_count")
     )  # Gets latest themes only
 
-<<<<<<< HEAD
     if filtered_themes:
         scatter_plot_data = filter_scatter_plot_data(filtered_themes)
     else:
         scatter_plot_data = []
-=======
     all_topic_ids = (
         processing_run.get_themes_for_question(question)
         .order_by("topic_id")
@@ -124,9 +119,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         .values_list("topic_id", flat=True)
     )
     colour_map = get_theme_colour_map(list(all_topic_ids))
-    scatter_plot_data = get_scatter_plot_data(filtered_themes)
     plot_div = make_scatter_plot(scatter_plot_data, colour_map)
->>>>>>> 8d21452 (Add a basic plotly scatter chart.)
 
     # Get counts
     total_responses = responses.count()
@@ -154,7 +147,7 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "blank_free_text_count": blank_free_text_count,
         "outliers_count": outliers_count,
         "outlier_theme_id": outlier_theme.id if outlier_theme else None,
-        # "scatter_plot_data": scatter_plot_data,
+        "scatter_plot_data": scatter_plot_data,
         "scatter_plot": plot_div,
     }
     return render(request, "consultations/questions/show.html", context)
