@@ -19,7 +19,7 @@ from consultation_analyser.pipeline.processing import run_processing_pipeline
 def index(request: HttpRequest) -> HttpResponse:
     if request.POST:
         try:
-            consultation = create_dummy_data(include_themes=False, number_questions=10)
+            consultation = create_dummy_data()
             user = request.user
             consultation.users.add(user)
             messages.success(request, "A dummy consultation has been generated")

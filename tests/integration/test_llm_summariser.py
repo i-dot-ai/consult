@@ -16,7 +16,9 @@ def test_create_llm_summaries_for_consultation():
     assert not theme.summary
     assert not theme.short_description
 
-    create_llm_summaries_for_processing_run(DummyLLMBackend(), consultation_builder.current_processing_run)
+    create_llm_summaries_for_processing_run(
+        DummyLLMBackend(), consultation_builder.current_processing_run
+    )
 
     theme.refresh_from_db()
     assert theme.summary

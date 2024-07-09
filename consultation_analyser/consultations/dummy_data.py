@@ -2,20 +2,13 @@ import datetime
 import random
 
 from consultation_analyser.factories import (
-    AnswerFactory,
-    ConsultationFactory,
-    ConsultationResponseFactory,
+    ConsultationBuilder,
     FakeConsultationData,
-    ProcessingRunFactory,
-    QuestionFactory,
-    SectionFactory,
-    ThemeFactory,
-    TopicModelMetadataFactory,
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
 
 
-def create_dummy_data(responses=10, include_themes=True, number_questions=10, **options):
+def create_dummy_data(responses=10, number_questions=10, **options):
     if number_questions > 10:
         raise RuntimeError("You can't have more than 10 questions")
     if HostingEnvironment.is_production():
@@ -28,77 +21,39 @@ def create_dummy_data(responses=10, include_themes=True, number_questions=10, **
     if "slug" not in options:
         options["slug"] = f"consultation-slug-{timestamp}"
 
-    consultation = ConsultationFactory(**options)
-    section = SectionFactory(name="Base section", consultation=consultation)
+    consultation_builder = ConsultationBuilder(**options)
     fake_consultation_data = FakeConsultationData()
     all_questions = fake_consultation_data.all_questions()
     questions_to_include = all_questions[:number_questions]
 
     questions = [
-        QuestionFactory(
+        consultation_builder.add_question(
             text=q["text"],
             slug=q["slug"],
             multiple_choice_questions=[
                 (x["question_text"], x["options"]) for x in (q.get("multiple_choice") or [])
             ],
             has_free_text=q["has_free_text"],
-            section=section,
         )
         for q in questions_to_include
     ]
-    for r in range(responses):
-        response = ConsultationResponseFactory(consultation=consultation)
-        answers = []
+
+    for i, r in enumerate(range(responses)):
         for q in questions:
             if q.has_free_text:
-                free_text_answer = fake_consultation_data.get_free_text_answer(q.slug)
-                answers.append(
-                    AnswerFactory(
-                        question=q,
-                        consultation_response=response,
-                        free_text=free_text_answer,
-                    )
-                )
-                # Force some answers to have no free text response
                 if random.randrange(1, 4) == 1:
-                    ans = AnswerFactory(
-                        question=q,
-                        consultation_response=response,
-                        free_text="",
-                    )
-                    ans.themes.clear()
-                    answers.append(ans)
+                    free_text_answer = ""
+                else:
+                    free_text_answer = fake_consultation_data.get_free_text_answer(q.slug)
             else:
-                ans = AnswerFactory(question=q, consultation_response=response)
-                ans.themes.clear()
-                answers.append(ans)
+                free_text_answer = None
 
-        # cause the last question to have answers with two responses to the multiple choice
-        # so that we always have a path to test this through the frontend
-        q = questions[-1]
-        question_mc = q.multiple_choice_options[0]
-        possibles = question_mc["options"].copy()
-        for a in q.answer_set.all():
-            answer_mc = a.multiple_choice[0]
-            random.shuffle(possibles)
-            answer_mc["options"] = possibles[:2]
-            a.multiple_choice = [answer_mc]
-            a.save()
+            consultation_builder.add_answer(q, free_text=free_text_answer)
+            consultation_builder.next_response()
 
-        if include_themes:
-            # Set themes per question, multiple answers with the same theme
-            processing_run = ProcessingRunFactory(consultation=consultation)
-            for q in questions:
-                tm = TopicModelMetadataFactory()
-                themes = [
-                    ThemeFactory(topic_model_metadata=tm, topic_id=i, processing_run=processing_run)
-                    for i in range(-1, 4)
-                ]
-                for a in answers[1:]:
-                    random_theme = random.choice(themes)
-                    a.themes.add(random_theme)
-                    a.save()
-            # Force at least one answer to be an outlier
-            answers[0].themes.add(themes[0])
-            answers[0].save()
-    return consultation
+    # always assign a double multichoice selection to the last question
+    question_options = q.multiple_choice_options[0]
+    answers = (question_options["question_text"], question_options["options"][:2])
+    consultation_builder.add_answer(q, multiple_choice_answers=[answers])
+
+    return consultation_builder.consultation

@@ -39,9 +39,8 @@ class FakeConsultationData:
 
 
 class ConsultationBuilder:
-    def __init__(self, consultation=None):
-        if not consultation:
-            consultation = ConsultationFactory()
+    def __init__(self, **kwargs):
+        consultation = ConsultationFactory(**kwargs)
 
         self.consultation = consultation
         self.current_response = None
