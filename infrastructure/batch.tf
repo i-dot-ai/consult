@@ -8,7 +8,7 @@ module "batch_compute" {
   name            = local.name
   region          = var.region
   vpc_id          = data.terraform_remote_state.vpc.outputs.vpc_id
-  desired_vcpus   = 0
+  desired_vcpus   = 8
   min_vcpus       = 0
   max_vcpus       = 20
   private_subnets = data.terraform_remote_state.vpc.outputs.private_subnets
