@@ -38,6 +38,77 @@ class FakeConsultationData:
         return list(self.questions.values())
 
 
+class ConsultationBuilder:
+    def __init__(self, consultation=None):
+        if not consultation:
+            consultation = ConsultationFactory()
+
+        self.consultation = consultation
+        self.current_response = None
+        self.current_processing_run = None
+        self.section = None
+        self.consultation_responses = []
+
+    def get_section(self):
+        if not self.section:
+            self.section = SectionFactory(consultation=self.consultation)
+
+        return self.section
+
+    def add_question(self, **kwargs):
+        """
+        Create a question, assigning it to the current section.
+        We only support one section for now.
+        """
+        return QuestionFactory(section=self.get_section(), **kwargs)
+
+    def add_answer(self, question, **kwargs):
+        """
+        Create an answer to the passed question, assigning it to the current_response
+        """
+        return AnswerFactory(
+            question=question, consultation_response=self.get_current_response(), **kwargs
+        )
+
+    def next_response(self):
+        """
+        Create a new response and put it in the self.current_response
+        field
+        """
+        self.current_response = None
+        return self.get_current_response()
+
+    def get_current_response(self):
+        """
+        Return the current_response, creating one if it doesn't exist
+        """
+        if not self.current_response:
+            self.current_response = ConsultationResponseFactory(
+                consultation=self.consultation, answers=False
+            )
+
+        return self.current_response
+
+    def get_current_processing_run(self):
+        if not self.current_processing_run:
+            self.current_processing_run = ProcessingRunFactory(consultation=self.consultation)
+
+        return self.current_processing_run
+
+    def add_theme(self, answer=None, **kwargs):
+        """
+        Create a theme, optionally passing an Answer to assign it to
+        """
+
+        processing_run = self.get_current_processing_run()
+        theme = ThemeFactory(processing_run=processing_run, **kwargs)
+
+        if answer:
+            answer.themes.add(theme)
+
+        return theme
+
+
 class ConsultationWithAnswersFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Consultation
@@ -55,7 +126,7 @@ class ConsultationWithAnswersFactory(factory.django.DjangoModelFactory):
 
     @factory.post_generation
     def create_answers(consultation, _create, _extracted, **kwargs):
-        QuestionFactory(section=SectionFactory(consultation=consultation), has_free_text=True)
+        QuestionFactory(section=SectionFactory(consultation=consultation))
         ConsultationResponseFactory.create_batch(8, consultation=consultation)
 
 
@@ -76,7 +147,7 @@ class ConsultationWithThemesFactory(factory.django.DjangoModelFactory):
 
     @factory.post_generation
     def create_themes(consultation, _create, _extracted, **kwargs):
-        QuestionFactory(section=SectionFactory(consultation=consultation), has_free_text=True)
+        QuestionFactory(section=SectionFactory(consultation=consultation))
         ConsultationResponseFactory.create_batch(8, consultation=consultation)
 
         process_consultation_themes(
@@ -95,15 +166,6 @@ class ConsultationFactory(factory.django.DjangoModelFactory):
     slug = factory.LazyAttribute(lambda _o: faker.slug())
 
     @factory.post_generation
-    def with_question(consultation, creation_strategy, value, **kwargs):
-        if value is True:
-            SectionFactory(
-                consultation=consultation,
-                with_question=True,
-                with_question__with_answer=kwargs.get("with_answer"),
-            )
-
-    @factory.post_generation
     def user(consultation, creation_strategy, value, **kwargs):
         if value:
             consultation.users.set([value])
@@ -117,19 +179,6 @@ class SectionFactory(factory.django.DjangoModelFactory):
     name = faker.sentence()
     slug = faker.slug()
     consultation = factory.SubFactory("consultation_analyser.factories.ConsultationFactory")
-
-    class Params:
-        with_questions = factory.Trait(
-            questions=[factory.SubFactory("consultation_analyser.factories.QuestionFactory")]
-        )
-
-    @factory.post_generation
-    def with_question(section, creation_strategy, value, **kwargs):
-        if value is True:
-            QuestionFactory(
-                section=section,
-                with_answer=kwargs.get("with_answer"),
-            )
 
 
 def get_multiple_choice_questions(current_question):
@@ -150,22 +199,14 @@ class QuestionFactory(factory.django.DjangoModelFactory):
         model = models.Question
         skip_postgeneration_save = True
 
-    text = faker.sentence()
-    slug = faker.slug()
+    text = factory.LazyAttribute(lambda _o: faker.sentence())
+    slug = factory.LazyAttribute(lambda _o: faker.slug())
     multiple_choice_options = factory.LazyAttribute(get_multiple_choice_questions)
     has_free_text = True
     section = factory.SubFactory(SectionFactory)
 
     class Params:
         multiple_choice_questions = None
-
-    @factory.post_generation
-    def with_answer(question, creation_strategy, value, **kwargs):
-        if value is True:
-            answer = AnswerFactory(
-                question=question, consultation_response__consultation=question.section.consultation
-            )
-            answer.save()
 
     @factory.post_generation
     def validate_json_fields(question, creation_strategy, extracted, **kwargs):
@@ -178,6 +219,7 @@ class ConsultationResponseFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = models.ConsultationResponse
+        skip_postgeneration_save = True
 
     @factory.post_generation
     def answers(consultation_response, creation_strategy, value, **kwargs):
@@ -247,13 +289,6 @@ class AnswerFactory(factory.django.DjangoModelFactory):
 
     class Params:
         multiple_choice_answers = None
-
-    @factory.post_generation
-    def with_themes(self, creation_strategy, value, **kwargs):
-        if value is True:
-            processing_run = ProcessingRunFactory(consultation=self.question.section.consultation)
-            theme = ThemeFactory(processing_run=processing_run)
-            self.themes.add(theme)
 
     @factory.post_generation
     def validate_json_fields(answer, creation_strategy, extracted, **kwargs):

@@ -6,10 +6,9 @@ from consultation_analyser.consultations.models import MultipleChoiceNotProporti
 
 @pytest.mark.django_db
 def test_get_multiple_choice_stats():
-    consultation = factories.ConsultationFactory()
-    section = factories.SectionFactory()
-    question = factories.QuestionFactory(
-        section=section, multiple_choice_questions=[("What do you like?", ["Rain", "Sun", "Snow"])]
+    consultation_builder = factories.ConsultationBuilder()
+    question = consultation_builder.add_question(
+        multiple_choice_questions=[("What do you like?", ["Rain", "Sun", "Snow"])]
     )
 
     for a in [
@@ -22,10 +21,8 @@ def test_get_multiple_choice_stats():
         ["Rain", "Sun"],
         ["Sun", "Snow"],
     ]:
-        factories.AnswerFactory(
-            multiple_choice_answers=[("What do you like?", a)],
-            question=question,
-            consultation_response=factories.ConsultationResponseFactory(consultation=consultation),
+        consultation_builder.add_answer(
+            question, multiple_choice_answers=[("What do you like?", a)]
         )
 
     result = question.multiple_choice_stats()
@@ -47,10 +44,9 @@ def test_get_multiple_choice_stats():
 
 @pytest.mark.django_db
 def test_get_multiple_choice_has_multiple_selections():
-    consultation = factories.ConsultationFactory()
-    section = factories.SectionFactory()
-    question = factories.QuestionFactory(
-        section=section, multiple_choice_questions=[("What do you like?", ["Rain", "Sun", "Snow"])]
+    consultation_builder = factories.ConsultationBuilder()
+    question = consultation_builder.add_question(
+        multiple_choice_questions=[("What do you like?", ["Rain", "Sun", "Snow"])]
     )
 
     for a in [
@@ -58,10 +54,8 @@ def test_get_multiple_choice_has_multiple_selections():
         ["Sun"],
         ["Snow"],
     ]:
-        factories.AnswerFactory(
-            multiple_choice_answers=[("What do you like?", a)],
-            question=question,
-            consultation_response=factories.ConsultationResponseFactory(consultation=consultation),
+        consultation_builder.add_answer(
+            question, multiple_choice_answers=[("What do you like?", a)]
         )
 
     result = question.multiple_choice_stats()

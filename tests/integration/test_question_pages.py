@@ -5,7 +5,7 @@ import pytest
 
 from consultation_analyser.consultations import models
 from consultation_analyser.factories import (
-    ConsultationWithThemesFactory,
+    ConsultationBuilder,
     UserFactory,
 )
 from tests.helpers import sign_in
@@ -14,10 +14,21 @@ from tests.helpers import sign_in
 @pytest.mark.django_db
 def test_get_question_summary_page(django_app):
     user = UserFactory()
-    consultation = ConsultationWithThemesFactory(users=(user))
+    consultation_builder = ConsultationBuilder(user=(user))
+    consultation = consultation_builder.consultation
+    question = consultation_builder.add_question(
+        multiple_choice_questions=[("Do you agree?", ["Yes", "No", "Maybe"])]
+    )
+    theme = consultation_builder.add_theme(topic_id=1) # prevent outlier
 
-    question = models.Question.objects.filter(section__consultation=consultation).first()
-    processing_run = consultation.latest_processing_run
+    for a in [
+        [("Do you agree?", ["Yes"])],
+        [("Do you agree?", ["No"])],
+        [("Do you agree?", ["No"])],
+        [("Do you agree?", ["Maybe"])],
+    ]:
+        answer = consultation_builder.add_answer(question, multiple_choice_answers=a)
+        answer.themes.add(theme)
 
     sign_in(django_app, user.email)
 
@@ -28,19 +39,15 @@ def test_get_question_summary_page(django_app):
 
     assert question.text in page_content
 
-    latest_theme = (
-        processing_run.get_themes_for_question(question_id=question.id)
-        .filter(is_outlier=False)
-        .last()
-    )
-    assert latest_theme.short_description in page_content
+    assert theme.short_description in page_content
 
     for item in question.multiple_choice_options:
         for opt in item["options"]:
             assert opt in page_content
 
-    for keyword in latest_theme.topic_keywords:
+    for keyword in theme.topic_keywords:
         assert keyword in page_content
 
-    assert re.search(r"Yes\s+\d\s+\d+%", question_page.html.text)
-    assert re.search(r"No\s+\d\s+\d+%", question_page.html.text)
+    assert re.search(r"Yes\s+1\s+25%", question_page.html.text)
+    assert re.search(r"No\s+2\s+50%", question_page.html.text)
+    assert re.search(r"Maybe\s+1\s+25%", question_page.html.text)

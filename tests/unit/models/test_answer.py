@@ -52,20 +52,17 @@ def test_multiple_choice_validation():
 
 @pytest.mark.django_db
 def test_find_answer_multiple_choice_response():
-    q = factories.QuestionFactory(
+    consultation_builder = factories.ConsultationBuilder()
+    question = consultation_builder.add_question(
         multiple_choice_questions=[("Do you agree?", ["Yes", "No", "Maybe"])]
     )
-    resp = factories.ConsultationResponseFactory(consultation=q.section.consultation)
 
-    factories.AnswerFactory(
-        question=q, consultation_response=resp, multiple_choice_answers=[("Do you agree?", ["Yes"])]
-    )
-    factories.AnswerFactory(
-        question=q, consultation_response=resp, multiple_choice_answers=[("Do you agree?", ["No"])]
-    )
-    factories.AnswerFactory(
-        question=q, consultation_response=resp, multiple_choice_answers=[("Do you agree?", ["No"])]
-    )
+    for a in [
+        [("Do you agree?", ["Yes"])],
+        [("Do you agree?", ["No"])],
+        [("Do you agree?", ["No"])],
+    ]:
+        consultation_builder.add_answer(question, multiple_choice_answers=a)
 
     result = models.Answer.objects.filter_multiple_choice(question="Not a question", answer="Yes")
     assert not result
