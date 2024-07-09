@@ -192,6 +192,11 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
     def themes(self):
         return Theme.objects.filter(processing_run=self).distinct()
 
+    @property
+    def topic_model_metadatas(self):
+        topic_model_meta_ids = self.themes.values_list("topic_model_metadata", flat=True)
+        return TopicModelMetadata.objects.filter(id__in=topic_model_meta_ids).distinct()
+
     def get_themes_for_answer(self, answer_id):
         # At the moment, at most one theme per answer and run but
         # likely to change in future.
