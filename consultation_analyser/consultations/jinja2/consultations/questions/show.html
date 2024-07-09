@@ -91,13 +91,35 @@
                 </div>
               {% endif %}
               {% if not multiple_choice.has_multiple_selections %}
+                <div>
                 <donut-chart>
                   {% for option in multiple_choice.counts.keys() %}
-                    <chart-item data-label="{{ option }}" data-count="{{ multiple_choice.percentages[option] }}"></chart-item>
+                    <chart-item data-label="{{ option }}" data-count="{{ multiple_choice.percentages()[option] }}"></chart-item>
                   {% endfor %}
                 </donut-chart>
+                </div>
               {% endif %}
+              <div class="govuk-!-padding-left-2 govuk-!-padding-right-2">
+              <dl class="govuk-summary-list iai-chart-text">
+                {% for option in multiple_choice.counts.keys() %}
+                  <div class="govuk-summary-list__row">
+                    <dt class="govuk-summary-list__key">
+                      {{ option }}
+                    </dt>
+                    <dd class="govuk-summary-list__value">
+                      {{ multiple_choice.counts[option] }}
+                    </dd>
+                    {% if not multiple_choice.has_multiple_selections %}
+                      <dd class="govuk-summary-list__value">
+                        {{ multiple_choice.percentages()[option] }}%
+                      </dd>
+                    {% endif %}
+                  </div>
+                {% endfor %}
+              </dl>
+              </div>
             {% endfor %}
+          {% endif %}
         </div>
       </div>
 
