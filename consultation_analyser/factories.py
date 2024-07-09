@@ -38,6 +38,27 @@ class FakeConsultationData:
         return list(self.questions.values())
 
 
+class ConsultationWithAnswersFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Consultation
+        skip_postgeneration_save = True
+
+    name = factory.LazyAttribute(lambda _o: faker.sentence())
+    slug = factory.LazyAttribute(lambda _o: faker.slug())
+
+    @factory.post_generation
+    def users(consultation, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        consultation.users.add(extracted)
+
+    @factory.post_generation
+    def create_answers(consultation, _create, _extracted, **kwargs):
+        QuestionFactory(section=SectionFactory(consultation=consultation), has_free_text=True)
+        ConsultationResponseFactory.create_batch(8, consultation=consultation)
+
+
 class ConsultationWithThemesFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Consultation
@@ -160,11 +181,12 @@ class ConsultationResponseFactory(factory.django.DjangoModelFactory):
 
     @factory.post_generation
     def answers(consultation_response, creation_strategy, value, **kwargs):
-        questions = models.Question.objects.filter(
-            section__consultation=consultation_response.consultation
-        ).all()
-        for q in questions:
-            AnswerFactory(question=q, consultation_response=consultation_response)
+        if value or value is None:
+            questions = models.Question.objects.filter(
+                section__consultation=consultation_response.consultation
+            ).all()
+            for q in questions:
+                AnswerFactory(question=q, consultation_response=consultation_response)
 
 
 class ProcessingRunFactory(factory.django.DjangoModelFactory):

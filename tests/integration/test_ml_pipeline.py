@@ -17,7 +17,7 @@ def test_topic_model_end_to_end(tmp_path):
 
     # identical answers
     for r in range(10):
-        response = factories.ConsultationResponseFactory(consultation=consultation)
+        response = factories.ConsultationResponseFactory(consultation=consultation, answers=False)
         factories.AnswerFactory(
             question=q,
             consultation_response=response,

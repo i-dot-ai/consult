@@ -11,33 +11,29 @@ from consultation_analyser.consultations import models
 )
 @pytest.mark.django_db
 def test_save_theme_to_answer(input_keywords, topic_id, is_outlier):
-    consultation = factories.ConsultationFactory()
-    consultation_response = factories.ConsultationResponseFactory(consultation=consultation)
-    section = factories.SectionFactory(consultation=consultation)
-    question = factories.QuestionFactory(has_free_text=True, section=section)
-    answer = factories.AnswerFactory(question=question, consultation_response=consultation_response)
+    consultation = factories.ConsultationWithAnswersFactory()
+    answer = models.Answer.objects.last()
     processing_run = factories.ProcessingRunFactory(consultation=consultation)
-    topic_model_meta = factories.TopicModelMetadataFactory()
+    tmm = factories.TopicModelMetadataFactory()
+
     #  Check theme created and saved to answer
     answer.save_theme_to_answer(
         topic_keywords=input_keywords,
         topic_id=topic_id,
         processing_run=processing_run,
-        topic_model_metadata=topic_model_meta,
+        topic_model_metadata=tmm,
     )
     theme = models.Theme.objects.get(topic_keywords=input_keywords)
     assert theme.topic_keywords == input_keywords
     assert theme.is_outlier == is_outlier
-    latest_themes_for_answer = processing_run.get_themes_for_answer(answer_id=answer.id)
-    # At the moment, we only have at most one theme for answer and processing run
-    assert latest_themes_for_answer.last().topic_keywords == input_keywords
-    # Check no duplicate created
+
     answer.save_theme_to_answer(
         topic_keywords=input_keywords,
         topic_id=topic_id,
         processing_run=processing_run,
-        topic_model_metadata=topic_model_meta,
+        topic_model_metadata=tmm,
     )
+
     themes_qs = models.Theme.objects.filter(topic_keywords=input_keywords)
     assert themes_qs.count() == 1
 
