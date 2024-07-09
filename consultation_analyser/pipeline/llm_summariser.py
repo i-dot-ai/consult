@@ -1,6 +1,6 @@
 import logging
 
-from consultation_analyser.consultations.models import ProcessingRun
+from consultation_analyser.consultations.models import ProcessingRun, TopicModelMetadata, Theme
 from consultation_analyser.pipeline.backends.llm_backend import LLMBackend
 
 logger = logging.getLogger("pipeline")
@@ -23,4 +23,9 @@ def create_llm_summaries_for_processing_run(llm_backend: LLMBackend, processing_
             theme.short_description = theme_summary_data.short_description
         logger.info(f"Theme description: {theme.short_description}")
         theme.save()
+
+    # processing_run.themes.
+
+
+
     logger.info("Ending LLM summarisation")
