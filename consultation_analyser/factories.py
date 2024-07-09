@@ -7,6 +7,9 @@ from django.utils import timezone
 
 from consultation_analyser.authentication import models as authentication_models
 from consultation_analyser.consultations import models
+from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
+from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
+from consultation_analyser.pipeline.processing import process_consultation_themes
 
 faker = _faker.Faker()
 
@@ -35,6 +38,33 @@ class FakeConsultationData:
         return list(self.questions.values())
 
 
+class ConsultationWithThemesFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = models.Consultation
+        skip_postgeneration_save = True
+
+    name = factory.LazyAttribute(lambda _o: faker.sentence())
+    slug = factory.LazyAttribute(lambda _o: faker.slug())
+
+    @factory.post_generation
+    def users(consultation, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        consultation.users.add(extracted)
+
+    @factory.post_generation
+    def create_themes(consultation, _create, _extracted, **kwargs):
+        QuestionFactory(section=SectionFactory(consultation=consultation), has_free_text=True)
+        ConsultationResponseFactory.create_batch(8, consultation=consultation)
+
+        process_consultation_themes(
+            consultation=consultation,
+            topic_backend=DummyTopicBackend(),
+            llm_backend=DummyLLMBackend(),
+        )
+
+
 class ConsultationFactory(factory.django.DjangoModelFactory):
     class Meta:
         model = models.Consultation
@@ -50,15 +80,6 @@ class ConsultationFactory(factory.django.DjangoModelFactory):
                 consultation=consultation,
                 with_question=True,
                 with_question__with_answer=kwargs.get("with_answer"),
-            )
-
-    @factory.post_generation
-    def with_themes(consultation, creation_strategy, value, **kwargs):
-        if value is True:
-            SectionFactory(
-                consultation=consultation,
-                with_question=True,
-                with_question__with_answer=True,
             )
 
     @factory.post_generation
@@ -92,7 +113,7 @@ class SectionFactory(factory.django.DjangoModelFactory):
 
 def get_multiple_choice_questions(current_question):
     if not current_question.multiple_choice_questions:
-        questions = [("Do you agree?", ["Yes", "No", "Maybe"])]
+        questions = [("Do you agree?", ["Yes", "No"])]
     else:
         questions = current_question.multiple_choice_questions
 
@@ -136,6 +157,14 @@ class ConsultationResponseFactory(factory.django.DjangoModelFactory):
 
     class Meta:
         model = models.ConsultationResponse
+
+    @factory.post_generation
+    def answers(consultation_response, creation_strategy, value, **kwargs):
+        questions = models.Question.objects.filter(
+            section__consultation=consultation_response.consultation
+        ).all()
+        for q in questions:
+            AnswerFactory(question=q, consultation_response=consultation_response)
 
 
 class ProcessingRunFactory(factory.django.DjangoModelFactory):
@@ -191,9 +220,6 @@ class AnswerFactory(factory.django.DjangoModelFactory):
     free_text = factory.LazyAttribute(
         lambda o: faker.sentence() if o.question.has_free_text else None
     )
-
-    question = factory.SubFactory(QuestionFactory)
-    consultation_response = factory.SubFactory(ConsultationResponseFactory)
 
     multiple_choice = factory.LazyAttribute(get_multiple_choice_answers)
 
