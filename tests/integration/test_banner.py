@@ -12,6 +12,5 @@ def test_user_can_sign_in(django_app):
     assert "pilot stage" not in logged_out_homepage
 
     consultations_index = sign_in(django_app, "email@example.com")
-    print(consultations_index)
 
     assert "pilot stage" in consultations_index

@@ -98,7 +98,6 @@ class MultipleChoiceQuestionStats:
                 "It does not make sense to calculate percentages for a multiple choice question supporting multiple selections"
             )
         else:
-            print(self.counts)
             return {
                 option: round((float(count) / self.total_responses) * 100)
                 for option, count in self.counts.items()
