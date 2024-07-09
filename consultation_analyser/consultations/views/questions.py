@@ -1,3 +1,5 @@
+from typing import Dict, List, Tuple
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Max, QuerySet
@@ -10,18 +12,23 @@ from .decorators import user_can_see_consultation
 from .filters import get_applied_filters, get_filtered_responses, get_filtered_themes
 
 
-def get_scatter_plot_data(filtered_themes: QuerySet) -> list[dict]:
+def filter_scatter_plot_data(filtered_themes: QuerySet) -> List[Dict]:
     if not filtered_themes:
         return []
-    filtered_themes_topic_ids = filtered_themes.values_list("topic_id", flat=True)
-    topic_model_metadata = filtered_themes.last().topic_model_metadata
-    scatter_plot_data = topic_model_metadata.get_scatter_plot_data_with_detail(
-        filtered_themes_topic_ids
-    )
-    return scatter_plot_data
+    theme = filtered_themes.first()  # metadata same for all themes for question
+    topic_model_metadata = theme.topic_model_metadata
+    data = topic_model_metadata.scatter_plot_data
+    if not data:  # Old consultations - didn't calculate scatter data when generating themes
+        return []
+    data = data["data"]
+    topic_ids = [theme.topic_id for theme in filtered_themes]
+    filtered_scatter_data = [
+        coordinate for coordinate in data if coordinate["topic_id"] in topic_ids
+    ]
+    return filtered_scatter_data
 
 
-def get_outliers_info(processing_run: models.ProcessingRun, question: models.Question) -> tuple:
+def get_outliers_info(processing_run: models.ProcessingRun, question: models.Question) -> Tuple:
     outlier_theme = None
     outliers_count = 0
     if not processing_run:
@@ -59,7 +66,10 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         .order_by("-answer_count")
     )  # Gets latest themes only
 
-    scatter_plot_data = get_scatter_plot_data(filtered_themes)
+    if filtered_themes:
+        scatter_plot_data = filter_scatter_plot_data(filtered_themes)
+    else:
+        scatter_plot_data = []
 
     # Get counts
     total_responses = responses.count()
