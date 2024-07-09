@@ -66,13 +66,13 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
             run_processing_pipeline(consultation)
             messages.success(request, "Consultation data has been sent for processing")
         elif "llm_summarisation" in request.POST:
-            try:
+            if not consultation.latest_processing_run:
+                messages.error(request, "Cannot run LLM summarisation as no topics created")
+            else:
                 run_llm_summariser(consultation)
                 messages.success(
                     request, "(Re-)running LLM summarisation on the latest processing run"
                 )
-            except models.ProcessingRun.DoesNotExist:
-                messages.error(request, "Cannot run LLM summarisation as no topics created")
         elif "download_json" in request.POST:
             consultation_json = consultation_to_json(consultation)
             response = HttpResponse(consultation_json, content_type="application/json")
