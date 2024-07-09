@@ -77,6 +77,9 @@ $iai-colour-pink: #C50878;
 .con-question-list__item {
     border-top: 1px solid #E5E7EB;
 }
+.con-question-list__button-group {
+    flex-shrink: 0;
+}
 
 
 /** RESPONSES PAGE **/
@@ -89,6 +92,10 @@ $iai-colour-pink: #C50878;
 pre code {
   white-space: pre-wrap;
   font-size: 80%;
+}
+
+.con-responses-table td, .con-responses-table th {
+    width: 50%;
 }
 
 
