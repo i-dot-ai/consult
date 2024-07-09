@@ -1,6 +1,5 @@
 {% if messages %}
-  <div class="iai-grid">
-    <div class="iai-grid__start-2-span-10">
+
       {% for message in messages %}
         <notification-banner>
           <div class="govuk-notification-banner govuk-notification-banner--{{ message.level_tag }}" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
@@ -17,6 +16,5 @@
           </div>
         </notification-banner>
       {% endfor %}
-    </div>
-  </div>
+
 {% endif %}
