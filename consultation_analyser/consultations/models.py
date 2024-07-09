@@ -220,10 +220,7 @@ class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
             return
 
         data = self.scatter_plot_data["data"]
-        related_themes_qs = (
-            Theme.objects.filter(topic_model_metadata=self)
-            .distinct()
-        )
+        related_themes_qs = Theme.objects.filter(topic_model_metadata=self).distinct()
         updated_data = []
         for coordinate in data:
             topic_id = coordinate["topic_id"]
@@ -240,7 +237,6 @@ class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
         self.scatter_plot_data = {"data": updated_data}
         self.save()
         return
-
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
