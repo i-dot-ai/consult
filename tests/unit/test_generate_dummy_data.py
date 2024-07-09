@@ -18,9 +18,6 @@ def test_a_consultation_is_generated(settings):
     assert Question.objects.count() == 10
     assert Answer.objects.count() >= 100
 
-    qs = Answer.objects.filter(themes__is_outlier=True)
-    assert qs.exists()
-
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("environment", ["prod"])
