@@ -403,7 +403,7 @@ body:has(.iai-environment-warning) main {
     display: block;
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.7s;
+    transition: max-height 0.4s;
   }
 }
 @media (min-width: 375px) {
