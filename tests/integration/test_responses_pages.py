@@ -2,12 +2,9 @@ import html
 
 import pytest
 
+from consultation_analyser.consultations.models import Answer, Question
 from consultation_analyser.factories import (
-    AnswerFactory,
-    ConsultationFactory,
-    ConsultationResponseFactory,
-    ProcessingRunFactory,
-    ThemeFactory,
+    ConsultationWithThemesFactory,
     UserFactory,
 )
 from tests.helpers import sign_in
@@ -18,22 +15,12 @@ def test_get_question_responses_page(django_app):
     user = UserFactory(email="email@example.com")
     sign_in(django_app, "email@example.com")
 
-    consultation = ConsultationFactory(
-        user=user,
-        with_question=True,
-        with_question__with_multiple_choice=True,
-        with_question__with_free_text=True,
-    )
+    consultation = ConsultationWithThemesFactory(users=(user))
 
-    consultation_response = ConsultationResponseFactory(consultation=consultation)
-
-    section = consultation.section_set.first()
-    question = section.question_set.first()
-
-    answer = AnswerFactory(question=question, consultation_response=consultation_response)
-    processing_run = ProcessingRunFactory(consultation=consultation)
-    theme = ThemeFactory(processing_run=processing_run)
-    answer.themes.add(theme)
+    processing_run = consultation.latest_processing_run
+    question = Question.objects.last()
+    section = question.section
+    answer = Answer.objects.filter(question=question).first()
     multiple_choice = answer.multiple_choice[0]
 
     question_responses_url = (

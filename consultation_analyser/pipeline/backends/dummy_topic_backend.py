@@ -1,4 +1,5 @@
 import logging
+import random
 
 from faker import Faker
 
@@ -7,7 +8,23 @@ from consultation_analyser.consultations import models
 from .topic_backend import TopicBackend
 from .types import TopicAssignment
 
-logger = logging.getLogger("django.server")
+logger = logging.getLogger("pipeline")
+
+
+def random_partition(lst):
+    result = []
+    current_sublist = []
+
+    for item in lst:
+        if current_sublist and random.random() < 0.25:
+            result.append(current_sublist)
+            current_sublist = []
+        current_sublist.append(item)
+
+    if current_sublist:
+        result.append(current_sublist)
+
+    return result
 
 
 class DummyTopicBackend(TopicBackend):
@@ -17,11 +34,15 @@ class DummyTopicBackend(TopicBackend):
 
         assignments = []
         topic_id = -1
-        for answer in answers:
+
+        # introduce some clumping in the topics
+        for answer_set in random_partition(answers):
             topic_keywords = faker.words(4)
-            assignments.append(
-                TopicAssignment(topic_id=topic_id, topic_keywords=topic_keywords, answer=answer)
-            )
+            for answer in answer_set:
+                assignments.append(
+                    TopicAssignment(topic_id=topic_id, topic_keywords=topic_keywords, answer=answer)
+                )
+
             topic_id += 1
 
         return assignments

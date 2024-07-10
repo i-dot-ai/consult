@@ -7,19 +7,18 @@ from consultation_analyser.pipeline.llm_summariser import create_llm_summaries_f
 
 @pytest.mark.django_db
 def test_create_llm_summaries_for_consultation():
-    consultation = factories.ConsultationFactory(name="My new consultation")
-    response = factories.ConsultationResponseFactory(consultation=consultation)
-    section = factories.SectionFactory(consultation=consultation)
-    question = factories.QuestionFactory(section=section, has_free_text=True)
-    processing_run = factories.ProcessingRunFactory(consultation=consultation)
-    theme = factories.ThemeFactory(short_description="", summary="", processing_run=processing_run)
-    answer = factories.AnswerFactory(question=question, consultation_response=response)
+    consultation_builder = factories.ConsultationBuilder()
+    theme = consultation_builder.add_theme(summary="", short_description="")
+    question = consultation_builder.add_question()
+    answer = consultation_builder.add_answer(question)
     answer.themes.add(theme)
 
     assert not theme.summary
     assert not theme.short_description
 
-    create_llm_summaries_for_processing_run(DummyLLMBackend(), processing_run)
+    create_llm_summaries_for_processing_run(
+        DummyLLMBackend(), consultation_builder.current_processing_run
+    )
 
     theme.refresh_from_db()
     assert theme.summary

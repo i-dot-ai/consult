@@ -9,7 +9,7 @@ from consultation_analyser.factories import ConsultationFactory, UserFactory
 @pytest.mark.django_db
 def test_get_consultation_we_own(client):
     user = UserFactory()
-    consultation_we_own = ConsultationFactory(user=user, with_themes=True)
+    consultation_we_own = ConsultationFactory(user=user)
     client.force_login(user)
     response = client.get(f"/consultations/{consultation_we_own.slug}/")
     assert response.status_code == 200

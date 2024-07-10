@@ -2,38 +2,37 @@ import io
 import json
 
 import pytest
-from django.conf import settings
 
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.upload_consultation import upload_consultation
-from consultation_analyser.factories import ProcessingRunFactory, UserFactory
-from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
-from consultation_analyser.pipeline.ml_pipeline import save_themes_for_processing_run
+from consultation_analyser.factories import ConsultationBuilder, UserFactory
 
 
 @pytest.mark.django_db
 def test_consultation_to_json(django_app):
     user = UserFactory()
-    file = open(settings.BASE_DIR / "tests" / "examples" / "upload.json", "rb")
 
-    consultation = upload_consultation(file, user)
-    processing_run = ProcessingRunFactory(consultation=consultation)
-    save_themes_for_processing_run(DummyTopicBackend(), processing_run=processing_run)
+    consultation_builder = ConsultationBuilder(name="My consultation")
+    consultation = consultation_builder.consultation
+    question = consultation_builder.add_question()
+
+    answer = consultation_builder.add_answer(question)
+    consultation_builder.add_theme(answer)
+    consultation_builder.next_response()
+    answer = consultation_builder.add_answer(question)
+    consultation_builder.add_theme(answer)
 
     consultation_json = json.loads(consultation_to_json(consultation))
 
     assert consultation_json["consultation"]["name"] == "My consultation"
 
     assert len(consultation_json["consultation"]["sections"]) == 1
-    assert len(consultation_json["consultation"]["sections"][0]["questions"]) == 3
+    assert len(consultation_json["consultation"]["sections"][0]["questions"]) == 1
 
     assert len(consultation_json["consultation_responses"]) == 2
-    assert len(consultation_json["consultation_responses"][0]["answers"]) == 3
+    assert len(consultation_json["consultation_responses"][0]["answers"]) == 1
 
-    # dummy theme process assigns on theme per question
-    # and we'll only create themes for free_text answers,
-    # of which there are 4 in the test data
-    assert len(consultation_json["themes"]) == 4
+    assert len(consultation_json["themes"]) == 2
 
     consultation_json["consultation"]["name"] = "My consultation reuploaded"
 

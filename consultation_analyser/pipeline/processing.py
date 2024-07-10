@@ -68,6 +68,8 @@ def process_consultation_themes(consultation, topic_backend=None, llm_backend=No
     save_themes_for_processing_run(topic_backend, processing_run)
     summarise_with_llm(consultation, processing_run, llm_backend)
 
+    return processing_run
+
 
 def run_processing_pipeline(consultation):
     if HostingEnvironment.is_deployed():

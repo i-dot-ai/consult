@@ -6,48 +6,21 @@ from consultation_analyser.consultations.views import filters
 
 
 def set_up_for_filters():
-    consultation = factories.ConsultationFactory()
-    consultation_response = factories.ConsultationResponseFactory(consultation=consultation)
-    section = factories.SectionFactory(consultation=consultation)
-    question = factories.QuestionFactory(
-        section=section,
-    )
-    processing_run = factories.ProcessingRunFactory(consultation=consultation)
-    topic_model_meta = factories.TopicModelMetadataFactory()
-    theme1 = factories.ThemeFactory(
-        topic_keywords=["dog", "puppy"],
-        processing_run=processing_run,
-        topic_model_metadata=topic_model_meta,
-    )
-    theme2 = factories.ThemeFactory(
-        topic_keywords=["cat", "kitten"],
-        processing_run=processing_run,
-        topic_model_metadata=topic_model_meta,
-    )
-    answer = factories.AnswerFactory(
-        question=question,
-        free_text="We love dogs.",
-        consultation_response=consultation_response,
-    )
-    answer.themes.add(theme1)
-    answer = factories.AnswerFactory(
-        question=question,
-        free_text="We like cats not dogs.",
-        consultation_response=consultation_response,
-    )
-    answer.themes.add(theme2)
-    answer = factories.AnswerFactory(
-        question=question,
-        free_text="We love cats.",
-        consultation_response=consultation_response,
-    )
-    answer.themes.add(theme2)
-    answer = factories.AnswerFactory(
-        question=question,
-        free_text=None,
-        consultation_response=consultation_response,
-    )
-    answer.themes.add(theme2)
+    consultation_builder = factories.ConsultationBuilder()
+    question = consultation_builder.add_question()
+
+    theme1 = consultation_builder.add_theme(topic_keywords=["dog", "puppy"])
+    theme2 = consultation_builder.add_theme(topic_keywords=["cat", "kitten"])
+
+    for answer, theme in [
+        ["We love dogs.", theme1],
+        ["We like cats not dogs", theme2],
+        ["We love cats", theme2],
+        [None, theme2],
+    ]:
+        a = consultation_builder.add_answer(question, free_text=answer)
+        a.themes.add(theme)
+
     return question
 
 
