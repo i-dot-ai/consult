@@ -38,7 +38,7 @@ def test_consultation_to_json(django_app):
 
     reuploadable_without_themes = consultation_json.copy()
     reuploadable_without_themes.pop("themes")
-    file_to_reupload = io.BytesIO(json.dumps(reuploadable_without_themes).encode('utf-8'))
+    file_to_reupload = io.BytesIO(json.dumps(reuploadable_without_themes).encode("utf-8"))
 
     # This will bail if anything goes wrong
     reuploaded = upload_consultation(file_to_reupload, user)

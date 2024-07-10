@@ -47,11 +47,8 @@ class BERTopicBackend(TopicBackend):
         self.random_state = 12  # For reproducibility
         self.topic_model = None
         self.persistence_path = persistence_path
-<<<<<<< HEAD
         self.device = device
-=======
         self.n_neighbors = 15
->>>>>>> 1e80d6e (Add 2d embeddings for plotting.)
 
     def get_topics(self, question: models.Question) -> list[TopicAssignment]:
         answers_qs = (
