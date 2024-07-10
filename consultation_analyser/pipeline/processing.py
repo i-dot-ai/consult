@@ -1,3 +1,5 @@
+import logging
+from pathlib import Path
 from typing import Optional
 
 from django.conf import settings
@@ -8,12 +10,15 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.pipeline.backends.bedrock_llm_backend import BedrockLLMBackend
 from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
 from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
+from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
 from consultation_analyser.pipeline.backends.ollama_llm_backend import OllamaLLMBackend
 from consultation_analyser.pipeline.batch_calls import BatchJobHandler
 from consultation_analyser.pipeline.llm_summariser import (
     create_llm_summaries_for_processing_run,
 )
 from consultation_analyser.pipeline.ml_pipeline import save_themes_for_processing_run
+
+logger = logging.getLogger("pipeline")
 
 
 def get_llm_backend(llm_identifier: Optional[str] = None):
@@ -44,6 +49,22 @@ def get_llm_backend(llm_identifier: Optional[str] = None):
         )
 
 
+def get_topic_backend(
+    embedding_model: Optional[str] = None,
+    persistence_path: Optional[Path] = None,
+    device: Optional[str] = None,
+):
+    if embedding_model == "fake":
+        logger.info("Using fake topic model")
+        return DummyTopicBackend()
+    elif embedding_model:
+        return BERTopicBackend(
+            embedding_model=embedding_model, persistence_path=persistence_path, device=device
+        )
+    else:
+        return BERTopicBackend(persistence_path=persistence_path, device=device)
+
+
 def summarise_with_llm(consultation, processing_run=None, llm_backend=None):
     if not llm_backend:
         llm_backend = get_llm_backend(llm_backend)
@@ -60,10 +81,7 @@ def process_consultation_themes(consultation, topic_backend=None, llm_backend=No
     # TODO - add more metadata to processing run
 
     if not topic_backend:
-        topic_backend = BERTopicBackend()
-
-    if not llm_backend:
-        llm_backend = get_llm_backend(llm_backend)
+        topic_backend = get_topic_backend()
 
     save_themes_for_processing_run(topic_backend, processing_run)
     summarise_with_llm(consultation, processing_run, llm_backend)

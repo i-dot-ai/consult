@@ -121,7 +121,7 @@ The `generate_themes` command will accept a JSON file containing a `Consultation
 
 Invoke the command like this, replacing the input file with your JSON.
 ```
-poetry run python manage.py generate_themes --input=tests/examples/chocolate.json --clean
+poetry run python manage.py generate_themes --input=tests/examples/chocolate.json --clean --device cpu
 ```
 
 Options available for this command are:
@@ -129,6 +129,7 @@ Options available for this command are:
 `--clean`: delete this consultation if it already exists in the database.
 `--llm`: which llm to use. Pass `fake`, `bedrock`, or `ollama/model_name`.
 `--embdedding_model`: pass the model for `SentenceTransformers` to use in the `BERTopic` pipeline. If `fake` is passed, random topics will be generated.
+`--device`: pass the hardware device to run the topic embeddings on. Examples include: `cpu`, `cuda` and `mps`. Will default to `cpu` when requested is unavailable.
 
 The resulting file will be placed in `tmp/outputs` and its path will be printed on the console.
 

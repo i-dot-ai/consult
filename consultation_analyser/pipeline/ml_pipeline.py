@@ -8,7 +8,9 @@ logger = logging.getLogger("pipeline")
 
 
 def save_themes_for_question(
-    question: models.Question, topic_backend: TopicBackend, processing_run: models.ProcessingRun
+    question: models.Question,
+    topic_backend: TopicBackend,
+    processing_run: models.ProcessingRun,
 ) -> None:
     logging.info(f"Get topics for question: {question.text}")
     topic_model_metadata = models.TopicModelMetadata()
