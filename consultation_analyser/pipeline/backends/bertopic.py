@@ -35,7 +35,7 @@ class BERTopicBackend(TopicBackend):
         self,
         embedding_model: Optional[str] = None,
         persistence_path: Optional[Path] = None,
-        device: Optional[str] = None,
+        device: Optional[str] = "cpu",
     ):
         if not embedding_model:
             embedding_model = settings.BERTOPIC_DEFAULT_EMBEDDING_MODEL
@@ -48,7 +48,7 @@ class BERTopicBackend(TopicBackend):
         self.persistence_path = persistence_path
         self.device = device
 
-    def get_topics(self, question: models.Question, device=None) -> list[TopicAssignment]:
+    def get_topics(self, question: models.Question) -> list[TopicAssignment]:
         answers_qs = (
             models.Answer.objects.filter(question=question)
             .exclude(free_text="")

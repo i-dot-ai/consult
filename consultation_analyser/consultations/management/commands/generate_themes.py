@@ -15,9 +15,11 @@ from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.upload_consultation import upload_consultation
-from consultation_analyser.pipeline.backends.bertopic import BERTopicBackend
-from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
-from consultation_analyser.pipeline.processing import get_llm_backend, process_consultation_themes
+from consultation_analyser.pipeline.processing import (
+    get_llm_backend,
+    get_topic_backend,
+    process_consultation_themes,
+)
 
 logger = logging.getLogger("pipeline")
 
@@ -68,14 +70,17 @@ class Command(BaseCommand):
         output_dir = self.__get_output_dir(
             output_dir=options["output_dir"], consultation=consultation
         )
-        topic_backend = self.__get_topic_backend(
-            embedding_model=options["embedding_model"], persistence_path=output_dir / "bertopic"
+        device = self.__check_device(options["device"]) if options["device"] else None
+        persistence_path = output_dir / "bertopic"
+        embedding_model = options["embedding_model"]
+
+        topic_backend = get_topic_backend(
+            embedding_model=embedding_model, persistence_path=persistence_path, device=device
         )
         llm_backend = get_llm_backend(llm_identifier=options["llm"])
-        device = self.__check_device(options["device"]) if options["device"] else None
 
         process_consultation_themes(
-            consultation, topic_backend=topic_backend, llm_backend=llm_backend, device=device
+            consultation, topic_backend=topic_backend, llm_backend=llm_backend
         )
 
         self.__save_consultation_with_themes(output_dir=output_dir, consultation=consultation)
@@ -97,27 +102,13 @@ class Command(BaseCommand):
         try:
             user = User.objects.filter(email="email@example.com").first()
             consultation = upload_consultation(open(input_file), user)
-        except IntegrityError as e:
-            logger.info(e)
+        except IntegrityError:
             logger.info(
                 "This consultation already exists. To remove it and start with a fresh copy pass --clean."
             )
             exit()
 
         return consultation
-
-    def __get_topic_backend(
-        self, persistence_path: Optional[Path] = None, embedding_model: Optional[str] = ""
-    ):
-        if embedding_model == "fake":
-            logger.info("Using fake topic model")
-            return DummyTopicBackend()
-        elif embedding_model:
-            return BERTopicBackend(
-                embedding_model=embedding_model, persistence_path=persistence_path
-            )
-        else:
-            return BERTopicBackend(persistence_path=persistence_path)
 
     def __get_output_dir(self, consultation: models.Consultation, output_dir: Optional[str] = None):
         if not output_dir:
