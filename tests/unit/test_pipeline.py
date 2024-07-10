@@ -12,8 +12,14 @@ from consultation_analyser.pipeline.ml_pipeline import (
 @pytest.mark.django_db
 def test_get_scatter_plot_data():
     question = factories.QuestionFactory()
-    answer1 = factories.AnswerFactory(question=question)
-    answer2 = factories.AnswerFactory(question=question)
+    consultation = question.section.consultation
+    consultation_response = factories.ConsultationResponseFactory(consultation=consultation)
+    answer1 = factories.AnswerFactory(
+        question=question, consultation_response=consultation_response
+    )
+    answer2 = factories.AnswerFactory(
+        question=question, consultation_response=consultation_response
+    )
 
     assignments = [
         TopicAssignment(
