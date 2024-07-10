@@ -3,7 +3,6 @@ import re
 
 import pytest
 
-from consultation_analyser.consultations import models
 from consultation_analyser.factories import (
     ConsultationBuilder,
     UserFactory,
@@ -19,7 +18,7 @@ def test_get_question_summary_page(django_app):
     question = consultation_builder.add_question(
         multiple_choice_questions=[("Do you agree?", ["Yes", "No", "Maybe"])]
     )
-    theme = consultation_builder.add_theme(topic_id=1) # prevent outlier
+    theme = consultation_builder.add_theme(topic_id=1)  # prevent outlier
 
     for a in [
         [("Do you agree?", ["Yes"])],
