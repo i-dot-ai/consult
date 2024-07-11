@@ -187,6 +187,7 @@ class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
 class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     # TODO - add more processing run metadata
+    topic_model_parameters = models.JSONField(default=dict)
 
     @property
     def themes(self):
