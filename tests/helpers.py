@@ -1,10 +1,10 @@
 import os
-from pathlib import Path
 import re
 import time
+from pathlib import Path
 
-from django.core import mail
 from django.conf import settings
+from django.core import mail
 
 
 def sign_in(django_app, email):
@@ -45,7 +45,4 @@ def save_and_open_page(html_string) -> None:
     with open(filename, "wb") as f:
         f.write(html_string)
 
-    os.system(f"open {filename}") # nosec
-
-
-
+    os.system(f"open {filename}")  # nosec

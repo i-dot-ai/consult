@@ -1,4 +1,3 @@
-import html
 import re
 
 import pytest
@@ -34,18 +33,16 @@ def test_get_question_summary_page(django_app):
     question_summary_url = f"/consultations/{consultation.slug}/sections/{question.section.slug}/questions/{question.slug}/"
 
     question_page = django_app.get(question_summary_url)
-    page_content = html.unescape(str(question_page.content))
 
-    assert question.text in page_content
-
-    assert theme.short_description in page_content
+    assert question.text in question_page
+    assert theme.short_description in question_page
 
     for item in question.multiple_choice_options:
         for opt in item["options"]:
-            assert opt in page_content
+            assert opt in question_page
 
     for keyword in theme.topic_keywords:
-        assert keyword in page_content
+        assert keyword in question_page
 
     assert re.search(r"Yes\s+1\s+25%", question_page.html.text)
     assert re.search(r"No\s+2\s+50%", question_page.html.text)
