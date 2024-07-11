@@ -2,7 +2,7 @@ import logging
 import os
 from dataclasses import dataclass
 from pathlib import Path
-from typing import List, Optional
+from typing import Dict, List, Optional
 from uuid import UUID
 
 import numpy as np
@@ -50,7 +50,10 @@ class BERTopicBackend(TopicBackend):
         self.device = device
         self.n_neighbors = 15
 
-    def get_topics(self, question: models.Question) -> list[TopicAssignment]:
+    # TODO - turn topic_model_params into dataclass?
+    def get_topics(
+        self, question: models.Question, topic_model_parameters: Dict
+    ) -> list[TopicAssignment]:
         answers_qs = (
             models.Answer.objects.filter(question=question)
             .exclude(free_text="")
@@ -62,7 +65,9 @@ class BERTopicBackend(TopicBackend):
         answers_list_with_embeddings = self.__get_embeddings_for_question(answers_list)
 
         logger.info("BERTopic topic model generation")
-        self.topic_model = self.__get_topic_model(answers_list_with_embeddings)
+        self.topic_model = self.__get_topic_model(
+            answers_list_with_embeddings,
+        )
 
         answers_topics_df = self.__get_answers_and_topics(
             self.topic_model, answers_list_with_embeddings
@@ -137,12 +142,17 @@ class BERTopicBackend(TopicBackend):
         ]
         return answers_list_with_embeddings
 
-    def __get_topic_model(self, answers_list_with_embeddings: List[AnswerWithEmbeddings]):
+    def __get_topic_model(
+        self, answers_list_with_embeddings: List[AnswerWithEmbeddings], topic_model_parameters: Dict
+    ):
         from bertopic import BERTopic
         from bertopic.vectorizers import ClassTfidfTransformer
         from hdbscan import HDBSCAN
         from sklearn.feature_extraction.text import CountVectorizer
         from umap.umap_ import UMAP
+
+        # TODO - get all the other params out and deal with them
+        nr_topics = topic_model_parameters.get("nr_topics", "auto")
 
         free_text_responses_list = [answer.free_text for answer in answers_list_with_embeddings]
         embeddings_list = [answer.embedding for answer in answers_list_with_embeddings]
@@ -168,6 +178,7 @@ class BERTopicBackend(TopicBackend):
             hdbscan_model=hdbscan_model,
             vectorizer_model=vectorizer_model,
             ctfidf_model=ctfidf_model,
+            nr_topics=nr_topics,
         )
         topic_model.fit_transform(free_text_responses_list, embeddings=embeddings)
         return topic_model

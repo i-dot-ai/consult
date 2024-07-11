@@ -89,8 +89,9 @@ def process_consultation_themes(consultation, topic_backend=None, llm_backend=No
 
 def run_processing_pipeline(consultation, topic_model_parameters=None):
     processing_run = ProcessingRun(consultation=consultation)
+    if topic_model_parameters:
+        processing_run.topic_model_parameters = topic_model_parameters
     processing_run.save()
-    # Save topic_model_parameters...
 
     if HostingEnvironment.is_deployed():
         job_name = f"generate-themes-{consultation.slug}"[:128]  # Must be <=128 , no spaces

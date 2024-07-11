@@ -31,7 +31,7 @@ def save_themes_for_question(
     processing_run: models.ProcessingRun,
 ) -> None:
     logging.info(f"Get topics for question: {question.text}")
-    assignments = topic_backend.get_topics(question)
+    assignments = topic_backend.get_topics(question, processing_run.topic_model_parameters)
 
     data = get_scatter_plot_data(assignments)
     topic_model_metadata = models.TopicModelMetadata(scatter_plot_data=data)
