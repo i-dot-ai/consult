@@ -1,3 +1,5 @@
+import json
+import logging
 from uuid import UUID
 
 from django.contrib import messages
@@ -13,6 +15,11 @@ from consultation_analyser.pipeline.backends.types import (
     NO_SUMMARY_STR,
 )
 from consultation_analyser.pipeline.processing import run_llm_summariser, run_processing_pipeline
+from consultation_analyser.support_console.forms.run_consultation_pipeline import (
+    TopicModelParametersForm,
+)
+
+logger = logging.getLogger("run_pipeline")
 
 
 @staff_member_required
@@ -91,3 +98,25 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
         "total_with_summaries": total_with_summaries,
     }
     return render(request, "support_console/consultations/show.html", context=context)
+
+
+@staff_member_required
+def run(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
+    consultation = models.Consultation.objects.get(id=consultation_id)
+    if "default_generate_themes" in request.POST:
+        run_processing_pipeline(consultation)
+        return redirect("support_consultation", consultation_id=consultation_id)
+    elif "submit" in request.POST:
+        form = TopicModelParametersForm(request.POST, request.FILES)
+        if form.is_valid():
+            logger.info("Upload parameters")
+            params_file = request.FILES["upload_params"]
+            topic_model_params = json.load(params_file)
+            print(topic_model_params)
+            # TODO - now pass in the params
+            run_processing_pipeline(consultation)
+            messages.success(request, "Consultation data has been sent for processing")
+            return redirect("support_consultation", consultation_id=consultation_id)
+    else:
+        form = TopicModelParametersForm()
+    return render(request, "support_console/consultations/run.html", {"form": form})

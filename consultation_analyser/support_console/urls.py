@@ -26,4 +26,5 @@ urlpatterns = [
         consultations_users.new,
         name="add_user",
     ),
+    path("consultations/<uuid:consultation_id>/run/", consultations.run, name="run_consultation"),
 ]

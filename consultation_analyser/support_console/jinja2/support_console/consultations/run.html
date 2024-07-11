@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% set page_title = "Upload your BERTopic parameters as a JSON and generate themes" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+      <h1 class="govuk-heading-l">Upload</h1>
+      {{ render_form(form, request) }}
+    </div>
+  </div>
+{% endblock %}
