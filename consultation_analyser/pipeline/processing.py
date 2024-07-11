@@ -76,9 +76,7 @@ def summarise_with_llm(consultation, processing_run=None, llm_backend=None):
 
 
 def process_consultation_themes(consultation, topic_backend=None, llm_backend=None):
-    processing_run = ProcessingRun(consultation=consultation)
-    processing_run.save()
-    # TODO - add more metadata to processing run
+    processing_run = consultation.latest_processing_run
 
     if not topic_backend:
         topic_backend = get_topic_backend()
@@ -89,7 +87,11 @@ def process_consultation_themes(consultation, topic_backend=None, llm_backend=No
     return processing_run
 
 
-def run_processing_pipeline(consultation):
+def run_processing_pipeline(consultation, topic_model_parameters=None):
+    processing_run = ProcessingRun(consultation=consultation)
+    processing_run.save()
+    # Save topic_model_parameters...
+
     if HostingEnvironment.is_deployed():
         job_name = f"generate-themes-{consultation.slug}"[:128]  # Must be <=128 , no spaces
         command = {
