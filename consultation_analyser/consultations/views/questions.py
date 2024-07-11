@@ -1,6 +1,8 @@
+from typing import Dict, List, Tuple
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Count, Max
+from django.db.models import Count, Max, QuerySet
 from django.http import HttpRequest
 from django.shortcuts import render
 
@@ -8,6 +10,36 @@ from .. import models
 from .consultations import NO_THEMES_YET_MESSAGE
 from .decorators import user_can_see_consultation
 from .filters import get_applied_filters, get_filtered_responses, get_filtered_themes
+
+
+def filter_scatter_plot_data(filtered_themes: QuerySet) -> List[Dict]:
+    if not filtered_themes:
+        return []
+    theme = filtered_themes.first()  # metadata same for all themes for question
+    topic_model_metadata = theme.topic_model_metadata
+    data = topic_model_metadata.scatter_plot_data
+    if not data:  # Old consultations - didn't calculate scatter data when generating themes
+        return []
+    data = data["data"]
+    topic_ids = [theme.topic_id for theme in filtered_themes]
+    filtered_scatter_data = [
+        coordinate for coordinate in data if coordinate["topic_id"] in topic_ids
+    ]
+    return filtered_scatter_data
+
+
+def get_outliers_info(processing_run: models.ProcessingRun, question: models.Question) -> Tuple:
+    outlier_theme = None
+    outliers_count = 0
+    if not processing_run:
+        return outlier_theme, outliers_count
+    outlier_themes = processing_run.get_themes_for_question(question_id=question.id).filter(
+        is_outlier=True
+    )
+    if outlier_themes:
+        outlier_theme = outlier_themes.first()
+        outliers_count = models.Answer.objects.filter(themes=outlier_theme).count()
+    return outlier_theme, outliers_count
 
 
 @user_can_see_consultation
@@ -34,6 +66,11 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         .order_by("-answer_count")
     )  # Gets latest themes only
 
+    if filtered_themes:
+        scatter_plot_data = filter_scatter_plot_data(filtered_themes)
+    else:
+        scatter_plot_data = []
+
     # Get counts
     total_responses = responses.count()
     multiple_choice_stats = question.multiple_choice_stats()
@@ -44,15 +81,9 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         models.Answer.objects.filter(question=question).filter(free_text="").count()
     )
 
-    outlier_theme = None
-    outliers_count = 0
-    if processing_run:
-        outlier_themes = processing_run.get_themes_for_question(question_id=question.id).filter(
-            is_outlier=True
-        )
-        if outlier_themes:
-            outlier_theme = outlier_themes.first()
-            outliers_count = models.Answer.objects.filter(themes=outlier_theme).count()
+    outlier_theme, outliers_count = get_outliers_info(
+        processing_run=processing_run, question=question
+    )
 
     context = {
         "consultation_slug": consultation_slug,
@@ -66,5 +97,6 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "blank_free_text_count": blank_free_text_count,
         "outliers_count": outliers_count,
         "outlier_theme_id": outlier_theme.id if outlier_theme else None,
+        "scatter_plot_data": scatter_plot_data,
     }
     return render(request, "consultations/questions/show.html", context)

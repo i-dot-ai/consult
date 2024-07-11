@@ -23,4 +23,10 @@ def create_llm_summaries_for_processing_run(llm_backend: LLMBackend, processing_
             theme.short_description = theme_summary_data.short_description
         logger.info(f"Theme description: {theme.short_description}")
         theme.save()
+
+    logger.info("Save updated theme summaries to data for scatter plot")
+    related_topic_model_metadata = processing_run.topic_model_metadatas
+    for topic_model_metadata in related_topic_model_metadata:
+        topic_model_metadata.add_llm_summarisation_detail()
+
     logger.info("Ending LLM summarisation")
