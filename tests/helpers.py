@@ -1,6 +1,10 @@
+import os
+from pathlib import Path
 import re
+import time
 
 from django.core import mail
+from django.conf import settings
 
 
 def sign_in(django_app, email):
@@ -25,3 +29,23 @@ def sign_in(django_app, email):
 
     mail.outbox.clear()
     return homepage
+
+
+def save_and_open_page(html_string) -> None:
+    """
+    Given page content from webtest, write it to /tmp
+    and pop it open in the browser
+    """
+
+    dir = settings.BASE_DIR / "tmp" / "integration-test-html-snapshots"
+    Path(dir).mkdir(parents=True, exist_ok=True)
+
+    filename = dir / f"test-html-{int(time.time())}.html"
+
+    with open(filename, "wb") as f:
+        f.write(html_string)
+
+    os.system(f"open {filename}") # nosec
+
+
+
