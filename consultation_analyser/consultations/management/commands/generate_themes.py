@@ -101,7 +101,9 @@ class Command(BaseCommand):
 
         try:
             user = User.objects.filter(email="email@example.com").first()
-            consultation = upload_consultation(open(input_file), user)
+
+            with open(input_file, mode='rb') as file:
+                consultation = upload_consultation(file, user)
         except IntegrityError:
             logger.info(
                 "This consultation already exists. To remove it and start with a fresh copy pass --clean."
