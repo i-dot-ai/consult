@@ -44,10 +44,11 @@ jobs:
       - name: Install npm dependencies
         run: npm install
 
-      - name: Check migrations
+      - name: Setup app
         run: |
           poetry run python manage.py migrate
           poetry run python manage.py makemigrations --check
+          make govuk_frontend
         env:
           DJANGO_SECRET_KEY: dummy-key
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
