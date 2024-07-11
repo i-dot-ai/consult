@@ -127,7 +127,7 @@
         <div class="iai-panel">
           <div class="govuk-!-padding-left-2 govuk-!-padding-right-2">
 
-            {% if themes.length %}
+            {% if themes %}
               <table class="iai-themes-list">
                 <caption class="govuk-table__caption govuk-table__caption--s">
                   <h2 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold govuk-!-margin-bottom-2 govuk-!-margin-top-0">Prevalent themes</h2>
@@ -189,7 +189,7 @@
             {% else %}
               <h2 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold govuk-!-margin-0">Prevalent themes</h2>
             {% endif %}
-            
+
             {% if blank_free_text_count and question.has_free_text %}
               {% if blank_free_text_count == 1 %}
                 <p class="govuk-body govuk-!-margin-top-5">There is {{ blank_free_text_count }} response with no free text and this has been excluded from the theme analysis.</p>
