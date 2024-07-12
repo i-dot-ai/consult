@@ -1,4 +1,5 @@
 import json
+import logging
 
 from django.forms.models import model_to_dict
 
@@ -7,6 +8,7 @@ from consultation_analyser.consultations.public_schema import (
     ConsultationWithResponsesAndThemes,
 )
 
+logger = logging.getLogger("download_json")
 
 def select_keys_from_model(model, keys):
     model_attrs = model_to_dict(model)
@@ -21,12 +23,15 @@ def consultation_to_json(consultation):
     Raises:
         pydantic.ValidationError: if the generated JSON is not compliant
     """
+    logger.info(f"Start downloading for consultation {consultation.name}")
 
     attrs = {}
 
     themes = []
+
     latest_processing_run = consultation.latest_processing_run
     if latest_processing_run:
+        logger.info(f"Getting section data")
         for theme in latest_processing_run.themes:
             theme_attrs = select_keys_from_model(
                 theme, ["topic_id", "topic_keywords", "summary", "short_description"]
@@ -37,6 +42,7 @@ def consultation_to_json(consultation):
 
     attrs["consultation"] = select_keys_from_model(consultation, ["name"])
 
+    logger.info(f"Getting section data")
     sections = []
     for section in consultation.section_set.all():
         questions = []
@@ -54,6 +60,7 @@ def consultation_to_json(consultation):
 
     attrs["consultation"]["sections"] = sections
 
+    logger.info(f"Getting response data")
     attrs["consultation_responses"] = []
     for response in consultation.consultationresponse_set.all():
         response_attrs = {"submitted_at": response.submitted_at.isoformat()}
@@ -72,12 +79,14 @@ def consultation_to_json(consultation):
 
         response_attrs["answers"] = answers
         attrs["consultation_responses"].append(response_attrs)
+    logger.info(f"Finished processing data for data download")
 
+    logger.info(f"Checking data is valid")
     # raise if we're invalid
     if themes:
         attrs["themes"] = themes
         ConsultationWithResponsesAndThemes(**attrs)
     else:
         ConsultationWithResponses(**attrs)
-
+    logger.info("Finally dump the data to JSON")
     return json.dumps(attrs)
