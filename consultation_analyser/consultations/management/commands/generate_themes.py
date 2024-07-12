@@ -102,7 +102,7 @@ class Command(BaseCommand):
         try:
             user = User.objects.filter(email="email@example.com").first()
 
-            with open(input_file, mode='rb') as file:
+            with open(input_file, mode="rb") as file:
                 consultation = upload_consultation(file, user)
         except IntegrityError:
             logger.info(
