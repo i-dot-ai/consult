@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "consult-ai"
+version = "0.1.0"
+description = "AI functionality for the consult product"
+authors = ["Your Name <you@example.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.12.3"
+pydantic = "^2.8.2"
+bertopic = "^0.16.2"
+sentence-transformers = "^3.0.1"
+umap-learn = "^0.5.5"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

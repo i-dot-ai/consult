@@ -54,6 +54,7 @@ langchain-community = "^0.2.6"
 ijson = "^3.3.0"
 psutil = "^6.0.0"
 langchain-aws = "^0.1.9"
+consult_ai = { path = "consult_ai/", develop = true }
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.5.1"
