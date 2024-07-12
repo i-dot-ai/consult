@@ -177,6 +177,7 @@ LOGGING = {
     "loggers": {
         "pipeline": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "upload": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
+		"download_json": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
     },
 }
 
