@@ -168,6 +168,8 @@ class BERTopicBackend(TopicBackend):
             hdbscan_model=hdbscan_model,
             vectorizer_model=vectorizer_model,
             ctfidf_model=ctfidf_model,
+            # TODO - remove this and have config
+            nr_topics=20
         )
         topic_model.fit_transform(free_text_responses_list, embeddings=embeddings)
         return topic_model
