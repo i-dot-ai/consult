@@ -147,23 +147,3 @@ The data schema for consultations supplied to the tool is defined in `consultati
 To build the JSON schemas and examples from this file, run `make schema_docs`.
 
 The `json-schema-faker-options.js` file configures (JSON Schema Faker)[https://github.com/json-schema-faker] to make the JSON examples.
-
-## Frontend Prototype
-
-Located at `/prototype` in this repo, using the GOV.UK Prototype Kit.
-
-### How to run
-
-Ensure you have a recent version of Node.js installed (v16 or greater). Then, **from the prototype directory**, run:
-
-```
-npm install
-```
-
-Then
-
-```
-npm run dev
-```
-
-The actual prototype can be accessed at http://localhost:3000/prototype.
