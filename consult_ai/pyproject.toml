@@ -11,6 +11,9 @@ pydantic = "^2.8.2"
 bertopic = "^0.16.2"
 sentence-transformers = "^3.0.1"
 umap-learn = "^0.5.5"
+langchain = "^0.2.8"
+openai = "^1.35.14"
+langchain-aws = "^0.1.11"
 
 
 [build-system]
