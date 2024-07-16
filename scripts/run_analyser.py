@@ -19,7 +19,6 @@ import logging
 logging.getLogger("pipeline").setLevel(logging.INFO)
 
 ### Load data ==============
-
 input_json = "tests/examples/chocolate.json"
 
 with open(input_json) as f:

@@ -32,18 +32,21 @@ class QuestionAnalyser(BaseModel):
         consultation_name = self.consultation_name
         question = self.question.text
         new_themes = []
-        for theme in self.themes:
-            theme_responses = [
-                answer for answer in self.answers if answer.theme_id == theme.id
-            ]
-            sample_responses = sample(theme_responses, size_sample_answers)
+        if not self.themes:
+            print("Themes must be generated before they can be summarised")
+        else:
+            for theme in self.themes:
+                theme_responses = [
+                    answer for answer in self.answers if answer.theme_id == theme.id
+                ]
+                sample_responses = sample(theme_responses, size_sample_answers)
 
-            theme = summarise_theme_backend.summarise_theme(
-                theme=theme,
-                sample_responses=sample_responses,
-                consultation_name=consultation_name,
-                question=question,
-            )
+                theme = summarise_theme_backend.summarise_theme(
+                    theme=theme,
+                    sample_responses=sample_responses,
+                    consultation_name=consultation_name,
+                    question=question,
+                )
 
-            new_themes.append(theme)
-        self.themes = new_themes
+                new_themes.append(theme)
+            self.themes = new_themes
