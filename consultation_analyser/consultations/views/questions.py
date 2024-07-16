@@ -58,6 +58,9 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
 
     # TODO - for now default to latest processing run
     processing_run = consultation.latest_processing_run
+    themes_exist = False
+    if processing_run:
+        themes_exist = models.Theme.objects.filter(processing_run=processing_run).exists()
 
     applied_filters = get_applied_filters(request)
     responses = get_filtered_responses(question, applied_filters)
@@ -99,5 +102,6 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "outliers_count": outliers_count,
         "outlier_theme_id": outlier_theme.id if outlier_theme else None,
         "scatter_plot_data": scatter_plot_data,
+        "themes_exist": themes_exist
     }
     return render(request, "consultations/questions/show.html", context)
