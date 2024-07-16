@@ -102,7 +102,7 @@ class LangchainLLMBackend(LLMBackend):
         Would become: [/INST]
         {{
             "short_description": 'The creaminess of Dairy Milk',
-            "summary": 'Answers emphasised how creamy Dairy Milk is',
+            "summary": 'Answers emphasised how creamy Dairy Milk is'
         }}</s>
         [INST] == CONSULTATION NAME ==
         {consultation_name}
