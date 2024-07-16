@@ -62,6 +62,7 @@ pre-commit = "^3.7.1"
 factory_boy = "^3.3.0"
 django-extensions = "^3.2.3"
 mypy = "^1.10.1"
+black = "^24.4.2"
 
 [tool.mypy]
 files = '**/*.py'
