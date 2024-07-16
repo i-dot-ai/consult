@@ -8,7 +8,7 @@ from consultation_analyser.factories import (
 from consultation_analyser.hosting_environment import HostingEnvironment
 
 
-def create_dummy_data(responses=10, number_questions=10, **options):
+def create_dummy_data(responses=20, number_questions=10, **options):
     if number_questions > 10:
         raise RuntimeError("You can't have more than 10 questions")
     if HostingEnvironment.is_production():
