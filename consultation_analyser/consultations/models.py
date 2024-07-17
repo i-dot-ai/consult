@@ -187,6 +187,9 @@ class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
 class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     # TODO - add more processing run metadata
+    started_at = models.DateTimeField(null=True)
+    finished_at = models.DateTimeField(null=True)
+    slug = models.SlugField(null=True)
 
     @property
     def themes(self):
