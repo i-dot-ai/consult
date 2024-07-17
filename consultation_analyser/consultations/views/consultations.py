@@ -5,8 +5,12 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
+import django_rq
+
+from ..tasks import process_json_from_s3
 
 from consultation_analyser.consultations.upload_consultation import upload_consultation
+from consultation_analyser.consultations.upload_file import upload_file
 
 from .. import models
 from ..forms.consultation_upload_form import ConsultationUploadForm
@@ -50,9 +54,14 @@ def new(request: HttpRequest):
         form = ConsultationUploadForm(request.POST, request.FILES)
         if form.is_valid():
             logger.info("Running upload_consultation")
-            upload_consultation(request.FILES["consultation_json"], request.user)
+            channel_name = request.POST.get('channel_name')
+            file_name = upload_file(request.FILES["consultation_json"], channel_name)
             etime = time.time()
             logger.info(f"Total upload time: {etime - stime}s")
+
+            django_rq.enqueue(process_json_from_s3, file_name, request.user)
+            messages.success(request, f"The consultation has been uploaded to {file_name}")
+            
             return render(request, "consultations/consultations/uploaded.html", {})
 
     return render(request, "consultations/consultations/new.html", {"form": form})

@@ -56,8 +56,8 @@ migrate: ## Apply migrations
 	poetry run python manage.py generate_erd
 
 .PHONY: serve
-serve: ## Run the server
-	poetry run gunicorn --reload --workers=1 -c consultation_analyser/gunicorn.py consultation_analyser.wsgi
+serve: ## Run the serve
+	poetry run uvicorn consultation_analyser.asgi:application --host 0.0.0.0 --port 8000
 
 .PHONY: test
 test: ## Run the tests

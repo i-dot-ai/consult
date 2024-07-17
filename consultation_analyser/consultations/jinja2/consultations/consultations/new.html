@@ -7,6 +7,46 @@
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">Upload a consultation</h1>
       {{ render_form(form, request) }}
+      {# progress indicator #}
+      <div id="progress-bar-container" hidden>
+          <label for="progress-bar">Upload progress:</label>
+          <progress id="progress-bar" max="100" value="0">0%</progress>
+      </div>
+
+      <script>
+
+        document.querySelector("form").addEventListener('submit', function(event) {
+          event.preventDefault();
+
+          var fileInput = document.getElementById('id_consultation_json');
+          var file = fileInput.files[0];
+          var progressBar = document.getElementById('progress-bar');
+          var channelName = 'upload-progress-channel';
+          document.querySelector("#progress-bar-container").removeAttribute("hidden");
+          var socket = new WebSocket('ws://' + window.location.host + '/ws/upload_progress/');
+          socket.onmessage = function(e) {
+              var data = JSON.parse(e.data);
+              progressBar.value = data.progress;
+          };
+
+          var formData = new FormData();
+          formData.append('file', file);
+          formData.append('channel_name', channelName);
+
+          var xhr = new XMLHttpRequest();
+          xhr.open('POST', '/consultations/new/', true);
+          xhr.onload = function() {
+              if (xhr.status === 200) {
+                  alert('File uploaded successfully');
+              } else {
+                  alert('Failed to upload file');
+              }
+          };
+          xhr.send(formData);
+        });
+
+      </script>
+
     </div>
   </div>
 {% endblock %}

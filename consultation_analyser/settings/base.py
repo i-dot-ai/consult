@@ -14,7 +14,7 @@ import logging
 import os
 import sys
 from pathlib import Path
-
+import multiprocessing
 import environ
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -52,6 +52,8 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_forms_gds",
     "django.contrib.humanize",
+    "channels",
+    "django_rq",
 ]
 
 
@@ -99,6 +101,7 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "consultation_analyser.wsgi.application"
+ASGI_APPLICATION = "consultation_analyser.asgi.application"
 
 AUTH_USER_MODEL = "authentication.User"
 
@@ -206,6 +209,7 @@ GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID = env("GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID
 BATCH_JOB_QUEUE = env("BATCH_JOB_QUEUE", default=None)
 BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION", default=None)
 AWS_REGION = env("AWS_REGION")
+APP_BUCKET = env("APP_BUCKET")
 
 # ML pipeline
 LLM_BACKEND = env("LLM_BACKEND")
@@ -216,3 +220,27 @@ LOGIN_URL = "/sign-in/"
 
 # version info
 GIT_SHA = env("GIT_SHA", default=None)
+
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels_redis.core.RedisChannelLayer',
+        'CONFIG': {
+            "hosts": [('127.0.0.1', 6379)],
+        },
+    },
+}
+
+
+RQ_WORKER_CLASS = 'django_rq.Worker'
+RQ_QUEUES = {
+    'default': {
+        'HOST': 'localhost',
+        'PORT': 6379,
+        'DB': 0,
+        'DEFAULT_TIMEOUT': 360,
+    },
+}
+
+
+REDIS_URL=env("REDIS_URL")

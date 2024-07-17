@@ -54,6 +54,9 @@ langchain-community = "^0.2.7"
 ijson = "^3.3.0"
 psutil = "^6.0.0"
 langchain-aws = "^0.1.11"
+channels = "^4.1.0"
+channels-redis = "^4.2.0"
+django-rq = "^2.10.2"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.5.2"
