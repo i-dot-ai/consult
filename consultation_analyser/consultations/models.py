@@ -219,15 +219,18 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
     def save(self, *args, **kwargs):
         if not self.slug:
             generated_slug = generate_random_slug()
-            while ProcessingRun.objects.filter(slug=generated_slug, consultation=self.consultation).exists():
+            while ProcessingRun.objects.filter(
+                slug=generated_slug, consultation=self.consultation
+            ).exists():
                 generated_slug = generate_random_slug()
             self.slug = generated_slug
         super().save(self, *args, **kwargs)
 
-
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
-            models.UniqueConstraint(fields=["slug", "consultation"], name="unique_slug_consultation"),
+            models.UniqueConstraint(
+                fields=["slug", "consultation"], name="unique_slug_consultation"
+            ),
         ]
 
 
