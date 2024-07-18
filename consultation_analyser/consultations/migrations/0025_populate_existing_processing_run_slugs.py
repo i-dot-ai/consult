@@ -20,7 +20,7 @@ def populate_processing_run_slug(apps, schema_editor):
         slug = generate_random_slug()
         slugs.add(slug)
 
-    for z in zip(all_runs, slug):
+    for z in zip(all_runs, slugs):
         z[0].slug = z[1]
         z[0].save()
 
