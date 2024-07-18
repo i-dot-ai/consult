@@ -54,6 +54,7 @@ langchain-community = "^0.2.9"
 ijson = "^3.3.0"
 psutil = "^6.0.0"
 langchain-aws = "^0.1.11"
+wonderwords = "^2.2.0"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.5.4"
@@ -65,6 +66,7 @@ mypy = "^1.11.0"
 [tool.mypy]
 files = '**/*.py'
 exclude = ['^consultation_analyser/consultations/migrations/']
+
 
 
 [tool.poetry.group.test.dependencies]
