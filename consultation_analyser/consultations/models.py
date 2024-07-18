@@ -224,7 +224,7 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
             ).exists():
                 generated_slug = generate_random_slug()
             self.slug = generated_slug
-        super().save(self, *args, **kwargs)
+        super(ProcessingRun, self).save(*args, **kwargs)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
