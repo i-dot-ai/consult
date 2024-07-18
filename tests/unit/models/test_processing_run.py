@@ -1,7 +1,6 @@
 import datetime
 
 import pytest
-
 from django.db import IntegrityError
 
 from consultation_analyser import factories
@@ -52,6 +51,3 @@ def test_processing_run_slug():
     with pytest.raises(IntegrityError):
         pr2.slug = slug1
         pr2.save()
-
-
-
