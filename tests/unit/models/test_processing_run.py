@@ -25,6 +25,7 @@ def test_latest_processing_run():
 
     assert latest_theme_for_answer == run2.get_themes_for_answer(answer.id).last()
     assert latest_theme_for_answer != run1.get_themes_for_answer(answer.id).last()
+    assert run1.started_at < run1.finished_at
 
 
 @pytest.mark.django_db
