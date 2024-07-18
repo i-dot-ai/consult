@@ -6,9 +6,17 @@ import pydantic
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.db import connection, models
+from wonderwords import RandomWord
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import public_schema
+
+
+def generate_random_slug():
+    word1 = RandomWord().word().lower()
+    word2 = RandomWord().word().lower()
+    slug = f"{word1}-{word2}"
+    return slug
 
 
 class MultipleChoiceSchemaValidator(BaseValidator):
@@ -208,8 +216,19 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
     def get_themes_for_question(self, question_id):
         return self.themes.filter(processing_run=self, answer__question_id=question_id).distinct()
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            generated_slug = generate_random_slug()
+            while ProcessingRun.objects.filter(slug=generated_slug, consultation=self.consultation).exists():
+                generated_slug = generate_random_slug()
+            self.slug = generated_slug
+        super().save(self, *args, **kwargs)
+
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+        constraints = [
+            models.UniqueConstraint(fields=["slug", "consultation"], name="unique_slug_consultation"),
+        ]
 
 
 class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
