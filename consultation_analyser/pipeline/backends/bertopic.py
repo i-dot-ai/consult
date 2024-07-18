@@ -169,7 +169,7 @@ class BERTopicBackend(TopicBackend):
             vectorizer_model=vectorizer_model,
             ctfidf_model=ctfidf_model,
             # TODO - remove this and have config
-            nr_topics=20
+            nr_topics=10
         )
         topic_model.fit_transform(free_text_responses_list, embeddings=embeddings)
         return topic_model
