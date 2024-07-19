@@ -5,7 +5,7 @@
 {% set page_title = consultation.name %}
 
 {% block content %}
-  
+
   <h1 class="govuk-heading-m">{{ page_title }}</h1>
   {{ govukBreadcrumbs({
     "items": [
@@ -20,7 +20,9 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-
+      {% if processing_run %}
+        Themes generated at {{ processing_run.started_at }}
+      {% endif %}
       <div class="con-question-list">
         <h2 class="govuk-body govuk-!-font-weight-bold govuk-!-padding-bottom-1 govuk-!-padding-top-5 govuk-!-padding-left-7 govuk-!-padding-right-7">All questions</h2>
         <ul class="govuk-body govuk-!-padding-0">

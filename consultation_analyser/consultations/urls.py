@@ -13,6 +13,11 @@ urlpatterns = [
     path("consultations/", consultations.index, name="consultations"),
     path("consultations/new/", consultations.new, name="new_consultation"),
     path("consultations/<str:consultation_slug>/", consultations.show, name="consultation"),
+    path(
+        "consultations/<str:consultation_slug>/runs/<str:processing_run_slug>/",
+        consultations.show,
+        name="consultation-run",
+    ),
     path("schema/<str:schema_name>.json", schema.raw_schema),
     path(
         "consultations/<str:consultation_slug>/sections/<str:section_slug>/questions/<str:question_slug>/",

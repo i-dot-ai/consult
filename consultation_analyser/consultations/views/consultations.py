@@ -1,5 +1,6 @@
 import logging
 import time
+from typing import Optional
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -29,13 +30,26 @@ def index(request: HttpRequest) -> HttpResponse:
 
 @user_can_see_consultation
 @login_required
-def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
+def show(
+    request: HttpRequest, consultation_slug: str, processing_run_slug: Optional[str] = None
+) -> HttpResponse:
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    questions = models.Question.objects.filter(section__consultation__slug=consultation_slug)
-    context = {"questions": questions, "consultation": consultation}
-
-    if not consultation.has_processing_run():
+    if processing_run_slug:
+        processing_run = get_object_or_404(
+            models.ProcessingRun, slug=processing_run_slug, consultation=consultation
+        )
+    elif consultation.has_processing_run():
+        processing_run = consultation.latest_processing_run
+    else:
+        processing_run = None
         messages.info(request, NO_THEMES_YET_MESSAGE)
+
+    questions = models.Question.objects.filter(section__consultation__slug=consultation_slug)
+    context = {
+        "questions": questions,
+        "consultation": consultation,
+        "processing_run": processing_run,
+    }
 
     return render(request, "consultations/consultations/show.html", context)
 
