@@ -1,3 +1,5 @@
+from typing import Optional
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -12,8 +14,25 @@ from .filters import get_applied_filters, get_filtered_responses
 
 @user_can_see_consultation
 @login_required
-def index(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
+def index(
+    request: HttpRequest,
+    consultation_slug: str,
+    section_slug: str,
+    question_slug: str,
+    processing_run_slug: Optional[str] = None,
+):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+    print("consultation")
+    print(consultation.name)
+    if processing_run_slug:
+        processing_run = get_object_or_404(
+            models.ProcessingRun, slug=processing_run_slug, consultation=consultation
+        )
+    elif consultation.has_processing_run():
+        processing_run = consultation.latest_processing_run
+    else:
+        processing_run = None
+
     question = models.Question.objects.get(
         slug=question_slug,
         section__slug=section_slug,
@@ -42,6 +61,7 @@ def index(request: HttpRequest, consultation_slug: str, section_slug: str, quest
     context = {
         "consultation_name": consultation.name,
         "consultation_slug": consultation_slug,
+        "processing_run": processing_run,
         "question": question,
         "responses": paginated_responses,
         "total_responses": total_responses,
