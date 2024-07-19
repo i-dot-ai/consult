@@ -17,7 +17,7 @@
 
         <p class="govuk-body">
           <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
-            View on frontend
+            View on frontend (latest results)
           </a>
         </p>
 
@@ -73,6 +73,37 @@
       <a href="{{ url("add_user", kwargs={"consultation_id": consultation.id}) }}" role="button" draggable="false" class="govuk-button" data-module="govuk-button">
         Add users
       </a>
+
+      <h2 class="govuk-heading-m">Previous runs of the theme generation</h2>
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Link</th>
+            <th scope="col" class="govuk-table__header">Run started at</th>
+            <th scope="col" class="govuk-table__header">Run finished at</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+        {% for run in processing_runs %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+              <a href="{{ url('consultation_run', kwargs={'consultation_slug': consultation.slug, 'processing_run_slug': run.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
+                View on frontend
+              </a>
+            </td>
+            <td class="govuk-table__cell">
+              {% if run.started_at %}
+                {{ datetime(run.started_at) }}
+              {% endif %}
+            </td>
+            <td class="govuk-table__cell">
+              {% if run.started_at %}
+                {{ datetime(run.finished_at) }}
+              {% endif %}
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
 
       <form method="post" novalidate>{{ csrf_input }}
         <h2 class="govuk-heading-m">Generate themes</h2>
