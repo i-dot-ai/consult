@@ -3,14 +3,18 @@ import time
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.csrf import csrf_exempt
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
-import django_rq
+from django_rq import get_queue, enqueue
+from django.http import JsonResponse
+from ..tasks import enqueue_job
+from channels.layers import get_channel_layer
 
-from ..tasks import process_json_from_s3
 
 from consultation_analyser.consultations.upload_consultation import upload_consultation
 from consultation_analyser.consultations.upload_file import upload_file
+from asgiref.sync import async_to_sync
 
 from .. import models
 from ..forms.consultation_upload_form import ConsultationUploadForm
@@ -54,14 +58,14 @@ def new(request: HttpRequest):
         form = ConsultationUploadForm(request.POST, request.FILES)
         if form.is_valid():
             logger.info("Running upload_consultation")
-            channel_name = request.POST.get('channel_name')
-            file_name = upload_file(request.FILES["consultation_json"], channel_name)
+            file_name = upload_file(request.FILES["consultation_json"])
             etime = time.time()
             logger.info(f"Total upload time: {etime - stime}s")
 
-            django_rq.enqueue(process_json_from_s3, file_name, request.user)
-            messages.success(request, f"The consultation has been uploaded to {file_name}")
-            
+            job = enqueue_job(file_name, request.user)
+            messages.success(request, f"The consultation has been uploaded to {job}")
+           
             return render(request, "consultations/consultations/uploaded.html", {})
 
     return render(request, "consultations/consultations/new.html", {"form": form})
+

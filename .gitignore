@@ -184,3 +184,5 @@ tmp
 
 # Ignore notebooks for now
 *.ipynb
+
+*dump*.rdb*

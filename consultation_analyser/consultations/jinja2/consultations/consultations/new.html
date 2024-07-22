@@ -3,50 +3,110 @@
 {% set page_title = "Upload a consultation" %}
 
 {% block content %}
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-two-thirds">
-      <h1 class="govuk-heading-l">Upload a consultation</h1>
-      {{ render_form(form, request) }}
-      {# progress indicator #}
-      <div id="progress-bar-container" hidden>
-          <label for="progress-bar">Upload progress:</label>
-          <progress id="progress-bar" max="100" value="0">0%</progress>
-      </div>
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <h1 class="govuk-heading-l">Upload a consultation</h1>
+    {{ render_form(form, request) }}
+    {# progress indicator #}
 
-      <script>
 
-        document.querySelector("form").addEventListener('submit', function(event) {
-          event.preventDefault();
-
-          var fileInput = document.getElementById('id_consultation_json');
-          var file = fileInput.files[0];
-          var progressBar = document.getElementById('progress-bar');
-          var channelName = 'upload-progress-channel';
-          document.querySelector("#progress-bar-container").removeAttribute("hidden");
-          var socket = new WebSocket('ws://' + window.location.host + '/ws/upload_progress/');
-          socket.onmessage = function(e) {
-              var data = JSON.parse(e.data);
-              progressBar.value = data.progress;
-          };
-
-          var formData = new FormData();
-          formData.append('file', file);
-          formData.append('channel_name', channelName);
-
-          var xhr = new XMLHttpRequest();
-          xhr.open('POST', '/consultations/new/', true);
-          xhr.onload = function() {
-              if (xhr.status === 200) {
-                  alert('File uploaded successfully');
-              } else {
-                  alert('Failed to upload file');
-              }
-          };
-          xhr.send(formData);
-        });
-
-      </script>
-
+    <div id="progress-bar-container" hidden>
+      <label id="progress-label"></label>
     </div>
+    <div>
+      <label id="worker-status"></label>
+    </div>
+
+
+    <script>
+
+      document.querySelector("form").addEventListener('submit', function (event) {
+        event.preventDefault();
+
+        var fileInput = document.getElementById('id_consultation_json');
+        var file = fileInput.files[0];
+        var progressLabel = document.getElementById('progress-label');
+        var workerStatusLabel = document.getElementById('worker-status');
+
+        function startPolling(jobId) {
+          const statusUrl = `/consultations/job-status/${jobId}/`;
+            const workerStatusLabel = document.getElementById('worker-status');
+            
+            function poll() {
+                fetch(statusUrl)
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status == 'failed') {
+                            workerStatusLabel.innerText = 'Worker Status: Error - Check worker log for job id : ' + data.id; 
+                        } 
+                        else if (data.status == 'finished'){
+                          workerStatusLabel.innerText = 'Worker Status: ' + data.status;
+                          setTimeout(function() {
+                                window.location.href = '/consultations/';
+                              }, 2000);  // Wait for 2 seconds before redirecting
+                        }
+                        else {
+                            workerStatusLabel.innerText = 'Worker Status: ' + data.status;
+                            // Continue polling if job is not completed
+                            if (data.status !== 'completed' && data.status !== 'failed' && data.status !== 'finished') {
+                                setTimeout(poll, 2000);  // Poll every 2 seconds
+                            }
+                        }
+                        
+                    })
+                    .catch(error => {
+                        console.error('Error fetching job status:', error);
+                    });
+            }
+            
+            poll();
+        }
+
+        document.querySelector("#progress-bar-container").removeAttribute("hidden");
+
+            var uploadProgressSocket = new WebSocket('ws://' + window.location.host + '/ws/upload_progress/');
+            uploadProgressSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                const roundedPercentage = Math.round(data.percentage);
+                console.log('Upload Progress:', roundedPercentage);
+                progressLabel.innerText = 'Upload progress : ' + roundedPercentage + '%';
+            };
+
+            var workerStatusSocket = new WebSocket('ws://' + window.location.host + '/ws/worker_status/');
+            workerStatusSocket.onmessage = function(e) {
+                const data = JSON.parse(e.data);
+                console.log('Worker Status:', data);
+                if (data.worker_job_id) {
+                    workerStatusLabel.innerText = 'Worker Status : ' + data.worker_job_id;
+                    startPolling(data.worker_job_id);
+                }
+                
+            };
+
+        var formData = new FormData();
+        formData.append('consultation_json', file);
+        const csrfToken = document.querySelector('[name="csrfmiddlewaretoken"]').value;
+        formData.append('csrfmiddlewaretoken', csrfToken);
+
+        var xhr = new XMLHttpRequest();
+        xhr.open('POST', '/consultations/new/', true);
+        xhr.onload = function () {
+          if (xhr.status === 200) {
+            console.log('File uploaded successfully');
+
+          } else {
+            alert('Failed to upload file');
+          }
+        };
+        xhr.send(formData);
+      });
+
+    </script>
+
+    </script>
+
+
+
   </div>
+</div>
 {% endblock %}

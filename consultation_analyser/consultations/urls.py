@@ -2,8 +2,9 @@ from django.urls import include, path
 from magic_link import urls as magic_link_urls
 
 from .views import consultations, pages, questions, responses, root, schema, sessions
+from .tasks import get_job_status
 
-urlpatterns = [
+urlpatterns = [ 
     path("", root.root),
     path("how-it-works/", pages.how_it_works),
     path("schema/", schema.show),
@@ -28,4 +29,6 @@ urlpatterns = [
     path("sign-in/", sessions.new),
     path("sign-out/", sessions.destroy),
     path("magic-link/", include(magic_link_urls)),
+    path('django-rq/', include('django_rq.urls')),
+    path('consultations/job-status/<str:job_id>/', get_job_status, name='job_status'),
 ]
