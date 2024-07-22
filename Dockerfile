@@ -27,6 +27,12 @@ RUN touch README.md
 
 RUN poetry bundle venv ./venv
 
+# Installing consult AI 
+# When working locally this is installed as part of the poetry dev dependencies 
+# When deployed, we have a separate step here to install it that allows chaching of previous venv bundle to take place 
+COPY consult_ai consult_ai/
+RUN poetry add ./consult_ai/
+
 
 # app
 FROM python:3.12.3-slim

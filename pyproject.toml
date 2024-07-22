@@ -54,7 +54,6 @@ langchain-community = "^0.2.6"
 ijson = "^3.3.0"
 psutil = "^6.0.0"
 langchain-aws = "^0.1.9"
-consult_ai = { path = "consult_ai/", develop = true }
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.5.1"
@@ -63,6 +62,7 @@ factory_boy = "^3.3.0"
 django-extensions = "^3.2.3"
 mypy = "^1.10.1"
 black = "^24.4.2"
+consult_ai = { path = "consult_ai/", develop = true }
 
 [tool.mypy]
 files = '**/*.py'
