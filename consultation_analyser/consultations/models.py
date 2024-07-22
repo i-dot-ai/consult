@@ -227,11 +227,12 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
         super(ProcessingRun, self).save(*args, **kwargs)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        constraints = [
-            models.UniqueConstraint(
-                fields=["slug", "consultation"], name="unique_slug_consultation"
-            ),
-        ]
+        # constraints = [
+        #     models.UniqueConstraint(
+        #         fields=["slug", "consultation"], name="unique_slug_consultation"
+        #     ),
+        # ]
+        pass
 
 
 class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
