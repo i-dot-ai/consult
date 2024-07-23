@@ -13,10 +13,10 @@ def select_keys_from_model(model, keys):
     return {key: model_attrs[key] for key in keys}
 
 
-def consultation_to_json(consultation):
+def consultation_to_json(consultation, processing_run=None):
     """
     Return the consultation in a format compliant with the public schema.
-    For now, always get the latest themes.
+    Default to latest processing_run if exists.
 
     Raises:
         pydantic.ValidationError: if the generated JSON is not compliant
@@ -25,9 +25,11 @@ def consultation_to_json(consultation):
     attrs = {}
 
     themes = []
-    latest_processing_run = consultation.latest_processing_run
-    if latest_processing_run:
-        for theme in latest_processing_run.themes:
+    if not processing_run:
+        processing_run = consultation.latest_processing_run
+
+    if processing_run:
+        for theme in processing_run.themes:
             theme_attrs = select_keys_from_model(
                 theme, ["topic_id", "topic_keywords", "summary", "short_description"]
             )
@@ -63,8 +65,8 @@ def consultation_to_json(consultation):
                 answer, ["question", "multiple_choice", "free_text"]
             )
             # TODO - for now, the assumption is at most one theme per answer
-            if latest_processing_run:
-                themes_for_answer = latest_processing_run.get_themes_for_answer(answer_id=answer.id)
+            if processing_run:
+                themes_for_answer = processing_run.get_themes_for_answer(answer_id=answer.id)
                 latest_theme = themes_for_answer.last()
                 answer_attrs["theme_id"] = str(latest_theme.id) if latest_theme else None
             answer_attrs["question_id"] = str(answer_attrs.pop("question"))
