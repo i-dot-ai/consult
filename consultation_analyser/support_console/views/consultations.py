@@ -84,7 +84,7 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     except RuntimeError as error:
         messages.error(request, error.args[0])
 
-    # For now, latest processing run on frontend
+    # For display, just take latest themes
     total_themes, total_with_summaries = get_number_themes_for_processing_run(
         consultation.latest_processing_run
     )
