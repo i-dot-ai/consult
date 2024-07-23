@@ -4,7 +4,7 @@ from typing import Optional
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse, Http404
 from django.shortcuts import get_object_or_404, render
 
 from consultation_analyser.consultations.upload_consultation import upload_consultation
@@ -34,7 +34,10 @@ def show(
     request: HttpRequest, consultation_slug: str, processing_run_slug: Optional[str] = None
 ) -> HttpResponse:
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    processing_run = consultation.get_processing_run(processing_run_slug)
+    try:
+        processing_run = consultation.get_processing_run(processing_run_slug)
+    except models.ProcessingRun.DoesNotExist:
+        return Http404
     if not processing_run:
         messages.info(request, NO_THEMES_YET_MESSAGE)
 

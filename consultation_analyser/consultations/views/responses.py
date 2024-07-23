@@ -3,7 +3,7 @@ from typing import Optional
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
-from django.http import HttpRequest
+from django.http import HttpRequest, Http404
 from django.shortcuts import get_object_or_404, render
 
 from .. import models
@@ -22,7 +22,11 @@ def index(
     processing_run_slug: Optional[str] = None,
 ):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    processing_run = consultation.get_processing_run(slug=processing_run_slug)
+    try:
+        processing_run = consultation.get_processing_run(slug=processing_run_slug)
+    except models.ProcessingRun.DoesNotExist:
+        return Http404
+
     question = models.Question.objects.get(
         slug=question_slug,
         section__slug=section_slug,

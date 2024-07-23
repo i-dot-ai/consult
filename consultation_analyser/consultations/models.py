@@ -73,9 +73,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def get_processing_run(self, processing_run_slug=None):
         if processing_run_slug:
-            processing_run = get_object_or_404(
-                ProcessingRun, consultation=self, slug=processing_run_slug
-            )
+            processing_run = ProcessingRun.objects.get(consultation=self, slug=processing_run_slug)
         else:
             processing_run = self.latest_processing_run
         return processing_run

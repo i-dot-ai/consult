@@ -5,6 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Max, QuerySet
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, render
+from django.http import Http404
 
 from .. import models
 from .consultations import NO_THEMES_YET_MESSAGE
@@ -52,7 +53,11 @@ def show(
     processing_run_slug: Optional[str] = None,
 ):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    processing_run = consultation.get_processing_run(processing_run_slug)
+    try:
+        processing_run = consultation.get_processing_run(processing_run_slug)
+    except models.ProcessingRun.DoesNotExist:
+        raise Http404
+
     question = models.Question.objects.get(
         slug=question_slug,
         section__slug=section_slug,
