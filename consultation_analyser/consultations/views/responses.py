@@ -22,8 +22,6 @@ def index(
     processing_run_slug: Optional[str] = None,
 ):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    print("consultation")
-    print(consultation.name)
     if processing_run_slug:
         processing_run = get_object_or_404(
             models.ProcessingRun, slug=processing_run_slug, consultation=consultation
