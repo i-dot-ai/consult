@@ -7,6 +7,7 @@ import pydantic
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.db import connection, models
+from django.shortcuts import get_object_or_404
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import public_schema
@@ -69,6 +70,13 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         processing_runs = ProcessingRun.objects.filter(consultation=self).order_by("created_at")
         latest = processing_runs.last() if processing_runs else None
         return latest
+
+    def get_processing_run(self, processing_run_slug=None):
+        if processing_run_slug:
+            processing_run = get_object_or_404(ProcessingRun, consultation=self, slug=processing_run_slug)
+        else:
+            processing_run = self.latest_processing_run
+        return processing_run
 
 
 class Section(UUIDPrimaryKeyModel, TimeStampedModel):
