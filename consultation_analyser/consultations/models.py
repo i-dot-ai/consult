@@ -2,6 +2,7 @@ import itertools
 import uuid
 from dataclasses import dataclass
 
+import faker as _faker
 import pydantic
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
@@ -9,6 +10,8 @@ from django.db import connection, models
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import public_schema
+
+faker = _faker.Faker()
 
 
 class MultipleChoiceSchemaValidator(BaseValidator):
@@ -187,6 +190,9 @@ class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
 class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     # TODO - add more processing run metadata
+    started_at = models.DateTimeField(null=True)
+    finished_at = models.DateTimeField(null=True)
+    slug = models.SlugField(null=True)
 
     @property
     def themes(self):
@@ -205,8 +211,22 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
     def get_themes_for_question(self, question_id):
         return self.themes.filter(processing_run=self, answer__question_id=question_id).distinct()
 
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            generated_slug = faker.slug()
+            while ProcessingRun.objects.filter(
+                slug=generated_slug, consultation=self.consultation
+            ).exists():
+                generated_slug = faker.slug()
+            self.slug = generated_slug
+        super(ProcessingRun, self).save(*args, **kwargs)
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+        constraints = [
+            models.UniqueConstraint(
+                fields=["slug", "consultation"], name="unique_slug_consultation"
+            ),
+        ]
 
 
 class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):

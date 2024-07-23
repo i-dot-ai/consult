@@ -1,3 +1,4 @@
+import datetime
 import logging
 from pathlib import Path
 from typing import Optional
@@ -76,7 +77,8 @@ def summarise_with_llm(consultation, processing_run=None, llm_backend=None):
 
 
 def process_consultation_themes(consultation, topic_backend=None, llm_backend=None):
-    processing_run = ProcessingRun(consultation=consultation)
+    started_at = datetime.datetime.now()
+    processing_run = ProcessingRun(consultation=consultation, started_at=started_at)
     processing_run.save()
     # TODO - add more metadata to processing run
 
@@ -86,6 +88,8 @@ def process_consultation_themes(consultation, topic_backend=None, llm_backend=No
     save_themes_for_processing_run(topic_backend, processing_run)
     summarise_with_llm(consultation, processing_run, llm_backend)
 
+    processing_run.finished_at = datetime.datetime.now()
+    processing_run.save()
     return processing_run
 
 
