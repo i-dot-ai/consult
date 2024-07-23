@@ -80,6 +80,8 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
             response = HttpResponse(consultation_json, content_type="application/json")
             response["Content-Disposition"] = f"attachment; filename={consultation.slug}.json"
             return response
+        # TODO
+        # elif something with "download_json_" in request.POST, get the relevant processing run
 
     except RuntimeError as error:
         messages.error(request, error.args[0])
