@@ -34,14 +34,8 @@ def show(
     request: HttpRequest, consultation_slug: str, processing_run_slug: Optional[str] = None
 ) -> HttpResponse:
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    if processing_run_slug:
-        processing_run = get_object_or_404(
-            models.ProcessingRun, slug=processing_run_slug, consultation=consultation
-        )
-    elif consultation.has_processing_run():
-        processing_run = consultation.latest_processing_run
-    else:
-        processing_run = None
+    processing_run = consultation.get_processing_run(processing_run_slug)
+    if not processing_run:
         messages.info(request, NO_THEMES_YET_MESSAGE)
 
     questions = models.Question.objects.filter(section__consultation__slug=consultation_slug)

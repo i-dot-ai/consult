@@ -22,30 +22,17 @@ def index(
     processing_run_slug: Optional[str] = None,
 ):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    if processing_run_slug:
-        processing_run = get_object_or_404(
-            models.ProcessingRun, slug=processing_run_slug, consultation=consultation
-        )
-    elif consultation.has_processing_run():
-        processing_run = consultation.latest_processing_run
-    else:
-        processing_run = None
-
+    processing_run = consultation.get_processing_run(slug=processing_run_slug)
     question = models.Question.objects.get(
         slug=question_slug,
         section__slug=section_slug,
         section__consultation__slug=consultation_slug,
     )
-    consultation = question.section.consultation
-    if not consultation.has_processing_run():
-        messages.info(request, NO_THEMES_YET_MESSAGE)
-
-    # TODO - for now, get themes from latest processing run
-    latest_processing_run = consultation.latest_processing_run
-    if latest_processing_run:
-        themes_for_question = latest_processing_run.get_themes_for_question(question_id=question.id)
+    if processing_run:
+        themes_for_question = processing_run.get_themes_for_question(question_id=question.id)
     else:
         themes_for_question = models.Theme.objects.none()
+        messages.info(request, NO_THEMES_YET_MESSAGE)
     total_responses = models.Answer.objects.filter(question=question).count()
     applied_filters = get_applied_filters(request)
     responses = get_filtered_responses(question, applied_filters)

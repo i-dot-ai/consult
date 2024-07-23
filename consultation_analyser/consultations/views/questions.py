@@ -52,22 +52,15 @@ def show(
     processing_run_slug: Optional[str] = None,
 ):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    if processing_run_slug:
-        processing_run = get_object_or_404(
-            models.ProcessingRun, slug=processing_run_slug, consultation=consultation
-        )
-    elif consultation.has_processing_run():
-        processing_run = consultation.latest_processing_run
-    else:
-        processing_run = None
-        messages.info(request, NO_THEMES_YET_MESSAGE)
-
+    processing_run = consultation.get_processing_run(processing_run_slug)
     question = models.Question.objects.get(
         slug=question_slug,
         section__slug=section_slug,
         section__consultation__slug=consultation_slug,
     )
-    consultation = question.section.consultation
+
+    if not processing_run:
+        messages.info(request, NO_THEMES_YET_MESSAGE)
 
     applied_filters = get_applied_filters(request)
     responses = get_filtered_responses(question, applied_filters)
