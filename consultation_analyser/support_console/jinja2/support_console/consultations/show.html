@@ -17,7 +17,7 @@
 
         <p class="govuk-body">
           <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
-            View on frontend (latest results)
+            View on frontend
           </a>
         </p>
 
@@ -74,7 +74,7 @@
         Add users
       </a>
 
-      <h2 class="govuk-heading-m">Previous runs of the theme generation</h2>
+      <h2 class="govuk-heading-m">All runs of theme generation</h2>
       <table class="govuk-table">
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
@@ -97,7 +97,7 @@
               {% endif %}
             </td>
             <td class="govuk-table__cell">
-              {% if run.started_at %}
+              {% if run.finished_at %}
                 {{ datetime(run.finished_at) }}
               {% endif %}
             </td>
@@ -123,7 +123,7 @@
 
         <h2 class="govuk-heading-m">Download JSON</h2>
         {% if total_themes %}
-          <p class="govuk-body">This consultation has themes, so the JSON will be in the <a class="govuk-link" href="/schema/consultation_with_responses_and_themes_schema.json">ConsultationWithResponsesAndThemes</a> format.</p>
+          <p class="govuk-body">This consultation has themes, so the JSON will be in the <a class="govuk-link" href="/schema/consultation_with_responses_and_themes_schema.json">ConsultationWithResponsesAndThemes</a> format. It will contain the themes generated most recently.</p>
         {% else %}
           <p class="govuk-body">This consultations has no themes, this JSON will be in the <a class="govuk-link" href="/schema/consultation_with_responses_schema.json">ConsultationWithResponses</a> format.</p>
         {% endif %}
