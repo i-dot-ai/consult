@@ -77,7 +77,7 @@
                 const data = JSON.parse(e.data);
                 console.log('Worker Status:', data);
                 if (data.worker_job_id) {
-                    workerStatusLabel.innerText = 'Worker Status : ' + data.worker_job_id;
+                    workerStatusLabel.innerText = 'Worker status : ' + data.worker_job_id;
                     startPolling(data.worker_job_id);
                 }
                 
