@@ -37,16 +37,16 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.status == 'failed') {
-                            workerStatusLabel.innerText = 'Worker Status : ' + data.exception; 
+                            workerStatusLabel.innerText = 'Worker status : ' + data.exception; 
                         } 
                         else if (data.status == 'finished'){
-                          workerStatusLabel.innerText = 'Worker Status: ' + data.status;
+                          workerStatusLabel.innerText = 'Worker status: ' + data.status;
                           setTimeout(function() {
                                 window.location.href = '/consultations/';
                               }, 2000);  // Wait for 2 seconds before redirecting
                         }
                         else {
-                            workerStatusLabel.innerText = 'Worker Status: ' + data.status;
+                            workerStatusLabel.innerText = 'Worker status: ' + data.status;
                             // Continue polling if job is not completed
                             if (data.status !== 'completed' && data.status !== 'failed' && data.status !== 'finished') {
                                 setTimeout(poll, 2000);  // Poll every 2 seconds
@@ -75,7 +75,7 @@
             var workerStatusSocket = new WebSocket('ws://' + window.location.host + '/ws/worker_status/');
             workerStatusSocket.onmessage = function(e) {
                 const data = JSON.parse(e.data);
-                console.log('Worker Status:', data);
+                console.log('Worker status:', data);
                 if (data.worker_job_id) {
                     workerStatusLabel.innerText = 'Worker status : ' + data.worker_job_id;
                     startPolling(data.worker_job_id);
