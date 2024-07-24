@@ -72,6 +72,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         return latest
 
     def get_processing_run(self, processing_run_slug=None):
+        # If None, get latest run if exists
         if processing_run_slug:
             processing_run = ProcessingRun.objects.get(consultation=self, slug=processing_run_slug)
         else:

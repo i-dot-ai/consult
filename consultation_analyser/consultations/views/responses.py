@@ -23,7 +23,7 @@ def index(
 ):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     try:
-        processing_run = consultation.get_processing_run(slug=processing_run_slug)
+        processing_run = consultation.get_processing_run(processing_run_slug=processing_run_slug)
     except models.ProcessingRun.DoesNotExist:
         return Http404
 
