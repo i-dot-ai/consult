@@ -14,6 +14,9 @@ from asgiref.sync import async_to_sync
 
 logger = logging.getLogger("Consultation Processing Task")
 
+class UploadConsultationError(Exception):
+    pass
+
 
 def process_json_from_s3(file, user):
     """
@@ -34,7 +37,12 @@ def process_json_from_s3(file, user):
     file_content = response['Body'].read()
     file_handle = BytesIO(file_content)
 
-    upload_consultation(file_handle, user)
+    try:
+        upload_consultation(file_handle, user)
+    except Exception as e:
+        logger.error(f'Error uploading consultation: {e}')
+        raise UploadConsultationError(f'Error uploading consultation: {e}')
+
     logger.info("End")
 
 
@@ -100,6 +108,13 @@ def get_job_status(request: HttpRequest, job_id):
             'result': job.result,
             'meta': job.meta,
         }
+        if status == 'failed':
+            # Customize the exception message
+            exc_info = job.exc_info
+            custom_message = "An error occurred during the job execution.\n"
+            if exc_info:
+                custom_message += f" {str(exc_info).splitlines()[-1]}"  # Simplified message
+            response_data['exception'] = custom_message
     else:
         response_data = {'error': 'Job not found'}
 

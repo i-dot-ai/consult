@@ -37,7 +37,7 @@
                     .then(response => response.json())
                     .then(data => {
                         if (data.status == 'failed') {
-                            workerStatusLabel.innerText = 'Worker Status: Error - Check worker log for job id : ' + data.id; 
+                            workerStatusLabel.innerText = 'Worker Status : ' + data.exception; 
                         } 
                         else if (data.status == 'finished'){
                           workerStatusLabel.innerText = 'Worker Status: ' + data.status;
