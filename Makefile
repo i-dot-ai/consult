@@ -116,15 +116,19 @@ AUTO_APPLY_RESOURCES = module.ecs.aws_ecs_task_definition.aws-ecs-task \
 target_modules = $(foreach resource,$(AUTO_APPLY_RESOURCES),-target $(resource))
 IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
 
-PREV_IMAGE_TAG=$$(git rev-parse HEAD~1)
-MAIN_IMAGE_TAG=$$(git rev-parse origin/main)
+ifndef cache
+	override cache = ./.build-cache
+endif
 
 .PHONY: docker_build
-docker_build: ## Cache from the previous image and the head of main
-	docker buildx build --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE)  \
-	--cache-to type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(IMAGE) \
-	--cache-from type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(ECR_REPO_URL):$(PREV_IMAGE_TAG) \
-	--cache-from type=s3,region=$(AWS_REGION),bucket=$(DOCKER_CACHE_BUCKET),name=$(APP_NAME)/$(ECR_REPO_URL):$(MAIN_IMAGE_TAG) .
+docker_build: ## Build the docker container for the specified service when running in CI/CD
+	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
+	--cache-to type=local,dest=$(cache) \
+	--cache-from type=local,src=$(cache) .
+
+.PHONY: docker_build_local
+docker_build_local: ## Build the docker container for the specified service locally
+	DOCKER_BUILDKIT=1 docker build --platform=linux/amd64 -t $(IMAGE) -f $(service)/Dockerfile .
 
 .PHONY: docker_run
 docker_run: ## Run the docker container
