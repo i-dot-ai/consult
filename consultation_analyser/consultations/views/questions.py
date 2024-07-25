@@ -1,9 +1,9 @@
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional, Tuple
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Max, QuerySet
-from django.http import HttpRequest
+from django.http import Http404, HttpRequest
 from django.shortcuts import get_object_or_404, render
 
 from .. import models
@@ -44,20 +44,27 @@ def get_outliers_info(processing_run: models.ProcessingRun, question: models.Que
 
 @user_can_see_consultation
 @login_required
-def show(request: HttpRequest, consultation_slug: str, section_slug: str, question_slug: str):
+def show(
+    request: HttpRequest,
+    consultation_slug: str,
+    section_slug: str,
+    question_slug: str,
+    processing_run_slug: Optional[str] = None,
+):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+    try:
+        processing_run = consultation.get_processing_run(processing_run_slug)
+    except models.ProcessingRun.DoesNotExist:
+        raise Http404
+
     question = models.Question.objects.get(
         slug=question_slug,
         section__slug=section_slug,
         section__consultation__slug=consultation_slug,
     )
 
-    consultation = question.section.consultation
-    if not consultation.has_processing_run():
+    if not processing_run:
         messages.info(request, NO_THEMES_YET_MESSAGE)
-
-    # TODO - for now default to latest processing run
-    processing_run = consultation.latest_processing_run
 
     applied_filters = get_applied_filters(request)
     responses = get_filtered_responses(question, applied_filters)
@@ -99,5 +106,6 @@ def show(request: HttpRequest, consultation_slug: str, section_slug: str, questi
         "outliers_count": outliers_count,
         "outlier_theme_id": outlier_theme.id if outlier_theme else None,
         "scatter_plot_data": scatter_plot_data,
+        "processing_run": processing_run,
     }
     return render(request, "consultations/questions/show.html", context)

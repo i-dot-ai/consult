@@ -232,6 +232,8 @@ class ConsultationResponseFactory(factory.django.DjangoModelFactory):
 
 class ProcessingRunFactory(factory.django.DjangoModelFactory):
     consultation = factory.SubFactory(ConsultationFactory)
+    started_at = timezone.now() - timezone.timedelta(minutes=1)
+    finished_at = timezone.now()
 
     class Meta:
         model = models.ProcessingRun

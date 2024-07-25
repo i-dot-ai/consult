@@ -70,6 +70,14 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         latest = processing_runs.last() if processing_runs else None
         return latest
 
+    def get_processing_run(self, processing_run_slug=None):
+        # If None, get latest run if exists
+        if processing_run_slug:
+            processing_run = ProcessingRun.objects.get(consultation=self, slug=processing_run_slug)
+        else:
+            processing_run = self.latest_processing_run
+        return processing_run
+
 
 class Section(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)

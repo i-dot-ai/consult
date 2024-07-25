@@ -46,15 +46,17 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     return render(request, "support_console/consultations/delete.html", context=context)
 
 
-def get_number_themes_latest_run(consultation):
-    total_themes = 0
-    total_with_summaries = 0
-    if consultation.has_processing_run():
-        processing_run = consultation.latest_processing_run
-        total_themes = processing_run.themes.count()
-        total_with_summaries = (
-            processing_run.themes.exclude(summary="").exclude(summary=NO_SUMMARY_STR).count()
-        )
+def get_number_themes_for_processing_run(processing_run):
+    """
+    Get total themes for processing run.
+    If processing_run not specified, get the latest processing run if exists.
+    """
+    if not processing_run:
+        return 0, 0
+    total_themes = processing_run.themes.count()
+    total_with_summaries = (
+        processing_run.themes.exclude(summary="").exclude(summary=NO_SUMMARY_STR).count()
+    )
     return total_themes, total_with_summaries
 
 
@@ -82,10 +84,15 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     except RuntimeError as error:
         messages.error(request, error.args[0])
 
-    total_themes, total_with_summaries = get_number_themes_latest_run(consultation)
-    # TODO - find a better way to summarise themes by question
+    # For display, just take latest themes
+    total_themes, total_with_summaries = get_number_themes_for_processing_run(
+        consultation.latest_processing_run
+    )
+    processing_runs = consultation.processingrun_set.all().order_by("created_at")
+
     context = {
         "consultation": consultation,
+        "processing_runs": processing_runs,
         "users": consultation.users.all(),
         "total_themes": total_themes,
         "total_with_summaries": total_with_summaries,

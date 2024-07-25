@@ -1,9 +1,10 @@
 import logging
 import time
+from typing import Optional
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.http import HttpRequest, HttpResponse
+from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
 from consultation_analyser.consultations.upload_consultation import upload_consultation
@@ -29,13 +30,23 @@ def index(request: HttpRequest) -> HttpResponse:
 
 @user_can_see_consultation
 @login_required
-def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
+def show(
+    request: HttpRequest, consultation_slug: str, processing_run_slug: Optional[str] = None
+) -> HttpResponse:
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    questions = models.Question.objects.filter(section__consultation__slug=consultation_slug)
-    context = {"questions": questions, "consultation": consultation}
-
-    if not consultation.has_processing_run():
+    try:
+        processing_run = consultation.get_processing_run(processing_run_slug)
+    except models.ProcessingRun.DoesNotExist:
+        return Http404
+    if not processing_run:
         messages.info(request, NO_THEMES_YET_MESSAGE)
+
+    questions = models.Question.objects.filter(section__consultation__slug=consultation_slug)
+    context = {
+        "questions": questions,
+        "consultation": consultation,
+        "processing_run": processing_run,
+    }
 
     return render(request, "consultations/consultations/show.html", context)
 
