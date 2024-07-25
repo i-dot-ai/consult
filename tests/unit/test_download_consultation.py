@@ -5,6 +5,8 @@ import pytest
 
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.upload_consultation import upload_consultation
+from consultation_analyser import factories
+from consultation_analyser.consultations import models
 from consultation_analyser.factories import ConsultationBuilder, UserFactory
 
 
@@ -44,3 +46,24 @@ def test_consultation_to_json(django_app):
     reuploaded = upload_consultation(file_to_reupload, user)
 
     assert reuploaded
+
+
+@pytest.mark.django_db
+def test_consultation_to_json_processing_runs(django_app):
+    # Set up 2 processing runs for a consultation
+    consultation = factories.ConsultationWithThemesFactory()
+    first_processing_run = models.ProcessingRun.objects.all().order_by("created_at").first()
+    second_processing_run = factories.ProcessingRunFactory(consultation=consultation)
+    made_up_theme = factories.ThemeFactory(processing_run=second_processing_run, short_description="This is my new theme")
+    question = models.Question.objects.filter(section__consultation=consultation, has_free_text=True).first()
+    answer = models.Answer.objects.filter(question=question).first()
+    answer.theme = made_up_theme
+    answer.save()
+
+    consultation1 = consultation_to_json(consultation, first_processing_run)
+    consultation2 = consultation_to_json(consultation, second_processing_run)
+    assert consultation1 != consultation2
+    assert "This is my new theme" not in consultation1
+    assert "This is my new theme" in consultation2
+
+
