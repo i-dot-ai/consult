@@ -7,7 +7,6 @@ import pydantic
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.db import connection, models
-from django.shortcuts import get_object_or_404
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import public_schema

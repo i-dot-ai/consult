@@ -37,4 +37,3 @@ def test_get_processing_run():
     pr_diff_consultation = factories.ProcessingRunFactory()
     with pytest.raises(models.ProcessingRun.DoesNotExist):
         consultation.get_processing_run(pr_diff_consultation.slug)
-
