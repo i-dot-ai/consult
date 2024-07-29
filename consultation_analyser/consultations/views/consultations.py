@@ -8,7 +8,7 @@ from django.core.files.storage import default_storage as storage
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
-from consultation_analyser.consultations.upload_consultation import upload_consultation
+from consultation_analyser.consultations.jobs.upload_consultation import async_upload_consultation
 
 from .. import models
 from ..forms.consultation_upload_form import ConsultationUploadForm
@@ -57,16 +57,12 @@ def new(request: HttpRequest):
     if not request.POST:
         form = ConsultationUploadForm()
     else:
-        stime = time.time()
         logger.info("Upload received")
         form = ConsultationUploadForm(request.POST, request.FILES)
         if form.is_valid():
-            logger.info("Running upload_consultation")
+            logger.info("Enqueueing upload_consultation job")
             file_path = storage.save(request.FILES["consultation_json"].name, request.FILES["consultation_json"])
-            saved_file = storage.open(file_path, "r")
-            upload_consultation(saved_file, request.user)
-            etime = time.time()
-            logger.info(f"Total upload time: {etime - stime}s")
+            async_upload_consultation.delay(file_path, request.user.id)
             return render(request, "consultations/consultations/uploaded.html", {})
 
     return render(request, "consultations/consultations/new.html", {"form": form})
