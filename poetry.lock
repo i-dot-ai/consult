@@ -3571,6 +3571,7 @@ files = [
 
 [package.dependencies]
 certifi = "*"
+rq = {version = ">=0.6", optional = true, markers = "extra == \"rq\""}
 urllib3 = ">=1.26.11"
 
 [package.extras]
@@ -4408,4 +4409,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.3"
-content-hash = "17f3c63f56396ab6f91dcfec5c3f5c86b6c34df6b192d2ec1ae0e08dfc91216f"
+content-hash = "91daa8ec652ecd988defba88074eaa28c2b3280d5ca3b0a33cd16e0653f4a577"
