@@ -4,6 +4,7 @@ from typing import Optional
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.core.files.storage import default_storage as storage
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
@@ -61,7 +62,9 @@ def new(request: HttpRequest):
         form = ConsultationUploadForm(request.POST, request.FILES)
         if form.is_valid():
             logger.info("Running upload_consultation")
-            upload_consultation(request.FILES["consultation_json"], request.user)
+            file_path = storage.save(request.FILES["consultation_json"].name, request.FILES["consultation_json"])
+            saved_file = storage.open(file_path, "r")
+            upload_consultation(saved_file, request.user)
             etime = time.time()
             logger.info(f"Total upload time: {etime - stime}s")
             return render(request, "consultations/consultations/uploaded.html", {})
