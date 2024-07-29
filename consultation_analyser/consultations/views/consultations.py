@@ -1,5 +1,4 @@
 import logging
-import time
 from typing import Optional
 
 from django.contrib import messages
@@ -61,7 +60,9 @@ def new(request: HttpRequest):
         form = ConsultationUploadForm(request.POST, request.FILES)
         if form.is_valid():
             logger.info("Enqueueing upload_consultation job")
-            file_path = storage.save(request.FILES["consultation_json"].name, request.FILES["consultation_json"])
+            file_path = storage.save(
+                request.FILES["consultation_json"].name, request.FILES["consultation_json"]
+            )
             async_upload_consultation.delay(file_path, request.user.id)
             return render(request, "consultations/consultations/uploaded.html", {})
 
