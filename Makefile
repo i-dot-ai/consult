@@ -56,8 +56,8 @@ migrate: ## Apply migrations
 	poetry run python manage.py generate_erd
 
 .PHONY: serve
-serve: ## Run the server
-	poetry run gunicorn --reload --workers=1 -c consultation_analyser/gunicorn.py consultation_analyser.wsgi
+serve: ## Run the server and the worker
+	poetry run honcho start
 
 .PHONY: test
 test: ## Run the tests
