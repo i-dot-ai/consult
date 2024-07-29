@@ -1,9 +1,8 @@
 import os
 from pathlib import Path
 
-from django.conf.global_settings import STORAGES
-
 import environ
+from django.conf.global_settings import STORAGES
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -17,5 +16,5 @@ STORAGES["default"] = {
 }
 
 # process all async jobs inline
-for queueConfig in RQ_QUEUES.values(): # noqa
-    queueConfig['ASYNC'] = False
+for queueConfig in RQ_QUEUES.values():  # noqa
+    queueConfig["ASYNC"] = "False"
