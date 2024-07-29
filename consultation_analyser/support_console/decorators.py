@@ -1,4 +1,4 @@
-from django.contrib.auth.decorators import staff_member_required
+from django.contrib.admin.views.decorators import staff_member_required
 
 
 def support_login_required(view_func=None):

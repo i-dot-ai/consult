@@ -1,16 +1,15 @@
 from uuid import UUID
 
 from django.contrib import messages
-
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
 from consultation_analyser.consultations import models
+from consultation_analyser.support_console.decorators import support_login_required
 from consultation_analyser.support_console.forms.add_users_to_consultation_form import (
     AddUsersToConsultationForm,
 )
-from consultation_analyser.support_console.decorators import support_login_required
 
 
 @support_login_required
