@@ -1,5 +1,6 @@
 import pytest
 from django.conf import settings
+from django_rq import get_worker
 from webtest import Upload
 
 from consultation_analyser.factories import ProcessingRunFactory, UserFactory
