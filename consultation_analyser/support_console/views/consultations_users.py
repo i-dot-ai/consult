@@ -1,7 +1,7 @@
 from uuid import UUID
 
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
+
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
@@ -10,9 +10,10 @@ from consultation_analyser.consultations import models
 from consultation_analyser.support_console.forms.add_users_to_consultation_form import (
     AddUsersToConsultationForm,
 )
+from consultation_analyser.support_console.decorators import support_login_required
 
 
-@staff_member_required
+@support_login_required
 def new(request: HttpRequest, consultation_id: UUID):
     consultation = models.Consultation.objects.get(id=consultation_id)
     users = models.User.objects.exclude(id__in=[u.id for u in consultation.users.all()]).all()
@@ -35,7 +36,7 @@ def new(request: HttpRequest, consultation_id: UUID):
     return render(request, "support_console/consultations_users/new.html", context=context)
 
 
-@staff_member_required
+@support_login_required
 def delete(request: HttpRequest, consultation_id: UUID, user_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
     user = models.User.objects.get(id=user_id)

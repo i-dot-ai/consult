@@ -1,7 +1,6 @@
 from uuid import UUID
 
 from django.contrib import messages
-from django.contrib.admin.views.decorators import staff_member_required
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
@@ -13,9 +12,10 @@ from consultation_analyser.pipeline.backends.types import (
     NO_SUMMARY_STR,
 )
 from consultation_analyser.pipeline.processing import run_llm_summariser, run_processing_pipeline
+from consultation_analyser.support_console.decorators import support_login_required
 
 
-@staff_member_required
+@support_login_required
 def index(request: HttpRequest) -> HttpResponse:
     if request.POST:
         try:
@@ -30,7 +30,7 @@ def index(request: HttpRequest) -> HttpResponse:
     return render(request, "support_console/consultations/index.html", context=context)
 
 
-@staff_member_required
+@support_login_required
 def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
     context = {
@@ -60,7 +60,7 @@ def get_number_themes_for_processing_run(processing_run):
     return total_themes, total_with_summaries
 
 
-@staff_member_required
+@support_login_required
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
     try:
