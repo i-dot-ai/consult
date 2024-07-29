@@ -236,5 +236,6 @@ CACHES = {
 RQ_QUEUES = {
     "default": {
         "USE_REDIS_CACHE": "redis",
+        "ASYNC": True,
     },
 }
