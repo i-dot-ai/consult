@@ -46,7 +46,7 @@ django-magic-link = "^1.0.0"
 django-crispy-forms = "^2.3"
 crispy-forms-gds = "^0.3.1"
 django-gov-notify = { git = "https://github.com/i-dot-ai/django-gov-notify", branch = "support-python-3-12" }
-sentry-sdk = "^2.11.0"
+sentry-sdk = {extras = ["redis", "rq"], version = "^2.11.0"}
 torch = "~2.2"
 jsonschema = { extras = ["format"], version = "^4.23.0" }
 tiktoken = "^0.7.0"
@@ -68,6 +68,13 @@ mypy = "^1.11.0"
 [tool.mypy]
 files = '**/*.py'
 exclude = ['^consultation_analyser/consultations/migrations/']
+
+
+
+
+
+
+
 
 
 
