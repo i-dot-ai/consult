@@ -154,3 +154,4 @@ variable "publicly_accessible" {
   type        = bool
   description = "Flag to determine if the database is publicly accessible"
 }
+
