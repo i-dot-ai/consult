@@ -19,7 +19,9 @@ django.setup()
 
 def worker_process(queue_name):
     # Connect to Redis server
-    redis_url = os.getenv('REDIS_URL', 'redis://localhost:6379')
+    redis_host = os.getenv('REDIS_HOST')
+    redis_port = os.getenv('REDIS_PORT')
+    redis_url = f'redis://{redis_host}:{redis_port}'
     conn = Redis.from_url(redis_url)
 
     # Create RQ worker
