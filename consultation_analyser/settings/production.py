@@ -1,4 +1,5 @@
 import sentry_sdk
+from django.conf.global_settings import STORAGES
 
 from consultation_analyser.settings.base import *  # noqa
 
@@ -7,6 +8,12 @@ CSRF_TRUSTED_ORIGINS = ["https://" + env("DOMAIN_NAME")]  # noqa: F405
 SENTRY_DSN = env("SENTRY_DSN")  # noqa: F405
 EXECUTION_CONTEXT = env("EXECUTION_CONTEXT")  # noqa: F405
 GIT_SHA = env("GIT_SHA")  # noqa: F405
+
+
+STORAGES["default"] = {  # noqa: F405
+    "BACKEND": "storages.backends.s3.S3Storage",
+    "OPTIONS": {"bucket_name": env("AWS_STORAGE_BUCKET_NAME"), "location": "app_data/"},  # noqa: F405
+}
 
 
 def sentry_before_send(event, hint):

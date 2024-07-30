@@ -58,6 +58,7 @@ pytest-random-order = "^1.1.1"
 django-rq = "^2.10.2"
 django-redis = "^5.4.0"
 honcho = "^1.1.0"
+django-storages = "^1.14.4"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.5.5"
