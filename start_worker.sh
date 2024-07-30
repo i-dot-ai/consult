@@ -1,1 +1,1 @@
-exec venv/bin/python rq_worker.py
+exec venv/bin/python ./consultation_analyser/rq_worker.py

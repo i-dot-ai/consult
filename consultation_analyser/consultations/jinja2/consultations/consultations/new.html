@@ -64,7 +64,7 @@
 
         document.querySelector("#progress-bar-container").removeAttribute("hidden");
 
-            var uploadProgressSocket = new WebSocket('ws://' + window.location.host + '/ws/upload_progress/');
+            var uploadProgressSocket = new WebSocket('wss://' + window.location.host + '/ws/upload_progress/');
             uploadProgressSocket.onmessage = function(e) {
                 const data = JSON.parse(e.data);
                 const roundedPercentage = Math.round(data.percentage);
@@ -72,7 +72,7 @@
                 progressLabel.innerText = 'Upload progress : ' + roundedPercentage + '%';
             };
 
-            var workerStatusSocket = new WebSocket('ws://' + window.location.host + '/ws/worker_status/');
+            var workerStatusSocket = new WebSocket('wss://' + window.location.host + '/ws/worker_status/');
             workerStatusSocket.onmessage = function(e) {
                 const data = JSON.parse(e.data);
                 console.log('Worker status:', data);

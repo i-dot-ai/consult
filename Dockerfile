@@ -22,6 +22,9 @@ WORKDIR /src
 COPY pyproject.toml .
 COPY poetry.lock .
 
+COPY start.sh .
+COPY start_worker.sh .
+
 # do this so that poetry bundle can run without the project - can't pass --no-root to bundle
 RUN touch README.md
 
