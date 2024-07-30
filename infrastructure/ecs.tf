@@ -23,6 +23,8 @@ locals {
     "BATCH_JOB_QUEUE"      = module.batch_job_definition.job_queue_name,
     "BATCH_JOB_DEFINITION" = module.batch_job_definition.job_definition_name,
     "EXECUTION_CONTEXT"    = "ecs"
+    "REDIS_HOST" = module.elasticache.redis_address,
+    "REDIS_PORT" = module.elasticache.redis_port,
   })
 
   additional_policy_arns = {for idx, arn in [aws_iam_policy.ecs.arn] : idx => arn}
@@ -62,6 +64,42 @@ module "ecs" {
     "RolePassableByRunner" = "True"
   }
 
+}
+
+module "worker" {
+  source             = "../../i-ai-core-infrastructure//modules/ecs"
+  name               = "${local.name}-worker"
+  image_tag          = var.image_tag
+  ecr_repository_uri = var.ecr_repository_uri
+  ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
+  ecs_cluster_name   = data.terraform_remote_state.platform.outputs.ecs_cluster_name
+  memory             = local.ecs_memory
+  cpu                = local.ecs_cpus
+  health_check = {
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    accepted_response   = "200"
+    path                = "/"
+    timeout             = 6
+    port                = 8000
+  }
+  environment_variables = local.ecs_env_vars
+
+  state_bucket                 = var.state_bucket
+  vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
+  private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
+  container_port               = "8000"
+  load_balancer_security_group = module.load_balancer.load_balancer_security_group_id
+  aws_lb_arn                   = module.load_balancer.alb_arn
+  host                         = local.host
+  route53_record_name          = aws_route53_record.type_a_record.name
+  ip_whitelist                 = var.external_ips
+  create_listener              = false
+  create_networking            = false
+  task_additional_iam_policies = local.additional_policy_arns
+  additional_execution_role_tags = {
+    "RolePassableByRunner" = "True"
+  }
 }
 
 resource "aws_route53_record" "type_a_record" {
