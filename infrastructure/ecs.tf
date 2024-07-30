@@ -64,7 +64,7 @@ module "ecs" {
   additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
   }
-  entrypoint = ["./start.sh"]
+  entrypoint = ["sh","/start.sh"]
 }
 
 module "worker" {
@@ -101,7 +101,7 @@ module "worker" {
   additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
   }
-  entrypoint = ["./start_worker.sh"]
+  entrypoint = ["sh"," /start_worker.sh"]
 }
 
 resource "aws_route53_record" "type_a_record" {
