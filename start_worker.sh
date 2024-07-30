@@ -1,1 +1,1 @@
-python rq_worker.py
+exec venv/bin/python rq_worker.py
