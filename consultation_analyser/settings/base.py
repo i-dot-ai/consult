@@ -219,13 +219,17 @@ LOGIN_URL = "/sign-in/"
 GIT_SHA = env("GIT_SHA", default=None)
 
 # redis
+redis_host = env.str("REDIS_HOST", "localhost")
+redis_port = env.str("REDIS_PORT", "6379")
+redis_url = f"redis://{redis_host}:{redis_port}"
+
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     },
     "redis": {
         "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": env.str("REDIS_URL", "redis://localhost:6379/"),
+        "LOCATION": redis_url,
         "OPTIONS": {
             "CLIENT_CLASS": "django_redis.client.DefaultClient",
             "MAX_ENTRIES": 5000,
