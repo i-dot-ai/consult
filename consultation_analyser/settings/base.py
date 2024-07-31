@@ -47,7 +47,7 @@ INSTALLED_APPS = [
     "consultation_analyser.consultations",
     "consultation_analyser.support_console",
     "consultation_analyser.error_pages",
-    "consultation_analyser.email",
+    "consultation_analyser.send_email",
     "compressor",
     "crispy_forms",
     "crispy_forms_gds",
