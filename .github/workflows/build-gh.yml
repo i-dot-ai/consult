@@ -51,6 +51,7 @@ jobs:
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
       INFRASTRUCTURE_FOLDER: "infrastructure"
       DOCKER_BUILD_INSTANCE: ${{ needs.set-vars.outputs.docker-build-instance }}
+      COMMIT_HASH: ${{ github.sha }}
     secrets:
       AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT}}
       AWS_GITHUBRUNNER_PAT_USER: ${{ secrets.AWS_GITHUBRUNNER_PAT_USER }}

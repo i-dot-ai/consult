@@ -74,6 +74,7 @@ jobs:
       ENVIRONMENT: ${{ needs.set-vars.outputs.environment }}
       PUBLIC_INFRA_DEPLOYMENT: true
       INFRA_CONFIG_REPO: ${{ needs.set-vars.outputs.infra-config-repo }}
+      IMAGE_TAG: ${{ github.sha }}
     secrets:
       AWS_GITHUBRUNNER_PAT: ${{ secrets.AWS_GITHUBRUNNER_PAT }}
       AWS_GITHUBRUNNER_PAT_USER: ${{ secrets.AWS_GITHUBRUNNER_PAT_USER }}
