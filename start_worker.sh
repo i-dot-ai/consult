@@ -1,3 +1,3 @@
 #!/bin/sh
 
-exec venv/bin/python ./consultation_analyser/rq_worker.py
+exec venv/bin/python3.12 ./consultation_analyser/rq_worker.py

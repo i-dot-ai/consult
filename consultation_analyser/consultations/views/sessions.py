@@ -8,7 +8,7 @@ from magic_link.models import MagicLink
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.forms.sessions import NewSessionForm
-from consultation_analyser.email import send_magic_link_email
+from consultation_analyser.send_email import send_magic_link_email
 from consultation_analyser.hosting_environment import HostingEnvironment
 
 

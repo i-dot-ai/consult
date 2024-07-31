@@ -1,6 +1,6 @@
 from django.core import mail
 
-from consultation_analyser.email import send_magic_link_email
+from consultation_analyser.send_email import send_magic_link_email
 
 
 def test_magic_link_email():
