@@ -63,7 +63,6 @@ def get_number_themes_for_processing_run(processing_run):
 @support_login_required
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
-    print(request.POST)
     try:
         download_key = None
         for key in request.POST:
