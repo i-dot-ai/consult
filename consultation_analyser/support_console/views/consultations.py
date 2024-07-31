@@ -65,21 +65,6 @@ def get_number_themes_for_processing_run(processing_run):
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
     try:
-        download_key = None
-        for key in request.POST:
-            if key.startswith("download_json"):
-                download_key = key
-        if download_key:
-            if download_key == "download_json":
-                consultation_json = consultation_to_json(consultation)
-            else:
-                processing_run_slug = download_key.replace("download_json_", "")
-                processing_run = models.ProcessingRun.objects.get(slug=processing_run_slug)
-                consultation_json = consultation_to_json(consultation, processing_run)
-            response = HttpResponse(consultation_json, content_type="application/json")
-            response["Content-Disposition"] = f"attachment; filename={consultation.slug}.json"
-            return response
-
         if "generate_themes" in request.POST:
             run_processing_pipeline(consultation)
             messages.success(request, "Consultation data has been sent for processing")
@@ -91,6 +76,11 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
                 messages.success(
                     request, "(Re-)running LLM summarisation on the latest processing run"
                 )
+        elif "download_json" in request.POST:
+            consultation_json = consultation_to_json(consultation)
+            response = HttpResponse(consultation_json, content_type="application/json")
+            response["Content-Disposition"] = f"attachment; filename={consultation.slug}.json"
+            return response
 
     except RuntimeError as error:
         messages.error(request, error.args[0])
