@@ -106,6 +106,9 @@ IMAGE_TAG=$$(git rev-parse HEAD)
 AUTO_APPLY_RESOURCES = module.ecs.aws_ecs_task_definition.aws-ecs-task \
                        module.ecs.aws_ecs_service.aws-ecs-service \
                        module.ecs.data.aws_ecs_task_definition.main \
+                       module.worker.aws_ecs_task_definition.aws-ecs-task \
+                       module.worker.aws_ecs_service.aws-ecs-service \
+                       module.worker.data.aws_ecs_task_definition.main \
                        module.batch_job_definition.aws_batch_job_definition.job_definition \
                        module.waf.aws_wafv2_ip_set.london \
                        aws_secretsmanager_secret.django_secret \
