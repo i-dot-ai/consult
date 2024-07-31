@@ -24,7 +24,10 @@ def test_consultation_to_json(django_app):
     answer = consultation_builder.add_answer(question)
     consultation_builder.add_theme(answer)
 
-    consultation_json = json.loads(consultation_to_json(consultation))
+    consultation_no_themes_json = json.loads(consultation_to_json(consultation))
+    assert "themes" not in consultation_no_themes_json.keys()
+
+    consultation_json = json.loads(consultation_to_json(consultation, processing_run=consultation.latest_processing_run))
 
     assert consultation_json["consultation"]["name"] == "My consultation"
 
@@ -46,6 +49,9 @@ def test_consultation_to_json(django_app):
     reuploaded = upload_consultation(file_to_reupload, user)
 
     assert reuploaded
+
+
+
 
 
 @pytest.mark.django_db

@@ -16,7 +16,6 @@ def select_keys_from_model(model, keys):
 def consultation_to_json(consultation, processing_run=None):
     """
     Return the consultation in a format compliant with the public schema.
-    Default to latest processing_run if exists.
 
     Raises:
         pydantic.ValidationError: if the generated JSON is not compliant
@@ -25,8 +24,6 @@ def consultation_to_json(consultation, processing_run=None):
     attrs = {}
 
     themes = []
-    if not processing_run:
-        processing_run = consultation.latest_processing_run
 
     if processing_run:
         for theme in processing_run.themes:

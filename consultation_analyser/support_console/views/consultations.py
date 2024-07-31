@@ -81,6 +81,12 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
             response = HttpResponse(consultation_json, content_type="application/json")
             response["Content-Disposition"] = f"attachment; filename={consultation.slug}.json"
             return response
+        elif "download_json_themes" in request.POST:
+            latest_processing_run = consultation.latest_processing_run
+            consultation_json = consultation_to_json(consultation, latest_processing_run)
+            response = HttpResponse(consultation_json, content_type="application/json")
+            response["Content-Disposition"] = f"attachment; filename={consultation.slug}.json"
+            return response
 
     except RuntimeError as error:
         messages.error(request, error.args[0])
