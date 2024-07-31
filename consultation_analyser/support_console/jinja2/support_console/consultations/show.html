@@ -108,10 +108,9 @@
                   {% endif %}
                 </td>
                 <td class="govuk-table__cell">
-                  {{ govukButton({
-                    'text': "Download JSON",
-                    'name': "download_json_" + run.slug
-                  }) }}
+                  <a href="{{ url('download_consultation', kwargs={'consultation_slug': consultation.slug, 'processing_run_slug': run.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
+                    Download data as JSON
+                  </a>
                 </td>
               </tr>
             {% endfor %}
