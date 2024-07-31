@@ -61,7 +61,7 @@ serve: ## Run the server
 
 .PHONY: test
 test: ## Run the tests
-	poetry run pytest tests/
+	poetry run pytest tests/ --random-order
 
 .PHONY: check-python-code
 check-python-code: ## Check Python code - linting and mypy
