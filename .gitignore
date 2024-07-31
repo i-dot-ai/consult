@@ -184,3 +184,6 @@ tmp
 
 # Ignore notebooks for now
 *.ipynb
+
+# Docker cache
+.build-cache
