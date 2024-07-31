@@ -69,5 +69,3 @@ jobs:
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
           BATCH_JOB_QUEUE: dummy-queue
           BATCH_JOB_DEFINITION: dummy-definition
-
-

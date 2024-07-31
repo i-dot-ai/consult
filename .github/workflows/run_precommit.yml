@@ -17,4 +17,3 @@ jobs:
       with:
         python-version-file: 'pyproject.toml'
     - uses: pre-commit/action@v3.0.1
-
