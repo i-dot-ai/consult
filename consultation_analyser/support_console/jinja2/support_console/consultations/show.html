@@ -132,20 +132,11 @@
         }) }}
 
         <h2 class="govuk-heading-m">Download JSON</h2>
-        <p class="govuk-body">This consultation can be downloaded without themes as a JSON in the <a class="govuk-link" href="/schema/consultation_with_responses_schema.json">ConsultationWithResponses</a> format.</p>
+        <p class="govuk-body">This consultation will be downloaded without themes as a JSON in the <a class="govuk-link" href="/schema/consultation_with_responses_schema.json">ConsultationWithResponses</a> format.</p>
         {{ govukButton({
           'text': "Download JSON (without themes)",
           'name': "download_json"
         }) }}
-
-        {% if total_themes %}
-          <p class="govuk-body">This consultation has themes, so the JSON can also be downloaded in the <a class="govuk-link" href="/schema/consultation_with_responses_and_themes_schema.json">ConsultationWithResponsesAndThemes</a> format. It will contain the themes generated most recently.</p>
-          {{ govukButton({
-            'text': "Download JSON (with themes)",
-            'name': "download_json_themes"
-          }) }}
-        {% endif %}
-
       </form>
     </div>
   </div>
