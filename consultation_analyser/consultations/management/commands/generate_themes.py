@@ -123,7 +123,7 @@ class Command(BaseCommand):
         return output_dir
 
     def __save_consultation_with_themes(self, output_dir: Path, consultation: models.Consultation):
-        json_with_themes = consultation_to_json(consultation)
+        json_with_themes = consultation_to_json(consultation, consultation.latest_processing_run)
         f = open(output_dir / "consultation_with_themes.json", "w")
         f.write(json_with_themes)
         f.close()

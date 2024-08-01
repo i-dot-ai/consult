@@ -98,3 +98,18 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
         "total_with_summaries": total_with_summaries,
     }
     return render(request, "support_console/consultations/show.html", context=context)
+
+
+@support_login_required
+def download(request: HttpRequest, consultation_slug: str, processing_run_slug: str):
+    # If no processing_run, defaults to latest if exists
+    consultation = models.Consultation.objects.get(slug=consultation_slug)
+    processing_run = models.ProcessingRun.objects.get(
+        consultation=consultation, slug=processing_run_slug
+    )
+    consultation_json = consultation_to_json(
+        consultation=consultation, processing_run=processing_run
+    )
+    response = HttpResponse(consultation_json, content_type="application/json")
+    response["Content-Disposition"] = f"attachment; filename={consultation.slug}.json"
+    return response
