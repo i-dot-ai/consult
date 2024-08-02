@@ -11,6 +11,7 @@ Consult is a machine learning and LLM-powered tool to automate the processing of
 ### External dependencies
 
 - PostgreSQL (`brew install postgresql`)
+- redis (`brew install redis`)
 - GraphViz (`brew install graphviz`), for generating diagrams
 
 ### Environment variables

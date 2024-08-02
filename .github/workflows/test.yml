@@ -14,6 +14,14 @@ jobs:
     container: python:3.12.3
 
     services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
       postgres:
         image: postgres
         env:
@@ -61,11 +69,11 @@ jobs:
           LLM_BACKEND: fake
           AWS_REGION: eu-west-2
 
-
       - name: pytest
         run:
           make test
         env:
+          REDIS_HOST: redis
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
           BATCH_JOB_QUEUE: dummy-queue
           BATCH_JOB_DEFINITION: dummy-definition

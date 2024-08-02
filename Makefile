@@ -56,8 +56,8 @@ migrate: ## Apply migrations
 	poetry run python manage.py generate_erd
 
 .PHONY: serve
-serve: ## Run the server
-	poetry run gunicorn --reload --workers=1 -c consultation_analyser/gunicorn.py consultation_analyser.wsgi
+serve: ## Run the server and the worker
+	poetry run honcho start
 
 .PHONY: test
 test: ## Run the tests
@@ -106,6 +106,9 @@ IMAGE_TAG=$$(git rev-parse HEAD)
 AUTO_APPLY_RESOURCES = module.ecs.aws_ecs_task_definition.aws-ecs-task \
                        module.ecs.aws_ecs_service.aws-ecs-service \
                        module.ecs.data.aws_ecs_task_definition.main \
+                       module.worker.aws_ecs_task_definition.aws-ecs-task \
+                       module.worker.aws_ecs_service.aws-ecs-service \
+                       module.worker.data.aws_ecs_task_definition.main \
                        module.batch_job_definition.aws_batch_job_definition.job_definition \
                        module.waf.aws_wafv2_ip_set.london \
                        aws_secretsmanager_secret.django_secret \

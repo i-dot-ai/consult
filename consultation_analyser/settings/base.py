@@ -51,6 +51,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_forms_gds",
     "django.contrib.humanize",
+    "django_rq",
 ]
 
 
@@ -215,3 +216,30 @@ LOGIN_URL = "/sign-in/"
 
 # version info
 GIT_SHA = env("GIT_SHA", default=None)
+
+# redis
+redis_host = env.str("REDIS_HOST", "localhost")
+redis_port = env.str("REDIS_PORT", "6379")
+redis_url = f"redis://{redis_host}:{redis_port}"
+
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+    },
+    "redis": {
+        "BACKEND": "django_redis.cache.RedisCache",
+        "LOCATION": redis_url,
+        "OPTIONS": {
+            "CLIENT_CLASS": "django_redis.client.DefaultClient",
+            "MAX_ENTRIES": 5000,
+        },
+    },
+}
+
+# rq
+RQ_QUEUES = {
+    "default": {
+        "USE_REDIS_CACHE": "redis",
+        "ASYNC": True,
+    },
+}
