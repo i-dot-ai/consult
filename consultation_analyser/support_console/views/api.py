@@ -1,7 +1,7 @@
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
-from consultation_analyser.consultations import serializers
+from consultation_analyser.support_console import serializers
 
 # TODO - add auth!!
 
