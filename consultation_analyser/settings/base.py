@@ -52,13 +52,13 @@ INSTALLED_APPS = [
     "crispy_forms_gds",
     "django.contrib.humanize",
     "django_rq",
-	"rest_framework",
-	"rest_framework_simplejwt",
+    "rest_framework",
+    "rest_framework_simplejwt",
 ]
 
 REST_FRAMEWORK = {
-    'DEFAULT_AUTHENTICATION_CLASSES': (
-        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
 }
 

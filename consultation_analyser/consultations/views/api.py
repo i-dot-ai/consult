@@ -1,16 +1,14 @@
-from rest_framework.decorators import api_view, schema
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 
 from consultation_analyser.consultations import serializers
-
-
 
 # TODO - add auth!!
 
 
 @api_view()
 def hello_world(request):
-	return Response({"message": "Hello world!"})
+    return Response({"message": "Hello world!"})
 
 
 @api_view(["POST"])

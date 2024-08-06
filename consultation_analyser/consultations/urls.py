@@ -1,7 +1,7 @@
 from django.urls import include, path
 from magic_link import urls as magic_link_urls
 
-from .views import consultations, pages, questions, responses, root, schema, sessions, api
+from .views import api, consultations, pages, questions, responses, root, schema, sessions
 
 urlpatterns = [
     path("", root.root),
@@ -43,7 +43,7 @@ urlpatterns = [
     path("sign-in/", sessions.new),
     path("sign-out/", sessions.destroy),
     path("magic-link/", include(magic_link_urls)),
-	# api
-	path("api/hello-world/", api.hello_world),
-	path("api/upload-data/", api.upload_json_data)
+    # api
+    path("api/hello-world/", api.hello_world),
+    path("api/upload-data/", api.upload_json_data),
 ]
