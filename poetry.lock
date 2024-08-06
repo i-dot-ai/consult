@@ -890,6 +890,29 @@ files = [
 ]
 
 [[package]]
+name = "drf-jsonschema-serializer"
+version = "3.0.0"
+description = "JSON Schema support for Django REST Framework"
+optional = false
+python-versions = ">=3.10"
+files = [
+    {file = "drf_jsonschema_serializer-3.0.0-py3-none-any.whl", hash = "sha256:d0e5cce095a5638b0bb7867aa060ed59ab9eed2f54ba5058dd9b483c9c887ed5"},
+    {file = "drf_jsonschema_serializer-3.0.0.tar.gz", hash = "sha256:8a42c6079225f789cd55321897073b576d15db3406d008e92f44febb017a232a"},
+]
+
+[package.dependencies]
+django = ">=4.2"
+djangorestframework = ">=3.13"
+jsonschema = ">=4.0.0"
+
+[package.extras]
+all-format-validators = ["fqdn", "idna", "isoduration", "jsonpointer", "rfc3339-validator", "rfc3987", "uri-template", "webcolors"]
+coverage = ["pytest-cov"]
+docs = ["sphinx", "sphinx-rtd-theme"]
+release = ["bump-my-version", "twine"]
+tests = ["black", "django-stubs[compatible-mypy]", "djangorestframework-stubs[compatible-mypy]", "flake8", "fqdn", "idna", "isoduration", "isort", "jsonpointer", "mypy", "pytest", "pytest-django", "rfc3339-validator", "rfc3987", "tox", "types-jsonschema", "uri-template", "webcolors"]
+
+[[package]]
 name = "email-validator"
 version = "2.2.0"
 description = "A robust email address syntax and deliverability validation library."
@@ -4480,4 +4503,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.3"
-content-hash = "ea45d3984ede234d6f4d34a4105e551c39cc2dd13a31840363cd55e3602ab8e1"
+content-hash = "e88f2c39793b4412317d9e041aede81b9a75ea361916ea2386342e1070cadea2"
