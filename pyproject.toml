@@ -61,6 +61,7 @@ honcho = "^1.1.0"
 django-storages = "^1.14.4"
 djangorestframework = "^3.15.2"
 drf-jsonschema-serializer = "^3.0.0"
+djangorestframework-simplejwt = "^5.3.1"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.5.6"
@@ -72,6 +73,7 @@ mypy = "^1.11.0"
 [tool.mypy]
 files = '**/*.py'
 exclude = ['^consultation_analyser/consultations/migrations/']
+
 
 
 

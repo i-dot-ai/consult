@@ -52,8 +52,20 @@ INSTALLED_APPS = [
     "crispy_forms_gds",
     "django.contrib.humanize",
     "django_rq",
-	"rest_framework"
+	"rest_framework",
+	"rest_framework_simplejwt",
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': (
+        'rest_framework.permissions.IsAuthenticated',
+    ),
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
+
+# TODO - any other JWT settings?
 
 
 # TODO: steal code from this blog post to add a health check endpoint: https://testdriven.io/blog/deploying-django-to-ecs-with-terraform/#django-health-check
