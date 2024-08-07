@@ -2,6 +2,7 @@ from django.shortcuts import redirect
 from django.urls import path
 
 from .views import consultations, consultations_users, pages, users
+from .views.api import api
 
 urlpatterns = [
     path("", lambda request: redirect("/support/consultations/")),
@@ -31,4 +32,5 @@ urlpatterns = [
         consultations.download,
         name="download_consultation",
     ),
+    path("api/", api.urls),
 ]

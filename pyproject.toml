@@ -59,6 +59,8 @@ django-rq = "^2.10.2"
 django-redis = "^5.4.0"
 honcho = "^1.1.0"
 django-storages = "^1.14.4"
+django-ninja = "^1.2.2"
+django-ninja-jwt = "^5.3.2"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.5.6"
@@ -70,6 +72,8 @@ mypy = "^1.11.0"
 [tool.mypy]
 files = '**/*.py'
 exclude = ['^consultation_analyser/consultations/migrations/']
+
+
 
 [tool.poetry.group.test.dependencies]
 pytest-django = "^4.8.0"
