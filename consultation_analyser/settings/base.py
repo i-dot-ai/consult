@@ -52,6 +52,7 @@ INSTALLED_APPS = [
     "crispy_forms_gds",
     "django.contrib.humanize",
     "django_rq",
+	"ninja_jwt",
 ]
 
 
