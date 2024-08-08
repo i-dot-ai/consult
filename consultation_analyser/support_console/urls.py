@@ -10,7 +10,7 @@ urlpatterns = [
     path("users/", users.index),
     path("users/new/", users.new),
     path("users/<int:user_id>/", users.show),
-	path("users/me/", users.my_account),
+    path("users/me/", users.my_account),
     path("consultations/", consultations.index),
     path("consultations/<uuid:consultation_id>/", consultations.show, name="support_consultation"),
     path(
@@ -34,5 +34,4 @@ urlpatterns = [
         name="download_consultation",
     ),
     path("api/", api.urls),
-
 ]

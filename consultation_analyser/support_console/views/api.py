@@ -10,7 +10,6 @@ from consultation_analyser.consultations.jobs.upload_consultation import async_u
 from consultation_analyser.consultations.public_schema import ConsultationWithResponses
 from consultation_analyser.support_console.decorators import support_login_required
 
-
 logger = logging.getLogger("api")
 
 api = NinjaAPI()
@@ -35,5 +34,3 @@ def upload_consultation(request, data: ConsultationWithResponses):
 def hello(request):
     print(request.user)
     return "Hello world"
-
-
