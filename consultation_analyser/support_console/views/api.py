@@ -7,8 +7,6 @@ from consultation_analyser.consultations.public_schema import ConsultationWithRe
 api = NinjaAPI()
 
 
-
-
 @api.post("/upload_data/", auth=JWTAuth())
 @api.post("/upload-themed-data/")
 def upload_themed_data(request, data: ConsultationWithResponsesAndThemes):
