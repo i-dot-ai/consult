@@ -117,3 +117,9 @@ pre code {
     --fonts-prefix: "iai-assets";
 }
 @import "../node_modules/i.ai-design-system/dist/styles.scss";
+
+
+/** SUPPORT PAGES **/
+.long-token--word-wrap {
+  word-wrap: break-word;
+}
