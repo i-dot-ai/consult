@@ -12,7 +12,6 @@ readme = "README.md"
 [tool.pytest.ini_options]
 DJANGO_SETTINGS_MODULE = "consultation_analyser.settings.test"
 filterwarnings = [
-  "ignore::django.utils.deprecation.RemovedInDjango51Warning:.*compressor.*",
   "ignore::pydantic.warnings.PydanticDeprecatedSince20",
   "ignore::FutureWarning:.*huggingface_hub.*",
   "ignore::SyntaxWarning:.*sentence_transformers.*",
