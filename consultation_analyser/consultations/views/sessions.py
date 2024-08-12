@@ -5,6 +5,7 @@ from django.contrib.auth import logout
 from django.http import HttpRequest
 from django.shortcuts import redirect, render
 from magic_link.models import MagicLink
+from django.contrib.auth.decorators import login_not_required
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.forms.sessions import NewSessionForm
@@ -12,6 +13,7 @@ from consultation_analyser.email import send_magic_link_email
 from consultation_analyser.hosting_environment import HostingEnvironment
 
 
+@login_not_required
 def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
     try:
         email = email.lower()
@@ -27,6 +29,7 @@ def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
         pass
 
 
+@login_not_required
 def new(request: HttpRequest):
     if request.user.is_authenticated:
         return redirect("/")
@@ -43,6 +46,7 @@ def new(request: HttpRequest):
     return render(request, "consultations/sessions/new.html", {"form": form})
 
 
+@login_not_required
 def destroy(request: HttpRequest):
     logout(request)
     messages.success(request, "You have signed out")
