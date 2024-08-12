@@ -1,4 +1,4 @@
-from django.http import HttpResponseRedirect
+from django.http import HttpResponseNotFound
 
 
 class SupportAppStaffRequiredMiddleware:
@@ -11,7 +11,7 @@ class SupportAppStaffRequiredMiddleware:
         response = self.get_response(request)
         if request.path.startswith("/support/"):
             if not request.user.is_authenticated:
-                return HttpResponseRedirect("/")
+                return HttpResponseNotFound()
             elif not request.user.is_staff:
-                return HttpResponseRedirect("/")
+                return HttpResponseNotFound()
         return response
