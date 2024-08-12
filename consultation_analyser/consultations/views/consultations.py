@@ -15,7 +15,6 @@ logger = logging.getLogger("upload")
 NO_THEMES_YET_MESSAGE = "We are processing your consultation. Themes have not been generated yet."
 
 
-@login_required
 def index(request: HttpRequest) -> HttpResponse:
     consultations = request.user.consultation_set.all()
     user = request.user
@@ -25,7 +24,6 @@ def index(request: HttpRequest) -> HttpResponse:
 
 
 @user_can_see_consultation
-@login_required
 def show(
     request: HttpRequest, consultation_slug: str, processing_run_slug: Optional[str] = None
 ) -> HttpResponse:
