@@ -67,6 +67,7 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "waffle.middleware.WaffleMiddleware",
+	"django.contrib.auth.middleware.LoginRequiredMiddleware",
     "consultation_analyser.middleware.SupportAppStaffRequiredMiddleware",
 ]
 
