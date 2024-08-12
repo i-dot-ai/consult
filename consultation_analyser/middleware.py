@@ -1,4 +1,9 @@
-from django.http import HttpResponseNotFound
+from urllib.parse import urlparse
+
+from django.http import HttpResponseNotFound, Http404
+from django.contrib.auth.middleware import LoginRequiredMiddleware
+from django.shortcuts import resolve_url
+from django.contrib.auth.views import redirect_to_login
 
 
 class SupportAppStaffRequiredMiddleware:
@@ -15,3 +20,10 @@ class SupportAppStaffRequiredMiddleware:
             elif not request.user.is_staff:
                 return HttpResponseNotFound()
         return response
+
+
+
+class LoginRequiredMiddleware404(LoginRequiredMiddleware):
+    """Require login, 404 if no access."""
+    def handle_no_permission(self, request, view_func):
+        return Http404()

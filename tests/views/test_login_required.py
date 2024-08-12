@@ -35,9 +35,9 @@ def test_access_public_urls_no_login(client):
 def test_access_generic_consultation_urls(client):
     for url_name in GENERIC_CONSULTATION_URL_NAMES:
         url = reverse(url_name)
-        # No login should redirect
+        # No login should give 404
         response = client.get(url)
-        assert response.status_code == 302
+        assert response.status_code == 404
         # Any logged in user should be able to access pages
         user = factories.UserFactory()
         client.force_login(user)
