@@ -15,4 +15,4 @@ def test_no_login_support_pages(client):
     for url in support_urls:
         full_url = f"/support/{url}"
         response = client.get(full_url)
-        assert response.status_code == 302  # No access, redirect to admin login
+        assert response.status_code == 404  # No access - 404
