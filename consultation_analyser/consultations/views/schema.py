@@ -3,6 +3,7 @@ import json
 from django.conf import settings
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import render
+from django.contrib.auth.decorators import login_not_required
 
 from .. import public_schema
 from ..decorators.renderable_schema import RenderableSchema
@@ -15,6 +16,7 @@ def pretty_format_json(json_string: str) -> str:
 SCHEMA_DIR = settings.BASE_DIR / "consultation_analyser" / "consultations" / "public_schema"
 
 
+@login_not_required
 def raw_schema(request: HttpRequest, schema_name: str):
     mappings = {
         "consultation_schema": f"{SCHEMA_DIR}/consultation_schema.json",
@@ -30,6 +32,7 @@ def raw_schema(request: HttpRequest, schema_name: str):
     return HttpResponse(open(schema_to_serve, "r").read(), content_type="application/json")
 
 
+@login_not_required
 def show(request: HttpRequest):
     json_schemas = {
         "consultation": pretty_format_json(open(f"{SCHEMA_DIR}/consultation_schema.json").read()),
