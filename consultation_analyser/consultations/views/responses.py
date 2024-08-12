@@ -13,7 +13,6 @@ from .filters import get_applied_filters, get_filtered_responses
 
 
 @user_can_see_consultation
-@login_required
 def index(
     request: HttpRequest,
     consultation_slug: str,

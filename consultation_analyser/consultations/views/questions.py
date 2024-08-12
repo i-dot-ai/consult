@@ -43,7 +43,6 @@ def get_outliers_info(processing_run: models.ProcessingRun, question: models.Que
 
 
 @user_can_see_consultation
-@login_required
 def show(
     request: HttpRequest,
     consultation_slug: str,
