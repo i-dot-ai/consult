@@ -2,7 +2,6 @@ import logging
 from typing import Optional
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 

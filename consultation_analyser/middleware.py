@@ -1,5 +1,5 @@
-from django.http import HttpResponseNotFound, Http404
 from django.contrib.auth.middleware import LoginRequiredMiddleware
+from django.http import Http404
 
 
 class SupportAppStaffRequiredMiddleware:
@@ -20,8 +20,8 @@ class SupportAppStaffRequiredMiddleware:
         return response
 
 
-
 class LoginRequiredMiddleware404(LoginRequiredMiddleware):
     """Require login, 404 if no access."""
+
     def handle_no_permission(self, request, view_func):
         raise Http404

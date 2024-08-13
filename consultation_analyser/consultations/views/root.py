@@ -1,6 +1,6 @@
+from django.contrib.auth.decorators import login_not_required
 from django.http import HttpRequest
 from django.shortcuts import redirect, reverse
-from django.contrib.auth.decorators import login_not_required
 
 from .pages import home
 
