@@ -36,6 +36,7 @@ def new(request: HttpRequest):
         form = NewSessionForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data["email"]
+            email = email.lower()
             send_magic_link_if_email_exists(request, email)
             return render(request, "magic_link/link_sent.html")
 
