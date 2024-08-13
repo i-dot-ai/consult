@@ -56,4 +56,5 @@ def destroy(request: HttpRequest):
 
 @method_decorator(login_not_required, name="dispatch")
 class MagicLinkView(magic_link.views.MagicLinkView):
+    # Explicitly declared class so can use decorator.
     pass

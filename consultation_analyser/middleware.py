@@ -11,12 +11,10 @@ class SupportAppStaffRequiredMiddleware:
     def __call__(self, request):
         response = self.get_response(request)
         if request.path.startswith("/support/"):
-            if not request.user.is_staff:
+            # Must already be logged in from login required middleware.
+            # Sign-out is excepted as we don't want to 404 on sign-out.
+            if (not request.user.is_staff) and (not request.path.startswith("/support/sign-out/")):
                 raise Http404
-            # if not request.user.is_authenticated:
-            #     return HttpResponseNotFound()
-            # elif not request.user.is_staff:
-            #     return HttpResponseNotFound()
         return response
 
 
