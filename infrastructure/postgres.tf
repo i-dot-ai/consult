@@ -12,7 +12,10 @@ module "rds" {
   service_sg_ids          = [module.ecs.ecs_sg_id]
   publicly_accessible     = var.publicly_accessible
   securelist_ips          = concat(var.developer_ips, var.internal_ips)
-  secret_tags = {
+  secret_tags             = {
     "platform:secret-purpose" : "general"
   }
+  engine         = "postgres"
+  engine_version = "16.3"
+  family         = "postgres16"
 }
