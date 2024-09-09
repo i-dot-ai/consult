@@ -32,7 +32,9 @@ locals {
 }
 
 module "ecs" {
-  source             = "../../i-ai-core-infrastructure//modules/ecs"
+  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
+  #source            = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
+  source             = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v1.0.0-ecs"
   name               = local.name
   image_tag          = var.image_tag
   ecr_repository_uri = var.ecr_repository_uri
@@ -68,7 +70,9 @@ module "ecs" {
 }
 
 module "worker" {
-  source             = "../../i-ai-core-infrastructure//modules/ecs"
+  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
+  #source            = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
+  source             = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v1.0.0-ecs"
   name               = "${local.name}-worker"
   image_tag          = var.image_tag
   ecr_repository_uri = var.ecr_repository_uri
