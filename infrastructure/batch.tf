@@ -3,7 +3,9 @@ locals {
 }
 
 module "batch_compute" {
-  source          = "../../i-ai-core-infrastructure/modules/batch/batch_compute_environment"
+  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
+  # source          = "../../i-ai-core-infrastructure/modules/batch/batch_compute_environment"
+  source = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/batch-compute-environment?ref=v1.0.0-batch-compute-environment"
   account_id      = var.account_id
   name            = local.name
   region          = var.region
@@ -18,7 +20,9 @@ module "batch_compute" {
 }
 
 module "batch_job_definition" {
-  source                  = "../../i-ai-core-infrastructure/modules/batch/batch_job_definitons"
+  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
+  # source                  = "../../i-ai-core-infrastructure/modules/batch/batch_job_definitons"
+  source = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/batch-job-definitions?ref=v1.0.0-batch-job-definitions"
   name                    = local.name
   compute_environment_arn = [module.batch_compute.ec2_compute_environment_arn]
   state_bucket            = var.state_bucket
