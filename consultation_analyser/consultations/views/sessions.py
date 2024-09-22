@@ -14,6 +14,7 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 
 def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
     try:
+        email = email.lower()
         user = User.objects.get(email=email)
         link = MagicLink.objects.create(user=user, redirect_to="/")
         magic_link = request.build_absolute_uri(link.get_absolute_url())
