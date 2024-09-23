@@ -12,9 +12,9 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@x-govuk/govuk-prototype-components": "^3.0.6",
-    "govuk-frontend": "^5.5.0",
+    "@x-govuk/govuk-prototype-components": "^3.0.8",
+    "govuk-frontend": "^5.6.0",
     "json-schema-faker-cli": "^5.0.6",
-    "i.ai-design-system": "^0.4.3"
+    "i.ai-design-system": "^0.4.5"
   }
 }
