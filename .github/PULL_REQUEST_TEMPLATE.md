@@ -10,7 +10,7 @@
 
 <!-- How could someone else check this work? Which parts do you want more feedback on? -->
 
-## Link to JIRA ticket
+## Link to Trello ticket
 
 <!-- e.g. https://technologyprogramme.atlassian.net/jira/software/c/projects/ER/boards/346?selectedIssue=ER-87 -->
 
