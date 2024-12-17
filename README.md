@@ -3,7 +3,7 @@
 Consult is a machine learning and LLM-powered tool to automate the processing of public consultations.
 
 > [!IMPORTANT]
-> Incubation Project: This project is an incubation project; as such, we don't recommend using this for critical use cases yet. We are currently in a research stage, trialling the tool for case studies across the Civil Service. If you are a civil servant and wish to take part in our research stage, please register your interest [here](https://www.smartsurvey.co.uk/s/consultation-interest/).
+> Incubation Project: This project is an incubation project; as such, we don't recommend using this for critical use cases yet. We are currently in a research stage, trialling the tool for case studies across the Civil Service. If you are a civil servant and wish to take part in our research stage, please contact us at i-dot-ai-enquiries@cabinetoffice.gov.uk.
 
 
 ## Setting up the application
@@ -13,14 +13,33 @@ Consult is a machine learning and LLM-powered tool to automate the processing of
 - PostgreSQL (`brew install postgresql`)
 - redis (`brew install redis`)
 - GraphViz (`brew install graphviz`), for generating diagrams
+- precommit (`brew install pre-commit`)
+
+Installation instructions assume using a Mac with Homebrew.
+
+### Clone the repo
+
+```
+git clone git@github.com:i-dot-ai/consult.git
+```
+
+In the new repo install pre-commit:
+```
+cd consult
+```
+```
+pre-commit install
+```
+Pre-commit identifies some potential secrets on commit (but will not catch all potential sensitive information).
 
 ### Environment variables
 
 Populate `.env` by copying `.env.example` and filling in required values.
 
-### Python
 
-Ensure you have `python 3.12.3`, `poetry` and `npm` installed, then run `poetry install`.
+### Install packages
+
+Ensure you have `python 3.12.3`, `poetry` and `npm` installed. Then run `poetry install`, and `npm install`.
 
 ### Database setup
 
@@ -53,9 +72,19 @@ make check_db
 
 ### Run the application
 
+Make sure redis is running:
+```
+brew services start redis
+```
+
+The database should also be running as described above.
+
+Then run:
 ```
 make serve
 ```
+
+Go to `http://localhost:8000` in the browser.
 
 ### Run the tests
 
