@@ -43,7 +43,7 @@ setup_test_db:  ## Set up the test db on a local postgres
 
 .PHONY: reset_test_db
 reset_test_db: ## Reset the test db
-	dropdb consultations_test
+	-psql -lqt | cut -d \| -f 1 | grep -qw consultations_test && dropdb consultations_test
 	$(MAKE) setup_test_db
 
 .PHONY: check_db
