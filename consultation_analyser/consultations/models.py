@@ -338,3 +338,153 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         )
         self.themes.add(theme)
         self.save()
+
+
+# ====== New models =======
+# TODO - will rename once the old models are removed
+
+
+class Consultation2(UUIDPrimaryKeyModel, TimeStampedModel):
+    name = models.CharField(max_length=256)
+    # TODO - add slug
+    users = models.ManyToManyField(User)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class QuestionGroup(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Model to group question together for display."""
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class Question2(UUIDPrimaryKeyModel, TimeStampedModel):
+    text = models.TextField()
+    consultation = models.ForeignKey(Consultation2, on_delete=models.CASCADE)
+    order = models.IntegerField()
+    question_group = models.ForeignKey(QuestionGroup, on_delete=models.CASCADE, null=True)
+    # TODO - add slug
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
+    class QuestionType(models.TextChoices):
+        FREE_TEXT = "free_text"
+        SINGLE_OPTION = "single_option"
+        MULTIPLE_OPTIONS = "multiple_options"
+
+    question = models.ForeignKey(Question2, on_delete=models.CASCADE)
+    text = models.TextField()
+    type = models.CharField(max_length=16, choices=QuestionType.choices)
+    options = models.JSONField(default=list, blank=True)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+# TODO - add expanded question
+class ExpandedQuestion(UUIDPrimaryKeyModel, TimeStampedModel):
+    question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
+    text = models.TextField()
+
+    # TODO - add history
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
+    consultation = models.ForeignKey(Consultation2, on_delete=models.CASCADE)
+    # demographic data, or anything else that is at respondent level
+    data = models.JSONField(default=dict)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class Answer2(UUIDPrimaryKeyModel, TimeStampedModel):
+    question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
+    respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
+    text = models.TextField()
+    # TODO - add favourite
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class ExecutionRun(UUIDPrimaryKeyModel, TimeStampedModel):
+    class TaskType(models.TextChoices):
+        SENTIMENT_ANALYSIS = "sentiment_analysis"
+        THEME_GENERATION = "theme_generation"
+        THEME_MAPPING = "theme_mapping"
+
+    type = models.CharField(max_length=32, choices=TaskType.choices)
+    # TODO - add metadata e.g. langfuse_id
+    # TODO - add history
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
+    """
+    A Framework groups a set of themes, that are them used to
+    classify consultation responses.
+    Create a new Framework every time the set of themes changes.
+    """
+
+    question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
+    # When Framework is created - record reason it was changed & user that created it
+    change_reason = models.CharField(max_length=256)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    precursor = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class Theme2(UUIDPrimaryKeyModel, TimeStampedModel):
+    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
+
+    # The new theme is assigned to a new framework with the change reason and user.
+    # The theme that it has been changed from is the precursor.
+    framework = models.ForeignKey(Framework, on_delete=models.CASCADE)
+    precursor = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
+
+    # TODO - add theme_code which comes from pipeline run
+    theme_name = models.CharField(max_length=256)  # TODO - is this long enough
+    theme_description = models.TextField()
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
+    answer = models.ForeignKey(Answer2, on_delete=models.CASCADE)
+    theme = models.ForeignKey(Theme2, on_delete=models.CASCADE)
+    reason = models.TextField()
+    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
+
+    # TODO - add history
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
+    class PositionType(models.TextChoices):
+        AGREE = "agree"
+        DISAGREE = "disagree"
+        MIXED = "mixed"
+
+    answer = models.ForeignKey(Answer2, on_delete=models.CASCADE)
+    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
+    position = models.CharField(max_length=16, choices=PositionType.choices)
+
+    # TODO - add history
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
