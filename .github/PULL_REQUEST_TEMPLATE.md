@@ -12,7 +12,7 @@
 
 ## Link to Trello ticket
 
-<!-- e.g. https://technologyprogramme.atlassian.net/jira/software/c/projects/ER/boards/346?selectedIssue=ER-87 -->
+<!-- e.g. https://trello.com/c/PHi7K23V/27-django-data-models-mvp-v1 -->
 
 ## Things to check
 
