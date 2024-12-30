@@ -8,7 +8,7 @@ def test_logging_in_to_support(client):
     # given I am a logged in admin user
     user = UserFactory(
         email="email@example.com",
-        # password="admin",  # pragma: allowlist secret
+        password="admin",  # pragma: allowlist secret
         is_staff=True,
     )
     client.force_login(user)
