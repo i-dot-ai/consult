@@ -61,7 +61,7 @@ django-storages = "^1.14.4"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.8.4"
-pre-commit = "^3.8.0"
+pre-commit = "^4.0.1"
 factory_boy = "^3.3.1"
 django-extensions = "^3.2.3"
 mypy = "^1.14.0"
