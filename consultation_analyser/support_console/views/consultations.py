@@ -8,10 +8,6 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.dummy_data import create_dummy_data
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.pipeline.backends.types import (
-    NO_SUMMARY_STR,
-)
-from consultation_analyser.pipeline.processing import run_llm_summariser, run_processing_pipeline
 
 
 def index(request: HttpRequest) -> HttpResponse:
