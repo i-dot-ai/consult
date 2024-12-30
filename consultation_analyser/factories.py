@@ -8,7 +8,6 @@ from django.utils import timezone
 from consultation_analyser.authentication import models as authentication_models
 from consultation_analyser.consultations import models
 
-
 faker = _faker.Faker()
 
 

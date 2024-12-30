@@ -9,7 +9,6 @@ from consultation_analyser.consultations.download_consultation import consultati
 from consultation_analyser.consultations.dummy_data import create_dummy_data
 from consultation_analyser.hosting_environment import HostingEnvironment
 
-
 NO_SUMMARY_STR = "Unable to generate summary for this theme"
 
 

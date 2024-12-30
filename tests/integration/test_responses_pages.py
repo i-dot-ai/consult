@@ -17,7 +17,6 @@ def test_get_question_responses_page(django_app):
 
     consultation = ConsultationWithThemesFactory(users=(user))
 
-    processing_run = consultation.latest_processing_run
     question = Question.objects.last()
     section = question.section
     answer = Answer.objects.filter(question=question).first()
