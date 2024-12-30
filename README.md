@@ -153,28 +153,6 @@ The govuk assets are versioned in the `npm` package. `make dev_environment`
 includes a step to copy them to the `frontend` folder from where `runserver`
 can serve them; you can rerun this with `make govuk_frontend`.
 
-## Obtaining outputs programatically [IGNORE FOR NOW: DB models to be updated soon]
-
-The `generate_themes` command will accept a JSON file containing a `ConsultationWithResponses` and emit a JSON file containing a `ConsultationWithResponsesAndThemes`.
-
-Invoke the command like this, replacing the input file with your JSON.
-```
-poetry run python manage.py generate_themes --input=tests/examples/chocolate.json --clean --device cpu
-```
-
-Options available for this command are:
-
-`--clean`: delete this consultation if it already exists in the database.
-`--llm`: which llm to use. Pass `fake`, `bedrock`, or `ollama/model_name`.
-`--embdedding_model`: pass the model for `SentenceTransformers` to use in the `BERTopic` pipeline. If `fake` is passed, random topics will be generated.
-`--device`: pass the hardware device to run the topic embeddings on. Examples include: `cpu`, `cuda` and `mps`. Will default to `cpu` when requested is unavailable.
-
-The resulting file will be placed in `tmp/outputs` and its path will be printed on the console.
-
-If you are using Bedrock you will need to assume the `ai-engineer-role` in your shell before running this command.
-
-If you are using Ollama, you will have to install the app (e.g. `brew install ollama`) and have it running `ollama serve`. You will need to run your models e.g. `ollama run mistral`.
-
 
 ## Schema documentation [IGNORE FOR NOW: DB models to be updated soon]
 
