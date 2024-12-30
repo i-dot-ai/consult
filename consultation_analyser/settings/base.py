@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     "crispy_forms_gds",
     "django.contrib.humanize",
     "django_rq",
-    "simple_history"
+    "simple_history",
 ]
 
 
@@ -69,7 +69,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "waffle.middleware.WaffleMiddleware",
     "consultation_analyser.middleware.SupportAppStaffRequiredMiddleware",
-    "simple_history.middleware.HistoryRequestMiddleware"
+    "simple_history.middleware.HistoryRequestMiddleware",
 ]
 
 ROOT_URLCONF = "consultation_analyser.urls"
