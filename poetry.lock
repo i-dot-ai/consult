@@ -525,6 +525,20 @@ rq = ">=2"
 sentry = ["sentry-sdk (>=1.0.0)"]
 
 [[package]]
+name = "django-simple-history"
+version = "3.7.0"
+description = "Store model history and view/revert changes from admin site."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "django_simple_history-3.7.0-py3-none-any.whl", hash = "sha256:282cb2c4aa63f51547f17da7f2130abaa81ba01694676d19b88d52c94a57a52c"},
+    {file = "django_simple_history-3.7.0.tar.gz", hash = "sha256:ac3b7ca8b0d33f7ea6be8fe7fc98cf43415efa500ff5dfe736fbd1ebc0cf39f9"},
+]
+
+[package.dependencies]
+django = ">=4.2"
+
+[[package]]
 name = "django-storages"
 version = "1.14.4"
 description = "Support for many storage backends in Django"
@@ -2018,4 +2032,4 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.3"
-content-hash = "63046309bbc86a05ad847d92e34760ac4c4b81b4ca37b4e187de3a8801711d3a"
+content-hash = "6390479bc39060e2d2336dace3a9cf0dc370f7895b3171deccd52774f539243d"
