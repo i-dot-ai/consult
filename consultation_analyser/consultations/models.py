@@ -7,9 +7,11 @@ import pydantic
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.db import connection, models
+from simple_history.models import HistoricalRecords
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import public_schema
+
 
 faker = _faker.Faker()
 
@@ -391,7 +393,8 @@ class ExpandedQuestion(UUIDPrimaryKeyModel, TimeStampedModel):
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
     text = models.TextField()
 
-    # TODO - add history
+    history = HistoricalRecords()
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
@@ -423,7 +426,8 @@ class ExecutionRun(UUIDPrimaryKeyModel, TimeStampedModel):
 
     type = models.CharField(max_length=32, choices=TaskType.choices)
     # TODO - add metadata e.g. langfuse_id
-    # TODO - add history
+
+    history = HistoricalRecords()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
@@ -468,7 +472,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     reason = models.TextField()
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
 
-    # TODO - add history
+    history = HistoricalRecords()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
@@ -484,7 +488,7 @@ class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
     position = models.CharField(max_length=16, choices=PositionType.choices)
 
-    # TODO - add history
+    history = HistoricalRecords()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
