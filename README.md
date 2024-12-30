@@ -94,7 +94,7 @@ make test
 
 ## The database
 
-### Generating dummy data
+### Generating dummy data [IGNORE FOR NOW: Database models to be updated imminently]
 
 Only run this in development. Will create a consultation with 10 complete
 responses in a variety of question formats. This runs as part of `make
@@ -119,10 +119,16 @@ you can run `manage.py generate_erd`. (You will need `graphviz` installed: see
 
 ### Magic links
 
-You can sign into the application using a magic link, requested via `/sign-in`.
+You can sign into the application using a magic link, requested via `/sign-in/`. 
+You need to have a user set-up first - add new users in `/support/users/` 
+(only be done by `staff` members).
+
+When running locally, you can create your first admin user using `make dev_admin_user`, 
+on dev/pre-prod/prod ask one of the existing members of the team.
 
 For convenience, in local dev environments the value of the magic link will be
 logged along with the rest of the server logs.
+
 
 ### The frontend
 
@@ -147,7 +153,7 @@ The govuk assets are versioned in the `npm` package. `make dev_environment`
 includes a step to copy them to the `frontend` folder from where `runserver`
 can serve them; you can rerun this with `make govuk_frontend`.
 
-## Obtaining outputs programatically
+## Obtaining outputs programatically [IGNORE FOR NOW: DB models to be updated soon]
 
 The `generate_themes` command will accept a JSON file containing a `ConsultationWithResponses` and emit a JSON file containing a `ConsultationWithResponsesAndThemes`.
 
@@ -170,7 +176,7 @@ If you are using Bedrock you will need to assume the `ai-engineer-role` in your 
 If you are using Ollama, you will have to install the app (e.g. `brew install ollama`) and have it running `ollama serve`. You will need to run your models e.g. `ollama run mistral`.
 
 
-## Schema documentation
+## Schema documentation [IGNORE FOR NOW: DB models to be updated soon]
 
 The data schema for consultations supplied to the tool is defined in `consultation_analyser/consultations/public_schema/public_schema.yaml`.
 
