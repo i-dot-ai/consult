@@ -3,7 +3,7 @@
 Consult is a machine learning and LLM-powered tool to automate the processing of public consultations.
 
 > [!IMPORTANT]
-> Incubation Project: This project is an incubation project; as such, we don't recommend using this for critical use cases yet. We are currently in a research stage, trialling the tool for case studies across the Civil Service. If you are a civil servant and wish to take part in our research stage, please register your interest [here](https://www.smartsurvey.co.uk/s/consultation-interest/).
+> Incubation Project: This project is an incubation project; as such, we don't recommend using this for critical use cases yet. We are currently in a research stage, trialling the tool for case studies across the Civil Service. If you are a civil servant and wish to take part in our research stage, please contact us at i-dot-ai-enquiries@cabinetoffice.gov.uk.
 
 
 ## Setting up the application
@@ -13,14 +13,33 @@ Consult is a machine learning and LLM-powered tool to automate the processing of
 - PostgreSQL (`brew install postgresql`)
 - redis (`brew install redis`)
 - GraphViz (`brew install graphviz`), for generating diagrams
+- precommit (`brew install pre-commit`)
+
+Installation instructions assume using a Mac with Homebrew.
+
+### Clone the repo
+
+```
+git clone git@github.com:i-dot-ai/consult.git
+```
+
+In the new repo install pre-commit:
+```
+cd consult
+```
+```
+pre-commit install
+```
+Pre-commit identifies some potential secrets on commit (but will not catch all potential sensitive information).
 
 ### Environment variables
 
 Populate `.env` by copying `.env.example` and filling in required values.
 
-### Python
 
-Ensure you have `python 3.12.3`, `poetry` and `npm` installed, then run `poetry install`.
+### Install packages
+
+Ensure you have `python 3.12.3`, `poetry` and `npm` installed. Then run `poetry install`, and `npm install`.
 
 ### Database setup
 
@@ -53,9 +72,19 @@ make check_db
 
 ### Run the application
 
+Make sure redis is running:
+```
+brew services start redis
+```
+
+The database should also be running as described above.
+
+Then run:
 ```
 make serve
 ```
+
+Go to `http://localhost:8000` in the browser.
 
 ### Run the tests
 
@@ -65,7 +94,7 @@ make test
 
 ## The database
 
-### Generating dummy data
+### Generating dummy data [IGNORE FOR NOW: Database models to be updated imminently]
 
 Only run this in development. Will create a consultation with 10 complete
 responses in a variety of question formats. This runs as part of `make
@@ -90,10 +119,16 @@ you can run `manage.py generate_erd`. (You will need `graphviz` installed: see
 
 ### Magic links
 
-You can sign into the application using a magic link, requested via `/sign-in`.
+You can sign into the application using a magic link, requested via `/sign-in/`. 
+You need to have a user set-up first - add new users in `/support/users/` 
+(only be done by `staff` members).
+
+When running locally, you can create your first admin user using `make dev_admin_user`, 
+on dev/pre-prod/prod ask one of the existing members of the team.
 
 For convenience, in local dev environments the value of the magic link will be
 logged along with the rest of the server logs.
+
 
 ### The frontend
 
@@ -118,7 +153,7 @@ The govuk assets are versioned in the `npm` package. `make dev_environment`
 includes a step to copy them to the `frontend` folder from where `runserver`
 can serve them; you can rerun this with `make govuk_frontend`.
 
-## Obtaining outputs programatically
+## Obtaining outputs programatically [IGNORE FOR NOW: DB models to be updated soon]
 
 The `generate_themes` command will accept a JSON file containing a `ConsultationWithResponses` and emit a JSON file containing a `ConsultationWithResponsesAndThemes`.
 
@@ -141,7 +176,7 @@ If you are using Bedrock you will need to assume the `ai-engineer-role` in your 
 If you are using Ollama, you will have to install the app (e.g. `brew install ollama`) and have it running `ollama serve`. You will need to run your models e.g. `ollama run mistral`.
 
 
-## Schema documentation
+## Schema documentation [IGNORE FOR NOW: DB models to be updated soon]
 
 The data schema for consultations supplied to the tool is defined in `consultation_analyser/consultations/public_schema/public_schema.yaml`.
 
