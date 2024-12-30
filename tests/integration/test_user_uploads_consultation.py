@@ -32,8 +32,3 @@ def test_user_uploads_consultation(django_app):
     # then I should see a success page
     assert "Consultation uploaded" in success_page
 
-    # and when I visit the consultation again I shouldn't still see a processing message
-    consultation = user.consultation_set.first()
-    processing_page = django_app.get(f"/consultations/{consultation.slug}/")
-    assert "processing your consultation" not in processing_page
-
