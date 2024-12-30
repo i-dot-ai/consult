@@ -60,18 +60,7 @@ def get_number_themes_for_processing_run(processing_run):
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
     try:
-        if "generate_themes" in request.POST:
-            run_processing_pipeline(consultation)
-            messages.success(request, "Consultation data has been sent for processing")
-        elif "llm_summarisation" in request.POST:
-            if not consultation.latest_processing_run:
-                messages.error(request, "Cannot run LLM summarisation as no topics created")
-            else:
-                run_llm_summariser(consultation)
-                messages.success(
-                    request, "(Re-)running LLM summarisation on the latest processing run"
-                )
-        elif "download_json" in request.POST:
+        if "download_json" in request.POST:
             consultation_json = consultation_to_json(consultation)
             response = HttpResponse(consultation_json, content_type="application/json")
             response["Content-Disposition"] = f"attachment; filename={consultation.slug}.json"
