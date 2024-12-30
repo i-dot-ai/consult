@@ -12,7 +12,6 @@ from simple_history.models import HistoricalRecords
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import public_schema
 
-
 faker = _faker.Faker()
 
 
