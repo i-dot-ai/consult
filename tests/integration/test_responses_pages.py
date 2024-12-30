@@ -17,7 +17,6 @@ def test_get_question_responses_page(django_app):
 
     consultation = ConsultationWithThemesFactory(users=(user))
 
-    processing_run = consultation.latest_processing_run
     question = Question.objects.last()
     section = question.section
     answer = Answer.objects.filter(question=question).first()
@@ -36,9 +35,6 @@ def test_get_question_responses_page(django_app):
     assert f"{answer.free_text}" in page_content
     assert f"{multiple_choice["question_text"]}" in page_content
     assert f"{multiple_choice["options"][0]}" in page_content
-    if answer.free_text:
-        latest_theme_for_answer = processing_run.get_themes_for_answer(answer_id=answer.id).last()
-        assert f"{latest_theme_for_answer.short_description}" in page_content
 
     # Check keyword filtering
     first_word_of_answer = answer.free_text.split()[0]

@@ -7,9 +7,6 @@ from django.utils import timezone
 
 from consultation_analyser.authentication import models as authentication_models
 from consultation_analyser.consultations import models
-from consultation_analyser.pipeline.backends.dummy_llm_backend import DummyLLMBackend
-from consultation_analyser.pipeline.backends.dummy_topic_backend import DummyTopicBackend
-from consultation_analyser.pipeline.processing import process_consultation_themes
 
 faker = _faker.Faker()
 
@@ -148,12 +145,6 @@ class ConsultationWithThemesFactory(factory.django.DjangoModelFactory):
     def create_themes(consultation, _create, _extracted, **kwargs):
         QuestionFactory(section=SectionFactory(consultation=consultation))
         ConsultationResponseFactory.create_batch(8, consultation=consultation)
-
-        process_consultation_themes(
-            consultation=consultation,
-            topic_backend=DummyTopicBackend(),
-            llm_backend=DummyLLMBackend(),
-        )
 
 
 class ConsultationFactory(factory.django.DjangoModelFactory):

@@ -208,9 +208,6 @@ BATCH_JOB_QUEUE = env("BATCH_JOB_QUEUE", default=None)
 BATCH_JOB_DEFINITION = env("BATCH_JOB_DEFINITION", default=None)
 AWS_REGION = env("AWS_REGION")
 
-# ML pipeline
-LLM_BACKEND = env("LLM_BACKEND")
-BERTOPIC_DEFAULT_EMBEDDING_MODEL = "thenlper/gte-small"
 
 # Authentication
 LOGIN_URL = "/sign-in/"

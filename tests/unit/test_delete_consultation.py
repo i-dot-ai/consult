@@ -13,7 +13,6 @@ def test_delete_consultation():
     assert models.Section.objects.count() >= 1
     assert models.Question.objects.count() >= 1
     assert models.Answer.objects.count() >= 1
-    assert models.Theme.objects.count() >= 1
 
     consultation.delete()
 
@@ -22,4 +21,5 @@ def test_delete_consultation():
     assert models.Section.objects.count() == 0
     assert models.Question.objects.count() == 0
     assert models.Answer.objects.count() == 0
-    assert models.Theme.objects.count() == 0
+
+

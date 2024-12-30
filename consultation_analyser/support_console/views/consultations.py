@@ -8,10 +8,8 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.dummy_data import create_dummy_data
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.pipeline.backends.types import (
-    NO_SUMMARY_STR,
-)
-from consultation_analyser.pipeline.processing import run_llm_summariser, run_processing_pipeline
+
+NO_SUMMARY_STR = "Unable to generate summary for this theme"
 
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -60,18 +58,7 @@ def get_number_themes_for_processing_run(processing_run):
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
     try:
-        if "generate_themes" in request.POST:
-            run_processing_pipeline(consultation)
-            messages.success(request, "Consultation data has been sent for processing")
-        elif "llm_summarisation" in request.POST:
-            if not consultation.latest_processing_run:
-                messages.error(request, "Cannot run LLM summarisation as no topics created")
-            else:
-                run_llm_summariser(consultation)
-                messages.success(
-                    request, "(Re-)running LLM summarisation on the latest processing run"
-                )
-        elif "download_json" in request.POST:
+        if "download_json" in request.POST:
             consultation_json = consultation_to_json(consultation)
             response = HttpResponse(consultation_json, content_type="application/json")
             response["Content-Disposition"] = f"attachment; filename={consultation.slug}.json"
