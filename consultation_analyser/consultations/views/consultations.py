@@ -2,7 +2,6 @@ import logging
 from typing import Optional
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.core.files.storage import default_storage as storage
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
@@ -19,7 +18,6 @@ logger = logging.getLogger("upload")
 NO_THEMES_YET_MESSAGE = "We are processing your consultation. Themes have not been generated yet."
 
 
-@login_required
 def index(request: HttpRequest) -> HttpResponse:
     consultations = request.user.consultation_set.all()
     user = request.user
@@ -29,7 +27,6 @@ def index(request: HttpRequest) -> HttpResponse:
 
 
 @user_can_see_consultation
-@login_required
 def show(
     request: HttpRequest, consultation_slug: str, processing_run_slug: Optional[str] = None
 ) -> HttpResponse:
@@ -51,7 +48,6 @@ def show(
     return render(request, "consultations/consultations/show.html", context)
 
 
-@login_required
 def new(request: HttpRequest):
     if not request.POST:
         form = ConsultationUploadForm()

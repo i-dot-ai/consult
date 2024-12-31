@@ -1,9 +1,12 @@
 import logging
 
+import magic_link.views
 from django.contrib import messages
 from django.contrib.auth import logout
+from django.contrib.auth.decorators import login_not_required
 from django.http import HttpRequest
 from django.shortcuts import redirect, render
+from django.utils.decorators import method_decorator
 from magic_link.models import MagicLink
 
 from consultation_analyser.authentication.models import User
@@ -27,6 +30,7 @@ def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
         pass
 
 
+@login_not_required
 def new(request: HttpRequest):
     if request.user.is_authenticated:
         return redirect("/")
@@ -43,7 +47,14 @@ def new(request: HttpRequest):
     return render(request, "consultations/sessions/new.html", {"form": form})
 
 
+@login_not_required
 def destroy(request: HttpRequest):
     logout(request)
     messages.success(request, "You have signed out")
     return redirect("/")
+
+
+@method_decorator(login_not_required, name="dispatch")
+class MagicLinkView(magic_link.views.MagicLinkView):
+    # Explicitly declared class so can use decorator.
+    pass
