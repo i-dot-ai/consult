@@ -23,7 +23,7 @@ class Consultation2Factory(DjangoModelFactory):
     class Meta:
         model = models.Consultation2
 
-    name = factory.LazyAttribute(lambda o: fake.sentence())
+    text = factory.LazyAttribute(lambda o: fake.sentence())
     users = factory.RelatedFactoryList(UserFactory, factory_related_name="consultation", size=3)
 
 
