@@ -352,8 +352,7 @@ class SlugFromTextModel(models.Model):
     slug = models.SlugField(null=False)
 
     def save(self, *args, **kwargs):
-        # Auto-generate a slug from the text
-        # Ensure slug unique
+        # Generate a slug from the text - ensure unique
         cropped_length = 124
         cropped_text = self.text[:cropped_length]
         generated_slug = slugify(cropped_text)
