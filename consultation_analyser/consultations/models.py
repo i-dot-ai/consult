@@ -349,14 +349,15 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class SlugFromTextModel(models.Model):
     text = models.CharField(max_length=256)
-    slug = models.SlugField(null=False, editable=False)
+    slug = models.SlugField(null=False, editable=False, max_length=256)
 
     def save(self, *args, **kwargs):
         # Generate a slug from the text - ensure unique
         cropped_length = 124
         cropped_text = self.text[:cropped_length]
         generated_slug = slugify(cropped_text)
-        while SlugFromTextModel.objects.filter(slug=generated_slug).exists():
+        ModelClass = self.__class__
+        while ModelClass.objects.filter(slug=generated_slug).exists():
             generated_slug = f"{generated_slug[:cropped_length]}-{random.randint(0, 999)}"
         self.slug = generated_slug
         return super().save(*args, **kwargs)
