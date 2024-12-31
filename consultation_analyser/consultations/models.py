@@ -1,7 +1,7 @@
 import itertools
+import random
 import uuid
 from dataclasses import dataclass
-import random
 
 import faker as _faker
 import pydantic
@@ -348,8 +348,8 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class SlugFromTextModel(models.Model):
-    text = models.TextField()
-    slug = models.SlugField(null=False)
+    text = models.CharField(max_length=256)
+    slug = models.SlugField(null=False, editable=False)
 
     def save(self, *args, **kwargs):
         # Generate a slug from the text - ensure unique
@@ -365,15 +365,13 @@ class SlugFromTextModel(models.Model):
         abstract = True
 
 
-
-
-class Consultation2(UUIDPrimaryKeyModel, TimeStampedModel):
-    name = models.CharField(max_length=256)
-    # TODO - add slug
+class Consultation2(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
     users = models.ManyToManyField(User)
 
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta, SlugFromTextModel.Meta):
+        constraints = [
+            models.UniqueConstraint(fields=["slug"], name="unique_consult_slug"),
+        ]
 
 
 class QuestionGroup(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -383,15 +381,17 @@ class QuestionGroup(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
-class Question2(UUIDPrimaryKeyModel, TimeStampedModel):
+class Question2(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
     text = models.TextField()
     consultation = models.ForeignKey(Consultation2, on_delete=models.CASCADE)
     order = models.IntegerField()
     question_group = models.ForeignKey(QuestionGroup, on_delete=models.CASCADE, null=True)
     # TODO - add slug
 
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta, SlugFromTextModel.Meta):
+        constraints = [
+            models.UniqueConstraint(fields=["slug"], name="unique_q_slug"),
+        ]
 
 
 class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
