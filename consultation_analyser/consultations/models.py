@@ -1,12 +1,14 @@
 import itertools
 import uuid
 from dataclasses import dataclass
+import random
 
 import faker as _faker
 import pydantic
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.db import connection, models
+from django.utils.text import slugify
 from simple_history.models import HistoricalRecords
 
 from consultation_analyser.authentication.models import User
@@ -343,6 +345,27 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
 
 # ====== New models =======
 # TODO - will rename once the old models are removed
+
+
+class SlugFromTextModel(models.Model):
+    text = models.TextField()
+    slug = models.SlugField(null=False)
+
+    def save(self, *args, **kwargs):
+        # Auto-generate a slug from the text
+        # Ensure slug unique
+        cropped_length = 124
+        cropped_text = self.text[:cropped_length]
+        generated_slug = slugify(cropped_text)
+        while SlugFromTextModel.objects.filter(slug=generated_slug).exists():
+            generated_slug = f"{generated_slug[:cropped_length]}-{random.randint(0, 999)}"
+        self.slug = generated_slug
+        return super().save(*args, **kwargs)
+
+    class Meta:
+        abstract = True
+
+
 
 
 class Consultation2(UUIDPrimaryKeyModel, TimeStampedModel):
