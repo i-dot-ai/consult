@@ -23,7 +23,3 @@ def test_question_save():
     another_question = Question2Factory(text=question_text)
     assert another_question.slug != question.slug
     assert another_question.slug.startswith(slugified)
-
-
-
-
