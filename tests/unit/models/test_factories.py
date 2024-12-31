@@ -1,7 +1,9 @@
 """
 Test factories for the new consultation models.
 """
+
 import pytest
+
 from consultation_analyser import factories2
 
 
