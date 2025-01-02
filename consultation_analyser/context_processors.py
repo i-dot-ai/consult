@@ -86,11 +86,6 @@ def app_config(request: HttpRequest):
                     "active": request.path == "/how-it-works/",
                 },
                 {
-                    "href": "/schema/",
-                    "text": "Data schema",
-                    "active": request.path == "/schema/",
-                },
-                {
                     "href": "/data-sharing/",
                     "text": "Data sharing",
                     "active": request.path == "/data-sharing/",

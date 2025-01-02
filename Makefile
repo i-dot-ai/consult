@@ -4,25 +4,11 @@ export AWS_REGION
 export ECR_REPO_NAME
 export APP_NAME
 
-SCHEMAS := consultation consultation_response consultation_with_responses consultation_with_responses_and_themes
 
 .PHONY: help
 help:     ## Show this help.
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-30s\033[0m %s\n", $$1, $$2}'
 
-## Schema documentation
-consultation_analyser/consultations/public_schema.py: consultation_analyser/consultations/public_schema/public_schema.yaml
-	poetry run datamodel-codegen --input $< --output $@ --use-schema-description --output-model-type pydantic_v2.BaseModel
-
-.PRECIOUS: consultation_analyser/consultations/public_schema/%_schema.json
-consultation_analyser/consultations/public_schema/%_schema.json: consultation_analyser/consultations/public_schema.py
-	poetry run python manage.py generate_json_schemas
-
-consultation_analyser/consultations/public_schema/%_example.json: consultation_analyser/consultations/public_schema/%_schema.json
-	npx generate-json $^ $@ none $(PWD)/json-schema-faker-options.js
-
-.PHONY: schema_docs
-schema_docs: $(foreach part,$(SCHEMAS), consultation_analyser/consultations/public_schema/$(part)_example.json)
 
 .PHONY: setup_dev_db
 setup_dev_db: ## Set up the development db on a local postgres
