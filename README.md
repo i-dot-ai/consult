@@ -153,11 +153,3 @@ The govuk assets are versioned in the `npm` package. `make dev_environment`
 includes a step to copy them to the `frontend` folder from where `runserver`
 can serve them; you can rerun this with `make govuk_frontend`.
 
-
-## Schema documentation [IGNORE FOR NOW: DB models to be updated soon]
-
-The data schema for consultations supplied to the tool is defined in `consultation_analyser/consultations/public_schema/public_schema.yaml`.
-
-To build the JSON schemas and examples from this file, run `make schema_docs`.
-
-The `json-schema-faker-options.js` file configures (JSON Schema Faker)[https://github.com/json-schema-faker] to make the JSON examples.
