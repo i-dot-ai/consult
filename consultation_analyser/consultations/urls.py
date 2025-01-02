@@ -7,11 +7,9 @@ urlpatterns = [
     # public urls
     path("", root.root, name="root"),
     path("how-it-works/", pages.how_it_works, name="how_it_works"),
-    path("schema/", schema.show, name="schema"),
     path("data-sharing/", pages.data_sharing, name="data_sharing"),
     path("get-involved/", pages.get_involved, name="get_involved"),
     path("privacy/", pages.privacy, name="privacy"),
-    path("schema/<str:schema_name>.json", schema.raw_schema, name="raw_schema"),
     # login required
     path("consultations/", consultations.index, name="consultations"),
     path("consultations/new/", consultations.new, name="new_consultation"),
