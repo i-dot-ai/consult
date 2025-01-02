@@ -50,20 +50,3 @@ def show(
 
     return render(request, "consultations/consultations/show.html", context)
 
-
-@login_required
-def new(request: HttpRequest):
-    if not request.POST:
-        form = ConsultationUploadForm()
-    else:
-        logger.info("Upload received")
-        form = ConsultationUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            logger.info("Enqueueing upload_consultation job")
-            file_path = storage.save(
-                request.FILES["consultation_json"].name, request.FILES["consultation_json"]
-            )
-            async_upload_consultation.delay(file_path, request.user.id)
-            return render(request, "consultations/consultations/uploaded.html", {})
-
-    return render(request, "consultations/consultations/new.html", {"form": form})

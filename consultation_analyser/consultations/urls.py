@@ -12,7 +12,6 @@ urlpatterns = [
     path("privacy/", pages.privacy, name="privacy"),
     # login required
     path("consultations/", consultations.index, name="consultations"),
-    path("consultations/new/", consultations.new, name="new_consultation"),
     path("consultations/<str:consultation_slug>/", consultations.show, name="consultation"),
     path(
         "consultations/<str:consultation_slug>/runs/<str:processing_run_slug>/",
