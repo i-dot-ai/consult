@@ -455,8 +455,9 @@ class ExecutionRun(UUIDPrimaryKeyModel, TimeStampedModel):
 
     type = models.CharField(max_length=32, choices=TaskType.choices)
     # TODO - add metadata e.g. langfuse_id
-
-    history = HistoricalRecords()
+    # Note, the execution run will be run on responses to a particular
+    # question part - but this will be stored in the correspondong framework/mapping etc.
+    history = HistoricalRecords()  # TODO - is this needed?
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
@@ -469,6 +470,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     Create a new Framework every time the set of themes changes.
     """
 
+    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
     # When Framework is created - record reason it was changed & user that created it
     change_reason = models.CharField(max_length=256)
@@ -480,8 +482,6 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class Theme2(UUIDPrimaryKeyModel, TimeStampedModel):
-    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
-
     # The new theme is assigned to a new framework with the change reason and user.
     # The theme that it has been changed from is the precursor.
     framework = models.ForeignKey(Framework, on_delete=models.CASCADE)
