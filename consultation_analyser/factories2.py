@@ -29,10 +29,6 @@ class Consultation2Factory(DjangoModelFactory):
     users = factory.RelatedFactoryList(UserFactory, factory_related_name="consultation", size=3)
 
 
-class QuestionGroupFactory(DjangoModelFactory):
-    class Meta:
-        model = models.QuestionGroup
-
 
 class Question2Factory(DjangoModelFactory):
     class Meta:
@@ -41,7 +37,6 @@ class Question2Factory(DjangoModelFactory):
     text = factory.LazyAttribute(lambda o: fake.sentence())
     consultation = factory.SubFactory(Consultation2Factory)
     order = factory.LazyAttribute(lambda n: random.randint(1, 10))
-    question_group = None
 
 
 # TODO -  all free-text for now, can add to this in future
@@ -52,15 +47,6 @@ class QuestionPartFactory(DjangoModelFactory):
     question = factory.SubFactory(Question2Factory)
     text = factory.LazyAttribute(lambda o: fake.sentence())
     type = models.QuestionPart.QuestionType.FREE_TEXT
-
-
-class ExpandedQuestionFactory(DjangoModelFactory):
-    class Meta:
-        model = models.ExpandedQuestion
-
-    question_part = factory.SubFactory(QuestionPartFactory)
-    text = factory.LazyAttribute(lambda o: fake.sentence())
-    # TODO - actually the text probably comes from the question part and question
 
 
 class RespondentFactory(DjangoModelFactory):
