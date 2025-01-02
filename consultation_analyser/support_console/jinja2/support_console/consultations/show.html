@@ -86,7 +86,6 @@
                 <th scope="col" class="govuk-table__header">Link</th>
                 <th scope="col" class="govuk-table__header">Run started at</th>
                 <th scope="col" class="govuk-table__header">Run finished at</th>
-                <th scope="col" class="govuk-table__header">Download</th>
               </tr>
             </thead>
             <tbody class="govuk-table__body">
@@ -107,21 +106,9 @@
                     {{ datetime(run.finished_at) }}
                   {% endif %}
                 </td>
-                <td class="govuk-table__cell">
-                  <a href="{{ url('download_consultation', kwargs={'consultation_slug': consultation.slug, 'processing_run_slug': run.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
-                    Download data as JSON
-                  </a>
-                </td>
               </tr>
             {% endfor %}
           </table>
-
-        <h2 class="govuk-heading-m">Download JSON</h2>
-        <p class="govuk-body">This consultation will be downloaded without themes as a JSON in the <a class="govuk-link" href="/schema/consultation_with_responses_schema.json">ConsultationWithResponses</a> format.</p>
-        {{ govukButton({
-          'text': "Download JSON (without themes)",
-          'name': "download_json"
-        }) }}
       </form>
     </div>
   </div>

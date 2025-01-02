@@ -5,7 +5,6 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from consultation_analyser.consultations import models
-from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.dummy_data import create_dummy_data
 from consultation_analyser.hosting_environment import HostingEnvironment
 
@@ -57,15 +56,6 @@ def get_number_themes_for_processing_run(processing_run):
 
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
-    try:
-        if "download_json" in request.POST:
-            consultation_json = consultation_to_json(consultation)
-            response = HttpResponse(consultation_json, content_type="application/json")
-            response["Content-Disposition"] = f"attachment; filename={consultation.slug}.json"
-            return response
-
-    except RuntimeError as error:
-        messages.error(request, error.args[0])
 
     # For display, just take latest themes
     total_themes, total_with_summaries = get_number_themes_for_processing_run(
@@ -81,17 +71,3 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
         "total_with_summaries": total_with_summaries,
     }
     return render(request, "support_console/consultations/show.html", context=context)
-
-
-def download(request: HttpRequest, consultation_slug: str, processing_run_slug: str):
-    # If no processing_run, defaults to latest if exists
-    consultation = models.Consultation.objects.get(slug=consultation_slug)
-    processing_run = models.ProcessingRun.objects.get(
-        consultation=consultation, slug=processing_run_slug
-    )
-    consultation_json = consultation_to_json(
-        consultation=consultation, processing_run=processing_run
-    )
-    response = HttpResponse(consultation_json, content_type="application/json")
-    response["Content-Disposition"] = f"attachment; filename={consultation.slug}.json"
-    return response
