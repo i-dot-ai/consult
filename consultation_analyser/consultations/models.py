@@ -1,5 +1,5 @@
+import datetime
 import itertools
-import random
 import uuid
 from dataclasses import dataclass
 
@@ -352,13 +352,20 @@ class SlugFromTextModel(models.Model):
     slug = models.SlugField(null=False, editable=False, max_length=256)
 
     def save(self, *args, **kwargs):
-        # Generate a slug from the text - ensure unique
-        cropped_length = 124
+        # Generate a slug from the text - ensure unique by adding timestamp if needed
+        ModelClass = self.__class__
+        cropped_length = 220
         cropped_text = self.text[:cropped_length]
         generated_slug = slugify(cropped_text)
-        ModelClass = self.__class__
-        while ModelClass.objects.filter(slug=generated_slug).exists():
-            generated_slug = f"{generated_slug[:cropped_length]}-{random.randint(0, 999)}"
+        if self.pk:
+            slug_exists = (
+                ModelClass.objects.filter(slug=generated_slug).exclude(pk=self.pk).exists()
+            )
+        else:
+            slug_exists = ModelClass.objects.filter(slug=generated_slug).exists()
+        if slug_exists:
+            timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S%f")
+            generated_slug = f"{generated_slug}-{timestamp}"
         self.slug = generated_slug
         return super().save(*args, **kwargs)
 

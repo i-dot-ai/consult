@@ -8,7 +8,7 @@ def test_consultation_save():
     consultation_title = "My First Consultation"
     slugified = "my-first-consultation"
     consultation = Consultation2Factory(text=consultation_title)
-    assert consultation.slug.startswith(slugified)
+    assert consultation.slug == slugified
     another_consultation = Consultation2Factory(text=consultation_title)
     assert another_consultation.slug != consultation.slug
     assert another_consultation.slug.startswith(slugified)
@@ -19,7 +19,7 @@ def test_question_save():
     question_text = "What are your thoughts on the proposed changes?"
     slugified = "what-are-your-thoughts-on-the-proposed-changes"
     question = Question2Factory(text=question_text)
-    assert question.slug.startswith(slugified)
+    assert question.slug == slugified
     another_question = Question2Factory(text=question_text)
     assert another_question.slug != question.slug
     assert another_question.slug.startswith(slugified)
