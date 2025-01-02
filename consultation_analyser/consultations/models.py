@@ -392,9 +392,8 @@ class QuestionGroup(UUIDPrimaryKeyModel, TimeStampedModel):
 class Question2(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
     text = models.TextField()
     consultation = models.ForeignKey(Consultation2, on_delete=models.CASCADE)
-    order = models.IntegerField()
+    order = models.IntegerField(null=True)
     question_group = models.ForeignKey(QuestionGroup, on_delete=models.CASCADE, null=True)
-    # TODO - add slug
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta, SlugFromTextModel.Meta):
         constraints = [
@@ -411,13 +410,13 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
     question = models.ForeignKey(Question2, on_delete=models.CASCADE)
     text = models.TextField()
     type = models.CharField(max_length=16, choices=QuestionType.choices)
-    options = models.JSONField(default=list, blank=True)
+    options = models.JSONField(default=list)
+    order = models.IntegerField(null=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
 
-# TODO - add expanded question
 class ExpandedQuestion(UUIDPrimaryKeyModel, TimeStampedModel):
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
     text = models.TextField()
@@ -441,6 +440,7 @@ class Answer2(UUIDPrimaryKeyModel, TimeStampedModel):
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
     respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
     text = models.TextField()
+    chosen_options = models.JSONField(default=list)
     # TODO - add favourite
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
