@@ -29,7 +29,6 @@ class Consultation2Factory(DjangoModelFactory):
     users = factory.RelatedFactoryList(UserFactory, factory_related_name="consultation", size=3)
 
 
-
 class Question2Factory(DjangoModelFactory):
     class Meta:
         model = models.Question2
@@ -114,7 +113,7 @@ class SentimentMappingFactory(DjangoModelFactory):
 
 def create_dummy_consultation_from_yaml(
     file_path: str = "./tests/examples/sample_questions.yml",
-    number_respondents: int = 5,
+    number_respondents: int = 10,
     consultation: Optional[models.Consultation2] = None,
 ) -> Consultation2Factory:
     """
@@ -176,9 +175,6 @@ def create_dummy_consultation_from_yaml(
 
             # Now populate the answers and corresponding themes etc. for these question parts
             for respondent in respondents:
-                print("=======")
-                print(question_part_type)
-                print(question_part.text)
                 if question_part_type == models.QuestionPart.QuestionType.SINGLE_OPTION:
                     chosen_options = random.choice(part["options"])
                     text = ""
