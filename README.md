@@ -91,9 +91,8 @@ make test
 
 ## The database
 
-### Generating dummy data [IGNORE FOR NOW: Database models to be updated imminently]
-
-Only run this in development. Will create a consultation with 10 complete
+### Generating dummy data
+Only run this in development. Will create a consultation with 100 complete
 responses in a variety of question formats. This runs as part of `make
 dev_environment`, but you can run it more than once.
 
