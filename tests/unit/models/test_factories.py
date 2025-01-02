@@ -13,10 +13,8 @@ def test_factories():
     # just check nothing fails
     factories2.UserFactory()
     factories2.Consultation2Factory()
-    factories2.QuestionGroupFactory()
     factories2.Question2Factory()
     factories2.QuestionPartFactory()
-    factories2.ExpandedQuestionFactory()
     factories2.RespondentFactory()
     factories2.Answer2Factory()
     factories2.ExecutionRunFactory()
