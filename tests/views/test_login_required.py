@@ -7,12 +7,10 @@ from consultation_analyser.consultations.urls import urlpatterns
 PUBLIC_URL_NAMES = [
     "root",
     "how_it_works",
-    "schema",
     "data_sharing",
     "get_involved",
     "privacy",
 ]
-RAW_SCHEMA_URL_NAMES = ["raw_schema"]
 GENERIC_CONSULTATION_URL_NAMES = ["consultations", "new_consultation"]
 AUTHENTICATION_URL_NAMES = [
     "sign_in",
@@ -22,7 +20,6 @@ AUTHENTICATION_URL_NAMES = [
 
 URL_NAMES_TO_EXCLUDE = (
     PUBLIC_URL_NAMES
-    + RAW_SCHEMA_URL_NAMES
     + GENERIC_CONSULTATION_URL_NAMES
     + AUTHENTICATION_URL_NAMES
 )
@@ -33,11 +30,6 @@ def test_access_public_urls_no_login(client):
     for url_name in PUBLIC_URL_NAMES:
         url = reverse(url_name)
         response = client.get(url)
-        assert response.status_code == 200
-    # There are more schema names, won't include them all
-    for schema_name in ["consultation_with_responses_schema", "consultation_schema"]:
-        url = reverse("raw_schema", kwargs={"schema_name": schema_name})
-        response = client.get(url, format="json")
         assert response.status_code == 200
 
 
