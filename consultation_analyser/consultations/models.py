@@ -382,18 +382,13 @@ class Consultation2(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
         ]
 
 
-class QuestionGroup(UUIDPrimaryKeyModel, TimeStampedModel):
-    """Model to group question together for display."""
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+# TODO - add QuestionGroup - to aggregate questions that should appear together
 
 
 class Question2(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
     text = models.TextField()
     consultation = models.ForeignKey(Consultation2, on_delete=models.CASCADE)
     order = models.IntegerField(null=True)
-    question_group = models.ForeignKey(QuestionGroup, on_delete=models.CASCADE, null=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta, SlugFromTextModel.Meta):
         constraints = [
@@ -417,14 +412,7 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
-class ExpandedQuestion(UUIDPrimaryKeyModel, TimeStampedModel):
-    question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
-    text = models.TextField()
-
-    history = HistoricalRecords()
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+# TODO - add ExpandedQuestionPart
 
 
 class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -509,9 +497,9 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     class PositionType(models.TextChoices):
-        AGREE = "agree"
-        DISAGREE = "disagree"
-        MIXED = "mixed"
+        AGREE = "Agree"
+        DISAGREE = "Disagree"
+        UNCLEAR = "Unclear"
 
     answer = models.ForeignKey(Answer2, on_delete=models.CASCADE)
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
