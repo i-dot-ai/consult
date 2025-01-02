@@ -1,7 +1,3 @@
-"""
-Sample questions relating to the updated models with dummy data.
-For each question, have related question parts, and where relevant, themes.
-"""
 - question_text: "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?"
   order: 1
   parts:
@@ -46,7 +42,7 @@ For each question, have related question parts, and where relevant, themes.
   order: 3
   parts:
     - text: ""
-      type: "multiple_option"
+      type: "multiple_options"
       options: ["Sustainability", "Design", "Cost-effectiveness", "Durability", "Brand recognition"]
       order: 1
 
