@@ -26,9 +26,4 @@ urlpatterns = [
         consultations_users.new,
         name="add_user",
     ),
-    path(
-        "download/consultations/<str:consultation_slug>/processing_run/<str:processing_run_slug>/",
-        consultations.download,
-        name="download_consultation",
-    ),
 ]

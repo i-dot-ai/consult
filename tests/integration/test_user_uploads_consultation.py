@@ -31,4 +31,3 @@ def test_user_uploads_consultation(django_app):
 
     # then I should see a success page
     assert "Consultation uploaded" in success_page
-
