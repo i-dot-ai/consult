@@ -1,6 +1,8 @@
 import random
+from typing import Optional
 
 import factory
+import yaml
 from factory.django import DjangoModelFactory
 from faker import Faker
 
@@ -88,6 +90,7 @@ class FrameworkFactory(DjangoModelFactory):
     class Meta:
         model = models.Framework
 
+    xecution_run = factory.SubFactory(ExecutionRunFactory)
     question_part = factory.SubFactory(QuestionPartFactory)
     change_reason = factory.LazyAttribute(lambda o: fake.sentence())
     user = factory.SubFactory(UserFactory)
@@ -98,7 +101,6 @@ class Theme2Factory(DjangoModelFactory):
     class Meta:
         model = models.Theme2
 
-    execution_run = factory.SubFactory(ExecutionRunFactory)
     framework = factory.SubFactory(FrameworkFactory)
     precursor = None  # TODO - add option for theme
     theme_name = factory.LazyAttribute(lambda o: fake.sentence())
@@ -122,3 +124,59 @@ class SentimentMappingFactory(DjangoModelFactory):
     answer = factory.SubFactory(Answer2Factory)
     execution_run = factory.SubFactory(ExecutionRunFactory)
     position = factory.Iterator(models.SentimentMapping.PositionType.values)
+
+
+def create_consultation_from_yaml(
+    file_path: str = "./tests/examples/sample_questions.yml",
+    number_respondents: int = 5,
+    consultation: Optional[models.Consultation2] = None,
+) -> Consultation2Factory:
+    """Create consultation with question, question parts and answers from yaml file."""
+    if not consultation:
+        consultation = Consultation2Factory()
+    respondents = [RespondentFactory(consultation=consultation) for _ in range(number_respondents)]
+
+    with open(file_path, "r") as file:
+        questions_data = yaml.safe_load(file)
+
+    # Save all questions, and corresponding question parts and answers
+    for question_data in questions_data:
+        question_text = question_data["question_text"]
+        order = question_data["order"]
+        parts = (
+            question_data["part"]
+            if isinstance(question_data["part"], list)
+            else [question_data["part"]]
+        )
+        question = Question2Factory(text=question_text, order=order, consultation=consultation)
+
+        for part in parts:
+            question_part = QuestionPartFactory(
+                question=question,
+                text=part["text"],
+                type=part["type"],
+                options=part.get("options", []),
+                order=part["order"],
+            )
+
+            # Generate answers for each respondent
+            for respondent in respondents:
+                if part["type"] == "single_option":
+                    chosen_options = random.choice(part["options"])
+                    text = ""
+                elif part["type"] == "multiple_option":
+                    chosen_options = random.sample(
+                        part["options"], k=random.randint(1, len(part["options"]))
+                    )
+                    text = ""
+                elif part["type"] == "free_text":
+                    text = random.choice(part.get("free_text_answers", [""]))
+                    chosen_options = []
+
+                Answer2Factory(
+                    question_part=question_part,
+                    text=text,
+                    chosen_options=chosen_options,
+                    respondent=respondent,
+                )
+    return consultation
