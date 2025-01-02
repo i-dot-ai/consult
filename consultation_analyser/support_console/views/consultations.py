@@ -6,7 +6,7 @@ from django.shortcuts import redirect, render
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
-from consultation_analyser.consultations.dummy_data import create_dummy_data
+from consultation_analyser.factories2 import create_dummy_consultation_from_yaml
 from consultation_analyser.hosting_environment import HostingEnvironment
 
 NO_SUMMARY_STR = "Unable to generate summary for this theme"
@@ -15,7 +15,7 @@ NO_SUMMARY_STR = "Unable to generate summary for this theme"
 def index(request: HttpRequest) -> HttpResponse:
     if request.POST:
         try:
-            consultation = create_dummy_data()
+            consultation = create_dummy_consultation_from_yaml()
             user = request.user
             consultation.users.add(user)
             messages.success(request, "A dummy consultation has been generated")
