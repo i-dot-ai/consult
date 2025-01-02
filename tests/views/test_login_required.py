@@ -11,7 +11,7 @@ PUBLIC_URL_NAMES = [
     "get_involved",
     "privacy",
 ]
-GENERIC_CONSULTATION_URL_NAMES = ["consultations", "new_consultation"]
+GENERIC_CONSULTATION_URL_NAMES = ["consultations",]
 AUTHENTICATION_URL_NAMES = [
     "sign_in",
     "sign_out",
