@@ -90,7 +90,7 @@ class FrameworkFactory(DjangoModelFactory):
     class Meta:
         model = models.Framework
 
-    xecution_run = factory.SubFactory(ExecutionRunFactory)
+    execution_run = factory.SubFactory(ExecutionRunFactory)
     question_part = factory.SubFactory(QuestionPartFactory)
     change_reason = factory.LazyAttribute(lambda o: fake.sentence())
     user = factory.SubFactory(UserFactory)
@@ -143,40 +143,72 @@ def create_consultation_from_yaml(
     for question_data in questions_data:
         question_text = question_data["question_text"]
         order = question_data["order"]
-        parts = (
-            question_data["part"]
-            if isinstance(question_data["part"], list)
-            else [question_data["part"]]
-        )
+        parts = question_data["parts"]
         question = Question2Factory(text=question_text, order=order, consultation=consultation)
 
+        # Each question part is considered separately
         for part in parts:
+            question_part_type = part["type"]
             question_part = QuestionPartFactory(
                 question=question,
                 text=part["text"],
-                type=part["type"],
+                type=type,
                 options=part.get("options", []),
                 order=part["order"],
             )
 
-            # Generate answers for each respondent
+            # Get themes if free_text
+            if question_part_type == "free_text":
+                # Create themes (simulate theme generation)
+                execution_run_theme_generation = ExecutionRunFactory(
+                    type=models.ExecutionRun.TaskType.THEME_GENERATION
+                )
+                framework = FrameworkFactory(
+                    execution_run=execution_run_theme_generation, question_part=question_part
+                )
+
+                themes = part.get("themes", [])
+                for theme in themes:
+                    theme_objects = [
+                        Theme2Factory(
+                            framework=framework,
+                            theme_name=theme["name"],
+                            theme_description=theme["description"],
+                        )
+                    ]
+
+                # Simulate theme mapping
+                execution_run_theme_mapping = ExecutionRunFactory(
+                    type=models.ExecutionRun.TaskType.THEME_MAPPING
+                )
+
             for respondent in respondents:
-                if part["type"] == "single_option":
+                if question_part_type == "single_option":
                     chosen_options = random.choice(part["options"])
                     text = ""
-                elif part["type"] == "multiple_option":
+                elif question_part_type == "multiple_option":
                     chosen_options = random.sample(
                         part["options"], k=random.randint(1, len(part["options"]))
                     )
                     text = ""
-                elif part["type"] == "free_text":
+                elif question_part_type == "free_text":
                     text = random.choice(part.get("free_text_answers", [""]))
                     chosen_options = []
 
-                Answer2Factory(
+                answer = Answer2Factory(
                     question_part=question_part,
                     text=text,
                     chosen_options=chosen_options,
                     respondent=respondent,
                 )
+                # Now map (multiple) themes to each answer
+                if question_part_type == "free_text":
+                    themes_for_answer = random.sample(
+                        theme_objects, k=random.randint(1, len(theme_objects))
+                    )
+                    for theme in themes_for_answer:
+                        ThemeMappingFactory(
+                            answer=answer, theme=theme, execution_run=execution_run_theme_mapping
+                        )
+
     return consultation
