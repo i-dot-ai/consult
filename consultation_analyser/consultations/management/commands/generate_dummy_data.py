@@ -1,6 +1,6 @@
 from django.core.management.base import BaseCommand
 
-from consultation_analyser.factories2 import create_dummy_consultation_from_yaml
+from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
 
 
 class Command(BaseCommand):

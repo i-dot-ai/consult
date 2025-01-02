@@ -2,7 +2,6 @@ import random
 
 import factory
 import faker as _faker
-import yaml
 from django.utils import timezone
 
 from consultation_analyser.authentication import models as authentication_models
@@ -15,24 +14,6 @@ def generate_dummy_topic_keywords():
     dummy_sentence = faker.sentence()
     words = dummy_sentence.lower().strip(".")
     return words.split(" ")
-
-
-class FakeConsultationData:
-    def __init__(self):
-        with open("./tests/examples/questions.yml", "r") as f:
-            questions = yaml.safe_load(f)
-            slugs = [q["slug"] for q in questions]
-            self.questions = dict(zip(slugs, questions))
-
-    def question(self):
-        return random.choice(list(self.questions.values()))
-
-    def get_free_text_answer(self, slug):
-        q = self.questions[slug]
-        return random.choice(q["answers"])
-
-    def all_questions(self):
-        return list(self.questions.values())
 
 
 class ConsultationBuilder:

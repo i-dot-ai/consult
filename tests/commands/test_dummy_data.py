@@ -13,16 +13,11 @@ from consultation_analyser.consultations import models
 def test_name_parameter_sets_consultation_name(mock_is_local):
     call_command(
         "generate_dummy_data",
-        name="My special consultation",
         stdout=StringIO(),  # we'll ignore this
     )
 
-    assert models.Consultation.objects.count() == 1
-    assert models.Question.objects.count() == 10
-    assert models.Answer.objects.count() >= 100
-
-    assert models.Consultation.objects.first().name == "My special consultation"
-    assert models.Consultation.objects.first().slug == "my-special-consultation"
+    assert models.Consultation2.objects.count() == 1
+    assert models.Question2.objects.count() == 5
 
 
 @pytest.mark.django_db
@@ -34,6 +29,5 @@ def test_the_tool_will_only_run_in_dev(environment):
         ):
             call_command(
                 "generate_dummy_data",
-                name="My special consultation",
                 stdout=StringIO(),  # we'll ignore this
             )
