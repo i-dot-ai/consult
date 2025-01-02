@@ -11,18 +11,16 @@ PUBLIC_URL_NAMES = [
     "get_involved",
     "privacy",
 ]
-GENERIC_CONSULTATION_URL_NAMES = ["consultations",]
+GENERIC_CONSULTATION_URL_NAMES = [
+    "consultations",
+]
 AUTHENTICATION_URL_NAMES = [
     "sign_in",
     "sign_out",
     "magic_link",
 ]  # No tests - tested elsewhere, all public
 
-URL_NAMES_TO_EXCLUDE = (
-    PUBLIC_URL_NAMES
-    + GENERIC_CONSULTATION_URL_NAMES
-    + AUTHENTICATION_URL_NAMES
-)
+URL_NAMES_TO_EXCLUDE = PUBLIC_URL_NAMES + GENERIC_CONSULTATION_URL_NAMES + AUTHENTICATION_URL_NAMES
 
 
 @pytest.mark.django_db
