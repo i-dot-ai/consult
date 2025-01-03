@@ -1,7 +1,10 @@
 import logging
-from typing import Optional
 
+<<<<<<< HEAD
 from django.contrib import messages
+=======
+from django.contrib.auth.decorators import login_required
+>>>>>>> 773d47e (Change consultation views to use new consultation model.)
 from django.http import Http404, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
@@ -15,30 +18,23 @@ NO_THEMES_YET_MESSAGE = "We are processing your consultation. Themes have not be
 
 
 def index(request: HttpRequest) -> HttpResponse:
-    consultations = request.user.consultation_set.all()
     user = request.user
+    consultations_for_user = models.Consultation2.objects.filter(users=user)
     is_staff = user.is_staff
-    context = {"consultations": consultations, "is_staff": is_staff}
+    context = {"consultations": consultations_for_user, "is_staff": is_staff}
     return render(request, "consultations/consultations/index.html", context)
 
 
 @user_can_see_consultation
-def show(
-    request: HttpRequest, consultation_slug: str, processing_run_slug: Optional[str] = None
-) -> HttpResponse:
-    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    try:
-        processing_run = consultation.get_processing_run(processing_run_slug)
-    except models.ProcessingRun.DoesNotExist:
-        return Http404
-    if not processing_run:
-        messages.info(request, NO_THEMES_YET_MESSAGE)
-
-    questions = models.Question.objects.filter(section__consultation__slug=consultation_slug)
+@login_required
+def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
+    consultation = get_object_or_404(models.Consultation2, slug=consultation_slug)
+    questions = models.Question2.objects.filter(consultation__slug=consultation_slug).order_by(
+        "order"
+    )
     context = {
         "questions": questions,
         "consultation": consultation,
-        "processing_run": processing_run,
     }
-
+    # TODO - do something better if there is no question text, and get it from the question parts
     return render(request, "consultations/consultations/show.html", context)
