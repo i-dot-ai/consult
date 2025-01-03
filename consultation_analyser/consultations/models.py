@@ -494,6 +494,22 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
+    @staticmethod
+    def get_latest_theme_mappings_for_question_part(part: QuestionPart) -> models.QuerySet:
+        """
+        Get the set of the theme mappings corresponding to the latest execution run.
+        """
+        theme_mappings_for_question_part = ThemeMapping.objects.filter(answer__question_part=part)
+        execution_runs = ExecutionRun.objects.filter(
+            thememapping__in=theme_mappings_for_question_part
+        ).distinct()
+        latest_execution_run = execution_runs.order_by("created_at").last()
+        if latest_execution_run:
+            latest_mappings = ThemeMapping.objects.filter(execution_run=latest_execution_run)
+        else:
+            latest_mappings = ThemeMapping.objects.none()
+        return latest_mappings
+
 
 class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     class PositionType(models.TextChoices):
