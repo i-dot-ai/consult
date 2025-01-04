@@ -352,7 +352,8 @@ class SlugFromTextModel(models.Model):
     slug = models.SlugField(null=False, editable=False, max_length=256)
 
     def save(self, *args, **kwargs):
-        # Generate a slug from the text - ensure unique by adding timestamp if needed
+        # Generate a slug from the text - ensure unique by adding timestamp if needed.
+        # Don't allow empty slug.
         ModelClass = self.__class__
         cropped_length = 220
         cropped_text = self.text[:cropped_length]
@@ -363,7 +364,7 @@ class SlugFromTextModel(models.Model):
             )
         else:
             slug_exists = ModelClass.objects.filter(slug=generated_slug).exists()
-        if slug_exists:
+        if slug_exists or not generated_slug:
             timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S%f")
             generated_slug = f"{generated_slug}-{timestamp}"
         self.slug = generated_slug
