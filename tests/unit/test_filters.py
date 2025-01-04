@@ -35,7 +35,7 @@ def set_up_for_filters():
 @pytest.mark.django_db
 def test_get_filtered_responses(applied_filters, expected_count):
     question = set_up_for_filters()
-    queryset = filters.get_filtered_responses(question, applied_filters=applied_filters)
+    queryset = filters.get_filtered_answers(question, applied_filters=applied_filters)
     assert queryset.count() == expected_count
 
 
@@ -45,7 +45,7 @@ def test_get_filtered_responses_themes():
     question = set_up_for_filters()
     theme1 = models.Theme.objects.all().order_by("created_at").first()
     applied_filters = {"keyword": "", "theme": theme1.id}
-    queryset = filters.get_filtered_responses(question, applied_filters=applied_filters)
+    queryset = filters.get_filtered_answers(question, applied_filters=applied_filters)
     assert queryset.count() == 1
     assert queryset[0].free_text == "We love dogs."
 

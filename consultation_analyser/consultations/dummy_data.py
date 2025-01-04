@@ -75,13 +75,13 @@ def create_dummy_consultation_from_yaml(
                     type=models.ExecutionRun.TaskType.THEME_MAPPING
                 )
                 themes = part.get("themes", [])
-                for theme in themes:
-                    theme_objects = [
-                        Theme2Factory(
+
+                theme_objects = [
+                    Theme2Factory(
                             framework=framework,
                             theme_name=theme["name"],
                             theme_description=theme["description"],
-                        )
+                        ) for theme in themes
                     ]
 
             # Now populate the answers and corresponding themes etc. for these question parts
@@ -104,6 +104,7 @@ def create_dummy_consultation_from_yaml(
                     chosen_options=chosen_options,
                     respondent=respondent,
                 )
+
                 # Now map (multiple) themes and sentiment to each answer for free-text questions.
                 # This is in a different order to how it would work in pipeline - but this is as we
                 # are reading from file.

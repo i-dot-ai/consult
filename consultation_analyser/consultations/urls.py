@@ -14,24 +14,14 @@ urlpatterns = [
     path("consultations/", consultations.index, name="consultations"),
     path("consultations/<str:consultation_slug>/", consultations.show, name="consultation"),
     path(
-        "consultations/<str:consultation_slug>/sections/<str:section_slug>/questions/<str:question_slug>/",
+        "consultations/<str:consultation_slug>/questions/<str:question_slug>/",
         questions.show,
         name="show_question",
     ),
     path(
-        "consultations/<str:consultation_slug>/runs/<str:processing_run_slug>/sections/<str:section_slug>/questions/<str:question_slug>/",
-        questions.show,
-        name="show_question_runs",
-    ),
-    path(
-        "consultations/<str:consultation_slug>/sections/<str:section_slug>/responses/<str:question_slug>/",
+        "consultations/<str:consultation_slug>/responses/<str:question_slug>/",
         responses.index,
         name="question_responses",
-    ),
-    path(
-        "consultations/<str:consultation_slug>/runs/<str:processing_run_slug>/sections/<str:section_slug>/responses/<str:question_slug>/",
-        responses.index,
-        name="question_responses_runs",
     ),
     # authentication
     path("sign-in/", sessions.new, name="sign_in"),
