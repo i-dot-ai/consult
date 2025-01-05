@@ -19,7 +19,7 @@ urlpatterns = [
     ),
     path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/",
-        responses.index,
+        answers.index,
         name="question_responses",
     ),
     # authentication
