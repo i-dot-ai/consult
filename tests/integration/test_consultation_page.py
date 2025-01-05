@@ -12,12 +12,13 @@ def test_consultation_page(django_app):
     consultation = create_dummy_consultation_from_yaml()
     consultation.users.add(user)
 
+    print(f"type: {type(django_app)}")
     sign_in(django_app, user.email)
 
     consultation_slug = consultation.slug
     question = Question2.objects.filter(consultation=consultation).first()
     homepage = django_app.get(f"/consultations/{consultation_slug}/")
-    question_page = homepage.click("Question summary")
+    question_page = homepage.click("Question summary", index=0)
 
     assert "Question summary" in question_page
     assert f"{question.text}" in question_page
