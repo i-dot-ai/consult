@@ -78,11 +78,12 @@ def create_dummy_consultation_from_yaml(
 
                 theme_objects = [
                     Theme2Factory(
-                            framework=framework,
-                            theme_name=theme["name"],
-                            theme_description=theme["description"],
-                        ) for theme in themes
-                    ]
+                        framework=framework,
+                        theme_name=theme["name"],
+                        theme_description=theme["description"],
+                    )
+                    for theme in themes
+                ]
 
             # Now populate the answers and corresponding themes etc. for these question parts
             for respondent in respondents:
