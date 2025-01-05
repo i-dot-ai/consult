@@ -19,7 +19,7 @@ def test_adding_users_to_consultations_via_support(django_app):
     consultations_index = consultations_index.form.submit("generate_dummy_consultation")
 
     latest_consultation = Consultation.objects.all().order_by("created_at").last()
-    consultation_page = consultations_index.click(latest_consultation.name)
+    consultation_page = consultations_index.click(latest_consultation.text)
 
     assert user.email in consultation_page
 

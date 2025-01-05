@@ -3,13 +3,14 @@ from django.http.response import Http404
 from django.test import RequestFactory
 
 from consultation_analyser.consultations.views import consultations
-from consultation_analyser.factories import ConsultationFactory, UserFactory
+from consultation_analyser.factories2 import Consultation2Factory, UserFactory
 
 
 @pytest.mark.django_db
 def test_get_consultation_we_own(client):
     user = UserFactory()
-    consultation_we_own = ConsultationFactory(user=user)
+    consultation_we_own = Consultation2Factory()
+    consultation_we_own.users.add(user)
     client.force_login(user)
     response = client.get(f"/consultations/{consultation_we_own.slug}/")
     assert response.status_code == 200
@@ -18,7 +19,7 @@ def test_get_consultation_we_own(client):
 @pytest.mark.django_db
 def test_get_consultation_we_do_not_own():
     user = UserFactory()
-    consultation_we_do_not_own = ConsultationFactory()
+    consultation_we_do_not_own = Consultation2Factory()
 
     request_factory = RequestFactory()
 
