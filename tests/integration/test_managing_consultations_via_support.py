@@ -1,7 +1,7 @@
 import pytest
 
-from consultation_analyser.consultations.models import Consultation
-from consultation_analyser.factories import UserFactory
+from consultation_analyser.consultations.models import Consultation2
+from consultation_analyser.factories2 import UserFactory
 from tests.helpers import sign_in
 
 
