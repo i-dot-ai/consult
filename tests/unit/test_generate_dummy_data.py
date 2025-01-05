@@ -53,7 +53,7 @@ def test_create_dummy_consultation_from_yaml():
     assert theme_mapping.count() >= 10
     themes = models.Theme2.objects.filter(framework__question_part=question_parts[1])
     assert themes.count() == 2
-    assert themes.filter(theme_name="Standardized framework").exists()
+    assert themes.filter(name="Standardized framework").exists()
 
     assert models.QuestionPart.objects.filter(
         type=models.QuestionPart.QuestionType.SINGLE_OPTION

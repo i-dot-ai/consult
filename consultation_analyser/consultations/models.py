@@ -364,8 +364,10 @@ class SlugFromTextModel(models.Model):
             )
         else:
             slug_exists = ModelClass.objects.filter(slug=generated_slug).exists()
-        if slug_exists or not generated_slug:
-            timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S%f")
+        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S%f")
+        if not generated_slug:
+            generated_slug = timestamp
+        elif slug_exists:
             generated_slug = f"{generated_slug}-{timestamp}"
         self.slug = generated_slug
         return super().save(*args, **kwargs)
@@ -477,8 +479,8 @@ class Theme2(UUIDPrimaryKeyModel, TimeStampedModel):
     precursor = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
 
     # TODO - add theme_code which comes from pipeline run
-    theme_name = models.CharField(max_length=256)  # TODO - is this long enough
-    theme_description = models.TextField()
+    name = models.CharField(max_length=256)  # TODO - is this long enough
+    description = models.TextField()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
