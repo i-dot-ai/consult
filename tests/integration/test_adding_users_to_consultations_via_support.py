@@ -1,5 +1,6 @@
 import pytest
 
+from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import Consultation2
 from consultation_analyser.factories import UserFactory
 from tests.helpers import sign_in
@@ -37,6 +38,7 @@ def test_adding_users_to_consultations_via_support(django_app):
 
     assert "Users updated" in consultation_page
 
+    User.objects.exclude(id=user.id).delete()
     add_user_page = consultation_page.click("Add users")
 
     assert "There are no more users available to add" in add_user_page

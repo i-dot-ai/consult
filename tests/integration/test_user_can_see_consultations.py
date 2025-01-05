@@ -1,6 +1,6 @@
 import pytest
 
-from consultation_analyser.factories import ConsultationFactory, UserFactory
+from consultation_analyser.factories2 import Consultation2Factory, UserFactory
 from tests.helpers import sign_in
 
 
@@ -16,7 +16,7 @@ def test_user_can_see_consultations(django_app):
     assert "You do not have any consultations" in landing_page
 
     # but when i add a consultation
-    ConsultationFactory(name="My First Consultation", user=user)
+    Consultation2Factory(name="My First Consultation", user=user)
 
     # and i sign in again
     landing_page.click("Sign out")
@@ -28,7 +28,7 @@ def test_user_can_see_consultations(django_app):
 
 @pytest.mark.django_db
 def test_logged_out_user_sees_404s(django_app):
-    ConsultationFactory(slug="whatever")
+    Consultation2Factory(slug="whatever")
 
     returned_page = django_app.get("/consultations/whatever/", expect_errors=True)
 
