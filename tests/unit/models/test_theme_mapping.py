@@ -23,8 +23,8 @@ def test_get_latest_theme_mappings_for_question_part_returns_latest_mappings():
     ThemeMappingFactory(answer=answer, theme=theme1, execution_run=first_execution_run)
     # Second theme mapping execution run
     second_framework = FrameworkFactory(question_part=question_part)
-    theme2 = Theme2Factory(framework=second_framework, theme_name="theme 2")
-    theme3 = Theme2Factory(framework=second_framework, theme_name="theme 3")
+    theme2 = Theme2Factory(framework=second_framework, name="theme 2")
+    theme3 = Theme2Factory(framework=second_framework, name="theme 3")
     second_execution_run = ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
     ThemeMappingFactory(answer=answer, theme=theme2, execution_run=second_execution_run)
     ThemeMappingFactory(answer=answer, theme=theme3, execution_run=second_execution_run)
@@ -32,7 +32,7 @@ def test_get_latest_theme_mappings_for_question_part_returns_latest_mappings():
     # Get the latest theme mappings
     latest_mappings = models.ThemeMapping.get_latest_theme_mappings_for_question_part(question_part)
     assert latest_mappings.count() == 2
-    assert "theme 2" in latest_mappings.values_list("theme__theme_name", flat=True)
+    assert "theme 2" in latest_mappings.values_list("theme__name", flat=True)
     assert all(mapping.execution_run == second_execution_run for mapping in latest_mappings)
 
 

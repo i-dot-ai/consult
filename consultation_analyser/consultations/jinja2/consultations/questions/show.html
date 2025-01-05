@@ -96,7 +96,7 @@
                         <td class="iai-themes-list__cell iai-themes-list__cell--theme">
                           <toggle-button>
                             <button class="iai-themes-list__theme-toggle" aria-expanded="false" aria-controls="toggle{{ loop.index }}">
-                              <span class="iai-themes-list__theme-text">{{ theme.theme_name }}</span>
+                              <span class="iai-themes-list__theme-text">{{ theme.name }}</span>
                               <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
                                 <path d="M2 12C2 17.5228 6.47715 22 12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12Z" stroke="#C50878" stroke-linecap="round" stroke-linejoin="round"/>
                                 <path d="M11 8L15 12L11 16" stroke="#C50878" stroke-linecap="round" stroke-linejoin="round"/>
@@ -107,7 +107,7 @@
                         <td class="iai-themes-list__detail" id="toggle{{ loop.index }}">
                           <span class="iai-display-flex iai-display-flex--stretch">
                             <span class="iai-themes-list__detail-container">
-                              <p class="iai-themes__detail-text">{{ theme.theme_description }}</p>
+                              <p class="iai-themes__detail-text">{{ theme.description }}</p>
                             </span>
                           </span>
                         </td>

@@ -23,3 +23,9 @@ def test_question_save():
     another_question = Question2Factory(text=question_text)
     assert another_question.slug != question.slug
     assert another_question.slug.startswith(slugified)
+
+    # Test empty quesiton text. This might occur if we have two related
+    # question parts with no overarching question.
+    question_text = ""
+    question = Question2Factory(text=question_text)
+    assert question.slug

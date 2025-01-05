@@ -79,8 +79,8 @@ def create_dummy_consultation_from_yaml(
                 theme_objects = [
                     Theme2Factory(
                         framework=framework,
-                        theme_name=theme["name"],
-                        theme_description=theme["description"],
+                        name=theme["name"],
+                        description=theme["description"],
                     )
                     for theme in themes
                 ]

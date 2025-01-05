@@ -86,8 +86,8 @@ class Theme2Factory(DjangoModelFactory):
 
     framework = factory.SubFactory(FrameworkFactory)
     precursor = None  # TODO - add option for theme
-    theme_name = factory.LazyAttribute(lambda o: fake.sentence())
-    theme_description = factory.LazyAttribute(lambda o: fake.paragraph())
+    name = factory.LazyAttribute(lambda o: fake.sentence())
+    description = factory.LazyAttribute(lambda o: fake.paragraph())
 
 
 class ThemeMappingFactory(DjangoModelFactory):
