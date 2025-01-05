@@ -1,9 +1,10 @@
 import pytest
 
-from consultation_analyser.factories2 import UserFactory
-from tests.helpers import sign_in
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
 from consultation_analyser.consultations.models import Question2
+from consultation_analyser.factories2 import UserFactory
+from tests.helpers import sign_in
+
 
 @pytest.mark.django_db
 def test_consultation_page(django_app):
