@@ -1,11 +1,11 @@
 import pytest
 
-from consultation_analyser.factories import ConsultationFactory
+from consultation_analyser.factories2 import Consultation2Factory
 
 
 @pytest.mark.django_db
 def test_no_login_support_pages(client):
-    consultation = ConsultationFactory()
+    consultation = Consultation2Factory()
     support_urls = [
         "",
         "sign-out/",
