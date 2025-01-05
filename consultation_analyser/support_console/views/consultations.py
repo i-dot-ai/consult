@@ -57,17 +57,8 @@ def get_number_themes_for_processing_run(processing_run):
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
 
-    # For display, just take latest themes
-    total_themes, total_with_summaries = get_number_themes_for_processing_run(
-        consultation.latest_processing_run
-    )
-    processing_runs = consultation.processingrun_set.all().order_by("created_at")
-
     context = {
         "consultation": consultation,
-        "processing_runs": processing_runs,
         "users": consultation.users.all(),
-        "total_themes": total_themes,
-        "total_with_summaries": total_with_summaries,
     }
     return render(request, "support_console/consultations/show.html", context=context)
