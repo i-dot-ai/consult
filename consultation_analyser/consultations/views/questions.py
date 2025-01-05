@@ -27,7 +27,7 @@ def filter_scatter_plot_data(filtered_themes: QuerySet) -> List[Dict]:
     return filtered_scatter_data
 
 
-def get_outliers_info(processing_run: models.ProcessingRun, question: models.Question) -> Tuple:
+def get_outliers_info(processing_run: models.ProcessingRun, question: models.QuestionOld) -> Tuple:
     outlier_theme = None
     outliers_count = 0
     if not processing_run:
@@ -37,7 +37,7 @@ def get_outliers_info(processing_run: models.ProcessingRun, question: models.Que
     )
     if outlier_themes:
         outlier_theme = outlier_themes.first()
-        outliers_count = models.Answer.objects.filter(themes=outlier_theme).count()
+        outliers_count = models.AnswerOld.objects.filter(themes=outlier_theme).count()
     return outlier_theme, outliers_count
 
 

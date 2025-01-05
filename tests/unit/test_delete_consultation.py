@@ -8,16 +8,16 @@ from consultation_analyser.factories import ConsultationWithThemesFactory
 def test_delete_consultation():
     consultation = ConsultationWithThemesFactory()
 
-    assert models.Consultation.objects.count() == 1
+    assert models.ConsultationOld.objects.count() == 1
     assert models.ConsultationResponse.objects.count() >= 1
     assert models.Section.objects.count() >= 1
-    assert models.Question.objects.count() >= 1
-    assert models.Answer.objects.count() >= 1
+    assert models.QuestionOld.objects.count() >= 1
+    assert models.AnswerOld.objects.count() >= 1
 
     consultation.delete()
 
-    assert models.Consultation.objects.count() == 0
+    assert models.ConsultationOld.objects.count() == 0
     assert models.ConsultationResponse.objects.count() == 0
     assert models.Section.objects.count() == 0
-    assert models.Question.objects.count() == 0
-    assert models.Answer.objects.count() == 0
+    assert models.QuestionOld.objects.count() == 0
+    assert models.AnswerOld.objects.count() == 0
