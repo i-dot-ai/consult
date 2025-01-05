@@ -88,7 +88,7 @@ class ConsultationBuilder:
 
 class ConsultationWithAnswersFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Consultation
+        model = models.ConsultationOld
         skip_postgeneration_save = True
 
     name = factory.LazyAttribute(lambda _o: faker.sentence())
@@ -109,7 +109,7 @@ class ConsultationWithAnswersFactory(factory.django.DjangoModelFactory):
 
 class ConsultationWithThemesFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Consultation
+        model = models.ConsultationOld
         skip_postgeneration_save = True
 
     name = factory.LazyAttribute(lambda _o: faker.sentence())
@@ -130,7 +130,7 @@ class ConsultationWithThemesFactory(factory.django.DjangoModelFactory):
 
 class ConsultationFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Consultation
+        model = models.ConsultationOld
         skip_postgeneration_save = True
 
     name = factory.LazyAttribute(lambda _o: faker.sentence())
@@ -167,7 +167,7 @@ def get_multiple_choice_questions(current_question):
 
 class QuestionFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Question
+        model = models.QuestionOld
         skip_postgeneration_save = True
 
     text = factory.LazyAttribute(lambda _o: faker.sentence())
@@ -195,7 +195,7 @@ class ConsultationResponseFactory(factory.django.DjangoModelFactory):
     @factory.post_generation
     def answers(consultation_response, creation_strategy, value, **kwargs):
         if value or value is None:
-            questions = models.Question.objects.filter(
+            questions = models.QuestionOld.objects.filter(
                 section__consultation=consultation_response.consultation
             ).all()
             for q in questions:
@@ -218,7 +218,7 @@ class TopicModelMetadataFactory(factory.django.DjangoModelFactory):
 
 class ThemeFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Theme
+        model = models.ThemeOld
 
     processing_run = factory.SubFactory(ProcessingRunFactory)
     topic_model_metadata = factory.SubFactory(TopicModelMetadataFactory)
@@ -251,7 +251,7 @@ def get_multiple_choice_answers(current_answer):
 
 class AnswerFactory(factory.django.DjangoModelFactory):
     class Meta:
-        model = models.Answer
+        model = models.AnswerOld
         skip_postgeneration_save = True
 
     free_text = factory.LazyAttribute(

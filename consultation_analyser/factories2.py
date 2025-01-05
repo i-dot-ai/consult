@@ -24,7 +24,7 @@ class Consultation2Factory(DjangoModelFactory):
         model = models.Consultation2
 
     text = factory.LazyAttribute(lambda o: fake.sentence())
-    users = factory.RelatedFactoryList(UserFactory, factory_related_name="consultation", size=3)
+
 
 
 class Question2Factory(DjangoModelFactory):

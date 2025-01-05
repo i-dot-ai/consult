@@ -43,7 +43,9 @@ class TimeStampedModel(models.Model):
         ordering = ["created_at"]
 
 
-class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
+# To line ~350 - old models to be removed
+
+class ConsultationOld(UUIDPrimaryKeyModel, TimeStampedModel):
     name = models.CharField(max_length=256)
     slug = models.CharField(null=False, max_length=256)
     users = models.ManyToManyField(User)
@@ -63,7 +65,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         the Theme in question could still be associated with
         another Answer
         """
-        Theme.objects.filter(answer__question__section__consultation=self).delete()
+        ThemeOld.objects.filter(answer__question__section__consultation=self).delete()
 
         super().delete(*args, **kwargs)
 
@@ -83,7 +85,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class Section(UUIDPrimaryKeyModel, TimeStampedModel):
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    consultation = models.ForeignKey(ConsultationOld, on_delete=models.CASCADE)
     name = models.TextField()
     slug = models.CharField(null=False, max_length=256)
 
@@ -118,7 +120,7 @@ class MultipleChoiceQuestionStats:
             }
 
 
-class Question(UUIDPrimaryKeyModel, TimeStampedModel):
+class QuestionOld(UUIDPrimaryKeyModel, TimeStampedModel):
     MULTIPLE_CHOICE_COUNTS_QUERY = """
         SELECT question_id as id, elem ->> 'question_text' as question, option, COUNT(*) as count
         FROM    consultations_answer,
@@ -191,7 +193,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    consultation = models.ForeignKey(ConsultationOld, on_delete=models.CASCADE)
     submitted_at = models.DateTimeField(editable=False, null=False)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
@@ -199,7 +201,7 @@ class ConsultationResponse(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    consultation = models.ForeignKey(ConsultationOld, on_delete=models.CASCADE)
     # TODO - add more processing run metadata
     started_at = models.DateTimeField(null=True)
     finished_at = models.DateTimeField(null=True)
@@ -207,7 +209,7 @@ class ProcessingRun(UUIDPrimaryKeyModel, TimeStampedModel):
 
     @property
     def themes(self):
-        return Theme.objects.filter(processing_run=self).distinct()
+        return ThemeOld.objects.filter(processing_run=self).distinct()
 
     @property
     def topic_model_metadatas(self):
@@ -251,13 +253,13 @@ class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
             return
 
         data = self.scatter_plot_data["data"]
-        related_themes_qs = Theme.objects.filter(topic_model_metadata=self).distinct()
+        related_themes_qs = ThemeOld.objects.filter(topic_model_metadata=self).distinct()
         updated_data = []
         for coordinate in data:
             topic_id = coordinate["topic_id"]
             try:
                 theme = related_themes_qs.get(topic_id=topic_id)
-            except Theme.DoesNotExist:
+            except ThemeOld.DoesNotExist:
                 theme = None
             if theme:
                 updated_coordinate = coordinate
@@ -273,7 +275,7 @@ class TopicModelMetadata(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
-class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
+class ThemeOld(UUIDPrimaryKeyModel, TimeStampedModel):
     processing_run = models.ForeignKey(ProcessingRun, on_delete=models.CASCADE, null=True)
     # Topic model, keywords and ID come from BERTopic
     topic_model_metadata = models.ForeignKey(
@@ -311,7 +313,7 @@ class AnswerQuerySet(models.QuerySet):
         return self.extra(where=[self.MULTIPLE_CHOICE_QUERY], params=[question, answer])  # nosec
 
 
-class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
+class AnswerOld(UUIDPrimaryKeyModel, TimeStampedModel):
     multiple_choice = models.JSONField(
         null=True, blank=True, validators=[MultipleChoiceSchemaValidator(limit_value=None)]
     )
@@ -319,9 +321,9 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     objects = AnswerQuerySet.as_manager()
 
     free_text = models.TextField(null=True, blank=True)
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey(QuestionOld, on_delete=models.CASCADE)
     consultation_response = models.ForeignKey(ConsultationResponse, on_delete=models.CASCADE)
-    themes = models.ManyToManyField(Theme)
+    themes = models.ManyToManyField(ThemeOld)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
@@ -333,7 +335,7 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         processing_run: ProcessingRun,
         topic_model_metadata: TopicModelMetadata,
     ):
-        theme, _ = Theme.objects.get_or_create(
+        theme, _ = ThemeOld.objects.get_or_create(
             topic_keywords=topic_keywords,
             topic_id=topic_id,
             processing_run=processing_run,
