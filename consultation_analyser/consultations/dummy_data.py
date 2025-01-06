@@ -4,16 +4,16 @@ from typing import Optional
 import yaml
 
 from consultation_analyser.consultations import models
-from consultation_analyser.factories2 import (
-    Answer2Factory,
-    Consultation2Factory,
+from consultation_analyser.factories import (
+    AnswerFactory,
+    ConsultationFactory,
     ExecutionRunFactory,
     FrameworkFactory,
-    Question2Factory,
+    QuestionFactory,
     QuestionPartFactory,
     RespondentFactory,
     SentimentMappingFactory,
-    Theme2Factory,
+    ThemeFactory,
     ThemeMappingFactory,
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
@@ -23,7 +23,7 @@ def create_dummy_consultation_from_yaml(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
     consultation: Optional[models.Consultation] = None,
-) -> Consultation2Factory:
+) -> ConsultationFactory:
     """
     Create consultation with question, question parts, answers and themes from yaml file.
     Creates relevant objects: Consultation, Question, QuestionPart, Answer, Theme, ThemeMapping,
@@ -33,7 +33,7 @@ def create_dummy_consultation_from_yaml(
         raise RuntimeError("Dummy data generation should not be run in production")
 
     if not consultation:
-        consultation = Consultation2Factory()
+        consultation = ConsultationFactory()
     respondents = [RespondentFactory(consultation=consultation) for _ in range(number_respondents)]
 
     with open(file_path, "r") as file:
@@ -41,7 +41,7 @@ def create_dummy_consultation_from_yaml(
 
     # Save all questions, and corresponding question parts and answers
     for question_data in questions_data:
-        question = Question2Factory(
+        question = QuestionFactory(
             text=question_data["question_text"],
             order=question_data["order"],
             consultation=consultation,
@@ -77,7 +77,7 @@ def create_dummy_consultation_from_yaml(
                 themes = part.get("themes", [])
 
                 theme_objects = [
-                    Theme2Factory(
+                    ThemeFactory(
                         framework=framework,
                         name=theme["name"],
                         description=theme["description"],
@@ -99,7 +99,7 @@ def create_dummy_consultation_from_yaml(
                     text = random.choice(part.get("free_text_answers", [""]))
                     chosen_options = []
 
-                answer = Answer2Factory(
+                answer = AnswerFactory(
                     question_part=question_part,
                     text=text,
                     chosen_options=chosen_options,

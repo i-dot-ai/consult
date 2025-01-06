@@ -2,7 +2,7 @@ import pytest
 from django.conf import settings
 from webtest import Upload
 
-from consultation_analyser.factories import UserFactory
+from consultation_analyser.factories_old import UserFactory
 from tests.helpers import sign_in
 
 
