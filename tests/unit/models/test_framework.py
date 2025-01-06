@@ -16,8 +16,8 @@ def test_amend_framework():
         execution_run=theme_generation_run, question_part=question_part, user=None
     )
 
-    amended_framework = models.Framework.amend_framework(
-        user=user, change_reason="I wanted to change the themes.", precursor=framework_1
+    amended_framework = framework_1.amend_framework(
+        user=user, change_reason="I wanted to change the themes."
     )
     # ID, precursor, user, change reason should all be updated.
     assert amended_framework.id != framework_1.id

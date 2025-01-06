@@ -451,7 +451,7 @@ class ExecutionRun(UUIDPrimaryKeyModel, TimeStampedModel):
     # TODO - add metadata e.g. langfuse_id
     # Note, the execution run will be run on responses to a particular
     # question part - but this will be stored in the correspondong framework/mapping etc.
-    history = HistoricalRecords()  # TODO - is this needed?
+    history = HistoricalRecords()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
@@ -468,7 +468,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
     # When Framework is created - record reason it was changed & user that created it
     change_reason = models.CharField(max_length=256)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True) # None when AI generated
     precursor = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
@@ -482,8 +482,10 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         new_framework = Framework.objects.create(
             precursor=self, execution_run=None, user=user, change_reason=change_reason
         )
+        print(self._meta.fields)
         for field in self._meta.fields:
             if field.name not in ["id", "precursor", "execution_run", "user", "change_reason"]:
+                print(field.name)
                 setattr(new_framework, field.name, getattr(self, field.name))
         new_framework.save()
         return new_framework
@@ -505,6 +507,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         """
         if not self.precursor:
             return self.theme_set.all()
+
 
         previous_framework_themes = self.precursor.theme_set.values_list("id", flat=True)
         new_themes = self.themes_set.exclude(precursor__id__in=previous_framework_themes)
