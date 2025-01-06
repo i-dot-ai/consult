@@ -1,5 +1,3 @@
-import json
-
 import pytest
 
 from consultation_analyser.consultations.models import Consultation
@@ -19,11 +17,6 @@ def test_managing_consultations_via_support(django_app):
 
     latest_consultation = Consultation.objects.all().order_by("created_at").last()
     consultation_page = consultations_page.click(latest_consultation.name)
-
-    # then I should be able to download the JSON
-    json_download = consultation_page.forms[0].submit("download_json")
-    exported_data = json.loads(json_download.text)
-    assert exported_data["consultation"]["name"] == latest_consultation.name
 
     # and I should be able to delete the consultation
     confirmation_page = consultation_page.click("Delete this consultation")

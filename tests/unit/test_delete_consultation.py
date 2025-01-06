@@ -21,5 +21,3 @@ def test_delete_consultation():
     assert models.Section.objects.count() == 0
     assert models.Question.objects.count() == 0
     assert models.Answer.objects.count() == 0
-
-
