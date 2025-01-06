@@ -1,7 +1,7 @@
 import logging
 
 from django.contrib.auth.decorators import login_required
-from django.http import Http404, HttpRequest, HttpResponse
+from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
 from .. import models
@@ -35,25 +35,3 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     }
     # TODO - do something better if there is no question text, and get it from the question parts
     return render(request, "consultations/consultations/show.html", context)
-<<<<<<< HEAD
-=======
-
-
-# TODO - to be removed (separate PR?)
-@login_required
-def new(request: HttpRequest):
-    if not request.POST:
-        form = ConsultationUploadForm()
-    else:
-        logger.info("Upload received")
-        form = ConsultationUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            logger.info("Enqueueing upload_consultation job")
-            file_path = storage.save(
-                request.FILES["consultation_json"].name, request.FILES["consultation_json"]
-            )
-            async_upload_consultation.delay(file_path, request.user.id)
-            return render(request, "consultations/consultations/uploaded.html", {})
-
-    return render(request, "consultations/consultations/new.html", {"form": form})
->>>>>>> 93526a0 (Change consultation views to use new consultation model.)

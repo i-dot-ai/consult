@@ -468,7 +468,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
     # When Framework is created - record reason it was changed & user that created it
     change_reason = models.CharField(max_length=256)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True) # None when AI generated
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)  # None when AI generated
     precursor = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
@@ -507,7 +507,6 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         """
         if not self.precursor:
             return self.theme_set.all()
-
 
         previous_framework_themes = self.precursor.theme_set.values_list("id", flat=True)
         new_themes = self.themes_set.exclude(precursor__id__in=previous_framework_themes)

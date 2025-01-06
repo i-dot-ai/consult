@@ -1,7 +1,7 @@
 from django.urls import include, path
 from magic_link import urls as magic_link_urls
 
-from .views import consultations, pages, questions, responses, root, sessions
+from .views import answers, consultations, pages, questions, root, sessions
 
 urlpatterns = [
     # public urls
