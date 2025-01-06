@@ -45,6 +45,7 @@ class TimeStampedModel(models.Model):
 
 # To line ~350 - old models to be removed
 
+
 class ConsultationOld(UUIDPrimaryKeyModel, TimeStampedModel):
     name = models.CharField(max_length=256)
     slug = models.CharField(null=False, max_length=256)
@@ -378,7 +379,7 @@ class SlugFromTextModel(models.Model):
         abstract = True
 
 
-class Consultation2(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
+class Consultation(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
     users = models.ManyToManyField(User)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta, SlugFromTextModel.Meta):
@@ -390,9 +391,9 @@ class Consultation2(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
 # TODO - add QuestionGroup - to aggregate questions that should appear together
 
 
-class Question2(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
+class Question(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
     text = models.TextField()
-    consultation = models.ForeignKey(Consultation2, on_delete=models.CASCADE)
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     order = models.IntegerField(null=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta, SlugFromTextModel.Meta):
@@ -407,7 +408,7 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
         SINGLE_OPTION = "single_option"
         MULTIPLE_OPTIONS = "multiple_options"
 
-    question = models.ForeignKey(Question2, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
     text = models.TextField()
     type = models.CharField(max_length=16, choices=QuestionType.choices)
     options = models.JSONField(default=list)
@@ -421,7 +422,7 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
-    consultation = models.ForeignKey(Consultation2, on_delete=models.CASCADE)
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     # demographic data, or anything else that is at respondent level
     data = models.JSONField(default=dict)
 
@@ -429,7 +430,7 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
-class Answer2(UUIDPrimaryKeyModel, TimeStampedModel):
+class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
     respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
     text = models.TextField()
@@ -474,7 +475,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
-class Theme2(UUIDPrimaryKeyModel, TimeStampedModel):
+class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     # The new theme is assigned to a new framework with the change reason and user.
     # The theme that it has been changed from is the precursor.
     framework = models.ForeignKey(Framework, on_delete=models.CASCADE)
@@ -489,8 +490,8 @@ class Theme2(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
-    answer = models.ForeignKey(Answer2, on_delete=models.CASCADE)
-    theme = models.ForeignKey(Theme2, on_delete=models.CASCADE)
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
     reason = models.TextField()
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
 
@@ -522,7 +523,7 @@ class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         DISAGREE = "Disagree"
         UNCLEAR = "Unclear"
 
-    answer = models.ForeignKey(Answer2, on_delete=models.CASCADE)
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
     position = models.CharField(max_length=16, choices=PositionType.choices)
 

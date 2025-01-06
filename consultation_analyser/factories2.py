@@ -21,15 +21,14 @@ class UserFactory(DjangoModelFactory):
 
 class Consultation2Factory(DjangoModelFactory):
     class Meta:
-        model = models.Consultation2
+        model = models.Consultation
 
     text = factory.LazyAttribute(lambda o: fake.sentence())
 
 
-
 class Question2Factory(DjangoModelFactory):
     class Meta:
-        model = models.Question2
+        model = models.Question
 
     text = factory.LazyAttribute(lambda o: fake.sentence())
     consultation = factory.SubFactory(Consultation2Factory)
@@ -55,7 +54,7 @@ class RespondentFactory(DjangoModelFactory):
 
 class Answer2Factory(DjangoModelFactory):
     class Meta:
-        model = models.Answer2
+        model = models.Answer
 
     question_part = factory.SubFactory(QuestionPartFactory)
     respondent = factory.SubFactory(RespondentFactory)
@@ -82,7 +81,7 @@ class FrameworkFactory(DjangoModelFactory):
 
 class Theme2Factory(DjangoModelFactory):
     class Meta:
-        model = models.Theme2
+        model = models.Theme
 
     framework = factory.SubFactory(FrameworkFactory)
     precursor = None  # TODO - add option for theme

@@ -22,7 +22,7 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 def create_dummy_consultation_from_yaml(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
-    consultation: Optional[models.Consultation2] = None,
+    consultation: Optional[models.Consultation] = None,
 ) -> Consultation2Factory:
     """
     Create consultation with question, question parts, answers and themes from yaml file.
