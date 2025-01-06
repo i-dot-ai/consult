@@ -1,6 +1,6 @@
 from django.urls import path
 
-from .views import consultations, pages, questions, responses, root, sessions
+from .views import answers, consultations, pages, questions, root, sessions
 
 urlpatterns = [
     # public urls

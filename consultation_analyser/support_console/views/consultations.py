@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from consultation_analyser.consultations import models
-from consultation_analyser.factories2 import create_dummy_consultation_from_yaml
+from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
 from consultation_analyser.hosting_environment import HostingEnvironment
 
 NO_SUMMARY_STR = "Unable to generate summary for this theme"

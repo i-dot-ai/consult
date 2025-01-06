@@ -6,7 +6,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("consultations", "0029_rename_new_models"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
