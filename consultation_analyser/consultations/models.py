@@ -474,6 +474,42 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
+    def amend_framework(self, **kwargs) -> "Framework":
+        """
+        Creates a new Framework object based on the existing framework.
+        This allows us to track history and changes of a framework.
+        """
+        new_framework = Framework.objects.create(precursor=self, execution_run=None)
+        for field in self._meta.fields:
+            if field.name not in ["id", "precursor", "execution_run"]:
+                if field.name in kwargs:
+                    setattr(new_framework, field.name, kwargs[field.name])
+                else:
+                    setattr(new_framework, field.name, getattr(self, field.name))
+        new_framework.save()
+        return new_framework
+
+    def get_themes_removed_from_previous_framework(self) -> models.QuerySet:
+        """
+        Get the themes that were removed from the previous framework.
+        """
+        if not self.precursor:
+            return self.theme_set.none()
+
+        themes_in_this_framework = self.theme_set.all()
+        themes_that_persisted = themes_in_this_framework.values_list("precursor__id", flat=True)
+        precursor_themes_removed = self.precursor.theme_set.exclude(id__in=themes_that_persisted)
+        return precursor_themes_removed
+
+        return self.theme_set.exclude(id__in=self.precursor.theme_set.values_list("id", flat=True))
+    def get_themes_added_from_previous_framework(self) -> models.QuerySet:
+        """ Get the themes that were added from the previous framework. """
+        if not self.precursor:
+            return self.theme_set.all()
+
+        return self.theme_set.exclude(id__in=self.precursor.theme_set.values_list("id", flat=True))
+
+
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     # The new theme is assigned to a new framework with the change reason and user.
@@ -487,6 +523,21 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
+
+    def amend_theme(self, new_framework: Framework, **kwargs) -> "Theme":
+        """
+        Creates a new Theme object based on the existing theme.
+        This allows us to track history and changes of a theme.
+        """
+        new_theme = Theme.objects.create(framework=new_framework, precursor=self)
+        for field in self._meta.fields:
+            if field.name not in ["id", "precursor", "framework"]:
+                if field.name in kwargs:
+                    setattr(new_theme, field.name, kwargs[field.name])
+                else:
+                    setattr(new_theme, field.name, getattr(self, field.name))
+        new_theme.save()
+        return new_theme
 
 
 class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
