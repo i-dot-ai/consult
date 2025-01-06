@@ -15,9 +15,9 @@ def index(
     question_slug: str,
 ):
     # For now, just display free text parts of the question
-    consultation = get_object_or_404(models.Consultation2, slug=consultation_slug)
+    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
 
-    question = models.Question2.objects.get(
+    question = models.Question.objects.get(
         slug=question_slug,
         consultation=consultation,
     )
@@ -32,10 +32,10 @@ def index(
         question=question, type=models.QuestionPart.QuestionType.FREE_TEXT
     ).first()
     if free_text_question_part:
-        free_text_answers = models.Answer2.objects.filter(question_part=free_text_question_part)
+        free_text_answers = models.Answer.objects.filter(question_part=free_text_question_part)
         total_responses = free_text_answers.count()
     else:
-        free_text_answers = models.Answer2.objects.none()
+        free_text_answers = models.Answer.objects.none()
         total_responses = 0
 
     # pagination

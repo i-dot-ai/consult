@@ -48,8 +48,8 @@ def show(
     consultation_slug: str,
     question_slug: str,
 ):
-    consultation = get_object_or_404(models.Consultation2, slug=consultation_slug)
-    question = get_object_or_404(models.Question2, slug=question_slug, consultation=consultation)
+    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+    question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
 
     question_parts = models.QuestionPart.objects.filter(question=question).order_by("order")
 
@@ -60,7 +60,7 @@ def show(
     # closed_question_parts = question_parts.filter(type__in=[models.QuestionPart.QuestionType.SINGLE_OPTION, models.QuestionPart.QuestionType.MULTIPLE_OPTIONS]).order_by("order")
 
     # Get counts
-    total_responses = models.Answer2.objects.filter(question_part=question_parts.first()).count()
+    total_responses = models.Answer.objects.filter(question_part=question_parts.first()).count()
 
     # Get latest themes for the free text part
     # TODO - order by count?
@@ -73,7 +73,7 @@ def show(
         )
         highest_theme_count = theme_counts[0]["count"]
         theme_counts_dict = {
-            models.Theme2.objects.get(id=theme_count["theme"]): theme_count["count"]
+            models.Theme.objects.get(id=theme_count["theme"]): theme_count["count"]
             for theme_count in theme_counts
         }
         print(theme_counts_dict)

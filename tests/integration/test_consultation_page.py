@@ -1,7 +1,7 @@
 import pytest
 
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
-from consultation_analyser.consultations.models import Question2
+from consultation_analyser.consultations.models import Question
 from consultation_analyser.factories2 import UserFactory
 from tests.helpers import sign_in
 
@@ -16,7 +16,7 @@ def test_consultation_page(django_app):
     sign_in(django_app, user.email)
 
     consultation_slug = consultation.slug
-    question = Question2.objects.filter(consultation=consultation).first()
+    question = Question.objects.filter(consultation=consultation).first()
     homepage = django_app.get(f"/consultations/{consultation_slug}/")
     question_page = homepage.click("Question summary", index=0)
 

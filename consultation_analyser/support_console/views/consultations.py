@@ -20,13 +20,13 @@ def index(request: HttpRequest) -> HttpResponse:
             messages.success(request, "A dummy consultation has been generated")
         except RuntimeError as error:
             messages.error(request, error.args[0])
-    consultations = models.Consultation2.objects.all()
+    consultations = models.Consultation.objects.all()
     context = {"consultations": consultations, "production_env": HostingEnvironment.is_production()}
     return render(request, "support_console/consultations/index.html", context=context)
 
 
 def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    consultation = models.Consultation2.objects.get(id=consultation_id)
+    consultation = models.Consultation.objects.get(id=consultation_id)
     context = {
         "consultation": consultation,
     }
