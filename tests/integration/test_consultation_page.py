@@ -2,7 +2,7 @@ import pytest
 
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
 from consultation_analyser.consultations.models import Question
-from consultation_analyser.factories2 import UserFactory
+from consultation_analyser.factories import UserFactory
 from tests.helpers import sign_in
 
 
@@ -12,7 +12,6 @@ def test_consultation_page(django_app):
     consultation = create_dummy_consultation_from_yaml()
     consultation.users.add(user)
 
-    print(f"type: {type(django_app)}")
     sign_in(django_app, user.email)
 
     consultation_slug = consultation.slug

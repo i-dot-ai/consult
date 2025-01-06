@@ -1,7 +1,7 @@
 import pytest
 from django.urls import reverse
 
-from consultation_analyser import factories2
+from consultation_analyser import factories
 from consultation_analyser.consultations.urls import urlpatterns
 
 PUBLIC_URL_NAMES = [
@@ -39,7 +39,7 @@ def test_access_generic_consultation_urls(client):
         response = client.get(url)
         assert response.status_code == 302
         # Any logged in user should be able to access pages
-        user = factories2.UserFactory()
+        user = factories.UserFactory()
         client.force_login(user)
         response = client.get(url)
         assert response.status_code == 200
@@ -47,7 +47,7 @@ def test_access_generic_consultation_urls(client):
 
 
 def set_up_consultation(user):
-    question = factories2.Question2Factory()
+    question = factories.QuestionFactory()
     consultation = question.consultation
     consultation.users.add(user)
     consultation.save()
@@ -87,8 +87,8 @@ def test_consultations_urls_login_required(client):
         (2) add it as a special case to be excluded and write a separate test.
     """
 
-    user = factories2.UserFactory()
-    non_consultation_user = factories2.UserFactory()
+    user = factories.UserFactory()
+    non_consultation_user = factories.UserFactory()
     possible_args = set_up_consultation(user)
 
     # Get all URLs that haven't explicitly been excluded.

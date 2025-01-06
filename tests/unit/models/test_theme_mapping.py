@@ -1,12 +1,12 @@
 import pytest
 
 from consultation_analyser.consultations import models
-from consultation_analyser.factories2 import (
-    Answer2Factory,
+from consultation_analyser.factories import (
+    AnswerFactory,
     ExecutionRunFactory,
     FrameworkFactory,
     QuestionPartFactory,
-    Theme2Factory,
+    ThemeFactory,
     ThemeMappingFactory,
 )
 
@@ -14,17 +14,17 @@ from consultation_analyser.factories2 import (
 @pytest.mark.django_db
 def test_get_latest_theme_mappings_for_question_part_returns_latest_mappings():
     question_part = QuestionPartFactory()
-    answer = Answer2Factory(question_part=question_part)
+    answer = AnswerFactory(question_part=question_part)
 
     # First theme mapping execution run
     first_framework = FrameworkFactory(question_part=question_part)
-    theme1 = Theme2Factory(framework=first_framework)
+    theme1 = ThemeFactory(framework=first_framework)
     first_execution_run = ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
     ThemeMappingFactory(answer=answer, theme=theme1, execution_run=first_execution_run)
     # Second theme mapping execution run
     second_framework = FrameworkFactory(question_part=question_part)
-    theme2 = Theme2Factory(framework=second_framework, name="theme 2")
-    theme3 = Theme2Factory(framework=second_framework, name="theme 3")
+    theme2 = ThemeFactory(framework=second_framework, name="theme 2")
+    theme3 = ThemeFactory(framework=second_framework, name="theme 3")
     second_execution_run = ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
     ThemeMappingFactory(answer=answer, theme=theme2, execution_run=second_execution_run)
     ThemeMappingFactory(answer=answer, theme=theme3, execution_run=second_execution_run)

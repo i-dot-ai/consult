@@ -3,11 +3,11 @@ import json
 
 import pytest
 
-from consultation_analyser import factories
+from consultation_analyser import factories_old
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.download_consultation import consultation_to_json
 from consultation_analyser.consultations.upload_consultation import upload_consultation
-from consultation_analyser.factories import ConsultationBuilder, UserFactory
+from consultation_analyser.factories_old import ConsultationBuilder, UserFactory
 
 
 @pytest.mark.django_db
@@ -56,10 +56,10 @@ def test_consultation_to_json(django_app):
 @pytest.mark.django_db
 def test_consultation_to_json_processing_runs(django_app):
     # Set up 2 processing runs for a consultation
-    consultation = factories.ConsultationWithThemesFactory()
+    consultation = factories_old.ConsultationWithThemesFactory()
     first_processing_run = models.ProcessingRun.objects.all().order_by("created_at").first()
-    second_processing_run = factories.ProcessingRunFactory(consultation=consultation)
-    made_up_theme = factories.ThemeFactory(
+    second_processing_run = factories_old.ProcessingRunFactory(consultation=consultation)
+    made_up_theme = factories_old.ThemeFactory(
         processing_run=second_processing_run, short_description="This is my new theme"
     )
     question = models.QuestionOld.objects.filter(
