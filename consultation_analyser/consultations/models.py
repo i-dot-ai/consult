@@ -468,31 +468,28 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
     # When Framework is created - record reason it was changed & user that created it
     change_reason = models.CharField(max_length=256)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
     precursor = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    def amend_framework(self, **kwargs) -> "Framework":
+    def amend_framework(self, user: User, change_reason: str) -> "Framework":
         """
         Creates a new Framework object based on the existing framework.
         This allows us to track history and changes of a framework.
         """
-        new_framework = Framework.objects.create(precursor=self, execution_run=None)
+        new_framework = Framework.objects.create(
+            precursor=self, execution_run=None, user=user, change_reason=change_reason
+        )
         for field in self._meta.fields:
-            if field.name not in ["id", "precursor", "execution_run"]:
-                if field.name in kwargs:
-                    setattr(new_framework, field.name, kwargs[field.name])
-                else:
-                    setattr(new_framework, field.name, getattr(self, field.name))
+            if field.name not in ["id", "precursor", "execution_run", "user", "change_reason"]:
+                setattr(new_framework, field.name, getattr(self, field.name))
         new_framework.save()
         return new_framework
 
     def get_themes_removed_from_previous_framework(self) -> models.QuerySet:
-        """
-        Get the themes that were removed from the previous framework.
-        """
+        """Themes removed from the previous framework i.e. no longer exist in any format."""
         if not self.precursor:
             return self.theme_set.none()
 
@@ -501,14 +498,17 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         precursor_themes_removed = self.precursor.theme_set.exclude(id__in=themes_that_persisted)
         return precursor_themes_removed
 
-        return self.theme_set.exclude(id__in=self.precursor.theme_set.values_list("id", flat=True))
-    def get_themes_added_from_previous_framework(self) -> models.QuerySet:
-        """ Get the themes that were added from the previous framework. """
+    def get_themes_added_to_previous_framework(self) -> models.QuerySet:
+        """
+        Themes that were added in this framework, and didn't exist in
+        the previous framework.
+        """
         if not self.precursor:
             return self.theme_set.all()
 
-        return self.theme_set.exclude(id__in=self.precursor.theme_set.values_list("id", flat=True))
-
+        previous_framework_themes = self.precursor.theme_set.values_list("id", flat=True)
+        new_themes = self.themes_set.exclude(precursor__id__in=previous_framework_themes)
+        return new_themes
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
