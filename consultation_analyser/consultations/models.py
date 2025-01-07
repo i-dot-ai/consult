@@ -172,7 +172,11 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         You will have to add themes manually.
         """
         new_framework = Framework.objects.create(
-            execution_run=None, question_part=self.question_part, user=user, change_reason=change_reason, precursor=self,
+            execution_run=None,
+            question_part=self.question_part,
+            user=user,
+            change_reason=change_reason,
+            precursor=self,
         )
         # Only have execution_run when we AI generate framework
         return new_framework
@@ -181,20 +185,12 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         """Themes removed from the previous framework i.e. no longer exist in any format."""
         if not self.precursor:
             return self.theme_set.none()
-        print("===========")
         themes_in_this_framework = self.theme_set.all()
-        print("themes in this framework")
-        print(themes_in_this_framework)
-
-        precursors_themes_that_persisted = themes_in_this_framework.values_list("precursor__id", flat=True)
-        print("themes that persisted precursors ids")
-        print(precursors_themes_that_persisted)
-        persisted_ids = [id for id in precursors_themes_that_persisted if id] # remove None
-
+        precursors_themes_that_persisted = themes_in_this_framework.values_list(
+            "precursor__id", flat=True
+        )
+        persisted_ids = [id for id in precursors_themes_that_persisted if id]  # remove None
         precursor_themes_removed = self.precursor.theme_set.exclude(id__in=persisted_ids).distinct()
-        print("precursor themes removed")
-        print(precursor_themes_removed)
-
         return precursor_themes_removed
 
     def get_themes_added_to_previous_framework(self) -> models.QuerySet:
