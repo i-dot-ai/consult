@@ -249,6 +249,9 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
+    # When changing the mapping for an answer, don't change the answer
+    # change the theme.
+    # TODO - how to handle this?
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
     reason = models.TextField()
@@ -263,6 +266,8 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     def get_latest_theme_mappings_for_question_part(part: QuestionPart) -> models.QuerySet:
         """
         Get the set of the theme mappings corresponding to the latest execution run.
+        The latest will include all changes that have been made manually to mapping
+        (changes stored in history table).
         """
         theme_mappings_for_question_part = ThemeMapping.objects.filter(answer__question_part=part)
         execution_runs = ExecutionRun.objects.filter(
