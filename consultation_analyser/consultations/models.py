@@ -171,14 +171,9 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         This allows us to track history and changes of a framework.
         """
         new_framework = Framework.objects.create(
-            precursor=self, execution_run=None, user=user, change_reason=change_reason
+            execution_run=None, question_part=self.question_part, user=user, change_reason=change_reason, precursor=self,
         )
-        print(self._meta.fields)
-        for field in self._meta.fields:
-            if field.name not in ["id", "precursor", "execution_run", "user", "change_reason"]:
-                print(field.name)
-                setattr(new_framework, field.name, getattr(self, field.name))
-        new_framework.save()
+        # Only have execution_run when we AI generate framework
         return new_framework
 
     def get_themes_removed_from_previous_framework(self) -> models.QuerySet:
@@ -223,13 +218,13 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
         This allows us to track history and changes of a theme.
         """
         new_theme = Theme.objects.create(framework=new_framework, precursor=self)
-        for field in self._meta.fields:
-            if field.name not in ["id", "precursor", "framework"]:
-                if field.name in kwargs:
-                    setattr(new_theme, field.name, kwargs[field.name])
-                else:
-                    setattr(new_theme, field.name, getattr(self, field.name))
-        new_theme.save()
+        for field in self._meta.get_fields():
+            field_name = field.name
+            if field_name not in ["id", "precursor", "framework"]:
+                # Get updated value if exists, else use value from existing theme.
+                value = kwargs.get(field_name, getattr(self, field_name))
+                setattr(new_theme, field.name, value)
+                new_theme.save()
         return new_theme
 
 
