@@ -97,12 +97,3 @@ class ThemeMappingFactory(DjangoModelFactory):
     theme = factory.SubFactory(ThemeFactory)
     reason = factory.LazyAttribute(lambda o: fake.sentence())
     execution_run = factory.SubFactory(ExecutionRunFactory)
-
-
-class SentimentMappingFactory(DjangoModelFactory):
-    class Meta:
-        model = models.SentimentMapping
-
-    answer = factory.SubFactory(AnswerFactory)
-    execution_run = factory.SubFactory(ExecutionRunFactory)
-    position = factory.Iterator(models.SentimentMapping.PositionType.values)

@@ -12,7 +12,6 @@ from consultation_analyser.factories import (
     QuestionFactory,
     QuestionPartFactory,
     RespondentFactory,
-    SentimentMappingFactory,
     ThemeFactory,
     ThemeMappingFactory,
 )
@@ -61,10 +60,7 @@ def create_dummy_consultation_from_yaml(
 
             # Get themes if free_text
             if question_part_type == models.QuestionPart.QuestionType.FREE_TEXT:
-                # Simulate execution runs for each question to generate sentiment, themes, theme mapping
-                sentiment_run = ExecutionRunFactory(
-                    type=models.ExecutionRun.TaskType.SENTIMENT_ANALYSIS
-                )
+                # Simulate execution runs for each question to generate themes, theme mapping
                 theme_generation_run = ExecutionRunFactory(
                     type=models.ExecutionRun.TaskType.THEME_GENERATION
                 )
@@ -117,9 +113,5 @@ def create_dummy_consultation_from_yaml(
                         ThemeMappingFactory(
                             answer=answer, theme=theme, execution_run=theme_mapping_run
                         )
-                    sentiment = random.choice(models.SentimentMapping.PositionType.values)
-                    SentimentMappingFactory(
-                        answer=answer, execution_run=sentiment_run, position=sentiment
-                    )
 
     return consultation

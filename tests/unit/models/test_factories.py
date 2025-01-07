@@ -20,4 +20,3 @@ def test_factories():
     factories.FrameworkFactory()
     factories.ThemeFactory()
     factories.ThemeMappingFactory()
-    factories.SentimentMappingFactory()
