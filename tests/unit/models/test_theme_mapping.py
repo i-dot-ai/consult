@@ -1,7 +1,6 @@
 import pytest
 
 from consultation_analyser.consultations import models
-from django.contrib.auth import get_user_model
 from consultation_analyser.factories import (
     AnswerFactory,
     ExecutionRunFactory,
@@ -67,4 +66,3 @@ def test_get_history_of_changes_to_answer():
 
     # Check current status i.e. latest theme mapping
     assert theme_mapping.theme == theme3
-
