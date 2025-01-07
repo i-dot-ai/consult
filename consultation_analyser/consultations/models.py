@@ -222,7 +222,16 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     def amend_theme(self, new_framework: Framework, **kwargs) -> "Theme":
         """
         Creates a new Theme object based on the existing theme.
-        This allows us to track history and changes of a theme.
+        Allows us to track history and changes of a theme.
+
+        Args:
+            self: The existing theme that we want to make changes to.
+            new_framework: The new framework that the new theme will be assigned to.
+                Should be based on the framework of the existing theme.
+            **kwargs: Update the name, description etc.
+
+        Returns:
+            A new theme based on the existing theme, changed according to kwargs.
         """
         if self.framework != new_framework.precursor:
             raise ValueError(
