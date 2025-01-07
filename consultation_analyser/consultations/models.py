@@ -250,7 +250,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     # When changing the mapping for an answer, don't change the answer
-    # change the theme.
+    # change the theme.
     # TODO - how to handle this?
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
