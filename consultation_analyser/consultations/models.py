@@ -224,12 +224,16 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
         Creates a new Theme object based on the existing theme.
         This allows us to track history and changes of a theme.
         """
+        if self.framework != new_framework.precursor:
+            raise ValueError(
+                "Framework for new theme must be based on the framework for the existing theme."
+            )
         new_theme = Theme.objects.create(framework=new_framework, precursor=self)
-        for field in self._meta.get_fields():
-            field_name = field.name
-            if field_name not in ["id", "precursor", "framework"]:
+        for field in self._meta.get_fields(include_parents=False):
+            # exclude e.g. 'framework'
+            if field.name not in ["id", "precursor", "framework"] and not field.one_to_many:
                 # Get updated value if exists, else use value from existing theme.
-                value = kwargs.get(field_name, getattr(self, field_name))
+                value = kwargs.get(field.name, getattr(self, field.name))
                 setattr(new_theme, field.name, value)
                 new_theme.save()
         return new_theme
