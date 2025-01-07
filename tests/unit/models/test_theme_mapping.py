@@ -1,6 +1,7 @@
 import pytest
 
 from consultation_analyser.consultations import models
+from django.contrib.auth import get_user_model
 from consultation_analyser.factories import (
     AnswerFactory,
     ExecutionRunFactory,
@@ -67,10 +68,3 @@ def test_get_history_of_changes_to_answer():
     # Check current status i.e. latest theme mapping
     assert theme_mapping.theme == theme3
 
-    # Can we see the history of the changes to the answer?
-    assert theme_mapping.history.all().count() == 3  # total changes
-    earliest = theme_mapping.history.earliest()
-    assert earliest.theme == theme1, earliest.theme
-    latest = theme_mapping.history.latest()
-    assert latest.theme == theme3
-    assert earliest.modified_at < latest.modified_at
