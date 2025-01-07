@@ -67,3 +67,21 @@ def test_get_themes_removed_from_previous_framework():
     removed_themes = framework_2b.get_themes_removed_from_previous_framework()
     assert len(removed_themes) == 2
     assert set(removed_themes.values_list("name", flat=True)) == {"X", "Z"}
+
+
+@pytest.mark.django_db
+def test_get_themes_added_from_previous_framework():
+    framework_1, framework_2a, framework_2b = set_up_frameworks()
+    theme_x = models.Theme.objects.get(name="X")
+    theme_w = models.Theme.objects.get(name="W")
+
+    themes = framework_1.get_themes_added_to_previous_framework()
+    assert len(themes) == 3
+    assert theme_x in themes
+
+    themes = framework_2a.get_themes_added_to_previous_framework()
+    assert len(themes) == 0
+
+    themes = framework_2b.get_themes_added_to_previous_framework()
+    assert len(themes) == 1
+    assert theme_w in themes
