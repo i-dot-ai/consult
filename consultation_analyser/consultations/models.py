@@ -202,7 +202,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
             return self.theme_set.all()
 
         previous_framework_themes = self.precursor.theme_set.values_list("id", flat=True)
-        new_themes = self.themes_set.exclude(precursor__id__in=previous_framework_themes)
+        new_themes = self.theme_set.exclude(precursor__id__in=previous_framework_themes)
         return new_themes
 
 
