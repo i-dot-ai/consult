@@ -54,10 +54,7 @@ make dev_environment
 
 This will set up dev and test databases with dummy data. See the definition of that make task for the various steps.
 
-```
-make dev_admin_user
-```
-This will set up the admin account to dev environment.
+It will also set up the admin account to dev environment.
 
 You will have an staff user (i.e. one that can access the admin) created with the username `email@example.com` and the password `admin`.
 

@@ -170,7 +170,7 @@ frontend/django_extensions
 # Other
 .env
 .DS_Store
-
+.vscode
 
 # Local .terraform directories
 **/.terraform/*
