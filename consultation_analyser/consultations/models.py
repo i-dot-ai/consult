@@ -263,17 +263,4 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         return latest_mappings
 
 
-class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
-    class PositionType(models.TextChoices):
-        AGREE = "Agree"
-        DISAGREE = "Disagree"
-        UNCLEAR = "Unclear"
-
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
-    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
-    position = models.CharField(max_length=16, choices=PositionType.choices)
-
-    history = HistoricalRecords()
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+# TODO - add SentimentMapping as needed
