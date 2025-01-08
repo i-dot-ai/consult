@@ -11,9 +11,6 @@ updates:
         update-types:
           - "minor"
           - "patch"
-    ignore:
-      # Don't update as doesn't work on older Macs
-      - dependency-name: "torch"
 
   - package-ecosystem: "npm"
     directory: "/"
