@@ -79,9 +79,6 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
         ]
 
 
-# TODO - add QuestionGroup - to aggregate questions that should appear together
-
-
 class Question(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
     text = models.TextField()
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
@@ -108,8 +105,6 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-
-# TODO - add ExpandedQuestionPart
 
 
 class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -251,7 +246,6 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
 class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     # When changing the mapping for an answer, don't change the answer
     # change the theme.
-    # TODO - how to handle this?
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
     reason = models.TextField()
@@ -281,4 +275,3 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         return latest_mappings
 
 
-# TODO - add SentimentMapping as needed
