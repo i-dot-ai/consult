@@ -13,4 +13,4 @@ def test_nav_links(django_app):
     assert "data sharing agreement" in data_sharing_page
 
     get_involved_page = data_sharing_page.click("Get involved", index=0)
-    assert "register your interest" in get_involved_page
+    assert "If you would like to take part" in get_involved_page
