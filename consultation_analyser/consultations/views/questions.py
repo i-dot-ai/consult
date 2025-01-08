@@ -23,13 +23,11 @@ def show(
     free_text_question_part = question_parts.filter(
         type=models.QuestionPart.QuestionType.FREE_TEXT
     ).first()
-    # closed_question_parts = question_parts.filter(type__in=[models.QuestionPart.QuestionType.SINGLE_OPTION, models.QuestionPart.QuestionType.MULTIPLE_OPTIONS]).order_by("order")
 
     # Get counts
     total_responses = models.Answer.objects.filter(question_part=question_parts.first()).count()
 
     # Get latest themes for the free text part
-    # TODO - order by count?
     if free_text_question_part:
         latest_theme_mappings = models.ThemeMapping.get_latest_theme_mappings_for_question_part(
             part=free_text_question_part
