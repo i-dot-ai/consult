@@ -17,6 +17,6 @@ def test_factories():
     factories.RespondentFactory()
     factories.AnswerFactory()
     factories.ExecutionRunFactory()
-    factories.FrameworkFactory()
     factories.ThemeFactory()
     factories.ThemeMappingFactory()
+    factories.InitialFrameworkFactory()
