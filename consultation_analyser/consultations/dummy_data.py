@@ -46,10 +46,6 @@ def create_dummy_consultation_from_yaml(
             consultation=consultation,
         )
         parts = question_data["parts"]
-        print("=====================================")
-        print("created question")
-        print(question.text)
-        print(f"num consultations: {models.Consultation.objects.count()}")
 
         # Each question part is considered separately
         for part in parts:
@@ -61,27 +57,18 @@ def create_dummy_consultation_from_yaml(
                 options=part.get("options", []),
                 order=part["order"],
             )
-            print("created question part")
-            print(question_part.text)
-            print(f"num consultations: {models.Consultation.objects.count()}")
             # Get themes if free_text
             if question_part_type == models.QuestionPart.QuestionType.FREE_TEXT:
                 # Simulate execution runs for each question to generate themes, theme mapping
                 theme_generation_run = ExecutionRunFactory(
                     type=models.ExecutionRun.TaskType.THEME_GENERATION
                 )
-                print("created theme generation execution run")
-                print(f"num consultations: {models.Consultation.objects.count()}")
                 framework = InitialFrameworkFactory(
                     execution_run=theme_generation_run, question_part=question_part
                 )
-                print("created initial framework")
-                print(f"num consultations: {models.Consultation.objects.count()}")
                 theme_mapping_run = ExecutionRunFactory(
                     type=models.ExecutionRun.TaskType.THEME_MAPPING
                 )
-                print("created  execution run")
-                print(f"num consultations: {models.Consultation.objects.count()}")
                 themes = part.get("themes", [])
                 theme_objects = [
                     InitialThemeFactory(

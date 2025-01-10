@@ -204,7 +204,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
             change_reason=change_reason,
             precursor=self,
         )
-        super(Framework, self).save()
+        super(Framework, new_framework).save()
         # Only have execution_run when we AI generate framework
         return new_framework
 
@@ -276,9 +276,8 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
             raise ValueError(
                 "Framework for new theme must be based on the framework for the existing theme."
             )
-
         new_theme = Theme(
-            framework=new_framework, precursor=self, name=name, description=description
+            precursor=self, name=name, description=description, framework=new_framework,
         )
         super(Theme, new_theme).save()
         return new_theme

@@ -86,6 +86,8 @@ def test_create_descendant_framework():
     new_framework = initial_framework.create_descendant_framework(
         user=user, change_reason="I wanted to change the themes."
     )
+    assert new_framework.id
+    assert models.Framework.objects.filter(id=new_framework.id).exists()
     assert new_framework.question_part == initial_framework.question_part
     assert new_framework.id != initial_framework.id
     assert new_framework.precursor == initial_framework

@@ -1,44 +1,43 @@
-# TODO - need to fix these objects
+import pytest
 
-# def set_up_frameworks():
-#     question_part = factories.QuestionPartFactory(type=models.QuestionPart.QuestionType.FREE_TEXT)
-
-#     # Set up initial framework - replicate a run of the theme generation task.
-#     theme_generation_run = factories.ExecutionRunFactory(
-#         type=models.ExecutionRun.TaskType.THEME_GENERATION
-#     )
-#     framework_1 = factories.InitialFrameworkFactory(
-#         execution_run=theme_generation_run, question_part=question_part
-#     )
-#     factories.InitialThemeFactory(name="X", framework=framework_1)
-#     factories.InitialThemeFactory(name="Y", framework=framework_1)
-#     factories.InitialThemeFactory(name="Z", framework=framework_1)
-
-#     # Create a new framework amending these themes
-#     framework_2 = framework_1.amend_framework(
-#         user=factories.UserFactory(), change_reason="I wanted to change the themes."
-#     )
-#     return framework_1, framework_2
+from consultation_analyser.consultations.models import Theme
+from consultation_analyser.consultations import models
+from consultation_analyser.factories import InitialThemeFactory, DescendantThemeFactory, InitialFrameworkFactory, DescendantFrameworkFactory, QuestionPartFactory
 
 
-# @pytest.mark.django_db
-# def test_amend_theme():
-#     framework_1, framework_2 = set_up_frameworks()
-#     theme_x = models.Theme.objects.get(name="X", framework=framework_1)
-#     models.Theme.objects.get(name="Y", framework=framework_1)
+@pytest.mark.django_db
+def test_cant_use_save():
+    theme = InitialThemeFactory()
+    with pytest.raises(ValueError) as excinfo:
+        theme.save()
+    assert "Direct save() method is not allowed" in str(excinfo.value)
 
-#     with pytest.raises(ValueError):
-#         theme_x.amend_theme(
-#             new_framework=factories.InitialFrameworkFactory(),
-#             name="change X",
-#             description="longer description",
-#         )
 
-#     updated_x = theme_x.amend_theme(
-#         new_framework=framework_2, name="change X", description="longer description"
-#     )
-#     assert updated_x.id != theme_x.id
-#     assert updated_x.name == "change X"
-#     assert updated_x.description == "longer description"
-#     assert updated_x.framework == framework_2
-#     assert updated_x.precursor == theme_x
+@pytest.mark.django_db
+def test_create_initial_theme():
+    framework = InitialFrameworkFactory()
+    name = "Test Theme"
+    description = "Test Description"
+    new_theme = Theme.create_initial_theme(framework=framework, name=name, description=description)
+    assert new_theme.framework == framework
+    assert not new_theme.precursor
+
+
+@pytest.mark.django_db
+def test_create_descendant_theme():
+    question_part = QuestionPartFactory()
+    initial_framework = InitialFrameworkFactory(question_part=question_part)
+    initial_theme = InitialThemeFactory(framework=initial_framework)
+    descendant_framework = DescendantFrameworkFactory(precursor=initial_framework)
+    random_framework = InitialFrameworkFactory(question_part=question_part)
+
+    # The descendant theme must be based on a descendant framework
+    with pytest.raises(ValueError) as excinfo:
+        initial_theme.create_descendant_theme(name="name", description="description", new_framework=random_framework)
+    assert "Framework for new theme must be based on the framework for the existing theme." in str(excinfo.value)
+
+    new_theme = initial_theme.create_descendant_theme(new_framework=descendant_framework, name="name", description="description")
+    assert new_theme.framework == descendant_framework
+    assert new_theme.precursor == initial_theme
+    assert new_theme.name == "name"
+    assert new_theme.description == "description"
