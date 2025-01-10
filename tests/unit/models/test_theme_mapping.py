@@ -5,8 +5,8 @@ from consultation_analyser.factories import (
     AnswerFactory,
     ExecutionRunFactory,
     InitialFrameworkFactory,
+    InitialThemeFactory,
     QuestionPartFactory,
-    ThemeFactory,
     ThemeMappingFactory,
 )
 
@@ -18,14 +18,14 @@ def test_get_latest_theme_mappings_for_question_part_returns_latest_mappings():
 
     # First theme mapping execution run
     first_framework = InitialFrameworkFactory(question_part=question_part)
-    theme1 = ThemeFactory(framework=first_framework)
+    theme1 = InitialThemeFactory(framework=first_framework)
     first_execution_run = ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
     ThemeMappingFactory(answer=answer, theme=theme1, execution_run=first_execution_run)
 
     # Second theme mapping execution run
     second_framework = InitialFrameworkFactory(question_part=question_part)
-    theme2 = ThemeFactory(framework=second_framework, name="theme 2")
-    theme3 = ThemeFactory(framework=second_framework, name="theme 3")
+    theme2 = InitialThemeFactory(framework=second_framework, name="theme 2")
+    theme3 = InitialThemeFactory(framework=second_framework, name="theme 3")
     second_execution_run = ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
     ThemeMappingFactory(answer=answer, theme=theme2, execution_run=second_execution_run)
     ThemeMappingFactory(answer=answer, theme=theme3, execution_run=second_execution_run)
@@ -49,9 +49,9 @@ def test_get_history_of_changes_to_answer():
     question_part = QuestionPartFactory()
     answer1 = AnswerFactory(question_part=question_part)
     framework = InitialFrameworkFactory(question_part=question_part)
-    theme1 = ThemeFactory(framework=framework, name="theme 1")
-    theme2 = ThemeFactory(framework=framework, name="theme 2")
-    theme3 = ThemeFactory(framework=framework, name="theme 3")
+    theme1 = InitialThemeFactory(framework=framework, name="theme 1")
+    theme2 = InitialThemeFactory(framework=framework, name="theme 2")
+    theme3 = InitialThemeFactory(framework=framework, name="theme 3")
 
     # Now map a theme to the Answer
     theme_mapping = ThemeMappingFactory(

@@ -10,9 +10,9 @@
 #     framework_1 = factories.InitialFrameworkFactory(
 #         execution_run=theme_generation_run, question_part=question_part
 #     )
-#     factories.ThemeFactory(name="X", framework=framework_1)
-#     factories.ThemeFactory(name="Y", framework=framework_1)
-#     factories.ThemeFactory(name="Z", framework=framework_1)
+#     factories.InitialThemeFactory(name="X", framework=framework_1)
+#     factories.InitialThemeFactory(name="Y", framework=framework_1)
+#     factories.InitialThemeFactory(name="Z", framework=framework_1)
 
 #     # Create a new framework amending these themes
 #     framework_2 = framework_1.amend_framework(

@@ -175,7 +175,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         raise ValueError("Direct save() method is not allowed for Frameworks - use custom methods.")
 
     @classmethod
-    def create_inital_framework(
+    def create_initial_framework(
         cls, execution_run: ExecutionRun, question_part: QuestionPart
     ) -> "Framework":
         """Create initial framework for a question part."""
@@ -246,7 +246,19 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    def amend_theme(self, new_framework: Framework, **kwargs) -> "Theme":
+    def save(self, *args, **kwargs):
+        raise ValueError("Direct save() method is not allowed for Themes - use custom methods.")
+
+    @classmethod
+    def create_initial_theme(cls, framework: Framework, name: str, description: str) -> "Theme":
+        """Create initial theme for a framework."""
+        new_theme = Theme(framework=framework, name=name, description=description, precursor=None)
+        super(Theme, new_theme).save()
+        return new_theme
+
+    def create_descendant_theme(
+        self, new_framework: Framework, name: str, description: str
+    ) -> "Theme":
         """
         Creates a new Theme object based on the existing theme.
         Allows us to track history and changes of a theme.
@@ -264,14 +276,11 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
             raise ValueError(
                 "Framework for new theme must be based on the framework for the existing theme."
             )
-        new_theme = Theme.objects.create(framework=new_framework, precursor=self)
-        for field in self._meta.get_fields(include_parents=False):
-            # exclude e.g. 'framework'
-            if field.name not in ["id", "precursor", "framework"] and not field.one_to_many:
-                # Get updated value if exists, else use value from existing theme.
-                value = kwargs.get(field.name, getattr(self, field.name))
-                setattr(new_theme, field.name, value)
-                new_theme.save()
+
+        new_theme = Theme(
+            framework=new_framework, precursor=self, name=name, description=description
+        )
+        super(Theme, new_theme).save()
         return new_theme
 
 
