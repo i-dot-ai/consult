@@ -86,7 +86,7 @@ class InitialFrameworkFactory(DjangoModelFactory):
         )
 
 
-class DecendantFrameworkFactory(DjangoModelFactory):
+class DescendantFrameworkFactory(DjangoModelFactory):
     # Creates a framework that is is derived from another framework
     class Meta:
         model = models.Framework
@@ -126,7 +126,7 @@ class InitialThemeFactory(DjangoModelFactory):
         )
 
 
-class DecendantThemeFactory(DjangoModelFactory):
+class DescendantThemeFactory(DjangoModelFactory):
     class Meta:
         model = models.Theme
 
@@ -139,13 +139,13 @@ class DecendantThemeFactory(DjangoModelFactory):
         if not precursor:
             precursor = InitialThemeFactory()
         if not framework:
-            framework = DecendantFrameworkFactory()
+            framework = DescendantFrameworkFactory(precursor=precursor.framework)
         if not name:
             name = fake.sentence()
         if not description:
             description = fake.paragraph()
-        return precursor.create_decendant_theme(
-            precursor=precursor, framework=framework, name=name, description=description
+        return precursor.create_descendant_theme(
+            new_framework=framework, name=name, description=description
         )
 
 
