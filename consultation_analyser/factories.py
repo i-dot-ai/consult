@@ -75,8 +75,12 @@ class InitialFrameworkFactory(DjangoModelFactory):
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
-        execution_run = kwargs.get("execution_run", ExecutionRunFactory())
-        question_part = kwargs.get("question_part", QuestionPartFactory())
+        execution_run = kwargs.get("execution_run")
+        question_part = kwargs.get("question_part")
+        if not execution_run:
+            execution_run = ExecutionRunFactory()
+        if not question_part:
+            question_part = QuestionPartFactory()
         return model_class.create_inital_framework(
             execution_run=execution_run, question_part=question_part
         )
