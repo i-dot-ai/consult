@@ -81,19 +81,72 @@ class InitialFrameworkFactory(DjangoModelFactory):
             execution_run = ExecutionRunFactory()
         if not question_part:
             question_part = QuestionPartFactory()
-        return model_class.create_inital_framework(
+        return model_class.create_initial_framework(
             execution_run=execution_run, question_part=question_part
         )
 
 
-class ThemeFactory(DjangoModelFactory):
+class DecendantFrameworkFactory(DjangoModelFactory):
+    # Creates a framework that is is derived from another framework
+    class Meta:
+        model = models.Framework
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        precursor = kwargs.get("precursor")
+        user = kwargs.get("user")
+        change_reason = kwargs.get("change_reason")
+        if not precursor:
+            precursor = InitialFrameworkFactory()
+        if not user:
+            user = UserFactory()
+        if not change_reason:
+            change_reason = fake.sentence()
+        return precursor.create_descendant_framework(user=user, change_reason=change_reason)
+
+
+class InitialThemeFactory(DjangoModelFactory):
+    # Create an initial theme (which will have come from the theme generation task)
     class Meta:
         model = models.Theme
 
-    framework = factory.SubFactory(InitialFrameworkFactory)
-    precursor = None  # TODO - add option for theme
-    name = factory.LazyAttribute(lambda o: fake.sentence())
-    description = factory.LazyAttribute(lambda o: fake.paragraph())
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        framework = kwargs.get("framework")
+        name = kwargs.get("name")
+        description = kwargs.get("description")
+        if not framework:
+            framework = InitialFrameworkFactory()
+        if not name:
+            name = fake.sentence()
+        if not description:
+            description = fake.paragraph()
+        return model_class.create_initial_theme(
+            framework=framework, name=name, description=description
+        )
+
+
+class DecendantThemeFactory(DjangoModelFactory):
+    class Meta:
+        model = models.Theme
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        precursor = kwargs.get("precursor")
+        framework = kwargs.get("framework")
+        name = kwargs.get("name")
+        description = kwargs.get("description")
+        if not precursor:
+            precursor = InitialThemeFactory()
+        if not framework:
+            framework = DecendantFrameworkFactory()
+        if not name:
+            name = fake.sentence()
+        if not description:
+            description = fake.paragraph()
+        return precursor.create_decendant_theme(
+            precursor=precursor, framework=framework, name=name, description=description
+        )
 
 
 class ThemeMappingFactory(DjangoModelFactory):
@@ -101,6 +154,6 @@ class ThemeMappingFactory(DjangoModelFactory):
         model = models.ThemeMapping
 
     answer = factory.SubFactory(AnswerFactory)
-    theme = factory.SubFactory(ThemeFactory)
+    theme = factory.SubFactory(InitialThemeFactory)
     reason = factory.LazyAttribute(lambda o: fake.sentence())
     execution_run = factory.SubFactory(ExecutionRunFactory)

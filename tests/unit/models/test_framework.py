@@ -17,22 +17,22 @@ from consultation_analyser.consultations import models
 #     framework_1 = factories.InitialFrameworkFactory(
 #         execution_run=theme_generation_run, question_part=question_part
 #     )
-#     theme_x = factories.ThemeFactory(name="X", framework=framework_1)
-#     theme_y = factories.ThemeFactory(name="Y", framework=framework_1)
-#     factories.ThemeFactory(name="Z", framework=framework_1)
+#     theme_x = factories.InitialThemeFactory(name="X", framework=framework_1)
+#     theme_y = factories.InitialThemeFactory(name="Y", framework=framework_1)
+#     factories.InitialThemeFactory(name="Z", framework=framework_1)
 
 #     # Create a new framework amending these themes
 #     framework_2a = framework_1.amend_framework(
 #         user=user_1, change_reason="I wanted to change the themes."
 #     )
-#     factories.ThemeFactory(name="X2", framework=framework_2a, precursor=theme_x)
+#     factories.InitialThemeFactory(name="X2", framework=framework_2a, precursor=theme_x)
 
 #     # Create another new framework amending the initial themes
 #     framework_2b = framework_1.amend_framework(
 #         user=user_2, change_reason="I wanted to change the themes in a different way."
 #     )
-#     factories.ThemeFactory(name="Y2", framework=framework_2b, precursor=theme_y)
-#     factories.ThemeFactory(name="W", framework=framework_2b, precursor=None)
+#     factories.InitialThemeFactory(name="Y2", framework=framework_2b, precursor=theme_y)
+#     factories.InitialThemeFactory(name="W", framework=framework_2b, precursor=None)
 
 #     return framework_1, framework_2a, framework_2b
 
@@ -63,13 +63,12 @@ def test_cant_save():
 @pytest.mark.django_db
 def test_create_initial_framework():
     with pytest.raises(ValueError):
-        models.Framework.create_inital_framework(
+        models.Framework.create_initial_framework(
             execution_run=None, question_part=factories.QuestionPartFactory()
         )
-
     execution_run = factories.ExecutionRunFactory()
     question_part = factories.QuestionPartFactory()
-    framework = models.Framework.create_inital_framework(
+    framework = models.Framework.create_initial_framework(
         execution_run=execution_run, question_part=question_part
     )
     assert framework.id
@@ -84,14 +83,15 @@ def test_create_initial_framework():
 def test_create_descendant_framework():
     initial_framework = factories.InitialFrameworkFactory()
     user = factories.UserFactory()
-    new_framework = initial_framework.create_descendant_framework(user=user, change_reason="I wanted to change the themes.")
+    new_framework = initial_framework.create_descendant_framework(
+        user=user, change_reason="I wanted to change the themes."
+    )
     assert new_framework.question_part == initial_framework.question_part
     assert new_framework.id != initial_framework.id
     assert new_framework.precursor == initial_framework
     assert new_framework.user == user
     assert new_framework.change_reason == "I wanted to change the themes."
     assert not new_framework.execution_run
-
 
 
 # @pytest.mark.django_db

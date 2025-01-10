@@ -9,10 +9,10 @@ from consultation_analyser.factories import (
     ConsultationFactory,
     ExecutionRunFactory,
     InitialFrameworkFactory,
+    InitialThemeFactory,
     QuestionFactory,
     QuestionPartFactory,
     RespondentFactory,
-    ThemeFactory,
     ThemeMappingFactory,
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
@@ -84,7 +84,7 @@ def create_dummy_consultation_from_yaml(
                 print(f"num consultations: {models.Consultation.objects.count()}")
                 themes = part.get("themes", [])
                 theme_objects = [
-                    ThemeFactory(
+                    InitialThemeFactory(
                         framework=framework,
                         name=theme["name"],
                         description=theme["description"],
