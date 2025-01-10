@@ -80,6 +80,20 @@ def test_create_initial_framework():
     assert framework.question_part == question_part
 
 
+@pytest.mark.django_db
+def test_create_descendant_framework():
+    initial_framework = factories.InitialFrameworkFactory()
+    user = factories.UserFactory()
+    new_framework = initial_framework.create_descendant_framework(user=user, change_reason="I wanted to change the themes.")
+    assert new_framework.question_part == initial_framework.question_part
+    assert new_framework.id != initial_framework.id
+    assert new_framework.precursor == initial_framework
+    assert new_framework.user == user
+    assert new_framework.change_reason == "I wanted to change the themes."
+    assert not new_framework.execution_run
+
+
+
 # @pytest.mark.django_db
 # def test_get_themes_removed_from_previous_framework():
 #     framework_1, framework_2a, framework_2b = set_up_frameworks()

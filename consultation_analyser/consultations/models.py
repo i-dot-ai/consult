@@ -191,7 +191,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         super(Framework, new_framework).save()
         return new_framework
 
-    def amend_framework(self, user: User, change_reason: str) -> "Framework":
+    def create_descendant_framework(self, user: User, change_reason: str) -> "Framework":
         """
         Creates a new Framework object based on the existing framework.
         This allows us to track history and changes of a framework.
