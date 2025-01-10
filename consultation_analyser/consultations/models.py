@@ -70,6 +70,18 @@ class SlugFromTextModel(models.Model):
         abstract = True
 
 
+class ExampleModel(models.Model):
+    name = models.CharField(max_length=256)
+
+    def save(self, *args, **kwargs):
+        raise Exception(
+            "Direct save() method is not allowed for this model. Use a custom method instead."
+        )
+
+    class Meta:
+        abstract = True
+
+
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
     users = models.ManyToManyField(User)
 
@@ -104,7 +116,6 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
-
 
 
 class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -160,19 +171,40 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
+    def save(self, *args, **kwargs):
+        raise ValueError("Direct save() method is not allowed for Frameworks - use custom methods.")
+
+    @classmethod
+    def create_inital_framework(
+        cls, execution_run: ExecutionRun, question_part: QuestionPart
+    ) -> "Framework":
+        """Create initial framework for a question part."""
+        # We require an execution run for the initial framework
+        # user, change_reason, precursor are all None
+        if not execution_run:
+            raise ValueError("An initial Framework needs an execution run.")
+
+        new_framework = Framework(
+            execution_run=execution_run,
+            question_part=question_part,
+        )
+        super(Framework, new_framework).save()
+        return new_framework
+
     def amend_framework(self, user: User, change_reason: str) -> "Framework":
         """
         Creates a new Framework object based on the existing framework.
         This allows us to track history and changes of a framework.
-        You will have to add themes manually.
+        Add themes manually.
         """
-        new_framework = Framework.objects.create(
+        new_framework = Framework(
             execution_run=None,
             question_part=self.question_part,
             user=user,
             change_reason=change_reason,
             precursor=self,
         )
+        super(Framework, self).save()
         # Only have execution_run when we AI generate framework
         return new_framework
 
@@ -273,5 +305,3 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         else:
             latest_mappings = ThemeMapping.objects.none()
         return latest_mappings
-
-

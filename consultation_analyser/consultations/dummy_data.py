@@ -8,7 +8,7 @@ from consultation_analyser.factories import (
     AnswerFactory,
     ConsultationFactory,
     ExecutionRunFactory,
-    FrameworkFactory,
+    InitialFrameworkFactory,
     QuestionFactory,
     QuestionPartFactory,
     RespondentFactory,
@@ -64,14 +64,15 @@ def create_dummy_consultation_from_yaml(
                 theme_generation_run = ExecutionRunFactory(
                     type=models.ExecutionRun.TaskType.THEME_GENERATION
                 )
-                framework = FrameworkFactory(
+
+                framework = InitialFrameworkFactory(
                     execution_run=theme_generation_run, question_part=question_part
                 )
                 theme_mapping_run = ExecutionRunFactory(
                     type=models.ExecutionRun.TaskType.THEME_MAPPING
                 )
-                themes = part.get("themes", [])
 
+                themes = part.get("themes", [])
                 theme_objects = [
                     ThemeFactory(
                         framework=framework,

@@ -68,22 +68,25 @@ class ExecutionRunFactory(DjangoModelFactory):
     type = factory.Iterator(models.ExecutionRun.TaskType.values)
 
 
-class FrameworkFactory(DjangoModelFactory):
+class InitialFrameworkFactory(DjangoModelFactory):
+    # Creates an initial framework
     class Meta:
         model = models.Framework
 
-    execution_run = factory.SubFactory(ExecutionRunFactory)
-    question_part = factory.SubFactory(QuestionPartFactory)
-    change_reason = factory.LazyAttribute(lambda o: fake.sentence())
-    user = factory.SubFactory(UserFactory)
-    precursor = None  # TODO - add option for framework
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        execution_run = kwargs.get("execution_run", ExecutionRunFactory())
+        question_part = kwargs.get("question_part", QuestionPartFactory())
+        return model_class.create_inital_framework(
+            execution_run=execution_run, question_part=question_part
+        )
 
 
 class ThemeFactory(DjangoModelFactory):
     class Meta:
         model = models.Theme
 
-    framework = factory.SubFactory(FrameworkFactory)
+    framework = factory.SubFactory(InitialFrameworkFactory)
     precursor = None  # TODO - add option for theme
     name = factory.LazyAttribute(lambda o: fake.sentence())
     description = factory.LazyAttribute(lambda o: fake.paragraph())

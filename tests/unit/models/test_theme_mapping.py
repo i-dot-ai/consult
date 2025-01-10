@@ -4,7 +4,7 @@ from consultation_analyser.consultations import models
 from consultation_analyser.factories import (
     AnswerFactory,
     ExecutionRunFactory,
-    FrameworkFactory,
+    InitialFrameworkFactory,
     QuestionPartFactory,
     ThemeFactory,
     ThemeMappingFactory,
@@ -17,13 +17,13 @@ def test_get_latest_theme_mappings_for_question_part_returns_latest_mappings():
     answer = AnswerFactory(question_part=question_part)
 
     # First theme mapping execution run
-    first_framework = FrameworkFactory(question_part=question_part)
+    first_framework = InitialFrameworkFactory(question_part=question_part)
     theme1 = ThemeFactory(framework=first_framework)
     first_execution_run = ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
     ThemeMappingFactory(answer=answer, theme=theme1, execution_run=first_execution_run)
 
     # Second theme mapping execution run
-    second_framework = FrameworkFactory(question_part=question_part)
+    second_framework = InitialFrameworkFactory(question_part=question_part)
     theme2 = ThemeFactory(framework=second_framework, name="theme 2")
     theme3 = ThemeFactory(framework=second_framework, name="theme 3")
     second_execution_run = ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
@@ -48,7 +48,7 @@ def test_get_latest_theme_mappings_for_question_part_no_mappings():
 def test_get_history_of_changes_to_answer():
     question_part = QuestionPartFactory()
     answer1 = AnswerFactory(question_part=question_part)
-    framework = FrameworkFactory(question_part=question_part)
+    framework = InitialFrameworkFactory(question_part=question_part)
     theme1 = ThemeFactory(framework=framework, name="theme 1")
     theme2 = ThemeFactory(framework=framework, name="theme 2")
     theme3 = ThemeFactory(framework=framework, name="theme 3")

@@ -31,6 +31,12 @@ def test_the_tool_will_only_run_in_dev(environment):
 @pytest.mark.django_db
 def test_create_dummy_consultation_from_yaml():
     consultation = create_dummy_consultation_from_yaml(number_respondents=10)
+
+    for question_part in models.QuestionPart.objects.filter(
+        type=models.QuestionPart.QuestionType.FREE_TEXT
+    ):
+        assert models.Framework.objects.filter(question_part=question_part).count() == 1
+
     questions = models.Question.objects.filter(consultation=consultation)
     assert questions.count() == 5
     assert questions.filter(
