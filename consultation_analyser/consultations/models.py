@@ -70,17 +70,6 @@ class SlugFromTextModel(models.Model):
         abstract = True
 
 
-class ExampleModel(models.Model):
-    name = models.CharField(max_length=256)
-
-    def save(self, *args, **kwargs):
-        raise Exception(
-            "Direct save() method is not allowed for this model. Use a custom method instead."
-        )
-
-    class Meta:
-        abstract = True
-
 
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
     users = models.ManyToManyField(User)
