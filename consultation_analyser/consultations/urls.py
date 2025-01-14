@@ -1,5 +1,4 @@
-from django.urls import include, path
-from magic_link import urls as magic_link_urls
+from django.urls import path
 
 from .views import consultations, pages, questions, responses, root, sessions
 
@@ -41,5 +40,5 @@ urlpatterns = [
     # authentication
     path("sign-in/", sessions.new, name="sign_in"),
     path("sign-out/", sessions.destroy, name="sign_out"),
-    path("magic-link/", include(magic_link_urls), name="magic_link"),
+    path("magic-link/<uuid:token>/", sessions.MagicLinkView.as_view(), name="magic_link"),
 ]

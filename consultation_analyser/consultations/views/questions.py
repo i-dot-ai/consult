@@ -1,7 +1,6 @@
 from typing import Dict, List, Optional, Tuple
 
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
 from django.db.models import Count, Max, QuerySet
 from django.http import Http404, HttpRequest
 from django.shortcuts import get_object_or_404, render
@@ -43,7 +42,6 @@ def get_outliers_info(processing_run: models.ProcessingRun, question: models.Que
 
 
 @user_can_see_consultation
-@login_required
 def show(
     request: HttpRequest,
     consultation_slug: str,
