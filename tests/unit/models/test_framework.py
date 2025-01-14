@@ -60,11 +60,13 @@ def test_get_themes_removed_from_previous_framework():
         name="initial_theme_3", framework=initial_framework
     )
 
-    # Create subsequent framework, two themes removed
-    descendent_theme_1 = factories.DescendantThemeFactory(name="descendent_theme_1")
-    descendent_framework = descendent_theme_1.framework
-    print(descendent_framework.theme_set.all())
-
+    # Create subsequent framework, one theme persists
+    descendent_framework = initial_framework.create_descendant_framework(
+        user=factories.UserFactory(), change_reason="I wanted to change the themes."
+    )
+    initial_theme_1.create_descendant_theme(
+        new_framework=descendent_framework, name="descendant theme", description="descendant theme"
+    )
     themes_removed = descendent_framework.get_themes_removed_from_previous_framework()
     assert len(themes_removed) == 2
     assert initial_theme_2 in themes_removed
