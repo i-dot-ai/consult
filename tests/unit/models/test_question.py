@@ -12,6 +12,3 @@ def test_unique_question_number():
     assert question_1.number != question_2.number
     with pytest.raises(django.db.utils.IntegrityError):
         QuestionFactory(consultation=consultation, number=1)
-
-
-
