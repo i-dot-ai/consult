@@ -9,11 +9,15 @@ from consultation_analyser.factories import (
     ExecutionRunFactory,
     FreeTextAnswerFactory,
     FreeTextQuestionPartFactory,
+    SingleOptionQuestionPartFactory,
+    MultipleOptionQuestionPartFactory,
     InitialFrameworkFactory,
     InitialThemeFactory,
     QuestionFactory,
     RespondentFactory,
     ThemeMappingFactory,
+    SingleOptionAnswerFactory,
+    MultipleOptionAnswerFactory,
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
 
@@ -50,15 +54,14 @@ def create_dummy_consultation_from_yaml(
         # Each question part is considered separately
         for part in parts:
             question_part_type = part["type"]
-            question_part = FreeTextQuestionPartFactory(
-                question=question,
-                text=part["text"],
-                type=question_part_type,
-                options=part.get("options", []),
-                number=part["number"],
-            )
-            # Get themes if free_text
             if question_part_type == models.QuestionPart.QuestionType.FREE_TEXT:
+                question_part = FreeTextQuestionPartFactory(
+                    question=question,
+                    text=part["text"],
+                    type=question_part_type,
+                    number=part["number"],
+                )
+
                 # Simulate execution runs for each question to generate themes, theme mapping
                 theme_generation_run = ExecutionRunFactory(
                     type=models.ExecutionRun.TaskType.THEME_GENERATION
@@ -79,26 +82,50 @@ def create_dummy_consultation_from_yaml(
                     for theme in themes
                 ]
 
+            elif question_part_type == models.QuestionPart.QuestionType.SINGLE_OPTION:
+                question_part = SingleOptionQuestionPartFactory(
+                    question=question,
+                    text=part["text"],
+                    type=question_part_type,
+                    options=part.get("options"),
+                    number=part["number"],
+                )
+            else:
+                question_part = MultipleOptionQuestionPartFactory(
+                    question=question,
+                    text=part["text"],
+                    type=question_part_type,
+                    options=part.get("options"),
+                    number=part["number"],
+                )
+
             # Now populate the answers and corresponding themes etc. for these question parts
             for respondent in respondents:
-                if question_part_type == models.QuestionPart.QuestionType.SINGLE_OPTION:
+                if question_part_type == models.QuestionPart.QuestionType.FREE_TEXT:
+                    text = random.choice(part.get("free_text_answers", [""]))
+                    answer = FreeTextAnswerFactory(
+                        question_part=question_part, text=text, respondent=respondent
+                    )
+                elif question_part_type == models.QuestionPart.QuestionType.SINGLE_OPTION:
                     chosen_options = random.choice(part["options"])
                     text = ""
-                elif question_part_type == models.QuestionPart.QuestionType.MULTIPLE_OPTIONS:
+                    answer = SingleOptionAnswerFactory(
+                        question_part=question_part,
+                        text=text,
+                        chosen_options=chosen_options,
+                        respondent=respondent,
+                    )
+                else:
                     chosen_options = random.sample(
                         part["options"], k=random.randint(1, len(part["options"]))
                     )
                     text = ""
-                elif question_part_type == models.QuestionPart.QuestionType.FREE_TEXT:
-                    text = random.choice(part.get("free_text_answers", [""]))
-                    chosen_options = []
-
-                answer = FreeTextAnswerFactory(
-                    question_part=question_part,
-                    text=text,
-                    chosen_options=chosen_options,
-                    respondent=respondent,
-                )
+                    answer = MultipleOptionAnswerFactory(
+                        question_part=question_part,
+                        text=text,
+                        chosen_options=chosen_options,
+                        respondent=respondent,
+                    )
 
                 # Now map (multiple) themes and sentiment to each answer for free-text questions.
                 # This is in a different order to how it would work in pipeline - but this is as we

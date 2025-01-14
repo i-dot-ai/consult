@@ -46,8 +46,8 @@ class SlugFromTextModel(models.Model):
     slug = models.SlugField(null=False, editable=False, max_length=256)
 
     def save(self, *args, **kwargs):
-        # Generate a slug from the text - ensure unique by adding timestamp if needed.
-        # Don't allow empty slug.
+        # Generate slug from text - ensure unique by adding timestamp
+        # if needed (usually won't be). Don't allow empty slug.
         ModelClass = self.__class__
         cropped_length = 220
         cropped_text = self.text[:cropped_length]
