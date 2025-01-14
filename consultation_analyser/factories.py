@@ -32,17 +32,39 @@ class QuestionFactory(DjangoModelFactory):
 
     text = factory.LazyAttribute(lambda o: fake.sentence())
     consultation = factory.SubFactory(ConsultationFactory)
-    order = factory.LazyAttribute(lambda n: random.randint(1, 10))
+    number = factory.Sequence(lambda n: n + 1)  # Unique number within consultation
 
 
-# TODO -  all free-text for now, can add to this in future
-class QuestionPartFactory(DjangoModelFactory):
+class FreeTextQuestionPartFactory(DjangoModelFactory):
     class Meta:
         model = models.QuestionPart
 
     question = factory.SubFactory(QuestionFactory)
     text = factory.LazyAttribute(lambda o: fake.sentence())
     type = models.QuestionPart.QuestionType.FREE_TEXT
+    number = factory.Sequence(lambda n: n + 1)  # Unique number within question
+
+
+class SingleOptionQuestionPartFactory(DjangoModelFactory):
+    class Meta:
+        model = models.QuestionPart
+
+    question = factory.SubFactory(QuestionFactory)
+    text = factory.LazyAttribute(lambda o: fake.sentence())
+    type = models.QuestionPart.QuestionType.SINGLE_OPTION
+    number = factory.Sequence(lambda n: n + 1)  # Unique number within question
+    options = factory.LazyAttribute(lambda o: [fake.word() for _ in range(random.randint(2, 5))])
+
+
+class MultipleOptionQuestionPartFactory(DjangoModelFactory):
+    class Meta:
+        model = models.QuestionPart
+
+    question = factory.SubFactory(QuestionFactory)
+    text = factory.LazyAttribute(lambda o: fake.sentence())
+    type = models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
+    number = factory.Sequence(lambda n: n + 1)  # Unique number within question
+    options = factory.LazyAttribute(lambda o: [fake.word() for _ in range(random.randint(2, 5))])
 
 
 class RespondentFactory(DjangoModelFactory):
@@ -52,13 +74,35 @@ class RespondentFactory(DjangoModelFactory):
     consultation = factory.SubFactory(ConsultationFactory)
 
 
-class AnswerFactory(DjangoModelFactory):
+class FreeTextAnswerFactory(DjangoModelFactory):
     class Meta:
         model = models.Answer
 
-    question_part = factory.SubFactory(QuestionPartFactory)
+    question_part = factory.SubFactory(FreeTextQuestionPartFactory)
     respondent = factory.SubFactory(RespondentFactory)
     text = factory.LazyAttribute(lambda o: fake.paragraph())
+
+
+class SingleOptionAnswerFactory(DjangoModelFactory):
+    class Meta:
+        model = models.Answer
+
+    question_part = factory.SubFactory(SingleOptionQuestionPartFactory)
+    respondent = factory.SubFactory(RespondentFactory)
+    chosen_options = factory.LazyAttribute(lambda o: [random.choice(o.question_part.options)])
+
+
+class MultipleOptionAnswerFactory(DjangoModelFactory):
+    class Meta:
+        model = models.Answer
+
+    question_part = factory.SubFactory(MultipleOptionQuestionPartFactory)
+    respondent = factory.SubFactory(RespondentFactory)
+    chosen_options = factory.LazyAttribute(
+        lambda o: random.sample(
+            o.question_part.options, k=random.randint(1, len(o.question_part.options))
+        )
+    )
 
 
 class ExecutionRunFactory(DjangoModelFactory):
@@ -80,7 +124,7 @@ class InitialFrameworkFactory(DjangoModelFactory):
         if not execution_run:
             execution_run = ExecutionRunFactory()
         if not question_part:
-            question_part = QuestionPartFactory()
+            question_part = FreeTextQuestionPartFactory()
         return model_class.create_initial_framework(
             execution_run=execution_run, question_part=question_part
         )
@@ -153,7 +197,7 @@ class ThemeMappingFactory(DjangoModelFactory):
     class Meta:
         model = models.ThemeMapping
 
-    answer = factory.SubFactory(AnswerFactory)
+    answer = factory.SubFactory(FreeTextAnswerFactory)
     theme = factory.SubFactory(InitialThemeFactory)
     reason = factory.LazyAttribute(lambda o: fake.sentence())
     execution_run = factory.SubFactory(ExecutionRunFactory)

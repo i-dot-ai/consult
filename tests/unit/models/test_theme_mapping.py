@@ -2,19 +2,19 @@ import pytest
 
 from consultation_analyser.consultations import models
 from consultation_analyser.factories import (
-    AnswerFactory,
     ExecutionRunFactory,
+    FreeTextAnswerFactory,
+    FreeTextQuestionPartFactory,
     InitialFrameworkFactory,
     InitialThemeFactory,
-    QuestionPartFactory,
     ThemeMappingFactory,
 )
 
 
 @pytest.mark.django_db
 def test_get_latest_theme_mappings_for_question_part_returns_latest_mappings():
-    question_part = QuestionPartFactory()
-    answer = AnswerFactory(question_part=question_part)
+    question_part = FreeTextQuestionPartFactory()
+    answer = FreeTextAnswerFactory(question_part=question_part)
 
     # First theme mapping execution run
     first_framework = InitialFrameworkFactory(question_part=question_part)
@@ -39,15 +39,15 @@ def test_get_latest_theme_mappings_for_question_part_returns_latest_mappings():
 
 @pytest.mark.django_db
 def test_get_latest_theme_mappings_for_question_part_no_mappings():
-    question_part = QuestionPartFactory()
+    question_part = FreeTextQuestionPartFactory()
     latest_mappings = models.ThemeMapping.get_latest_theme_mappings_for_question_part(question_part)
     assert latest_mappings.count() == 0
 
 
 @pytest.mark.django_db
 def test_get_history_of_changes_to_answer():
-    question_part = QuestionPartFactory()
-    answer1 = AnswerFactory(question_part=question_part)
+    question_part = FreeTextQuestionPartFactory()
+    answer1 = FreeTextAnswerFactory(question_part=question_part)
     framework = InitialFrameworkFactory(question_part=question_part)
     theme1 = InitialThemeFactory(framework=framework, name="theme 1")
     theme2 = InitialThemeFactory(framework=framework, name="theme 2")

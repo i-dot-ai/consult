@@ -46,10 +46,10 @@ def test_create_dummy_consultation_from_yaml():
     question_1 = questions.get(
         text="Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?"
     )
-    question_parts = models.QuestionPart.objects.filter(question=question_1).order_by("order")
+    question_parts = models.QuestionPart.objects.filter(question=question_1)
     assert question_parts[0].type == models.QuestionPart.QuestionType.SINGLE_OPTION
     assert question_parts[0].options == ["Yes", "No", "Don't know", "No answer"]
-    assert question_parts[0].order == 1
+    assert question_parts[0].number == 1
     assert not question_parts[0].text
     assert question_parts[1].text == "Please explain your answer."
     assert not question_parts[1].options

@@ -5,13 +5,13 @@ import yaml
 
 from consultation_analyser.consultations import models
 from consultation_analyser.factories import (
-    AnswerFactory,
     ConsultationFactory,
     ExecutionRunFactory,
+    FreeTextAnswerFactory,
+    FreeTextQuestionPartFactory,
     InitialFrameworkFactory,
     InitialThemeFactory,
     QuestionFactory,
-    QuestionPartFactory,
     RespondentFactory,
     ThemeMappingFactory,
 )
@@ -42,7 +42,7 @@ def create_dummy_consultation_from_yaml(
     for question_data in questions_data:
         question = QuestionFactory(
             text=question_data["question_text"],
-            order=question_data["order"],
+            number=question_data["number"],
             consultation=consultation,
         )
         parts = question_data["parts"]
@@ -50,12 +50,12 @@ def create_dummy_consultation_from_yaml(
         # Each question part is considered separately
         for part in parts:
             question_part_type = part["type"]
-            question_part = QuestionPartFactory(
+            question_part = FreeTextQuestionPartFactory(
                 question=question,
                 text=part["text"],
                 type=question_part_type,
                 options=part.get("options", []),
-                order=part["order"],
+                number=part["number"],
             )
             # Get themes if free_text
             if question_part_type == models.QuestionPart.QuestionType.FREE_TEXT:
@@ -93,7 +93,7 @@ def create_dummy_consultation_from_yaml(
                     text = random.choice(part.get("free_text_answers", [""]))
                     chosen_options = []
 
-                answer = AnswerFactory(
+                answer = FreeTextAnswerFactory(
                     question_part=question_part,
                     text=text,
                     chosen_options=chosen_options,

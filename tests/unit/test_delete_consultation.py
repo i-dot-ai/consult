@@ -8,9 +8,9 @@ from consultation_analyser.consultations import models
 def test_delete_consultation():
     consultation = factories.ConsultationFactory()
     question = factories.QuestionFactory(consultation=consultation)
-    question_part = factories.QuestionPartFactory(question=question)
+    question_part = factories.FreeTextQuestionPartFactory(question=question)
     respondent = factories.RespondentFactory(consultation=consultation)
-    factories.AnswerFactory(question_part=question_part, respondent=respondent)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent)
 
     assert models.Consultation.objects.count() == 1
     assert models.Respondent.objects.count() >= 1

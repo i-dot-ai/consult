@@ -15,10 +15,10 @@ def test_cant_save():
 def test_create_initial_framework():
     with pytest.raises(ValueError):
         models.Framework.create_initial_framework(
-            execution_run=None, question_part=factories.QuestionPartFactory()
+            execution_run=None, question_part=factories.FreeTextQuestionPartFactory()
         )
     execution_run = factories.ExecutionRunFactory()
-    question_part = factories.QuestionPartFactory()
+    question_part = factories.FreeTextQuestionPartFactory()
     framework = models.Framework.create_initial_framework(
         execution_run=execution_run, question_part=question_part
     )
@@ -53,16 +53,20 @@ def test_get_themes_removed_from_previous_framework():
     # Create framework with 3 themes
     initial_theme_1 = factories.InitialThemeFactory(name="initial_theme_1")
     initial_framework = initial_theme_1.framework
-    initial_theme_2 = factories.InitialThemeFactory(name="initial_theme_2", framework=initial_framework)
-    initial_theme_3 = factories.InitialThemeFactory(name="initial_theme_3", framework=initial_framework)
+    initial_theme_2 = factories.InitialThemeFactory(
+        name="initial_theme_2", framework=initial_framework
+    )
+    initial_theme_3 = factories.InitialThemeFactory(
+        name="initial_theme_3", framework=initial_framework
+    )
 
     # Create subsequent framework, two themes removed
     descendent_theme_1 = factories.DescendantThemeFactory(name="descendent_theme_1")
     descendent_framework = descendent_theme_1.framework
+    print(descendent_framework.theme_set.all())
 
     themes_removed = descendent_framework.get_themes_removed_from_previous_framework()
     assert len(themes_removed) == 2
     assert initial_theme_2 in themes_removed
     assert initial_theme_3 in themes_removed
     assert initial_theme_1 not in themes_removed
-
