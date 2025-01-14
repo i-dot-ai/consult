@@ -21,11 +21,6 @@ def index(
         slug=question_slug,
         consultation=consultation,
     )
-    # if processing_run:
-    #     themes_for_question = processing_run.get_themes_for_question(question_id=question.id)
-    # else:
-    #     themes_for_question = models.Theme.objects.none()
-    #     messages.info(request, NO_THEMES_YET_MESSAGE)
 
     # Assume that there is only one free text response
     free_text_question_part = models.QuestionPart.objects.filter(

@@ -11,9 +11,6 @@ from .decorators import user_can_see_consultation
 logger = logging.getLogger("upload")
 
 
-NO_THEMES_YET_MESSAGE = "We are processing your consultation. Themes have not been generated yet."
-
-
 def index(request: HttpRequest) -> HttpResponse:
     user = request.user
     consultations_for_user = models.Consultation.objects.filter(users=user)
