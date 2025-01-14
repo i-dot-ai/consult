@@ -9,15 +9,15 @@ from consultation_analyser.factories import (
     ExecutionRunFactory,
     FreeTextAnswerFactory,
     FreeTextQuestionPartFactory,
-    SingleOptionQuestionPartFactory,
-    MultipleOptionQuestionPartFactory,
     InitialFrameworkFactory,
     InitialThemeFactory,
+    MultipleOptionAnswerFactory,
+    MultipleOptionQuestionPartFactory,
     QuestionFactory,
     RespondentFactory,
-    ThemeMappingFactory,
     SingleOptionAnswerFactory,
-    MultipleOptionAnswerFactory,
+    SingleOptionQuestionPartFactory,
+    ThemeMappingFactory,
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
 
