@@ -113,6 +113,7 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
                 name="unique_free_text_per_question",
             ),
         ]
+        # Assume at most one free_text part per question, that is what we expect from data we've seen to date
         ordering = ["number"]
 
 
