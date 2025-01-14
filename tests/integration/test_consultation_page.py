@@ -16,8 +16,8 @@ def test_consultation_page(django_app):
 
     consultation_slug = consultation.slug
     question = Question.objects.filter(consultation=consultation).first()
-    homepage = django_app.get(f"/consultations/{consultation_slug}/")
-    question_page = homepage.click("Question summary", index=0)
+    consultation_page = django_app.get(f"/consultations/{consultation_slug}/")
+    question_page = consultation_page.click("Question summary", index=0)
 
     assert "Question summary" in question_page
     assert f"{question.text}" in question_page

@@ -45,7 +45,7 @@ def test_get_latest_theme_mappings_for_question_part_no_mappings():
 
 
 @pytest.mark.django_db
-def test_get_history_of_changes_to_answer():
+def test_get_history_of_theme_mappings_for_answer():
     question_part = FreeTextQuestionPartFactory()
     answer1 = FreeTextAnswerFactory(question_part=question_part)
     framework = InitialFrameworkFactory(question_part=question_part)
