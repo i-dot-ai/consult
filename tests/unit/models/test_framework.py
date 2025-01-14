@@ -47,7 +47,6 @@ def test_create_descendant_framework():
     assert not new_framework.execution_run
 
 
-# TODO - turn into fixtures
 @pytest.mark.django_db
 def test_get_themes_removed_from_previous_framework():
     # Create framework with 3 themes
