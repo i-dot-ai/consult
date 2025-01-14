@@ -35,7 +35,7 @@ django-types = "^0.20.0"
 django-waffle = "^4.2.0"
 django-magic-link = "^1.0.0"
 django-crispy-forms = "^2.3"
-crispy-forms-gds = "^0.3.2"
+crispy-forms-gds = "^2.0.1"
 django-gov-notify = { git = "https://github.com/i-dot-ai/django-gov-notify", branch = "support-python-3-12" }
 sentry-sdk = { extras = ["redis", "rq"], version = "^2.19.2" }
 ijson = "^3.3.0"
