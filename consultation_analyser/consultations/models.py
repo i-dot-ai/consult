@@ -211,16 +211,11 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         if not self.precursor:
             return self.theme_set.none()
         themes_in_this_framework = self.theme_set.all()
-        print(f"themes_in_this_framework: {themes_in_this_framework}")
         precursors_themes_that_persisted = themes_in_this_framework.values_list(
             "precursor__id", flat=True
         )
-        print(f"precursore_themes_that_persisted: {precursors_themes_that_persisted}")
         persisted_ids = [id for id in precursors_themes_that_persisted if id]  # remove None
-        print(f"persisted_ids: {persisted_ids}")
-        print(f"precursor themes: {self.precursor.theme_set.all()}")
         precursor_themes_removed = self.precursor.theme_set.exclude(id__in=persisted_ids).distinct()
-        print(f"precursor_themes_removed: {precursor_themes_removed}")
         return precursor_themes_removed
 
     def get_themes_added_to_previous_framework(self) -> models.QuerySet:
