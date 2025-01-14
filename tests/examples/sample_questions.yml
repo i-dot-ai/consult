@@ -1,14 +1,14 @@
 - question_text: "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?"
-  order: 1
+  number: 1
   parts:
     - text: ""
       type: "single_option"
       options: ["Yes", "No", "Don't know", "No answer"]
-      order: 1
+      number: 1
     - text: "Please explain your answer."
       type: "free_text"
       options: []
-      order: 2
+      number: 2
       free_text_answers:
       - ""
       - "Yes, I agree with the proposal as it will create a standardized framework that benefits both consumers and manufacturers."
@@ -27,32 +27,32 @@
           description: "Innovation in flavour development."
 
 - question_text: "Is the proposed description sufficiently clear for the purpose of implementation and enforcement?"
-  order: 2
+  number: 2
   parts:
     - text: "(a) Multibuy promotions"
       type: "single_option"
       options: ["Yes", "No", "Don't know", "No answer"]
-      order: 1
+      number: 1
     - text: "(b) Price promotions"
       type: "single_option"
       options: ["Yes", "No", "Don't know", "No answer"]
-      order: 2
+      number: 2
 
 - question_text: "Which of the following factors do you believe are important when considering the packaging of chocolate bars? Please select all that apply: a) Sustainability, b) Design, c) Cost-effectiveness, d) Durability, e) Brand recognition."
-  order: 3
+  number: 3
   parts:
     - text: ""
       type: "multiple_options"
       options: ["Sustainability", "Design", "Cost-effectiveness", "Durability", "Brand recognition"]
-      order: 1
+      number: 1
 
 - question_text: "What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?"
-  order: 4
+  number: 4
   parts:
     - text: ""
       type: "free_text"
       options: []
-      order: 1
+      number: 1
       free_text_answers:
       - ""
       - "I believe the current regulations should include clearer guidelines on the sourcing of ingredients to ensure ethical practices and sustainability."
@@ -75,12 +75,12 @@
           description: "It should promote fair trade practices."
 
 - question_text: ""
-  order: 5
+  number: 5
   parts:
     - text: "What factors most influence your decision when choosing a chocolate bar?"
       type: "free_text"
       options: []
-      order: 1
+      number: 1
       free_text_answers:
       - ""
       - "I primarily look for high cocoa content because I enjoy a rich, intense chocolate flavour."
@@ -103,5 +103,5 @@
     - text: "How frequently do these factors lead you to try new chocolate bar brands?"
       type: "single_option"
       options: ["Always", "Often", "Sometimes", "Rarely", "Never"]
-      order: 2
+      number: 2
 

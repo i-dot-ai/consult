@@ -27,7 +27,7 @@ def index(request: HttpRequest) -> HttpResponse:
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     questions = models.Question.objects.filter(consultation__slug=consultation_slug).order_by(
-        "order"
+        "number"
     )
     context = {
         "questions": questions,

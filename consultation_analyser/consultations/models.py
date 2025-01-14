@@ -70,7 +70,6 @@ class SlugFromTextModel(models.Model):
         abstract = True
 
 
-
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
     users = models.ManyToManyField(User)
 
@@ -83,12 +82,14 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
 class Question(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
     text = models.TextField()
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
-    order = models.IntegerField(null=True)
+    number = models.IntegerField(null=False, default=0)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta, SlugFromTextModel.Meta):
         constraints = [
-            models.UniqueConstraint(fields=["slug"], name="unique_q_slug"),
+            models.UniqueConstraint(fields=["consultation", "slug"], name="unique_q_slug"),
+            models.UniqueConstraint(fields=["consultation", "number"], name="unique_q_number"),
         ]
+        ordering = ["number"]
 
 
 class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -100,11 +101,19 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     text = models.TextField()
     type = models.CharField(max_length=16, choices=QuestionType.choices)
-    options = models.JSONField(default=list)
-    order = models.IntegerField(null=True)
+    options = models.JSONField(null=True)  # List, null if free-text
+    number = models.IntegerField(null=False, default=0)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+        constraints = [
+            models.UniqueConstraint(fields=["question", "number"], name="unique_part_per_question"),
+            models.UniqueConstraint(
+                fields=["question"],
+                condition=models.Q(type="free_text"),
+                name="unique_free_text_per_question",
+            ),
+        ]
+        ordering = ["number"]
 
 
 class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -137,7 +146,6 @@ class ExecutionRun(UUIDPrimaryKeyModel, TimeStampedModel):
     # TODO - add metadata e.g. langfuse_id
     # Note, the execution run will be run on responses to a particular
     # question part - but this will be stored in the correspondong framework/mapping etc.
-    history = HistoricalRecords()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
@@ -266,7 +274,10 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
                 "Framework for new theme must be based on the framework for the existing theme."
             )
         new_theme = Theme(
-            precursor=self, name=name, description=description, framework=new_framework,
+            precursor=self,
+            name=name,
+            description=description,
+            framework=new_framework,
         )
         super(Theme, new_theme).save()
         return new_theme
@@ -279,6 +290,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
     reason = models.TextField()
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
+    # TODO - add stance (what are options?)
 
     history = HistoricalRecords()
 

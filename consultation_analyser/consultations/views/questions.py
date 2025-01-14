@@ -16,7 +16,7 @@ def show(
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
 
-    question_parts = models.QuestionPart.objects.filter(question=question).order_by("order")
+    question_parts = models.QuestionPart.objects.filter(question=question).order_by("number")
 
     # Assume at most one free text part per question.
     free_text_question_part = question_parts.filter(
