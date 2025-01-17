@@ -70,21 +70,63 @@ class SlugFromTextModel(models.Model):
         abstract = True
 
 
-class Consultation(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
+class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
+    title = models.CharField(max_length=256)
+    slug = models.SlugField(null=False, editable=False, max_length=256)
     users = models.ManyToManyField(User)
 
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta, SlugFromTextModel.Meta):
+    def save(self, *args, **kwargs):
+        # Generate slug from text - if needed, append integer for uniqueness.
+        def slug_exists_for_another_consultation(self, slug):
+            if self.slug == slug:
+                return False
+            return Consultation.objects.filter(slug=slug).exists()
+
+        cropped_length = 220
+        cropped_text = self.title[:cropped_length]
+        actual_slug = slugify(cropped_text)
+
+        i = 1
+        generated_slug = actual_slug
+        slug_exists = slug_exists_for_another_consultation(self, generated_slug)
+        while slug_exists:
+            generated_slug = f"{actual_slug}-{i}"
+            i = i + 1
+            slug_exists = slug_exists_for_another_consultation(self, generated_slug)
+
+        self.slug = generated_slug
+        return super().save(*args, **kwargs)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(fields=["slug"], name="unique_consult_slug"),
         ]
 
 
-class Question(UUIDPrimaryKeyModel, TimeStampedModel, SlugFromTextModel):
+class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     text = models.TextField()
+    slug = models.SlugField(null=False, editable=False, max_length=256)
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     number = models.IntegerField(null=False, default=0)
 
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta, SlugFromTextModel.Meta):
+    def save(self, *args, **kwargs):
+        # Generate slug from text - if needed, add question number for uniqueness.
+        # if needed (usually won't be). Don't allow empty slug.
+        cropped_length = 220
+        cropped_text = self.text[:cropped_length]
+        generated_slug = slugify(cropped_text)
+        if self.pk:
+            slug_exists = Question.objects.filter(slug=generated_slug).exclude(pk=self.pk).exists()
+        else:
+            slug_exists = Question.objects.filter(slug=generated_slug).exists()
+        if not generated_slug:
+            generated_slug = str(self.number)
+        elif slug_exists:
+            generated_slug = f"{generated_slug}-{self.number}"
+        self.slug = generated_slug
+        return super().save(*args, **kwargs)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(fields=["consultation", "slug"], name="unique_q_slug"),
             models.UniqueConstraint(fields=["consultation", "number"], name="unique_q_number"),
