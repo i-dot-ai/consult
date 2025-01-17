@@ -82,15 +82,16 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
                 return False
             return Consultation.objects.filter(slug=slug).exists()
 
-        cropped_length = 220
-        cropped_text = self.title[:cropped_length]
-        actual_slug = slugify(cropped_text)
+        cropped_length = 256
+        slugified_title = slugify(self.title)[:cropped_length]
 
-        i = 1
-        generated_slug = actual_slug
+        i = 2
+        generated_slug = slugified_title
         slug_exists = slug_exists_for_another_consultation(self, generated_slug)
         while slug_exists:
-            generated_slug = f"{actual_slug}-{i}"
+            str_to_append = f"-{i}"
+            n = len(str_to_append)
+            generated_slug = f"{slugified_title[: (cropped_length - n)]}{str_to_append}"
             i = i + 1
             slug_exists = slug_exists_for_another_consultation(self, generated_slug)
 
@@ -112,17 +113,27 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     def save(self, *args, **kwargs):
         # Generate slug from text - if needed, add question number for uniqueness.
         # if needed (usually won't be). Don't allow empty slug.
-        cropped_length = 220
-        cropped_text = self.text[:cropped_length]
-        generated_slug = slugify(cropped_text)
+        cropped_length = 256
+        generated_slug = slugify(self.text)[:cropped_length]
         if self.pk:
-            slug_exists = Question.objects.filter(slug=generated_slug).exclude(pk=self.pk).exists()
+            slug_exists = (
+                Question.objects.filter(slug=generated_slug)
+                .filter(consultation=self.consultation)
+                .exclude(pk=self.pk)
+                .exists()
+            )
         else:
-            slug_exists = Question.objects.filter(slug=generated_slug).exists()
+            slug_exists = (
+                Question.objects.filter(slug=generated_slug)
+                .filter(consultation=self.consultation)
+                .exists()
+            )
         if not generated_slug:
             generated_slug = str(self.number)
         elif slug_exists:
-            generated_slug = f"{generated_slug}-{self.number}"
+            str_to_append = f"-{str(self.number)}"
+            n = len(str_to_append)
+            generated_slug = f"{generated_slug[: (cropped_length - n)]}{str_to_append}"
         self.slug = generated_slug
         return super().save(*args, **kwargs)
 
