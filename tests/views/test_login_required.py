@@ -48,15 +48,11 @@ def test_access_generic_consultation_urls(client):
 
 def set_up_consultation(user):
     question = factories.QuestionFactory()
-    section = question.section
-    consultation = section.consultation
-    processing_run = factories.ProcessingRunFactory(consultation=consultation)
+    consultation = question.consultation
     consultation.users.add(user)
     consultation.save()
     possible_args = {
         "consultation_slug": consultation.slug,
-        "processing_run_slug": processing_run.slug,
-        "section_slug": section.slug,
         "question_slug": question.slug,
     }
     return possible_args

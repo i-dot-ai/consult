@@ -1,304 +1,203 @@
 import random
 
 import factory
-import faker as _faker
-import yaml
-from django.utils import timezone
+from factory.django import DjangoModelFactory
+from faker import Faker
 
-from consultation_analyser.authentication import models as authentication_models
+from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import models
 
-faker = _faker.Faker()
+fake = Faker()
 
 
-def generate_dummy_topic_keywords():
-    dummy_sentence = faker.sentence()
-    words = dummy_sentence.lower().strip(".")
-    return words.split(" ")
+class UserFactory(DjangoModelFactory):
+    class Meta:
+        model = User
+
+    email = factory.LazyAttribute(lambda o: fake.email())
+    is_staff = False
+    password = factory.LazyAttribute(lambda o: fake.password())
 
 
-class FakeConsultationData:
-    def __init__(self):
-        with open("./tests/examples/questions.yml", "r") as f:
-            questions = yaml.safe_load(f)
-            slugs = [q["slug"] for q in questions]
-            self.questions = dict(zip(slugs, questions))
-
-    def question(self):
-        return random.choice(list(self.questions.values()))
-
-    def get_free_text_answer(self, slug):
-        q = self.questions[slug]
-        return random.choice(q["answers"])
-
-    def all_questions(self):
-        return list(self.questions.values())
-
-
-class ConsultationBuilder:
-    def __init__(self, **kwargs):
-        consultation = ConsultationFactory(**kwargs)
-
-        self.consultation = consultation
-        self.current_response = None
-        self.current_processing_run = None
-        self.section = None
-        self.consultation_responses = []
-
-    def get_section(self):
-        if not self.section:
-            self.section = SectionFactory(consultation=self.consultation)
-
-        return self.section
-
-    def add_question(self, **kwargs):
-        """
-        Create a question, assigning it to the current section.
-        We only support one section for now.
-        """
-        return QuestionFactory(section=self.get_section(), **kwargs)
-
-    def add_answer(self, question, **kwargs):
-        """
-        Create an answer to the passed question, assigning it to the current_response
-        """
-        return AnswerFactory(
-            question=question, consultation_response=self.get_current_response(), **kwargs
-        )
-
-    def next_response(self):
-        """
-        Create a new response and put it in the self.current_response
-        field
-        """
-        self.current_response = None
-        return self.get_current_response()
-
-    def get_current_response(self):
-        """
-        Return the current_response, creating one if it doesn't exist
-        """
-        if not self.current_response:
-            self.current_response = ConsultationResponseFactory(
-                consultation=self.consultation, answers=False
-            )
-
-        return self.current_response
-
-    def get_current_processing_run(self):
-        if not self.current_processing_run:
-            self.current_processing_run = ProcessingRunFactory(consultation=self.consultation)
-
-        return self.current_processing_run
-
-    def add_theme(self, answer=None, **kwargs):
-        """
-        Create a theme, optionally passing an Answer to assign it to
-        """
-
-        processing_run = self.get_current_processing_run()
-        theme = ThemeFactory(processing_run=processing_run, **kwargs)
-
-        if answer:
-            answer.themes.add(theme)
-
-        return theme
-
-
-class ConsultationWithAnswersFactory(factory.django.DjangoModelFactory):
+class ConsultationFactory(DjangoModelFactory):
     class Meta:
         model = models.Consultation
-        skip_postgeneration_save = True
 
-    name = factory.LazyAttribute(lambda _o: faker.sentence())
-    slug = factory.LazyAttribute(lambda _o: faker.slug())
-
-    @factory.post_generation
-    def users(consultation, create, extracted, **kwargs):
-        if not create or not extracted:
-            return
-
-        consultation.users.add(extracted)
-
-    @factory.post_generation
-    def create_answers(consultation, _create, _extracted, **kwargs):
-        QuestionFactory(section=SectionFactory(consultation=consultation))
-        ConsultationResponseFactory.create_batch(8, consultation=consultation)
+    title = factory.LazyAttribute(lambda o: fake.sentence())
 
 
-class ConsultationWithThemesFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.Consultation
-        skip_postgeneration_save = True
-
-    name = factory.LazyAttribute(lambda _o: faker.sentence())
-    slug = factory.LazyAttribute(lambda _o: faker.slug())
-
-    @factory.post_generation
-    def users(consultation, create, extracted, **kwargs):
-        if not create or not extracted:
-            return
-
-        consultation.users.add(extracted)
-
-    @factory.post_generation
-    def create_themes(consultation, _create, _extracted, **kwargs):
-        QuestionFactory(section=SectionFactory(consultation=consultation))
-        ConsultationResponseFactory.create_batch(8, consultation=consultation)
-
-
-class ConsultationFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.Consultation
-        skip_postgeneration_save = True
-
-    name = factory.LazyAttribute(lambda _o: faker.sentence())
-    slug = factory.LazyAttribute(lambda _o: faker.slug())
-
-    @factory.post_generation
-    def user(consultation, creation_strategy, value, **kwargs):
-        if value:
-            consultation.users.set([value])
-
-
-class SectionFactory(factory.django.DjangoModelFactory):
-    class Meta:
-        model = models.Section
-        skip_postgeneration_save = True
-
-    name = faker.sentence()
-    slug = faker.slug()
-    consultation = factory.SubFactory("consultation_analyser.factories.ConsultationFactory")
-
-
-def get_multiple_choice_questions(current_question):
-    if not current_question.multiple_choice_questions:
-        questions = [("Do you agree?", ["Yes", "No"])]
-    else:
-        questions = current_question.multiple_choice_questions
-
-    multiple_choice = []
-    for question, options in questions:
-        multiple_choice.append({"question_text": question, "options": options})
-
-    return multiple_choice
-
-
-class QuestionFactory(factory.django.DjangoModelFactory):
+class QuestionFactory(DjangoModelFactory):
     class Meta:
         model = models.Question
-        skip_postgeneration_save = True
 
-    text = factory.LazyAttribute(lambda _o: faker.sentence())
-    slug = factory.LazyAttribute(lambda _o: faker.slug())
-    multiple_choice_options = factory.LazyAttribute(get_multiple_choice_questions)
-    has_free_text = True
-    section = factory.SubFactory(SectionFactory)
-
-    class Params:
-        multiple_choice_questions = None
-
-    @factory.post_generation
-    def validate_json_fields(question, creation_strategy, extracted, **kwargs):
-        question.full_clean()
-
-
-class ConsultationResponseFactory(factory.django.DjangoModelFactory):
+    text = factory.LazyAttribute(lambda o: fake.sentence())
     consultation = factory.SubFactory(ConsultationFactory)
-    submitted_at = timezone.now()
+    number = factory.Sequence(lambda n: n + 1)  # Unique number within consultation
 
+
+class FreeTextQuestionPartFactory(DjangoModelFactory):
     class Meta:
-        model = models.ConsultationResponse
-        skip_postgeneration_save = True
+        model = models.QuestionPart
 
-    @factory.post_generation
-    def answers(consultation_response, creation_strategy, value, **kwargs):
-        if value or value is None:
-            questions = models.Question.objects.filter(
-                section__consultation=consultation_response.consultation
-            ).all()
-            for q in questions:
-                AnswerFactory(question=q, consultation_response=consultation_response)
+    question = factory.SubFactory(QuestionFactory)
+    text = factory.LazyAttribute(lambda o: fake.sentence())
+    type = models.QuestionPart.QuestionType.FREE_TEXT
+    number = factory.Sequence(lambda n: n + 1)  # Unique number within question
 
 
-class ProcessingRunFactory(factory.django.DjangoModelFactory):
+class SingleOptionQuestionPartFactory(DjangoModelFactory):
+    class Meta:
+        model = models.QuestionPart
+
+    question = factory.SubFactory(QuestionFactory)
+    text = factory.LazyAttribute(lambda o: fake.sentence())
+    type = models.QuestionPart.QuestionType.SINGLE_OPTION
+    number = factory.Sequence(lambda n: n + 1)  # Unique number within question
+    options = factory.LazyAttribute(lambda o: [fake.word() for _ in range(random.randint(2, 5))])
+
+
+class MultipleOptionQuestionPartFactory(DjangoModelFactory):
+    class Meta:
+        model = models.QuestionPart
+
+    question = factory.SubFactory(QuestionFactory)
+    text = factory.LazyAttribute(lambda o: fake.sentence())
+    type = models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
+    number = factory.Sequence(lambda n: n + 1)  # Unique number within question
+    options = factory.LazyAttribute(lambda o: [fake.word() for _ in range(random.randint(2, 5))])
+
+
+class RespondentFactory(DjangoModelFactory):
+    class Meta:
+        model = models.Respondent
+
     consultation = factory.SubFactory(ConsultationFactory)
-    started_at = timezone.now() - timezone.timedelta(minutes=1)
-    finished_at = timezone.now()
 
+
+class FreeTextAnswerFactory(DjangoModelFactory):
     class Meta:
-        model = models.ProcessingRun
+        model = models.Answer
+
+    question_part = factory.SubFactory(FreeTextQuestionPartFactory)
+    respondent = factory.SubFactory(RespondentFactory)
+    text = factory.LazyAttribute(lambda o: fake.paragraph())
 
 
-class TopicModelMetadataFactory(factory.django.DjangoModelFactory):
+class SingleOptionAnswerFactory(DjangoModelFactory):
     class Meta:
-        model = models.TopicModelMetadata
+        model = models.Answer
+
+    question_part = factory.SubFactory(SingleOptionQuestionPartFactory)
+    respondent = factory.SubFactory(RespondentFactory)
+    chosen_options = factory.LazyAttribute(lambda o: [random.choice(o.question_part.options)])
 
 
-class ThemeFactory(factory.django.DjangoModelFactory):
+class MultipleOptionAnswerFactory(DjangoModelFactory):
+    class Meta:
+        model = models.Answer
+
+    question_part = factory.SubFactory(MultipleOptionQuestionPartFactory)
+    respondent = factory.SubFactory(RespondentFactory)
+    chosen_options = factory.LazyAttribute(
+        lambda o: random.sample(
+            o.question_part.options, k=random.randint(1, len(o.question_part.options))
+        )
+    )
+
+
+class ExecutionRunFactory(DjangoModelFactory):
+    class Meta:
+        model = models.ExecutionRun
+
+    type = factory.Iterator(models.ExecutionRun.TaskType.values)
+
+
+class InitialFrameworkFactory(DjangoModelFactory):
+    # Creates an initial framework
+    class Meta:
+        model = models.Framework
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        execution_run = kwargs.get("execution_run")
+        question_part = kwargs.get("question_part")
+        if not execution_run:
+            execution_run = ExecutionRunFactory()
+        if not question_part:
+            question_part = FreeTextQuestionPartFactory()
+        return model_class.create_initial_framework(
+            execution_run=execution_run, question_part=question_part
+        )
+
+
+class DescendantFrameworkFactory(DjangoModelFactory):
+    # Creates a framework that is is derived from another framework
+    class Meta:
+        model = models.Framework
+
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        precursor = kwargs.get("precursor")
+        user = kwargs.get("user")
+        change_reason = kwargs.get("change_reason")
+        if not precursor:
+            precursor = InitialFrameworkFactory()
+        if not user:
+            user = UserFactory()
+        if not change_reason:
+            change_reason = fake.sentence()
+        return precursor.create_descendant_framework(user=user, change_reason=change_reason)
+
+
+class InitialThemeFactory(DjangoModelFactory):
+    # Create an initial theme (which will have come from the theme generation task)
     class Meta:
         model = models.Theme
 
-    processing_run = factory.SubFactory(ProcessingRunFactory)
-    topic_model_metadata = factory.SubFactory(TopicModelMetadataFactory)
-    topic_keywords = factory.LazyAttribute(lambda _o: generate_dummy_topic_keywords())
-    short_description = factory.LazyAttribute(lambda _o: faker.sentence())
-    summary = factory.LazyAttribute(lambda _o: faker.sentence())
-    topic_id = factory.Sequence(lambda n: n - 1)  # Hack to get topics to include outliers -1
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        framework = kwargs.get("framework")
+        name = kwargs.get("name")
+        description = kwargs.get("description")
+        if not framework:
+            framework = InitialFrameworkFactory()
+        if not name:
+            name = fake.sentence()
+        if not description:
+            description = fake.paragraph()
+        return model_class.create_initial_theme(
+            framework=framework, name=name, description=description
+        )
 
 
-def get_multiple_choice_answers(current_answer):
-    multiple_choice = []
-    if (
-        current_answer.question.multiple_choice_options
-        and not current_answer.multiple_choice_answers
-    ):
-        answers = [
-            (q["question_text"], [random.choice(q["options"])])
-            for q in current_answer.question.multiple_choice_options
-        ]
-    elif current_answer.question.multiple_choice_options:
-        answers = current_answer.multiple_choice_answers
-    else:
-        return None
-
-    for question, options in answers:
-        multiple_choice.append({"question_text": question, "options": options})
-
-    return multiple_choice
-
-
-class AnswerFactory(factory.django.DjangoModelFactory):
+class DescendantThemeFactory(DjangoModelFactory):
     class Meta:
-        model = models.Answer
-        skip_postgeneration_save = True
+        model = models.Theme
 
-    free_text = factory.LazyAttribute(
-        lambda o: faker.sentence() if o.question.has_free_text else None
-    )
+    @classmethod
+    def _create(cls, model_class, *args, **kwargs):
+        precursor = kwargs.get("precursor")
+        framework = kwargs.get("framework")
+        name = kwargs.get("name")
+        description = kwargs.get("description")
+        if not precursor:
+            precursor = InitialThemeFactory()
+        if not framework:
+            framework = DescendantFrameworkFactory(precursor=precursor.framework)
+        if not name:
+            name = fake.sentence()
+        if not description:
+            description = fake.paragraph()
+        return precursor.create_descendant_theme(
+            new_framework=framework, name=name, description=description
+        )
 
-    multiple_choice = factory.LazyAttribute(get_multiple_choice_answers)
 
-    class Params:
-        multiple_choice_answers = None
-
-    @factory.post_generation
-    def validate_json_fields(answer, creation_strategy, extracted, **kwargs):
-        answer.full_clean()
-
-
-# this delegates all creation to the create_user method on User
-# because that's how Django likes users to be created
-class UserFactory(factory.django.DjangoModelFactory):
+class ThemeMappingFactory(DjangoModelFactory):
     class Meta:
-        model = authentication_models.User
-        skip_postgeneration_save = True
+        model = models.ThemeMapping
 
-    email = factory.LazyAttribute(lambda o: faker.email())
-    is_staff = False
-    password = factory.LazyAttribute(lambda o: faker.password())
-
-    @factory.post_generation
-    def create_user(user, creation_strategy, value, **kwargs):
-        user.set_password(user.password)
-        user.save()
+    answer = factory.SubFactory(FreeTextAnswerFactory)
+    theme = factory.SubFactory(InitialThemeFactory)
+    reason = factory.LazyAttribute(lambda o: fake.sentence())
+    execution_run = factory.SubFactory(ExecutionRunFactory)

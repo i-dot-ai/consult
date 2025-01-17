@@ -28,6 +28,9 @@
           <span class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">Response explorer</span>
           {{ question.text }}
         </h1>
+        <h2 class="govuk-heading-m govuk-!-font-weight-regular">
+          {{ free_text_question_part.text }}
+        </h2>
       </div>
     </div>
   </div>
@@ -37,35 +40,7 @@
     <div class="govuk-grid-column-one-quarter-from-desktop">
       <div class="iai-panel govuk-!-margin-bottom-5">
         <h2 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">Filters</h2>
-        <form>
-
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="event-name">Keyword search</label>
-            <input class="govuk-input govuk-input--width-10" id="keyword" name="keyword" type="text" value="{{applied_filters.keyword}}">
-          </div>
-
-          <div class="govuk-form-group">
-            <label class="govuk-label" for="theme">
-              Theme
-            </label>
-            <select class="govuk-select" id="theme" name="theme">
-              <option {% if applied_filters.theme == "All" %}selected{% endif %}>All</option>
-              {% for theme in themes %}
-                <option value="{{ theme.id }}" {% if applied_filters.theme|string == theme.id|string %}selected{% endif %}>{{ theme.short_description }}</option>
-              {% endfor %}
-              {#<option {% if applied_filters.theme == "No theme" %}selected{% endif %}>No theme</option>#}
-            </select>
-          </div>
-         
-            {{ govukButton({
-              "text": "Apply filters",
-              "classes": "govuk-!-margin-bottom-2"
-            }) }}
-            <div class="govuk-!-padding-2">
-              <a class="govuk-body-s" href="?">Clear filters</a>
-            </div>
-
-        </form>
+        READD FILTERS (keywords, theme)
       </div>
     </div>
 
@@ -78,24 +53,14 @@
           </caption>
           <thead class="govuk-table__head">
             <tr class="govuk-table__row">
-              {% if question.multiple_choice_options %}
-                <th scope="col" class="govuk-table__header">Multiple choice</th>
-              {% endif %}
               <th scope="col" class="govuk-table__header">Free text</th>
             </tr>
           </thead>
           <tbody class="govuk-table__body">
             {% for response in responses %}
               <tr class="govuk-table__row govuk-body-s">
-                {% if response.multiple_choice %}
-                  <td class="govuk-table__cell">
-                    {% for item in response.multiple_choice %}
-                      <strong>{{ item["question_text"] }}</strong> {{ ", ".join(item["options"]) }}
-                    {% endfor %}
-                  </td>
-                {% endif %}
                 <td class="govuk-table__cell">
-                  {{ response.free_text }}
+                  {{ response.text }}
                 </td>
               </tr>
             {% endfor %}
@@ -106,14 +71,9 @@
         {% if pagination.paginator.num_pages > 1 %}
           <nav class="govuk-pagination" role="navigation" aria-label="Pagination">
 
-            {% set filters = namespace(str="") %}
-            {% for key, value in applied_filters.items() %}
-              {% set filters.str = filters.str + "&" + key + "=" + value %}
-            {% endfor %}
-
             {% if pagination.number > 1 %}
               <div class="govuk-pagination__prev">
-                <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.number - 1 }}{{ filters.str }}" rel="prev">
+                <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.number - 1 }}" rel="prev">
                   <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
                     <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
                   </svg>
@@ -128,7 +88,7 @@
 
               {% if pagination.number > 2 %}
                 <li class="govuk-pagination__item">
-                  <a class="govuk-link govuk-pagination__link" href="?page=1{{ filters.str }}" aria-label="Page 1">
+                  <a class="govuk-link govuk-pagination__link" href="?page=1" aria-label="Page 1">
                     1
                   </a>
                 </li>
@@ -139,20 +99,20 @@
 
               {% if pagination.has_previous() %}
                 <li class="govuk-pagination__item">
-                  <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.previous_page_number() }}{{ filters.str }}" aria-label="Page {{ pagination.previous_page_number() }}">
+                  <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.previous_page_number() }}" aria-label="Page {{ pagination.previous_page_number() }}">
                     {{ pagination.previous_page_number() }}
                   </a>
                 </li>
               {% endif %}
               <li class="govuk-pagination__item govuk-pagination__item--current">
-                <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.number }}{{ filters.str }}" aria-label="Page {{ pagination.number }}" aria-current="page">
+                <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.number }}" aria-label="Page {{ pagination.number }}" aria-current="page">
                   {{ pagination.number }}
                 </a>
               </li>
 
               {% if pagination.has_next() %}
                 <li class="govuk-pagination__item">
-                  <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.next_page_number() }}{{ filters.str }}" aria-label="Page {{ pagination.next_page_number() }}">
+                  <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.next_page_number() }}" aria-label="Page {{ pagination.next_page_number() }}">
                     {{ pagination.next_page_number() }}
                   </a>
                 </li>
@@ -163,7 +123,7 @@
                   &ctdot;
                 </li>
                 <li class="govuk-pagination__item">
-                  <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.paginator.num_pages }}{{ filters.str }}" aria-label="Page {{ pagination.paginator.num_pages }}">
+                  <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.paginator.num_pages }}" aria-label="Page {{ pagination.paginator.num_pages }}">
                     {{ pagination.paginator.num_pages }}
                   </a>
                 </li>
@@ -173,7 +133,7 @@
 
             {% if pagination.has_next() %}
               <div class="govuk-pagination__next">
-                <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.next_page_number() }}{{ filters.str }}" rel="next">
+                <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.next_page_number() }}" rel="next">
                   <span class="govuk-pagination__link-title">
                     Next<span class="govuk-visually-hidden"> page</span>
                   </span>

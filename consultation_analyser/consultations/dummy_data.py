@@ -1,59 +1,142 @@
-import datetime
 import random
+from typing import Optional
 
+import yaml
+
+from consultation_analyser.consultations import models
 from consultation_analyser.factories import (
-    ConsultationBuilder,
-    FakeConsultationData,
+    ConsultationFactory,
+    ExecutionRunFactory,
+    FreeTextAnswerFactory,
+    FreeTextQuestionPartFactory,
+    InitialFrameworkFactory,
+    InitialThemeFactory,
+    MultipleOptionAnswerFactory,
+    MultipleOptionQuestionPartFactory,
+    QuestionFactory,
+    RespondentFactory,
+    SingleOptionAnswerFactory,
+    SingleOptionQuestionPartFactory,
+    ThemeMappingFactory,
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
 
 
-def create_dummy_data(responses=20, number_questions=10, **options):
-    if number_questions > 10:
-        raise RuntimeError("You can't have more than 10 questions")
+def create_dummy_consultation_from_yaml(
+    file_path: str = "./tests/examples/sample_questions.yml",
+    number_respondents: int = 10,
+    consultation: Optional[models.Consultation] = None,
+) -> ConsultationFactory:
+    """
+    Create consultation with question, question parts, answers and themes from yaml file.
+    Creates relevant objects: Consultation, Question, QuestionPart, Answer, Theme, ThemeMapping,
+    SentimentMapping, Framework, ExecutionRun.
+    """
     if HostingEnvironment.is_production():
         raise RuntimeError("Dummy data generation should not be run in production")
 
-    # Timestamp to avoid duplicates - set these as default options
-    timestamp = datetime.datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
-    if "name" not in options:
-        options["name"] = f"Dummy consultation generated at {timestamp}"
-    if "slug" not in options:
-        options["slug"] = f"consultation-slug-{timestamp}"
+    if not consultation:
+        consultation = ConsultationFactory()
+    respondents = [RespondentFactory(consultation=consultation) for _ in range(number_respondents)]
 
-    consultation_builder = ConsultationBuilder(**options)
-    fake_consultation_data = FakeConsultationData()
-    all_questions = fake_consultation_data.all_questions()
-    questions_to_include = all_questions[:number_questions]
+    with open(file_path, "r") as file:
+        questions_data = yaml.safe_load(file)
 
-    questions = [
-        consultation_builder.add_question(
-            text=q["text"],
-            slug=q["slug"],
-            multiple_choice_questions=[
-                (x["question_text"], x["options"]) for x in (q.get("multiple_choice") or [])
-            ],
-            has_free_text=q["has_free_text"],
+    # Save all questions, and corresponding question parts and answers
+    for question_data in questions_data:
+        question = QuestionFactory(
+            text=question_data["question_text"],
+            number=question_data["number"],
+            consultation=consultation,
         )
-        for q in questions_to_include
-    ]
+        parts = question_data["parts"]
 
-    for i, r in enumerate(range(responses)):
-        for q in questions:
-            if q.has_free_text:
-                if random.randrange(1, 4) == 1:
-                    free_text_answer = ""
-                else:
-                    free_text_answer = fake_consultation_data.get_free_text_answer(q.slug)
+        # Each question part is considered separately
+        for part in parts:
+            question_part_type = part["type"]
+            if question_part_type == models.QuestionPart.QuestionType.FREE_TEXT:
+                question_part = FreeTextQuestionPartFactory(
+                    question=question,
+                    text=part["text"],
+                    type=question_part_type,
+                    number=part["number"],
+                )
+
+                # Simulate execution runs for each question to generate themes, theme mapping
+                theme_generation_run = ExecutionRunFactory(
+                    type=models.ExecutionRun.TaskType.THEME_GENERATION
+                )
+                framework = InitialFrameworkFactory(
+                    execution_run=theme_generation_run, question_part=question_part
+                )
+                theme_mapping_run = ExecutionRunFactory(
+                    type=models.ExecutionRun.TaskType.THEME_MAPPING
+                )
+                themes = part.get("themes", [])
+                theme_objects = [
+                    InitialThemeFactory(
+                        framework=framework,
+                        name=theme["name"],
+                        description=theme["description"],
+                    )
+                    for theme in themes
+                ]
+
+            elif question_part_type == models.QuestionPart.QuestionType.SINGLE_OPTION:
+                question_part = SingleOptionQuestionPartFactory(
+                    question=question,
+                    text=part["text"],
+                    type=question_part_type,
+                    options=part.get("options"),
+                    number=part["number"],
+                )
             else:
-                free_text_answer = None
+                question_part = MultipleOptionQuestionPartFactory(
+                    question=question,
+                    text=part["text"],
+                    type=question_part_type,
+                    options=part.get("options"),
+                    number=part["number"],
+                )
 
-            consultation_builder.add_answer(q, free_text=free_text_answer)
-            consultation_builder.next_response()
+            # Now populate the answers and corresponding themes etc. for these question parts
+            for respondent in respondents:
+                if question_part_type == models.QuestionPart.QuestionType.FREE_TEXT:
+                    text = random.choice(part.get("free_text_answers", [""]))
+                    answer = FreeTextAnswerFactory(
+                        question_part=question_part, text=text, respondent=respondent
+                    )
+                elif question_part_type == models.QuestionPart.QuestionType.SINGLE_OPTION:
+                    chosen_options = random.choice(part["options"])
+                    text = ""
+                    answer = SingleOptionAnswerFactory(
+                        question_part=question_part,
+                        text=text,
+                        chosen_options=chosen_options,
+                        respondent=respondent,
+                    )
+                else:
+                    chosen_options = random.sample(
+                        part["options"], k=random.randint(1, len(part["options"]))
+                    )
+                    text = ""
+                    answer = MultipleOptionAnswerFactory(
+                        question_part=question_part,
+                        text=text,
+                        chosen_options=chosen_options,
+                        respondent=respondent,
+                    )
 
-    # always assign a double multichoice selection to the last question
-    question_options = q.multiple_choice_options[0]
-    answers = (question_options["question_text"], question_options["options"][:2])
-    consultation_builder.add_answer(q, multiple_choice_answers=[answers])
+                # Now map (multiple) themes and sentiment to each answer for free-text questions.
+                # This is in a different order to how it would work in pipeline - but this is as we
+                # are reading from file.
+                if question_part_type == models.QuestionPart.QuestionType.FREE_TEXT:
+                    themes_for_answer = random.sample(
+                        theme_objects, k=random.randint(1, len(theme_objects))
+                    )
+                    for theme in themes_for_answer:
+                        ThemeMappingFactory(
+                            answer=answer, theme=theme, execution_run=theme_mapping_run
+                        )
 
-    return consultation_builder.consultation
+    return consultation

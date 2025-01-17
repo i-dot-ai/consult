@@ -3,6 +3,7 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
 from consultation_analyser.authentication.models import User
+from consultation_analyser.consultations.models import Consultation
 
 from ..forms.edit_user_form import EditUserForm
 from ..forms.new_user_form import NewUserForm
@@ -29,7 +30,7 @@ def new(request: HttpRequest):
 
 def show(request: HttpRequest, user_id: int):
     user = get_object_or_404(User, pk=user_id)
-    consultations = user.consultation_set.all()
+    consultations = Consultation.objects.filter(users__in=[user])
 
     if not request.POST:
         form = EditUserForm({"user_id": user_id, "is_staff": user.is_staff})

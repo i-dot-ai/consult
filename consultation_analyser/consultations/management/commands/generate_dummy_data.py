@@ -1,22 +1,12 @@
 from django.core.management.base import BaseCommand
-from django.utils.text import slugify
 
-from consultation_analyser.consultations.dummy_data import create_dummy_data
+from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
 
 
 class Command(BaseCommand):
-    help = "Generate a dummy consultation with 10 responses"
-
-    def add_arguments(self, parser):
-        parser.add_argument("--name", action="store", help="The name of the consultation", type=str)
+    help = "Generate a dummy consultation with 100 responses"
 
     def handle(self, *args, **options):
         self.stdout.write("Generating dummy data...")
-        if options["name"]:
-            name = options["name"]
-            slug = slugify(name)
-            create_dummy_data(name=options["name"], slug=slug)
-        else:
-            create_dummy_data()
-
+        create_dummy_consultation_from_yaml(number_respondents=100)
         self.stdout.write("Done.")

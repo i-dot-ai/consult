@@ -1,0 +1,107 @@
+- question_text: "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?"
+  number: 1
+  parts:
+    - text: ""
+      type: "single_option"
+      options: ["Yes", "No", "Don't know", "No answer"]
+      number: 1
+    - text: "Please explain your answer."
+      type: "free_text"
+      options: []
+      number: 2
+      free_text_answers:
+      - ""
+      - "Yes, I agree with the proposal as it will create a standardized framework that benefits both consumers and manufacturers."
+      - "No, I do not agree because I feel the proposed categories are too restrictive and may stifle innovation in flavour development."
+      - "I agree with the proposal, but I think there should be room for additional categories to accommodate future trends."
+      - "I disagree with the proposal as it does not sufficiently account for regional flavour preferences across the UK."
+      - "Yes, aligning the flavour categories will help consumers easily compare products and make informed choices."
+      - "I neither agree nor disagree at this moment; I would like more information on how the categories were determined."
+      - "I support the proposal because it will likely improve transparency and consistency in labelling for consumers."
+      - "No, I believe the existing categories are sufficient and that changes could confuse consumers."
+      - "I agree in principle, but I think the guidelines should include a provision for periodic review to adapt to market changes."
+      themes:
+        - name: "Standardized framework"
+          description: "A standardized framework that benefits both consumers and manufacturers."
+        - name: "Innovation"
+          description: "Innovation in flavour development."
+
+- question_text: "Is the proposed description sufficiently clear for the purpose of implementation and enforcement?"
+  number: 2
+  parts:
+    - text: "(a) Multibuy promotions"
+      type: "single_option"
+      options: ["Yes", "No", "Don't know", "No answer"]
+      number: 1
+    - text: "(b) Price promotions"
+      type: "single_option"
+      options: ["Yes", "No", "Don't know", "No answer"]
+      number: 2
+
+- question_text: "Which of the following factors do you believe are important when considering the packaging of chocolate bars? Please select all that apply: a) Sustainability, b) Design, c) Cost-effectiveness, d) Durability, e) Brand recognition."
+  number: 3
+  parts:
+    - text: ""
+      type: "multiple_options"
+      options: ["Sustainability", "Design", "Cost-effectiveness", "Durability", "Brand recognition"]
+      number: 1
+
+- question_text: "What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?"
+  number: 4
+  parts:
+    - text: ""
+      type: "free_text"
+      options: []
+      number: 1
+      free_text_answers:
+      - ""
+      - "I believe the current regulations should include clearer guidelines on the sourcing of ingredients to ensure ethical practices and sustainability."
+      - "The regulations could be improved by setting specific limits on sugar content to promote healthier options for consumers."
+      - "Consideration should be given to standardizing portion sizes to help consumers make informed choices and manage their calorie intake."
+      - "It would be beneficial to include mandatory allergen warnings on all packaging to enhance consumer safety."
+      - "The regulations should encourage more innovation in packaging materials to reduce environmental impact."
+      - "Introducing incentives for using locally sourced ingredients could support local economies and reduce carbon footprints."
+      - "The current regulations could be improved by including a requirement for transparent labeling about nutritional information."
+      - "I think the regulations should mandate clearer expiration dates to prevent food waste and ensure product freshness."
+      - "The industry would benefit from guidelines that promote fair trade practices, giving consumers more ethical choices."
+      themes:
+        - name: "More innovative"
+          description: "Innovative ideas to improve chocolate bar regulations."
+        - name: "Healthier options"
+          description: "It should encourage healthier options."
+        - name: "Clearer guidelines"
+          description: "It should include clearer guidelines."
+        - name: "Fair trade practices"
+          description: "It should promote fair trade practices."
+
+- question_text: ""
+  number: 5
+  parts:
+    - text: "What factors most influence your decision when choosing a chocolate bar?"
+      type: "free_text"
+      options: []
+      number: 1
+      free_text_answers:
+      - ""
+      - "I primarily look for high cocoa content because I enjoy a rich, intense chocolate flavour."
+      - "Price is a big factor for me; I tend to choose chocolate bars that are on sale or offer good value."
+      - "I prefer brands that use organic ingredients, as I believe they are healthier and more sustainable."
+      - "The packaging design often catches my eye and influences my choice, especially if it looks premium or unique."
+      - "I always check for allergen information because I need to avoid nuts."
+      - "I am influenced by ethical considerations, so I opt for fair trade chocolate bars."
+      - "Recommendations from friends or family play a significant role in my decision-making process."
+      - "I look for familiar brands that I have enjoyed in the past and trust their quality."
+      - "The variety of flavours offered is important to me, as I like trying new and interesting combinations."
+      themes:
+        - name: "Cocoa content"
+          description: "Factors related to the cocoa content of chocolate bars."
+        - name: "Price"
+          description: "Factors related to the price of chocolate bars."
+        - name: "Familiarity"
+          description: "How familiar brands are."
+
+    - text: "How frequently do these factors lead you to try new chocolate bar brands?"
+      type: "single_option"
+      options: ["Always", "Often", "Sometimes", "Rarely", "Never"]
+      number: 2
+

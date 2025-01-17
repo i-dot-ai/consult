@@ -39,7 +39,7 @@
             {% for consultation in consultations %}
               <tr class="govuk-table__row">
                 <td class="govuk-table__cell">
-                  {{ consultation.name }}
+                  {{ consultation.text }}
                 </td>
                 <td class="govuk-table__cell">
                   {{ datetime(consultation.created_at) }}

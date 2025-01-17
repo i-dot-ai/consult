@@ -5,7 +5,7 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
 from consultation_analyser.consultations import models
-from consultation_analyser.consultations.dummy_data import create_dummy_data
+from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
 from consultation_analyser.hosting_environment import HostingEnvironment
 
 NO_SUMMARY_STR = "Unable to generate summary for this theme"
@@ -14,7 +14,7 @@ NO_SUMMARY_STR = "Unable to generate summary for this theme"
 def index(request: HttpRequest) -> HttpResponse:
     if request.POST:
         try:
-            consultation = create_dummy_data()
+            consultation = create_dummy_consultation_from_yaml()
             user = request.user
             consultation.users.add(user)
             messages.success(request, "A dummy consultation has been generated")
@@ -57,17 +57,8 @@ def get_number_themes_for_processing_run(processing_run):
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
 
-    # For display, just take latest themes
-    total_themes, total_with_summaries = get_number_themes_for_processing_run(
-        consultation.latest_processing_run
-    )
-    processing_runs = consultation.processingrun_set.all().order_by("created_at")
-
     context = {
         "consultation": consultation,
-        "processing_runs": processing_runs,
         "users": consultation.users.all(),
-        "total_themes": total_themes,
-        "total_with_summaries": total_with_summaries,
     }
     return render(request, "support_console/consultations/show.html", context=context)

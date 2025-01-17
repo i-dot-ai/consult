@@ -21,7 +21,7 @@ class AddUsersToConsultationForm(forms.Form):
         self.has_users = len(users) > 0
 
         self.fields["users"].choices = [(u.id, u.email) for u in users]
-        self.fields["users"].help_text = f"Adding to {consultation.name}"
+        self.fields["users"].help_text = f"Adding to {consultation.title}"
         self.helper = FormHelper()
         if self.has_users:
             self.helper.layout = Layout(

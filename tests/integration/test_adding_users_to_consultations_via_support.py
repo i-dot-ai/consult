@@ -1,5 +1,6 @@
 import pytest
 
+from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import Consultation
 from consultation_analyser.factories import UserFactory
 from tests.helpers import sign_in
@@ -19,7 +20,7 @@ def test_adding_users_to_consultations_via_support(django_app):
     consultations_index = consultations_index.form.submit("generate_dummy_consultation")
 
     latest_consultation = Consultation.objects.all().order_by("created_at").last()
-    consultation_page = consultations_index.click(latest_consultation.name)
+    consultation_page = consultations_index.click(latest_consultation.title)
 
     assert user.email in consultation_page
 
@@ -37,6 +38,7 @@ def test_adding_users_to_consultations_via_support(django_app):
 
     assert "Users updated" in consultation_page
 
+    User.objects.exclude(id=user.id).delete()
     add_user_page = consultation_page.click("Add users")
 
     assert "There are no more users available to add" in add_user_page
