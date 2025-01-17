@@ -16,7 +16,7 @@ def test_user_can_see_consultations(django_app):
     assert "You do not have any consultations" in landing_page
 
     # but when i add a consultation
-    consultation = ConsultationFactory(text="My First Consultation")
+    consultation = ConsultationFactory(title="My First Consultation")
     consultation.users.add(user)
 
     # and i sign in again

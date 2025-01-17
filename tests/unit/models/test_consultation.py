@@ -7,12 +7,11 @@ from consultation_analyser.factories import ConsultationFactory
 def test_consultation_save():
     consultation_title = "My First Consultation"
     slugified = "my-first-consultation"
-    consultation = ConsultationFactory(text=consultation_title)
+    consultation = ConsultationFactory(title=consultation_title)
     assert consultation.slug == slugified
-    another_consultation = ConsultationFactory(text=consultation_title)
+    another_consultation = ConsultationFactory(title=consultation_title)
     assert another_consultation.slug != consultation.slug
     assert another_consultation.slug == f"{slugified}-1"
-    yet_another_consultation = ConsultationFactory(text=consultation_title)
+    yet_another_consultation = ConsultationFactory(title=consultation_title)
     assert yet_another_consultation.slug != consultation.slug
     assert yet_another_consultation.slug == f"{slugified}-2"
-

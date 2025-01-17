@@ -12,7 +12,7 @@
       {% for consultation in consultations %}
         <li class="govuk-!-margin-top-2">
           <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-body-l govuk-link govuk-link--no-visited-state">
-            {{ consultation.text }}
+            {{ consultation.title }}
           </a>
         </li>
       {% endfor %}

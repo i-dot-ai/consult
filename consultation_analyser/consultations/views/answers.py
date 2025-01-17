@@ -40,7 +40,7 @@ def index(
     paginated_responses = current_page.object_list
 
     context = {
-        "consultation_name": consultation.text,
+        "consultation_name": consultation.title,
         "consultation_slug": consultation_slug,
         "question": question,
         "free_text_question_part": free_text_question_part,

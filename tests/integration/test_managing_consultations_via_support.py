@@ -16,7 +16,7 @@ def test_managing_consultations_via_support(django_app):
     consultations_page = consultations_page.form.submit("generate_dummy_consultation")
 
     latest_consultation = Consultation.objects.all().order_by("created_at").last()
-    consultation_page = consultations_page.click(latest_consultation.text)
+    consultation_page = consultations_page.click(latest_consultation.title)
 
     # and I should be able to delete the consultation
     confirmation_page = consultation_page.click("Delete this consultation")

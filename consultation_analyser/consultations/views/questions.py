@@ -45,7 +45,7 @@ def show(
 
     context = {
         "consultation_slug": consultation_slug,
-        "consultation_name": consultation.text,
+        "consultation_name": consultation.title,
         "question": question,
         "question_parts": question_parts,
         "total_responses": total_responses,

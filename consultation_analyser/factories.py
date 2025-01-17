@@ -23,7 +23,7 @@ class ConsultationFactory(DjangoModelFactory):
     class Meta:
         model = models.Consultation
 
-    text = factory.LazyAttribute(lambda o: fake.sentence())
+    title = factory.LazyAttribute(lambda o: fake.sentence())
 
 
 class QuestionFactory(DjangoModelFactory):
