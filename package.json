@@ -15,6 +15,6 @@
     "@x-govuk/govuk-prototype-components": "^3.0.9",
     "govuk-frontend": "^5.8.0",
     "json-schema-faker-cli": "^5.0.6",
-    "i.ai-design-system": "^0.4.8"
+    "i.ai-design-system": "^0.5.0"
   }
 }
