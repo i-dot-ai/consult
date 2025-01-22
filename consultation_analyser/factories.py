@@ -1,6 +1,7 @@
 import random
 
 import factory
+from factory import fuzzy
 from factory.django import DjangoModelFactory
 from faker import Faker
 
@@ -201,3 +202,4 @@ class ThemeMappingFactory(DjangoModelFactory):
     theme = factory.SubFactory(InitialThemeFactory)
     reason = factory.LazyAttribute(lambda o: fake.sentence())
     execution_run = factory.SubFactory(ExecutionRunFactory)
+    stance = fuzzy.FuzzyChoice(['POSITIVE', 'NEGATIVE'])
