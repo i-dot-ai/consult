@@ -8,7 +8,7 @@ Accepted
 
 ## Context
 
-For a given consultation, Consult needs to store the questions, responses and all outputs of the AI pipeline. The pipeline generates themes for free-text responses, and assigns them to each response. Additionally we need to store some of the intermediate outputs.
+For a given consultation, Consult needs to store the questions, responses and outputs of the AI pipeline. The pipeline generates themes for free-text responses, and assigns them to each response. Additionally we need to store some of the intermediate outputs in the database.
 
 The theme mapping pipeline outputs we need to store are: 
 - Sentiment analysis
@@ -29,4 +29,4 @@ To record the history of changes to `Theme` and `Framework` tables, create a new
  
 This change will enable us to store all of the AI pipeline outputs, ie assigning themes to free-text consultation responses and intermediate outputs. It will also enable us to track the history of all themes and theme assignments, and who made those changes.
 
-A risk is that these models and their interactions are difficult to understand, but this is partially mitigated by adding logic in the model methods, and adding constraints in the model
+A risk is that these models and their interactions are difficult to understand. This is partially mitigated by adding logic in the model methods, and adding constraints to the models.
