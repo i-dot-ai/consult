@@ -149,3 +149,6 @@ The govuk assets are versioned in the `npm` package. `make dev_environment`
 includes a step to copy them to the `frontend` folder from where `runserver`
 can serve them; you can rerun this with `make govuk_frontend`.
 
+## Docs
+
+We are using `adr-tools` to manage "Architectural Decision Records" - to track decisions made. To install and use: https://github.com/npryce/adr-tools.
