@@ -348,12 +348,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
     reason = models.TextField()
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
-    stance = models.CharField(
-        max_length=8,
-        choices=Stance.choices,
-        default=Stance.POSITIVE
-    )
-
+    stance = models.CharField(max_length=8, choices=Stance.choices)
     history = HistoricalRecords()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
