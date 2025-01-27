@@ -340,12 +340,15 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
 class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     # When changing the mapping for an answer, don't change the answer
     # change the theme.
+    class Stance(models.TextChoices):
+        POSITIVE = 'POSITIVE', 'Positive'
+        NEGATIVE = 'NEGATIVE', 'Negative'
+
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
     reason = models.TextField()
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
-    # TODO - add stance (what are options?)
-
+    stance = models.CharField(max_length=8, choices=Stance.choices)
     history = HistoricalRecords()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
