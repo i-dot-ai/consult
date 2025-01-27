@@ -202,4 +202,4 @@ class ThemeMappingFactory(DjangoModelFactory):
     theme = factory.SubFactory(InitialThemeFactory)
     reason = factory.LazyAttribute(lambda o: fake.sentence())
     execution_run = factory.SubFactory(ExecutionRunFactory)
-    stance = fuzzy.FuzzyChoice(['POSITIVE', 'NEGATIVE'])
+    stance = fuzzy.FuzzyChoice(models.ThemeMapping.Stance.values)
