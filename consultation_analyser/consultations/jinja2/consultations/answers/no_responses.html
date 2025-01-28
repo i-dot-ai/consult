@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% set page_title = "Review response themes" %}
+
+{% block content %}
+  <div class="govuk-grid-row govuk-!-margin-top-5">
+    <div class="govuk-grid-column-full">
+      <span class="govuk-caption-m">Question {{question.number}} </span>
+      <h1 class="govuk-heading-m">
+        {{ question.text }}
+      </h1>
+    </div>
+
+    <div class="govuk-grid-column-full">
+      <div class="iai-panel govuk-!-margin-bottom-4">
+        <h2 class="govuk-heading-m">No responses</h2>
+        <p class="govuk-body-s">There are no remaining responses to this question to check.</p>
+      </div>
+  </div>
+{% endblock %}

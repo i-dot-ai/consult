@@ -22,6 +22,16 @@ urlpatterns = [
         answers.index,
         name="question_responses",
     ),
+    path(
+        "consultations/<str:consultation_slug>/responses/<str:question_slug>/show-next/",
+        answers.show_next,
+        name="show_next_response",
+    ),
+    path(
+        "consultations/<str:consultation_slug>/responses/<str:question_slug>/<str:response_id>/",
+        answers.show,
+        name="show_response",
+    ),
     # authentication
     path("sign-in/", sessions.new, name="sign_in"),
     path("sign-out/", sessions.destroy, name="sign_out"),

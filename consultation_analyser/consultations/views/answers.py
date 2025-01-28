@@ -1,7 +1,9 @@
+from datetime import datetime
+
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.http import HttpRequest
-from django.shortcuts import get_object_or_404, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from .. import models
 from .decorators import user_can_see_consultation
@@ -50,3 +52,93 @@ def index(
     }
 
     return render(request, "consultations/answers/index.html", context)
+
+
+@login_required  # TODO: check if we still need this
+@user_can_see_consultation
+def show(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+    response_id: int,
+):
+    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+    question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
+    response = get_object_or_404(models.Answer, id=response_id)
+
+    # TODO: update with QuestionPart
+    all_theme_mappings = models.ThemeMapping.get_latest_theme_mappings_for_question_part(
+        part=response.question_part
+    )
+    all_themes = models.Theme.objects.filter(id__in=all_theme_mappings.values("theme"))
+    existing_themes = models.ThemeMapping.objects.filter(answer=response).values_list(
+        "theme", flat=True
+    )
+
+    if request.method == "POST":
+        requested_themes = request.POST.getlist("theme")
+        existing_mappings = models.ThemeMapping.objects.filter(answer=response)
+
+        # themes to delete
+        existing_mappings.exclude(theme_id__in=requested_themes).delete()
+
+        # themes to add
+        themes_to_add = set(requested_themes).difference([str(theme) for theme in existing_themes])
+        for theme_id in themes_to_add:
+            models.ThemeMapping.objects.create(
+                answer=response, theme_id=theme_id, reason="User added theme"
+            )
+
+        # flag
+        response.is_theme_mapping_audited = True
+        response.save()
+
+        return redirect(
+            "show_next_response", consultation_slug=consultation_slug, question_slug=question_slug
+        )
+
+    elif request.method == "GET":
+        context = {
+            "consultation_name": consultation.title,
+            "consultation_slug": consultation_slug,
+            "question": question,
+            "response": response,
+            "all_themes": all_themes,
+            "existing_themes": existing_themes,  #  update this key
+            "date_created": datetime.strftime(response.created_at, "%d %B %Y"),
+        }
+
+        return render(request, "consultations/answers/show.html", context)
+
+
+@user_can_see_consultation
+@login_required
+def show_next(request: HttpRequest, consultation_slug: str, question_slug: str):
+    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+    question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
+
+    # Where is a better place to put (and cache) this?
+    question_parts_with_themes = [
+        qp.id
+        for qp in question.questionpart_set.all()
+        if models.ThemeMapping.get_latest_theme_mappings_for_question_part(qp).count() > 0
+    ]
+
+    # Get the next response that has not been checked
+    next_response = (
+        models.Answer.objects.filter(
+            question_part_id__in=question_parts_with_themes, is_theme_mapping_audited=False
+        )
+        .order_by("?")
+        .first()
+    )
+
+    if next_response:
+        return redirect(
+            "show_response",
+            consultation_slug=consultation_slug,
+            question_slug=question_slug,
+            response_id=next_response.id,
+        )
+
+    return render(request, "consultations/answers/no_responses.html")

@@ -184,6 +184,7 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
     text = models.TextField()
     chosen_options = models.JSONField(default=list)
+    is_theme_mapping_audited = models.BooleanField(default=False)
     # TODO - add favourite
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
@@ -347,7 +348,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
     reason = models.TextField()
-    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
+    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
     stance = models.CharField(max_length=8, choices=Stance.choices)
     history = HistoricalRecords()
 
