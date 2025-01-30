@@ -33,7 +33,7 @@ locals {
 module "ecs" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source            = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
-  source             = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v1.0.0-ecs"
+  source             = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.0.0-ecs"
   name               = local.name
   image_tag          = var.image_tag
   ecr_repository_uri = var.ecr_repository_uri
@@ -51,32 +51,31 @@ module "ecs" {
   }
   environment_variables = local.ecs_env_vars
 
-  state_bucket                 = var.state_bucket
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   container_port               = "8000"
   load_balancer_security_group = module.load_balancer.load_balancer_security_group_id
   aws_lb_arn                   = module.load_balancer.alb_arn
   host                         = local.host
-  route53_record_name          = aws_route53_record.type_a_record.name
-  ip_whitelist                 = var.external_ips
   create_listener              = true
   task_additional_iam_policies = local.additional_policy_arns
   additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
   }
   entrypoint = ["./start.sh"]
+  certificate_arn = data.terraform_remote_state.universal.outputs.certificate_arn
 }
 
 module "worker" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source            = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
-  source             = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v1.0.0-ecs"
+  source             = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.0.0-ecs"
   name               = "${local.name}-worker"
   image_tag          = var.image_tag
   ecr_repository_uri = var.ecr_repository_uri
   ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
   ecs_cluster_name   = data.terraform_remote_state.platform.outputs.ecs_cluster_name
+  certificate_arn    = data.terraform_remote_state.universal.outputs.certificate_arn
   memory             = local.ecs_memory
   cpu                = local.ecs_cpus
   health_check = {
@@ -89,15 +88,12 @@ module "worker" {
   }
   environment_variables = local.ecs_env_vars
 
-  state_bucket                 = var.state_bucket
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   container_port               = "8000"
   load_balancer_security_group = module.load_balancer.load_balancer_security_group_id
   aws_lb_arn                   = module.load_balancer.alb_arn
   host                         = local.host
-  route53_record_name          = aws_route53_record.type_a_record.name
-  ip_whitelist                 = var.external_ips
   create_listener              = false
   create_networking            = false
   task_additional_iam_policies = local.additional_policy_arns
