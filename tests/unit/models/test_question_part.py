@@ -3,12 +3,11 @@ import pytest
 
 from consultation_analyser.consultations.models import QuestionPart
 from consultation_analyser.factories import (
+    FreeTextAnswerFactory,
     FreeTextQuestionPartFactory,
+    MultipleOptionQuestionPartFactory,
     QuestionFactory,
     SingleOptionQuestionPartFactory,
-    FreeTextAnswerFactory,
-    SingleOptionAnswerFactory,
-    MultipleOptionQuestionPartFactory,
 )
 
 
@@ -28,7 +27,6 @@ def test_only_one_free_text():
         excinfo.match(
             "UNIQUE constraint failed: consultations_questionpart.question_id, consultations_questionpart.type"
         )
-
 
 
 @pytest.mark.django_db
