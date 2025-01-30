@@ -32,6 +32,11 @@ urlpatterns = [
         answers.show,
         name="show_response",
     ),
+    path(
+        "consultations/<str:consultation_slug>/review-free-text-questions/",
+        questions.index,
+        name="review_free_text_questions",
+    ),
     # authentication
     path("sign-in/", sessions.new, name="sign_in"),
     path("sign-out/", sessions.destroy, name="sign_out"),
