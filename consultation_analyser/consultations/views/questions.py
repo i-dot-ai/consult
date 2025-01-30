@@ -26,6 +26,9 @@ def show(
     total_responses = models.Answer.objects.filter(question_part=question_parts.first()).count()
 
     # Get latest themes for the free text part
+    theme_counts_dict = {}
+    highest_theme_count = 0
+
     if free_text_question_part:
         latest_theme_mappings = models.ThemeMapping.get_latest_theme_mappings_for_question_part(
             part=free_text_question_part
@@ -33,15 +36,12 @@ def show(
         theme_counts = (
             latest_theme_mappings.values("theme").annotate(count=Count("theme")).order_by("-count")
         )
-        highest_theme_count = theme_counts[0]["count"]
-        theme_counts_dict = {
-            models.Theme.objects.get(id=theme_count["theme"]): theme_count["count"]
+        if theme_counts:
+            highest_theme_count = theme_counts[0]["count"]
+            theme_counts_dict = {
+                models.Theme.objects.get(id=theme_count["theme"]): theme_count["count"]
             for theme_count in theme_counts
         }
-        print(theme_counts_dict)
-    else:
-        theme_counts_dict = {}
-        highest_theme_count = 0
 
     context = {
         "consultation_slug": consultation_slug,
