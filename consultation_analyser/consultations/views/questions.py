@@ -40,8 +40,8 @@ def show(
             highest_theme_count = theme_counts[0]["count"]
             theme_counts_dict = {
                 models.Theme.objects.get(id=theme_count["theme"]): theme_count["count"]
-            for theme_count in theme_counts
-        }
+                for theme_count in theme_counts
+            }
 
     context = {
         "consultation_slug": consultation_slug,
