@@ -33,7 +33,7 @@ urlpatterns = [
         name="show_response",
     ),
     path(
-        "consultations/<str:consultation_slug>/review-free-text-questions/",
+        "consultations/<str:consultation_slug>/review-questions/",
         questions.index,
         name="review_free_text_questions",
     ),
