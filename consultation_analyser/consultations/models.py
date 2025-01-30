@@ -342,8 +342,8 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     # When changing the mapping for an answer, don't change the answer
     # change the theme.
     class Stance(models.TextChoices):
-        POSITIVE = 'POSITIVE', 'Positive'
-        NEGATIVE = 'NEGATIVE', 'Negative'
+        POSITIVE = "POSITIVE", "Positive"
+        NEGATIVE = "NEGATIVE", "Negative"
 
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)

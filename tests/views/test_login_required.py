@@ -51,9 +51,13 @@ def set_up_consultation(user):
     consultation = question.consultation
     consultation.users.add(user)
     consultation.save()
+
+    question_part = factories.FreeTextQuestionPartFactory(question=question)
+    answer = factories.FreeTextAnswerFactory(question_part=question_part)
     possible_args = {
         "consultation_slug": consultation.slug,
         "question_slug": question.slug,
+        "response_id": answer.id,
     }
     return possible_args
 

@@ -1,6 +1,7 @@
 from datetime import datetime
 
 from django.contrib.auth.decorators import login_required
+from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
@@ -85,9 +86,7 @@ def show(
         # themes to add
         themes_to_add = set(requested_themes).difference([str(theme) for theme in existing_themes])
         for theme_id in themes_to_add:
-            models.ThemeMapping.objects.create(
-                answer=response, theme_id=theme_id, reason="User added theme"
-            )
+            models.ThemeMapping.objects.create(answer=response, theme_id=theme_id, stance="")
 
         # flag
         response.is_theme_mapping_audited = True
@@ -117,17 +116,26 @@ def show_next(request: HttpRequest, consultation_slug: str, question_slug: str):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
 
-    # Where is a better place to put (and cache) this?
-    question_parts_with_themes = [
-        qp.id
-        for qp in question.questionpart_set.all()
-        if models.ThemeMapping.get_latest_theme_mappings_for_question_part(qp).count() > 0
-    ]
+    def handle_no_responses():
+        context = {
+            "consultation_name": consultation.title,
+            "consultation_slug": consultation_slug,
+            "question": question,
+        }
+        return render(request, "consultations/answers/no_responses.html", context)
+
+    # Get the question part with themes
+    try: 
+        question_part_with_themes = question.questionpart_set.get(
+            type=models.QuestionPart.QuestionType.FREE_TEXT
+        )
+    except ObjectDoesNotExist:
+        return handle_no_responses()
 
     # Get the next response that has not been checked
     next_response = (
         models.Answer.objects.filter(
-            question_part_id__in=question_parts_with_themes, is_theme_mapping_audited=False
+            question_part=question_part_with_themes, is_theme_mapping_audited=False
         )
         .order_by("?")
         .first()
@@ -141,4 +149,4 @@ def show_next(request: HttpRequest, consultation_slug: str, question_slug: str):
             response_id=next_response.id,
         )
 
-    return render(request, "consultations/answers/no_responses.html")
+    return handle_no_responses()
