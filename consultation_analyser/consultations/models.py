@@ -157,6 +157,14 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
     options = models.JSONField(null=True)  # List, null if free-text
     number = models.IntegerField(null=False, default=0)
 
+    def get_proportion_of_auditted_answers(self) -> float:
+        # Only relevant for free text questions
+        total_answers = self.answer_set.count()
+        if total_answers == 0:
+            return 0
+        audited_answers = self.answer_set.filter(is_theme_mapping_audited=True).count()
+        return audited_answers / total_answers
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(fields=["question", "number"], name="unique_part_per_question"),
