@@ -36,7 +36,7 @@
                   Show next
                   <span class="govuk-visually-hidden"> - {{ part.text }}</span>
                 </a>
-                Reviewed {{ part.proportion_of_auditted_answers * 100 | round(0) }}%
+                <p>Reviewed {{ part.proportion_of_audited_answers * 100 | round(0) }}%
               </div>
             </li>
           {% endfor %}

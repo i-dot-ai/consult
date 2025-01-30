@@ -158,7 +158,7 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
     number = models.IntegerField(null=False, default=0)
 
     @property
-    def proportion_of_auditted_answers(self) -> float:
+    def proportion_of_audited_answers(self) -> float:
         # Only relevant for free text questions
         total_answers = self.answer_set.count()
         if total_answers == 0:
