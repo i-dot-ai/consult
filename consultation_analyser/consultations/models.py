@@ -157,7 +157,8 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
     options = models.JSONField(null=True)  # List, null if free-text
     number = models.IntegerField(null=False, default=0)
 
-    def get_proportion_of_auditted_answers(self) -> float:
+    @property
+    def proportion_of_auditted_answers(self) -> float:
         # Only relevant for free text questions
         total_answers = self.answer_set.count()
         if total_answers == 0:

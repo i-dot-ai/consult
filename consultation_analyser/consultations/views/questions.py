@@ -59,8 +59,6 @@ def show(
 def index(request, consultation_slug: str):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     question_parts = models.QuestionPart.objects.filter(question__consultation=consultation, type=models.QuestionPart.QuestionType.FREE_TEXT)
-
-
     context = {
         "consultation": consultation,
         "question_parts": question_parts,
