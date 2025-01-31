@@ -1,6 +1,5 @@
 from datetime import datetime
 
-from django.contrib.auth.decorators import login_required
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.http import HttpRequest
@@ -11,7 +10,6 @@ from .decorators import user_can_see_consultation
 
 
 @user_can_see_consultation
-@login_required
 def index(
     request: HttpRequest,
     consultation_slug: str,
@@ -55,7 +53,6 @@ def index(
     return render(request, "consultations/answers/index.html", context)
 
 
-@login_required  # TODO: check if we still need this
 @user_can_see_consultation
 def show(
     request: HttpRequest,
@@ -111,7 +108,6 @@ def show(
 
 
 @user_can_see_consultation
-@login_required
 def show_next(request: HttpRequest, consultation_slug: str, question_slug: str):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
