@@ -8,69 +8,65 @@
 {% block content %}
 
   <div class="govuk-grid-row govuk-!-margin-top-5">
-    <div class="govuk-grid-column-full">
-      <span class="govuk-caption-m">Question {{question.number}} </span>
-      <h1 class="govuk-heading-m">
+    <div class="iai-panel govuk-grid-column-one-half govuk-!-margin-bottom-4 iai-grid-column-one-half response-theme-review-one-half">
+      <h1 class="govuk-heading-s">
         {{ question.text }}
       </h1>
-      <h2 class="govuk-heading-s govuk-!-font-weight-regular">
-        <span class="govuk-caption-m">Part {{response.question_part.number}}</span>
-        {% if response.question_part.text %}
+      {% if response.question_part.text %}
+        <h2 class="govuk-body-s govuk-!-font-weight-regular">
           {{ response.question_part.text }}
-        {% endif %}
-      </h2>
+        </h2>
+      {% endif %}
 
-      <div class="iai-panel govuk-!-margin-bottom-4">
-        <h2 class="govuk-heading-m">Respondent {{response.respondent.id}}</h2>
-        <p class="govuk-body-s">Submitted on: {{ date_created }}</p>
+      <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
-        <h3 class="govuk-heading-s govuk-!-margin-bottom-4">Response</h3>
-        <p style="line-height: 2em" class="govuk-body" id="text">
-          {{ response.text }}
-        </p>
+      <p style="line-height: 2em" class="govuk-body" id="text">
+        {{ response.text }}
+      </p>
+      
+    </div>
+    <div class="iai-panel govuk-grid-column-one-half govuk-!-margin-bottom-4 iai-grid-column-one-half response-theme-review-one-half">
 
-        <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-        <form method="POST">
+      <form method="POST">
 
-          {{ csrf_input }}
+        {{ csrf_input }}
 
-          <div class="govuk-form-group">
-            <fieldset class="govuk-fieldset" aria-describedby="theme-hint">
-              <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
-                <h2 class="govuk-fieldset__heading">
-                  Which themes are most relevant?
-                </h2>
-              </legend>
-              <div id="theme-hint" class="govuk-hint">
-                Select all that apply
+        <div class="govuk-form-group">
+          <fieldset class="govuk-fieldset" aria-describedby="theme-hint">
+            <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
+              <h2 class="govuk-fieldset__heading">
+                Which themes are most relevant?
+              </h2>
+            </legend>
+            <div id="theme-hint" class="govuk-hint iai-hint">
+              Select all that apply
+            </div>
+            <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes">
+              {% for theme in all_themes %}
+              <div class="govuk-checkboxes__item">
+                <input class="govuk-checkboxes__input" id="theme-{{ loop.index0 }}" name="theme" type="checkbox" value="{{ theme.id }}"
+                {% if theme.id in existing_themes %} checked="True" {% endif %}
+                aria-describedby="theme-{{ loop.index0 }}-hint">
+                  <label class="govuk-label govuk-checkboxes__label" for="theme-{{ loop.index0 }}">
+                    {{ theme.name }}
+                  </label>
+                  <div id="theme-{{ loop.index0 }}-hint" class="govuk-hint govuk-checkboxes__hint iai-hint">
+                    {{ theme.description }}
+                  </div>
+                </input>
               </div>
-              <div class="govuk-checkboxes" data-module="govuk-checkboxes">
-                {% for theme in all_themes %}
-                <div class="govuk-checkboxes__item">
-                  <input class="govuk-checkboxes__input" id="theme-{{ loop.index0 }}" name="theme" type="checkbox" value="{{ theme.id }}"
-                  {% if theme.id in existing_themes %} checked="True" {% endif %}
-                  aria-describedby="theme-{{ loop.index0 }}-hint">
-                    <label class="govuk-label govuk-checkboxes__label" for="theme-{{ loop.index0 }}">
-                      {{ theme.name }}
-                    </label>
-                    <div id="theme-{{ loop.index0 }}-hint" class="govuk-hint govuk-checkboxes__hint">
-                      {{ theme.description }}
-                    </div>
-                  </input>
-                </div>
-                {% endfor %}
-              </div>
-            </fieldset>
-          </div>
+              {% endfor %}
+            </div>
+          </fieldset>
+        </div>
 
-          <button type="submit" class="govuk-button" data-module="govuk-button" data-govuk-button-init="">
-            Save and continue to a new response
-          </button>
+        <button type="submit" class="govuk-button" data-module="govuk-button" data-govuk-button-init="">
+          Save and continue to a new response
+        </button>
 
-        </form>
+      </form>
 
 
-      </div>
     </div>
   </div>
 

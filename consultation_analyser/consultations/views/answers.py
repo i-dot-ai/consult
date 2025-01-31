@@ -125,7 +125,7 @@ def show_next(request: HttpRequest, consultation_slug: str, question_slug: str):
         return render(request, "consultations/answers/no_responses.html", context)
 
     # Get the question part with themes
-    try: 
+    try:
         question_part_with_themes = question.questionpart_set.get(
             type=models.QuestionPart.QuestionType.FREE_TEXT
         )

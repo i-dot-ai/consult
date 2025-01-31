@@ -117,3 +117,20 @@ pre code {
     --fonts-prefix: "iai-assets";
 }
 @import "../node_modules/i.ai-design-system/dist/styles.scss";
+
+
+/** RESPONSE THEMES PAGE **/
+.iai-grid-column-one-half {
+    width: 48%;
+    margin-right: 1%;
+    margin-left: 1%;
+}
+
+.response-theme-review-one-half {
+    max-height: calc(100vh - 280px);
+    overflow-y: scroll;
+}
+
+.iai-hint {
+    font-size: 0.875rem;
+}

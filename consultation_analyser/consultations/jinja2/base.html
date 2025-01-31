@@ -40,11 +40,11 @@
 
   <main class="govuk-main-wrapper" id="main-content" role="main">
     <div class="govuk-width-container">
-      {% if app_config.show_provisional_data_warning %}
+      <!-- {% if app_config.show_provisional_data_warning %}
         {% with messages=[{"level_tag": "warning", "message": "The analysis you are viewing is in pilot stage and for testing purposes only"}] %}
           {% include "messages.html" %}
         {% endwith %}
-      {% endif %}
+      {% endif %} -->
       {% include "messages.html" %}
       {% block content %}
       {% endblock %}
