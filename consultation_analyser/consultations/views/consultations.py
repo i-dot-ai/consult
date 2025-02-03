@@ -13,8 +13,7 @@ logger = logging.getLogger("upload")
 def index(request: HttpRequest) -> HttpResponse:
     user = request.user
     consultations_for_user = models.Consultation.objects.filter(users=user)
-    is_staff = user.is_staff
-    context = {"consultations": consultations_for_user, "is_staff": is_staff}
+    context = {"consultations": consultations_for_user}
     return render(request, "consultations/consultations/index.html", context)
 
 
