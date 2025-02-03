@@ -8,15 +8,16 @@
   <h1 class="govuk-heading-l">{{ page_title }}</h1>
 
   {% if consultations %}
-    <ul class="govuk-list">
-      {% for consultation in consultations %}
-        <li class="govuk-!-margin-top-2">
-          <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-body-l govuk-link govuk-link--no-visited-state">
-            {{ consultation.title }}
-          </a>
-        </li>
-      {% endfor %}
-    </ul>
+    <p class="govuk-body">Click to review themes for your consultations</p>
+      <ul class="govuk-list">
+        {% for consultation in consultations %}
+          <li class="govuk-!-margin-top-2">
+            <a href="{{ url('review_free_text_questions', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-body-l govuk-link govuk-link--no-visited-state">
+              {{ consultation.title }}
+            </a>
+          </li>
+        {% endfor %}
+      </ul>
   {% else %}
     <p class="govuk-body">You do not have any consultations</p>
   {% endif %}
