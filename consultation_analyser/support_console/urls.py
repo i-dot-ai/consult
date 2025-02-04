@@ -26,4 +26,9 @@ urlpatterns = [
         consultations_users.new,
         name="add_user",
     ),
+    path(
+        "consultations/import/",
+        consultations.import_consultations,
+        name="import_consultations",
+    ),
 ]
