@@ -1,6 +1,7 @@
 from uuid import UUID
 
 from django.contrib import messages
+from django.core.management import call_command
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
 
@@ -62,3 +63,13 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
         "users": consultation.users.all(),
     }
     return render(request, "support_console/consultations/show.html", context=context)
+
+
+def import_consultations(request: HttpRequest) -> HttpResponse:
+    if request.POST:
+        s3_key = request.POST.get("s3_key")
+        call_command("import_consultation_data", s3_key)
+        messages.success(request, "Consultations imported")
+
+        return redirect("/support/consultations/")
+    return render(request, "support_console/consultations/import.html")
