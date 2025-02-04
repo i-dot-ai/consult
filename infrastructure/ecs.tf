@@ -11,9 +11,10 @@ locals {
     "AWS_REGION"                           = local.secret_env_vars.AWS_REGION,
     "AWS_BUCKET_NAME"                      = local.secret_env_vars.AWS_BUCKET_NAME,
     "DATABASE_URL"                         = local.rds_fqdn,
-    "DOMAIN_NAME"                          = "${local.host}"
-    "GIT_SHA"                              = var.image_tag
+    "DOMAIN_NAME"                          = "${local.host}",
+    "GIT_SHA"                              = var.image_tag,
     "APP_BUCKET"                           = local.secret_env_vars.APP_BUCKET,
+    "AWS_BUCKET_NAME"                      = "${local.name}-data"
   }
 
   batch_env_vars = merge(local.base_env_vars, {
