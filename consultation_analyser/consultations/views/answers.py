@@ -64,7 +64,6 @@ def show(
     question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
     response = get_object_or_404(models.Answer, id=response_id)
 
-    # TODO: update with QuestionPart
     all_theme_mappings = models.ThemeMapping.get_latest_theme_mappings_for_question_part(
         part=response.question_part
     )
@@ -100,7 +99,7 @@ def show(
             "question": question,
             "response": response,
             "all_themes": all_themes,
-            "existing_themes": existing_themes,  #  update this key
+            "existing_themes": existing_themes,
             "date_created": datetime.strftime(response.created_at, "%d %B %Y"),
         }
 
