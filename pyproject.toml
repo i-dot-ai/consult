@@ -47,6 +47,7 @@ honcho = "^2.0.0"
 django-storages = "^1.14.4"
 setuptools = "^75.8.0"
 django-simple-history = "^3.8.0"
+openpyxl = "^3.1.5"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.9.4"

@@ -9,6 +9,7 @@ locals {
     "GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID" = local.secret_env_vars.GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID,
     "SENTRY_DSN"                           = local.secret_env_vars.SENTRY_DSN,
     "AWS_REGION"                           = local.secret_env_vars.AWS_REGION,
+    "AWS_BUCKET_NAME"                      = local.secret_env_vars.AWS_BUCKET_NAME,
     "DATABASE_URL"                         = local.rds_fqdn,
     "DOMAIN_NAME"                          = "${local.host}"
     "GIT_SHA"                              = var.image_tag
