@@ -48,7 +48,7 @@ def test_question_save_same_slug():
 
 @pytest.mark.django_db
 def test_question_save_too_long():
-    long_title = ("T" * 257)
+    long_title = "T" * 257
     question = QuestionFactory(text=long_title)
     assert len(question.slug) == 256
 

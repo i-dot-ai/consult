@@ -20,7 +20,14 @@ AUTHENTICATION_URL_NAMES = [
     "magic_link",
 ]  # No tests - tested elsewhere, all public
 
-URL_NAMES_TO_EXCLUDE = PUBLIC_URL_NAMES + GENERIC_CONSULTATION_URL_NAMES + AUTHENTICATION_URL_NAMES
+REDIRECTING_URL_NAMES = ["show_next_response"]
+
+URL_NAMES_TO_EXCLUDE = (
+    PUBLIC_URL_NAMES
+    + GENERIC_CONSULTATION_URL_NAMES
+    + AUTHENTICATION_URL_NAMES
+    + REDIRECTING_URL_NAMES
+)
 
 
 @pytest.mark.django_db
@@ -51,9 +58,14 @@ def set_up_consultation(user):
     consultation = question.consultation
     consultation.users.add(user)
     consultation.save()
+
+    question_part = factories.FreeTextQuestionPartFactory(question=question)
+    answer = factories.FreeTextAnswerFactory(question_part=question_part)
+    factories.ThemeMappingFactory(answer=answer)
     possible_args = {
         "consultation_slug": consultation.slug,
         "question_slug": question.slug,
+        "response_id": answer.id,
     }
     return possible_args
 
@@ -113,6 +125,29 @@ def test_consultations_urls_login_required(client):
         # Logged in with a user for this consultation - 200
         client.force_login(user)
         check_expected_status_code(client, url, 200)
+        client.logout()
+
+        # Logged in with a different user - 404
+        client.force_login(non_consultation_user)
+        check_expected_status_code(client, url, 404)
+        client.logout()
+
+    # Testing links that redirect
+    url_patterns_to_test = [
+        url_pattern
+        for url_pattern in url_patterns_excluding_magic_link
+        if url_pattern.name in REDIRECTING_URL_NAMES
+    ]
+
+    for url_pattern in url_patterns_to_test:
+        url = get_url_for_pattern(url_pattern, possible_args)
+
+        # Not logged in - should 404
+        check_expected_status_code(client, url, expected_status_code=404)
+
+        # Logged in with a user for this consultation - 302
+        client.force_login(user)
+        check_expected_status_code(client, url, 302)
         client.logout()
 
         # Logged in with a different user - 404
