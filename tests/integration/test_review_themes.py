@@ -71,13 +71,14 @@ def test_review_show_response(django_app):
     # Same themes
     # TODO - why doesn't this assign themes properly?
     review_response_page.form["theme"] = [str(theme_a.id), str(theme_b.id)]
+    print("Themes selected for submission:", review_response_page.form["theme"].value)
     next_response = review_response_page.form.submit().follow()
     assert "No responses" in next_response  # We have reviewed all responses
 
     # Check that the answer is now audited, and the theme mappings are unchanged
     updated_answer = models.Answer.objects.get(id=response_id)
     assert updated_answer.is_theme_mapping_audited
-    # TODO - why doesn't this work?
+    # TODO - I don't think this is working as themes aren't getting added properly in the form
     assert models.ThemeMapping.objects.filter(answer=updated_answer).count() == 2
 
     # Check the latest user who made the change has been saved
