@@ -3,6 +3,7 @@ from django.urls import reverse
 
 from consultation_analyser.consultations import models
 from consultation_analyser.factories import (
+    ExecutionRunFactory,
     FreeTextAnswerFactory,
     InitialFrameworkFactory,
     InitialThemeFactory,
@@ -26,9 +27,10 @@ def test_review_show_response(django_app):
     theme_b = InitialThemeFactory(framework=framework, name="Theme B")
     answer_1 = FreeTextAnswerFactory(question_part=question_part)
     answer_2 = FreeTextAnswerFactory(question_part=question_part)
-    ThemeMappingFactory(answer=answer_1, theme=theme_a)
-    ThemeMappingFactory(answer=answer_2, theme=theme_a)
-    ThemeMappingFactory(answer=answer_2, theme=theme_b)
+    execution_run = ExecutionRunFactory(framework=framework)
+    ThemeMappingFactory(answer=answer_1, theme=theme_a, execution_run=execution_run)
+    ThemeMappingFactory(answer=answer_2, theme=theme_a, execution_run=execution_run)
+    ThemeMappingFactory(answer=answer_2, theme=theme_b, execution_run=execution_run)
 
     sign_in(django_app, user.email)
 
@@ -69,16 +71,13 @@ def test_review_show_response(django_app):
     )
     review_response_page = django_app.get(url)
     # Same themes
-    # TODO - why doesn't this assign themes properly?
     review_response_page.form["theme"] = [str(theme_a.id), str(theme_b.id)]
-    print("Themes selected for submission:", review_response_page.form["theme"].value)
     next_response = review_response_page.form.submit().follow()
     assert "No responses" in next_response  # We have reviewed all responses
 
     # Check that the answer is now audited, and the theme mappings are unchanged
     updated_answer = models.Answer.objects.get(id=response_id)
     assert updated_answer.is_theme_mapping_audited
-    # TODO - I don't think this is working as themes aren't getting added properly in the form
     assert models.ThemeMapping.objects.filter(answer=updated_answer).count() == 2
 
     # Check the latest user who made the change has been saved
