@@ -111,7 +111,7 @@ endif
 
 .PHONY: docker_build
 docker_build: ## Build the docker container for the specified service when running in CI/CD
-	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
+	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=consultations -t $(IMAGE) \
 	--cache-to type=local,dest=$(cache) \
 	--cache-from type=local,src=$(cache) .
 
@@ -223,3 +223,8 @@ release: ## Deploy app
 	fi
 
 	chmod +x ./infrastructure/scripts/release.sh && ./infrastructure/scripts/release.sh $(env)
+
+.PHONY: tf_destroy
+tf_destroy: ## Apply terraform
+	make tf_init_and_set_workspace && \
+	terraform -chdir=./infrastructure/$(instance) destroy -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} ${args}
