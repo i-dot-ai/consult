@@ -1,4 +1,5 @@
 import pytest
+from django.db.utils import IntegrityError
 
 from consultation_analyser.consultations.models import Theme
 from consultation_analyser.factories import (
@@ -51,3 +52,31 @@ def test_create_descendant_theme():
     assert new_theme.precursor == initial_theme
     assert new_theme.name == "name"
     assert new_theme.description == "description"
+
+
+@pytest.mark.django_db
+def test_get_theme_identifier():
+    framework = InitialFrameworkFactory()
+    theme_1 = Theme.create_initial_theme(
+        framework=framework, name="Theme 1", description=""
+    )  # no key
+    theme_2 = Theme.create_initial_theme(
+        framework=framework, name="Theme 2", description="", key="A"
+    )  # with key
+
+    assert theme_1.get_identifier() == "Theme 1"
+    assert theme_2.get_identifier() == "A"
+
+
+@pytest.mark.django_db
+def test_theme_key_uniqueness():
+    framework = InitialFrameworkFactory()
+    Theme.create_initial_theme(framework=framework, name="Theme 1", description="", key="A")
+
+    # Can have two themes with the same key in different frameworks
+    framework_2 = InitialFrameworkFactory()
+    Theme.create_initial_theme(framework=framework_2, name="Theme 1", description="", key="A")
+
+    # Cannot have two themes in the same framework with the same key
+    with pytest.raises(IntegrityError):
+        Theme.create_initial_theme(framework=framework, name="Theme 1", description="", key="A")
