@@ -196,6 +196,8 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     is_theme_mapping_audited = models.BooleanField(default=False)
     # TODO - add favourite
 
+    history = HistoricalRecords()
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 

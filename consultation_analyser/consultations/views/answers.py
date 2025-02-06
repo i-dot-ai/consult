@@ -1,4 +1,5 @@
 from datetime import datetime
+from uuid import UUID
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
@@ -58,7 +59,7 @@ def show(
     request: HttpRequest,
     consultation_slug: str,
     question_slug: str,
-    response_id: int,
+    response_id: UUID,
 ):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
