@@ -3,7 +3,7 @@ locals {
   secret_env_vars = jsondecode(data.aws_secretsmanager_secret_version.env_vars.secret_string)
   base_env_vars = {
     "ENVIRONMENT"                          = terraform.workspace,
-    "DJANGO_SECRET_KEY"                    = data.aws_secretsmanager_secret_version.django_secret.secret_string,
+    "DJANGO_SECRET_KEY"                    = random_password.django_pass.result,
     "DEBUG"                                = local.secret_env_vars.DEBUG,
     "GOVUK_NOTIFY_API_KEY"                 = local.secret_env_vars.GOVUK_NOTIFY_API_KEY,
     "GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID" = local.secret_env_vars.GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID,
