@@ -372,6 +372,10 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     class Stance(models.TextChoices):
         POSITIVE = "POSITIVE", "Positive"
         NEGATIVE = "NEGATIVE", "Negative"
+        HUMAN = (
+            "HUMAN",
+            "Human",
+        )  # Currently stance only used by AI; used as a proxy for human-selected
 
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
