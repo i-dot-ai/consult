@@ -1,4 +1,8 @@
 import csv
+from io import StringIO
+
+import boto3
+from django.conf import settings
 
 from consultation_analyser.consultations.models import (
     Answer,
@@ -9,7 +13,7 @@ from consultation_analyser.consultations.models import (
 )
 
 
-def export_user_theme(consultation_slug: str):
+def export_user_theme(consultation_slug: str, s3_key: str) -> None:
     consultation = Consultation.objects.get(slug=consultation_slug)
     output = []
 
@@ -51,8 +55,27 @@ def export_user_theme(consultation_slug: str):
                     }
                 )
 
-    with open("example_consultation_theme_changes.csv", mode="w") as file:
-        writer = csv.DictWriter(file, fieldnames=output[0].keys())
+    if settings.ENVIRONMENT == "local":
+        with open("downloads/example_consultation_theme_changes.csv", mode="w") as file:
+            writer = csv.DictWriter(file, fieldnames=output[0].keys())
+            writer.writeheader()
+            for row in output:
+                writer.writerow(row)
+    else:
+        if len(s3_key) == 0:
+            raise ValueError("s3_key cannot be empty")
+
+        s3_client = boto3.client("s3")
+
+        csv_buffer = StringIO()
+        writer = csv.DictWriter(csv_buffer, fieldnames=output[0].keys())
         writer.writeheader()
         for row in output:
             writer.writerow(row)
+
+        s3_client.put_object(
+            Bucket=settings.AWS_BUCKET_NAME,
+            Key=f"{s3_key}/consultation_theme_changes.csv",
+            Body=csv_buffer.getvalue(),
+        )
+        csv_buffer.close()
