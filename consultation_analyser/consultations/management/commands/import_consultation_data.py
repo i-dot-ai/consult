@@ -69,6 +69,7 @@ class Command(BaseCommand):
                 framework=framework,
                 name=value["topic_name"],
                 description=value["rationale"],
+                key=key,
             )
             theme_object_lookup[key] = theme.id
             self.stdout.write(f"Successfully saved theme {theme.name}")

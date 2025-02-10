@@ -305,22 +305,33 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     # TODO - add theme_code which comes from pipeline run
     name = models.CharField(max_length=256)  # TODO - is this long enough
     description = models.TextField()
+    key = models.CharField(max_length=1, null=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+        constraints = [
+            models.UniqueConstraint(fields=["framework", "key"], name="unique_framework_key"),
+        ]
 
     def save(self, *args, **kwargs):
         raise ValueError("Direct save() method is not allowed for Themes - use custom methods.")
 
     @classmethod
-    def create_initial_theme(cls, framework: Framework, name: str, description: str) -> "Theme":
+    def create_initial_theme(
+        cls, framework: Framework, name: str, description: str, key: str | None = None
+    ) -> "Theme":
         """Create initial theme for a framework."""
-        new_theme = Theme(framework=framework, name=name, description=description, precursor=None)
+        new_theme = Theme(
+            framework=framework, name=name, description=description, key=key, precursor=None
+        )
         super(Theme, new_theme).save()
         return new_theme
 
     def create_descendant_theme(
-        self, new_framework: Framework, name: str, description: str
+        self,
+        new_framework: Framework,
+        name: str,
+        description: str,
+        key: str | None = None,
     ) -> "Theme":
         """
         Creates a new Theme object based on the existing theme.
@@ -344,9 +355,15 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
             name=name,
             description=description,
             framework=new_framework,
+            key=key,
         )
         super(Theme, new_theme).save()
         return new_theme
+
+    def get_identifier(self) -> str:
+        if self.key:
+            return self.key
+        return self.name
 
 
 class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
