@@ -1,4 +1,4 @@
-import re
+import csv
 from unittest.mock import patch
 
 import pytest
@@ -7,6 +7,10 @@ from django.urls import reverse
 from consultation_analyser import factories
 from consultation_analyser.consultations import models
 from tests.helpers import sign_in
+
+
+def get_sorted_theme_string(themes: list[models.Theme]) -> str:
+    return ", ".join(sorted([theme.get_identifier() for theme in themes]))
 
 
 @pytest.mark.django_db
@@ -19,18 +23,31 @@ def test_export_user_theme(mock_boto_client, django_app):
     question = factories.QuestionFactory(consultation=consultation)
     question_part = factories.FreeTextQuestionPartFactory(question=question)
     response = factories.FreeTextAnswerFactory(question_part=question_part)
+    response2 = factories.FreeTextAnswerFactory(question_part=question_part)
 
     # Set up themes and theme mappings
     framework = factories.InitialFrameworkFactory(question_part=question_part)
+    execution_run = factories.ExecutionRunFactory()
     theme1 = factories.InitialThemeFactory(framework=framework)
     theme2 = factories.InitialThemeFactory(framework=framework)
     theme3 = factories.InitialThemeFactory(framework=framework)
-
     factories.ThemeMappingFactory(
-        answer=response, theme=theme1, stance=models.ThemeMapping.Stance.POSITIVE
+        answer=response,
+        theme=theme1,
+        stance=models.ThemeMapping.Stance.POSITIVE,
+        execution_run=execution_run,
     )
     factories.ThemeMappingFactory(
-        answer=response, theme=theme2, stance=models.ThemeMapping.Stance.NEGATIVE
+        answer=response,
+        theme=theme2,
+        stance=models.ThemeMapping.Stance.NEGATIVE,
+        execution_run=execution_run,
+    )
+    factories.ThemeMappingFactory(
+        answer=response2,
+        theme=theme3,
+        stance=models.ThemeMapping.Stance.POSITIVE,
+        execution_run=execution_run,
     )
 
     # Set up user changes
@@ -60,8 +77,30 @@ def test_export_user_theme(mock_boto_client, django_app):
     mock_boto_client.return_value.put_object.assert_called_once()
 
     generated_csv = mock_boto_client.return_value.put_object.call_args[1]["Body"]
+    exported_data = [row for row in csv.DictReader(generated_csv.splitlines(), delimiter=",")]
 
-    # TODO: convert to csv and read as dict
-    assert len(re.findall(theme1.name, generated_csv)) == 1
-    assert len(re.findall(theme2.name, generated_csv)) == 2
-    assert len(re.findall(theme3.name, generated_csv)) == 1
+    # First answer has been audited and changed by user
+    assert exported_data[0] == {
+        "Consultation": consultation.title,
+        "Question number": str(question.number),
+        "Question text": question.text,
+        "Question part text": question_part.text,
+        "Response text": response.text,
+        "Response has been audited": "True",
+        "Original themes": get_sorted_theme_string([theme1, theme2]),
+        "Current themes": get_sorted_theme_string([theme2, theme3]),
+        "Auditors": user.email,
+    }
+
+    # Second answer has not been audited
+    assert exported_data[1] == {
+        "Consultation": consultation.title,
+        "Question number": str(question.number),
+        "Question text": question.text,
+        "Question part text": question_part.text,
+        "Response text": response2.text,
+        "Response has been audited": "False",
+        "Original themes": f"{theme3.get_identifier()}",
+        "Current themes": "",
+        "Auditors": "",
+    }

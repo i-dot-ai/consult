@@ -5,7 +5,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("consultations", "0038_historicalanswer"),
+        ("consultations", "0039_theme_key_theme_unique_framework_key"),
     ]
 
     operations = [

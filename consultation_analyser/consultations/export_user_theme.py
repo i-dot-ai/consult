@@ -44,12 +44,21 @@ def export_user_theme(consultation_slug: str, s3_key: str) -> None:
                         "Question part text": question_part.text,
                         "Response text": response.text,
                         "Response has been audited": response.is_theme_mapping_audited,
-                        # TODO: replace theme name with keys when they are available
                         "Original themes": ", ".join(
-                            [theme_mapping.theme.name for theme_mapping in original_themes]
+                            sorted(
+                                [
+                                    theme_mapping.theme.get_identifier()
+                                    for theme_mapping in original_themes
+                                ]
+                            )
                         ),
                         "Current themes": ", ".join(
-                            [theme_mapping.theme.name for theme_mapping in current_themes]
+                            sorted(
+                                [
+                                    theme_mapping.theme.get_identifier()
+                                    for theme_mapping in current_themes
+                                ]
+                            )
                         ),
                         "Auditors": ", ".join(list(auditors)),
                     }
