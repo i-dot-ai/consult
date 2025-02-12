@@ -8,6 +8,8 @@ from consultation_analyser.factories import (
     MultipleOptionQuestionPartFactory,
     QuestionFactory,
     SingleOptionQuestionPartFactory,
+    SingleOptionAnswerFactory,
+    MultipleOptionAnswerFactory
 )
 
 
@@ -49,3 +51,36 @@ def test_proportion_of_auditted_answers_some_audited():
     for _ in range(2):
         FreeTextAnswerFactory(question_part=question_part, is_theme_mapping_audited=False)
     assert question_part.proportion_of_audited_answers == 0.6
+
+
+@pytest.mark.django_db
+def test_get_all_chosen_options():
+    # Free text question parts don't have options
+    free_text_question_part = FreeTextQuestionPartFactory()
+    for _ in range(3):
+        FreeTextAnswerFactory(question_part=free_text_question_part)
+    assert free_text_question_part.get_all_chosen_options() == []
+
+    # Single option questions have at most one option
+    single_option_question_part = SingleOptionQuestionPartFactory(options=["blue", "red", "green"])
+    SingleOptionAnswerFactory(question_part=single_option_question_part, chosen_options=["blue"])
+    SingleOptionAnswerFactory(question_part=single_option_question_part, chosen_options=["red"])
+    SingleOptionAnswerFactory(question_part=single_option_question_part, chosen_options=["blue"])
+    SingleOptionAnswerFactory(question_part=single_option_question_part, chosen_options=[])
+    output = single_option_question_part.get_all_chosen_options()
+    assert len(output) == 3
+    assert output.count("blue") == 2
+    assert output.count("green") == 0
+    assert output.count("red") == 1
+
+    # Multiple option questions may have more than one chosen option
+    multiple_option_question_part = MultipleOptionQuestionPartFactory(options=["blue", "red", "green"])
+    MultipleOptionAnswerFactory(question_part=multiple_option_question_part, chosen_options=["blue", "green"])
+    MultipleOptionAnswerFactory(question_part=multiple_option_question_part, chosen_options=["red", "green"])
+    MultipleOptionAnswerFactory(question_part=multiple_option_question_part, chosen_options=["blue"])
+    MultipleOptionAnswerFactory(question_part=multiple_option_question_part, chosen_options=[])
+    output = multiple_option_question_part.get_all_chosen_options()
+    assert len(output) == 5
+    assert output.count("blue") == 2
+    assert output.count("green") == 2
+    assert output.count("red") == 1
