@@ -1,5 +1,6 @@
 import django
 import pytest
+from collections import OrderedDict
 
 from consultation_analyser.consultations.models import QuestionPart
 from consultation_analyser.factories import (
@@ -54,12 +55,12 @@ def test_proportion_of_auditted_answers_some_audited():
 
 
 @pytest.mark.django_db
-def test_get_all_chosen_options():
+def test_get_option_counts():
     # Free text question parts don't have options
     free_text_question_part = FreeTextQuestionPartFactory()
     for _ in range(3):
         FreeTextAnswerFactory(question_part=free_text_question_part)
-    assert free_text_question_part.get_all_chosen_options() == []
+    assert free_text_question_part.get_option_counts() == {}
 
     # Single option questions have at most one option
     single_option_question_part = SingleOptionQuestionPartFactory(options=["blue", "red", "green"])
@@ -67,11 +68,9 @@ def test_get_all_chosen_options():
     SingleOptionAnswerFactory(question_part=single_option_question_part, chosen_options=["red"])
     SingleOptionAnswerFactory(question_part=single_option_question_part, chosen_options=["blue"])
     SingleOptionAnswerFactory(question_part=single_option_question_part, chosen_options=[])
-    output = single_option_question_part.get_all_chosen_options()
-    assert len(output) == 3
-    assert output.count("blue") == 2
-    assert output.count("green") == 0
-    assert output.count("red") == 1
+    expected = OrderedDict([("blue", 2), ("red", 1), ("green", 0)])
+    actual = single_option_question_part.get_option_counts()
+    assert expected == actual
 
     # Multiple option questions may have more than one chosen option
     multiple_option_question_part = MultipleOptionQuestionPartFactory(options=["blue", "red", "green"])
@@ -79,8 +78,6 @@ def test_get_all_chosen_options():
     MultipleOptionAnswerFactory(question_part=multiple_option_question_part, chosen_options=["red", "green"])
     MultipleOptionAnswerFactory(question_part=multiple_option_question_part, chosen_options=["blue"])
     MultipleOptionAnswerFactory(question_part=multiple_option_question_part, chosen_options=[])
-    output = multiple_option_question_part.get_all_chosen_options()
-    assert len(output) == 5
-    assert output.count("blue") == 2
-    assert output.count("green") == 2
-    assert output.count("red") == 1
+    expected = OrderedDict([("blue", 2), ("red", 1), ("green", 2)])
+    actual = multiple_option_question_part.get_option_counts()
+    assert expected == actual
