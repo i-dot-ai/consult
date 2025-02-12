@@ -32,6 +32,7 @@
           {% if question_dict.single_option_question_part %}
             {{ question_dict.single_option_question_part.text }}
             {{ question_dict.option_counts}}
+            {{ question_dict.option_proportions }}
           {% endif %}
         </ul>
       {% endfor %}
