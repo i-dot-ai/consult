@@ -20,14 +20,17 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      {% for q_dict in all_questions %}
-        <p>{{ q_dict.question.text }}</p>
+      {% for question_dict in all_questions %}
+        <p>{{ question_dict.question.text }}</p>
         <ul class="govuk-list govuk-list--bullet">
-          {% if q_dict.free_text_question_part %}
-            <li>{{ q_dict.free_text_question_part.text }}</li>
+          {% if question_dict.free_text_question_part %}
+            <li>{{ question_dict.free_text_question_part.text }}</li>
+            {% for item in question_dict.theme_counts %}
+              <li>{{ item.theme.name }}: {{ item.theme.description }}: {{ item.count }}</li>
+            {% endfor %}
           {% endif %}
-          {% if q_dict.closed_question %}
-            <li>{{ q_dict.single_option_question_part.text }}</li>
+          {% if question_dict.closed_question %}
+            <li>{{ question_dict.single_option_question_part.text }}</li>
           {% endif %}
         </ul>
       {% endfor %}
