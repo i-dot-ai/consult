@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{%- from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs -%}
+{%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+
+{% set page_title = consultation.title %}
+
+{% block content %}
+
+  <h1 class="govuk-heading-m">{{ page_title }}</h1>
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Back to your consultations",
+        "href": "/consultations",
+      }
+    ]
+  }) }}
+
+  {%- from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs -%}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      {% for question_dict in all_questions %}
+        <p>{{ question_dict.question.text }}</p>
+        <ul class="govuk-list govuk-list--bullet">
+          {% if question_dict.free_text_question_part %}
+            <li>{{ question_dict.free_text_question_part.text }}</li>
+            {% for item in question_dict.theme_counts %}
+              <li>{{ item.theme.name }}: {{ item.theme.description }}: {{ item.count }}</li>
+            {% endfor %}
+          {% endif %}
+          {% if question_dict.single_option_question_part %}
+            {{ question_dict.single_option_question_part.text }}
+            {{ question_dict.option_counts}}
+            {{ question_dict.option_proportions }}
+          {% endif %}
+        </ul>
+      {% endfor %}
+
+    </div>
+  </div>
+
+{% endblock %}
