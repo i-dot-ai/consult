@@ -1,16 +1,17 @@
+from collections import OrderedDict
+
 import django
 import pytest
-from collections import OrderedDict
 
 from consultation_analyser.consultations.models import QuestionPart
 from consultation_analyser.factories import (
     FreeTextAnswerFactory,
     FreeTextQuestionPartFactory,
+    MultipleOptionAnswerFactory,
     MultipleOptionQuestionPartFactory,
     QuestionFactory,
-    SingleOptionQuestionPartFactory,
     SingleOptionAnswerFactory,
-    MultipleOptionAnswerFactory
+    SingleOptionQuestionPartFactory,
 )
 
 
@@ -56,7 +57,7 @@ def test_proportion_of_auditted_answers_some_audited():
 
 @pytest.mark.django_db
 def test_get_option_counts():
-    # Free text question parts don't have options
+    # Free text question parts don't have options
     free_text_question_part = FreeTextQuestionPartFactory()
     for _ in range(3):
         FreeTextAnswerFactory(question_part=free_text_question_part)
@@ -73,10 +74,18 @@ def test_get_option_counts():
     assert expected == actual
 
     # Multiple option questions may have more than one chosen option
-    multiple_option_question_part = MultipleOptionQuestionPartFactory(options=["blue", "red", "green"])
-    MultipleOptionAnswerFactory(question_part=multiple_option_question_part, chosen_options=["blue", "green"])
-    MultipleOptionAnswerFactory(question_part=multiple_option_question_part, chosen_options=["red", "green"])
-    MultipleOptionAnswerFactory(question_part=multiple_option_question_part, chosen_options=["blue"])
+    multiple_option_question_part = MultipleOptionQuestionPartFactory(
+        options=["blue", "red", "green"]
+    )
+    MultipleOptionAnswerFactory(
+        question_part=multiple_option_question_part, chosen_options=["blue", "green"]
+    )
+    MultipleOptionAnswerFactory(
+        question_part=multiple_option_question_part, chosen_options=["red", "green"]
+    )
+    MultipleOptionAnswerFactory(
+        question_part=multiple_option_question_part, chosen_options=["blue"]
+    )
     MultipleOptionAnswerFactory(question_part=multiple_option_question_part, chosen_options=[])
     expected = OrderedDict([("blue", 2), ("red", 1), ("green", 2)])
     actual = multiple_option_question_part.get_option_counts()
