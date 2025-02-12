@@ -83,6 +83,7 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
     context = {
         "consultation": consultation,
         "bucket_name": settings.AWS_BUCKET_NAME,
+        "environment": settings.ENVIRONMENT,
     }
 
     if request.method == "POST":

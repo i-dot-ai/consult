@@ -82,14 +82,16 @@ def show(
 
         # themes to update to show set by human
         existing_mappings.filter(theme_id__in=requested_themes).exclude(
-            stance=models.ThemeMapping.Stance.HUMAN
-        ).update(stance=models.ThemeMapping.Stance.HUMAN)
+            user_audited=True,
+        ).update(user_audited=True)
 
         # themes to add
         themes_to_add = set(requested_themes).difference([str(theme) for theme in existing_themes])
         for theme_id in themes_to_add:
             models.ThemeMapping.objects.create(
-                answer=response, theme_id=theme_id, stance=models.ThemeMapping.Stance.HUMAN
+                answer=response,
+                theme_id=theme_id,
+                user_audited=True,
             )
 
         # flag

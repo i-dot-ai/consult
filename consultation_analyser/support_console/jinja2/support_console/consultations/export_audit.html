@@ -11,15 +11,20 @@
 
   <div class="govuk-form-group">
 
-    <p class="govuk-label-wrapper">
-      <label class="govuk-label govuk-label--l" for="s3_key">
-        Where should the file be saved?
-      </label>
-      <div id="s3_key-hint" class="govuk-hint iai-hint">
-        The file will be saved as: {{bucket_name}}/[YOUR PATH]/consultation_theme_changes.csv
-      </div>
-      <input class="govuk-input govuk-input--width-20" id="s3_key" name="s3_key" type="text">
-    </p>
+    {% if environment == 'local' %}
+      <p>The file will be saved in: downloads/example_consultation_theme_changes.csv</p>
+    {% else %}
+      <p class="govuk-label-wrapper">
+        <label class="govuk-label govuk-label--l" for="s3_key">
+          Where should the file be saved?
+        </label>
+        <div id="s3_key-hint" class="govuk-hint iai-hint">
+          The file will be saved as: {{bucket_name}}/[YOUR PATH]/consultation_theme_changes.csv
+        </div>
+        <input class="govuk-input govuk-input--width-20" id="s3_key" name="s3_key" type="text">
+      </p>
+    {% endif %}
+
   </div>
   {{ govukButton({
     'text': "Submit",

@@ -1,4 +1,5 @@
 import csv
+import os
 from io import StringIO
 
 import boto3
@@ -7,7 +8,6 @@ from django.conf import settings
 from consultation_analyser.consultations.models import (
     Answer,
     Consultation,
-    Question,
     QuestionPart,
     ThemeMapping,
 )
@@ -17,54 +17,55 @@ def export_user_theme(consultation_slug: str, s3_key: str) -> None:
     consultation = Consultation.objects.get(slug=consultation_slug)
     output = []
 
-    for question in Question.objects.filter(consultation=consultation):
-        for question_part in QuestionPart.objects.filter(question=question):
-            for response in Answer.objects.filter(question_part=question_part):
-                original_themes = (
-                    ThemeMapping.history.filter(answer=response)
-                    .filter(stance__in=[ThemeMapping.Stance.POSITIVE, ThemeMapping.Stance.NEGATIVE])
-                    .filter(history_type="+")
-                )
-                current_themes = ThemeMapping.objects.filter(answer=response).filter(
-                    stance=ThemeMapping.Stance.HUMAN
-                )
-                auditors = set(
-                    [
-                        theme_mapping.history_user.email
-                        for theme_mapping in ThemeMapping.history.filter(answer=response).filter(
-                            stance=ThemeMapping.Stance.HUMAN
+    for question_part in QuestionPart.objects.filter(
+        question__consultation=consultation,
+        type=QuestionPart.QuestionType.FREE_TEXT,
+    ):
+        question = question_part.question
+        for response in Answer.objects.filter(question_part=question_part):
+            original_themes = (
+                ThemeMapping.history.filter(answer=response)
+                .filter(user_audited=False)
+                .filter(history_type="+")
+            )
+            current_themes = ThemeMapping.objects.filter(answer=response).filter(user_audited=True)
+            auditors = set(
+                [
+                    r.history_user.email
+                    for r in response.history.filter(is_theme_mapping_audited=True)
+                ]
+            )
+            output.append(
+                {
+                    "Consultation": consultation.title,
+                    "Question number": question.number,
+                    "Question text": question.text,
+                    "Question part text": question_part.text,
+                    "Response text": response.text,
+                    "Response has been audited": response.is_theme_mapping_audited,
+                    "Original themes": ", ".join(
+                        sorted(
+                            [
+                                theme_mapping.theme.get_identifier()
+                                for theme_mapping in original_themes
+                            ]
                         )
-                    ]
-                )
-                output.append(
-                    {
-                        "Consultation": consultation.title,
-                        "Question number": question.number,
-                        "Question text": question.text,
-                        "Question part text": question_part.text,
-                        "Response text": response.text,
-                        "Response has been audited": response.is_theme_mapping_audited,
-                        "Original themes": ", ".join(
-                            sorted(
-                                [
-                                    theme_mapping.theme.get_identifier()
-                                    for theme_mapping in original_themes
-                                ]
-                            )
-                        ),
-                        "Current themes": ", ".join(
-                            sorted(
-                                [
-                                    theme_mapping.theme.get_identifier()
-                                    for theme_mapping in current_themes
-                                ]
-                            )
-                        ),
-                        "Auditors": ", ".join(list(auditors)),
-                    }
-                )
+                    ),
+                    "Current themes": ", ".join(
+                        sorted(
+                            [
+                                theme_mapping.theme.get_identifier()
+                                for theme_mapping in current_themes
+                            ]
+                        )
+                    ),
+                    "Auditors": ", ".join(list(auditors)),
+                }
+            )
 
     if settings.ENVIRONMENT == "local":
+        if not os.path.exists("downloads"):
+            os.makedirs("downloads")
         with open("downloads/example_consultation_theme_changes.csv", mode="w") as file:
             writer = csv.DictWriter(file, fieldnames=output[0].keys())
             writer.writeheader()
