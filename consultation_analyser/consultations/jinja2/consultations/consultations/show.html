@@ -2,7 +2,7 @@
 {%- from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs -%}
 {%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
 
-{% set page_title = consultation.title %}
+{% set page_title = "Dashboard" %}
 
 {% block content %}
 
@@ -19,23 +19,50 @@
   {%- from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs -%}
 
   <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-      {% for question_dict in all_questions %}
-        <p>{{ question_dict.question.text }}</p>
-        <ul class="govuk-list govuk-list--bullet">
-          {% if question_dict.free_text_question_part %}
-            <li>{{ question_dict.free_text_question_part.text }}</li>
-            {% for item in question_dict.theme_counts %}
-              <li>{{ item.theme.name }}: {{ item.theme.description }}: {{ item.count }}</li>
-            {% endfor %}
-          {% endif %}
-          {% if question_dict.single_option_question_part %}
-            {{ question_dict.single_option_question_part.text }}
-            {{ question_dict.option_counts}}
-            {{ question_dict.option_proportions }}
-          {% endif %}
-        </ul>
-      {% endfor %}
+    <div class="govuk-grid-column-three-quarters">
+
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+          {% for question_dict in all_questions %}
+            <div class="iai-panel govuk-!-margin-bottom-4">
+              <span class="govuk-caption-m "><a class="govuk-link" href="{{ url('question_responses', kwargs={'consultation_slug': consultation.slug, 'question_slug': question_dict.question.slug}) }}">Question {{ question_dict.question.number }}</a></span>
+              <h2 class="govuk-heading-m govuk-!-margin-top-1">{{ question_dict.question.text }}</h2>
+
+              {% if question_dict.free_text_answers %}
+                  <h3 class="govuk-heading-s">Free text response</h3>
+                  <p class="govuk-body" style="display: flex;align-items:center;gap: 0.6%">
+                    <img src="/public/images/thumbs-up-down.svg"/>
+                  </p>
+
+                  <p class="govuk-body govuk-!-margin-bottom-2">Top themes</p>
+
+                  <div class="govuk-pill-container" style="display: flex;align-items:center;gap: 0.6%">
+                    {# Loop through the framework results and display the top themes #}
+                    {% for theme, count in question_dict["theme_counts"].items() %}
+                      <div class="govuk-pill">
+                        <tool-tip class="iai-tooltip">
+                          <div class="iai-tooltip__button">
+                            <span>{{ theme.name }}</span>
+                            <img src="/public/images/question-mark.svg" alt="" width="14"/>
+                          </div>
+                          <div class="iai-tooltip__content">
+                            {{ theme.description }}
+                          </div>
+                        </tool-tip>
+                      </div>
+                    {% endfor %}
+                  </div>
+              {% else %}
+                <p class="govuk-body">This question does not have a free text responses</p>
+              {% endif %}
+
+              <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+            </div>
+          {% endfor %}
+
+        </div>
+      </div>
 
     </div>
   </div>
