@@ -166,6 +166,13 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
         audited_answers = self.answer_set.filter(is_theme_mapping_audited=True).count()
         return audited_answers / total_answers
 
+    def get_all_chosen_options(self) -> list:
+        all_options = []
+        for answer in self.answer_set.all():
+            all_options.extend(answer.chosen_options)
+        return all_options
+
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(fields=["question", "number"], name="unique_part_per_question"),
