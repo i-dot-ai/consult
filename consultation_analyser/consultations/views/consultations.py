@@ -1,4 +1,5 @@
 import logging
+from collections import OrderedDict
 
 from django.contrib.auth.decorators import login_required
 from django.db.models import Count
@@ -72,7 +73,10 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
         if single_option_question_part:
             question_dict["single_option_question_part"] = single_option_question_part
             counts = single_option_question_part.get_option_counts()
+            total_responses = single_option_question_part.answer_set.count()
+            proportions = OrderedDict((k, v / total_responses) for k, v in counts.items())
             question_dict["option_counts"] = counts
+            question_dict["option_proportions"] = proportions
         questions_list.append(question_dict)
 
     context = {
