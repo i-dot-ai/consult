@@ -29,8 +29,9 @@
               <li>{{ item.theme.name }}: {{ item.theme.description }}: {{ item.count }}</li>
             {% endfor %}
           {% endif %}
-          {% if question_dict.closed_question %}
-            <li>{{ question_dict.single_option_question_part.text }}</li>
+          {% if question_dict.single_option_question_part %}
+            {{ question_dict.single_option_question_part.text }}
+            {{ question_dict.option_counts}}
           {% endif %}
         </ul>
       {% endfor %}

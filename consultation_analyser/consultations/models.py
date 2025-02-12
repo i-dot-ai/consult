@@ -181,7 +181,6 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
             counts[option] = all_chosen_options.count(option)
         return counts
 
-
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(fields=["question", "number"], name="unique_part_per_question"),
