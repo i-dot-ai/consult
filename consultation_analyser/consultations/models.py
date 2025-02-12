@@ -1,5 +1,6 @@
 import datetime
 import uuid
+from collections import OrderedDict
 
 import faker as _faker
 import pydantic
@@ -166,11 +167,19 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
         audited_answers = self.answer_set.filter(is_theme_mapping_audited=True).count()
         return audited_answers / total_answers
 
-    def get_all_chosen_options(self) -> list:
-        all_options = []
+    def get_option_counts(self) -> OrderedDict:
+        """
+        Get the counts of each option chosen for the corresponding answers.
+        Keep counts in the same order as specified in QuestionPart.options.
+        """
+        all_chosen_options = []
         for answer in self.answer_set.all():
-            all_options.extend(answer.chosen_options)
-        return all_options
+            all_chosen_options.extend(answer.chosen_options)
+        counts = OrderedDict()
+        all_possible_options = self.options or []
+        for option in all_possible_options:
+            counts[option] = all_chosen_options.count(option)
+        return counts
 
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
