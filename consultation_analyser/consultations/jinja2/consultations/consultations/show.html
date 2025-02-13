@@ -57,6 +57,19 @@
 
               <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
+              <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+              <script src="{{ static ('scripts/bar-chart-script.js') }}"></script>
+              {% if question_dict.single_option_question_part %}
+                <h3 class="govuk-heading-s">Response to closed question (single option)</h3>
+                <canvas style="max-height: 220px;max-width:480px" id="chart-{{ question_dict.single_option_question_part.id }}"></canvas>
+              {% else %}
+                <p class="govuk-body">This question does not have a multiple choice option</p>
+              {% endif %}
+
+
+
+
+
             </div>
           {% endfor %}
 
