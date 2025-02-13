@@ -15,6 +15,7 @@ from consultation_analyser.factories import (
     MultipleOptionQuestionPartFactory,
     QuestionFactory,
     RespondentFactory,
+    SentimentMappingFactory,
     SingleOptionAnswerFactory,
     SingleOptionQuestionPartFactory,
     ThemeMappingFactory,
@@ -63,6 +64,9 @@ def create_dummy_consultation_from_yaml(
                 )
 
                 # Simulate execution runs for each question to generate themes, theme mapping
+                sentiment_mapping_run = ExecutionRunFactory(
+                    type=models.ExecutionRun.TaskType.SENTIMENT_ANALYSIS
+                )
                 theme_generation_run = ExecutionRunFactory(
                     type=models.ExecutionRun.TaskType.THEME_GENERATION
                 )
@@ -126,8 +130,11 @@ def create_dummy_consultation_from_yaml(
                         chosen_options=chosen_options,
                         respondent=respondent,
                     )
+                    # Also add sentiment to answer replicating the sentiment mapping step
+                    # This is agree/disagree/unclear
+                    SentimentMappingFactory(answer=answer, execution_run=sentiment_mapping_run)
 
-                # Now map (multiple) themes and sentiment to each answer for free-text questions.
+                # Now map (multiple) themes to each answer for free-text questions.
                 # This is in a different order to how it would work in pipeline - but this is as we
                 # are reading from file.
                 if question_part_type == models.QuestionPart.QuestionType.FREE_TEXT:

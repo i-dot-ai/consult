@@ -58,3 +58,6 @@ def test_factories():
     assert models.Theme.objects.filter(id=theme.id).exists()
     mapping = factories.ThemeMappingFactory()
     assert models.ThemeMapping.objects.filter(id=mapping.id).exists()
+
+    sentiment_mapping = factories.SentimentMappingFactory()
+    assert models.SentimentMapping.objects.filter(id=sentiment_mapping.id).exists()
