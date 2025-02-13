@@ -17,10 +17,14 @@ NO_SUMMARY_STR = "Unable to generate summary for this theme"
 def index(request: HttpRequest) -> HttpResponse:
     if request.POST:
         try:
-            consultation = create_dummy_consultation_from_yaml()
-            user = request.user
-            consultation.users.add(user)
-            messages.success(request, "A dummy consultation has been generated")
+            if request.POST.get("generate_dummy_consultation") is not None:
+                consultation = create_dummy_consultation_from_yaml()
+                user = request.user
+                consultation.users.add(user)
+                messages.success(request, "A dummy consultation has been generated")
+            elif request.POST.get("create_synthetic_consultation") is not None:
+                call_command("import_synthetic_data")
+                messages.success(request, "Synthetic data imported")
         except RuntimeError as error:
             messages.error(request, error.args[0])
     consultations = models.Consultation.objects.all()

@@ -1,0 +1,718 @@
+{
+    "Agreement": {
+        "A": {
+            "frequency": 0.1,
+            "topics": [
+                {
+                    "topic_name": "Protecting Vulnerable Populations",
+                    "rationale": "The ban on gambling advertisements will help protect children and individuals susceptible to gambling addiction from being overly exposed to gambling promotions."
+                },
+                {
+                    "topic_name": "Guarding At-Risk Groups",
+                    "rationale": "The prohibition of gambling ads will help shield children and those prone to gambling addiction from excessive exposure to gambling promotions."
+                },
+                {
+                    "topic_name": "Safeguarding At-Risk Demographics",
+                    "rationale": "The restriction on gambling advertisements will aid in protecting young people and individuals vulnerable to gambling dependency from excessive exposure to gambling ads."
+                },
+                {
+                    "topic_name": "Defending Vulnerable Communities",
+                    "rationale": "Banning gambling promotions will prevent children and those susceptible to gambling addiction from being excessively exposed to such advertisements."
+                },
+                {
+                    "topic_name": "Shielding Fragile Populations",
+                    "rationale": "The interdiction of gambling ads will help guard children and individuals prone to gambling addiction from overexposure to gambling promotions."
+                },
+                {
+                    "topic_name": "Protecting Susceptible Groups",
+                    "rationale": "By eliminating gambling advertisements, we can protect children and individuals who are susceptible to gambling addiction from being overly exposed to such ads."
+                },
+                {
+                    "topic_name": "Preserving At-Risk Groups",
+                    "rationale": "The cessation of gambling advertisements will contribute to safeguarding children and those inclined towards gambling addiction from being excessively subjected to gambling promotions."
+                },
+                {
+                    "topic_name": "Guarding Fragile Demographics",
+                    "rationale": "Eradicating gambling ads will assist in protecting children and those at risk of gambling addiction from overexposure to such promotions."
+                },
+                {
+                    "topic_name": "Shielding Sensitive Populations",
+                    "rationale": "Preventing gambling ads will safeguard children and individuals who are at risk of gambling addiction from being excessively exposed to gambling promotions."
+                },
+                {
+                    "topic_name": "Defending At-Risk Demographics",
+                    "rationale": "The prevention of gambling ads will help protect children and people prone to gambling addiction from excessive exposure to gambling advertisements."
+                },
+                {
+                    "topic_name": "Preserving Vulnerable Communities",
+                    "rationale": "The elimination of gambling advertisements will protect young people and individuals susceptible to gambling addiction from being overly exposed to gambling promotions."
+                },
+                {
+                    "topic_name": "Guarding Sensitive Groups",
+                    "rationale": "The removal of gambling advertisements will help shield children and those vulnerable to gambling addictions from being overly exposed to such promotions."
+                },
+                {
+                    "topic_name": "Safeguarding Fragile Communities",
+                    "rationale": "Banning gambling advertisements will protect children and individuals prone to gambling addiction from being frequently subjected to gambling promotions."
+                },
+                {
+                    "topic_name": "Defending Susceptible Populations",
+                    "rationale": "Restricting gambling advertisements will help safeguard young people and those at risk of gambling addiction from being overexposed to gambling promotions."
+                },
+                {
+                    "topic_name": "Shielding At-Risk Communities",
+                    "rationale": "Prohibiting gambling ads will prevent children and those vulnerable to gambling addiction from being overly exposed to such advertisements."
+                },
+                {
+                    "topic_name": "Protecting Sensitive Groups",
+                    "rationale": "The ban on gambling ads will ensure that children and people susceptible to gambling dependency are not excessively exposed to such promotions."
+                },
+                {
+                    "topic_name": "Defending Fragile Populations",
+                    "rationale": "With a ban on gambling ads, children and individuals vulnerable to gambling addiction will be protected from excessive exposure to these promotions."
+                },
+                {
+                    "topic_name": "Safeguarding Susceptible Demographics",
+                    "rationale": "Halting gambling ads will aid in guarding children and those at risk of gambling addiction from being overly exposed to gambling advertisements."
+                },
+                {
+                    "topic_name": "Guarding Susceptible Communities",
+                    "rationale": "Stopping gambling advertisements will help protect children and those vulnerable to gambling addiction from being excessively exposed to gambling promotions."
+                },
+                {
+                    "topic_name": "Preserving Fragile Demographics",
+                    "rationale": "By banning gambling ads, we shield children and individuals susceptible to gambling addiction from being overly exposed to such advertisements."
+                },
+                {
+                    "topic_name": "Safeguarding Vulnerable Groups",
+                    "rationale": "Preventing gambling advertisements will help defend children and individuals prone to gambling addiction from frequent exposure to gambling promotions."
+                }
+            ]
+        },
+        "B": {
+            "frequency": 0.15,
+            "topics": [
+                {
+                    "topic_name": "Aligning with Global Standards",
+                    "rationale": "Implementing these regulations will allow the country to align with international standards like those in Italy and Australia, which have shown positive public health results."
+                },
+                {
+                    "topic_name": "Adhering to Global Criteria",
+                    "rationale": "Adopting these regulations will enable the nation to conform to global standards like those in Italy and Australia, which have demonstrated positive public health outcomes."
+                },
+                {
+                    "topic_name": "Complying with International Benchmarks",
+                    "rationale": "Applying these rules will allow the country to meet international benchmarks like those in Italy and Australia, which have provided beneficial public health results."
+                },
+                {
+                    "topic_name": "Matching Global Protocols",
+                    "rationale": "Enforcing these regulations will permit the nation to align with worldwide protocols akin to those in Italy and Australia, which have manifested positive health results."
+                },
+                {
+                    "topic_name": "Harmonizing with Global Standards",
+                    "rationale": "Implementing these rules will help the country harmonize with global norms such as those in Italy and Australia, which have yielded favorable health results."
+                },
+                {
+                    "topic_name": "Standardizing with International Measures",
+                    "rationale": "Adopting these measures will allow the nation to standardize with international guidelines like those in Italy and Australia, which have indicated positive health outcomes."
+                },
+                {
+                    "topic_name": "Conforming to Global Norms",
+                    "rationale": "Implementing these policies will enable the country to conform to international norms similar to those in Italy and Australia, which have produced beneficial public health outcomes."
+                },
+                {
+                    "topic_name": "Synchronizing with International Standards",
+                    "rationale": "Adopting these guidelines will permit the nation to synchronize with global standards akin to those in Italy and Australia, which have shown positive health results."
+                },
+                {
+                    "topic_name": "Complying with International Norms",
+                    "rationale": "Applying these regulations will help the country comply with global norms like those in Italy and Australia, which have shown beneficial health outcomes."
+                },
+                {
+                    "topic_name": "Aligning with Worldwide Criteria",
+                    "rationale": "Implementing these guidelines will align the country with international criteria such as those in Italy and Australia, which have demonstrated favorable public health outcomes."
+                },
+                {
+                    "topic_name": "Abiding by Global Standards",
+                    "rationale": "Introducing these regulations will bring the nation in line with global standards like those in Italy and Australia, which have resulted in positive public health effects."
+                },
+                {
+                    "topic_name": "Meeting International Standards",
+                    "rationale": "Enacting these guidelines will help the country meet international standards akin to those in Italy and Australia, which have shown positive health success."
+                },
+                {
+                    "topic_name": "Conforming to Global Standards",
+                    "rationale": "Instituting these regulations will allow the country to conform to global standards similar to those in Italy and Australia, which have resulted in positive health benefits."
+                },
+                {
+                    "topic_name": "Harmonizing with International Norms",
+                    "rationale": "Applying these policies will enable the country to harmonize with international norms like those in Italy and Australia, which have yielded positive health results."
+                },
+                {
+                    "topic_name": "Integrating with Global Standards",
+                    "rationale": "Adopting these regulations will integrate the nation with global standards such as those in Italy and Australia, which have achieved positive health outcomes."
+                },
+                {
+                    "topic_name": "Synchronizing with Global Guidelines",
+                    "rationale": "Enforcing these regulations will synchronize the country with international guidelines like those in Italy and Australia, which have demonstrated beneficial public health outcomes."
+                },
+                {
+                    "topic_name": "Aligning with Worldwide Norms",
+                    "rationale": "Establishing these measures will allow the country to align with worldwide norms such as those in Italy and Australia, which have evidenced positive health results."
+                },
+                {
+                    "topic_name": "Maintaining Global Standards",
+                    "rationale": "Initiating these regulations will permit the country to maintain global standards akin to those in Italy and Australia, which have shown favorable public health outcomes."
+                },
+                {
+                    "topic_name": "Complying with Worldwide Guidelines",
+                    "rationale": "Enforcing these regulations will help the country comply with global guidelines similar to those in Italy and Australia, which have demonstrated positive public health results."
+                },
+                {
+                    "topic_name": "Synchronizing with International Protocols",
+                    "rationale": "Implementing these guidelines will help the nation synchronize with global protocols similar to those in Italy and Australia, which have yielded positive health outcomes."
+                },
+                {
+                    "topic_name": "Aligning with Global Guidelines",
+                    "rationale": "Adopting these measures will bring the nation in line with international guidelines like those in Italy and Australia, which have resulted in beneficial health outcomes."
+                }
+            ]
+        },
+        "C": {
+            "frequency": 0.13,
+            "topics": [
+                {
+                    "topic_name": "Public Health Improvements",
+                    "rationale": "Reducing gambling advertisements is expected to lower the rate of gambling-related health issues, leading to overall public health benefits."
+                },
+                {
+                    "topic_name": "Enhancements in Public Health",
+                    "rationale": "Minimizing gambling advertisements is projected to lower the incidences of gambling-related health problems, resulting in overall public health advantages."
+                },
+                {
+                    "topic_name": "Improvements in Community Health",
+                    "rationale": "Cutting down on gambling ads is anticipated to reduce the occurrence of gambling-related health issues, leading to general health benefits for the public."
+                },
+                {
+                    "topic_name": "Advances in Public Health",
+                    "rationale": "By decreasing gambling advertisements, the rate of health problems related to gambling is expected to decline, providing overall wellness benefits to the public."
+                },
+                {
+                    "topic_name": "Better Public Health Outcomes",
+                    "rationale": "Lowering the prevalence of gambling advertisements is likely to reduce gambling-related health complications, thus enhancing public health."
+                },
+                {
+                    "topic_name": "Community Health Enhancement",
+                    "rationale": "The reduction of gambling ads is predicted to decrease the cases of gambling-related health concerns, ultimately benefiting overall public health."
+                },
+                {
+                    "topic_name": "Public Health Betterment",
+                    "rationale": "Reducing the visibility of gambling advertisements is expected to lower the rate of health issues related to gambling, leading to improved public health."
+                },
+                {
+                    "topic_name": "Public Wellness Improvements",
+                    "rationale": "Cutting back on gambling ads is believed to diminish the incidence of gambling-related health problems, resulting in better health for the public."
+                },
+                {
+                    "topic_name": "Health Advantages for the Public",
+                    "rationale": "By lessening gambling advertisements, it is expected that the number of health issues linked to gambling will drop, benefiting public health overall."
+                },
+                {
+                    "topic_name": "Boosting Public Health",
+                    "rationale": "A decrease in gambling ads is projected to lower gambling-related health issues, which will enhance the overall health of the public."
+                },
+                {
+                    "topic_name": "Public Health Gains",
+                    "rationale": "Reducing the presence of gambling advertisements is likely to decrease the occurrence of health problems related to gambling, benefiting public health."
+                },
+                {
+                    "topic_name": "Progress in Public Health",
+                    "rationale": "Lowering gambling advertisement frequency is expected to mitigate gambling-related health risks, improving public health welfare."
+                },
+                {
+                    "topic_name": "Health Improvement for the Community",
+                    "rationale": "Lessening the frequency of gambling ads will likely reduce gambling-linked health problems, yielding benefits to public health."
+                },
+                {
+                    "topic_name": "Enhancing Community Wellness",
+                    "rationale": "By curbing gambling advertisements, the occurrence of gambling-related health issues is expected to diminish, enhancing overall public health."
+                },
+                {
+                    "topic_name": "Betterment of Public Wellness",
+                    "rationale": "Cutting down on the amount of gambling ads is anticipated to decrease the incidence of gambling-linked health issues, leading to benefits in public health."
+                },
+                {
+                    "topic_name": "Health Gains for the Public",
+                    "rationale": "Reducing the number of gambling advertisements is expected to mitigate gambling-related health problems, improving overall public health."
+                },
+                {
+                    "topic_name": "Public Health Growth",
+                    "rationale": "Decreasing gambling ads is projected to lessen the rate of gambling-associated health issues, thereby enhancing public health."
+                },
+                {
+                    "topic_name": "Community Wellness Improvement",
+                    "rationale": "Minimizing the presence of gambling advertisements is expected to reduce the gambling-related health issues, benefiting the overall public health."
+                },
+                {
+                    "topic_name": "Public Health Benefits",
+                    "rationale": "The reduction of gambling ads is likely to lower the rate of health problems linked to gambling, resulting in better health outcomes for the public."
+                },
+                {
+                    "topic_name": "Improving Community Health",
+                    "rationale": "By decreasing gambling ads, the rate of health issues related to gambling is projected to fall, leading to overall public health benefits."
+                },
+                {
+                    "topic_name": "Public Health Boost",
+                    "rationale": "Reducing the frequency of gambling advertisements is expected to mitigate gambling-related health issues, enhancing public health benefits."
+                }
+            ]
+        },
+        "D": {
+            "frequency": 0.01,
+            "topics": [
+                {
+                    "topic_name": "Creating a Safer Viewing Environment",
+                    "rationale": "The proposed ban aims to create a safer viewing environment for sports fans by minimizing the temptation and normalization of gambling."
+                },
+                {
+                    "topic_name": "Establishing a More Secure Viewing Space",
+                    "rationale": "The suggested prohibition aims to establish a more secure viewing space for sports enthusiasts by reducing the appeal and acceptance of gambling."
+                },
+                {
+                    "topic_name": "Creating a Safer Watching Environment",
+                    "rationale": "The intended prohibition seeks to create a safer watching environment for sports spectators by lessening the lure and regularization of gambling."
+                },
+                {
+                    "topic_name": "Ensuring a Secure Viewing Atmosphere",
+                    "rationale": "The recommended ban targets ensuring a secure viewing atmosphere for sports audiences by cutting down the temptation and normalization of gambling."
+                },
+                {
+                    "topic_name": "Developing a Safer Viewing Space",
+                    "rationale": "The proposed restriction aims to develop a safer viewing space for sports fans by decreasing the attraction and normalization of gambling."
+                },
+                {
+                    "topic_name": "Promoting a Safer Viewing Environment",
+                    "rationale": "The intended restriction targets promoting a safer viewing environment for sports fans by lowering the temptation and normalization of gambling."
+                },
+                {
+                    "topic_name": "Forming a More Protected Viewing Environment",
+                    "rationale": "The suggested ban aims to form a more protected viewing environment for sports enthusiasts by minimizing the allure and commonality of gambling."
+                },
+                {
+                    "topic_name": "Creating a Secure Viewing Atmosphere",
+                    "rationale": "The proposed prohibition targets creating a secure viewing atmosphere for sports spectators by reducing the appeal and typicality of gambling."
+                },
+                {
+                    "topic_name": "Building a Safer Viewing Space",
+                    "rationale": "The recommended ban targets building a safer viewing space for sports audiences by cutting down the attraction and regularity of gambling."
+                },
+                {
+                    "topic_name": "Fostering a Safer Viewing Environment",
+                    "rationale": "The suggested restriction aims to foster a safer viewing environment for sports fans by decreasing the allure and normalization of gambling."
+                },
+                {
+                    "topic_name": "Making a Safer Viewing Environment",
+                    "rationale": "The intended prohibition seeks to make a safer viewing environment for sports enthusiasts by lessening the temptation and commonality of gambling."
+                },
+                {
+                    "topic_name": "Designing a Safer Viewing Space",
+                    "rationale": "The proposed restriction aims to design a safer viewing space for sports spectators by reducing the appeal and typicality of gambling."
+                },
+                {
+                    "topic_name": "Establishing a Protected Viewing Environment",
+                    "rationale": "The recommended prohibition targets establishing a protected viewing environment for sports audiences by cutting down the attraction and normalization of gambling."
+                },
+                {
+                    "topic_name": "Creating a Safer Viewing Zone",
+                    "rationale": "The proposed ban aims to create a safer viewing zone for sports fans by minimizing the lure and regularity of gambling."
+                },
+                {
+                    "topic_name": "Developing a Protected Viewing Atmosphere",
+                    "rationale": "The suggested prohibition targets developing a protected viewing atmosphere for sports enthusiasts by lessening the appeal and commonality of gambling."
+                },
+                {
+                    "topic_name": "Forming a Safe Viewing Environment",
+                    "rationale": "The intended restriction aims to form a safe viewing environment for sports spectators by lowering the temptation and typicality of gambling."
+                },
+                {
+                    "topic_name": "Creating a More Secure Viewing Zone",
+                    "rationale": "The recommended ban targets creating a more secure viewing zone for sports audiences by decreasing the attraction and normalization of gambling."
+                },
+                {
+                    "topic_name": "Ensuring a Safer Viewing Space",
+                    "rationale": "The suggested restriction aims to ensure a safer viewing space for sports fans by reducing the allure and regularization of gambling."
+                },
+                {
+                    "topic_name": "Promoting a Safer Watching Space",
+                    "rationale": "The proposed prohibition seeks to promote a safer watching space for sports enthusiasts by minimizing the lure and typicality of gambling."
+                },
+                {
+                    "topic_name": "Creating a Secure Watching Environment",
+                    "rationale": "The intended restriction targets creating a secure watching environment for sports spectators by cutting down the temptation and commonality of gambling."
+                },
+                {
+                    "topic_name": "Building a Protected Viewing Environment",
+                    "rationale": "The recommended prohibition aims to build a protected viewing environment for sports audiences by lessening the appeal and normalization of gambling."
+                }
+            ]
+        }
+    },
+    "Disagreement": {
+        "E": {
+            "frequency": 0.1,
+            "topics": [
+                {
+                    "topic_name": "Economic Impact on Advertising Revenue",
+                    "rationale": "The regulations may significantly reduce advertising revenues for broadcasters and sports organizations, leading to economic drawbacks."
+                },
+                {
+                    "topic_name": "Financial Influence on Ad Revenue",
+                    "rationale": "The rules might considerably cut advertising income for broadcasters and sports groups, resulting in economic hardships."
+                },
+                {
+                    "topic_name": "Economic Consequences on Advertising Income",
+                    "rationale": "The guidelines could greatly decrease ad earnings for media and sports entities, causing financial setbacks."
+                },
+                {
+                    "topic_name": "Financial Effect on Ad Earnings",
+                    "rationale": "The regulations may substantially lower ad revenues for TV channels and sports organizations, leading to financial issues."
+                },
+                {
+                    "topic_name": "Economic Impact on Ad Profits",
+                    "rationale": "The policies might significantly diminish advertising profits for broadcasters and sports bodies, causing economic difficulties."
+                },
+                {
+                    "topic_name": "Financial Repercussions on Advertising Revenue",
+                    "rationale": "The constraints may notably reduce ad incomes for broadcasters and athletic associations, resulting in monetary challenges."
+                },
+                {
+                    "topic_name": "Economic Influence on Advertisement Revenue",
+                    "rationale": "The regulations could heavily cut down on advertising revenues for broadcasters and sports institutions, leading to economic complications."
+                },
+                {
+                    "topic_name": "Financial Ramifications on Ad Revenue",
+                    "rationale": "The edicts may substantially decrease advertising earnings for TV networks and sports organizations, causing financial problems."
+                },
+                {
+                    "topic_name": "Economic Effect on Advertising Earnings",
+                    "rationale": "The rules might greatly reduce ad revenues for broadcasting companies and sports bodies, resulting in economic setbacks."
+                },
+                {
+                    "topic_name": "Financial Impact on Advertisement Profits",
+                    "rationale": "The directives may significantly reduce advertising incomes for broadcasters and sports associations, causing economic issues."
+                },
+                {
+                    "topic_name": "Economic Influence on Ad Revenue",
+                    "rationale": "The regulations could greatly lower ad earnings for media and sports organizations, resulting in financial drawbacks."
+                },
+                {
+                    "topic_name": "Financial Impact on Advertising Income",
+                    "rationale": "The policies may considerably cut down on ad revenues for broadcasting firms and sports entities, causing economic problems."
+                },
+                {
+                    "topic_name": "Economic Repercussions on Ad Revenue",
+                    "rationale": "The guidelines might significantly lessen ad earnings for broadcasters and sports bodies, leading to financial hardships."
+                },
+                {
+                    "topic_name": "Financial Effect on Advertisement Revenue",
+                    "rationale": "The limitations may greatly reduce ad incomes for media houses and sports associations, resulting in financial challenges."
+                },
+                {
+                    "topic_name": "Economic Effect on Ad Profits",
+                    "rationale": "The restrictions could significantly cut advertising revenues for broadcasters and sports institutions, causing economic difficulties."
+                },
+                {
+                    "topic_name": "Financial Influence on Advertising Income",
+                    "rationale": "The laws may considerably decrease ad earnings for TV channels and sports entities, leading to economic complications."
+                },
+                {
+                    "topic_name": "Economic Ramifications on Advertising Revenue",
+                    "rationale": "The rules might substantially cut ad incomes for broadcasting companies and sports organizations, causing monetary issues."
+                },
+                {
+                    "topic_name": "Financial Consequences on Ad Revenue",
+                    "rationale": "The measures could greatly reduce advertising revenues for broadcasters and athletic associations, resulting in financial setbacks."
+                },
+                {
+                    "topic_name": "Economic Impact on Advertisement Earnings",
+                    "rationale": "The regulations might significantly lower ad profits for media firms and sports bodies, leading to economic challenges."
+                },
+                {
+                    "topic_name": "Financial Repercussions on Advertisement Revenue",
+                    "rationale": "The guidelines may greatly cut down on ad incomes for broadcasters and sports associations, causing economic problems."
+                },
+                {
+                    "topic_name": "Economic Influence on Advertising Profits",
+                    "rationale": "The rules could significantly reduce advertising revenues for broadcasting entities and sports organizations, resulting in financial issues."
+                }
+            ]
+        },
+        "F": {
+            "frequency": 0.15,
+            "topics": [
+                {
+                    "topic_name": "Infringement on Business Rights",
+                    "rationale": "Banning gambling advertisements can be seen as an infringement on businesses' rights to market and promote their legal products."
+                },
+                {
+                    "topic_name": "Violation of Commercial Rights",
+                    "rationale": "Prohibiting gambling ads could be interpreted as a violation of commercial rights to advertise and sell lawful products."
+                },
+                {
+                    "topic_name": "Restriction on Trade Rights",
+                    "rationale": "Outlawing gambling promotions is perceived as a limitation on companies' rights to endorse and market their legitimate goods."
+                },
+                {
+                    "topic_name": "Encroachment on Advertising Rights",
+                    "rationale": "Forbidding gambling adverts may be seen as an encroachment on the rights of businesses to advertise and promote authorized products."
+                },
+                {
+                    "topic_name": "Interference with Marketing Rights",
+                    "rationale": "Preventing gambling commercials could be considered an interference with enterprises' rights to market and sell their legal merchandise."
+                },
+                {
+                    "topic_name": "Assault on Business Promotion Rights",
+                    "rationale": "Barring gambling adverts might be viewed as an assault on the rights of companies to promote and market their lawful products."
+                },
+                {
+                    "topic_name": "Intrusion into Corporate Marketing Rights",
+                    "rationale": "Restricting gambling commercials may be interpreted as an intrusion into businesses' rights to advertise and market their legitimate products."
+                },
+                {
+                    "topic_name": "Violation of Marketing Freedom",
+                    "rationale": "Prohibiting gambling advertisements is seen as a violation of enterprises' freedom to advertise and promote their lawful products."
+                },
+                {
+                    "topic_name": "Curtailment of Commercial Promotion",
+                    "rationale": "Outlawing gambling advertisements could be viewed as a curtailment of businesses' rights to market and promote their legitimate products."
+                },
+                {
+                    "topic_name": "Violation of Business Advertising Rights",
+                    "rationale": "Banning gambling commercials may be considered a violation of companies' rights to promote and advertise their legal goods."
+                },
+                {
+                    "topic_name": "Invasion of Corporate Marketing Rights",
+                    "rationale": "Forbidding gambling advertisements might be regarded as an invasion into businesses' rights to advertise and market their sanctioned products."
+                },
+                {
+                    "topic_name": "Limitation on Business Promotion Rights",
+                    "rationale": "Preventing gambling adverts is perceived as a limitation on companies' rights to promote and market their approved products."
+                },
+                {
+                    "topic_name": "Breach of Advertising Rights",
+                    "rationale": "Banning gambling commercials could be seen as a breach of enterprises' rights to commercialize and promote lawful goods."
+                },
+                {
+                    "topic_name": "Violation of Commercial Marketing Rights",
+                    "rationale": "Prohibiting gambling ads may be perceived as a violation of corporate rights to market and advertise their legal products."
+                },
+                {
+                    "topic_name": "Invasion of Commercial Advertising Rights",
+                    "rationale": "Outlawing gambling adverts could be considered an invasion into businesses' rights to endorse and promote their legal merchandise."
+                },
+                {
+                    "topic_name": "Encroachment on Promotional Rights",
+                    "rationale": "Forbidding gambling advertisements might be viewed as an encroachment on corporate rights to promote and market their permissible products."
+                },
+                {
+                    "topic_name": "Restriction on Promotional Activities",
+                    "rationale": "Preventing gambling ads may be regarded as a restriction on businesses' activities to market and sell their legitimate products."
+                },
+                {
+                    "topic_name": "Impingement on Commercial Rights",
+                    "rationale": "Banning gambling advertisements may be interpreted as an impingement on companies' rights to promote and market their lawful products."
+                },
+                {
+                    "topic_name": "Violation of Corporate Advertising Rights",
+                    "rationale": "Prohibiting gambling commercials could be considered a violation of businesses' rights to advertise and market their legitimate goods."
+                },
+                {
+                    "topic_name": "Intrusion on Business Promotion Rights",
+                    "rationale": "Outlawing gambling adverts might be regarded as an intrusion into enterprises' rights to market and promote their legitimate products."
+                },
+                {
+                    "topic_name": "Infringement on Marketing Rights",
+                    "rationale": "Forbidding gambling ads can be seen as an infringement on the marketing rights of businesses to advertise and promote their legal products."
+                }
+            ]
+        },
+        "G": {
+            "frequency": 0.13,
+            "topics": [
+                {
+                    "topic_name": "Implementation and Enforcement Challenges",
+                    "rationale": "Effectively implementing and enforcing the ban could present logistical issues and require significant resources, complicating the execution of these regulations."
+                },
+                {
+                    "topic_name": "Challenges in Implementation and Enforcement",
+                    "rationale": "Effectively carrying out and enforcing the ban could introduce logistical obstacles and demand considerable resources, complicating the execution of these rules."
+                },
+                {
+                    "topic_name": "Issues with Ban Implementation and Enforcement",
+                    "rationale": "Implementing and enforcing the ban efficiently could lead to logistical difficulties and necessitate substantial resources, complicating the regulation execution."
+                },
+                {
+                    "topic_name": "Execution and Enforcement Difficulties",
+                    "rationale": "Implementing and enforcing the ban effectively may result in logistical complications and require significant resources, making the execution of these regulations more complex."
+                },
+                {
+                    "topic_name": "Enforcement and Implementation Obstacles",
+                    "rationale": "Successfully implementing and enforcing the ban may pose logistical challenges and require substantial resources, complicating the enforcement of these rules."
+                },
+                {
+                    "topic_name": "Ban Enforcement and Implementation Hurdles",
+                    "rationale": "Effectively enforcing and implementing the ban could involve logistical issues and require significant resources, complicating regulation compliance."
+                },
+                {
+                    "topic_name": "Difficulties in Ban Execution and Enforcement",
+                    "rationale": "Effective implementation and enforcement of the ban may present logistical problems and require considerable resources, complicating the regulations' execution."
+                },
+                {
+                    "topic_name": "Implementation and Ban Enforcement Obstacles",
+                    "rationale": "Executing and enforcing the ban efficiently could introduce logistical challenges and demand significant resources, complicating the process."
+                },
+                {
+                    "topic_name": "Ban Compliance Implementation Challenges",
+                    "rationale": "Implementing and enforcing the ban effectively may involve logistical issues and substantial resource requirements, making the regulations harder to execute."
+                },
+                {
+                    "topic_name": "Challenges in Ban Execution and Compliance",
+                    "rationale": "Ensuring effective enforcement and implementation of the ban could result in logistical problems and substantial resource needs, complicating the execution."
+                },
+                {
+                    "topic_name": "Complications in Implementation and Enforcement",
+                    "rationale": "Effectively carrying out and enforcing the ban may pose logistical difficulties and necessitate significant resources, complicating the process."
+                },
+                {
+                    "topic_name": "Implementation and Enforcement Issues",
+                    "rationale": "Successfully implementing and enforcing the ban could introduce logistical challenges and require substantial resources, complicating the regulation compliance."
+                },
+                {
+                    "topic_name": "Ban Execution and Enforcement Challenges",
+                    "rationale": "Effective enforcement and implementation of the ban might cause logistical complications and demand significant resources, making the execution of these regulations more complex."
+                },
+                {
+                    "topic_name": "Ban Implementation and Enforcement Issues",
+                    "rationale": "Enforcing and implementing the ban efficiently may present logistical difficulties and require considerable resources, complicating the regulation execution."
+                },
+                {
+                    "topic_name": "Obstacles in Ban Enforcement and Implementation",
+                    "rationale": "Effectively enforcing and implementing the ban could lead to logistical challenges and necessitate substantial resources, complicating the process."
+                },
+                {
+                    "topic_name": "Issues in Implementation and Enforcement",
+                    "rationale": "Carrying out and enforcing the ban effectively may result in logistical issues and require significant resources, complicating compliance with these regulations."
+                },
+                {
+                    "topic_name": "Challenges in Ban Compliance and Execution",
+                    "rationale": "Implementing and enforcing the ban efficiently could introduce logistical obstacles and demand substantial resources, complicating the regulation process."
+                },
+                {
+                    "topic_name": "Ban Enforcement and Implementation Difficulties",
+                    "rationale": "Effective enforcement and implementation of the ban may present logistical issues and substantial resource requirements, making the process more complex."
+                },
+                {
+                    "topic_name": "Enforcement and Execution Obstacles",
+                    "rationale": "Ensuring effective implementation and enforcement of the ban could lead to logistical problems and demand significant resources, complicating the regulation execution."
+                },
+                {
+                    "topic_name": "Execution and Compliance Challenges",
+                    "rationale": "Effectively implementing and enforcing the ban might result in logistical complications and substantial resource needs, complicating the execution process."
+                },
+                {
+                    "topic_name": "Compliance and Implementation Issues",
+                    "rationale": "Successfully enforcing and implementing the ban may introduce logistical challenges and require considerable resources, complicating the regulations' execution."
+                }
+            ]
+        },
+        "H": {
+            "frequency": 0.01,
+            "topics": [
+                {
+                    "topic_name": "Potential Shift to Unregulated Channels",
+                    "rationale": "Restricting gambling advertisements on televised sports might push these advertisements to less regulated online platforms, potentially undermining the intended public health benefits."
+                },
+                {
+                    "topic_name": "Shift to Less Regulated Channels",
+                    "rationale": "Limiting gambling ads on sports TV might drive these adverts to less regulated online platforms, possibly harming public health efforts."
+                },
+                {
+                    "topic_name": "Move to Unregulated Advertising Channels",
+                    "rationale": "Banning gambling commercials on televised sports may redirect these ads to more loosely controlled online venues, potentially weakening public health advantages."
+                },
+                {
+                    "topic_name": "Switch to Unregulated Mediums",
+                    "rationale": "Restricting gambling advertisements on sports broadcasts might push these ads to less controlled online areas, possibly affecting public health goals."
+                },
+                {
+                    "topic_name": "Transition to Less Controlled Channels",
+                    "rationale": "Gambling ad restrictions on TV sports could shift these promotions to more unregulated online platforms, potentially compromising public health benefits."
+                },
+                {
+                    "topic_name": "Movement to Unregulated Platforms",
+                    "rationale": "Restricting gambling ads during sports broadcasts may lead these advertisements to less monitored online areas, possibly negating public health objectives."
+                },
+                {
+                    "topic_name": "Drift to Loosely Regulated Channels",
+                    "rationale": "Prohibiting gambling commercials on sports TV could push these ads toward less controlled online mediums, potentially undermining public health goals."
+                },
+                {
+                    "topic_name": "Redirection to Unregulated Channels",
+                    "rationale": "Limiting gambling advertisements on sports television might shift these promos to loosely governed online channels, potentially diminishing the intended health benefits."
+                },
+                {
+                    "topic_name": "Steering to Less Governed Channels",
+                    "rationale": "Restricting gambling ads on televised sports could push these advertisements to more loosely regulated online outlets, possibly reducing the public health benefits."
+                },
+                {
+                    "topic_name": "Shift to Unsupervised Channels",
+                    "rationale": "Banning gambling ads from sports broadcasts might redirect these advertisements to less regulated online platforms, potentially affecting intended health improvements."
+                },
+                {
+                    "topic_name": "Migration to Unregulated Online Channels",
+                    "rationale": "Prohibiting gambling advertisements on sports telecasts could turn these promos towards less controlled online channels, possibly negating intended public health benefits."
+                },
+                {
+                    "topic_name": "Shift Towards Unregulated Channels",
+                    "rationale": "Limiting gambling ads in televised sports may divert these ads to less regulated online environments, potentially diminishing the expected health benefits."
+                },
+                {
+                    "topic_name": "Redirection to Less Controlled Platforms",
+                    "rationale": "Restricting gambling advertisements during TV sports may nudge these promos toward less governed online platforms, possibly weakening public health impacts."
+                },
+                {
+                    "topic_name": "Turn to Unregulated Venues",
+                    "rationale": "Banning gambling ads during sports broadcasts might push these adverts to less regulated online spaces, potentially affecting health outcomes."
+                },
+                {
+                    "topic_name": "Shift to Less Regulated Mediums",
+                    "rationale": "Limiting gambling advertisements on television sports could steer these promos to less regulated online domains, potentially altering public health goals."
+                },
+                {
+                    "topic_name": "Move Toward Unregulated Platforms",
+                    "rationale": "Restricting gambling ads on sports TV could lead these adverts to less regulated online venues, perhaps impacting the intended health benefits."
+                },
+                {
+                    "topic_name": "Redirection to Loosely Governed Channels",
+                    "rationale": "Limiting gambling ads during televised sports might push these advertisements toward less regulated online spaces, potentially altering public health aims."
+                },
+                {
+                    "topic_name": "Transition to Less Supervised Channels",
+                    "rationale": "Banning gambling ads from sports television might steer these adverts to less regulated online areas, potentially impacting public health measures."
+                },
+                {
+                    "topic_name": "Switch to Less Governed Channels",
+                    "rationale": "Restricting gambling ads during sports broadcasts might move these promotions to less regulated online outlets, potentially jeopardizing intended public health outcomes."
+                },
+                {
+                    "topic_name": "Drift Towards Unregulated Mediums",
+                    "rationale": "Limitations on gambling ads in sports telecasts may push these adverts towards less regulated online platforms, potentially affecting the anticipated health improvements."
+                },
+                {
+                    "topic_name": "Movement to Loosely Regulated Platforms",
+                    "rationale": "Restricting gambling ads on sports TV might push these adverts to less regulated online realms, potentially undermining the intended public health results."
+                }
+            ]
+        }
+    }
+}

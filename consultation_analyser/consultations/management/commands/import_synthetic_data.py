@@ -9,11 +9,11 @@ class Command(BaseCommand):
     help = "Import synthetic data from the 'downloads' folder"
 
     def get_theme(self, theme_data, response_theme_data, framework):
-        search_string = list(response_theme_data.keys())[0]
+        search_string = list(response_theme_data)[0]
         theme_dict = theme_data["Agreement"] | theme_data["Disagreement"]
 
         try:
-            key = next(filter(lambda k: search_string in str(theme_dict), theme_dict.keys()))
+            key = next(filter(lambda k: search_string in str(theme_dict[k]), theme_dict.keys()))
             return models.Theme.objects.get(framework=framework, key=key)
         except StopIteration:
             return None
@@ -23,7 +23,7 @@ class Command(BaseCommand):
     def import_question(self, index, consultation):
         self.stdout.write(f"Creating question {index}")
 
-        with open(f"downloads/synthetic_data/question_{index}/expanded_question.json") as f:
+        with open(f"synthetic_data/question_{index}/expanded_question.json") as f:
             question_data = json.load(f)
 
         question = models.Question.objects.create(
@@ -45,7 +45,7 @@ class Command(BaseCommand):
                 execution_run=execution_run, question_part=free_text_qp
             )
 
-            with open(f"downloads/synthetic_data/question_{index}/framework_topics.json") as f:
+            with open(f"synthetic_data/question_{index}/framework_topics.json") as f:
                 theme_data = json.load(f)
 
             for key, value in (theme_data["Agreement"] | theme_data["Disagreement"]).items():
@@ -67,7 +67,7 @@ class Command(BaseCommand):
             )
 
         respondents = models.Respondent.objects.filter(consultation=consultation)
-        with open(f"downloads/synthetic_data/question_{index}/responses.json") as f:
+        with open(f"synthetic_data/question_{index}/responses.json") as f:
             responses = json.load(f)
 
         for i, response in enumerate(responses):
@@ -112,7 +112,7 @@ class Command(BaseCommand):
         consultation = models.Consultation.objects.create(title="Synthetic Data Consultation")
 
         # Generating respondents. In the synthetic data, the respondents were regenerated for each question, but as we're only using this for local testing, we'll just use the first batch.
-        with open("downloads/synthetic_data/question_3/responses.json") as f:
+        with open("synthetic_data/question_3/responses.json") as f:
             responses = json.load(f)
 
         for response in responses:
