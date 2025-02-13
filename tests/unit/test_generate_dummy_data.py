@@ -68,5 +68,5 @@ def test_create_dummy_consultation_from_yaml():
         type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
     ).exists()
 
-    assert models.ExecutionRun.objects.count() == 3 * 2  # 3 free-text parts, 2 types of run for now
+    assert models.ExecutionRun.objects.count() == 3 * 3  # 3 free-text parts, 3 types of run
     assert models.Framework.objects.count() == 3
