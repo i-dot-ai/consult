@@ -23,8 +23,10 @@
       themes:
         - name: "Standardized framework"
           description: "A standardized framework that benefits both consumers and manufacturers."
+          key: "A"
         - name: "Innovation"
           description: "Innovation in flavour development."
+          key: "B"
 
 - question_text: "Is the proposed description sufficiently clear for the purpose of implementation and enforcement?"
   number: 2
@@ -67,12 +69,16 @@
       themes:
         - name: "More innovative"
           description: "Innovative ideas to improve chocolate bar regulations."
+          key: "A"
         - name: "Healthier options"
           description: "It should encourage healthier options."
+          key: "B"
         - name: "Clearer guidelines"
           description: "It should include clearer guidelines."
+          key: "C"
         - name: "Fair trade practices"
           description: "It should promote fair trade practices."
+          key: "D"
 
 - question_text: ""
   number: 5
@@ -95,10 +101,13 @@
       themes:
         - name: "Cocoa content"
           description: "Factors related to the cocoa content of chocolate bars."
+          key: "A"
         - name: "Price"
           description: "Factors related to the price of chocolate bars."
+          key: "B"
         - name: "Familiarity"
           description: "How familiar brands are."
+          key: "C"
 
     - text: "How frequently do these factors lead you to try new chocolate bar brands?"
       type: "single_option"
