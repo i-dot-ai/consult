@@ -401,3 +401,19 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         else:
             latest_mappings = ThemeMapping.objects.none()
         return latest_mappings
+
+
+class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
+    class Position(models.TextChoices):
+        AGREE = "AGREE", "Agree"
+        DISAGREE = "DISAGREE", "Disagree"
+        UNCLEAR = "UNCLEAR", "Unclear"
+
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
+    position = models.CharField(max_length=8, choices=Position.choices)
+
+    history = HistoricalRecords()
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
