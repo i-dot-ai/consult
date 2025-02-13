@@ -203,3 +203,12 @@ class ThemeMappingFactory(DjangoModelFactory):
     reason = factory.LazyAttribute(lambda o: fake.sentence())
     execution_run = factory.SubFactory(ExecutionRunFactory)
     stance = fuzzy.FuzzyChoice(models.ThemeMapping.Stance.values)
+
+
+class SentimentMappingFactory(DjangoModelFactory):
+    class Meta:
+        model = models.SentimentMapping
+
+    answer = factory.SubFactory(FreeTextAnswerFactory)
+    execution_run = factory.SubFactory(ExecutionRunFactory)
+    position = fuzzy.FuzzyChoice(models.ThemeMapping.Stance.values)
