@@ -160,14 +160,17 @@ class InitialThemeFactory(DjangoModelFactory):
         framework = kwargs.get("framework")
         name = kwargs.get("name")
         description = kwargs.get("description")
+        key = kwargs.get("key")
         if not framework:
             framework = InitialFrameworkFactory()
         if not name:
             name = fake.sentence()
         if not description:
             description = fake.paragraph()
+        if not key:
+            key = fake.random_letter()
         return model_class.create_initial_theme(
-            framework=framework, name=name, description=description
+            framework=framework, name=name, description=description, key=key
         )
 
 
@@ -181,6 +184,7 @@ class DescendantThemeFactory(DjangoModelFactory):
         framework = kwargs.get("framework")
         name = kwargs.get("name")
         description = kwargs.get("description")
+        key = kwargs.get("key")
         if not precursor:
             precursor = InitialThemeFactory()
         if not framework:
@@ -189,8 +193,10 @@ class DescendantThemeFactory(DjangoModelFactory):
             name = fake.sentence()
         if not description:
             description = fake.paragraph()
+        if not key:
+            key = fake.random_letter()
         return precursor.create_descendant_theme(
-            new_framework=framework, name=name, description=description
+            new_framework=framework, name=name, description=description, key=key
         )
 
 

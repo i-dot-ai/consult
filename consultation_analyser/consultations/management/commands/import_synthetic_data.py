@@ -103,7 +103,7 @@ class Command(BaseCommand):
                 models.Answer.objects.create(
                     question_part=multi_choice_qp,
                     respondent=respondents[i],
-                    chosen_options=json.dumps(response["multiple_choice_option"]),
+                    chosen_options=response["multiple_choice_option"],
                 )
 
     def handle(self, *args, **options):
