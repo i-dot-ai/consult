@@ -211,4 +211,4 @@ class SentimentMappingFactory(DjangoModelFactory):
 
     answer = factory.SubFactory(FreeTextAnswerFactory)
     execution_run = factory.SubFactory(ExecutionRunFactory)
-    position = fuzzy.FuzzyChoice(models.ThemeMapping.Stance.values)
+    position = fuzzy.FuzzyChoice(models.SentimentMapping.Position.values)
