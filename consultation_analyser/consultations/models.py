@@ -405,13 +405,13 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     class Position(models.TextChoices):
-        AGREE = "AGREE", "Agree"
-        DISAGREE = "DISAGREE", "Disagree"
+        AGREEMENT = "AGREEMENT", "Agreement"
+        DISAGREEMENT = "DISAGREEMENT", "Disagreement"
         UNCLEAR = "UNCLEAR", "Unclear"
 
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
-    position = models.CharField(max_length=8, choices=Position.choices)
+    position = models.CharField(max_length=12, choices=Position.choices)
 
     history = HistoricalRecords()
 
