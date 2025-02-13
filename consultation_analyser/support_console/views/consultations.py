@@ -1,12 +1,14 @@
 from uuid import UUID
 
+from django.conf import settings
 from django.contrib import messages
 from django.core.management import call_command
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
+from consultation_analyser.consultations.export_user_theme import export_user_theme
 from consultation_analyser.hosting_environment import HostingEnvironment
 
 NO_SUMMARY_STR = "Unable to generate summary for this theme"
@@ -73,3 +75,26 @@ def import_consultations(request: HttpRequest) -> HttpResponse:
 
         return redirect("/support/consultations/")
     return render(request, "support_console/consultations/import.html")
+
+
+def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
+    consultation = get_object_or_404(models.Consultation, id=consultation_id)
+
+    context = {
+        "consultation": consultation,
+        "bucket_name": settings.AWS_BUCKET_NAME,
+        "environment": settings.ENVIRONMENT,
+    }
+
+    if request.method == "POST":
+        s3_key = request.POST.get("s3_key")
+        try:
+            export_user_theme(consultation.slug, s3_key)
+        except Exception as e:
+            messages.error(request, e)
+            return render(request, "support_console/consultations/export_audit.html", context)
+
+        messages.success(request, "Consultation theme audit exported")
+        return redirect("/support/consultations/")
+
+    return render(request, "support_console/consultations/export_audit.html", context)

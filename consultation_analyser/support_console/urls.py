@@ -31,4 +31,9 @@ urlpatterns = [
         consultations.import_consultations,
         name="import_consultations",
     ),
+    path(
+        "consultations/<uuid:consultation_id>/export/",
+        consultations.export_consultation_theme_audit,
+        name="export_consultation_theme_audit",
+    ),
 ]

@@ -193,7 +193,7 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
     text = models.TextField()
     chosen_options = models.JSONField(default=list)
-    is_theme_mapping_audited = models.BooleanField(default=False)
+    is_theme_mapping_audited = models.BooleanField(default=False, null=True)
     # TODO - add favourite
 
     history = HistoricalRecords()
@@ -379,6 +379,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
     stance = models.CharField(max_length=8, choices=Stance.choices)
     history = HistoricalRecords()
+    user_audited = models.BooleanField(default=False)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
