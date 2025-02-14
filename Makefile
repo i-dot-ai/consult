@@ -150,13 +150,13 @@ docker_echo:
 	echo $($(value))
 
 ifeq ($(instance),postgres)
-CONFIG_DIR=../../../consultation-analyser-infra-config
+CONFIG_DIR=../../../consult-infra-config
 tf_build_args=
 else ifeq ($(instance),universal)
-CONFIG_DIR=../../../consultation-analyser-infra-config
+CONFIG_DIR=../../../consult-infra-config
 env=prod
 else
-CONFIG_DIR=../../consultation-analyser-infra-config
+CONFIG_DIR=../../consult-infra-config
 tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 endif
 
