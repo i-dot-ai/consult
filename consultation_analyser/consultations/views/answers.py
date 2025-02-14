@@ -35,6 +35,30 @@ def index(
         free_text_answers = models.Answer.objects.none()
         total_responses = 0
 
+
+    responses_data = models.Answer.objects.filter(question_part__question=question)
+    responses: dict = {}
+    for response in responses_data:
+        if not responses.get(response.respondent_id):
+            responses[response.respondent_id] = {}
+        try:
+            responses[response.respondent_id]["free_text"] = models.Answer.objects.get(
+            question_part__question=question,
+            question_part__type=models.QuestionPart.QuestionType.FREE_TEXT,
+            respondent_id=response.respondent_id,
+        )
+        except models.Answer.DoesNotExist:
+            pass
+        try:
+            responses[response.respondent_id]["multiple_choice"] = models.Answer.objects.get(
+            question_part__question=question,
+            question_part__type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS,
+            respondent_id=response.respondent_id,
+        )
+        except models.Answer.DoesNotExist:
+            pass
+
+
     # pagination
     pagination = Paginator(free_text_answers, 5)
     page_index = request.GET.get("page", "1")
@@ -49,6 +73,7 @@ def index(
         "responses": paginated_responses,
         "total_responses": total_responses,
         "pagination": current_page,
+        "responses": responses,
     }
 
     return render(request, "consultations/answers/index.html", context)
