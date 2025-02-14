@@ -67,6 +67,11 @@ def get_top_themes_for_free_text_question_part(
         .annotate(theme_count=Count("theme"))
         .order_by("-theme_count")
     )[:number_top_themes]
+    top_themes_counts_qs = (
+        theme_mappings_qs.values("theme")
+        .annotate(theme_count=Count("theme"))
+        .order_by("-theme_count")
+    )
     top_themes_by_counts_list = []
     for item in top_themes_counts_qs:
         theme_obj = Theme.objects.get(id=item["theme"])
