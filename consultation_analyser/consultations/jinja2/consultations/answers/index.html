@@ -23,20 +23,19 @@
 
   <div class="govuk-grid-row govuk-!-margin-top-5">
     <div class="govuk-grid-column-full">
-      <div class="iai-panel">
-        <h1 class="govuk-heading-m govuk-!-font-weight-regular">
-          <span class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">Response explorer</span>
-          {{ question.text }}
-        </h1>
-        <h2 class="govuk-heading-m govuk-!-font-weight-regular">
-          {{ free_text_question_part.text }}
-        </h2>
-      </div>
+      <h1 class="govuk-heading-m govuk-!-font-weight-regular">
+        <span class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">Question {{question.number}}</span>
+        {{ question.text }}
+      </h1>
+      <h2 class="govuk-heading-m govuk-!-font-weight-regular">
+        {{ free_text_question_part.text }}
+      </h2>
     </div>
+
+    <!-- TODO: add search bar -->
   </div>
 
   <div class="govuk-grid-row govuk-!-margin-top-5">
-
     <div class="govuk-grid-column-one-quarter-from-desktop">
       <div class="iai-panel govuk-!-margin-bottom-5">
         <h2 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">Filters</h2>
@@ -45,6 +44,87 @@
     </div>
 
     <div class="govuk-grid-column-three-quarters-from-desktop">
+      <span class="govuk-caption-m">{{ total_responses }} responses</span>
+      <h2 class="govuk-heading-m">Overview</h2>
+      
+      <!-- TODO: add 'top themes' panel here -->
+
+      <!-- TODO: add 'Response to multiple choice' panel here -->
+
+      <div class="govuk-grid-row">
+        <div class="govuk-grid-column-full">
+          <span class="govuk-caption-m">{{ total_responses }} responses</span>
+          <h2 class="govuk-heading-m">Individual responses</h2>
+        </div>
+      </div>
+
+      <!-- TODO: add sorting options here -->
+      
+      <!-- TODO: replace table below with detailed response panels -->
+
+      {# Responses #}
+
+      {% for respondent, response in responses.items() %}
+        <div class="iai-panel response govuk-!-margin-bottom-4">
+          <div class="govuk-grid-row">
+            <div class="govuk-grid-column-two-thirds">
+              <!-- <span class="govuk-caption-m">Individual</span> -->
+              <h2 class="govuk-heading-m">
+                <!-- <a href="/respondent/0" class="govuk-link govuk-link--no-underline govuk-link--no-visited-state">
+                  Respondent 0
+                </a> -->
+                Respondent {{ respondent }}
+              </h2>
+            </div>
+            <!-- <div class="govuk-grid-column-one-third">
+              <a class="pin-response align-right">
+                <p class="govuk-body-s govuk-!-margin-bottom-0" style="display: flex; align-items: center;">
+                  <img src="/public/images/pin-response.svg" alt="Pin response">
+                  <span>Pin response</span>
+                </p>
+              </a>
+            </div> -->
+          </div>
+            {% if response.free_text %}
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-4">Free text response</h3>
+              <p class="govuk-body" style="display: flex; align-items: center; gap: 0.6%;">
+                <img src="/public/images/thumbs-up.svg" alt="icon" style="width: 24px; height: 24px;">
+                <span>Agreement</span>
+              </p>
+
+              <div class="govuk-pill-container" style="display: flex; align-items: center; gap: 0.6%;">
+                <div class="govuk-pill">
+                  <tool-tip class="iai-tooltip">
+                    <div class="iai-tooltip__button" role="tooltip" tabindex="0" aria-describedby="tooltip-content-2a1c358a-162a-4cf8-8011-43c13ef22785">
+                      <img src="/public/images/tick.svg" alt="icon" style="width: 24px; height: 24px;">
+                      <span>Gaining from Global Best Practices</span>
+                      <img src="/public/images/question-mark.svg" alt="info" width="14">
+                    </div>
+                    <div class="iai-tooltip__content" id="tooltip-content-2a1c358a-162a-4cf8-8011-43c13ef22785">
+                      Following the effective examples provided by nations such as Italy and Australia, which have seen positive outcomes after imposing similar restrictions, demonstrates the potential for success of this policy.
+                    </div>
+                  </tool-tip>
+                </div>
+              </div>
+              <div class="govuk-pill-container" style="display: flex; align-items: center; gap: 0.6%;">
+                
+              </div>
+              <p class="govuk-body" style="line-height: 2em;">
+                <span class="sentence-border">Reducing gambling ads is a good move. </span><span class="sentence-border">Countries like Italy and Australia have had success with this, showing it can work. </span><span class="sentence-border">It's a step worth taking to help those recovering.</span>
+              </p>
+            {% endif %}
+
+            {% if response.multiple_choice %}
+              <h3 class="govuk-heading-s govuk-!-margin-bottom-2">Response to multiple choice</h3>
+              <p class="govuk-body" style="line-height: 2em;">
+                Not answered
+              </p>
+            {% endif %}
+
+          <p class="govuk-body-s">Region: Wales, Individual type: Individual</p>
+        </div>
+      {% endfor %}
+
       <div class="iai-panel">
         <table class="govuk-table con-responses-table">
           <caption class="govuk-table__caption govuk-table__caption--m govuk-!-margin-bottom-0">
@@ -67,7 +147,11 @@
           </tbody>
         </table>
 
-        {# Pagination #}
+        
+
+      </div>
+
+      {# Pagination #}
         {% if pagination.paginator.num_pages > 1 %}
           <nav class="govuk-pagination" role="navigation" aria-label="Pagination">
 
@@ -146,8 +230,6 @@
 
           </nav>
         {% endif %}
-
-      </div>
 
     </div>
 
