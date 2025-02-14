@@ -82,6 +82,7 @@ def create_dummy_consultation_from_yaml(
                         framework=framework,
                         name=theme["name"],
                         description=theme["description"],
+                        key=theme["key"],
                     )
                     for theme in themes
                 ]

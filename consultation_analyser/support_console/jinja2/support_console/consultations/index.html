@@ -37,5 +37,11 @@
         'name': "generate_dummy_consultation"
       }) }}
     {% endif %}
+    {{
+      govukButton({
+        'text': "Create consultation from synthetic data",
+        'name': "create_synthetic_consultation"
+      })
+    }}
   </form>
 {% endblock %}

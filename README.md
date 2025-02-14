@@ -91,6 +91,15 @@ make test
 
 ## The database
 
+### Importing synthetic data
+Will create a consultation with 9 questions in both free-text and multiple
+choice formats and around 300 answers for each.
+
+```
+poetry run python manage.py import_synthetic_data
+```
+Or go to `/support/consultations/` and import a synthetic consultation from there.
+
 ### Generating dummy data
 Only run this in development. Will create a consultation with 100 complete
 responses in a variety of question formats. This runs as part of `make
