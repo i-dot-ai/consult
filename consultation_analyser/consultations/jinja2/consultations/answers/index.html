@@ -64,16 +64,18 @@
 
       {# Responses #}
 
-      {% for respondent, response in responses.items() %}
+      {% for respondent in respondents %}
         <div class="iai-panel response govuk-!-margin-bottom-4">
           <div class="govuk-grid-row">
             <div class="govuk-grid-column-two-thirds">
-              <!-- <span class="govuk-caption-m">Individual</span> -->
+              {% if respondent.individual %}
+                <span class="govuk-caption-m">{{ respondent.individual }}</span>
+              {% endif %}
               <h2 class="govuk-heading-m">
                 <!-- <a href="/respondent/0" class="govuk-link govuk-link--no-underline govuk-link--no-visited-state">
                   Respondent 0
                 </a> -->
-                Respondent {{ respondent }}
+                Respondent {{ respondent.id }}
               </h2>
             </div>
             <!-- <div class="govuk-grid-column-one-third">
@@ -85,71 +87,55 @@
               </a>
             </div> -->
           </div>
-            {% if response.free_text %}
+            {% if respondent.free_text_answer %}
               <h3 class="govuk-heading-s govuk-!-margin-bottom-4">Free text response</h3>
-              <p class="govuk-body" style="display: flex; align-items: center; gap: 0.6%;">
-                <img src="/public/images/thumbs-up.svg" alt="icon" style="width: 24px; height: 24px;">
-                <span>Agreement</span>
-              </p>
+              {% if respondent.sentiment %}
+                <p class="govuk-body" style="display: flex; align-items: center; gap: 0.6%;">
+                  <!-- <img src="/public/images/thumbs-up.svg" alt="icon" style="width: 24px; height: 24px;"> -->
+                  <span>{{ respondent.sentiment.position }}</span>
+                </p>
+              {% endif %}
 
-              <div class="govuk-pill-container" style="display: flex; align-items: center; gap: 0.6%;">
-                <div class="govuk-pill">
-                  <tool-tip class="iai-tooltip">
-                    <div class="iai-tooltip__button" role="tooltip" tabindex="0" aria-describedby="tooltip-content-2a1c358a-162a-4cf8-8011-43c13ef22785">
-                      <img src="/public/images/tick.svg" alt="icon" style="width: 24px; height: 24px;">
-                      <span>Gaining from Global Best Practices</span>
-                      <img src="/public/images/question-mark.svg" alt="info" width="14">
-                    </div>
-                    <div class="iai-tooltip__content" id="tooltip-content-2a1c358a-162a-4cf8-8011-43c13ef22785">
-                      Following the effective examples provided by nations such as Italy and Australia, which have seen positive outcomes after imposing similar restrictions, demonstrates the potential for success of this policy.
-                    </div>
-                  </tool-tip>
+              {% for theme in respondent.themes %}
+
+                <div class="govuk-pill-container" style="display: flex; align-items: center; gap: 0.6%;">
+                  <div class="govuk-pill">
+                    <tool-tip class="iai-tooltip">
+                      <div class="iai-tooltip__button" role="tooltip" tabindex="0" aria-describedby="tooltip-content-2a1c358a-162a-4cf8-8011-43c13ef22785">
+                        <!-- <img src="/public/images/tick.svg" alt="icon" style="width: 24px; height: 24px;"> -->
+                        <span>{{ theme.theme.name }}</span>
+                        <img src="/public/images/question-mark.svg" alt="info" width="14">
+                      </div>
+                      <div class="iai-tooltip__content" id="tooltip-content-2a1c358a-162a-4cf8-8011-43c13ef22785">
+                        {{ theme.theme.description }}
+                      </div>
+                    </tool-tip>
+                  </div>
                 </div>
-              </div>
-              <div class="govuk-pill-container" style="display: flex; align-items: center; gap: 0.6%;">
-                
-              </div>
+              
+              {% endfor %}
+
               <p class="govuk-body" style="line-height: 2em;">
-                <span class="sentence-border">Reducing gambling ads is a good move. </span><span class="sentence-border">Countries like Italy and Australia have had success with this, showing it can work. </span><span class="sentence-border">It's a step worth taking to help those recovering.</span>
+                {{ respondent.free_text_answer.text }}
               </p>
             {% endif %}
 
-            {% if response.multiple_choice %}
+            {% if has_multiple_choice_question_part %}
               <h3 class="govuk-heading-s govuk-!-margin-bottom-2">Response to multiple choice</h3>
+              {% if respondent.multiple_choice_answer %}
+                <p class="govuk-body" style="line-height: 2em;">
+                  {{ respondent.multiple_choice_answer.chosen_options }}
+                </p>
+              {% else %}
               <p class="govuk-body" style="line-height: 2em;">
                 Not answered
               </p>
+              {% endif %}
             {% endif %}
 
-          <p class="govuk-body-s">Region: Wales, Individual type: Individual</p>
+          <p class="govuk-body-s">{{ respondent.demographic_data }}</p>
         </div>
       {% endfor %}
-
-      <div class="iai-panel">
-        <table class="govuk-table con-responses-table">
-          <caption class="govuk-table__caption govuk-table__caption--m govuk-!-margin-bottom-0">
-            <h2 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold govuk-!-margin-bottom-0">Responses</h2>
-            <span class="iai-table-subhead govuk-body-s govuk-!-margin-top-1">(Showing <strong>{{ responses|length }}</strong> of <strong>{{ total_responses }}</strong> responses)</span>
-          </caption>
-          <thead class="govuk-table__head">
-            <tr class="govuk-table__row">
-              <th scope="col" class="govuk-table__header">Free text</th>
-            </tr>
-          </thead>
-          <tbody class="govuk-table__body">
-            {% for response in responses %}
-              <tr class="govuk-table__row govuk-body-s">
-                <td class="govuk-table__cell">
-                  {{ response.text }}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-
-        
-
-      </div>
 
       {# Pagination #}
         {% if pagination.paginator.num_pages > 1 %}
