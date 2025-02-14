@@ -10,6 +10,7 @@ from consultation_analyser.consultations.models import (
     Consultation,
     Question,
     QuestionPart,
+    SentimentMapping,
     Theme,
     ThemeMapping,
 )
@@ -24,6 +25,34 @@ def index(request: HttpRequest) -> HttpResponse:
     consultations_for_user = Consultation.objects.filter(users=user)
     context = {"consultations": consultations_for_user}
     return render(request, "consultations/consultations/index.html", context)
+
+
+def get_counts_of_sentiment(free_text_question_part: QuestionPart) -> dict:
+    """Gives agree/disagree/unclear/no position counts for responses to the free text question."""
+    total_answers = free_text_question_part.answer_set.all().count()
+    sentiments_for_question_part_qs = SentimentMapping.objects.filter(
+        answer__question_part=free_text_question_part
+    )
+    number_in_agreement = sentiments_for_question_part_qs.filter(
+        position=SentimentMapping.Position.AGREEMENT
+    ).count()
+    number_in_disagreement = sentiments_for_question_part_qs.filter(
+        position=SentimentMapping.Position.DISAGREEMENT
+    ).count()
+    number_unclear = sentiments_for_question_part_qs.filter(
+        position=SentimentMapping.Position.UNCLEAR
+    ).count()
+    # Any answers not assigned a position
+    number_no_position = (
+        total_answers - number_in_agreement - number_in_disagreement - number_unclear
+    )
+    sentiment_counts = {
+        "agreement": number_in_agreement,
+        "disagreement": number_in_disagreement,
+        "unclear": number_unclear,
+        "no_position": number_no_position,
+    }
+    return sentiment_counts
 
 
 def get_top_themes_for_free_text_question_part(
@@ -71,6 +100,7 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
                 free_text_question_part
             )
             question_dict["theme_counts"] = top_themes_by_counts_list
+            question_dict["sentiment_counts"] = get_counts_of_sentiment(free_text_question_part)
         # For now, assume that we just take the first closed question (in many cases there will be just one)
         # Just take the single option for now
         single_option_question_part = (
@@ -85,7 +115,7 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
             proportions = OrderedDict((k, v / total_responses) for k, v in counts.items())
             question_dict["single_option_counts"] = counts
             question_dict["single_option_proportions"] = proportions
-        questions_list.append(question_dict)
+
         # Do something similar and just find the first multiple option question part
         multiple_option_question_part = (
             QuestionPart.objects.filter(question=question)
@@ -97,6 +127,8 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
             counts = multiple_option_question_part.get_option_counts()
             total_responses = multiple_option_question_part.answer_set.count()
             question_dict["multiple_option_counts"] = counts
+
+        questions_list.append(question_dict)
 
     context = {
         "all_questions": questions_list,

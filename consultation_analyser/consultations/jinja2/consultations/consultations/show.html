@@ -32,6 +32,12 @@
                   <h3 class="govuk-heading-s">Free text response</h3>
                   <p class="govuk-body" style="display: flex;align-items:center;gap: 0.6%">
                     <img src="{{ static('icons/thumbs-up-down.svg') }}"/>
+                    {{ question_dict.sentiment_counts.agreement }} Agreement,
+                    {{ question_dict.sentiment_counts.disagreement}} Disagreement,
+                    {{ question_dict.sentiment_counts.unclear }} Unclear
+                    {% if question_dict.sentiment_counts.no_position %}
+                      , {{ question_dict.sentiment_counts.no_position }} No opinion
+                    {% endif %}
                   </p>
 
                   <p class="govuk-body govuk-!-margin-bottom-2">Top themes</p>
