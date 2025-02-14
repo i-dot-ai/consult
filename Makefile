@@ -223,8 +223,3 @@ release: ## Deploy app
 	fi
 
 	chmod +x ./infrastructure/scripts/release.sh && ./infrastructure/scripts/release.sh $(env)
-
-.PHONY: tf_destroy
-tf_destroy: ## Apply terraform
-	make tf_init_and_set_workspace && \
-	terraform -chdir=./infrastructure/$(instance) destroy -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} ${args}
