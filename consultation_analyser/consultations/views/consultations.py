@@ -83,8 +83,8 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
             counts = single_option_question_part.get_option_counts()
             total_responses = single_option_question_part.answer_set.count()
             proportions = OrderedDict((k, v / total_responses) for k, v in counts.items())
-            question_dict["option_counts"] = counts
-            question_dict["option_proportions"] = proportions
+            question_dict["single_option_counts"] = counts
+            question_dict["single_option_proportions"] = proportions
         questions_list.append(question_dict)
 
     context = {
