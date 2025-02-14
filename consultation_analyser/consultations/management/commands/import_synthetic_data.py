@@ -80,6 +80,20 @@ class Command(BaseCommand):
                     text=response["free_text"],
                 )
 
+                if response.get("overall_agreement") == "Agreement":
+                    position = models.SentimentMapping.Position.AGREEMENT
+                elif response.get("overall_agreement") == "Disagreement":
+                    position = models.SentimentMapping.Position.DISAGREEMENT
+                elif response.get("overall_agreement") == "Conflicted (Undecided)":
+                    position = models.SentimentMapping.Position.UNCLEAR
+                
+                if position:
+                    models.SentimentMapping.objects.create(
+                        answer=answer,
+                        execution_run=execution_run,
+                        position=position,
+                    )
+
                 for topic in response["agreed_topics"]:
                     if theme := self.get_theme(theme_data, topic, framework):
                         models.ThemeMapping.objects.create(

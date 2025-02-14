@@ -1,7 +1,12 @@
 import pytest
 
 from consultation_analyser.consultations.management.commands.import_synthetic_data import Command
-from consultation_analyser.consultations.models import Answer, QuestionPart, ThemeMapping
+from consultation_analyser.consultations.models import (
+    Answer,
+    QuestionPart,
+    SentimentMapping,
+    ThemeMapping,
+)
 from consultation_analyser.factories import (
     ConsultationFactory,
     InitialFrameworkFactory,
@@ -87,6 +92,7 @@ def test_import_question():
 
     free_text_answer = Answer.objects.filter(question_part=free_text_qp).first()
     assert ThemeMapping.objects.get(answer=free_text_answer).theme.key == "C"
+    assert SentimentMapping.objects.get(answer=free_text_answer).position == "AGREEMENT"
 
     multiple_choice_answer = Answer.objects.filter(question_part=multiple_choice_qp).first()
     assert multiple_choice_answer.chosen_options == "Strongly agree"
