@@ -80,7 +80,7 @@ dev_environment: reset_dev_db migrate dummy_data reset_test_db govuk_frontend de
 
 # Docker
 AWS_REGION=eu-west-2
-APP_NAME=consultations
+APP_NAME=consult
 ECR_URL=$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 ECR_REPO_URL=$(ECR_URL)/$(ECR_REPO_NAME)
 DOCKER_CACHE_BUCKET=i-dot-ai-docker-cache
@@ -150,13 +150,13 @@ docker_echo:
 	echo $($(value))
 
 ifeq ($(instance),postgres)
-CONFIG_DIR=../../../consultation-analyser-infra-config
+CONFIG_DIR=../../../consult-infra-config
 tf_build_args=
 else ifeq ($(instance),universal)
-CONFIG_DIR=../../../consultation-analyser-infra-config
+CONFIG_DIR=../../../consult-infra-config
 env=prod
 else
-CONFIG_DIR=../../consultation-analyser-infra-config
+CONFIG_DIR=../../consult-infra-config
 tf_build_args=-var "image_tag=$(IMAGE_TAG)"
 endif
 
