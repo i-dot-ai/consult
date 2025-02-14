@@ -86,6 +86,17 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
             question_dict["single_option_counts"] = counts
             question_dict["single_option_proportions"] = proportions
         questions_list.append(question_dict)
+        # Do something similar and just find the first multiple option question part
+        multiple_option_question_part = (
+            QuestionPart.objects.filter(question=question)
+            .filter(type=QuestionPart.QuestionType.MULTIPLE_OPTIONS)
+            .first()
+        )
+        if multiple_option_question_part:
+            question_dict["multiple_option_question_part"] = multiple_option_question_part
+            counts = multiple_option_question_part.get_option_counts()
+            total_responses = multiple_option_question_part.answer_set.count()
+            question_dict["multiple_option_counts"] = counts
 
     context = {
         "all_questions": questions_list,
