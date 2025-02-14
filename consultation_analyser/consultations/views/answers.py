@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from uuid import UUID
 
@@ -35,32 +36,50 @@ def index(
         free_text_answers = models.Answer.objects.none()
         total_responses = 0
 
+    has_multiple_choice_question_part = models.QuestionPart.objects.filter(
+        question=question, type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
+    ).exists()
 
-    responses_data = models.Answer.objects.filter(question_part__question=question)
-    responses: dict = {}
-    for response in responses_data:
-        if not responses.get(response.respondent_id):
-            responses[response.respondent_id] = {}
-        try:
-            responses[response.respondent_id]["free_text"] = models.Answer.objects.get(
-            question_part__question=question,
-            question_part__type=models.QuestionPart.QuestionType.FREE_TEXT,
-            respondent_id=response.respondent_id,
+    # respondents = models.Respondent.objects.filter(answers__question_part__question=question).distinct()
+    respondents = models.Respondent.objects.filter(consultation=consultation)
+
+    for respondent in respondents:
+        # Demographic data
+        demographic_data = json.loads(respondent.data)
+        respondent.demographic_data = ", ".join(
+            [f"{k.title()}: {v}" for k, v in demographic_data.items()]
         )
+        if demographic_data.get("individual"):
+            respondent.individual = demographic_data["individual"]
+
+        # Free text response
+        try:
+            respondent.free_text_answer = models.Answer.objects.get(
+                question_part__question=question,
+                question_part__type=models.QuestionPart.QuestionType.FREE_TEXT,
+                respondent=respondent,
+            )
+            respondent.sentiment = models.SentimentMapping.objects.filter(
+                answer=respondent.free_text_answer,
+            ).last()
+            respondent.themes = models.ThemeMapping.objects.filter(
+                answer=respondent.free_text_answer
+            )
         except models.Answer.DoesNotExist:
             pass
+
+        # Multiple choice response
         try:
-            responses[response.respondent_id]["multiple_choice"] = models.Answer.objects.get(
-            question_part__question=question,
-            question_part__type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS,
-            respondent_id=response.respondent_id,
-        )
+            respondent.multiple_choice_answer = models.Answer.objects.get(
+                question_part__question=question,
+                question_part__type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS,
+                respondent=respondent,
+            )
         except models.Answer.DoesNotExist:
             pass
-
 
     # pagination
-    pagination = Paginator(free_text_answers, 5)
+    pagination = Paginator(respondents, 5)
     page_index = request.GET.get("page", "1")
     current_page = pagination.page(page_index)
     paginated_responses = current_page.object_list
@@ -70,10 +89,10 @@ def index(
         "consultation_slug": consultation_slug,
         "question": question,
         "free_text_question_part": free_text_question_part,
-        "responses": paginated_responses,
         "total_responses": total_responses,
         "pagination": current_page,
-        "responses": responses,
+        "respondents": paginated_responses,
+        "has_multiple_choice_question_part": has_multiple_choice_question_part,
     }
 
     return render(request, "consultations/answers/index.html", context)
