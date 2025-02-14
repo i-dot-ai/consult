@@ -86,7 +86,7 @@ class Command(BaseCommand):
                     position = models.SentimentMapping.Position.DISAGREEMENT
                 elif response.get("overall_agreement") == "Conflicted (Undecided)":
                     position = models.SentimentMapping.Position.UNCLEAR
-                
+
                 if position:
                     models.SentimentMapping.objects.create(
                         answer=answer,
