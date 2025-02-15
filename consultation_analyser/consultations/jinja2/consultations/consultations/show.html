@@ -63,14 +63,18 @@
 
               <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
+              <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+              <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+              <script src="{{ static('scripts/horizontal-bar-chart.js') }}"></script>
+
               {% if question_dict.single_option_question_part %}
-                <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-                <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-                <script src="{{ static('scripts/horizontal-bar-chart.js') }}"></script>
-                <h3 class="govuk-heading-s">Response to closed question (single option)</h3>
-                <horizontal-bar-chart data='{{ question_dict.single_option_counts }}'></horizontal-bar-chart>
+                <h3 class="govuk-heading-s">Response to multiple choice</h3>
+                <horizontal-bar-chart data='{{ question_dict.single_option_counts }}' data-format="percentage"></horizontal-bar-chart>
+              {% elif question_dict.multiple_option_question_part %}
+                <h3 class="govuk-heading-s">Response to multiple choice</h3>
+                <horizontal-bar-chart data='{{ question_dict.multiple_option_counts }}' data-format="raw"></horizontal-bar-chart>
               {% else %}
-                <p class="govuk-body">This question does not have a multiple choice option</p>
+                <p class="govuk-body">This question does not have a multiple choice part</p>
               {% endif %}
 
             </div>

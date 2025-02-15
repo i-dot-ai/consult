@@ -18,6 +18,9 @@ class HorizontalBarChart extends HTMLElement {
       const labels = Object.keys(data);
       const counts = Object.values(data);
 
+      // Get the data format from the attribute - either 'raw' or 'percentage'.
+      const dataFormat = this.getAttribute('data-format') || 'raw';
+
       // Define the chart data and options.
       const chartData = {
           labels: labels,
@@ -65,10 +68,14 @@ class HorizontalBarChart extends HTMLElement {
                       size: 12
                   },
                   formatter: (value, ctx) => {
-                      const datapoints = ctx.chart.data.datasets[0].data;
-                      const total = datapoints.reduce((total, datapoint) => total + datapoint, 0);
-                      const percentage = value / total * 100;
-                      return percentage.toFixed(0) + "%";
+                      if (dataFormat === 'percentage') {
+                          const datapoints = ctx.chart.data.datasets[0].data;
+                          const total = datapoints.reduce((total, datapoint) => total + datapoint, 0);
+                          const percentage = value / total * 100;
+                          return percentage.toFixed(0) + "%";
+                      } else {
+                          return value;
+                      }
                   }
               }
           }
