@@ -137,7 +137,7 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
         all_questions.append(question_dict)
 
     # TODO - what is the right number per page?
-    pagination = Paginator(all_questions, 3)
+    pagination = Paginator(all_questions, 5)
     page_index = request.GET.get("page", "1")
     current_page = pagination.page(page_index)
     paginated_questions = current_page.object_list
