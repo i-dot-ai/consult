@@ -141,11 +141,6 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     page_index = request.GET.get("page", "1")
     current_page = pagination.page(page_index)
     paginated_questions = current_page.object_list
-    print(f"paginated_questions: {paginated_questions}")
-    print(type(paginated_questions))
-    print(len(paginated_questions))
-    print(f"current_page: {current_page}")
-    print(type(current_page))
 
     context = {
         "consultation": consultation,
