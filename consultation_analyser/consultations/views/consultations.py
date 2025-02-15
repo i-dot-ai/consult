@@ -2,6 +2,7 @@ import logging
 from collections import OrderedDict
 
 from django.contrib.auth.decorators import login_required
+from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
@@ -90,7 +91,7 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     consultation = get_object_or_404(Consultation, slug=consultation_slug)
     questions = Question.objects.filter(consultation__slug=consultation_slug).order_by("number")
 
-    questions_list = []
+    all_questions = []
     for question in questions:
         question_dict = {"question": question}
         # Get free text question stuff
@@ -133,10 +134,22 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
             total_responses = multiple_option_question_part.answer_set.count()
             question_dict["multiple_option_counts"] = counts
 
-        questions_list.append(question_dict)
+        all_questions.append(question_dict)
+
+    # TODO - what is the right number per page?
+    pagination = Paginator(all_questions, 3)
+    page_index = request.GET.get("page", "1")
+    current_page = pagination.page(page_index)
+    paginated_questions = current_page.object_list
+    print(f"paginated_questions: {paginated_questions}")
+    print(type(paginated_questions))
+    print(len(paginated_questions))
+    print(f"current_page: {current_page}")
+    print(type(current_page))
 
     context = {
-        "all_questions": questions_list,
         "consultation": consultation,
+        "pagination": current_page,
+        "questions_list": paginated_questions,
     }
     return render(request, "consultations/consultations/show.html", context)
