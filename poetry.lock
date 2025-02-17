@@ -107,17 +107,17 @@ uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
 name = "boto3"
-version = "1.36.17"
+version = "1.36.21"
 description = "The AWS SDK for Python"
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "boto3-1.36.17-py3-none-any.whl", hash = "sha256:59bcf0c4b04d9cc36f8b418ad17ab3c4a99a21a175d2fad7096aa21cbe84630b"},
-    {file = "boto3-1.36.17.tar.gz", hash = "sha256:5ecae20e780a3ce9afb3add532b61c466a8cb8960618e4fa565b3883064c1346"},
+    {file = "boto3-1.36.21-py3-none-any.whl", hash = "sha256:f94faa7cf932d781f474d87f8b4c14a033af95ac1460136b40d75e7a30086ef0"},
+    {file = "boto3-1.36.21.tar.gz", hash = "sha256:41eb2b73eb612d300e629e3328b83f1ffea0fc6633e75c241a72a76746c1db26"},
 ]
 
 [package.dependencies]
-botocore = ">=1.36.17,<1.37.0"
+botocore = ">=1.36.21,<1.37.0"
 jmespath = ">=0.7.1,<2.0.0"
 s3transfer = ">=0.11.0,<0.12.0"
 
@@ -126,13 +126,13 @@ crt = ["botocore[crt] (>=1.21.0,<2.0a0)"]
 
 [[package]]
 name = "botocore"
-version = "1.36.17"
+version = "1.36.21"
 description = "Low-level, data-driven core of boto 3."
 optional = false
 python-versions = ">=3.8"
 files = [
-    {file = "botocore-1.36.17-py3-none-any.whl", hash = "sha256:069858b2fd693548035d7fd53a774e37e4260fea64e0ac9b8a3aee904f9321df"},
-    {file = "botocore-1.36.17.tar.gz", hash = "sha256:cec13e0a7ce78e71aad0b397581b4e81824c7981ef4c261d2e296d200c399b09"},
+    {file = "botocore-1.36.21-py3-none-any.whl", hash = "sha256:24a7052e792639dc2726001bd474cd0aaa959c1e18ddd92c17f3adc6efa1b132"},
+    {file = "botocore-1.36.21.tar.gz", hash = "sha256:da746240e2ad64fd4997f7f3664a0a8e303d18075fc1d473727cb6375080ea16"},
 ]
 
 [package.dependencies]
@@ -308,13 +308,13 @@ django-crispy-forms = ">=2.0,<2.4"
 
 [[package]]
 name = "datamodel-code-generator"
-version = "0.27.2"
+version = "0.28.1"
 description = "Datamodel Code Generator"
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 files = [
-    {file = "datamodel_code_generator-0.27.2-py3-none-any.whl", hash = "sha256:efcbfbe6a1488d3411fc588b1ce1af5f854f5107810b1cc9026a6d6333a7c4d8"},
-    {file = "datamodel_code_generator-0.27.2.tar.gz", hash = "sha256:1a7655f5fd3a61329b57534904f5c40dd850850e420696fd946ec7a4f59c32b8"},
+    {file = "datamodel_code_generator-0.28.1-py3-none-any.whl", hash = "sha256:1ff8a56f9550a82bcba3e1ad7ebdb89bc655eeabbc4bc6acfb05977cbdc6381c"},
+    {file = "datamodel_code_generator-0.28.1.tar.gz", hash = "sha256:37ef5f3b488f7d7a3f0b5b3ba0f2bc1ae01bab4dc7e0f6b99ff6c40713a6beb3"},
 ]
 
 [package.dependencies]
@@ -329,6 +329,7 @@ pydantic = ">=1.5"
 pyyaml = ">=6.0.1"
 
 [package.extras]
+all = ["graphql-core (>=3.2.3)", "httpx (>=0.24.1)", "openapi-spec-validator (>=0.2.8,<0.7)", "prance (>=0.18.2)", "pysnooper (>=0.4.1,<2)"]
 debug = ["pysnooper (>=0.4.1,<2)"]
 graphql = ["graphql-core (>=3.2.3)"]
 http = ["httpx (>=0.24.1)"]
@@ -541,13 +542,13 @@ django = ">=4.2"
 
 [[package]]
 name = "django-storages"
-version = "1.14.4"
+version = "1.14.5"
 description = "Support for many storage backends in Django"
 optional = false
 python-versions = ">=3.7"
 files = [
-    {file = "django-storages-1.14.4.tar.gz", hash = "sha256:69aca94d26e6714d14ad63f33d13619e697508ee33ede184e462ed766dc2a73f"},
-    {file = "django_storages-1.14.4-py3-none-any.whl", hash = "sha256:d61930acb4a25e3aebebc6addaf946a3b1df31c803a6bf1af2f31c9047febaa3"},
+    {file = "django_storages-1.14.5-py3-none-any.whl", hash = "sha256:5ce9c69426f24f379821fd688442314e4aa03de87ae43183c4e16915f4c165d4"},
+    {file = "django_storages-1.14.5.tar.gz", hash = "sha256:ace80dbee311258453e30cd5cfd91096b834180ccf09bc1f4d2cb6d38d68571a"},
 ]
 
 [package.dependencies]
@@ -557,7 +558,7 @@ Django = ">=3.2"
 azure = ["azure-core (>=1.13)", "azure-storage-blob (>=12)"]
 boto3 = ["boto3 (>=1.4.4)"]
 dropbox = ["dropbox (>=7.2.1)"]
-google = ["google-cloud-storage (>=1.27)"]
+google = ["google-cloud-storage (>=1.32)"]
 libcloud = ["apache-libcloud"]
 s3 = ["boto3 (>=1.4.4)"]
 sftp = ["paramiko (>=1.15)"]
@@ -1925,13 +1926,13 @@ crt = ["botocore[crt] (>=1.36.0,<2.0a.0)"]
 
 [[package]]
 name = "sentry-sdk"
-version = "2.20.0"
+version = "2.21.0"
 description = "Python client for Sentry (https://sentry.io)"
 optional = false
 python-versions = ">=3.6"
 files = [
-    {file = "sentry_sdk-2.20.0-py2.py3-none-any.whl", hash = "sha256:c359a1edf950eb5e80cffd7d9111f3dbeef57994cb4415df37d39fda2cf22364"},
-    {file = "sentry_sdk-2.20.0.tar.gz", hash = "sha256:afa82713a92facf847df3c6f63cec71eb488d826a50965def3d7722aa6f0fdab"},
+    {file = "sentry_sdk-2.21.0-py2.py3-none-any.whl", hash = "sha256:7623cfa9e2c8150948a81ca253b8e2bfe4ce0b96ab12f8cd78e3ac9c490fd92f"},
+    {file = "sentry_sdk-2.21.0.tar.gz", hash = "sha256:a6d38e0fb35edda191acf80b188ec713c863aaa5ad8d5798decb8671d02077b6"},
 ]
 
 [package.dependencies]
@@ -2173,4 +2174,4 @@ brotli = ["brotli"]
 [metadata]
 lock-version = "2.0"
 python-versions = "3.12.3"
-content-hash = "eccbb2680d90bd9a761c0a29eeaf15f4792129b766c5efc73da950735c40a299"
+content-hash = "ee111b218884d69350b0a23ea020fab4978becff74fe97c29c8a2ac69cac2c3b"
