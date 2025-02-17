@@ -1,24 +1,22 @@
+//@ts-check
+
 class HorizontalBarChart extends HTMLElement {
   constructor() {
       super();
-      // Attach a shadow root to the element.
-      this.attachShadow({ mode: 'open' });
+
   }
 
   connectedCallback() {
-      // Create a canvas element.
       const canvas = document.createElement('canvas');
-      this.shadowRoot.appendChild(canvas);
+      this.appendChild(canvas);
 
-      // Get the context of the canvas.
       const ctx = canvas.getContext('2d');
 
-      // Get the data from the attribute.
       const data = JSON.parse(this.getAttribute('data')) || {};
       const labels = Object.keys(data);
       const counts = Object.values(data);
 
-      // Get the data format from the attribute - either 'raw' or 'percentage'.
+      // Data format is 'raw' for counts, or 'percentage'.
       const dataFormat = this.getAttribute('data-format') || 'raw';
 
       // Define the chart data and options.
@@ -81,7 +79,6 @@ class HorizontalBarChart extends HTMLElement {
           }
       };
 
-      // Create the chart.
       new Chart(ctx, {
           type: 'bar',
           data: chartData,
@@ -91,5 +88,4 @@ class HorizontalBarChart extends HTMLElement {
   }
 }
 
-// Define the new element.
 customElements.define('horizontal-bar-chart', HorizontalBarChart);
