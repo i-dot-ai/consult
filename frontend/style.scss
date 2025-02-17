@@ -81,6 +81,44 @@ $iai-colour-pink: #C50878;
     flex-shrink: 0;
 }
 
+.con-pill-container{
+  margin-bottom: 12px;
+  display: flex;
+  flex-wrap: wrap;
+}
+
+.con-pill{
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 2%;
+  margin-top: 0;
+  margin-right: 5px;
+  margin-left: 5px;
+  margin-bottom: 4px;
+  padding: 4px 6px;
+  border-radius: 2px;
+  position: relative;
+  text-decoration: none;
+}
+
+.con-pill:first-child{
+  padding-left: 0;
+}
+
+.con-pill span{
+  white-space: nowrap;
+}
+
+.con-pill:not(:last-child):after {
+  border-left: 1px solid #bbbfbf;
+  bottom: 0;
+  content: " ";
+  position: absolute;
+  right: -8px;
+  top: 0;
+}
+
 
 /** RESPONSES PAGE **/
 
