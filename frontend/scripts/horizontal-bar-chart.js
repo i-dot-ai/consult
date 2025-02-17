@@ -33,6 +33,7 @@ class HorizontalBarChart extends HTMLElement {
       const chartOptions = {
           responsive: true,
           maintainAspectRatio: false,
+          aspectRatio: 1.5,
           indexAxis: 'y',
           scales: {
               x: {
