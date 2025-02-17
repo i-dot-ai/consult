@@ -1,6 +1,5 @@
-import logging
-from collections import OrderedDict
 import json
+import logging
 
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
@@ -117,7 +116,9 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
         )
         if single_option_question_part:
             question_dict["single_option_question_part"] = single_option_question_part
-            question_dict["single_option_counts"] = json.dumps(single_option_question_part.get_option_counts())
+            question_dict["single_option_counts"] = json.dumps(
+                single_option_question_part.get_option_counts()
+            )
 
         # Do something similar and just find the first multiple option question part
         multiple_option_question_part = (
@@ -127,7 +128,9 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
         )
         if multiple_option_question_part:
             question_dict["multiple_option_question_part"] = multiple_option_question_part
-            question_dict["multiple_option_counts"] = json.dumps(multiple_option_question_part.get_option_counts())
+            question_dict["multiple_option_counts"] = json.dumps(
+                multiple_option_question_part.get_option_counts()
+            )
 
         all_questions.append(question_dict)
 
