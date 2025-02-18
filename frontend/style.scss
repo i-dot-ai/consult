@@ -136,6 +136,11 @@ pre code {
     width: 50%;
 }
 
+/* Allow chart resizing */
+horizontal-bar-chart {
+    display: block;
+}
+
 
 /** UPLOAD PAGE **/
 .iai-error-list {
