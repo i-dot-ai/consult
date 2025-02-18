@@ -86,7 +86,7 @@ class Command(BaseCommand):
                     position = models.SentimentMapping.Position.DISAGREEMENT
                 elif response.get("overall_agreement") == "Conflicted (Undecided)":
                     position = models.SentimentMapping.Position.UNCLEAR
-                
+
                 if position:
                     models.SentimentMapping.objects.create(
                         answer=answer,
@@ -117,7 +117,7 @@ class Command(BaseCommand):
                 models.Answer.objects.create(
                     question_part=multi_choice_qp,
                     respondent=respondents[i],
-                    chosen_options=response["multiple_choice_option"],
+                    chosen_options=[response["multiple_choice_option"]],
                 )
 
     def handle(self, *args, **options):
