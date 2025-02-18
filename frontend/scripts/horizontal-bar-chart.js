@@ -1,18 +1,12 @@
 //@ts-check
 
 class HorizontalBarChart extends HTMLElement {
-  constructor() {
-      super();
-
-  }
 
   connectedCallback() {
       const canvas = document.createElement('canvas');
       this.appendChild(canvas);
 
-      const ctx = canvas.getContext('2d');
-
-      const data = JSON.parse(this.getAttribute('data')) || {};
+      const data = JSON.parse(this.getAttribute('data') || "{}");
       const labels = Object.keys(data);
       const counts = Object.values(data);
 
@@ -82,11 +76,11 @@ class HorizontalBarChart extends HTMLElement {
           }
       };
 
-      new Chart(ctx, {
+      new Chart(canvas, {
           type: 'bar',
           data: chartData,
-          options: chartOptions,
-          plugins: [ChartDataLabels]
+          options: /** @type{object} */(chartOptions),
+          plugins: [window["ChartDataLabels"]]
       });
   }
 }
