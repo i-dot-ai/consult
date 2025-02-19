@@ -4,8 +4,8 @@ locals {
   name          = "${var.team_name}-${var.env}-${var.project_name}"
   batch_memory        = 8192
   batch_vcpus         = 4
-  ecs_memory    = 30720
-  ecs_cpus      = 4096
+  ecs_memory    = var.env == "prod" ? 1024 : 512
+  ecs_cpus      = var.env == "prod" ? 512 : 256
 
 }
 
