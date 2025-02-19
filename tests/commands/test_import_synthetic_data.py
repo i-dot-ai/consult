@@ -95,4 +95,4 @@ def test_import_question():
     assert SentimentMapping.objects.get(answer=free_text_answer).position == "AGREEMENT"
 
     multiple_choice_answer = Answer.objects.filter(question_part=multiple_choice_qp).first()
-    assert multiple_choice_answer.chosen_options == "Strongly agree"
+    assert multiple_choice_answer.chosen_options == ["Strongly agree"]
