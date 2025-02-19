@@ -140,7 +140,7 @@ docker_push:
 	docker push $(IMAGE)
 
 docker_tag_is_present_on_image:
-	aws ecr describe-images --repository-name $(ECR_REPO_NAME) --image-ids imageTag=$(tag) --query 'imageDetails[].imageTags' | jq -e '.[]|any(. == "$(tag)")' >/dev/null
+	aws ecr describe-images --repository-name $(ECR_REPO_NAME) --image-ids imageTag=$(IMAGE_TAG) --query 'imageDetails[].imageTags' | jq -e '.[]|any(. == "$(tag)")' >/dev/null
 
 docker_update_tag:
 	# repo and tag variable are set from git-hub core workflow. example: repo=ecr-repo-name, tag=dev
