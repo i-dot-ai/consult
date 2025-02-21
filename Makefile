@@ -151,7 +151,7 @@ docker_update_tag: ## Tag the docker image with the specified tag
 	# repo and tag variable are set from git-hub core workflow. example: repo=ecr-repo-name, tag=dev
 	if make docker_tag_is_present_on_image 2>/dev/null; then echo "Image already tagged with $(tag)" && exit 0; fi && \
 	MANIFEST=$$(aws ecr batch-get-image --repository-name $(ECR_REPO_NAME) --image-ids imageTag=$(IMAGE_TAG) --query 'images[].imageManifest' --output text) && \
-	aws ecr put-image --repository-name $(repo) --image-tag $(tag) --image-manifest "$$MANIFEST"
+	aws ecr put-image --repository-name $(ECR_REPO_NAME) --image-tag $(tag) --image-manifest "$$MANIFEST"
 
 # Ouputs the value that you're after - useful to get a value i.e. IMAGE_TAG out of the Makefile
 .PHONY: docker_echo
