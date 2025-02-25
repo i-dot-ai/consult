@@ -27,29 +27,263 @@
         <span class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">Question {{question.number}}</span>
         {{ question.text }}
       </h1>
-      <h2 class="govuk-heading-m govuk-!-font-weight-regular">
-        {{ free_text_question_part.text }}
-      </h2>
+      {% if free_text_question_part %}
+        <h2 class="govuk-heading-m govuk-!-font-weight-regular">
+          {{ free_text_question_part.text }}
+        </h2>
+      {% endif %}
     </div>
 
-    <!-- TODO: add search bar -->
+    <!-- TODO: add search bar when semantic search added -->
   </div>
 
   <div class="govuk-grid-row govuk-!-margin-top-5">
     <div class="govuk-grid-column-one-quarter-from-desktop">
-      <div class="iai-panel govuk-!-margin-bottom-5">
-        <h2 class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">Filters</h2>
-        READD FILTERS (keywords, theme)
+
+      <div class="moj-filter">
+        <div class="moj-filter__header">
+          <div class="moj-filter__header-title">
+            <h2 class="govuk-heading-m">Filter</h2>
+          </div>
+        </div>
+      
+        <div class="moj-filter__content">
+          <div class="moj-filter__selected">
+            <div class="moj-filter__selected-heading">
+              {% if has_filters %}
+                <div class="moj-filter__heading-title">
+                  <h2 class="govuk-heading-m">Selected filters</h2>
+                </div>
+                <a class="moj-filter__tag" href={{request.path}}> Remove all filters</a>
+              {% endif %}
+
+              {% for type, options in active_filters.items() %}
+                <!-- TODO: make me look nicer  -->
+                {% if options.selected %}
+                  <h3 class="govuk-heading-s govuk-!-margin-bottom-0">{{ options.label }}</h3>
+
+                  <ul class="moj-filter-tags">
+                    {% for option in options.selected %}
+                      <li><a class="moj-filter__tag" href={{"?" + remove_query_param(request, type, option.id)}}><span class="govuk-visually-hidden">Remove this filter</span> {{ option.display }}</a></li>
+                    {% endfor %}
+                  </ul>
+                {% endif %}
+              {% endfor %}
+            </div>
+          </div>
+  
+          <form method="GET">
+            <div class="moj-filter__options">
+              <button aria-disabled="true" type="submit" id="filter-button" class="govuk-button" data-module="govuk-button" data-test-id="submit-button" data-govuk-button-init="">
+                Apply filters
+              </button>
+  
+              <div class="govuk-form-group">
+                <label class="govuk-label govuk-label--m" for="responseid">
+                  Response ID
+                </label>
+                <input class="govuk-input govuk-!-width-one-third" id="responseid" name="responseid" type="text" {% if active_filters.responseid.selected %} value="{{ active_filters.responseid.selected[0].display }}" {% endif %}>
+              </div>
+
+              {% if has_individual_data %}
+                <div class="govuk-form-group">
+                  <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                      Respondent type
+                    </legend>
+        
+                    <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes" data-govuk-checkboxes-init="">
+                      <div class="govuk-checkboxes__item">
+                        <input class="govuk-checkboxes__input" id="demographicindividual-0" name="demographicindividual" type="checkbox" value="Individual"
+                        {% if is_in("Individual", active_filters.demographicindividual.selected) %}
+                          checked
+                        {% endif %}
+                        >
+                        <!-- TODO: add % e.g. Organisation: 48 (15%) -->
+                        <label class="govuk-label govuk-checkboxes__label" for="demographicindividual-0">
+                          Individual
+                        </label>
+                      </div>
+                      <div class="govuk-checkboxes__item">
+                        <input class="govuk-checkboxes__input" id="demographicindividual-1" name="demographicindividual" type="checkbox" value="Organisation"
+                        {% if is_in("Organisation", active_filters.demographicindividual.selected) %}
+                          checked
+                        {% endif %}
+                        >
+                        <label class="govuk-label govuk-checkboxes__label" for="demographicindividual-1">
+                          Organisation
+                        </label>
+                      </div>
+                    </div>
+                  </fieldset>
+                </div>
+              {% endif %}
+              
+              {% if free_text_question_part %}
+                <div class="govuk-form-group">
+                  <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                      Themes
+                    </legend>
+                    <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes" data-govuk-checkboxes-init="">
+                      {% for theme_mapping in all_theme_mappings %}
+                        <div class="govuk-checkboxes__item">
+                          <input class="govuk-checkboxes__input" id="themesfilter-{{loop.index0}}" name="themesfilter" type="checkbox" value={{theme_mapping.theme__id}}
+                          {% if is_in(theme_mapping.theme__id, active_filters.themesfilter.selected) %}
+                            checked
+                          {% endif %}
+                          >
+                          <label class="govuk-label govuk-checkboxes__label" for="themesfilter-{{loop.index0}}">
+                            {{ theme_mapping.theme__name }}
+                          </label>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </fieldset>
+                </div>
+              
+  
+                <div class="govuk-form-group">
+                  <fieldset class="govuk-fieldset">
+                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                      Theme sentiment
+                    </legend>
+    
+                    <div class="govuk-radios" data-module="govuk-radios" data-govuk-radios-init="">
+                      {% for option in theme_stance_options %}
+                        <div class="govuk-radios__item">
+                          <input class="govuk-radios__input" id="themesentiment-{{loop.index0}}" name="themesentiment" type="radio" value={{option}} {% if active_filters.themesentiment.selected %}{% if option == active_filters.themesentiment.selected[0].id %} checked {% endif %} {% endif %}>
+                          <label class="govuk-label govuk-radios__label" for="themesentiment-{{loop.index0}}">
+                            {{ option|capitalize }}
+                          </label>
+                        </div>
+                      {% endfor %}
+                    </div>
+                  </fieldset>
+                </div>
+              {% endif %}
+  
+              <div class="govuk-form-group">
+                <fieldset class="govuk-fieldset">
+                  <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                    Response sentiment
+                  </legend>
+                  <div class="govuk-radios" data-module="govuk-radios" data-govuk-radios-init="">
+                    {% for option in stance_options %}
+                      <div class="govuk-radios__item">
+                        <input class="govuk-radios__input" id="responsesentiment-{{loop.index0}}" name="responsesentiment" type="radio" value={{option}} {% if active_filters.responsesentiment.selected %}{% if option == active_filters.responsesentiment.selected[0].id %} checked {% endif %}{% endif %}>
+                        <label class="govuk-label govuk-radios__label" for="responsesentiment-{{loop.index0}}">
+                          {{ option|capitalize }}
+                        </label>
+                      </div>
+                    {% endfor %}
+                  </div>
+                </fieldset>
+              </div>
+          
+            {% if free_text_question_part %}
+              <div class="govuk-form-group">
+                <label class="govuk-label govuk-label--m" for="wordcount">
+                  Response length that is at least
+                </label>
+      
+                <div class="govuk-input__wrapper">
+                  <input class="govuk-input govuk-input--width-5" id="wordcount" name="wordcount" type="text" spellcheck="false" {% if active_filters.wordcount.selected %} value="{{ active_filters.wordcount.selected[0].id }}" {% endif %}>
+                  <div class="govuk-input__suffix" aria-hidden="true">words</div>
+                </div>
+              </div>
+            {% endif %}
+                  
+            </div>
+          </form>
+      
+        </div>
+      
       </div>
     </div>
 
     <div class="govuk-grid-column-three-quarters-from-desktop">
+      <!-- TODO: change this to the total figure -->
       <span class="govuk-caption-m">{{ total_responses }} responses</span>
       <h2 class="govuk-heading-m">Overview</h2>
       
-      <!-- TODO: add 'top themes' panel here -->
+      {% if free_text_question_part %}
+        <div class="iai-panel govuk-!-margin-bottom-8">
+          <h2 class="govuk-heading-m">Top themes</h2>
+          <details class="govuk-details">
+            <summary class="govuk-details__summary">
+              <span class="govuk-details__summary-text">
+                Help with themes
+              </span>
+            </summary>
+            <div class="govuk-details__text">
+              <p class="govuk-body">Themes are AI-generated by spotting trends from the individual responses to the question. A single response could have more than 1 theme. 
+            The table below represents the number of times a theme appears in the response, and if it was a positive or negative mention of that theme.
+            </p></div>
+          </details>
 
-      <!-- TODO: add 'Response to multiple choice' panel here -->
+          <table class="govuk-table govuk-body" mentionstable="">
+            <thead class="govuk-table__head">
+              <tr class="govuk-table__row">
+                <th scope="col" class="govuk-table__header">Theme name</th>
+                <th scope="col" class="govuk-table__header">Total mentions</th>
+                <th scope="col" class="govuk-table__header">Positive mentions</th>
+                <th scope="col" class="govuk-table__header">Negative mentions</th>
+              </tr>
+            </thead>
+          
+            <tbody class="govuk-table__body">
+              {% for theme_mapping in all_theme_mappings %}
+                <tr class="govuk-table__row">
+                  <th scope="row" class="govuk-table__header"><tool-tip class="iai-tooltip"><div class="iai-tooltip__button" role="tooltip" tabindex="0" aria-describedby="tooltip-content-3fbe5d4c-c46c-426d-a004-516a28dc2fad"><span>{{theme_mapping.theme__name}}</span> <img src="public/images/question-mark.svg" alt="" width="14"></div><div class="iai-tooltip__content" id="tooltip-content-3fbe5d4c-c46c-426d-a004-516a28dc2fad" style="display: none;">{{theme_mapping.theme__description}}</div></tool-tip></th>
+                  <td class="govuk-table__cell">{{theme_mapping.count}}</td>
+                  <!-- TODO: add percentages and whether bold -->
+                  <td class="govuk-table__cell">{{theme_mapping.positive_count}}</td>
+                  <td class="govuk-table__cell">{{theme_mapping.negative_count}}</td>
+                </tr>
+              {% endfor %}
+              <tr class="new-class">
+                <td class="govuk-table__cell"><b>All themes</b></td>
+                <td class="govuk-table__cell">{{theme_mapping_summary.total}}</td>
+                <td class="govuk-table__cell">{{theme_mapping_summary.positive}}</td>
+                <td class="govuk-table__cell">{{theme_mapping_summary.negative}}</td>
+              </tr>
+            </tbody>
+          </table>
+
+          <!-- TODO: add data visualisation -->
+
+        </div>
+      {% endif %}
+
+      {% if has_multiple_choice_question_part %}
+        <div class="iai-panel govuk-!-margin-bottom-8">
+          <!-- Display unique multiple choice options with counts -->
+          {% for summary in multiple_choice_summary %}
+            <table class="govuk-table" responsetomultiplechoice="">
+              <caption class="govuk-table__caption govuk-table__caption--m">Response to multiple choice</caption>
+              <thead class="govuk-table__head">
+                <tr class="govuk-table__row">
+                  <th scope="col" class="govuk-table__header">Response type</th>
+                  <th scope="col" class="govuk-table__header">Response rate</th>
+                </tr>
+              </thead>
+              <tbody class="govuk-table__body">
+
+                {% for option, count in summary.items() %}
+                  <tr class="govuk-table__row">
+                    <th scope="row" class="govuk-table__header">{{ option }}</th>
+                    <td class="govuk-table__cell">{{ count }}</td>
+                  </tr>
+                {% endfor %}
+    
+              </tbody>
+            </table>
+          {% endfor %}
+      
+          <!-- TODO: add data visualisation -->
+        </div>
+      {% endif %}
 
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
@@ -60,8 +294,6 @@
 
       <!-- TODO: add sorting options here -->
       
-      <!-- TODO: replace table below with detailed response panels -->
-
       {# Responses #}
 
       {% for respondent in respondents %}
@@ -92,7 +324,7 @@
               {% if respondent.sentiment %}
                 <p class="govuk-body" style="display: flex; align-items: center; gap: 0.6%;">
                   <!-- <img src="/public/images/thumbs-up.svg" alt="icon" style="width: 24px; height: 24px;"> -->
-                  <span>{{ respondent.sentiment.position }}</span>
+                  <span>{{ respondent.sentiment.position|capitalize }}</span>
                 </p>
               {% endif %}
 
@@ -124,7 +356,7 @@
               <h3 class="govuk-heading-s govuk-!-margin-bottom-2">Response to multiple choice</h3>
               {% if respondent.multiple_choice_answer %}
                 <p class="govuk-body" style="line-height: 2em;">
-                  {{ respondent.multiple_choice_answer.chosen_options }}
+                  {{ respondent.multiple_choice_answer.chosen_options|join(", ") }}
                 </p>
               {% else %}
               <p class="govuk-body" style="line-height: 2em;">
@@ -132,8 +364,9 @@
               </p>
               {% endif %}
             {% endif %}
-
-          <p class="govuk-body-s">{{ respondent.demographic_data }}</p>
+          {% if respondent.demographic_data %}
+            <p class="govuk-body-s">{{ respondent.demographic_data }}</p>
+          {% endif %}
         </div>
       {% endfor %}
 
@@ -143,7 +376,7 @@
 
             {% if pagination.number > 1 %}
               <div class="govuk-pagination__prev">
-                <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.number - 1 }}" rel="prev">
+                <a class="govuk-link govuk-pagination__link" href={{"?" + replace_query_param(request, "page", pagination.number - 1)}} rel="prev">
                   <svg class="govuk-pagination__icon govuk-pagination__icon--prev" xmlns="http://www.w3.org/2000/svg" height="13" width="15" aria-hidden="true" focusable="false" viewBox="0 0 15 13">
                     <path d="m6.5938-0.0078125-6.7266 6.7266 6.7441 6.4062 1.377-1.449-4.1856-3.9768h12.896v-2h-12.984l4.2931-4.293-1.414-1.414z"></path>
                   </svg>
@@ -169,20 +402,20 @@
 
               {% if pagination.has_previous() %}
                 <li class="govuk-pagination__item">
-                  <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.previous_page_number() }}" aria-label="Page {{ pagination.previous_page_number() }}">
+                  <a class="govuk-link govuk-pagination__link" href={{"?" + replace_query_param(request, "page", pagination.previous_page_number())}} aria-label="Page {{ pagination.previous_page_number() }}">
                     {{ pagination.previous_page_number() }}
                   </a>
                 </li>
               {% endif %}
               <li class="govuk-pagination__item govuk-pagination__item--current">
-                <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.number }}" aria-label="Page {{ pagination.number }}" aria-current="page">
+                <a class="govuk-link govuk-pagination__link" href={{"?" + replace_query_param(request, "page", pagination.number)}} aria-label="Page {{ pagination.number }}" aria-current="page">
                   {{ pagination.number }}
                 </a>
               </li>
 
               {% if pagination.has_next() %}
                 <li class="govuk-pagination__item">
-                  <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.next_page_number() }}" aria-label="Page {{ pagination.next_page_number() }}">
+                  <a class="govuk-link govuk-pagination__link" href={{"?" + replace_query_param(request, "page", pagination.next_page_number())}} aria-label="Page {{ pagination.next_page_number() }}">
                     {{ pagination.next_page_number() }}
                   </a>
                 </li>
@@ -193,7 +426,7 @@
                   &ctdot;
                 </li>
                 <li class="govuk-pagination__item">
-                  <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.paginator.num_pages }}" aria-label="Page {{ pagination.paginator.num_pages }}">
+                  <a class="govuk-link govuk-pagination__link" href={{"?" + replace_query_param(request, "page", pagination.paginator.num_pages)}} aria-label="Page {{ pagination.paginator.num_pages }}">
                     {{ pagination.paginator.num_pages }}
                   </a>
                 </li>
@@ -203,7 +436,7 @@
 
             {% if pagination.has_next() %}
               <div class="govuk-pagination__next">
-                <a class="govuk-link govuk-pagination__link" href="?page={{ pagination.next_page_number() }}" rel="next">
+                <a class="govuk-link govuk-pagination__link" href={{"?" + replace_query_param(request, "page", pagination.next_page_number())}} rel="next">
                   <span class="govuk-pagination__link-title">
                     Next<span class="govuk-visually-hidden"> page</span>
                   </span>
