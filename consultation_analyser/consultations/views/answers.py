@@ -4,11 +4,79 @@ from uuid import UUID
 
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
+from django.db.models import Count, F, Q, QuerySet, Sum, Value
+from django.db.models.functions import Length, Replace
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .. import models
 from .decorators import user_can_see_consultation
+
+
+def get__selected_option_summary(question: models.Question):
+    annotated_responses = [
+        models.Answer.objects.filter(question_part=question_part)
+        .values("chosen_options")
+        .order_by("chosen_options")
+        .annotate(count=Count("id"))
+        for question_part in question.questionpart_set.filter(
+            type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
+        )
+    ]
+
+    multichoice_summary = []
+    for responses in annotated_responses:
+        option_counts = {}
+        for response in responses:
+            for option in response["chosen_options"]:
+                if option not in option_counts:
+                    option_counts[option] = 0
+                option_counts[option] += response["count"]
+        multichoice_summary.append(option_counts)
+
+    return multichoice_summary
+
+
+def filter_by_word_count(
+    respondents: QuerySet,
+    question_slug: str,
+    word_count: int,
+) -> QuerySet:
+    """filter respondents by word count"""
+    respondents = respondents.annotate(
+        # Calculates the difference between the length of the text and the length of the text with spaces removed and add 1
+        word_count=Length("answer__text")
+        - Length(Replace(F("answer__text"), Value(" "), Value("")))
+        + 1
+    )
+
+    annotated_responses = (
+        models.Answer.objects.filter(
+            question_part__question__slug=question_slug,
+        )
+        .annotate(word_count=Length("text") - Length(Replace(F("text"), Value(" "), Value(""))) + 1)
+        .filter(word_count__gte=word_count)
+    )
+
+    return respondents.filter(answer__in=annotated_responses)
+
+
+def filter_by_theme(
+    respondents: QuerySet,
+    themesfilter: list[str] | None = None,
+    themesentiment: list[str] | None = None,
+    responsesentiment: list[str] | None = None,
+) -> QuerySet:
+    """filter respondents by response themes"""
+
+    if themesfilter:
+        respondents = respondents.filter(answer__thememapping__theme__in=themesfilter)
+    if themesentiment:
+        respondents = respondents.filter(answer__thememapping__stance=themesentiment)
+    if responsesentiment:
+        respondents = respondents.filter(answer__sentimentmapping__position=responsesentiment)
+
+    return respondents
 
 
 @user_can_see_consultation
@@ -17,6 +85,45 @@ def index(
     consultation_slug: str,
     question_slug: str,
 ):
+    responseid = request.GET.get("responseid")
+    demographicindividual = request.GET.getlist("demographicindividual")
+    themesfilter = request.GET.getlist("themesfilter")
+    themesentiment = request.GET.get("themesentiment")
+    responsesentiment = request.GET.get("responsesentiment")
+    wordcount = request.GET.get("wordcount")
+    active_filters = {
+        "responseid": {
+            "label": "Response ID",
+            "selected": [{"display": responseid, "id": responseid}] if responseid else [],
+        },
+        "demographicindividual": {
+            "label": "Individual or Organisation",
+            "selected": [{"display": d, "id": d} for d in demographicindividual],
+        },
+        "themesfilter": {
+            "label": "Theme",
+            "selected": [
+                {"display": models.Theme.objects.get(id=t).name, "id": t} for t in themesfilter
+            ],
+        },
+        "themesentiment": {
+            "label": "Theme Sentiment",
+            "selected": [{"display": themesentiment.title(), "id": themesentiment}]
+            if themesentiment
+            else [],
+        },
+        "responsesentiment": {
+            "label": "Response Sentiment",
+            "selected": [{"display": responsesentiment.title(), "id": responsesentiment}]
+            if responsesentiment
+            else [],
+        },
+        "wordcount": {
+            "label": "Minimum Word Count",
+            "selected": [{"display": wordcount, "id": wordcount}] if wordcount else [],
+        },
+    }
+
     # For now, just display free text parts of the question
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
 
@@ -29,29 +136,76 @@ def index(
     free_text_question_part = models.QuestionPart.objects.filter(
         question=question, type=models.QuestionPart.QuestionType.FREE_TEXT
     ).first()
-    if free_text_question_part:
-        free_text_answers = models.Answer.objects.filter(question_part=free_text_question_part)
-        total_responses = free_text_answers.count()
-    else:
-        free_text_answers = models.Answer.objects.none()
-        total_responses = 0
 
     has_multiple_choice_question_part = models.QuestionPart.objects.filter(
         question=question, type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
     ).exists()
 
-    # respondents = models.Respondent.objects.filter(answers__question_part__question=question).distinct()
-    respondents = models.Respondent.objects.filter(consultation=consultation)
+    # Themes
+    all_theme_mappings = (
+        models.ThemeMapping.get_latest_theme_mappings_for_question_part(free_text_question_part)
+        .values("theme__name", "theme__description", "theme__id")
+        .annotate(count=Count("id"))
+        .annotate(positive_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.POSITIVE)))
+        .annotate(negative_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.NEGATIVE)))
+    )
 
+    theme_mapping_summary = {
+        "total": all_theme_mappings.aggregate(Sum("count"))["count__sum"],
+        "positive": all_theme_mappings.aggregate(Sum("positive_count"))["positive_count__sum"],
+        "negative": all_theme_mappings.aggregate(Sum("negative_count"))["negative_count__sum"],
+    }
+
+    # Multiple choice summary
+    multiple_choice_summary = get__selected_option_summary(question)
+
+    if responseid:
+        respondents = models.Respondent.objects.filter(
+            answer__id=responseid,
+            answer__question_part__question=question,
+        )
+    else:
+        respondents = models.Respondent.objects.filter(
+            consultation=consultation,
+        )
+
+    respondents = filter_by_theme(
+        respondents,
+        themesfilter,
+        themesentiment,
+        responsesentiment,
+    ).distinct()
+
+    if wordcount:
+        respondents = filter_by_word_count(respondents, question_slug, int(wordcount))
+
+    # Demographic data
+    has_individual_data = False
     for respondent in respondents:
-        # Demographic data
+        if not respondent.data:
+            continue
         demographic_data = json.loads(respondent.data)
         respondent.demographic_data = ", ".join(
             [f"{k.title()}: {v}" for k, v in demographic_data.items()]
         )
         if demographic_data.get("individual"):
+            has_individual_data = True
             respondent.individual = demographic_data["individual"]
 
+    if demographicindividual:
+        respondents = [
+            respondent
+            for respondent in respondents
+            if respondent.individual in demographicindividual
+        ]
+
+    # pagination
+    pagination = Paginator(respondents, 5)
+    page_index = request.GET.get("page", "1")
+    current_page = pagination.page(page_index)
+    paginated_respondents = current_page.object_list
+
+    for respondent in paginated_respondents:
         # Free text response
         try:
             respondent.free_text_answer = models.Answer.objects.get(
@@ -78,21 +232,25 @@ def index(
         except models.Answer.DoesNotExist:
             pass
 
-    # pagination
-    pagination = Paginator(respondents, 5)
-    page_index = request.GET.get("page", "1")
-    current_page = pagination.page(page_index)
-    paginated_responses = current_page.object_list
-
     context = {
         "consultation_name": consultation.title,
         "consultation_slug": consultation_slug,
         "question": question,
         "free_text_question_part": free_text_question_part,
-        "total_responses": total_responses,
+        "total_responses": len(respondents),
         "pagination": current_page,
-        "respondents": paginated_responses,
+        "respondents": paginated_respondents,
         "has_multiple_choice_question_part": has_multiple_choice_question_part,
+        "all_theme_mappings": all_theme_mappings,
+        "theme_mapping_summary": theme_mapping_summary,
+        "multiple_choice_summary": multiple_choice_summary,
+        "stance_options": models.SentimentMapping.Position.names,
+        "theme_stance_options": models.ThemeMapping.Stance.names,
+        "active_filters": active_filters,
+        "has_filters": any(
+            [active_filter["selected"] for active_filter in active_filters.values()]
+        ),
+        "has_individual_data": has_individual_data,
     }
 
     return render(request, "consultations/answers/index.html", context)
