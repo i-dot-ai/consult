@@ -71,7 +71,7 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     return render(request, "support_console/consultations/show.html", context=context)
 
 
-def import_consultations(request: HttpRequest) -> HttpResponse:
+def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
     if request.POST:
         s3_key = request.POST.get("s3_key")
         call_command("import_consultation_data", s3_key)
