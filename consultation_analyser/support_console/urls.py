@@ -27,9 +27,9 @@ urlpatterns = [
         name="add_user",
     ),
     path(
-        "consultations/import/",
-        consultations.import_consultations,
-        name="import_consultations",
+        "consultations/import-xlsx/",
+        consultations.import_consultations_xlsx,
+        name="import_consultations_xlsx",
     ),
     path(
         "consultations/<uuid:consultation_id>/export/",
