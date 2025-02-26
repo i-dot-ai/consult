@@ -10,6 +10,7 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
 from consultation_analyser.consultations.export_user_theme import export_user_theme
 from consultation_analyser.hosting_environment import HostingEnvironment
+from consultation_analyser.ingest import get_themefinder_outputs_for_question
 
 NO_SUMMARY_STR = "Unable to generate summary for this theme"
 
@@ -83,6 +84,11 @@ def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
 
 def import_theme_mapping(request: HttpRequest) -> HttpResponse:
     # TODO - obviously change name of template!
+    if request.POST:
+        s3_key = request.POST.get("s3_key")
+        all_data_for_question = get_themefinder_outputs_for_question(s3_key)
+        print(all_data_for_question)
+        return redirect("/support/consultations/")
 
     return render(request, "support_console/consultations/import2.html")
 
