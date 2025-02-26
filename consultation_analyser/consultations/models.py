@@ -183,6 +183,7 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     # demographic data, or anything else that is at respondent level
     data = models.JSONField(default=dict)
+    themefinder_respondent_id = models.IntegerField(null=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
