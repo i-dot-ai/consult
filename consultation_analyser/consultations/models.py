@@ -1,6 +1,7 @@
 import datetime
 import uuid
 from collections import OrderedDict
+import json
 
 import faker as _faker
 import pydantic
@@ -176,7 +177,11 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
         for answer in self.answer_set.all():
             all_chosen_options.extend(answer.chosen_options)
         counts = OrderedDict()
-        all_possible_options = self.options or []
+        all_possible_options = self.options
+        if all_possible_options:
+            all_possible_options = json.loads(all_possible_options)
+        else:
+            all_possible_options = []
         for option in all_possible_options:
             counts[option] = all_chosen_options.count(option)
         return counts
