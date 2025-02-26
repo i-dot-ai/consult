@@ -23,8 +23,8 @@
 
   <div class="govuk-grid-row govuk-!-margin-top-5">
     <div class="govuk-grid-column-full">
-      <h1 class="govuk-heading-m govuk-!-font-weight-regular">
-        <span class="govuk-body-s govuk-!-display-block govuk-!-font-weight-bold">Question {{question.number}}</span>
+      <span class="govuk-caption-xl govuk-!-display-block">Question {{question.number}}</span>
+      <h1 class="govuk-heading-l">
         {{ question.text }}
       </h1>
       {% if free_text_question_part %}
@@ -40,40 +40,39 @@
   <div class="govuk-grid-row govuk-!-margin-top-5">
     <div class="govuk-grid-column-one-quarter-from-desktop">
 
-      <div class="moj-filter">
-        <div class="moj-filter__header">
-          <div class="moj-filter__header-title">
+      <div class="iai-filter">
+        <div class="iai-filter__header">
+          <div class="iai-filter__header-title">
             <h2 class="govuk-heading-m">Filter</h2>
           </div>
         </div>
       
-        <div class="moj-filter__content">
-          <div class="moj-filter__selected">
-            <div class="moj-filter__selected-heading">
-              {% if has_filters %}
-                <div class="moj-filter__heading-title">
-                  <h2 class="govuk-heading-m">Selected filters</h2>
-                </div>
-                <a class="moj-filter__tag" href={{request.path}}> Remove all filters</a>
-              {% endif %}
-
-              {% for type, options in active_filters.items() %}
-                <!-- TODO: make me look nicer  -->
-                {% if options.selected %}
-                  <h3 class="govuk-heading-s govuk-!-margin-bottom-0">{{ options.label }}</h3>
-
-                  <ul class="moj-filter-tags">
+        <div class="iai-filter__content">
+          {% if has_filters %}
+            <div class="iai-filter__selected">
+              <div class="iai-filter__selected-heading">
+                  <div class="iai-filter__heading-title">
+                    <h2 class="govuk-heading-m govuk-!-margin-bottom-0">Selected filters</h2>
+                  </div>
+                  <a class="iai-filter__tag" href={{request.path}}> Remove all filters</a>
+                  
+                  {% for type, options in active_filters.items() %}
+                  {% if options.selected %}
+                  <h3 class="govuk-heading-s govuk-!-margin-bottom-0 govuk-!-margin-top-5">{{ options.label }}</h3>
+                  
+                  <ul class="iai-filter-tags">
                     {% for option in options.selected %}
-                      <li><a class="moj-filter__tag" href={{"?" + remove_query_param(request, type, option.id)}}><span class="govuk-visually-hidden">Remove this filter</span> {{ option.display }}</a></li>
+                    <li><a class="iai-filter__tag" href={{"?" + remove_query_param(request, type, option.id)}}><span class="govuk-visually-hidden">Remove this filter</span> {{ option.display }}</a></li>
                     {% endfor %}
                   </ul>
-                {% endif %}
-              {% endfor %}
-            </div>
-          </div>
+                  {% endif %}
+                  {% endfor %}
+                </div>
+              </div>
+            {% endif %}
   
           <form method="GET">
-            <div class="moj-filter__options">
+            <div class="iai-filter__options">
               <button aria-disabled="true" type="submit" id="filter-button" class="govuk-button" data-module="govuk-button" data-test-id="submit-button" data-govuk-button-init="">
                 Apply filters
               </button>
@@ -235,7 +234,7 @@
             <tbody class="govuk-table__body">
               {% for theme_mapping in all_theme_mappings %}
                 <tr class="govuk-table__row">
-                  <th scope="row" class="govuk-table__header"><tool-tip class="iai-tooltip"><div class="iai-tooltip__button" role="tooltip" tabindex="0" aria-describedby="tooltip-content-3fbe5d4c-c46c-426d-a004-516a28dc2fad"><span>{{theme_mapping.theme__name}}</span> <img src="public/images/question-mark.svg" alt="" width="14"></div><div class="iai-tooltip__content" id="tooltip-content-3fbe5d4c-c46c-426d-a004-516a28dc2fad" style="display: none;">{{theme_mapping.theme__description}}</div></tool-tip></th>
+                  <th scope="row" class="govuk-table__header"><tool-tip class="iai-tooltip"><div class="iai-tooltip__button" role="tooltip" tabindex="0" aria-describedby="tooltip-content-3fbe5d4c-c46c-426d-a004-516a28dc2fad"><span>{{theme_mapping.theme__name}}</span> <img src="{{ static('icons/question-mark.svg') }}" alt="" width="14"></div><div class="iai-tooltip__content" id="tooltip-content-3fbe5d4c-c46c-426d-a004-516a28dc2fad" style="display: none;">{{theme_mapping.theme__description}}</div></tool-tip></th>
                   <td class="govuk-table__cell">{{theme_mapping.count}}</td>
                   <!-- TODO: add percentages and whether bold -->
                   <td class="govuk-table__cell">{{theme_mapping.positive_count}}</td>
@@ -287,7 +286,7 @@
 
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-          <span class="govuk-caption-m">{{ total_responses }} responses</span>
+          <span class="govuk-caption-m">{{ total_selected_responses }} responses</span>
           <h2 class="govuk-heading-m">Individual responses</h2>
         </div>
       </div>
@@ -323,7 +322,13 @@
               <h3 class="govuk-heading-s govuk-!-margin-bottom-4">Free text response</h3>
               {% if respondent.sentiment %}
                 <p class="govuk-body" style="display: flex; align-items: center; gap: 0.6%;">
-                  <!-- <img src="/public/images/thumbs-up.svg" alt="icon" style="width: 24px; height: 24px;"> -->
+                  {% if respondent.sentiment.position == "AGREEMENT" %}
+                    <img src="{{ static('icons/thumbs-up.svg') }}" alt="icon" style="width: 24px; height: 24px;">
+                  {% elif respondent.sentiment.position == "DISAGREEMENT" %}
+                    <img src="{{ static('icons/thumbs-down.svg') }}" alt="icon" style="width: 24px; height: 24px;">
+                  {% else %}
+                    <img src="{{ static('icons/thumbs-up-down.svg') }}" alt="icon" style="width: 24px; height: 24px;">
+                  {% endif %}
                   <span>{{ respondent.sentiment.position|capitalize }}</span>
                 </p>
               {% endif %}
@@ -334,9 +339,13 @@
                   <div class="govuk-pill">
                     <tool-tip class="iai-tooltip">
                       <div class="iai-tooltip__button" role="tooltip" tabindex="0" aria-describedby="tooltip-content-2a1c358a-162a-4cf8-8011-43c13ef22785">
-                        <!-- <img src="/public/images/tick.svg" alt="icon" style="width: 24px; height: 24px;"> -->
+                        {% if theme.stance == "POSITIVE" %}
+                          <img src="{{ static('icons/tick.svg') }}" alt="icon" style="width: 24px; height: 24px;">
+                        {% else %}
+                          <img src="{{ static('icons/warning.svg') }}" alt="icon" style="width: 24px; height: 24px;">
+                        {% endif %}
                         <span>{{ theme.theme.name }}</span>
-                        <img src="/public/images/question-mark.svg" alt="info" width="14">
+                        <img src="{{ static('icons/question-mark.svg') }}" alt="info" width="14">
                       </div>
                       <div class="iai-tooltip__content" id="tooltip-content-2a1c358a-162a-4cf8-8011-43c13ef22785">
                         {{ theme.theme.description }}

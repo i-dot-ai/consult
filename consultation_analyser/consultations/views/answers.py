@@ -62,19 +62,29 @@ def filter_by_word_count(
 
 
 def filter_by_theme(
+    question: models.Question,
     respondents: QuerySet,
+    responseid: str | None = None,
     themesfilter: list[str] | None = None,
     themesentiment: list[str] | None = None,
     responsesentiment: list[str] | None = None,
 ) -> QuerySet:
     """filter respondents by response themes"""
-
+    if responseid:
+        respondents = respondents.filter(
+            answer__id=responseid,
+            answer__question_part__question=question,
+        )
     if themesfilter:
         respondents = respondents.filter(answer__thememapping__theme__in=themesfilter)
     if themesentiment:
         respondents = respondents.filter(answer__thememapping__stance=themesentiment)
     if responsesentiment:
-        respondents = respondents.filter(answer__sentimentmapping__position=responsesentiment)
+        respondents = respondents.filter(
+            answer__in=models.Answer.objects.filter(
+                sentimentmapping__position=responsesentiment, question_part__question=question
+            )
+        )
 
     return respondents
 
@@ -159,18 +169,12 @@ def index(
     # Multiple choice summary
     multiple_choice_summary = get__selected_option_summary(question)
 
-    if responseid:
-        respondents = models.Respondent.objects.filter(
-            answer__id=responseid,
-            answer__question_part__question=question,
-        )
-    else:
-        respondents = models.Respondent.objects.filter(
-            consultation=consultation,
-        )
+    total_respondents = models.Respondent.objects.filter(consultation=consultation)
 
     respondents = filter_by_theme(
-        respondents,
+        question,
+        total_respondents,
+        responseid,
         themesfilter,
         themesentiment,
         responsesentiment,
@@ -237,7 +241,8 @@ def index(
         "consultation_slug": consultation_slug,
         "question": question,
         "free_text_question_part": free_text_question_part,
-        "total_responses": len(respondents),
+        "total_responses": total_respondents.count(),
+        "total_selected_responses": len(respondents),
         "pagination": current_page,
         "respondents": paginated_respondents,
         "has_multiple_choice_question_part": has_multiple_choice_question_part,
