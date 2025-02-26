@@ -10,7 +10,7 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
 from consultation_analyser.consultations.export_user_theme import export_user_theme
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.ingest import get_themefinder_outputs_for_question
+from consultation_analyser.support_console.ingest import get_themefinder_outputs_for_question
 
 NO_SUMMARY_STR = "Unable to generate summary for this theme"
 
