@@ -24,10 +24,9 @@ def list_all_files_in_folder(folder_name: str, bucket_name: str) -> set:
     return files_only
 
 
-def get_themefinder_outputs_for_question(s3_uri: str) -> dict:
-    # TODO - fix this name
+def get_themefinder_outputs_for_question(key: str) -> dict:
     s3 = boto3.client(
         "s3",
     )
-    response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=s3_uri)
+    response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=key)
     return json.loads(response["Body"].read())
