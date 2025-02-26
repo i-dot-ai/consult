@@ -1,6 +1,6 @@
 import datetime
 import uuid
-from collections import OrderedDict
+from collections import OrderedDict, Counter
 import json
 
 import faker as _faker
@@ -174,17 +174,16 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
         Keep counts in the same order as specified in QuestionPart.options.
         """
         all_chosen_options = []
+
         for answer in self.answer_set.all():
-            all_chosen_options.extend(answer.chosen_options)
-        counts = OrderedDict()
-        all_possible_options = self.options
-        if all_possible_options:
-            all_possible_options = json.loads(all_possible_options)
-        else:
-            all_possible_options = []
-        for option in all_possible_options:
-            counts[option] = all_chosen_options.count(option)
-        return counts
+            chosen_options = answer.chosen_options if answer.chosen_options else []
+            all_chosen_options.extend(chosen_options)
+        counts = Counter(all_chosen_options)
+
+        all_possible_options = self.options or []
+        # We may care about the order they appear
+        ordered_counts = OrderedDict((option, counts[option]) for option in all_possible_options)
+        return ordered_counts
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
