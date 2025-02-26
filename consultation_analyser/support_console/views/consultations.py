@@ -83,6 +83,7 @@ def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
 
 def import_theme_mapping(request: HttpRequest) -> HttpResponse:
     # TODO - obviously change name of template!
+
     return render(request, "support_console/consultations/import2.html")
 
 
