@@ -125,7 +125,7 @@
                       Themes
                     </legend>
                     <div class="govuk-checkboxes govuk-checkboxes--small" data-module="govuk-checkboxes" data-govuk-checkboxes-init="">
-                      {% for theme_mapping in all_theme_mappings %}
+                      {% for theme_mapping in theme_mappings %}
                         <div class="govuk-checkboxes__item">
                           <input class="govuk-checkboxes__input" id="themesfilter-{{loop.index0}}" name="themesfilter" type="checkbox" value={{theme_mapping.theme__id}}
                           {% if is_in(theme_mapping.theme__id, active_filters.themesfilter.selected) %}
@@ -232,7 +232,7 @@
             </thead>
           
             <tbody class="govuk-table__body">
-              {% for theme_mapping in all_theme_mappings %}
+              {% for theme_mapping in selected_theme_mappings %}
                 <tr class="govuk-table__row">
                   <th scope="row" class="govuk-table__header"><tool-tip class="iai-tooltip"><div class="iai-tooltip__button" role="tooltip" tabindex="0" aria-describedby="tooltip-content-3fbe5d4c-c46c-426d-a004-516a28dc2fad"><span>{{theme_mapping.theme__name}}</span> <img src="{{ static('icons/question-mark.svg') }}" alt="" width="14"></div><div class="iai-tooltip__content" id="tooltip-content-3fbe5d4c-c46c-426d-a004-516a28dc2fad" style="display: none;">{{theme_mapping.theme__description}}</div></tool-tip></th>
                   <td class="govuk-table__cell">{{theme_mapping.count}}</td>
@@ -286,7 +286,7 @@
 
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
-          <span class="govuk-caption-m">{{ total_selected_responses }} responses</span>
+          <span class="govuk-caption-m">{{ total_responses }} responses</span>
           <h2 class="govuk-heading-m">Individual responses</h2>
         </div>
       </div>

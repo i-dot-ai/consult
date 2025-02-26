@@ -13,28 +13,32 @@ from .. import models
 from .decorators import user_can_see_consultation
 
 
-def get__selected_option_summary(question: models.Question):
-    annotated_responses = [
-        models.Answer.objects.filter(question_part=question_part)
-        .values("chosen_options")
-        .order_by("chosen_options")
-        .annotate(count=Count("id"))
-        for question_part in question.questionpart_set.filter(
-            type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
+def filter_by_response_and_theme(
+    question: models.Question,
+    respondents: QuerySet,
+    responseid: str | None = None,
+    responsesentiment: list[str] | None = None,
+    themesfilter: list[str] | None = None,
+    themesentiment: list[str] | None = None,
+) -> QuerySet:
+    """filter respondents by response themes"""
+    if responseid:
+        respondents = respondents.filter(
+            answer__id=responseid,
+            answer__question_part__question=question,
         )
-    ]
+    if responsesentiment:
+        respondents = respondents.filter(
+            answer__in=models.Answer.objects.filter(
+                sentimentmapping__position=responsesentiment, question_part__question=question
+            )
+        )
+    if themesfilter:
+        respondents = respondents.filter(answer__thememapping__theme__in=themesfilter)
+    if themesentiment:
+        respondents = respondents.filter(answer__thememapping__stance=themesentiment)
 
-    multichoice_summary = []
-    for responses in annotated_responses:
-        option_counts = {}
-        for response in responses:
-            for option in response["chosen_options"]:
-                if option not in option_counts:
-                    option_counts[option] = 0
-                option_counts[option] += response["count"]
-        multichoice_summary.append(option_counts)
-
-    return multichoice_summary
+    return respondents
 
 
 def filter_by_word_count(
@@ -61,32 +65,79 @@ def filter_by_word_count(
     return respondents.filter(answer__in=annotated_responses)
 
 
-def filter_by_theme(
-    question: models.Question,
+def filter_by_demographic_data(
     respondents: QuerySet,
-    responseid: str | None = None,
-    themesfilter: list[str] | None = None,
-    themesentiment: list[str] | None = None,
-    responsesentiment: list[str] | None = None,
+    demographicindividual: list[str] | None = None,
 ) -> QuerySet:
-    """filter respondents by response themes"""
-    if responseid:
-        respondents = respondents.filter(
-            answer__id=responseid,
-            answer__question_part__question=question,
+    """filter respondents by demographic data"""
+    has_individual_data = False
+    for respondent in respondents:
+        if not respondent.data:
+            continue
+        demographic_data = json.loads(respondent.data)
+        respondent.demographic_data = ", ".join(
+            [f"{k.title()}: {v}" for k, v in demographic_data.items()]
         )
-    if themesfilter:
-        respondents = respondents.filter(answer__thememapping__theme__in=themesfilter)
-    if themesentiment:
-        respondents = respondents.filter(answer__thememapping__stance=themesentiment)
-    if responsesentiment:
-        respondents = respondents.filter(
-            answer__in=models.Answer.objects.filter(
-                sentimentmapping__position=responsesentiment, question_part__question=question
-            )
-        )
+        if demographic_data.get("individual"):
+            has_individual_data = True
+            respondent.individual = demographic_data["individual"]
 
-    return respondents
+    if demographicindividual:
+        respondents = [
+            respondent
+            for respondent in respondents
+            if respondent.individual in demographicindividual
+        ]
+
+    return has_individual_data, respondents
+
+
+def get_selected_theme_summary(
+    free_text_question_part: models.QuestionPart, respondents: QuerySet
+) -> tuple[QuerySet, dict]:
+    """Get a summary of the selected themes for a free text question"""
+    selected_theme_mappings = (
+        models.ThemeMapping.get_latest_theme_mappings_for_question_part(free_text_question_part)
+        .filter(answer__respondent__in=respondents)
+        .values("theme__name", "theme__description", "theme__id")
+        .annotate(count=Count("id"))
+        .annotate(positive_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.POSITIVE)))
+        .annotate(negative_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.NEGATIVE)))
+    )
+
+    theme_mapping_summary = {
+        "total": selected_theme_mappings.aggregate(Sum("count"))["count__sum"],
+        "positive": selected_theme_mappings.aggregate(Sum("positive_count"))["positive_count__sum"],
+        "negative": selected_theme_mappings.aggregate(Sum("negative_count"))["negative_count__sum"],
+    }
+
+    return selected_theme_mappings, theme_mapping_summary
+
+
+def get_selected_option_summary(question: models.Question, respondents: QuerySet) -> list[dict]:
+    """Get a summary of the selected options for a multiple choice question"""
+    annotated_responses = [
+        models.Answer.objects.filter(question_part=question_part, respondent__in=respondents)
+        .distinct()
+        .values("chosen_options")
+        .order_by("chosen_options")
+        .annotate(count=Count("id"))
+        for question_part in question.questionpart_set.filter(
+            type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
+        )
+    ]
+
+    multichoice_summary = []
+    for responses in annotated_responses:
+        option_counts = {}
+        for response in responses:
+            for option in response["chosen_options"]:
+                if option not in option_counts:
+                    option_counts[option] = 0
+                option_counts[option] += response["count"]
+        multichoice_summary.append(option_counts)
+
+    return multichoice_summary
 
 
 @user_can_see_consultation
@@ -134,81 +185,55 @@ def index(
         },
     }
 
-    # For now, just display free text parts of the question
+    # Get question data
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-
     question = models.Question.objects.get(
         slug=question_slug,
         consultation=consultation,
     )
-
-    # Assume that there is only one free text response
     free_text_question_part = models.QuestionPart.objects.filter(
         question=question, type=models.QuestionPart.QuestionType.FREE_TEXT
-    ).first()
-
+    ).first()  # Assume that there is only one free text response
     has_multiple_choice_question_part = models.QuestionPart.objects.filter(
         question=question, type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
     ).exists()
-
-    # Themes
-    all_theme_mappings = (
+    theme_mappings = (
         models.ThemeMapping.get_latest_theme_mappings_for_question_part(free_text_question_part)
         .values("theme__name", "theme__description", "theme__id")
-        .annotate(count=Count("id"))
-        .annotate(positive_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.POSITIVE)))
-        .annotate(negative_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.NEGATIVE)))
+        .order_by("theme__name")
+        .distinct("theme__name")
     )
 
-    theme_mapping_summary = {
-        "total": all_theme_mappings.aggregate(Sum("count"))["count__sum"],
-        "positive": all_theme_mappings.aggregate(Sum("positive_count"))["positive_count__sum"],
-        "negative": all_theme_mappings.aggregate(Sum("negative_count"))["negative_count__sum"],
-    }
-
-    # Multiple choice summary
-    multiple_choice_summary = get__selected_option_summary(question)
-
-    total_respondents = models.Respondent.objects.filter(consultation=consultation)
-
-    respondents = filter_by_theme(
+    # Get respondents list
+    respondents = filter_by_response_and_theme(
         question,
-        total_respondents,
+        models.Respondent.objects.filter(consultation=consultation),
         responseid,
+        responsesentiment,
         themesfilter,
         themesentiment,
-        responsesentiment,
     ).distinct()
 
     if wordcount:
         respondents = filter_by_word_count(respondents, question_slug, int(wordcount))
 
-    # Demographic data
-    has_individual_data = False
-    for respondent in respondents:
-        if not respondent.data:
-            continue
-        demographic_data = json.loads(respondent.data)
-        respondent.demographic_data = ", ".join(
-            [f"{k.title()}: {v}" for k, v in demographic_data.items()]
-        )
-        if demographic_data.get("individual"):
-            has_individual_data = True
-            respondent.individual = demographic_data["individual"]
+    has_individual_data, respondents = filter_by_demographic_data(
+        respondents, demographicindividual
+    )
 
-    if demographicindividual:
-        respondents = [
-            respondent
-            for respondent in respondents
-            if respondent.individual in demographicindividual
-        ]
+    # Get summaries for respondents list
+    selected_theme_mappings, theme_mapping_summary = get_selected_theme_summary(
+        free_text_question_part, respondents
+    )
+    multiple_choice_summary = get_selected_option_summary(question, respondents)
 
-    # pagination
+    # Pagination
     pagination = Paginator(respondents, 5)
     page_index = request.GET.get("page", "1")
     current_page = pagination.page(page_index)
     paginated_respondents = current_page.object_list
 
+    # Get individual data for each displayed respondent
     for respondent in paginated_respondents:
         # Free text response
         try:
@@ -241,12 +266,12 @@ def index(
         "consultation_slug": consultation_slug,
         "question": question,
         "free_text_question_part": free_text_question_part,
-        "total_responses": total_respondents.count(),
-        "total_selected_responses": len(respondents),
+        "has_multiple_choice_question_part": has_multiple_choice_question_part,
+        "theme_mappings": theme_mappings,
+        "total_responses": len(respondents),
         "pagination": current_page,
         "respondents": paginated_respondents,
-        "has_multiple_choice_question_part": has_multiple_choice_question_part,
-        "all_theme_mappings": all_theme_mappings,
+        "selected_theme_mappings": selected_theme_mappings,
         "theme_mapping_summary": theme_mapping_summary,
         "multiple_choice_summary": multiple_choice_summary,
         "stance_options": models.SentimentMapping.Position.names,
