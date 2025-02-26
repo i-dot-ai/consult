@@ -1,7 +1,6 @@
 import datetime
 import uuid
-from collections import OrderedDict, Counter
-import json
+from collections import Counter, OrderedDict
 
 import faker as _faker
 import pydantic
