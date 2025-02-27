@@ -16,6 +16,8 @@ Including another URLconf
 """
 
 from django.urls import include, path
+from debug_toolbar.toolbar import debug_toolbar_urls
+from django.conf import settings
 
 from consultation_analyser.consultations import urls
 from consultation_analyser.error_pages import views as error_views
@@ -28,3 +30,6 @@ urlpatterns = [
     path("", include(urls)),
     path("support/", include(support_console_urls)),
 ]
+
+if settings.DEBUG:
+    urlpatterns += debug_toolbar_urls()
