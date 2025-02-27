@@ -32,7 +32,7 @@
         {{ csrf_input }}
 
         <div class="govuk-form-group">
-          <fieldset class="govuk-fieldset" aria-describedby="theme-hint">
+          <fieldset class="govuk-fieldset">
             <legend class="govuk-fieldset__legend govuk-fieldset__legend--l">
               <h2 class="govuk-fieldset__heading">
                 Which themes are most relevant?
@@ -57,9 +57,14 @@
           </fieldset>
         </div>
 
-        <button type="submit" class="govuk-button" data-module="govuk-button" data-govuk-button-init="">
-          Save and continue to a new response
-        </button>
+        <div class="govuk-button-group">
+          <button type="submit" class="govuk-button" data-module="govuk-button" data-govuk-button-init="">
+            Save and continue to a new response
+          </button>
+          <button class="govuk-button govuk-button--secondary" data-module="govuk-button" data-govuk-button-init="" formaction="{{ url('show_next_response', kwargs={'question_slug': question.slug, 'consultation_slug': consultation_slug}) }}" formmethod="get">
+            Skip this response
+          </button>
+        </div>
 
       </form>
 
