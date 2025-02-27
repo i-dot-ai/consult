@@ -21,7 +21,7 @@
       <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
       <p style="line-height: 2em" class="govuk-body" id="text">
-        {{ response.text }}
+        Response{% if response.respondent.themefinder_respondent_id %} {{response.respondent.themefinder_respondent_id}}{% endif %}: {{ response.text }}
       </p>
       
     </div>
