@@ -10,7 +10,7 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
 from consultation_analyser.consultations.export_user_theme import export_user_theme
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.support_console.ingest import get_themefinder_outputs_for_question
+from consultation_analyser.support_console.ingest import import_themefinder_data_for_question_part, get_themefinder_outputs_for_question
 
 NO_SUMMARY_STR = "Unable to generate summary for this theme"
 
@@ -82,17 +82,6 @@ def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
     return render(request, "support_console/consultations/import.html")
 
 
-def import_theme_mapping(request: HttpRequest) -> HttpResponse:
-    # TODO - obviously change name of template!
-    if request.POST:
-        s3_key = request.POST.get("s3_key")
-        all_data_for_question = get_themefinder_outputs_for_question(s3_key)
-        print(all_data_for_question)
-        return redirect("/support/consultations/")
-
-    return render(request, "support_console/consultations/import2.html")
-
-
 def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = get_object_or_404(models.Consultation, id=consultation_id)
 
@@ -114,3 +103,12 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
         return redirect("/support/consultations/")
 
     return render(request, "support_console/consultations/export_audit.html", context)
+
+
+def import_theme_mapping(request: HttpRequest) -> HttpResponse:
+    if request.POST:
+        s3_key = request.POST.get("s3_key")
+        import_themefinder_data_for_question_part(s3_key)
+        return redirect("/support/consultations/")
+    # TODO - obviously change name of template!
+    return render(request, "support_console/consultations/import2.html")
