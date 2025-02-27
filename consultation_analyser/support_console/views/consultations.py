@@ -81,7 +81,7 @@ def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
         messages.success(request, "Consultations imported")
 
         return redirect("/support/consultations/")
-    return render(request, "support_console/consultations/import.html")
+    return render(request, "support_console/consultations/import_xlsx.html")
 
 
 def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
@@ -112,5 +112,4 @@ def import_theme_mapping(request: HttpRequest) -> HttpResponse:
         s3_key = request.POST.get("s3_key")
         import_themefinder_data_for_question_part(s3_key)
         return redirect("/support/consultations/")
-    # TODO - obviously change name of template!
-    return render(request, "support_console/consultations/import2.html")
+    return render(request, "support_console/consultations/import.html")
