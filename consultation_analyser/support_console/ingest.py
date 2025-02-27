@@ -1,4 +1,5 @@
 import json
+import logging
 
 import boto3
 from django.conf import settings
@@ -8,12 +9,16 @@ from consultation_analyser.consultations.models import (
     Consultation,
     ExecutionRun,
     Framework,
+    Question,
     QuestionPart,
     Respondent,
     SentimentMapping,
     Theme,
     ThemeMapping,
 )
+
+logger = logging.getLogger("import")
+
 
 STANCE_MAPPING = {
     "POSITIVE": ThemeMapping.Stance.POSITIVE,
@@ -57,7 +62,7 @@ def get_themefinder_outputs_for_question(key: str) -> dict:
 
 def import_themes(question_part: QuestionPart, theme_data: dict) -> Framework:
     theme_generation_execution_run = ExecutionRun.objects.create(
-        question_part=question_part, execution_type=ExecutionRun.TaskType.THEME_GENERATION
+        type=ExecutionRun.TaskType.THEME_GENERATION
     )
     framework = Framework.create_initial_framework(
         question_part=question_part, execution_run=theme_generation_execution_run
@@ -80,28 +85,30 @@ def import_theme_mapping_and_responses(
     mapping_execution_run: ExecutionRun,
     theme_mapping_dict: dict,
 ) -> None:
+    # TODO - check unique IDs
     question_part = framework.question_part
     consultation = question_part.question.consultation
 
     # Create respondent if doesn't exist, then create answer
-    respondent_id = theme_mapping_dict["respondent_id"]
-    respondent = Respondent.get_or_create(consultation=consultation, respondent_id=respondent_id)
+    response_id = theme_mapping_dict["response_id"]
+    respondent, _ = Respondent.objects.get_or_create(
+        consultation=consultation, themefinder_respondent_id=response_id
+    )
 
     # Create the answer
     # TODO -  we should change the output format in themefinder
     # At the moment it is of the form `question_0`
-    keys = [value for key, value in theme_mapping_dict.items() if key.startswith("question_")]
+    keys = [key for key in theme_mapping_dict.keys() if key.startswith("question_")]
     relevant_key = keys[0]  # Can assume just one
     text = theme_mapping_dict[relevant_key]
-    answer = Answer(question_part=question_part, respondent=respondent, text=text)
+    answer = Answer.objects.create(question_part=question_part, respondent=respondent, text=text)
 
     # Then add the sentiment to the answer
     raw_position = theme_mapping_dict["position"]
     position = SENTIMENT_MAPPING.get(raw_position, "")
-    sentiment = SentimentMapping(
+    SentimentMapping.objects.create(
         answer=answer, position=position, execution_run=sentiment_execution_run
     )
-    sentiment.save()
 
     # Then map the themes to the answer
     reasons = theme_mapping_dict["reasons"]
@@ -122,11 +129,9 @@ def import_theme_mapping_and_responses(
 
 def import_theme_mappings_for_framework(framework: Framework, list_mappings: list[dict]) -> None:
     sentiment_execution_run = ExecutionRun.objects.create(
-        question_part=framework.question_part, execution_type=ExecutionRun.TaskType.SENTIMENT
+        type=ExecutionRun.TaskType.SENTIMENT_ANALYSIS
     )
-    mapping_execution_run = ExecutionRun.objects.create(
-        question_part=framework.question_part, execution_type=ExecutionRun.TaskType.MAPPING
-    )
+    mapping_execution_run = ExecutionRun.objects.create(type=ExecutionRun.TaskType.THEME_MAPPING)
     for theme_mapping_dict in list_mappings:
         import_theme_mapping_and_responses(
             framework=framework,
@@ -138,18 +143,21 @@ def import_theme_mappings_for_framework(framework: Framework, list_mappings: lis
 
 # TODO - will change this to pass in a consultation
 # This does it for one question
+# TODO - key of form
+# app_data/<consultation_folder>/<timestamped_folder>/question_n/something.json
 def import_themefinder_data_for_question_part(key: str) -> None:
-    # TODO - check for different IDs
-    consultation = Consultation(title="MY IMPORT")
+    # TODO - check for different IDs
+    consultation = Consultation.objects.create(title="MY IMPORT")
     data = get_themefinder_outputs_for_question(key)
-    question_text = data["question_text"]
-    # TODO - is this in the question part
+    question_text = data["question"]
+
+    # TODO - think about where to store text - in Question or QuestionPart
     # Put it in the new question for now
-    question = consultation.questions.create(text=question_text)
-    question_part = question.parts.create(text="")
+    question = Question.objects.create(consultation=consultation, text=question_text)
+    question_part = QuestionPart.objects.create(text="", question=question)
 
     # Now import themes
-    refined_themes = data["refined_themes"]
+    refined_themes = data["refined_themes"][0]
     framework = import_themes(question_part=question_part, theme_data=refined_themes)
 
     # Then map the themes
