@@ -9,11 +9,16 @@
     <div class="govuk-grid-column-two-thirds">
       <h1 class="govuk-heading-l">{{ page_title }}</h1>
         <p class="govuk-body">
-          <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
-            View on frontend
+          <a href="{{ url('review_free_text_questions', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
+            View on frontend (question review)
           </a>
         </p>
 
+        <p class="govuk-body">
+          <a href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-link govuk-body govuk-link--no-visited-state">
+            View on frontend (dashboard)
+          </a>
+        </p>
 
         <p class="govuk-body">
           <a href="{{ url('export_consultation_theme_audit', kwargs={'consultation_id': consultation.id}) }}" class="govuk-link govuk-body">
