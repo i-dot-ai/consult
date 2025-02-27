@@ -1,10 +1,11 @@
-import csv
-from unittest.mock import patch
+# TODO - needed for fixing broken test below
+# import csv
+# from unittest.mock import patch
 
-import pytest
-from django.urls import reverse
+# import pytest
+# from django.urls import reverse
 
-from consultation_analyser import factories
+# from consultation_analyser import factories
 from consultation_analyser.consultations import models
 from tests.helpers import sign_in
 
