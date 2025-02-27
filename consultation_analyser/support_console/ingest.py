@@ -5,6 +5,7 @@ from django.conf import settings
 
 from consultation_analyser.consultations.models import (
     Answer,
+    Consultation,
     ExecutionRun,
     Framework,
     QuestionPart,
@@ -12,7 +13,6 @@ from consultation_analyser.consultations.models import (
     SentimentMapping,
     Theme,
     ThemeMapping,
-    Consultation
 )
 
 STANCE_MAPPING = {
@@ -55,7 +55,7 @@ def get_themefinder_outputs_for_question(key: str) -> dict:
     return json.loads(response["Body"].read())
 
 
-def import_question_themes(question_part: QuestionPart, theme_data: dict) -> Framework:
+def import_themes(question_part: QuestionPart, theme_data: dict) -> Framework:
     theme_generation_execution_run = ExecutionRun.objects.create(
         question_part=question_part, execution_type=ExecutionRun.TaskType.THEME_GENERATION
     )
@@ -120,9 +120,7 @@ def import_theme_mapping_and_responses(
         ).save()
 
 
-def import_theme_mappings_for_framework(
-    framework: Framework, list_mappings: list[dict]
-) -> None:
+def import_theme_mappings_for_framework(framework: Framework, list_mappings: list[dict]) -> None:
     sentiment_execution_run = ExecutionRun.objects.create(
         question_part=framework.question_part, execution_type=ExecutionRun.TaskType.SENTIMENT
     )
@@ -139,9 +137,20 @@ def import_theme_mappings_for_framework(
 
 
 # TODO - will change this to pass in a consultation
+# This does it for one question
 def import_themefinder_data_for_evaluation(key: str) -> None:
     consultation = Consultation(title="MY IMPORT")
     data = get_themefinder_outputs_for_question(key)
     question_text = data["question_text"]
+    # TODO - is this in the question part
+    # Put it in the new question for now
+    question = consultation.questions.create(text=question_text)
+    question_part = question.parts.create(text="")
 
+    # Now import themes
+    refined_themes = data["refined_themes"]
+    framework = import_themes(question_part=question_part, theme_data=refined_themes)
 
+    # Then map the themes
+    list_theme_mappings = data["mapping"]
+    import_theme_mappings_for_framework(framework, list_theme_mappings)
