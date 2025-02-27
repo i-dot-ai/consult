@@ -12,6 +12,7 @@ from consultation_analyser.consultations.models import (
     SentimentMapping,
     Theme,
     ThemeMapping,
+    Consultation
 )
 
 STANCE_MAPPING = {
@@ -119,7 +120,7 @@ def import_theme_mapping_and_responses(
         ).save()
 
 
-def import_theme_mappings_for_question_part(
+def import_theme_mappings_for_framework(
     framework: Framework, list_mappings: list[dict]
 ) -> None:
     sentiment_execution_run = ExecutionRun.objects.create(
@@ -136,5 +137,11 @@ def import_theme_mappings_for_question_part(
             theme_mapping_dict=theme_mapping_dict,
         )
 
+
+# TODO - will change this to pass in a consultation
+def import_themefinder_data_for_evaluation(key: str) -> None:
+    consultation = Consultation(title="MY IMPORT")
+    data = get_themefinder_outputs_for_question(key)
+    question_text = data["question_text"]
 
 
