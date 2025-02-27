@@ -152,14 +152,13 @@ def import_themefinder_data_for_question_part(key: str) -> None:
     question_text = data["question"]
 
     # TODO - think about where to store text - in Question or QuestionPart
-    # Put it in the new question for now
+    # In question for now
     question = Question.objects.create(consultation=consultation, text=question_text)
-    question_part = QuestionPart.objects.create(text="", question=question)
+    question_part = QuestionPart.objects.create(
+        text="", question=question, type=QuestionPart.QuestionType.FREE_TEXT
+    )
 
-    # Now import themes
     refined_themes = data["refined_themes"][0]
     framework = import_themes(question_part=question_part, theme_data=refined_themes)
-
-    # Then map the themes
     list_theme_mappings = data["mapping"]
     import_theme_mappings_for_framework(framework, list_theme_mappings)
