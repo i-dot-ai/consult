@@ -7,7 +7,6 @@
 
 # from consultation_analyser import factories
 from consultation_analyser.consultations import models
-from tests.helpers import sign_in
 
 
 def get_sorted_theme_string(themes: list[models.Theme]) -> str:
