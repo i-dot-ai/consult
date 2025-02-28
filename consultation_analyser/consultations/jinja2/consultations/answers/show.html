@@ -10,7 +10,9 @@
   <div class="govuk-grid-row govuk-!-margin-top-5">
     <div class="iai-panel govuk-grid-column-one-half govuk-!-margin-bottom-4 iai-grid-column-one-half response-theme-review-one-half">
       <h1 class="govuk-heading-s">
-        Question {{question.number}}: {{ question.text }}
+        Question {{question.number}}:
+        <br>
+        {{ question.text }}
       </h1>
       {% if response.question_part.text %}
         <h2 class="govuk-body-s govuk-!-font-weight-regular">
@@ -20,8 +22,10 @@
 
       <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
-      <p style="line-height: 2em" class="govuk-body" id="text">
-        Response{% if response.respondent.themefinder_respondent_id %} {{response.respondent.themefinder_respondent_id}}{% endif %}: {{ response.text }}
+      <p class="govuk-body" id="text">
+        Response{% if response.respondent.themefinder_respondent_id %} {{response.respondent.themefinder_respondent_id}}{% endif %}:
+        <br>
+        {{ response.text }}
       </p>
       
     </div>
