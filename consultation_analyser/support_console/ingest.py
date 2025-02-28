@@ -78,10 +78,7 @@ def get_theme_for_key(framework: Framework, key: str) -> Theme:
 def create_answer_from_dict(
     theme_mapping_dict: dict, question_part: QuestionPart, respondent: Respondent
 ) -> Answer:
-    # TODO -  we should change the output format in themefinder - at the mo, of the form `question_0`
-    keys = [key for key in theme_mapping_dict.keys() if key.startswith("question_")]
-    relevant_key = keys[0]  # Can assume just one
-    text = theme_mapping_dict[relevant_key]
+    text = theme_mapping_dict["response"]
     answer = Answer.objects.create(question_part=question_part, respondent=respondent, text=text)
     return answer
 
