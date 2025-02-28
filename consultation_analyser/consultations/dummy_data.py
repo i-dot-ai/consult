@@ -38,7 +38,10 @@ def create_dummy_consultation_from_yaml(
 
     if not consultation:
         consultation = ConsultationFactory()
-    respondents = [RespondentFactory(consultation=consultation) for _ in range(number_respondents)]
+    respondents = [
+        RespondentFactory(consultation=consultation, themefinder_respondent_id=i + 1)
+        for i in range(number_respondents)
+    ]
 
     with open(file_path, "r") as file:
         questions_data = yaml.safe_load(file)

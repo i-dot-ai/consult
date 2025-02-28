@@ -72,8 +72,8 @@ def test_import_question():
     command = Command()
     consultation = ConsultationFactory()
 
-    for _ in range(5):
-        RespondentFactory(consultation=consultation)
+    for i in range(5):
+        RespondentFactory(consultation=consultation, themefinder_respondent_id=i + 1)
 
     command.import_question(999, consultation)
 
@@ -85,9 +85,9 @@ def test_import_question():
     )
 
     assert consultation.question_set.count() == 1
-    assert Answer.objects.filter(question_part=free_text_qp).count() == 5
+    assert Answer.objects.filter(question_part=free_text_qp).count() == 3
     assert (
-        Answer.objects.filter(question_part=multiple_choice_qp).count() == 2
+        Answer.objects.filter(question_part=multiple_choice_qp).count() == 1
     )  # Not all respondents have mande a choice
 
     free_text_answer = Answer.objects.filter(question_part=free_text_qp).first()

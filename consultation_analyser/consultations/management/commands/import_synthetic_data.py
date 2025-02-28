@@ -66,17 +66,27 @@ class Command(BaseCommand):
                 options=json.dumps(question_data["multiple_choice"][0]["options"]),
             )
 
-        respondents = models.Respondent.objects.filter(consultation=consultation)
+        # respondents = models.Respondent.objects.filter(consultation=consultation)
         with open(f"synthetic_data/question_{index}/responses.json") as f:
             responses = json.load(f)
 
         for i, response in enumerate(responses):
             self.stdout.write(f"Creating responses for {i}")
+
+            respondent = models.Respondent.objects.get(
+                consultation=consultation,
+                themefinder_respondent_id=(response["response_id"] + 1),
+            )
+
+            if models.Answer.objects.filter(
+                respondent=respondent, question_part__question=question
+            ).exists():
+                continue
             if response.get("free_text"):
                 self.stdout.write(f"Creating free-text response for {i}")
                 answer = models.Answer.objects.create(
                     question_part=free_text_qp,
-                    respondent=respondents[i],
+                    respondent=respondent,
                     text=response["free_text"],
                 )
 
@@ -116,7 +126,7 @@ class Command(BaseCommand):
                 self.stdout.write(f"Creating multiple choice response for {i}")
                 models.Answer.objects.create(
                     question_part=multi_choice_qp,
-                    respondent=respondents[i],
+                    respondent=respondent,
                     chosen_options=[response["multiple_choice_option"]],
                 )
 
@@ -130,8 +140,15 @@ class Command(BaseCommand):
             responses = json.load(f)
 
         for response in responses:
+            if models.Respondent.objects.filter(
+                consultation=consultation,
+                themefinder_respondent_id=(response["response_id"] + 1),
+            ).exists():
+                continue
+
             models.Respondent.objects.create(
                 consultation=consultation,
+                themefinder_respondent_id=(response["response_id"] + 1),
                 data=json.dumps(
                     {
                         "individual": response["demographic_individual"],
