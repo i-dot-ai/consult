@@ -97,6 +97,48 @@ def mapping():
     return mapping
 
 
+@pytest.fixture
+def refined_themes2():
+    refined_themes = [
+        {
+            "A": "Theme A: hello.",
+            "B": "Theme B: hello again.",
+            "E": "No theme: whatever the description of no theme is",
+        }
+    ]
+    return refined_themes
+
+
+@pytest.fixture
+def mapping2():
+    mapping = [
+        {
+            "response_id": 0,
+            "response": "Response 0.",
+            "position": "agreement",
+            "reasons": [
+                "Reason 0.",
+            ],
+            "labels": [
+                "A",
+            ],
+            "stances": [
+                "POSITIVE",
+            ],
+        },
+        {
+            "response_id": 6,
+            "response": "Response 6",
+            "position": "disagreement",
+            "reasons": [
+                "Reason 6",
+            ],
+            "labels": ["B"],
+            "stances": ["NEGATIVE"],
+        }
+    ]
+    return mapping
+
 
 @pytest.mark.django_db
 def test_import_themes(refined_themes):
@@ -157,3 +199,21 @@ def test_import_theme_mappings_for_framework(refined_themes, mapping):
     theme_e_mapping = theme_mappings5.get(theme__key="E")
     assert not theme_e_mapping.stance
     assert theme_e_mapping.reason == "Response is too short"
+
+
+@pytest.mark.django_db
+def test_importing_for_different_questions(refined_themes, refined_themes2, mapping, mapping2):
+    consultation = factories.ConsultationFactory()
+    question1 = factories.QuestionFactory(consultation=consultation)
+    question2 = factories.QuestionFactory(consultation=consultation)
+    question_part1 = factories.FreeTextQuestionPartFactory(question=question1)
+    question_part2 = factories.FreeTextQuestionPartFactory(question=question2)
+
+    framework1 = import_themes(question_part=question_part1, theme_data=refined_themes[0])
+    framework2 = import_themes(question_part=question_part2, theme_data=refined_themes2[0])
+    import_theme_mappings_for_framework(framework=framework1, list_mappings=mapping)
+    import_theme_mappings_for_framework(framework=framework2, list_mappings=mapping2)
+
+    assert Respondent.objects.filter(consultation=consultation).count() == 7
+    assert Respondent.objects.filter(consultation=consultation).filter(themefinder_respondent_id=6).exists()
+    assert Answer.objects.filter(question_part=question_part2).count() == 2
