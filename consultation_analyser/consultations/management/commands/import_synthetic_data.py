@@ -63,7 +63,7 @@ class Command(BaseCommand):
                 number=1 if question_data["has_free_text"] else 0,
                 type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS,
                 # The synthetic data only has one multiple choice set
-                options=json.dumps(question_data["multiple_choice"][0]["options"]),
+                options=question_data["multiple_choice"][0]["options"],
             )
 
         # respondents = models.Respondent.objects.filter(consultation=consultation)

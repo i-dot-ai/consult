@@ -115,7 +115,8 @@ def create_dummy_consultation_from_yaml(
                         question_part=question_part, text=text, respondent=respondent
                     )
                 elif question_part_type == models.QuestionPart.QuestionType.SINGLE_OPTION:
-                    chosen_options = random.choice(part["options"])
+                    chosen_option = random.choice(part["options"])
+                    chosen_options = [chosen_option]
                     text = ""
                     answer = SingleOptionAnswerFactory(
                         question_part=question_part,
