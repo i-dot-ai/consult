@@ -160,7 +160,6 @@ def import_theme_mappings_for_framework(framework: Framework, list_mappings: lis
 def import_themefinder_data_for_question_part(
     consultation: Consultation, question_number: int, key: str
 ) -> None:
-    # TODO - check for different IDs
     data = get_themefinder_outputs_for_question(key)
     question_text = data["question"]
 
