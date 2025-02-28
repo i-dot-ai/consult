@@ -48,11 +48,18 @@ def get_all_themefinder_output_files_within_folder(folder_name: str, bucket_name
     return suitable_outputs
 
 
-def get_themefinder_outputs_for_question(key: str) -> dict:
+def get_themefinder_outputs_for_question_old(key: str) -> dict:
     s3 = boto3.client(
         "s3",
     )
     response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=key)
+    return json.loads(response["Body"].read())
+
+
+def get_themefinder_outputs_for_question(question_folder_key: str, output_name: str) -> list[dict]:
+    data_key = f"{question_folder_key}/{output_name}.json"
+    s3 = boto3.client("s3")
+    response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=data_key)
     return json.loads(response["Body"].read())
 
 
@@ -157,7 +164,7 @@ def import_theme_mappings_for_framework(framework: Framework, list_mappings: lis
 def import_themefinder_data_for_question_part(
     consultation: Consultation, question_number: int, key: str
 ) -> None:
-    data = get_themefinder_outputs_for_question(key)
+    data = get_themefinder_outputs_for_question_old(key)
     question_text = data["question"]
 
     # TODO - think about where to store text - in Question or QuestionPart - in question for now

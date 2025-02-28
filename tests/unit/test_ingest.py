@@ -1,8 +1,24 @@
-import pytest
+import json
 
-from consultation_analyser.support_console.ingest import import_themes, import_theme_mappings_for_framework
+import boto3
+import pytest
+from django.conf import settings
+from moto import mock_aws
+
 from consultation_analyser import factories
-from consultation_analyser.consultations.models import Consultation, QuestionPart, Theme, ExecutionRun, Framework, ThemeMapping, Answer, Respondent, SentimentMapping
+from consultation_analyser.consultations.models import (
+    Answer,
+    ExecutionRun,
+    Respondent,
+    SentimentMapping,
+    Theme,
+    ThemeMapping,
+)
+from consultation_analyser.support_console.ingest import (
+    get_themefinder_outputs_for_question,
+    import_theme_mappings_for_framework,
+    import_themes,
+)
 
 
 @pytest.fixture
@@ -135,9 +151,31 @@ def mapping2():
             ],
             "labels": ["B"],
             "stances": ["NEGATIVE"],
-        }
+        },
     ]
     return mapping
+
+
+@pytest.fixture
+def mock_s3_bucket():
+    with mock_aws():
+        conn = boto3.resource("s3", region_name="us-east-1")
+        bucket_name = "test-bucket"
+        conn.create_bucket(Bucket=bucket_name)
+        yield bucket_name
+
+
+@pytest.fixture
+def mock_s3_objects(mock_s3_bucket, mapping, mapping2, refined_themes, refined_themes2):
+    conn = boto3.resource("s3", region_name="us-east-1")
+    conn.Object(mock_s3_bucket, "folder/question_0/mapping.json").put(Body=json.dumps(mapping))
+    conn.Object(mock_s3_bucket, "folder/question_0/refined_themes.json").put(
+        Body=json.dumps(refined_themes)
+    )
+    conn.Object(mock_s3_bucket, "folder/question_1/mapping.json").put(Body=json.dumps(mapping2))
+    conn.Object(mock_s3_bucket, "folder/question_1/refined_themes.json").put(
+        Body=json.dumps(refined_themes2)
+    )
 
 
 @pytest.mark.django_db
@@ -149,7 +187,10 @@ def test_import_themes(refined_themes):
     assert imported_themes.count() == 5
     theme_a = imported_themes.get(key="A")
     assert theme_a.name == "Fair Trade Certification"
-    assert theme_a.description == "Ensuring ethical sourcing and supporting sustainable farming practises by requiring fair trade certification for all chocolate products."
+    assert (
+        theme_a.description
+        == "Ensuring ethical sourcing and supporting sustainable farming practises by requiring fair trade certification for all chocolate products."
+    )
     assert {"A", "B", "C", "D", "E"} == set(imported_themes.values_list("key", flat=True))
     # Framework generated for themes, has the right type of execution run
     framework = theme_a.framework
@@ -182,10 +223,16 @@ def test_import_theme_mappings_for_framework(refined_themes, mapping):
     theme_mappings2 = theme_mappings.filter(answer=answer2)
     assert theme_mappings2.count() == 2
     theme_a_mapping = theme_mappings2.get(theme__key="A")
-    assert theme_a_mapping.reason == "The response highlights the potential benefits of fair trade certification for cocoa farmers and the environment."
+    assert (
+        theme_a_mapping.reason
+        == "The response highlights the potential benefits of fair trade certification for cocoa farmers and the environment."
+    )
     assert theme_a_mapping.stance == ThemeMapping.Stance.POSITIVE
     theme_c_mapping = theme_mappings2.get(theme__key="C")
-    assert theme_c_mapping.reason == "It also suggests that fair trade certification could enhance consumer confidence in chocolate products."
+    assert (
+        theme_c_mapping.reason
+        == "It also suggests that fair trade certification could enhance consumer confidence in chocolate products."
+    )
     assert theme_c_mapping.stance == ThemeMapping.Stance.NEGATIVE
 
     # Now check response 5 has been imported correctly
@@ -215,5 +262,21 @@ def test_importing_for_different_questions(refined_themes, refined_themes2, mapp
     import_theme_mappings_for_framework(framework=framework2, list_mappings=mapping2)
 
     assert Respondent.objects.filter(consultation=consultation).count() == 7
-    assert Respondent.objects.filter(consultation=consultation).filter(themefinder_respondent_id=6).exists()
+    assert (
+        Respondent.objects.filter(consultation=consultation)
+        .filter(themefinder_respondent_id=6)
+        .exists()
+    )
     assert Answer.objects.filter(question_part=question_part2).count() == 2
+
+
+def test_get_themefinder_outputs_for_question(mock_s3_objects, monkeypatch):
+    monkeypatch.setattr(settings, "AWS_BUCKET_NAME", "test-bucket")
+    outputs = get_themefinder_outputs_for_question("folder/question_0", "mapping")
+    assert outputs[1].get("response_id") == 1
+    assert outputs[1].get("labels") == ["C", "D"]
+    outputs = get_themefinder_outputs_for_question("folder/question_0", "refined_themes")
+    assert len(outputs[0]) == 5
+    assert outputs[0]["A"].startswith("Fair Trade Certification")
+    outputs = get_themefinder_outputs_for_question("folder/question_1", "refined_themes")
+    assert len(outputs[0]) == 3
