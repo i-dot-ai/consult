@@ -9,10 +9,21 @@
 <form method="post" enctype="multipart/form-data" novalidate>{{ csrf_input }}
   <div class="govuk-form-group">
     <p class="govuk-label-wrapper">
-      <label class="govuk-label govuk-label--l" for="s3_key">
-        Where is the file located?
+      <label class="govuk-label govuk-label--l" for="consultation_name">
+        Consultation name
       </label>
-      <input class="govuk-input" id="s3_key" name="s3_key" type="text">
+      <input class="govuk-input" id="consultation_name" name="consultation_name" type="text" required>
+    </p>
+  </div>
+  <div class="govuk-form-group">
+    <p class="govuk-label-wrapper">
+      <label class="govuk-label govuk-label--l" for="path">
+        Where are the outputs located?
+      </label>
+      <div id="s3_key-hint" class="govuk-hint iai-hint">
+        The outputs will be saved in: {{ bucket_name }}/[YOUR PATH]/ eg {{ bucket_name }}/[CONSULTATION_ID]/06_02_2025_theme_generation/
+      </div>
+      <input class="govuk-input" id="path" name="path" type="text">
     </p>
   </div>
   {{ govukButton({
