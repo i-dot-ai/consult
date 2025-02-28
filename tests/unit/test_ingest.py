@@ -8,7 +8,11 @@ from moto import mock_aws
 from consultation_analyser import factories
 from consultation_analyser.consultations.models import (
     Answer,
+    Consultation,
     ExecutionRun,
+    Framework,
+    Question,
+    QuestionPart,
     Respondent,
     SentimentMapping,
     Theme,
@@ -16,6 +20,7 @@ from consultation_analyser.consultations.models import (
 )
 from consultation_analyser.support_console.ingest import (
     get_themefinder_outputs_for_question,
+    import_all_questions_for_consultation,
     import_theme_mappings_for_framework,
     import_themes,
 )
@@ -168,12 +173,18 @@ def mock_s3_bucket():
 @pytest.fixture
 def mock_s3_objects(mock_s3_bucket, mapping, mapping2, refined_themes, refined_themes2):
     conn = boto3.resource("s3", region_name="us-east-1")
+    conn.Object(mock_s3_bucket, "folder/question_0/question.json").put(
+        Body=json.dumps({"question": "What do you think?"})
+    )
     conn.Object(mock_s3_bucket, "folder/question_0/mapping.json").put(Body=json.dumps(mapping))
-    conn.Object(mock_s3_bucket, "folder/question_0/refined_themes.json").put(
+    conn.Object(mock_s3_bucket, "folder/question_0/themes.json").put(
         Body=json.dumps(refined_themes)
     )
+    conn.Object(mock_s3_bucket, "folder/question_1/question.json").put(
+        Body=json.dumps({"question": "What do you think this time?"})
+    )
     conn.Object(mock_s3_bucket, "folder/question_1/mapping.json").put(Body=json.dumps(mapping2))
-    conn.Object(mock_s3_bucket, "folder/question_1/refined_themes.json").put(
+    conn.Object(mock_s3_bucket, "folder/question_1/themes.json").put(
         Body=json.dumps(refined_themes2)
     )
 
@@ -272,11 +283,40 @@ def test_importing_for_different_questions(refined_themes, refined_themes2, mapp
 
 def test_get_themefinder_outputs_for_question(mock_s3_objects, monkeypatch):
     monkeypatch.setattr(settings, "AWS_BUCKET_NAME", "test-bucket")
-    outputs = get_themefinder_outputs_for_question("folder/question_0", "mapping")
+    outputs = get_themefinder_outputs_for_question("folder/question_0/", "question")
+    assert outputs.get("question") == "What do you think?"
+    outputs = get_themefinder_outputs_for_question("folder/question_0/", "mapping")
     assert outputs[1].get("response_id") == 1
     assert outputs[1].get("labels") == ["C", "D"]
-    outputs = get_themefinder_outputs_for_question("folder/question_0", "refined_themes")
+    outputs = get_themefinder_outputs_for_question("folder/question_0/", "themes")
     assert len(outputs[0]) == 5
     assert outputs[0]["A"].startswith("Fair Trade Certification")
-    outputs = get_themefinder_outputs_for_question("folder/question_1", "refined_themes")
+    outputs = get_themefinder_outputs_for_question("folder/question_1/", "themes")
     assert len(outputs[0]) == 3
+
+
+@pytest.mark.django_db
+def test_import_all_questions_for_consultation(mock_s3_objects, monkeypatch):
+    monkeypatch.setattr(settings, "AWS_BUCKET_NAME", "test-bucket")
+    consultation_title = "My first consultation"
+    folder_name = "folder"
+
+    import_all_questions_for_consultation(consultation_title, folder_name)
+    consultation = Consultation.objects.get(title=consultation_title)
+    questions = Question.objects.filter(consultation=consultation)
+    assert questions.count() == 2
+    assert questions[0].number == 1
+
+    # Has the first question imported properly?
+    question_part = QuestionPart.objects.get(question=questions[0])
+    answers = Answer.objects.filter(question_part=question_part)
+    assert answers.count() == 6
+    framework = Framework.objects.filter(question_part=question_part).first()
+    assert Theme.objects.filter(framework=framework).count() == 5
+
+    # Has the second question imported properly?
+    question_part = QuestionPart.objects.get(question=questions[1])
+    answers = Answer.objects.filter(question_part=question_part)
+    assert answers.count() == 2
+    framework = Framework.objects.filter(question_part=question_part).first()
+    assert Theme.objects.filter(framework=framework).count() == 3
