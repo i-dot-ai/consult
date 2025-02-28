@@ -109,7 +109,9 @@ def import_theme_mapping(request: HttpRequest) -> HttpResponse:
     if request.POST:
         consultation_name = request.POST.get("consultation_name")
         path_to_outputs = request.POST.get("path")
-        import_all_questions_for_consultation(consultation_title=consultation_name, folder_name=path_to_outputs)
+        import_all_questions_for_consultation(
+            consultation_title=consultation_name, folder_name=path_to_outputs
+        )
         return redirect("/support/consultations/")
     context = {"bucket_name": settings.AWS_BUCKET_NAME}
     return render(request, "support_console/consultations/import.html", context=context)
