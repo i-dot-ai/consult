@@ -75,6 +75,39 @@ def get_theme_for_key(framework: Framework, key: str) -> Theme:
     return Theme.objects.get(framework=framework, key=key)
 
 
+def create_answer_from_dict(
+    theme_mapping_dict: dict, question_part: QuestionPart, respondent: Respondent
+) -> Answer:
+    # TODO -  we should change the output format in themefinder - at the mo, of the form `question_0`
+    keys = [key for key in theme_mapping_dict.keys() if key.startswith("question_")]
+    relevant_key = keys[0]  # Can assume just one
+    text = theme_mapping_dict[relevant_key]
+    answer = Answer.objects.create(question_part=question_part, respondent=respondent, text=text)
+    return answer
+
+
+def map_themes_to_answer(
+    answer: Answer,
+    theme_mapping_dict: dict,
+    framework: Framework,
+    mapping_execution_run: ExecutionRun,
+) -> None:
+    reasons = theme_mapping_dict["reasons"]
+    labels = theme_mapping_dict["labels"]
+    stances = theme_mapping_dict["stances"]
+
+    for reason, label, raw_stance in zip(reasons, labels, stances):
+        theme = get_theme_for_key(framework, label)
+        stance = STANCE_MAPPING.get(raw_stance, "")
+        ThemeMapping(
+            answer=answer,
+            theme=theme,
+            reason=reason,
+            stance=stance,
+            execution_run=mapping_execution_run,
+        ).save()
+
+
 def import_theme_mapping_and_responses(
     framework: Framework,
     sentiment_execution_run: ExecutionRun,
@@ -90,36 +123,24 @@ def import_theme_mapping_and_responses(
     respondent, _ = Respondent.objects.get_or_create(
         consultation=consultation, themefinder_respondent_id=response_id
     )
+    answer = create_answer_from_dict(
+        theme_mapping_dict=theme_mapping_dict, question_part=question_part, respondent=respondent
+    )
 
-    # Create the answer
-    # TODO -  we should change the output format in themefinder - at the mo, of the form `question_0`
-    keys = [key for key in theme_mapping_dict.keys() if key.startswith("question_")]
-    relevant_key = keys[0]  # Can assume just one
-    text = theme_mapping_dict[relevant_key]
-    answer = Answer.objects.create(question_part=question_part, respondent=respondent, text=text)
-
-    # Then add the sentiment to the answer
+    # Add sentiment to answer
     raw_position = theme_mapping_dict["position"]
     position = SENTIMENT_MAPPING.get(raw_position, "")
     SentimentMapping.objects.create(
         answer=answer, position=position, execution_run=sentiment_execution_run
     )
 
-    # Then map the themes to the answer
-    reasons = theme_mapping_dict["reasons"]
-    labels = theme_mapping_dict["labels"]
-    stances = theme_mapping_dict["stances"]
-
-    for reason, label, raw_stance in zip(reasons, labels, stances):
-        theme = get_theme_for_key(framework, label)
-        stance = STANCE_MAPPING.get(raw_stance, "")
-        ThemeMapping(
-            answer=answer,
-            theme=theme,
-            reason=reason,
-            stance=stance,
-            execution_run=mapping_execution_run,
-        ).save()
+    # And map the themes
+    map_themes_to_answer(
+        answer=answer,
+        theme_mapping_dict=theme_mapping_dict,
+        framework=framework,
+        mapping_execution_run=mapping_execution_run,
+    )
 
 
 def import_theme_mappings_for_framework(framework: Framework, list_mappings: list[dict]) -> None:
