@@ -11,8 +11,6 @@ from consultation_analyser.consultations.dummy_data import create_dummy_consulta
 from consultation_analyser.consultations.export_user_theme import export_user_theme
 from consultation_analyser.hosting_environment import HostingEnvironment
 
-NO_SUMMARY_STR = "Unable to generate summary for this theme"
-
 
 def index(request: HttpRequest) -> HttpResponse:
     if request.POST:
@@ -45,20 +43,6 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
             return redirect("/support/consultations/")
 
     return render(request, "support_console/consultations/delete.html", context=context)
-
-
-def get_number_themes_for_processing_run(processing_run):
-    """
-    Get total themes for processing run.
-    If processing_run not specified, get the latest processing run if exists.
-    """
-    if not processing_run:
-        return 0, 0
-    total_themes = processing_run.themes.count()
-    total_with_summaries = (
-        processing_run.themes.exclude(summary="").exclude(summary=NO_SUMMARY_STR).count()
-    )
-    return total_themes, total_with_summaries
 
 
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
