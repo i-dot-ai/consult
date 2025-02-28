@@ -32,32 +32,25 @@ SENTIMENT_MAPPING = {
 }
 
 
-def get_all_themefinder_output_files_within_folder(folder_name: str, bucket_name: str) -> list:
-    """
-    Assume they are of the form `x.json` for n an integer.
-    In a folder called `question_n`.
-    """
+def get_all_question_subfolders(folder_name: str, bucket_name: str) -> list:
     s3 = boto3.resource("s3")
     objects = s3.Bucket(bucket_name).objects.filter(Prefix=folder_name)
-    set_object_names = [obj.key for obj in objects]
-    json_files_only = [name for name in set_object_names if name.endswith(".json")]
-    # Check they are in a questions_folder
-    suitable_outputs = [
-        name for name in json_files_only if name.split("/")[-2].startswith("question_")
-    ]
-    return suitable_outputs
+    object_names_set = {obj.key for obj in objects}
+    # Get set of all subfolders
+    subfolders = set()
+    for path in object_names_set:
+        folder = "/".join(path.split("/")[:-1]) + "/"
+        subfolders.add(folder)
+    # Only the ones that are question_folders
+    question_folders = [name for name in subfolders if name.split("/")[-2].startswith("question_")]
+    question_folders.sort()
+    return question_folders
 
 
-def get_themefinder_outputs_for_question_old(key: str) -> dict:
-    s3 = boto3.client(
-        "s3",
-    )
-    response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=key)
-    return json.loads(response["Body"].read())
-
-
-def get_themefinder_outputs_for_question(question_folder_key: str, output_name: str) -> list[dict]:
-    data_key = f"{question_folder_key}/{output_name}.json"
+def get_themefinder_outputs_for_question(
+    question_folder_key: str, output_name: str
+) -> dict | list[dict]:
+    data_key = f"{question_folder_key}{output_name}.json"
     s3 = boto3.client("s3")
     response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=data_key)
     return json.loads(response["Body"].read())
@@ -162,11 +155,18 @@ def import_theme_mappings_for_framework(framework: Framework, list_mappings: lis
 
 
 def import_themefinder_data_for_question_part(
-    consultation: Consultation, question_number: int, key: str
+    consultation: Consultation, question_number: int, question_folder: str
 ) -> None:
-    data = get_themefinder_outputs_for_question_old(key)
-    question_text = data["question"]
+    logger.info(f"Importing data for question {question_number}")
 
+    # Create question/question part
+    question_data = get_themefinder_outputs_for_question(
+        question_folder_key=question_folder, output_name="question"
+    )
+    if isinstance(question_data, dict):
+        question_text = question_data.get("question")
+    else:
+        raise ValueError("Expected a dictionary of question data")
     # TODO - think about where to store text - in Question or QuestionPart - in question for now
     question = Question.objects.create(
         consultation=consultation, text=question_text, number=question_number
@@ -175,7 +175,36 @@ def import_themefinder_data_for_question_part(
         text="", question=question, type=QuestionPart.QuestionType.FREE_TEXT
     )
 
-    refined_themes = data["refined_themes"][0]
-    framework = import_themes(question_part=question_part, theme_data=refined_themes)
-    list_theme_mappings = data["mapping"]
-    import_theme_mappings_for_framework(framework, list_theme_mappings)
+    # Import themes
+    themes = get_themefinder_outputs_for_question(
+        question_folder_key=question_folder, output_name="themes"
+    )
+    if isinstance(themes, list):
+        framework = import_themes(question_part=question_part, theme_data=themes[0])
+    else:
+        raise ValueError("Expected a list of themes")
+    logger.info(f"Imported themes for question {question_number}")
+
+    # Import responses and mappings
+    list_theme_mappings = get_themefinder_outputs_for_question(
+        question_folder_key=question_folder, output_name="mapping"
+    )
+    if isinstance(list_theme_mappings, list):
+        import_theme_mappings_for_framework(framework, list_theme_mappings)
+    else:
+        raise ValueError("Expected a list of dictionaries of theme mappings")
+    logger.info(f"Imported themes for question {question_number}")
+    logger.info(f"Imported data for question: {question.text}")
+
+
+def import_all_questions_for_consultation(consultation_title: str, folder_name: str) -> None:
+    # folder in S3 should contain folders named `question_n` for each question
+    consultation = Consultation.objects.create(title=consultation_title)
+    question_folders = get_all_question_subfolders(folder_name, settings.AWS_BUCKET_NAME)
+    for i in range(len(question_folders)):
+        question_folder = question_folders[i]
+        logger.info(f"Importing data from folder: {question_folder}")
+        import_themefinder_data_for_question_part(
+            consultation=consultation, question_number=(i + 1), question_folder=question_folder
+        )
+    logger.info(f"Imported all data for consultation: {consultation.title}")
