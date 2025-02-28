@@ -32,24 +32,20 @@ SENTIMENT_MAPPING = {
 }
 
 
-def get_all_folder_names_within_folder(folder_name: str, bucket_name: str) -> set:
+def get_all_themefinder_output_files_within_folder(folder_name: str, bucket_name: str) -> list:
+    """
+    Assume they are of the form `x.json` for n an integer.
+    In a folder called `question_n`.
+    """
     s3 = boto3.resource("s3")
     objects = s3.Bucket(bucket_name).objects.filter(Prefix=folder_name)
-    set_object_names = {obj.key for obj in objects}
-    # Folders end in slash
-    folders_only = {name for name in set_object_names if name.endswith("/")}
-    # Exclude the name for the folder itself
-    folder_names = {name.split("/")[1] for name in folders_only}
-    folder_names = folder_names - {""}
-    return folder_names
-
-
-def list_all_files_in_folder(folder_name: str, bucket_name: str) -> set:
-    s3 = boto3.resource("s3")
-    objects = s3.Bucket(bucket_name).objects.filter(Prefix=folder_name)
-    object_names = {obj.key for obj in objects}
-    files_only = {name for name in object_names if not name.endswith("/")}
-    return files_only
+    set_object_names = [obj.key for obj in objects]
+    json_files_only = [name for name in set_object_names if name.endswith(".json")]
+    # Check they are in a questions_folder
+    suitable_outputs = [
+        name for name in json_files_only if name.split("/")[-2].startswith("question_")
+    ]
+    return suitable_outputs
 
 
 def get_themefinder_outputs_for_question(key: str) -> dict:
@@ -96,8 +92,7 @@ def import_theme_mapping_and_responses(
     )
 
     # Create the answer
-    # TODO -  we should change the output format in themefinder
-    # At the moment it is of the form `question_0`
+    # TODO -  we should change the output format in themefinder - at the mo, of the form `question_0`
     keys = [key for key in theme_mapping_dict.keys() if key.startswith("question_")]
     relevant_key = keys[0]  # Can assume just one
     text = theme_mapping_dict[relevant_key]
@@ -141,19 +136,17 @@ def import_theme_mappings_for_framework(framework: Framework, list_mappings: lis
         )
 
 
-# TODO - will change this to pass in a consultation
-# This does it for one question
-# TODO - key of form
-# app_data/<consultation_folder>/<timestamped_folder>/question_n/something.json
-def import_themefinder_data_for_question_part(key: str) -> None:
+def import_themefinder_data_for_question_part(
+    consultation: Consultation, question_number: int, key: str
+) -> None:
     # TODO - check for different IDs
-    consultation = Consultation.objects.create(title="MY IMPORT")
     data = get_themefinder_outputs_for_question(key)
     question_text = data["question"]
 
-    # TODO - think about where to store text - in Question or QuestionPart
-    # In question for now
-    question = Question.objects.create(consultation=consultation, text=question_text)
+    # TODO - think about where to store text - in Question or QuestionPart - in question for now
+    question = Question.objects.create(
+        consultation=consultation, text=question_text, number=question_number
+    )
     question_part = QuestionPart.objects.create(
         text="", question=question, type=QuestionPart.QuestionType.FREE_TEXT
     )
