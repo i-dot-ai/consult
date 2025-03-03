@@ -9,12 +9,18 @@ from moto import mock_aws
 def refined_themes():
     refined_themes = [
         {
-            "A": "Fair Trade Certification: Ensuring ethical sourcing and supporting sustainable farming practises by requiring fair trade certification for all chocolate products.",
-            "B": "Sugar and Portion Sizing: Addressing public health concerns by reducing sugar content and implementing stricter portion size regulations for chocolate bars.",
-            "C": "Transparent Labelling: Improving transparency by mandating clear and comprehensive labelling of ingredients, nutritional information, and potential allergens.",
-            "D": "Environmental Impact: Introducing measures to minimise the environmental impact of chocolate production, such as reducing packaging waste and promoting eco-friendly practises.",
-            "E": "No theme: whatever the description of no theme is",
-        }
+            "A": "Fair Trade Certification: Ensuring ethical sourcing and supporting sustainable farming practises by requiring fair trade certification for all chocolate products."
+        },
+        {
+            "B": "Sugar and Portion Sizing: Addressing public health concerns by reducing sugar content and implementing stricter portion size regulations for chocolate bars."
+        },
+        {
+            "C": "Transparent Labelling: Improving transparency by mandating clear and comprehensive labelling of ingredients, nutritional information, and potential allergens."
+        },
+        {
+            "D": "Environmental Impact: Introducing measures to minimise the environmental impact of chocolate production, such as reducing packaging waste and promoting eco-friendly practises."
+        },
+        {"E": "No theme: whatever the description of no theme is"},
     ]
     return refined_themes
 
@@ -100,11 +106,9 @@ def mapping():
 @pytest.fixture
 def refined_themes2():
     refined_themes = [
-        {
-            "A": "Theme A: hello.",
-            "B": "Theme B: hello again.",
-            "E": "No theme: whatever the description of no theme is",
-        }
+        {"A": "Theme A: hello."},
+        {"B": "Theme B: hello again."},
+        {"E": "No theme: whatever the description of no theme is"},
     ]
     return refined_themes
 

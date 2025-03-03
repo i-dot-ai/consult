@@ -51,27 +51,37 @@ def get_themefinder_outputs_for_question(
     question_folder_key: str, output_name: str
 ) -> dict | list[dict]:
     data_key = f"{question_folder_key}{output_name}.json"
+    print(f"data_key: {data_key}")
     s3 = boto3.client("s3")
     response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=data_key)
     return json.loads(response["Body"].read())
 
 
-def import_themes(question_part: QuestionPart, theme_data: dict) -> Framework:
+def import_themes(question_part: QuestionPart, theme_data: list[dict]) -> Framework:
+    print(f"themedata: {theme_data}")
     theme_generation_execution_run = ExecutionRun.objects.create(
         type=ExecutionRun.TaskType.THEME_GENERATION
     )
     framework = Framework.create_initial_framework(
         question_part=question_part, execution_run=theme_generation_execution_run
     )
-    for theme_key, theme_value in theme_data.items():
-        name, description = theme_value.split(": ", 1)
-        Theme.create_initial_theme(
-            framework=framework, key=theme_key, name=name, description=description
-        )
+    for data in theme_data:
+        print(f"data: {data}")
+        for theme_key, theme_value in data.items():
+            print(theme_key)
+            print(theme_value)
+            name, description = theme_value.split(": ", 1)
+            theme = Theme.create_initial_theme(
+                framework=framework, key=theme_key, name=name, description=description
+            )
+            print(theme.id)
+            print(theme.key)
+            print(f"framework: {framework.id}")
     return framework
 
 
 def get_theme_for_key(framework: Framework, key: str) -> Theme:
+    print(f"framework: {framework.id}, key: {key}")
     return Theme.objects.get(framework=framework, key=key)
 
 
@@ -94,6 +104,7 @@ def map_themes_to_answer(
     stances = theme_mapping_dict["stances"]
 
     for reason, label, raw_stance in zip(reasons, labels, stances):
+        print(f"reason: {reason}, label: {label}, stance: {raw_stance}")
         theme = get_theme_for_key(framework, label)
         stance = STANCE_MAPPING.get(raw_stance, "")
         ThemeMapping(
@@ -174,13 +185,15 @@ def import_themefinder_data_for_question_part(
     question_part = QuestionPart.objects.create(
         text="", question=question, type=QuestionPart.QuestionType.FREE_TEXT
     )
-
+    print(f"imported question: {question_part.id}")
     # Import themes
     themes = get_themefinder_outputs_for_question(
         question_folder_key=question_folder, output_name="themes"
     )
+    print(f"========themes: {themes}")
     if isinstance(themes, list):
-        framework = import_themes(question_part=question_part, theme_data=themes[0])
+        print("importing")
+        framework = import_themes(question_part=question_part, theme_data=themes)
     else:
         raise ValueError("Expected a list of themes")
     logger.info(f"Imported themes for question {question_number}")
@@ -190,6 +203,7 @@ def import_themefinder_data_for_question_part(
         question_folder_key=question_folder, output_name="mapping"
     )
     if isinstance(list_theme_mappings, list):
+        print(f"framework for theme mapping: {framework.id}")
         import_theme_mappings_for_framework(framework, list_theme_mappings)
     else:
         raise ValueError("Expected a list of dictionaries of theme mappings")
