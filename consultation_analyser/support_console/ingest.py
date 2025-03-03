@@ -66,7 +66,7 @@ def import_themes(question_part: QuestionPart, theme_data: list[dict]) -> Framew
     for data in theme_data:
         for theme_key, theme_value in data.items():
             name, description = theme_value.split(": ", 1)
-            theme = Theme.create_initial_theme(
+            Theme.create_initial_theme(
                 framework=framework, key=theme_key, name=name, description=description
             )
     return framework
