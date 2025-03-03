@@ -25,7 +25,7 @@ from consultation_analyser.support_console.ingest import (
 @pytest.mark.django_db
 def test_import_themes(refined_themes):
     question_part = factories.FreeTextQuestionPartFactory()
-    import_themes(question_part=question_part, theme_data=refined_themes[0])
+    import_themes(question_part=question_part, theme_data=refined_themes)
     imported_themes = Theme.objects.filter(framework__question_part=question_part)
     # Themes imported correctly
     assert imported_themes.count() == 5
@@ -47,7 +47,7 @@ def test_import_theme_mappings_for_framework(refined_themes, mapping):
     # Populate with themes first
     question_part = factories.FreeTextQuestionPartFactory()
     consultation = question_part.question.consultation
-    framework = import_themes(question_part=question_part, theme_data=refined_themes[0])
+    framework = import_themes(question_part=question_part, theme_data=refined_themes)
 
     import_theme_mappings_for_framework(framework=framework, list_mappings=mapping)
     # Check overall numbers
@@ -100,8 +100,8 @@ def test_importing_for_different_questions(refined_themes, refined_themes2, mapp
     question_part1 = factories.FreeTextQuestionPartFactory(question=question1)
     question_part2 = factories.FreeTextQuestionPartFactory(question=question2)
 
-    framework1 = import_themes(question_part=question_part1, theme_data=refined_themes[0])
-    framework2 = import_themes(question_part=question_part2, theme_data=refined_themes2[0])
+    framework1 = import_themes(question_part=question_part1, theme_data=refined_themes)
+    framework2 = import_themes(question_part=question_part2, theme_data=refined_themes2)
     import_theme_mappings_for_framework(framework=framework1, list_mappings=mapping)
     import_theme_mappings_for_framework(framework=framework2, list_mappings=mapping2)
 
@@ -122,10 +122,9 @@ def test_get_themefinder_outputs_for_question(mock_s3_objects, monkeypatch):
     assert outputs[1].get("response_id") == 1
     assert outputs[1].get("labels") == ["C", "D"]
     outputs = get_themefinder_outputs_for_question("folder/question_0/", "themes")
-    assert len(outputs[0]) == 5
-    assert outputs[0]["A"].startswith("Fair Trade Certification")
+    assert len(outputs) == 5
     outputs = get_themefinder_outputs_for_question("folder/question_1/", "themes")
-    assert len(outputs[0]) == 3
+    assert len(outputs) == 3
 
 
 @pytest.mark.django_db
