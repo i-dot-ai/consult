@@ -47,7 +47,7 @@ jobs:
       - set-vars
       - start-runner
     permissions: write-all
-    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-docker.yml@aa7587a77322b3c3f6e367910a5e8007ff80c63a
+    uses: i-dot-ai/i-dot-ai-core-github-actions/.github/workflows/build-docker.yml@131b92e336006e1b847e06b9aea08b6f3ae653a1
     with:
       APP_NAME: ${{ needs.set-vars.outputs.app-name }}
       RUNNER_LABEL: ${{ needs.start-runner.outputs.label }}
