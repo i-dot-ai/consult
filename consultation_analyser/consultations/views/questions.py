@@ -52,7 +52,6 @@ def show(
         "theme_counts": theme_counts_dict,
         "highest_theme_count": highest_theme_count,
     }
-    print(f"context: {context}")
     return render(request, "consultations/questions/show.html", context)
 
 
