@@ -152,7 +152,7 @@ data "aws_iam_policy_document" "ecs" {
       "s3:PutObject*"
     ]
     resources = [
-      "arn:aws:s3:::${local.AWS_BUCKET_NAME}/app_data/*"
+      "arn:aws:s3:::${local.base_env_vars.AWS_BUCKET_NAME}/app_data/*"
     ]
   }
 }
