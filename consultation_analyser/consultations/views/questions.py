@@ -65,4 +65,5 @@ def index(request, consultation_slug: str):
         "consultation": consultation,
         "question_parts": question_parts,
     }
+    print(f"context:{context}")
     return render(request, "consultations/questions/index.html", context)

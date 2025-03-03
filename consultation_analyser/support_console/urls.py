@@ -27,9 +27,14 @@ urlpatterns = [
         name="add_user",
     ),
     path(
+        "consultations/import-xlsx/",
+        consultations.import_consultations_xlsx,
+        name="import_consultations_xlsx",
+    ),
+    path(
         "consultations/import/",
-        consultations.import_consultations,
-        name="import_consultations",
+        consultations.import_theme_mapping,
+        name="import_theme_mapping",
     ),
     path(
         "consultations/<uuid:consultation_id>/export/",

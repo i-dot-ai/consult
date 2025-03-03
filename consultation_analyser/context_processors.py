@@ -57,6 +57,11 @@ def app_config(request: HttpRequest):
                     "active": request.path.startswith("/support/users"),
                 },
                 {
+                    "href": "/support/consultations/import/",
+                    "text": "Import",
+                    "active": request.path.startswith("/support/consultations/import"),
+                },
+                {
                     "href": "/support/sign-out/",
                     "text": "Sign out",
                     "classes": "x-govuk-primary-navigation__item--right",

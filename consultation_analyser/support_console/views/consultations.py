@@ -10,6 +10,7 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
 from consultation_analyser.consultations.export_user_theme import export_user_theme
 from consultation_analyser.hosting_environment import HostingEnvironment
+from consultation_analyser.support_console.ingest import import_all_questions_for_consultation
 
 NO_SUMMARY_STR = "Unable to generate summary for this theme"
 
@@ -71,14 +72,14 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     return render(request, "support_console/consultations/show.html", context=context)
 
 
-def import_consultations(request: HttpRequest) -> HttpResponse:
+def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
     if request.POST:
         s3_key = request.POST.get("s3_key")
         call_command("import_consultation_data", s3_key)
         messages.success(request, "Consultations imported")
 
         return redirect("/support/consultations/")
-    return render(request, "support_console/consultations/import.html")
+    return render(request, "support_console/consultations/import_xlsx.html")
 
 
 def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
@@ -102,3 +103,15 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
         return redirect("/support/consultations/")
 
     return render(request, "support_console/consultations/export_audit.html", context)
+
+
+def import_theme_mapping(request: HttpRequest) -> HttpResponse:
+    if request.POST:
+        consultation_name = request.POST.get("consultation_name")
+        path_to_outputs = request.POST.get("path")
+        import_all_questions_for_consultation(
+            consultation_title=consultation_name, folder_name=path_to_outputs
+        )
+        return redirect("/support/consultations/")
+    context = {"bucket_name": settings.AWS_BUCKET_NAME}
+    return render(request, "support_console/consultations/import.html", context=context)

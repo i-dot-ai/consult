@@ -50,6 +50,7 @@ django-simple-history = "^3.8.0"
 openpyxl = "^3.1.5"
 pandas = "^2.2.3"
 django-debug-toolbar = "^5.0.1"
+moto = "^5.1.0"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.9.9"
