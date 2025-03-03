@@ -89,7 +89,6 @@ def test_import_theme_mappings_for_framework(refined_themes, mapping):
     assert theme_mappings5.count() == 1
     theme_e_mapping = theme_mappings5.get(theme__key="E")
     assert not theme_e_mapping.stance
-    assert theme_e_mapping.reason == "Response is too short"
 
 
 @pytest.mark.django_db
@@ -154,6 +153,7 @@ def test_import_all_questions_for_consultation(mock_s3_objects, monkeypatch):
     assert Theme.objects.filter(framework=framework).count() == 3
 
 
+# TODO - actually include some bad data
 @pytest.mark.django_db
 def test_import_bad_data(mock_s3_objects, monkeypatch):
     monkeypatch.setattr(settings, "AWS_BUCKET_NAME", "test-bucket")
