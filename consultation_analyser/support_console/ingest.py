@@ -121,6 +121,7 @@ def import_theme_mapping_and_responses(
     respondent, _ = Respondent.objects.get_or_create(
         consultation=consultation, themefinder_respondent_id=response_id
     )
+    logger.info(f"Importing response for respondent: {respondent.themefinder_respondent_id} for question_part {question_part.id}")
     answer = create_answer_from_dict(
         theme_mapping_dict=theme_mapping_dict, question_part=question_part, respondent=respondent
     )
