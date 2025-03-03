@@ -14,7 +14,6 @@ locals {
     "DOMAIN_NAME"                          = "${local.host}",
     "GIT_SHA"                              = var.image_tag,
     "APP_BUCKET"                           = local.secret_env_vars.APP_BUCKET,
-    "AWS_BUCKET_NAME"                      = "${var.team_name}-${terraform.workspace}-consultations-data",
   }
 
   batch_env_vars = merge(local.base_env_vars, {
@@ -153,7 +152,7 @@ data "aws_iam_policy_document" "ecs" {
       "s3:PutObject*"
     ]
     resources = [
-      "arn:aws:s3:::${local.name}-data/app_data/*"
+      "arn:aws:s3:::${local.base_env_vars.AWS_BUCKET_NAME}/app_data/*"
     ]
   }
 }
