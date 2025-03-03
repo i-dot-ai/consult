@@ -75,7 +75,9 @@ def show(
 
     if request.method == "POST":
         requested_themes = request.POST.getlist("theme")
-        existing_mappings = models.ThemeMapping.objects.filter(answer=response)
+        existing_mappings = models.ThemeMapping.objects.filter(answer=response).select_related(
+            "theme"
+        )
 
         # themes to delete
         existing_mappings.exclude(theme_id__in=requested_themes).delete()
@@ -86,7 +88,7 @@ def show(
         ).update(user_audited=True)
 
         # themes to add
-        themes_to_add = set(requested_themes).difference([str(theme) for theme in existing_themes])
+        themes_to_add = set(requested_themes) - set(map(str, existing_themes))
         for theme_id in themes_to_add:
             models.ThemeMapping.objects.create(
                 answer=response,
@@ -108,8 +110,8 @@ def show(
             "consultation_slug": consultation_slug,
             "question": question,
             "response": response,
-            "all_themes": all_themes,
-            "existing_themes": existing_themes,
+            "all_themes": list(all_themes),
+            "existing_themes": list(existing_themes),
             "date_created": datetime.strftime(response.created_at, "%d %B %Y"),
         }
 

@@ -410,15 +410,16 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         The latest will include all changes that have been made manually to mapping
         (changes stored in history table).
         """
-        theme_mappings_for_question_part = ThemeMapping.objects.filter(answer__question_part=part)
-        execution_runs = ExecutionRun.objects.filter(
-            thememapping__in=theme_mappings_for_question_part
-        ).distinct()
-        latest_execution_run = execution_runs.order_by("created_at").last()
-        if latest_execution_run:
-            latest_mappings = ThemeMapping.objects.filter(execution_run=latest_execution_run)
-        else:
-            latest_mappings = ThemeMapping.objects.none()
+        latest_execution_run_subquery = (
+            ExecutionRun.objects.filter(thememapping__answer__question_part=part)
+            .annotate(latest_created_at=models.Max("created_at"))
+            .values("latest_created_at")
+        )
+
+        latest_mappings = ThemeMapping.objects.filter(
+            execution_run__created_at=models.Subquery(latest_execution_run_subquery)
+        ).select_related("answer", "theme", "execution_run")
+
         return latest_mappings
 
 
