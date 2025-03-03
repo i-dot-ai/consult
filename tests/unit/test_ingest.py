@@ -152,3 +152,13 @@ def test_import_all_questions_for_consultation(mock_s3_objects, monkeypatch):
     assert answers.count() == 2
     framework = Framework.objects.filter(question_part=question_part).first()
     assert Theme.objects.filter(framework=framework).count() == 3
+
+
+@pytest.mark.django_db
+def test_import_bad_data(mock_s3_objects, monkeypatch):
+    monkeypatch.setattr(settings, "AWS_BUCKET_NAME", "test-bucket")
+    consultation_title = "My second consultation"
+    folder_name = "bad_data"
+    with pytest.raises(ValueError) as excinfo:
+        import_all_questions_for_consultation(consultation_title, folder_name)
+        assert str(excinfo.value) == "Number of stances does not match number of themes"

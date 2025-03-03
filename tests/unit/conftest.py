@@ -95,9 +95,7 @@ def mapping():
             "labels": [
                 "E",
             ],
-            "stances": [
-                "",
-            ],
+            "stances": [],
         },
     ]
     return mapping
@@ -145,6 +143,35 @@ def mapping2():
 
 
 @pytest.fixture
+def bad_data_mapping():
+    mapping = [
+        {
+            "response_id": 0,
+            "response": "Response 0.",
+            "position": "agreement",
+            "reasons": [
+                "Reason 0.",
+            ],
+            "labels": [
+                "A",
+            ],
+            "stances": [
+                "POSITIVE",
+            ],
+        },
+        {
+            "response_id": 6,
+            "response": "Response 6",
+            "position": "disagreement",
+            "reasons": ["Reason 6", ""],
+            "labels": ["B", "C"],
+            "stances": ["NEGATIVE"],
+        },
+    ]
+    return mapping
+
+
+@pytest.fixture
 def mock_s3_bucket():
     with mock_aws():
         conn = boto3.resource("s3", region_name="us-east-1")
@@ -168,5 +195,14 @@ def mock_s3_objects(mock_s3_bucket, mapping, mapping2, refined_themes, refined_t
     )
     conn.Object(mock_s3_bucket, "folder/question_1/mapping.json").put(Body=json.dumps(mapping2))
     conn.Object(mock_s3_bucket, "folder/question_1/themes.json").put(
+        Body=json.dumps(refined_themes2)
+    )
+    conn.Object(mock_s3_bucket, "bad_data/question_1/question.json").put(
+        Body=json.dumps({"question": "What do you think about the bad data?"})
+    )
+    conn.Object(mock_s3_bucket, "bad_data/question_1/mapping.json").put(
+        Body=json.dumps(bad_data_mapping)
+    )
+    conn.Object(mock_s3_bucket, "bad_data/question_1/themes.json").put(
         Body=json.dumps(refined_themes2)
     )
