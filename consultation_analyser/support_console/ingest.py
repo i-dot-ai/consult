@@ -94,6 +94,20 @@ def map_themes_to_answer(
     labels = theme_mapping_dict["labels"]
     stances = theme_mapping_dict["stances"]
 
+    number_of_themes = len(labels)
+
+    # If there is "No theme", reason/stance may not exist.
+    # But if arrays are non-empty and different lengths, we can't infer what they are
+    if number_of_themes:
+        if len(reasons) == 0:
+            reasons = [""] * number_of_themes
+        if len(stances) == 0:
+            stances = [""] * number_of_themes
+        elif len(stances) != number_of_themes:
+            raise ValueError("Number of stances does not match number of themes")
+        elif len(reasons) != number_of_themes:
+            raise ValueError("Number of reasons does not match number of themes")
+
     for reason, label, raw_stance in zip(reasons, labels, stances):
         theme = get_theme_for_key(framework, label)
         stance = STANCE_MAPPING.get(raw_stance, "")
