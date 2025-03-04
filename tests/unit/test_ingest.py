@@ -109,7 +109,7 @@ def test_get_themefinder_outputs_for_question(mock_s3_objects, monkeypatch):
     monkeypatch.setattr(settings, "AWS_BUCKET_NAME", "test-bucket")
     outputs = get_themefinder_outputs_for_question("folder/question_0/", "question")
     assert outputs.get("question") == "What do you think?"
-    outputs = get_themefinder_outputs_for_question("folder/question_0/", "mapping")
+    outputs = get_themefinder_outputs_for_question("folder/question_0/", "updated_mapping")
     assert outputs[1].get("response_id") == 1
     assert outputs[1].get("labels") == ["C", "D"]
     outputs = get_themefinder_outputs_for_question("folder/question_0/", "themes")
