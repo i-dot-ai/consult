@@ -157,14 +157,18 @@ def mock_s3_objects(mock_s3_bucket, mapping, mapping2, refined_themes, refined_t
     conn.Object(mock_s3_bucket, "folder/question_0/question.json").put(
         Body=json.dumps({"question": "What do you think?"})
     )
-    conn.Object(mock_s3_bucket, "folder/question_0/updated_mapping.json").put(Body=json.dumps(mapping))
+    conn.Object(mock_s3_bucket, "folder/question_0/updated_mapping.json").put(
+        Body=json.dumps(mapping)
+    )
     conn.Object(mock_s3_bucket, "folder/question_0/themes.json").put(
         Body=json.dumps(refined_themes)
     )
     conn.Object(mock_s3_bucket, "folder/question_1/question.json").put(
         Body=json.dumps({"question": "What do you think this time?"})
     )
-    conn.Object(mock_s3_bucket, "folder/question_1/updated_mapping.json").put(Body=json.dumps(mapping2))
+    conn.Object(mock_s3_bucket, "folder/question_1/updated_mapping.json").put(
+        Body=json.dumps(mapping2)
+    )
     conn.Object(mock_s3_bucket, "folder/question_1/themes.json").put(
         Body=json.dumps(refined_themes2)
     )

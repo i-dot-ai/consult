@@ -158,7 +158,7 @@ def import_theme_mappings_for_framework(framework: Framework, list_mappings: lis
         )
 
 
-def import_themefinder_data_for_question_part(
+def import_themefinder_data_for_question(
     consultation: Consultation, question_number: int, question_folder: str
 ) -> None:
     logger.info(f"Importing data for question {question_number}")
@@ -207,7 +207,7 @@ def import_all_questions_for_consultation(consultation_title: str, folder_name: 
     for i in range(len(question_folders)):
         question_folder = question_folders[i]
         logger.info(f"Importing data from folder: {question_folder}")
-        import_themefinder_data_for_question_part(
+        import_themefinder_data_for_question(
             consultation=consultation, question_number=(i + 1), question_folder=question_folder
         )
     logger.info(f"Imported all data for consultation: {consultation.title}")
