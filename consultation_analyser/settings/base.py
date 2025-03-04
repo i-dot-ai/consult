@@ -180,6 +180,7 @@ LOGGING = {
     "loggers": {
         "pipeline": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "upload": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
+        "import": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
     },
 }
 

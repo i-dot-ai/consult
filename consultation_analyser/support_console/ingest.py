@@ -121,9 +121,6 @@ def import_theme_mapping_and_responses(
     respondent, _ = Respondent.objects.get_or_create(
         consultation=consultation, themefinder_respondent_id=response_id
     )
-    logger.info(
-        f"Importing response for respondent: {respondent.themefinder_respondent_id} for question_part {question_part.id}"
-    )
     answer = create_answer_from_dict(
         theme_mapping_dict=theme_mapping_dict, question_part=question_part, respondent=respondent
     )
@@ -161,8 +158,6 @@ def import_theme_mappings_for_framework(framework: Framework, list_mappings: lis
 def import_themefinder_data_for_question(
     consultation: Consultation, question_number: int, question_folder: str
 ) -> None:
-    logger.info(f"Importing data for question {question_number}")
-
     # Create question/question part
     question_data = get_themefinder_outputs_for_question(
         question_folder_key=question_folder, output_name="question"
@@ -197,7 +192,7 @@ def import_themefinder_data_for_question(
     else:
         raise ValueError("Expected a list of dictionaries of theme mappings")
     logger.info(f"Imported themes for question {question_number}")
-    logger.info(f"Imported data for question: {question.text}")
+    logger.info(f"**Imported all data for question: {question.text}**")
 
 
 def import_all_questions_for_consultation(consultation_title: str, folder_name: str) -> None:
