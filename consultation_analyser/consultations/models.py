@@ -413,7 +413,8 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         latest_execution_run_subquery = (
             ExecutionRun.objects.filter(thememapping__answer__question_part=part)
             .annotate(latest_created_at=models.Max("created_at"))
-            .values("latest_created_at")
+            .order_by("-latest_created_at")
+            .values_list("latest_created_at", flat=True)[:1]
         )
 
         latest_mappings = ThemeMapping.objects.filter(
