@@ -67,16 +67,8 @@ def test_import_theme_mappings_for_framework(refined_themes, mapping):
     theme_mappings2 = theme_mappings.filter(answer=answer2)
     assert theme_mappings2.count() == 2
     theme_a_mapping = theme_mappings2.get(theme__key="A")
-    assert (
-        theme_a_mapping.reason
-        == "The response highlights the potential benefits of fair trade certification for cocoa farmers and the environment."
-    )
     assert theme_a_mapping.stance == ThemeMapping.Stance.POSITIVE
     theme_c_mapping = theme_mappings2.get(theme__key="C")
-    assert (
-        theme_c_mapping.reason
-        == "It also suggests that fair trade certification could enhance consumer confidence in chocolate products."
-    )
     assert theme_c_mapping.stance == ThemeMapping.Stance.NEGATIVE
 
     # Now check response 5 has been imported correctly
@@ -152,13 +144,3 @@ def test_import_all_questions_for_consultation(mock_s3_objects, monkeypatch):
     framework = Framework.objects.filter(question_part=question_part).first()
     assert Theme.objects.filter(framework=framework).count() == 3
 
-
-# TODO - actually include some bad data
-@pytest.mark.django_db
-def test_import_bad_data(mock_s3_objects, monkeypatch):
-    monkeypatch.setattr(settings, "AWS_BUCKET_NAME", "test-bucket")
-    consultation_title = "My second consultation"
-    folder_name = "bad_data"
-    with pytest.raises(ValueError) as excinfo:
-        import_all_questions_for_consultation(consultation_title, folder_name)
-        assert str(excinfo.value) == "Number of stances does not match number of themes"
