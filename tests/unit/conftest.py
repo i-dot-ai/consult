@@ -168,4 +168,3 @@ def mock_s3_objects(mock_s3_bucket, mapping, mapping2, refined_themes, refined_t
     conn.Object(mock_s3_bucket, "folder/question_1/themes.json").put(
         Body=json.dumps(refined_themes2)
     )
-

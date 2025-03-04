@@ -143,4 +143,3 @@ def test_import_all_questions_for_consultation(mock_s3_objects, monkeypatch):
     assert answers.count() == 2
     framework = Framework.objects.filter(question_part=question_part).first()
     assert Theme.objects.filter(framework=framework).count() == 3
-
