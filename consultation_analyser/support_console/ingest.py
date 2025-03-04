@@ -90,17 +90,17 @@ def map_themes_to_answer(
     framework: Framework,
     mapping_execution_run: ExecutionRun,
 ) -> None:
-    reasons = theme_mapping_dict["reasons"]
     labels = theme_mapping_dict["labels"]
     stances = theme_mapping_dict["stances"]
+    if len(labels) != len(stances):
+        raise ValueError("Number of stances does not match number of themes")
 
-    for reason, label, raw_stance in zip(reasons, labels, stances):
+    for label, raw_stance in zip(labels, stances):
         theme = get_theme_for_key(framework, label)
         stance = STANCE_MAPPING.get(raw_stance, "")
         ThemeMapping(
             answer=answer,
             theme=theme,
-            reason=reason,
             stance=stance,
             execution_run=mapping_execution_run,
         ).save()
@@ -121,7 +121,9 @@ def import_theme_mapping_and_responses(
     respondent, _ = Respondent.objects.get_or_create(
         consultation=consultation, themefinder_respondent_id=response_id
     )
-    logger.info(f"Importing response for respondent: {respondent.themefinder_respondent_id} for question_part {question_part.id}")
+    logger.info(
+        f"Importing response for respondent: {respondent.themefinder_respondent_id} for question_part {question_part.id}"
+    )
     answer = create_answer_from_dict(
         theme_mapping_dict=theme_mapping_dict, question_part=question_part, respondent=respondent
     )
@@ -188,7 +190,7 @@ def import_themefinder_data_for_question_part(
 
     # Import responses and mappings
     list_theme_mappings = get_themefinder_outputs_for_question(
-        question_folder_key=question_folder, output_name="mapping"
+        question_folder_key=question_folder, output_name="updated_mapping"
     )
     if isinstance(list_theme_mappings, list):
         import_theme_mappings_for_framework(framework, list_theme_mappings)

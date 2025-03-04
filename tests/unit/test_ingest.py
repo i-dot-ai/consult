@@ -67,16 +67,8 @@ def test_import_theme_mappings_for_framework(refined_themes, mapping):
     theme_mappings2 = theme_mappings.filter(answer=answer2)
     assert theme_mappings2.count() == 2
     theme_a_mapping = theme_mappings2.get(theme__key="A")
-    assert (
-        theme_a_mapping.reason
-        == "The response highlights the potential benefits of fair trade certification for cocoa farmers and the environment."
-    )
     assert theme_a_mapping.stance == ThemeMapping.Stance.POSITIVE
     theme_c_mapping = theme_mappings2.get(theme__key="C")
-    assert (
-        theme_c_mapping.reason
-        == "It also suggests that fair trade certification could enhance consumer confidence in chocolate products."
-    )
     assert theme_c_mapping.stance == ThemeMapping.Stance.NEGATIVE
 
     # Now check response 5 has been imported correctly
@@ -89,7 +81,6 @@ def test_import_theme_mappings_for_framework(refined_themes, mapping):
     assert theme_mappings5.count() == 1
     theme_e_mapping = theme_mappings5.get(theme__key="E")
     assert not theme_e_mapping.stance
-    assert theme_e_mapping.reason == "Response is too short"
 
 
 @pytest.mark.django_db
@@ -118,7 +109,7 @@ def test_get_themefinder_outputs_for_question(mock_s3_objects, monkeypatch):
     monkeypatch.setattr(settings, "AWS_BUCKET_NAME", "test-bucket")
     outputs = get_themefinder_outputs_for_question("folder/question_0/", "question")
     assert outputs.get("question") == "What do you think?"
-    outputs = get_themefinder_outputs_for_question("folder/question_0/", "mapping")
+    outputs = get_themefinder_outputs_for_question("folder/question_0/", "updated_mapping")
     assert outputs[1].get("response_id") == 1
     assert outputs[1].get("labels") == ["C", "D"]
     outputs = get_themefinder_outputs_for_question("folder/question_0/", "themes")
