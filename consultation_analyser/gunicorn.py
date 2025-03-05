@@ -1,5 +1,8 @@
-workers = 1
+from django.conf import settings
+
+
+workers = settings.WORKERS
 bind = "0.0.0.0:8000"
 accesslog = "-"
 errorlog = "-"
-timeout = 1200
+timeout = settings.TIMEOUT
