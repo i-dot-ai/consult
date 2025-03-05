@@ -1,7 +1,7 @@
 import csv
+import datetime
 import os
 from io import StringIO
-import datetime
 
 import boto3
 from django.conf import settings
@@ -12,6 +12,7 @@ from consultation_analyser.consultations.models import (
     QuestionPart,
     ThemeMapping,
 )
+
 
 def get_timestamp() -> str:
     now = datetime.datetime.now()
@@ -73,7 +74,9 @@ def export_user_theme(consultation_slug: str, s3_key: str) -> None:
     if settings.ENVIRONMENT == "local":
         if not os.path.exists("downloads"):
             os.makedirs("downloads")
-        with open(f"downloads/{timestamp}_example_consultation_theme_changes.csv", mode="w") as file:
+        with open(
+            f"downloads/{timestamp}_example_consultation_theme_changes.csv", mode="w"
+        ) as file:
             writer = csv.DictWriter(file, fieldnames=output[0].keys())
             writer.writeheader()
             for row in output:
