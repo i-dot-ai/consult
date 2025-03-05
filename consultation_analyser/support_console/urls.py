@@ -41,4 +41,9 @@ urlpatterns = [
         consultations.export_consultation_theme_audit,
         name="export_consultation_theme_audit",
     ),
+    path(
+        "consultations/<uuid:consultation_id>/export-urls/",
+        consultations.export_urls_for_consultation,
+        name="export_urls_for_consultation",
+    ),
 ]
