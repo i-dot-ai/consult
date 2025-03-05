@@ -1,6 +1,7 @@
 import csv
 import os
 from io import StringIO
+import datetime
 
 import boto3
 from django.conf import settings
@@ -11,6 +12,10 @@ from consultation_analyser.consultations.models import (
     QuestionPart,
     ThemeMapping,
 )
+
+def get_timestamp() -> str:
+    now = datetime.datetime.now()
+    return now.strftime("%Y-%m-%d-%H%M%S")
 
 
 def export_user_theme(consultation_slug: str, s3_key: str) -> None:
@@ -63,10 +68,12 @@ def export_user_theme(consultation_slug: str, s3_key: str) -> None:
                 }
             )
 
+    timestamp = get_timestamp()
+
     if settings.ENVIRONMENT == "local":
         if not os.path.exists("downloads"):
             os.makedirs("downloads")
-        with open("downloads/example_consultation_theme_changes.csv", mode="w") as file:
+        with open(f"downloads/{timestamp}_example_consultation_theme_changes.csv", mode="w") as file:
             writer = csv.DictWriter(file, fieldnames=output[0].keys())
             writer.writeheader()
             for row in output:
@@ -85,7 +92,7 @@ def export_user_theme(consultation_slug: str, s3_key: str) -> None:
 
         s3_client.put_object(
             Bucket=settings.AWS_BUCKET_NAME,
-            Key=f"{s3_key}/consultation_theme_changes.csv",
+            Key=f"{s3_key}/{timestamp}consultation_theme_changes.csv",
             Body=csv_buffer.getvalue(),
         )
         csv_buffer.close()
