@@ -1,8 +1,8 @@
-from django.conf import settings
+import os
 
 
-workers = settings.WORKERS
+workers = os.environ.get("GUNICORN_WORKERS")
 bind = "0.0.0.0:8000"
 accesslog = "-"
 errorlog = "-"
-timeout = settings.TIMEOUT
+timeout = os.environ.get("GUNICORN_TIMEOUT")

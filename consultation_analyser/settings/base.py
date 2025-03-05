@@ -268,7 +268,3 @@ if DEBUG:
     INSTALLED_APPS += ["debug_toolbar"]
     INTERNAL_IPS = ["127.0.0.1"]
 
-
-# Gunicorn
-WORKERS = 1
-TIMEOUT = 30
