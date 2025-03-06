@@ -27,6 +27,12 @@
         </p>
 
         <p class="govuk-body">
+          <a href="{{ url('export_urls_for_consultation', kwargs={'consultation_id': consultation.id}) }}" class="govuk-link govuk-body">
+            Export respondent ID / URL mapping for this consultation
+          </a>
+        </p>
+
+        <p class="govuk-body">
           <a href="{{ url('delete_consultation', kwargs={'consultation_id': consultation.id}) }}" class="govuk-link govuk-link--warning govuk-body">
             Delete this consultation
           </a>

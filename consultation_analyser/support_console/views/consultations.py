@@ -1,5 +1,6 @@
 from uuid import UUID
 
+import pandas as pd
 from django.conf import settings
 from django.contrib import messages
 from django.core.management import call_command
@@ -10,6 +11,7 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
 from consultation_analyser.consultations.export_user_theme import export_user_theme
 from consultation_analyser.hosting_environment import HostingEnvironment
+from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
 from consultation_analyser.support_console.ingest import import_themefinder_data_for_question
 
 NO_SUMMARY_STR = "Unable to generate summary for this theme"
@@ -133,3 +135,27 @@ def import_theme_mapping(request: HttpRequest) -> HttpResponse:
         return redirect("/support/consultations/")
     context = {"bucket_name": settings.AWS_BUCKET_NAME}
     return render(request, "support_console/consultations/import.html", context=context)
+
+
+def export_urls_for_consultation(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
+    context = {"bucket_name": settings.AWS_BUCKET_NAME}
+
+    if request.method == "POST":
+        s3_key = request.POST.get("s3_key")
+
+        try:
+            consultation = get_object_or_404(models.Consultation, id=consultation_id)
+            base_url = request.build_absolute_uri("/")
+            df = get_urls_for_consultation(consultation, base_url, s3_key)
+
+            response = HttpResponse(content_type="application/xlsx")
+            response["Content-Disposition"] = 'attachment; filename="url_mappings.xlsx"'
+            with pd.ExcelWriter(response) as writer:
+                df.to_excel(writer, sheet_name="Sheet 1", index=False)
+
+            return response
+        except Exception as e:
+            messages.error(request, e)
+            return render(request, "support_console/consultations/export_urls.html", context)
+
+    return render(request, "support_console/consultations/export_urls.html", context)
