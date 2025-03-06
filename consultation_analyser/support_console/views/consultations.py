@@ -1,6 +1,5 @@
 from uuid import UUID
 
-import pandas as pd
 from django.conf import settings
 from django.contrib import messages
 from django.core.management import call_command
@@ -142,18 +141,17 @@ def export_urls_for_consultation(request: HttpRequest, consultation_id: UUID) ->
 
     if request.method == "POST":
         s3_key = request.POST.get("s3_key")
+        filename = request.POST.get("filename")
 
         try:
             consultation = get_object_or_404(models.Consultation, id=consultation_id)
             base_url = request.build_absolute_uri("/")
-            df = get_urls_for_consultation(consultation, base_url, s3_key)
+            get_urls_for_consultation(consultation, base_url, s3_key, filename)
 
-            response = HttpResponse(content_type="application/xlsx")
-            response["Content-Disposition"] = 'attachment; filename="url_mappings.xlsx"'
-            with pd.ExcelWriter(response) as writer:
-                df.to_excel(writer, sheet_name="Sheet 1", index=False)
-
-            return response
+            messages.success(
+                request, f"Consultation URLs exported to {settings.AWS_BUCKET_NAME}/{s3_key}"
+            )
+            return redirect("/support/consultations/")
         except Exception as e:
             messages.error(request, e)
             return render(request, "support_console/consultations/export_urls.html", context)
