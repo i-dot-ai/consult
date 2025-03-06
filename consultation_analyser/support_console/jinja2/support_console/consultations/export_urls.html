@@ -13,9 +13,17 @@
         What is the file path of the document with the original department IDs?
       </label>
       <div id="s3_key-hint" class="govuk-hint iai-hint">
-        The file will be accessed at: {{ bucket_name }}/[YOUR PATH] eg {{ bucket_name }}/[CONSULTATION_ID]/RAW_DATA/filename.xlsx
+        The file will be accessed at: {{ bucket_name }}/[YOUR PATH]/[YOUR FILENAME] eg {{ bucket_name }}/[CONSULTATION_ID]/RAW_DATA/filename.xlsx
       </div>
       <input class="govuk-input" id="s3_key" name="s3_key" type="text" aria-describedby="s3_key-hint">
+    </p>
+  </div>
+  <div class="govuk-form-group">
+    <p class="govuk-label-wrapper">
+      <label class="govuk-label govuk-label--l" for="filename">
+        What is the document filename?
+      </label>
+      <input class="govuk-input" id="filename" name="filename" type="text">
     </p>
   </div>
   {{ govukButton({
