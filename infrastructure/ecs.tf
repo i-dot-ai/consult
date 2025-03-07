@@ -14,6 +14,9 @@ locals {
     "DOMAIN_NAME"                          = "${local.host}",
     "GIT_SHA"                              = var.image_tag,
     "APP_BUCKET"                           = local.secret_env_vars.APP_BUCKET,
+    "GUNICORN_WORKERS"                     = local.secret_env_vars.GUNICORN_WORKERS,
+    "GUNICORN_TIMEOUT"                     = local.secret_env_vars.GUNICORN_TIMEOUT,
+
   }
 
   batch_env_vars = merge(local.base_env_vars, {
