@@ -66,6 +66,7 @@ def export_user_theme(consultation_slug: str, s3_key: str) -> None:
                         )
                     ),
                     "Auditors": ", ".join(list(auditors)),
+                    "Audited at": response.datetime_theme_mapping_audited,  # First time audited
                 }
             )
 
