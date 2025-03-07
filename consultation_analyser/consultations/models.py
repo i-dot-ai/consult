@@ -219,26 +219,16 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    def get_latest_theme_review_date_for_answer(self) -> datetime.datetime | None:
-        # Assumes latest framework for question part
+    def get_datetime_audited(self) -> datetime.datetime | None:
         if not self.is_theme_mapping_audited:
             return None
 
-        # Latest modified date for any theme mapping for this answer
-        latest_theme_mappings_qs = ThemeMapping.get_latest_theme_mappings_for_question_part(
-            self.question_part
-        )
-        latest_for_answer = (
-            latest_theme_mappings_qs.filter(answer=self).order_by("modified_at").last()
-        )
-        if latest_for_answer:
-            return latest_for_answer.modified_at
-        else:  # No themes for this answer, find when it was marked as audited
-            history_for_answer = self.history.all()
-            for historical_record in history_for_answer:
-                if historical_record.is_theme_mapping_audited:
-                    return historical_record.modified_at
-            return None
+        # Use history to find the first date it was marked as audited
+        history_for_answer = self.history.all()
+        for historical_record in history_for_answer:
+            if historical_record.is_theme_mapping_audited:
+                return historical_record.modified_at
+        return None
 
 
 class ExecutionRun(UUIDPrimaryKeyModel, TimeStampedModel):
