@@ -10,9 +10,11 @@
   <div class="govuk-grid-row govuk-!-margin-top-5">
     <div class="iai-panel govuk-grid-column-one-half govuk-!-margin-bottom-4 iai-grid-column-one-half response-theme-review-one-half">
       <h1 class="govuk-heading-s">
-        Question {{question.number}}:
-        <br>
-        {{ question.text }}
+        <expanding-text>
+          Question {{question.number}}:
+          <br>
+          {{ question.text }}
+        </expanding-text>
       </h1>
       {% if response.question_part.text %}
         <h2 class="govuk-body-s govuk-!-font-weight-regular">
@@ -75,6 +77,8 @@
 
     </div>
   </div>
+
+  <script src="{{ static('scripts/expanding-text.js') }}"></script>
 
 
 {% endblock %}
