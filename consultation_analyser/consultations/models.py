@@ -213,7 +213,6 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     text = models.TextField()
     chosen_options = models.JSONField(default=list)
     is_theme_mapping_audited = models.BooleanField(default=False, null=True)
-    # TODO - add favourite
 
     history = HistoricalRecords()
 
