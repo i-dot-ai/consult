@@ -219,12 +219,13 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    def get_datetime_audited(self) -> datetime.datetime | None:
+    @property
+    def datetime_theme_mapping_audited(self) -> datetime.datetime | None:
         if not self.is_theme_mapping_audited:
             return None
 
         # Use history to find the first date it was marked as audited
-        history_for_answer = self.history.all()
+        history_for_answer = self.history.all().order_by("history_date")
         for historical_record in history_for_answer:
             if historical_record.is_theme_mapping_audited:
                 return historical_record.modified_at
