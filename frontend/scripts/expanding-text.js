@@ -29,7 +29,7 @@ class ExpandingText extends HTMLElement{
 
       if (this.hidden_text.length > 0) {
         this.innerHTML = `
-          <span>${this.display_text}</span><span class="ellipsis">...</span><span class="hidden-text" style="display: none" id="hidden-text">${this.hidden_text}</span>
+          <span>${this.display_text}</span><span class="ellipsis">...</span><span class="hidden-text" style="display: none" id="hidden-text" tabindex="-1">${this.hidden_text}</span>
           <button class="expander" aria-expanded="false" aria-controls="hidden-text" class="govuk-button govuk-button--secondary" data-module="govuk-button">
             Read more
           </button>
@@ -40,14 +40,18 @@ class ExpandingText extends HTMLElement{
         this.expander = /** @type HTMLElement */ (this.querySelector('.expander'))
   
         this.expander?.addEventListener('click', () => {
-          const expanded = this.expander?.getAttribute('aria-expanded') === 'true'
-          this.expander?.setAttribute('aria-expanded', String(!expanded))
+          this.expanded = this.expander?.getAttribute('aria-expanded') === 'true'
+          this.expander?.setAttribute('aria-expanded', String(!this.expanded))
           if (this.hidden_text_element && this.ellipsis) {
-            this.hidden_text_element.style.display = expanded ? 'none' : 'block'
-            this.ellipsis.style.display = expanded ? 'block' : 'none'
+            this.hidden_text_element.style.display = this.expanded ? 'none' : 'block'
+            this.ellipsis.style.display = this.expanded ? 'block' : 'none'
+
+            if (this.expanded) {
+              this.hidden_text_element.focus()
+            }
           }
           if (this.expander) {
-            this.expander.textContent = expanded ? 'Read more' : 'Read less'
+            this.expander.textContent = this.expanded ? 'Read more' : 'Read less'
           }
         })
       }
