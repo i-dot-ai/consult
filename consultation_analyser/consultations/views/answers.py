@@ -101,16 +101,18 @@ def get_selected_theme_summary(
         models.ThemeMapping.get_latest_theme_mappings_for_question_part(free_text_question_part)
         .filter(answer__respondent__in=respondents)
         .values("theme__name", "theme__description", "theme__id")
-        .annotate(count=Count("id"))
-        .annotate(positive_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.POSITIVE)))
-        .annotate(negative_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.NEGATIVE)))
+        .annotate(
+            count=Count("id"),
+            positive_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.POSITIVE)),
+            negative_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.NEGATIVE)),
+        )
     )
 
-    theme_mapping_summary = {
-        "total": selected_theme_mappings.aggregate(Sum("count"))["count__sum"],
-        "positive": selected_theme_mappings.aggregate(Sum("positive_count"))["positive_count__sum"],
-        "negative": selected_theme_mappings.aggregate(Sum("negative_count"))["negative_count__sum"],
-    }
+    theme_mapping_summary = selected_theme_mappings.aggregate(
+        total=Sum("count"),
+        positive=Sum("positive_count"),
+        negative=Sum("negative_count"),
+    )
 
     return selected_theme_mappings, theme_mapping_summary
 
