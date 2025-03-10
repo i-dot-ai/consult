@@ -80,7 +80,7 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
     }
 
     if request.method == "POST":
-        s3_key = request.POST.get("s3_key")
+        s3_key = request.POST.get("s3_key", "")
         try:
             logging.info(f"Exporting theme audit data - sending to queue")
             # export_user_theme(consultation.slug, s3_key)
