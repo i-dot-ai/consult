@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     "django.contrib.auth",
+    "django.contrib.admin",
     "waffle",  # feature flags
     "magic_link",
     "consultation_analyser.authentication",
@@ -168,6 +169,10 @@ LOGGING = {
             "format": "[{server_time}] {name}: {message}",
             "style": "{",
         },
+        "rq_console": {
+            "format": "%(asctime)s %(message)s",
+            "datefmt": "%H:%M:%S",
+        },
     },
     "handlers": {
         "stdout": {
@@ -175,13 +180,20 @@ LOGGING = {
             "class": "logging.StreamHandler",
             "stream": sys.stdout,
             "formatter": "pipeline",
-        }
+        },
+        "rq_console": {
+            "level": "DEBUG",
+            "class": "rq.logutils.ColorizingStreamHandler",
+            "formatter": "rq_console",
+            "exclude": ["%(asctime)s"],
+        },
     },
     "loggers": {
         "pipeline": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "upload": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "import": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "export": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
+        "rq.worker": {"handlers": ["rq_console"], "level": "DEBUG"},
     },
 }
 
