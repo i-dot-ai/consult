@@ -15,7 +15,6 @@ from consultation_analyser.consultations.models import (
     ThemeMapping,
 )
 
-
 logger = logging.getLogger("export")
 
 
