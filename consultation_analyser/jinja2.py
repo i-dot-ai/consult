@@ -41,12 +41,9 @@ def replace_query_param(request, key, value):
 
 
 def remove_query_param(request, key, value):
-    print("DEBUGGING 🐛")
     query = request.GET.copy()
     query_dict = {k: v for k, v in query.lists()}
     query_dict[key].remove(value)
-    print(f"query after: {query_dict}")
-    print(urlencode(query_dict))
     return urlencode(query_dict, doseq=True)
 
 
