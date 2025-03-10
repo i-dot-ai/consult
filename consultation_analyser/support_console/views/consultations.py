@@ -1,3 +1,4 @@
+import logging
 from uuid import UUID
 
 from django.conf import settings
@@ -12,6 +13,8 @@ from consultation_analyser.consultations.export_user_theme import export_user_th
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
 from consultation_analyser.support_console.ingest import import_themefinder_data_for_question
+
+logger = logging.getLogger("export")
 
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -79,7 +82,8 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
     if request.method == "POST":
         s3_key = request.POST.get("s3_key")
         try:
-            export_user_theme(consultation.slug, s3_key)
+            logging.info(f"Exporting theme audit data - sending to queue")
+            export_user_theme.delay(consultation.slug, s3_key)
         except Exception as e:
             messages.error(request, e)
             return render(request, "support_console/consultations/export_audit.html", context)
