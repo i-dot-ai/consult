@@ -86,7 +86,8 @@ def filter_by_demographic_data(
         respondents = [
             respondent
             for respondent in respondents
-            if respondent.individual in demographicindividual
+            if hasattr(respondent, "individual")
+            and getattr(respondent, "individual") in demographicindividual
         ]
 
     return has_individual_data, respondents
@@ -204,7 +205,7 @@ def index(
         .distinct("theme__name")
     )
 
-    # Get respondents list
+    # Get respondents list, applying relevant filters
     respondents = filter_by_response_and_theme(
         question,
         models.Respondent.objects.filter(consultation=consultation),
@@ -221,7 +222,7 @@ def index(
         respondents, demographicindividual
     )
 
-    # Get summaries for respondents list
+    # Get summary data for filtered respondents list
     selected_theme_mappings, theme_mapping_summary = get_selected_theme_summary(
         free_text_question_part, respondents
     )
