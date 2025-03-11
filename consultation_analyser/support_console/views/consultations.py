@@ -9,7 +9,7 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
-from consultation_analyser.consultations.export_user_theme import export_user_theme
+from consultation_analyser.consultations.export_user_theme import export_user_theme, dummy_task_to_delete
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
 from consultation_analyser.support_console.ingest import import_themefinder_data_for_question
@@ -80,6 +80,8 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
     }
 
     if request.method == "POST":
+        dummy_task_to_delete.delay("dummy_task")
+
         s3_key = request.POST.get("s3_key", "")
         try:
             logging.info("Exporting theme audit data - sending to queue")
