@@ -53,6 +53,7 @@ django-debug-toolbar = "^5.0.1"
 moto = "^5.1.0"
 pyflame = "^0.3.2"
 freezegun = "^1.5.1"
+django-test-migrations = "^1.4.0"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.9.10"
