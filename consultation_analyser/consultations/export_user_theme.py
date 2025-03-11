@@ -15,6 +15,8 @@ from consultation_analyser.consultations.models import (
     ThemeMapping,
 )
 
+from django.db import connection
+
 logger = logging.getLogger("export")
 
 
@@ -22,26 +24,9 @@ def get_timestamp() -> str:
     now = datetime.datetime.now()
     return now.strftime("%Y-%m-%d-%H%M%S")
 
-@job("default")
-def dummy_task_to_delete(input: str) -> None:
-    logger.info(f"Starting dummy task with input: {input}")
-    print("HELLO!!!!!")
-    output = [{"input": input, "output": "dummy_output"}, {"input": input, "output": "dummy_output"}]
-    if not os.path.exists("downloads"):
-        os.makedirs("downloads")
-    with open(
-        f"downloads/dummy.csv", mode="w"
-    ) as file:
-        writer = csv.DictWriter(file, fieldnames=output[0].keys())
-        writer.writeheader()
-        for row in output:
-            writer.writerow(row)
-    logger.info("Finishing dummy task")
-
 
 @job("default")
 def export_user_theme(consultation_slug: str, s3_key: str) -> None:
-    logger.info(f"Starting export for consultation: {consultation_slug}")
     consultation = Consultation.objects.get(slug=consultation_slug)
     output = []
 
