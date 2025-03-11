@@ -182,8 +182,9 @@ LOGGING = {
             "formatter": "pipeline",
         },
         "rq_console": {
-            "level": "DEBUG",
+            "level": "INFO",
             "class": "rq.logutils.ColorizingStreamHandler",
+            "stream": sys.stdout,
             "formatter": "rq_console",
             "exclude": ["%(asctime)s"],
         },
@@ -193,7 +194,7 @@ LOGGING = {
         "upload": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "import": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "export": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
-        "rq.worker": {"handlers": ["rq_console"], "level": "DEBUG"},
+        "rq.worker": {"handlers": ["rq_console"], "level": "INFO"},
     },
 }
 
