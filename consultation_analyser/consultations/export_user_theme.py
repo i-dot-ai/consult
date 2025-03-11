@@ -15,8 +15,6 @@ from consultation_analyser.consultations.models import (
     ThemeMapping,
 )
 
-from django.db import connection
-
 logger = logging.getLogger("export")
 
 
