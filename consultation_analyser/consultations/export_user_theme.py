@@ -11,6 +11,7 @@ from django_rq import job
 from consultation_analyser.consultations.models import (
     Answer,
     Consultation,
+    ExecutionRun,
     QuestionPart,
     ThemeMapping,
 )
@@ -23,6 +24,20 @@ def get_timestamp() -> str:
     return now.strftime("%Y-%m-%d-%H%M%S")
 
 
+def get_latest_sentiment_execution_run_for_question_part(
+    question_part: QuestionPart,
+) -> ExecutionRun | None:
+    sentiment_mapping_execution_runs = ExecutionRun.objects.filter(
+        type=ExecutionRun.TaskType.SENTIMENT_ANALYSIS
+    )
+    execution_runs_for_question_part = sentiment_mapping_execution_runs.objects.filter(
+        sentiment_mapping__answer__question_part=question_part
+    )
+    if execution_runs_for_question_part:
+        return execution_runs_for_question_part.order_by("created_at").last()
+    return None
+
+
 @job("default")
 def export_user_theme(consultation_slug: str, s3_key: str) -> None:
     consultation = Consultation.objects.get(slug=consultation_slug)
@@ -33,7 +48,8 @@ def export_user_theme(consultation_slug: str, s3_key: str) -> None:
         type=QuestionPart.QuestionType.FREE_TEXT,
     ):
         question = question_part.question
-        for response in Answer.objects.filter(question_part=question_part):
+        answer_qs = Answer.objects.filter(question_part=question_part)
+        for response in answer_qs:
             original_themes = (
                 ThemeMapping.history.filter(answer=response)
                 .filter(user_audited=False)
@@ -48,6 +64,7 @@ def export_user_theme(consultation_slug: str, s3_key: str) -> None:
             )
             output.append(
                 {
+                    "Response ID": response.respondent.themefinder_respondent_id,
                     "Consultation": consultation.title,
                     "Question number": question.number,
                     "Question text": question.text,
