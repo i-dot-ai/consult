@@ -1,10 +1,12 @@
 import csv
 import datetime
+import logging
 import os
 from io import StringIO
 
 import boto3
 from django.conf import settings
+from django_rq import job
 
 from consultation_analyser.consultations.models import (
     Answer,
@@ -13,12 +15,15 @@ from consultation_analyser.consultations.models import (
     ThemeMapping,
 )
 
+logger = logging.getLogger("export")
+
 
 def get_timestamp() -> str:
     now = datetime.datetime.now()
     return now.strftime("%Y-%m-%d-%H%M%S")
 
 
+@job("default")
 def export_user_theme(consultation_slug: str, s3_key: str) -> None:
     consultation = Consultation.objects.get(slug=consultation_slug)
     output = []
@@ -100,3 +105,4 @@ def export_user_theme(consultation_slug: str, s3_key: str) -> None:
             Body=csv_buffer.getvalue(),
         )
         csv_buffer.close()
+    logger.info(f"Finishing export for consultation: {consultation_slug}")
