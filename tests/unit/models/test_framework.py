@@ -50,13 +50,13 @@ def test_create_descendant_framework():
 @pytest.mark.django_db
 def test_get_themes_removed_from_previous_framework():
     # Create framework with 3 themes
-    initial_theme_1 = factories.InitialThemeFactory(name="initial_theme_1")
+    initial_theme_1 = factories.InitialThemeFactory(name="initial_theme_1", key="A")
     initial_framework = initial_theme_1.framework
     initial_theme_2 = factories.InitialThemeFactory(
-        name="initial_theme_2", framework=initial_framework
+        name="initial_theme_2", framework=initial_framework, key="B"
     )
     initial_theme_3 = factories.InitialThemeFactory(
-        name="initial_theme_3", framework=initial_framework
+        name="initial_theme_3", framework=initial_framework, key="C"
     )
 
     # Create subsequent framework, one theme persists

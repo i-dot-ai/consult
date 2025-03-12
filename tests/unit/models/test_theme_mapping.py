@@ -11,7 +11,6 @@ from consultation_analyser.factories import (
 )
 
 
-@pytest.mark.skip("key error - need to fix")
 @pytest.mark.django_db
 def test_get_latest_theme_mappings_for_question_part_returns_latest_mappings():
     question_part = FreeTextQuestionPartFactory()
@@ -19,14 +18,14 @@ def test_get_latest_theme_mappings_for_question_part_returns_latest_mappings():
 
     # First theme mapping execution run
     first_framework = InitialFrameworkFactory(question_part=question_part)
-    theme1 = InitialThemeFactory(framework=first_framework)
+    theme1 = InitialThemeFactory(framework=first_framework, key="A")
     first_execution_run = ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
     ThemeMappingFactory(answer=answer, theme=theme1, execution_run=first_execution_run)
 
     # Second theme mapping execution run
     second_framework = InitialFrameworkFactory(question_part=question_part)
-    theme2 = InitialThemeFactory(framework=second_framework, name="theme 2")
-    theme3 = InitialThemeFactory(framework=second_framework, name="theme 3")
+    theme2 = InitialThemeFactory(framework=second_framework, name="theme 2", key="B")
+    theme3 = InitialThemeFactory(framework=second_framework, name="theme 3", key="C")
     second_execution_run = ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
     ThemeMappingFactory(answer=answer, theme=theme2, execution_run=second_execution_run)
     ThemeMappingFactory(answer=answer, theme=theme3, execution_run=second_execution_run)
@@ -50,9 +49,9 @@ def test_get_history_of_theme_mappings_for_answer():
     question_part = FreeTextQuestionPartFactory()
     answer1 = FreeTextAnswerFactory(question_part=question_part)
     framework = InitialFrameworkFactory(question_part=question_part)
-    theme1 = InitialThemeFactory(framework=framework, name="theme 1")
-    theme2 = InitialThemeFactory(framework=framework, name="theme 2")
-    theme3 = InitialThemeFactory(framework=framework, name="theme 3")
+    theme1 = InitialThemeFactory(framework=framework, name="theme 1", key="A")
+    theme2 = InitialThemeFactory(framework=framework, name="theme 2", key="B")
+    theme3 = InitialThemeFactory(framework=framework, name="theme 3", key="C")
 
     # Now map a theme to the Answer
     theme_mapping = ThemeMappingFactory(
