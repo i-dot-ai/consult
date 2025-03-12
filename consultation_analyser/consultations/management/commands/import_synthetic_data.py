@@ -63,7 +63,7 @@ class Command(BaseCommand):
                 number=1 if question_data["has_free_text"] else 0,
                 type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS,
                 # The synthetic data only has one multiple choice set
-                options=question_data["multiple_choice"][0]["options"],
+                options=json.loads(json.dumps(question_data["multiple_choice"][0]["options"])),
             )
 
         # respondents = models.Respondent.objects.filter(consultation=consultation)
@@ -149,12 +149,10 @@ class Command(BaseCommand):
             models.Respondent.objects.create(
                 consultation=consultation,
                 themefinder_respondent_id=(response["response_id"] + 1),
-                data=json.dumps(
-                    {
-                        "individual": response["demographic_individual"],
-                        "region": response["demographic_region"],
-                    }
-                ),
+                data={
+                    "individual": response["demographic_individual"],
+                    "region": response["demographic_region"],
+                },
             )
 
         for i in range(1, 10):

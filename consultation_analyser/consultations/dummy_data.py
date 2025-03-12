@@ -1,3 +1,4 @@
+import json
 import random
 from typing import Optional
 
@@ -95,7 +96,7 @@ def create_dummy_consultation_from_yaml(
                     question=question,
                     text=part["text"],
                     type=question_part_type,
-                    options=part.get("options"),
+                    options=json.loads(json.dumps(part.get("options"))),
                     number=part["number"],
                 )
             else:
@@ -103,7 +104,7 @@ def create_dummy_consultation_from_yaml(
                     question=question,
                     text=part["text"],
                     type=question_part_type,
-                    options=part.get("options"),
+                    options=json.loads(json.dumps(part.get("options"))),
                     number=part["number"],
                 )
 

@@ -41,13 +41,13 @@ def test_get_top_themes_for_free_text_question_part():
     framework = factories.InitialFrameworkFactory(question_part=question_part)
     execution_run = factories.ExecutionRunFactory()
     theme_a = factories.InitialThemeFactory(
-        name="Theme A", framework=framework, execution_run=execution_run
+        name="Theme A", framework=framework, execution_run=execution_run, key="A"
     )
     theme_b = factories.InitialThemeFactory(
-        name="Theme B", framework=framework, execution_run=execution_run
+        name="Theme B", framework=framework, execution_run=execution_run, key="B"
     )
     theme_c = factories.InitialThemeFactory(
-        name="Theme C", framework=framework, execution_run=execution_run
+        name="Theme C", framework=framework, execution_run=execution_run, key="C"
     )
 
     for _ in range(10):
