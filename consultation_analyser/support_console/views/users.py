@@ -10,7 +10,7 @@ from ..forms.new_user_form import NewUserForm
 
 
 def index(request: HttpRequest):
-    users = User.objects.all().order_by("-created_at")
+    users = User.objects.all().order_by("email")
     return render(request, "support_console/users/index.html", {"users": users})
 
 
