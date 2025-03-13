@@ -1,5 +1,3 @@
-import json
-
 import pytest
 from pytest_lazy_fixtures import lf
 
@@ -296,15 +294,15 @@ def test_filter_by_word_count():
 @pytest.mark.parametrize(
     "individual_filter, should_filter",
     [
-        ("individual", True),
+        (["individual"], True),
         (None, False),
     ],
 )
 def test_filter_by_demographic_data(individual_filter, should_filter):
-    respondent_individual = RespondentFactory(data=json.dumps({"individual": "individual"}))
-    respondent_organisation = RespondentFactory(data=json.dumps({"individual": "organisation"}))
+    respondent_individual = RespondentFactory(data={"individual": "individual"})
+    respondent_organisation = RespondentFactory(data={"individual": "organisation"})
     respondent_no_data = RespondentFactory()
-    respondent_no_individual_data = RespondentFactory(data=json.dumps({"age": "18-24"}))
+    respondent_no_individual_data = RespondentFactory(data={"age": "18-24"})
 
     has_individual_data, filtered_respondents = filter_by_demographic_data(
         Respondent.objects.all(),

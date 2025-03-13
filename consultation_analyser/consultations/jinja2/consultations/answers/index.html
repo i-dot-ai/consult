@@ -202,7 +202,6 @@
     </div>
 
     <div class="govuk-grid-column-three-quarters-from-desktop">
-      <!-- TODO: change this to the total figure -->
       <span class="govuk-caption-m">{{ total_responses }} responses</span>
       <h2 class="govuk-heading-m">Overview</h2>
       
@@ -303,12 +302,10 @@
                 <span class="govuk-caption-m">{{ respondent.individual }}</span>
               {% endif %}
               <h2 class="govuk-heading-m">
-                <!-- <a href="/respondent/0" class="govuk-link govuk-link--no-underline govuk-link--no-visited-state">
-                  Respondent 0
-                </a> -->
-                Respondent {{ respondent.id }}
+                Respondent {{ respondent.identifier }}
               </h2>
             </div>
+            <!-- TODO: add pin here -->
             <!-- <div class="govuk-grid-column-one-third">
               <a class="pin-response align-right">
                 <p class="govuk-body-s govuk-!-margin-bottom-0" style="display: flex; align-items: center;">

@@ -1,4 +1,3 @@
-import json
 from datetime import datetime
 from uuid import UUID
 
@@ -70,27 +69,15 @@ def filter_by_demographic_data(
     demographicindividual: list[str] | None = None,
 ) -> QuerySet:
     """filter respondents by demographic data"""
-    has_individual_data = False
-    for respondent in respondents:
-        if not respondent.data:
-            continue
-        demographic_data = json.loads(respondent.data)
-        respondent.demographic_data = ", ".join(
-            [f"{k.title()}: {v}" for k, v in demographic_data.items()]
-        )
-        if demographic_data.get("individual"):
-            has_individual_data = True
-            respondent.individual = demographic_data["individual"]
 
-    if demographicindividual:
-        respondents = [
-            respondent
-            for respondent in respondents
-            if hasattr(respondent, "individual")
-            and getattr(respondent, "individual") in demographicindividual
-        ]
+    has_individual_data = respondents.filter(data__has_key="individual").exists()
 
-    return has_individual_data, respondents
+    if not demographicindividual:
+        return has_individual_data, respondents
+
+    filtered_respondents = respondents.filter(data__individual__in=demographicindividual)
+
+    return has_individual_data, filtered_respondents
 
 
 def get_selected_theme_summary(
