@@ -48,7 +48,7 @@ def get_position(answer: Answer, execution_run: ExecutionRun) -> str | None:
     return None
 
 
-def get_output_row(response: Answer, sentiment_execution_run: ExecutionRun) -> dict:
+def get_theme_mapping_output_row(response: Answer, sentiment_execution_run: ExecutionRun) -> dict:
     question_part = response.question_part
     question = question_part.question
     consultation_title = question.consultation.title
@@ -84,11 +84,8 @@ def get_output_row(response: Answer, sentiment_execution_run: ExecutionRun) -> d
     return row_data
 
 
-@job("default")
-def export_user_theme(consultation_slug: str, s3_key: str) -> None:
-    consultation = Consultation.objects.get(slug=consultation_slug)
+def get_theme_mappimg_output(consultation: Consultation) -> list[dict]:
     output = []
-
     for question_part in QuestionPart.objects.filter(
         question__consultation=consultation,
         type=QuestionPart.QuestionType.FREE_TEXT,
@@ -98,8 +95,15 @@ def export_user_theme(consultation_slug: str, s3_key: str) -> None:
         if sentiment_run:
             answer_qs = Answer.objects.filter(question_part=question_part)
             for response in answer_qs:
-                row = get_output_row(response, sentiment_run)
+                row = get_theme_mapping_output_row(response, sentiment_run)
                 output.append(row)
+    return output
+
+
+@job("default")
+def export_user_theme(consultation_slug: str, s3_key: str) -> None:
+    consultation = Consultation.objects.get(slug=consultation_slug)
+    output = get_theme_mappimg_output(consultation)
 
     timestamp = get_timestamp()
 
