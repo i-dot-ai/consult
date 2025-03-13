@@ -84,7 +84,7 @@ def get_theme_mapping_output_row(response: Answer, sentiment_execution_run: Exec
     return row_data
 
 
-def get_theme_mappimg_output(consultation: Consultation) -> list[dict]:
+def get_theme_mapping_output(consultation: Consultation) -> list[dict]:
     output = []
     for question_part in QuestionPart.objects.filter(
         question__consultation=consultation,
@@ -100,10 +100,10 @@ def get_theme_mappimg_output(consultation: Consultation) -> list[dict]:
     return output
 
 
-@job("default")
+
 def export_user_theme(consultation_slug: str, s3_key: str) -> None:
     consultation = Consultation.objects.get(slug=consultation_slug)
-    output = get_theme_mappimg_output(consultation)
+    output = get_theme_mapping_output(consultation)
 
     timestamp = get_timestamp()
 
@@ -136,3 +136,8 @@ def export_user_theme(consultation_slug: str, s3_key: str) -> None:
         )
         csv_buffer.close()
     logger.info(f"Finishing export for consultation: {consultation_slug}")
+
+
+@job("default")
+def export_user_theme_job(consultation_slug: str, s3_key: str) -> None:
+    export_user_theme(consultation_slug, s3_key)
