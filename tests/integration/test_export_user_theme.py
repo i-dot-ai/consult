@@ -47,8 +47,8 @@ def test_export_user_theme(mock_boto_client, django_app):
     # Set up themes and theme mappings
     framework = factories.InitialFrameworkFactory(question_part=question_part)
     execution_run = factories.ExecutionRunFactory()
-    theme1 = factories.InitialThemeFactory(framework=framework, key="A")
-    theme2 = factories.InitialThemeFactory(framework=framework, key="B")
+    theme1 = factories.InitialThemeFactory(framework=framework, key="B")
+    theme2 = factories.InitialThemeFactory(framework=framework, key="A")
     theme3 = factories.InitialThemeFactory(framework=framework, key="C")
     factories.ThemeMappingFactory(
         answer=response,
@@ -105,6 +105,7 @@ def test_export_user_theme(mock_boto_client, django_app):
         "Response text": response.text,
         "Response has been audited": "True",
         "Original themes": get_sorted_theme_string([theme1, theme2]),
+        "Original stances": "NEGATIVE, POSITIVE",
         "Current themes": get_sorted_theme_string([theme2, theme3]),
         "Position": "AGREEMENT",
         "Auditors": user.email,
@@ -121,6 +122,7 @@ def test_export_user_theme(mock_boto_client, django_app):
         "Response text": response2.text,
         "Response has been audited": "False",
         "Original themes": f"{theme3.get_identifier()}",
+        "Original stances": "POSITIVE",
         "Current themes": "",
         "Position": "UNCLEAR",
         "Auditors": "",
