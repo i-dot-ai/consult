@@ -59,6 +59,9 @@ def get_theme_mapping_output_row(response: Answer, sentiment_execution_run: Exec
         .filter(user_audited=False)
         .filter(history_type="+")
     )
+    original_themes_identifiers = {tm.theme.get_identifier(): tm.stance for tm in original_themes}
+    ordered_theme_identifiers = sorted(list(original_themes_identifiers.keys()))
+    ordered_theme_stances = [original_themes_identifiers[identifier] for identifier in ordered_theme_identifiers]
     current_themes = ThemeMapping.objects.filter(answer=response).filter(user_audited=True)
     auditors = set(
         [r.history_user.email for r in response.history.filter(is_theme_mapping_audited=True)]
@@ -72,8 +75,9 @@ def get_theme_mapping_output_row(response: Answer, sentiment_execution_run: Exec
         "Response text": response.text,
         "Response has been audited": response.is_theme_mapping_audited,
         "Original themes": ", ".join(
-            sorted([theme_mapping.theme.get_identifier() for theme_mapping in original_themes])
+            ordered_theme_identifiers
         ),
+        "Original stances": ", ".join(ordered_theme_stances),
         "Current themes": ", ".join(
             sorted([theme_mapping.theme.get_identifier() for theme_mapping in current_themes])
         ),
