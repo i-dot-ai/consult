@@ -100,7 +100,6 @@ def get_theme_mapping_output(consultation: Consultation) -> list[dict]:
     return output
 
 
-
 def export_user_theme(consultation_slug: str, s3_key: str) -> None:
     consultation = Consultation.objects.get(slug=consultation_slug)
     output = get_theme_mapping_output(consultation)
