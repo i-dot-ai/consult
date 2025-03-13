@@ -40,7 +40,9 @@ def get_latest_sentiment_execution_run_for_question_part(
     return None
 
 
-def get_position(answer: Answer, execution_run: ExecutionRun) -> str | None:
+def get_position(answer: Answer, execution_run: ExecutionRun | None) -> str | None:
+    if not execution_run:
+        return None
     sentiment = SentimentMapping.objects.filter(answer=answer, execution_run=execution_run)
     if sentiment:
         # There will only be one
@@ -48,7 +50,9 @@ def get_position(answer: Answer, execution_run: ExecutionRun) -> str | None:
     return None
 
 
-def get_theme_mapping_output_row(response: Answer, sentiment_execution_run: ExecutionRun) -> dict:
+def get_theme_mapping_output_row(
+    response: Answer, sentiment_execution_run: ExecutionRun | None
+) -> dict:
     question_part = response.question_part
     question = question_part.question
     consultation_title = question.consultation.title
@@ -61,7 +65,9 @@ def get_theme_mapping_output_row(response: Answer, sentiment_execution_run: Exec
     )
     original_themes_identifiers = {tm.theme.get_identifier(): tm.stance for tm in original_themes}
     ordered_theme_identifiers = sorted(list(original_themes_identifiers.keys()))
-    ordered_theme_stances = [original_themes_identifiers[identifier] for identifier in ordered_theme_identifiers]
+    ordered_theme_stances = [
+        original_themes_identifiers[identifier] for identifier in ordered_theme_identifiers
+    ]
     current_themes = ThemeMapping.objects.filter(answer=response).filter(user_audited=True)
     auditors = set(
         [r.history_user.email for r in response.history.filter(is_theme_mapping_audited=True)]
@@ -74,9 +80,7 @@ def get_theme_mapping_output_row(response: Answer, sentiment_execution_run: Exec
         "Question part text": question_part.text,
         "Response text": response.text,
         "Response has been audited": response.is_theme_mapping_audited,
-        "Original themes": ", ".join(
-            ordered_theme_identifiers
-        ),
+        "Original themes": ", ".join(ordered_theme_identifiers),
         "Original stances": ", ".join(ordered_theme_stances),
         "Current themes": ", ".join(
             sorted([theme_mapping.theme.get_identifier() for theme_mapping in current_themes])
@@ -96,11 +100,10 @@ def get_theme_mapping_output(consultation: Consultation) -> list[dict]:
     ):
         # Default to latest execution run
         sentiment_run = get_latest_sentiment_execution_run_for_question_part(question_part)
-        if sentiment_run:
-            answer_qs = Answer.objects.filter(question_part=question_part)
-            for response in answer_qs:
-                row = get_theme_mapping_output_row(response, sentiment_run)
-                output.append(row)
+        answer_qs = Answer.objects.filter(question_part=question_part)
+        for response in answer_qs:
+            row = get_theme_mapping_output_row(response, sentiment_run)
+            output.append(row)
     return output
 
 
