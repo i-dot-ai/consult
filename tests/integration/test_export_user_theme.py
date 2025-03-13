@@ -81,7 +81,9 @@ def test_export_user_theme(mock_boto_client, django_app):
     )
     review_response_page = django_app.get(change_url)
     review_response_page.form["theme"] = [str(theme2.id), str(theme3.id)]
-    review_response_page.form.submit()
+    review_response_page.form.submit("Save and continue to a new response")
+    print(response.datetime_theme_mapping_audited)
+    print(response.is_theme_mapping_audited)
 
     # Call the method
     export_user_theme(consultation.slug, "test_key")
