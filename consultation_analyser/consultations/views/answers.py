@@ -158,19 +158,19 @@ def index(
             ],
         },
         "themesentiment": {
-            "label": "Theme Sentiment",
+            "label": "Theme sentiment",
             "selected": [{"display": themesentiment.title(), "id": themesentiment}]
             if themesentiment
             else [],
         },
         "responsesentiment": {
-            "label": "Response Sentiment",
+            "label": "Response sentiment",
             "selected": [{"display": responsesentiment.title(), "id": responsesentiment}]
             if responsesentiment
             else [],
         },
         "wordcount": {
-            "label": "Minimum Word Count",
+            "label": "Minimum word count",
             "selected": [{"display": wordcount, "id": wordcount}] if wordcount else [],
         },
     }

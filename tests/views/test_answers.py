@@ -397,9 +397,7 @@ def test_get_selected_option_summary(question):
     option_summary = get_selected_option_summary(
         question,
         Respondent.objects.all(),
-    )
-
-    print(option_summary)
+    )    
 
     assert option_summary[0]["A"] == 2
     assert option_summary[0]["B"] == 1
