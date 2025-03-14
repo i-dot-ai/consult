@@ -206,6 +206,12 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
+    @property
+    def identifier(self) -> uuid.UUID | int:
+        if self.themefinder_respondent_id:
+            return self.themefinder_respondent_id
+        return self.id
+
 
 class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
