@@ -332,7 +332,6 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     framework = models.ForeignKey(Framework, on_delete=models.CASCADE)
     precursor = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
 
-    # TODO - add theme_code which comes from pipeline run
     name = models.CharField(max_length=256)  # TODO - is this long enough
     description = models.TextField()
     key = models.CharField(max_length=1, null=True)
