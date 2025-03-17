@@ -144,6 +144,6 @@ def export_user_theme(consultation_slug: str, s3_key: str) -> None:
     logger.info(f"Finishing export for consultation: {consultation_slug}")
 
 
-@job("default")
+@job("default", timeout=900)
 def export_user_theme_job(consultation_slug: str, s3_key: str) -> None:
     export_user_theme(consultation_slug, s3_key)
