@@ -76,13 +76,15 @@
               <button aria-disabled="true" type="submit" id="filter-button" class="govuk-button" data-module="govuk-button" data-test-id="submit-button" data-govuk-button-init="">
                 Apply filters
               </button>
-  
-              <div class="govuk-form-group">
-                <label class="govuk-label govuk-label--m" for="responseid">
-                  Response ID
-                </label>
-                <input class="govuk-input govuk-!-width-one-third" id="responseid" name="responseid" type="text" {% if active_filters.responseid.selected %} value="{{ active_filters.responseid.selected[0].display }}" {% endif %}>
-              </div>
+              
+              {% if display_respondent_id_filter %}
+                <div class="govuk-form-group">
+                  <label class="govuk-label govuk-label--m" for="responseid">
+                    Respondent ID
+                  </label>
+                  <input class="govuk-input govuk-!-width-one-third" id="responseid" name="responseid" type="text" {% if active_filters.responseid.selected %} value="{{ active_filters.responseid.selected[0].display }}" {% endif %}>
+                </div>
+              {% endif %}
 
               {% if has_individual_data %}
                 <div class="govuk-form-group">

@@ -24,8 +24,13 @@ from consultation_analyser.factories import (
 
 
 @pytest.fixture()
-def uuid():
-    return "00000000-0000-0000-0000-000000000000"
+def themefinder_respondent_id():
+    return 1
+
+
+@pytest.fixture()
+def matching_respondent(themefinder_respondent_id):
+    return RespondentFactory(themefinder_respondent_id=themefinder_respondent_id)
 
 
 @pytest.fixture()
@@ -60,16 +65,16 @@ def positive_theme_stance():
 
 @pytest.fixture()
 def answer_matching_all_filters(
-    uuid, question_part, positive_sentiment, theme_a, positive_theme_stance
+    matching_respondent, question_part, positive_sentiment, theme_a, positive_theme_stance
 ):
-    answer = FreeTextAnswerFactory(id=uuid, question_part=question_part)
+    answer = FreeTextAnswerFactory(respondent=matching_respondent, question_part=question_part)
     SentimentMappingFactory(position=positive_sentiment, answer=answer)
     ThemeMappingFactory(theme=theme_a, stance=positive_theme_stance, answer=answer)
     return answer
 
 
 @pytest.fixture()
-def answer_not_matching_response_uuid(
+def answer_not_matching_respondent_id(
     question_part, positive_sentiment, theme_a, positive_theme_stance
 ):
     answer = FreeTextAnswerFactory(question_part=question_part)
@@ -115,14 +120,20 @@ def answer_not_matching_theme_stance(question_part, positive_sentiment, theme_a)
             None,
             [
                 lf("answer_matching_all_filters"),
-                lf("answer_not_matching_response_uuid"),
+                lf("answer_not_matching_respondent_id"),
                 lf("answer_not_matching_positive_sentiment"),
                 lf("answer_not_matching_theme"),
                 lf("answer_not_matching_theme_stance"),
             ],
         ),  # No filters
         # One filter
-        (lf("uuid"), None, None, None, [lf("answer_matching_all_filters")]),  # Filter by responseid
+        (
+            lf("themefinder_respondent_id"),
+            None,
+            None,
+            None,
+            [lf("answer_matching_all_filters")],
+        ),  # Filter by responseid
         (
             None,
             lf("positive_sentiment"),
@@ -130,7 +141,7 @@ def answer_not_matching_theme_stance(question_part, positive_sentiment, theme_a)
             None,
             [
                 lf("answer_matching_all_filters"),
-                lf("answer_not_matching_response_uuid"),
+                lf("answer_not_matching_respondent_id"),
                 lf("answer_not_matching_theme"),
                 lf("answer_not_matching_theme_stance"),
             ],
@@ -142,7 +153,7 @@ def answer_not_matching_theme_stance(question_part, positive_sentiment, theme_a)
             None,
             [
                 lf("answer_matching_all_filters"),
-                lf("answer_not_matching_response_uuid"),
+                lf("answer_not_matching_respondent_id"),
                 lf("answer_not_matching_positive_sentiment"),
                 lf("answer_not_matching_theme_stance"),
             ],
@@ -154,14 +165,14 @@ def answer_not_matching_theme_stance(question_part, positive_sentiment, theme_a)
             lf("positive_theme_stance"),
             [
                 lf("answer_matching_all_filters"),
-                lf("answer_not_matching_response_uuid"),
+                lf("answer_not_matching_respondent_id"),
                 lf("answer_not_matching_positive_sentiment"),
                 lf("answer_not_matching_theme"),
             ],
         ),  # Filter by theme stance
         # Combination of filters
         (
-            lf("uuid"),
+            lf("themefinder_respondent_id"),
             lf("positive_sentiment"),
             None,
             None,
@@ -174,7 +185,7 @@ def answer_not_matching_theme_stance(question_part, positive_sentiment, theme_a)
             None,
             [
                 lf("answer_matching_all_filters"),
-                lf("answer_not_matching_response_uuid"),
+                lf("answer_not_matching_respondent_id"),
                 lf("answer_not_matching_theme_stance"),
             ],
         ),  # Filter by responseid and theme
@@ -185,7 +196,7 @@ def answer_not_matching_theme_stance(question_part, positive_sentiment, theme_a)
             lf("positive_theme_stance"),
             [
                 lf("answer_matching_all_filters"),
-                lf("answer_not_matching_response_uuid"),
+                lf("answer_not_matching_respondent_id"),
                 lf("answer_not_matching_positive_sentiment"),
             ],
         ),  # Filter by theme and theme stance
@@ -199,7 +210,7 @@ def test_filter_by_response_and_theme(
     expected,
     question,
     answer_matching_all_filters,
-    answer_not_matching_response_uuid,
+    answer_not_matching_respondent_id,
     answer_not_matching_positive_sentiment,
     answer_not_matching_theme,
     answer_not_matching_theme_stance,
@@ -397,7 +408,7 @@ def test_get_selected_option_summary(question):
     option_summary = get_selected_option_summary(
         question,
         Respondent.objects.all(),
-    )    
+    )
 
     assert option_summary[0]["A"] == 2
     assert option_summary[0]["B"] == 1

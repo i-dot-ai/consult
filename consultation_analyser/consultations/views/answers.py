@@ -23,7 +23,7 @@ def filter_by_response_and_theme(
     """filter respondents by response themes"""
     if responseid:
         respondents = respondents.filter(
-            answer__id=responseid,
+            themefinder_respondent_id=responseid,
             answer__question_part__question=question,
         )
     if responsesentiment:
@@ -144,7 +144,7 @@ def index(
     wordcount = request.GET.get("wordcount")
     active_filters = {
         "responseid": {
-            "label": "Response ID",
+            "label": "Respondent ID",
             "selected": [{"display": responseid, "id": responseid}] if responseid else [],
         },
         "demographicindividual": {
@@ -271,6 +271,9 @@ def index(
             [active_filter["selected"] for active_filter in active_filters.values()]
         ),
         "has_individual_data": has_individual_data,
+        "display_respondent_id_filter": respondents.filter(
+            themefinder_respondent_id__isnull=False
+        ).exists(),
     }
 
     return render(request, "consultations/answers/index.html", context)
