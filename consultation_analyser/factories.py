@@ -73,6 +73,7 @@ class RespondentFactory(DjangoModelFactory):
         model = models.Respondent
 
     consultation = factory.SubFactory(ConsultationFactory)
+    themefinder_respondent_id = factory.LazyAttribute(lambda o: random.randint(2, 500000000))
 
 
 class FreeTextAnswerFactory(DjangoModelFactory):
