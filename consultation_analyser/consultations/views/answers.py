@@ -37,7 +37,7 @@ def filter_by_response_and_theme(
     if themesentiment:
         respondents = respondents.filter(answer__thememapping__stance=themesentiment)
 
-    return respondents
+    return respondents.distinct()
 
 
 def filter_by_word_count(
