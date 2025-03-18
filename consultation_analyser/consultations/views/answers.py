@@ -1,3 +1,4 @@
+import logging
 from datetime import datetime
 from uuid import UUID
 
@@ -10,6 +11,8 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from .. import models
 from .decorators import user_can_see_consultation
+
+logger = logging.getLogger("eval")
 
 
 def filter_by_response_and_theme(
@@ -290,30 +293,49 @@ def show(
     question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
     response = get_object_or_404(models.Answer, id=response_id)
 
+    logger.info(f"response_id: {response.id}")
+
     all_theme_mappings = models.ThemeMapping.get_latest_theme_mappings_for_question_part(
         part=response.question_part
     )
+    logger.info(
+        f"all_theme_mappings: key {all_theme_mappings.values('theme__key', 'theme__name')} : theme_id {all_theme_mappings.values('theme__id')}"
+    )
+    logger.info(f"count all_theme_mappings: {all_theme_mappings.count()}")
+
     all_themes = models.Theme.objects.filter(id__in=all_theme_mappings.values("theme"))
+    logger.info(f"all_themes: {all_themes.values('name')}")
+
     existing_themes = models.ThemeMapping.objects.filter(answer=response).values_list(
         "theme", flat=True
     )
+    logger.info(f"existing_themes: {existing_themes.values('name', 'key')}")
+    logger.info(f"number existing_themes: {existing_themes.count()}")
+    logger.info(f"distinct themes: {existing_themes.distinct().count()}")
 
     if request.method == "POST":
         requested_themes = request.POST.getlist("theme")
+        logger.info(f"requested_themes: {requested_themes.values('name', 'key')}")
+
         existing_mappings = models.ThemeMapping.objects.filter(answer=response).select_related(
             "theme"
         )
 
         # themes to delete
+        logger.info(f"themes_to_delete: {existing_mappings.exclude(theme_id__in=requested_themes)}")
         existing_mappings.exclude(theme_id__in=requested_themes).delete()
 
         # themes to update to show set by human
+        logger.info(
+            f"themes_to_update: {existing_mappings.filter(theme_id__in=requested_themes).exclude(user_audited=True)}"
+        )
         existing_mappings.filter(theme_id__in=requested_themes).exclude(
             user_audited=True,
         ).update(user_audited=True)
 
         # themes to add
         themes_to_add = set(requested_themes) - set(map(str, existing_themes))
+        logger.info(f"themes_to_add: {themes_to_add}")
         for theme_id in themes_to_add:
             models.ThemeMapping.objects.create(
                 answer=response,
