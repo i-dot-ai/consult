@@ -295,6 +295,10 @@ def show(
 
     logger.info(f"response_id: {response.id}")
 
+
+    # Get all the theme mappings for the EXECUTION RUN and question part
+    # Currently these will be the ones that have been AI generated
+    # as all the others.
     all_theme_mappings = models.ThemeMapping.get_latest_theme_mappings_for_question_part(
         part=response.question_part
     )
@@ -303,9 +307,11 @@ def show(
     )
     logger.info(f"count all_theme_mappings: {all_theme_mappings.count()}")
 
+    # All themes for this question
     all_themes = models.Theme.objects.filter(id__in=all_theme_mappings.values("theme"))
     logger.info(f"all_themes: {all_themes.values('name', 'id', 'key')}")
 
+    # All themes for this response (TODO - should really filter to execution run)
     existing_themes = models.ThemeMapping.objects.filter(answer=response).values_list(
         "theme", flat=True
     )
@@ -314,6 +320,7 @@ def show(
     logger.info(f"distinct themes: {existing_themes.distinct().count()}")
 
     if request.method == "POST":
+        # TODO - should all these themes be added/removed from an existing user?
         requested_themes = request.POST.getlist("theme")
         logger.info(f"requested_themes: {requested_themes}")
 
