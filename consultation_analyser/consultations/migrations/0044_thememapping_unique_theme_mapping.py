@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("consultations", "0043_convert_jsonfield_data_to_json"),
     ]

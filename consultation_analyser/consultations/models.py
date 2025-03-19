@@ -418,9 +418,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
-            models.UniqueConstraint(
-                fields=["answer", "theme", "execution_run"], name="unique_theme_mapping"
-            ),
+            models.UniqueConstraint(fields=["answer", "theme"], name="unique_theme_mapping"),
         ]
 
     @staticmethod
