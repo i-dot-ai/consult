@@ -1,0 +1,499 @@
+{
+  "$defs": {
+    "Answer": {
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "modified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modified At"
+        },
+        "question_part": {
+          "$ref": "#/$defs/QuestionPart"
+        },
+        "respondent": {
+          "$ref": "#/$defs/Respondent"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "chosen_options": {
+          "description": "JSON object data",
+          "title": "Chosen Options",
+          "type": "object"
+        },
+        "is_theme_mapping_audited": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Is Theme Mapping Audited"
+        }
+      },
+      "required": [
+        "question_part",
+        "respondent",
+        "text",
+        "chosen_options"
+      ],
+      "title": "Answer",
+      "type": "object"
+    },
+    "Consultation": {
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "modified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modified At"
+        },
+        "title": {
+          "maxLength": 256,
+          "title": "Title",
+          "type": "string"
+        },
+        "slug": {
+          "title": "Slug",
+          "type": "string"
+        },
+        "users": {
+          "anyOf": [
+            {
+              "items": {
+                "$ref": "#/$defs/User"
+              },
+              "type": "array"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Users"
+        }
+      },
+      "required": [
+        "title",
+        "slug"
+      ],
+      "title": "Consultation",
+      "type": "object"
+    },
+    "ExecutionRun": {
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "modified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modified At"
+        },
+        "type": {
+          "$ref": "#/$defs/Type1"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "title": "ExecutionRun",
+      "type": "object"
+    },
+    "Position": {
+      "enum": [
+        "AGREEMENT",
+        "DISAGREEMENT",
+        "UNCLEAR"
+      ],
+      "title": "Position",
+      "type": "string"
+    },
+    "Question": {
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "modified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modified At"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "slug": {
+          "title": "Slug",
+          "type": "string"
+        },
+        "consultation": {
+          "$ref": "#/$defs/Consultation"
+        },
+        "number": {
+          "title": "Number",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "text",
+        "slug",
+        "consultation",
+        "number"
+      ],
+      "title": "Question",
+      "type": "object"
+    },
+    "QuestionPart": {
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "modified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modified At"
+        },
+        "question": {
+          "$ref": "#/$defs/Question"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/Type"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "JSON data",
+          "title": "Options"
+        },
+        "number": {
+          "title": "Number",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "question",
+        "text",
+        "type",
+        "number"
+      ],
+      "title": "QuestionPart",
+      "type": "object"
+    },
+    "Respondent": {
+      "properties": {
+        "id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Id"
+        },
+        "created_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Created At"
+        },
+        "modified_at": {
+          "anyOf": [
+            {
+              "format": "date-time",
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Modified At"
+        },
+        "consultation": {
+          "$ref": "#/$defs/Consultation"
+        },
+        "data": {
+          "description": "JSON object data",
+          "title": "Data",
+          "type": "object"
+        },
+        "themefinder_respondent_id": {
+          "anyOf": [
+            {
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "title": "Themefinder Respondent Id"
+        }
+      },
+      "required": [
+        "consultation",
+        "data"
+      ],
+      "title": "Respondent",
+      "type": "object"
+    },
+    "Type": {
+      "enum": [
+        "free_text",
+        "single_option",
+        "multiple_options"
+      ],
+      "title": "Type",
+      "type": "string"
+    },
+    "Type1": {
+      "enum": [
+        "sentiment_analysis",
+        "theme_generation",
+        "theme_mapping"
+      ],
+      "title": "Type1",
+      "type": "string"
+    },
+    "User": {
+      "title": "User"
+    }
+  },
+  "properties": {
+    "id": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Id"
+    },
+    "created_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Created At"
+    },
+    "modified_at": {
+      "anyOf": [
+        {
+          "format": "date-time",
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "title": "Modified At"
+    },
+    "answer": {
+      "$ref": "#/$defs/Answer"
+    },
+    "execution_run": {
+      "$ref": "#/$defs/ExecutionRun"
+    },
+    "position": {
+      "$ref": "#/$defs/Position"
+    }
+  },
+  "required": [
+    "answer",
+    "execution_run",
+    "position"
+  ],
+  "title": "SentimentMapping",
+  "type": "object"
+}
