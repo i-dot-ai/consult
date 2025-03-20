@@ -16,6 +16,7 @@ from consultation_analyser.consultations import public_schema
 faker = _faker.Faker()
 
 
+# TODO: we don't use this anymore, remove it without manage.py makemigrations complaining
 class MultipleChoiceSchemaValidator(BaseValidator):
     def compare(self, value, _limit_value):
         if not value:

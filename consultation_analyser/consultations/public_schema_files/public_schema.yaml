@@ -1,0 +1,402 @@
+openapi: 3.0.3
+info:
+  title: Consult
+  version: 1.0.0
+  description: OpenAPI schema for the models in the Consultations app
+paths: {}
+components:
+  schemas:
+    Consultation:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        title:
+          type: string
+          maxLength: 256
+        slug:
+          type: string
+        users:
+          type: array
+          items:
+            $ref: '#/components/schemas/User'
+      required:
+      - title
+      - slug
+    Question:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        text:
+          type: string
+        slug:
+          type: string
+        consultation:
+          type: uuid
+          $ref: '#/components/schemas/Consultation'
+        number:
+          type: integer
+      required:
+      - text
+      - slug
+      - consultation
+      - number
+    QuestionPart:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        question:
+          type: uuid
+          $ref: '#/components/schemas/Question'
+        text:
+          type: string
+        type:
+          type: string
+          maxLength: 16
+        options:
+          type: object
+          additionalProperties: true
+          description: JSON data
+        number:
+          type: integer
+      required:
+      - question
+      - text
+      - type
+      - number
+    Respondent:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        consultation:
+          type: uuid
+          $ref: '#/components/schemas/Consultation'
+        data:
+          type: object
+          additionalProperties: true
+          description: JSON object data
+        themefinder_respondent_id:
+          type: integer
+      required:
+      - consultation
+      - data
+    HistoricalAnswer:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        text:
+          type: string
+        chosen_options:
+          type: object
+          additionalProperties: true
+          description: JSON object data
+        is_theme_mapping_audited:
+          type: boolean
+        question_part:
+          type: uuid
+          $ref: '#/components/schemas/QuestionPart'
+        respondent:
+          type: uuid
+          $ref: '#/components/schemas/Respondent'
+        history_id:
+          type: string
+        history_date:
+          type: string
+          format: date-time
+        history_change_reason:
+          type: string
+          maxLength: 100
+        history_type:
+          type: string
+          maxLength: 1
+        history_user:
+          type: uuid
+          $ref: '#/components/schemas/User'
+      required:
+      - id
+      - text
+      - chosen_options
+      - history_date
+      - history_type
+    Answer:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        question_part:
+          type: uuid
+          $ref: '#/components/schemas/QuestionPart'
+        respondent:
+          type: uuid
+          $ref: '#/components/schemas/Respondent'
+        text:
+          type: string
+        chosen_options:
+          type: object
+          additionalProperties: true
+          description: JSON object data
+        is_theme_mapping_audited:
+          type: boolean
+      required:
+      - question_part
+      - respondent
+      - text
+      - chosen_options
+    ExecutionRun:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        type:
+          type: string
+          maxLength: 32
+      required:
+      - type
+    Framework:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        execution_run:
+          type: uuid
+          $ref: '#/components/schemas/ExecutionRun'
+        question_part:
+          type: uuid
+          $ref: '#/components/schemas/QuestionPart'
+        change_reason:
+          type: string
+          maxLength: 256
+        user:
+          type: uuid
+          $ref: '#/components/schemas/User'
+        precursor:
+          type: uuid
+          $ref: '#/components/schemas/Framework'
+      required:
+      - question_part
+      - change_reason
+    Theme:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        framework:
+          type: uuid
+          $ref: '#/components/schemas/Framework'
+        precursor:
+          type: uuid
+          $ref: '#/components/schemas/Theme'
+        name:
+          type: string
+          maxLength: 256
+        description:
+          type: string
+        key:
+          type: string
+          maxLength: 1
+      required:
+      - framework
+      - name
+      - description
+    HistoricalThemeMapping:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        reason:
+          type: string
+        stance:
+          type: string
+          maxLength: 8
+        user_audited:
+          type: boolean
+        answer:
+          type: uuid
+          $ref: '#/components/schemas/Answer'
+        theme:
+          type: uuid
+          $ref: '#/components/schemas/Theme'
+        execution_run:
+          type: uuid
+          $ref: '#/components/schemas/ExecutionRun'
+        history_id:
+          type: string
+        history_date:
+          type: string
+          format: date-time
+        history_change_reason:
+          type: string
+          maxLength: 100
+        history_type:
+          type: string
+          maxLength: 1
+        history_user:
+          type: uuid
+          $ref: '#/components/schemas/User'
+      required:
+      - id
+      - reason
+      - stance
+      - user_audited
+      - history_date
+      - history_type
+    ThemeMapping:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        answer:
+          type: uuid
+          $ref: '#/components/schemas/Answer'
+        theme:
+          type: uuid
+          $ref: '#/components/schemas/Theme'
+        reason:
+          type: string
+        execution_run:
+          type: uuid
+          $ref: '#/components/schemas/ExecutionRun'
+        stance:
+          type: string
+          maxLength: 8
+        user_audited:
+          type: boolean
+      required:
+      - answer
+      - theme
+      - reason
+      - stance
+      - user_audited
+    HistoricalSentimentMapping:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        position:
+          type: string
+          maxLength: 12
+        answer:
+          type: uuid
+          $ref: '#/components/schemas/Answer'
+        execution_run:
+          type: uuid
+          $ref: '#/components/schemas/ExecutionRun'
+        history_id:
+          type: string
+        history_date:
+          type: string
+          format: date-time
+        history_change_reason:
+          type: string
+          maxLength: 100
+        history_type:
+          type: string
+          maxLength: 1
+        history_user:
+          type: uuid
+          $ref: '#/components/schemas/User'
+      required:
+      - id
+      - position
+      - history_date
+      - history_type
+    SentimentMapping:
+      type: object
+      properties:
+        id:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+        modified_at:
+          type: string
+          format: date-time
+        answer:
+          type: uuid
+          $ref: '#/components/schemas/Answer'
+        execution_run:
+          type: uuid
+          $ref: '#/components/schemas/ExecutionRun'
+        position:
+          type: string
+          maxLength: 12
+      required:
+      - answer
+      - execution_run
+      - position
