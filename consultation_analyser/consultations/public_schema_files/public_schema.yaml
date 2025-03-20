@@ -73,6 +73,10 @@ components:
         type:
           type: string
           maxLength: 16
+          enum:
+          - free_text
+          - single_option
+          - multiple_options
         options:
           type: object
           additionalProperties: true
@@ -143,6 +147,10 @@ components:
         history_type:
           type: string
           maxLength: 1
+          enum:
+          - +
+          - '~'
+          - '-'
         history_user:
           type: uuid
           $ref: '#/components/schemas/User'
@@ -196,6 +204,10 @@ components:
         type:
           type: string
           maxLength: 32
+          enum:
+          - sentiment_analysis
+          - theme_generation
+          - theme_mapping
       required:
       - type
     Framework:
@@ -272,6 +284,9 @@ components:
         stance:
           type: string
           maxLength: 8
+          enum:
+          - POSITIVE
+          - NEGATIVE
         user_audited:
           type: boolean
         answer:
@@ -294,6 +309,10 @@ components:
         history_type:
           type: string
           maxLength: 1
+          enum:
+          - +
+          - '~'
+          - '-'
         history_user:
           type: uuid
           $ref: '#/components/schemas/User'
@@ -329,6 +348,9 @@ components:
         stance:
           type: string
           maxLength: 8
+          enum:
+          - POSITIVE
+          - NEGATIVE
         user_audited:
           type: boolean
       required:
@@ -351,6 +373,10 @@ components:
         position:
           type: string
           maxLength: 12
+          enum:
+          - AGREEMENT
+          - DISAGREEMENT
+          - UNCLEAR
         answer:
           type: uuid
           $ref: '#/components/schemas/Answer'
@@ -368,6 +394,10 @@ components:
         history_type:
           type: string
           maxLength: 1
+          enum:
+          - +
+          - '~'
+          - '-'
         history_user:
           type: uuid
           $ref: '#/components/schemas/User'
@@ -396,6 +426,10 @@ components:
         position:
           type: string
           maxLength: 12
+          enum:
+          - AGREEMENT
+          - DISAGREEMENT
+          - UNCLEAR
       required:
       - answer
       - execution_run

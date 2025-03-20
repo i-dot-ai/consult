@@ -1,5 +1,4 @@
-import json
-from typing import Any, Dict, List, Optional, TypedDict
+from typing import Any, cast, Dict, List, Optional, TypedDict
 
 import yaml
 from django.apps import apps
@@ -33,6 +32,15 @@ class OpenAPISchema(TypedDict):
     components: OpenAPIComponents
 
 
+class SchemaFieldProperty(TypedDict, total=False):
+    type: str
+    format: Optional[str]
+    maxLength: Optional[int]
+    enum: List[str]  # Note: List type for enum values
+    example: Optional[str]
+    description: Optional[str]
+
+
 class OpenAPISchemaGenerator:
     """
     Generate OpenAPI schema from Django models without Django Rest Framework.
@@ -54,10 +62,12 @@ class OpenAPISchemaGenerator:
         field_type = type(field)
 
         if field_type in (CharField, TextField):
-            schema = {"type": "string"}
+            schema: SchemaFieldProperty = {"type": "string"}
             if hasattr(field, "max_length") and field.max_length:
                 schema["maxLength"] = field.max_length
-            return schema
+            if hasattr(field, "choices") and field.choices:
+                schema["enum"] = [choice[0] for choice in field.choices]
+            return cast(Dict[str, Any], schema)
 
         elif field_type == IntegerField:
             return {"type": "integer"}
@@ -160,16 +170,9 @@ class OpenAPISchemaGenerator:
         """Generate YAML representation of the schema."""
         return yaml.dump(self.schema, sort_keys=False)
 
-    def generate_json(self) -> str:
-        """Generate JSON representation of the schema."""
-        return json.dumps(self.schema, indent=2)
-
-    def write_to_file(self, filename: str, format: str = "yaml") -> None:
+    def write_to_file(self, filename: str) -> None:
         """Write the schema to a file."""
-        if format.lower() == "yaml":
-            content = self.generate_yaml()
-        else:
-            content = self.generate_json()
+        content = self.generate_yaml()
 
         with open(filename, "w") as f:
             f.write(content)
@@ -183,5 +186,5 @@ def generate_openapi_yaml():
     )
     generator.add_all_models(["consultations"])
     generator.write_to_file(
-        "consultation_analyser/consultations/public_schema/public_schema.yaml", format="yaml"
+        "consultation_analyser/consultations/public_schema_files/public_schema.yaml"
     )
