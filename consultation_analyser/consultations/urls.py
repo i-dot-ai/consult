@@ -37,7 +37,7 @@ urlpatterns = [
         questions.index,
         name="review_free_text_questions",
     ),
-    path("schema", schema.show, name="schema"),
+    path("schema/", schema.show, name="schema"),
     path("schema/<str:schema_name>.json", schema.raw_schema, name="raw_schema"),
     # authentication
     path("sign-in/", sessions.new, name="sign_in"),
