@@ -1,11 +1,11 @@
-from typing import Any, cast, Dict, List, Optional, TypedDict
+# This script generates an OpenAPI schema for data imports to the Consultation app.
+
+from typing import Any, Dict, List, Optional, TypedDict, cast
 
 import yaml
-from django.apps import apps
 from django.db.models import (
     BooleanField,
     CharField,
-    DateTimeField,
     FloatField,
     ForeignKey,
     IntegerField,
@@ -13,6 +13,39 @@ from django.db.models import (
     ManyToManyField,
     TextField,
 )
+
+from consultation_analyser.consultations.models import (
+    Answer,
+    Consultation,
+    ExecutionRun,
+    Framework,
+    Question,
+    QuestionPart,
+    SentimentMapping,
+    Theme,
+    ThemeMapping,
+)
+
+FIELDS_TO_EXCLUDE = [
+    "id",
+    "created_at",
+    "modified_at",
+    "slug",
+    "users",
+    "is_theme_mapping_audited",
+    "themefinder_respondent_id",
+]  # These are either auto-generated or populated after import
+MODELS_TO_INCLUDE = [
+    Consultation,
+    Question,
+    QuestionPart,
+    Answer,
+    ExecutionRun,
+    Framework,
+    Theme,
+    ThemeMapping,
+    SentimentMapping,
+]
 
 
 class OpenAPIInfo(TypedDict):
@@ -78,9 +111,6 @@ class OpenAPISchemaGenerator:
         elif field_type == BooleanField:
             return {"type": "boolean"}
 
-        elif field_type == DateTimeField:
-            return {"type": "string", "format": "date-time"}
-
         elif field_type == ForeignKey:
             return {
                 "type": "uuid",
@@ -123,6 +153,8 @@ class OpenAPISchemaGenerator:
         required = []
 
         for field in model._meta.fields:
+            if field.name in FIELDS_TO_EXCLUDE:
+                continue
             field_schema = self._get_field_type(field)
 
             if hasattr(field, "help_text") and field.help_text:
@@ -134,6 +166,8 @@ class OpenAPISchemaGenerator:
             properties[field.name] = field_schema
 
         for field in model._meta.many_to_many:
+            if field.name in FIELDS_TO_EXCLUDE:
+                continue
             properties[field.name] = self._get_field_type(field)
 
         schema = {"type": "object", "properties": properties}
@@ -148,31 +182,21 @@ class OpenAPISchemaGenerator:
         model_name = model.__name__
         self.schema["components"]["schemas"][model_name] = self.generate_model_schema(model)
 
-    def add_all_models(self, app_labels: Optional[List[str]] = None) -> None:
-        """Add all models from specified apps or all installed apps."""
-        if app_labels:
-            models = [
-                model
-                for app_label in app_labels
-                for model in apps.get_app_config(app_label).get_models()
-            ]
-        else:
-            models = apps.get_models()
-
-        for model in models:
+    def add_all_models(self) -> None:
+        for model in MODELS_TO_INCLUDE:
             self.add_model(model)
 
-    def add_path(self, path: str, methods: Dict[str, Dict[str, Any]]) -> None:
-        """Add a path to the OpenAPI schema."""
-        self.schema["paths"][path] = methods
-
-    def generate_yaml(self) -> str:
-        """Generate YAML representation of the schema."""
-        return yaml.dump(self.schema, sort_keys=False)
+        # Add a custom import-specific Respondent model schema
+        self.schema["components"]["schemas"]["Respondent"] = {
+            "type": "object",
+            "properties": {
+                "id": {"type": "any"},  # We will override this in themefinder
+            },
+            "required": ["id"],
+        }
 
     def write_to_file(self, filename: str) -> None:
-        """Write the schema to a file."""
-        content = self.generate_yaml()
+        content = yaml.dump(self.schema, sort_keys=False)
 
         with open(filename, "w") as f:
             f.write(content)
@@ -184,7 +208,7 @@ def generate_openapi_yaml():
         version="1.0.0",
         description="OpenAPI schema for the models in the Consultations app",
     )
-    generator.add_all_models(["consultations"])
+    generator.add_all_models()
     generator.write_to_file(
         "consultation_analyser/consultations/public_schema_files/public_schema.yaml"
     )
