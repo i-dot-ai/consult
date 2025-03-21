@@ -1,0 +1,12 @@
+{
+  "properties": {
+    "id": {
+      "title": "Id"
+    }
+  },
+  "required": [
+    "id"
+  ],
+  "title": "Respondent",
+  "type": "object"
+}

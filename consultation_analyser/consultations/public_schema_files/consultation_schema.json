@@ -1,0 +1,14 @@
+{
+  "properties": {
+    "title": {
+      "maxLength": 256,
+      "title": "Title",
+      "type": "string"
+    }
+  },
+  "required": [
+    "title"
+  ],
+  "title": "Consultation",
+  "type": "object"
+}

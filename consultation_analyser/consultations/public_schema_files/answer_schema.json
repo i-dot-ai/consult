@@ -1,0 +1,125 @@
+{
+  "$defs": {
+    "Consultation": {
+      "properties": {
+        "title": {
+          "maxLength": 256,
+          "title": "Title",
+          "type": "string"
+        }
+      },
+      "required": [
+        "title"
+      ],
+      "title": "Consultation",
+      "type": "object"
+    },
+    "Question": {
+      "properties": {
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "consultation": {
+          "$ref": "#/$defs/Consultation"
+        },
+        "number": {
+          "title": "Number",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "text",
+        "consultation",
+        "number"
+      ],
+      "title": "Question",
+      "type": "object"
+    },
+    "QuestionPart": {
+      "properties": {
+        "question": {
+          "$ref": "#/$defs/Question"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "type": {
+          "$ref": "#/$defs/Type"
+        },
+        "options": {
+          "anyOf": [
+            {
+              "type": "object"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "JSON data",
+          "title": "Options"
+        },
+        "number": {
+          "title": "Number",
+          "type": "integer"
+        }
+      },
+      "required": [
+        "question",
+        "text",
+        "type",
+        "number"
+      ],
+      "title": "QuestionPart",
+      "type": "object"
+    },
+    "Respondent": {
+      "properties": {
+        "id": {
+          "title": "Id"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Respondent",
+      "type": "object"
+    },
+    "Type": {
+      "enum": [
+        "free_text",
+        "single_option",
+        "multiple_options"
+      ],
+      "title": "Type",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "question_part": {
+      "$ref": "#/$defs/QuestionPart"
+    },
+    "respondent": {
+      "$ref": "#/$defs/Respondent"
+    },
+    "text": {
+      "title": "Text",
+      "type": "string"
+    },
+    "chosen_options": {
+      "description": "JSON object data",
+      "title": "Chosen Options",
+      "type": "object"
+    }
+  },
+  "required": [
+    "question_part",
+    "respondent",
+    "text",
+    "chosen_options"
+  ],
+  "title": "Answer",
+  "type": "object"
+}
