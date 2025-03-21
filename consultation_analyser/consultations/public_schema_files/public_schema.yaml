@@ -9,40 +9,15 @@ components:
     Consultation:
       type: object
       properties:
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        modified_at:
-          type: string
-          format: date-time
         title:
           type: string
           maxLength: 256
-        slug:
-          type: string
-        users:
-          type: array
-          items:
-            $ref: '#/components/schemas/User'
       required:
       - title
-      - slug
     Question:
       type: object
       properties:
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        modified_at:
-          type: string
-          format: date-time
         text:
-          type: string
-        slug:
           type: string
         consultation:
           type: uuid
@@ -51,20 +26,11 @@ components:
           type: integer
       required:
       - text
-      - slug
       - consultation
       - number
     QuestionPart:
       type: object
       properties:
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        modified_at:
-          type: string
-          format: date-time
         question:
           type: uuid
           $ref: '#/components/schemas/Question'
@@ -88,89 +54,9 @@ components:
       - text
       - type
       - number
-    Respondent:
-      type: object
-      properties:
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        modified_at:
-          type: string
-          format: date-time
-        consultation:
-          type: uuid
-          $ref: '#/components/schemas/Consultation'
-        data:
-          type: object
-          additionalProperties: true
-          description: JSON object data
-        themefinder_respondent_id:
-          type: integer
-      required:
-      - consultation
-      - data
-    HistoricalAnswer:
-      type: object
-      properties:
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        modified_at:
-          type: string
-          format: date-time
-        text:
-          type: string
-        chosen_options:
-          type: object
-          additionalProperties: true
-          description: JSON object data
-        is_theme_mapping_audited:
-          type: boolean
-        question_part:
-          type: uuid
-          $ref: '#/components/schemas/QuestionPart'
-        respondent:
-          type: uuid
-          $ref: '#/components/schemas/Respondent'
-        history_id:
-          type: string
-        history_date:
-          type: string
-          format: date-time
-        history_change_reason:
-          type: string
-          maxLength: 100
-        history_type:
-          type: string
-          maxLength: 1
-          enum:
-          - +
-          - '~'
-          - '-'
-        history_user:
-          type: uuid
-          $ref: '#/components/schemas/User'
-      required:
-      - id
-      - text
-      - chosen_options
-      - history_date
-      - history_type
     Answer:
       type: object
       properties:
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        modified_at:
-          type: string
-          format: date-time
         question_part:
           type: uuid
           $ref: '#/components/schemas/QuestionPart'
@@ -183,8 +69,6 @@ components:
           type: object
           additionalProperties: true
           description: JSON object data
-        is_theme_mapping_audited:
-          type: boolean
       required:
       - question_part
       - respondent
@@ -193,14 +77,6 @@ components:
     ExecutionRun:
       type: object
       properties:
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        modified_at:
-          type: string
-          format: date-time
         type:
           type: string
           maxLength: 32
@@ -213,14 +89,6 @@ components:
     Framework:
       type: object
       properties:
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        modified_at:
-          type: string
-          format: date-time
         execution_run:
           type: uuid
           $ref: '#/components/schemas/ExecutionRun'
@@ -242,14 +110,6 @@ components:
     Theme:
       type: object
       properties:
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        modified_at:
-          type: string
-          format: date-time
         framework:
           type: uuid
           $ref: '#/components/schemas/Framework'
@@ -268,72 +128,9 @@ components:
       - framework
       - name
       - description
-    HistoricalThemeMapping:
-      type: object
-      properties:
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        modified_at:
-          type: string
-          format: date-time
-        reason:
-          type: string
-        stance:
-          type: string
-          maxLength: 8
-          enum:
-          - POSITIVE
-          - NEGATIVE
-        user_audited:
-          type: boolean
-        answer:
-          type: uuid
-          $ref: '#/components/schemas/Answer'
-        theme:
-          type: uuid
-          $ref: '#/components/schemas/Theme'
-        execution_run:
-          type: uuid
-          $ref: '#/components/schemas/ExecutionRun'
-        history_id:
-          type: string
-        history_date:
-          type: string
-          format: date-time
-        history_change_reason:
-          type: string
-          maxLength: 100
-        history_type:
-          type: string
-          maxLength: 1
-          enum:
-          - +
-          - '~'
-          - '-'
-        history_user:
-          type: uuid
-          $ref: '#/components/schemas/User'
-      required:
-      - id
-      - reason
-      - stance
-      - user_audited
-      - history_date
-      - history_type
     ThemeMapping:
       type: object
       properties:
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        modified_at:
-          type: string
-          format: date-time
         answer:
           type: uuid
           $ref: '#/components/schemas/Answer'
@@ -359,64 +156,9 @@ components:
       - reason
       - stance
       - user_audited
-    HistoricalSentimentMapping:
-      type: object
-      properties:
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        modified_at:
-          type: string
-          format: date-time
-        position:
-          type: string
-          maxLength: 12
-          enum:
-          - AGREEMENT
-          - DISAGREEMENT
-          - UNCLEAR
-        answer:
-          type: uuid
-          $ref: '#/components/schemas/Answer'
-        execution_run:
-          type: uuid
-          $ref: '#/components/schemas/ExecutionRun'
-        history_id:
-          type: string
-        history_date:
-          type: string
-          format: date-time
-        history_change_reason:
-          type: string
-          maxLength: 100
-        history_type:
-          type: string
-          maxLength: 1
-          enum:
-          - +
-          - '~'
-          - '-'
-        history_user:
-          type: uuid
-          $ref: '#/components/schemas/User'
-      required:
-      - id
-      - position
-      - history_date
-      - history_type
     SentimentMapping:
       type: object
       properties:
-        id:
-          type: string
-        created_at:
-          type: string
-          format: date-time
-        modified_at:
-          type: string
-          format: date-time
         answer:
           type: uuid
           $ref: '#/components/schemas/Answer'
@@ -434,3 +176,10 @@ components:
       - answer
       - execution_run
       - position
+    Respondent:
+      type: object
+      properties:
+        id:
+          type: any
+      required:
+      - id

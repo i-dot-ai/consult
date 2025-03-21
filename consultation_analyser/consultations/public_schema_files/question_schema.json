@@ -2,125 +2,22 @@
   "$defs": {
     "Consultation": {
       "properties": {
-        "id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Id"
-        },
-        "created_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Created At"
-        },
-        "modified_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Modified At"
-        },
         "title": {
           "maxLength": 256,
           "title": "Title",
           "type": "string"
-        },
-        "slug": {
-          "title": "Slug",
-          "type": "string"
-        },
-        "users": {
-          "anyOf": [
-            {
-              "items": {
-                "$ref": "#/$defs/User"
-              },
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Users"
         }
       },
       "required": [
-        "title",
-        "slug"
+        "title"
       ],
       "title": "Consultation",
       "type": "object"
-    },
-    "User": {
-      "title": "User"
     }
   },
   "properties": {
-    "id": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Id"
-    },
-    "created_at": {
-      "anyOf": [
-        {
-          "format": "date-time",
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Created At"
-    },
-    "modified_at": {
-      "anyOf": [
-        {
-          "format": "date-time",
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Modified At"
-    },
     "text": {
       "title": "Text",
-      "type": "string"
-    },
-    "slug": {
-      "title": "Slug",
       "type": "string"
     },
     "consultation": {
@@ -133,7 +30,6 @@
   },
   "required": [
     "text",
-    "slug",
     "consultation",
     "number"
   ],

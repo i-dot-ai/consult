@@ -2,44 +2,6 @@
   "$defs": {
     "Answer": {
       "properties": {
-        "id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Id"
-        },
-        "created_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Created At"
-        },
-        "modified_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Modified At"
-        },
         "question_part": {
           "$ref": "#/$defs/QuestionPart"
         },
@@ -54,18 +16,6 @@
           "description": "JSON object data",
           "title": "Chosen Options",
           "type": "object"
-        },
-        "is_theme_mapping_audited": {
-          "anyOf": [
-            {
-              "type": "boolean"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Is Theme Mapping Audited"
         }
       },
       "required": [
@@ -79,116 +29,20 @@
     },
     "Consultation": {
       "properties": {
-        "id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Id"
-        },
-        "created_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Created At"
-        },
-        "modified_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Modified At"
-        },
         "title": {
           "maxLength": 256,
           "title": "Title",
           "type": "string"
-        },
-        "slug": {
-          "title": "Slug",
-          "type": "string"
-        },
-        "users": {
-          "anyOf": [
-            {
-              "items": {
-                "$ref": "#/$defs/User"
-              },
-              "type": "array"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Users"
         }
       },
       "required": [
-        "title",
-        "slug"
+        "title"
       ],
       "title": "Consultation",
       "type": "object"
     },
     "ExecutionRun": {
       "properties": {
-        "id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Id"
-        },
-        "created_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Created At"
-        },
-        "modified_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Modified At"
-        },
         "type": {
           "$ref": "#/$defs/Type1"
         }
@@ -210,50 +64,8 @@
     },
     "Question": {
       "properties": {
-        "id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Id"
-        },
-        "created_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Created At"
-        },
-        "modified_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Modified At"
-        },
         "text": {
           "title": "Text",
-          "type": "string"
-        },
-        "slug": {
-          "title": "Slug",
           "type": "string"
         },
         "consultation": {
@@ -266,7 +78,6 @@
       },
       "required": [
         "text",
-        "slug",
         "consultation",
         "number"
       ],
@@ -275,44 +86,6 @@
     },
     "QuestionPart": {
       "properties": {
-        "id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Id"
-        },
-        "created_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Created At"
-        },
-        "modified_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Modified At"
-        },
         "question": {
           "$ref": "#/$defs/Question"
         },
@@ -353,67 +126,11 @@
     "Respondent": {
       "properties": {
         "id": {
-          "anyOf": [
-            {
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
           "title": "Id"
-        },
-        "created_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Created At"
-        },
-        "modified_at": {
-          "anyOf": [
-            {
-              "format": "date-time",
-              "type": "string"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Modified At"
-        },
-        "consultation": {
-          "$ref": "#/$defs/Consultation"
-        },
-        "data": {
-          "description": "JSON object data",
-          "title": "Data",
-          "type": "object"
-        },
-        "themefinder_respondent_id": {
-          "anyOf": [
-            {
-              "type": "integer"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null,
-          "title": "Themefinder Respondent Id"
         }
       },
       "required": [
-        "consultation",
-        "data"
+        "id"
       ],
       "title": "Respondent",
       "type": "object"
@@ -435,50 +152,9 @@
       ],
       "title": "Type1",
       "type": "string"
-    },
-    "User": {
-      "title": "User"
     }
   },
   "properties": {
-    "id": {
-      "anyOf": [
-        {
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Id"
-    },
-    "created_at": {
-      "anyOf": [
-        {
-          "format": "date-time",
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Created At"
-    },
-    "modified_at": {
-      "anyOf": [
-        {
-          "format": "date-time",
-          "type": "string"
-        },
-        {
-          "type": "null"
-        }
-      ],
-      "default": null,
-      "title": "Modified At"
-    },
     "answer": {
       "$ref": "#/$defs/Answer"
     },
