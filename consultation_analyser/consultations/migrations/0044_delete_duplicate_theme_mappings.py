@@ -8,14 +8,13 @@ class Migration(migrations.Migration):
     def delete_duplicate_theme_mappings(apps, schema_editor):
         ThemeMapping = apps.get_model("consultations", "ThemeMapping")
 
-        # Identify duplicates by grouping and counting entries
         duplicates = (
             ThemeMapping.objects.values("answer", "theme")
             .annotate(count=Count("id"))
             .filter(count__gt=1)
         )
 
-        # Keep the first entry
+        # Keep the first theme mapping for each (answer, theme) pair
         theme_mapping_ids_to_keep = []
         for d in duplicates:
             theme_mapping_to_keep = (
@@ -25,7 +24,7 @@ class Migration(migrations.Migration):
             )
             theme_mapping_ids_to_keep.append(theme_mapping_to_keep.id)
 
-        # Delete the duplicates that are not in the list of IDs to keep
+        # Delete subsequent theme mappings for each (answer, theme) pair
         for d in duplicates:
             ThemeMapping.objects.filter(answer=d["answer"], theme=d["theme"]).exclude(
                 id__in=theme_mapping_ids_to_keep
