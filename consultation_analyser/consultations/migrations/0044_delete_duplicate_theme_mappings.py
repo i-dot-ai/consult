@@ -15,12 +15,21 @@ class Migration(migrations.Migration):
             .filter(count__gt=1)
         )
 
-        # Keep the first entry and delete the rest
+        # Keep the first entry
+        theme_mapping_ids_to_keep = []
         for d in duplicates:
-            theme_mappings = ThemeMapping.objects.filter(
-                answer=d["answer"], theme=d["theme"]
-            ).order_by("created_at")
-            theme_mappings[1:].delete()
+            theme_mapping_to_keep = (
+                ThemeMapping.objects.filter(answer=d["answer"], theme=d["theme"])
+                .order_by("created_at")
+                .first()
+            )
+            theme_mapping_ids_to_keep.append(theme_mapping_to_keep.id)
+
+        # Delete the duplicates that are not in the list of IDs to keep
+        for d in duplicates:
+            ThemeMapping.objects.filter(answer=d["answer"], theme=d["theme"]).exclude(
+                id__in=theme_mapping_ids_to_keep
+            ).delete()
 
     dependencies = [
         ("consultations", "0043_convert_jsonfield_data_to_json"),
