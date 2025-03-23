@@ -99,12 +99,12 @@ def map_themes_to_answer(
     for label, raw_stance in zip(labels, stances):
         theme = get_theme_for_key(framework, label)
         stance = STANCE_MAPPING.get(raw_stance, "")
-        ThemeMapping(
+        # Theme mapping is unique on answer and theme
+        ThemeMapping.objects.update_or_create(
             answer=answer,
             theme=theme,
-            stance=stance,
-            execution_run=mapping_execution_run,
-        ).save()
+            defaults={"stance": stance, "execution_run": mapping_execution_run},
+        )
 
 
 def import_theme_mapping_and_responses(
