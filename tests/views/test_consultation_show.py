@@ -1,7 +1,7 @@
 import pytest
 
 from consultation_analyser import factories
-from consultation_analyser.consultations.models import SentimentMapping, ExecutionRun
+from consultation_analyser.consultations.models import ExecutionRun, SentimentMapping
 from consultation_analyser.consultations.views.consultations import (
     get_counts_of_sentiment,
     get_top_themes_for_free_text_question_part,
