@@ -338,15 +338,6 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     def get_theme_mappings(self) -> models.QuerySet:
         return ThemeMapping.objects.filter(theme__framework=self)
 
-    @classmethod
-    def get_latest_theme_mappings(cls, question_part: QuestionPart) -> models.QuerySet:
-        latest_framework = (
-            Framework.objects.filter(question_part=question_part).order_by("created_at").last()
-        )
-        if latest_framework:
-            return latest_framework.get_theme_mappings()
-        return ThemeMapping.objects.none()
-
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     # The new theme is assigned to a new framework with the change reason and user.
@@ -437,26 +428,35 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    @staticmethod
-    def get_latest_theme_mappings_for_question_part(part: QuestionPart) -> models.QuerySet:
-        """
-        Get the set of the theme mappings corresponding to the latest execution run.
-        The latest will include all changes that have been made manually to mapping
-        (changes stored in history table).
-        """
-        latest_execution_run_subquery = (
-            ExecutionRun.objects.filter(thememapping__answer__question_part=part)
-            .filter(type=ExecutionRun.TaskType.THEME_MAPPING)
-            .annotate(latest_created_at=models.Max("created_at"))
-            .order_by("-latest_created_at")
-            .values_list("latest_created_at", flat=True)[:1]
+    # @staticmethod
+    # def get_latest_theme_mappings_for_question_part(part: QuestionPart) -> models.QuerySet:
+    #     """
+    #     Get the set of the theme mappings corresponding to the latest execution run.
+    #     The latest will include all changes that have been made manually to mapping
+    #     (changes stored in history table).
+    #     """
+    #     latest_execution_run_subquery = (
+    #         ExecutionRun.objects.filter(thememapping__answer__question_part=part)
+    #         .filter(type=ExecutionRun.TaskType.THEME_MAPPING)
+    #         .annotate(latest_created_at=models.Max("created_at"))
+    #         .order_by("-latest_created_at")
+    #         .values_list("latest_created_at", flat=True)[:1]
+    #     )
+
+    #     latest_mappings = ThemeMapping.objects.filter(
+    #         execution_run__created_at=models.Subquery(latest_execution_run_subquery)
+    #     ).select_related("answer", "theme", "execution_run")
+
+    #     return latest_mappings
+
+    @classmethod
+    def get_latest_theme_mappings(cls, question_part: QuestionPart) -> models.QuerySet:
+        latest_framework = (
+            Framework.objects.filter(question_part=question_part).order_by("created_at").last()
         )
-
-        latest_mappings = ThemeMapping.objects.filter(
-            execution_run__created_at=models.Subquery(latest_execution_run_subquery)
-        ).select_related("answer", "theme", "execution_run")
-
-        return latest_mappings
+        if latest_framework:
+            return latest_framework.get_theme_mappings()
+        return ThemeMapping.objects.none()
 
 
 class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):

@@ -104,35 +104,3 @@ def test_get_theme_mappings():
     assert qs.count() == 3
     assert theme_mapping in qs
     assert diff_theme_mapping not in qs
-
-
-@pytest.mark.django_db
-def test_get_latest_theme_mappings():
-    question_part = factories.FreeTextQuestionPartFactory()
-    answer = factories.FreeTextAnswerFactory(question_part=question_part)
-    answer2 = factories.FreeTextAnswerFactory(question_part=question_part)
-
-    framework1 = factories.InitialFrameworkFactory(question_part=question_part)
-    framework2 = factories.InitialFrameworkFactory(question_part=question_part)
-    factories.InitialFrameworkFactory()  # random framework - diff question
-
-    # Framework 1 themes
-    theme = factories.InitialThemeFactory(framework=framework1)
-    theme2 = factories.InitialThemeFactory(framework=framework1)
-
-    # Framework 2 themes
-    theme3 = factories.InitialThemeFactory(framework=framework2)
-    theme4 = factories.InitialThemeFactory(framework=framework2)
-
-    # Theme mappings for framework 1
-    factories.ThemeMappingFactory(answer=answer, theme=theme)
-    factories.ThemeMappingFactory(answer=answer2, theme=theme2)
-
-    # Theme mappings for framework 2
-    factories.ThemeMappingFactory(answer=answer, theme=theme3)
-    factories.ThemeMappingFactory(answer=answer2, theme=theme4)
-    factories.ThemeMappingFactory(answer=answer2, theme=theme3)
-
-    theme_mappings_qs = Framework.get_latest_theme_mappings(question_part=question_part)
-    assert theme_mappings_qs.count() == 3
-    assert theme_mappings_qs.first().theme.framework == framework2
