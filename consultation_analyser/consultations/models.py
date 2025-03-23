@@ -428,27 +428,6 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    # @staticmethod
-    # def get_latest_theme_mappings_for_question_part(part: QuestionPart) -> models.QuerySet:
-    #     """
-    #     Get the set of the theme mappings corresponding to the latest execution run.
-    #     The latest will include all changes that have been made manually to mapping
-    #     (changes stored in history table).
-    #     """
-    #     latest_execution_run_subquery = (
-    #         ExecutionRun.objects.filter(thememapping__answer__question_part=part)
-    #         .filter(type=ExecutionRun.TaskType.THEME_MAPPING)
-    #         .annotate(latest_created_at=models.Max("created_at"))
-    #         .order_by("-latest_created_at")
-    #         .values_list("latest_created_at", flat=True)[:1]
-    #     )
-
-    #     latest_mappings = ThemeMapping.objects.filter(
-    #         execution_run__created_at=models.Subquery(latest_execution_run_subquery)
-    #     ).select_related("answer", "theme", "execution_run")
-
-    #     return latest_mappings
-
     @classmethod
     def get_latest_theme_mappings(cls, question_part: QuestionPart) -> models.QuerySet:
         latest_framework = (
