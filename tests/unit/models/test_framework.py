@@ -1,12 +1,12 @@
 import pytest
 
 from consultation_analyser import factories
-from consultation_analyser.consultations import models
+from consultation_analyser.consultations.models import Framework, ExecutionRun
 
 
 @pytest.mark.django_db
 def test_cant_save():
-    framework = models.Framework()
+    framework = Framework()
     with pytest.raises(ValueError):
         framework.save()
 
@@ -15,17 +15,19 @@ def test_cant_save():
 def test_create_initial_framework():
     question_part = factories.FreeTextQuestionPartFactory()
     with pytest.raises(ValueError):
-        models.Framework.create_initial_framework(
-            execution_run=None, question_part=question_part
-        )
-    theme_mapping_execution_run = factories.ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
-    theme_generation_execution_run = factories.ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_GENERATION)
+       Framework.create_initial_framework(execution_run=None, question_part=question_part)
+    theme_mapping_execution_run = factories.ExecutionRunFactory(
+        type=ExecutionRun.TaskType.THEME_MAPPING
+    )
+    theme_generation_execution_run = factories.ExecutionRunFactory(
+        type=ExecutionRun.TaskType.THEME_GENERATION
+    )
     with pytest.raises(ValueError):
-        models.Framework.create_initial_framework(
+        Framework.create_initial_framework(
             execution_run=theme_mapping_execution_run, question_part=question_part
         )
 
-    framework = models.Framework.create_initial_framework(
+    framework = Framework.create_initial_framework(
         execution_run=theme_generation_execution_run, question_part=question_part
     )
     assert framework.id
@@ -44,7 +46,7 @@ def test_create_descendant_framework():
         user=user, change_reason="I wanted to change the themes."
     )
     assert new_framework.id
-    assert models.Framework.objects.filter(id=new_framework.id).exists()
+    assert Framework.objects.filter(id=new_framework.id).exists()
     assert new_framework.question_part == initial_framework.question_part
     assert new_framework.id != initial_framework.id
     assert new_framework.precursor == initial_framework
@@ -77,3 +79,63 @@ def test_get_themes_removed_from_previous_framework():
     assert initial_theme_2 in themes_removed
     assert initial_theme_3 in themes_removed
     assert initial_theme_1 not in themes_removed
+
+
+
+
+@pytest.mark.django_db
+def test_get_theme_mappings_for_framework():
+    theme = factories.InitialThemeFactory()
+    framework = theme.framework
+    # No theme mappings
+    qs = framework.get_theme_mappings_for_framework()
+    assert qs.count() == 0
+
+    # Now add some theme mappings
+    question_part = framework.question_part
+    theme2 = factories.InitialThemeFactory(framework=framework)
+    answer = factories.FreeTextAnswerFactory(question_part=question_part)
+    answer2 = factories.FreeTextAnswerFactory(question_part=question_part)
+    diff_answer = factories.FreeTextAnswerFactory()
+    theme_mapping = factories.ThemeMappingFactory(answer=answer, theme=theme)
+    factories.ThemeMappingFactory(answer=answer, theme=theme2)
+    factories.ThemeMappingFactory(answer=answer2, theme=theme2)
+    diff_theme_mapping = factories.ThemeMappingFactory(answer=diff_answer)
+
+    qs = framework.get_theme_mappings_for_framework()
+    assert qs.count() == 3
+    assert theme_mapping in qs
+    assert diff_theme_mapping not in qs
+
+
+
+@pytest.mark.django_db
+def test_get_latest_theme_mappings():
+    question_part = factories.FreeTextQuestionPartFactory()
+    answer = factories.FreeTextAnswerFactory(question_part=question_part)
+    answer2 = factories.FreeTextAnswerFactory(question_part=question_part)
+
+    framework1 = factories.InitialFrameworkFactory(question_part=question_part)
+    framework2 = factories.InitialFrameworkFactory(question_part=question_part)
+    factories.InitialFrameworkFactory() # random framework - diff question
+
+    # Framework 1 themes
+    theme = factories.InitialThemeFactory(framework=framework1)
+    theme2 = factories.InitialThemeFactory(framework=framework1)
+
+    # Framework 2 themes
+    theme3 = factories.InitialThemeFactory(framework=framework2)
+    theme4 = factories.InitialThemeFactory(framework=framework2)
+
+    # Theme mappings for framework 1
+    factories.ThemeMappingFactory(answer=answer, theme=theme)
+    factories.ThemeMappingFactory(answer=answer2, theme=theme2)
+
+    # Theme mappings for framework 2
+    factories.ThemeMappingFactory(answer=answer, theme=theme3)
+    factories.ThemeMappingFactory(answer=answer2, theme=theme4)
+    factories.ThemeMappingFactory(answer=answer2, theme=theme3)
+
+    theme_mappings_qs = Framework.get_latest_theme_mappings(question_part=question_part)
+    assert theme_mappings_qs.count() == 3
+    assert theme_mappings_qs.first().theme.framework == framework2

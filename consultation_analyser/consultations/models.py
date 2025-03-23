@@ -259,6 +259,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     classify consultation responses.
     Create a new Framework every time the set of themes changes.
     """
+
     # Execution run is the theme generation execution run that has generated the framework
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
@@ -333,6 +334,17 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         previous_framework_themes = self.precursor.theme_set.values_list("id", flat=True)
         new_themes = self.theme_set.exclude(precursor__id__in=previous_framework_themes)
         return new_themes
+
+    def get_theme_mappings_for_framework(self) -> models.QuerySet:
+        return ThemeMapping.objects.filter(theme__framework=self)
+
+    @classmethod
+    def get_latest_theme_mappings(cls, question_part: QuestionPart) -> models.QuerySet:
+        latest_framework = Framework.objects.filter(question_part=question_part).order_by("created_at").last()
+        if latest_framework:
+            return latest_framework.get_theme_mappings_for_framework()
+        return ThemeMapping.objects.none()
+
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -415,6 +427,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
     reason = models.TextField()
     # This is the theme mapping execution run
+    # TODO - rename field to be more explicit, amend save to ensure correct type
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
     stance = models.CharField(max_length=8, choices=Stance.choices)
     history = HistoricalRecords()
