@@ -28,6 +28,7 @@ def test_review_show_response(django_app):
     answer_1 = FreeTextAnswerFactory(question_part=question_part)
     answer_2 = FreeTextAnswerFactory(question_part=question_part)
     execution_run = ExecutionRunFactory(framework=framework)
+    # Initial state answer1 = [A], answer2 = [A, B]
     ThemeMappingFactory(answer=answer_1, theme=theme_a, execution_run=execution_run)
     ThemeMappingFactory(answer=answer_2, theme=theme_a, execution_run=execution_run)
     ThemeMappingFactory(answer=answer_2, theme=theme_b, execution_run=execution_run)
@@ -55,6 +56,13 @@ def test_review_show_response(django_app):
     theme_mapping = models.ThemeMapping.objects.get(answer=updated_answer)
     assert theme_mapping.theme == theme_b
 
+    # Check that the counts are right and there are no duplicates
+    # expected answer1 = [B], answer2 = [A, B]
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_a).count() == 0
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_b).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_a).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_b).count() == 1
+
     # And check user who made the change has been saved
     latest_answer_history = updated_answer.history.latest()
     assert latest_answer_history.history_user == user
@@ -80,6 +88,92 @@ def test_review_show_response(django_app):
     assert updated_answer.is_theme_mapping_audited
     assert models.ThemeMapping.objects.filter(answer=updated_answer).count() == 2
 
+    # Check that the counts are right and there are no duplicates
+    # expected answer1 = [B], answer2 = [A, B]
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_a).count() == 0
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_b).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_a).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_b).count() == 1
+
     # Check the latest user who made the change has been saved
     latest_answer_history = updated_answer.history.latest()
     assert latest_answer_history.history_user == user
+
+    # Change answer1 back
+    response_id = answer_1.id
+    url = reverse(
+        "show_response",
+        args=(
+            consultation_slug,
+            question_slug,
+            response_id,
+        ),
+    )
+    review_response_page = django_app.get(url)
+    review_response_page.form["theme"] = [str(theme_a.id)]
+    next_response = review_response_page.form.submit().follow()
+
+    # expected answer1 = [A], answer2 = [A, B]
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_a).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_b).count() == 0
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_a).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_b).count() == 1
+
+    # Change answer1 again
+    response_id = answer_1.id
+    url = reverse(
+        "show_response",
+        args=(
+            consultation_slug,
+            question_slug,
+            response_id,
+        ),
+    )
+    review_response_page = django_app.get(url)
+    review_response_page.form["theme"] = [str(theme_a.id), str(theme_b.id)]
+    next_response = review_response_page.form.submit().follow()
+
+    # expected answer1 = [A, B], answer2 = [A, B]
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_a).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_b).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_a).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_b).count() == 1
+
+    # Change answer1 to nothing
+    response_id = answer_1.id
+    url = reverse(
+        "show_response",
+        args=(
+            consultation_slug,
+            question_slug,
+            response_id,
+        ),
+    )
+    review_response_page = django_app.get(url)
+    review_response_page.form["theme"] = []
+    next_response = review_response_page.form.submit().follow()
+    # expected answer1 = [], answer2 = [A, B]
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_a).count() == 0
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_b).count() == 0
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_a).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_b).count() == 1
+
+    # Change answer1 again
+    response_id = answer_1.id
+    url = reverse(
+        "show_response",
+        args=(
+            consultation_slug,
+            question_slug,
+            response_id,
+        ),
+    )
+    review_response_page = django_app.get(url)
+    review_response_page.form["theme"] = [str(theme_a.id), str(theme_b.id)]
+    next_response = review_response_page.form.submit().follow()
+
+    # expected answer1 = [A, B], answer2 = [A, B]
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_a).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_b).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_a).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_b).count() == 1
