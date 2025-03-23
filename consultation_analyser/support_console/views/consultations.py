@@ -12,7 +12,7 @@ from consultation_analyser.consultations.dummy_data import create_dummy_consulta
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
-from consultation_analyser.support_console.ingest import import_themefinder_data_for_question
+from consultation_analyser.support_console.ingest import import_themefinder_data_for_question_job
 
 logger = logging.getLogger("export")
 
@@ -114,7 +114,7 @@ def import_theme_mapping(request: HttpRequest) -> HttpResponse:
         )
         max_existing = max(question_numbers) if question_numbers else 0
         next_question_number = max_existing + 1
-        import_themefinder_data_for_question(
+        import_themefinder_data_for_question_job.delay(
             consultation=consultation,
             question_number=next_question_number,
             question_folder=path_to_outputs,

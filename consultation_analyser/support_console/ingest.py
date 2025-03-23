@@ -3,6 +3,7 @@ import logging
 
 import boto3
 from django.conf import settings
+from django_rq import job
 
 from consultation_analyser.consultations.models import (
     Answer,
@@ -193,6 +194,15 @@ def import_themefinder_data_for_question(
         raise ValueError("Expected a list of dictionaries of theme mappings")
     logger.info(f"Imported themes for question {question_number}")
     logger.info(f"**Imported all data for question: {question.text}**")
+
+
+@job("default", timeout=900)
+def import_themefinder_data_for_question_job(
+    consultation: Consultation, question_number: int, question_folder: str
+) -> None:
+    import_themefinder_data_for_question(
+        consultation=consultation, question_number=question_number, question_folder=question_folder
+    )
 
 
 def import_all_questions_for_consultation(consultation_title: str, folder_name: str) -> None:
