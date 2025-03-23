@@ -1,7 +1,7 @@
 import pytest
 
 from consultation_analyser import factories
-from consultation_analyser.consultations.models import Framework, ExecutionRun
+from consultation_analyser.consultations.models import ExecutionRun, Framework
 
 
 @pytest.mark.django_db
@@ -15,7 +15,7 @@ def test_cant_save():
 def test_create_initial_framework():
     question_part = factories.FreeTextQuestionPartFactory()
     with pytest.raises(ValueError):
-       Framework.create_initial_framework(execution_run=None, question_part=question_part)
+        Framework.create_initial_framework(execution_run=None, question_part=question_part)
     theme_mapping_execution_run = factories.ExecutionRunFactory(
         type=ExecutionRun.TaskType.THEME_MAPPING
     )
@@ -81,14 +81,12 @@ def test_get_themes_removed_from_previous_framework():
     assert initial_theme_1 not in themes_removed
 
 
-
-
 @pytest.mark.django_db
-def test_get_theme_mappings_for_framework():
+def test_get_theme_mappings():
     theme = factories.InitialThemeFactory()
     framework = theme.framework
     # No theme mappings
-    qs = framework.get_theme_mappings_for_framework()
+    qs = framework.get_theme_mappings()
     assert qs.count() == 0
 
     # Now add some theme mappings
@@ -102,11 +100,10 @@ def test_get_theme_mappings_for_framework():
     factories.ThemeMappingFactory(answer=answer2, theme=theme2)
     diff_theme_mapping = factories.ThemeMappingFactory(answer=diff_answer)
 
-    qs = framework.get_theme_mappings_for_framework()
+    qs = framework.get_theme_mappings()
     assert qs.count() == 3
     assert theme_mapping in qs
     assert diff_theme_mapping not in qs
-
 
 
 @pytest.mark.django_db
@@ -117,7 +114,7 @@ def test_get_latest_theme_mappings():
 
     framework1 = factories.InitialFrameworkFactory(question_part=question_part)
     framework2 = factories.InitialFrameworkFactory(question_part=question_part)
-    factories.InitialFrameworkFactory() # random framework - diff question
+    factories.InitialFrameworkFactory()  # random framework - diff question
 
     # Framework 1 themes
     theme = factories.InitialThemeFactory(framework=framework1)

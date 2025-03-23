@@ -286,21 +286,34 @@ def show(
     question_slug: str,
     response_id: UUID,
 ):
+    # Allow user to review and update theme mappings for a response.
+    # Assume latest theme mappings i.e. from latest framework.
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
     response = get_object_or_404(models.Answer, id=response_id)
 
-    all_theme_mappings = models.ThemeMapping.get_latest_theme_mappings_for_question_part(
-        part=response.question_part
+    latest_framework = (
+        models.Framework.objects.filter(question_part=response.question_part)
+        .order_by("created_at")
+        .last()
     )
-    all_themes = models.Theme.objects.filter(id__in=all_theme_mappings.values("theme"))
-    existing_themes = models.ThemeMapping.objects.filter(answer=response).values_list(
+    if latest_framework:
+        all_theme_mappings_for_framework = latest_framework.get_theme_mappings()
+    else:
+        all_theme_mappings_for_framework = models.ThemeMapping.objects.none()
+
+    all_themes = models.Theme.objects.filter(
+        id__in=all_theme_mappings_for_framework.values("theme")
+    )
+
+    # TODO - should be theme mappings with the existing framework
+    existing_themes = all_theme_mappings_for_framework.filter(answer=response).values_list(
         "theme", flat=True
     )
 
     if request.method == "POST":
         requested_themes = request.POST.getlist("theme")
-        existing_mappings = models.ThemeMapping.objects.filter(answer=response).select_related(
+        existing_mappings = all_theme_mappings_for_framework.filter(answer=response).select_related(
             "theme"
         )
 
@@ -319,7 +332,7 @@ def show(
                 answer=response,
                 theme_id=theme_id,
                 user_audited=True,
-            )
+            )  # From the theme we can infer it's from this framework
 
         # flag
         response.is_theme_mapping_audited = True

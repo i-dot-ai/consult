@@ -335,16 +335,17 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         new_themes = self.theme_set.exclude(precursor__id__in=previous_framework_themes)
         return new_themes
 
-    def get_theme_mappings_for_framework(self) -> models.QuerySet:
+    def get_theme_mappings(self) -> models.QuerySet:
         return ThemeMapping.objects.filter(theme__framework=self)
 
     @classmethod
     def get_latest_theme_mappings(cls, question_part: QuestionPart) -> models.QuerySet:
-        latest_framework = Framework.objects.filter(question_part=question_part).order_by("created_at").last()
+        latest_framework = (
+            Framework.objects.filter(question_part=question_part).order_by("created_at").last()
+        )
         if latest_framework:
-            return latest_framework.get_theme_mappings_for_framework()
+            return latest_framework.get_theme_mappings()
         return ThemeMapping.objects.none()
-
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
