@@ -259,7 +259,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     classify consultation responses.
     Create a new Framework every time the set of themes changes.
     """
-
+    # Execution run is the theme generation execution run that has generated the framework
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
     # When Framework is created - record reason it was changed & user that created it
@@ -282,6 +282,9 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         # user, change_reason, precursor are all None
         if not execution_run:
             raise ValueError("An initial Framework needs an execution run.")
+
+        if execution_run.type != ExecutionRun.TaskType.THEME_GENERATION:
+            raise ValueError("Initial framework must be based on theme generation")
 
         new_framework = Framework(
             execution_run=execution_run,
@@ -411,6 +414,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
     reason = models.TextField()
+    # This is the theme mapping execution run
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
     stance = models.CharField(max_length=8, choices=Stance.choices)
     history = HistoricalRecords()
@@ -428,6 +432,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         """
         latest_execution_run_subquery = (
             ExecutionRun.objects.filter(thememapping__answer__question_part=part)
+            # .filter(type=ExecutionRun.TaskType.THEME_MAPPING)
             .annotate(latest_created_at=models.Max("created_at"))
             .order_by("-latest_created_at")
             .values_list("latest_created_at", flat=True)[:1]

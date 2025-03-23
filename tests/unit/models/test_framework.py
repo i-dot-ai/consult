@@ -13,20 +13,26 @@ def test_cant_save():
 
 @pytest.mark.django_db
 def test_create_initial_framework():
+    question_part = factories.FreeTextQuestionPartFactory()
     with pytest.raises(ValueError):
         models.Framework.create_initial_framework(
-            execution_run=None, question_part=factories.FreeTextQuestionPartFactory()
+            execution_run=None, question_part=question_part
         )
-    execution_run = factories.ExecutionRunFactory()
-    question_part = factories.FreeTextQuestionPartFactory()
+    theme_mapping_execution_run = factories.ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
+    theme_generation_execution_run = factories.ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_GENERATION)
+    with pytest.raises(ValueError):
+        models.Framework.create_initial_framework(
+            execution_run=theme_mapping_execution_run, question_part=question_part
+        )
+
     framework = models.Framework.create_initial_framework(
-        execution_run=execution_run, question_part=question_part
+        execution_run=theme_generation_execution_run, question_part=question_part
     )
     assert framework.id
     assert not framework.precursor
     assert not framework.user
     assert not framework.change_reason
-    assert framework.execution_run == execution_run
+    assert framework.execution_run == theme_generation_execution_run
     assert framework.question_part == question_part
 
 

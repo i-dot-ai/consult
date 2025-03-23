@@ -1,7 +1,7 @@
 import pytest
 
 from consultation_analyser import factories
-from consultation_analyser.consultations.models import SentimentMapping
+from consultation_analyser.consultations.models import SentimentMapping, ExecutionRun
 from consultation_analyser.consultations.views.consultations import (
     get_counts_of_sentiment,
     get_top_themes_for_free_text_question_part,
@@ -39,7 +39,7 @@ def test_get_counts_of_sentiment():
 def test_get_top_themes_for_free_text_question_part():
     question_part = factories.FreeTextQuestionPartFactory()
     framework = factories.InitialFrameworkFactory(question_part=question_part)
-    execution_run = factories.ExecutionRunFactory()
+    execution_run = factories.ExecutionRunFactory(type=ExecutionRun.TaskType.THEME_MAPPING)
     theme_a = factories.InitialThemeFactory(
         name="Theme A", framework=framework, execution_run=execution_run, key="A"
     )

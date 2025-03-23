@@ -124,7 +124,7 @@ class InitialFrameworkFactory(DjangoModelFactory):
         execution_run = kwargs.get("execution_run")
         question_part = kwargs.get("question_part")
         if not execution_run:
-            execution_run = ExecutionRunFactory()
+            execution_run = ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_GENERATION)
         if not question_part:
             question_part = FreeTextQuestionPartFactory()
         return model_class.create_initial_framework(

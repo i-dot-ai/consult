@@ -27,7 +27,7 @@ def test_review_show_response(django_app):
     theme_b = InitialThemeFactory(framework=framework, name="Theme B")
     answer_1 = FreeTextAnswerFactory(question_part=question_part)
     answer_2 = FreeTextAnswerFactory(question_part=question_part)
-    execution_run = ExecutionRunFactory(framework=framework)
+    execution_run = ExecutionRunFactory(framework=framework, type=models.ExecutionRun.TaskType.THEME_MAPPING)
     # Initial state answer1 = [A], answer2 = [A, B]
     ThemeMappingFactory(answer=answer_1, theme=theme_a, execution_run=execution_run)
     ThemeMappingFactory(answer=answer_2, theme=theme_a, execution_run=execution_run)
