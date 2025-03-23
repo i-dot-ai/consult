@@ -45,12 +45,12 @@ def test_get_latest_theme_mappings():
     InitialFrameworkFactory()  # random framework - diff question
 
     # Framework 1 themes
-    theme = InitialThemeFactory(framework=framework1)
-    theme2 = InitialThemeFactory(framework=framework1)
+    theme = InitialThemeFactory(framework=framework1, key="A")
+    theme2 = InitialThemeFactory(framework=framework1, key="B")
 
     # Framework 2 themes
-    theme3 = InitialThemeFactory(framework=framework2)
-    theme4 = InitialThemeFactory(framework=framework2)
+    theme3 = InitialThemeFactory(framework=framework2, key="C")
+    theme4 = InitialThemeFactory(framework=framework2, key="D")
 
     # Theme mappings for framework 1
     ThemeMappingFactory(answer=answer, theme=theme)
