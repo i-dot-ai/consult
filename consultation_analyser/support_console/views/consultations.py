@@ -95,6 +95,7 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
 
 
 def import_theme_mapping(request: HttpRequest) -> HttpResponse:
+    current_user = request.user
     if request.POST:
         consultation_slug = request.POST.get("consultation_slug")
         consultation_name = request.POST.get("consultation_name")
@@ -108,6 +109,8 @@ def import_theme_mapping(request: HttpRequest) -> HttpResponse:
             if not consultation_name:
                 consultation_name = "New Consultation"
             consultation = models.Consultation.objects.create(title=consultation_name)
+        consultation.users.add(current_user)
+        consultation.save()
 
         question_numbers = models.Question.objects.filter(consultation=consultation).values_list(
             "number", flat=True
