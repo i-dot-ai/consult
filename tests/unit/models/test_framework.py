@@ -79,5 +79,3 @@ def test_get_themes_removed_from_previous_framework():
     assert initial_theme_2 in themes_removed
     assert initial_theme_3 in themes_removed
     assert initial_theme_1 not in themes_removed
-
-

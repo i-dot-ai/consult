@@ -57,19 +57,19 @@ def get_themefinder_outputs_for_question(
     return json.loads(response["Body"].read())
 
 
-def import_themes(question_part: QuestionPart, theme_data: list[dict]) -> Framework:
+def import_themes(question_part: QuestionPart, theme_data: dict) -> Framework:
     theme_generation_execution_run = ExecutionRun.objects.create(
         type=ExecutionRun.TaskType.THEME_GENERATION
     )
     framework = Framework.create_initial_framework(
         question_part=question_part, execution_run=theme_generation_execution_run
     )
-    for data in theme_data:
-        for theme_key, theme_value in data.items():
-            name, description = theme_value.split(": ", 1)
-            Theme.create_initial_theme(
-                framework=framework, key=theme_key, name=name, description=description
-            )
+    for theme_key, theme_value in theme_data.items():
+        name, description = theme_value.split(": ", 1)
+        logger.info(f"Creating theme: {name}, key: {theme_key}")
+        Theme.create_initial_theme(
+            framework=framework, key=theme_key, name=name, description=description
+        )
     return framework
 
 
@@ -148,6 +148,7 @@ def import_theme_mappings_for_framework(framework: Framework, list_mappings: lis
     )
     mapping_execution_run = ExecutionRun.objects.create(type=ExecutionRun.TaskType.THEME_MAPPING)
     for theme_mapping_dict in list_mappings:
+        logger.info(f"Importing theme mapping for response: {theme_mapping_dict}")
         import_theme_mapping_and_responses(
             framework=framework,
             sentiment_execution_run=sentiment_execution_run,
@@ -178,10 +179,10 @@ def import_themefinder_data_for_question(
     themes = get_themefinder_outputs_for_question(
         question_folder_key=question_folder, output_name="themes"
     )
-    if isinstance(themes, list):
+    if isinstance(themes, dict):
         framework = import_themes(question_part=question_part, theme_data=themes)
     else:
-        raise ValueError("Expected a list of themes")
+        raise ValueError("Expected a dict of themes")
     logger.info(f"Imported themes for question {question_number}")
 
     # Import responses and mappings
