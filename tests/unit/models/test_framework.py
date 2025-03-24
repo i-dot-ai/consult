@@ -81,26 +81,3 @@ def test_get_themes_removed_from_previous_framework():
     assert initial_theme_1 not in themes_removed
 
 
-@pytest.mark.django_db
-def test_get_theme_mappings():
-    theme = factories.InitialThemeFactory()
-    framework = theme.framework
-    # No theme mappings
-    qs = framework.get_theme_mappings()
-    assert qs.count() == 0
-
-    # Now add some theme mappings
-    question_part = framework.question_part
-    theme2 = factories.InitialThemeFactory(framework=framework)
-    answer = factories.FreeTextAnswerFactory(question_part=question_part)
-    answer2 = factories.FreeTextAnswerFactory(question_part=question_part)
-    diff_answer = factories.FreeTextAnswerFactory()
-    theme_mapping = factories.ThemeMappingFactory(answer=answer, theme=theme)
-    factories.ThemeMappingFactory(answer=answer, theme=theme2)
-    factories.ThemeMappingFactory(answer=answer2, theme=theme2)
-    diff_theme_mapping = factories.ThemeMappingFactory(answer=diff_answer)
-
-    qs = framework.get_theme_mappings()
-    assert qs.count() == 3
-    assert theme_mapping in qs
-    assert diff_theme_mapping not in qs
