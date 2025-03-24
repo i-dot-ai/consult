@@ -260,6 +260,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     Create a new Framework every time the set of themes changes.
     """
 
+    # Execution run is the theme generation execution run that has generated the framework
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
     # When Framework is created - record reason it was changed & user that created it
@@ -282,6 +283,9 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         # user, change_reason, precursor are all None
         if not execution_run:
             raise ValueError("An initial Framework needs an execution run.")
+
+        if execution_run.type != ExecutionRun.TaskType.THEME_GENERATION:
+            raise ValueError("Initial framework must be based on theme generation")
 
         new_framework = Framework(
             execution_run=execution_run,
@@ -330,6 +334,9 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         previous_framework_themes = self.precursor.theme_set.values_list("id", flat=True)
         new_themes = self.theme_set.exclude(precursor__id__in=previous_framework_themes)
         return new_themes
+
+    def get_theme_mappings(self) -> models.QuerySet:
+        return ThemeMapping.objects.filter(theme__framework=self)
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -411,6 +418,8 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
     reason = models.TextField()
+    # This is the theme mapping execution run
+    # TODO - rename field to be more explicit, amend save to ensure correct type
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
     stance = models.CharField(max_length=8, choices=Stance.choices)
     history = HistoricalRecords()
@@ -419,25 +428,14 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
 
-    @staticmethod
-    def get_latest_theme_mappings_for_question_part(part: QuestionPart) -> models.QuerySet:
-        """
-        Get the set of the theme mappings corresponding to the latest execution run.
-        The latest will include all changes that have been made manually to mapping
-        (changes stored in history table).
-        """
-        latest_execution_run_subquery = (
-            ExecutionRun.objects.filter(thememapping__answer__question_part=part)
-            .annotate(latest_created_at=models.Max("created_at"))
-            .order_by("-latest_created_at")
-            .values_list("latest_created_at", flat=True)[:1]
+    @classmethod
+    def get_latest_theme_mappings(cls, question_part: QuestionPart) -> models.QuerySet:
+        latest_framework = (
+            Framework.objects.filter(question_part=question_part).order_by("created_at").last()
         )
-
-        latest_mappings = ThemeMapping.objects.filter(
-            execution_run__created_at=models.Subquery(latest_execution_run_subquery)
-        ).select_related("answer", "theme", "execution_run")
-
-        return latest_mappings
+        if latest_framework:
+            return latest_framework.get_theme_mappings()
+        return ThemeMapping.objects.none()
 
 
 class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):

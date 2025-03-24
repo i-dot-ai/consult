@@ -46,7 +46,7 @@ def test_export_user_theme(mock_boto_client, django_app):
 
     # Set up themes and theme mappings
     framework = factories.InitialFrameworkFactory(question_part=question_part)
-    execution_run = factories.ExecutionRunFactory()
+    execution_run = factories.ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
     theme1 = factories.InitialThemeFactory(framework=framework, key="B")
     theme2 = factories.InitialThemeFactory(framework=framework, key="A")
     theme3 = factories.InitialThemeFactory(framework=framework, key="C")

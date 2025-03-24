@@ -39,7 +39,7 @@ class Command(BaseCommand):
                 type=models.QuestionPart.QuestionType.FREE_TEXT,
             )
             execution_run = models.ExecutionRun.objects.create(
-                type=models.ExecutionRun.TaskType.THEME_MAPPING,
+                type=models.ExecutionRun.TaskType.THEME_GENERATION,
             )
             framework = models.Framework.create_initial_framework(
                 execution_run=execution_run, question_part=free_text_qp

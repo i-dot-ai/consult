@@ -30,8 +30,8 @@ def show(
     highest_theme_count = 0
 
     if free_text_question_part:
-        latest_theme_mappings = models.ThemeMapping.get_latest_theme_mappings_for_question_part(
-            part=free_text_question_part
+        latest_theme_mappings = models.ThemeMapping.get_latest_theme_mappings(
+            question_part=free_text_question_part
         )
         theme_counts = (
             latest_theme_mappings.values("theme").annotate(count=Count("theme")).order_by("-count")

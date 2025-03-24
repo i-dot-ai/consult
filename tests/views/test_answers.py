@@ -1,7 +1,12 @@
 import pytest
 from pytest_lazy_fixtures import lf
 
-from consultation_analyser.consultations.models import Respondent, SentimentMapping, ThemeMapping
+from consultation_analyser.consultations.models import (
+    ExecutionRun,
+    Respondent,
+    SentimentMapping,
+    ThemeMapping,
+)
 from consultation_analyser.consultations.views.answers import (
     filter_by_demographic_data,
     filter_by_response_and_theme,
@@ -10,6 +15,7 @@ from consultation_analyser.consultations.views.answers import (
     get_selected_theme_summary,
 )
 from consultation_analyser.factories import (
+    ExecutionRunFactory,
     FreeTextAnswerFactory,
     FreeTextQuestionPartFactory,
     InitialFrameworkFactory,
@@ -46,6 +52,16 @@ def question_part(question):
 @pytest.fixture()
 def framework(question_part):
     return InitialFrameworkFactory(question_part=question_part)
+
+
+@pytest.fixture()
+def theme_mapping_execution_run():
+    return ExecutionRunFactory(type=ExecutionRun.TaskType.THEME_MAPPING)
+
+
+@pytest.fixture()
+def theme_generation_execution_run():
+    return ExecutionRunFactory(type=ExecutionRun.TaskType.THEME_GENERATION)
 
 
 @pytest.fixture()
@@ -232,10 +248,18 @@ def test_filter_by_response_and_theme(
 
 
 @pytest.mark.django_db
-def test_filter_by_multiple_themes(question, question_part, framework):
-    theme_a = InitialThemeFactory(framework=framework, key="A")
-    theme_b = InitialThemeFactory(framework=framework, key="B")
-    theme_c = InitialThemeFactory(framework=framework, key="C")
+def test_filter_by_multiple_themes(
+    question, question_part, framework, theme_generation_execution_run
+):
+    theme_a = InitialThemeFactory(
+        framework=framework, key="A", execution_run=theme_generation_execution_run
+    )
+    theme_b = InitialThemeFactory(
+        framework=framework, key="B", execution_run=theme_generation_execution_run
+    )
+    theme_c = InitialThemeFactory(
+        framework=framework, key="C", execution_run=theme_generation_execution_run
+    )
 
     answer_theme_a = FreeTextAnswerFactory(question_part=question_part)
     ThemeMappingFactory(theme=theme_a, answer=answer_theme_a)
@@ -334,37 +358,43 @@ def test_filter_by_demographic_data(individual_filter, should_filter):
 
 
 @pytest.mark.django_db
-def test_get_selected_theme_summary(question_part, framework):
-    theme_a = InitialThemeFactory(framework=framework, key="A")
-    theme_b = InitialThemeFactory(framework=framework, key="B")
-    InitialThemeFactory(framework=framework, key="C")
+def test_get_selected_theme_summary(
+    question_part, framework, theme_generation_execution_run, theme_mapping_execution_run
+):
+    theme_a = InitialThemeFactory(
+        framework=framework, key="A", execution_run=theme_generation_execution_run
+    )
+    theme_b = InitialThemeFactory(
+        framework=framework, key="B", execution_run=theme_generation_execution_run
+    )
+    InitialThemeFactory(framework=framework, key="C", execution_run=theme_generation_execution_run)
 
     answer_theme_a = FreeTextAnswerFactory(question_part=question_part)
     ThemeMappingFactory(
         theme=theme_a,
         answer=answer_theme_a,
         stance=ThemeMapping.Stance.POSITIVE,
-        execution_run=framework.execution_run,
+        execution_run=theme_mapping_execution_run,
     )
     answer_theme_b = FreeTextAnswerFactory(question_part=question_part)
     ThemeMappingFactory(
         theme=theme_b,
         answer=answer_theme_b,
         stance=ThemeMapping.Stance.POSITIVE,
-        execution_run=framework.execution_run,
+        execution_run=theme_mapping_execution_run,
     )
     answer_theme_a_and_b = FreeTextAnswerFactory(question_part=question_part)
     ThemeMappingFactory(
         theme=theme_a,
         answer=answer_theme_a_and_b,
         stance=ThemeMapping.Stance.POSITIVE,
-        execution_run=framework.execution_run,
+        execution_run=theme_mapping_execution_run,
     )
     ThemeMappingFactory(
         theme=theme_b,
         answer=answer_theme_a_and_b,
         stance=ThemeMapping.Stance.NEGATIVE,
-        execution_run=framework.execution_run,
+        execution_run=theme_mapping_execution_run,
     )
 
     selected_theme_mappings, theme_mapping_summary = get_selected_theme_summary(

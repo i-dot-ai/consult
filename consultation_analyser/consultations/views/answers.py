@@ -84,9 +84,12 @@ def get_selected_theme_summary(
     free_text_question_part: models.QuestionPart, respondents: QuerySet
 ) -> tuple[QuerySet, dict]:
     """Get a summary of the selected themes for a free text question"""
+    # Assume latest framework for now
+    theme_mappings_qs = models.ThemeMapping.get_latest_theme_mappings(
+        question_part=free_text_question_part
+    )
     selected_theme_mappings = (
-        models.ThemeMapping.get_latest_theme_mappings_for_question_part(free_text_question_part)
-        .filter(answer__respondent__in=respondents)
+        theme_mappings_qs.filter(answer__respondent__in=respondents)
         .values("theme__name", "theme__description", "theme__id")
         .annotate(
             count=Count("id"),
@@ -188,7 +191,7 @@ def index(
         question=question, type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
     ).exists()
     theme_mappings = (
-        models.ThemeMapping.get_latest_theme_mappings_for_question_part(free_text_question_part)
+        models.ThemeMapping.get_latest_theme_mappings(question_part=free_text_question_part)
         .values("theme__name", "theme__description", "theme__id")
         .order_by("theme__name")
         .distinct("theme__name")
@@ -286,21 +289,27 @@ def show(
     question_slug: str,
     response_id: UUID,
 ):
+    # Allow user to review and update theme mappings for a response.
+    # Assume latest theme mappings i.e. from latest framework.
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
     response = get_object_or_404(models.Answer, id=response_id)
 
-    all_theme_mappings = models.ThemeMapping.get_latest_theme_mappings_for_question_part(
-        part=response.question_part
+    all_theme_mappings_for_framework = models.ThemeMapping.get_latest_theme_mappings(
+        response.question_part
     )
-    all_themes = models.Theme.objects.filter(id__in=all_theme_mappings.values("theme"))
-    existing_themes = models.ThemeMapping.objects.filter(answer=response).values_list(
+
+    all_themes = models.Theme.objects.filter(
+        id__in=all_theme_mappings_for_framework.values("theme")
+    )
+
+    existing_themes = all_theme_mappings_for_framework.filter(answer=response).values_list(
         "theme", flat=True
     )
 
     if request.method == "POST":
         requested_themes = request.POST.getlist("theme")
-        existing_mappings = models.ThemeMapping.objects.filter(answer=response).select_related(
+        existing_mappings = all_theme_mappings_for_framework.filter(answer=response).select_related(
             "theme"
         )
 
@@ -319,7 +328,7 @@ def show(
                 answer=response,
                 theme_id=theme_id,
                 user_audited=True,
-            )
+            )  # From the theme we can infer it's from this framework
 
         # flag
         response.is_theme_mapping_audited = True

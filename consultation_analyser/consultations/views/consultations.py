@@ -60,9 +60,7 @@ def get_top_themes_for_free_text_question_part(
     free_text_question_part: QuestionPart, number_top_themes: int = 8
 ) -> list[dict]:
     # For now, just get latest theme mappings
-    theme_mappings_qs = ThemeMapping.get_latest_theme_mappings_for_question_part(
-        free_text_question_part
-    )
+    theme_mappings_qs = ThemeMapping.get_latest_theme_mappings(free_text_question_part)
     top_themes_counts_qs = (
         theme_mappings_qs.values("theme")
         .annotate(theme_count=Count("theme"))

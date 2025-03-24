@@ -1,32 +1,40 @@
 import pytest
 
 from consultation_analyser import factories
-from consultation_analyser.consultations import models
+from consultation_analyser.consultations.models import ExecutionRun, Framework
 
 
 @pytest.mark.django_db
 def test_cant_save():
-    framework = models.Framework()
+    framework = Framework()
     with pytest.raises(ValueError):
         framework.save()
 
 
 @pytest.mark.django_db
 def test_create_initial_framework():
-    with pytest.raises(ValueError):
-        models.Framework.create_initial_framework(
-            execution_run=None, question_part=factories.FreeTextQuestionPartFactory()
-        )
-    execution_run = factories.ExecutionRunFactory()
     question_part = factories.FreeTextQuestionPartFactory()
-    framework = models.Framework.create_initial_framework(
-        execution_run=execution_run, question_part=question_part
+    with pytest.raises(ValueError):
+        Framework.create_initial_framework(execution_run=None, question_part=question_part)
+    theme_mapping_execution_run = factories.ExecutionRunFactory(
+        type=ExecutionRun.TaskType.THEME_MAPPING
+    )
+    theme_generation_execution_run = factories.ExecutionRunFactory(
+        type=ExecutionRun.TaskType.THEME_GENERATION
+    )
+    with pytest.raises(ValueError):
+        Framework.create_initial_framework(
+            execution_run=theme_mapping_execution_run, question_part=question_part
+        )
+
+    framework = Framework.create_initial_framework(
+        execution_run=theme_generation_execution_run, question_part=question_part
     )
     assert framework.id
     assert not framework.precursor
     assert not framework.user
     assert not framework.change_reason
-    assert framework.execution_run == execution_run
+    assert framework.execution_run == theme_generation_execution_run
     assert framework.question_part == question_part
 
 
@@ -38,7 +46,7 @@ def test_create_descendant_framework():
         user=user, change_reason="I wanted to change the themes."
     )
     assert new_framework.id
-    assert models.Framework.objects.filter(id=new_framework.id).exists()
+    assert Framework.objects.filter(id=new_framework.id).exists()
     assert new_framework.question_part == initial_framework.question_part
     assert new_framework.id != initial_framework.id
     assert new_framework.precursor == initial_framework
@@ -71,3 +79,5 @@ def test_get_themes_removed_from_previous_framework():
     assert initial_theme_2 in themes_removed
     assert initial_theme_3 in themes_removed
     assert initial_theme_1 not in themes_removed
+
+

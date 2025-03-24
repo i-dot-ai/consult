@@ -27,7 +27,10 @@ def test_review_show_response(django_app):
     theme_b = InitialThemeFactory(framework=framework, name="Theme B")
     answer_1 = FreeTextAnswerFactory(question_part=question_part)
     answer_2 = FreeTextAnswerFactory(question_part=question_part)
-    execution_run = ExecutionRunFactory(framework=framework)
+    execution_run = ExecutionRunFactory(
+        framework=framework, type=models.ExecutionRun.TaskType.THEME_MAPPING
+    )
+    # Initial state answer1 = [A], answer2 = [A, B]
     ThemeMappingFactory(answer=answer_1, theme=theme_a, execution_run=execution_run)
     ThemeMappingFactory(answer=answer_2, theme=theme_a, execution_run=execution_run)
     ThemeMappingFactory(answer=answer_2, theme=theme_b, execution_run=execution_run)
@@ -55,6 +58,13 @@ def test_review_show_response(django_app):
     theme_mapping = models.ThemeMapping.objects.get(answer=updated_answer)
     assert theme_mapping.theme == theme_b
 
+    # Check that the counts are right and there are no duplicates
+    # expected answer1 = [B], answer2 = [A, B]
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_a).count() == 0
+    assert models.ThemeMapping.objects.filter(answer=answer_1, theme=theme_b).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_a).count() == 1
+    assert models.ThemeMapping.objects.filter(answer=answer_2, theme=theme_b).count() == 1
+
     # And check user who made the change has been saved
     latest_answer_history = updated_answer.history.latest()
     assert latest_answer_history.history_user == user
@@ -79,7 +89,3 @@ def test_review_show_response(django_app):
     updated_answer = models.Answer.objects.get(id=response_id)
     assert updated_answer.is_theme_mapping_audited
     assert models.ThemeMapping.objects.filter(answer=updated_answer).count() == 2
-
-    # Check the latest user who made the change has been saved
-    latest_answer_history = updated_answer.history.latest()
-    assert latest_answer_history.history_user == user
