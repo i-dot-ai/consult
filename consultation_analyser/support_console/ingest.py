@@ -186,7 +186,7 @@ def import_themefinder_data_for_question(
 
     # Import responses and mappings
     list_theme_mappings = get_themefinder_outputs_for_question(
-        question_folder_key=question_folder, output_name="updated_mapping"
+        question_folder_key=question_folder, output_name="mapping"
     )
     if isinstance(list_theme_mappings, list):
         import_theme_mappings_for_framework(framework, list_theme_mappings)
