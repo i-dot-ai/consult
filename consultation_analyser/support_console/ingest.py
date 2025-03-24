@@ -205,15 +205,3 @@ def import_themefinder_data_for_question_job(
         consultation=consultation, question_number=question_number, question_folder=question_folder
     )
 
-
-def import_all_questions_for_consultation(consultation_title: str, folder_name: str) -> None:
-    # folder in S3 should contain folders named `question_n` for each question
-    consultation = Consultation.objects.create(title=consultation_title)
-    question_folders = get_all_question_subfolders(folder_name, settings.AWS_BUCKET_NAME)
-    for i in range(len(question_folders)):
-        question_folder = question_folders[i]
-        logger.info(f"Importing data from folder: {question_folder}")
-        import_themefinder_data_for_question(
-            consultation=consultation, question_number=(i + 1), question_folder=question_folder
-        )
-    logger.info(f"Imported all data for consultation: {consultation.title}")
