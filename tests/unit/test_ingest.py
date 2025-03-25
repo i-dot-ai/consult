@@ -4,11 +4,7 @@ from django.conf import settings
 from consultation_analyser import factories
 from consultation_analyser.consultations.models import (
     Answer,
-    Consultation,
     ExecutionRun,
-    Framework,
-    Question,
-    QuestionPart,
     Respondent,
     SentimentMapping,
     Theme,
@@ -16,7 +12,6 @@ from consultation_analyser.consultations.models import (
 )
 from consultation_analyser.support_console.ingest import (
     get_themefinder_outputs_for_question,
-    import_all_questions_for_consultation,
     import_theme_mappings_for_framework,
     import_themes,
 )
@@ -118,28 +113,3 @@ def test_get_themefinder_outputs_for_question(mock_s3_objects, monkeypatch):
     assert len(outputs) == 3
 
 
-@pytest.mark.django_db
-def test_import_all_questions_for_consultation(mock_s3_objects, monkeypatch):
-    monkeypatch.setattr(settings, "AWS_BUCKET_NAME", "test-bucket")
-    consultation_title = "My first consultation"
-    folder_name = "folder"
-
-    import_all_questions_for_consultation(consultation_title, folder_name)
-    consultation = Consultation.objects.get(title=consultation_title)
-    questions = Question.objects.filter(consultation=consultation)
-    assert questions.count() == 2
-    assert questions[0].number == 1
-
-    # Has the first question imported properly?
-    question_part = QuestionPart.objects.get(question=questions[0])
-    answers = Answer.objects.filter(question_part=question_part)
-    assert answers.count() == 6
-    framework = Framework.objects.filter(question_part=question_part).first()
-    assert Theme.objects.filter(framework=framework).count() == 5
-
-    # Has the second question imported properly?
-    question_part = QuestionPart.objects.get(question=questions[1])
-    answers = Answer.objects.filter(question_part=question_part)
-    assert answers.count() == 2
-    framework = Framework.objects.filter(question_part=question_part).first()
-    assert Theme.objects.filter(framework=framework).count() == 3

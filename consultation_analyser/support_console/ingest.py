@@ -57,19 +57,19 @@ def get_themefinder_outputs_for_question(
     return json.loads(response["Body"].read())
 
 
-def import_themes(question_part: QuestionPart, theme_data: list[dict]) -> Framework:
+def import_themes(question_part: QuestionPart, theme_data: dict) -> Framework:
     theme_generation_execution_run = ExecutionRun.objects.create(
         type=ExecutionRun.TaskType.THEME_GENERATION
     )
     framework = Framework.create_initial_framework(
         question_part=question_part, execution_run=theme_generation_execution_run
     )
-    for data in theme_data:
-        for theme_key, theme_value in data.items():
-            name, description = theme_value.split(": ", 1)
-            Theme.create_initial_theme(
-                framework=framework, key=theme_key, name=name, description=description
-            )
+    for theme_key, theme_value in theme_data.items():
+        name, description = theme_value.split(": ", 1)
+        logger.info(f"Creating theme: {name}, key: {theme_key}")
+        Theme.create_initial_theme(
+            framework=framework, key=theme_key, name=name, description=description
+        )
     return framework
 
 
@@ -148,6 +148,7 @@ def import_theme_mappings_for_framework(framework: Framework, list_mappings: lis
     )
     mapping_execution_run = ExecutionRun.objects.create(type=ExecutionRun.TaskType.THEME_MAPPING)
     for theme_mapping_dict in list_mappings:
+        logger.info(f"Importing theme mapping for response: {theme_mapping_dict}")
         import_theme_mapping_and_responses(
             framework=framework,
             sentiment_execution_run=sentiment_execution_run,
@@ -178,15 +179,15 @@ def import_themefinder_data_for_question(
     themes = get_themefinder_outputs_for_question(
         question_folder_key=question_folder, output_name="themes"
     )
-    if isinstance(themes, list):
+    if isinstance(themes, dict):
         framework = import_themes(question_part=question_part, theme_data=themes)
     else:
-        raise ValueError("Expected a list of themes")
+        raise ValueError("Expected a dict of themes")
     logger.info(f"Imported themes for question {question_number}")
 
     # Import responses and mappings
     list_theme_mappings = get_themefinder_outputs_for_question(
-        question_folder_key=question_folder, output_name="updated_mapping"
+        question_folder_key=question_folder, output_name="mapping"
     )
     if isinstance(list_theme_mappings, list):
         import_theme_mappings_for_framework(framework, list_theme_mappings)
@@ -204,15 +205,3 @@ def import_themefinder_data_for_question_job(
         consultation=consultation, question_number=question_number, question_folder=question_folder
     )
 
-
-def import_all_questions_for_consultation(consultation_title: str, folder_name: str) -> None:
-    # folder in S3 should contain folders named `question_n` for each question
-    consultation = Consultation.objects.create(title=consultation_title)
-    question_folders = get_all_question_subfolders(folder_name, settings.AWS_BUCKET_NAME)
-    for i in range(len(question_folders)):
-        question_folder = question_folders[i]
-        logger.info(f"Importing data from folder: {question_folder}")
-        import_themefinder_data_for_question(
-            consultation=consultation, question_number=(i + 1), question_folder=question_folder
-        )
-    logger.info(f"Imported all data for consultation: {consultation.title}")
