@@ -111,5 +111,3 @@ def test_get_themefinder_outputs_for_question(mock_s3_objects, monkeypatch):
     assert len(outputs) == 5
     outputs = get_themefinder_outputs_for_question("folder/question_1/", "themes")
     assert len(outputs) == 3
-
-
