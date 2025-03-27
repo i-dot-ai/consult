@@ -161,3 +161,14 @@ can serve them; you can rerun this with `make govuk_frontend`.
 ## Docs
 
 We are using `adr-tools` to manage "Architectural Decision Records" - to track decisions made. To install and use: https://github.com/npryce/adr-tools.
+
+
+## Support area
+
+The support area is for admin use - adding users, running imports, giving users permissions to consultations etc.
+
+Access the support area by going to `/support/`. You will need to be a "staff user" to access it.
+
+If you are running locally, you can create a staff user by running `make dev_admin_user` - which creates an admin user (as described above).
+
+On any environment, if you are a staff user, you can give other users permission to access the support area. Go to `/support/users/`.
