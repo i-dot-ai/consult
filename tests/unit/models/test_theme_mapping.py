@@ -1,3 +1,4 @@
+import django
 import pytest
 
 from consultation_analyser.consultations import models
@@ -64,3 +65,15 @@ def test_get_latest_theme_mappings():
     theme_mappings_qs = models.ThemeMapping.get_latest_theme_mappings(question_part=question_part)
     assert theme_mappings_qs.count() == 3
     assert theme_mappings_qs.first().theme.framework == framework2
+
+
+@pytest.mark.django_db
+def test_check_uniqueness():
+    theme_mapping = ThemeMappingFactory()
+    answer = theme_mapping.answer
+    theme = theme_mapping.theme
+
+    # Create a duplicate theme mapping
+    duplicate = models.ThemeMapping(answer=answer, theme=theme)
+    with pytest.raises(django.db.utils.IntegrityError):
+        duplicate.save()
