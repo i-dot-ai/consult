@@ -18,5 +18,6 @@ def delete(request: HttpRequest, consultation_id: UUID, question_id: UUID) -> Ht
             question.delete()
             messages.success(request, "The question has been deleted")
             return redirect("/support/consultations/")
-
+        else:
+            return redirect(f"/support/consultations/{consultation_id}/")
     return render(request, "support_console/questions/delete.html", context=context)
