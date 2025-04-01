@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+
+{% set page_title = "Delete question" %}
+
+{% block content %}
+  <h1 class="govuk-heading-l">{{ page_title }}</h1>
+  <div>
+    <p class="govuk-body">This question is part of the consultation with title: {{ question.consultation.title }}</p>
+    <p class="govuk-body">Are you sure you want to delete the question: {{ question.text }}</p>
+  </div>
+
+  <br />
+
+  <form method="post" novalidate>{{ csrf_input }}
+    {{ govukButton({
+      'text': "Yes, delete it",
+      'name': "confirm_deletion",
+      'classes': "govuk-button--warning"
+    }) }}
+  </form>
+
+{% endblock %}

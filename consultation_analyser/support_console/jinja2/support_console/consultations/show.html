@@ -110,6 +110,9 @@
               {{ question.text }}
             </td>
             <td class="govuk-table__cell">
+              <a href="{{ url('delete_question', kwargs={'consultation_id': consultation.id, 'question_id': question.id}) }}" class="govuk-link govuk-link--warning govuk-body">
+                Delete this question
+              </a>
             </td>
           </tr>
         {% endfor %}
