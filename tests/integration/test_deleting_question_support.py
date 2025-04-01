@@ -28,6 +28,18 @@ def test_deleting_consultation_questions_via_support(django_app):
     assert delete_confirmation_page.request.path == expected_url
     assert "Are you sure you want to delete the question" in delete_confirmation_page
 
+    # Cancel deletion
+    delete_confirmation_page.form.submit("cancel_deletion")
+
+    # Check question still exists
+    assert Question.objects.filter(id=question.id).count() == 1
+
+    # Go to consultation page in support
+    consultations_page = django_app.get(f"/support/consultations/{consultation.id}/")
+
+    # Click delete question
+    delete_confirmation_page = consultations_page.click("Delete this question")
+
     # Confirm deletion
     delete_confirmation_page.form.submit("confirm_deletion")
 
