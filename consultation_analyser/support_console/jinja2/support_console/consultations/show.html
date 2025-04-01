@@ -88,4 +88,42 @@
     </div>
   </div>
 
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <h2 class="govuk-heading-m">Questions</h2>
+      {% if questions %}
+      <table class="govuk-table">
+        <thead class="govuk-table__head">
+          <tr class="govuk-table__row">
+            <th scope="col" class="govuk-table__header">Question number</th>
+            <th scope="col" class="govuk-table__header">Question text</th>
+            <th scope="col" class="govuk-table__header">Actions</th>
+          </tr>
+        </thead>
+        <tbody class="govuk-table__body">
+        {% for question in questions %}
+          <tr class="govuk-table__row">
+            <td class="govuk-table__cell">
+              {{ question.number }}
+            </td>
+            <td class="govuk-table__cell">
+              {{ question.text }}
+            </td>
+            <td class="govuk-table__cell">
+            </td>
+          </tr>
+        {% endfor %}
+      </table>
+      {% else %}
+        <p class="govuk-body">There are no questions associated with this consultation</p>
+      {% endif %}
+
+
+
+    </div>
+  </div>
+
+
+
+
 {% endblock %}
