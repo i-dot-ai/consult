@@ -28,8 +28,8 @@ govuk-frontend-jinja = "^3.5.0"
 pydot = "^3.0.4"
 gunicorn = "^23.0.0"
 whitenoise = "^6.9.0"
-boto3 = "^1.37.21"
-pydantic = "^2.10.6"
+boto3 = "^1.37.25"
+pydantic = "^2.11.1"
 datamodel-code-generator = "^0.28.5"
 django-types = "^0.20.0"
 django-waffle = "^4.2.0"
@@ -37,14 +37,14 @@ django-magic-link = "^1.0.0"
 django-crispy-forms = "^2.3"
 crispy-forms-gds = "^2.0.1"
 django-gov-notify = { git = "https://github.com/i-dot-ai/django-gov-notify", branch = "support-python-3-12" }
-sentry-sdk = { extras = ["redis", "rq"], version = "^2.24.1" }
+sentry-sdk = { extras = ["redis", "rq"], version = "^2.25.0" }
 ijson = "^3.3.0"
 psutil = "^7.0.0"
 pytest-random-order = "^1.1.1"
 django-rq = "^3.0.0"
 django-redis = "^5.4.0"
 honcho = "^2.0.0"
-django-storages = "^1.14.5"
+django-storages = "^1.14.6"
 setuptools = "^78.1.0"
 django-simple-history = "^3.8.0"
 openpyxl = "^3.1.5"
@@ -68,7 +68,7 @@ files = '**/*.py'
 exclude = ['^consultation_analyser/consultations/migrations/']
 
 [tool.poetry.group.test.dependencies]
-pytest-django = "^4.10.0"
+pytest-django = "^4.11.0"
 django-webtest = "^1.9.12"
 
 [build-system]
