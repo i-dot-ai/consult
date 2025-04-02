@@ -426,7 +426,9 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     user_audited = models.BooleanField(default=False)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+        constraints = [
+            models.UniqueConstraint(fields=["answer", "theme"], name="unique_theme_answer"),
+        ]
 
     @classmethod
     def get_latest_theme_mappings(cls, question_part: QuestionPart) -> models.QuerySet:
