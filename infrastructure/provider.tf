@@ -27,7 +27,7 @@ provider "aws" {
     tags = {
       "platform:environment"    = terraform.workspace
       "platform:deployed-via"   = "github"
-      "platform:repository"     = "https://github.com/i-dot-ai/consultation-analyser"
+      "platform:repository"     = "https://github.com/i-dot-ai/consult"
       "platform:security-level" = "base"
 
       Organisation = "co"
