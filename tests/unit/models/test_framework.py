@@ -1,7 +1,11 @@
 import pytest
 
 from consultation_analyser import factories
-from consultation_analyser.consultations.models import ExecutionRun, Framework
+from consultation_analyser.consultations.models import (
+    ExecutionRun,
+    Framework,
+    ThemeMapping,
+)
 
 
 @pytest.mark.django_db
@@ -79,3 +83,43 @@ def test_get_themes_removed_from_previous_framework():
     assert initial_theme_2 in themes_removed
     assert initial_theme_3 in themes_removed
     assert initial_theme_1 not in themes_removed
+
+
+@pytest.mark.django_db
+def test_get_theme_mappings():
+    # Set up questions and answers
+    question_part = factories.FreeTextQuestionPartFactory()
+    answer_1 = factories.FreeTextAnswerFactory(question_part=question_part)
+    answer_2 = factories.FreeTextAnswerFactory(question_part=question_part)
+    answer_3 = factories.FreeTextAnswerFactory(question_part=question_part)
+
+    # First framework and mappings
+    framework1 = factories.InitialFrameworkFactory(question_part=question_part)
+    theme1 = factories.InitialThemeFactory(framework=framework1)
+    ThemeMapping.objects.create(theme=theme1, answer=answer_1)
+
+    # Latest framework and mappings - make sure there are some historical themes.
+    framework2 = factories.InitialFrameworkFactory(question_part=question_part)
+    theme_a = factories.InitialThemeFactory(framework=framework2)
+    theme_b = factories.InitialThemeFactory(framework=framework2)
+    theme_c = factories.InitialThemeFactory(framework=framework2)
+    tm1 = ThemeMapping.objects.create(answer=answer_1, theme=theme_a)
+    tm2 = ThemeMapping.objects.create(answer=answer_1, theme=theme_b)
+    ThemeMapping.objects.create(answer=answer_2, theme=theme_b)
+    ThemeMapping.objects.create(answer=answer_3, theme=theme_c)
+    tm2.delete()
+
+    # Check get_theme_mappings
+    latest_qs = framework2.get_theme_mappings()
+    assert latest_qs.count() == 3
+    assert tm1 in latest_qs
+    assert tm2 not in latest_qs
+
+    # Check get_theme_mappings_with_history
+    theme_mappings_with_history = framework2.get_theme_mappings_with_history()
+    assert theme_mappings_with_history.count() == 5
+    mapping = theme_mappings_with_history.get(theme=theme_a, answer=answer_1)
+    assert mapping.history_type == "+"
+    mappings = theme_mappings_with_history.filter(theme=theme_b, answer=answer_1)
+    assert mappings.count() == 2
+    assert mappings.latest().history_type == "-"

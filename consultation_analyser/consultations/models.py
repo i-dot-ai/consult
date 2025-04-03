@@ -341,6 +341,9 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     def get_theme_mappings(self) -> models.QuerySet:
         return ThemeMapping.objects.filter(theme__framework=self)
 
+    def get_theme_mappings_with_history(self) -> models.QuerySet:
+        return ThemeMapping.history.filter(theme__framework=self)
+
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     # The new theme is assigned to a new framework with the change reason and user.
