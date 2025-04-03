@@ -115,8 +115,8 @@ def test_get_theme_mappings():
     assert tm1 in latest_qs
     assert tm2 not in latest_qs
 
-    # Check get_theme_mappings_with_history
-    theme_mappings_with_history = framework2.get_theme_mappings_with_history()
+    # Check with history
+    theme_mappings_with_history = framework2.get_theme_mappings(history=True)
     assert theme_mappings_with_history.count() == 5
     mapping = theme_mappings_with_history.get(theme=theme_a, answer=answer_1)
     assert mapping.history_type == "+"

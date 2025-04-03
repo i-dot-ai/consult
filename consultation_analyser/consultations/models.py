@@ -338,11 +338,10 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         new_themes = self.theme_set.exclude(precursor__id__in=previous_framework_themes)
         return new_themes
 
-    def get_theme_mappings(self) -> models.QuerySet:
+    def get_theme_mappings(self, history=False) -> models.QuerySet:
+        if history:
+            return ThemeMapping.history.filter(theme__framework=self)
         return ThemeMapping.objects.filter(theme__framework=self)
-
-    def get_theme_mappings_with_history(self) -> models.QuerySet:
-        return ThemeMapping.history.filter(theme__framework=self)
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
