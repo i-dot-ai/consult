@@ -52,10 +52,12 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
+    questions = models.Question.objects.filter(consultation=consultation).order_by("number")
 
     context = {
         "consultation": consultation,
         "users": consultation.users.all(),
+        "questions": questions,
     }
     return render(request, "support_console/consultations/show.html", context=context)
 

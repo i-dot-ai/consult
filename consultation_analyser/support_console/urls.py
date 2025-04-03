@@ -3,7 +3,7 @@ from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import include, path
 
-from .views import consultations, consultations_users, pages, users
+from .views import consultations, consultations_users, pages, questions, users
 
 urlpatterns = [
     path("", lambda request: redirect("/support/consultations/"), name="support"),
@@ -47,6 +47,11 @@ urlpatterns = [
         "consultations/<uuid:consultation_id>/export-urls/",
         consultations.export_urls_for_consultation,
         name="export_urls_for_consultation",
+    ),
+    path(
+        "consultations/<uuid:consultation_id>/questions/<uuid:question_id>/delete/",
+        questions.delete,
+        name="delete_question",
     ),
 ]
 
