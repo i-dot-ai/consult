@@ -7,15 +7,18 @@
     "test": "tests"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build-lit": "node build-lit.mjs"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@lit-labs/ssr": "^3.3.1",
     "@x-govuk/govuk-prototype-components": "^3.0.9",
     "govuk-frontend": "^5.9.0",
     "i.ai-design-system": "^0.5.2",
-    "json-schema-faker-cli": "^5.0.6"
+    "json-schema-faker-cli": "^5.0.6",
+    "lit": "^3.2.1"
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.41"
