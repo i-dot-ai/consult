@@ -80,6 +80,7 @@ TEMPLATES = [
     {
         "BACKEND": "django.template.backends.jinja2.Jinja2",
         "APP_DIRS": True,
+        "DIRS": [BASE_DIR / "consultation_analyser/lit"],
         "OPTIONS": {
             "environment": "consultation_analyser.jinja2.environment",
             "context_processors": [
