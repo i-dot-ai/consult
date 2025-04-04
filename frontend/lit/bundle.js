@@ -28,7 +28,7 @@ class IaiLitBase extends r {
     static styles = i$3``
 
     static properties = {
-        propsString: {type: String},
+        encprops: {type: String},
     }
 
     constructor() {
@@ -37,8 +37,8 @@ class IaiLitBase extends r {
     }
 
     willUpdate() {
-        if (this.propsString) {
-            this.props = JSON.parse(atob(this.propsString)) || {};
+        if (this.encprops) {
+            this.props = JSON.parse(atob(this.encprops)) || {};
         }
     }
 }

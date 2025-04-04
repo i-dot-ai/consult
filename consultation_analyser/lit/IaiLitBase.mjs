@@ -5,7 +5,7 @@ export default class IaiLitBase extends LitElement {
     static styles = css``
 
     static properties = {
-        propsString: {type: String},
+        encprops: {type: String},
     }
 
     constructor() {
@@ -14,8 +14,8 @@ export default class IaiLitBase extends LitElement {
     }
 
     willUpdate() {
-        if (this.propsString) {
-            this.props = JSON.parse(atob(this.propsString)) || {};
+        if (this.encprops) {
+            this.props = JSON.parse(atob(this.encprops)) || {};
         }
     }
 }

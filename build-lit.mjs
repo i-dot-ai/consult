@@ -68,7 +68,7 @@ async function getRenderStringSsr(filePath, propsString) {
 
     const fileName = getFileNameWithoutExtension(filePath);
     // encode props as base64 to parse them inside component, else they will truncate incorrectly
-    const renderResult = render(html`${unsafeHTML(`<${fileName} propsString="${btoa(propsString)}"></${fileName}>`)}`)
+    const renderResult = render(html`${unsafeHTML(`<${fileName} encprops="${btoa(propsString)}"></${fileName}>`)}`)
 
     let output = "";
     for await (const chunk of renderResult) {
