@@ -9,7 +9,8 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-lit-ssr": "node build-lit.mjs",
-    "build-lit-csr": "npx rollup -c"
+    "build-lit-csr": "npx rollup -c",
+    "build-lit": "npm run build-lit-ssr && npm run build-lit-csr"
   },
   "author": "",
   "license": "ISC",

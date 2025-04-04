@@ -74,7 +74,18 @@ async function getRenderStringSsr(filePath, encprops) {
     for await (const chunk of renderResult) {
         output += chunk;
     }
+
+    if (!isShadowDomEnabled()) {
+        // Render to light DOM
+        output = output.replace(/<template shadowroot="open" shadowrootmode="open">/g, "")
+        output = output.replace(/<\/template>/g, "");
+    }
+
     return output;
+}
+
+function isShadowDomEnabled() {
+    return process.argv.includes("--shadowdom");
 }
 
 async function renderToFileSsr(filePath) {
