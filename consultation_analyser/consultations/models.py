@@ -436,12 +436,16 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
     @classmethod
-    def get_latest_theme_mappings(cls, question_part: QuestionPart) -> models.QuerySet:
+    def get_latest_theme_mappings(
+        cls, question_part: QuestionPart, history: bool = False
+    ) -> models.QuerySet:
         latest_framework = (
             Framework.objects.filter(question_part=question_part).order_by("created_at").last()
         )
         if latest_framework:
-            return latest_framework.get_theme_mappings()
+            return latest_framework.get_theme_mappings(history=history)
+        if history:
+            return ThemeMapping.history.none()
         return ThemeMapping.objects.none()
 
 

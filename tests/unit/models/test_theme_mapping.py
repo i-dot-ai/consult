@@ -45,6 +45,13 @@ def test_get_latest_theme_mappings():
     framework2 = InitialFrameworkFactory(question_part=question_part)
     InitialFrameworkFactory()  # random framework - diff question
 
+    # Return empty querysets as no theme mappings yet
+    qs = framework1.get_theme_mappings()
+    assert not qs.count()
+    qs = framework1.get_theme_mappings(history=True)
+    assert not qs.count()
+
+    # Now add some mappings including some historical mappings
     # Framework 1 themes
     theme = InitialThemeFactory(framework=framework1, key="A")
     theme2 = InitialThemeFactory(framework=framework1, key="B")
@@ -58,13 +65,25 @@ def test_get_latest_theme_mappings():
     ThemeMappingFactory(answer=answer2, theme=theme2)
 
     # Theme mappings for framework 2
-    ThemeMappingFactory(answer=answer, theme=theme3)
+    mapping1 = ThemeMappingFactory(answer=answer, theme=theme3)
     ThemeMappingFactory(answer=answer2, theme=theme4)
     ThemeMappingFactory(answer=answer2, theme=theme3)
+    mapping1.delete()
 
-    theme_mappings_qs = models.ThemeMapping.get_latest_theme_mappings(question_part=question_part)
-    assert theme_mappings_qs.count() == 3
+    theme_mappings_qs = models.ThemeMapping.get_latest_theme_mappings(
+        question_part=question_part, history=False
+    )
+    assert theme_mappings_qs.count() == 2
     assert theme_mappings_qs.first().theme.framework == framework2
+
+    historical_theme_mappings_qs = models.ThemeMapping.get_latest_theme_mappings(
+        question_part=question_part, history=True
+    )
+    assert historical_theme_mappings_qs.count() == 4
+    assert historical_theme_mappings_qs.first().theme.framework == framework2
+    changed_mapping = historical_theme_mappings_qs.filter(answer=answer, theme=theme3)
+    assert changed_mapping.count() == 2
+    assert set(changed_mapping.values_list("history_type", flat=True)) == set(["-", "+"])
 
 
 @pytest.mark.django_db
