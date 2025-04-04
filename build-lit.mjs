@@ -1,4 +1,4 @@
-import { writeFileSync, readFileSync, readdir, existsSync, lstatSync } from "fs";
+import { writeFileSync, readdir, existsSync, lstatSync } from "fs";
 import path from "path";
 
 import { render } from "@lit-labs/ssr";
@@ -6,7 +6,7 @@ import { render } from "@lit-labs/ssr";
 import { html } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 
-import { IaiLitSsr } from "./consultation_analyser/consultations/jinja2/components/iai-lit-test/iai-lit-ssr.lit.ssr.mjs";
+import IaiLitSsrExample from "./consultation_analyser/lit/ssr/IaiLitSsrExample/iai-lit-ssr-example.lit.ssr.mjs";
 
 
 async function main() {
@@ -30,16 +30,10 @@ async function processLitFiles(dir) {
 
             if (file.isDirectory()) {
                 processLitFiles(fullPath);
-            } else if (file.name.includes(".lit")) {
-                if (file.name.includes(".ssr")) {
-                    console.log("building:", fullPath);
-                    renderToFileSsr(fullPath);
-                    console.log("build successful");
-                } else if (file.name.includes(".csr")) {
-                    console.log("building:", fullPath);
-                    renderToFileCsr(fullPath);
-                    console.log("build successful");
-                }
+            } else if (file.name.includes(".lit.ssr")) {
+                console.log("building:", fullPath);
+                renderToFileSsr(fullPath);
+                console.log("build successful");
             }
         }
     })
@@ -99,19 +93,6 @@ function getTargetFilePath(filePath) {
 
 function getFileNameWithoutExtension(filePath) {
     return path.basename(filePath).replace(".lit.ssr.mjs", "").replace(".lit.csr.mjs", "")
-}
-
-async function renderToFileCsr(filePath) {
-    const componentCode = readFileSync(filePath, "utf-8");
-
-    const result = `<script type="module">\n${componentCode}\n</script>`;
-    
-    let output = "";
-    for await (const chunk of result) {
-        output += chunk;
-    }
-    
-    writeFileSync(getTargetFilePath(filePath), output, "utf8");
 }
 
 main();
