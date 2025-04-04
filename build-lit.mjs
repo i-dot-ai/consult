@@ -60,15 +60,15 @@ async function renderToStdout() {
 }
 
 
-async function getRenderStringSsr(filePath, propsString) {
+async function getRenderStringSsr(filePath, encprops) {
     if (!existsSync(filePath) || isDirectory(filePath)) {
         console.error("Component path is invalid");
         return "";
     }
 
     const fileName = getFileNameWithoutExtension(filePath);
-    // encode props as base64 to parse them inside component, else they will truncate incorrectly
-    const renderResult = render(html`${unsafeHTML(`<${fileName} encprops="${btoa(propsString)}"></${fileName}>`)}`)
+    // props are encoded as base64 to parse them inside component, else they will truncate incorrectly
+    const renderResult = render(html`${unsafeHTML(`<${fileName} encprops="${encprops || ''}"></${fileName}>`)}`)
 
     let output = "";
     for await (const chunk of renderResult) {
