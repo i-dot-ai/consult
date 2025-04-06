@@ -17,7 +17,7 @@ from tests.utils import get_sorted_theme_string
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
 def test_export_user_theme(mock_boto_client, django_app):
     user = factories.UserFactory(is_staff=True)
-    # Set up consultation with question and response
+    # Set up consultation with question and responses
     consultation = factories.ConsultationFactory()
     consultation.users.add(user)
     question = factories.QuestionFactory(consultation=consultation)
@@ -30,21 +30,44 @@ def test_export_user_theme(mock_boto_client, django_app):
     response2 = factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent2)
 
     # Assign sentiment/position
-    execution_run = factories.ExecutionRunFactory(
+    # Create some historical ones first
+    first_execution_run = factories.ExecutionRunFactory(
         type=models.ExecutionRun.TaskType.SENTIMENT_ANALYSIS
     )
     factories.SentimentMappingFactory(
         answer=response,
-        execution_run=execution_run,
+        execution_run=first_execution_run,
+        position=models.SentimentMapping.Position.DISAGREEMENT,
+    )
+
+    # We only care about the latest sentiment mapping
+    second_execution_run = factories.ExecutionRunFactory(
+        type=models.ExecutionRun.TaskType.SENTIMENT_ANALYSIS
+    )
+    factories.SentimentMappingFactory(
+        answer=response,
+        execution_run=second_execution_run,
         position=models.SentimentMapping.Position.AGREEMENT,
     )
     factories.SentimentMappingFactory(
         answer=response2,
-        execution_run=execution_run,
+        execution_run=second_execution_run,
         position=models.SentimentMapping.Position.UNCLEAR,
     )
 
     # Set up themes and theme mappings
+    # Set up some historical ones but we should only pick up the latest framework
+    historical_framework = factories.InitialFrameworkFactory(question_part=question_part)
+    historical_execution_run = factories.ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
+    theme_x = factories.InitialThemeFactory(framework=historical_framework, key="X")
+    factories.ThemeMappingFactory(
+        answer=response,
+        theme=theme_x,
+        stance=models.ThemeMapping.Stance.POSITIVE,
+        execution_run=historical_execution_run,
+    )
+
+    # Latest framework and theme mappings
     framework = factories.InitialFrameworkFactory(question_part=question_part)
     execution_run = factories.ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_MAPPING)
     theme1 = factories.InitialThemeFactory(framework=framework, key="B")

@@ -47,3 +47,4 @@ def test_get_latest_sentiment_execution_run_for_question_part():
     factories.SentimentMappingFactory(answer=answer2, execution_run=execution_run2)
     actual = get_latest_sentiment_execution_run_for_question_part(free_text_question_part)
     assert actual == execution_run2
+
