@@ -53,11 +53,11 @@ urlpatterns = [
         questions.delete,
         name="delete_question",
     ),
+    path("django-rq/", include("django_rq.urls")),
 ]
 
 
 if settings.DEBUG:
     urlpatterns += [
         path("admin/", admin.site.urls),
-        path("django-rq/", include("django_rq.urls")),
     ]
