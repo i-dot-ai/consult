@@ -6,6 +6,9 @@ import { render } from "@lit-labs/ssr";
 import { html } from "lit";
 import { unsafeHTML } from "lit/directives/unsafe-html.js";
 
+import DOMPurify from 'dompurify';
+import { JSDOM } from "jsdom";
+
 import IaiLitSsrExample from "./consultation_analyser/lit/ssr/IaiLitSsrExample/iai-lit-ssr-example.lit.ssr.mjs";
 
 
@@ -70,7 +73,7 @@ async function getRenderStringSsr(filePath, encprops) {
     // props are encoded as base64 to parse them inside component, else they will truncate incorrectly
     const renderResult = render(html`${unsafeHTML(`<${fileName} encprops="${encprops || ''}"></${fileName}>`)}`)
 
-    let output = "";
+    let output = `<div data-comment="ssr-component">`;
     for await (const chunk of renderResult) {
         output += chunk;
     }
@@ -80,8 +83,11 @@ async function getRenderStringSsr(filePath, encprops) {
         output = output.replace(/<template shadowroot="open" shadowrootmode="open">/g, "")
         output = output.replace(/<\/template>/g, "");
     }
+    output += `</div>`;
 
-    return output;
+    const window = new JSDOM("").window;
+    const purify = DOMPurify(window);
+    return purify.sanitize(output, { ADD_TAGS: [fileName], ADD_ATTR: ["shadowroot", "shadowrootmode"]});
 }
 
 function isShadowDomEnabled() {

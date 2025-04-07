@@ -14,8 +14,8 @@ def renderLitSsr(path, props):
     )
 
     # Remove initially added command from stdout, only return rendered html element
-    htmlStartIndex = result.stdout.find("<!-")
-    return result.stdout[htmlStartIndex:] if result.stdout.find("<!-") > -1 else ""
+    htmlStartIndex = result.stdout.find('<div data-comment="ssr-component">')
+    return result.stdout[htmlStartIndex:] if htmlStartIndex > -1 else ""
 
 def encodeProps(props):
     jsonString = json.dumps(props)
