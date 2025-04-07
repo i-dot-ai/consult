@@ -23,8 +23,8 @@ def test_review_show_response(django_app):
     question_slug = question_part.question.slug
 
     consultation.users.add(user)
-    theme_a = InitialThemeFactory(framework=framework, name="Theme A")
-    theme_b = InitialThemeFactory(framework=framework, name="Theme B")
+    theme_a = InitialThemeFactory(framework=framework, name="Theme A", key="A")
+    theme_b = InitialThemeFactory(framework=framework, name="Theme B", key="B")
     answer_1 = FreeTextAnswerFactory(question_part=question_part)
     answer_2 = FreeTextAnswerFactory(question_part=question_part)
     execution_run = ExecutionRunFactory(
