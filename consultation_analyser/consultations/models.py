@@ -202,6 +202,9 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
     # demographic data, or anything else that is at respondent level
     data = models.JSONField(default=dict)
     themefinder_respondent_id = models.IntegerField(null=True)
+    user_provided_id = models.CharField(
+        max_length=128, null=True
+    )  # Optional response ID supplied by department
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
@@ -347,7 +350,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
 
     name = models.CharField(max_length=256)  # TODO - is this long enough
     description = models.TextField()
-    key = models.CharField(max_length=1, null=True)
+    key = models.CharField(max_length=128, null=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
