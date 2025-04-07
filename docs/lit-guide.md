@@ -75,10 +75,29 @@ In the Jinja template, use resulting html file as below:
 ```
 
 ### Passing props from template context
-Recommended way is to use the Server-Side Rendering at Runtime approach for passing props from a Jinja template context.
+Use the Server-Side Rendering at Runtime approach for passing props from a Jinja template context.
 
-Regardless, --props flag can be used to pass props as a base64 encrypted JSON string.
 
+## Server-Side Rendering at Runtime
+### How to:
+Create your component .mjs file. Ideally extend from IaiLitBase base class.
+
+In your Django view, import renderLitSsr and pass it the component path (and optionally a dictionary of all props).
+```
+from .render import renderLitSsr
+# ...
+def some_view(request: HttpRequest):
+    renderedComponent = renderLitSsr(
+        settings.BASE_DIR / "consultation_analyser/lit/ssr/IaiLitSsrExample/iai-lit-ssr-example.lit.ssr.mjs",
+        {"exampleValue": "My Example Value", "foo": [{"bar": "baz"}]}
+    )
+    return render(request, "some_template.html", { "some_component": renderedComponent })
+```
+
+Render the render result in your Jinja template as below:
+```
+<div>{{ some_component | safe }}</div>
+```
 
 ## Build Script Flags
 The build script "build-lit.mjs" can take several flags:
@@ -94,3 +113,6 @@ Used to specify the command is called at runtime, so that the render result is o
 
 ### path
 Used to specify a component path so only that component is built. Must be used wih runtime enabled to have an effect.
+
+### props
+Used to pass props as base64 encoded JSON string. Must be used wih runtime enabled and a path passed to have an effect.
