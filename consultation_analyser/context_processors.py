@@ -70,18 +70,29 @@ def app_config(request: HttpRequest):
         )
     else:
         if request.user.is_authenticated:
-            menu_items = [
-                {
-                    "href": "/consultations/",
-                    "text": "Your consultations",
-                    "active": request.path.startswith("/consultations"),
-                },
-                {
-                    "href": "/sign-out/",
-                    "text": "Sign out",
-                    "classes": "x-govuk-primary-navigation__item--right",
-                },
-            ]
+            menu_items = []
+            if request.user.is_staff:
+                menu_items = [
+                    {
+                        "href": "/support/",
+                        "text": "Support",
+                    },
+                ]
+
+            menu_items.extend(
+                [
+                    {
+                        "href": "/consultations/",
+                        "text": "Your consultations",
+                        "active": request.path.startswith("/consultations"),
+                    },
+                    {
+                        "href": "/sign-out/",
+                        "text": "Sign out",
+                        "classes": "x-govuk-primary-navigation__item--right",
+                    },
+                ]
+            )
         else:
             menu_items = [
                 {
