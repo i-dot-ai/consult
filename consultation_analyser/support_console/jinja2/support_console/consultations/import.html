@@ -5,20 +5,9 @@
 
 {% block content %}
 <h1 class="govuk-heading-l">{{ page_title }}</h1>
-  <p class="govuk-body">Import one question at a time. Use the consultation slug if you are adding it to an existing consultation.</p>
+  <p class="govuk-body">Import the consultation input data</p>
 
 <form method="post" enctype="multipart/form-data" novalidate>{{ csrf_input }}
-  <div class="govuk-form-group">
-    <p class="govuk-label-wrapper">
-      <label class="govuk-label govuk-label--l" for="consultation_name">
-        Consultation slug
-      </label>
-      <input class="govuk-input" id="consultation_slug" name="consultation_slug" type="text" required>
-      <div id="s3_key-hint" class="govuk-hint iai-hint">
-        Leave blank if it is a new consultation and add the consultation name below
-      </div>
-    </p>
-  </div>
 
   <div class="govuk-form-group">
     <p class="govuk-label-wrapper">
@@ -26,9 +15,6 @@
         Consultation name
       </label>
       <input class="govuk-input" id="consultation_name" name="consultation_name" type="text" required>
-      <div id="s3_key-hint" class="govuk-hint iai-hint">
-        Leave blank unless it is a new consultation or you wish to update the consultation name
-      </div>
     </p>
   </div>
 
@@ -38,7 +24,7 @@
         Where are the outputs located?
       </label>
       <div id="s3_key-hint" class="govuk-hint iai-hint">
-        The should be saved in: {{ bucket_name }}/[YOUR PATH] eg {{ bucket_name }}/[CONSULTATION_ID]/06_02_2025_theme_generation/question_1/
+        The should be saved in: {{ bucket_name }}/[YOUR PATH] where [YOUR PATH] is of the form `app_data/[CONSULTATION_CODE]`
       </div>
       <input class="govuk-input" id="path" name="path" type="text">
     </p>
