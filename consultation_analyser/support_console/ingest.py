@@ -249,3 +249,27 @@ def import_question_part_data(consultation: Consultation, question_part_dict: di
     logger.info(
         f"Question part imported: question_number {question_number}, part_number: {question_part_number}"
     )
+
+
+def import_responses(question_part: QuestionPart, responses_data: list[dict]):
+    # TODO - ideally would have imported respondents separately
+    consultation = question_part.question.consultation
+    answers = []
+    for response in responses_data:
+        themefinder_respondent_id = response["themefinder_id"]
+        respondent, _ = Respondent.objects.get_or_create(
+            consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
+        )
+        response_text = response["response"]
+        # TODO - add import of options for non-free-text data
+        # response_chosen_options = responses_data.get("options")
+        answers.append(
+            Answer(question_part=question_part, respondent=respondent, text=response_text)
+        )
+    Answer.objects.bulk_create(answers)
+    logger.info(
+        f"Saved responses for question_number {question_part.question.number} and question part {question_part.number}"
+    )
+    logger.info(
+        f"Saved responses from themefinder_respondent_id {responses_data[0]['themefinder_id']} to {responses_data[-1]['themefinder_id']}"
+    )
