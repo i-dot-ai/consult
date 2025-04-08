@@ -14,6 +14,7 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
 from consultation_analyser.support_console.ingest import (
     get_all_question_part_subfolders,
+    import_all_responses_from_jsonl,
     import_for_question_part,
 )
 
@@ -126,6 +127,7 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
     # Inputs are respondents, question text and responses, no themefinder outputs.
     current_user = request.user
     bucket_name = settings.AWS_BUCKET_NAME
+    batch_size = 100
     if request.POST:
         consultation_name = request.POST.get("consultation_name")
         path_to_outputs = request.POST.get("path")
@@ -136,17 +138,22 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
         consultation.users.add(current_user)
         consultation.save()
 
-        # Get question_parts
         question_part_subfolders = get_all_question_part_subfolders(
             folder_name=path_to_outputs, bucket_name=bucket_name
         )
 
         for folder in question_part_subfolders:
-            import_for_question_part(consultation=consultation, question_part_folder_key=folder)
-            # TODO - read in the responses
+            question_part = import_for_question_part(
+                consultation=consultation, question_part_folder_key=folder
+            )
+            import_all_responses_from_jsonl(
+                question_part=question_part,
+                bucket_name=bucket_name,
+                question_part_folder_key=folder,
+                batch_size=batch_size,
+            )
 
         # TODO - how to handle failures - import by question, or by consultation?
-
         return redirect("/support/consultations/")
     context = {"bucket_name": bucket_name}
     return render(request, "support_console/consultations/import.html", context=context)
