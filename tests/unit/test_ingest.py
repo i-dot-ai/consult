@@ -14,6 +14,7 @@ from consultation_analyser.consultations.models import (
 from consultation_analyser.support_console.ingest import (
     get_themefinder_outputs_for_question,
     import_question_part_data,
+    import_responses,
     import_theme_mappings_for_framework,
     import_themes,
 )
@@ -170,3 +171,32 @@ def test_import_question_part_data():
         import_question_part_data(
             consultation=consultation, question_part_dict=failing_no_question_number
         )
+
+
+# TODO - add a test for non-free text cases
+@pytest.mark.django_db
+def test_import_responses():
+    question_part = factories.FreeTextQuestionPartFactory()
+    consultation = question_part.question.consultation
+    Respondent.objects.create(consultation=consultation, themefinder_respondent_id=1)
+
+    # Not every respondent will respond to every q
+    # Some respondents will already exist, some will be created
+    responses_data = [
+        {"themefinder_id": 1, "response": "response 1"},
+        {"themefinder_id": 2, "response": "response 2"},
+        {"themefinder_id": 4, "response": "response 4"},
+    ]
+    import_responses(question_part=question_part, responses_data=responses_data)
+    assert Respondent.objects.all().count() == 3
+    assert Answer.objects.all().count() == 3
+
+    response = Answer.objects.get(
+        question_part=question_part, respondent__themefinder_respondent_id=1
+    )
+    assert response.text == "response 1"
+
+    response = Answer.objects.get(
+        question_part=question_part, respondent__themefinder_respondent_id=2
+    )
+    assert response.text == "response 2"
