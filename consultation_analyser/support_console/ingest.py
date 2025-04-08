@@ -8,13 +8,10 @@ from django_rq import job
 from consultation_analyser.consultations.models import (
     Answer,
     Consultation,
-    ExecutionRun,
-    Framework,
     Question,
     QuestionPart,
     Respondent,
     SentimentMapping,
-    Theme,
     ThemeMapping,
 )
 
@@ -33,7 +30,7 @@ SENTIMENT_MAPPING = {
 }
 
 
-def get_all_question_subfolders(folder_name: str, bucket_name: str) -> list:
+def get_all_question_part_subfolders(folder_name: str, bucket_name: str) -> list:
     s3 = boto3.resource("s3")
     objects = s3.Bucket(bucket_name).objects.filter(Prefix=folder_name)
     object_names_set = {obj.key for obj in objects}
@@ -43,7 +40,9 @@ def get_all_question_subfolders(folder_name: str, bucket_name: str) -> list:
         folder = "/".join(path.split("/")[:-1]) + "/"
         subfolders.add(folder)
     # Only the ones that are question_folders
-    question_folders = [name for name in subfolders if name.split("/")[-2].startswith("question_")]
+    question_folders = [
+        name for name in subfolders if name.split("/")[-2].startswith("question_part_")
+    ]
     question_folders.sort()
     return question_folders
 
@@ -55,8 +54,6 @@ def get_themefinder_outputs_for_question(
     s3 = boto3.client("s3")
     response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=data_key)
     return json.loads(response["Body"].read())
-
-
 
 
 def import_question_part_data(consultation: Consultation, question_part_dict: dict):
@@ -72,7 +69,7 @@ def import_question_part_data(consultation: Consultation, question_part_dict: di
     if not question_text and not question_part_text:
         raise ValueError("There is no text for question or question part.")
 
-    question_number = question_part_dict["question_number"]  # It should fail
+    question_number = question_part_dict["question_number"]
     question_part_number = question_part_dict.get(
         "question_part_number", 1
     )  # If no question_part_number, assume 1
@@ -134,11 +131,13 @@ def import_responses_job(question_part: QuestionPart, responses_data: list[dict]
     import_responses(question_part, responses_data)
 
 
-
 def import_for_question_part(consultation: Consultation, question_part_folder_key: str):
     s3 = boto3.client("s3")
-    # read question_data
-    data_key = f"{question_part_folder_key}question_part.json"
-    question_part_data = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=data_key)
-    question_part = import_question_part_data(consultation=consultation, question_part_dict=question_part_data)
+    # read question_data
+    data_key = f"{question_part_folder_key}question.json"
+    response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=data_key)
+    question_part_data = json.loads(response["Body"].read())
+    question_part = import_question_part_data(
+        consultation=consultation, question_part_dict=question_part_data
+    )
     return question_part
