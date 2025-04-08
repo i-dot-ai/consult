@@ -33,11 +33,6 @@ urlpatterns = [
         name="import_consultations_xlsx",
     ),
     path(
-        "consultations/import/",
-        consultations.import_theme_mapping,
-        name="import_theme_mapping",
-    ),
-    path(
         "consultations/<uuid:consultation_id>/export/",
         consultations.export_consultation_theme_audit,
         name="export_consultation_theme_audit",
