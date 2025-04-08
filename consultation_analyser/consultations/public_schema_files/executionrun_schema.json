@@ -1,0 +1,23 @@
+{
+  "$defs": {
+    "Type1": {
+      "enum": [
+        "sentiment_analysis",
+        "theme_generation",
+        "theme_mapping"
+      ],
+      "title": "Type1",
+      "type": "string"
+    }
+  },
+  "properties": {
+    "type": {
+      "$ref": "#/$defs/Type1"
+    }
+  },
+  "required": [
+    "type"
+  ],
+  "title": "ExecutionRun",
+  "type": "object"
+}
