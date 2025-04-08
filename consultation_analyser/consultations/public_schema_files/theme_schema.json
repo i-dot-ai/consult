@@ -166,7 +166,7 @@
         "key": {
           "anyOf": [
             {
-              "maxLength": 1,
+              "maxLength": 128,
               "type": "string"
             },
             {
