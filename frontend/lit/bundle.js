@@ -35,6 +35,10 @@ class IaiLitBase extends r {
         super();
         this.props = {};
     }
+    
+    createRenderRoot() {
+        return this;
+    }
 
     willUpdate() {
         if (this.encprops) {
@@ -42,10 +46,6 @@ class IaiLitBase extends r {
         }
     }
 }
-
-// import { LitElement, html, css } from 'https://cdn.jsdelivr.net/gh/lit/dist@3/core/lit-core.min.js';
-
-
 
 class IaiLitCsrExample extends IaiLitBase {
     static styles = [

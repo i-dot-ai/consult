@@ -12,6 +12,10 @@ export default class IaiLitBase extends LitElement {
         super();
         this.props = {};
     }
+    
+    createRenderRoot() {
+        return this;
+    }
 
     willUpdate() {
         if (this.encprops) {
