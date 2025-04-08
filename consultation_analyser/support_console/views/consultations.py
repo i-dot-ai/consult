@@ -138,6 +138,8 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
         consultation.users.add(current_user)
         consultation.save()
 
+        # TODO - ideally import all respondents in one go first.
+
         question_part_subfolders = get_all_question_part_subfolders(
             folder_name=path_to_outputs, bucket_name=bucket_name
         )
