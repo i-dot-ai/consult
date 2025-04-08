@@ -5,6 +5,7 @@ from consultation_analyser import factories
 from consultation_analyser.consultations.models import (
     Answer,
     ExecutionRun,
+    QuestionPart,
     Respondent,
     SentimentMapping,
     Theme,
@@ -12,6 +13,7 @@ from consultation_analyser.consultations.models import (
 )
 from consultation_analyser.support_console.ingest import (
     get_themefinder_outputs_for_question,
+    import_question_part_data,
     import_theme_mappings_for_framework,
     import_themes,
 )
@@ -111,3 +113,60 @@ def test_get_themefinder_outputs_for_question(mock_s3_objects, monkeypatch):
     assert len(outputs) == 5
     outputs = get_themefinder_outputs_for_question("folder/question_1/", "themes")
     assert len(outputs) == 3
+
+
+@pytest.mark.django_db
+def test_import_question_part_data():
+    consultation = factories.ConsultationFactory()
+    # Set up sample question_part.json dictionaries
+    new_free_text_question = {
+        "question_text": "What is your favourite?",
+        "question_part_text": "Please explain your answer",
+        "question_number": 3,
+        "question_part_type": "free_text",
+    }
+    existing_question_with_options = {
+        "question_text": "What is your favourite?",
+        "question_number": 3,
+        "question_part_number": 2,
+        "options": ["cats", "dogs"],
+        "question_part_type": "single_option",
+    }
+    failing_no_text = {
+        "question_text": "",
+        "question_part_text": "",
+        "question_number": 4,
+        "question_part_type": "free_text",
+    }
+    failing_no_question_number = {
+        "question_text": "What is your favourite?",
+        "question_part_type": "free_text",
+    }
+
+    import_question_part_data(consultation=consultation, question_part_dict=new_free_text_question)
+    question_part = QuestionPart.objects.get(
+        question__consultation=consultation, question__number=3, number=1
+    )
+    assert question_part.text == "Please explain your answer"
+    assert question_part.question.text == "What is your favourite?"
+    assert question_part.number == 1
+    assert question_part.type == QuestionPart.QuestionType.FREE_TEXT
+
+    import_question_part_data(
+        consultation=consultation, question_part_dict=existing_question_with_options
+    )
+    question_part = QuestionPart.objects.get(
+        question__consultation=consultation, question__number=3, number=2
+    )
+    assert question_part.text == ""
+    assert question_part.question.text == "What is your favourite?"
+    assert question_part.options == ["cats", "dogs"]
+    assert question_part.type == QuestionPart.QuestionType.SINGLE_OPTION
+
+    with pytest.raises(ValueError):
+        import_question_part_data(consultation=consultation, question_part_dict=failing_no_text)
+
+    with pytest.raises(KeyError):
+        import_question_part_data(
+            consultation=consultation, question_part_dict=failing_no_question_number
+        )
