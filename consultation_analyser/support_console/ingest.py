@@ -231,7 +231,7 @@ def import_question_part_data(consultation: Consultation, question_part_dict: di
     )
 
     if question_part_type == QuestionPart.QuestionType.FREE_TEXT:
-        QuestionPart.objects.create(
+        question_part = QuestionPart.objects.create(
             question=question,
             number=question_part_number,
             type=question_part_type,
@@ -239,7 +239,7 @@ def import_question_part_data(consultation: Consultation, question_part_dict: di
         )
     else:
         options = question_part_dict["options"]
-        QuestionPart.objects.create(
+        question_part = QuestionPart.objects.create(
             question=question,
             number=question_part_number,
             type=question_part_type,
@@ -249,6 +249,7 @@ def import_question_part_data(consultation: Consultation, question_part_dict: di
     logger.info(
         f"Question part imported: question_number {question_number}, part_number: {question_part_number}"
     )
+    return question_part
 
 
 def import_responses(question_part: QuestionPart, responses_data: list[dict]):
@@ -273,3 +274,18 @@ def import_responses(question_part: QuestionPart, responses_data: list[dict]):
     logger.info(
         f"Saved responses from themefinder_respondent_id {responses_data[0]['themefinder_id']} to {responses_data[-1]['themefinder_id']}"
     )
+
+
+@job("default", timeout=900)
+def import_responses_job(question_part: QuestionPart, responses_data: list[dict]):
+    import_responses(question_part, responses_data)
+
+
+
+def import_for_question_part(consultation: Consultation, question_part_folder_key: str):
+    s3 = boto3.client("s3")
+    # read question_data
+    data_key = f"{question_part_folder_key}question_part.json"
+    question_part_data = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=data_key)
+    question_part = import_question_part_data(consultation=consultation, question_part_dict=question_part_data)
+    return question_part

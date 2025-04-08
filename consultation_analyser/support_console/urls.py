@@ -54,4 +54,9 @@ urlpatterns = [
     ),
     path("admin/", admin.site.urls),
     path("django-rq/", include("django_rq.urls")),
+    path(
+        "consultations/import-inputs/",
+        consultations.import_consultation_inputs,
+        name="import_inputs",
+    ),
 ]

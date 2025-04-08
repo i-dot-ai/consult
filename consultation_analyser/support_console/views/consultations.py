@@ -12,7 +12,8 @@ from consultation_analyser.consultations.dummy_data import create_dummy_consulta
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
-from consultation_analyser.support_console.ingest import import_themefinder_data_for_question_job
+from consultation_analyser.support_console.ingest import import_themefinder_data_for_question_job, get_all_question_subfolders, import_for_question_part
+
 
 logger = logging.getLogger("export")
 
@@ -150,3 +151,33 @@ def export_urls_for_consultation(request: HttpRequest, consultation_id: UUID) ->
             return render(request, "support_console/consultations/export_urls.html", context)
 
     return render(request, "support_console/consultations/export_urls.html", context)
+
+
+
+def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
+    # Inputs are respondents, question text and responses, no themefinder outputs.
+    current_user = request.user
+    bucket_name = settings.AWS_BUCKET_NAME
+    if request.POST:
+        consultation_name = request.POST.get("consultation_name")
+        path_to_outputs = request.POST.get("path")
+
+        if not consultation_name:
+            consultation_name = "New Consultation"
+        consultation = models.Consultation.objects.create(title=consultation_name)
+        consultation.users.add(current_user)
+        consultation.save()
+
+
+        # Get question_parts
+        question_part_subfolders = get_all_question_subfolders(folder_name=path_to_outputs, bucket_name=bucket_name)
+
+        for folder in question_part_subfolders:
+            # TODO - import question part
+            question_part = import_for_question_part(consultation=consultation, question_part_folder_key=folder)
+            # TODO - read in the responses
+
+        return redirect("/support/consultations/")
+    context = {"bucket_name": bucket_name}
+    return render(request, "support_console/consultations/import.html", context=context)
+
