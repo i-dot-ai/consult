@@ -1,5 +1,4 @@
 import pytest
-from django.conf import settings
 
 from consultation_analyser import factories
 from consultation_analyser.consultations.models import (
@@ -11,7 +10,6 @@ from consultation_analyser.support_console.ingest import (
     import_question_part_data,
     import_responses,
 )
-
 
 # TODO - keep for a while to see how to test reading from bucket
 # def test_get_themefinder_outputs_for_question(mock_s3_objects, monkeypatch):
