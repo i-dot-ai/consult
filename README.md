@@ -180,5 +180,5 @@ see the ERD (above). The public schema is customised via a script in
 
 To update the public schemas to reflect Django model changes, run `make generate_public_schema`.
 This updates the yaml OpenAPI schema, which is used by `datamodel-codegen` to create a python schema 
-`consultation_analyser/consultations/public_schema.py` used for themefinder imports.
+`consultation_analyser/consultations/public_schema.py` used for imports.
 This is transferred to a JSON schema. We expose the Answer and QuestionPart schemas for external users from the webapp at `/schema/`.
