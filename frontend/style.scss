@@ -345,3 +345,24 @@ horizontal-bar-chart {
     align-items: center;
     gap: 1%;
 }
+
+.long-header {
+    line-height: 3rem;
+    text-align: justify;
+}
+
+.text-truncated {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.clickable {
+    cursor: pointer;
+    transition-property: color;
+    transition: 0.3s ease-in-out;
+}
+
+.clickable:hover  {
+    color: $iai-colour-pink;
+}
