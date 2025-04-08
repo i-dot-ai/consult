@@ -204,3 +204,48 @@ def import_themefinder_data_for_question_job(
     import_themefinder_data_for_question(
         consultation=consultation, question_number=question_number, question_folder=question_folder
     )
+
+
+def import_question_part_data(consultation: Consultation, question_part_dict: dict):
+    # TODO maybe some validation of question_part_dict - Pydantic models from ThemeFinder?
+    type_mapping = {
+        "free_text": QuestionPart.QuestionType.FREE_TEXT,
+        "single_option": QuestionPart.QuestionType.SINGLE_OPTION,
+        "multiple_option": QuestionPart.QuestionType.MULTIPLE_OPTIONS,
+    }
+
+    question_text = question_part_dict.get("question_text", "")
+    question_part_text = question_part_dict.get("question_part_text", "")
+    if not question_text and not question_part_text:
+        raise ValueError("There is no text for question or question part.")
+
+    question_number = question_part_dict["question_number"]  # It should fail
+    question_part_number = question_part_dict.get(
+        "question_part_number", 1
+    )  # If no question_part_number, assume 1
+    question_part_type = question_part_dict["question_part_type"]
+    question_part_type = type_mapping[question_part_type]
+
+    question, _ = Question.objects.get_or_create(
+        consultation=consultation, number=question_number, defaults={"text": question_text}
+    )
+
+    if question_part_type == QuestionPart.QuestionType.FREE_TEXT:
+        QuestionPart.objects.create(
+            question=question,
+            number=question_part_number,
+            type=question_part_type,
+            text=question_part_text,
+        )
+    else:
+        options = question_part_dict["options"]
+        QuestionPart.objects.create(
+            question=question,
+            number=question_part_number,
+            type=question_part_type,
+            text=question_part_text,
+            options=options,
+        )
+    logger.info(
+        f"Question part imported: question_number {question_number}, part_number: {question_part_number}"
+    )
