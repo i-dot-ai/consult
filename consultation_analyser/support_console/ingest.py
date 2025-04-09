@@ -165,6 +165,6 @@ def import_all_responses_from_jsonl(
         if len(lines) == batch_size:
             import_responses_job.delay(question_part=question_part, responses_data=lines)
             lines = []
-    # Process any remaining lines after the loop
+    # Any remaining lines < batch size
     if lines:
         import_responses_job.delay(question_part=question_part, responses_data=lines)
