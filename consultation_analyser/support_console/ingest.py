@@ -56,6 +56,21 @@ def get_themefinder_outputs_for_question(
     return json.loads(response["Body"].read())
 
 
+def import_respondent_data(consultation: Consultation, respondent_data: list):
+    logger.info(f"Importing respondent data for consultation: {consultation.title}")
+    respondents_to_save = []
+    for respondent in respondent_data:
+        respondent = json.loads(respondent.decode("utf-8"))
+        themefinder_respondent_id = respondent["themefinder_id"]
+        # TODO - add further fields e.g. user supplied ID
+        respondents_to_save.append(
+            Respondent(
+                consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
+            )
+        )
+    Respondent.objects.bulk_create(respondents_to_save)
+
+
 def import_question_part_data(consultation: Consultation, question_part_dict: dict) -> QuestionPart:
     type_mapping = {
         "free_text": QuestionPart.QuestionType.FREE_TEXT,

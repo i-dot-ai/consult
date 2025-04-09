@@ -11,6 +11,7 @@ from consultation_analyser.consultations.models import (
 from consultation_analyser.support_console.ingest import (
     import_all_responses_from_jsonl,
     import_question_part_data,
+    import_respondent_data,
     import_responses,
 )
 
@@ -135,3 +136,18 @@ def test_import_all_responses_from_jsonl(mock_consultation_input_objects):
     assert responses[0].text == "It's really fun."
     assert responses[2].text == "I need more info."
     assert responses[2].respondent.themefinder_respondent_id == 4
+
+
+@pytest.mark.django_db
+def test_import_respondent_data():
+    respondent_data = [
+        b'{"themefinder_id":1}',
+        b'{"themefinder_id":2}',
+        b'{"themefinder_id":3}',
+    ]
+    consultation = factories.ConsultationFactory()
+    import_respondent_data(consultation=consultation, respondent_data=respondent_data)
+    respondents = Respondent.objects.filter(consultation=consultation).order_by("themefinder_id")
+    assert respondents.count() == 3
+    assert respondents[0].themefinder_respondent_id == 1
+    assert respondents[2].themefinder_respondent_id == 3
