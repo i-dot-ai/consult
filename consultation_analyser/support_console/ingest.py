@@ -90,7 +90,7 @@ def import_question_part_data(consultation: Consultation, question_part_dict: di
     question_part_number = question_part_dict.get(
         "question_part_number", 1
     )  # If no question_part_number, assume 1
-    question_part_type = question_part_dict["question_part_type"]
+    question_part_type = question_part_dict.get("question_part_type", "free_text")
     question_part_type = type_mapping[question_part_type]
 
     question, _ = Question.objects.get_or_create(
@@ -120,7 +120,6 @@ def import_question_part_data(consultation: Consultation, question_part_dict: di
 
 
 def import_responses(question_part: QuestionPart, responses_data: list) -> None:
-    # TODO - ideally would have imported respondents separately
     logger.info(
         f"Importing batch of responses for question_number {question_part.question.number} and question part {question_part.number}"
     )
@@ -130,7 +129,8 @@ def import_responses(question_part: QuestionPart, responses_data: list) -> None:
     for response in responses_data:
         response = json.loads(response.decode("utf-8"))
         themefinder_respondent_id = response["themefinder_id"]
-        respondent, _ = Respondent.objects.get_or_create(
+        # Respondents should have been imported already
+        respondent = Respondent.objects.get(
             consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
         )
         response_text = response["response"]
@@ -191,9 +191,7 @@ def import_all_responses_from_jsonl(
     responses_file_key = f"{question_part_folder_key}responses.jsonl"
     s3_client = boto3.client("s3")
     response = s3_client.get_object(Bucket=bucket_name, Key=responses_file_key)
-
     lines = []
-    # TODO - chunk size?
     for line in response["Body"].iter_lines():
         lines.append(line)
         if len(lines) == batch_size:

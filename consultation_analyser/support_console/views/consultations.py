@@ -124,9 +124,6 @@ def export_urls_for_consultation(request: HttpRequest, consultation_id: UUID) ->
     return render(request, "support_console/consultations/export_urls.html", context)
 
 
-
-
-
 def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
     current_user = request.user
     bucket_name = settings.AWS_BUCKET_NAME
@@ -146,28 +143,20 @@ def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
     return render(request, "support_console/consultations/import_respondents.html", context=context)
 
 
-
-
 def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
-    # Inputs are respondents, question text and responses, no themefinder outputs.
-    current_user = request.user
+    # Inputs are question text and responses, no themefinder outputs.
+    # Respondents should already have been imported
     bucket_name = settings.AWS_BUCKET_NAME
     batch_size = 100
     if request.POST:
-        consultation_name = request.POST.get("consultation_name")
-        path_to_outputs = request.POST.get("path")
+        consultation_slug = request.POST.get("consultation_slug")
+        consultation_code = request.POST.get("consultation_code")
+        path_to_inputs = f"app_data/{consultation_code}/inputs/"
 
-        if not consultation_name:
-            consultation_name = "New Consultation"
-        consultation = models.Consultation.objects.create(title=consultation_name)
-        consultation.users.add(current_user)
-        consultation.save()
-
-        # TODO - ideally import all respondents in one go first.
+        consultation = models.Consultation.objects.get(slug=consultation_slug)
         question_part_subfolders = get_all_question_part_subfolders(
-            folder_name=path_to_outputs, bucket_name=bucket_name
+            folder_name=path_to_inputs, bucket_name=bucket_name
         )
-
         for folder in question_part_subfolders:
             question_part = import_question_part(
                 consultation=consultation, question_part_folder_key=folder
@@ -178,8 +167,6 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
                 question_part_folder_key=folder,
                 batch_size=batch_size,
             )
-
-        # TODO - how to handle failures - import by question, or by consultation?
         return redirect("/support/consultations/")
     context = {"bucket_name": bucket_name}
-    return render(request, "support_console/consultations/import_respondents.html", context=context)
+    return render(request, "support_console/consultations/import_inputs.html", context=context)

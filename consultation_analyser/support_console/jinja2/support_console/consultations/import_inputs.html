@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+
+{% set page_title = "Import ThemeFinder outputs" %}
+
+{% block content %}
+<h1 class="govuk-heading-l">{{ page_title }}</h1>
+  <p class="govuk-body">Import input data (questions, responses) for an existing consultation</p>
+
+<form method="post" enctype="multipart/form-data" novalidate>{{ csrf_input }}
+
+  <div class="govuk-form-group">
+    <p class="govuk-label-wrapper">
+      <label class="govuk-label govuk-label--l" for="consultation_slug">
+        Consultation slug
+      </label>
+      <input class="govuk-input" id="consultation_slug" name="consultation_slug" type="text" required>
+    </p>
+  </div>
+
+  <div class="govuk-form-group">
+    <p class="govuk-label-wrapper">
+      <label class="govuk-label govuk-label--l" for="consultation_code">
+        What is the name of the consultation folder?
+      </label>
+      <div id="s3_key-hint" class="govuk-hint iai-hint">
+        Consultation data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER]
+      </div>
+      <input class="govuk-input" id="consultation_code" name="consultation_code" type="text">
+    </p>
+  </div>
+  {{ govukButton({
+    'text': "Submit",
+    'name': "submit"
+  }) }}
+</form>
+{% endblock %}
