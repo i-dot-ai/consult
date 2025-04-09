@@ -45,15 +45,15 @@ def mock_consultation_input_objects(mock_s3_bucket):
         {"themefinder_id": 4, "response": "I need more info."},
     ]
     responses_jsonl_2 = "\n".join([json.dumps(response) for response in responses_2])
-    conn.Object(mock_s3_bucket, "app_data/CON1/question_part_1/question.json").put(
+    conn.Object(mock_s3_bucket, "app_data/CON1/inputs/question_part_1/question.json").put(
         Body=json.dumps(question_part_1)
     )
-    conn.Object(mock_s3_bucket, "app_data/CON1/question_part_1/response.jsonl").put(
+    conn.Object(mock_s3_bucket, "app_data/CON1/inputs/question_part_1/response.jsonl").put(
         Body=responses_jsonl_1
     )
-    conn.Object(mock_s3_bucket, "app_data/CON1/question_part_2/question.json").put(
+    conn.Object(mock_s3_bucket, "app_data/CON1/inputs/question_part_2/question.json").put(
         Body=json.dumps(question_part_2)
     )
-    conn.Object(mock_s3_bucket, "app_data/CON1/question_part_2/response.jsonl").put(
+    conn.Object(mock_s3_bucket, "app_data/CON1/inputs/question_part_2/response.jsonl").put(
         Body=responses_jsonl_2
     )
