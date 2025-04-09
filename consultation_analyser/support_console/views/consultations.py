@@ -15,7 +15,7 @@ from consultation_analyser.support_console.export_url_guidance import get_urls_f
 from consultation_analyser.support_console.ingest import (
     get_all_question_part_subfolders,
     import_all_responses_from_jsonl,
-    import_for_question_part,
+    import_question_part,
 )
 
 logger = logging.getLogger("export")
@@ -139,13 +139,12 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
         consultation.save()
 
         # TODO - ideally import all respondents in one go first.
-
         question_part_subfolders = get_all_question_part_subfolders(
             folder_name=path_to_outputs, bucket_name=bucket_name
         )
 
         for folder in question_part_subfolders:
-            question_part = import_for_question_part(
+            question_part = import_question_part(
                 consultation=consultation, question_part_folder_key=folder
             )
             import_all_responses_from_jsonl(

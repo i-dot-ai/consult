@@ -48,12 +48,12 @@ def mock_consultation_input_objects(mock_s3_bucket):
     conn.Object(mock_s3_bucket, "app_data/CON1/inputs/question_part_1/question.json").put(
         Body=json.dumps(question_part_1)
     )
-    conn.Object(mock_s3_bucket, "app_data/CON1/inputs/question_part_1/response.jsonl").put(
+    conn.Object(mock_s3_bucket, "app_data/CON1/inputs/question_part_1/responses.jsonl").put(
         Body=responses_jsonl_1
     )
     conn.Object(mock_s3_bucket, "app_data/CON1/inputs/question_part_2/question.json").put(
         Body=json.dumps(question_part_2)
     )
-    conn.Object(mock_s3_bucket, "app_data/CON1/inputs/question_part_2/response.jsonl").put(
+    conn.Object(mock_s3_bucket, "app_data/CON1/inputs/question_part_2/responses.jsonl").put(
         Body=responses_jsonl_2
     )

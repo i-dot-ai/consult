@@ -1,5 +1,6 @@
-import pytest
 import time
+
+import pytest
 
 from consultation_analyser import factories
 from consultation_analyser.consultations.models import (
@@ -8,9 +9,9 @@ from consultation_analyser.consultations.models import (
     Respondent,
 )
 from consultation_analyser.support_console.ingest import (
+    import_all_responses_from_jsonl,
     import_question_part_data,
     import_responses,
-    import_all_responses_from_jsonl
 )
 
 # TODO - keep for a while to see how to test reading from bucket
@@ -94,10 +95,11 @@ def test_import_responses():
     # Not every respondent will respond to every q
     # Some respondents will already exist, some will be created
     responses_data = [
-        {"themefinder_id": 1, "response": "response 1"},
-        {"themefinder_id": 2, "response": "response 2"},
-        {"themefinder_id": 4, "response": "response 4"},
+        b'{"themefinder_id":1, "response":"response 1"}',
+        b'{"themefinder_id":2, "response":"response 2"}',
+        b'{"themefinder_id":4, "response":"response 4"}',
     ]
+
     import_responses(question_part=question_part, responses_data=responses_data)
     assert Respondent.objects.all().count() == 3
     assert Answer.objects.all().count() == 3
@@ -113,19 +115,20 @@ def test_import_responses():
     assert response.text == "response 2"
 
 
-# TODO - make this test work
-
 @pytest.mark.django_db
-def test_import_all_responses_from_jsonl(mock_s3_bucket, mock_consultation_input_objects, monkeypatch):
+def test_import_all_responses_from_jsonl(mock_consultation_input_objects):
     question = factories.QuestionFactory(number=3)
     question_part = factories.FreeTextQuestionPartFactory(question=question, number=1)
-    import_all_responses_from_jsonl(question_part, bucket_name="test-bucket", question_part_folder_key="app_data/CON1/inputs/question_part_2/", batch_size=2)
-
-    # TODO - is there a better way?
+    import_all_responses_from_jsonl(
+        question_part,
+        bucket_name="test-bucket",
+        question_part_folder_key="app_data/CON1/inputs/question_part_2/",
+        batch_size=2,
+    )
+    # TODO - improve this, but it works for now!
     time.sleep(5)
-
     responses = Answer.objects.filter(question_part=question_part)
-    respondents = Respondent.objects.filter(consultation = question.consultation)
+    respondents = Respondent.objects.filter(consultation=question.consultation)
     assert responses.count() == 3
     assert respondents.count() == 3
     assert responses[0].respondent.themefinder_respondent_id == 1

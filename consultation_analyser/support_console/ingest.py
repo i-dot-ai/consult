@@ -57,7 +57,6 @@ def get_themefinder_outputs_for_question(
 
 
 def import_question_part_data(consultation: Consultation, question_part_dict: dict) -> QuestionPart:
-    # TODO maybe some validation of question_part_dict - Pydantic models from ThemeFinder?
     type_mapping = {
         "free_text": QuestionPart.QuestionType.FREE_TEXT,
         "single_option": QuestionPart.QuestionType.SINGLE_OPTION,
@@ -102,17 +101,16 @@ def import_question_part_data(consultation: Consultation, question_part_dict: di
     return question_part
 
 
-def import_responses(question_part: QuestionPart, responses_data: list[dict]) -> None:
+def import_responses(question_part: QuestionPart, responses_data: list) -> None:
     # TODO - ideally would have imported respondents separately
     logger.info(
-        f"Starting to import responses for question_number {question_part.question.number} and question part {question_part.number}"
-    )
-    logger.info(
-        f"Importing responses from themefinder_respondent_id {responses_data[0].get('themefinder_id')} to {responses_data[-1].get('themefinder_id')}"
+        f"Importing batch of responses for question_number {question_part.question.number} and question part {question_part.number}"
     )
     consultation = question_part.question.consultation
+
     answers = []
     for response in responses_data:
+        response = json.loads(response.decode("utf-8"))
         themefinder_respondent_id = response["themefinder_id"]
         respondent, _ = Respondent.objects.get_or_create(
             consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
@@ -123,23 +121,19 @@ def import_responses(question_part: QuestionPart, responses_data: list[dict]) ->
         answers.append(
             Answer(question_part=question_part, respondent=respondent, text=response_text)
         )
+
     Answer.objects.bulk_create(answers)
     logger.info(
-        f"Saved responses for question_number {question_part.question.number} and question part {question_part.number}"
-    )
-    logger.info(
-        f"Saved responses from themefinder_respondent_id {responses_data[0]['themefinder_id']} to {responses_data[-1]['themefinder_id']}"
+        f"Saved batch of responses for question_number {question_part.question.number} and question part {question_part.number}"
     )
 
 
 @job("default", timeout=900)
-def import_responses_job(question_part: QuestionPart, responses_data: list[dict]):
+def import_responses_job(question_part: QuestionPart, responses_data: list):
     import_responses(question_part, responses_data)
 
 
-def import_for_question_part(
-    consultation: Consultation, question_part_folder_key: str
-) -> QuestionPart:
+def import_question_part(consultation: Consultation, question_part_folder_key: str) -> QuestionPart:
     s3 = boto3.client("s3")
     data_key = f"{question_part_folder_key}question.json"
     response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=data_key)
@@ -154,14 +148,14 @@ def import_all_responses_from_jsonl(
     question_part: QuestionPart, bucket_name: str, question_part_folder_key: str, batch_size: int
 ) -> None:
     logger.info(f"Importing responses from {question_part_folder_key}, batch_size {batch_size}")
-    responses_file_key = f"{question_part_folder_key}response.jsonl"
+    responses_file_key = f"{question_part_folder_key}responses.jsonl"
     s3_client = boto3.client("s3")
     response = s3_client.get_object(Bucket=bucket_name, Key=responses_file_key)
 
     lines = []
     # TODO - chunk size?
     for line in response["Body"].iter_lines():
-        lines.append(json.loads(line.decode("utf-8")))
+        lines.append(line)
         if len(lines) == batch_size:
             import_responses_job.delay(question_part=question_part, responses_data=lines)
             lines = []
