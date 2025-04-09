@@ -69,9 +69,7 @@ def import_respondent_data(consultation: Consultation, respondent_data: list):
             )
         )
     Respondent.objects.bulk_create(respondents_to_save)
-    logger.info(
-        f"Saved batch of respondents for consultation: {consultation.title}"
-    )
+    logger.info(f"Saved batch of respondents for consultation: {consultation.title}")
 
 
 def import_question_part_data(consultation: Consultation, question_part_dict: dict) -> QuestionPart:
@@ -169,7 +167,7 @@ def import_all_respondents_from_jsonl(
         if len(lines) == batch_size:
             import_respondent_data_job.delay(consultation=consultation, respondent_data=lines)
             lines = []
-    if lines: # Any remaining lines < batch size
+    if lines:  # Any remaining lines < batch size
         import_respondent_data_job.delay(consultation=consultation, respondent_data=lines)
 
 

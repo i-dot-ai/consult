@@ -57,9 +57,9 @@ def app_config(request: HttpRequest):
                     "active": request.path.startswith("/support/users"),
                 },
                 {
-                    "href": "/support/consultations/import-inputs/",
+                    "href": "/support/consultations/import-summary/",
                     "text": "Import",
-                    "active": request.path.startswith("/support/consultations/import-inputs"),
+                    "active": request.path.startswith("/support/consultations/import-summary"),
                 },
                 {
                     "href": "/support/sign-out/",
