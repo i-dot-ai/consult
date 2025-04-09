@@ -109,3 +109,20 @@ def test_import_responses():
         question_part=question_part, respondent__themefinder_respondent_id=2
     )
     assert response.text == "response 2"
+
+
+# TODO - make this test work
+
+# @pytest.mark.django_db
+# def test_import_all_responses_from_jsonl(mock_s3_bucket, mock_consultation_input_objects, monkeypatch):
+#     question = factories.QuestionFactory(number=3)
+#     question_part = factories.FreeTextQuestionPartFactory(question=question, number=1)
+#     import_all_responses_from_jsonl(question_part, bucket_name="test-bucket", question_part_folder_key="app_data/CON1/question_part_2", batch_size=2)
+#     responses = Answer.objects.filter(question_part=question_part).order_by("number")
+#     respondents = Respondent.objects.filter(consultation = question.consultation)
+#     assert responses.count() == 4
+#     assert respondents.count() == 4
+#     assert responses[0].respondent.themefinder_respondent_id == 1
+#     assert responses[0].text == "response 1"
+#     assert responses[2].text == "response 4"
+#     assert responses[2].respondent.themefinder_respondent_id == 4

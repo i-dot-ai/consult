@@ -36,24 +36,24 @@ def mock_consultation_input_objects(mock_s3_bucket):
         {"themefinder_id": 1, "response": "Yes, I think so."},
         {"themefinder_id": 2, "response": "Not sure about that."},
         {"themefinder_id": 3, "response": "I don't think so."},
-        {"themefinder_id": 4, "response": "Maybe, but I need more info."}
+        {"themefinder_id": 4, "response": "Maybe, but I need more info."},
     ]
     responses_jsonl_1 = "\n".join([json.dumps(response) for response in responses_1])
     responses_2 = [
         {"themefinder_id": 1, "response": "It's really fun."},
         {"themefinder_id": 3, "response": "It's goog."},
-        {"themefinder_id": 4, "response": "I need more info."}
+        {"themefinder_id": 4, "response": "I need more info."},
     ]
     responses_jsonl_2 = "\n".join([json.dumps(response) for response in responses_2])
     conn.Object(mock_s3_bucket, "app_data/CON1/question_part_1/question.json").put(
         Body=json.dumps(question_part_1)
     )
-    conn.Object(mock_s3_bucket, "app_data/CON1/question_part_1/response.json").put(
+    conn.Object(mock_s3_bucket, "app_data/CON1/question_part_1/response.jsonl").put(
         Body=responses_jsonl_1
     )
     conn.Object(mock_s3_bucket, "app_data/CON1/question_part_2/question.json").put(
         Body=json.dumps(question_part_2)
     )
-    conn.Object(mock_s3_bucket, "app_data/CON1/question_part_2/response.json").put(
+    conn.Object(mock_s3_bucket, "app_data/CON1/question_part_2/response.jsonl").put(
         Body=responses_jsonl_2
     )
