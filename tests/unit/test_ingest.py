@@ -119,7 +119,7 @@ def test_import_responses():
 def test_import_all_responses_from_jsonl(mock_s3_bucket, mock_consultation_input_objects, monkeypatch):
     question = factories.QuestionFactory(number=3)
     question_part = factories.FreeTextQuestionPartFactory(question=question, number=1)
-    import_all_responses_from_jsonl(question_part, bucket_name="test-bucket", question_part_folder_key="app_data/CON1/question_part_2/", batch_size=2)
+    import_all_responses_from_jsonl(question_part, bucket_name="test-bucket", question_part_folder_key="app_data/CON1/inputs/question_part_2/", batch_size=2)
 
     # TODO - is there a better way?
     time.sleep(5)
