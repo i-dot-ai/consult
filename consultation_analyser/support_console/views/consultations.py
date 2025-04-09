@@ -14,9 +14,9 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
 from consultation_analyser.support_console.ingest import (
     get_all_question_part_subfolders,
+    import_all_respondents_from_jsonl,
     import_all_responses_from_jsonl,
     import_question_part,
-    import_all_respondents_from_jsonl
 )
 
 logger = logging.getLogger("export")
@@ -137,7 +137,12 @@ def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
         consultation.users.add(current_user)
         consultation.save()
         input_folder_name = f"app_data/{consultation_code}/inputs/"
-        import_all_respondents_from_jsonl(consultation=consultation, bucket_name=bucket_name, inputs_folder_key=input_folder_name, batch_size=batch_size)
+        import_all_respondents_from_jsonl(
+            consultation=consultation,
+            bucket_name=bucket_name,
+            inputs_folder_key=input_folder_name,
+            batch_size=batch_size,
+        )
         return redirect("/support/consultations/")
     context = {"bucket_name": bucket_name}
     return render(request, "support_console/consultations/import_respondents.html", context=context)
@@ -145,7 +150,7 @@ def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
 
 def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
     # Inputs are question text and responses, no themefinder outputs.
-    # Respondents should already have been imported
+    # Respondents should already have been imported
     bucket_name = settings.AWS_BUCKET_NAME
     batch_size = 100
     if request.POST:
@@ -170,3 +175,7 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
         return redirect("/support/consultations/")
     context = {"bucket_name": bucket_name}
     return render(request, "support_console/consultations/import_inputs.html", context=context)
+
+
+def import_summary(request: HttpRequest) -> HttpResponse:
+    return render(request, "support_console/consultations/import_summary.html", context={})

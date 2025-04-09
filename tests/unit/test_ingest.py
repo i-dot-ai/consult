@@ -9,7 +9,6 @@ from consultation_analyser.consultations.models import (
     Respondent,
 )
 from consultation_analyser.support_console.ingest import (
-    import_all_respondents_from_jsonl,
     import_all_responses_from_jsonl,
     import_question_part_data,
     import_respondent_data,
@@ -155,4 +154,3 @@ def test_import_respondent_data():
     assert respondents.count() == 3
     assert respondents[0].themefinder_respondent_id == 1
     assert respondents[2].themefinder_respondent_id == 3
-
