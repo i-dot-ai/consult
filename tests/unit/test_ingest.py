@@ -147,7 +147,9 @@ def test_import_respondent_data():
     ]
     consultation = factories.ConsultationFactory()
     import_respondent_data(consultation=consultation, respondent_data=respondent_data)
-    respondents = Respondent.objects.filter(consultation=consultation).order_by("themefinder_id")
+    respondents = Respondent.objects.filter(consultation=consultation).order_by(
+        "themefinder_respondent_id"
+    )
     assert respondents.count() == 3
     assert respondents[0].themefinder_respondent_id == 1
     assert respondents[2].themefinder_respondent_id == 3
