@@ -144,8 +144,31 @@ def import_responses(question_part: QuestionPart, responses_data: list) -> None:
 
 
 @job("default", timeout=900)
+def import_respondent_data_job(consultation: Consultation, respondent_data: list):
+    import_respondent_data(consultation=consultation, respondent_data=respondent_data)
+
+
+@job("default", timeout=900)
 def import_responses_job(question_part: QuestionPart, responses_data: list):
     import_responses(question_part, responses_data)
+
+
+def import_all_respondents_from_jsonl(
+    consultation: Consultation, bucket_name: str, inputs_folder_key: str, batch_size: int
+) -> None:
+    logger.info(f"Importing respondents from {inputs_folder_key}, batch_size {batch_size}")
+    respondents_file_key = f"{inputs_folder_key}respondents.jsonl"
+    s3_client = boto3.client("s3")
+    response = s3_client.get_object(Bucket=bucket_name, Key=respondents_file_key)
+    lines = []
+    for line in response["Body"].iter_lines():
+        lines.append(line)
+        if len(lines) == batch_size:
+            import_respondent_data_job.delay(consultation=consultation, responses_data=lines)
+            lines = []
+    # Any remaining lines < batch size
+    if lines:
+        import_respondent_data_job.delay(consultation=consultation, responses_data=lines)
 
 
 def import_question_part(consultation: Consultation, question_part_folder_key: str) -> QuestionPart:
