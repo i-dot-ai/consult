@@ -54,4 +54,9 @@ urlpatterns = [
         consultations.import_consultation_inputs,
         name="import_inputs",
     ),
+    path(
+        "consultations/import-respondents/",
+        consultations.import_consultation_respondents,
+        name="import_respondents",
+    ),
 ]

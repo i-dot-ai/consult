@@ -16,6 +16,7 @@ from consultation_analyser.support_console.ingest import (
     get_all_question_part_subfolders,
     import_all_responses_from_jsonl,
     import_question_part,
+    import_all_respondents_from_jsonl
 )
 
 logger = logging.getLogger("export")
@@ -123,6 +124,30 @@ def export_urls_for_consultation(request: HttpRequest, consultation_id: UUID) ->
     return render(request, "support_console/consultations/export_urls.html", context)
 
 
+
+
+
+def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
+    current_user = request.user
+    bucket_name = settings.AWS_BUCKET_NAME
+    batch_size = 100
+    if request.POST:
+        consultation_name = request.POST.get("consultation_name")
+        consultation_code = request.POST.get("consultation_code")
+        if not consultation_name:
+            consultation_name = "New Consultation"
+        consultation = models.Consultation.objects.create(title=consultation_name)
+        consultation.users.add(current_user)
+        consultation.save()
+        input_folder_name = f"app_data/{consultation_code}/inputs/"
+        import_all_respondents_from_jsonl(consultation=consultation, bucket_name=bucket_name, inputs_folder_key=input_folder_name, batch_size=batch_size)
+        return redirect("/support/consultations/")
+    context = {"bucket_name": bucket_name}
+    return render(request, "support_console/consultations/import_respondents.html", context=context)
+
+
+
+
 def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
     # Inputs are respondents, question text and responses, no themefinder outputs.
     current_user = request.user
@@ -157,4 +182,4 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
         # TODO - how to handle failures - import by question, or by consultation?
         return redirect("/support/consultations/")
     context = {"bucket_name": bucket_name}
-    return render(request, "support_console/consultations/import.html", context=context)
+    return render(request, "support_console/consultations/import_respondents.html", context=context)
