@@ -24,7 +24,10 @@
   <div class="govuk-grid-row govuk-!-margin-top-5">
     <div class="govuk-grid-column-full">
       <span class="govuk-caption-xl govuk-!-display-block">Question {{question.number}}</span>
-      <h1 class="govuk-heading-l">
+      <h1
+        class="govuk-heading-l long-header clickable text-truncated"
+        onclick="document.getElementsByTagName('h1')[0].classList.toggle('text-truncated')"
+      >
         {{ question.text }}
       </h1>
       {% if free_text_question_part %}
