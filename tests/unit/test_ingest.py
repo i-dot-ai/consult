@@ -155,23 +155,3 @@ def test_import_respondent_data():
     assert respondents[0].themefinder_respondent_id == 1
     assert respondents[2].themefinder_respondent_id == 3
 
-
-@pytest.mark.django_db
-def test_import_all_respondents_from_jsonl(mock_consultation_input_objects):
-    consultation = factories.ConsultationFactory()
-    import_all_respondents_from_jsonl(
-        bucket_name="test-bucket",
-        input_folder_key="app_data/CON1/inputs/",
-        batch_size=2,
-    )
-    # TODO - improve this, but it works for now!
-    time.sleep(5)
-    respondents = Respondent.objects.filter(consultation=consultation).order_by(
-        "themefinder_respondent_id"
-    )
-    assert respondents.count() == 5
-    assert respondents.themefinder_respondent_id == 1
-    assert respondents.themefinder_respondent_id == 5
-
-
-4

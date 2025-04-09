@@ -56,7 +56,7 @@ def mock_consultation_input_objects(mock_s3_bucket):
     responses_jsonl_2 = "\n".join([json.dumps(response) for response in responses_2])
 
     conn.Object(mock_s3_bucket, "app_data/CON1/inputs/respondents.jsonl").put(
-        Body=json.dumps(respondents_jsonl)
+        Body=respondents_jsonl
     )
     conn.Object(mock_s3_bucket, "app_data/CON1/inputs/question_part_1/question.json").put(
         Body=json.dumps(question_part_1)

@@ -57,6 +57,8 @@ def get_themefinder_outputs_for_question(
 
 
 def import_respondent_data(consultation: Consultation, respondent_data: list):
+    print("started impoort")
+    print(respondent_data)
     logger.info(f"Importing respondent data for consultation: {consultation.title}")
     respondents_to_save = []
     for respondent in respondent_data:
@@ -69,6 +71,10 @@ def import_respondent_data(consultation: Consultation, respondent_data: list):
             )
         )
     Respondent.objects.bulk_create(respondents_to_save)
+    print("created")
+    logger.info(
+        f"Saved batch of respondents for consultation: {consultation.title}"
+    )
 
 
 def import_question_part_data(consultation: Consultation, question_part_dict: dict) -> QuestionPart:
@@ -166,8 +172,7 @@ def import_all_respondents_from_jsonl(
         if len(lines) == batch_size:
             import_respondent_data_job.delay(consultation=consultation, responses_data=lines)
             lines = []
-    # Any remaining lines < batch size
-    if lines:
+    if lines: # Any remaining lines < batch size
         import_respondent_data_job.delay(consultation=consultation, responses_data=lines)
 
 
