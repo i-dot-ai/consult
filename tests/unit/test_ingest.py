@@ -1,4 +1,5 @@
 import pytest
+import time
 
 from consultation_analyser import factories
 from consultation_analyser.consultations.models import (
@@ -9,6 +10,7 @@ from consultation_analyser.consultations.models import (
 from consultation_analyser.support_console.ingest import (
     import_question_part_data,
     import_responses,
+    import_all_responses_from_jsonl
 )
 
 # TODO - keep for a while to see how to test reading from bucket
@@ -113,16 +115,20 @@ def test_import_responses():
 
 # TODO - make this test work
 
-# @pytest.mark.django_db
-# def test_import_all_responses_from_jsonl(mock_s3_bucket, mock_consultation_input_objects, monkeypatch):
-#     question = factories.QuestionFactory(number=3)
-#     question_part = factories.FreeTextQuestionPartFactory(question=question, number=1)
-#     import_all_responses_from_jsonl(question_part, bucket_name="test-bucket", question_part_folder_key="app_data/CON1/question_part_2", batch_size=2)
-#     responses = Answer.objects.filter(question_part=question_part).order_by("number")
-#     respondents = Respondent.objects.filter(consultation = question.consultation)
-#     assert responses.count() == 4
-#     assert respondents.count() == 4
-#     assert responses[0].respondent.themefinder_respondent_id == 1
-#     assert responses[0].text == "response 1"
-#     assert responses[2].text == "response 4"
-#     assert responses[2].respondent.themefinder_respondent_id == 4
+@pytest.mark.django_db
+def test_import_all_responses_from_jsonl(mock_s3_bucket, mock_consultation_input_objects, monkeypatch):
+    question = factories.QuestionFactory(number=3)
+    question_part = factories.FreeTextQuestionPartFactory(question=question, number=1)
+    import_all_responses_from_jsonl(question_part, bucket_name="test-bucket", question_part_folder_key="app_data/CON1/question_part_2/", batch_size=2)
+
+    # TODO - is there a better way?
+    time.sleep(5)
+
+    responses = Answer.objects.filter(question_part=question_part)
+    respondents = Respondent.objects.filter(consultation = question.consultation)
+    assert responses.count() == 3
+    assert respondents.count() == 3
+    assert responses[0].respondent.themefinder_respondent_id == 1
+    assert responses[0].text == "It's really fun."
+    assert responses[2].text == "I need more info."
+    assert responses[2].respondent.themefinder_respondent_id == 4
