@@ -121,6 +121,9 @@ def test_import_responses():
 def test_import_all_responses_from_jsonl(mock_consultation_input_objects):
     question = factories.QuestionFactory(number=3)
     question_part = factories.FreeTextQuestionPartFactory(question=question, number=1)
+    consultation = question.consultation
+    for i in range(5):
+        factories.RespondentFactory(consultation=consultation, themefinder_respondent_id=i)
     import_all_responses_from_jsonl(
         question_part,
         bucket_name="test-bucket",
@@ -130,9 +133,7 @@ def test_import_all_responses_from_jsonl(mock_consultation_input_objects):
     # TODO - improve this, but it works for now!
     time.sleep(5)
     responses = Answer.objects.filter(question_part=question_part)
-    respondents = Respondent.objects.filter(consultation=question.consultation)
     assert responses.count() == 3
-    assert respondents.count() == 3
     assert responses[0].respondent.themefinder_respondent_id == 1
     assert responses[0].text == "It's really fun."
     assert responses[2].text == "I need more info."
