@@ -18,12 +18,14 @@
       "items": {
         "type": "string"
       },
-      "nullable": true
+      "nullable": true,
+      "description": "All possible options for a closed question. Might not be present for free text question (or empty)."
     },
     "question_part_type": {
       "type": "string",
       "enum": ["free_text", "single_option", "multiple_options"],
-      "nullable": true
+      "nullable": true,
+      "description": "If not supplied, assume free-text question."
     }
   },
   "required": [

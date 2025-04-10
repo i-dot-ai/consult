@@ -4,22 +4,24 @@
     "themefinder_id": {
       "type": "integer"
     },
-    "response": {
-      "type": "string"
+    "text": {
+      "type": "string",
+      "description": "Free text response"
     },
-    "response_chosen_options": {
+    "chosen_options": {
       "type": "array",
       "items": {
         "type": "string"
-      }
+      },
+      "description": "Options that have been chosen for a closed question."
     }
   },
   "anyOf": [
     {
-      "required": ["response"]
+      "required": ["text"]
     },
     {
-      "required": ["response_chosen_options"]
+      "required": ["chosen_options"]
     }
   ],
   "required": ["themefinder_id"],

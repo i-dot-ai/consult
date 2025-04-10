@@ -4,7 +4,7 @@
   "items": {
     "type": "object",
     "properties": {
-      "topic_id": {
+      "label": {
         "type": "string",
         "maxLength": 128
       },
@@ -15,7 +15,7 @@
         "type": "string"
       }
     },
-    "required": ["topic_id", "theme_name", "theme_description"],
+    "required": ["label", "theme_name", "theme_description"],
     "additionalProperties": true
   }
 }
