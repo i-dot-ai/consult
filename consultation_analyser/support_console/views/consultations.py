@@ -14,10 +14,10 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
 from consultation_analyser.support_console.ingest import (
     get_all_question_part_subfolders,
+    get_list_consultation_folder_names_formatted_for_dropdown,
     import_all_respondents_from_jsonl,
     import_all_responses_from_jsonl,
     import_question_part,
-    get_list_consultation_folder_names_formatted_for_dropdown
 )
 
 logger = logging.getLogger("export")
@@ -164,7 +164,9 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
 
     all_consultations = models.Consultation.objects.all().order_by("-created_at")
     consultations_for_select = all_consultations.values("id", "title")
-    consultations_for_select = [{"text": f'{d["title"]} ({d["id"]})', "value": d['id']} for d in consultations_for_select]
+    consultations_for_select = [
+        {"text": f"{d['title']} ({d['id']})", "value": d["id"]} for d in consultations_for_select
+    ]
 
     consultation_folders = get_list_consultation_folder_names_formatted_for_dropdown()
 
@@ -190,7 +192,11 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
         msg = f"Import for consultation inputs started for consultation with slug {consultation.slug} - check for progress in dashboard"
         messages.success(request, msg)
         return redirect("/support/consultations/import-summary/")
-    context = {"bucket_name": bucket_name, "consultations_for_select": consultations_for_select, "consultation_folders": consultation_folders}
+    context = {
+        "bucket_name": bucket_name,
+        "consultations_for_select": consultations_for_select,
+        "consultation_folders": consultation_folders,
+    }
     return render(request, "support_console/consultations/import_inputs.html", context=context)
 
 
