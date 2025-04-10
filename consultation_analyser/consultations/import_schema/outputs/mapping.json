@@ -1,0 +1,24 @@
+{
+  "type": "object",
+  "properties": {
+    "themefinder_id": {
+      "type": "integer"
+    },
+    "labels": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 128
+      }
+    },
+    "stances": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["POSITIVE", "NEGATIVE"]
+      }
+    }
+  },
+  "required": ["themefinder_id", "labels", "stances"],
+  "additionalProperties": true
+}
