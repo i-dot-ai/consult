@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+{%- from 'govuk_frontend_jinja/components/select/macro.html' import govukSelect -%}
 
 {% set page_title = "Import respondent data for a new consultation" %}
 
@@ -19,15 +20,17 @@
   </div>
 
   <div class="govuk-form-group">
-    <p class="govuk-label-wrapper">
-      <label class="govuk-label govuk-label--l" for="consultation_code">
-        What is the name of the consultation folder in the S3 bucket?
-      </label>
-      <div id="s3_key-hint" class="govuk-hint iai-hint">
-        Data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER NAME]
-      </div>
-      <input class="govuk-input" id="consultation_code" name="consultation_code" type="text">
-    </p>
+    {{ govukSelect({
+      'id': "consultation_code",
+      'name': "consultation_code",
+      'label': {
+        'text': "Select consultation folder",
+      },
+      'hint': {
+        'text': "Data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER]"
+      },
+      'items': consultation_folders
+    }) }}
   </div>
   {{ govukButton({
     'text': "Submit",

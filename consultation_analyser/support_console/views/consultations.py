@@ -17,7 +17,7 @@ from consultation_analyser.support_console.ingest import (
     import_all_respondents_from_jsonl,
     import_all_responses_from_jsonl,
     import_question_part,
-    get_all_folder_names_within_folder
+    get_list_consultation_folder_names_formatted_for_dropdown
 )
 
 logger = logging.getLogger("export")
@@ -131,6 +131,9 @@ def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
     current_user = request.user
     bucket_name = settings.AWS_BUCKET_NAME
     batch_size = 100
+
+    consultation_folders = get_list_consultation_folder_names_formatted_for_dropdown()
+
     if request.POST:
         consultation_name = request.POST.get("consultation_name")
         consultation_code = request.POST.get("consultation_code")
@@ -149,7 +152,7 @@ def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
         msg = f"Importing respondents started for consultation with slug {consultation.slug} - check for progress in dashboard"
         messages.success(request, msg)
         return redirect("/support/consultations/import-summary/")
-    context = {"bucket_name": bucket_name}
+    context = {"bucket_name": bucket_name, "consultation_folders": consultation_folders}
     return render(request, "support_console/consultations/import_respondents.html", context=context)
 
 
@@ -163,10 +166,7 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
     consultations_for_select = all_consultations.values("id", "title")
     consultations_for_select = [{"text": f'{d["title"]} ({d["id"]})', "value": d['id']} for d in consultations_for_select]
 
-    try:
-        consultation_folders = get_all_folder_names_within_folder(folder_name="app_data", bucket_name=bucket_name)
-    except RuntimeError:
-        consultation_folders = set()
+    consultation_folders = get_list_consultation_folder_names_formatted_for_dropdown()
 
     if request.POST:
         consultation_id = request.POST.get("consultation_id")
