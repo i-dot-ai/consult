@@ -1,12 +1,12 @@
 {
-  "$schema": "http://json-schema.org/draft-07/schema#",
   "type": "array",
   "items": {
     "type": "object",
     "properties": {
       "label": {
         "type": "string",
-        "maxLength": 128
+        "maxLength": 128,
+        "description": "Unique key defining a theme."
       },
       "theme_name": {
         "type": "string"
