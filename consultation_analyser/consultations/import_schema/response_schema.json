@@ -1,0 +1,27 @@
+{
+  "type": "object",
+  "properties": {
+    "themefinder_id": {
+      "type": "integer"
+    },
+    "response": {
+      "type": "string"
+    },
+    "response_chosen_options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    }
+  },
+  "anyOf": [
+    {
+      "required": ["response"]
+    },
+    {
+      "required": ["response_chosen_options"]
+    }
+  ],
+  "required": ["themefinder_id"],
+  "additionalProperties": true
+}
