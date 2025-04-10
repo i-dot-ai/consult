@@ -8,7 +8,10 @@
   <div>
     <p class="govuk-body">This question part is part of the consultation with title: {{ question_part.question.consultation.title }}</p>
     <p class="govuk-body">Are you sure you want to delete the following question part?</p>
-    <p class="govuk-inset-text">{{ question_part.question.text }}/n{{ question_part.question.text }}</p>
+    <p class="govuk-inset-text">
+      {{ question_part.question.text }}
+      {{ question_part.question.text }}
+    </p>
   </div>
 
   <br />

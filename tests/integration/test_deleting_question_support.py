@@ -1,7 +1,7 @@
 import pytest
 
 from consultation_analyser import factories
-from consultation_analyser.consultations.models import Question
+from consultation_analyser.consultations.models import QuestionPart
 from tests.helpers import sign_in
 
 
@@ -34,7 +34,7 @@ def test_deleting_consultation_question_parts_via_support(django_app):
     delete_confirmation_page.form.submit("cancel_deletion")
 
     # Check question still exists
-    assert Question.objects.filter(id=question.id).count() == 1
+    assert QuestionPart.objects.filter(id=question_part.id).count() == 1
 
     # Go to consultation page in support
     consultations_page = django_app.get(f"/support/consultations/{consultation.id}/")
@@ -46,4 +46,4 @@ def test_deleting_consultation_question_parts_via_support(django_app):
     delete_confirmation_page.form.submit("confirm_deletion")
 
     # Check question deleted
-    assert Question.objects.filter(id=question.id).count() == 0
+    assert QuestionPart.objects.filter(id=question.id).count() == 0
