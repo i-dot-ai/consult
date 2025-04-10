@@ -53,13 +53,21 @@ def get_all_folder_names_within_folder(
     s3 = boto3.resource("s3")
     objects = s3.Bucket(bucket_name).objects.filter(Prefix=folder_name)
     set_object_names = {obj.key for obj in objects}
+    # Remove prefix
+    set_object_names = {name.replace(f"folder_name/", "") for name in set_object_names}
     # Folders end in slash
-    folders_only = {name for name in set_object_names if name.endswith("/")}
-    # Exclude the name for the folder itself
-    folder_names = {name.split("/")[1] for name in folders_only}
-    folder_names = folder_names - {""}
+    folder_names = {name.split("/")[1] for name in set_object_names}
+    folder_names = set(folder_names) - {""}
     return folder_names
 
+
+def get_list_consultation_folder_names_formatted_for_dropdown() -> list[dict]:
+    try:
+        consultation_folder_names = get_all_folder_names_within_folder(folder_name="app_data", bucket_name=settings.AWS_BUCKET_NAME)
+    except RuntimeError: # If no credentials for AWS
+        consultation_folder_names = set()
+    consultation_folders_formatted = [{"text": x, "value": x} for x in consultation_folder_names]
+    return consultation_folders_formatted
 
 
 

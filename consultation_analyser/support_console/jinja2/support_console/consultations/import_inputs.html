@@ -21,7 +21,9 @@
         'items': consultations_for_select
       }) }}
     </p>
+  </div>
 
+  <div class="govuk-form-group">
     <p class="govuk-label-wrapper">
 
       {{ govukSelect({
@@ -31,7 +33,7 @@
           'text': "Select consultation folder",
         },
         'hint': {
-          'text': "Consultation data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER]"
+          'text': "Data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER]"
         },
         'items': consultation_folders
       }) }}
