@@ -57,7 +57,9 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
-    question_parts = models.QuestionPart.objects.filter(question__consultation=consultation).order_by("question__number", "number")
+    question_parts = models.QuestionPart.objects.filter(
+        question__consultation=consultation
+    ).order_by("question__number", "number")
 
     context = {
         "consultation": consultation,
