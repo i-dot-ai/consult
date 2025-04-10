@@ -59,6 +59,7 @@ The structure should be:
 ```
 with separate folders for each question_part (sub-question).
 
+Schema for each of these are in `/consultation_analyser/consultations/import_schema/`.
 
 
 ## Consequences
