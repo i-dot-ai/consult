@@ -29,6 +29,37 @@ We will store data in S3 (in the bucket specified by `AWS_BUCKET_NAME`) in a sta
 Data will be saved in JSON files, or JSONL (JSON lines) files for longer files to allow us to read it line-by-line.
 
 
+The structure should be:
+
+```
+<consultation-name>/
+    ├── raw_data/
+    │   └── ....
+    ├── inputs/
+    │   ├── question_part_<id>/
+    │   │   ├── responses.jsonl
+    │   │   └── question_part.json
+    │   ├──  question_part_<id>/
+    │   │   ├── responses.jsonl
+    │   │   └── question_part.json
+    │   ├── ...
+    │   ...
+    └── outputs/
+        ├── mapping/
+        │   ├── <timestamp>/
+        │   │   ├── question_part_<id>/
+        │   │   │   ├── meta.json
+        │   │   │   ├── themes.json
+        │   │   │   ├── position.jsonl
+        │   │   │   └── mapping.jsonl
+        │   │   ├── question_part_<id>/
+        │   │   ├── ...
+        │   ...  
+        └── sign_off/
+```
+with separate folders for each question_part (sub-question).
+
+
 
 ## Consequences
 
