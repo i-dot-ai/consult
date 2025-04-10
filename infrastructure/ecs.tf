@@ -55,6 +55,7 @@ module "ecs" {
   }
   environment_variables = local.ecs_env_vars
 
+
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   container_port               = "8000"
@@ -91,6 +92,8 @@ module "worker" {
     port                = 8000
   }
   environment_variables = local.ecs_env_vars
+
+  autoscaling_maximum_target = 4
 
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
