@@ -1,0 +1,21 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "topic_id": {
+        "type": "string",
+        "maxLength": 128
+      },
+      "theme_name": {
+        "type": "string"
+      },
+      "theme_description": {
+        "type": "string"
+      }
+    },
+    "required": ["topic_id", "theme_name", "theme_description"],
+    "additionalProperties": true
+  }
+}
