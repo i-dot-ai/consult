@@ -1,0 +1,34 @@
+{
+  "type": "object",
+  "properties": {
+    "question_text": {
+      "type": "string"
+    },
+    "question_part_text": {
+      "type": "string"
+    },
+    "question_number": {
+      "type": "integer"
+    },
+    "question_part_number": {
+      "type": "integer"
+    },
+    "question_part_multiple_choice_options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "nullable": true
+    },
+    "question_part_type": {
+      "type": "string",
+      "enum": ["free_text", "single_option", "multiple_options"],
+      "nullable": true
+    }
+  },
+  "required": [
+    "question_text",
+    "question_number"
+  ],
+  "additionalProperties": true
+}
