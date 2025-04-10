@@ -47,6 +47,22 @@ def get_all_question_part_subfolders(folder_name: str, bucket_name: str) -> list
     return question_folders
 
 
+def get_all_folder_names_within_folder(
+    folder_name: str, bucket_name: str
+) -> set:
+    s3 = boto3.resource("s3")
+    objects = s3.Bucket(bucket_name).objects.filter(Prefix=folder_name)
+    set_object_names = {obj.key for obj in objects}
+    # Folders end in slash
+    folders_only = {name for name in set_object_names if name.endswith("/")}
+    # Exclude the name for the folder itself
+    folder_names = {name.split("/")[1] for name in folders_only}
+    folder_names = folder_names - {""}
+    return folder_names
+
+
+
+
 def get_themefinder_outputs_for_question(
     question_folder_key: str, output_name: str
 ) -> dict | list[dict]:

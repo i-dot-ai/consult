@@ -17,6 +17,7 @@ from consultation_analyser.support_console.ingest import (
     import_all_respondents_from_jsonl,
     import_all_responses_from_jsonl,
     import_question_part,
+    get_all_folder_names_within_folder
 )
 
 logger = logging.getLogger("export")
@@ -162,6 +163,11 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
     consultations_for_select = all_consultations.values("id", "title")
     consultations_for_select = [{"text": f'{d["title"]} ({d["id"]})', "value": d['id']} for d in consultations_for_select]
 
+    try:
+        consultation_folders = get_all_folder_names_within_folder(folder_name="app_data", bucket_name=bucket_name)
+    except RuntimeError:
+        consultation_folders = set()
+
     if request.POST:
         consultation_id = request.POST.get("consultation_id")
         consultation_code = request.POST.get("consultation_code")
@@ -184,7 +190,7 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
         msg = f"Import for consultation inputs started for consultation with slug {consultation.slug} - check for progress in dashboard"
         messages.success(request, msg)
         return redirect("/support/consultations/import-summary/")
-    context = {"bucket_name": bucket_name, "consultations_for_select": consultations_for_select}
+    context = {"bucket_name": bucket_name, "consultations_for_select": consultations_for_select, "consultation_folders": consultation_folders}
     return render(request, "support_console/consultations/import_inputs.html", context=context)
 
 
