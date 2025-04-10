@@ -23,18 +23,25 @@
     </p>
 
     <p class="govuk-label-wrapper">
-      <label class="govuk-label govuk-label--l" for="consultation_code">
-        What is the name of the consultation folder?
-      </label>
-      <div id="s3_key-hint" class="govuk-hint iai-hint">
-        Consultation data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER]
-      </div>
-      <input class="govuk-input" id="consultation_code" name="consultation_code" type="text">
+
+      {{ govukSelect({
+        'id': "consultation_code",
+        'name': "consultation_code",
+        'label': {
+          'text': "Select consultation folder",
+        },
+        'hint': {
+          'text': "Consultation data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER]"
+        },
+        'items': consultation_folders
+      }) }}
     </p>
   </div>
+
   {{ govukButton({
     'text': "Submit",
     'name': "submit"
   }) }}
+
 </form>
 {% endblock %}
