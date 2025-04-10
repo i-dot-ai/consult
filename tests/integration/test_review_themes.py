@@ -31,9 +31,9 @@ def test_review_show_response(django_app):
         framework=framework, type=models.ExecutionRun.TaskType.THEME_MAPPING
     )
     # Initial state answer1 = [A], answer2 = [A, B]
-    ThemeMappingFactory(answer=answer_1, theme=theme_a, execution_run=execution_run)
-    ThemeMappingFactory(answer=answer_2, theme=theme_a, execution_run=execution_run)
-    ThemeMappingFactory(answer=answer_2, theme=theme_b, execution_run=execution_run)
+    ThemeMappingFactory(answer=answer_1, theme=theme_a, theme_mapping_execution_run=execution_run)
+    ThemeMappingFactory(answer=answer_2, theme=theme_a, theme_mapping_execution_run=execution_run)
+    ThemeMappingFactory(answer=answer_2, theme=theme_b, theme_mapping_execution_run=execution_run)
 
     sign_in(django_app, user.email)
 

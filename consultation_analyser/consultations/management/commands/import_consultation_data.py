@@ -60,7 +60,7 @@ class Command(BaseCommand):
         # Add themes
         execution_run = ExecutionRun.objects.create(type=ExecutionRun.TaskType.THEME_MAPPING)
         framework = Framework.create_initial_framework(
-            execution_run=execution_run, question_part=question_part
+            theme_generation_execution_run=execution_run, question_part=question_part
         )
         theme_object_lookup = {}
 
@@ -96,7 +96,7 @@ class Command(BaseCommand):
                     ThemeMapping.objects.create(
                         answer=response,
                         theme_id=theme_id,
-                        execution_run=execution_run,
+                        theme_mapping_execution_run=execution_run,
                         stance=ThemeMapping.Stance.POSITIVE,
                     )
 
@@ -106,7 +106,7 @@ class Command(BaseCommand):
                     ThemeMapping.objects.create(
                         answer=response,
                         theme_id=theme_id,
-                        execution_run=execution_run,
+                        theme_mapping_execution_run=execution_run,
                         stance=ThemeMapping.Stance.NEGATIVE,
                     )
             self.stdout.write(f"Successfully added response topics for {response.id}")

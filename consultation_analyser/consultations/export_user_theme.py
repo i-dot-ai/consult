@@ -28,11 +28,13 @@ def get_timestamp() -> str:
 def get_latest_sentiment_execution_run_for_question_part(
     question_part: QuestionPart,
 ) -> ExecutionRun | None:
-    sentiment_qs = SentimentMapping.objects.select_related("execution_run").filter(
+    sentiment_qs = SentimentMapping.objects.select_related(
+        "sentiment_analysis_execution_run"
+    ).filter(
         answer__question_part=question_part,
-        execution_run__type=ExecutionRun.TaskType.SENTIMENT_ANALYSIS,
+        sentiment_analysis_execution_run__type=ExecutionRun.TaskType.SENTIMENT_ANALYSIS,
     )
-    execution_run_ids = sentiment_qs.values_list("execution_run", flat=True)
+    execution_run_ids = sentiment_qs.values_list("sentiment_analysis_execution_run", flat=True)
     execution_runs = ExecutionRun.objects.filter(id__in=execution_run_ids)
 
     if execution_runs:
@@ -40,10 +42,14 @@ def get_latest_sentiment_execution_run_for_question_part(
     return None
 
 
-def get_position(answer: Answer, execution_run: ExecutionRun | None) -> str | None:
-    if not execution_run:
+def get_position(
+    answer: Answer, sentiment_analysis_execution_run: ExecutionRun | None
+) -> str | None:
+    if not sentiment_analysis_execution_run:
         return None
-    sentiment = SentimentMapping.objects.filter(answer=answer, execution_run=execution_run)
+    sentiment = SentimentMapping.objects.filter(
+        answer=answer, sentiment_analysis_execution_run=sentiment_analysis_execution_run
+    )
     if sentiment:
         # There will only be one
         return sentiment.first().position
@@ -61,7 +67,9 @@ def get_theme_mapping_output_row(
     question = question_part.question
     consultation_title = question.consultation.title
 
-    position = get_position(answer=response, execution_run=sentiment_execution_run)
+    position = get_position(
+        answer=response, sentiment_analysis_execution_run=sentiment_execution_run
+    )
 
     original_themes = (
         historical_mappings_for_framework.filter(answer=response)

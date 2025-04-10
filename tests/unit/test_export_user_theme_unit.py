@@ -19,7 +19,7 @@ def test_get_position():
     )
     factories.SentimentMappingFactory(
         answer=answer,
-        execution_run=execution_run1,
+        sentiment_analysis_execution_run=execution_run1,
         position=models.SentimentMapping.Position.AGREEMENT,
     )
     assert get_position(answer, execution_run1) == models.SentimentMapping.Position.AGREEMENT
@@ -42,8 +42,14 @@ def test_get_latest_sentiment_execution_run_for_question_part():
     factories.ExecutionRunFactory(
         type=models.ExecutionRun.TaskType.SENTIMENT_ANALYSIS
     )  # Diff run not tied to this question part
-    factories.SentimentMappingFactory(answer=answer1, execution_run=execution_run1)
-    factories.SentimentMappingFactory(answer=answer2, execution_run=execution_run1)
-    factories.SentimentMappingFactory(answer=answer2, execution_run=execution_run2)
+    factories.SentimentMappingFactory(
+        answer=answer1, sentiment_analysis_execution_run=execution_run1
+    )
+    factories.SentimentMappingFactory(
+        answer=answer2, sentiment_analysis_execution_run=execution_run1
+    )
+    factories.SentimentMappingFactory(
+        answer=answer2, sentiment_analysis_execution_run=execution_run2
+    )
     actual = get_latest_sentiment_execution_run_for_question_part(free_text_question_part)
     assert actual == execution_run2

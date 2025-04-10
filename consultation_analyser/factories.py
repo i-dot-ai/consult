@@ -121,14 +121,17 @@ class InitialFrameworkFactory(DjangoModelFactory):
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
-        execution_run = kwargs.get("execution_run")
+        theme_generation_execution_run = kwargs.get("theme_generation_execution_run")
         question_part = kwargs.get("question_part")
-        if not execution_run:
-            execution_run = ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_GENERATION)
+        if not theme_generation_execution_run:
+            theme_generation_execution_run = ExecutionRunFactory(
+                type=models.ExecutionRun.TaskType.THEME_GENERATION
+            )
         if not question_part:
             question_part = FreeTextQuestionPartFactory()
         return model_class.create_initial_framework(
-            execution_run=execution_run, question_part=question_part
+            theme_generation_execution_run=theme_generation_execution_run,
+            question_part=question_part,
         )
 
 
@@ -208,7 +211,7 @@ class ThemeMappingFactory(DjangoModelFactory):
     answer = factory.SubFactory(FreeTextAnswerFactory)
     theme = factory.SubFactory(InitialThemeFactory)
     reason = factory.LazyAttribute(lambda o: fake.sentence())
-    execution_run = factory.SubFactory(ExecutionRunFactory)
+    theme_mapping_execution_run = factory.SubFactory(ExecutionRunFactory)
     stance = fuzzy.FuzzyChoice(models.ThemeMapping.Stance.values)
 
 
@@ -217,5 +220,5 @@ class SentimentMappingFactory(DjangoModelFactory):
         model = models.SentimentMapping
 
     answer = factory.SubFactory(FreeTextAnswerFactory)
-    execution_run = factory.SubFactory(ExecutionRunFactory)
+    sentiment_analysis_execution_run = factory.SubFactory(ExecutionRunFactory)
     position = fuzzy.FuzzyChoice(models.SentimentMapping.Position.values)

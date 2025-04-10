@@ -265,7 +265,9 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     """
 
     # Execution run is the theme generation execution run that has generated the framework
-    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
+    theme_generation_execution_run = models.ForeignKey(
+        ExecutionRun, on_delete=models.CASCADE, null=True
+    )
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
     # When Framework is created - record reason it was changed & user that created it
     change_reason = models.CharField(max_length=256)
@@ -280,19 +282,19 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
 
     @classmethod
     def create_initial_framework(
-        cls, execution_run: ExecutionRun, question_part: QuestionPart
+        cls, theme_generation_execution_run: ExecutionRun, question_part: QuestionPart
     ) -> "Framework":
         """Create initial framework for a question part."""
         # We require an execution run for the initial framework
         # user, change_reason, precursor are all None
-        if not execution_run:
+        if not theme_generation_execution_run:
             raise ValueError("An initial Framework needs an execution run.")
 
-        if execution_run.type != ExecutionRun.TaskType.THEME_GENERATION:
+        if theme_generation_execution_run.type != ExecutionRun.TaskType.THEME_GENERATION:
             raise ValueError("Initial framework must be based on theme generation")
 
         new_framework = Framework(
-            execution_run=execution_run,
+            theme_generation_execution_run=theme_generation_execution_run,
             question_part=question_part,
         )
         super(Framework, new_framework).save()
@@ -305,7 +307,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         Add themes manually.
         """
         new_framework = Framework(
-            execution_run=None,
+            theme_generation_execution_run=None,
             question_part=self.question_part,
             user=user,
             change_reason=change_reason,
@@ -426,7 +428,9 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     reason = models.TextField()
     # This is the theme mapping execution run
     # TODO - rename field to be more explicit, amend save to ensure correct type
-    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
+    theme_mapping_execution_run = models.ForeignKey(
+        ExecutionRun, on_delete=models.CASCADE, null=True
+    )
     stance = models.CharField(max_length=8, choices=Stance.choices)
     history = HistoricalRecords()
     user_audited = models.BooleanField(default=False)
@@ -457,7 +461,7 @@ class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         UNCLEAR = "UNCLEAR", "Unclear"
 
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
-    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
+    sentiment_analysis_execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
     position = models.CharField(max_length=12, choices=Position.choices)
 
     history = HistoricalRecords()

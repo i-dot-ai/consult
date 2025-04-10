@@ -75,7 +75,7 @@ def create_dummy_consultation_from_yaml(
                     type=models.ExecutionRun.TaskType.THEME_GENERATION
                 )
                 framework = InitialFrameworkFactory(
-                    execution_run=theme_generation_run, question_part=question_part
+                    theme_generation_execution_run=theme_generation_run, question_part=question_part
                 )
                 theme_mapping_run = ExecutionRunFactory(
                     type=models.ExecutionRun.TaskType.THEME_MAPPING
@@ -138,7 +138,9 @@ def create_dummy_consultation_from_yaml(
                     )
                     # Also add sentiment to answer replicating the sentiment mapping step
                     # This is agree/disagree/unclear
-                    SentimentMappingFactory(answer=answer, execution_run=sentiment_mapping_run)
+                    SentimentMappingFactory(
+                        answer=answer, sentiment_analysis_execution_run=sentiment_mapping_run
+                    )
 
                 # Now map (multiple) themes to each answer for free-text questions.
                 # This is in a different order to how it would work in pipeline - but this is as we
@@ -149,7 +151,9 @@ def create_dummy_consultation_from_yaml(
                     )
                     for theme in themes_for_answer:
                         ThemeMappingFactory(
-                            answer=answer, theme=theme, execution_run=theme_mapping_run
+                            answer=answer,
+                            theme=theme,
+                            theme_mapping_execution_run=theme_mapping_run,
                         )
 
     return consultation

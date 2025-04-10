@@ -374,27 +374,27 @@ def test_get_selected_theme_summary(
         theme=theme_a,
         answer=answer_theme_a,
         stance=ThemeMapping.Stance.POSITIVE,
-        execution_run=theme_mapping_execution_run,
+        theme_mapping_execution_run=theme_mapping_execution_run,
     )
     answer_theme_b = FreeTextAnswerFactory(question_part=question_part)
     ThemeMappingFactory(
         theme=theme_b,
         answer=answer_theme_b,
         stance=ThemeMapping.Stance.POSITIVE,
-        execution_run=theme_mapping_execution_run,
+        theme_mapping_execution_run=theme_mapping_execution_run,
     )
     answer_theme_a_and_b = FreeTextAnswerFactory(question_part=question_part)
     ThemeMappingFactory(
         theme=theme_a,
         answer=answer_theme_a_and_b,
         stance=ThemeMapping.Stance.POSITIVE,
-        execution_run=theme_mapping_execution_run,
+        theme_mapping_execution_run=theme_mapping_execution_run,
     )
     ThemeMappingFactory(
         theme=theme_b,
         answer=answer_theme_a_and_b,
         stance=ThemeMapping.Stance.NEGATIVE,
-        execution_run=theme_mapping_execution_run,
+        theme_mapping_execution_run=theme_mapping_execution_run,
     )
 
     selected_theme_mappings, theme_mapping_summary = get_selected_theme_summary(
