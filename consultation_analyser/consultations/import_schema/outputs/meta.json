@@ -1,0 +1,13 @@
+{
+  "type": "object",
+  "properties": {
+    "question_number": {
+      "type": "integer"
+    },
+    "question_part_number": {
+      "type": "integer"
+    }
+  },
+  "required": ["question_number"],
+  "additionalProperties": false
+}
