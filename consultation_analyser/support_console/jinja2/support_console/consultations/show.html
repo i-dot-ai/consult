@@ -90,28 +90,32 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h2 class="govuk-heading-m">Questions</h2>
-      {% if questions %}
+      <h2 class="govuk-heading-m">Questions parts</h2>
+      {% if question_parts %}
       <table class="govuk-table">
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">Question number</th>
-            <th scope="col" class="govuk-table__header">Question text</th>
+            <th scope="col" class="govuk-table__header">Question part number</th>
+            <th scope="col" class="govuk-table__header">Text</th>
             <th scope="col" class="govuk-table__header">Actions</th>
           </tr>
         </thead>
         <tbody class="govuk-table__body">
-        {% for question in questions %}
+        {% for part in question_parts %}
           <tr class="govuk-table__row">
             <td class="govuk-table__cell">
-              {{ question.number }}
+              {{ part.question.number }}
             </td>
             <td class="govuk-table__cell">
-              {{ question.text }}
+              {{ part.number }}
             </td>
             <td class="govuk-table__cell">
-              <a href="{{ url('delete_question', kwargs={'consultation_id': consultation.id, 'question_id': question.id}) }}" class="govuk-link govuk-link--warning govuk-body">
-                Delete this question
+              {{ part.question.text }} {{ part.text }}
+            </td>
+            <td class="govuk-table__cell">
+              <a href="{{ url('delete_question_part', kwargs={'consultation_id': consultation.id, 'question_part_id': part.id}) }}" class="govuk-link govuk-link--warning govuk-body">
+                Delete this question part
               </a>
             </td>
           </tr>
