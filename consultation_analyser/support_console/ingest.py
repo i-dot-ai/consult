@@ -62,7 +62,7 @@ def import_themes(question_part: QuestionPart, theme_data: dict) -> Framework:
         type=ExecutionRun.TaskType.THEME_GENERATION
     )
     framework = Framework.create_initial_framework(
-        question_part=question_part, execution_run=theme_generation_execution_run
+        question_part=question_part, theme_generation_execution_run=theme_generation_execution_run
     )
     for theme_key, theme_value in theme_data.items():
         name, description = theme_value.split(": ", 1)
@@ -103,7 +103,7 @@ def map_themes_to_answer(
         ThemeMapping.objects.update_or_create(
             answer=answer,
             theme=theme,
-            defaults={"stance": stance, "execution_run": mapping_execution_run},
+            defaults={"stance": stance, "theme_mapping_execution_run": mapping_execution_run},
         )
 
 
@@ -130,7 +130,7 @@ def import_theme_mapping_and_responses(
     raw_position = theme_mapping_dict["position"]
     position = SENTIMENT_MAPPING.get(raw_position, "")
     SentimentMapping.objects.create(
-        answer=answer, position=position, execution_run=sentiment_execution_run
+        answer=answer, position=position, sentiment_analysis_execution_run=sentiment_execution_run
     )
 
     # And map the themes

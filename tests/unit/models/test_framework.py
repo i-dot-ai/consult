@@ -19,7 +19,9 @@ def test_cant_save():
 def test_create_initial_framework():
     question_part = factories.FreeTextQuestionPartFactory()
     with pytest.raises(ValueError):
-        Framework.create_initial_framework(execution_run=None, question_part=question_part)
+        Framework.create_initial_framework(
+            theme_generation_execution_run=None, question_part=question_part
+        )
     theme_mapping_execution_run = factories.ExecutionRunFactory(
         type=ExecutionRun.TaskType.THEME_MAPPING
     )
@@ -28,17 +30,17 @@ def test_create_initial_framework():
     )
     with pytest.raises(ValueError):
         Framework.create_initial_framework(
-            execution_run=theme_mapping_execution_run, question_part=question_part
+            theme_generation_execution_run=theme_mapping_execution_run, question_part=question_part
         )
 
     framework = Framework.create_initial_framework(
-        execution_run=theme_generation_execution_run, question_part=question_part
+        theme_generation_execution_run=theme_generation_execution_run, question_part=question_part
     )
     assert framework.id
     assert not framework.precursor
     assert not framework.user
     assert not framework.change_reason
-    assert framework.execution_run == theme_generation_execution_run
+    assert framework.theme_generation_execution_run == theme_generation_execution_run
     assert framework.question_part == question_part
 
 
@@ -56,7 +58,7 @@ def test_create_descendant_framework():
     assert new_framework.precursor == initial_framework
     assert new_framework.user == user
     assert new_framework.change_reason == "I wanted to change the themes."
-    assert not new_framework.execution_run
+    assert not new_framework.theme_generation_execution_run
 
 
 @pytest.mark.django_db

@@ -52,13 +52,19 @@ def test_get_top_themes_for_free_text_question_part():
 
     for _ in range(10):
         answer = factories.FreeTextAnswerFactory(question_part=question_part)
-        factories.ThemeMappingFactory(answer=answer, theme=theme_a, execution_run=execution_run)
+        factories.ThemeMappingFactory(
+            answer=answer, theme=theme_a, theme_mapping_execution_run=execution_run
+        )
     for _ in range(5):
         answer = factories.FreeTextAnswerFactory(question_part=question_part)
-        factories.ThemeMappingFactory(answer=answer, theme=theme_b, execution_run=execution_run)
+        factories.ThemeMappingFactory(
+            answer=answer, theme=theme_b, theme_mapping_execution_run=execution_run
+        )
     for _ in range(3):
         answer = factories.FreeTextAnswerFactory(question_part=question_part)
-        factories.ThemeMappingFactory(answer=answer, theme=theme_c, execution_run=execution_run)
+        factories.ThemeMappingFactory(
+            answer=answer, theme=theme_c, theme_mapping_execution_run=execution_run
+        )
 
     actual = get_top_themes_for_free_text_question_part(question_part, number_top_themes=30)
     assert len(actual) == 3, actual

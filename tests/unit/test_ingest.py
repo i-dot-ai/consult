@@ -33,7 +33,7 @@ def test_import_themes(refined_themes):
     assert {"A", "B", "C", "D", "E"} == set(imported_themes.values_list("key", flat=True))
     # Framework generated for themes, has the right type of execution run
     framework = theme_a.framework
-    assert framework.execution_run.type == ExecutionRun.TaskType.THEME_GENERATION
+    assert framework.theme_generation_execution_run.type == ExecutionRun.TaskType.THEME_GENERATION
     assert framework.theme_set.all().count() == 5
 
 

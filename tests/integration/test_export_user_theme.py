@@ -35,7 +35,7 @@ def test_export_user_theme(mock_boto_client, django_app):
     )
     factories.SentimentMappingFactory(
         answer=response,
-        execution_run=first_execution_run,
+        sentiment_analysis_execution_run=first_execution_run,
         position=models.SentimentMapping.Position.DISAGREEMENT,
     )
 
@@ -45,12 +45,12 @@ def test_export_user_theme(mock_boto_client, django_app):
     )
     factories.SentimentMappingFactory(
         answer=response,
-        execution_run=second_execution_run,
+        sentiment_analysis_execution_run=second_execution_run,
         position=models.SentimentMapping.Position.AGREEMENT,
     )
     factories.SentimentMappingFactory(
         answer=response2,
-        execution_run=second_execution_run,
+        sentiment_analysis_execution_run=second_execution_run,
         position=models.SentimentMapping.Position.UNCLEAR,
     )
 
@@ -65,7 +65,7 @@ def test_export_user_theme(mock_boto_client, django_app):
         answer=response,
         theme=theme_x,
         stance=models.ThemeMapping.Stance.POSITIVE,
-        execution_run=historical_execution_run,
+        theme_mapping_execution_run=historical_execution_run,
     )
 
     # Latest framework and theme mappings
@@ -78,19 +78,19 @@ def test_export_user_theme(mock_boto_client, django_app):
         answer=response,
         theme=theme1,
         stance=models.ThemeMapping.Stance.POSITIVE,
-        execution_run=execution_run,
+        theme_mapping_execution_run=execution_run,
     )
     factories.ThemeMappingFactory(
         answer=response,
         theme=theme2,
         stance=models.ThemeMapping.Stance.NEGATIVE,
-        execution_run=execution_run,
+        theme_mapping_execution_run=execution_run,
     )
     factories.ThemeMappingFactory(
         answer=response2,
         theme=theme3,
         stance=models.ThemeMapping.Stance.POSITIVE,
-        execution_run=execution_run,
+        theme_mapping_execution_run=execution_run,
     )
 
     with freeze_time("2023-01-01 12:00:00"):

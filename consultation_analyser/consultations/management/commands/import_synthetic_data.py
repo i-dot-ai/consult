@@ -42,7 +42,7 @@ class Command(BaseCommand):
                 type=models.ExecutionRun.TaskType.THEME_GENERATION,
             )
             framework = models.Framework.create_initial_framework(
-                execution_run=execution_run, question_part=free_text_qp
+                theme_generation_execution_run=execution_run, question_part=free_text_qp
             )
 
             with open(f"synthetic_data/question_{index}/framework_topics.json") as f:
@@ -98,18 +98,20 @@ class Command(BaseCommand):
                     position = models.SentimentMapping.Position.UNCLEAR
 
                 if position:
+                    # TODO: fix the execution run type here
                     models.SentimentMapping.objects.create(
                         answer=answer,
-                        execution_run=execution_run,
+                        sentiment_analysis_execution_run=execution_run,
                         position=position,
                     )
 
                 for topic in response["agreed_topics"]:
+                    # TODO: fix the execution run type here
                     if theme := self.get_theme(theme_data, topic, framework):
                         models.ThemeMapping.objects.create(
                             answer=answer,
                             theme=theme,
-                            execution_run=execution_run,
+                            theme_mapping_execution_run=execution_run,
                             stance=models.ThemeMapping.Stance.POSITIVE,
                         )
 
@@ -118,7 +120,7 @@ class Command(BaseCommand):
                         models.ThemeMapping.objects.create(
                             answer=answer,
                             theme=theme,
-                            execution_run=execution_run,
+                            theme_mapping_execution_run=execution_run,
                             stance=models.ThemeMapping.Stance.NEGATIVE,
                         )
 
