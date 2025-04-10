@@ -9,11 +9,11 @@ from consultation_analyser.consultations.models import (
     Respondent,
 )
 from consultation_analyser.support_console.ingest import (
+    import_all_respondents_from_jsonl,
     import_all_responses_from_jsonl,
     import_question_part_data,
     import_respondent_data,
     import_responses,
-    import_all_respondents_from_jsonl
 )
 
 
@@ -139,7 +139,6 @@ def test_import_respondent_data():
     assert respondents[2].themefinder_respondent_id == 3
 
 
-
 @pytest.mark.django_db
 def test_import_all_respondents_from_jsonl(mock_consultation_input_objects):
     consultation = factories.ConsultationFactory()
@@ -151,7 +150,9 @@ def test_import_all_respondents_from_jsonl(mock_consultation_input_objects):
     )
     # TODO - improve this, but it works for now!
     time.sleep(5)
-    respondents = Respondent.objects.filter(consultation=consultation).order_by("themefinder_respondent_id")
+    respondents = Respondent.objects.filter(consultation=consultation).order_by(
+        "themefinder_respondent_id"
+    )
     assert respondents.count() == 5
     assert respondents[0].themefinder_respondent_id == 1
     assert respondents[4].themefinder_respondent_id == 5

@@ -143,8 +143,9 @@ def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
             inputs_folder_key=input_folder_name,
             batch_size=batch_size,
         )
-        messages.success(request, "Importing respondents started - check for progress in dashboard")
-        return redirect("/support/consultation/import-summary/")
+        msg = f"Importing respondents started for consultation with slug {consultation.slug} - check for progress in dashboard"
+        messages.success(request, msg)
+        return redirect("/support/consultations/import-summary/")
     context = {"bucket_name": bucket_name}
     return render(request, "support_console/consultations/import_respondents.html", context=context)
 
@@ -173,10 +174,9 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
                 question_part_folder_key=folder,
                 batch_size=batch_size,
             )
-        messages.success(
-            request, "Import for consultation inputs started - check for progress in dashboard"
-        )
-        return redirect("/support/consultation/import-summary/")
+        msg = f"Import for consultation inputs started for consultation with slug {consultation.slug} - check for progress in dashboard"
+        messages.success(request, msg)
+        return redirect("/support/consultations/import-summary/")
     context = {"bucket_name": bucket_name}
     return render(request, "support_console/consultations/import_inputs.html", context=context)
 
