@@ -92,7 +92,7 @@ def import_question_part_data(consultation: Consultation, question_part_dict: di
     question_part_type = type_mapping[question_part_type]
 
     question, _ = Question.objects.get_or_create(
-        consultation=consultation, number=question_number, defaults={"text": question_text}
+        consultation=consultation, number=question_number, text=question_text
     )
 
     if question_part_type == QuestionPart.QuestionType.FREE_TEXT:
