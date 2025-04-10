@@ -93,7 +93,6 @@ module "worker" {
   }
   environment_variables = local.ecs_env_vars
 
-  autoscaling_minimum_target = 2
   autoscaling_maximum_target = 4
 
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
