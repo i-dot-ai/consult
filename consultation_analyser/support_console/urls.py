@@ -33,11 +33,6 @@ urlpatterns = [
         name="import_consultations_xlsx",
     ),
     path(
-        "consultations/import/",
-        consultations.import_theme_mapping,
-        name="import_theme_mapping",
-    ),
-    path(
         "consultations/<uuid:consultation_id>/export/",
         consultations.export_consultation_theme_audit,
         name="export_consultation_theme_audit",
@@ -51,6 +46,21 @@ urlpatterns = [
         "consultations/<uuid:consultation_id>/questions/<uuid:question_id>/delete/",
         questions.delete,
         name="delete_question",
+    ),
+    path(
+        "consultations/import-respondents/",
+        consultations.import_consultation_respondents,
+        name="import_respondents",
+    ),
+    path(
+        "consultations/import-inputs/",
+        consultations.import_consultation_inputs,
+        name="import_inputs",
+    ),
+    path(
+        "consultations/import-summary/",
+        consultations.import_summary,
+        name="import_summary",
     ),
     path("admin/", admin.site.urls),
     path("django-rq/", include("django_rq.urls")),

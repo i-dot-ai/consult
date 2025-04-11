@@ -8,13 +8,10 @@ from django_rq import job
 from consultation_analyser.consultations.models import (
     Answer,
     Consultation,
-    ExecutionRun,
-    Framework,
     Question,
     QuestionPart,
     Respondent,
     SentimentMapping,
-    Theme,
     ThemeMapping,
 )
 
@@ -33,7 +30,7 @@ SENTIMENT_MAPPING = {
 }
 
 
-def get_all_question_subfolders(folder_name: str, bucket_name: str) -> list:
+def get_all_question_part_subfolders(folder_name: str, bucket_name: str) -> list:
     s3 = boto3.resource("s3")
     objects = s3.Bucket(bucket_name).objects.filter(Prefix=folder_name)
     object_names_set = {obj.key for obj in objects}
@@ -43,7 +40,9 @@ def get_all_question_subfolders(folder_name: str, bucket_name: str) -> list:
         folder = "/".join(path.split("/")[:-1]) + "/"
         subfolders.add(folder)
     # Only the ones that are question_folders
-    question_folders = [name for name in subfolders if name.split("/")[-2].startswith("question_")]
+    question_folders = [
+        name for name in subfolders if name.split("/")[-2].startswith("question_part_")
+    ]
     question_folders.sort()
     return question_folders
 
@@ -57,150 +56,145 @@ def get_themefinder_outputs_for_question(
     return json.loads(response["Body"].read())
 
 
-def import_themes(question_part: QuestionPart, theme_data: dict) -> Framework:
-    theme_generation_execution_run = ExecutionRun.objects.create(
-        type=ExecutionRun.TaskType.THEME_GENERATION
-    )
-    framework = Framework.create_initial_framework(
-        question_part=question_part, execution_run=theme_generation_execution_run
-    )
-    for theme_key, theme_value in theme_data.items():
-        name, description = theme_value.split(": ", 1)
-        logger.info(f"Creating theme: {name}, key: {theme_key}")
-        Theme.create_initial_theme(
-            framework=framework, key=theme_key, name=name, description=description
+def import_respondent_data(consultation: Consultation, respondent_data: list):
+    logger.info(f"Importing respondent data for consultation: {consultation.title}")
+    respondents_to_save = []
+    for respondent in respondent_data:
+        respondent = json.loads(respondent.decode("utf-8"))
+        themefinder_respondent_id = respondent["themefinder_id"]
+        # TODO - add further fields e.g. user supplied ID
+        respondents_to_save.append(
+            Respondent(
+                consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
+            )
         )
-    return framework
+    Respondent.objects.bulk_create(respondents_to_save)
+    logger.info(f"Saved batch of respondents for consultation: {consultation.title}")
 
 
-def get_theme_for_key(framework: Framework, key: str) -> Theme:
-    return Theme.objects.get(framework=framework, key=key)
+def import_question_part_data(consultation: Consultation, question_part_dict: dict) -> QuestionPart:
+    type_mapping = {
+        "free_text": QuestionPart.QuestionType.FREE_TEXT,
+        "single_option": QuestionPart.QuestionType.SINGLE_OPTION,
+        "multiple_option": QuestionPart.QuestionType.MULTIPLE_OPTIONS,
+    }
 
+    question_text = question_part_dict.get("question_text", "")
+    question_part_text = question_part_dict.get("question_part_text", "")
+    if not question_text and not question_part_text:
+        raise ValueError("There is no text for question or question part.")
 
-def create_answer_from_dict(
-    theme_mapping_dict: dict, question_part: QuestionPart, respondent: Respondent
-) -> Answer:
-    text = theme_mapping_dict["response"]
-    answer = Answer.objects.create(question_part=question_part, respondent=respondent, text=text)
-    return answer
+    question_number = question_part_dict["question_number"]
+    question_part_number = question_part_dict.get(
+        "question_part_number", 1
+    )  # If no question_part_number, assume 1
+    question_part_type = question_part_dict.get("question_part_type", "free_text")
+    question_part_type = type_mapping[question_part_type]
 
+    question, _ = Question.objects.get_or_create(
+        consultation=consultation, number=question_number, text=question_text
+    )
 
-def map_themes_to_answer(
-    answer: Answer,
-    theme_mapping_dict: dict,
-    framework: Framework,
-    mapping_execution_run: ExecutionRun,
-) -> None:
-    labels = theme_mapping_dict["labels"]
-    stances = theme_mapping_dict["stances"]
-    if len(labels) != len(stances):
-        raise ValueError("Number of stances does not match number of themes")
-
-    for label, raw_stance in zip(labels, stances):
-        theme = get_theme_for_key(framework, label)
-        stance = STANCE_MAPPING.get(raw_stance, "")
-        # Theme mapping is unique on answer and theme
-        ThemeMapping.objects.update_or_create(
-            answer=answer,
-            theme=theme,
-            defaults={"stance": stance, "execution_run": mapping_execution_run},
+    if question_part_type == QuestionPart.QuestionType.FREE_TEXT:
+        question_part = QuestionPart.objects.create(
+            question=question,
+            number=question_part_number,
+            type=question_part_type,
+            text=question_part_text,
         )
+    else:
+        options = question_part_dict["options"]
+        question_part = QuestionPart.objects.create(
+            question=question,
+            number=question_part_number,
+            type=question_part_type,
+            text=question_part_text,
+            options=options,
+        )
+    logger.info(
+        f"Question part imported: question_number {question_number}, part_number: {question_part_number}"
+    )
+    return question_part
 
 
-def import_theme_mapping_and_responses(
-    framework: Framework,
-    sentiment_execution_run: ExecutionRun,
-    mapping_execution_run: ExecutionRun,
-    theme_mapping_dict: dict,
-) -> None:
-    # TODO - check unique IDs
-    question_part = framework.question_part
+def import_responses(question_part: QuestionPart, responses_data: list) -> None:
+    logger.info(
+        f"Importing batch of responses for question_number {question_part.question.number} and question part {question_part.number}"
+    )
     consultation = question_part.question.consultation
 
-    # Create respondent if doesn't exist, then create answer
-    response_id = theme_mapping_dict["response_id"]
-    respondent, _ = Respondent.objects.get_or_create(
-        consultation=consultation, themefinder_respondent_id=response_id
-    )
-    answer = create_answer_from_dict(
-        theme_mapping_dict=theme_mapping_dict, question_part=question_part, respondent=respondent
-    )
-
-    # Add sentiment to answer
-    raw_position = theme_mapping_dict["position"]
-    position = SENTIMENT_MAPPING.get(raw_position, "")
-    SentimentMapping.objects.create(
-        answer=answer, position=position, execution_run=sentiment_execution_run
-    )
-
-    # And map the themes
-    map_themes_to_answer(
-        answer=answer,
-        theme_mapping_dict=theme_mapping_dict,
-        framework=framework,
-        mapping_execution_run=mapping_execution_run,
-    )
-
-
-def import_theme_mappings_for_framework(framework: Framework, list_mappings: list[dict]) -> None:
-    sentiment_execution_run = ExecutionRun.objects.create(
-        type=ExecutionRun.TaskType.SENTIMENT_ANALYSIS
-    )
-    mapping_execution_run = ExecutionRun.objects.create(type=ExecutionRun.TaskType.THEME_MAPPING)
-    for theme_mapping_dict in list_mappings:
-        logger.info(f"Importing theme mapping for response: {theme_mapping_dict}")
-        import_theme_mapping_and_responses(
-            framework=framework,
-            sentiment_execution_run=sentiment_execution_run,
-            mapping_execution_run=mapping_execution_run,
-            theme_mapping_dict=theme_mapping_dict,
+    answers = []
+    for response in responses_data:
+        response = json.loads(response.decode("utf-8"))
+        themefinder_respondent_id = response["themefinder_id"]
+        # Respondents should have been imported already
+        respondent = Respondent.objects.get(
+            consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
+        )
+        response_text = response["response"]
+        # TODO - add import of options for non-free-text data
+        # response_chosen_options = responses_data.get("options")
+        answers.append(
+            Answer(question_part=question_part, respondent=respondent, text=response_text)
         )
 
-
-def import_themefinder_data_for_question(
-    consultation: Consultation, question_number: int, question_folder: str
-) -> None:
-    # Create question/question part
-    question_data = get_themefinder_outputs_for_question(
-        question_folder_key=question_folder, output_name="question"
+    Answer.objects.bulk_create(answers)
+    logger.info(
+        f"Saved batch of responses for question_number {question_part.question.number} and question part {question_part.number}"
     )
-    if isinstance(question_data, dict):
-        question_text = question_data.get("question")
-    else:
-        raise ValueError("Expected a dictionary of question data")
-    # TODO - think about where to store text - in Question or QuestionPart - in question for now
-    question = Question.objects.create(
-        consultation=consultation, text=question_text, number=question_number
-    )
-    question_part = QuestionPart.objects.create(
-        text="", question=question, type=QuestionPart.QuestionType.FREE_TEXT
-    )
-    # Import themes
-    themes = get_themefinder_outputs_for_question(
-        question_folder_key=question_folder, output_name="themes"
-    )
-    if isinstance(themes, dict):
-        framework = import_themes(question_part=question_part, theme_data=themes)
-    else:
-        raise ValueError("Expected a dict of themes")
-    logger.info(f"Imported themes for question {question_number}")
-
-    # Import responses and mappings
-    list_theme_mappings = get_themefinder_outputs_for_question(
-        question_folder_key=question_folder, output_name="mapping"
-    )
-    if isinstance(list_theme_mappings, list):
-        import_theme_mappings_for_framework(framework, list_theme_mappings)
-    else:
-        raise ValueError("Expected a list of dictionaries of theme mappings")
-    logger.info(f"Imported themes for question {question_number}")
-    logger.info(f"**Imported all data for question: {question.text}**")
 
 
 @job("default", timeout=900)
-def import_themefinder_data_for_question_job(
-    consultation: Consultation, question_number: int, question_folder: str
+def import_respondent_data_job(consultation: Consultation, respondent_data: list):
+    import_respondent_data(consultation=consultation, respondent_data=respondent_data)
+
+
+@job("default", timeout=900)
+def import_responses_job(question_part: QuestionPart, responses_data: list):
+    import_responses(question_part, responses_data)
+
+
+def import_all_respondents_from_jsonl(
+    consultation: Consultation, bucket_name: str, inputs_folder_key: str, batch_size: int
 ) -> None:
-    import_themefinder_data_for_question(
-        consultation=consultation, question_number=question_number, question_folder=question_folder
+    logger.info(f"Importing respondents from {inputs_folder_key}, batch_size {batch_size}")
+    respondents_file_key = f"{inputs_folder_key}respondents.jsonl"
+    s3_client = boto3.client("s3")
+    response = s3_client.get_object(Bucket=bucket_name, Key=respondents_file_key)
+    lines = []
+    for line in response["Body"].iter_lines():
+        lines.append(line)
+        if len(lines) == batch_size:
+            import_respondent_data_job.delay(consultation=consultation, respondent_data=lines)
+            lines = []
+    if lines:  # Any remaining lines < batch size
+        import_respondent_data_job.delay(consultation=consultation, respondent_data=lines)
+
+
+def import_question_part(consultation: Consultation, question_part_folder_key: str) -> QuestionPart:
+    s3 = boto3.client("s3")
+    data_key = f"{question_part_folder_key}question.json"
+    response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=data_key)
+    question_part_data = json.loads(response["Body"].read())
+    question_part = import_question_part_data(
+        consultation=consultation, question_part_dict=question_part_data
     )
+    return question_part
+
+
+def import_all_responses_from_jsonl(
+    question_part: QuestionPart, bucket_name: str, question_part_folder_key: str, batch_size: int
+) -> None:
+    logger.info(f"Importing responses from {question_part_folder_key}, batch_size {batch_size}")
+    responses_file_key = f"{question_part_folder_key}responses.jsonl"
+    s3_client = boto3.client("s3")
+    response = s3_client.get_object(Bucket=bucket_name, Key=responses_file_key)
+    lines = []
+    for line in response["Body"].iter_lines():
+        lines.append(line)
+        if len(lines) == batch_size:
+            import_responses_job.delay(question_part=question_part, responses_data=lines)
+            lines = []
+    # Any remaining lines < batch size
+    if lines:
+        import_responses_job.delay(question_part=question_part, responses_data=lines)
