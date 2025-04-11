@@ -7,16 +7,42 @@ export default class IaiExpandingText extends IaiLitBase {
         text: { type: String },
         lines: { type: Number },
         _expanded: { type: Boolean },
+        _textOverflowing: { type: Boolean },
     }
     constructor() {
         super();
         this.text = "";
         this.lines = 1;
         this._expanded = false;
+        this._textOverflowing = true;
     }
 
     handleClick() {
+        if (!this._textOverflowing) {
+            return;
+        }
         this._expanded = !this._expanded;
+    }
+
+    isTextOverflowing = (element, lines) => {
+        const lineHeight = parseInt(window.getComputedStyle(element).lineHeight.replace("px", ""));
+        const scrollHeight = this.querySelector(".iai-text-content").scrollHeight;
+        return scrollHeight / lineHeight > this.lines;
+    }
+
+    updateTextOverflowing = () => {
+        this._textOverflowing = this.isTextOverflowing(
+            this.querySelector(".iai-text-content"),
+            this.lines
+        )
+    } 
+
+    firstUpdated() {
+        this.updateTextOverflowing();
+
+        window.addEventListener("resize", () => {
+            this.updateTextOverflowing();
+        })        
     }
 
     render() {
@@ -46,11 +72,18 @@ export default class IaiExpandingText extends IaiLitBase {
                     -webkit-box-orient: vertical;
                     overflow: hidden;
                     text-overflow: ellipsis;
+
+                    display: box;
+                    line-clamp: ${this.lines};
+                    box-orient: vertical;
                 }
             </style>
 
             <div
-                class=${"iai-text-content clickable" + (this._expanded ? "" : " iai-text-truncated")}
+                class=${"iai-text-content"
+                    + (this._textOverflowing ? " clickable" : "")
+                    + (this._expanded ? "" : " iai-text-truncated")
+                }
                 role="button"
                 tabindex="0"
                 @keydown=${(e) => {
