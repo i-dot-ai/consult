@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import include, path
 
-from .views import consultations, consultations_users, pages, questions, users
+from .views import consultations, consultations_users, pages, question_parts, users
 
 urlpatterns = [
     path("", lambda request: redirect("/support/consultations/"), name="support"),
@@ -43,9 +43,9 @@ urlpatterns = [
         name="export_urls_for_consultation",
     ),
     path(
-        "consultations/<uuid:consultation_id>/questions/<uuid:question_id>/delete/",
-        questions.delete,
-        name="delete_question",
+        "consultations/<uuid:consultation_id>/question-parts/<uuid:question_part_id>/delete/",
+        question_parts.delete,
+        name="delete_question_part",
     ),
     path(
         "consultations/import-respondents/",

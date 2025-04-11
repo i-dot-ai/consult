@@ -1,12 +1,12 @@
 import pytest
 
 from consultation_analyser import factories
-from consultation_analyser.consultations.models import Question
+from consultation_analyser.consultations.models import QuestionPart
 from tests.helpers import sign_in
 
 
 @pytest.mark.django_db
-def test_deleting_consultation_questions_via_support(django_app):
+def test_deleting_consultation_question_parts_via_support(django_app):
     question_part = factories.FreeTextQuestionPartFactory()
     question = question_part.question
     consultation = question.consultation
@@ -21,18 +21,20 @@ def test_deleting_consultation_questions_via_support(django_app):
     consultations_page = django_app.get(f"/support/consultations/{consultation.id}/")
 
     # Click delete question
-    delete_confirmation_page = consultations_page.click("Delete this question")
+    delete_confirmation_page = consultations_page.click("Delete this question part")
 
     # Confirm the delete question page URL is correct
-    expected_url = f"/support/consultations/{consultation.id}/questions/{question.id}/delete/"
+    expected_url = (
+        f"/support/consultations/{consultation.id}/question-parts/{question_part.id}/delete/"
+    )
     assert delete_confirmation_page.request.path == expected_url
-    assert "Are you sure you want to delete the question" in delete_confirmation_page
+    assert "Are you sure" in delete_confirmation_page
 
     # Cancel deletion
     delete_confirmation_page.form.submit("cancel_deletion")
 
     # Check question still exists
-    assert Question.objects.filter(id=question.id).count() == 1
+    assert QuestionPart.objects.filter(id=question_part.id).count() == 1
 
     # Go to consultation page in support
     consultations_page = django_app.get(f"/support/consultations/{consultation.id}/")
@@ -44,4 +46,4 @@ def test_deleting_consultation_questions_via_support(django_app):
     delete_confirmation_page.form.submit("confirm_deletion")
 
     # Check question deleted
-    assert Question.objects.filter(id=question.id).count() == 0
+    assert QuestionPart.objects.filter(id=question.id).count() == 0
