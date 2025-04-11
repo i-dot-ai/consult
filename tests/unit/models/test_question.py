@@ -1,8 +1,8 @@
 import django
 import pytest
 
-from consultation_analyser.factories import ConsultationFactory, QuestionFactory
 from consultation_analyser.consultations.models import Question
+from consultation_analyser.factories import ConsultationFactory, QuestionFactory
 
 
 @pytest.mark.django_db
@@ -13,7 +13,6 @@ def test_unique_question_number():
     assert question_1.number != question_2.number
     with pytest.raises(django.db.utils.IntegrityError):
         Question.objects.get_or_create(consultation=consultation, number=1, text="different text")
-
 
 
 @pytest.mark.django_db
