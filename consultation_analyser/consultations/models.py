@@ -427,7 +427,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     # This is the theme mapping execution run
     # TODO - rename field to be more explicit, amend save to ensure correct type
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
-    stance = models.CharField(max_length=8, choices=Stance.choices)
+    stance = models.CharField(max_length=8, choices=Stance.choices, null=True)
     history = HistoricalRecords()
     user_audited = models.BooleanField(default=False)
 
