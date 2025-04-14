@@ -109,6 +109,7 @@ class IaiExpandingText extends IaiLitBase {
 
     disconnectedCallback() {
         window.removeEventListener("resize", this.updateTextOverflowing);
+        super.disconnectedCallback();
     }
 
     render() {
