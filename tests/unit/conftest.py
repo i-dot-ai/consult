@@ -42,16 +42,16 @@ def mock_consultation_input_objects(mock_s3_bucket):
     respondents_jsonl = "\n".join([json.dumps(respondent) for respondent in respondents])
 
     responses_1 = [
-        {"themefinder_id": 1, "response": "Yes, I think so."},
-        {"themefinder_id": 2, "response": "Not sure about that."},
-        {"themefinder_id": 3, "response": "I don't think so."},
-        {"themefinder_id": 4, "response": "Maybe, but I need more info."},
+        {"themefinder_id": 1, "text": "Yes, I think so."},
+        {"themefinder_id": 2, "text": "Not sure about that."},
+        {"themefinder_id": 3, "text": "I don't think so."},
+        {"themefinder_id": 4, "text": "Maybe, but I need more info."},
     ]
     responses_jsonl_1 = "\n".join([json.dumps(response) for response in responses_1])
     responses_2 = [
-        {"themefinder_id": 1, "response": "It's really fun."},
-        {"themefinder_id": 3, "response": "It's goog."},
-        {"themefinder_id": 4, "response": "I need more info."},
+        {"themefinder_id": 1, "text": "It's really fun."},
+        {"themefinder_id": 3, "text": "It's goog."},
+        {"themefinder_id": 4, "text": "I need more info."},
     ]
     responses_jsonl_2 = "\n".join([json.dumps(response) for response in responses_2])
 
