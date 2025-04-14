@@ -149,11 +149,20 @@ def import_responses(question_part: QuestionPart, responses_data: list) -> None:
     # Respondents should have been imported already
     decoded_responses = [json.loads(response.decode("utf-8")) for response in responses_data]
     themefinder_ids = [response["themefinder_id"] for response in decoded_responses]
-    corresponding_respondents = Respondent.objects.filter(consultation=consultation).filter(themefinder_respondent_id__in=themefinder_ids)
+    corresponding_respondents = Respondent.objects.filter(consultation=consultation).filter(
+        themefinder_respondent_id__in=themefinder_ids
+    )
     respondent_dictionary = {r.themefinder_respondent_id: r for r in corresponding_respondents}
 
-    # TODO - "response" field will change to "text", will also need to add import of options for non-free-text data
-    answers = [Answer(question_part=question_part, respondent=respondent_dictionary[response["themefinder_id"]], text=response["response"]) for response in decoded_responses]
+    # TODO - "response" field will change to "text", will also need to add import of options for non-free-text data
+    answers = [
+        Answer(
+            question_part=question_part,
+            respondent=respondent_dictionary[response["themefinder_id"]],
+            text=response["response"],
+        )
+        for response in decoded_responses
+    ]
     Answer.objects.bulk_create(answers)
     logger.info(
         f"Saved batch of responses for question_number {question_part.question.number} and question part {question_part.number}"
