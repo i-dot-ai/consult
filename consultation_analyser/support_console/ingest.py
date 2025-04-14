@@ -159,7 +159,7 @@ def import_responses(question_part: QuestionPart, responses_data: list) -> None:
         Answer(
             question_part=question_part,
             respondent=respondent_dictionary[response["themefinder_id"]],
-            text=response["response"],
+            text=response["text"],
         )
         for response in decoded_responses
     ]
