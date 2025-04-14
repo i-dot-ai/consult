@@ -25,10 +25,15 @@
     <div class="govuk-grid-column-full">
       <span class="govuk-caption-xl govuk-!-display-block">Question {{question.number}}</span>
       <h1
-        class="govuk-heading-l long-header clickable text-truncated"
-        onclick="document.getElementsByTagName('h1')[0].classList.toggle('text-truncated')"
+        class="govuk-heading-l"
       >
-        {{ question.text }}
+        <iai-expanding-text
+          text="{{ question.text }}"
+          lines="1"
+        ></iai-expanding-text>
+        <noscript>
+          {{ question.text }}
+        </noscript>
       </h1>
       {% if free_text_question_part %}
         <h2 class="govuk-heading-m govuk-!-font-weight-regular">
