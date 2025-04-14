@@ -49,23 +49,25 @@ export default class IaiExpandingText extends IaiLitBase {
         return html`
             <style>
                 iai-expanding-text .iai-text-content {
+                    transition-property: color, padding-left;
+                    transition: 0.3s ease-in-out;
+                    padding-left: 0rem;
                     position: relative;
                     width: 100%;
+                }
+                iai-expanding-text .iai-text-content.clickable {
                     padding-left: 1rem;
                 }
-
-                iai-expanding-text .iai-text-content:focus-visible {
+                iai-expanding-text .iai-text-content.clickable:focus-visible {
                     outline: 3px solid #ffdd04;
                     border: 4px solid black;
                 }
-
-                iai-expanding-text .iai-text-content::before {
+                iai-expanding-text .iai-text-content.clickable::before {
                     content: "${this._expanded ? "▾" : "▸"}";
                     position: absolute;
                     left: 0;
                     top: 0;
                 }
-
                 iai-expanding-text .iai-text-content.iai-text-truncated {
                     display: -webkit-box;
                     -webkit-line-clamp: ${this.lines};
