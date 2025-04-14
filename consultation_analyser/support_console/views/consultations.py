@@ -82,7 +82,6 @@ def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
 
 def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = get_object_or_404(models.Consultation, id=consultation_id)
-
     context = {
         "consultation": consultation,
         "bucket_name": settings.AWS_BUCKET_NAME,

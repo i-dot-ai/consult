@@ -6,14 +6,14 @@
 
 {% block content %}
 <h1 class="govuk-heading-l">{{ page_title }}</h1>
-  <p class="govuk-body">Import respondents for a consultation</p>
+  <p class="govuk-body">Import respondents for a consultation. Data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER].</p>
 
 <form method="post" enctype="multipart/form-data" novalidate>{{ csrf_input }}
 
   <div class="govuk-form-group">
     <p class="govuk-label-wrapper">
       <label class="govuk-label govuk-label--l" for="consultation_name">
-        Consultation name
+        Enter the consultation title
       </label>
       <input class="govuk-input" id="consultation_name" name="consultation_name" type="text" required>
     </p>
@@ -25,9 +25,6 @@
       'name': "consultation_code",
       'label': {
         'text': "Select consultation folder",
-      },
-      'hint': {
-        'text': "Data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER]"
       },
       'items': consultation_folders
     }) }}

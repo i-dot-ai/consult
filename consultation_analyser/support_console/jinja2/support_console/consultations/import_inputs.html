@@ -6,7 +6,7 @@
 
 {% block content %}
 <h1 class="govuk-heading-l">{{ page_title }}</h1>
-  <p class="govuk-body">Import question and response data. This should be for a consultation where we have already imported the respondents data.</p>
+  <p class="govuk-body">Import question and response data. This should be for a consultation where we have already imported the respondents data. Data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER].</p>
 
 <form method="post" enctype="multipart/form-data" novalidate>{{ csrf_input }}
 
@@ -31,9 +31,6 @@
         'name': "consultation_code",
         'label': {
           'text': "Select consultation folder",
-        },
-        'hint': {
-          'text': "Data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER]"
         },
         'items': consultation_folders
       }) }}
