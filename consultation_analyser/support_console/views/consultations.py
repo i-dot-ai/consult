@@ -14,6 +14,7 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
 from consultation_analyser.support_console.ingest import (
     get_all_question_part_subfolders,
+    get_folder_names_for_dropdown,
     import_all_respondents_from_jsonl,
     import_all_responses_from_jsonl,
     import_question_part,
@@ -81,7 +82,6 @@ def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
 
 def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = get_object_or_404(models.Consultation, id=consultation_id)
-
     context = {
         "consultation": consultation,
         "bucket_name": settings.AWS_BUCKET_NAME,
@@ -130,6 +130,9 @@ def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
     current_user = request.user
     bucket_name = settings.AWS_BUCKET_NAME
     batch_size = 100
+
+    consultation_folders = get_folder_names_for_dropdown()
+
     if request.POST:
         consultation_name = request.POST.get("consultation_name")
         consultation_code = request.POST.get("consultation_code")
@@ -148,7 +151,7 @@ def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
         msg = f"Importing respondents started for consultation with slug {consultation.slug} - check for progress in dashboard"
         messages.success(request, msg)
         return redirect("/support/consultations/import-summary/")
-    context = {"bucket_name": bucket_name}
+    context = {"bucket_name": bucket_name, "consultation_folders": consultation_folders}
     return render(request, "support_console/consultations/import_respondents.html", context=context)
 
 
@@ -157,12 +160,21 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
     # Respondents should already have been imported
     bucket_name = settings.AWS_BUCKET_NAME
     batch_size = 100
+
+    all_consultations = models.Consultation.objects.all().order_by("-created_at")
+    consultations_for_select = all_consultations.values("id", "title")
+    consultations_for_select = [
+        {"text": f"{d['title']} ({d['id']})", "value": d["id"]} for d in consultations_for_select
+    ]
+
+    consultation_folders = get_folder_names_for_dropdown()
+
     if request.POST:
-        consultation_slug = request.POST.get("consultation_slug")
+        consultation_id = request.POST.get("consultation_id")
         consultation_code = request.POST.get("consultation_code")
         path_to_inputs = f"app_data/{consultation_code}/inputs/"
 
-        consultation = models.Consultation.objects.get(slug=consultation_slug)
+        consultation = models.Consultation.objects.get(id=consultation_id)
         question_part_subfolders = get_all_question_part_subfolders(
             folder_name=path_to_inputs, bucket_name=bucket_name
         )
@@ -179,7 +191,11 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
         msg = f"Import for consultation inputs started for consultation with slug {consultation.slug} - check for progress in dashboard"
         messages.success(request, msg)
         return redirect("/support/consultations/import-summary/")
-    context = {"bucket_name": bucket_name}
+    context = {
+        "bucket_name": bucket_name,
+        "consultations_for_select": consultations_for_select,
+        "consultation_folders": consultation_folders,
+    }
     return render(request, "support_console/consultations/import_inputs.html", context=context)
 
 
