@@ -27,7 +27,7 @@ export default class IaiExpandingText extends IaiLitBase {
     isTextOverflowing = (element, lines) => {
         const lineHeight = parseInt(window.getComputedStyle(element).lineHeight.replace("px", ""));
         const scrollHeight = this.querySelector(".iai-text-content").scrollHeight;
-        return scrollHeight / lineHeight > this.lines;
+        return scrollHeight / lineHeight > lines;
     }
 
     updateTextOverflowing = () => {
@@ -40,9 +40,11 @@ export default class IaiExpandingText extends IaiLitBase {
     firstUpdated() {
         this.updateTextOverflowing();
 
-        window.addEventListener("resize", () => {
-            this.updateTextOverflowing();
-        })        
+        window.addEventListener("resize", this.updateTextOverflowing);
+    }
+
+    disconnectedCallback() {
+        window.removeEventListener("resize", this.updateTextOverflowing);
     }
 
     render() {
