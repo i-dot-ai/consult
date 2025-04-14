@@ -97,6 +97,7 @@
           <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">Question number</th>
             <th scope="col" class="govuk-table__header">Question part number</th>
+            <th scope="col" class="govuk-table__header">Question part type</th>
             <th scope="col" class="govuk-table__header">Text</th>
             <th scope="col" class="govuk-table__header">Actions</th>
           </tr>
@@ -109,6 +110,9 @@
             </td>
             <td class="govuk-table__cell">
               {{ part.number }}
+            </td>
+            <td class="govuk-table__cell">
+              {{ part.type }}
             </td>
             <td class="govuk-table__cell">
               {{ part.question.text }} {{ part.text }}
