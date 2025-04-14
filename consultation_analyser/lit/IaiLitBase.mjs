@@ -22,4 +22,9 @@ export default class IaiLitBase extends LitElement {
             this.props = JSON.parse(atob(this.encprops)) || {};
         }
     }
+
+    generateId(length=16) {
+        const startIndex = 2; //  skip the leading "0."
+        return Math.random().toString(36).substring(startIndex, startIndex+length);
+    }
 }
