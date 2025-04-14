@@ -95,14 +95,14 @@ def test_get_theme_mappings():
 
     # First framework and mappings
     framework1 = factories.InitialFrameworkFactory(question_part=question_part)
-    theme1 = factories.InitialThemeFactory(framework=framework1)
+    theme1 = factories.InitialThemeFactory(framework=framework1, key="A")
     ThemeMapping.objects.create(theme=theme1, answer=answer_1)
 
     # Latest framework and mappings - make sure there are some historical themes.
     framework2 = factories.InitialFrameworkFactory(question_part=question_part)
-    theme_a = factories.InitialThemeFactory(framework=framework2)
-    theme_b = factories.InitialThemeFactory(framework=framework2)
-    theme_c = factories.InitialThemeFactory(framework=framework2)
+    theme_a = factories.InitialThemeFactory(framework=framework2, key="A")
+    theme_b = factories.InitialThemeFactory(framework=framework2, key="B")
+    theme_c = factories.InitialThemeFactory(framework=framework2, key="C")
     tm1 = ThemeMapping.objects.create(answer=answer_1, theme=theme_a)
     tm2 = ThemeMapping.objects.create(answer=answer_1, theme=theme_b)
     ThemeMapping.objects.create(answer=answer_2, theme=theme_b)
