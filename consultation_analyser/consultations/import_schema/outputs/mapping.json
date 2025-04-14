@@ -10,15 +10,8 @@
         "type": "string",
         "maxLength": 128
       }
-    },
-    "stances": {
-      "type": "array",
-      "items": {
-        "type": "string",
-        "enum": ["POSITIVE", "NEGATIVE"]
-      }
     }
   },
-  "required": ["themefinder_id", "labels", "stances"],
+  "required": ["themefinder_id", "theme_keys"],
   "additionalProperties": true
 }

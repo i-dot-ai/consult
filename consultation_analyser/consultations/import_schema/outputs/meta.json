@@ -1,15 +1,15 @@
 {
   "type": "object",
   "properties": {
-    "question_order": {
+    "question_number": {
       "type": "integer",
-      "description": "Order of question. Needed here to match up themefinder outputs and consultation inputs."
+      "description": "Question number. Needed here to match up themefinder outputs and consultation inputs."
     },
-    "question_part_order": {
+    "question_part_number": {
       "type": "integer",
       "description": "Number of sub-question within question. If not provided, assume 1."
     }
   },
-  "required": ["question_order"],
+  "required": ["question_number"],
   "additionalProperties": false
 }

@@ -9,6 +9,6 @@
       "enum": ["DISAGREEMENT", "AGREEMENT", "UNCLEAR"]
     }
   },
-  "required": ["themefinder_id", "position"],
+  "required": ["themefinder_id", "sentiment"],
   "additionalProperties": true
 }
