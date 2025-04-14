@@ -4,9 +4,9 @@
     "themefinder_id": {
       "type": "integer"
     },
-    "position": {
+    "sentiment": {
       "type": "string",
-      "enum": ["disagreement", "agreement", "unclear"]
+      "enum": ["DISAGREEMENT", "AGREEMENT", "UNCLEAR"]
     }
   },
   "required": ["themefinder_id", "position"],

@@ -3,7 +3,7 @@
   "items": {
     "type": "object",
     "properties": {
-      "label": {
+      "theme_key": {
         "type": "string",
         "maxLength": 128,
         "description": "Unique key defining a theme."

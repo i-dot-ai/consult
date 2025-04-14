@@ -9,11 +9,11 @@
       "type": "string",
       "description": "A question part is a subquestion of a question. If there is just one question part within a question, this field will be empty."
     },
-    "question_number": {
+    "question_order": {
       "type": "integer",
       "description": "This gives the order of the question in the consultation."
     },
-    "question_part_number": {
+    "question_part_order": {
       "type": "integer",
       "description": "This gives the order of the question part within the question. If not present, assume 1."
     },
