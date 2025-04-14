@@ -59,7 +59,7 @@ def get_all_folder_names_within_folder(folder_name: str, bucket_name: str) -> se
     return folder_names
 
 
-def get_list_consultation_folder_names_formatted_for_dropdown() -> list[dict]:
+def get_folder_names_for_dropdown() -> list[dict]:
     try:
         consultation_folder_names = get_all_folder_names_within_folder(
             folder_name="app_data", bucket_name=settings.AWS_BUCKET_NAME

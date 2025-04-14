@@ -14,7 +14,7 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
 from consultation_analyser.support_console.ingest import (
     get_all_question_part_subfolders,
-    get_list_consultation_folder_names_formatted_for_dropdown,
+    get_folder_names_for_dropdown,
     import_all_respondents_from_jsonl,
     import_all_responses_from_jsonl,
     import_question_part,
@@ -131,7 +131,7 @@ def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
     bucket_name = settings.AWS_BUCKET_NAME
     batch_size = 100
 
-    consultation_folders = get_list_consultation_folder_names_formatted_for_dropdown()
+    consultation_folders = get_folder_names_for_dropdown()
 
     if request.POST:
         consultation_name = request.POST.get("consultation_name")
@@ -167,7 +167,7 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
         {"text": f"{d['title']} ({d['id']})", "value": d["id"]} for d in consultations_for_select
     ]
 
-    consultation_folders = get_list_consultation_folder_names_formatted_for_dropdown()
+    consultation_folders = get_folder_names_for_dropdown()
 
     if request.POST:
         consultation_id = request.POST.get("consultation_id")
