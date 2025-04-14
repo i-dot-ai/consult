@@ -59,7 +59,7 @@ export default class IaiExpandingText extends IaiLitBase {
                     padding-left: 1rem;
                 }
                 iai-expanding-text .iai-text-content.clickable:focus-visible {
-                    outline: 3px solid #ffdd04;
+                    outline: 3px solid var(--iai-colour-focus);
                     border: 4px solid black;
                 }
                 iai-expanding-text .iai-text-content.clickable::before {

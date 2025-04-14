@@ -122,19 +122,16 @@ class IaiExpandingText extends IaiLitBase {
                 iai-expanding-text .iai-text-content.clickable {
                     padding-left: 1rem;
                 }
-
                 iai-expanding-text .iai-text-content.clickable:focus-visible {
-                    outline: 3px solid #ffdd04;
+                    outline: 3px solid var(--iai-colour-focus);
                     border: 4px solid black;
                 }
-
                 iai-expanding-text .iai-text-content.clickable::before {
                     content: "${this._expanded ? "▾" : "▸"}";
                     position: absolute;
                     left: 0;
                     top: 0;
                 }
-
                 iai-expanding-text .iai-text-content.iai-text-truncated {
                     display: -webkit-box;
                     -webkit-line-clamp: ${this.lines};
