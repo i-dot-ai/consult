@@ -25,6 +25,6 @@ export default class IaiLitBase extends LitElement {
 
     generateId(length=16) {
         const startIndex = 2; //  skip the leading "0."
-        return Math.random().toString(36).substring(startIndex, startIndex+length);
+        return "iai-" + Math.random().toString(36).substring(startIndex, startIndex+length);
     }
 }

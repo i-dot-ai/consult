@@ -48,7 +48,7 @@ class IaiLitBase extends r {
 
     generateId(length=16) {
         const startIndex = 2; //  skip the leading "0."
-        return Math.random().toString(36).substring(startIndex, startIndex+length);
+        return "iai-" + Math.random().toString(36).substring(startIndex, startIndex+length);
     }
 }
 
@@ -80,16 +80,16 @@ class IaiExpandingText extends IaiLitBase {
     }
     constructor() {
         super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
         this.text = "";
         this.lines = 1;
         this._expanded = false;
         this._textOverflowing = true;
-
-        this.contentId = this.generateId();
     }
 
     handleClick() {
-        console.log("clicked:", this.contentId);
         if (!this._textOverflowing) {
             return;
         }
@@ -98,9 +98,7 @@ class IaiExpandingText extends IaiLitBase {
 
     isTextOverflowing = (element, lines) => {
         let computedLineHeight = parseInt(window.getComputedStyle(element).lineHeight);
-        console.log(computedLineHeight);
         const scrollHeight = this.querySelector(".iai-text-content").scrollHeight;
-        console.log(scrollHeight / computedLineHeight, scrollHeight, computedLineHeight, lines, scrollHeight / computedLineHeight > lines);
         return Math.round(scrollHeight / computedLineHeight) > lines;
     }
 
@@ -119,11 +117,11 @@ class IaiExpandingText extends IaiLitBase {
 
     disconnectedCallback() {
         window.removeEventListener("resize", this.updateTextOverflowing);
+
         super.disconnectedCallback();
     }
 
     render() {
-        console.log(this.lines, this.contentId);
         return x`
             <style>
                 .iai-text-content:has(#${this.contentId}) {
