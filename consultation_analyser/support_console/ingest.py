@@ -130,7 +130,7 @@ def import_responses(question_part: QuestionPart, responses_data: list) -> None:
     respondent_dictionary = {r.themefinder_respondent_id: r for r in corresponding_respondents}
 
     # TODO - "response" field will change to "text", will also need to add import of options for non-free-text data
-    answers = [Answer(question_part=question_part, respondent=respondent_dictionary[response_dictionary["themefinder_id"]], text=response_dictionary["response"]) for response_dictionary in decoded_responses]
+    answers = [Answer(question_part=question_part, respondent=respondent_dictionary[response["themefinder_id"]], text=response["response"]) for response in decoded_responses]
     Answer.objects.bulk_create(answers)
     logger.info(
         f"Saved batch of responses for question_number {question_part.question.number} and question part {question_part.number}"
