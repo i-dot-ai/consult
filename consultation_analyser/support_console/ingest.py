@@ -123,21 +123,14 @@ def import_responses(question_part: QuestionPart, responses_data: list) -> None:
     )
     consultation = question_part.question.consultation
 
-    answers = []
-    for response in responses_data:
-        response = json.loads(response.decode("utf-8"))
-        themefinder_respondent_id = response["themefinder_id"]
-        # Respondents should have been imported already
-        respondent = Respondent.objects.get(
-            consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
-        )
-        response_text = response["response"]
-        # TODO - add import of options for non-free-text data
-        # response_chosen_options = responses_data.get("options")
-        answers.append(
-            Answer(question_part=question_part, respondent=respondent, text=response_text)
-        )
+    # Respondents should have been imported already
+    decoded_responses = [json.loads(response.decode("utf-8")) for response in responses_data]
+    themefinder_ids = [response["themefinder_id"] for response in decoded_responses]
+    corresponding_respondents = Respondent.objects.filter(consultation=consultation).filter(themefinder_respondent_id__in=themefinder_ids)
+    respondent_dictionary = {r.themefinder_respondent_id: r for r in corresponding_respondents}
 
+    # TODO - "response" field will change to "text", will also need to add import of options for non-free-text data
+    answers = [Answer(question_part=question_part, respondent=respondent_dictionary[response["themefinder_id"]], text=response["response"]) for response in decoded_responses]
     Answer.objects.bulk_create(answers)
     logger.info(
         f"Saved batch of responses for question_number {question_part.question.number} and question part {question_part.number}"
