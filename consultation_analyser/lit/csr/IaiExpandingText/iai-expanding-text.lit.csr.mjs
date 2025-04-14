@@ -1,4 +1,4 @@
-import { html } from 'lit';
+import { html, css } from 'lit';
 import IaiLitBase from '../../IaiLitBase.mjs';
 
 
@@ -9,6 +9,43 @@ export default class IaiExpandingText extends IaiLitBase {
         _expanded: { type: Boolean },
         _textOverflowing: { type: Boolean },
     }
+
+    static styles = [
+        IaiLitBase.styles,
+        css`
+            iai-expanding-text .iai-text-content {
+                transition-property: color, padding-left;
+                transition: 0.3s ease-in-out;
+                padding-left: 0em;
+                position: relative;
+                width: 100%;
+                line-height: 1.3em;
+            }
+            iai-expanding-text .iai-text-content.clickable {
+                padding-left: 1em;
+            }
+            iai-expanding-text .iai-text-content.clickable:focus-visible {
+                outline: 3px solid var(--iai-colour-focus);
+                border: 4px solid black;
+            }
+            iai-expanding-text .iai-text-content.clickable::before {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+            iai-expanding-text .iai-text-content.iai-text-truncated {
+                display: -webkit-box;
+                display: box;
+
+                -webkit-box-orient: vertical;
+                box-orient: vertical;
+
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+        `
+    ]
+
     constructor() {
         super();
         this.contentId = this.generateId();
@@ -41,6 +78,8 @@ export default class IaiExpandingText extends IaiLitBase {
     } 
 
     firstUpdated() {
+        this.applyStaticStyles("iai-expanding-text", IaiExpandingText.styles);
+
         this.updateTextOverflowing();
 
         window.addEventListener("resize", this.updateTextOverflowing);
@@ -55,37 +94,12 @@ export default class IaiExpandingText extends IaiLitBase {
     render() {
         return html`
             <style>
-                .iai-text-content:has(#${this.contentId}) {
-                    transition-property: color, padding-left;
-                    transition: 0.3s ease-in-out;
-                    padding-left: 0em;
-                    position: relative;
-                    width: 100%;
-                    line-height: 1.3em;
-                }
-                .iai-text-content:has(#${this.contentId}).clickable {
-                    padding-left: 1em;
-                }
-                .iai-text-content:has(#${this.contentId}).clickable:focus-visible {
-                    outline: 3px solid var(--iai-colour-focus);
-                    border: 4px solid black;
-                }
                 .iai-text-content:has(#${this.contentId}).clickable::before {
                     content: "${this._expanded ? "▾" : "▸"}";
-                    position: absolute;
-                    left: 0;
-                    top: 0;
                 }
                 .iai-text-content:has(#${this.contentId}).iai-text-truncated {
-                    display: -webkit-box;
                     -webkit-line-clamp: ${this.lines};
-                    -webkit-box-orient: vertical;
-                    overflow: hidden;
-                    text-overflow: ellipsis;
-
-                    display: box;
                     line-clamp: ${this.lines};
-                    box-orient: vertical;
                 }
             </style>
 
