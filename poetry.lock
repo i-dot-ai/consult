@@ -606,18 +606,18 @@ testing = ["coverage[toml] (>=5.0a4)", "pytest (>=4.6.11)", "setuptools (>=71.0.
 
 [[package]]
 name = "django-extensions"
-version = "3.2.3"
+version = "4.1"
 description = "Extensions for Django"
 optional = false
-python-versions = ">=3.6"
+python-versions = ">=3.9"
 groups = ["development"]
 files = [
-    {file = "django-extensions-3.2.3.tar.gz", hash = "sha256:44d27919d04e23b3f40231c4ab7af4e61ce832ef46d610cc650d53e68328410a"},
-    {file = "django_extensions-3.2.3-py3-none-any.whl", hash = "sha256:9600b7562f79a92cbf1fde6403c04fee314608fefbb595502e34383ae8203401"},
+    {file = "django_extensions-4.1-py3-none-any.whl", hash = "sha256:0699a7af28f2523bf8db309a80278519362cd4b6e1fd0a8cd4bf063e1e023336"},
+    {file = "django_extensions-4.1.tar.gz", hash = "sha256:7b70a4d28e9b840f44694e3f7feb54f55d495f8b3fa6c5c0e5e12bcb2aa3cdeb"},
 ]
 
 [package.dependencies]
-Django = ">=3.2"
+django = ">=4.2"
 
 [[package]]
 name = "django-gov-notify"
@@ -2606,4 +2606,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "3.12.3"
-content-hash = "d4f8e0473006c8fb23fccee4eae080432a0a086091bb6284c81546cf242527d9"
+content-hash = "4b6d767b806990454b7f5fd90817b288d84538d29b80269dca6d519d819a6b0b"
