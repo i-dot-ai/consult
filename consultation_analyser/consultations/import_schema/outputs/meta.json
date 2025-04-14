@@ -10,6 +10,6 @@
       "description": "Number of sub-question within question. If not provided, assume 1."
     }
   },
-  "required": ["question_number"],
+  "required": ["question_order"],
   "additionalProperties": false
 }

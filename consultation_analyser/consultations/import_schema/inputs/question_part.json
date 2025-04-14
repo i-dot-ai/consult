@@ -15,7 +15,8 @@
     },
     "question_part_number_display": {
       "type": "string",
-      "description": "The user supplied question part number to display. This may be blank."
+      "description": "The user supplied question part number to display. This may be blank.",
+      "nullable": true
     },
     "question_order": {
       "type": "integer",
@@ -23,7 +24,8 @@
     },
     "question_part_order": {
       "type": "integer",
-      "description": "This gives the order of the question part within the question. If not present, assume 1."
+      "description": "This gives the order of the question part within the question. If not present, assume 1.",
+      "nullable": true
     },
     "question_part_multiple_choice_options": {
       "type": "array",
@@ -42,7 +44,8 @@
   },
   "required": [
     "question_text",
-    "question_number"
+    "question_order",
+    "question_number_display"
   ],
   "additionalProperties": true
 }
