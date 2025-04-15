@@ -7,13 +7,22 @@ from consultation_analyser.consultations.models import (
     Answer,
     QuestionPart,
     Respondent,
+    SentimentMapping,
+    Theme,
+    ThemeMapping,
 )
 from consultation_analyser.support_console.ingest import (
     import_all_respondents_from_jsonl,
     import_all_responses_from_jsonl,
+    import_all_sentiment_mappings_from_jsonl,
+    import_all_theme_mappings_from_jsonl,
     import_question_part_data,
     import_respondent_data,
     import_responses,
+    import_sentiment_mappings,
+    import_theme_mappings,
+    import_themes,
+    import_themes_from_json,
 )
 
 
@@ -156,3 +165,184 @@ def test_import_all_respondents_from_jsonl(mock_consultation_input_objects):
     assert respondents.count() == 5
     assert respondents[0].themefinder_respondent_id == 1
     assert respondents[4].themefinder_respondent_id == 5
+
+
+@pytest.mark.django_db
+def test_import_themes():
+    theme_data = [
+        {"theme_key": "A", "theme_name": "Theme A", "theme_description": "A description"},
+        {"theme_key": "B", "theme_name": "Theme B", "theme_description": "B description"},
+        {"theme_key": "C", "theme_name": "Theme C", "theme_description": "C description"},
+    ]
+    question_part = factories.FreeTextQuestionPartFactory()
+    import_themes(question_part=question_part, theme_data=theme_data)
+    themes = Theme.objects.filter(framework__question_part=question_part).order_by("key")
+    assert themes.count() == 3
+    assert themes[0].key == "A"
+    assert themes[2].key == "C"
+
+
+@pytest.mark.django_db
+def test_import_themes_from_json(mock_consultation_input_objects):
+    question_part = factories.FreeTextQuestionPartFactory()
+    import_themes_from_json(
+        question_part=question_part,
+        bucket_name="test-bucket",
+        question_part_folder_key="app_data/CON1/outputs/mapping/2025-04-01/question_part_1/",
+    )
+    # TODO - improve this, but it works for now!
+    time.sleep(5)
+    themes = Theme.objects.filter(framework__question_part=question_part).order_by("key")
+    assert themes.count() == 3
+    assert themes[0].key == "A"
+    assert themes[2].key == "C"
+
+
+@pytest.mark.django_db
+def test_import_theme_mappings():
+    thememapping_data = [
+        b'{"themefinder_id":1,"theme_keys":["A"]}',
+        b'{"themefinder_id":2,"theme_keys":["B"]}',
+        b'{"themefinder_id":3,"theme_keys":["A", "B"]}',
+    ]
+    question_part = factories.FreeTextQuestionPartFactory()
+    consultation = question_part.question.consultation
+    respondent_1 = factories.RespondentFactory(
+        themefinder_respondent_id=1, consultation=consultation
+    )
+    respondent_2 = factories.RespondentFactory(
+        themefinder_respondent_id=2, consultation=consultation
+    )
+    respondent_3 = factories.RespondentFactory(
+        themefinder_respondent_id=3, consultation=consultation
+    )
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_1)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_2)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_3)
+
+    framework = factories.InitialFrameworkFactory(question_part=question_part)
+
+    factories.InitialThemeFactory(key="A", framework=framework)
+    factories.InitialThemeFactory(key="B", framework=framework)
+
+    import_theme_mappings(question_part=question_part, thememapping_data=thememapping_data)
+    theme_mappings = ThemeMapping.objects.filter(answer__question_part=question_part).order_by(
+        "answer__respondent__themefinder_respondent_id", "theme__key"
+    )
+    assert theme_mappings.count() == 4
+    assert theme_mappings[0].theme.key == "A"
+    assert theme_mappings[3].theme.key == "B"
+
+
+@pytest.mark.django_db
+def test_import_all_theme_mappings_from_jsonl(mock_consultation_input_objects):
+    question_part = factories.FreeTextQuestionPartFactory()
+    consultation = question_part.question.consultation
+    respondent_1 = factories.RespondentFactory(
+        themefinder_respondent_id=1, consultation=consultation
+    )
+    respondent_2 = factories.RespondentFactory(
+        themefinder_respondent_id=2, consultation=consultation
+    )
+    respondent_3 = factories.RespondentFactory(
+        themefinder_respondent_id=3, consultation=consultation
+    )
+    respondent_4 = factories.RespondentFactory(
+        themefinder_respondent_id=4, consultation=consultation
+    )
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_1)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_2)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_3)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_4)
+
+    framework = factories.InitialFrameworkFactory(question_part=question_part)
+    factories.InitialThemeFactory(key="A", framework=framework)
+    factories.InitialThemeFactory(key="B", framework=framework)
+
+    import_all_theme_mappings_from_jsonl(
+        question_part=question_part,
+        bucket_name="test-bucket",
+        question_part_folder_key="app_data/CON1/outputs/mapping/2025-04-01/question_part_1/",
+        batch_size=2,
+    )
+
+    # TODO - improve this, but it works for now!
+    time.sleep(5)
+    theme_mappings = ThemeMapping.objects.all().order_by("created_at")
+    assert theme_mappings.count() == 4
+    assert theme_mappings[0].answer.question_part.id == question_part.id
+    assert theme_mappings[0].theme.key == "A"
+    assert theme_mappings[3].answer.question_part.id == question_part.id
+    assert theme_mappings[3].theme.key == "B"
+
+
+@pytest.mark.django_db
+def test_import_sentiment_mappings():
+    sentimentmapping_data = [
+        b'{"themefinder_id":1,"sentiment":"AGREEMENT"}',
+        b'{"themefinder_id":2,"sentiment":"DISAGREEMENT"}',
+        b'{"themefinder_id":4,"sentiment":"UNCLEAR"}',
+    ]
+    question_part = factories.FreeTextQuestionPartFactory()
+    consultation = question_part.question.consultation
+    respondent_1 = factories.RespondentFactory(
+        themefinder_respondent_id=1, consultation=consultation
+    )
+    respondent_2 = factories.RespondentFactory(
+        themefinder_respondent_id=2, consultation=consultation
+    )
+    respondent_3 = factories.RespondentFactory(
+        themefinder_respondent_id=3, consultation=consultation
+    )
+    respondent_4 = factories.RespondentFactory(
+        themefinder_respondent_id=4, consultation=consultation
+    )
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_1)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_2)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_3)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_4)
+
+    import_sentiment_mappings(
+        question_part=question_part, sentimentmapping_data=sentimentmapping_data
+    )
+    sentiment_mappings = SentimentMapping.objects.filter(
+        answer__question_part=question_part
+    ).order_by("answer__respondent__themefinder_respondent_id")
+    assert sentiment_mappings.count() == 3
+    assert sentiment_mappings[0].position == SentimentMapping.Position.AGREEMENT
+    assert sentiment_mappings[2].position == SentimentMapping.Position.UNCLEAR
+
+
+@pytest.mark.django_db
+def test_import_all_sentiment_mappings_from_jsonl(mock_consultation_input_objects):
+    question_part = factories.FreeTextQuestionPartFactory()
+    consultation = question_part.question.consultation
+    respondent_1 = factories.RespondentFactory(
+        themefinder_respondent_id=1, consultation=consultation
+    )
+    respondent_2 = factories.RespondentFactory(
+        themefinder_respondent_id=2, consultation=consultation
+    )
+    respondent_3 = factories.RespondentFactory(
+        themefinder_respondent_id=3, consultation=consultation
+    )
+    respondent_4 = factories.RespondentFactory(
+        themefinder_respondent_id=4, consultation=consultation
+    )
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_1)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_2)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_3)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_4)
+
+    import_all_sentiment_mappings_from_jsonl(
+        question_part=question_part,
+        bucket_name="test-bucket",
+        question_part_folder_key="app_data/CON1/outputs/mapping/2025-04-01/question_part_1/",
+        batch_size=2,
+    )
+    # TODO - improve this, but it works for now!
+    time.sleep(5)
+    sentiment_mappings = SentimentMapping.objects.all().order_by("created_at")
+    assert sentiment_mappings.count() == 3
+    assert sentiment_mappings[0].position == SentimentMapping.Position.AGREEMENT
+    assert sentiment_mappings[2].position == SentimentMapping.Position.UNCLEAR

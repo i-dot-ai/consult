@@ -55,6 +55,30 @@ def mock_consultation_input_objects(mock_s3_bucket):
     ]
     responses_jsonl_2 = "\n".join([json.dumps(response) for response in responses_2])
 
+    themes = [
+        {"theme_key": "A", "theme_name": "Theme A", "theme_description": "A description"},
+        {"theme_key": "B", "theme_name": "Theme B", "theme_description": "B description"},
+        {"theme_key": "C", "theme_name": "Theme C", "theme_description": "C description"},
+    ]
+
+    theme_mappings = [
+        {"themefinder_id": 1, "theme_keys": ["A"]},
+        {"themefinder_id": 2, "theme_keys": ["B"]},
+        {"themefinder_id": 4, "theme_keys": ["A", "B"]},
+    ]
+    theme_mappings_jsonl = "\n".join(
+        [json.dumps(theme_mapping) for theme_mapping in theme_mappings]
+    )
+
+    sentiment_mappings = [
+        {"themefinder_id": 1, "sentiment": "AGREEMENT"},
+        {"themefinder_id": 2, "sentiment": "DISAGREEMENT"},
+        {"themefinder_id": 4, "sentiment": "UNCLEAR"},
+    ]
+    sentiment_mappings_jsonl = "\n".join(
+        [json.dumps(sentiment_mapping) for sentiment_mapping in sentiment_mappings]
+    )
+
     conn.Object(mock_s3_bucket, "app_data/CON1/inputs/respondents.jsonl").put(
         Body=respondents_jsonl
     )
@@ -70,3 +94,12 @@ def mock_consultation_input_objects(mock_s3_bucket):
     conn.Object(mock_s3_bucket, "app_data/CON1/inputs/question_part_2/responses.jsonl").put(
         Body=responses_jsonl_2
     )
+    conn.Object(
+        mock_s3_bucket, "app_data/CON1/outputs/mapping/2025-04-01/question_part_1/themes.json"
+    ).put(Body=json.dumps(themes))
+    conn.Object(
+        mock_s3_bucket, "app_data/CON1/outputs/mapping/2025-04-01/question_part_1/mapping.jsonl"
+    ).put(Body=theme_mappings_jsonl)
+    conn.Object(
+        mock_s3_bucket, "app_data/CON1/outputs/mapping/2025-04-01/question_part_1/sentiment.jsonl"
+    ).put(Body=sentiment_mappings_jsonl)
