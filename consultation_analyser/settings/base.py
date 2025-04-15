@@ -195,6 +195,7 @@ LOGGING = {
         "upload": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "import": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "export": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
+        "dummy_data": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "rq.worker": {"handlers": ["rq_console"], "level": "INFO"},
     },
 }
