@@ -1,8 +1,11 @@
 import json
+import logging
+import math
 import random
 from typing import Optional
 
 import yaml
+import django
 
 from consultation_analyser.consultations import models
 from consultation_analyser.factories import (
@@ -23,11 +26,53 @@ from consultation_analyser.factories import (
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
 
+logger = logging.getLogger("dummy_data")
+
+
+def simulate_user_amending_themes(question_part: models.QuestionPart):
+    logger.info(
+        f"Starting amending themes for question number {question_part.question.number} and question part number {question_part.number}"
+    )
+    # Ideally random using .order_by("?") but might take too long
+    latest_theme_mappings = models.ThemeMapping.get_latest_theme_mappings(question_part=question_part)
+    total = latest_theme_mappings.count()
+    latest_framework = (
+        models.Framework.objects.filter(question_part=question_part).order_by("created_at").last()
+    )
+    latest_themes = models.Theme.objects.filter(framework=latest_framework)
+    all_responses = models.Answer.objects.filter(question_part=question_part)
+
+    # Delete some theme mappings
+    sample_size = math.floor(total / 5)
+    random_sample_ids = latest_theme_mappings[:sample_size].values_list("id", flat=True)
+    latest_theme_mappings.filter(id__in=random_sample_ids).delete()
+
+    # Now select some responses and add new themes
+    sample_size = math.floor(total / 5)
+
+    chosen_responses = all_responses[:sample_size]
+    for response in chosen_responses:
+        try:
+            random_theme = latest_themes.order_by("?")[0]
+            ThemeMappingFactory(theme=random_theme, answer=response)
+        except django.db.utils.IntegrityError:
+            # will sometimes get uniqueness constraint errors
+            pass
+
+    # Now update all theme mappings and responses to mark as user reviewed
+    theme_mappings = models.ThemeMapping.get_latest_theme_mappings(question_part=question_part)
+    total = theme_mappings.count()
+    theme_mappings.update(user_audited=True)
+    logger.info(
+        f"Simulated amending themes for question number {question_part.question.number} and question part number {question_part.number}"
+    )
+
 
 def create_dummy_consultation_from_yaml(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
     consultation: Optional[models.Consultation] = None,
+    include_changes_to_themes: bool = False,
 ) -> ConsultationFactory:
     """
     Create consultation with question, question parts, answers and themes from yaml file.
@@ -39,10 +84,12 @@ def create_dummy_consultation_from_yaml(
 
     if not consultation:
         consultation = ConsultationFactory()
+
     respondents = [
         RespondentFactory(consultation=consultation, themefinder_respondent_id=i + 1)
         for i in range(number_respondents)
     ]
+    logger.info(f"Created {number_respondents} respondents")
 
     with open(file_path, "r") as file:
         questions_data = yaml.safe_load(file)
@@ -65,6 +112,9 @@ def create_dummy_consultation_from_yaml(
                     text=part["text"],
                     type=question_part_type,
                     number=part["number"],
+                )
+                logger.info(
+                    f"Created question part for question number {question.number} and question part number {question_part.number}"
                 )
 
                 # Simulate execution runs for each question to generate themes, theme mapping
@@ -108,8 +158,16 @@ def create_dummy_consultation_from_yaml(
                     number=part["number"],
                 )
 
+            logger.info(
+                f"Finished creating themes, execution runs etc for question number {question.number} and question part number {question_part.number}"
+            )
+
             # Now populate the answers and corresponding themes etc. for these question parts
             for respondent in respondents:
+                logger.info(
+                    f"Start populating responses for question number {question.number} and question part number {question_part.number}"
+                )
+
                 if question_part_type == models.QuestionPart.QuestionType.FREE_TEXT:
                     text = random.choice(part.get("free_text_answers", [""]))
                     answer = FreeTextAnswerFactory(
@@ -139,6 +197,9 @@ def create_dummy_consultation_from_yaml(
                     # Also add sentiment to answer replicating the sentiment mapping step
                     # This is agree/disagree/unclear
                     SentimentMappingFactory(answer=answer, execution_run=sentiment_mapping_run)
+                    logger.info(
+                        f"Finished populating responses for question number {question.number} and question part number {question_part.number}"
+                    )
 
                 # Now map (multiple) themes to each answer for free-text questions.
                 # This is in a different order to how it would work in pipeline - but this is as we
@@ -151,5 +212,10 @@ def create_dummy_consultation_from_yaml(
                         ThemeMappingFactory(
                             answer=answer, theme=theme, execution_run=theme_mapping_run
                         )
+                    logger.info(
+                        f"Added theme mappings for question number {question.number} and question part number {question_part.number}"
+                    )
+                    if include_changes_to_themes:
+                        simulate_user_amending_themes(question_part)
 
     return consultation
