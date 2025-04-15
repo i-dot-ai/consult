@@ -10,7 +10,9 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "build-lit-ssr": "node build-lit.mjs",
     "build-lit-csr": "npx rollup -c",
-    "build-lit": "npm run build-lit-ssr && npm run build-lit-csr"
+    "build-lit": "npm run build-lit-ssr && npm run build-lit-csr",
+    "storybook": "storybook dev -p 6006",
+    "build-storybook": "storybook build"
   },
   "author": "",
   "license": "ISC",
@@ -27,7 +29,15 @@
     "lit": "^3.2.1"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "^3.2.6",
+    "@storybook/addon-essentials": "^8.6.12",
+    "@storybook/blocks": "^8.6.12",
+    "@storybook/experimental-addon-test": "^8.6.12",
+    "@storybook/test": "^8.6.12",
+    "@storybook/web-components": "^8.6.12",
+    "@storybook/web-components-vite": "^8.6.12",
     "@types/chart.js": "^2.9.41",
-    "rollup": "^4.39.0"
+    "rollup": "^4.39.0",
+    "storybook": "^8.6.12"
   }
 }
