@@ -43,14 +43,14 @@ The structure should be:
     │   │   ├── responses.jsonl
     │   │   └── question_part.json
     │   ├── ...
-    │   ...
+    │   └── respondents.jsonl
     └── outputs/
         ├── mapping/
         │   ├── <timestamp>/
         │   │   ├── question_part_<id>/
         │   │   │   ├── meta.json
         │   │   │   ├── themes.json
-        │   │   │   ├── position.jsonl
+        │   │   │   ├── sentiment.jsonl
         │   │   │   └── mapping.jsonl
         │   │   ├── question_part_<id>/
         │   │   ├── ...
