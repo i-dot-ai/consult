@@ -58,6 +58,11 @@ urlpatterns = [
         name="import_inputs",
     ),
     path(
+        "consultations/import-themes/",
+        consultations.import_consultation_themes,
+        name="import_themes",
+    ),
+    path(
         "consultations/import-summary/",
         consultations.import_summary,
         name="import_summary",
