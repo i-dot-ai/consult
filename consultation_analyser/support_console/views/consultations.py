@@ -208,15 +208,19 @@ def import_consultation_themes(request: HttpRequest) -> HttpResponse:
     consultation_options = [
         {"value": c.slug, "text": c.slug} for c in models.Consultation.objects.all()
     ]
-    context = {"consultations": consultation_options, "bucket_name": bucket_name}
-
+    consultation_folders = get_folder_names_for_dropdown()
+    context = {
+        "consultations": consultation_options,
+        "bucket_name": bucket_name,
+        "consultation_folders": consultation_folders,
+    }
     batch_size = 100
 
     if request.POST:
         consultation_slug = request.POST.get("consultation_slug")
         consultation_code = request.POST.get("consultation_code")
         consultation_mapping_date = request.POST.get("consultation_mapping_date")
-        path_to_themes = f"app_data/{consultation_code}/outputs/mapping/"
+        path_to_themes = f"app_data/{consultation_code}/outputs/mapping/{consultation_mapping_date}"
 
         consultation = models.Consultation.objects.get(slug=consultation_slug)
         if not models.Question.objects.filter(consultation=consultation).exists():
@@ -227,29 +231,32 @@ def import_consultation_themes(request: HttpRequest) -> HttpResponse:
             )
 
         question_part_subfolders = get_all_question_part_subfolders(
-            folder_name=path_to_themes, bucket_name=bucket_name, subfolder_key=-3
+            folder_name=path_to_themes, bucket_name=bucket_name
         )
 
         for folder in question_part_subfolders:
-            folder_path = f"{folder}{consultation_mapping_date}"
             question_number = int(folder.split("/")[-2].split("question_part_")[-1])
             question_part = models.QuestionPart.objects.get(
-                question__number=question_number, type=models.QuestionPart.QuestionType.FREE_TEXT
+                question__consultation=consultation,
+                question__number=question_number,
+                type=models.QuestionPart.QuestionType.FREE_TEXT,
             )
 
             import_themes_from_json(
-                question_part=question_part, question_part_folder_key=folder_path
+                question_part=question_part,
+                bucket_name=bucket_name,
+                question_part_folder_key=folder,
             )
             import_all_theme_mappings_from_jsonl(
                 question_part=question_part,
                 bucket_name=bucket_name,
-                question_part_folder_key=folder_path,
+                question_part_folder_key=folder,
                 batch_size=batch_size,
             )
             import_all_sentiment_mappings_from_jsonl(
                 question_part=question_part,
                 bucket_name=bucket_name,
-                question_part_folder_key=folder_path,
+                question_part_folder_key=folder,
                 batch_size=batch_size,
             )
 

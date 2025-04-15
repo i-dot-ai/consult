@@ -10,24 +10,29 @@
 
   <form method="post" enctype="multipart/form-data" novalidate>{{ csrf_input }}
 
-    {{ govukSelect({
-      "id": "consultation_slug",
-      "name": "consultation_slug",
-      "label": {
-          "text": "Select an existing consultation slug"
-      },
-      "items": consultations
-    }) }}
+    <div class="govuk-form-group">
+      <p class="govuk-label-wrapper">
+        {{ govukSelect({
+          "id": "consultation_slug",
+          "name": "consultation_slug",
+          "label": {
+              "text": "Select an existing consultation slug"
+          },
+          "items": consultations
+        })}}
+    </p>
+  </div>
 
     <div class="govuk-form-group">
       <p class="govuk-label-wrapper">
-        <label class="govuk-label govuk-label--l" for="consultation_code">
-          What is the name of the consultation folder?
-        </label>
-        <div id="s3_key-hint" class="govuk-hint iai-hint">
-          Consultation data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER]
-        </div>
-        <input class="govuk-input" id="consultation_code" name="consultation_code" type="text">
+        {{ govukSelect({
+          'id': "consultation_code",
+          'name': "consultation_code",
+          'label': {
+            'text': "Select consultation folder",
+          },
+          'items': consultation_folders
+        }) }}
       </p>
     </div>
 
@@ -37,7 +42,7 @@
           Which dated subfolder should be used? e.g. 2025-01-01/
         </label>
         <div id="s3_key-hint" class="govuk-hint iai-hint">
-          Consultation data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER]/mapping/[QUESTION NUMBER]/[DATED SUBFOLDER]
+          Consultation data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER]/mapping/[DATED SUBFOLDER]/
         </div>
         <input class="govuk-input" id="consultation_mapping_date" name="consultation_mapping_date" type="text">
       </p>

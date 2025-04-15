@@ -34,9 +34,7 @@ SENTIMENT_MAPPING = {
 }
 
 
-def get_all_question_part_subfolders(
-    folder_name: str, bucket_name: str, subfolder_key: int = -2
-) -> list:
+def get_all_question_part_subfolders(folder_name: str, bucket_name: str) -> list:
     s3 = boto3.resource("s3")
     objects = s3.Bucket(bucket_name).objects.filter(Prefix=folder_name)
     object_names_set = {obj.key for obj in objects}
@@ -47,9 +45,9 @@ def get_all_question_part_subfolders(
         subfolders.add(folder)
     # Only the ones that are question_folders
     question_folders = [
-        "/".join(name.split("/")[0 : subfolder_key + 1]) + "/"
+        "/".join(name.split("/")[:-1]) + "/"
         for name in subfolders
-        if name.split("/")[subfolder_key].startswith("question_part_")
+        if name.split("/")[-2].startswith("question_part_")
     ]
     question_folders.sort()
     return question_folders
@@ -192,9 +190,9 @@ def import_themes(question_part: QuestionPart, theme_data: list) -> None:
         themes.append(
             Theme(
                 framework=framework,
-                name=theme["Theme Name"],
-                description=theme["Theme Description"],
-                key=theme["topic_id"],
+                name=theme["theme_name"],
+                description=theme["theme_description"],
+                key=theme["theme_key"],
             )
         )
         # TODO: check if we are appending 'other' etc.
@@ -225,13 +223,14 @@ def import_theme_mappings(question_part: QuestionPart, thememapping_data: list) 
                 consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
             ),
         )
-        for idx, theme_key in enumerate(data["labels"]):
+
+        for theme_key in data["theme_keys"]:
+            theme = Theme.objects.get(framework=latest_framework, key=theme_key)
             theme_mappings.append(
                 ThemeMapping(
                     answer=answer,
-                    theme=Theme.objects.get(framework=latest_framework, key=theme_key),
+                    theme=theme,
                     execution_run=execution_run,
-                    stance=ThemeMapping.Stance[data["stances"][idx]],
                 )
             )
 
@@ -262,7 +261,7 @@ def import_sentiment_mappings(question_part: QuestionPart, sentimentmapping_data
             SentimentMapping(
                 answer=answer,
                 execution_run=execution_run,
-                position=SentimentMapping.Position[sentiment_mapping["position"].upper()],
+                position=SentimentMapping.Position[sentiment_mapping["sentiment"]],
             )
         )
     bulk_create_with_history(sentiment_mappings, SentimentMapping)
@@ -337,10 +336,12 @@ def import_all_responses_from_jsonl(
         import_responses_job.delay(question_part=question_part, responses_data=lines)
 
 
-def import_themes_from_json(question_part: QuestionPart, question_part_folder_key: str) -> None:
+def import_themes_from_json(
+    question_part: QuestionPart, bucket_name: str, question_part_folder_key: str
+) -> None:
     s3 = boto3.client("s3")
     data_key = f"{question_part_folder_key}themes.json"
-    response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=data_key)
+    response = s3.get_object(Bucket=bucket_name, Key=data_key)
     theme_data = json.loads(response["Body"].read().decode("utf-8"))
     import_themes(question_part=question_part, theme_data=theme_data)
 
@@ -371,7 +372,7 @@ def import_all_sentiment_mappings_from_jsonl(
     logger.info(
         f"Importing sentiment mappings from {question_part_folder_key}, batch_size {batch_size}"
     )
-    sentiment_mappings_file_key = f"{question_part_folder_key}position.jsonl"
+    sentiment_mappings_file_key = f"{question_part_folder_key}sentiment.jsonl"
     s3_client = boto3.client("s3")
     response = s3_client.get_object(Bucket=bucket_name, Key=sentiment_mappings_file_key)
     lines = []
