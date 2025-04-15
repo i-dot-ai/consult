@@ -203,7 +203,8 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
 
 
 def import_consultation_themes(request: HttpRequest) -> HttpResponse:
-    # TODO: write helptext here
+    # Imports themefinder outputs: themes, theme mappings and sentiment mappings
+    # Responses should already have been imported
     bucket_name = settings.AWS_BUCKET_NAME
     consultation_options = [
         {"value": c.slug, "text": c.slug} for c in models.Consultation.objects.all()
@@ -224,7 +225,6 @@ def import_consultation_themes(request: HttpRequest) -> HttpResponse:
 
         consultation = models.Consultation.objects.get(slug=consultation_slug)
         if not models.Question.objects.filter(consultation=consultation).exists():
-            # TODO: handle with raise error and try/except
             messages.error(request, "Questions have not yet been imported for this Consultation")
             return render(
                 request, "support_console/consultations/import_themes.html", context=context
@@ -260,7 +260,8 @@ def import_consultation_themes(request: HttpRequest) -> HttpResponse:
                 batch_size=batch_size,
             )
 
-        # TODO: add a message
+        msg = f"Importing themefinder outputs started for consultation with slug {consultation.slug} - check for progress in dashboard"
+        messages.success(request, msg)
         return redirect("/support/consultations/import-summary/")
 
     return render(request, "support_console/consultations/import_themes.html", context=context)
