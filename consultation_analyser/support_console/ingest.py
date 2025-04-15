@@ -185,17 +185,15 @@ def import_themes(question_part: QuestionPart, theme_data: list) -> None:
         execution_run=execution_run, question_part=question_part
     )
 
-    themes = []
-    for theme in theme_data:
-        themes.append(
-            Theme(
-                framework=framework,
-                name=theme["theme_name"],
-                description=theme["theme_description"],
-                key=theme["theme_key"],
-            )
+    themes = [
+        Theme(
+            framework=framework,
+            name=theme["theme_name"],
+            description=theme["theme_description"],
+            key=theme["theme_key"],
         )
-        # TODO: check if we are appending 'other' etc.
+        for theme in theme_data
+    ]
 
     Theme.objects.bulk_create(themes)
     logger.info(
