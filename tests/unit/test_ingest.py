@@ -82,9 +82,9 @@ def test_import_responses():
     for i in range(1, 5):
         factories.RespondentFactory(consultation=consultation, themefinder_respondent_id=i)
     responses_data = [
-        b'{"themefinder_id":1, "response":"response 1"}',
-        b'{"themefinder_id":2, "response":"response 2"}',
-        b'{"themefinder_id":4, "response":"response 4"}',
+        b'{"themefinder_id":1, "text":"response 1"}',
+        b'{"themefinder_id":2, "text":"response 2"}',
+        b'{"themefinder_id":4, "text":"response 4"}',
     ]
 
     import_responses(question_part=question_part, responses_data=responses_data)
