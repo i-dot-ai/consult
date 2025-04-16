@@ -45,7 +45,7 @@ def index(request: HttpRequest) -> HttpResponse:
                 user = request.user
                 consultation.users.add(user)
                 create_dummy_consultation_from_yaml_job.delay(
-                    number_respondents=n, include_changes_to_themes=True
+                    number_respondents=n, include_changes_to_themes=True, consultation=consultation
                 )
                 messages.success(
                     request,
