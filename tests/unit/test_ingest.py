@@ -124,11 +124,14 @@ def test_import_all_responses_from_jsonl(mock_consultation_input_objects):
     # TODO - improve this, but it works for now!
     time.sleep(5)
     responses = Answer.objects.filter(question_part=question_part)
+    historical_responses = Answer.history.filter(question_part=question_part)
     assert responses.count() == 3
     assert responses[0].respondent.themefinder_respondent_id == 1
     assert responses[0].text == "It's really fun."
     assert responses[2].text == "I need more info."
     assert responses[2].respondent.themefinder_respondent_id == 4
+    assert historical_responses.count() == 3
+    assert historical_responses[0].history_type == "+"
 
 
 @pytest.mark.django_db
