@@ -4,8 +4,9 @@ import math
 import random
 from typing import Optional
 
-import yaml
 import django
+import yaml
+from django_rq import job
 
 from consultation_analyser.consultations import models
 from consultation_analyser.factories import (
@@ -34,7 +35,9 @@ def simulate_user_amending_themes(question_part: models.QuestionPart):
         f"Starting amending themes for question number {question_part.question.number} and question part number {question_part.number}"
     )
     # Ideally random using .order_by("?") but might take too long
-    latest_theme_mappings = models.ThemeMapping.get_latest_theme_mappings(question_part=question_part)
+    latest_theme_mappings = models.ThemeMapping.get_latest_theme_mappings(
+        question_part=question_part
+    )
     total = latest_theme_mappings.count()
     latest_framework = (
         models.Framework.objects.filter(question_part=question_part).order_by("created_at").last()
@@ -219,3 +222,18 @@ def create_dummy_consultation_from_yaml(
                         simulate_user_amending_themes(question_part)
 
     return consultation
+
+
+@job
+def create_dummy_consultation_from_yaml_job(
+    file_path: str = "./tests/examples/sample_questions.yml",
+    number_respondents: int = 10,
+    consultation: Optional[models.Consultation] = None,
+    include_changes_to_themes: bool = False,
+):
+    create_dummy_consultation_from_yaml(
+        file_path=file_path,
+        number_respondents=number_respondents,
+        consultation=consultation,
+        include_changes_to_themes=include_changes_to_themes,
+    )
