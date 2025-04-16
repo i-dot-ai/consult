@@ -175,7 +175,7 @@ def import_responses(question_part: QuestionPart, responses_data: list) -> None:
     )
 
 
-def import_themes(question_part: QuestionPart, theme_data: list) -> None:
+def import_themes_and_get_framework(question_part: QuestionPart, theme_data: list) -> Framework:
     logger.info(
         f"Importing themes for question_number {question_part.question.number}, part_number: {question_part.number}"
     )
@@ -199,16 +199,16 @@ def import_themes(question_part: QuestionPart, theme_data: list) -> None:
     logger.info(
         f"Saved batch of themes for question_number {question_part.question.number} and question part {question_part.number}"
     )
+    return framework
 
 
-def import_theme_mappings(question_part: QuestionPart, thememapping_data: list) -> None:
+def import_theme_mappings(
+    question_part: QuestionPart, thememapping_data: list, framework: Framework
+) -> None:
     logger.info(
         f"Importing batch of theme mappings for question_number {question_part.question.number} and question part {question_part.number}"
     )
     consultation = question_part.question.consultation
-    latest_framework = (
-        Framework.objects.filter(question_part=question_part).order_by("created_at").last()
-    )
     execution_run = ExecutionRun.objects.create(type=ExecutionRun.TaskType.THEME_MAPPING)
 
     theme_mappings = []
@@ -223,7 +223,7 @@ def import_theme_mappings(question_part: QuestionPart, thememapping_data: list) 
         )
 
         for theme_key in data["theme_keys"]:
-            theme = Theme.objects.get(framework=latest_framework, key=theme_key)
+            theme = Theme.objects.get(framework=framework, key=theme_key)
             theme_mappings.append(
                 ThemeMapping(
                     answer=answer,
@@ -279,8 +279,10 @@ def import_responses_job(question_part: QuestionPart, responses_data: list):
 
 
 @job("default", timeout=900)
-def import_theme_mappings_job(question_part: QuestionPart, thememapping_data: list):
-    import_theme_mappings(question_part, thememapping_data)
+def import_theme_mappings_job(
+    question_part: QuestionPart, thememapping_data: list, framework: Framework
+):
+    import_theme_mappings(question_part, thememapping_data, framework)
 
 
 @job("default", timeout=900)
@@ -334,18 +336,22 @@ def import_all_responses_from_jsonl(
         import_responses_job.delay(question_part=question_part, responses_data=lines)
 
 
-def import_themes_from_json(
+def import_themes_from_json_and_get_framework(
     question_part: QuestionPart, bucket_name: str, question_part_folder_key: str
-) -> None:
+) -> Framework:
     s3 = boto3.client("s3")
     data_key = f"{question_part_folder_key}themes.json"
     response = s3.get_object(Bucket=bucket_name, Key=data_key)
     theme_data = json.loads(response["Body"].read().decode("utf-8"))
-    import_themes(question_part=question_part, theme_data=theme_data)
+    return import_themes_and_get_framework(question_part=question_part, theme_data=theme_data)
 
 
 def import_all_theme_mappings_from_jsonl(
-    question_part: QuestionPart, bucket_name: str, question_part_folder_key: str, batch_size: int
+    question_part: QuestionPart,
+    framework: Framework,
+    bucket_name: str,
+    question_part_folder_key: str,
+    batch_size: int,
 ) -> None:
     logger.info(
         f"Importing theme_mappings from {question_part_folder_key}, batch_size {batch_size}"
@@ -357,11 +363,15 @@ def import_all_theme_mappings_from_jsonl(
     for line in response["Body"].iter_lines():
         lines.append(line)
         if len(lines) == batch_size:
-            import_theme_mappings_job.delay(question_part=question_part, thememapping_data=lines)
+            import_theme_mappings_job.delay(
+                question_part=question_part, thememapping_data=lines, framework=framework
+            )
             lines = []
     # Any remaining lines < batch size
     if lines:
-        import_theme_mappings_job.delay(question_part=question_part, thememapping_data=lines)
+        import_theme_mappings_job.delay(
+            question_part=question_part, thememapping_data=lines, framework=framework
+        )
 
 
 def import_all_sentiment_mappings_from_jsonl(

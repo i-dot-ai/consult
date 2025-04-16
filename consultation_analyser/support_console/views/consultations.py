@@ -20,7 +20,7 @@ from consultation_analyser.support_console.ingest import (
     import_all_sentiment_mappings_from_jsonl,
     import_all_theme_mappings_from_jsonl,
     import_question_part,
-    import_themes_from_json,
+    import_themes_from_json_and_get_framework,
 )
 
 logger = logging.getLogger("export")
@@ -242,13 +242,14 @@ def import_consultation_themes(request: HttpRequest) -> HttpResponse:
                 type=models.QuestionPart.QuestionType.FREE_TEXT,
             )
 
-            import_themes_from_json(
+            framework = import_themes_from_json_and_get_framework(
                 question_part=question_part,
                 bucket_name=bucket_name,
                 question_part_folder_key=folder,
             )
             import_all_theme_mappings_from_jsonl(
                 question_part=question_part,
+                framework=framework,
                 bucket_name=bucket_name,
                 question_part_folder_key=folder,
                 batch_size=batch_size,

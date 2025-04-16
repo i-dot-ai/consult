@@ -21,8 +21,8 @@ from consultation_analyser.support_console.ingest import (
     import_responses,
     import_sentiment_mappings,
     import_theme_mappings,
-    import_themes,
-    import_themes_from_json,
+    import_themes_and_get_framework,
+    import_themes_from_json_and_get_framework,
 )
 
 
@@ -175,24 +175,22 @@ def test_import_themes():
         {"theme_key": "C", "theme_name": "Theme C", "theme_description": "C description"},
     ]
     question_part = factories.FreeTextQuestionPartFactory()
-    import_themes(question_part=question_part, theme_data=theme_data)
-    themes = Theme.objects.filter(framework__question_part=question_part).order_by("key")
+    framework = import_themes_and_get_framework(question_part=question_part, theme_data=theme_data)
+    themes = Theme.objects.filter(framework=framework).order_by("key")
     assert themes.count() == 3
     assert themes[0].key == "A"
     assert themes[2].key == "C"
 
 
 @pytest.mark.django_db
-def test_import_themes_from_json(mock_consultation_input_objects):
+def test_import_themes_from_json_and_get_framework(mock_consultation_input_objects):
     question_part = factories.FreeTextQuestionPartFactory()
-    import_themes_from_json(
+    framework = import_themes_from_json_and_get_framework(
         question_part=question_part,
         bucket_name="test-bucket",
         question_part_folder_key="app_data/CON1/outputs/mapping/2025-04-01/question_part_1/",
     )
-    # TODO - improve this, but it works for now!
-    time.sleep(5)
-    themes = Theme.objects.filter(framework__question_part=question_part).order_by("key")
+    themes = Theme.objects.filter(framework=framework).order_by("key")
     assert themes.count() == 3
     assert themes[0].key == "A"
     assert themes[2].key == "C"
@@ -225,7 +223,9 @@ def test_import_theme_mappings():
     factories.InitialThemeFactory(key="A", framework=framework)
     factories.InitialThemeFactory(key="B", framework=framework)
 
-    import_theme_mappings(question_part=question_part, thememapping_data=thememapping_data)
+    import_theme_mappings(
+        question_part=question_part, thememapping_data=thememapping_data, framework=framework
+    )
     theme_mappings = ThemeMapping.objects.filter(answer__question_part=question_part).order_by(
         "answer__respondent__themefinder_respondent_id", "theme__key"
     )
@@ -261,6 +261,7 @@ def test_import_all_theme_mappings_from_jsonl(mock_consultation_input_objects):
 
     import_all_theme_mappings_from_jsonl(
         question_part=question_part,
+        framework=framework,
         bucket_name="test-bucket",
         question_part_folder_key="app_data/CON1/outputs/mapping/2025-04-01/question_part_1/",
         batch_size=2,
