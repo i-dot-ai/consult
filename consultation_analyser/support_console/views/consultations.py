@@ -17,7 +17,10 @@ from consultation_analyser.support_console.ingest import (
     get_folder_names_for_dropdown,
     import_all_respondents_from_jsonl,
     import_all_responses_from_jsonl,
+    import_all_sentiment_mappings_from_jsonl,
+    import_all_theme_mappings_from_jsonl,
     import_question_part,
+    import_themes_from_json_and_get_framework,
 )
 
 logger = logging.getLogger("export")
@@ -197,6 +200,72 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
         "consultation_folders": consultation_folders,
     }
     return render(request, "support_console/consultations/import_inputs.html", context=context)
+
+
+def import_consultation_themes(request: HttpRequest) -> HttpResponse:
+    # Imports themefinder outputs: themes, theme mappings and sentiment mappings
+    # Responses should already have been imported
+    bucket_name = settings.AWS_BUCKET_NAME
+    consultation_options = [
+        {"value": c.slug, "text": c.slug} for c in models.Consultation.objects.all()
+    ]
+    consultation_folders = get_folder_names_for_dropdown()
+    context = {
+        "consultations": consultation_options,
+        "bucket_name": bucket_name,
+        "consultation_folders": consultation_folders,
+    }
+    batch_size = 100
+
+    if request.POST:
+        consultation_slug = request.POST.get("consultation_slug")
+        consultation_code = request.POST.get("consultation_code")
+        consultation_mapping_date = request.POST.get("consultation_mapping_date")
+        path_to_themes = f"app_data/{consultation_code}/outputs/mapping/{consultation_mapping_date}"
+
+        consultation = models.Consultation.objects.get(slug=consultation_slug)
+        if not models.Question.objects.filter(consultation=consultation).exists():
+            messages.error(request, "Questions have not yet been imported for this Consultation")
+            return render(
+                request, "support_console/consultations/import_themes.html", context=context
+            )
+
+        question_part_subfolders = get_all_question_part_subfolders(
+            folder_name=path_to_themes, bucket_name=bucket_name
+        )
+
+        for folder in question_part_subfolders:
+            question_number = int(folder.split("/")[-2].split("question_part_")[-1])
+            question_part = models.QuestionPart.objects.get(
+                question__consultation=consultation,
+                question__number=question_number,
+                type=models.QuestionPart.QuestionType.FREE_TEXT,
+            )
+
+            framework = import_themes_from_json_and_get_framework(
+                question_part=question_part,
+                bucket_name=bucket_name,
+                question_part_folder_key=folder,
+            )
+            import_all_theme_mappings_from_jsonl(
+                question_part=question_part,
+                framework=framework,
+                bucket_name=bucket_name,
+                question_part_folder_key=folder,
+                batch_size=batch_size,
+            )
+            import_all_sentiment_mappings_from_jsonl(
+                question_part=question_part,
+                bucket_name=bucket_name,
+                question_part_folder_key=folder,
+                batch_size=batch_size,
+            )
+
+        msg = f"Importing themefinder outputs started for consultation with slug {consultation.slug} - check for progress in dashboard"
+        messages.success(request, msg)
+        return redirect("/support/consultations/import-summary/")
+
+    return render(request, "support_console/consultations/import_themes.html", context=context)
 
 
 def import_summary(request: HttpRequest) -> HttpResponse:

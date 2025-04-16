@@ -1,6 +1,7 @@
 import datetime
 import uuid
 from collections import Counter, OrderedDict
+from enum import Enum
 
 import faker as _faker
 import pydantic
@@ -417,7 +418,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
 class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     # When changing the mapping for an answer, don't change the answer
     # change the theme.
-    class Stance(models.TextChoices):
+    class Stance(models.TextChoices, Enum):
         POSITIVE = "POSITIVE", "Positive"
         NEGATIVE = "NEGATIVE", "Negative"
 
@@ -451,7 +452,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
-    class Position(models.TextChoices):
+    class Position(models.TextChoices, Enum):
         AGREEMENT = "AGREEMENT", "Agreement"
         DISAGREEMENT = "DISAGREEMENT", "Disagreement"
         UNCLEAR = "UNCLEAR", "Unclear"

@@ -4,14 +4,18 @@ import logging
 import boto3
 from django.conf import settings
 from django_rq import job
+from simple_history.utils import bulk_create_with_history
 
 from consultation_analyser.consultations.models import (
     Answer,
     Consultation,
+    ExecutionRun,
+    Framework,
     Question,
     QuestionPart,
     Respondent,
     SentimentMapping,
+    Theme,
     ThemeMapping,
 )
 
@@ -41,7 +45,9 @@ def get_all_question_part_subfolders(folder_name: str, bucket_name: str) -> list
         subfolders.add(folder)
     # Only the ones that are question_folders
     question_folders = [
-        name for name in subfolders if name.split("/")[-2].startswith("question_part_")
+        "/".join(name.split("/")[:-1]) + "/"
+        for name in subfolders
+        if name.split("/")[-2].startswith("question_part_")
     ]
     question_folders.sort()
     return question_folders
@@ -169,6 +175,99 @@ def import_responses(question_part: QuestionPart, responses_data: list) -> None:
     )
 
 
+def import_themes_and_get_framework(question_part: QuestionPart, theme_data: list) -> Framework:
+    logger.info(
+        f"Importing themes for question_number {question_part.question.number}, part_number: {question_part.number}"
+    )
+
+    execution_run = ExecutionRun.objects.create(type=ExecutionRun.TaskType.THEME_GENERATION)
+    framework = Framework.create_initial_framework(
+        execution_run=execution_run, question_part=question_part
+    )
+
+    themes = [
+        Theme(
+            framework=framework,
+            name=theme["theme_name"],
+            description=theme["theme_description"],
+            key=theme["theme_key"],
+        )
+        for theme in theme_data
+    ]
+
+    Theme.objects.bulk_create(themes)
+    logger.info(
+        f"Saved batch of themes for question_number {question_part.question.number} and question part {question_part.number}"
+    )
+    return framework
+
+
+def import_theme_mappings(
+    question_part: QuestionPart, thememapping_data: list, framework: Framework
+) -> None:
+    logger.info(
+        f"Importing batch of theme mappings for question_number {question_part.question.number} and question part {question_part.number}"
+    )
+    consultation = question_part.question.consultation
+    execution_run = ExecutionRun.objects.create(type=ExecutionRun.TaskType.THEME_MAPPING)
+
+    theme_mappings = []
+    for data in thememapping_data:
+        data = json.loads(data.decode("utf-8"))
+        themefinder_respondent_id = data["themefinder_id"]
+        answer = Answer.objects.get(
+            question_part=question_part,
+            respondent=Respondent.objects.get(
+                consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
+            ),
+        )
+
+        for theme_key in data["theme_keys"]:
+            theme = Theme.objects.get(framework=framework, key=theme_key)
+            theme_mappings.append(
+                ThemeMapping(
+                    answer=answer,
+                    theme=theme,
+                    execution_run=execution_run,
+                )
+            )
+
+    bulk_create_with_history(theme_mappings, ThemeMapping)
+    logger.info(
+        f"Saved batch of theme mappings for question_number {question_part.question.number} and question part {question_part.number}"
+    )
+
+
+def import_sentiment_mappings(question_part: QuestionPart, sentimentmapping_data: list) -> None:
+    logger.info(
+        f"Importing batch of sentiment mappings for question_number {question_part.question.number} and question part {question_part.number}"
+    )
+    consultation = question_part.question.consultation
+    execution_run = ExecutionRun.objects.create(type=ExecutionRun.TaskType.SENTIMENT_ANALYSIS)
+
+    sentiment_mappings = []
+    for sentiment_mapping in sentimentmapping_data:
+        sentiment_mapping = json.loads(sentiment_mapping.decode("utf-8"))
+        themefinder_respondent_id = sentiment_mapping["themefinder_id"]
+        answer = Answer.objects.get(
+            question_part=question_part,
+            respondent=Respondent.objects.get(
+                consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
+            ),
+        )
+        sentiment_mappings.append(
+            SentimentMapping(
+                answer=answer,
+                execution_run=execution_run,
+                position=SentimentMapping.Position[sentiment_mapping["sentiment"]],
+            )
+        )
+    bulk_create_with_history(sentiment_mappings, SentimentMapping)
+    logger.info(
+        f"Saved batch of sentiment mappings for question_number {question_part.question.number} and question part {question_part.number}"
+    )
+
+
 @job("default", timeout=900)
 def import_respondent_data_job(consultation: Consultation, respondent_data: list):
     import_respondent_data(consultation=consultation, respondent_data=respondent_data)
@@ -177,6 +276,18 @@ def import_respondent_data_job(consultation: Consultation, respondent_data: list
 @job("default", timeout=900)
 def import_responses_job(question_part: QuestionPart, responses_data: list):
     import_responses(question_part, responses_data)
+
+
+@job("default", timeout=900)
+def import_theme_mappings_job(
+    question_part: QuestionPart, thememapping_data: list, framework: Framework
+):
+    import_theme_mappings(question_part, thememapping_data, framework)
+
+
+@job("default", timeout=900)
+def import_sentiment_mappings_job(question_part: QuestionPart, sentimentmapping_data: list):
+    import_sentiment_mappings(question_part, sentimentmapping_data)
 
 
 def import_all_respondents_from_jsonl(
@@ -223,3 +334,65 @@ def import_all_responses_from_jsonl(
     # Any remaining lines < batch size
     if lines:
         import_responses_job.delay(question_part=question_part, responses_data=lines)
+
+
+def import_themes_from_json_and_get_framework(
+    question_part: QuestionPart, bucket_name: str, question_part_folder_key: str
+) -> Framework:
+    s3 = boto3.client("s3")
+    data_key = f"{question_part_folder_key}themes.json"
+    response = s3.get_object(Bucket=bucket_name, Key=data_key)
+    theme_data = json.loads(response["Body"].read().decode("utf-8"))
+    return import_themes_and_get_framework(question_part=question_part, theme_data=theme_data)
+
+
+def import_all_theme_mappings_from_jsonl(
+    question_part: QuestionPart,
+    framework: Framework,
+    bucket_name: str,
+    question_part_folder_key: str,
+    batch_size: int,
+) -> None:
+    logger.info(
+        f"Importing theme_mappings from {question_part_folder_key}, batch_size {batch_size}"
+    )
+    theme_mappings_file_key = f"{question_part_folder_key}mapping.jsonl"
+    s3_client = boto3.client("s3")
+    response = s3_client.get_object(Bucket=bucket_name, Key=theme_mappings_file_key)
+    lines = []
+    for line in response["Body"].iter_lines():
+        lines.append(line)
+        if len(lines) == batch_size:
+            import_theme_mappings_job.delay(
+                question_part=question_part, thememapping_data=lines, framework=framework
+            )
+            lines = []
+    # Any remaining lines < batch size
+    if lines:
+        import_theme_mappings_job.delay(
+            question_part=question_part, thememapping_data=lines, framework=framework
+        )
+
+
+def import_all_sentiment_mappings_from_jsonl(
+    question_part: QuestionPart, bucket_name: str, question_part_folder_key: str, batch_size: int
+) -> None:
+    logger.info(
+        f"Importing sentiment mappings from {question_part_folder_key}, batch_size {batch_size}"
+    )
+    sentiment_mappings_file_key = f"{question_part_folder_key}sentiment.jsonl"
+    s3_client = boto3.client("s3")
+    response = s3_client.get_object(Bucket=bucket_name, Key=sentiment_mappings_file_key)
+    lines = []
+    for line in response["Body"].iter_lines():
+        lines.append(line)
+        if len(lines) == batch_size:
+            import_sentiment_mappings_job.delay(
+                question_part=question_part, sentimentmapping_data=lines
+            )
+            lines = []
+    # Any remaining lines < batch size
+    if lines:
+        import_sentiment_mappings_job.delay(
+            question_part=question_part, sentimentmapping_data=lines
+        )
