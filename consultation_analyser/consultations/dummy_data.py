@@ -224,7 +224,7 @@ def create_dummy_consultation_from_yaml(
     return consultation
 
 
-@job
+@job("default", timeout=900)
 def create_dummy_consultation_from_yaml_job(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
