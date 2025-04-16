@@ -1,0 +1,21 @@
+{
+  "type": "array",
+  "items": {
+    "type": "object",
+    "properties": {
+      "theme_key": {
+        "type": "string",
+        "maxLength": 128,
+        "description": "Unique key defining a theme."
+      },
+      "theme_name": {
+        "type": "string"
+      },
+      "theme_description": {
+        "type": "string"
+      }
+    },
+    "required": ["label", "theme_name", "theme_description"],
+    "additionalProperties": true
+  }
+}

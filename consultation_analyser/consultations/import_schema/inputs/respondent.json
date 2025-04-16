@@ -1,0 +1,16 @@
+{
+  "type": "object",
+  "properties": {
+    "themefinder_id": {
+      "type": "integer"
+    },
+    "supplied_respondent_id": {
+      "type": "string"
+    },
+    "data": {
+      "type": "object"
+    }
+  },
+  "required": ["themefinder_id"],
+  "additionalProperties": true
+}

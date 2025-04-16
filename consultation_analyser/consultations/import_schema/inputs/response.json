@@ -1,0 +1,30 @@
+{
+  "type": "object",
+  "properties": {
+    "themefinder_id": {
+      "type": "integer",
+      "description": "This is the ID for the respondent, provided by ThemeFinder."
+    },
+    "text": {
+      "type": "string",
+      "description": "Free text response"
+    },
+    "chosen_options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Options that have been chosen for a closed question."
+    }
+  },
+  "anyOf": [
+    {
+      "required": ["text"]
+    },
+    {
+      "required": ["chosen_options"]
+    }
+  ],
+  "required": ["themefinder_id"],
+  "additionalProperties": true
+}

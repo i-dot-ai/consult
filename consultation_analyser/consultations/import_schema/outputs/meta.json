@@ -1,0 +1,15 @@
+{
+  "type": "object",
+  "properties": {
+    "question_number": {
+      "type": "integer",
+      "description": "Question number. Needed here to match up themefinder outputs and consultation inputs."
+    },
+    "question_part_number": {
+      "type": "integer",
+      "description": "Number of sub-question within question. If not provided, assume 1."
+    }
+  },
+  "required": ["question_number"],
+  "additionalProperties": false
+}

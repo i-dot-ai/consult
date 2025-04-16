@@ -1,0 +1,17 @@
+{
+  "type": "object",
+  "properties": {
+    "themefinder_id": {
+      "type": "integer"
+    },
+    "theme_keys": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "maxLength": 128
+      }
+    }
+  },
+  "required": ["themefinder_id", "theme_keys"],
+  "additionalProperties": true
+}

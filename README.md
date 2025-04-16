@@ -172,19 +172,55 @@ If you are running locally, you can create a staff user by running `make dev_adm
 
 On any environment, if you are a staff user, you can give other users permission to access the support area. Go to `/support/users/`.
 
-### Public schemas
-
-We have a 'public schema' that describes the data shape expected for imports - for the Django schema, 
-see the ERD (above). The public schema is customised via a script in 
-`consultation_analyser/consultations/public_schema_files/generate_openapi_yaml.py`.
-
-To update the public schemas to reflect Django model changes, run `make generate_public_schema`.
-This updates the yaml OpenAPI schema, which is used by `datamodel-codegen` to create a python schema 
-`consultation_analyser/consultations/public_schema.py` used for imports.
-This is transferred to a JSON schema. We expose the Answer and QuestionPart schemas for external users from the webapp at `/schema/`.
-
 
 ## Importing data
+
+### Data import format
+Data should be stored in the approprate S3 bucket (`AWS_DATA_BUCKET`) and within a folder called `app_data`.
+
+It should be stored in the following structure for a given consultation:
+```
+<consultation-name>/
+    ├── raw_data/
+    │   └── ....
+    ├── inputs/
+    │   ├── question_part_<id>/
+    │   │   ├── responses.jsonl
+    │   │   └── question_part.json
+    │   ├──  question_part_<id>/
+    │   │   ├── responses.jsonl
+    │   │   └── question_part.json
+    │   ├── ...
+    │   └── respondents.jsonl
+    └── outputs/
+        ├── mapping/
+        │   ├── <timestamp>/
+        │   │   ├── question_part_<id>/
+        │   │   │   ├── meta.json
+        │   │   │   ├── themes.json
+        │   │   │   ├── sentiment.jsonl
+        │   │   │   └── mapping.jsonl
+        │   │   ├── question_part_<id>/
+        │   │   ├── ...
+        │   ...  
+        └── sign_off/
+```
+
+Note that we have the notion of "question part" to reflect the sub-questions within a question.
+
+The format for each of these files is in `consultation_analyser/consultations/import_schema`. Some of the files are JSONL files - [JSONLines](https://jsonlines.org/). The schema are given in [JSON Schema format](https://json-schema.org/). In Python you can use the `jsonschema` library to validate a JSON instance.
+
+Format of each of the files:
+* `respondents.jsonl` - this is a JSONL file per consultation, where each entry is the format given in the `respondent.json` schema.
+* `responses.jsonl` - this is a JSONL file per question part, where each entry is in the format given in the `response.json` schema.
+* `question_part.json` - this is a JSON file per question part, and this must satisfy the format given in the `question_part.json` schema.
+* `meta.json` - this is a file with metadata allowing us to match up inputs and outputs
+* `themes.json` - this gives the themes for a given question part and run of ThemeFinder, with `theme_key` as a unique identifier for a theme (for a given question part). This is the format given by the `themes.json` schema.
+* `sentiment.jsonl` - this a JSONL file per question part and run of themefinder, each row is a line in the format of `sentiment.json` with one row per response.
+* `mapping.jsonl` - this is a JSONL file per question part and run of themefinder, each row is a line in the format of `mapping.json`. Each row maps a given response to its themes.
+
+
+### Data import process
 
 You must be a staff user to import consultation data. The consultation data consists of input data on questions, responses, and respondent data, and output data which is further data on themes from themefinder.
 
@@ -197,6 +233,8 @@ The import should be run in stages, which can be navigated to from `support/cons
 4. Again, wait for this to be completed - check progress in `support/django-rq/`. For a long consultation, this might take a while.
 5. TODO - then import ThemeFinder outputs.
 
-Run this locally first to ensure the data is valid before running in production. If the import fails half-way, delete the consultation or question (which will delete all related objects) and re-import. 
+**Run this locally first to ensure the data is valid before running in production**. If the import fails half-way, delete the consultation or question (which will delete all related objects) and re-import. 
 
 To run locally you must have access to your AWS account.
+
+

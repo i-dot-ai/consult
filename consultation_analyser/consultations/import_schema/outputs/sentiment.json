@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "themefinder_id": {
+      "type": "integer"
+    },
+    "sentiment": {
+      "type": "string",
+      "enum": ["DISAGREEMENT", "AGREEMENT", "UNCLEAR"]
+    }
+  },
+  "required": ["themefinder_id", "sentiment"],
+  "additionalProperties": true
+}
