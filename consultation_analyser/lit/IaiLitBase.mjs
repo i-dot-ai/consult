@@ -2,7 +2,12 @@ import { LitElement, css } from "lit";
 
 
 export default class IaiLitBase extends LitElement {
-    static styles = css``
+    static styles = css`
+        :root {
+            --iai-colour-focus:  #ffdd04;
+            --iai-colour-pink:  #C50878;
+        }
+    `
 
     static properties = {
         encprops: {type: String},

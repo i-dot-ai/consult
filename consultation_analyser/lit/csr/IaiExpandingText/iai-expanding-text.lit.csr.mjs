@@ -21,8 +21,15 @@ export default class IaiExpandingText extends IaiLitBase {
                 width: 100%;
                 line-height: 1.3em;
             }
+
             iai-expanding-text .iai-text-content.clickable {
                 padding-left: 1em;
+                cursor: pointer;
+                transition-property: color;
+                transition: 0.3s ease-in-out;
+            }
+            iai-expanding-text .iai-text-content.clickable:hover  {
+                color: var(--iai-colour-pink);
             }
             iai-expanding-text .iai-text-content.clickable:focus-visible {
                 outline: 3px solid var(--iai-colour-focus);
@@ -33,6 +40,7 @@ export default class IaiExpandingText extends IaiLitBase {
                 left: 0;
                 top: 0;
             }
+                
             iai-expanding-text .iai-text-content.iai-text-truncated {
                 display: -webkit-box;
                 display: box;
