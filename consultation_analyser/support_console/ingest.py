@@ -169,7 +169,7 @@ def import_responses(question_part: QuestionPart, responses_data: list) -> None:
         )
         for response in decoded_responses
     ]
-    Answer.objects.bulk_create(answers)
+    bulk_create_with_history(answers, Answer)
     logger.info(
         f"Saved batch of responses for question_number {question_part.question.number} and question part {question_part.number}"
     )
