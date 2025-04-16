@@ -8,7 +8,10 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from consultation_analyser.consultations import models
-from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml, create_dummy_consultation_from_yaml_job
+from consultation_analyser.consultations.dummy_data import (
+    create_dummy_consultation_from_yaml,
+    create_dummy_consultation_from_yaml_job,
+)
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
@@ -36,11 +39,18 @@ def index(request: HttpRequest) -> HttpResponse:
                 messages.success(request, "A dummy consultation has been generated")
             elif request.POST.get("generate_giant_dummy_consultation") is not None:
                 n = 10000
-                consultation = models.Consultation.objects.create(title=f"Giant dummy consultation - {n} respondents, with theme changes")
+                consultation = models.Consultation.objects.create(
+                    title=f"Giant dummy consultation - {n} respondents, with theme changes"
+                )
                 user = request.user
                 consultation.users.add(user)
-                create_dummy_consultation_from_yaml_job.delay(number_respondents=n, include_changes_to_themes=True)
-                messages.success(request, "A giant dummy consultation is being created - see progress in the Django RQ dashboard")
+                create_dummy_consultation_from_yaml_job.delay(
+                    number_respondents=n, include_changes_to_themes=True
+                )
+                messages.success(
+                    request,
+                    "A giant dummy consultation is being created - see progress in the Django RQ dashboard",
+                )
             elif request.POST.get("create_synthetic_consultation") is not None:
                 call_command("import_synthetic_data")
                 messages.success(request, "Synthetic data imported")
