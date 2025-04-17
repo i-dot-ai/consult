@@ -7,8 +7,9 @@
     "supplied_respondent_id": {
       "type": "string"
     },
-    "data": {
-      "type": "object"
+    "demographics": {
+      "type": "object",
+      "description": "Dictionary with any demographic data."
     }
   },
   "required": ["themefinder_id"],
