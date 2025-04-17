@@ -57,12 +57,6 @@ describe('iai-expanding-text', () => {
     `);
 
     const expandingText = el.querySelector(".iai-text-content");
-
-    document.dispatchEvent(new KeyboardEvent("keydown", {
-      key: "Tab",
-      bubbles: true,
-    }))
-
     expandingText.focus();
     expect(document.activeElement).to.equal(expandingText);
   });
