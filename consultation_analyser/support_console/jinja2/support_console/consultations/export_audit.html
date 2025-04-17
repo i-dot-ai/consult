@@ -15,28 +15,23 @@
       'name': "question_parts",
       'fieldset': {
         'legend': {
-          'text': "Which question do you want to download data for?",
+          'text': "Which questions do you want to download data for?",
           'isPageHeading': false,
           'classes': "govuk-fieldset__legend--l"
         }
       },
-      'hint': {
-        'text': "Select all that apply"
-      },
       'items': question_parts_items
     }) }}
 
-
-
     {% if environment == 'local' %}
-      <p>The file will be saved in: downloads/[timestamp]-example_consultation_theme_changes.csv</p>
+      <p>The file will be saved in: downloads/[timestamp]_question_[question_number]_theme_changes</p>
     {% else %}
       <p class="govuk-label-wrapper">
         <label class="govuk-label govuk-label--l" for="s3_key">
           Where should the file be saved?
         </label>
         <div id="s3_key-hint" class="govuk-hint iai-hint">
-          The file will be saved as: {{bucket_name}}/[YOUR PATH]/[timestamp]-consultation_theme_changes.csv
+          The file will be saved as: {{bucket_name}}/[YOUR PATH]/[timestamp]_question_[question_number]_theme_changes.csv
         </div>
         <input class="govuk-input govuk-input--width-20" id="s3_key" name="s3_key" type="text">
       </p>
