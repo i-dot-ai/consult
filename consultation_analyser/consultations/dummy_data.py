@@ -226,7 +226,7 @@ def create_dummy_consultation_from_yaml(
 
 # Will only be run occasionally to create dummy data
 # Not in prod
-@job("default", timeout=1800)
+@job("default", timeout=2100)
 def create_dummy_consultation_from_yaml_job(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
