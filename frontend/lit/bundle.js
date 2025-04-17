@@ -25,7 +25,12 @@ const t=globalThis,i$1=t.trustedTypes,s=i$1?i$1.createPolicy("lit-html",{createH
  */class r extends b{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0;}createRenderRoot(){const t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){const s=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=B(s,this.renderRoot,this.renderOptions);}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(true);}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(false);}render(){return T}}r._$litElement$=true,r["finalized"]=true,globalThis.litElementHydrateSupport?.({LitElement:r});const i=globalThis.litElementPolyfillSupport;i?.({LitElement:r});(globalThis.litElementVersions??=[]).push("4.1.1");
 
 class IaiLitBase extends r {
-    static styles = i$3``
+    static styles = i$3`
+        :root {
+            --iai-colour-focus:  #ffdd04;
+            --iai-colour-pink:  #C50878;
+        }
+    `
 
     static properties = {
         encprops: {type: String},
@@ -107,8 +112,15 @@ class IaiExpandingText extends IaiLitBase {
                 width: 100%;
                 line-height: 1.3em;
             }
+
             iai-expanding-text .iai-text-content.clickable {
                 padding-left: 1em;
+                cursor: pointer;
+                transition-property: color;
+                transition: 0.3s ease-in-out;
+            }
+            iai-expanding-text .iai-text-content.clickable:hover  {
+                color: var(--iai-colour-pink);
             }
             iai-expanding-text .iai-text-content.clickable:focus-visible {
                 outline: 3px solid var(--iai-colour-focus);
@@ -119,6 +131,7 @@ class IaiExpandingText extends IaiLitBase {
                 left: 0;
                 top: 0;
             }
+                
             iai-expanding-text .iai-text-content.iai-text-truncated {
                 display: -webkit-box;
                 display: box;
@@ -129,7 +142,7 @@ class IaiExpandingText extends IaiLitBase {
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
-        `   
+        `
     ]
 
     constructor() {
@@ -164,11 +177,17 @@ class IaiExpandingText extends IaiLitBase {
     } 
 
     firstUpdated() {
-        this.updateTextOverflowing();
-
         this.applyStaticStyles("iai-expanding-text", IaiExpandingText.styles);
 
+        this.updateTextOverflowing();
+
         window.addEventListener("resize", this.updateTextOverflowing);
+    }
+
+    updated(changedProps) {
+        if (changedProps.has("lines") || changedProps.has("text")) {
+            this.updateTextOverflowing();
+        }
     }
 
     disconnectedCallback() {

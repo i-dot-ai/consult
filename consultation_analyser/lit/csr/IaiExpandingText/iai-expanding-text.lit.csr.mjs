@@ -93,6 +93,12 @@ export default class IaiExpandingText extends IaiLitBase {
         window.addEventListener("resize", this.updateTextOverflowing);
     }
 
+    updated(changedProps) {
+        if (changedProps.has("lines") || changedProps.has("text")) {
+            this.updateTextOverflowing();
+        }
+    }
+
     disconnectedCallback() {
         window.removeEventListener("resize", this.updateTextOverflowing);
 
