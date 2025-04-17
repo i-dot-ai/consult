@@ -224,16 +224,19 @@ Format of each of the files:
 
 You must be a staff user to import consultation data. The consultation data consists of input data on questions, responses, and respondent data, and output data which is further data on themes from themefinder.
 
-Data should be stored in a specific structure in S3 (bucket specified by `AWS_BUCKET_NAME`) - documentation for this structure to follow soon!
+Data should be stored in a specific structure in S3 (bucket specified by `AWS_BUCKET_NAME`) as described above.
+
+**Run this locally first to ensure the data is valid before running in production.**
 
 The import should be run in stages, which can be navigated to from `support/consultations/import-summary/`:
+
 1. Create a consultation and import data on respondents `support/consultations/import-respondents`.
 2. The import is running asynchronously - you can check its progress by looking at the queue in `support/django-rq/`.
 3. Once the respondents import is done, import the question and response data `support/consultations/import-inputs/`.
 4. Again, wait for this to be completed - check progress in `support/django-rq/`. For a long consultation, this might take a while.
-5. TODO - then import ThemeFinder outputs.
+5. Once done, import the ThemeFinder outputs from `support/consultations/import-themes/`.
 
-**Run this locally first to ensure the data is valid before running in production**. If the import fails half-way, delete the consultation or question (which will delete all related objects) and re-import. 
+If the import fails half-way, delete the consultation or question (which will delete all related objects) and re-import. This can be done by navigating to the individual consultation from `/support/consultations/`.
 
 To run locally you must have access to your AWS account.
 
