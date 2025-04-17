@@ -248,13 +248,15 @@
           
             {% if free_text_question_part %}
               <div class="govuk-form-group">
-                <label class="govuk-label govuk-label--m" for="wordcount">
-                  Response length that is at least
-                </label>
+                <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
+                  Response word count
+                </legend>
       
                 <div class="govuk-input__wrapper">
-                  <input class="govuk-input govuk-input--width-5" id="wordcount" name="wordcount" type="text" spellcheck="false" {% if active_filters.wordcount.selected %} value="{{ active_filters.wordcount.selected[0].id }}" {% endif %}>
-                  <div class="govuk-input__suffix" aria-hidden="true">words</div>
+                  <label class="govuk-label govuk-label--m govuk-!-margin-right-2 v-centered" for="wordcount">
+                    Minimum:
+                  </label>
+                  <input class="govuk-input govuk-input--width-5 govuk-input--full-border" id="wordcount" name="wordcount" type="number" spellcheck="false" {% if active_filters.wordcount.selected %} value="{{ active_filters.wordcount.selected[0].id }}" {% endif %} />
                 </div>
               </div>
             {% endif %}

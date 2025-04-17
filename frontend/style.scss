@@ -367,3 +367,13 @@ horizontal-bar-chart {
 .clickable:hover  {
     color: $iai-colour-pink;
 }
+
+.govuk-input.govuk-input--full-border {
+    border: 1px solid var(--iai-colour-text-secondary);
+    border-radius: var(--iai-border-radius);
+}
+
+.v-centered {
+    margin-top: auto;
+    margin-bottom: auto;
+}
