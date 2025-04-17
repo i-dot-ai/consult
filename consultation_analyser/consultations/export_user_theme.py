@@ -117,33 +117,6 @@ def get_theme_mapping_rows(question_part: QuestionPart) -> list[dict]:
     return output
 
 
-# def get_theme_mapping_output(consultation: Consultation, question_part: QuestionPart) -> list[dict]:
-#     output = []
-#     for question_part in QuestionPart.objects.filter(
-#         question__consultation=consultation,
-#         type=QuestionPart.QuestionType.FREE_TEXT,
-#     ):
-#         # Default to latest execution run
-#         sentiment_run = get_latest_sentiment_execution_run_for_question_part(question_part)
-#         answer_qs = Answer.objects.filter(question_part=question_part)
-#         # Get themes from latest framework
-#         current_theme_mappings = ThemeMapping.get_latest_theme_mappings(
-#             question_part=question_part, history=False
-#         )
-#         historical_theme_mappings = ThemeMapping.get_latest_theme_mappings(
-#             question_part=question_part, history=True
-#         )
-#         for response in answer_qs:
-#             row = get_theme_mapping_output_row(
-#                 mappings_for_framework=current_theme_mappings,
-#                 historical_mappings_for_framework=historical_theme_mappings,
-#                 response=response,
-#                 sentiment_execution_run=sentiment_run,
-#             )
-#             output.append(row)
-#     return output
-
-
 def export_user_theme(question_part_id: uuid.UUID, s3_key: str) -> None:
     question_part = QuestionPart.objects.get(id=question_part_id)
     output = get_theme_mapping_rows(question_part)
