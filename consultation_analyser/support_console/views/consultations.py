@@ -103,14 +103,21 @@ def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
 
 def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = get_object_or_404(models.Consultation, id=consultation_id)
+    question_parts = models.QuestionPart.objects.filter(question__consultation=consultation, type=models.QuestionPart.QuestionType.FREE_TEXT).order_by("question__number")
+
+    question_parts_items = [{"value": qp.id, "text": f"Question {qp.question.number} - {qp.question.text} {qp.text}"} for qp in  question_parts]
+
     context = {
         "consultation": consultation,
+        "question_parts_items": question_parts_items,
         "bucket_name": settings.AWS_BUCKET_NAME,
         "environment": settings.ENVIRONMENT,
     }
 
     if request.method == "POST":
+        print(request.POST)
         s3_key = request.POST.get("s3_key", "")
+        question_part_ids = request.POST.get("question_parts")
         try:
             logging.info("Exporting theme audit data - sending to queue")
             export_user_theme_job.delay(consultation.slug, s3_key)
