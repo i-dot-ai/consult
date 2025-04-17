@@ -2,6 +2,7 @@ import csv
 import datetime
 import logging
 import os
+import uuid
 from io import StringIO
 
 import boto3
@@ -94,44 +95,70 @@ def get_theme_mapping_output_row(
     return row_data
 
 
-def get_theme_mapping_output(consultation: Consultation) -> list[dict]:
+def get_theme_mapping_rows(question_part: QuestionPart) -> list[dict]:
     output = []
-    for question_part in QuestionPart.objects.filter(
-        question__consultation=consultation,
-        type=QuestionPart.QuestionType.FREE_TEXT,
-    ):
-        # Default to latest execution run
-        sentiment_run = get_latest_sentiment_execution_run_for_question_part(question_part)
-        answer_qs = Answer.objects.filter(question_part=question_part)
-        # Get themes from latest framework
-        current_theme_mappings = ThemeMapping.get_latest_theme_mappings(
-            question_part=question_part, history=False
+    # Default to latest execution run
+    sentiment_run = get_latest_sentiment_execution_run_for_question_part(question_part)
+    answer_qs = Answer.objects.filter(question_part=question_part)
+    # Get themes from latest framework
+    current_theme_mappings = ThemeMapping.get_latest_theme_mappings(
+        question_part=question_part, history=False
+    )
+    historical_theme_mappings = ThemeMapping.get_latest_theme_mappings(
+        question_part=question_part, history=True
+    )
+    for response in answer_qs:
+        row = get_theme_mapping_output_row(
+            mappings_for_framework=current_theme_mappings,
+            historical_mappings_for_framework=historical_theme_mappings,
+            response=response,
+            sentiment_execution_run=sentiment_run,
         )
-        historical_theme_mappings = ThemeMapping.get_latest_theme_mappings(
-            question_part=question_part, history=True
-        )
-        for response in answer_qs:
-            row = get_theme_mapping_output_row(
-                mappings_for_framework=current_theme_mappings,
-                historical_mappings_for_framework=historical_theme_mappings,
-                response=response,
-                sentiment_execution_run=sentiment_run,
-            )
-            output.append(row)
+        output.append(row)
     return output
 
 
-def export_user_theme(consultation_slug: str, s3_key: str) -> None:
-    consultation = Consultation.objects.get(slug=consultation_slug)
-    output = get_theme_mapping_output(consultation)
 
+# def get_theme_mapping_output(consultation: Consultation, question_part: QuestionPart) -> list[dict]:
+#     output = []
+#     for question_part in QuestionPart.objects.filter(
+#         question__consultation=consultation,
+#         type=QuestionPart.QuestionType.FREE_TEXT,
+#     ):
+#         # Default to latest execution run
+#         sentiment_run = get_latest_sentiment_execution_run_for_question_part(question_part)
+#         answer_qs = Answer.objects.filter(question_part=question_part)
+#         # Get themes from latest framework
+#         current_theme_mappings = ThemeMapping.get_latest_theme_mappings(
+#             question_part=question_part, history=False
+#         )
+#         historical_theme_mappings = ThemeMapping.get_latest_theme_mappings(
+#             question_part=question_part, history=True
+#         )
+#         for response in answer_qs:
+#             row = get_theme_mapping_output_row(
+#                 mappings_for_framework=current_theme_mappings,
+#                 historical_mappings_for_framework=historical_theme_mappings,
+#                 response=response,
+#                 sentiment_execution_run=sentiment_run,
+#             )
+#             output.append(row)
+#     return output
+
+
+def export_user_theme(question_part_id: uuid.UUID, s3_key: str) -> None:
+    question_part = QuestionPart.objects.get(id=question_part_id)
+    output = get_theme_mapping_rows(question_part)
     timestamp = get_timestamp()
+    # unique as only one free text question part per question
+    question_number = question_part.question.number
+    filename = f"{timestamp}_question_{question_number}_theme_changes.csv"
 
     if settings.ENVIRONMENT == "local":
         if not os.path.exists("downloads"):
             os.makedirs("downloads")
         with open(
-            f"downloads/{timestamp}_example_consultation_theme_changes.csv", mode="w"
+            f"downloads/{filename}", mode="w"
         ) as file:
             writer = csv.DictWriter(file, fieldnames=output[0].keys())
             writer.writeheader()
@@ -151,13 +178,13 @@ def export_user_theme(consultation_slug: str, s3_key: str) -> None:
 
         s3_client.put_object(
             Bucket=settings.AWS_BUCKET_NAME,
-            Key=f"{s3_key}/{timestamp}consultation_theme_changes.csv",
+            Key=f"{s3_key}/{filename}",
             Body=csv_buffer.getvalue(),
         )
         csv_buffer.close()
-    logger.info(f"Finishing export for consultation: {consultation_slug}")
+    logger.info(f"Finishing export for question {question_number} for consultation {question_part.question.consultation.title}")
 
 
 @job("default", timeout=900)
-def export_user_theme_job(consultation_slug: str, s3_key: str) -> None:
-    export_user_theme(consultation_slug, s3_key)
+def export_user_theme_job(question_part_id: str, s3_key: str) -> None:
+    export_user_theme(question_part_id, s3_key)

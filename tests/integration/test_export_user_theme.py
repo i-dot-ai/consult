@@ -109,7 +109,7 @@ def test_export_user_theme(mock_boto_client, django_app):
         review_response_page.form.submit("Save and continue to a new response")
 
     # Call the method
-    export_user_theme(consultation.slug, "test_key")
+    export_user_theme(question_part.id, "test_key")
 
     # Test the results
     # TODO: Unlear why this is this called twice?
