@@ -103,9 +103,14 @@ def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
 
 def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = get_object_or_404(models.Consultation, id=consultation_id)
-    question_parts = models.QuestionPart.objects.filter(question__consultation=consultation, type=models.QuestionPart.QuestionType.FREE_TEXT).order_by("question__number")
+    question_parts = models.QuestionPart.objects.filter(
+        question__consultation=consultation, type=models.QuestionPart.QuestionType.FREE_TEXT
+    ).order_by("question__number")
 
-    question_parts_items = [{"value": qp.id, "text": f"Question {qp.question.number} - {qp.question.text} {qp.text}"} for qp in  question_parts]
+    question_parts_items = [
+        {"value": qp.id, "text": f"Question {qp.question.number} - {qp.question.text} {qp.text}"}
+        for qp in question_parts
+    ]
 
     context = {
         "consultation": consultation,
@@ -115,17 +120,20 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
     }
 
     if request.method == "POST":
-        print(request.POST)
         s3_key = request.POST.get("s3_key", "")
-        question_part_ids = request.POST.get("question_parts")
-        try:
-            logging.info("Exporting theme audit data - sending to queue")
-            export_user_theme_job.delay(consultation.slug, s3_key)
-        except Exception as e:
-            messages.error(request, e)
-            return render(request, "support_console/consultations/export_audit.html", context)
+        question_part_ids = request.POST.getlist("question_parts")
+        for id in question_part_ids:
+            try:
+                logging.info("Exporting theme audit data - sending to queue")
+                export_user_theme_job.delay(question_part_id=id, s3_key=s3_key)
+            except Exception as e:
+                messages.error(request, e)
+                return render(request, "support_console/consultations/export_audit.html", context)
 
-        messages.success(request, "Consultation theme audit export started")
+        messages.success(
+            request,
+            "Consultation theme audit export started for question - see Django RQ dashboard for progress",
+        )
         return redirect("/support/consultations/")
 
     return render(request, "support_console/consultations/export_audit.html", context)

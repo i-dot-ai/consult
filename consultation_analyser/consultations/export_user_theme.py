@@ -11,7 +11,6 @@ from django_rq import job
 
 from consultation_analyser.consultations.models import (
     Answer,
-    Consultation,
     ExecutionRun,
     QuestionPart,
     SentimentMapping,
@@ -118,7 +117,6 @@ def get_theme_mapping_rows(question_part: QuestionPart) -> list[dict]:
     return output
 
 
-
 # def get_theme_mapping_output(consultation: Consultation, question_part: QuestionPart) -> list[dict]:
 #     output = []
 #     for question_part in QuestionPart.objects.filter(
@@ -157,9 +155,7 @@ def export_user_theme(question_part_id: uuid.UUID, s3_key: str) -> None:
     if settings.ENVIRONMENT == "local":
         if not os.path.exists("downloads"):
             os.makedirs("downloads")
-        with open(
-            f"downloads/{filename}", mode="w"
-        ) as file:
+        with open(f"downloads/{filename}", mode="w") as file:
             writer = csv.DictWriter(file, fieldnames=output[0].keys())
             writer.writeheader()
             for row in output:
@@ -182,9 +178,11 @@ def export_user_theme(question_part_id: uuid.UUID, s3_key: str) -> None:
             Body=csv_buffer.getvalue(),
         )
         csv_buffer.close()
-    logger.info(f"Finishing export for question {question_number} for consultation {question_part.question.consultation.title}")
+    logger.info(
+        f"Finishing export for question {question_number} for consultation {question_part.question.consultation.title}"
+    )
 
 
 @job("default", timeout=900)
-def export_user_theme_job(question_part_id: str, s3_key: str) -> None:
+def export_user_theme_job(question_part_id: uuid.UUID, s3_key: str) -> None:
     export_user_theme(question_part_id, s3_key)
