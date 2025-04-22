@@ -243,6 +243,11 @@ class IaiTextWithFallback extends IaiLitBase {
     }
     static styles = [
         IaiLitBase.styles,
+        i$3`
+            iai-text-with-fallback .fallback-active {
+                font-style: italic;
+            }
+        `
     ]
 
     constructor() {

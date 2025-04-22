@@ -11,6 +11,11 @@ export default class IaiTextWithFallback extends IaiLitBase {
     }
     static styles = [
         IaiLitBase.styles,
+        css`
+            iai-text-with-fallback .fallback-active {
+                font-style: italic;
+            }
+        `
     ]
 
     constructor() {
