@@ -11,11 +11,12 @@ export default class IaiTextWithFallback extends IaiLitBase {
     }
     static styles = [
         IaiLitBase.styles,
-        css``
     ]
 
     constructor() {
         super();
+
+        this.applyStaticStyles("iai-text-with-fallback", IaiTextWithFallback.styles);
         
         // By default, render fallback if text is falsy
         this.fallbackCondition = (text) => !text;

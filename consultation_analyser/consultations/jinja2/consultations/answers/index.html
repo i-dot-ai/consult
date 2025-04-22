@@ -368,7 +368,13 @@
               {% endfor %}
 
               <p class="govuk-body" style="line-height: 2em;">
-                {{ respondent.free_text_answer.text }}
+                <iai-text-with-fallback
+                  text="{{ respondent.free_text_answer.text }}"
+                  fallback="No text available"
+                ></iai-text-with-fallback>
+                <noscript>
+                  {{ respondent.free_text_answer.text or "No text available" }}
+                </noscript>
               </p>
             {% endif %}
 

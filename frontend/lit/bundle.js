@@ -233,4 +233,34 @@ class IaiExpandingText extends IaiLitBase {
     }
 }
 customElements.define("iai-expanding-text", IaiExpandingText);
+
+class IaiTextWithFallback extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        text: String,
+        fallback: String,
+        fallbackCondition: Function,
+    }
+    static styles = [
+        IaiLitBase.styles,
+    ]
+
+    constructor() {
+        super();
+
+        this.applyStaticStyles("iai-text-with-fallback", IaiTextWithFallback.styles);
+        
+        // By default, render fallback if text is falsy
+        this.fallbackCondition = (text) => !text;
+    }
+
+    render() {
+        return x`
+            <p class=${this.fallbackCondition(this.text) ? "fallback-active" : ""}>
+                ${this.fallbackCondition(this.text) ? this.fallback : this.text}
+            </p>
+        `
+    }
+}
+customElements.define("iai-text-with-fallback", IaiTextWithFallback);
 //# sourceMappingURL=bundle.js.map
