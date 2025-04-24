@@ -18,20 +18,27 @@ export default class IaiDataTable extends IaiLitBase {
             }
             iai-data-table .header-button {
                 position: relative;
+                max-width: max-content;
                 margin-right: 1em;
+                transition: 0.3s ease-in-out;
+                transition-property: color;
+            }
+            iai-data-table .header-button:hover {
+                color: var(--iai-colour-pink);
             }
             iai-data-table .header-button:after {
                 content: "▾";
                 position: absolute;
                 right: -1em;
+                top: 0;
                 opacity: 0;
                 transition: 0.3s ease-in-out;
                 transition-property: transform opacity;
             }
-            iai-data-table .header-button.sorted-ascending:after {
+            iai-data-table .header-button.ascending:after {
                 opacity: 1;
             }
-            iai-data-table .header-button.sorted-descending:after {
+            iai-data-table .header-button.descending:after {
                 opacity: 1;
                 transform: rotate(180deg);
             }
@@ -66,7 +73,9 @@ export default class IaiDataTable extends IaiLitBase {
 
     getHeaders() {
         const keys = new Set();
-        this.data.forEach(row => {
+        const data = this.props.data || this.data;
+
+        data.forEach(row => {
             Object.keys(row)
             .filter(key => !this._RESERVED_KEYS.includes(key))
             .forEach(key => keys.add(key))
@@ -77,14 +86,21 @@ export default class IaiDataTable extends IaiLitBase {
     updateSorts = (header) => {
         const updatedSorts = [...this._sorts];
         const sortIndex = updatedSorts.findIndex(sort => sort.field === header);
+
         if (sortIndex === -1) {
+            // If sort is not currently applied, apply sort in ascending order
             updatedSorts.unshift({ "field": header, "ascending": true });
+
         } else {
+            // If sort is already applied
             const currentSort = updatedSorts[sortIndex];
 
             if (sortIndex === 0) {
+                // If sort is the last to be applied, toggle direction
                 currentSort.ascending = !currentSort.ascending;
+
             } else {
+                // If sort is not last to be applied, update it's priority
                 updatedSorts.splice(sortIndex, 1);
                 updatedSorts.unshift({ "field": header, "ascending": true });
             }
@@ -132,19 +148,21 @@ export default class IaiDataTable extends IaiLitBase {
     updateSortedData() {
         // Rows that have a _bottomRow flag will appear at the bottom
         // and will be sorted as a separate group
-        const regularRows = this.data.filter(row => !row._bottomRow);
-        const bottomRows = this.data.filter(row => row._bottomRow);
+        const data = this.props.data || this.data;
+
+        const regularRows = data.filter(row => !row._bottomRow);
+        const bottomRows = data.filter(row => row._bottomRow);
 
         this._sortedData = this.sort(regularRows).concat(this.sort(bottomRows));
     }
 
-    getSortClass = (header) => {
+    getCurrentSortDirection = (header) => {
         const currentSortIndex = this._sorts.findIndex(sort => sort.field === header);
 
         if (currentSortIndex === -1) {
             return "";
         }
-        return this._sorts[currentSortIndex].ascending ? "sorted-ascending" : "sorted-descending";
+        return this._sorts[currentSortIndex].ascending ? "ascending" : "descending";
     }
 
     render() {
@@ -155,8 +173,13 @@ export default class IaiDataTable extends IaiLitBase {
                         ${this.getHeaders().map(header => html`
                             <th scope="col" class="govuk-table__header">
                                 <div
-                                    class=${"header-button " + this.getSortClass(header)}
+                                    class=${"header-button " + this.getCurrentSortDirection(header)}
                                     role="button"
+                                    aria-sort=${this.getCurrentSortDirection(header)}
+                                    aria-label=${this.getCurrentSortDirection(header)
+                                        ? `Sorted by "${header}" in ${this.getCurrentSortDirection(header)} order. Click to sort in reverse.`
+                                        : `Click to sort by "${header}" in ascending order`
+                                    }
                                     tabindex=0
                                     style="cursor: pointer;"
                                     @click=${() => this.updateSorts(header)}
@@ -175,7 +198,7 @@ export default class IaiDataTable extends IaiLitBase {
                 </thead>
           
                 <tbody class="govuk-table__body">
-                    ${this._sortedData.map((row, index) => html`
+                    ${this._sortedData.map(row => html`
                         <tr class=${
                             "govuk-table__row" +
                             (row._bottomRow ? " bottom-row" : "")
