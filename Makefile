@@ -79,7 +79,7 @@ dev_admin_user:
 dev_environment: reset_dev_db migrate dummy_data reset_test_db govuk_frontend dev_admin_user ## set up the database with dummy data and configure govuk_frontend
 
 .PHONY: generate_public_schema
-generate_public_schema: 
+generate_public_schema:
 	poetry run python manage.py generate_yaml_schema
 	poetry run datamodel-codegen --input consultation_analyser/consultations/public_schema_files/public_schema.yaml --output consultation_analyser/consultations/public_schema.py --input-file-type=openapi --field-constraints --output-model-type pydantic_v2.BaseModel
 	poetry run ruff format consultation_analyser/consultations/public_schema.py
@@ -103,11 +103,11 @@ AUTO_APPLY_RESOURCES = module.ecs.aws_ecs_task_definition.aws-ecs-task \
                        module.worker.aws_ecs_service.aws-ecs-service \
                        module.worker.data.aws_ecs_task_definition.main \
                        module.batch_job_definition.aws_batch_job_definition.job_definition \
-                       module.waf.aws_wafv2_ip_set.london \
+                       module.waf.aws_wafv2_ip_set \
                        aws_secretsmanager_secret.django_secret \
                        aws_secretsmanager_secret.debug \
-					   module.load_balancer.aws_security_group_rule.load_balancer_http_whitelist \
-					   module.load_balancer.aws_security_group_rule.load_balancer_https_whitelist
+											 module.load_balancer.aws_security_group_rule.load_balancer_http_whitelist \
+											 module.load_balancer.aws_security_group_rule.load_balancer_https_whitelist
 
 target_modules = $(foreach resource,$(AUTO_APPLY_RESOURCES),-target $(resource))
 IMAGE=$(ECR_REPO_URL):$(IMAGE_TAG)
