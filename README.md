@@ -238,6 +238,6 @@ The import should be run in stages, which can be navigated to from `support/cons
 
 If the import fails half-way, delete the consultation or question (which will delete all related objects) and re-import. This can be done by navigating to the individual consultation from `/support/consultations/`.
 
-To run locally you must have access to your AWS account.
+To run locally you must have access to your AWS account
 
 
