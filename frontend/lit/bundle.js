@@ -293,6 +293,7 @@ class IaiDataTable extends IaiLitBase {
                 margin-right: 1em;
                 transition: 0.3s ease-in-out;
                 transition-property: color;
+                cursor: pointer;
             }
             iai-data-table .header-button:hover {
                 color: var(--iai-colour-pink);
@@ -450,7 +451,6 @@ class IaiDataTable extends IaiLitBase {
                                         : `Click to sort by "${header}" in ascending order`
                                     }
                                     tabindex=0
-                                    style="cursor: pointer;"
                                     @click=${() => this.updateSorts(header)}
                                     @keydown=${(e) => {
                                         if (e.key === "Enter" || e.key === " ") {
