@@ -94,6 +94,9 @@
             </tbody>
           </table>
 
+          <iai-csv-download id="csv_download_themes" fileName="themes.csv"></iai-csv-download>
+          <script>document.getElementById("csv_download_themes").data = {{ csv_button_data | safe }}</script>
+
           <!-- TODO: add data visualisation -->
 
         </div>

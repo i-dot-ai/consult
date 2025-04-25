@@ -485,4 +485,58 @@ class IaiDataTable extends IaiLitBase {
     }
 }
 customElements.define("iai-data-table", IaiDataTable);
+
+class IaiCsvDownload extends IaiLitBase {
+    static styles = [
+        IaiLitBase.styles,
+        i$3``
+    ]
+
+    static properties = {
+        ...IaiLitBase.properties,
+        data: {type: Array},
+        fileName: { type: String },
+    }
+
+    constructor() {
+        super();
+
+        this.data = [];
+        this.fileName = "data.csv";
+    }
+
+    buildCsv(data) {
+        if (!data) {
+            return "";
+        }
+
+        const localData = Array.isArray(data) ? data : [data];
+        
+        const keys = Object.keys(data[0]);
+        const rows = [
+            keys.join(","),
+            ...localData.map(row => keys.map(key => JSON.stringify(row[key] ?? "")).join(","))
+        ];
+        return rows.join("\n");
+    }
+
+    getDownloadUrl = (csvContent) => {
+        return "data:text/csv;base64," + btoa(csvContent);
+    }
+
+    render() {
+        return x`
+            <a
+                class="govuk-button"
+                aria-label="Download themes as CSV"
+                title="Download themes as CSV"
+                href=${this.getDownloadUrl(this.buildCsv(this.props.data || this.data))}
+                download=${this.fileName}
+            >
+                Download CSV
+            </a>
+        `
+    }
+}
+customElements.define("iai-csv-download", IaiCsvDownload);
 //# sourceMappingURL=bundle.js.map
