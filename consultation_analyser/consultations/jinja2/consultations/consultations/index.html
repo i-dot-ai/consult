@@ -12,8 +12,20 @@
       <ul class="govuk-list">
         {% for consultation in consultations %}
           <li class="govuk-!-margin-top-2">
-            <a href="{{ url('review_free_text_questions', kwargs={'consultation_slug': consultation.slug}) }}" class="govuk-body-l govuk-link govuk-link--no-visited-state">
+            <h2 class="govuk-heading-m">
               {{ consultation.title }}
+            </h2>
+            <a
+              href="{{ url('review_free_text_questions', kwargs={'consultation_slug': consultation.slug}) }}"
+              class="govuk-body-l govuk-link govuk-link--no-visited-state govuk-!-margin-right-5"
+            >
+              View Evaluation
+            </a>
+            <a
+              href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}"
+              class="govuk-body-l govuk-link govuk-link--no-visited-state govuk-!-margin-right-5"
+            >
+              View Dashboard
             </a>
           </li>
         {% endfor %}
