@@ -206,26 +206,6 @@
                     </div>
                   </fieldset>
                 </div>
-              
-  
-                <div class="govuk-form-group">
-                  <fieldset class="govuk-fieldset">
-                    <legend class="govuk-fieldset__legend govuk-fieldset__legend--m">
-                      Theme sentiment
-                    </legend>
-    
-                    <div class="govuk-radios" data-module="govuk-radios" data-govuk-radios-init="">
-                      {% for option in theme_stance_options %}
-                        <div class="govuk-radios__item">
-                          <input class="govuk-radios__input" id="themesentiment-{{loop.index0}}" name="themesentiment" type="radio" value={{option}} {% if active_filters.themesentiment.selected %}{% if option == active_filters.themesentiment.selected[0].id %} checked {% endif %} {% endif %}>
-                          <label class="govuk-label govuk-radios__label" for="themesentiment-{{loop.index0}}">
-                            {{ option|capitalize }}
-                          </label>
-                        </div>
-                      {% endfor %}
-                    </div>
-                  </fieldset>
-                </div>
               {% endif %}
   
               <div class="govuk-form-group">
@@ -350,11 +330,6 @@
                   <div class="govuk-pill">
                     <tool-tip class="iai-tooltip">
                       <div class="iai-tooltip__button" role="tooltip" tabindex="0" aria-describedby="tooltip-content-2a1c358a-162a-4cf8-8011-43c13ef22785">
-                        {% if theme.stance == "POSITIVE" %}
-                          <img src="{{ static('icons/tick.svg') }}" alt="icon" style="width: 24px; height: 24px;">
-                        {% else %}
-                          <img src="{{ static('icons/warning.svg') }}" alt="icon" style="width: 24px; height: 24px;">
-                        {% endif %}
                         <span>{{ theme.theme.name }}</span>
                         <img src="{{ static('icons/question-mark.svg') }}" alt="info" width="14">
                       </div>
