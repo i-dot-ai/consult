@@ -16,7 +16,8 @@ export default class IaiRadioInput extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         css`
-            .govuk-radios__item {
+            iai-radio-input .govuk-radios__item:last-child,
+            iai-radio-input .govuk-radios__item:last-of-type {
                 margin-bottom: 10px;
             }
         `
@@ -30,17 +31,12 @@ export default class IaiRadioInput extends IaiLitBase {
         this.value = "";
         this.handleChange = () => {};
         this.name = "";
+
+        this.applyStaticStyles("iai-radio-input", IaiRadioInput.styles);
     }
 
     render() {
         return html`
-            <style>
-                iai-radio-input .govuk-radios__item:last-child,
-                iai-radio-input .govuk-radios__item:last-of-type {
-                    margin-bottom: 10px;
-                }
-            </style>
-        
             <div class="govuk-radios__item">
                 <input
                     type="radio"
