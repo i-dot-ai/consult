@@ -6,7 +6,7 @@ import IaiTextInput from './iai-text-input.lit.csr.mjs';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Example/IaiTextInput',
+  title: 'Csr/IaiTextInput',
   tags: ['autodocs'],
   argTypes: {
     inputId: { control: "text" },
