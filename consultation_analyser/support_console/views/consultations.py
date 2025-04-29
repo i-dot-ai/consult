@@ -1,6 +1,7 @@
 import logging
 from uuid import UUID
 
+from botocore.exceptions import ClientError
 from django.conf import settings
 from django.contrib import messages
 from django.core.management import call_command
@@ -192,31 +193,87 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
     if request.POST:
         consultation_id = request.POST.get("consultation_id")
         consultation_code = request.POST.get("consultation_code")
-        path_to_inputs = f"app_data/{consultation_code}/inputs/"
+        question_choice = request.POST.get("question_choice")
+        question_number = request.POST.get("question_number")
 
+        path_to_inputs = f"app_data/{consultation_code}/inputs/"
         consultation = models.Consultation.objects.get(id=consultation_id)
-        question_part_subfolders = get_all_question_part_subfolders(
-            folder_name=path_to_inputs, bucket_name=bucket_name
-        )
-        for folder in question_part_subfolders:
-            question_part = import_question_part(
-                consultation=consultation, question_part_folder_key=folder
-            )
-            import_all_responses_from_jsonl(
-                question_part=question_part,
-                bucket_name=bucket_name,
-                question_part_folder_key=folder,
-                batch_size=batch_size,
-            )
-        msg = f"Import for consultation inputs started for consultation with slug {consultation.slug} - check for progress in dashboard"
-        messages.success(request, msg)
-        return redirect("/support/consultations/import-summary/")
+
+        try:
+            if question_choice == "all":
+                question_part_subfolders = get_all_question_part_subfolders(
+                    folder_name=path_to_inputs, bucket_name=bucket_name
+                )
+                for folder in question_part_subfolders:
+                    question_part = import_question_part(
+                        consultation=consultation, question_part_folder_key=folder
+                    )
+                    import_all_responses_from_jsonl(
+                        question_part=question_part,
+                        bucket_name=bucket_name,
+                        question_part_folder_key=folder,
+                        batch_size=batch_size,
+                    )
+            else:
+                # importing a single question
+                int(question_number)  # tests a number is passed
+                folder = f"{path_to_inputs}question_part_{question_number}/"
+                question_part = import_question_part(
+                    consultation=consultation, question_part_folder_key=folder
+                )
+                import_all_responses_from_jsonl(
+                    question_part=question_part,
+                    bucket_name=bucket_name,
+                    question_part_folder_key=folder,
+                    batch_size=batch_size,
+                )
+
+            msg = f"Import for consultation inputs started for consultation with slug {consultation.slug} - check for progress in dashboard"
+            messages.success(request, msg)
+            return redirect("/support/consultations/import-summary/")
+
+        except (ClientError, ValueError) as e:
+            messages.error(request, e.__str__())
+
     context = {
         "bucket_name": bucket_name,
         "consultations_for_select": consultations_for_select,
         "consultation_folders": consultation_folders,
     }
     return render(request, "support_console/consultations/import_inputs.html", context=context)
+
+
+def import_question_part_themefinder_outputs(
+    consultation: models.Consultation,
+    question_number: int,
+    bucket_name: str,
+    folder: str,
+    batch_size: int,
+):
+    question_part = models.QuestionPart.objects.get(
+        question__consultation=consultation,
+        question__number=question_number,
+        type=models.QuestionPart.QuestionType.FREE_TEXT,
+    )
+    framework = import_themes_from_json_and_get_framework(
+        question_part=question_part,
+        bucket_name=bucket_name,
+        question_part_folder_key=folder,
+    )
+
+    import_all_theme_mappings_from_jsonl(
+        question_part=question_part,
+        framework=framework,
+        bucket_name=bucket_name,
+        question_part_folder_key=folder,
+        batch_size=batch_size,
+    )
+    import_all_sentiment_mappings_from_jsonl(
+        question_part=question_part,
+        bucket_name=bucket_name,
+        question_part_folder_key=folder,
+        batch_size=batch_size,
+    )
 
 
 def import_consultation_themes(request: HttpRequest) -> HttpResponse:
@@ -238,6 +295,8 @@ def import_consultation_themes(request: HttpRequest) -> HttpResponse:
         consultation_slug = request.POST.get("consultation_slug")
         consultation_code = request.POST.get("consultation_code")
         consultation_mapping_date = request.POST.get("consultation_mapping_date")
+        question_choice = request.POST.get("question_choice")
+        question_number = request.POST.get("question_number")
         path_to_themes = f"app_data/{consultation_code}/outputs/mapping/{consultation_mapping_date}"
 
         consultation = models.Consultation.objects.get(slug=consultation_slug)
@@ -247,40 +306,33 @@ def import_consultation_themes(request: HttpRequest) -> HttpResponse:
                 request, "support_console/consultations/import_themes.html", context=context
             )
 
-        question_part_subfolders = get_all_question_part_subfolders(
-            folder_name=path_to_themes, bucket_name=bucket_name
-        )
+        try:
+            if question_choice == "all":
+                question_part_subfolders = get_all_question_part_subfolders(
+                    folder_name=path_to_themes, bucket_name=bucket_name
+                )
 
-        for folder in question_part_subfolders:
-            question_number = int(folder.split("/")[-2].split("question_part_")[-1])
-            question_part = models.QuestionPart.objects.get(
-                question__consultation=consultation,
-                question__number=question_number,
-                type=models.QuestionPart.QuestionType.FREE_TEXT,
-            )
+                for folder in question_part_subfolders:
+                    question_number = int(folder.split("/")[-2].split("question_part_")[-1])
+                    import_question_part_themefinder_outputs(
+                        consultation, question_number, bucket_name, folder, batch_size
+                    )
 
-            framework = import_themes_from_json_and_get_framework(
-                question_part=question_part,
-                bucket_name=bucket_name,
-                question_part_folder_key=folder,
-            )
-            import_all_theme_mappings_from_jsonl(
-                question_part=question_part,
-                framework=framework,
-                bucket_name=bucket_name,
-                question_part_folder_key=folder,
-                batch_size=batch_size,
-            )
-            import_all_sentiment_mappings_from_jsonl(
-                question_part=question_part,
-                bucket_name=bucket_name,
-                question_part_folder_key=folder,
-                batch_size=batch_size,
-            )
+            else:
+                # importing a single question
+                int(question_number)  # tests a number is passed
+                folder = f"{path_to_themes}question_part_{question_number}/"
 
-        msg = f"Importing themefinder outputs started for consultation with slug {consultation.slug} - check for progress in dashboard"
-        messages.success(request, msg)
-        return redirect("/support/consultations/import-summary/")
+                import_question_part_themefinder_outputs(
+                    consultation, question_number, bucket_name, folder, batch_size
+                )
+
+            msg = f"Importing themefinder outputs started for consultation with slug {consultation.slug} - check for progress in dashboard"
+            messages.success(request, msg)
+            return redirect("/support/consultations/import-summary/")
+
+        except (ClientError, ValueError) as e:
+            messages.error(request, e.__str__())
 
     return render(request, "support_console/consultations/import_themes.html", context=context)
 

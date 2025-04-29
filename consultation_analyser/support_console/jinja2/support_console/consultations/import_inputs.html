@@ -1,8 +1,20 @@
 {% extends "base.html" %}
 {%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+{%- from 'govuk_frontend_jinja/components/input/macro.html' import govukInput -%}
+{%- from 'govuk_frontend_jinja/components/radios/macro.html' import govukRadios -%}
 {%- from 'govuk_frontend_jinja/components/select/macro.html' import govukSelect -%}
 
 {% set page_title = "Import consultation input data" %}
+
+{% set questionNumberChoiceHtml %}
+    {{ govukInput({
+        'id': "question_number",
+        'name': "question_number",
+        'label': {
+          'text': "Which question do you want to import?"
+        },
+      }) }}
+{% endset %}
 
 {% block content %}
 <h1 class="govuk-heading-l">{{ page_title }}</h1>
@@ -37,10 +49,52 @@
     </p>
   </div>
 
+  <div class="govuk-form-group">
+    <p class="govuk-label-wrapper">
+      {{ govukRadios({
+          'name': "question_choice",
+          'fieldset': {
+            'legend': {
+              'text': "Are you importing all questions for this consultation?",
+            }
+          },
+          'items': [
+            {
+              'value': "all",
+              'text': "Yes",
+              'checked': True,
+            },
+            {
+              'value': "one",
+              'text': "No",
+              'conditional': {
+                'html': questionNumberChoiceHtml
+              }
+            },
+          ]
+        }) }}
+    </p>
+  </div>
+
   {{ govukButton({
     'text': "Submit",
     'name': "submit"
   }) }}
 
 </form>
+
+<script src="{{ static("govuk-js/govuk-frontend.min.js") }}" type="module" ></script>
+<script type="module">
+  import { Radios } from "{{ static("govuk-js/govuk-frontend.min.js") }}"
+
+  const $radios = document.querySelectorAll('[data-module="govuk-radios"]')
+  $radios.forEach(($radio) => {
+    try {
+      new Radios($radio)
+    } catch (error) {
+      console.error(error)
+    }
+  })
+
+</script>
 {% endblock %}
