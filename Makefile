@@ -103,7 +103,9 @@ AUTO_APPLY_RESOURCES = module.ecs.aws_ecs_task_definition.aws-ecs-task \
                        module.worker.aws_ecs_service.aws-ecs-service \
                        module.worker.data.aws_ecs_task_definition.main \
                        module.batch_job_definition.aws_batch_job_definition.job_definition \
-                       module.waf.aws_wafv2_ip_set \
+                       module.waf.aws_wafv2_ip_set.host_ip_whitelist \
+                       module.waf.aws_wafv2_ip_set.header_secured_host_ip_whitelist \
+                       module.waf.aws_wafv2_ip_set.uri_path_ip_configuration \
                        aws_secretsmanager_secret.django_secret \
                        aws_secretsmanager_secret.debug \
 											 module.load_balancer.aws_security_group_rule.load_balancer_http_whitelist \
