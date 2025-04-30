@@ -9,7 +9,7 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .. import models
-from .decorators import user_can_see_consultation
+from .decorators import user_can_see_consultation, user_can_see_dashboards
 
 
 def filter_by_response_and_theme(
@@ -133,6 +133,7 @@ def get_selected_option_summary(question: models.Question, respondents: QuerySet
     return multichoice_summary
 
 
+@user_can_see_dashboards
 @user_can_see_consultation
 def index(
     request: HttpRequest,
