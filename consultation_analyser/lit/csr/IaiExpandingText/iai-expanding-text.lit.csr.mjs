@@ -36,9 +36,16 @@ export default class IaiExpandingText extends IaiLitBase {
                 border: 4px solid black;
             }
             iai-expanding-text .iai-text-content.clickable::before {
+                content: "▸";
                 position: absolute;
                 left: 0;
                 top: 0;
+                transition: 0.3s ease-in-out;
+                transition-property: transform;
+            }
+
+            iai-expanding-text .iai-text-content:not(.iai-text-truncated).clickable::before {
+                transform: rotate(90deg);
             }
                 
             iai-expanding-text .iai-text-content.iai-text-truncated {
@@ -108,9 +115,6 @@ export default class IaiExpandingText extends IaiLitBase {
     render() {
         return html`
             <style>
-                .iai-text-content:has(#${this.contentId}).clickable::before {
-                    content: "${this._expanded ? "▾" : "▸"}";
-                }
                 .iai-text-content:has(#${this.contentId}).iai-text-truncated {
                     -webkit-line-clamp: ${this.lines};
                     line-clamp: ${this.lines};

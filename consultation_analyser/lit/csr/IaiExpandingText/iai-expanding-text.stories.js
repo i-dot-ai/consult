@@ -52,3 +52,25 @@ export const TripleLineShortText = {
     lines: 3
   }
 };
+
+export const MultipleTexts = {
+  args: {
+    text: LONG_TEXT
+  },
+  render: (args) => {
+    const numInstances = 3;
+
+    return html`
+    ${[...Array(numInstances).keys()].map((_, index) => (
+      html`
+        <h3>Lines Allowed: ${index + 1}</h3>
+        <iai-expanding-text
+          text=${args.text}
+          lines=${index + 1}
+        ></iai-expanding-text>
+      `
+    ))}
+      
+    `
+  }
+};
