@@ -8,6 +8,10 @@ class EditUserForm(forms.Form):
         label="Can access support console",
         required=False,
     )
+    dashboard_access = forms.BooleanField(
+        label="Can access dashboards",
+        required=False,
+    )
 
     user_id = forms.IntegerField()
 
@@ -25,5 +29,6 @@ class EditUserForm(forms.Form):
         self.helper.layout = Layout(
             Field("user_id", type="hidden"),
             Field.checkboxes("is_staff"),
+            Field.checkboxes("dashboard_access"),
             Submit("submit", "Update user"),
         )
