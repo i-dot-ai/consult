@@ -49,4 +49,13 @@ export default class IaiLitBase extends LitElement {
         }
         document.head.append(style);
     }
+
+    applySlots = (slotName) => {
+        Promise.resolve().then(() => {
+            const slottedChildren = this.querySelectorAll(`[slot='${slotName}']`);
+            const slot = this.querySelector(`slot[name='${slotName}']`);
+            slottedChildren.forEach(child => slot.appendChild(child));
+        })
+    }
+
 }
