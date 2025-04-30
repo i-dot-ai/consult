@@ -54,6 +54,7 @@ def show(request: HttpRequest, user_id: int):
             if assign_dashboard_access:
                 user.groups.add(dashboard_group)
                 user.save()
+
             elif user_currently_has_dashboard_access:
                 user.groups.remove(dashboard_group)
                 user.save()
