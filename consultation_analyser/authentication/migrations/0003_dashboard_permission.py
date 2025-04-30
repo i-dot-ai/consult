@@ -17,5 +17,7 @@ class Migration(migrations.Migration):
         ("authentication", "0002_insert_user"),
     ]
     operations = [
-        migrations.RunPython(create_dashboard_permission),
+        migrations.RunPython(
+            create_dashboard_permission, reverse_code=delete_dashboard_viewer_group
+        ),
     ]
