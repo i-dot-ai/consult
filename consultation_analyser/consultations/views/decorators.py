@@ -17,3 +17,13 @@ def user_can_see_consultation(view_function):
         return view_function(request, *args, **kwargs)
 
     return decorator
+
+
+def user_can_see_dashboards(view_function):
+    def decorator(request, *args, **kwargs):
+        if not request.user.groups.filter(name="Dashboard access").exists():
+            raise Http404()  # No access if not part of dashboard group
+
+        return view_function(request, *args, **kwargs)
+
+    return decorator
