@@ -8,6 +8,7 @@ export default class IaiTextInput extends IaiLitBase {
         inputId: { type: String },
         name: {type: String},
         label: { type: String },
+        hideLabel: {type: Boolean},
         placeholder: { type: String },
         value: { type: String },
         handleInput: { type: Function },
@@ -15,7 +16,16 @@ export default class IaiTextInput extends IaiLitBase {
 
     static styles = [
         IaiLitBase.styles,
-        css``
+        css`
+            iai-text-input .visually-hidden {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 0;
+                height: 0;
+                overflow: hidden;
+            }
+        `
     ]
 
     constructor() {
@@ -23,6 +33,7 @@ export default class IaiTextInput extends IaiLitBase {
         this.inputId = "";
         this.name = "";
         this.label = "";
+        this.hideLabel = false;
         this.placeholder = "";
         this.value = "";
         this.handleChange = () => {};
@@ -32,7 +43,13 @@ export default class IaiTextInput extends IaiLitBase {
 
     render() {
         return html`
-            <label class="govuk-label govuk-label--m" for=${this.inputId}>
+            <label
+                for=${this.inputId}
+                class=${
+                    "govuk-label govuk-label--m"
+                    + (this.hideLabel ? " visually-hidden" : "")
+                }
+            >
                 ${this.label}
             </label>
             <input
