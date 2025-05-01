@@ -294,14 +294,16 @@ def show(
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
     response = get_object_or_404(models.Answer, id=response_id)
+    question_part = response.question_part
 
-    all_theme_mappings_for_framework = models.ThemeMapping.get_latest_theme_mappings(
-        response.question_part
+    all_theme_mappings_for_framework = models.ThemeMapping.get_latest_theme_mappings(question_part)
+
+    latest_framework = (
+        models.Framework.objects.filter(question_part=question_part).order_by("created_at").last()
     )
-
     all_themes = models.Theme.objects.filter(
-        id__in=all_theme_mappings_for_framework.values("theme")
-    )
+        framework=latest_framework
+    )  # May include themes not mapped to anything
 
     existing_themes = all_theme_mappings_for_framework.filter(answer=response).values_list(
         "theme", flat=True
