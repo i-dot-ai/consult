@@ -2,7 +2,7 @@ import { html, css } from 'lit';
 import IaiLitBase from '../../../IaiLitBase.mjs';
 
 
-export default class IaiRadioInput extends IaiLitBase {
+export default class IaiCheckboxInput extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         inputId: { type: String },
@@ -16,11 +16,11 @@ export default class IaiRadioInput extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         css`
-            iai-radio-input .govuk-radios__item:last-child,
-            iai-radio-input .govuk-radios__item:last-of-type {
+            iai-checkbox-input .govuk-radios__item:last-child,
+            iai-checkbox-input .govuk-radios__item:last-of-type {
                 margin-bottom: 10px;
             }
-            iai-radio-input .govuk-radios__label, .govuk-radios__hint {
+            iai-checkbox-input .govuk-radios__label, .govuk-radios__hint {
                 padding-bottom: 0;
             }
         `
@@ -35,24 +35,23 @@ export default class IaiRadioInput extends IaiLitBase {
         this.handleChange = () => {};
         this.name = "";
 
-        this.applyStaticStyles("iai-radio-input", IaiRadioInput.styles);
+        this.applyStaticStyles("iai-checkbox-input", IaiCheckboxInput.styles);
     }
 
     render() {
         return html`
-            <div class="govuk-radios__item">
+            <div class="govuk-checkboxes__item">
                 <input
-                    type="radio"
-                    class="govuk-radios__input"
+                    type="checkbox"
+                    class="govuk-checkboxes__input"
                     id=${this.inputId}
                     name=${this.name}
                     ?checked=${this.checked}
                     value=${this.value}
                     @change=${this.handleChange}
-                />
-
+                >
                 <label
-                    class="govuk-label govuk-radios__label"
+                    class="govuk-label govuk-checkboxes__label"
                     for=${this.inputId}
                 >
                     ${this.label}
@@ -61,4 +60,4 @@ export default class IaiRadioInput extends IaiLitBase {
         `
     }
 }
-customElements.define("iai-radio-input", IaiRadioInput);
+customElements.define("iai-checkbox-input", IaiCheckboxInput);
