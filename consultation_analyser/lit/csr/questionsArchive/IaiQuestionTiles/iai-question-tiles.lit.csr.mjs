@@ -1,19 +1,30 @@
 import { html, css } from 'lit';
+
 import IaiLitBase from '../../../IaiLitBase.mjs';
+import IaiQuestionOverview from '../IaiQuestionOverview/iai-question-overview.lit.csr.mjs';
+import IaiQuestionTile from '../IaiQuestionTile/iai-question-tile.lit.csr.mjs';
 
 
 export default class IaiQuestionTiles extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
+        questions: { type: Array },
+        _selectedQuestion: { type: Object },
     }
 
     static styles = [
         IaiLitBase.styles,
         css`
-            iai-question-tiles div[slot="tiles"] {
+            iai-question-tiles .questions {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 1em;
+            }
+            iai-question-tiles .tile-panel {
+                padding-right: 0;
+            }
+            iai-question-tiles .overview-panel {
+                padding-left: 0;
             }
         `
     ]
@@ -22,27 +33,36 @@ export default class IaiQuestionTiles extends IaiLitBase {
         super();
         this.contentId = this.generateId();
 
-        this._SLOT_NAMES = ["tiles"];
-
         // Prop defaults
-        
-        this.applyStaticStyles("iai-question-tiles", IaiQuestionTiles.styles);
-    }
+        this.questions = [];
+        this._selectedQuestion = null;
 
-    updated() {
-        this._SLOT_NAMES.forEach(slotName => this.applySlots(slotName));
+        this.applyStaticStyles("iai-question-tiles", IaiQuestionTiles.styles);
     }
 
     render() {
         return html`
             <div class="govuk-grid-row govuk-!-margin-top-5">
-                <div class="govuk-grid-column-three-quarters-from-desktop">
-                    
-                    <slot name="tiles"></slot>
-
+                <div class="govuk-grid-column-three-quarters-from-desktop tile-panel">
+                    <div class="questions">
+                        ${this.questions.map(question => html`
+                            <iai-question-tile
+                                .title=${question.title}
+                                .body=${question.body}
+                                @click=${_ => this._selectedQuestion = question}
+                            ></iai-question-tile>
+                        `)}
+                    </div>
                 </div>
 
-                <div class="govuk-grid-column-one-quarter-from-desktop">
+                <div class="govuk-grid-column-one-quarter-from-desktop overview-panel">
+                    ${this._selectedQuestion ? html`
+                        <iai-question-overview
+                            .title=${this._selectedQuestion.title}
+                            .body=${this._selectedQuestion.body}
+                            .handleClose=${() => this._selectedQuestion = null}
+                        ></iai-question-overview>
+                    ` : ""}
                 </div>
             </div>
         `;
