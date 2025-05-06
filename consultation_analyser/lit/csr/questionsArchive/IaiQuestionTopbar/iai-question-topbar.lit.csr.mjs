@@ -27,7 +27,7 @@ export default class IaiQuestionTopbar extends IaiLitBase {
 
             @media only screen and (max-width: 1000px) {
                 iai-question-topbar {
-                    flex-direction: column;
+                    flex-direction: column-reverse;
                 }
             }
         `
