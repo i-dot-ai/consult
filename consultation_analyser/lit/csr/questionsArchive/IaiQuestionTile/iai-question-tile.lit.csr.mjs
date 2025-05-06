@@ -11,8 +11,9 @@ export default class IaiQuestionTile extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         _favourited: { type: Boolean },
-        body: { type: String },
+        questionId: { type: String },
         title: { type: String },
+        body: { type: String },
         maxLength: { type: Number },
         highlighted: { type: Boolean },
     }
@@ -50,6 +51,7 @@ export default class IaiQuestionTile extends IaiLitBase {
 
         // Prop defaults
         this._favourited = false;
+        this.questionId = "";
         this.title = "";
         this.body = "";
         this.maxLength = 90;
@@ -63,7 +65,7 @@ export default class IaiQuestionTile extends IaiLitBase {
     }
 
     firstUpdated() {
-        this._favourited = this.getStoredIds().includes(this.title);
+        this._favourited = this.getStoredIds().includes(this.questionId);
     }
 
     handleFavouriteClick = (e) => {
@@ -71,7 +73,7 @@ export default class IaiQuestionTile extends IaiLitBase {
 
         this.toggleStorage();
 
-        this._favourited = this.getStoredIds().includes(this.title);
+        this._favourited = this.getStoredIds().includes(this.questionId);
     }
 
     handleViewClick = (e) => {
@@ -86,10 +88,10 @@ export default class IaiQuestionTile extends IaiLitBase {
     toggleStorage = () => {
         let questionIds = this.getStoredIds();
 
-        if (questionIds.includes(this.title)) {
-            questionIds = questionIds.filter(questionId => questionId != this.title);
+        if (questionIds.includes(this.questionId)) {
+            questionIds = questionIds.filter(questionId => questionId != this.questionId);
         } else {
-            questionIds.push(this.title);
+            questionIds.push(this.questionId);
         }
         localStorage.setItem(this._STORAGE_KEY, JSON.stringify(questionIds));
     }
