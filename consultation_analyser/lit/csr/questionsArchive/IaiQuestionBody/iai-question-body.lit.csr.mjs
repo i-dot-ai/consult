@@ -14,6 +14,7 @@ export default class IaiQuestionBody extends IaiLitBase {
             iai-question-body p {
                 line-height: 1.5em;
                 font-size: 1.1em;
+                margin-block: 0;
             }
         `
     ]
