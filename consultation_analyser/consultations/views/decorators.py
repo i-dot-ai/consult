@@ -1,6 +1,8 @@
 from django.http import Http404
 from django.shortcuts import get_object_or_404
 
+from consultation_analyser.constants import DASHBOARD_ACCESS
+
 from .. import models
 
 
@@ -21,7 +23,7 @@ def user_can_see_consultation(view_function):
 
 def user_can_see_dashboards(view_function):
     def decorator(request, *args, **kwargs):
-        if not request.user.groups.filter(name="Dashboard access").exists():
+        if not request.user.groups.filter(name=DASHBOARD_ACCESS).exists():
             raise Http404()  # No access if not part of dashboard group
 
         return view_function(request, *args, **kwargs)

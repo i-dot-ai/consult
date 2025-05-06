@@ -4,6 +4,7 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
 from consultation_analyser.authentication.models import User
+from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.models import Consultation
 
 from ..forms.edit_user_form import EditUserForm
@@ -32,7 +33,7 @@ def new(request: HttpRequest):
 def show(request: HttpRequest, user_id: int):
     user = get_object_or_404(User, pk=user_id)
     consultations = Consultation.objects.filter(users__in=[user])
-    dashboard_group = Group.objects.get(name="Dashboard access")
+    dashboard_group = Group.objects.get(name=DASHBOARD_ACCESS)
     user_currently_has_dashboard_access = dashboard_group in user.groups.all()
 
     if not request.POST:
