@@ -70,9 +70,6 @@ def get_theme_mapping_output_row(
     )
     original_themes_identifiers = {tm.theme.get_identifier(): tm.stance for tm in original_themes}
     ordered_theme_identifiers = sorted(list(original_themes_identifiers.keys()))
-    ordered_theme_stances = [
-        original_themes_identifiers[identifier] for identifier in ordered_theme_identifiers
-    ]
 
     current_themes = mappings_for_framework.filter(answer=response).filter(user_audited=True)
     auditors = set(
@@ -87,7 +84,6 @@ def get_theme_mapping_output_row(
         "Response text": response.text,
         "Response has been audited": response.is_theme_mapping_audited,
         "Original themes": ", ".join(ordered_theme_identifiers),
-        "Original stances": ", ".join(ordered_theme_stances),
         "Current themes": ", ".join(
             sorted([theme_mapping.theme.get_identifier() for theme_mapping in current_themes])
         ),
