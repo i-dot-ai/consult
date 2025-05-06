@@ -24,6 +24,12 @@ export default class IaiQuestionTopbar extends IaiLitBase {
                 margin: 0;
                 font-size: 1rem;
             }
+
+            @media only screen and (max-width: 1000px) {
+                iai-question-topbar {
+                    flex-direction: column;
+                }
+            }
         `
     ]
 
