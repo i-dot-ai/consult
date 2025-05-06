@@ -1,5 +1,7 @@
 import pytest
+from django.contrib.auth.models import Group
 
+from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
 from consultation_analyser.consultations.models import Question
 from consultation_analyser.factories import UserFactory
@@ -11,6 +13,9 @@ def test_consultation_page(django_app):
     user = UserFactory()
     consultation = create_dummy_consultation_from_yaml()
     consultation.users.add(user)
+    dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
+    user.groups.add(dash_access)
+    user.save()
 
     sign_in(django_app, user.email)
 

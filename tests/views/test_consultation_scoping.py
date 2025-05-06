@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group
 from django.http.response import Http404
 from django.test import RequestFactory
 
+from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.views import consultations
 from consultation_analyser.factories import ConsultationFactory, UserFactory
 
@@ -10,7 +11,7 @@ from consultation_analyser.factories import ConsultationFactory, UserFactory
 @pytest.mark.django_db
 def test_get_consultation_we_own(client):
     user = UserFactory()
-    dash_access = Group.objects.get(name="Dashboard access")
+    dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
     user.groups.add(dash_access)
     user.save()
     consultation_we_own = ConsultationFactory()
