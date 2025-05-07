@@ -9,6 +9,7 @@ import IaiTextInput from '../../filters/IaiTextInput/iai-text-input.lit.csr.mjs'
 export default class IaiQuestionTiles extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
+        consultationName: { type: String },
         questions: { type: Array },
         _visibleQuestions: { type: Array },
         _selectedQuestion: { type: Object },
@@ -32,6 +33,21 @@ export default class IaiQuestionTiles extends IaiLitBase {
             iai-question-tiles .search-container {
                 margin-bottom: 1em;
             }
+            iai-question-tiles .search-container label {
+                display: flex;
+                align-items: center;
+                margin-bottom: 0.5em;
+                font-weight: normal;
+                font-size: 1em;
+                line-height: 0;
+            }
+            iai-question-tiles .search-container label iai-icon {
+                margin-right: 0.5em;
+            }
+            iai-question-tiles .questions {
+                max-height: 80vh;
+                overflow: auto;
+            }
         `
     ]
 
@@ -40,6 +56,7 @@ export default class IaiQuestionTiles extends IaiLitBase {
         this.contentId = this.generateId();
 
         // Prop defaults
+        this.consultationName = "";
         this.questions = [];
         this._visibleQuestions = [];
         this._selectedQuestion = null;
@@ -68,6 +85,11 @@ export default class IaiQuestionTiles extends IaiLitBase {
 
     render() {
         return html`
+            <iai-page-title
+                title="All Questions"
+                .subtitle=${this.consultationName}
+            ></iai-page-title>
+
             <div class="govuk-grid-row govuk-!-margin-top-5">
                 <div class="govuk-grid-column-three-quarters-from-desktop tile-panel">
                     <div class="questions">
@@ -75,9 +97,11 @@ export default class IaiQuestionTiles extends IaiLitBase {
                             ? this._visibleQuestions.map(question => html`
                                 <iai-question-tile
                                     .questionId=${question.id}
+                                    .url=${question.url}
                                     .title=${question.title}
                                     .body=${question.body}
                                     .highlighted=${this._selectedQuestion == question}
+                                    .searchValue=${this._searchValue}
                                     @click=${_ => this._selectedQuestion = question}
                                 ></iai-question-tile>
                             `)
@@ -91,11 +115,19 @@ export default class IaiQuestionTiles extends IaiLitBase {
                         <iai-text-input
                             inputId="question-search"  
                             name="question-search"
-                            label="Search"
+                            .label=${html`
+                                <iai-icon
+                                    slot="icon"
+                                    name="search"
+                                    .color=${"var(--iai-colour-text-secondary)"}
+                                    .fill=${0}
+                                ></iai-icon>
+                                Search
+                            `}
                             placeholder=${"Search..."}
                             value=${this._searchValue}
                             .handleInput=${(e) => this._searchValue = e.target.value}
-                            .hideLabel=${true}
+                            .hideLabel=${false}
                         ></iai-text-input>
                     </div>
                     
@@ -103,6 +135,8 @@ export default class IaiQuestionTiles extends IaiLitBase {
                         <iai-question-overview
                             .title=${this._selectedQuestion.title}
                             .body=${this._selectedQuestion.body}
+                            .responses=${this._selectedQuestion.responses}
+                            .multiResponses=${this._selectedQuestion.multiResponses}
                             .handleClose=${() => this._selectedQuestion = null}
                         ></iai-question-overview>
                     ` : ""}
