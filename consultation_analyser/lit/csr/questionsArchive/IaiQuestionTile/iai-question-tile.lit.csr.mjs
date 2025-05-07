@@ -14,17 +14,20 @@ export default class IaiQuestionTile extends IaiLitBase {
         questionId: { type: String },
         title: { type: String },
         body: { type: String },
+        url: { type: String },
         maxLength: { type: Number },
         highlighted: { type: Boolean },
+        searchValue: { type: String },
     }
 
     static styles = [
         IaiLitBase.styles,
         css`
             iai-question-tile {
-                width: 30%;
+                width: 31%;
             }
             iai-question-tile .question-tile {
+                height: 100%;    
                 background: white;
                 padding: 1em;
                 border-radius: var(--iai-border-radius);
@@ -54,8 +57,10 @@ export default class IaiQuestionTile extends IaiLitBase {
         this.questionId = "";
         this.title = "";
         this.body = "";
+        this.url = "";
         this.maxLength = 90;
         this.highlighted = false;
+        this.searchValue = "";
 
         this.applyStaticStyles("iai-question-tile", IaiQuestionTile.styles);
     }
@@ -78,6 +83,8 @@ export default class IaiQuestionTile extends IaiLitBase {
 
     handleViewClick = (e) => {
         e.stopPropagation();
+
+        window.location.replace(this.url);
     }
 
     getStoredIds = () => {
@@ -132,6 +139,7 @@ export default class IaiQuestionTile extends IaiLitBase {
                 
                 <iai-question-body
                     .text=${this.getTruncatedText(this.body, this.maxLength)}
+                    .searchValue=${this.searchValue}
                 ></iai-question-body>
             </div>
         `;
