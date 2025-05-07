@@ -144,5 +144,6 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
         "consultation": consultation,
         "pagination": current_page,
         "questions_list": paginated_questions,
+        "all_questions_list": all_questions,
     }
     return render(request, "consultations/consultations/show.html", context)
