@@ -6,6 +6,8 @@ export default class IaiLitBase extends LitElement {
         :root {
             --iai-colour-focus:  #ffdd04;
             --iai-colour-pink:  #C50878;
+            --iai-colour-secondary: #0B8478;
+            --iai-colour-pink-transparent: #c5087812;
         }
     `
 
