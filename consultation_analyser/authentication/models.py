@@ -4,6 +4,8 @@ from django.contrib.auth.models import AbstractBaseUser, BaseUserManager, Permis
 from django.core.exceptions import ValidationError
 from django.db import models
 
+from consultation_analyser.constants import DASHBOARD_ACCESS
+
 
 class UserManager(BaseUserManager):
     def create_user(self, email, password=None, is_staff=False, idempotent=False):
@@ -54,3 +56,7 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def has_module_perms(self, app_label):
         return True
+
+    @property
+    def has_dashboard_access(self):
+        return self.groups.filter(name=DASHBOARD_ACCESS).exists()
