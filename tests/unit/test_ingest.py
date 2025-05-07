@@ -5,6 +5,7 @@ import pytest
 from consultation_analyser import factories
 from consultation_analyser.consultations.models import (
     Answer,
+    EvidenceRichMapping,
     QuestionPart,
     Respondent,
     SentimentMapping,
@@ -12,10 +13,12 @@ from consultation_analyser.consultations.models import (
     ThemeMapping,
 )
 from consultation_analyser.support_console.ingest import (
+    import_all_evidence_rich_mappings_from_jsonl,
     import_all_respondents_from_jsonl,
     import_all_responses_from_jsonl,
     import_all_sentiment_mappings_from_jsonl,
     import_all_theme_mappings_from_jsonl,
+    import_evidence_rich_mappings,
     import_question_part_data,
     import_respondent_data,
     import_responses,
@@ -350,3 +353,79 @@ def test_import_all_sentiment_mappings_from_jsonl(mock_consultation_input_object
     assert sentiment_mappings.count() == 3
     assert sentiment_mappings[0].position == SentimentMapping.Position.AGREEMENT
     assert sentiment_mappings[2].position == SentimentMapping.Position.UNCLEAR
+
+
+@pytest.mark.django_db
+def test_import_evidence_rich_mappings():
+    evidence_rich_mapping_data = [
+        b'{"response_id":1,"evidence_rich":"YES"}',
+        b'{"response_id":2,"evidence_rich":"NO"}',
+        b'{"response_id":4,"evidence_rich":"YES"}',
+    ]
+    question_part = factories.FreeTextQuestionPartFactory()
+    consultation = question_part.question.consultation
+    respondent_1 = factories.RespondentFactory(
+        themefinder_respondent_id=1, consultation=consultation
+    )
+    respondent_2 = factories.RespondentFactory(
+        themefinder_respondent_id=2, consultation=consultation
+    )
+    respondent_3 = factories.RespondentFactory(
+        themefinder_respondent_id=3, consultation=consultation
+    )
+    respondent_4 = factories.RespondentFactory(
+        themefinder_respondent_id=4, consultation=consultation
+    )
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_1)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_2)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_3)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_4)
+
+    import_evidence_rich_mappings(
+        question_part=question_part, evidence_rich_mapping_data=evidence_rich_mapping_data
+    )
+    evidence_rich_mappings = EvidenceRichMapping.objects.filter(
+        answer__question_part=question_part
+    ).order_by("answer__respondent__themefinder_respondent_id")
+    assert evidence_rich_mappings.count() == 3
+    assert evidence_rich_mappings[0].evidence_rich
+    assert not evidence_rich_mappings[1].evidence_rich
+    assert evidence_rich_mappings[2].evidence_rich
+
+
+@pytest.mark.django_db
+def test_import_all_evidence_rich_mappings_from_jsonl(mock_consultation_input_objects):
+    question_part = factories.FreeTextQuestionPartFactory()
+    consultation = question_part.question.consultation
+    respondent_1 = factories.RespondentFactory(
+        themefinder_respondent_id=1, consultation=consultation
+    )
+    respondent_2 = factories.RespondentFactory(
+        themefinder_respondent_id=2, consultation=consultation
+    )
+    respondent_3 = factories.RespondentFactory(
+        themefinder_respondent_id=3, consultation=consultation
+    )
+    respondent_4 = factories.RespondentFactory(
+        themefinder_respondent_id=4, consultation=consultation
+    )
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_1)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_2)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_3)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_4)
+
+    import_all_evidence_rich_mappings_from_jsonl(
+        question_part=question_part,
+        bucket_name="test-bucket",
+        question_part_folder_key="app_data/CON1/outputs/mapping/2025-04-01/question_part_1/",
+        batch_size=2,
+    )
+    # TODO - improve this, but it works for now!
+    time.sleep(5)
+    evidence_rich_mappings = EvidenceRichMapping.objects.filter(
+        answer__question_part=question_part
+    ).order_by("answer__respondent__themefinder_respondent_id")
+    assert evidence_rich_mappings.count() == 3
+    assert evidence_rich_mappings[0].evidence_rich
+    assert not evidence_rich_mappings[1].evidence_rich
+    assert evidence_rich_mappings[2].evidence_rich

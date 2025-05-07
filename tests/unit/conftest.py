@@ -79,6 +79,15 @@ def mock_consultation_input_objects(mock_s3_bucket):
         [json.dumps(sentiment_mapping) for sentiment_mapping in sentiment_mappings]
     )
 
+    evidence_rich_mappings = [
+        {"response_id": 1, "evidence_rich": "YES"},
+        {"response_id": 2, "evidence_rich": "NO"},
+        {"response_id": 4, "evidence_rich": "YES"},
+    ]
+    evidence_rich_mappings_jsonl = "\n".join(
+        [json.dumps(evidence_rich_mapping) for evidence_rich_mapping in evidence_rich_mappings]
+    )
+
     conn.Object(mock_s3_bucket, "app_data/CON1/inputs/respondents.jsonl").put(
         Body=respondents_jsonl
     )
@@ -103,3 +112,7 @@ def mock_consultation_input_objects(mock_s3_bucket):
     conn.Object(
         mock_s3_bucket, "app_data/CON1/outputs/mapping/2025-04-01/question_part_1/sentiment.jsonl"
     ).put(Body=sentiment_mappings_jsonl)
+    conn.Object(
+        mock_s3_bucket,
+        "app_data/CON1/outputs/mapping/2025-04-01/question_part_1/detail_detection.jsonl",
+    ).put(Body=evidence_rich_mappings_jsonl)

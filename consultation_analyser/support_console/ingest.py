@@ -9,6 +9,7 @@ from simple_history.utils import bulk_create_with_history
 from consultation_analyser.consultations.models import (
     Answer,
     Consultation,
+    EvidenceRichMapping,
     ExecutionRun,
     Framework,
     Question,
@@ -268,6 +269,38 @@ def import_sentiment_mappings(question_part: QuestionPart, sentimentmapping_data
     )
 
 
+def import_evidence_rich_mappings(
+    question_part: QuestionPart, evidence_rich_mapping_data: list
+) -> None:
+    logger.info(
+        f"Importing batch of evidence_rich mappings for question_number {question_part.number} and question part {question_part.number}"
+    )
+    consultation = question_part.question.consultation
+    execution_run = ExecutionRun.objects.create(type=ExecutionRun.TaskType.EVIDENCE_EVALUATION)
+
+    evidence_rich_mappings = []
+    for evidence_rich_mapping in evidence_rich_mapping_data:
+        evidence_rich_mapping = json.loads(evidence_rich_mapping.decode("utf-8"))
+        themefinder_respondent_id = evidence_rich_mapping["response_id"]
+        answer = Answer.objects.get(
+            question_part=question_part,
+            respondent=Respondent.objects.get(
+                consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
+            ),
+        )
+        evidence_rich_mappings.append(
+            EvidenceRichMapping(
+                answer=answer,
+                evidence_evaluation_execution_run=execution_run,
+                evidence_rich=True if evidence_rich_mapping["evidence_rich"] == "YES" else False,
+            )
+        )
+    bulk_create_with_history(evidence_rich_mappings, EvidenceRichMapping)
+    logger.info(
+        f"Saved batch of evidence rich mappings for question_number {question_part.question.number} and question part {question_part.number}"
+    )
+
+
 @job("default", timeout=900)
 def import_respondent_data_job(consultation: Consultation, respondent_data: list):
     import_respondent_data(consultation=consultation, respondent_data=respondent_data)
@@ -288,6 +321,13 @@ def import_theme_mappings_job(
 @job("default", timeout=900)
 def import_sentiment_mappings_job(question_part: QuestionPart, sentimentmapping_data: list):
     import_sentiment_mappings(question_part, sentimentmapping_data)
+
+
+@job("default", timeout=900)
+def import_evidence_rich_mappings_job(
+    question_part: QuestionPart, evidence_rich_mapping_data: list
+):
+    import_evidence_rich_mappings(question_part, evidence_rich_mapping_data)
 
 
 def import_all_respondents_from_jsonl(
@@ -395,4 +435,33 @@ def import_all_sentiment_mappings_from_jsonl(
     if lines:
         import_sentiment_mappings_job.delay(
             question_part=question_part, sentimentmapping_data=lines
+        )
+
+
+def import_all_evidence_rich_mappings_from_jsonl(
+    question_part: QuestionPart, bucket_name: str, question_part_folder_key: str, batch_size: int
+) -> None:
+    logger.info(
+        f"Importing evidence rich mappings from {question_part_folder_key}, batch_size {batch_size}"
+    )
+    evidence_rich_file_key = f"{question_part_folder_key}detail_detection.jsonl"
+    s3_client = boto3.client("s3")
+    try:
+        response = s3_client.get_object(Bucket=bucket_name, Key=evidence_rich_file_key)
+    except s3_client.exceptions.NoSuchKey:
+        logger.info(f"No evidence rich mapping found for {question_part_folder_key}")
+        return
+
+    lines = []
+    for line in response["Body"].iter_lines():
+        lines.append(line)
+        if len(lines) == batch_size:
+            import_evidence_rich_mappings_job.delay(
+                question_part=question_part, evidence_rich_mapping_data=lines
+            )
+            lines = []
+    # Any remaining lines < batch size
+    if lines:
+        import_evidence_rich_mappings_job.delay(
+            question_part=question_part, evidence_rich_mapping_data=lines
         )
