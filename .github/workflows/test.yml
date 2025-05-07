@@ -70,9 +70,18 @@ jobs:
           AWS_REGION: eu-west-2
           AWS_BUCKET_NAME: test-bucket
 
-      - name: pytest
+      - name: Run app tests
         run:
           make test
+        env:
+          REDIS_HOST: redis
+          DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
+          BATCH_JOB_QUEUE: dummy-queue
+          BATCH_JOB_DEFINITION: dummy-definition
+
+      - name: Run tests for migrations
+        run:
+          make test-migrations
         env:
           REDIS_HOST: redis
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
