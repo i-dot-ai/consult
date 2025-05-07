@@ -49,6 +49,10 @@ serve: ## Run the server and the worker
 test: ## Run the tests
 	poetry run pytest tests/ --random-order
 
+.PHONY: test-migrations
+test-migrations: ## Run the migration tests separately
+	poetry run pytest migration_tests/ --random-order
+
 .PHONY: check-python-code
 check-python-code: ## Check Python code - linting and mypy
 	poetry run ruff check --select I .
