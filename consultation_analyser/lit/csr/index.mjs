@@ -5,7 +5,6 @@ import IaiDataTable from "./IaiDataTable/iai-data-table.lit.csr.mjs";
 import IaiCsvDownload from "./IaiCsvDownload/iai-csv-download.lit.csr.mjs";
 import IaiRadioInput from "./filters/IaiRadioInput/iai-radio-input.lit.csr.mjs";
 
-import IaiResponseDashboard from "./IaiResponseDashboard/iai-response-dashboard.lit.csr.mjs";
 import IaiResponseFilters from "./IaiResponseFilters/iai-response-filters.lit.csr.mjs";
 import IaiNumberInput from "./filters/IaiNumberInput/iai-number-input.lit.csr.mjs";
 import IaiCheckboxInput from "./filters/IaiCheckboxInput/iai-checkbox-input.lit.csr.mjs";
