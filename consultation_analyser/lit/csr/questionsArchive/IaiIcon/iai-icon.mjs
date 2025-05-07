@@ -39,7 +39,7 @@ export default class IaiIcon extends IaiLitBase {
         this.contentId = this.generateId();
 
         // Google expect icon names to be alphabetically sorted
-        this._ALL_ICON_NAMES = ["visibility", "close", "star"];
+        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down"];
         this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
 
         // Prop defaults
