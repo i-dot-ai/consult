@@ -5,7 +5,7 @@ import IaiLitCsrExample from './iai-lit-csr-example.lit.csr.mjs';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Example/IaiLitCsrExample',
+  title: 'Csr/IaiLitCsrExample',
   tags: ['autodocs'],
   render: (args) => {
     return html`

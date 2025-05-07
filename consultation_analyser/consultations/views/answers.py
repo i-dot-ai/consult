@@ -254,6 +254,13 @@ def index(
         except models.Answer.DoesNotExist:
             pass
 
+    csv_button_data = [{
+        "Theme name": mapping.get("theme__name", ""),
+        "Total mentions": mapping.get('count', -1),
+        "Positive mentions": mapping.get("positive_count", -1),
+        "Negative mentions": mapping.get("negative_count", -1),
+    } for mapping in selected_theme_mappings]
+
     context = {
         "consultation_name": consultation.title,
         "consultation_slug": consultation_slug,
@@ -265,6 +272,7 @@ def index(
         "pagination": current_page,
         "respondents": paginated_respondents,
         "selected_theme_mappings": selected_theme_mappings,
+        "csv_button_data": csv_button_data,
         "theme_mapping_summary": theme_mapping_summary,
         "multiple_choice_summary": multiple_choice_summary,
         "stance_options": models.SentimentMapping.Position.names,
