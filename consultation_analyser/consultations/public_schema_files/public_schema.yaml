@@ -84,6 +84,7 @@ components:
           - sentiment_analysis
           - theme_generation
           - theme_mapping
+          - evidence_evaluation
       required:
       - type
     Framework:
@@ -154,7 +155,6 @@ components:
       - answer
       - theme
       - reason
-      - stance
       - user_audited
     SentimentMapping:
       type: object
@@ -176,6 +176,21 @@ components:
       - answer
       - execution_run
       - position
+    EvidenceRichMapping:
+      type: object
+      properties:
+        answer:
+          type: uuid
+          $ref: '#/components/schemas/Answer'
+        evidence_evaluation_execution_run:
+          type: uuid
+          $ref: '#/components/schemas/ExecutionRun'
+        evidence_rich:
+          type: boolean
+      required:
+      - answer
+      - evidence_evaluation_execution_run
+      - evidence_rich
     Respondent:
       type: object
       properties:

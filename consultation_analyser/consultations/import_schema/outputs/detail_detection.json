@@ -1,0 +1,14 @@
+{
+  "type": "object",
+  "properties": {
+    "response_id": {
+      "type": "integer"
+    },
+    "evidence_rich": {
+      "type": "string",
+      "enum": ["YES", "NO"]
+    }
+  },
+  "required": ["response_id", "evidence_rich"],
+  "additionalProperties": true
+}

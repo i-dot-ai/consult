@@ -1,5 +1,32 @@
 {
   "$defs": {
+    "Answer": {
+      "properties": {
+        "question_part": {
+          "$ref": "#/$defs/QuestionPart"
+        },
+        "respondent": {
+          "$ref": "#/$defs/Respondent"
+        },
+        "text": {
+          "title": "Text",
+          "type": "string"
+        },
+        "chosen_options": {
+          "description": "JSON object data",
+          "title": "Chosen Options",
+          "type": "object"
+        }
+      },
+      "required": [
+        "question_part",
+        "respondent",
+        "text",
+        "chosen_options"
+      ],
+      "title": "Answer",
+      "type": "object"
+    },
     "Consultation": {
       "properties": {
         "title": {
@@ -24,57 +51,6 @@
         "type"
       ],
       "title": "ExecutionRun",
-      "type": "object"
-    },
-    "Framework": {
-      "properties": {
-        "execution_run": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/ExecutionRun"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "question_part": {
-          "$ref": "#/$defs/QuestionPart"
-        },
-        "change_reason": {
-          "maxLength": 256,
-          "title": "Change Reason",
-          "type": "string"
-        },
-        "user": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/User"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        },
-        "precursor": {
-          "anyOf": [
-            {
-              "$ref": "#/$defs/Framework"
-            },
-            {
-              "type": "null"
-            }
-          ],
-          "default": null
-        }
-      },
-      "required": [
-        "question_part",
-        "change_reason"
-      ],
-      "title": "Framework",
       "type": "object"
     },
     "Question": {
@@ -138,6 +114,18 @@
       "title": "QuestionPart",
       "type": "object"
     },
+    "Respondent": {
+      "properties": {
+        "id": {
+          "title": "Id"
+        }
+      },
+      "required": [
+        "id"
+      ],
+      "title": "Respondent",
+      "type": "object"
+    },
     "Type": {
       "enum": [
         "free_text",
@@ -156,10 +144,25 @@
       ],
       "title": "Type1",
       "type": "string"
-    },
-    "User": {
-      "title": "User"
     }
   },
-  "$ref": "#/$defs/Framework"
+  "properties": {
+    "answer": {
+      "$ref": "#/$defs/Answer"
+    },
+    "evidence_evaluation_execution_run": {
+      "$ref": "#/$defs/ExecutionRun"
+    },
+    "evidence_rich": {
+      "title": "Evidence Rich",
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "answer",
+    "evidence_evaluation_execution_run",
+    "evidence_rich"
+  ],
+  "title": "EvidenceRichMapping",
+  "type": "object"
 }

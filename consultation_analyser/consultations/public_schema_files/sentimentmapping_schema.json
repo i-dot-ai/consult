@@ -148,7 +148,8 @@
       "enum": [
         "sentiment_analysis",
         "theme_generation",
-        "theme_mapping"
+        "theme_mapping",
+        "evidence_evaluation"
       ],
       "title": "Type1",
       "type": "string"

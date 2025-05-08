@@ -176,7 +176,7 @@ On any environment, if you are a staff user, you can give other users permission
 ## Importing data
 
 ### Data import format
-Data should be stored in the approprate S3 bucket (`AWS_DATA_BUCKET`) and within a folder called `app_data`.
+Data should be stored in the appropriate S3 bucket (`AWS_DATA_BUCKET`) and within a folder called `app_data`.
 
 It should be stored in the following structure for a given consultation:
 ```
@@ -199,6 +199,7 @@ It should be stored in the following structure for a given consultation:
         │   │   │   ├── meta.json
         │   │   │   ├── themes.json
         │   │   │   ├── sentiment.jsonl
+        │   │   │   ├── detail_detection.jsonl
         │   │   │   └── mapping.jsonl
         │   │   ├── question_part_<id>/
         │   │   ├── ...
@@ -217,6 +218,7 @@ Format of each of the files:
 * `meta.json` - this is a file with metadata allowing us to match up inputs and outputs
 * `themes.json` - this gives the themes for a given question part and run of ThemeFinder, with `theme_key` as a unique identifier for a theme (for a given question part). This is the format given by the `themes.json` schema.
 * `sentiment.jsonl` - this a JSONL file per question part and run of themefinder, each row is a line in the format of `sentiment.json` with one row per response.
+* `detail_detection.jsonl` - this a JSONL file per question part and run of themefinder, each row is a line in the format of `detail_detection.json` with one row per response.
 * `mapping.jsonl` - this is a JSONL file per question part and run of themefinder, each row is a line in the format of `mapping.json`. Each row maps a given response to its themes.
 
 

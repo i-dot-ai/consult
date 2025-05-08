@@ -245,7 +245,8 @@
       "enum": [
         "sentiment_analysis",
         "theme_generation",
-        "theme_mapping"
+        "theme_mapping",
+        "evidence_evaluation"
       ],
       "title": "Type1",
       "type": "string"
@@ -277,7 +278,15 @@
       "default": null
     },
     "stance": {
-      "$ref": "#/$defs/Stance"
+      "anyOf": [
+        {
+          "$ref": "#/$defs/Stance"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null
     },
     "user_audited": {
       "title": "User Audited",
@@ -288,7 +297,6 @@
     "answer",
     "theme",
     "reason",
-    "stance",
     "user_audited"
   ],
   "title": "ThemeMapping",

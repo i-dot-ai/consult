@@ -17,6 +17,7 @@ from django.db.models import (
 from consultation_analyser.consultations.models import (
     Answer,
     Consultation,
+    EvidenceRichMapping,
     ExecutionRun,
     Framework,
     Question,
@@ -45,6 +46,7 @@ MODELS_TO_INCLUDE = [
     Theme,
     ThemeMapping,
     SentimentMapping,
+    EvidenceRichMapping,
 ]
 
 
