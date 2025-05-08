@@ -34,14 +34,13 @@ def show(request: HttpRequest, user_id: int):
     user = get_object_or_404(User, pk=user_id)
     consultations = Consultation.objects.filter(users__in=[user])
     dashboard_group = Group.objects.get(name=DASHBOARD_ACCESS)
-    user_currently_has_dashboard_access = dashboard_group in user.groups.all()
 
     if not request.POST:
         form = EditUserForm(
             {
                 "user_id": user_id,
                 "is_staff": user.is_staff,
-                "dashboard_access": user_currently_has_dashboard_access,
+                "dashboard_access": user.has_dashboard_access,
             }
         )
     else:
@@ -56,7 +55,7 @@ def show(request: HttpRequest, user_id: int):
                 user.groups.add(dashboard_group)
                 user.save()
 
-            elif user_currently_has_dashboard_access:
+            elif user.has_dashboard_access:
                 user.groups.remove(dashboard_group)
                 user.save()
 
