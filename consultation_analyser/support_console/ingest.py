@@ -156,6 +156,7 @@ def import_responses(question_part: QuestionPart, responses_data: list) -> None:
         f"Importing batch of responses for question_number {question_part.question.number} and question part {question_part.number}"
     )
     consultation = question_part.question.consultation
+    is_free_text = question_part.type == QuestionPart.QuestionType.FREE_TEXT
 
     # Respondents should have been imported already
     decoded_responses = [json.loads(response.decode("utf-8")) for response in responses_data]
@@ -165,15 +166,25 @@ def import_responses(question_part: QuestionPart, responses_data: list) -> None:
     )
     respondent_dictionary = {r.themefinder_respondent_id: r for r in corresponding_respondents}
 
-    # TODO - "response" field will change to "text", will also need to add import of options for non-free-text data
-    answers = [
-        Answer(
-            question_part=question_part,
-            respondent=respondent_dictionary[response["themefinder_id"]],
-            text=response["text"],
-        )
-        for response in decoded_responses
-    ]
+    if is_free_text:
+        answers = [
+            Answer(
+                question_part=question_part,
+                respondent=respondent_dictionary[response["themefinder_id"]],
+                text=response["text"],
+            )
+            for response in decoded_responses
+        ]
+    else:
+        answers = [
+            Answer(
+                question_part=question_part,
+                respondent=respondent_dictionary[response["themefinder_id"]],
+                options=response.get("chosen_options"),
+            )
+            for response in decoded_responses
+        ]
+
     bulk_create_with_history(answers, Answer)
     logger.info(
         f"Saved batch of responses for question_number {question_part.question.number} and question part {question_part.number}"
