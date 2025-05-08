@@ -6,10 +6,6 @@
     },
     "supplied_respondent_id": {
       "type": "string"
-    },
-    "demographics": {
-      "type": "object",
-      "description": "Dictionary with any demographic data."
     }
   },
   "required": ["themefinder_id"],
