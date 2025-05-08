@@ -4,8 +4,12 @@
     "themefinder_id": {
       "type": "integer"
     },
-    "supplied_respondent_id": {
+    "user_provided_id": {
       "type": "string"
+    },
+    "demographics": {
+      "type": "object",
+      "description": "Dictionary with any demographic data."
     }
   },
   "required": ["themefinder_id"],

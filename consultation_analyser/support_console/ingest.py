@@ -92,10 +92,14 @@ def import_respondent_data(consultation: Consultation, respondent_data: list):
     for respondent in respondent_data:
         respondent = json.loads(respondent.decode("utf-8"))
         themefinder_respondent_id = respondent["themefinder_id"]
-        # TODO - add further fields e.g. user supplied ID
+        user_provided_id = respondent.get("user_provided_id", None)
+        data = respondent.get("demographic_data", {})
         respondents_to_save.append(
             Respondent(
-                consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
+                consultation=consultation,
+                themefinder_respondent_id=themefinder_respondent_id,
+                data=data,
+                user_provided_id=user_provided_id,
             )
         )
     Respondent.objects.bulk_create(respondents_to_save)

@@ -216,7 +216,6 @@ The format for each of these files is in `consultation_analyser/consultations/im
 Format of each of the files:
 * `respondents.jsonl` - this is a JSONL file per consultation, where each entry is the format given in the `respondent.json` schema.
 * `responses.jsonl` - this is a JSONL file per question part, where each entry is in the format given in the `response.json` schema.
-* `demographics.jsonl` - this is a JSONL file per question part, where each entry is in the format given in the `demographics.json` schema.
 * `question_part.json` - this is a JSON file per question part, and this must satisfy the format given in the `question_part.json` schema.
 * `meta.json` - this is a file with metadata allowing us to match up inputs and outputs
 * `themes.json` - this gives the themes for a given question part and run of ThemeFinder, with `theme_key` as a unique identifier for a theme (for a given question part). This is the format given by the `themes.json` schema.

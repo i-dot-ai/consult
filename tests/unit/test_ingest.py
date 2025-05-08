@@ -139,19 +139,45 @@ def test_import_all_responses_from_jsonl(mock_consultation_input_objects):
 
 @pytest.mark.django_db
 def test_import_respondent_data():
-    respondent_data = [
+    # Test import with essential respondent data only
+    basic_respondent_data = [
         b'{"themefinder_id":1}',
         b'{"themefinder_id":2}',
         b'{"themefinder_id":3}',
     ]
     consultation = factories.ConsultationFactory()
-    import_respondent_data(consultation=consultation, respondent_data=respondent_data)
+    import_respondent_data(consultation=consultation, respondent_data=basic_respondent_data)
     respondents = Respondent.objects.filter(consultation=consultation).order_by(
         "themefinder_respondent_id"
     )
     assert respondents.count() == 3
     assert respondents[0].themefinder_respondent_id == 1
     assert respondents[2].themefinder_respondent_id == 3
+
+    # Test import with all possible respondent data
+    complex_respondent_data = [
+        b'{"themefinder_id":1,"user_provided_id":"A","demographic_data":{"Country":"England","Member of the public":"Yes"}}',
+        b'{"themefinder_id":1,"user_provided_id":"B"}',
+        b'{"themefinder_id":3,"user_provided_id":"C","demographic_data":{"Country":"Wales","Member of the public":"No"}}',
+    ]
+    consultation = factories.ConsultationFactory()
+    import_respondent_data(consultation=consultation, respondent_data=complex_respondent_data)
+    respondents = Respondent.objects.filter(consultation=consultation).order_by(
+        "themefinder_respondent_id"
+    )
+    assert respondents[0].themefinder_respondent_id == 1
+    assert respondents[0].user_provided_id == "A"
+    assert respondents[0].data["Country"] == "England"
+    assert respondents[0].data["Member of the public"] == "Yes"
+
+    assert respondents[1].themefinder_respondent_id == 2
+    assert respondents[1].user_provided_id == "B"
+    assert not respondents[1].data
+
+    assert respondents[2].themefinder_respondent_id == 3
+    assert respondents[2].user_provided_id == "C"
+    assert respondents[2].data["Country"] == "Wales"
+    assert respondents[2].data["Member of the public"] == "No"
 
 
 @pytest.mark.django_db
