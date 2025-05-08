@@ -157,7 +157,7 @@ def test_import_respondent_data():
     # Test import with all possible respondent data
     complex_respondent_data = [
         b'{"themefinder_id":1,"user_provided_id":"A","demographic_data":{"Country":"England","Member of the public":"Yes"}}',
-        b'{"themefinder_id":1,"user_provided_id":"B"}',
+        b'{"themefinder_id":2,"user_provided_id":"B"}',
         b'{"themefinder_id":3,"user_provided_id":"C","demographic_data":{"Country":"Wales","Member of the public":"No"}}',
     ]
     consultation = factories.ConsultationFactory()
