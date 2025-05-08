@@ -18,6 +18,7 @@ export default class IaiQuestionTile extends IaiLitBase {
         maxLength: { type: Number },
         highlighted: { type: Boolean },
         searchValue: { type: String },
+        handleViewClick: { type: Function },
     }
 
     static styles = [
@@ -61,6 +62,7 @@ export default class IaiQuestionTile extends IaiLitBase {
         this.maxLength = 90;
         this.highlighted = false;
         this.searchValue = "";
+        this.handleViewClick = () => {};
 
         this.applyStaticStyles("iai-question-tile", IaiQuestionTile.styles);
     }
@@ -79,12 +81,6 @@ export default class IaiQuestionTile extends IaiLitBase {
         this.toggleStorage();
 
         this._favourited = this.getStoredIds().includes(this.questionId);
-    }
-
-    handleViewClick = (e) => {
-        e.stopPropagation();
-
-        window.location.replace(this.url);
     }
 
     getStoredIds = () => {
