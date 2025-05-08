@@ -83,6 +83,16 @@ export default class IaiQuestionTiles extends IaiLitBase {
         )
     }
 
+    handleViewClick = (e, question) => {
+        e.stopPropagation();
+
+        this._selectedQuestion = question;
+    }
+
+    handleTileClick = (e, url) => {
+        window.location.replace(url);
+    }
+
     render() {
         return html`
             <iai-page-title
@@ -102,7 +112,8 @@ export default class IaiQuestionTiles extends IaiLitBase {
                                     .body=${question.body}
                                     .highlighted=${this._selectedQuestion == question}
                                     .searchValue=${this._searchValue}
-                                    @click=${_ => this._selectedQuestion = question}
+                                    .handleViewClick=${(e) => this.handleViewClick(e, question)}
+                                    @click=${(e) => this.handleTileClick(e, question.url)}
                                 ></iai-question-tile>
                             `)
                             : html`<p>No matching question found.</p>`
