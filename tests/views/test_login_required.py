@@ -1,7 +1,9 @@
 import pytest
+from django.contrib.auth.models import Group
 from django.urls import reverse
 
 from consultation_analyser import factories
+from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.urls import urlpatterns
 
 PUBLIC_URL_NAMES = [
@@ -106,6 +108,10 @@ def test_consultations_urls_login_required(client):
     user = factories.UserFactory()
     non_consultation_user = factories.UserFactory()
     possible_args = set_up_consultation(user)
+
+    dashboard_access = Group.objects.get(name=DASHBOARD_ACCESS)
+    user.groups.add(dashboard_access)
+    user.save()
 
     # Get all URLs that haven't explicitly been excluded.
     # Exclude magic links in separate step as potentially more than one.

@@ -1,7 +1,6 @@
 import json
 import logging
 
-from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import HttpRequest, HttpResponse
@@ -16,7 +15,7 @@ from consultation_analyser.consultations.models import (
     ThemeMapping,
 )
 
-from .decorators import user_can_see_consultation
+from .decorators import user_can_see_consultation, user_can_see_dashboards
 
 logger = logging.getLogger("upload")
 
@@ -82,8 +81,8 @@ def get_top_themes_for_free_text_question_part(
     return top_themes_by_counts_list
 
 
+@user_can_see_dashboards
 @user_can_see_consultation
-@login_required
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     # Dashboard page
     consultation = get_object_or_404(Consultation, slug=consultation_slug)
