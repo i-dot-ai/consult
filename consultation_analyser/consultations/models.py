@@ -248,6 +248,7 @@ class ExecutionRun(UUIDPrimaryKeyModel, TimeStampedModel):
         SENTIMENT_ANALYSIS = "sentiment_analysis"
         THEME_GENERATION = "theme_generation"
         THEME_MAPPING = "theme_mapping"
+        EVIDENCE_EVALUATION = "evidence_evaluation"
 
     type = models.CharField(max_length=32, choices=TaskType.choices)
     # TODO - add metadata e.g. langfuse_id
@@ -460,6 +461,17 @@ class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
     position = models.CharField(max_length=12, choices=Position.choices)
+
+    history = HistoricalRecords()
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        pass
+
+
+class EvidenceRichMapping(UUIDPrimaryKeyModel, TimeStampedModel):
+    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    evidence_evaluation_execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
+    evidence_rich = models.BooleanField(default=False)
 
     history = HistoricalRecords()
 

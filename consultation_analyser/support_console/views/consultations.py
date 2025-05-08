@@ -19,6 +19,7 @@ from consultation_analyser.support_console.export_url_guidance import get_urls_f
 from consultation_analyser.support_console.ingest import (
     get_all_question_part_subfolders,
     get_folder_names_for_dropdown,
+    import_all_evidence_rich_mappings_from_jsonl,
     import_all_respondents_from_jsonl,
     import_all_responses_from_jsonl,
     import_all_sentiment_mappings_from_jsonl,
@@ -284,6 +285,12 @@ def import_question_part_themefinder_outputs(
         batch_size=batch_size,
     )
     import_all_sentiment_mappings_from_jsonl(
+        question_part=question_part,
+        bucket_name=bucket_name,
+        question_part_folder_key=folder,
+        batch_size=batch_size,
+    )
+    import_all_evidence_rich_mappings_from_jsonl(
         question_part=question_part,
         bucket_name=bucket_name,
         question_part_folder_key=folder,

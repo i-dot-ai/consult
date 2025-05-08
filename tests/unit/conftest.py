@@ -4,6 +4,8 @@ import boto3
 import pytest
 from moto import mock_aws
 
+from consultation_analyser import factories
+
 
 @pytest.fixture
 def mock_s3_bucket():
@@ -79,6 +81,15 @@ def mock_consultation_input_objects(mock_s3_bucket):
         [json.dumps(sentiment_mapping) for sentiment_mapping in sentiment_mappings]
     )
 
+    evidence_rich_mappings = [
+        {"response_id": 1, "evidence_rich": "YES"},
+        {"response_id": 2, "evidence_rich": "NO"},
+        {"response_id": 4, "evidence_rich": "YES"},
+    ]
+    evidence_rich_mappings_jsonl = "\n".join(
+        [json.dumps(evidence_rich_mapping) for evidence_rich_mapping in evidence_rich_mappings]
+    )
+
     conn.Object(mock_s3_bucket, "app_data/CON1/inputs/respondents.jsonl").put(
         Body=respondents_jsonl
     )
@@ -103,3 +114,31 @@ def mock_consultation_input_objects(mock_s3_bucket):
     conn.Object(
         mock_s3_bucket, "app_data/CON1/outputs/mapping/2025-04-01/question_part_1/sentiment.jsonl"
     ).put(Body=sentiment_mappings_jsonl)
+    conn.Object(
+        mock_s3_bucket,
+        "app_data/CON1/outputs/mapping/2025-04-01/question_part_1/detail_detection.jsonl",
+    ).put(Body=evidence_rich_mappings_jsonl)
+
+
+@pytest.fixture
+def question_part_with_4_responses():
+    question_part = factories.FreeTextQuestionPartFactory()
+    consultation = question_part.question.consultation
+    respondent_1 = factories.RespondentFactory(
+        themefinder_respondent_id=1, consultation=consultation
+    )
+    respondent_2 = factories.RespondentFactory(
+        themefinder_respondent_id=2, consultation=consultation
+    )
+    respondent_3 = factories.RespondentFactory(
+        themefinder_respondent_id=3, consultation=consultation
+    )
+    respondent_4 = factories.RespondentFactory(
+        themefinder_respondent_id=4, consultation=consultation
+    )
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_1)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_2)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_3)
+    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_4)
+
+    yield question_part

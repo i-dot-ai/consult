@@ -22,6 +22,7 @@ class Command(BaseCommand):
             public_schema.Theme,
             public_schema.ThemeMapping,
             public_schema.SentimentMapping,
+            public_schema.EvidenceRichMapping,
         ]
 
         for c in classes:

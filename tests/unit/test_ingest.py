@@ -5,6 +5,7 @@ import pytest
 from consultation_analyser import factories
 from consultation_analyser.consultations.models import (
     Answer,
+    EvidenceRichMapping,
     QuestionPart,
     Respondent,
     SentimentMapping,
@@ -12,10 +13,12 @@ from consultation_analyser.consultations.models import (
     ThemeMapping,
 )
 from consultation_analyser.support_console.ingest import (
+    import_all_evidence_rich_mappings_from_jsonl,
     import_all_respondents_from_jsonl,
     import_all_responses_from_jsonl,
     import_all_sentiment_mappings_from_jsonl,
     import_all_theme_mappings_from_jsonl,
+    import_evidence_rich_mappings,
     import_question_part_data,
     import_respondent_data,
     import_responses,
@@ -238,32 +241,15 @@ def test_import_theme_mappings():
 
 
 @pytest.mark.django_db
-def test_import_all_theme_mappings_from_jsonl(mock_consultation_input_objects):
-    question_part = factories.FreeTextQuestionPartFactory()
-    consultation = question_part.question.consultation
-    respondent_1 = factories.RespondentFactory(
-        themefinder_respondent_id=1, consultation=consultation
-    )
-    respondent_2 = factories.RespondentFactory(
-        themefinder_respondent_id=2, consultation=consultation
-    )
-    respondent_3 = factories.RespondentFactory(
-        themefinder_respondent_id=3, consultation=consultation
-    )
-    respondent_4 = factories.RespondentFactory(
-        themefinder_respondent_id=4, consultation=consultation
-    )
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_1)
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_2)
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_3)
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_4)
-
-    framework = factories.InitialFrameworkFactory(question_part=question_part)
+def test_import_all_theme_mappings_from_jsonl(
+    question_part_with_4_responses, mock_consultation_input_objects
+):
+    framework = factories.InitialFrameworkFactory(question_part=question_part_with_4_responses)
     factories.InitialThemeFactory(key="A", framework=framework)
     factories.InitialThemeFactory(key="B", framework=framework)
 
     import_all_theme_mappings_from_jsonl(
-        question_part=question_part,
+        question_part=question_part_with_4_responses,
         framework=framework,
         bucket_name="test-bucket",
         question_part_folder_key="app_data/CON1/outputs/mapping/2025-04-01/question_part_1/",
@@ -274,43 +260,25 @@ def test_import_all_theme_mappings_from_jsonl(mock_consultation_input_objects):
     time.sleep(5)
     theme_mappings = ThemeMapping.objects.all().order_by("created_at")
     assert theme_mappings.count() == 4
-    assert theme_mappings[0].answer.question_part.id == question_part.id
+    assert theme_mappings[0].answer.question_part.id == question_part_with_4_responses.id
     assert theme_mappings[0].theme.key == "A"
-    assert theme_mappings[3].answer.question_part.id == question_part.id
+    assert theme_mappings[3].answer.question_part.id == question_part_with_4_responses.id
     assert theme_mappings[3].theme.key == "B"
 
 
 @pytest.mark.django_db
-def test_import_sentiment_mappings():
+def test_import_sentiment_mappings(question_part_with_4_responses):
     sentimentmapping_data = [
         b'{"themefinder_id":1,"sentiment":"AGREEMENT"}',
         b'{"themefinder_id":2,"sentiment":"DISAGREEMENT"}',
         b'{"themefinder_id":4,"sentiment":"UNCLEAR"}',
     ]
-    question_part = factories.FreeTextQuestionPartFactory()
-    consultation = question_part.question.consultation
-    respondent_1 = factories.RespondentFactory(
-        themefinder_respondent_id=1, consultation=consultation
-    )
-    respondent_2 = factories.RespondentFactory(
-        themefinder_respondent_id=2, consultation=consultation
-    )
-    respondent_3 = factories.RespondentFactory(
-        themefinder_respondent_id=3, consultation=consultation
-    )
-    respondent_4 = factories.RespondentFactory(
-        themefinder_respondent_id=4, consultation=consultation
-    )
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_1)
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_2)
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_3)
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_4)
 
     import_sentiment_mappings(
-        question_part=question_part, sentimentmapping_data=sentimentmapping_data
+        question_part=question_part_with_4_responses, sentimentmapping_data=sentimentmapping_data
     )
     sentiment_mappings = SentimentMapping.objects.filter(
-        answer__question_part=question_part
+        answer__question_part=question_part_with_4_responses
     ).order_by("answer__respondent__themefinder_respondent_id")
     assert sentiment_mappings.count() == 3
     assert sentiment_mappings[0].position == SentimentMapping.Position.AGREEMENT
@@ -318,28 +286,11 @@ def test_import_sentiment_mappings():
 
 
 @pytest.mark.django_db
-def test_import_all_sentiment_mappings_from_jsonl(mock_consultation_input_objects):
-    question_part = factories.FreeTextQuestionPartFactory()
-    consultation = question_part.question.consultation
-    respondent_1 = factories.RespondentFactory(
-        themefinder_respondent_id=1, consultation=consultation
-    )
-    respondent_2 = factories.RespondentFactory(
-        themefinder_respondent_id=2, consultation=consultation
-    )
-    respondent_3 = factories.RespondentFactory(
-        themefinder_respondent_id=3, consultation=consultation
-    )
-    respondent_4 = factories.RespondentFactory(
-        themefinder_respondent_id=4, consultation=consultation
-    )
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_1)
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_2)
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_3)
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_4)
-
+def test_import_all_sentiment_mappings_from_jsonl(
+    question_part_with_4_responses, mock_consultation_input_objects
+):
     import_all_sentiment_mappings_from_jsonl(
-        question_part=question_part,
+        question_part=question_part_with_4_responses,
         bucket_name="test-bucket",
         question_part_folder_key="app_data/CON1/outputs/mapping/2025-04-01/question_part_1/",
         batch_size=2,
@@ -350,3 +301,45 @@ def test_import_all_sentiment_mappings_from_jsonl(mock_consultation_input_object
     assert sentiment_mappings.count() == 3
     assert sentiment_mappings[0].position == SentimentMapping.Position.AGREEMENT
     assert sentiment_mappings[2].position == SentimentMapping.Position.UNCLEAR
+
+
+@pytest.mark.django_db
+def test_import_evidence_rich_mappings(question_part_with_4_responses):
+    evidence_rich_mapping_data = [
+        b'{"response_id":1,"evidence_rich":"YES"}',
+        b'{"response_id":2,"evidence_rich":"NO"}',
+        b'{"response_id":4,"evidence_rich":"YES"}',
+    ]
+
+    import_evidence_rich_mappings(
+        question_part=question_part_with_4_responses,
+        evidence_rich_mapping_data=evidence_rich_mapping_data,
+    )
+    evidence_rich_mappings = EvidenceRichMapping.objects.filter(
+        answer__question_part=question_part_with_4_responses
+    ).order_by("answer__respondent__themefinder_respondent_id")
+    assert evidence_rich_mappings.count() == 3
+    assert evidence_rich_mappings[0].evidence_rich
+    assert not evidence_rich_mappings[1].evidence_rich
+    assert evidence_rich_mappings[2].evidence_rich
+
+
+@pytest.mark.django_db
+def test_import_all_evidence_rich_mappings_from_jsonl(
+    question_part_with_4_responses, mock_consultation_input_objects
+):
+    import_all_evidence_rich_mappings_from_jsonl(
+        question_part=question_part_with_4_responses,
+        bucket_name="test-bucket",
+        question_part_folder_key="app_data/CON1/outputs/mapping/2025-04-01/question_part_1/",
+        batch_size=2,
+    )
+    # TODO - improve this, but it works for now!
+    time.sleep(5)
+    evidence_rich_mappings = EvidenceRichMapping.objects.filter(
+        answer__question_part=question_part_with_4_responses
+    ).order_by("answer__respondent__themefinder_respondent_id")
+    assert evidence_rich_mappings.count() == 3
+    assert evidence_rich_mappings[0].evidence_rich
+    assert not evidence_rich_mappings[1].evidence_rich
+    assert evidence_rich_mappings[2].evidence_rich
