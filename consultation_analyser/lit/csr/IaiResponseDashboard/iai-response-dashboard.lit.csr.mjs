@@ -6,6 +6,7 @@ import IaiTextInput from '../filters/IaiTextInput/iai-text-input.lit.csr.mjs';
 import IaiResponseFilterGroup from '../IaiResponseFilterGroup/iai-response-filter-group.lit.csr.mjs';
 import IaiPageTitle from '../IaiPageTitle/iai-page-title.lit.csr.mjs';
 import IaiDataTable from '../IaiDataTable/iai-data-table.lit.csr.mjs';
+import IaiCsvDownload from '../IaiCsvDownload/iai-csv-download.lit.csr.mjs';
 
 
 export default class IaiResponseDashboard extends IaiLitBase {
@@ -105,6 +106,12 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 display: flex;
                 justify-content: space-between;
                 margin-bottom: 2em;
+            }
+            iai-response-dashboard .table-title.themes-mentions {
+                margin-bottom: 0;
+            }
+            iai-response-dashboard .themes-mentions iai-csv-download a {
+                margin-bottom: 0;
             }
             iai-response-dashboard .table-title h2 {
                 margin: 0;
@@ -324,14 +331,26 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         <div class="govuk-grid-column-full">
                             <div class="table-container">
 
-                                <div class="table-title">
+                                <div class="table-title themes-mentions">
                                     <h2 class="govuk-heading-m">
                                         Themes
                                     </h2>
 
-                                    <!-- TODO:
-                                        <button>Download CSV</button>
-                                    -->
+                                    <iai-csv-download
+                                        fileName="theme_mentions.csv"
+                                        .data=${this.themeMappings
+                                            .filter(themeMapping => (
+                                                this._themeFilters.includes(themeMapping.value) || this._themeFilters.length == 0
+                                            ))
+                                            .map(themeMapping => (
+                                                {
+                                                    "Theme name": themeMapping.label,
+                                                    "Theme description": themeMapping.description,
+                                                    "Total mentions": themeMapping.count,
+                                                }
+                                            ))
+                                        }
+                                    ></iai-csv-download>
                                 </div>
 
                                 <div class="theme-filters-applied">
