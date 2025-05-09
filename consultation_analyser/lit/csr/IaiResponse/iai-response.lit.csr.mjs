@@ -4,6 +4,7 @@ import IaiLitBase from '../../IaiLitBase.mjs';
 import IaiExpandingText from '../IaiExpandingText/iai-expanding-text.lit.csr.mjs';
 import IaiExpandingPill from '../IaiExpandingPill/iai-expanding-pill.lit.csr.mjs';
 import IaiIcon from '../questionsArchive/IaiIcon/iai-icon.mjs';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
 
 export default class IaiResponse extends IaiLitBase {
@@ -28,7 +29,7 @@ export default class IaiResponse extends IaiLitBase {
                 width: 100%;
             }
 
-            iai-response .highlighted {
+            iai-response .matched-text {
                 background-color: yellow;
             }
 
@@ -116,11 +117,9 @@ export default class IaiResponse extends IaiLitBase {
         };
     }
 
-    getFreeTextAnswerText = () => {
-        return this.free_text_answer_text.replace(
-            this.searchValue,
-            `<span class="highlighted">${this.searchValue}</span>`
-        );
+    getHighlightedText = (fullText, matchedText) => {
+        const regex = new RegExp(matchedText, "gi");
+        return fullText.replace(regex, match => `<span class="matched-text">${match}</span>`);
     }
 
     render() {
@@ -148,7 +147,7 @@ export default class IaiResponse extends IaiLitBase {
                     ? html`
                         <p class="govuk-body answer">
                             <iai-expanding-text
-                                .text=${this.getFreeTextAnswerText()}    
+                                .text=${this.getHighlightedText(this.free_text_answer_text, this.searchValue)}    
                                 .lines=${2}
                             ></iai-expanding-text>
                         </p>
