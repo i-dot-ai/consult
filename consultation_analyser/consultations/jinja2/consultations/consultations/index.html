@@ -19,14 +19,16 @@
               href="{{ url('review_free_text_questions', kwargs={'consultation_slug': consultation.slug}) }}"
               class="govuk-body-l govuk-link govuk-link--no-visited-state govuk-!-margin-right-5"
             >
-              View Evaluation
+              View evaluation
             </a>
-            <a
-              href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}"
-              class="govuk-body-l govuk-link govuk-link--no-visited-state govuk-!-margin-right-5"
-            >
-              View Dashboard
-            </a>
+            {% if user_has_dashboard_access %}
+              <a
+                href="{{ url('consultation', kwargs={'consultation_slug': consultation.slug}) }}"
+                class="govuk-body-l govuk-link govuk-link--no-visited-state govuk-!-margin-right-5"
+              >
+                View dashboard
+              </a>
+            {% endif %}
           </li>
         {% endfor %}
       </ul>
