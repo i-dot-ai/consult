@@ -30,7 +30,9 @@ class IaiLitBase extends r$3 {
             --iai-colour-focus:  #ffdd04;
             --iai-colour-pink:  #C50878;
             --iai-colour-secondary: #0B8478;
+            --iai-colour-secondary-transparent: #0b84781a;
             --iai-colour-pink-transparent: #c5087812;
+            --iai-colour-pink-transparent-mid: #F0B5D8;
         }
     `
 
@@ -103,6 +105,19 @@ class IaiLitCsrExample extends IaiLitBase {
     }
 }
 customElements.define("iai-lit-csr-example", IaiLitCsrExample);
+
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */
+const t$1={CHILD:2},e$1=t=>(...e)=>({_$litDirective$:t,values:e});class i{constructor(t){}get _$AU(){return this._$AM._$AU}_$AT(t,e,i){this._$Ct=t,this._$AM=e,this._$Ci=i;}_$AS(t,e){return this.update(t,e)}update(t,e){return this.render(...e)}}
+
+/**
+ * @license
+ * Copyright 2017 Google LLC
+ * SPDX-License-Identifier: BSD-3-Clause
+ */class e extends i{constructor(i){if(super(i),this.it=E,i.type!==t$1.CHILD)throw Error(this.constructor.directiveName+"() can only be used in child bindings")}render(r){if(r===E||null==r)return this._t=void 0,this.it=r;if(r===T)return r;if("string"!=typeof r)throw Error(this.constructor.directiveName+"() called with a non-string value");if(r===this.it)return this._t;this.it=r;const s=[r];return s.raw=s,this._t={_$litType$:this.constructor.resultType,strings:s,values:[]}}}e.directiveName="unsafeHTML",e.resultType=1;const o$2=e$1(e);
 
 class IaiExpandingText extends IaiLitBase {
     static properties = {
@@ -241,7 +256,7 @@ class IaiExpandingText extends IaiLitBase {
                 @click=${this.handleClick}
             >
                 <span id=${this.contentId}>
-                    ${this.text}
+                    ${o$2(this.text)}
                 </span>
             </div>
         `;
@@ -295,6 +310,9 @@ class IaiDataTable extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         i$4`
+            iai-data-table tbody.govuk-table__body td {
+                vertical-align: middle;
+            }
             iai-data-table .bottom-row td:first-child {
                 font-weight: bold;
             }
@@ -749,6 +767,12 @@ class IaiCheckboxInput extends IaiLitBase {
         this.applyStaticStyles("iai-checkbox-input", IaiCheckboxInput.styles);
     }
 
+    updated(changedProps) {
+        if (changedProps.has("checked")) {
+            this.querySelector("input").checked = this.checked;
+        }
+    }
+
     render() {
         return x`
             <div class="govuk-checkboxes__item">
@@ -757,7 +781,6 @@ class IaiCheckboxInput extends IaiLitBase {
                     class="govuk-checkboxes__input"
                     id=${this.inputId}
                     name=${this.name}
-                    ?checked=${this.checked}
                     value=${this.value}
                     @change=${this.handleChange}
                 >
@@ -844,14 +867,7 @@ typeof SuppressedError === "function" ? SuppressedError : function (error, suppr
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const o$2={attribute:true,type:String,converter:u$3,reflect:false,hasChanged:f$3},r$2=(t=o$2,e,r)=>{const{kind:n,metadata:i}=r;let s=globalThis.litPropertyMetadata.get(i);if(void 0===s&&globalThis.litPropertyMetadata.set(i,s=new Map),s.set(r.name,t),"accessor"===n){const{name:o}=r;return {set(r){const n=e.get.call(this);e.set.call(this,r),this.requestUpdate(o,n,t);},init(e){return void 0!==e&&this.P(o,void 0,t),e}}}if("setter"===n){const{name:o}=r;return function(r){const n=this[o];e.call(this,r),this.requestUpdate(o,n,t);}}throw Error("Unsupported decorator location: "+n)};function n$1(t){return (e,o)=>"object"==typeof o?r$2(t,e,o):((t,e,o)=>{const r=e.hasOwnProperty(o);return e.constructor.createProperty(o,r?{...t,wrapped:true}:t),r?Object.getOwnPropertyDescriptor(e,o):void 0})(t,e,o)}
-
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */
-const t$1={CHILD:2},e$1=t=>(...e)=>({_$litDirective$:t,values:e});class i{constructor(t){}get _$AU(){return this._$AM._$AU}_$AT(t,e,i){this._$Ct=t,this._$AM=e,this._$Ci=i;}_$AS(t,e){return this.update(t,e)}update(t,e){return this.render(...e)}}
+ */const o$1={attribute:true,type:String,converter:u$3,reflect:false,hasChanged:f$3},r$2=(t=o$1,e,r)=>{const{kind:n,metadata:i}=r;let s=globalThis.litPropertyMetadata.get(i);if(void 0===s&&globalThis.litPropertyMetadata.set(i,s=new Map),s.set(r.name,t),"accessor"===n){const{name:o}=r;return {set(r){const n=e.get.call(this);e.set.call(this,r),this.requestUpdate(o,n,t);},init(e){return void 0!==e&&this.P(o,void 0,t),e}}}if("setter"===n){const{name:o}=r;return function(r){const n=this[o];e.call(this,r),this.requestUpdate(o,n,t);}}throw Error("Unsupported decorator location: "+n)};function n$1(t){return (e,o)=>"object"==typeof o?r$2(t,e,o):((t,e,o)=>{const r=e.hasOwnProperty(o);return e.constructor.createProperty(o,r?{...t,wrapped:true}:t),r?Object.getOwnPropertyDescriptor(e,o):void 0})(t,e,o)}
 
 /**
  * @license
@@ -863,7 +879,7 @@ const t$1={CHILD:2},e$1=t=>(...e)=>({_$litDirective$:t,values:e});class i{constr
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const s=(i,t)=>{const e=i._$AN;if(void 0===e)return  false;for(const i of e)i._$AO?.(t,false),s(i,t);return  true},o$1=i=>{let t,e;do{if(void 0===(t=i._$AM))break;e=t._$AN,e.delete(i),i=t;}while(0===e?.size)},r=i=>{for(let t;t=i._$AM;i=t){let e=t._$AN;if(void 0===e)t._$AN=e=new Set;else if(e.has(i))break;e.add(i),c$1(t);}};function h(i){ void 0!==this._$AN?(o$1(this),this._$AM=i,r(this)):this._$AM=i;}function n(i,t=false,e=0){const r=this._$AH,h=this._$AN;if(void 0!==h&&0!==h.size)if(t)if(Array.isArray(r))for(let i=e;i<r.length;i++)s(r[i],false),o$1(r[i]);else null!=r&&(s(r,false),o$1(r));else s(this,i);}const c$1=i=>{i.type==t$1.CHILD&&(i._$AP??=n,i._$AQ??=h);};class f extends i{constructor(){super(...arguments),this._$AN=void 0;}_$AT(i,t,e){super._$AT(i,t,e),r(this),this.isConnected=i._$AU;}_$AO(i,t=true){i!==this.isConnected&&(this.isConnected=i,i?this.reconnected?.():this.disconnected?.()),t&&(s(this,i),o$1(this));}setValue(t){if(f$1(this._$Ct))this._$Ct._$AI(t,this);else {const i=[...this._$Ct._$AH];i[this._$Ci]=t,this._$Ct._$AI(i,this,0);}}disconnected(){}reconnected(){}}
+ */const s=(i,t)=>{const e=i._$AN;if(void 0===e)return  false;for(const i of e)i._$AO?.(t,false),s(i,t);return  true},o=i=>{let t,e;do{if(void 0===(t=i._$AM))break;e=t._$AN,e.delete(i),i=t;}while(0===e?.size)},r=i=>{for(let t;t=i._$AM;i=t){let e=t._$AN;if(void 0===e)t._$AN=e=new Set;else if(e.has(i))break;e.add(i),c$1(t);}};function h(i){ void 0!==this._$AN?(o(this),this._$AM=i,r(this)):this._$AM=i;}function n(i,t=false,e=0){const r=this._$AH,h=this._$AN;if(void 0!==h&&0!==h.size)if(t)if(Array.isArray(r))for(let i=e;i<r.length;i++)s(r[i],false),o(r[i]);else null!=r&&(s(r,false),o(r));else s(this,i);}const c$1=i=>{i.type==t$1.CHILD&&(i._$AP??=n,i._$AQ??=h);};class f extends i{constructor(){super(...arguments),this._$AN=void 0;}_$AT(i,t,e){super._$AT(i,t,e),r(this),this.isConnected=i._$AU;}_$AO(i,t=true){i!==this.isConnected&&(this.isConnected=i,i?this.reconnected?.():this.disconnected?.()),t&&(s(this,i),o(this));}setValue(t){if(f$1(this._$Ct))this._$Ct._$AI(t,this);else {const i=[...this._$Ct._$AH];i[this._$Ci]=t,this._$Ct._$AI(i,this,0);}}disconnected(){}reconnected(){}}
 
 /**
  * @license
@@ -2024,11 +2040,163 @@ class IaiResponses extends IaiLitBase {
 }
 customElements.define("iai-responses", IaiResponses);
 
-/**
- * @license
- * Copyright 2017 Google LLC
- * SPDX-License-Identifier: BSD-3-Clause
- */class e extends i{constructor(i){if(super(i),this.it=E,i.type!==t$1.CHILD)throw Error(this.constructor.directiveName+"() can only be used in child bindings")}render(r){if(r===E||null==r)return this._t=void 0,this.it=r;if(r===T)return r;if("string"!=typeof r)throw Error(this.constructor.directiveName+"() called with a non-string value");if(r===this.it)return this._t;this.it=r;const s=[r];return s.raw=s,this._t={_$litType$:this.constructor.resultType,strings:s,values:[]}}}e.directiveName="unsafeHTML",e.resultType=1;const o=e$1(e);
+class IaiIcon extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        name: { type: String },
+        color: { type: String },
+        fill: {type: Number }, //  0 | 1
+        opsz: { type: Number },
+        wght: { type: Number },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-icon {
+                display: flex;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Google expect icon names to be alphabetically sorted
+        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle"];
+        this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
+
+        // Prop defaults
+        this.name = "";
+        this.color = "";
+        this.fill = 0;
+        this.opsz = 48;
+        this.wght = 300;
+        
+        this.applyStaticStyles("iai-icon", IaiIcon.styles);
+    }
+
+    firstUpdated() {
+        this.addIconImport();
+    }
+
+    addIconImport() {
+        // Do not add if already added
+        if (document.querySelector(`link[href="${this._URL}"]`)) {
+            return;
+        }
+
+        const linkElement = document.createElement("link");
+        linkElement.rel = "stylesheet";
+        linkElement.href = this._URL;
+        document.head.append(linkElement);
+    }
+
+    render() {
+        return x`
+            <style>
+                #${this.contentId}.material-symbols-outlined {
+                    font-variation-settings:
+                        'FILL' ${this.fill},
+                        'opsz' ${this.opsz},
+                        'wght' ${this.wght};
+                    color: ${this.color};
+                }
+            </style>
+            <span id=${this.contentId} class="material-symbols-outlined">
+                ${this.name}
+            </span>
+        `;
+    }
+}
+customElements.define("iai-icon", IaiIcon);
+
+class IaiExpandingPill extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        label: {type: String},
+        body: {type: String},
+        initialExpanded: {type: Boolean},
+        _expanded: {type: Boolean},
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-expanding-pill {
+                font-size: 0.9em;
+            }
+            
+            iai-expanding-pill button {
+                display: flex;
+                place-items: center;
+                padding: 0.3em 0.8em;
+                gap: 1em;
+                font-size: 1em;
+                background: #c50878;
+                color: white;
+                border: none;
+                border-radius: var(--iai-border-radius);
+                cursor: pointer;
+            }
+            iai-expanding-pill button.expanded iai-icon {
+                transition: transform 0.3s ease-in-out;
+                transform: rotate(180deg);
+            }
+            iai-expanding-pill .body {
+                font-size: 1.1em;
+                line-height: 1.8em;
+                padding: 0 0.5em;
+                margin-bottom: 0.5em;
+                max-height: 0;
+                overflow: hidden;
+                transition: 0.6s ease;
+                transition-property: max-height, padding;
+            }
+            iai-expanding-pill .body.expanded {
+                padding-block: 0.5em;
+                max-height: 10em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.label = "";
+        this.body = "";
+        this.initialExpanded = false;
+        this._expanded = false;
+
+        this.applyStaticStyles("iai-expanding-pill", IaiExpandingPill.styles);
+    }
+
+    firstUpdated() {
+        this._expanded = this.initialExpanded;
+    }
+
+    render() {
+        return x`    
+            <button
+                class=${this._expanded ? "expanded" : ""}
+                @click=${_ => this._expanded = !this._expanded}
+            >
+                ${this.label}
+                <iai-icon
+                    .name=${"arrow_drop_down_circle"}
+                    .opsz=${12}
+                ></iai-icon>
+            </button>
+            <div class=${"body" + (this._expanded ? " expanded" : "")}>
+                ${this.body}
+            </div>
+        `;
+    }
+}
+customElements.define("iai-expanding-pill", IaiExpandingPill);
 
 class IaiResponse extends IaiLitBase {
     static properties = {
@@ -2071,17 +2239,21 @@ class IaiResponse extends IaiLitBase {
                 line-height: 2em;
             }
 
-            iai-response .themes {
-                display: flex;
-                align-items: center;
-                gap: 0.6%;
-            }
             iai-response .themes tool-tip,
             iai-response .themes tool-tip .iai-tooltip__button img {
                 width: 14px;
             }
             iai-response .themes tool-tip .iai-tooltip__button {
                 gap: 0.5em;
+            }
+            iai-response iai-expanding-text .iai-text-content {
+                transition: none;
+            }
+            iai-response .response {
+                border: 2px solid var(--iai-colour-border-grey);
+            }
+            iai-response .themes {
+                margin-bottom: 1em;
             }
         `
     ]
@@ -2117,17 +2289,19 @@ class IaiResponse extends IaiLitBase {
     }
 
     getFormattedSentiment = () => {
-        return (
-            this.sentiment_position.charAt(0).toLocaleUpperCase()
-            + this.sentiment_position.slice(1).toLocaleLowerCase()
-        );
-    }
+        if (this.sentiment_position == "AGREEMENT") {
+            return x`<strong>Agree</strong> with the question`;
+        } else if (this.sentiment_position == "DISAGREEMENT") {
+            return x`<strong>Disagree</strong> with the question`;
+        } else if (this.sentiment_position == "UNCLEAR") {
+            return x`<strong>Unclear</strong> about the question`;
+        }    }
 
     getFreeTextAnswerText = () => {
-        return o(this.free_text_answer_text.replace(
+        return this.free_text_answer_text.replace(
             this.searchValue,
             `<span class="highlighted">${this.searchValue}</span>`
-        ));
+        );
     }
 
     render() {
@@ -2143,24 +2317,17 @@ class IaiResponse extends IaiLitBase {
                             Respondent ${this.identifier}
                         </h2>
                     </div>
-                    
-                    <!-- TODO: add pin here -->
-                    <!--
-                    <div class="govuk-grid-column-one-third">
-                        <a class="pin-response align-right">
-                            <p class="govuk-body-s govuk-!-margin-bottom-0 display-flex align-items-center">
-                                <img src="/public/images/pin-response.svg" alt="Pin response">
-                                <span>Pin response</span>
-                            </p>
-                        </a>
-                    </div> -->
                 </div>
 
                 ${this.free_text_answer_text
                     ? x`
-                        <h3 class="govuk-heading-s govuk-!-margin-bottom-4">
-                            Free text response
-                        </h3>
+                        <p class="govuk-body answer">
+                            <iai-expanding-text
+                                .text=${this.getFreeTextAnswerText()}    
+                                .lines=${2}
+                            ></iai-expanding-text>
+                        </p>
+
                         ${this.sentiment_position
                             ? x`
                                 <p class="govuk-body sentiment-position">
@@ -2173,25 +2340,15 @@ class IaiResponse extends IaiLitBase {
                             : ""
                         }
 
-                        ${this.themes.map(theme => x`
-                            <div class="govuk-pill-container themes">
-                                <div class="govuk-pill">
-                                    <tool-tip class="iai-tooltip">
-                                        <div class="iai-tooltip__button" role="tooltip" tabindex="0" aria-describedby="tooltip-content-${theme.id}">
-                                            <span>${theme.name}</span>
-                                            <img src="https://consult.ai.cabinetoffice.gov.uk/static/icons/question-mark.svg" alt="info"/>
-                                        </div>
-                                        <div class="iai-tooltip__content" id="tooltip-content-${theme.id}">
-                                            ${theme.description}
-                                        </div>
-                                    </tool-tip>
-                                </div>
-                            </div>
-                        `)}
-
-                        <p class="govuk-body answer">
-                            ${this.getFreeTextAnswerText()}
-                        </p>
+                        <div class="themes">
+                            ${this.themes.map(theme => x`
+                                <iai-expanding-pill
+                                    .label=${theme.name}
+                                    .body=${theme.description}
+                                    .initialExpanded=${false}
+                                ></iai-expanding-pill>
+                            `)}
+                        </div>
                     `
                     : ""
                 }
@@ -2361,7 +2518,7 @@ class IaiQuestionBody extends IaiLitBase {
 
     getHighlightedText = (fullText, matchedText) => {
         const regex = new RegExp(matchedText, "gi");
-        return o(fullText.replace(regex, match => `<span class="matched-text">${match}</span>`));
+        return o$2(fullText.replace(regex, match => `<span class="matched-text">${match}</span>`));
     }
     
     render() {
@@ -2371,90 +2528,6 @@ class IaiQuestionBody extends IaiLitBase {
     }
 }
 customElements.define("iai-question-body", IaiQuestionBody);
-
-class IaiIcon extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        name: { type: String },
-        color: { type: String },
-        fill: {type: Number }, //  0 | 1
-        opsz: { type: Number },
-        wght: { type: Number },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-icon button {
-                background: none;
-                border: none;
-                cursor: pointer;
-                border-radius: 50%;
-                padding: 0.3em 0.5em;
-                transition: 0.3s ease-in-out;
-                transition-property: background-color;
-            }
-            iai-icon button:hover {
-                background: var(--iai-colour-pink-transparent);
-            }
-            iai-icon .material-symbols-outlined {
-                font-size: 2em;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Google expect icon names to be alphabetically sorted
-        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down"];
-        this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
-
-        // Prop defaults
-        this.name = "";
-        this.color = "";
-        this.fill = 0;
-        this.opsz = 48;
-        this.wght = 300;
-        
-        this.applyStaticStyles("iai-icon", IaiIcon.styles);
-    }
-
-    firstUpdated() {
-        this.addIconImport();
-    }
-
-    addIconImport() {
-        // Do not add if already added
-        if (document.querySelector(`link[href="${this._URL}"]`)) {
-            return;
-        }
-
-        const linkElement = document.createElement("link");
-        linkElement.rel = "stylesheet";
-        linkElement.href = this._URL;
-        document.head.append(linkElement);
-    }
-
-    render() {
-        return x`
-            <style>
-                #${this.contentId}.material-symbols-outlined {
-                    font-variation-settings:
-                        'FILL' ${this.fill},
-                        'opsz' ${this.opsz},
-                        'wght' ${this.wght};
-                    color: ${this.color};
-                }
-            </style>
-            <span id=${this.contentId} class="material-symbols-outlined">
-                ${this.name}
-            </span>
-        `;
-    }
-}
-customElements.define("iai-icon", IaiIcon);
 
 class IaiIconButton extends IaiLitBase {
     static properties = {
@@ -2528,6 +2601,7 @@ class IaiQuestionTile extends IaiLitBase {
         maxLength: { type: Number },
         highlighted: { type: Boolean },
         searchValue: { type: String },
+        handleViewClick: { type: Function },
     }
 
     static styles = [
@@ -2571,6 +2645,7 @@ class IaiQuestionTile extends IaiLitBase {
         this.maxLength = 90;
         this.highlighted = false;
         this.searchValue = "";
+        this.handleViewClick = () => {};
 
         this.applyStaticStyles("iai-question-tile", IaiQuestionTile.styles);
     }
@@ -2589,12 +2664,6 @@ class IaiQuestionTile extends IaiLitBase {
         this.toggleStorage();
 
         this._favourited = this.getStoredIds().includes(this.questionId);
-    }
-
-    handleViewClick = (e) => {
-        e.stopPropagation();
-
-        window.location.replace(this.url);
     }
 
     getStoredIds = () => {
@@ -2982,6 +3051,9 @@ class IaiQuestionTiles extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         i$4`
+            iai-question-tiles iai-icon .material-symbols-outlined {
+                font-size: 2em;
+            }
             iai-question-tiles .questions {
                 display: flex;
                 flex-wrap: wrap;
@@ -3046,6 +3118,16 @@ class IaiQuestionTiles extends IaiLitBase {
         )
     }
 
+    handleViewClick = (e, question) => {
+        e.stopPropagation();
+
+        this._selectedQuestion = question;
+    }
+
+    handleTileClick = (e, url) => {
+        window.location.replace(url);
+    }
+
     render() {
         return x`
             <iai-page-title
@@ -3065,7 +3147,8 @@ class IaiQuestionTiles extends IaiLitBase {
                                     .body=${question.body}
                                     .highlighted=${this._selectedQuestion == question}
                                     .searchValue=${this._searchValue}
-                                    @click=${_ => this._selectedQuestion = question}
+                                    .handleViewClick=${(e) => this.handleViewClick(e, question)}
+                                    @click=${(e) => this.handleTileClick(e, question.url)}
                                 ></iai-question-tile>
                             `)
                             : x`<p>No matching question found.</p>`
@@ -3196,4 +3279,66 @@ class IaiPageTitle extends IaiLitBase {
     }
 }
 customElements.define("iai-page-title", IaiPageTitle);
+
+class IaiChip extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        label: {type: String},
+        handleClick: {type: Function},
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-chip {
+                font-size: 0.9em;
+            }
+            
+            iai-chip div {
+                display: flex;
+                place-items: center;
+                gap: 1em;
+                padding: 0.5em 1em;
+                font-size: 1em;
+                line-height: 1.5em;
+                color: black;
+                background: var(--iai-colour-pink-transparent-mid);
+                border: none;
+                border-radius: var(--iai-border-radius);
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.label = "";
+        this.handleClick = () => {};
+
+        this.applyStaticStyles("iai-chip", IaiChip.styles);
+    }
+
+    render() {
+        return x`    
+            <div>
+                ${this.label}
+
+                <iai-icon-button
+                    title="Remove theme filter"
+                    .handleClick=${this.handleClick}
+                >
+                    <iai-icon
+                        slot="icon"
+                        name="close"
+                        .opsz=${12}
+                        .color=${"black"}
+                    ></iai-icon>
+                </iai-icon-button>
+            </div>
+        `;
+    }
+}
+customElements.define("iai-chip", IaiChip);
 //# sourceMappingURL=index.js.map
