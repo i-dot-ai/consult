@@ -25,3 +25,4 @@ import IaiTextResponseItem from "./questionsArchive/IaiTextResponseItem/iai-text
 import IaiPageTitle from "./IaiPageTitle/iai-page-title.lit.csr.mjs";
 import IaiExpandingPill from "./IaiExpandingPill/iai-expanding-pill.lit.csr.mjs";
 import IaiChip from "./IaiChip/iai-chip.lit.csr.mjs";
+import IaiResponseDashboard from "./IaiResponseDashboard/iai-response-dashboard.lit.csr.mjs";
