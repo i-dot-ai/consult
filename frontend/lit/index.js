@@ -3533,7 +3533,12 @@ class IaiResponseDashboard extends IaiLitBase {
 
     handleThemesPanelClose = (e) => {
         const themesContainerEl = this.querySelector(".themes-container");
-        if (themesContainerEl && themesContainerEl.contains(e.target)) {
+
+        if (!themesContainerEl) {
+            return;
+        }
+
+        if (!themesContainerEl.contains(e.target)) {
             this._themesPanelVisible = false;
         }
     }
