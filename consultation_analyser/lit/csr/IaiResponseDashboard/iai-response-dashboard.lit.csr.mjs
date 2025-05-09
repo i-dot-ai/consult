@@ -37,6 +37,9 @@ export default class IaiResponseDashboard extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         css`
+            iai-response-dashboard {
+                margin-bottom: 5em;
+            }
             .themes-container {
                 position: relative;
             }
@@ -171,7 +174,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
             changedProps.has("_minWordCount") ||
             changedProps.has("_searchValue")  ||
             changedProps.has("_themeFilters") ||
-            changedProps.has("_demographicFilter")
+            changedProps.has("_demographicFilters")
         ) {
             this.applyFilters();
         }
@@ -251,12 +254,16 @@ export default class IaiResponseDashboard extends IaiLitBase {
         }
 
         // filter by demographic
-        // if (
-        //     (response.individual === "individual" && !this._demographicFilters.includes("individual")) ||
-        //     (response.individual === "" && !this._demographicFilters.includes("organisation"))
-        // ) {
-        //     visible = false;
-        // }
+        if (
+            this._demographicFilters.length > 0 &&
+            (
+                (this._demographicFilters.includes("individual") && response.individual) ||
+                (this._demographicFilters.includes("organisation") && !response.individual)
+            )
+        )
+        {
+            visible = false;
+        }
         
         // filter by themes selected
         if (this._themeFilters.length > 0) {
@@ -502,7 +509,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                 }
 
                                 ${this.has_individual_data ? html`
-                                    <iai-response-filter-group title="Respondent type">
+                                    <iai-response-filter-group title="Response type">
                                         <div
                                             slot="content"
                                             class="govuk-checkboxes govuk-checkboxes--small"
@@ -512,14 +519,14 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                             <iai-checkbox-input
                                                 name="demographic-filter"
                                                 inputId="demographic-individual"
-                                                label="Individual"
+                                                label="Hide Individual"
                                                 value="individual"
                                                 .handleChange=${this.handleDemographicChange}
                                             ></iai-checkbox-input>
                                             <iai-checkbox-input
                                                 name="demographic-filter"
                                                 inputId="demographic-organisation"
-                                                label="Organisation"
+                                                label="Hide Organisation"
                                                 value="organisation"
                                                 .handleChange=${this.handleDemographicChange}
                                             ></iai-checkbox-input>
@@ -615,7 +622,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                     </div>
 
                     <iai-responses
-                        style="height: ${this.calculateResponsesHeight()}px;"
+                        style="height: calc(${this.calculateResponsesHeight()}px - 2em);"
                         .responses=${visibleResponses}
                         .renderResponse=${response => html`
                             <iai-response

@@ -2086,6 +2086,10 @@ class IaiResponses extends IaiLitBase {
             iai-responses lit-virtualizer {
                 height: 100%;
             }
+            iai-responses p.not-found {
+                text-align: center;
+                font-style: italic;
+            }
         `
     ]
 
@@ -2103,6 +2107,10 @@ class IaiResponses extends IaiLitBase {
     }
 
     render() {
+        if (this.responses.length === 0) {
+            return x`<p class="not-found">No matching responses found</p>`
+        }
+
         return x`
             <lit-virtualizer
                 role="list"
@@ -2223,7 +2231,7 @@ class IaiResponse extends IaiLitBase {
                 width: 100%;
             }
 
-            iai-response .highlighted {
+            iai-response .matched-text {
                 background-color: yellow;
             }
 
@@ -2310,11 +2318,9 @@ class IaiResponse extends IaiLitBase {
             return x`<strong>Unclear</strong> about the question`;
         }    }
 
-    getFreeTextAnswerText = () => {
-        return this.free_text_answer_text.replace(
-            this.searchValue,
-            `<span class="highlighted">${this.searchValue}</span>`
-        );
+    getHighlightedText = (fullText, matchedText) => {
+        const regex = new RegExp(matchedText, "gi");
+        return fullText.replace(regex, match => `<span class="matched-text">${match}</span>`);
     }
 
     render() {
@@ -2342,7 +2348,7 @@ class IaiResponse extends IaiLitBase {
                     ? x`
                         <p class="govuk-body answer">
                             <iai-expanding-text
-                                .text=${this.getFreeTextAnswerText()}    
+                                .text=${this.getHighlightedText(this.free_text_answer_text, this.searchValue)}    
                                 .lines=${2}
                             ></iai-expanding-text>
                         </p>
@@ -3389,6 +3395,9 @@ class IaiResponseDashboard extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         i$4`
+            iai-response-dashboard {
+                margin-bottom: 5em;
+            }
             .themes-container {
                 position: relative;
             }
@@ -3523,7 +3532,7 @@ class IaiResponseDashboard extends IaiLitBase {
             changedProps.has("_minWordCount") ||
             changedProps.has("_searchValue")  ||
             changedProps.has("_themeFilters") ||
-            changedProps.has("_demographicFilter")
+            changedProps.has("_demographicFilters")
         ) {
             this.applyFilters();
         }
@@ -3603,12 +3612,20 @@ class IaiResponseDashboard extends IaiLitBase {
         }
 
         // filter by demographic
-        // if (
-        //     (response.individual === "individual" && !this._demographicFilters.includes("individual")) ||
-        //     (response.individual === "" && !this._demographicFilters.includes("organisation"))
-        // ) {
-        //     visible = false;
-        // }
+        if (
+            this._demographicFilters.length > 0 &&
+            (
+                (this._demographicFilters.includes("individual") && response.individual) ||
+                (this._demographicFilters.includes("organisation") && !response.individual)
+            )
+        )
+
+
+            // (response.individual === "individual" && !this._demographicFilters.includes("individual")) ||
+            // (response.individual === "" && !this._demographicFilters.includes("organisation"))
+        {
+            visible = false;
+        }
         
         // filter by themes selected
         if (this._themeFilters.length > 0) {
@@ -3854,7 +3871,7 @@ class IaiResponseDashboard extends IaiLitBase {
                                 }
 
                                 ${this.has_individual_data ? x`
-                                    <iai-response-filter-group title="Respondent type">
+                                    <iai-response-filter-group title="Response type">
                                         <div
                                             slot="content"
                                             class="govuk-checkboxes govuk-checkboxes--small"
@@ -3864,14 +3881,14 @@ class IaiResponseDashboard extends IaiLitBase {
                                             <iai-checkbox-input
                                                 name="demographic-filter"
                                                 inputId="demographic-individual"
-                                                label="Individual"
+                                                label="Hide Individual"
                                                 value="individual"
                                                 .handleChange=${this.handleDemographicChange}
                                             ></iai-checkbox-input>
                                             <iai-checkbox-input
                                                 name="demographic-filter"
                                                 inputId="demographic-organisation"
-                                                label="Organisation"
+                                                label="Hide Organisation"
                                                 value="organisation"
                                                 .handleChange=${this.handleDemographicChange}
                                             ></iai-checkbox-input>
@@ -3967,7 +3984,7 @@ class IaiResponseDashboard extends IaiLitBase {
                     </div>
 
                     <iai-responses
-                        style="height: ${this.calculateResponsesHeight()}px;"
+                        style="height: calc(${this.calculateResponsesHeight()}px - 2em);"
                         .responses=${visibleResponses}
                         .renderResponse=${response => x`
                             <iai-response
