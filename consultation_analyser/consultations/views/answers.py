@@ -236,6 +236,9 @@ def index(
             respondent.themes = models.ThemeMapping.objects.filter(
                 answer=respondent.free_text_answer
             )
+            respondent.evidence_rich = models.EvidenceRichMapping.objects.filter(
+                answer=respondent.free_text_answer
+            ).last()
         except models.Answer.DoesNotExist:
             pass
 
