@@ -3532,7 +3532,8 @@ class IaiResponseDashboard extends IaiLitBase {
     }
 
     handleThemesPanelClose = (e) => {
-        if (!this.querySelector(".themes-container").contains(e.target)) {
+        const themesContainerEl = this.querySelector(".themes-container");
+        if (themesContainerEl && themesContainerEl.contains(e.target)) {
             this._themesPanelVisible = false;
         }
     }
@@ -3565,7 +3566,8 @@ class IaiResponseDashboard extends IaiLitBase {
         if (
             this._searchValue &&
             !response.free_text_answer_text.toLocaleLowerCase().includes(this._searchValue.toLocaleLowerCase()) &&
-            !response.identifier.toLocaleLowerCase().includes(this._searchValue.toLocaleLowerCase())
+            !response.identifier.toLocaleLowerCase().includes(this._searchValue.toLocaleLowerCase()) &&
+            !response.multiple_choice_answer.join(",").toLocaleLowerCase().includes(this._searchValue.toLocaleLowerCase())
         ) {
             visible = false;
         }
@@ -3643,59 +3645,64 @@ class IaiResponseDashboard extends IaiLitBase {
                 </div>
             </div>
 
-            <div class="govuk-grid-row govuk-!-margin-top-5">
-                <div class="govuk-grid-column-full">
-                    <div class="table-container">
+            ${this.themeMappings.length > 0
+                ? x`
+                    <div class="govuk-grid-row govuk-!-margin-top-5">
+                        <div class="govuk-grid-column-full">
+                            <div class="table-container">
 
-                        <div class="table-title">
-                            <h2 class="govuk-heading-m">
-                                Themes
-                            </h2>
+                                <div class="table-title">
+                                    <h2 class="govuk-heading-m">
+                                        Themes
+                                    </h2>
 
-                            <!-- TODO:
-                                <button>Download CSV</button>
-                            -->
-                        </div>
+                                    <!-- TODO:
+                                        <button>Download CSV</button>
+                                    -->
+                                </div>
 
-                        <div class="theme-filters-applied">
-                            <ul>
-                                ${this._themeFilters.map(themeFilterId => x`
-                                    <li>
-                                        <iai-chip
-                                            .label=${this.themeMappings
-                                                .find(themeMapping => themeMapping.value == themeFilterId).label
+                                <div class="theme-filters-applied">
+                                    <ul>
+                                        ${this._themeFilters.map(themeFilterId => x`
+                                            <li>
+                                                <iai-chip
+                                                    .label=${this.themeMappings
+                                                        .find(themeMapping => themeMapping.value == themeFilterId).label
+                                                    }
+                                                    .handleClick=${_ => this._themeFilters = this._themeFilters.filter(
+                                                        currThemeFilterId => currThemeFilterId != themeFilterId
+                                                    )}
+                                                ></iai-chip>
+                                            </li>
+                                        `)}
+                                    </ul>
+                                </div>
+
+                                <iai-data-table
+                                    .data=${this.themeMappings
+                                        .filter(themeMapping => (
+                                            this._themeFilters.includes(themeMapping.value) || this._themeFilters.length == 0
+                                        ))
+                                        .map(themeMapping => (
+                                            {
+                                                "Theme name and description": x`
+                                                    <iai-expanding-pill
+                                                        .label=${themeMapping.label}
+                                                        .body=${themeMapping.description}
+                                                        .initialExpanded=${true}
+                                                    ></iai-expanding-pill>
+                                                `,
+                                                "Total mentions": themeMapping.count,
                                             }
-                                            .handleClick=${_ => this._themeFilters = this._themeFilters.filter(
-                                                currThemeFilterId => currThemeFilterId != themeFilterId
-                                            )}
-                                        ></iai-chip>
-                                    </li>
-                                `)}
-                            </ul>
-                        </div>
-
-                        <iai-data-table
-                            .data=${this.themeMappings
-                                .filter(themeMapping => (
-                                    this._themeFilters.includes(themeMapping.value) || this._themeFilters.length == 0
-                                ))
-                                .map(themeMapping => (
-                                    {
-                                        "Theme name and description": x`
-                                            <iai-expanding-pill
-                                                .label=${themeMapping.label}
-                                                .body=${themeMapping.description}
-                                                .initialExpanded=${true}
-                                            ></iai-expanding-pill>
-                                        `,
-                                        "Total mentions": themeMapping.count,
+                                        ))
                                     }
-                                ))
-                            }
-                        ></iai-data-table>
+                                ></iai-data-table>
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                ` 
+                : ""
+            }
 
             ${this.multiple_choice_summary.length > 0
                 ? x`
@@ -3791,11 +3798,11 @@ class IaiResponseDashboard extends IaiLitBase {
                                                 </div>
                                             </div>
                                         </iai-response-filter-group>
+
+                                        <hr />
                                     `
                                     : ""
                                 }
-
-                                <hr />
 
                                 ${this.has_individual_data ? x`
                                     <iai-response-filter-group title="Respondent type">
@@ -3821,9 +3828,10 @@ class IaiResponseDashboard extends IaiLitBase {
                                             ></iai-checkbox-input>
                                         </div>
                                     </iai-response-filter-group>
+
+                                    <hr />
                                 ` : ""}
 
-                                <hr />
 
                                 <iai-response-filter-group title="Response sentiment">
                                     <div
@@ -3862,11 +3870,11 @@ class IaiResponseDashboard extends IaiLitBase {
                                         ></iai-checkbox-input>
                                     </div>
                                 </iai-response-filter-group>
-
-                                <hr />
                         
                                 ${this.free_text_question_part 
                                     ? x`
+                                        <hr />
+                                        
                                         <iai-response-filter-group title="Response word count">
                                             <div slot="content">
                                                 <iai-number-input
