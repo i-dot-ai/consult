@@ -19,6 +19,9 @@ export default class IaiQuestionTiles extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         css`
+            iai-question-tiles iai-icon .material-symbols-outlined {
+                font-size: 2em;
+            }
             iai-question-tiles .questions {
                 display: flex;
                 flex-wrap: wrap;
