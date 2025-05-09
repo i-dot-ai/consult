@@ -1,4 +1,6 @@
 import { html, css } from 'lit';
+import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+
 import IaiLitBase from '../../IaiLitBase.mjs';
 
 
@@ -139,7 +141,7 @@ export default class IaiExpandingText extends IaiLitBase {
                 @click=${this.handleClick}
             >
                 <span id=${this.contentId}>
-                    ${this.text}
+                    ${unsafeHTML(this.text)}
                 </span>
             </div>
         `;

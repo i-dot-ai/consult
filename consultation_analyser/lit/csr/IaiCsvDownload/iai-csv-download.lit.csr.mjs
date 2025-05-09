@@ -1,5 +1,7 @@
 import { html, css } from "lit";
+
 import IaiLitBase from "../../IaiLitBase.mjs";
+import IaiIcon from "../questionsArchive/IaiIcon/iai-icon.mjs";
 
 
 export default class IaiCsvDownload extends IaiLitBase {
@@ -50,6 +52,9 @@ export default class IaiCsvDownload extends IaiLitBase {
                 download=${this.fileName}
             >
                 Download CSV
+                <iai-icon
+                    name="download"
+                ></iai-icon>
             </a>
         `
     }

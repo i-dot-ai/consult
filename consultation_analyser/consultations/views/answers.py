@@ -221,14 +221,8 @@ def index(
     )
     multiple_choice_summary = get_selected_option_summary(question, respondents)
 
-    # Pagination
-    pagination = Paginator(respondents, 5)
-    page_index = request.GET.get("page", "1")
-    current_page = pagination.page(page_index)
-    paginated_respondents = current_page.object_list
-
     # Get individual data for each displayed respondent
-    for respondent in paginated_respondents:
+    for respondent in respondents:
         # Free text response
         try:
             respondent.free_text_answer = models.Answer.objects.get(
@@ -242,6 +236,9 @@ def index(
             respondent.themes = models.ThemeMapping.objects.filter(
                 answer=respondent.free_text_answer
             )
+            respondent.evidence_rich = models.EvidenceRichMapping.objects.filter(
+                answer=respondent.free_text_answer
+            ).last()
         except models.Answer.DoesNotExist:
             pass
 
@@ -254,6 +251,12 @@ def index(
             )
         except models.Answer.DoesNotExist:
             pass
+    
+    # Pagination
+    pagination = Paginator(respondents, 5)
+    page_index = request.GET.get("page", "1")
+    current_page = pagination.page(page_index)
+    paginated_respondents = current_page.object_list
 
     csv_button_data = [{
         "Theme name": mapping.get("theme__name", ""),
@@ -272,6 +275,7 @@ def index(
         "total_responses": len(respondents),
         "pagination": current_page,
         "respondents": paginated_respondents,
+        "all_respondents": respondents,
         "selected_theme_mappings": selected_theme_mappings,
         "csv_button_data": csv_button_data,
         "theme_mapping_summary": theme_mapping_summary,

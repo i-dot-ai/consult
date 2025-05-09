@@ -13,6 +13,9 @@ export default class IaiDataTable extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         css`
+            iai-data-table tbody.govuk-table__body td {
+                vertical-align: middle;
+            }
             iai-data-table .bottom-row td:first-child {
                 font-weight: bold;
             }
