@@ -113,7 +113,6 @@
       {
         id: "response-{{ respondent.identifier | default('') }}",
         identifier: "{{ respondent.identifier | default('') }}",
-        individual: "{{ respondent.individual | default('') }}",
         sentiment_position: "{{ (respondent.sentiment and respondent.sentiment.position) | default('') }}",
         free_text_answer_text: "{{ (respondent.free_text_answer and respondent.free_text_answer.text) | default('') }}",
         demographic_data: "{{ respondent.demographic_data | default('') }}",
@@ -133,6 +132,9 @@
         {% else %}
           multiple_choice_answer: [],
         {% endif %}
+
+        evidenceRich: {% if respondent.evidence_rich.evidence_rich %}true{% else %}false{% endif %},
+        individual: {% if respondent.individual %}true{% else %}false{% endif %},
       },
     {% endfor %}
   ];

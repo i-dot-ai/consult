@@ -250,7 +250,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
             visible = false;
         }
 
-        // TODO: filter by demographic
+        // filter by demographic
         // if (
         //     (response.individual === "individual" && !this._demographicFilters.includes("individual")) ||
         //     (response.individual === "" && !this._demographicFilters.includes("organisation"))
@@ -272,9 +272,14 @@ export default class IaiResponseDashboard extends IaiLitBase {
             }
         }
 
-        // filter by min word count
-        if (this._evidenceRichFilters) {
-            // TODO: Evidence Rich filter logic here
+        // filter by evidence rich
+        if (this._evidenceRichFilters.length > 0) {
+            if (
+                this._evidenceRichFilters.includes("evidence-rich") &&
+                !response.evidenceRich
+            ) {
+                visible = false;
+            }
         }
 
         // filter by min word count
@@ -625,6 +630,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                 .has_multiple_choice_question_part=${this.has_multiple_choice_question_part}
                                 .multiple_choice_answer=${response.multiple_choice_answer}
                                 .searchValue=${this._searchValue}
+                                .evidenceRich=${response.evidenceRich}
                             ></iai-response>
                         `}
                     ></iai-responses>
