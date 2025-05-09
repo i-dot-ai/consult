@@ -38,6 +38,12 @@ export default class IaiCheckboxInput extends IaiLitBase {
         this.applyStaticStyles("iai-checkbox-input", IaiCheckboxInput.styles);
     }
 
+    updated(changedProps) {
+        if (changedProps.has("checked")) {
+            this.querySelector("input").checked = this.checked;
+        }
+    }
+
     render() {
         return html`
             <div class="govuk-checkboxes__item">
@@ -46,7 +52,6 @@ export default class IaiCheckboxInput extends IaiLitBase {
                     class="govuk-checkboxes__input"
                     id=${this.inputId}
                     name=${this.name}
-                    ?checked=${this.checked}
                     value=${this.value}
                     @change=${this.handleChange}
                 >
