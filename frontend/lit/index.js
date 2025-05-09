@@ -539,7 +539,7 @@ class IaiIcon extends IaiLitBase {
         this.contentId = this.generateId();
 
         // Google expect icon names to be alphabetically sorted
-        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download"];
+        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond"];
         this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
 
         // Prop defaults
@@ -2213,6 +2213,7 @@ class IaiResponse extends IaiLitBase {
         has_multiple_choice_question_part: {type: Boolean},
         multiple_choice_answer: {type: Array},
         searchValue: {type: String},
+        evidenceRich: { type: Boolean },
     }
 
     static styles = [
@@ -2258,6 +2259,14 @@ class IaiResponse extends IaiLitBase {
             iai-response .themes {
                 margin-bottom: 1em;
             }
+            iai-response .space-between {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+            }
+            iai-response iai-icon .material-symbols-outlined {
+                font-size: 2em;
+            }
         `
     ]
 
@@ -2275,6 +2284,7 @@ class IaiResponse extends IaiLitBase {
         this.has_multiple_choice_question_part = false;
         this.multiple_choice_answer = [];
         this.searchValue = "";
+        this.evidenceRich = false;
 
         this.applyStaticStyles("iai-response", IaiResponse.styles);
     }
@@ -2311,14 +2321,20 @@ class IaiResponse extends IaiLitBase {
         return x`
             <div class="iai-panel response govuk-!-margin-bottom-4">
                 <div class="govuk-grid-row">
-                    <div class="govuk-grid-column-two-thirds">
-                        ${this.individual
-                            ? x`<span class="govuk-caption-m">${this.individual}</span>`
-                            : ""
-                        }
+                    <div class="govuk-grid-column-two-thirds space-between">
                         <h2 class="govuk-heading-m">
                             Respondent ${this.identifier}
                         </h2>
+
+                        ${this.evidenceRich
+                            ? x`
+                                <iai-icon
+                                    title="Evidence-rich response"
+                                    name="diamond"
+                                    .opsz=${48}
+                                ></iai-icon>
+                            `
+                            : ""}
                     </div>
                 </div>
 
@@ -3586,7 +3602,7 @@ class IaiResponseDashboard extends IaiLitBase {
             visible = false;
         }
 
-        // TODO: filter by demographic
+        // filter by demographic
         // if (
         //     (response.individual === "individual" && !this._demographicFilters.includes("individual")) ||
         //     (response.individual === "" && !this._demographicFilters.includes("organisation"))
@@ -3608,8 +3624,15 @@ class IaiResponseDashboard extends IaiLitBase {
             }
         }
 
-        // filter by min word count
-        if (this._evidenceRichFilters) ;
+        // filter by evidence rich
+        if (this._evidenceRichFilters.length > 0) {
+            if (
+                this._evidenceRichFilters.includes("evidence-rich") &&
+                !response.evidenceRich
+            ) {
+                visible = false;
+            }
+        }
 
         // filter by min word count
         if (this._minWordCount) {
@@ -3959,6 +3982,7 @@ class IaiResponseDashboard extends IaiLitBase {
                                 .has_multiple_choice_question_part=${this.has_multiple_choice_question_part}
                                 .multiple_choice_answer=${response.multiple_choice_answer}
                                 .searchValue=${this._searchValue}
+                                .evidenceRich=${response.evidenceRich}
                             ></iai-response>
                         `}
                     ></iai-responses>

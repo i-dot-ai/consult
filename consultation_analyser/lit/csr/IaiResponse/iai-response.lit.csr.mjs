@@ -3,6 +3,7 @@ import { html, css } from 'lit';
 import IaiLitBase from '../../IaiLitBase.mjs';
 import IaiExpandingText from '../IaiExpandingText/iai-expanding-text.lit.csr.mjs';
 import IaiExpandingPill from '../IaiExpandingPill/iai-expanding-pill.lit.csr.mjs';
+import IaiIcon from '../questionsArchive/IaiIcon/iai-icon.mjs';
 
 
 export default class IaiResponse extends IaiLitBase {
@@ -17,6 +18,7 @@ export default class IaiResponse extends IaiLitBase {
         has_multiple_choice_question_part: {type: Boolean},
         multiple_choice_answer: {type: Array},
         searchValue: {type: String},
+        evidenceRich: { type: Boolean },
     }
 
     static styles = [
@@ -62,6 +64,14 @@ export default class IaiResponse extends IaiLitBase {
             iai-response .themes {
                 margin-bottom: 1em;
             }
+            iai-response .space-between {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+            }
+            iai-response iai-icon .material-symbols-outlined {
+                font-size: 2em;
+            }
         `
     ]
 
@@ -79,6 +89,7 @@ export default class IaiResponse extends IaiLitBase {
         this.has_multiple_choice_question_part = false;
         this.multiple_choice_answer = [];
         this.searchValue = "";
+        this.evidenceRich = false;
 
         this.applyStaticStyles("iai-response", IaiResponse.styles);
     }
@@ -116,14 +127,20 @@ export default class IaiResponse extends IaiLitBase {
         return html`
             <div class="iai-panel response govuk-!-margin-bottom-4">
                 <div class="govuk-grid-row">
-                    <div class="govuk-grid-column-two-thirds">
-                        ${this.individual
-                            ? html`<span class="govuk-caption-m">${this.individual}</span>`
-                            : ""
-                        }
+                    <div class="govuk-grid-column-two-thirds space-between">
                         <h2 class="govuk-heading-m">
                             Respondent ${this.identifier}
                         </h2>
+
+                        ${this.evidenceRich
+                            ? html`
+                                <iai-icon
+                                    title="Evidence-rich response"
+                                    name="diamond"
+                                    .opsz=${48}
+                                ></iai-icon>
+                            `
+                            : ""}
                     </div>
                 </div>
 
