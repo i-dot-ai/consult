@@ -48,8 +48,8 @@ def test_ingesting_themefinder_outputs(django_app, mock_consultation_input_objec
 
     # and there is an existing consultation with imported responses
     consultation = ConsultationFactory()
-    question_1 = QuestionFactory(consultation=consultation)
-    question_2 = QuestionFactory(consultation=consultation)
+    question_1 = QuestionFactory(consultation=consultation, number=1)
+    question_2 = QuestionFactory(consultation=consultation, number=2)
     question_part_1 = FreeTextQuestionPartFactory(question=question_1)
     question_part_2 = FreeTextQuestionPartFactory(question=question_2)
 
