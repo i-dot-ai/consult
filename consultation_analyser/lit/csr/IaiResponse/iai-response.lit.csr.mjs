@@ -1,10 +1,8 @@
-
-       
-
-
 import { html, css } from 'lit';
+
 import IaiLitBase from '../../IaiLitBase.mjs';
-import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import IaiExpandingText from '../IaiExpandingText/iai-expanding-text.lit.csr.mjs';
+import IaiExpandingPill from '../IaiExpandingPill/iai-expanding-pill.lit.csr.mjs';
 
 
 export default class IaiResponse extends IaiLitBase {
@@ -48,17 +46,21 @@ export default class IaiResponse extends IaiLitBase {
                 line-height: 2em;
             }
 
-            iai-response .themes {
-                display: flex;
-                align-items: center;
-                gap: 0.6%;
-            }
             iai-response .themes tool-tip,
             iai-response .themes tool-tip .iai-tooltip__button img {
                 width: 14px;
             }
             iai-response .themes tool-tip .iai-tooltip__button {
                 gap: 0.5em;
+            }
+            iai-response iai-expanding-text .iai-text-content {
+                transition: none;
+            }
+            iai-response .response {
+                border: 2px solid var(--iai-colour-border-grey);
+            }
+            iai-response .themes {
+                margin-bottom: 1em;
             }
         `
     ]
@@ -94,17 +96,20 @@ export default class IaiResponse extends IaiLitBase {
     }
 
     getFormattedSentiment = () => {
-        return (
-            this.sentiment_position.charAt(0).toLocaleUpperCase()
-            + this.sentiment_position.slice(1).toLocaleLowerCase()
-        );
+        if (this.sentiment_position == "AGREEMENT") {
+            return html`<strong>Agree</strong> with the question`;
+        } else if (this.sentiment_position == "DISAGREEMENT") {
+            return html`<strong>Disagree</strong> with the question`;
+        } else if (this.sentiment_position == "UNCLEAR") {
+            return html`<strong>Unclear</strong> about the question`;
+        };
     }
 
     getFreeTextAnswerText = () => {
-        return unsafeHTML(this.free_text_answer_text.replace(
+        return this.free_text_answer_text.replace(
             this.searchValue,
             `<span class="highlighted">${this.searchValue}</span>`
-        ));
+        );
     }
 
     render() {
@@ -120,24 +125,17 @@ export default class IaiResponse extends IaiLitBase {
                             Respondent ${this.identifier}
                         </h2>
                     </div>
-                    
-                    <!-- TODO: add pin here -->
-                    <!--
-                    <div class="govuk-grid-column-one-third">
-                        <a class="pin-response align-right">
-                            <p class="govuk-body-s govuk-!-margin-bottom-0 display-flex align-items-center">
-                                <img src="/public/images/pin-response.svg" alt="Pin response">
-                                <span>Pin response</span>
-                            </p>
-                        </a>
-                    </div> -->
                 </div>
 
                 ${this.free_text_answer_text
                     ? html`
-                        <h3 class="govuk-heading-s govuk-!-margin-bottom-4">
-                            Free text response
-                        </h3>
+                        <p class="govuk-body answer">
+                            <iai-expanding-text
+                                .text=${this.getFreeTextAnswerText()}    
+                                .lines=${2}
+                            ></iai-expanding-text>
+                        </p>
+
                         ${this.sentiment_position
                             ? html`
                                 <p class="govuk-body sentiment-position">
@@ -150,25 +148,15 @@ export default class IaiResponse extends IaiLitBase {
                             : ""
                         }
 
-                        ${this.themes.map(theme => html`
-                            <div class="govuk-pill-container themes">
-                                <div class="govuk-pill">
-                                    <tool-tip class="iai-tooltip">
-                                        <div class="iai-tooltip__button" role="tooltip" tabindex="0" aria-describedby="tooltip-content-${theme.id}">
-                                            <span>${theme.name}</span>
-                                            <img src="https://consult.ai.cabinetoffice.gov.uk/static/icons/question-mark.svg" alt="info"/>
-                                        </div>
-                                        <div class="iai-tooltip__content" id="tooltip-content-${theme.id}">
-                                            ${theme.description}
-                                        </div>
-                                    </tool-tip>
-                                </div>
-                            </div>
-                        `)}
-
-                        <p class="govuk-body answer">
-                            ${this.getFreeTextAnswerText()}
-                        </p>
+                        <div class="themes">
+                            ${this.themes.map(theme => html`
+                                <iai-expanding-pill
+                                    .label=${theme.name}
+                                    .body=${theme.description}
+                                    .initialExpanded=${false}
+                                ></iai-expanding-pill>
+                            `)}
+                        </div>
                     `
                     : ""
                 }
