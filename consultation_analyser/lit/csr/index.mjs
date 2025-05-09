@@ -23,3 +23,5 @@ import IaiQuestionOverviewSubtitle from "./questionsArchive/IaiQuestionOverviewS
 import IaiMultiResponseItem from "./questionsArchive/IaiMultiResponseItem/iai-multi-response-item.lit.csr.mjs";
 import IaiTextResponseItem from "./questionsArchive/IaiTextResponseItem/iai-text-response-item.lit.csr.mjs";
 import IaiPageTitle from "./IaiPageTitle/iai-page-title.lit.csr.mjs";
+import IaiExpandingPill from "./IaiExpandingPill/iai-expanding-pill.lit.csr.mjs";
+import IaiChip from "./IaiChip/iai-chip.lit.csr.mjs";
