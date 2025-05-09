@@ -20,6 +20,10 @@ export default class IaiResponses extends IaiLitBase {
             iai-responses lit-virtualizer {
                 height: 100%;
             }
+            iai-responses p.not-found {
+                text-align: center;
+                font-style: italic;
+            }
         `
     ]
 
@@ -37,6 +41,10 @@ export default class IaiResponses extends IaiLitBase {
     }
 
     render() {
+        if (this.responses.length === 0) {
+            return html`<p class="not-found">No matching responses found</p>`
+        }
+
         return html`
             <lit-virtualizer
                 role="list"
