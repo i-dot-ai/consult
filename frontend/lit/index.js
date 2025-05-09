@@ -515,6 +515,78 @@ class IaiDataTable extends IaiLitBase {
 }
 customElements.define("iai-data-table", IaiDataTable);
 
+class IaiIcon extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        name: { type: String },
+        color: { type: String },
+        fill: {type: Number }, //  0 | 1
+        opsz: { type: Number },
+        wght: { type: Number },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-icon {
+                display: flex;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Google expect icon names to be alphabetically sorted
+        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download"];
+        this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
+
+        // Prop defaults
+        this.name = "";
+        this.color = "";
+        this.fill = 0;
+        this.opsz = 48;
+        this.wght = 300;
+        
+        this.applyStaticStyles("iai-icon", IaiIcon.styles);
+    }
+
+    firstUpdated() {
+        this.addIconImport();
+    }
+
+    addIconImport() {
+        // Do not add if already added
+        if (document.querySelector(`link[href="${this._URL}"]`)) {
+            return;
+        }
+
+        const linkElement = document.createElement("link");
+        linkElement.rel = "stylesheet";
+        linkElement.href = this._URL;
+        document.head.append(linkElement);
+    }
+
+    render() {
+        return x`
+            <style>
+                #${this.contentId}.material-symbols-outlined {
+                    font-variation-settings:
+                        'FILL' ${this.fill},
+                        'opsz' ${this.opsz},
+                        'wght' ${this.wght};
+                    color: ${this.color};
+                }
+            </style>
+            <span id=${this.contentId} class="material-symbols-outlined">
+                ${this.name}
+            </span>
+        `;
+    }
+}
+customElements.define("iai-icon", IaiIcon);
+
 class IaiCsvDownload extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
@@ -563,6 +635,9 @@ class IaiCsvDownload extends IaiLitBase {
                 download=${this.fileName}
             >
                 Download CSV
+                <iai-icon
+                    name="download"
+                ></iai-icon>
             </a>
         `
     }
@@ -2040,78 +2115,6 @@ class IaiResponses extends IaiLitBase {
 }
 customElements.define("iai-responses", IaiResponses);
 
-class IaiIcon extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        name: { type: String },
-        color: { type: String },
-        fill: {type: Number }, //  0 | 1
-        opsz: { type: Number },
-        wght: { type: Number },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-icon {
-                display: flex;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Google expect icon names to be alphabetically sorted
-        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle"];
-        this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
-
-        // Prop defaults
-        this.name = "";
-        this.color = "";
-        this.fill = 0;
-        this.opsz = 48;
-        this.wght = 300;
-        
-        this.applyStaticStyles("iai-icon", IaiIcon.styles);
-    }
-
-    firstUpdated() {
-        this.addIconImport();
-    }
-
-    addIconImport() {
-        // Do not add if already added
-        if (document.querySelector(`link[href="${this._URL}"]`)) {
-            return;
-        }
-
-        const linkElement = document.createElement("link");
-        linkElement.rel = "stylesheet";
-        linkElement.href = this._URL;
-        document.head.append(linkElement);
-    }
-
-    render() {
-        return x`
-            <style>
-                #${this.contentId}.material-symbols-outlined {
-                    font-variation-settings:
-                        'FILL' ${this.fill},
-                        'opsz' ${this.opsz},
-                        'wght' ${this.wght};
-                    color: ${this.color};
-                }
-            </style>
-            <span id=${this.contentId} class="material-symbols-outlined">
-                ${this.name}
-            </span>
-        `;
-    }
-}
-customElements.define("iai-icon", IaiIcon);
-
 class IaiExpandingPill extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -3440,6 +3443,12 @@ class IaiResponseDashboard extends IaiLitBase {
                 justify-content: space-between;
                 margin-bottom: 2em;
             }
+            iai-response-dashboard .table-title.themes-mentions {
+                margin-bottom: 0;
+            }
+            iai-response-dashboard .themes-mentions iai-csv-download a {
+                margin-bottom: 0;
+            }
             iai-response-dashboard .table-title h2 {
                 margin: 0;
             }
@@ -3656,14 +3665,26 @@ class IaiResponseDashboard extends IaiLitBase {
                         <div class="govuk-grid-column-full">
                             <div class="table-container">
 
-                                <div class="table-title">
+                                <div class="table-title themes-mentions">
                                     <h2 class="govuk-heading-m">
                                         Themes
                                     </h2>
 
-                                    <!-- TODO:
-                                        <button>Download CSV</button>
-                                    -->
+                                    <iai-csv-download
+                                        fileName="theme_mentions.csv"
+                                        .data=${this.themeMappings
+                                            .filter(themeMapping => (
+                                                this._themeFilters.includes(themeMapping.value) || this._themeFilters.length == 0
+                                            ))
+                                            .map(themeMapping => (
+                                                {
+                                                    "Theme name": themeMapping.label,
+                                                    "Theme description": themeMapping.description,
+                                                    "Total mentions": themeMapping.count,
+                                                }
+                                            ))
+                                        }
+                                    ></iai-csv-download>
                                 </div>
 
                                 <div class="theme-filters-applied">
