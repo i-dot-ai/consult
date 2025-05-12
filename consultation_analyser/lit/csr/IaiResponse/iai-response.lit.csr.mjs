@@ -195,7 +195,7 @@ export default class IaiResponse extends IaiLitBase {
                     : ""
                 }
 
-                ${this.demographic_data
+                ${this.demographic_data && this.demographic_data.length > 0
                     ? html`
                         <div class="govuk-body-s demographic-data">
                             <h3>Demographic Data</h3>
