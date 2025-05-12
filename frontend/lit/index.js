@@ -2618,6 +2618,7 @@ class IaiIconButton extends IaiLitBase {
     render() {
         return x`
             <button
+                type="button"
                 title=${this.title}
                 @click=${this.handleClick}
             >
