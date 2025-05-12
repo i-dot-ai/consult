@@ -1,14 +1,13 @@
 from datetime import datetime
 from uuid import UUID
 
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import Count, F, Q, QuerySet, Sum, Value
 from django.db.models.functions import Length, Replace
-from django.http import HttpRequest
+from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.core.cache import cache
-from django.http import JsonResponse
 
 from .. import models
 from .decorators import user_can_see_consultation, user_can_see_dashboards
