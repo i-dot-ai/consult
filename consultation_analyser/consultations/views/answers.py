@@ -232,7 +232,7 @@ def respondents_json(
                     "description": theme.theme.description,
                 } for theme in respondent.themes] if hasattr(respondent, "themes") else [],
                 "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options] if hasattr(respondent, "multiple_choice_answer") and hasattr(respondent.multiple_choice_answer, "chosen_options") else [],
-                "evidenceRich": True if hasattr(respondent, "evidence_rich") else False,
+                "evidenceRich": True if hasattr(respondent, "evidence_rich") and hasattr(respondent.evidence_rich, "evidence_rich") else False,
                 "individual": True if hasattr(respondent, "individual") else False,
             } for respondent in respondents]
         }
