@@ -54,6 +54,7 @@ export default class IaiIconButton extends IaiLitBase {
     render() {
         return html`
             <button
+                type="button"
                 title=${this.title}
                 @click=${this.handleClick}
             >
