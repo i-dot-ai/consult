@@ -7,6 +7,9 @@ from django.db.models import Count, F, Q, QuerySet, Sum, Value
 from django.db.models.functions import Length, Replace
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
+from django.core.cache import cache
+from django.http import JsonResponse
+from django.core import serializers
 
 from .. import models
 from .decorators import user_can_see_consultation, user_can_see_dashboards
@@ -132,6 +135,150 @@ def get_selected_option_summary(question: models.Question, respondents: QuerySet
 
     return multichoice_summary
 
+@user_can_see_dashboards
+@user_can_see_consultation
+def respondents_json(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    cache_key = f"respondents_{request.user.id}"
+    cache_timeout = 60 * 20 #  20 mins
+
+    respondents_cache_key = f"respondents_{request.user.id}"
+
+    responseid = request.GET.get("responseid")
+    demographicindividual = request.GET.getlist("demographicindividual")
+    themesfilter = request.GET.getlist("themesfilter")
+    themesentiment = request.GET.get("themesentiment")
+    responsesentiment = request.GET.get("responsesentiment")
+    wordcount = request.GET.get("wordcount")
+    active_filters = {
+        "responseid": {
+            "label": "Respondent ID",
+            "selected": [{"display": responseid, "id": responseid}] if responseid else [],
+        },
+        "demographicindividual": {
+            "label": "Individual or Organisation",
+            "selected": [{"display": d, "id": d} for d in demographicindividual],
+        },
+        "themesfilter": {
+            "label": "Theme",
+            "selected": [
+                {"display": models.Theme.objects.get(id=t).name, "id": t} for t in themesfilter
+            ],
+        },
+        "themesentiment": {
+            "label": "Theme sentiment",
+            "selected": [{"display": themesentiment.title(), "id": themesentiment}]
+            if themesentiment
+            else [],
+        },
+        "responsesentiment": {
+            "label": "Response sentiment",
+            "selected": [{"display": responsesentiment.title(), "id": responsesentiment}]
+            if responsesentiment
+            else [],
+        },
+        "wordcount": {
+            "label": "Minimum word count",
+            "selected": [{"display": wordcount, "id": wordcount}] if wordcount else [],
+        },
+    }
+    
+    respondents = cache.get(respondents_cache_key)
+
+    if respondents is None:
+        # Get question data
+        consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+        
+        question = models.Question.objects.get(
+            slug=question_slug,
+            consultation=consultation,
+        )
+        free_text_question_part = models.QuestionPart.objects.filter(
+            question=question, type=models.QuestionPart.QuestionType.FREE_TEXT
+        ).first()  # Assume that there is only one free text response
+        has_multiple_choice_question_part = models.QuestionPart.objects.filter(
+            question=question, type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
+        ).exists()
+        theme_mappings = (
+            models.ThemeMapping.get_latest_theme_mappings(question_part=free_text_question_part)
+            .values("theme__name", "theme__description", "theme__id")
+            .order_by("theme__name")
+            .distinct("theme__name")
+        )
+        
+        # Get respondents list, applying relevant filters
+        respondents = filter_by_response_and_theme(
+            question,
+            models.Respondent.objects.filter(consultation=consultation),
+            responseid,
+            responsesentiment,
+            themesfilter,
+            themesentiment,
+        ).distinct()
+
+        if wordcount:
+            respondents = filter_by_word_count(respondents, question_slug, int(wordcount))
+
+        has_individual_data, respondents = filter_by_demographic_data(
+            respondents, demographicindividual
+        )
+
+        # Get summary data for filtered respondents list
+        selected_theme_mappings, theme_mapping_summary = get_selected_theme_summary(
+            free_text_question_part, respondents
+        )
+        multiple_choice_summary = get_selected_option_summary(question, respondents)
+
+        # Get individual data for each displayed respondent
+        for respondent in respondents:
+            # Free text response
+            try:
+                respondent.free_text_answer = models.Answer.objects.get(
+                    question_part__question=question,
+                    question_part__type=models.QuestionPart.QuestionType.FREE_TEXT,
+                    respondent=respondent,
+                )
+                respondent.sentiment = models.SentimentMapping.objects.filter(
+                    answer=respondent.free_text_answer,
+                ).last()
+                respondent.themes = models.ThemeMapping.objects.filter(
+                    answer=respondent.free_text_answer
+                )
+                respondent.evidence_rich = models.EvidenceRichMapping.objects.filter(
+                    answer=respondent.free_text_answer
+                ).last()
+            except models.Answer.DoesNotExist:
+                pass
+
+            # Multiple choice response
+            try:
+                respondent.multiple_choice_answer = models.Answer.objects.get(
+                    question_part__question=question,
+                    question_part__type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS,
+                    respondent=respondent,
+                )
+            except models.Answer.DoesNotExist:
+                pass
+
+        display_respondent_id_filter = respondents.filter(
+            themefinder_respondent_id__isnull=False
+        ).exists()
+        
+        csv_button_data = [{
+            "Theme name": mapping.get("theme__name", ""),
+            "Total mentions": mapping.get('count', -1),
+            "Positive mentions": mapping.get("positive_count", -1),
+            "Negative mentions": mapping.get("negative_count", -1),
+        } for mapping in selected_theme_mappings]
+    
+        cache.set(respondents_cache_key, list(respondents), timeout=cache_timeout)
+
+    return JsonResponse({
+        "all_respondents": serializers.serialize("json", respondents, fields=["identifier"])
+    })
 
 @user_can_see_dashboards
 @user_can_see_consultation
@@ -221,8 +368,14 @@ def index(
     )
     multiple_choice_summary = get_selected_option_summary(question, respondents)
 
+    # Pagination
+    pagination = Paginator(respondents, 5)
+    page_index = request.GET.get("page", "1")
+    current_page = pagination.page(page_index)
+    paginated_respondents = current_page.object_list
+
     # Get individual data for each displayed respondent
-    for respondent in respondents:
+    for respondent in paginated_respondents:
         # Free text response
         try:
             respondent.free_text_answer = models.Answer.objects.get(
@@ -251,12 +404,6 @@ def index(
             )
         except models.Answer.DoesNotExist:
             pass
-    
-    # Pagination
-    pagination = Paginator(respondents, 5)
-    page_index = request.GET.get("page", "1")
-    current_page = pagination.page(page_index)
-    paginated_respondents = current_page.object_list
 
     csv_button_data = [{
         "Theme name": mapping.get("theme__name", ""),
@@ -275,7 +422,6 @@ def index(
         "total_responses": len(respondents),
         "pagination": current_page,
         "respondents": paginated_respondents,
-        "all_respondents": respondents,
         "selected_theme_mappings": selected_theme_mappings,
         "csv_button_data": csv_button_data,
         "theme_mapping_summary": theme_mapping_summary,
