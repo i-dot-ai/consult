@@ -9,7 +9,6 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 from django.core.cache import cache
 from django.http import JsonResponse
-from django.core import serializers
 
 from .. import models
 from .decorators import user_can_see_consultation, user_can_see_dashboards
@@ -151,38 +150,6 @@ def respondents_json(
     themesentiment = request.GET.get("themesentiment")
     responsesentiment = request.GET.get("responsesentiment")
     wordcount = request.GET.get("wordcount")
-    active_filters = {
-        "responseid": {
-            "label": "Respondent ID",
-            "selected": [{"display": responseid, "id": responseid}] if responseid else [],
-        },
-        "demographicindividual": {
-            "label": "Individual or Organisation",
-            "selected": [{"display": d, "id": d} for d in demographicindividual],
-        },
-        "themesfilter": {
-            "label": "Theme",
-            "selected": [
-                {"display": models.Theme.objects.get(id=t).name, "id": t} for t in themesfilter
-            ],
-        },
-        "themesentiment": {
-            "label": "Theme sentiment",
-            "selected": [{"display": themesentiment.title(), "id": themesentiment}]
-            if themesentiment
-            else [],
-        },
-        "responsesentiment": {
-            "label": "Response sentiment",
-            "selected": [{"display": responsesentiment.title(), "id": responsesentiment}]
-            if responsesentiment
-            else [],
-        },
-        "wordcount": {
-            "label": "Minimum word count",
-            "selected": [{"display": wordcount, "id": wordcount}] if wordcount else [],
-        },
-    }
     
     data = cache.get(cache_key)
 
@@ -197,15 +164,6 @@ def respondents_json(
         free_text_question_part = models.QuestionPart.objects.filter(
             question=question, type=models.QuestionPart.QuestionType.FREE_TEXT
         ).first()  # Assume that there is only one free text response
-        has_multiple_choice_question_part = models.QuestionPart.objects.filter(
-            question=question, type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
-        ).exists()
-        theme_mappings = (
-            models.ThemeMapping.get_latest_theme_mappings(question_part=free_text_question_part)
-            .values("theme__name", "theme__description", "theme__id")
-            .order_by("theme__name")
-            .distinct("theme__name")
-        )
         
         # Get respondents list, applying relevant filters
         respondents = filter_by_response_and_theme(
@@ -228,7 +186,6 @@ def respondents_json(
         selected_theme_mappings, theme_mapping_summary = get_selected_theme_summary(
             free_text_question_part, respondents
         )
-        multiple_choice_summary = get_selected_option_summary(question, respondents)
 
         # Get individual data for each displayed respondent
         for respondent in respondents:
@@ -260,17 +217,6 @@ def respondents_json(
                 )
             except models.Answer.DoesNotExist:
                 pass
-
-        display_respondent_id_filter = respondents.filter(
-            themefinder_respondent_id__isnull=False
-        ).exists()
-        
-        csv_button_data = [{
-            "Theme name": mapping.get("theme__name", ""),
-            "Total mentions": mapping.get('count', -1),
-            "Positive mentions": mapping.get("positive_count", -1),
-            "Negative mentions": mapping.get("negative_count", -1),
-        } for mapping in selected_theme_mappings]
     
         data = {
             "all_respondents": [{
