@@ -17,6 +17,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         consultationSlug: { type: String },
         questionTitle: { type: String },
         questionText: { type: String },
+        questionSlug: { type: String },
         stanceOptions: { type: Array },
         themeMappings: { type: Array },
         responses: { type: Array },
@@ -149,6 +150,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
 
         this.questionTitle = "";
         this.questionText = "";
+        this.questionSlug = "";
         this.consultationTitle = "";
         this.consultationSlug = "";
         this.responses = [];
@@ -167,8 +169,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
     }
 
     fetchResponses = async () => {
-        console.log("fetching")
-        const url = `/consultations/${this.consultationSlug}/responses/do-you-agree-that-reducing-exposure-to-gambling-advertisements-can-help-those-recovering-from-gambling-addiction/json`;
+        const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json`;
         let response = await fetch(url);
 
         if (!response.ok) {
@@ -176,8 +177,6 @@ export default class IaiResponseDashboard extends IaiLitBase {
         }
         
         const responsesData = await response.json();
-        console.log(responsesData)
-        
         
         this.responses = responsesData.all_respondents.map(response => ({
             ...response,

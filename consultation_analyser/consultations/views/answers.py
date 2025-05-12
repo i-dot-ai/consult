@@ -142,7 +142,7 @@ def respondents_json(
     consultation_slug: str,
     question_slug: str,
 ):
-    cache_key = f"respondents_{request.user.id}"
+    cache_key = f"respondents_{request.user.id}_{consultation_slug}_{question_slug}"
     cache_timeout = 60 * 20 #  20 mins
 
     respondents_cache_key = f"respondents_{request.user.id}"
@@ -278,15 +278,15 @@ def respondents_json(
             "all_respondents": [{
                 "id": f"response-{respondent.identifier}",
                 "identifier": respondent.identifier,
-                "sentiment_position": respondent.sentiment.position if respondent.sentiment else "",
-                "free_text_answer_text": respondent.free_text_answer.text if respondent.free_text_answer else "",
-                "demographic_data": respondent.data or "",
+                "sentiment_position": respondent.sentiment.position if hasattr(respondent, "sentiment") else "",
+                "free_text_answer_text": respondent.free_text_answer.text if hasattr(respondent, "free_text_answer") else "",
+                "demographic_data": hasattr(respondent, "data") or "",
                 "themes": [{
                     "id": theme.theme.id,
                     "stance": theme.stance,
                     "name": theme.theme.name,
                     "description": theme.theme.description,
-                } for theme in respondent.themes],
+                } for theme in respondent.themes] if hasattr(respondent, "themes") else [],
                 "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options] if hasattr(respondent, "multiple_choice_answer") and respondent.multiple_choice_answer.chosen_options else [],
                 "evidenceRich": True if hasattr(respondent, "evidence_rich") else False,
                 "individual": True if hasattr(respondent, "individual") else False,
@@ -428,10 +428,12 @@ def index(
         "Negative mentions": mapping.get("negative_count", -1),
     } for mapping in selected_theme_mappings]
 
+
     context = {
         "consultation_name": consultation.title,
         "consultation_slug": consultation_slug,
         "question": question,
+        "question_slug": question_slug,
         "free_text_question_part": free_text_question_part,
         "has_multiple_choice_question_part": has_multiple_choice_question_part,
         "theme_mappings": theme_mappings,
