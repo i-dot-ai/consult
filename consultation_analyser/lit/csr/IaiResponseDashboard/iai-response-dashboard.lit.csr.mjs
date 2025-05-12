@@ -271,7 +271,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         if (
             this._searchValue &&
             !response.free_text_answer_text.toLocaleLowerCase().includes(this._searchValue.toLocaleLowerCase()) &&
-            !response.identifier.toLocaleLowerCase().includes(this._searchValue.toLocaleLowerCase()) &&
+            !(typeof response.identifier === "string" && response.identifier.toLocaleLowerCase().includes(this._searchValue.toLocaleLowerCase())) &&
             !response.multiple_choice_answer.join(",").toLocaleLowerCase().includes(this._searchValue.toLocaleLowerCase())
         ) {
             visible = false;
