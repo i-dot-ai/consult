@@ -220,8 +220,8 @@ def respondents_json(
     
         data = {
             "all_respondents": [{
-                "id": f"response-{respondent.identifier}",
-                "identifier": respondent.identifier,
+                "id": f"response-{getattr(respondent, "identifier", '')}",
+                "identifier": getattr(respondent, "identifier", ""),
                 "sentiment_position": respondent.sentiment.position if hasattr(respondent, "sentiment") else "",
                 "free_text_answer_text": respondent.free_text_answer.text if hasattr(respondent, "free_text_answer") else "",
                 "demographic_data": hasattr(respondent, "data") or "",
@@ -231,7 +231,7 @@ def respondents_json(
                     "name": theme.theme.name,
                     "description": theme.theme.description,
                 } for theme in respondent.themes] if hasattr(respondent, "themes") else [],
-                "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options] if hasattr(respondent, "multiple_choice_answer") and respondent.multiple_choice_answer.chosen_options else [],
+                "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options] if hasattr(respondent, "multiple_choice_answer") and hasattr(respondent.multiple_choice_answer, "chosen_options") else [],
                 "evidenceRich": True if hasattr(respondent, "evidence_rich") else False,
                 "individual": True if hasattr(respondent, "individual") else False,
             } for respondent in respondents]
