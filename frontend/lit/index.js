@@ -539,7 +539,7 @@ class IaiIcon extends IaiLitBase {
         this.contentId = this.generateId();
 
         // Google expect icon names to be alphabetically sorted
-        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond"];
+        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond", "progress_activity"];
         this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
 
         // Prop defaults
@@ -3501,6 +3501,27 @@ class IaiResponseDashboard extends IaiLitBase {
                 max-height: 40em;
                 overflow: auto;
             }
+            iai-response-dashboard .spinner {
+                display: flex;
+                justify-content: center;
+                margin-block: 5em;
+                animation-name: spin;
+                animation-duration: 1s;
+                animation-iteration-count: infinite;
+                animation-timing-function: ease-in-out;
+            }
+            iai-response-dashboard .spinner iai-icon .material-symbols-outlined {
+                font-size: 3em;
+            }
+
+            @keyframes spin {
+                from {
+                    transform:rotate(0deg);
+                }
+                to {
+                    transform:rotate(360deg);
+                }
+            }
         `
     ]
 
@@ -4001,7 +4022,9 @@ class IaiResponseDashboard extends IaiLitBase {
                         </h2>
 
                         <span class="govuk-caption-m count-display">
-                            Viewing <strong>${visibleResponses.length}</strong> responses
+                            ${this._isLoading
+                                ? x`<strong>Loading</strong> responses`
+                                : x`Viewing <strong>${visibleResponses.length}</strong> responses`}
                         </span>
 
                         <iai-text-input
@@ -4016,7 +4039,15 @@ class IaiResponseDashboard extends IaiLitBase {
                     </div>
 
                     ${this._isLoading
-                        ? x`<p>Loading responses...</p>`
+                        ? x`
+                            <div class="spinner">
+                                <iai-icon
+                                    name="progress_activity"
+                                    .opsz=${48}
+                                    .color=${"var(--iai-colour-pink)"}
+                                ></iai-icon>
+                            </div>
+                        `
                         : x`
                             <iai-responses
                                 style="height: calc(${this.calculateResponsesHeight()}px - 2em);"

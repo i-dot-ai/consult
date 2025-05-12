@@ -130,6 +130,27 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 max-height: 40em;
                 overflow: auto;
             }
+            iai-response-dashboard .spinner {
+                display: flex;
+                justify-content: center;
+                margin-block: 5em;
+                animation-name: spin;
+                animation-duration: 1s;
+                animation-iteration-count: infinite;
+                animation-timing-function: ease-in-out;
+            }
+            iai-response-dashboard .spinner iai-icon .material-symbols-outlined {
+                font-size: 3em;
+            }
+
+            @keyframes spin {
+                from {
+                    transform:rotate(0deg);
+                }
+                to {
+                    transform:rotate(360deg);
+                }
+            }
         `
     ]
 
@@ -631,7 +652,9 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         </h2>
 
                         <span class="govuk-caption-m count-display">
-                            Viewing <strong>${visibleResponses.length}</strong> responses
+                            ${this._isLoading
+                                ? html`<strong>Loading</strong> responses`
+                                : html`Viewing <strong>${visibleResponses.length}</strong> responses`}
                         </span>
 
                         <iai-text-input
@@ -646,7 +669,15 @@ export default class IaiResponseDashboard extends IaiLitBase {
                     </div>
 
                     ${this._isLoading
-                        ? html`<p>Loading responses...</p>`
+                        ? html`
+                            <div class="spinner">
+                                <iai-icon
+                                    name="progress_activity"
+                                    .opsz=${48}
+                                    .color=${"var(--iai-colour-pink)"}
+                                ></iai-icon>
+                            </div>
+                        `
                         : html`
                             <iai-responses
                                 style="height: calc(${this.calculateResponsesHeight()}px - 2em);"
