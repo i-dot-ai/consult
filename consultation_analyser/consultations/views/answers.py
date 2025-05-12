@@ -275,9 +275,24 @@ def respondents_json(
         } for mapping in selected_theme_mappings]
     
         cache.set(respondents_cache_key, list(respondents), timeout=cache_timeout)
-
+        
     return JsonResponse({
-        "all_respondents": serializers.serialize("json", respondents, fields=["identifier"])
+        "all_respondents": [{
+            "id": f"response-{respondent.identifier}",
+            "identifier": respondent.identifier,
+            "sentiment_position": respondent.sentiment.position if respondent.sentiment else "",
+            "free_text_answer_text": respondent.free_text_answer.text if respondent.free_text_answer else "",
+            "demographic_data": respondent.data or "",
+            "themes": [{
+                "id": theme.theme.id,
+                "stance": theme.stance,
+                "name": theme.theme.name,
+                "description": theme.theme.description,
+            } for theme in respondent.themes],
+            "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options] if hasattr(respondent, "multiple_choice_answer") and respondent.multiple_choice_answer.chosen_options else [],
+            "evidenceRich": True if hasattr(respondent, "evidence_rich") else False,
+            "individual": True if hasattr(respondent, "individual") else False,
+        } for respondent in respondents]
     })
 
 @user_can_see_dashboards

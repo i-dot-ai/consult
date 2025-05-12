@@ -73,6 +73,10 @@ export default class IaiResponse extends IaiLitBase {
             iai-response iai-icon .material-symbols-outlined {
                 font-size: 2em;
             }
+            iai-response .demographic-data ul {
+                display: flex;
+                flex-direction: column;
+            }
         `
     ]
 
@@ -193,9 +197,18 @@ export default class IaiResponse extends IaiLitBase {
 
                 ${this.demographic_data
                     ? html`
-                        <p class="govuk-body-s">
-                            ${this.demographic_data}
-                        </p>`
+                        <div class="govuk-body-s demographic-data">
+                            <h3>Demographic Data</h3>
+                            <ul>
+                                ${Object.keys(this.demographic_data).map(key => html`
+                                    <li>
+                                        ${key.slice(0, 1).toLocaleUpperCase()
+                                            + key.slice(1)}: ${this.demographic_data[key]}
+                                    </li>
+                                `)}
+                            </ul>
+                        </div>
+                    `
                     : ""
                 }
             </div>

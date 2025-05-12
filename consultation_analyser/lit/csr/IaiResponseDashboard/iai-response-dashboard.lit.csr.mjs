@@ -178,10 +178,8 @@ export default class IaiResponseDashboard extends IaiLitBase {
         const responsesData = await response.json();
         console.log(responsesData)
         
-        const parsed = JSON.parse(responsesData.all_respondents)
-        console.log(parsed)
         
-        this.responses = parsed.map(response => ({
+        this.responses = responsesData.all_respondents.map(response => ({
             ...response,
             visible: true,
         }));
@@ -195,6 +193,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         };
 
         if (
+            changedProps.has("_isLoading") ||
             changedProps.has("_stanceFilters") ||
             changedProps.has("_evidenceRichFilters") ||
             changedProps.has("_minWordCount") ||
