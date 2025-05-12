@@ -3372,6 +3372,7 @@ class IaiResponseDashboard extends IaiLitBase {
         ...IaiLitBase.properties,
 
         consultationTitle: { type: String },
+        consultationSlug: { type: String },
         questionTitle: { type: String },
         questionText: { type: String },
         stanceOptions: { type: Array },
@@ -3382,6 +3383,7 @@ class IaiResponseDashboard extends IaiLitBase {
         has_multiple_choice_question_part: { type: Boolean },
         multiple_choice_summary: { type: Array },
 
+        _isLoading: { type: Boolean },
         _searchValue: { type: String },
         _themeSearchValue: { type: String },
         _minWordCount: { type: Number },
@@ -3493,6 +3495,7 @@ class IaiResponseDashboard extends IaiLitBase {
         this.contentId = this.generateId();
         
         // Prop defaults
+        this._isLoading = true;
         this._searchValue = "";
         this._themeSearchValue = "";
         this._stanceFilters = [];
@@ -3505,6 +3508,7 @@ class IaiResponseDashboard extends IaiLitBase {
         this.questionTitle = "";
         this.questionText = "";
         this.consultationTitle = "";
+        this.consultationSlug = "";
         this.responses = [];
         this.themeMappings = [];
         this.stanceOptions = [];
@@ -3517,15 +3521,36 @@ class IaiResponseDashboard extends IaiLitBase {
     }
 
     firstUpdated() {
-        this.responses = this.responses.map(response => ({
+        window.addEventListener("mousedown", this.handleThemesPanelClose);
+    }
+
+    fetchResponses = async () => {
+        console.log("fetching");
+        const url = `/consultations/${this.consultationSlug}/responses/do-you-agree-that-reducing-exposure-to-gambling-advertisements-can-help-those-recovering-from-gambling-addiction/json`;
+        let response = await fetch(url);
+
+        if (!response.ok) {
+            throw new Error(`Response status: ${response.status}`);
+        }
+        
+        const responsesData = await response.json();
+        console.log(responsesData);
+        
+        const parsed = JSON.parse(responsesData.all_respondents);
+        console.log(parsed);
+        
+        this.responses = parsed.map(response => ({
             ...response,
             visible: true,
         }));
 
-        window.addEventListener("mousedown", this.handleThemesPanelClose);
+        this._isLoading = false;
     }
 
     updated(changedProps) {
+        if (changedProps.has("consultationSlug")) {
+            this.fetchResponses();
+        }
         if (
             changedProps.has("_stanceFilters") ||
             changedProps.has("_evidenceRichFilters") ||
@@ -3619,10 +3644,6 @@ class IaiResponseDashboard extends IaiLitBase {
                 (this._demographicFilters.includes("organisation") && !response.individual)
             )
         )
-
-
-            // (response.individual === "individual" && !this._demographicFilters.includes("individual")) ||
-            // (response.individual === "" && !this._demographicFilters.includes("organisation"))
         {
             visible = false;
         }
@@ -3983,26 +4004,31 @@ class IaiResponseDashboard extends IaiLitBase {
                         ></iai-text-input>
                     </div>
 
-                    <iai-responses
-                        style="height: calc(${this.calculateResponsesHeight()}px - 2em);"
-                        .responses=${visibleResponses}
-                        .renderResponse=${response => x`
-                            <iai-response
-                                role="listitem"
-                                .id=${response.inputId}
-                                .identifier=${response.identifier}
-                                .individual=${response.individual}
-                                .sentiment_position=${response.sentiment_position}
-                                .free_text_answer_text=${response.free_text_answer_text}
-                                .demographic_data=${response.demographic_data}
-                                .themes=${response.themes}
-                                .has_multiple_choice_question_part=${this.has_multiple_choice_question_part}
-                                .multiple_choice_answer=${response.multiple_choice_answer}
-                                .searchValue=${this._searchValue}
-                                .evidenceRich=${response.evidenceRich}
-                            ></iai-response>
-                        `}
-                    ></iai-responses>
+                    ${this._isLoading
+                        ? x`<p>Loading responses...</p>`
+                        : x`
+                            <iai-responses
+                                style="height: calc(${this.calculateResponsesHeight()}px - 2em);"
+                                .responses=${visibleResponses}
+                                .renderResponse=${response => x`
+                                    <iai-response
+                                        role="listitem"
+                                        .id=${response.inputId}
+                                        .identifier=${response.identifier}
+                                        .individual=${response.individual}
+                                        .sentiment_position=${response.sentiment_position}
+                                        .free_text_answer_text=${response.free_text_answer_text}
+                                        .demographic_data=${response.demographic_data}
+                                        .themes=${response.themes}
+                                        .has_multiple_choice_question_part=${this.has_multiple_choice_question_part}
+                                        .multiple_choice_answer=${response.multiple_choice_answer}
+                                        .searchValue=${this._searchValue}
+                                        .evidenceRich=${response.evidenceRich}
+                                    ></iai-response>
+                                `}
+                            ></iai-responses>   
+                        `
+                    }
                 </div>
             </div>
         `;
