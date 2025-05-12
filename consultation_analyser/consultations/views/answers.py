@@ -145,8 +145,6 @@ def respondents_json(
     cache_key = f"respondents_{request.user.id}_{consultation_slug}_{question_slug}"
     cache_timeout = 60 * 20 #  20 mins
 
-    respondents_cache_key = f"respondents_{request.user.id}"
-
     responseid = request.GET.get("responseid")
     demographicindividual = request.GET.getlist("demographicindividual")
     themesfilter = request.GET.getlist("themesfilter")
@@ -186,7 +184,7 @@ def respondents_json(
         },
     }
     
-    data = cache.get(respondents_cache_key)
+    data = cache.get(cache_key)
 
     if data is None:
         # Get question data
@@ -292,7 +290,7 @@ def respondents_json(
                 "individual": True if hasattr(respondent, "individual") else False,
             } for respondent in respondents]
         }
-        cache.set(respondents_cache_key, data, timeout=cache_timeout)
+        cache.set(cache_key, data, timeout=cache_timeout)
         
     return JsonResponse(data)
 
