@@ -186,9 +186,9 @@ def respondents_json(
         },
     }
     
-    respondents = cache.get(respondents_cache_key)
+    data = cache.get(respondents_cache_key)
 
-    if respondents is None:
+    if data is None:
         # Get question data
         consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
         
@@ -274,26 +274,27 @@ def respondents_json(
             "Negative mentions": mapping.get("negative_count", -1),
         } for mapping in selected_theme_mappings]
     
-        cache.set(respondents_cache_key, list(respondents), timeout=cache_timeout)
+        data = {
+            "all_respondents": [{
+                "id": f"response-{respondent.identifier}",
+                "identifier": respondent.identifier,
+                "sentiment_position": respondent.sentiment.position if respondent.sentiment else "",
+                "free_text_answer_text": respondent.free_text_answer.text if respondent.free_text_answer else "",
+                "demographic_data": respondent.data or "",
+                "themes": [{
+                    "id": theme.theme.id,
+                    "stance": theme.stance,
+                    "name": theme.theme.name,
+                    "description": theme.theme.description,
+                } for theme in respondent.themes],
+                "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options] if hasattr(respondent, "multiple_choice_answer") and respondent.multiple_choice_answer.chosen_options else [],
+                "evidenceRich": True if hasattr(respondent, "evidence_rich") else False,
+                "individual": True if hasattr(respondent, "individual") else False,
+            } for respondent in respondents]
+        }
+        cache.set(respondents_cache_key, data, timeout=cache_timeout)
         
-    return JsonResponse({
-        "all_respondents": [{
-            "id": f"response-{respondent.identifier}",
-            "identifier": respondent.identifier,
-            "sentiment_position": respondent.sentiment.position if respondent.sentiment else "",
-            "free_text_answer_text": respondent.free_text_answer.text if respondent.free_text_answer else "",
-            "demographic_data": respondent.data or "",
-            "themes": [{
-                "id": theme.theme.id,
-                "stance": theme.stance,
-                "name": theme.theme.name,
-                "description": theme.theme.description,
-            } for theme in respondent.themes],
-            "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options] if hasattr(respondent, "multiple_choice_answer") and respondent.multiple_choice_answer.chosen_options else [],
-            "evidenceRich": True if hasattr(respondent, "evidence_rich") else False,
-            "individual": True if hasattr(respondent, "individual") else False,
-        } for respondent in respondents]
-    })
+    return JsonResponse(data)
 
 @user_can_see_dashboards
 @user_can_see_consultation
