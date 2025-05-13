@@ -2,15 +2,14 @@
 {%- from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs -%}
 {%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
 
-{% set page_title = "Dashboard" %}
+{% set page_title = "All Questions" %}
 
 {% block content %}
 
-  <h1 class="govuk-heading-m">{{ page_title }}</h1>
   {{ govukBreadcrumbs({
     "items": [
       {
-        "text": "Back to your consultations",
+        "text": "Back to all consultations",
         "href": "/consultations",
       }
     ]
@@ -19,70 +18,112 @@
   {%- from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs -%}
 
   <div class="govuk-grid-row">
-    <div class="govuk-grid-column-three-quarters">
+    <div class="govuk-grid-column-full">
 
-      <div class="govuk-grid-row">
-        <div class="govuk-grid-column-full">
-          {% for question_dict in questions_list %}
-            <div class="iai-panel govuk-!-margin-bottom-4">
-              <span class="govuk-caption-m "><a class="govuk-link" href="{{ url('question_responses', kwargs={'consultation_slug': consultation.slug, 'question_slug': question_dict.question.slug}) }}">Question {{ question_dict.question.number }}</a></span>
-              <h2 class="govuk-heading-m govuk-!-margin-top-1">{{ question_dict.question.text }}</h2>
+      <iai-question-tiles></iai-question-tiles>
+        <script>
+          const questionTilesEl = document.getElementsByTagName("iai-question-tiles")[0];
 
-              {% if question_dict.free_text_question_part %}
-                  <h3 class="govuk-heading-s">Free text response</h3>
-                  <p class="govuk-body" style="display: flex;align-items:center;gap: 0.6%">
-                    <img src="{{ static('icons/thumbs-up-down.svg') }}"/>
-                    {{ question_dict.sentiment_counts.agreement }} Agreement,
-                    {{ question_dict.sentiment_counts.disagreement}} Disagreement,
-                    {{ question_dict.sentiment_counts.unclear }} Unclear
-                    {% if question_dict.sentiment_counts.no_position %}
-                      , {{ question_dict.sentiment_counts.no_position }} No opinion
-                    {% endif %}
-                  </p>
+          questionTilesEl.consultationName = "{{ consultation.title }}"
+          questionTilesEl.questions = [
+            {% for question_dict in all_questions_list %}
+              {
+                id: "{{ question_dict.question.id }}",
+                title: "Question {{ question_dict.question.number }}",
+                body: "{{ question_dict.question.text }}",
+                url: "{{ url('question_responses', kwargs={'consultation_slug': consultation.slug, 'question_slug': question_dict.question.slug}) }}",
+                responses: {
+                  {% if question_dict.free_text_question_part %}
+                    agreement: {{ question_dict.sentiment_counts.agreement }},
+                    unclear: {{ question_dict.sentiment_counts.unclear }},
+                    disagreement: {{ question_dict.sentiment_counts.disagreement}},
+                  {% endif %}
+                },
+                multiResponses:
+                  {% if question_dict.single_option_question_part %}
+                    {{ question_dict.single_option_counts | safe }}
+                  {% elif question_dict.multiple_option_question_part %}
+                    {{ question_dict.multiple_option_counts | safe }}
+                  {% else %}
+                    {}
+                  {% endif %}
+              },
+            {% endfor %}
+          ]
+        </script>
+    </div>
+  </div>
 
-                  <p class="govuk-body govuk-!-margin-bottom-2">Top themes</p>
+  <div style="margin-bottom: 10em;"></div>
+  
+  <noscript>
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-three-quarters">
 
-                  <div class="con-pill-container" style="display: flex;align-items:center;gap: 0.6%">
-                    {% for item in question_dict.theme_counts %}
-                      <div class="con-pill">
-                        <tool-tip class="iai-tooltip">
-                          <div class="iai-tooltip__button">
-                            <span>{{ item.theme.name }}</span>
-                            <img src="{{ static('icons/question-mark.svg') }}" alt="" width="14"/>
-                          </div>
-                          <div class="iai-tooltip__content">
-                            {{ item.theme.description }}
-                          </div>
-                        </tool-tip>
-                      </div>
-                    {% endfor %}
-                  </div>
-              {% else %}
-                <p class="govuk-body">This question does not have free text responses</p>
-              {% endif %}
+        <div class="govuk-grid-row">
+          <div class="govuk-grid-column-full">
 
-              <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+            {% for question_dict in questions_list %}
+              <div class="iai-panel govuk-!-margin-bottom-4">
+                <span class="govuk-caption-m "><a class="govuk-link" href="{{ url('question_responses', kwargs={'consultation_slug': consultation.slug, 'question_slug': question_dict.question.slug}) }}">Question {{ question_dict.question.number }}</a></span>
+                <h2 class="govuk-heading-m govuk-!-margin-top-1">{{ question_dict.question.text }}</h2>
 
-              {% if question_dict.single_option_question_part %}
-                <h3 class="govuk-heading-s">Response to multiple choice</h3>
-                <horizontal-bar-chart data='{{ question_dict.single_option_counts }}' data-format="percentage"></horizontal-bar-chart>
-              {% elif question_dict.multiple_option_question_part %}
-                <h3 class="govuk-heading-s">Response to multiple choice</h3>
-                <horizontal-bar-chart data='{{ question_dict.multiple_option_counts }}' data-format="raw"></horizontal-bar-chart>
-              {% else %}
-                <p class="govuk-body">This question does not have a multiple choice part</p>
-              {% endif %}
+                {% if question_dict.free_text_question_part %}
+                    <h3 class="govuk-heading-s">Free text response</h3>
+                    <p class="govuk-body" style="display: flex;align-items:center;gap: 0.6%">
+                      <img src="{{ static('icons/thumbs-up-down.svg') }}"/>
+                      {{ question_dict.sentiment_counts.agreement }} Agreement,
+                      {{ question_dict.sentiment_counts.disagreement}} Disagreement,
+                      {{ question_dict.sentiment_counts.unclear }} Unclear
+                      {% if question_dict.sentiment_counts.no_position %}
+                        , {{ question_dict.sentiment_counts.no_position }} No opinion
+                      {% endif %}
+                    </p>
 
-            </div>
-          {% endfor %}
+                    <p class="govuk-body govuk-!-margin-bottom-2">Top themes</p>
 
-          {% from "components/pagination.html" import render_pagination %}
-          {{ render_pagination(pagination) }}
+                    <div class="con-pill-container" style="display: flex;align-items:center;gap: 0.6%">
+                      {% for item in question_dict.theme_counts %}
+                        <div class="con-pill">
+                          <tool-tip class="iai-tooltip">
+                            <div class="iai-tooltip__button">
+                              <span>{{ item.theme.name }}</span>
+                              <img src="{{ static('icons/question-mark.svg') }}" alt="" width="14"/>
+                            </div>
+                            <div class="iai-tooltip__content">
+                              {{ item.theme.description }}
+                            </div>
+                          </tool-tip>
+                        </div>
+                      {% endfor %}
+                    </div>
+                {% else %}
+                  <p class="govuk-body">This question does not have free text responses</p>
+                {% endif %}
 
+                <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
+
+                {% if question_dict.single_option_question_part %}
+                  <h3 class="govuk-heading-s">Response to multiple choice</h3>
+                  <horizontal-bar-chart data='{{ question_dict.single_option_counts }}' data-format="percentage"></horizontal-bar-chart>
+                {% elif question_dict.multiple_option_question_part %}
+                  <h3 class="govuk-heading-s">Response to multiple choice</h3>
+                  <horizontal-bar-chart data='{{ question_dict.multiple_option_counts }}' data-format="raw"></horizontal-bar-chart>
+                {% else %}
+                  <p class="govuk-body">This question does not have a multiple choice part</p>
+                {% endif %}
+
+              </div>
+            {% endfor %}
+
+            {% from "components/pagination.html" import render_pagination %}
+            {{ render_pagination(pagination) }}
+
+          </div>
         </div>
       </div>
     </div>
-  </div>
+  </noscript>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>

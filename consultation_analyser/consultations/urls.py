@@ -23,6 +23,11 @@ urlpatterns = [
         name="question_responses",
     ),
     path(
+        "consultations/<str:consultation_slug>/responses/<str:question_slug>/json/",
+        answers.respondents_json,
+        name="answers_respondents_json",
+    ),
+    path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/show-next/",
         answers.show_next,
         name="show_next_response",

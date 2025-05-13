@@ -6,6 +6,10 @@ export default class IaiLitBase extends LitElement {
         :root {
             --iai-colour-focus:  #ffdd04;
             --iai-colour-pink:  #C50878;
+            --iai-colour-secondary: #0B8478;
+            --iai-colour-secondary-transparent: #0b84781a;
+            --iai-colour-pink-transparent: #c5087812;
+            --iai-colour-pink-transparent-mid: #F0B5D8;
         }
     `
 
@@ -49,4 +53,13 @@ export default class IaiLitBase extends LitElement {
         }
         document.head.append(style);
     }
+
+    applySlots = (slotName) => {
+        Promise.resolve().then(() => {
+            const slottedChildren = this.querySelectorAll(`[slot='${slotName}']`);
+            const slot = this.querySelector(`slot[name='${slotName}']`);
+            slottedChildren.forEach(child => slot.appendChild(child));
+        })
+    }
+
 }

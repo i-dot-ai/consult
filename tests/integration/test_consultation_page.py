@@ -23,7 +23,7 @@ def test_consultation_page(django_app):
     question = Question.objects.filter(consultation=consultation).first()
     consultation_page = django_app.get(f"/consultations/{consultation_slug}/")
 
-    assert "Dashboard" in consultation_page
+    assert "All Questions" in consultation_page
     assert "Free text response" in consultation_page
     assert question.text in consultation_page
 

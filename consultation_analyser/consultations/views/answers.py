@@ -1,11 +1,12 @@
 from datetime import datetime
 from uuid import UUID
 
+from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import Count, F, Q, QuerySet, Sum, Value
 from django.db.models.functions import Length, Replace
-from django.http import HttpRequest
+from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .. import models
@@ -132,6 +133,111 @@ def get_selected_option_summary(question: models.Question, respondents: QuerySet
 
     return multichoice_summary
 
+@user_can_see_dashboards
+@user_can_see_consultation
+def respondents_json(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    cache_key = f"respondents_{request.user.id}_{consultation_slug}_{question_slug}"
+    cache_timeout = 60 * 20 #  20 mins
+
+    responseid = request.GET.get("responseid")
+    demographicindividual = request.GET.getlist("demographicindividual")
+    themesfilter = request.GET.getlist("themesfilter")
+    themesentiment = request.GET.get("themesentiment")
+    responsesentiment = request.GET.get("responsesentiment")
+    wordcount = request.GET.get("wordcount")
+    
+    data = cache.get(cache_key)
+
+    if data is None:
+        # Get question data
+        consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+        
+        question = models.Question.objects.get(
+            slug=question_slug,
+            consultation=consultation,
+        )
+        free_text_question_part = models.QuestionPart.objects.filter(
+            question=question, type=models.QuestionPart.QuestionType.FREE_TEXT
+        ).first()  # Assume that there is only one free text response
+        
+        # Get respondents list, applying relevant filters
+        respondents = filter_by_response_and_theme(
+            question,
+            models.Respondent.objects.filter(consultation=consultation),
+            responseid,
+            responsesentiment,
+            themesfilter,
+            themesentiment,
+        ).distinct()
+
+        if wordcount:
+            respondents = filter_by_word_count(respondents, question_slug, int(wordcount))
+
+        has_individual_data, respondents = filter_by_demographic_data(
+            respondents, demographicindividual
+        )
+
+        # Get summary data for filtered respondents list
+        selected_theme_mappings, theme_mapping_summary = get_selected_theme_summary(
+            free_text_question_part, respondents
+        )
+
+        # Get individual data for each displayed respondent
+        for respondent in respondents:
+            # Free text response
+            try:
+                respondent.free_text_answer = models.Answer.objects.get(
+                    question_part__question=question,
+                    question_part__type=models.QuestionPart.QuestionType.FREE_TEXT,
+                    respondent=respondent,
+                )
+                respondent.sentiment = models.SentimentMapping.objects.filter(
+                    answer=respondent.free_text_answer,
+                ).last()
+                respondent.themes = models.ThemeMapping.objects.filter(
+                    answer=respondent.free_text_answer
+                )
+                respondent.evidence_rich = models.EvidenceRichMapping.objects.filter(
+                    answer=respondent.free_text_answer
+                ).last()
+            except models.Answer.DoesNotExist:
+                pass
+
+            # Multiple choice response
+            try:
+                respondent.multiple_choice_answer = models.Answer.objects.get(
+                    question_part__question=question,
+                    question_part__type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS,
+                    respondent=respondent,
+                )
+            except models.Answer.DoesNotExist:
+                pass
+    
+        data = {
+            "all_respondents": [{
+                "id": f"response-{getattr(respondent, "identifier", '')}",
+                "identifier": getattr(respondent, "identifier", ""),
+                "sentiment_position": respondent.sentiment.position if hasattr(respondent, "sentiment") else "",
+                "free_text_answer_text": respondent.free_text_answer.text if hasattr(respondent, "free_text_answer") else "",
+                "demographic_data": hasattr(respondent, "data") or "",
+                "themes": [{
+                    "id": theme.theme.id,
+                    "stance": theme.stance,
+                    "name": theme.theme.name,
+                    "description": theme.theme.description,
+                } for theme in respondent.themes] if hasattr(respondent, "themes") else [],
+                "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options] if hasattr(respondent, "multiple_choice_answer") and hasattr(respondent.multiple_choice_answer, "chosen_options") else [],
+                "evidenceRich": True if hasattr(respondent, "evidence_rich") and hasattr(respondent.evidence_rich, "evidence_rich") else False,
+                "individual": True if hasattr(respondent, "individual") else False,
+            } for respondent in respondents]
+        }
+        cache.set(cache_key, data, timeout=cache_timeout)
+        
+    return JsonResponse(data)
 
 @user_can_see_dashboards
 @user_can_see_consultation
@@ -242,6 +348,9 @@ def index(
             respondent.themes = models.ThemeMapping.objects.filter(
                 answer=respondent.free_text_answer
             )
+            respondent.evidence_rich = models.EvidenceRichMapping.objects.filter(
+                answer=respondent.free_text_answer
+            ).last()
         except models.Answer.DoesNotExist:
             pass
 
@@ -262,10 +371,12 @@ def index(
         "Negative mentions": mapping.get("negative_count", -1),
     } for mapping in selected_theme_mappings]
 
+
     context = {
         "consultation_name": consultation.title,
         "consultation_slug": consultation_slug,
         "question": question,
+        "question_slug": question_slug,
         "free_text_question_part": free_text_question_part,
         "has_multiple_choice_question_part": has_multiple_choice_question_part,
         "theme_mappings": theme_mappings,
