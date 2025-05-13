@@ -121,7 +121,7 @@ def test_import_all_responses_from_jsonl(mock_consultation_input_objects):
     import_all_responses_from_jsonl(
         question_part,
         bucket_name="test-bucket",
-        question_part_folder_key="app_data/CON1/inputs/question_part_2/",
+        question_part_folder_key="app_data/con1/inputs/question_part_2/",
         batch_size=2,
     )
     # TODO - improve this, but it works for now!
@@ -160,7 +160,7 @@ def test_import_all_respondents_from_jsonl(mock_consultation_input_objects):
     import_all_respondents_from_jsonl(
         consultation=consultation,
         bucket_name="test-bucket",
-        inputs_folder_key="app_data/CON1/inputs/",
+        inputs_folder_key="app_data/con1/inputs/",
         batch_size=2,
     )
     # TODO - improve this, but it works for now!
@@ -194,7 +194,7 @@ def test_import_themes_from_json_and_get_framework(mock_consultation_input_objec
     framework = import_themes_from_json_and_get_framework(
         question_part=question_part,
         bucket_name="test-bucket",
-        question_part_folder_key="app_data/CON1/outputs/mapping/2025-04-01/question_part_1/",
+        question_part_folder_key="app_data/con1/outputs/mapping/2025-04-01/question_part_1/",
     )
     themes = Theme.objects.filter(framework=framework).order_by("key")
     assert themes.count() == 3
@@ -252,7 +252,7 @@ def test_import_all_theme_mappings_from_jsonl(
         question_part=question_part_with_4_responses,
         framework=framework,
         bucket_name="test-bucket",
-        question_part_folder_key="app_data/CON1/outputs/mapping/2025-04-01/question_part_1/",
+        question_part_folder_key="app_data/con1/outputs/mapping/2025-04-01/question_part_1/",
         batch_size=2,
     )
 
@@ -292,7 +292,7 @@ def test_import_all_sentiment_mappings_from_jsonl(
     import_all_sentiment_mappings_from_jsonl(
         question_part=question_part_with_4_responses,
         bucket_name="test-bucket",
-        question_part_folder_key="app_data/CON1/outputs/mapping/2025-04-01/question_part_1/",
+        question_part_folder_key="app_data/con1/outputs/mapping/2025-04-01/question_part_1/",
         batch_size=2,
     )
     # TODO - improve this, but it works for now!
@@ -331,7 +331,7 @@ def test_import_all_evidence_rich_mappings_from_jsonl(
     import_all_evidence_rich_mappings_from_jsonl(
         question_part=question_part_with_4_responses,
         bucket_name="test-bucket",
-        question_part_folder_key="app_data/CON1/outputs/mapping/2025-04-01/question_part_1/",
+        question_part_folder_key="app_data/con1/outputs/mapping/2025-04-01/question_part_1/",
         batch_size=2,
     )
     # TODO - improve this, but it works for now!

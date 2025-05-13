@@ -364,12 +364,15 @@ def index(
         except models.Answer.DoesNotExist:
             pass
 
-    csv_button_data = [{
-        "Theme name": mapping.get("theme__name", ""),
-        "Total mentions": mapping.get('count', -1),
-        "Positive mentions": mapping.get("positive_count", -1),
-        "Negative mentions": mapping.get("negative_count", -1),
-    } for mapping in selected_theme_mappings]
+    csv_button_data = [
+        {
+            "Theme name": mapping.get("theme__name", ""),
+            "Total mentions": mapping.get("count", -1),
+            "Positive mentions": mapping.get("positive_count", -1),
+            "Negative mentions": mapping.get("negative_count", -1),
+        }
+        for mapping in selected_theme_mappings
+    ]
 
 
     context = {
