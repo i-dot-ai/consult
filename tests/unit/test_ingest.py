@@ -306,9 +306,9 @@ def test_import_all_sentiment_mappings_from_jsonl(
 @pytest.mark.django_db
 def test_import_evidence_rich_mappings(question_part_with_4_responses):
     evidence_rich_mapping_data = [
-        b'{"response_id":1,"evidence_rich":"YES"}',
-        b'{"response_id":2,"evidence_rich":"NO"}',
-        b'{"response_id":4,"evidence_rich":"YES"}',
+        b'{"themefinder_id":1,"evidence_rich":"YES"}',
+        b'{"themefinder_id":2,"evidence_rich":"NO"}',
+        b'{"themefinder_id":4,"evidence_rich":"YES"}',
     ]
 
     import_evidence_rich_mappings(
