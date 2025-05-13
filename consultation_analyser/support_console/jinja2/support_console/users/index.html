@@ -17,6 +17,7 @@
         <th scope="col" class="govuk-table__header">Email</th>
         <th scope="col" class="govuk-table__header">Created at</th>
         <th scope="col" class="govuk-table__header">Can access support console</th>
+        <th scope="col" class="govuk-table__header">Can access dashboards</th>
       </tr>
     </thead>
     <tbody class="govuk-table__body">
@@ -30,6 +31,13 @@
         </td>
         <td class="govuk-table__cell">
           {% if user.is_staff %}
+            Yes
+          {% else %}
+            No
+          {% endif %}
+        </td>
+        <td class="govuk-table__cell">
+          {% if user.has_dashboard_access %}
             Yes
           {% else %}
             No
