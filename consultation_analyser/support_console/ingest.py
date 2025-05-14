@@ -281,7 +281,7 @@ def import_evidence_rich_mappings(
     evidence_rich_mappings = []
     for evidence_rich_mapping in evidence_rich_mapping_data:
         evidence_rich_mapping = json.loads(evidence_rich_mapping.decode("utf-8"))
-        themefinder_respondent_id = evidence_rich_mapping["response_id"]
+        themefinder_respondent_id = evidence_rich_mapping["themefinder_id"]
         answer = Answer.objects.get(
             question_part=question_part,
             respondent=Respondent.objects.get(

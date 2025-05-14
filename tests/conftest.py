@@ -98,18 +98,18 @@ def mock_consultation_input_objects(mock_s3_bucket):
     )
 
     evidence_rich_mappings = [
-        {"response_id": 1, "evidence_rich": "YES"},
-        {"response_id": 2, "evidence_rich": "NO"},
-        {"response_id": 4, "evidence_rich": "YES"},
+        {"themefinder_id": 1, "evidence_rich": "YES"},
+        {"themefinder_id": 2, "evidence_rich": "NO"},
+        {"themefinder_id": 4, "evidence_rich": "YES"},
     ]
     evidence_rich_mappings_jsonl = "\n".join(
         [json.dumps(evidence_rich_mapping) for evidence_rich_mapping in evidence_rich_mappings]
     )
 
     evidence_rich_mappings_2 = [
-        {"response_id": 1, "evidence_rich": "YES"},
-        {"response_id": 3, "evidence_rich": "NO"},
-        {"response_id": 4, "evidence_rich": "YES"},
+        {"themefinder_id": 1, "evidence_rich": "YES"},
+        {"themefinder_id": 3, "evidence_rich": "NO"},
+        {"themefinder_id": 4, "evidence_rich": "YES"},
     ]
     evidence_rich_mappings_2_jsonl = "\n".join(
         [json.dumps(evidence_rich_mapping) for evidence_rich_mapping in evidence_rich_mappings_2]
