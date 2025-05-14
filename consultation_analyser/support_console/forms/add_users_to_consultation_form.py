@@ -13,6 +13,7 @@ class AddUsersToConsultationForm(forms.Form):
 
     def __init__(self, *args, **kwargs):
         users = kwargs.pop("users")
+        users = users.order_by("email")
         consultation = kwargs.pop("consultation")
 
         super().__init__(*args, **kwargs)

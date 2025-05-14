@@ -25,7 +25,7 @@ def index(request: HttpRequest) -> HttpResponse:
     consultations_for_user = Consultation.objects.filter(users=user)
     context = {
         "consultations": consultations_for_user,
-        "user_has_dashboard_access": user.has_dashboard_access
+        "user_has_dashboard_access": user.has_dashboard_access,
     }
     return render(request, "consultations/consultations/index.html", context)
 
