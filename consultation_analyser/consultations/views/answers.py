@@ -8,6 +8,7 @@ from django.db.models import Count, F, Q, QuerySet, Sum, Value
 from django.db.models.functions import Length, Replace
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.db.models import Prefetch
 
 from .. import models
 from .decorators import user_can_see_consultation, user_can_see_dashboards
@@ -144,117 +145,103 @@ def respondents_json(
     cache_key = f"respondents_{request.user.id}_{consultation_slug}_{question_slug}"
     cache_timeout = 60 * 20  #  20 mins
 
-    responseid = request.GET.get("responseid")
-    demographicindividual = request.GET.getlist("demographicindividual")
-    themesfilter = request.GET.getlist("themesfilter")
-    themesentiment = request.GET.get("themesentiment")
-    responsesentiment = request.GET.get("responsesentiment")
-    wordcount = request.GET.get("wordcount")
-
+    # Retrieve cached data
     data = cache.get(cache_key)
 
+    # If no cached data found
     if data is None:
-        # Get question data
-        consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-
-        question = models.Question.objects.get(
-            slug=question_slug,
-            consultation=consultation,
+        # Prefetch all related data to avoid multiple db hits
+        filtered_answers = models.Answer.objects.filter(
+            question_part__question__slug=question_slug
+        ).prefetch_related(
+            Prefetch("thememapping_set", to_attr="prefetched_thememappings")
+        ).prefetch_related(
+            Prefetch("evidencerichmapping_set", to_attr="prefetched_evidencerichmappings")
+        ).prefetch_related(
+            Prefetch("sentimentmapping_set", to_attr="prefetched_sentimentmappings")
         )
-        free_text_question_part = models.QuestionPart.objects.filter(
-            question=question, type=models.QuestionPart.QuestionType.FREE_TEXT
-        ).first()  # Assume that there is only one free text response
 
-        # Get respondents list, applying relevant filters
-        respondents = filter_by_response_and_theme(
-            question,
-            models.Respondent.objects.filter(consultation=consultation),
-            responseid,
-            responsesentiment,
-            themesfilter,
-            themesentiment,
+        respondents = models.Respondent.objects.filter(
+            consultation__slug=consultation_slug
+        ).prefetch_related(
+            Prefetch("answer_set", queryset=filtered_answers, to_attr="prefetched_answers")
         ).distinct()
 
-        if wordcount:
-            respondents = filter_by_word_count(respondents, question_slug, int(wordcount))
-
-        has_individual_data, respondents = filter_by_demographic_data(
-            respondents, demographicindividual
-        )
-
-        # Get summary data for filtered respondents list
-        selected_theme_mappings, theme_mapping_summary = get_selected_theme_summary(
-            free_text_question_part, respondents
-        )
+        data = {
+            "all_respondents": []
+        }
 
         # Get individual data for each displayed respondent
         for respondent in respondents:
+            
+            # Defaults
+            free_text_answer = None
+            multiple_choice_answers = None
+
             # Free text response
-            try:
-                respondent.free_text_answer = models.Answer.objects.get(
-                    question_part__question=question,
-                    question_part__type=models.QuestionPart.QuestionType.FREE_TEXT,
-                    respondent=respondent,
-                )
-                respondent.sentiment = models.SentimentMapping.objects.filter(
-                    answer=respondent.free_text_answer,
-                ).last()
-                respondent.themes = models.ThemeMapping.objects.filter(
-                    answer=respondent.free_text_answer
-                )
-                respondent.evidence_rich = models.EvidenceRichMapping.objects.filter(
-                    answer=respondent.free_text_answer
-                ).last()
-            except models.Answer.DoesNotExist:
-                pass
+            free_text_responses = [
+                answer for answer in respondent.prefetched_answers
+                if answer.question_part.type == models.QuestionPart.QuestionType.FREE_TEXT
+            ]
+            
+
+            if len(free_text_responses) > 0:
+                free_text_answer = free_text_responses[0]
+
+                respondent.themes = free_text_answer.prefetched_thememappings # type: ignore
+
+                if len(free_text_answer.prefetched_sentimentmappings) > 0:
+                    respondent.sentiment = free_text_answer.prefetched_sentimentmappings[0] # type: ignore
+
+                if len(free_text_answer.prefetched_evidencerichmappings) > 0:
+                    respondent.evidence_rich = free_text_answer.prefetched_evidencerichmappings[0] # type: ignore
 
             # Multiple choice response
-            try:
-                respondent.multiple_choice_answer = models.Answer.objects.get(
-                    question_part__question=question,
-                    question_part__type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS,
-                    respondent=respondent,
-                )
-            except models.Answer.DoesNotExist:
-                pass
+            multiple_choice_answers = [
+                answer for answer in respondent.prefetched_answers
+                if answer.question_part.type == models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
+            ]
 
-        data = {
-            "all_respondents": [
-                {
-                    "id": f"response-{getattr(respondent, 'identifier', '')}",
-                    "identifier": getattr(respondent, "identifier", ""),
-                    "sentiment_position": respondent.sentiment.position
+            if len(multiple_choice_answers) > 0:
+                respondent.multiple_choice_answer = multiple_choice_answers[0]
+
+            # Build JSON response
+            data["all_respondents"].append({
+                "id": f"response-{getattr(respondent, "identifier", '')}",
+                "identifier": getattr(respondent, "identifier", ""),
+                "sentiment_position": respondent.sentiment.position
                     if hasattr(respondent, "sentiment")
                     and hasattr(respondent.sentiment, "position")
                     else "",
-                    "free_text_answer_text": respondent.free_text_answer.text
-                    if hasattr(respondent, "free_text_answer")
+                "free_text_answer_text": free_text_answer.text # type: ignore
+                    if hasattr(free_text_answer, "text")
                     else "",
-                    "demographic_data": hasattr(respondent, "data") or "",
-                    "themes": [
-                        {
-                            "id": theme.theme.id,
-                            "stance": theme.stance,
-                            "name": theme.theme.name,
-                            "description": theme.theme.description,
-                        }
-                        for theme in respondent.themes
-                    ]
-                    if hasattr(respondent, "themes")
+                "demographic_data": hasattr(respondent, "data") or "",
+                "themes": [
+                    {
+                        "id": theme.theme.id,
+                        "stance": theme.stance,
+                        "name": theme.theme.name,
+                        "description": theme.theme.description,
+                    }
+                    for theme in respondent.themes
+                ]
+                    if hasattr(respondent, "themes") 
                     else [],
-                    "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options]
+                "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options]
                     if hasattr(respondent, "multiple_choice_answer")
                     and hasattr(respondent.multiple_choice_answer, "chosen_options")
                     else [],
-                    "evidenceRich": True
+                "evidenceRich": True
                     if hasattr(respondent, "evidence_rich")
                     and hasattr(respondent.evidence_rich, "evidence_rich")
                     else False,
-                    "individual": True if hasattr(respondent, "individual") else False,
-                }
-                for respondent in respondents
-            ]
-        }
+                "individual": True
+                    if hasattr(respondent, "individual")
+                    else False,
+            })
+
+        # Update cache
         cache.set(cache_key, data, timeout=cache_timeout)
 
     return JsonResponse(data)
