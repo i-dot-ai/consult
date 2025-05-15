@@ -150,7 +150,14 @@ def respondents_json(
 
     # If no cached data found
     if data is None:
+
         # Prefetch all related data to avoid multiple db hits
+        # filtered_answers is not querying the database yet,
+        # only building the query (as querysets are lazily fetched).
+        # This then gets passed as the queryset param of respondent prefetch,
+        # updating that query with the filter logic.
+        # Ultimately the returned answers are only for the current consultation.
+
         filtered_answers = models.Answer.objects.filter(
             question_part__question__slug=question_slug
         ).prefetch_related(
