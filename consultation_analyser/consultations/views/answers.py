@@ -219,22 +219,41 @@ def respondents_json(
                 pass
 
         data = {
-            "all_respondents": [{
-                "id": f"response-{getattr(respondent, "identifier", '')}",
-                "identifier": getattr(respondent, "identifier", ""),
-                "sentiment_position": respondent.sentiment.position if hasattr(respondent, "sentiment") and hasattr(respondent.sentiment, "position") else "",
-                "free_text_answer_text": respondent.free_text_answer.text if hasattr(respondent, "free_text_answer") else "",
-                "demographic_data": hasattr(respondent, "data") or "",
-                "themes": [{
-                    "id": theme.theme.id,
-                    "stance": theme.stance,
-                    "name": theme.theme.name,
-                    "description": theme.theme.description,
-                } for theme in respondent.themes] if hasattr(respondent, "themes") else [],
-                "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options] if hasattr(respondent, "multiple_choice_answer") and hasattr(respondent.multiple_choice_answer, "chosen_options") else [],
-                "evidenceRich": True if hasattr(respondent, "evidence_rich") and hasattr(respondent.evidence_rich, "evidence_rich") else False,
-                "individual": True if hasattr(respondent, "individual") else False,
-            } for respondent in respondents]
+            "all_respondents": [
+                {
+                    "id": f"response-{getattr(respondent, 'identifier', '')}",
+                    "identifier": getattr(respondent, "identifier", ""),
+                    "sentiment_position": respondent.sentiment.position
+                    if hasattr(respondent, "sentiment")
+                    and hasattr(respondent.sentiment, "position")
+                    else "",
+                    "free_text_answer_text": respondent.free_text_answer.text
+                    if hasattr(respondent, "free_text_answer")
+                    else "",
+                    "demographic_data": hasattr(respondent, "data") or "",
+                    "themes": [
+                        {
+                            "id": theme.theme.id,
+                            "stance": theme.stance,
+                            "name": theme.theme.name,
+                            "description": theme.theme.description,
+                        }
+                        for theme in respondent.themes
+                    ]
+                    if hasattr(respondent, "themes")
+                    else [],
+                    "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options]
+                    if hasattr(respondent, "multiple_choice_answer")
+                    and hasattr(respondent.multiple_choice_answer, "chosen_options")
+                    else [],
+                    "evidenceRich": True
+                    if hasattr(respondent, "evidence_rich")
+                    and hasattr(respondent.evidence_rich, "evidence_rich")
+                    else False,
+                    "individual": True if hasattr(respondent, "individual") else False,
+                }
+                for respondent in respondents
+            ]
         }
         cache.set(cache_key, data, timeout=cache_timeout)
 
