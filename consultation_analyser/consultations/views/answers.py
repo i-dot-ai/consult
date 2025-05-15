@@ -141,7 +141,8 @@ def respondents_json(
     consultation_slug: str,
     question_slug: str,
 ):
-    cache_key = f"respondents_{request.user.id}_{consultation_slug}_{question_slug}"
+    # If needed, add request.user.id to make cache unique to each user
+    cache_key = f"respondents_{consultation_slug}_{question_slug}"
     cache_timeout = 60 * 20  #  20 mins
 
     # Retrieve cached data
