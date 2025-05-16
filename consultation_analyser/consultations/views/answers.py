@@ -172,7 +172,7 @@ def respondents_json(
             num_answers=Count("answer")
         ).filter(
             consultation__slug=consultation_slug,
-            num_answers__gt=0
+            num_answers__gt=0 #  Filter out respondents with no answers
         ).prefetch_related(
             Prefetch("answer_set", queryset=filtered_answers, to_attr="prefetched_answers")
         ).distinct()
