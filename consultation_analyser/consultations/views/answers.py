@@ -168,8 +168,11 @@ def respondents_json(
             Prefetch("sentimentmapping_set", to_attr="prefetched_sentimentmappings")
         )
 
-        respondents = models.Respondent.objects.filter(
-            consultation__slug=consultation_slug
+        respondents = models.Respondent.objects.annotate(
+            num_answers=Count("answer")
+        ).filter(
+            consultation__slug=consultation_slug,
+            num_answers__gt=0
         ).prefetch_related(
             Prefetch("answer_set", queryset=filtered_answers, to_attr="prefetched_answers")
         ).distinct()
