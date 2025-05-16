@@ -41,35 +41,35 @@ def app_config(request: HttpRequest):
 
     current_app = resolved_url.func.__module__.split(".")[1]
 
-    if current_app == "support_console":
-        app_config = AppConfig(
-            name="Consult support console",
-            path="/support/",
-            menu_items=[
-                {
-                    "href": "/support/consultations/",
-                    "text": "Consultations",
-                    "active": request.path.startswith("/support/consultations"),
-                },
-                {
-                    "href": "/support/users/",
-                    "text": "Users",
-                    "active": request.path.startswith("/support/users"),
-                },
-                {
-                    "href": "/support/consultations/import-summary/",
-                    "text": "Import",
-                    "active": request.path.startswith("/support/consultations/import-summary"),
-                },
-                {
-                    "href": "/support/sign-out/",
-                    "text": "Sign out",
-                    "classes": "x-govuk-primary-navigation__item--right",
-                },
-            ],
-        )
-    else:
-        if request.user.is_authenticated:
+    if request.user.is_authenticated:
+        if current_app == "support_console":
+            app_config = AppConfig(
+                name="Consult support console",
+                path="/support/",
+                menu_items=[
+                    {
+                        "href": "/support/consultations/",
+                        "text": "Consultations",
+                        "active": request.path.startswith("/support/consultations"),
+                    },
+                    {
+                        "href": "/support/users/",
+                        "text": "Users",
+                        "active": request.path.startswith("/support/users"),
+                    },
+                    {
+                        "href": "/support/consultations/import-summary/",
+                        "text": "Import",
+                        "active": request.path.startswith("/support/consultations/import-summary"),
+                    },
+                    {
+                        "href": "/support/sign-out/",
+                        "text": "Sign out",
+                        "classes": "x-govuk-primary-navigation__item--right",
+                    },
+                ],
+            )
+        else:  # regular (non-support console) app
             menu_items = []
             if request.user.is_staff:
                 menu_items = [
@@ -93,8 +93,18 @@ def app_config(request: HttpRequest):
                     },
                 ]
             )
-        else:
-            menu_items = [
+
+            app_config = AppConfig(
+                name="Consult",
+                path="/",
+                menu_items=menu_items,
+            )
+
+    else:  # non-authenticated user
+        app_config = AppConfig(
+            name="Consult",
+            path="/",
+            menu_items=[
                 {
                     "href": "/how-it-works/",
                     "text": "How it works",
@@ -116,12 +126,7 @@ def app_config(request: HttpRequest):
                     "active": request.path == "/sign-in/",
                     "classes": "x-govuk-primary-navigation__item--right",
                 },
-            ]
-
-        app_config = AppConfig(
-            name="Consult",
-            path="/",
-            menu_items=menu_items,
+            ],
         )
 
     return {"app_config": app_config}
