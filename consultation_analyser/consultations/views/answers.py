@@ -3,8 +3,7 @@ from uuid import UUID
 
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
-from django.core.paginator import Paginator
-from django.db.models import Count, F, Prefetch, Q, QuerySet, Sum, Value
+from django.db.models import Count, F, Prefetch, Q, QuerySet, Value
 from django.db.models.functions import Length, Replace
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -127,6 +126,18 @@ def get_selected_option_summary(question: models.Question, respondents: QuerySet
     return multichoice_summary
 
 
+def get_respondents_for_question(
+    consultation_slug: str, question_slug: str
+) -> QuerySet[models.Respondent]:
+    qs = models.Respondent.objects.annotate(
+        num_answers=Count("answer", filter=Q(answer__question_part__question__slug=question_slug))
+    ).filter(
+        consultation__slug=consultation_slug,
+        num_answers__gt=0,  #  Filter out respondents with no answers
+    )
+    return qs
+
+
 @user_can_see_dashboards
 @user_can_see_consultation
 def respondents_json(
@@ -138,7 +149,6 @@ def respondents_json(
     cache_key = f"respondents_{consultation_slug}_{question_slug}"
     # cache_timeout = 60 * 20  #  20 mins - TODO - changed for testing!
     cache_timeout = 1
-
 
     # Retrieve cached data
     data = cache.get(cache_key)
@@ -174,6 +184,9 @@ def respondents_json(
             )
             .distinct()
         )
+        respondents = respondents.prefetch_related(
+            Prefetch("answer_set", queryset=filtered_answers, to_attr="prefetched_answers")
+        ).distinct()
 
         data = {"all_respondents": []}
 
@@ -223,16 +236,16 @@ def respondents_json(
                     "free_text_answer_text": free_text_answer.text  # type: ignore
                     if hasattr(free_text_answer, "text")
                     else "",
-                "demographic_data": hasattr(respondent, "data") or "",
-                "themes": [
-                    {
-                        "id": theme.theme.id,
-                        "stance": theme.stance,
-                        "name": theme.theme.name,
-                        "description": theme.theme.description,
-                    }
-                    for theme in respondent.themes
-                ]
+                    "demographic_data": hasattr(respondent, "data") or "",
+                    "themes": [
+                        {
+                            "id": theme.theme.id,
+                            "stance": theme.stance,
+                            "name": theme.theme.name,
+                            "description": theme.theme.description,
+                        }
+                        for theme in respondent.themes
+                    ]
                     if hasattr(respondent, "themes")
                     else [],
                     "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options]
@@ -274,25 +287,15 @@ def index(
     ).exists()
 
     # Get all respondents for question
-    respondents = (
-        models.Respondent.objects.annotate(
-            num_answers=Count(
-                "answer", filter=Q(answer__question_part__question__slug=question_slug)
-            )
-        )
-        .filter(
-            consultation__slug=consultation_slug,
-            num_answers__gt=0,  #  Filter out respondents with no answers
-        )
-        .distinct()
+    respondents = get_respondents_for_question(
+        consultation_slug=consultation_slug, question_slug=question_slug
     )
+    respondents = respondents.distinct()
 
     has_individual_data = respondents.filter(data__has_key="individual").exists()
 
     # Get summary data for filtered respondents list
-    selected_theme_mappings = get_selected_theme_summary(
-        free_text_question_part, respondents
-    )
+    selected_theme_mappings = get_selected_theme_summary(free_text_question_part, respondents)
     multiple_choice_summary = get_selected_option_summary(question, respondents)
 
     csv_button_data = [
