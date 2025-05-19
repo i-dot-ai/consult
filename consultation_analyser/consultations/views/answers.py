@@ -268,45 +268,6 @@ def index(
     consultation_slug: str,
     question_slug: str,
 ):
-    # responseid = request.GET.get("responseid")
-    demographicindividual = request.GET.getlist("demographicindividual")
-    # themesfilter = request.GET.getlist("themesfilter")
-    # themesentiment = request.GET.get("themesentiment")
-    # responsesentiment = request.GET.get("responsesentiment")
-    # wordcount = request.GET.get("wordcount")
-    # active_filters = {
-    #     "responseid": {
-    #         "label": "Respondent ID",
-    #         "selected": [{"display": responseid, "id": responseid}] if responseid else [],
-    #     },
-    #     "demographicindividual": {
-    #         "label": "Individual or Organisation",
-    #         "selected": [{"display": d, "id": d} for d in demographicindividual],
-    #     },
-    #     "themesfilter": {
-    #         "label": "Theme",
-    #         "selected": [
-    #             {"display": models.Theme.objects.get(id=t).name, "id": t} for t in themesfilter
-    #         ],
-    #     },
-    #     "themesentiment": {
-    #         "label": "Theme sentiment",
-    #         "selected": [{"display": themesentiment.title(), "id": themesentiment}]
-    #         if themesentiment
-    #         else [],
-    #     },
-    #     "responsesentiment": {
-    #         "label": "Response sentiment",
-    #         "selected": [{"display": responsesentiment.title(), "id": responsesentiment}]
-    #         if responsesentiment
-    #         else [],
-    #     },
-    #     "wordcount": {
-    #         "label": "Minimum word count",
-    #         "selected": [{"display": wordcount, "id": wordcount}] if wordcount else [],
-    #     },
-    # }
-
     # Get question data
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
     question = models.Question.objects.get(
@@ -326,7 +287,6 @@ def index(
         .distinct("theme__name")
     )
 
-
     # Get all respondents for question
     respondents = (
         models.Respondent.objects.annotate(
@@ -341,22 +301,6 @@ def index(
         .distinct()
     )
 
-    # Get respondents list, applying relevant filters
-    # respondents = filter_by_response_and_theme(
-    #     question,
-    #     models.Respondent.objects.filter(consultation=consultation),
-    #     responseid,
-    #     responsesentiment,
-    #     themesfilter,
-    #     themesentiment,
-    # ).distinct()
-
-    # if wordcount:
-    #     respondents = filter_by_word_count(respondents, question_slug, int(wordcount))
-
-    # has_individual_data, respondents = filter_by_demographic_data(
-    #     respondents, demographicindividual
-    # )
     has_individual_data = respondents.filter(data__has_key="individual").exists()
 
     # Get summary data for filtered respondents list
@@ -364,43 +308,6 @@ def index(
         free_text_question_part, respondents
     )
     multiple_choice_summary = get_selected_option_summary(question, respondents)
-
-    # # Pagination
-    # pagination = Paginator(respondents, 5)
-    # page_index = request.GET.get("page", "1")
-    # current_page = pagination.page(page_index)
-    # paginated_respondents = current_page.object_list
-
-    # # Get individual data for each displayed respondent
-    # for respondent in paginated_respondents:
-    #     # Free text response
-    #     try:
-    #         respondent.free_text_answer = models.Answer.objects.get(
-    #             question_part__question=question,
-    #             question_part__type=models.QuestionPart.QuestionType.FREE_TEXT,
-    #             respondent=respondent,
-    #         )
-    #         respondent.sentiment = models.SentimentMapping.objects.filter(
-    #             answer=respondent.free_text_answer,
-    #         ).last()
-    #         respondent.themes = models.ThemeMapping.objects.filter(
-    #             answer=respondent.free_text_answer
-    #         )
-    #         respondent.evidence_rich = models.EvidenceRichMapping.objects.filter(
-    #             answer=respondent.free_text_answer
-    #         ).last()
-    #     except models.Answer.DoesNotExist:
-    #         pass
-
-    #     # Multiple choice response
-    #     try:
-    #         respondent.multiple_choice_answer = models.Answer.objects.get(
-    #             question_part__question=question,
-    #             question_part__type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS,
-    #             respondent=respondent,
-    #         )
-    #     except models.Answer.DoesNotExist:
-    #         pass
 
     csv_button_data = [
         {
