@@ -98,14 +98,7 @@ def get_selected_theme_summary(
             negative_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.NEGATIVE)),
         )
     )
-
-    theme_mapping_summary = selected_theme_mappings.aggregate(
-        total=Sum("count"),
-        positive=Sum("positive_count"),
-        negative=Sum("negative_count"),
-    )
-
-    return selected_theme_mappings, theme_mapping_summary
+    return selected_theme_mappings
 
 
 def get_selected_option_summary(question: models.Question, respondents: QuerySet) -> list[dict]:
@@ -279,12 +272,6 @@ def index(
     has_multiple_choice_question_part = models.QuestionPart.objects.filter(
         question=question, type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
     ).exists()
-    theme_mappings = (
-        models.ThemeMapping.get_latest_theme_mappings(question_part=free_text_question_part)
-        .values("theme__name", "theme__description", "theme__id")
-        .order_by("theme__name")
-        .distinct("theme__name")
-    )
 
     # Get all respondents for question
     respondents = (
@@ -303,7 +290,7 @@ def index(
     has_individual_data = respondents.filter(data__has_key="individual").exists()
 
     # Get summary data for filtered respondents list
-    selected_theme_mappings, theme_mapping_summary = get_selected_theme_summary(
+    selected_theme_mappings = get_selected_theme_summary(
         free_text_question_part, respondents
     )
     multiple_choice_summary = get_selected_option_summary(question, respondents)
@@ -325,11 +312,9 @@ def index(
         "question_slug": question_slug,
         "free_text_question_part": free_text_question_part,
         "has_multiple_choice_question_part": has_multiple_choice_question_part,
-        "theme_mappings": theme_mappings,
         "total_responses": len(respondents),
         "selected_theme_mappings": selected_theme_mappings,
         "csv_button_data": csv_button_data,
-        "theme_mapping_summary": theme_mapping_summary,
         "multiple_choice_summary": multiple_choice_summary,
         "stance_options": models.SentimentMapping.Position.names,
         "has_individual_data": has_individual_data,
