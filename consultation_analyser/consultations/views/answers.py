@@ -365,42 +365,42 @@ def index(
     )
     multiple_choice_summary = get_selected_option_summary(question, respondents)
 
-    # Pagination
-    pagination = Paginator(respondents, 5)
-    page_index = request.GET.get("page", "1")
-    current_page = pagination.page(page_index)
-    paginated_respondents = current_page.object_list
+    # # Pagination
+    # pagination = Paginator(respondents, 5)
+    # page_index = request.GET.get("page", "1")
+    # current_page = pagination.page(page_index)
+    # paginated_respondents = current_page.object_list
 
-    # Get individual data for each displayed respondent
-    for respondent in paginated_respondents:
-        # Free text response
-        try:
-            respondent.free_text_answer = models.Answer.objects.get(
-                question_part__question=question,
-                question_part__type=models.QuestionPart.QuestionType.FREE_TEXT,
-                respondent=respondent,
-            )
-            respondent.sentiment = models.SentimentMapping.objects.filter(
-                answer=respondent.free_text_answer,
-            ).last()
-            respondent.themes = models.ThemeMapping.objects.filter(
-                answer=respondent.free_text_answer
-            )
-            respondent.evidence_rich = models.EvidenceRichMapping.objects.filter(
-                answer=respondent.free_text_answer
-            ).last()
-        except models.Answer.DoesNotExist:
-            pass
+    # # Get individual data for each displayed respondent
+    # for respondent in paginated_respondents:
+    #     # Free text response
+    #     try:
+    #         respondent.free_text_answer = models.Answer.objects.get(
+    #             question_part__question=question,
+    #             question_part__type=models.QuestionPart.QuestionType.FREE_TEXT,
+    #             respondent=respondent,
+    #         )
+    #         respondent.sentiment = models.SentimentMapping.objects.filter(
+    #             answer=respondent.free_text_answer,
+    #         ).last()
+    #         respondent.themes = models.ThemeMapping.objects.filter(
+    #             answer=respondent.free_text_answer
+    #         )
+    #         respondent.evidence_rich = models.EvidenceRichMapping.objects.filter(
+    #             answer=respondent.free_text_answer
+    #         ).last()
+    #     except models.Answer.DoesNotExist:
+    #         pass
 
-        # Multiple choice response
-        try:
-            respondent.multiple_choice_answer = models.Answer.objects.get(
-                question_part__question=question,
-                question_part__type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS,
-                respondent=respondent,
-            )
-        except models.Answer.DoesNotExist:
-            pass
+    #     # Multiple choice response
+    #     try:
+    #         respondent.multiple_choice_answer = models.Answer.objects.get(
+    #             question_part__question=question,
+    #             question_part__type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS,
+    #             respondent=respondent,
+    #         )
+    #     except models.Answer.DoesNotExist:
+    #         pass
 
     csv_button_data = [
         {
