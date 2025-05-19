@@ -14,7 +14,7 @@ We are considering options for the dashboard. With a lot of results (potentially
 
 We will assume that all users have JavaScript (there are limited users).
 
-Replace the non-JS page (dashboard) with a link to a CSV with the data (store in S3 and download).
+Have a minimal non-JS page (details to be decided).
 
 Frontend will prepare and send query string with filters, pagination (page and page size), backend will apply these choices and return as JSON. 
 
