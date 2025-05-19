@@ -143,7 +143,9 @@ def respondents_json(
 ):
     # If needed, add request.user.id to make cache unique to each user
     cache_key = f"respondents_{consultation_slug}_{question_slug}"
-    cache_timeout = 60 * 20  #  20 mins
+    # cache_timeout = 60 * 20  #  20 mins - TODO - changed for testing!
+    cache_timeout = 1
+
 
     # Retrieve cached data
     data = cache.get(cache_key)
@@ -228,16 +230,16 @@ def respondents_json(
                     "free_text_answer_text": free_text_answer.text  # type: ignore
                     if hasattr(free_text_answer, "text")
                     else "",
-                    "demographic_data": hasattr(respondent, "data") or "",
-                    "themes": [
-                        {
-                            "id": theme.theme.id,
-                            "stance": theme.stance,
-                            "name": theme.theme.name,
-                            "description": theme.theme.description,
-                        }
-                        for theme in respondent.themes
-                    ]
+                "demographic_data": hasattr(respondent, "data") or "",
+                "themes": [
+                    {
+                        "id": theme.theme.id,
+                        "stance": theme.stance,
+                        "name": theme.theme.name,
+                        "description": theme.theme.description,
+                    }
+                    for theme in respondent.themes
+                ]
                     if hasattr(respondent, "themes")
                     else [],
                     "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options]
@@ -401,26 +403,26 @@ def index(
         "free_text_question_part": free_text_question_part,
         "has_multiple_choice_question_part": has_multiple_choice_question_part,
         "theme_mappings": theme_mappings,
-        "total_responses": len(respondents),
-        "pagination": current_page,
-        "respondents": paginated_respondents,
+        # "total_responses": len(respondents),
+        # "pagination": current_page,
+        # "respondents": paginated_respondents,
         "selected_theme_mappings": selected_theme_mappings,
         "csv_button_data": csv_button_data,
-        "theme_mapping_summary": theme_mapping_summary,
+        # "theme_mapping_summary": theme_mapping_summary,
         "multiple_choice_summary": multiple_choice_summary,
         "stance_options": models.SentimentMapping.Position.names,
-        "theme_stance_options": models.ThemeMapping.Stance.names,
-        "active_filters": active_filters,
-        "has_filters": any(
-            [active_filter["selected"] for active_filter in active_filters.values()]
-        ),
+        # "theme_stance_options": models.ThemeMapping.Stance.names,
+        # "active_filters": active_filters,
+        # "has_filters": any(
+        #     [active_filter["selected"] for active_filter in active_filters.values()]
+        # ),
         "has_individual_data": has_individual_data,
-        "display_respondent_id_filter": respondents.filter(
-            themefinder_respondent_id__isnull=False
-        ).exists(),
+        # "display_respondent_id_filter": respondents.filter(
+        #     themefinder_respondent_id__isnull=False
+        # ).exists(),
     }
 
-    return render(request, "consultations/answers/index.html", context)
+    return render(request, "consultations/answers/index2.html", context)
 
 
 @user_can_see_consultation
