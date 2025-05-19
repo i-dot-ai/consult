@@ -14,9 +14,9 @@ We are considering options for the dashboard. With a lot of results (potentially
 
 We will assume that all users have JavaScript (there are limited users).
 
-We will do all the filtering in the frontend. Keep the existing page as backup (though we don't need to do all the filtering in the non-JS page).
+Replace the non-JS page with a link to a CSV with the data (store in S3 and download).
 
-We will still paginate results in the backend, and the frontend will fetch these.
+Frontend will prepare and send query string with filters, pagination (page and page size), backend will apply these choices and return as JSON. 
 
 
 ## Consequences
