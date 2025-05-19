@@ -1,6 +1,8 @@
 import pytest
+from django.contrib.auth.models import Group
 from pytest_lazy_fixtures import lf
 
+from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.models import (
     ExecutionRun,
     Respondent,
@@ -15,6 +17,7 @@ from consultation_analyser.consultations.views.answers import (
     get_selected_theme_summary,
 )
 from consultation_analyser.factories import (
+    EvidenceRichMappingFactory,
     ExecutionRunFactory,
     FreeTextAnswerFactory,
     FreeTextQuestionPartFactory,
@@ -26,6 +29,7 @@ from consultation_analyser.factories import (
     RespondentFactory,
     SentimentMappingFactory,
     ThemeMappingFactory,
+    UserFactory,
 )
 
 
@@ -445,3 +449,47 @@ def test_get_selected_option_summary(question):
 
     with pytest.raises(KeyError):
         option_summary[0]["C"]
+
+
+@pytest.mark.django_db
+def test_respondents_json(client, question):
+    # set up responses with evidence-rich details
+    question_part = FreeTextQuestionPartFactory(question=question)
+    respondent_1 = RespondentFactory(
+        consultation=question.consultation, themefinder_respondent_id=1
+    )
+    respondent_2 = RespondentFactory(
+        consultation=question.consultation, themefinder_respondent_id=2
+    )
+    response_1 = FreeTextAnswerFactory(question_part=question_part, respondent=respondent_1)
+    response_2 = FreeTextAnswerFactory(question_part=question_part, respondent=respondent_2)
+
+    execution_run = ExecutionRunFactory()
+
+    EvidenceRichMappingFactory(
+        answer=response_1, evidence_evaluation_execution_run=execution_run, evidence_rich=True
+    )
+    EvidenceRichMappingFactory(
+        answer=response_2, evidence_evaluation_execution_run=execution_run, evidence_rich=False
+    )
+
+    # Set up user
+    user = UserFactory()
+    dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
+    user.groups.add(dash_access)
+    user.save()
+    question.consultation.users.add(user)
+
+    # Query json endpoint
+    client.force_login(user)
+    response = client.get(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
+    )
+    assert response.status_code == 200
+
+    response_json = response.json()
+
+    data_1 = list(filter(lambda x: x["identifier"] == 1, response_json["all_respondents"]))[0]
+    assert data_1["evidenceRich"]
+    data_2 = list(filter(lambda x: x["identifier"] == 2, response_json["all_respondents"]))[0]
+    assert not data_2["evidenceRich"]

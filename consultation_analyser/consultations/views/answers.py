@@ -168,47 +168,48 @@ def respondents_json(
             )
         )
 
-        respondents = models.Respondent.objects.annotate(
-            num_answers=Count("answer")
-        ).filter(
-            consultation__slug=consultation_slug,
-            num_answers__gt=0 #  Filter out respondents with no answers
-        ).prefetch_related(
-            Prefetch("answer_set", queryset=filtered_answers, to_attr="prefetched_answers")
-        ).distinct()
+        respondents = (
+            models.Respondent.objects.annotate(num_answers=Count("answer"))
+            .filter(
+                consultation__slug=consultation_slug,
+                num_answers__gt=0,  #  Filter out respondents with no answers
+            )
+            .prefetch_related(
+                Prefetch("answer_set", queryset=filtered_answers, to_attr="prefetched_answers")
+            )
+            .distinct()
+        )
 
-        data = {
-            "all_respondents": []
-        }
+        data = {"all_respondents": []}
 
         # Get individual data for each displayed respondent
         for respondent in respondents:
-
             # Defaults
             free_text_answer = None
             multiple_choice_answers = None
 
             # Free text response
             free_text_responses = [
-                answer for answer in respondent.prefetched_answers
+                answer
+                for answer in respondent.prefetched_answers
                 if answer.question_part.type == models.QuestionPart.QuestionType.FREE_TEXT
             ]
-
 
             if len(free_text_responses) > 0:
                 free_text_answer = free_text_responses[0]
 
-                respondent.themes = free_text_answer.prefetched_thememappings # type: ignore
+                respondent.themes = free_text_answer.prefetched_thememappings  # type: ignore
 
                 if len(free_text_answer.prefetched_sentimentmappings) > 0:
-                    respondent.sentiment = free_text_answer.prefetched_sentimentmappings[0] # type: ignore
+                    respondent.sentiment = free_text_answer.prefetched_sentimentmappings[0]  # type: ignore
 
                 if len(free_text_answer.prefetched_evidencerichmappings) > 0:
                     respondent.evidence_rich = free_text_answer.prefetched_evidencerichmappings[0]  # type: ignore
 
             # Multiple choice response
             multiple_choice_answers = [
-                answer for answer in respondent.prefetched_answers
+                answer
+                for answer in respondent.prefetched_answers
                 if answer.question_part.type == models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
             ]
 
@@ -224,28 +225,28 @@ def respondents_json(
                     if hasattr(respondent, "sentiment")
                     and hasattr(respondent.sentiment, "position")
                     else "",
-                "free_text_answer_text": free_text_answer.text # type: ignore
+                    "free_text_answer_text": free_text_answer.text  # type: ignore
                     if hasattr(free_text_answer, "text")
                     else "",
-                "demographic_data": hasattr(respondent, "data") or "",
-                "themes": [
-                    {
-                        "id": theme.theme.id,
-                        "stance": theme.stance,
-                        "name": theme.theme.name,
-                        "description": theme.theme.description,
-                    }
-                    for theme in respondent.themes
-                ]
+                    "demographic_data": hasattr(respondent, "data") or "",
+                    "themes": [
+                        {
+                            "id": theme.theme.id,
+                            "stance": theme.stance,
+                            "name": theme.theme.name,
+                            "description": theme.theme.description,
+                        }
+                        for theme in respondent.themes
+                    ]
                     if hasattr(respondent, "themes")
                     else [],
-                "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options]
+                    "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options]
                     if hasattr(respondent, "multiple_choice_answer")
                     and hasattr(respondent.multiple_choice_answer, "chosen_options")
                     else [],
-                "evidenceRich": True
+                    "evidenceRich": True
                     if hasattr(respondent, "evidence_rich")
-                    and respondent.evidence_rich.evidence_rich == True
+                    and respondent.evidence_rich.evidence_rich
                     else False,
                     "individual": True if hasattr(respondent, "individual") else False,
                 }
