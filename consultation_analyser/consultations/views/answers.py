@@ -134,7 +134,6 @@ def get_selected_option_summary(question: models.Question, respondents: QuerySet
     return multichoice_summary
 
 
-
 @user_can_see_dashboards
 @user_can_see_consultation
 def respondents_json(
@@ -327,12 +326,12 @@ def index(
         "free_text_question_part": free_text_question_part,
         "has_multiple_choice_question_part": has_multiple_choice_question_part,
         "theme_mappings": theme_mappings,
-        # "total_responses": len(respondents),
+        "total_responses": len(respondents),
         # "pagination": current_page,
         # "respondents": paginated_respondents,
         "selected_theme_mappings": selected_theme_mappings,
         "csv_button_data": csv_button_data,
-        # "theme_mapping_summary": theme_mapping_summary,
+        "theme_mapping_summary": theme_mapping_summary,
         "multiple_choice_summary": multiple_choice_summary,
         "stance_options": models.SentimentMapping.Position.names,
         # "theme_stance_options": models.ThemeMapping.Stance.names,
