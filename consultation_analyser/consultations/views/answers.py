@@ -327,22 +327,12 @@ def index(
         "has_multiple_choice_question_part": has_multiple_choice_question_part,
         "theme_mappings": theme_mappings,
         "total_responses": len(respondents),
-        # "pagination": current_page,
-        # "respondents": paginated_respondents,
         "selected_theme_mappings": selected_theme_mappings,
         "csv_button_data": csv_button_data,
         "theme_mapping_summary": theme_mapping_summary,
         "multiple_choice_summary": multiple_choice_summary,
         "stance_options": models.SentimentMapping.Position.names,
-        # "theme_stance_options": models.ThemeMapping.Stance.names,
-        # "active_filters": active_filters,
-        # "has_filters": any(
-        #     [active_filter["selected"] for active_filter in active_filters.values()]
-        # ),
         "has_individual_data": has_individual_data,
-        # "display_respondent_id_filter": respondents.filter(
-        #     themefinder_respondent_id__isnull=False
-        # ).exists(),
     }
 
     return render(request, "consultations/answers/index2.html", context)
