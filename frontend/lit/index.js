@@ -3140,6 +3140,10 @@ class IaiQuestionTiles extends IaiLitBase {
         this.applyStaticStyles("iai-question-tiles", IaiQuestionTiles.styles);
     }
 
+    firstUpdated() {
+        this._selectedQuestion = this.questions[0];
+    }
+
     updated(changedProps) {
         if (changedProps.has("_searchValue")) {
             this._visibleQuestions = this.questions.filter(
