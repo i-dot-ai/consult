@@ -3845,6 +3845,9 @@ class IaiResponseDashboard extends IaiLitBase {
 
                                 <iai-data-table
                                     .data=${this.multiple_choice_summary.map(item => ({
+                                        "_sortValues": {
+                                            "Count": parseInt(Object.values(item)[0]),
+                                        },
                                         "Answer": Object.keys(item)[0],
                                         "Count": Object.values(item)[0],
                                     }))}
