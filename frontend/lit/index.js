@@ -3165,7 +3165,7 @@ class IaiQuestionTiles extends IaiLitBase {
     }
 
     handleTileClick = (e, url) => {
-        window.location.replace(url);
+        window.location.href = url;
     }
 
     render() {
