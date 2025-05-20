@@ -401,7 +401,7 @@ def test_get_selected_theme_summary(
         execution_run=theme_mapping_execution_run,
     )
 
-    selected_theme_mappings, theme_mapping_summary = get_selected_theme_summary(
+    selected_theme_mappings = get_selected_theme_summary(
         question_part,
         Respondent.objects.all(),
     )
@@ -415,10 +415,6 @@ def test_get_selected_theme_summary(
     assert theme_b_summary["count"] == 2
     assert theme_b_summary["positive_count"] == 1
     assert theme_b_summary["negative_count"] == 1
-
-    assert theme_mapping_summary["total"] == 4
-    assert theme_mapping_summary["positive"] == 3
-    assert theme_mapping_summary["negative"] == 1
 
 
 @pytest.mark.django_db

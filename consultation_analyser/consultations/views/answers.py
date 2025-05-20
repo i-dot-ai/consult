@@ -126,18 +126,6 @@ def get_selected_option_summary(question: models.Question, respondents: QuerySet
     return multichoice_summary
 
 
-def get_respondents_for_question(
-    consultation_slug: str, question_slug: str
-) -> QuerySet[models.Respondent]:
-    qs = models.Respondent.objects.annotate(
-        num_answers=Count("answer", filter=Q(answer__question_part__question__slug=question_slug))
-    ).filter(
-        consultation__slug=consultation_slug,
-        num_answers__gt=0,  #  Filter out respondents with no answers
-    )
-    return qs
-
-
 @user_can_see_dashboards
 @user_can_see_consultation
 def respondents_json(
@@ -184,9 +172,6 @@ def respondents_json(
             )
             .distinct()
         )
-        respondents = respondents.prefetch_related(
-            Prefetch("answer_set", queryset=filtered_answers, to_attr="prefetched_answers")
-        ).distinct()
 
         data = {"all_respondents": []}
 
@@ -287,10 +272,14 @@ def index(
     ).exists()
 
     # Get all respondents for question
-    respondents = get_respondents_for_question(
-        consultation_slug=consultation_slug, question_slug=question_slug
+    respondents = (
+        models.Respondent.objects.annotate(num_answers=Count("answer"))
+        .filter(
+            consultation__slug=consultation_slug,
+            num_answers__gt=0,  #  Filter out respondents with no answers
+        )
+        .distinct()
     )
-    respondents = respondents.distinct()
 
     has_individual_data = respondents.filter(data__has_key="individual").exists()
 
