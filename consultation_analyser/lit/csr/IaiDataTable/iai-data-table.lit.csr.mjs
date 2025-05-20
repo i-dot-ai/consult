@@ -55,7 +55,7 @@ export default class IaiDataTable extends IaiLitBase {
 
         // These will not appear as column
         // as they merely act as flags for the row
-        this._RESERVED_KEYS = ["_bottomRow"];
+        this._RESERVED_KEYS = ["_bottomRow", "_sortValues"];
 
         // Prop defaults
         this.data = [];
@@ -120,8 +120,9 @@ export default class IaiDataTable extends IaiLitBase {
             for (const sort of this._sorts) {
                 const direction = sort.ascending ? 1 : -1;
 
-                const valA = rowA[sort.field];
-                const valB = rowB[sort.field];
+                // If _sortValues specified, use that for sorting instead
+                const valA = (rowA._sortValues && rowA._sortValues[sort.field]) || rowA[sort.field];
+                const valB = (rowB._sortValues && rowB._sortValues[sort.field]) || rowB[sort.field];
 
                 if (typeof valA === "string") {
                     // Sort strings alphabetically

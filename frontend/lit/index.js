@@ -352,7 +352,7 @@ class IaiDataTable extends IaiLitBase {
 
         // These will not appear as column
         // as they merely act as flags for the row
-        this._RESERVED_KEYS = ["_bottomRow"];
+        this._RESERVED_KEYS = ["_bottomRow", "_sortValues"];
 
         // Prop defaults
         this.data = [];
@@ -417,8 +417,9 @@ class IaiDataTable extends IaiLitBase {
             for (const sort of this._sorts) {
                 const direction = sort.ascending ? 1 : -1;
 
-                const valA = rowA[sort.field];
-                const valB = rowB[sort.field];
+                // If _sortValues specified, use that for sorting instead
+                const valA = (rowA._sortValues && rowA._sortValues[sort.field]) || rowA[sort.field];
+                const valB = (rowB._sortValues && rowB._sortValues[sort.field]) || rowB[sort.field];
 
                 if (typeof valA === "string") {
                     // Sort strings alphabetically
@@ -3805,6 +3806,13 @@ class IaiResponseDashboard extends IaiLitBase {
                                         ))
                                         .map(themeMapping => (
                                             {
+                                                // _sortValues are the values used for sorting comparison
+                                                // instead of the actual value of a cell, which can be an obj etc.
+                                                // particularly useful for html elements and dates.
+                                                "_sortValues": {
+                                                    "Theme name and description": themeMapping.label,
+                                                    "Total mentions": parseInt(themeMapping.count),
+                                                },
                                                 "Theme name and description": x`
                                                     <iai-expanding-pill
                                                         .label=${themeMapping.label}

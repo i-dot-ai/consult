@@ -434,6 +434,13 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                         ))
                                         .map(themeMapping => (
                                             {
+                                                // _sortValues are the values used for sorting comparison
+                                                // instead of the actual value of a cell, which can be an obj etc.
+                                                // particularly useful for html elements and dates.
+                                                "_sortValues": {
+                                                    "Theme name and description": themeMapping.label,
+                                                    "Total mentions": parseInt(themeMapping.count),
+                                                },
                                                 "Theme name and description": html`
                                                     <iai-expanding-pill
                                                         .label=${themeMapping.label}
