@@ -30,7 +30,7 @@
               {
                 id: "{{ question_dict.question.id }}",
                 title: "Question {{ question_dict.question.number }}",
-                body: "{{ question_dict.question.text }}",
+                body: `{{ question_dict.question.text }}`,
                 url: "{{ url('question_responses', kwargs={'consultation_slug': consultation.slug, 'question_slug': question_dict.question.slug}) }}",
                 responses: {
                   {% if question_dict.free_text_question_part %}
