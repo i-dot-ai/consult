@@ -169,11 +169,7 @@ def respondents_json(
         )
 
         respondents = (
-            models.Respondent.objects.annotate(
-                num_answers=Count(
-                    "answer", filter=Q(answer__question_part__question__slug=question_slug)
-                )
-            )
+            models.Respondent.objects.annotate(num_answers=Count("answer"))
             .filter(
                 consultation__slug=consultation_slug,
                 num_answers__gt=0,  #  Filter out respondents with no answers
@@ -250,7 +246,7 @@ def respondents_json(
                     else [],
                     "evidenceRich": True
                     if hasattr(respondent, "evidence_rich")
-                    and hasattr(respondent.evidence_rich, "evidence_rich")
+                    and respondent.evidence_rich.evidence_rich
                     else False,
                     "individual": True if hasattr(respondent, "individual") else False,
                 }

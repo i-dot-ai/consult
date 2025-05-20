@@ -219,3 +219,12 @@ class SentimentMappingFactory(DjangoModelFactory):
     answer = factory.SubFactory(FreeTextAnswerFactory)
     execution_run = factory.SubFactory(ExecutionRunFactory)
     position = fuzzy.FuzzyChoice(models.SentimentMapping.Position.values)
+
+
+class EvidenceRichMappingFactory(DjangoModelFactory):
+    class Meta:
+        model = models.EvidenceRichMapping
+
+    answer = factory.SubFactory(FreeTextAnswerFactory)
+    evidence_evaluation_execution_run = factory.SubFactory(ExecutionRunFactory)
+    evidence_rich = fake.boolean()

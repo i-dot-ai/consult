@@ -46,7 +46,9 @@ def test_authenticated_navigation(django_app):
 @pytest.mark.django_db
 def test_authenticated_staff_navigation(django_app):
     UserFactory(
-        email="email@example.com", password="admin", is_staff=True # pragma: allowlist secret`
+        email="email@example.com",
+        password="admin",  # pragma: allowlist secret`
+        is_staff=True,
     )
     sign_in(django_app, "email@example.com")
 
