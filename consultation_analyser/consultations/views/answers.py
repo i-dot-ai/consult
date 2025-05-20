@@ -323,7 +323,7 @@ def index(
         "has_individual_data": has_individual_data,
     }
 
-    return render(request, "consultations/answers/index2.html", context)
+    return render(request, "consultations/answers/index.html", context)
 
 
 @user_can_see_consultation
