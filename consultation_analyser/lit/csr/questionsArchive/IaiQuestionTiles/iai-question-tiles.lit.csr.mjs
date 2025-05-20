@@ -69,7 +69,9 @@ export default class IaiQuestionTiles extends IaiLitBase {
     }
 
     firstUpdated() {
-        this._selectedQuestion = this.questions[0];
+        if (this.questions.length > 0) {
+            this._selectedQuestion = this.questions[0];
+        }
     }
 
     updated(changedProps) {
