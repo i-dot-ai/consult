@@ -166,6 +166,9 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 font-weight: bold;
                 color: var(--iai-colour-text-secondary);
             }
+            iai-response-dashboard table .total-count-cell {
+                min-width: 10em;
+            }
 
             @keyframes spin {
                 from {
@@ -483,10 +486,12 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                                     <div>
                                                 `,
                                                 "Number of responses": html`
-                                                    <iai-progress-bar
-                                                        .value=${this.getPercentage(this.themeMappings.length, themeMapping.count)}
-                                                        .label=${themeMapping.count}
-                                                    ></iai-progress-bar>
+                                                    <div class="total-count-cell">
+                                                        <iai-progress-bar
+                                                            .value=${this.getPercentage(this.themeMappings.length, themeMapping.count)}
+                                                            .label=${themeMapping.count}
+                                                        ></iai-progress-bar>
+                                                    </div>
                                                 `
                                             }
                                         ))
