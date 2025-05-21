@@ -151,7 +151,13 @@ def respondents_json(
 
         filtered_answers = (
             models.Answer.objects.filter(question_part__question__slug=question_slug)
-            .prefetch_related(Prefetch("thememapping_set", to_attr="prefetched_thememappings"))
+            .prefetch_related(
+                Prefetch(
+                    "thememapping_set",
+                    queryset=models.ThemeMapping.objects.select_related("theme"),
+                    to_attr="prefetched_thememappings",
+                )
+            )
             .prefetch_related(
                 Prefetch("evidencerichmapping_set", to_attr="prefetched_evidencerichmappings")
             )
