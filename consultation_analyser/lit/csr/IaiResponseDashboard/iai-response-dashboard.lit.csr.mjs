@@ -146,16 +146,25 @@ export default class IaiResponseDashboard extends IaiLitBase {
             iai-response-dashboard thead tr {
                 color: var(--iai-colour-text-secondary);
             }
-            iai-response-dashboard iai-expanding-pill button {
-                width: 100%;
+            iai-response-dashboard table iai-expanding-pill button {
                 display: flex;
                 justify-content: space-between;
+                width: 100%;
+                font-size: 1.2em;
+                color: black;
+                background: var(--iai-colour-pink-transparent-mid);
             }
-            iai-response-dashboard iai-expanding-pill .body {
+            iai-response-dashboard table iai-expanding-pill .body {
+                font-size: 1.2em;
                 transition-property: margin, padding, max-height;
             }
-            iai-response-dashboard iai-expanding-pill .body:not(.expanded) {
+            iai-response-dashboard table iai-expanding-pill .body:not(.expanded) {
                 margin: 0;
+            }
+            iai-response-dashboard table .percentage-cell {
+                font-size: 2em;
+                font-weight: bold;
+                color: var(--iai-colour-text-secondary);
             }
 
             @keyframes spin {
@@ -458,7 +467,8 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                                 // particularly useful for html elements and dates.
                                                 "_sortValues": {
                                                     "Theme name and description": themeMapping.label,
-                                                    "Total mentions": parseInt(themeMapping.count),
+                                                    "Number of responses": parseInt(themeMapping.count),
+                                                    "Percentage of responses": this.getPercentage(this.themeMappings.length, parseInt(themeMapping.count)),
                                                 },
                                                 "Theme name and description": html`
                                                     <iai-expanding-pill
@@ -468,7 +478,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                                     ></iai-expanding-pill>
                                                 `,
                                                 "Percentage of responses": html`
-                                                    <div style="font-size: 2em; font-weight: bold; color: var(--iai-colour-text-secondary);">
+                                                    <div class="percentage-cell">
                                                         ${this.getPercentage(this.themeMappings.length, themeMapping.count)}%
                                                     <div>
                                                 `,
