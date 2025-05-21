@@ -292,19 +292,6 @@ def index(
     ).exists()
 
     # Get all respondents for question
-    # respondents = (
-    #     models.Respondent.objects.annotate(
-    #         num_answers=Count(
-    #             "answer", filter=Q(answer__question_part__question__slug=question_slug)
-    #         )
-    #     )
-    #     .filter(
-    #         consultation__slug=consultation_slug,
-    #         num_answers__gt=0,  #  Filter out respondents with no answers
-    #     )
-    #     .distinct()
-    # )
-
     respondents = (
         models.Respondent.objects.filter(
             consultation__slug=consultation_slug,
@@ -314,9 +301,6 @@ def index(
         .filter(
             num_answers__gt=0  # Keep only respondents with answers for the specified question
         )
-        # .prefetch_related(
-        #     Prefetch("answer_set", queryset=filtered_answers, to_attr="prefetched_answers")  # Prefetch the necessary answers
-        # )
         .distinct()
     )
 
