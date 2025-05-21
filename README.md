@@ -191,7 +191,9 @@ It should be stored in the following structure for a given consultation:
     │   │   ├── responses.jsonl
     │   │   └── question_part.json
     │   ├── ...
-    │   └── respondents.jsonl
+    |   ├── respondents.jsonl
+    │   └── demographicsß.jsonl
+    |
     └── outputs/
         ├── mapping/
         │   ├── <timestamp>/
