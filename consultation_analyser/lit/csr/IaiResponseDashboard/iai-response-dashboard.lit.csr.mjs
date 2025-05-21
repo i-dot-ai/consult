@@ -7,6 +7,7 @@ import IaiResponseFilterGroup from '../IaiResponseFilterGroup/iai-response-filte
 import IaiPageTitle from '../IaiPageTitle/iai-page-title.lit.csr.mjs';
 import IaiDataTable from '../IaiDataTable/iai-data-table.lit.csr.mjs';
 import IaiCsvDownload from '../IaiCsvDownload/iai-csv-download.lit.csr.mjs';
+import IaiProgressBar from '../IaiProgressBar/iai-progress-bar.lit.csr.mjs';
 
 
 export default class IaiResponseDashboard extends IaiLitBase {
@@ -141,6 +142,20 @@ export default class IaiResponseDashboard extends IaiLitBase {
             }
             iai-response-dashboard .spinner iai-icon .material-symbols-outlined {
                 font-size: 3em;
+            }
+            iai-response-dashboard thead tr {
+                color: var(--iai-colour-text-secondary);
+            }
+            iai-response-dashboard iai-expanding-pill button {
+                width: 100%;
+                display: flex;
+                justify-content: space-between;
+            }
+            iai-response-dashboard iai-expanding-pill .body {
+                transition-property: margin, padding, max-height;
+            }
+            iai-response-dashboard iai-expanding-pill .body:not(.expanded) {
+                margin: 0;
             }
 
             @keyframes spin {
@@ -353,7 +368,11 @@ export default class IaiResponseDashboard extends IaiLitBase {
             this._themeFilters.includes(themeMapping.value) ||
             themeMapping.label.toLocaleLowerCase().includes(this._themeSearchValue.toLocaleLowerCase())
         )
-    } 
+    }
+
+    getPercentage = (total, value) => {
+        return Math.floor((total / value) * 100);
+    }
 
     render() {
         const visibleResponses = this.responses.filter(response => response.visible);
@@ -448,7 +467,17 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                                         .initialExpanded=${true}
                                                     ></iai-expanding-pill>
                                                 `,
-                                                "Total mentions": themeMapping.count,
+                                                "Percentage of responses": html`
+                                                    <div style="font-size: 2em; font-weight: bold; color: var(--iai-colour-text-secondary);">
+                                                        ${this.getPercentage(this.themeMappings.length, themeMapping.count)}%
+                                                    <div>
+                                                `,
+                                                "Number of responses": html`
+                                                    <iai-progress-bar
+                                                        .value=${this.getPercentage(this.themeMappings.length, themeMapping.count)}
+                                                        .label=${themeMapping.count}
+                                                    ></iai-progress-bar>
+                                                `
                                             }
                                         ))
                                     }
