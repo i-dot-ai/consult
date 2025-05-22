@@ -153,9 +153,9 @@ def respondents_json(
         # This then gets passed as the queryset param of respondent prefetch,
         # updating that query with the filter logic.
         # Ultimately the returned answers are only for the current consultation.
-
-        filtered_answers = (
+        answers = (
             models.Answer.objects.filter(question_part__question__slug=question_slug)
+            .select_related("respondent")
             .prefetch_related(
                 Prefetch(
                     "thememapping_set",
@@ -171,6 +171,7 @@ def respondents_json(
             )
         )
 
+        respondent_ids = answers.values_list("respondent_id", flat=True)
         respondents = (
             models.Respondent.objects.filter(
                 consultation__slug=consultation_slug,
@@ -183,7 +184,7 @@ def respondents_json(
             .order_by("pk")
             .prefetch_related(
                 Prefetch(
-                    "answer_set", queryset=filtered_answers, to_attr="prefetched_answers"
+                    "answer_set", queryset=answers, to_attr="prefetched_answers"
                 )  # Prefetch the necessary answers
             )
             .distinct()
@@ -291,18 +292,14 @@ def index(
         question=question, type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
     ).exists()
 
+    # TODO - could rationalise with getting respondents
+    # from respondents_json above
     # Get all respondents for question
-    respondents = (
-        models.Respondent.objects.filter(
-            consultation__slug=consultation_slug,
-            answer__question_part__question__slug=question_slug,
-        )
-        .annotate(num_answers=Count("answer"))
-        .filter(
-            num_answers__gt=0  # Keep only respondents with answers for the specified question
-        )
-        .distinct()
-    )
+    respondents = models.Respondent.objects.filter(
+        id__in=models.Answer.objects.filter(
+            question_part__question__slug=question_slug
+        ).values('respondent_id')
+    ).distinct()
 
     has_individual_data = respondents.filter(data__has_key="individual").exists()
 
