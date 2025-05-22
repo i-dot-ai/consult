@@ -170,18 +170,8 @@ def respondents_json(
                 Prefetch("sentimentmapping_set", to_attr="prefetched_sentimentmappings")
             )
         )
-
-        respondent_ids = answers.values_list("respondent_id", flat=True)
         respondents = (
-            models.Respondent.objects.filter(
-                consultation__slug=consultation_slug,
-                answer__question_part__question__slug=question_slug,
-            )
-            .annotate(num_answers=Count("answer"))
-            .filter(
-                num_answers__gt=0  # Keep only respondents with answers for the specified question
-            )
-            .order_by("pk")
+            models.Respondent.objects.filter(id__in=answers.values("respondent_id"))
             .prefetch_related(
                 Prefetch(
                     "answer_set", queryset=answers, to_attr="prefetched_answers"
@@ -296,9 +286,9 @@ def index(
     # from respondents_json above
     # Get all respondents for question
     respondents = models.Respondent.objects.filter(
-        id__in=models.Answer.objects.filter(
-            question_part__question__slug=question_slug
-        ).values('respondent_id')
+        id__in=models.Answer.objects.filter(question_part__question__slug=question_slug).values(
+            "respondent_id"
+        )
     ).distinct()
 
     has_individual_data = respondents.filter(data__has_key="individual").exists()
