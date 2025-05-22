@@ -48,8 +48,16 @@ export default class IaiDataTable extends IaiLitBase {
                 position: absolute;
                 top: 0;
                 right: 0.5em;
+                opacity: 0;
                 transition: 0.3s ease-in-out;
-                transition-property: transform;
+                transition-property: transform, opacity;
+            }
+            iai-data-table thead .header-button:hover iai-icon {
+                opacity: 0.5;
+            }
+            iai-data-table thead .header-button.ascending iai-icon,
+            iai-data-table thead .header-button.descending iai-icon {
+                opacity: 1;
             }
             iai-data-table thead .header-button.descending iai-icon {
                 transform: rotateX(180deg);
@@ -108,8 +116,14 @@ export default class IaiDataTable extends IaiLitBase {
             const currentSort = updatedSorts[sortIndex];
 
             if (sortIndex === 0) {
-                // If sort is the last to be applied, toggle direction
-                currentSort.ascending = !currentSort.ascending;
+                // If sort is the last to be applied
+                if (currentSort.ascending) {
+                    // if ascending make it descending
+                    currentSort.ascending = false;
+                } else {
+                    // if descending order, unapply it
+                    updatedSorts.splice(sortIndex, 1);
+                }
 
             } else {
                 // If sort is not last to be applied, update it's priority
@@ -205,10 +219,7 @@ export default class IaiDataTable extends IaiLitBase {
                                 <h3>${header}</h3>
                                 <iai-icon
                                     name="sort"
-                                    .color=${this.getCurrentSortDirection(header)
-                                        ? "var(--iai-colour-pink)"
-                                        : "var(--iai-colour-text-secondary)"
-                                    }
+                                    .color=${"var(--iai-colour-text-secondary)"}
                                     .fill=${0}
                                 ></iai-icon>
                             </th>
