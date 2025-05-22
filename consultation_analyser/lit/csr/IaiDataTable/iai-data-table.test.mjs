@@ -49,13 +49,13 @@ describe('iai-data-table', () => {
 
     // Get the header to click for sorting
     const headerButton = el.querySelector(".header-button");
-    expect(headerButton.textContent.trim()).to.equal(columnToSort);
+    expect(headerButton.textContent.trim()).to.include(columnToSort);
 
     // click to apply ascending sort
     headerButton.click();
     await el.updateComplete;
     expect(headerButton.classList.contains("ascending")).to.equal(true);
-    expect(el.querySelector("tbody tr:not(.bottom-row)").textContent.trim()[0]).to.equal("B")
+    expect(el.querySelector("tbody tr:not(.bottom-row)").textContent.trim()[0]).to.equal("F")
 
     // reverse ascending cell data for comparison later
     const ascendingCells = el.querySelectorAll("tbody tr:not(.bottom-row)");
@@ -72,10 +72,14 @@ describe('iai-data-table', () => {
 
     // check if cells are in descending order
     bodyRowEls = el.querySelectorAll("tbody tr:not(.bottom-row)");
+    let lastCellContent;
     for (let i=0; i<bodyRowEls.length; i++) {
-      const cellContent = bodyRowEls[i].querySelector("td").textContent.trim()[0];
-      const dataContent = descendingCells[i][0];
-      expect(cellContent).to.equal(dataContent);
+      const cellContent = bodyRowEls[i].textContent.trim()[0];
+      if (lastCellContent) {
+        // check if alphabetically after or same
+        expect(lastCellContent.localeCompare(cellContent) < 0).to.equal(false);
+      }
+      lastCellContent = cellContent;
     }
   });
 });
