@@ -309,7 +309,6 @@ def index(
         "question_slug": question_slug,
         "free_text_question_part": free_text_question_part,
         "has_multiple_choice_question_part": has_multiple_choice_question_part,
-        "total_responses": len(respondents),
         "selected_theme_mappings": selected_theme_mappings,
         "csv_button_data": csv_button_data,
         "multiple_choice_summary": multiple_choice_summary,
