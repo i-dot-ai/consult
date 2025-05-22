@@ -54,6 +54,16 @@ def question_part(question):
 
 
 @pytest.fixture()
+def consultation_user(question):
+    user = UserFactory()
+    dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
+    user.groups.add(dash_access)
+    user.save()
+    question.consultation.users.add(user)
+    return user
+
+
+@pytest.fixture()
 def framework(question_part):
     return InitialFrameworkFactory(question_part=question_part)
 
@@ -448,7 +458,7 @@ def test_get_selected_option_summary(question):
 
 
 @pytest.mark.django_db
-def test_respondents_json(client, question):
+def test_respondents_json(client, question, consultation_user):
     # set up responses with evidence-rich details
     question_part = FreeTextQuestionPartFactory(question=question)
     respondent_1 = RespondentFactory(
@@ -469,15 +479,8 @@ def test_respondents_json(client, question):
         answer=response_2, evidence_evaluation_execution_run=execution_run, evidence_rich=False
     )
 
-    # Set up user
-    user = UserFactory()
-    dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
-    user.groups.add(dash_access)
-    user.save()
-    question.consultation.users.add(user)
-
     # Query json endpoint
-    client.force_login(user)
+    client.force_login(consultation_user)
     response = client.get(
         f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
     )
@@ -489,3 +492,30 @@ def test_respondents_json(client, question):
     assert data_1["evidenceRich"]
     data_2 = list(filter(lambda x: x["identifier"] == 2, response_json["all_respondents"]))[0]
     assert not data_2["evidenceRich"]
+
+
+@pytest.mark.parametrize(
+    "querystring, expected_count",
+    [
+        ("?", 7),
+        ("?page_size=4", 4),
+        ("?page_size=4&page=2", 3),
+    ],
+)
+@pytest.mark.django_db
+def test_respondents_json_pagination(
+    querystring, expected_count, client, consultation_user, question_part, question
+):
+    for i in range(7):
+        respondent = RespondentFactory(
+            consultation=question.consultation, themefinder_respondent_id=i + 1
+        )
+        FreeTextAnswerFactory(question_part=question_part, respondent=respondent)
+
+    client.force_login(consultation_user)
+    response = client.get(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/{querystring}"
+    )
+    assert response.status_code == 200
+    response_json = response.json()
+    assert len(response_json["all_respondents"]) == expected_count
