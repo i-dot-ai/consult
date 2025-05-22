@@ -299,6 +299,78 @@ class IaiTextWithFallback extends IaiLitBase {
 }
 customElements.define("iai-text-with-fallback", IaiTextWithFallback);
 
+class IaiIcon extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        name: { type: String },
+        color: { type: String },
+        fill: {type: Number }, //  0 | 1
+        opsz: { type: Number },
+        wght: { type: Number },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-icon {
+                display: flex;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Google expect icon names to be alphabetically sorted
+        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond", "progress_activity", "sort"];
+        this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
+
+        // Prop defaults
+        this.name = "";
+        this.color = "";
+        this.fill = 0;
+        this.opsz = 48;
+        this.wght = 300;
+        
+        this.applyStaticStyles("iai-icon", IaiIcon.styles);
+    }
+
+    firstUpdated() {
+        this.addIconImport();
+    }
+
+    addIconImport() {
+        // Do not add if already added
+        if (document.querySelector(`link[href="${this._URL}"]`)) {
+            return;
+        }
+
+        const linkElement = document.createElement("link");
+        linkElement.rel = "stylesheet";
+        linkElement.href = this._URL;
+        document.head.append(linkElement);
+    }
+
+    render() {
+        return x`
+            <style>
+                #${this.contentId}.material-symbols-outlined {
+                    font-variation-settings:
+                        'FILL' ${this.fill},
+                        'opsz' ${this.opsz},
+                        'wght' ${this.wght};
+                    color: ${this.color};
+                }
+            </style>
+            <span id=${this.contentId} class="material-symbols-outlined">
+                ${this.name}
+            </span>
+        `;
+    }
+}
+customElements.define("iai-icon", IaiIcon);
+
 class IaiDataTable extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -310,6 +382,10 @@ class IaiDataTable extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         i$4`
+            iai-data-table h3 {
+                margin: 0;
+                font-size: 1em;
+            }
             iai-data-table tbody.govuk-table__body td {
                 vertical-align: middle;
             }
@@ -327,21 +403,24 @@ class IaiDataTable extends IaiLitBase {
             iai-data-table .header-button:hover {
                 color: var(--iai-colour-pink);
             }
-            iai-data-table .header-button:after {
-                content: "▾";
+            iai-data-table thead {
+                text-align: start;
+            }
+            iai-data-table thead th {
+                text-align: left;
+                margin-right: 1em;
+                padding-right: 2em;
+                position: relative;
+            }
+            iai-data-table .header-button iai-icon {
                 position: absolute;
-                right: -1em;
                 top: 0;
-                opacity: 0;
+                right: 0.5em;
                 transition: 0.3s ease-in-out;
-                transition-property: transform opacity;
+                transition-property: transform;
             }
-            iai-data-table .header-button.ascending:after {
-                opacity: 1;
-            }
-            iai-data-table .header-button.descending:after {
-                opacity: 1;
-                transform: rotate(180deg);
+            iai-data-table thead .header-button.descending iai-icon {
+                transform: rotateX(180deg);
             }
         `
     ]
@@ -471,9 +550,9 @@ class IaiDataTable extends IaiLitBase {
                 <thead class="govuk-table__head">
                     <tr class="govuk-table__row">    
                         ${this.getHeaders().map(header => x`
-                            <th scope="col" class="govuk-table__header">
-                                <div
-                                    class=${"header-button " + this.getCurrentSortDirection(header)}
+                            <th
+                                style="" scope="col" class="govuk-table__header"
+                                class=${"header-button " + this.getCurrentSortDirection(header)}
                                     role="button"
                                     aria-sort=${this.getCurrentSortDirection(header)}
                                     aria-label=${this.getCurrentSortDirection(header)
@@ -488,9 +567,16 @@ class IaiDataTable extends IaiLitBase {
                                             this.updateSorts(header);
                                         }
                                     }}
-                                >
-                                    ${header}
-                                </div>
+                            >
+                                <h3>${header}</h3>
+                                <iai-icon
+                                    name="sort"
+                                    .color=${this.getCurrentSortDirection(header)
+                                        ? "var(--iai-colour-pink)"
+                                        : "var(--iai-colour-text-secondary)"
+                                    }
+                                    .fill=${0}
+                                ></iai-icon>
                             </th>
                         `)}
                     </tr>
@@ -515,78 +601,6 @@ class IaiDataTable extends IaiLitBase {
     }
 }
 customElements.define("iai-data-table", IaiDataTable);
-
-class IaiIcon extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        name: { type: String },
-        color: { type: String },
-        fill: {type: Number }, //  0 | 1
-        opsz: { type: Number },
-        wght: { type: Number },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-icon {
-                display: flex;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Google expect icon names to be alphabetically sorted
-        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond", "progress_activity"];
-        this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
-
-        // Prop defaults
-        this.name = "";
-        this.color = "";
-        this.fill = 0;
-        this.opsz = 48;
-        this.wght = 300;
-        
-        this.applyStaticStyles("iai-icon", IaiIcon.styles);
-    }
-
-    firstUpdated() {
-        this.addIconImport();
-    }
-
-    addIconImport() {
-        // Do not add if already added
-        if (document.querySelector(`link[href="${this._URL}"]`)) {
-            return;
-        }
-
-        const linkElement = document.createElement("link");
-        linkElement.rel = "stylesheet";
-        linkElement.href = this._URL;
-        document.head.append(linkElement);
-    }
-
-    render() {
-        return x`
-            <style>
-                #${this.contentId}.material-symbols-outlined {
-                    font-variation-settings:
-                        'FILL' ${this.fill},
-                        'opsz' ${this.opsz},
-                        'wght' ${this.wght};
-                    color: ${this.color};
-                }
-            </style>
-            <span id=${this.contentId} class="material-symbols-outlined">
-                ${this.name}
-            </span>
-        `;
-    }
-}
-customElements.define("iai-icon", IaiIcon);
 
 class IaiCsvDownload extends IaiLitBase {
     static styles = [

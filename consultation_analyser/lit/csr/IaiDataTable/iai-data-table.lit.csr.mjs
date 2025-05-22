@@ -1,5 +1,6 @@
 import { html, css } from 'lit';
 import IaiLitBase from '../../IaiLitBase.mjs';
+import IaiIcon from '../questionsArchive/IaiIcon/iai-icon.mjs';
 
 
 export default class IaiDataTable extends IaiLitBase {
@@ -13,6 +14,10 @@ export default class IaiDataTable extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         css`
+            iai-data-table h3 {
+                margin: 0;
+                font-size: 1em;
+            }
             iai-data-table tbody.govuk-table__body td {
                 vertical-align: middle;
             }
@@ -30,21 +35,24 @@ export default class IaiDataTable extends IaiLitBase {
             iai-data-table .header-button:hover {
                 color: var(--iai-colour-pink);
             }
-            iai-data-table .header-button:after {
-                content: "▾";
+            iai-data-table thead {
+                text-align: start;
+            }
+            iai-data-table thead th {
+                text-align: left;
+                margin-right: 1em;
+                padding-right: 2em;
+                position: relative;
+            }
+            iai-data-table .header-button iai-icon {
                 position: absolute;
-                right: -1em;
                 top: 0;
-                opacity: 0;
+                right: 0.5em;
                 transition: 0.3s ease-in-out;
-                transition-property: transform opacity;
+                transition-property: transform;
             }
-            iai-data-table .header-button.ascending:after {
-                opacity: 1;
-            }
-            iai-data-table .header-button.descending:after {
-                opacity: 1;
-                transform: rotate(180deg);
+            iai-data-table thead .header-button.descending iai-icon {
+                transform: rotateX(180deg);
             }
         `
     ]
@@ -176,9 +184,9 @@ export default class IaiDataTable extends IaiLitBase {
                 <thead class="govuk-table__head">
                     <tr class="govuk-table__row">    
                         ${this.getHeaders().map(header => html`
-                            <th scope="col" class="govuk-table__header">
-                                <div
-                                    class=${"header-button " + this.getCurrentSortDirection(header)}
+                            <th
+                                style="" scope="col" class="govuk-table__header"
+                                class=${"header-button " + this.getCurrentSortDirection(header)}
                                     role="button"
                                     aria-sort=${this.getCurrentSortDirection(header)}
                                     aria-label=${this.getCurrentSortDirection(header)
@@ -193,9 +201,16 @@ export default class IaiDataTable extends IaiLitBase {
                                             this.updateSorts(header);
                                         }
                                     }}
-                                >
-                                    ${header}
-                                </div>
+                            >
+                                <h3>${header}</h3>
+                                <iai-icon
+                                    name="sort"
+                                    .color=${this.getCurrentSortDirection(header)
+                                        ? "var(--iai-colour-pink)"
+                                        : "var(--iai-colour-text-secondary)"
+                                    }
+                                    .fill=${0}
+                                ></iai-icon>
                             </th>
                         `)}
                     </tr>
