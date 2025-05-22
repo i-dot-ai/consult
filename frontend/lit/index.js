@@ -3877,8 +3877,11 @@ class IaiResponseDashboard extends IaiLitBase {
         )
     }
 
-    getPercentage = (total, value) => {
-        return Math.floor((total / value) * 100);
+    getPercentage = (partialValue, totalValue) => {
+        if (totalValue === 0) {
+            return 0;
+        }
+        return ((partialValue / totalValue) * 100).toFixed(2);
     }
 
     render() {
@@ -3979,7 +3982,7 @@ class IaiResponseDashboard extends IaiLitBase {
                                                 "_sortValues": {
                                                     "Theme name and description": themeMapping.label,
                                                     "Number of responses": parseInt(themeMapping.count),
-                                                    "Percentage of responses": this.getPercentage(this.themeMappings.length, parseInt(themeMapping.count)),
+                                                    "Percentage of responses": this.getPercentage(parseInt(themeMapping.count), this.responses.length),
                                                 },
                                                 "Theme name and description": x`
                                                     <iai-expanding-pill
@@ -3990,13 +3993,13 @@ class IaiResponseDashboard extends IaiLitBase {
                                                 `,
                                                 "Percentage of responses": x`
                                                     <div class="percentage-cell">
-                                                        ${this.getPercentage(this.themeMappings.length, themeMapping.count)}%
+                                                        ${this.getPercentage(parseInt(themeMapping.count), this.responses.length)}%
                                                     <div>
                                                 `,
                                                 "Number of responses": x`
                                                     <div class="total-count-cell">
                                                         <iai-progress-bar
-                                                            .value=${this.getPercentage(this.themeMappings.length, themeMapping.count)}
+                                                            .value=${this.getPercentage(parseInt(themeMapping.count), this.responses.length)}
                                                             .label=${themeMapping.count}
                                                         ></iai-progress-bar>
                                                     </div>
