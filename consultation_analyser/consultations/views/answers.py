@@ -206,6 +206,23 @@ def respondents_json(
         "has_more_pages": False,
     }
 
+    # Filtering
+    query = Q()
+
+    stance_filters = request.GET.getlist("stanceFilters")
+    if stance_filters:
+        query &= Q(answer__sentimentmapping__position__in=stance_filters)
+
+    theme_filters = request.GET.getlist("themeFilters")
+    if theme_filters:
+        query &= Q(answer__thememapping__theme__in=theme_filters)
+
+    evidence_rich_filter = request.GET.get("evidenceRichFilters")
+    if evidence_rich_filter and evidence_rich_filter == "evidence-rich":
+        query &= Q(answer__evidencerichmapping__evidence_rich=True)
+
+    respondents = respondents.filter(query).distinct()
+
     # Pagination
     if page_size:
         pagination = Paginator(respondents, page_size)
