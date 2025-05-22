@@ -169,6 +169,22 @@ export default class IaiResponseDashboard extends IaiLitBase {
             iai-response-dashboard table .total-count-cell {
                 min-width: 10em;
             }
+            iai-response-dashboard .title-container {
+                display: flex;
+                gap: 2em;
+                align-items: center;
+            }
+            iai-response-dashboard .ternary-button {
+                padding: 0.5em 1em;
+                background: none;
+                border: none;
+                border-radius: var(--iai-border-radius);
+                cursor: pointer;
+                transition: background 0.3s ease-in-out;
+            }
+            iai-response-dashboard .ternary-button:hover {
+                background: var(--iai-colour-pink-transparent);
+            }
 
             @keyframes spin {
                 from {
@@ -420,9 +436,22 @@ export default class IaiResponseDashboard extends IaiLitBase {
                             <div class="table-container">
 
                                 <div class="table-title themes-mentions">
-                                    <h2 class="govuk-heading-m">
-                                        Themes
-                                    </h2>
+                                    <div class="title-container">
+                                        <h2 class="govuk-heading-m">
+                                            Themes
+                                        </h2>
+
+                                        <button
+                                            class="ternary-button"
+                                            @click=${() => {
+                                                this
+                                                .querySelectorAll("table iai-expanding-pill")
+                                                .forEach(pill => pill._expanded = false)
+                                            }}
+                                        >
+                                            Hide all descriptions
+                                        </button>
+                                    </div>
 
                                     <iai-csv-download
                                         fileName="theme_mentions.csv"
