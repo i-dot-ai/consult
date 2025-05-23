@@ -3491,6 +3491,66 @@ class IaiProgressBar extends IaiLitBase {
 }
 customElements.define("iai-progress-bar", IaiProgressBar);
 
+class IaiAnimatedNumber extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        number: { type: Number },
+        duration: { type: Number }, // miliseconds
+        _displayNumber: { type: Number },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-animated-number {
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.number = 0;
+        this.duration = 1000;
+        this._displayNumber = 0;
+        
+        this.applyStaticStyles("iai-animated-number", IaiAnimatedNumber.styles);
+    }
+
+    animate(start, end, duration) {
+        const element = this.querySelector("span");
+        const startTime = performance.now();
+
+        function update_number(currTime) {
+            const elapsedTime = currTime - startTime;
+            const time = Math.min(elapsedTime / duration, 1);
+            const currValue = start * (1 - time) + end * time;
+            element.textContent = currValue.toFixed(2);
+
+            if (time < 1) {
+                requestAnimationFrame(update_number);
+            }
+        }
+
+        requestAnimationFrame(update_number);
+    }
+
+    updated(changedProps) {
+        if (changedProps.has("number")) {
+            this.animate(this._displayNumber, this.number, this.duration);
+        }
+    }
+
+    render() {
+        return x`
+            <span>${this._displayNumber}</span>
+        `;
+    }
+}
+customElements.define("iai-animated-number", IaiAnimatedNumber);
+
 class IaiResponseDashboard extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -3517,6 +3577,7 @@ class IaiResponseDashboard extends IaiLitBase {
         _themesPanelVisible: { type: Boolean },
         _stanceFilters: { type: Array },
         _evidenceRichFilters: { type: Array },
+        _numberAnimationDuration: { type: Number },
     }
 
     static styles = [
@@ -3643,6 +3704,9 @@ class IaiResponseDashboard extends IaiLitBase {
                 margin: 0;
             }
             iai-response-dashboard table .percentage-cell {
+                display: flex;
+                gap: 0.2em;
+                min-width: 4.5em;
                 font-size: 2em;
                 font-weight: bold;
                 color: var(--iai-colour-text-secondary);
@@ -3692,6 +3756,7 @@ class IaiResponseDashboard extends IaiLitBase {
         this._themeFilters = [];
         this._themesPanelVisible = false;
         this._demographicFilters = [];
+        this._numberAnimationDuration = 500;
 
         this.questionTitle = "";
         this.questionText = "";
@@ -3711,6 +3776,8 @@ class IaiResponseDashboard extends IaiLitBase {
 
     firstUpdated() {
         window.addEventListener("mousedown", this.handleThemesPanelClose);
+
+        this._initialRender = false;
     }
 
     fetchResponses = async () => {
@@ -4000,7 +4067,14 @@ class IaiResponseDashboard extends IaiLitBase {
                                                 `,
                                                 "Percentage of responses": x`
                                                     <div class="percentage-cell">
-                                                        ${this.getPercentage(parseInt(themeMapping.count), this.responses.length)}%
+                                                        <iai-animated-number
+                                                            .number=${this.getPercentage(
+                                                                parseInt(themeMapping.count),
+                                                                this.responses.length
+                                                            )}
+                                                            .duration=${this._numberAnimationDuration}
+                                                        ></iai-animated-number>
+                                                        %
                                                     <div>
                                                 `,
                                                 "Number of responses": x`

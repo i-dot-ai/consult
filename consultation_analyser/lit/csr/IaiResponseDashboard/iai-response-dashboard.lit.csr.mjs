@@ -8,6 +8,7 @@ import IaiPageTitle from '../IaiPageTitle/iai-page-title.lit.csr.mjs';
 import IaiDataTable from '../IaiDataTable/iai-data-table.lit.csr.mjs';
 import IaiCsvDownload from '../IaiCsvDownload/iai-csv-download.lit.csr.mjs';
 import IaiProgressBar from '../IaiProgressBar/iai-progress-bar.lit.csr.mjs';
+import IaiAnimatedNumber from '../IaiAnimatedNumber/iai-animated-number.lit.csr.mjs';
 
 
 export default class IaiResponseDashboard extends IaiLitBase {
@@ -36,6 +37,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         _themesPanelVisible: { type: Boolean },
         _stanceFilters: { type: Array },
         _evidenceRichFilters: { type: Array },
+        _numberAnimationDuration: { type: Number },
     }
 
     static styles = [
@@ -162,6 +164,9 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 margin: 0;
             }
             iai-response-dashboard table .percentage-cell {
+                display: flex;
+                gap: 0.2em;
+                min-width: 4.5em;
                 font-size: 2em;
                 font-weight: bold;
                 color: var(--iai-colour-text-secondary);
@@ -211,6 +216,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         this._themeFilters = [];
         this._themesPanelVisible = false;
         this._demographicFilters = [];
+        this._numberAnimationDuration = 500;
 
         this.questionTitle = "";
         this.questionText = "";
@@ -229,7 +235,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
     }
 
     firstUpdated() {
-        window.addEventListener("mousedown", this.handleThemesPanelClose)
+        window.addEventListener("mousedown", this.handleThemesPanelClose);
     }
 
     fetchResponses = async () => {
@@ -520,7 +526,14 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                                 `,
                                                 "Percentage of responses": html`
                                                     <div class="percentage-cell">
-                                                        ${this.getPercentage(parseInt(themeMapping.count), this.responses.length)}%
+                                                        <iai-animated-number
+                                                            .number=${this.getPercentage(
+                                                                parseInt(themeMapping.count),
+                                                                this.responses.length
+                                                            )}
+                                                            .duration=${this._numberAnimationDuration}
+                                                        ></iai-animated-number>
+                                                        %
                                                     <div>
                                                 `,
                                                 "Number of responses": html`
