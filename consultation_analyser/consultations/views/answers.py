@@ -176,7 +176,7 @@ def get_respondents_for_question(consultation_slug: str, question_slug: str) -> 
 
         # Update cache
         cache.set(cache_key, respondents, timeout=cache_timeout)
-        return respondents
+    return respondents
 
 
 @user_can_see_dashboards
@@ -292,13 +292,8 @@ def index(
         question=question, type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
     ).exists()
 
-    # TODO - could maybe rationalise with getting respondents from respondents_json above
     # Get all respondents for question
-    respondents = models.Respondent.objects.filter(
-        id__in=models.Answer.objects.filter(
-            question_part__question=question, question_part__question__consultation=consultation
-        ).values_list("respondent_id", flat=True)
-    )
+    respondents = get_respondents_for_question(consultation_slug=consultation_slug, question_slug=question_slug)
 
     has_individual_data = respondents.filter(data__has_key="individual").exists()
 
