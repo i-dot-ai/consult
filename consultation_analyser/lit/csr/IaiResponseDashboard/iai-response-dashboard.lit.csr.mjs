@@ -408,7 +408,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         if (totalValue === 0) {
             return 0;
         }
-        return ((partialValue / totalValue) * 100).toFixed(2);
+        return parseFloat(((partialValue / totalValue) * 100).toFixed(2));
     }
 
     render() {

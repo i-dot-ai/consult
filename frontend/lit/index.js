@@ -427,7 +427,7 @@ class IaiDataTable extends IaiLitBase {
             iai-data-table thead .header-button.descending iai-icon {
                 opacity: 1;
             }
-            iai-data-table thead .header-button.descending iai-icon {
+            iai-data-table thead .header-button.ascending iai-icon {
                 transform: rotateX(180deg);
             }
         `
@@ -3501,10 +3501,7 @@ class IaiAnimatedNumber extends IaiLitBase {
 
     static styles = [
         IaiLitBase.styles,
-        i$4`
-            iai-animated-number {
-            }
-        `
+        i$4``
     ]
 
     constructor() {
@@ -3776,8 +3773,6 @@ class IaiResponseDashboard extends IaiLitBase {
 
     firstUpdated() {
         window.addEventListener("mousedown", this.handleThemesPanelClose);
-
-        this._initialRender = false;
     }
 
     fetchResponses = async () => {
@@ -3949,7 +3944,7 @@ class IaiResponseDashboard extends IaiLitBase {
         if (totalValue === 0) {
             return 0;
         }
-        return ((partialValue / totalValue) * 100).toFixed(2);
+        return parseFloat(((partialValue / totalValue) * 100).toFixed(2));
     }
 
     render() {
