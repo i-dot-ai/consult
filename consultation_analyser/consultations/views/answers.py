@@ -13,6 +13,7 @@ from .. import models
 from .decorators import user_can_see_consultation, user_can_see_dashboards
 
 
+# TODO: delete me
 def filter_by_response_and_theme(
     question: models.Question,
     respondents: QuerySet,
@@ -41,6 +42,7 @@ def filter_by_response_and_theme(
     return respondents.distinct()
 
 
+# TODO: delete me
 def filter_by_word_count(
     respondents: QuerySet,
     question_slug: str,
@@ -65,6 +67,7 @@ def filter_by_word_count(
     return respondents.filter(answer__in=annotated_responses)
 
 
+# TODO: delete me
 def filter_by_demographic_data(
     respondents: QuerySet,
     demographicindividual: list[str] | None = None,
@@ -188,6 +191,23 @@ def respondents_json(
 
         # Update cache
         cache.set(cache_key, respondents, timeout=cache_timeout)
+
+    # Filtering
+    query = Q()
+
+    stance_filters = request.GET.getlist("stanceFilters")
+    if stance_filters:
+        query &= Q(answer__sentimentmapping__position__in=stance_filters)
+
+    theme_filters = request.GET.getlist("themeFilters")
+    if theme_filters:
+        query &= Q(answer__thememapping__theme__in=theme_filters)
+
+    evidence_rich_filter = request.GET.get("evidenceRichFilters")
+    if evidence_rich_filter and evidence_rich_filter == "evidence-rich":
+        query &= Q(answer__evidencerichmapping__evidence_rich=True)
+
+    respondents = respondents.filter(query).distinct()
 
     # Pagination
     if page_size:

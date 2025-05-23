@@ -79,6 +79,11 @@ def theme_generation_execution_run():
 
 
 @pytest.fixture()
+def evidence_evaluation_execution_run():
+    return ExecutionRunFactory(type=ExecutionRun.TaskType.EVIDENCE_EVALUATION)
+
+
+@pytest.fixture()
 def positive_sentiment():
     return SentimentMapping.Position.AGREEMENT
 
@@ -88,6 +93,7 @@ def theme_a(framework):
     return InitialThemeFactory(framework=framework, key="A")
 
 
+# TODO: delete me
 @pytest.fixture()
 def positive_theme_stance():
     return ThemeMapping.Stance.POSITIVE
@@ -95,14 +101,24 @@ def positive_theme_stance():
 
 @pytest.fixture()
 def answer_matching_all_filters(
-    matching_respondent, question_part, positive_sentiment, theme_a, positive_theme_stance
+    matching_respondent,
+    question_part,
+    positive_sentiment,
+    theme_a,
+    evidence_evaluation_execution_run,
 ):
     answer = FreeTextAnswerFactory(respondent=matching_respondent, question_part=question_part)
     SentimentMappingFactory(position=positive_sentiment, answer=answer)
-    ThemeMappingFactory(theme=theme_a, stance=positive_theme_stance, answer=answer)
+    ThemeMappingFactory(theme=theme_a, answer=answer)
+    EvidenceRichMappingFactory(
+        answer=answer,
+        evidence_rich=True,
+        evidence_evaluation_execution_run=evidence_evaluation_execution_run,
+    )
     return answer
 
 
+# TODO: delete me
 @pytest.fixture()
 def answer_not_matching_respondent_id(
     question_part, positive_sentiment, theme_a, positive_theme_stance
@@ -114,22 +130,60 @@ def answer_not_matching_respondent_id(
 
 
 @pytest.fixture()
-def answer_not_matching_positive_sentiment(question_part, theme_a, positive_theme_stance):
+def answer_not_matching_positive_sentiment(
+    question_part, theme_a, positive_theme_stance, evidence_evaluation_execution_run
+):
     answer = FreeTextAnswerFactory(question_part=question_part)
     SentimentMappingFactory(position=SentimentMapping.Position.DISAGREEMENT, answer=answer)
-    ThemeMappingFactory(theme=theme_a, stance=positive_theme_stance, answer=answer)
+    ThemeMappingFactory(theme=theme_a, answer=answer)
+    EvidenceRichMappingFactory(
+        answer=answer,
+        evidence_rich=True,
+        evidence_evaluation_execution_run=evidence_evaluation_execution_run,
+    )
     return answer
 
 
 @pytest.fixture()
-def answer_not_matching_theme(question_part, positive_sentiment, positive_theme_stance, framework):
+def answer_not_matching_theme(
+    question_part,
+    positive_sentiment,
+    positive_theme_stance,
+    framework,
+    evidence_evaluation_execution_run,
+):
     answer = FreeTextAnswerFactory(question_part=question_part)
     SentimentMappingFactory(position=positive_sentiment, answer=answer)
     theme = InitialThemeFactory(key="B", framework=framework)
-    ThemeMappingFactory(theme=theme, stance=positive_theme_stance, answer=answer)
+    ThemeMappingFactory(theme=theme, answer=answer)
+    EvidenceRichMappingFactory(
+        answer=answer,
+        evidence_rich=True,
+        evidence_evaluation_execution_run=evidence_evaluation_execution_run,
+    )
     return answer
 
 
+@pytest.fixture()
+def answer_not_matching_evidence_rich(
+    matching_respondent,
+    question_part,
+    positive_sentiment,
+    theme_a,
+    evidence_evaluation_execution_run,
+):
+    answer = FreeTextAnswerFactory(respondent=matching_respondent, question_part=question_part)
+    SentimentMappingFactory(position=positive_sentiment, answer=answer)
+    ThemeMappingFactory(theme=theme_a, answer=answer)
+    EvidenceRichMappingFactory(
+        answer=answer,
+        evidence_rich=False,
+        evidence_evaluation_execution_run=evidence_evaluation_execution_run,
+    )
+    return answer
+
+
+# TODO: delete me
 @pytest.fixture()
 def answer_not_matching_theme_stance(question_part, positive_sentiment, theme_a):
     answer = FreeTextAnswerFactory(question_part=question_part)
@@ -138,6 +192,8 @@ def answer_not_matching_theme_stance(question_part, positive_sentiment, theme_a)
     return answer
 
 
+# TODO: delete me - using as reference for now
+@pytest.skip("no longer using these filter smethods")
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     "responseid, responsesentiment, theme, themestance, expected",
@@ -261,6 +317,7 @@ def test_filter_by_response_and_theme(
         assert respondent == expected[idx].respondent
 
 
+# TODO: delete me
 @pytest.mark.django_db
 def test_filter_by_multiple_themes(
     question, question_part, framework, theme_generation_execution_run
@@ -303,6 +360,7 @@ def test_filter_by_multiple_themes(
     assert answer_theme_b_and_c.respondent in result
 
 
+# TODO: delete me
 @pytest.mark.django_db
 def test_filter_by_word_count():
     question_1 = QuestionFactory()
@@ -339,6 +397,7 @@ def test_filter_by_word_count():
     assert respondent_long_answer_other_question not in result
 
 
+# TODO: delete me - could leave as reference for demographic filter work
 @pytest.mark.django_db
 @pytest.mark.parametrize(
     "individual_filter, should_filter",
@@ -519,3 +578,7 @@ def test_respondents_json_pagination(
     assert response.status_code == 200
     response_json = response.json()
     assert len(response_json["all_respondents"]) == expected_count
+
+
+# @pytest.mark.django_db
+# def test_respondents_json_filter_theme(client, question, consultation_user, question_part):
