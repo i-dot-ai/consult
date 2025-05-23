@@ -3441,6 +3441,7 @@ class IaiProgressBar extends IaiLitBase {
                 position: relative;
                 height: 2em;
                 color: white;
+                transition: width 1s ease-in-out;
                 background: var(--iai-colour-brand);
             }
             iai-progress-bar .container .label {
@@ -3926,12 +3927,18 @@ class IaiResponseDashboard extends IaiLitBase {
                                         <button
                                             class="ternary-button"
                                             @click=${() => {
-                                                this
-                                                .querySelectorAll("table iai-expanding-pill")
-                                                .forEach(pill => pill._expanded = false);
+                                                const pills = Array.from(this.querySelectorAll("table iai-expanding-pill"));
+
+                                                if (pills.filter(pill => !pill._expanded).length == 0) {
+                                                    // If all pills are extended, collapse them all
+                                                    pills.forEach(pill => pill._expanded = false);
+                                                } else {
+                                                    // else expand them all
+                                                    pills.forEach(pill => pill._expanded = true);
+                                                }
                                             }}
                                         >
-                                            Hide all descriptions
+                                            Hide/show all descriptions
                                         </button>
                                     </div>
 
