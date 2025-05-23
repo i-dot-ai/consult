@@ -5,7 +5,7 @@ from uuid import UUID
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.db.models import Count, F, Prefetch, QuerySet, Subquery, Value
+from django.db.models import Count, F, Prefetch, Q, QuerySet, Subquery, Value
 from django.db.models.functions import Length, Replace
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -19,6 +19,7 @@ class DataDict(TypedDict):
     has_more_pages: bool
 
 
+# TODO: delete me
 def filter_by_response_and_theme(
     question: models.Question,
     respondents: QuerySet,
@@ -47,6 +48,7 @@ def filter_by_response_and_theme(
     return respondents.distinct()
 
 
+# TODO: delete me
 def filter_by_word_count(
     respondents: QuerySet,
     question_slug: str,
@@ -71,6 +73,7 @@ def filter_by_word_count(
     return respondents.filter(answer__in=annotated_responses)
 
 
+# TODO: delete me
 def filter_by_demographic_data(
     respondents: QuerySet,
     demographicindividual: list[str] | None = None,
@@ -201,11 +204,6 @@ def respondents_json(
         consultation_slug=consultation_slug, question_slug=question_slug
     )
 
-    data: DataDict = {
-        "all_respondents": [],
-        "has_more_pages": False,
-    }
-
     # Filtering
     query = Q()
 
@@ -222,6 +220,11 @@ def respondents_json(
         query &= Q(answer__evidencerichmapping__evidence_rich=True)
 
     respondents = respondents.filter(query).distinct()
+
+    data: DataDict = {
+        "all_respondents": [],
+        "has_more_pages": False,
+    }
 
     # Pagination
     if page_size:
