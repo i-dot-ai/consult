@@ -180,7 +180,7 @@ def respondents_json(
             Prefetch(
                 "answer_set", queryset=answers, to_attr="prefetched_answers"
             )  # Prefetch the necessary answers
-        )
+        ).order_by("pk")
 
         # Update cache
         cache.set(cache_key, respondents, timeout=cache_timeout)
