@@ -210,15 +210,16 @@ def respondents_json(
             if answer.question_part.type == models.QuestionPart.QuestionType.FREE_TEXT
         ]
 
-        if len(free_text_responses) > 0:
+        if free_text_responses:
             free_text_answer = free_text_responses[0]
-
             respondent.themes = free_text_answer.prefetched_thememappings  # type: ignore
 
-            if len(free_text_answer.prefetched_sentimentmappings) > 0:
+            if free_text_answer.prefetched_sentimentmappings:
+                # Can assume at most one sentiment mapping
                 respondent.sentiment = free_text_answer.prefetched_sentimentmappings[0]  # type: ignore
 
-            if len(free_text_answer.prefetched_evidencerichmappings) > 0:
+            if free_text_answer.prefetched_evidencerichmappings:
+                # Can assume at most one sentiment mapping
                 respondent.evidence_rich = free_text_answer.prefetched_evidencerichmappings[0]  # type: ignore
 
         # Multiple choice response
@@ -228,7 +229,7 @@ def respondents_json(
             if answer.question_part.type == models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
         ]
 
-        if len(multiple_choice_answers) > 0:
+        if multiple_choice_answers:
             respondent.multiple_choice_answer = multiple_choice_answers[0]
 
         # Build JSON response
