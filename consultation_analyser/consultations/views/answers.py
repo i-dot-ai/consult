@@ -3,6 +3,7 @@ from uuid import UUID
 
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
+from django.core.paginator import Paginator
 from django.db.models import Count, F, Prefetch, Q, QuerySet, Value
 from django.db.models.functions import Length, Replace
 from django.http import HttpRequest, JsonResponse
@@ -133,15 +134,19 @@ def respondents_json(
     consultation_slug: str,
     question_slug: str,
 ):
+    page_size = request.GET.get("page_size")
+    page = request.GET.get(
+        "page", 1
+    )  # TODO: replace with `last_created_at` when we move to keyset pagination
     # If needed, add request.user.id to make cache unique to each user
     cache_key = f"respondents_{consultation_slug}_{question_slug}"
     cache_timeout = 60 * 20  #  20 mins
 
     # Retrieve cached data
-    data = cache.get(cache_key)
+    respondents = cache.get(cache_key)
 
     # If no cached data found
-    if data is None:
+    if respondents is None:
         # Prefetch all related data to avoid multiple db hits
         # filtered_answers is not querying the database yet,
         # only building the query (as querysets are lazily fetched).
@@ -172,86 +177,91 @@ def respondents_json(
                 consultation__slug=consultation_slug,
                 num_answers__gt=0,  #  Filter out respondents with no answers
             )
+            .order_by("pk")
             .prefetch_related(
                 Prefetch("answer_set", queryset=filtered_answers, to_attr="prefetched_answers")
             )
             .distinct()
         )
 
-        data = {"all_respondents": []}
-
-        # Get individual data for each displayed respondent
-        for respondent in respondents:
-            # Defaults
-            free_text_answer = None
-            multiple_choice_answers = None
-
-            # Free text response
-            free_text_responses = [
-                answer
-                for answer in respondent.prefetched_answers
-                if answer.question_part.type == models.QuestionPart.QuestionType.FREE_TEXT
-            ]
-
-            if len(free_text_responses) > 0:
-                free_text_answer = free_text_responses[0]
-
-                respondent.themes = free_text_answer.prefetched_thememappings  # type: ignore
-
-                if len(free_text_answer.prefetched_sentimentmappings) > 0:
-                    respondent.sentiment = free_text_answer.prefetched_sentimentmappings[0]  # type: ignore
-
-                if len(free_text_answer.prefetched_evidencerichmappings) > 0:
-                    respondent.evidence_rich = free_text_answer.prefetched_evidencerichmappings[0]  # type: ignore
-
-            # Multiple choice response
-            multiple_choice_answers = [
-                answer
-                for answer in respondent.prefetched_answers
-                if answer.question_part.type == models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
-            ]
-
-            if len(multiple_choice_answers) > 0:
-                respondent.multiple_choice_answer = multiple_choice_answers[0]
-
-            # Build JSON response
-            data["all_respondents"].append(
-                {
-                    "id": f"response-{getattr(respondent, 'identifier', '')}",
-                    "identifier": getattr(respondent, "identifier", ""),
-                    "sentiment_position": respondent.sentiment.position
-                    if hasattr(respondent, "sentiment")
-                    and hasattr(respondent.sentiment, "position")
-                    else "",
-                    "free_text_answer_text": free_text_answer.text  # type: ignore
-                    if hasattr(free_text_answer, "text")
-                    else "",
-                    "demographic_data": hasattr(respondent, "data") or "",
-                    "themes": [
-                        {
-                            "id": theme.theme.id,
-                            "stance": theme.stance,
-                            "name": theme.theme.name,
-                            "description": theme.theme.description,
-                        }
-                        for theme in respondent.themes
-                    ]
-                    if hasattr(respondent, "themes")
-                    else [],
-                    "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options]
-                    if hasattr(respondent, "multiple_choice_answer")
-                    and hasattr(respondent.multiple_choice_answer, "chosen_options")
-                    else [],
-                    "evidenceRich": True
-                    if hasattr(respondent, "evidence_rich")
-                    and respondent.evidence_rich.evidence_rich
-                    else False,
-                    "individual": True if hasattr(respondent, "individual") else False,
-                }
-            )
-
         # Update cache
-        cache.set(cache_key, data, timeout=cache_timeout)
+        cache.set(cache_key, respondents, timeout=cache_timeout)
+
+    # Pagination
+    if page_size:
+        pagination = Paginator(respondents, page_size)
+        current_page = pagination.page(page)
+        respondents = current_page.object_list
+
+    data: dict[str, list] = {"all_respondents": []}
+
+    # Get individual data for each displayed respondent
+    for respondent in respondents:
+        # Defaults
+        free_text_answer = None
+        multiple_choice_answers = None
+
+        # Free text response
+        free_text_responses = [
+            answer
+            for answer in respondent.prefetched_answers
+            if answer.question_part.type == models.QuestionPart.QuestionType.FREE_TEXT
+        ]
+
+        if len(free_text_responses) > 0:
+            free_text_answer = free_text_responses[0]
+
+            respondent.themes = free_text_answer.prefetched_thememappings  # type: ignore
+
+            if len(free_text_answer.prefetched_sentimentmappings) > 0:
+                respondent.sentiment = free_text_answer.prefetched_sentimentmappings[0]  # type: ignore
+
+            if len(free_text_answer.prefetched_evidencerichmappings) > 0:
+                respondent.evidence_rich = free_text_answer.prefetched_evidencerichmappings[0]  # type: ignore
+
+        # Multiple choice response
+        multiple_choice_answers = [
+            answer
+            for answer in respondent.prefetched_answers
+            if answer.question_part.type == models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
+        ]
+
+        if len(multiple_choice_answers) > 0:
+            respondent.multiple_choice_answer = multiple_choice_answers[0]
+
+        # Build JSON response
+        data["all_respondents"].append(
+            {
+                "id": f"response-{getattr(respondent, 'identifier', '')}",
+                "identifier": getattr(respondent, "identifier", ""),
+                "sentiment_position": respondent.sentiment.position
+                if hasattr(respondent, "sentiment") and hasattr(respondent.sentiment, "position")
+                else "",
+                "free_text_answer_text": free_text_answer.text  # type: ignore
+                if hasattr(free_text_answer, "text")
+                else "",
+                "demographic_data": hasattr(respondent, "data") or "",
+                "themes": [
+                    {
+                        "id": theme.theme.id,
+                        "stance": theme.stance,
+                        "name": theme.theme.name,
+                        "description": theme.theme.description,
+                    }
+                    for theme in respondent.themes
+                ]
+                if hasattr(respondent, "themes")
+                else [],
+                "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options]
+                if hasattr(respondent, "multiple_choice_answer")
+                and hasattr(respondent.multiple_choice_answer, "chosen_options")
+                else [],
+                "evidenceRich": True
+                if hasattr(respondent, "evidence_rich") and respondent.evidence_rich.evidence_rich
+                else False,
+                "individual": True if hasattr(respondent, "individual") else False,
+            }
+        )
 
     return JsonResponse(data)
 
