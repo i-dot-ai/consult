@@ -23,6 +23,7 @@ export default class IaiProgressBar extends IaiLitBase {
                 position: relative;
                 height: 2em;
                 color: white;
+                transition: width 1s ease-in-out;
                 background: var(--iai-colour-brand);
             }
             iai-progress-bar .container .label {
