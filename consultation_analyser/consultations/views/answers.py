@@ -125,18 +125,8 @@ def get_selected_option_summary(question: models.Question, respondents: QuerySet
     return multichoice_summary
 
 
-@user_can_see_dashboards
-@user_can_see_consultation
-def respondents_json(
-    request: HttpRequest,
-    consultation_slug: str,
-    question_slug: str,
-):
-    page_size = request.GET.get("page_size")
-    page = request.GET.get(
-        "page", 1
-    )  # TODO: replace with `last_created_at` when we move to keyset pagination
-    # If needed, add request.user.id to make cache unique to each user
+
+def get_respondents_for_question(consultation_slug: str, question_slug: str) -> QuerySet[models.Respondent]:
     cache_key = f"respondents_{consultation_slug}_{question_slug}"
     cache_timeout = 60 * 20  #  20 mins
 
@@ -186,6 +176,21 @@ def respondents_json(
 
         # Update cache
         cache.set(cache_key, respondents, timeout=cache_timeout)
+        return respondents
+
+
+@user_can_see_dashboards
+@user_can_see_consultation
+def respondents_json(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    page_size = request.GET.get("page_size")
+    page = request.GET.get(
+        "page", 1
+    )  # TODO: replace with `last_created_at` when we move to keyset pagination
+    respondents = get_respondents_for_question(consultation_slug=consultation_slug, question_slug=question_slug)
 
     # Pagination
     if page_size:
