@@ -26,3 +26,5 @@ import IaiPageTitle from "./IaiPageTitle/iai-page-title.lit.csr.mjs";
 import IaiExpandingPill from "./IaiExpandingPill/iai-expanding-pill.lit.csr.mjs";
 import IaiChip from "./IaiChip/iai-chip.lit.csr.mjs";
 import IaiResponseDashboard from "./IaiResponseDashboard/iai-response-dashboard.lit.csr.mjs";
+import IaiProgressBar from "./IaiProgressBar/iai-progress-bar.lit.csr.mjs";
+import IaiAnimatedNumber from "./IaiAnimatedNumber/iai-animated-number.lit.csr.mjs";

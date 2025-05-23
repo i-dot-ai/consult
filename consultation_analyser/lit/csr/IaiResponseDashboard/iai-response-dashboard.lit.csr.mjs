@@ -7,6 +7,8 @@ import IaiResponseFilterGroup from '../IaiResponseFilterGroup/iai-response-filte
 import IaiPageTitle from '../IaiPageTitle/iai-page-title.lit.csr.mjs';
 import IaiDataTable from '../IaiDataTable/iai-data-table.lit.csr.mjs';
 import IaiCsvDownload from '../IaiCsvDownload/iai-csv-download.lit.csr.mjs';
+import IaiProgressBar from '../IaiProgressBar/iai-progress-bar.lit.csr.mjs';
+import IaiAnimatedNumber from '../IaiAnimatedNumber/iai-animated-number.lit.csr.mjs';
 
 
 export default class IaiResponseDashboard extends IaiLitBase {
@@ -35,6 +37,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         _themesPanelVisible: { type: Boolean },
         _stanceFilters: { type: Array },
         _evidenceRichFilters: { type: Array },
+        _numberAnimationDuration: { type: Number },
     }
 
     static styles = [
@@ -142,6 +145,51 @@ export default class IaiResponseDashboard extends IaiLitBase {
             iai-response-dashboard .spinner iai-icon .material-symbols-outlined {
                 font-size: 3em;
             }
+            iai-response-dashboard thead tr {
+                color: var(--iai-colour-text-secondary);
+            }
+            iai-response-dashboard table iai-expanding-pill button {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+                font-size: 1.2em;
+                color: black;
+                background: var(--iai-colour-pink-transparent-mid);
+            }
+            iai-response-dashboard table iai-expanding-pill .body {
+                font-size: 1.2em;
+                transition-property: margin, padding, max-height;
+            }
+            iai-response-dashboard table iai-expanding-pill .body:not(.expanded) {
+                margin: 0;
+            }
+            iai-response-dashboard table .percentage-cell {
+                display: flex;
+                gap: 0.2em;
+                min-width: 4.5em;
+                font-size: 2em;
+                font-weight: bold;
+                color: var(--iai-colour-text-secondary);
+            }
+            iai-response-dashboard table .total-count-cell {
+                min-width: 10em;
+            }
+            iai-response-dashboard .title-container {
+                display: flex;
+                gap: 2em;
+                align-items: center;
+            }
+            iai-response-dashboard .ternary-button {
+                padding: 0.5em 1em;
+                background: none;
+                border: none;
+                border-radius: var(--iai-border-radius);
+                cursor: pointer;
+                transition: background 0.3s ease-in-out;
+            }
+            iai-response-dashboard .ternary-button:hover {
+                background: var(--iai-colour-pink-transparent);
+            }
 
             @keyframes spin {
                 from {
@@ -168,6 +216,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         this._themeFilters = [];
         this._themesPanelVisible = false;
         this._demographicFilters = [];
+        this._numberAnimationDuration = 500;
 
         this.questionTitle = "";
         this.questionText = "";
@@ -186,7 +235,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
     }
 
     firstUpdated() {
-        window.addEventListener("mousedown", this.handleThemesPanelClose)
+        window.addEventListener("mousedown", this.handleThemesPanelClose);
     }
 
     fetchResponses = async () => {
@@ -353,7 +402,14 @@ export default class IaiResponseDashboard extends IaiLitBase {
             this._themeFilters.includes(themeMapping.value) ||
             themeMapping.label.toLocaleLowerCase().includes(this._themeSearchValue.toLocaleLowerCase())
         )
-    } 
+    }
+
+    getPercentage = (partialValue, totalValue) => {
+        if (totalValue === 0) {
+            return 0;
+        }
+        return parseFloat(((partialValue / totalValue) * 100).toFixed(2));
+    }
 
     render() {
         const visibleResponses = this.responses.filter(response => response.visible);
@@ -389,9 +445,28 @@ export default class IaiResponseDashboard extends IaiLitBase {
                             <div class="table-container">
 
                                 <div class="table-title themes-mentions">
-                                    <h2 class="govuk-heading-m">
-                                        Themes
-                                    </h2>
+                                    <div class="title-container">
+                                        <h2 class="govuk-heading-m">
+                                            Themes
+                                        </h2>
+
+                                        <button
+                                            class="ternary-button"
+                                            @click=${() => {
+                                                const pills = Array.from(this.querySelectorAll("table iai-expanding-pill"));
+
+                                                if (pills.filter(pill => !pill._expanded).length == 0) {
+                                                    // If all pills are extended, collapse them all
+                                                    pills.forEach(pill => pill._expanded = false);
+                                                } else {
+                                                    // else expand them all
+                                                    pills.forEach(pill => pill._expanded = true);
+                                                }
+                                            }}
+                                        >
+                                            Hide/show all descriptions
+                                        </button>
+                                    </div>
 
                                     <iai-csv-download
                                         fileName="theme_mentions.csv"
@@ -439,7 +514,8 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                                 // particularly useful for html elements and dates.
                                                 "_sortValues": {
                                                     "Theme name and description": themeMapping.label,
-                                                    "Total mentions": parseInt(themeMapping.count),
+                                                    "Number of responses": parseInt(themeMapping.count),
+                                                    "Percentage of responses": this.getPercentage(parseInt(themeMapping.count), this.responses.length),
                                                 },
                                                 "Theme name and description": html`
                                                     <iai-expanding-pill
@@ -448,7 +524,26 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                                         .initialExpanded=${true}
                                                     ></iai-expanding-pill>
                                                 `,
-                                                "Total mentions": themeMapping.count,
+                                                "Percentage of responses": html`
+                                                    <div class="percentage-cell">
+                                                        <iai-animated-number
+                                                            .number=${this.getPercentage(
+                                                                parseInt(themeMapping.count),
+                                                                this.responses.length
+                                                            )}
+                                                            .duration=${this._numberAnimationDuration}
+                                                        ></iai-animated-number>
+                                                        %
+                                                    <div>
+                                                `,
+                                                "Number of responses": html`
+                                                    <div class="total-count-cell">
+                                                        <iai-progress-bar
+                                                            .value=${this.getPercentage(parseInt(themeMapping.count), this.responses.length)}
+                                                            .label=${themeMapping.count}
+                                                        ></iai-progress-bar>
+                                                    </div>
+                                                `
                                             }
                                         ))
                                     }
