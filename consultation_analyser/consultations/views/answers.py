@@ -125,8 +125,9 @@ def get_selected_option_summary(question: models.Question, respondents: QuerySet
     return multichoice_summary
 
 
-
-def get_respondents_for_question(consultation_slug: str, question_slug: str, cache_timeout: int = 60 * 20) -> QuerySet[models.Respondent]:
+def get_respondents_for_question(
+    consultation_slug: str, question_slug: str, cache_timeout: int = 60 * 20
+) -> QuerySet[models.Respondent]:
     # Cache data for question/consultation. Default timeout to 20 mins.
     cache_key = f"respondents_{consultation_slug}_{question_slug}"
 
@@ -190,7 +191,9 @@ def respondents_json(
     page = request.GET.get(
         "page", 1
     )  # TODO: replace with `last_created_at` when we move to keyset pagination
-    respondents = get_respondents_for_question(consultation_slug=consultation_slug, question_slug=question_slug)
+    respondents = get_respondents_for_question(
+        consultation_slug=consultation_slug, question_slug=question_slug
+    )
 
     # Pagination
     if page_size:
@@ -293,7 +296,9 @@ def index(
     ).exists()
 
     # Get all respondents for question
-    respondents = get_respondents_for_question(consultation_slug=consultation_slug, question_slug=question_slug)
+    respondents = get_respondents_for_question(
+        consultation_slug=consultation_slug, question_slug=question_slug
+    )
 
     has_individual_data = respondents.filter(data__has_key="individual").exists()
 
