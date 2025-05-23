@@ -59,7 +59,7 @@ export default class IaiDataTable extends IaiLitBase {
             iai-data-table thead .header-button.descending iai-icon {
                 opacity: 1;
             }
-            iai-data-table thead .header-button.descending iai-icon {
+            iai-data-table thead .header-button.ascending iai-icon {
                 transform: rotateX(180deg);
             }
         `
