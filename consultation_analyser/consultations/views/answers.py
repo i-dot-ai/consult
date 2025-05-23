@@ -4,7 +4,7 @@ from uuid import UUID
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.db.models import Count, F, Prefetch, Q, QuerySet, Value
+from django.db.models import Count, F, Prefetch, Q, QuerySet, Subquery, Value
 from django.db.models.functions import Length, Replace
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -153,9 +153,12 @@ def respondents_json(
         # This then gets passed as the queryset param of respondent prefetch,
         # updating that query with the filter logic.
         # Ultimately the returned answers are only for the current consultation.
-
-        filtered_answers = (
-            models.Answer.objects.filter(question_part__question__slug=question_slug)
+        answers = (
+            models.Answer.objects.filter(
+                question_part__question__slug=question_slug,
+                question_part__question__consultation__slug=consultation_slug,
+            )
+            .select_related("respondent")
             .prefetch_related(
                 Prefetch(
                     "thememapping_set",
@@ -172,16 +175,15 @@ def respondents_json(
         )
 
         respondents = (
-            models.Respondent.objects.annotate(num_answers=Count("answer"))
-            .filter(
-                consultation__slug=consultation_slug,
-                num_answers__gt=0,  #  Filter out respondents with no answers
+            models.Respondent.objects.filter(
+                id__in=Subquery(answers.values_list("respondent_id", flat=True))
+            )
+            .prefetch_related(
+                Prefetch(
+                    "answer_set", queryset=answers, to_attr="prefetched_answers"
+                )  # Prefetch the necessary answers
             )
             .order_by("pk")
-            .prefetch_related(
-                Prefetch("answer_set", queryset=filtered_answers, to_attr="prefetched_answers")
-            )
-            .distinct()
         )
 
         # Update cache
@@ -286,14 +288,12 @@ def index(
         question=question, type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
     ).exists()
 
+    # TODO - could maybe rationalise with getting respondents from respondents_json above
     # Get all respondents for question
-    respondents = (
-        models.Respondent.objects.annotate(num_answers=Count("answer"))
-        .filter(
-            consultation__slug=consultation_slug,
-            num_answers__gt=0,  #  Filter out respondents with no answers
-        )
-        .distinct()
+    respondents = models.Respondent.objects.filter(
+        id__in=models.Answer.objects.filter(
+            question_part__question=question, question_part__question__consultation=consultation
+        ).values_list("respondent_id", flat=True)
     )
 
     has_individual_data = respondents.filter(data__has_key="individual").exists()
