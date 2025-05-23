@@ -13,6 +13,7 @@ from .. import models
 from .decorators import user_can_see_consultation, user_can_see_dashboards
 
 
+# TODO: delete me
 def filter_by_response_and_theme(
     question: models.Question,
     respondents: QuerySet,
@@ -41,6 +42,7 @@ def filter_by_response_and_theme(
     return respondents.distinct()
 
 
+# TODO: delete me
 def filter_by_word_count(
     respondents: QuerySet,
     question_slug: str,
@@ -65,6 +67,7 @@ def filter_by_word_count(
     return respondents.filter(answer__in=annotated_responses)
 
 
+# TODO: delete me
 def filter_by_demographic_data(
     respondents: QuerySet,
     demographicindividual: list[str] | None = None,
