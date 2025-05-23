@@ -126,9 +126,9 @@ def get_selected_option_summary(question: models.Question, respondents: QuerySet
 
 
 
-def get_respondents_for_question(consultation_slug: str, question_slug: str) -> QuerySet[models.Respondent]:
+def get_respondents_for_question(consultation_slug: str, question_slug: str, cache_timeout: int = 60 * 20) -> QuerySet[models.Respondent]:
+    # Cache data for question/consultation. Default timeout to 20 mins.
     cache_key = f"respondents_{consultation_slug}_{question_slug}"
-    cache_timeout = 60 * 20  #  20 mins
 
     # Retrieve cached data
     respondents = cache.get(cache_key)
