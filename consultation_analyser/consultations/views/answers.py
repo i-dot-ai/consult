@@ -174,13 +174,17 @@ def respondents_json(
             )
         )
 
-        respondents = models.Respondent.objects.filter(
-            id__in=Subquery(answers.values_list("respondent_id", flat=True))
-        ).prefetch_related(
-            Prefetch(
-                "answer_set", queryset=answers, to_attr="prefetched_answers"
-            )  # Prefetch the necessary answers
-        ).order_by("pk")
+        respondents = (
+            models.Respondent.objects.filter(
+                id__in=Subquery(answers.values_list("respondent_id", flat=True))
+            )
+            .prefetch_related(
+                Prefetch(
+                    "answer_set", queryset=answers, to_attr="prefetched_answers"
+                )  # Prefetch the necessary answers
+            )
+            .order_by("pk")
+        )
 
         # Update cache
         cache.set(cache_key, respondents, timeout=cache_timeout)
@@ -289,7 +293,7 @@ def index(
     respondents = models.Respondent.objects.filter(
         id__in=models.Answer.objects.filter(
             question_part__question=question, question_part__question__consultation=consultation
-        ).values("respondent_id")
+        ).values_list("respondent_id", flat=True)
     )
 
     has_individual_data = respondents.filter(data__has_key="individual").exists()
