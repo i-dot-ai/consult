@@ -550,8 +550,6 @@ def test_get_respondents_for_question():
 
     # Check we correctly retrieve from cache
     cached_respondents = cache.get(f"respondents_{consultation.slug}_{question.slug}")
-    print("cached")
-    print(cached_respondents.values())
     assert set(cached_respondents.values_list("id", flat=True)) == set(
         respondents.values_list("id", flat=True)
     )
