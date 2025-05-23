@@ -177,6 +177,7 @@ def respondents_json(
                 consultation__slug=consultation_slug,
                 num_answers__gt=0,  #  Filter out respondents with no answers
             )
+            .order_by("pk")
             .prefetch_related(
                 Prefetch("answer_set", queryset=filtered_answers, to_attr="prefetched_answers")
             )
