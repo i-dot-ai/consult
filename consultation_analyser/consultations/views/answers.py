@@ -4,8 +4,7 @@ from uuid import UUID
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.db.models import Count, F, Prefetch, Q, QuerySet, Value
-from django.db.models import Count, F, Prefetch, Q, QuerySet, Value, Subquery
+from django.db.models import Count, F, Prefetch, Q, QuerySet, Subquery, Value
 from django.db.models.functions import Length, Replace
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -155,7 +154,10 @@ def respondents_json(
         # updating that query with the filter logic.
         # Ultimately the returned answers are only for the current consultation.
         answers = (
-            models.Answer.objects.filter(question_part__question__slug=question_slug, question_part__question__consultation__slug=consultation_slug)
+            models.Answer.objects.filter(
+                question_part__question__slug=question_slug,
+                question_part__question__consultation__slug=consultation_slug,
+            )
             .select_related("respondent")
             .prefetch_related(
                 Prefetch(
@@ -172,13 +174,12 @@ def respondents_json(
             )
         )
 
-        respondents = (
-            models.Respondent.objects.filter(id__in=Subquery(answers.values_list("respondent_id", flat=True)))
-            .prefetch_related(
-                Prefetch(
-                    "answer_set", queryset=answers, to_attr="prefetched_answers"
-                )  # Prefetch the necessary answers
-            )
+        respondents = models.Respondent.objects.filter(
+            id__in=Subquery(answers.values_list("respondent_id", flat=True))
+        ).prefetch_related(
+            Prefetch(
+                "answer_set", queryset=answers, to_attr="prefetched_answers"
+            )  # Prefetch the necessary answers
         )
 
         # Update cache
@@ -286,9 +287,9 @@ def index(
     # TODO - could maybe rationalise with getting respondents from respondents_json above
     # Get all respondents for question
     respondents = models.Respondent.objects.filter(
-        id__in=models.Answer.objects.filter(question_part__question=question, question_part__question__consultation=consultation).values(
-            "respondent_id"
-        )
+        id__in=models.Answer.objects.filter(
+            question_part__question=question, question_part__question__consultation=consultation
+        ).values("respondent_id")
     )
 
     has_individual_data = respondents.filter(data__has_key="individual").exists()
