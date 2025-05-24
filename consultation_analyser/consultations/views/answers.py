@@ -81,16 +81,35 @@ def filter_by_demographic_data(
     return has_individual_data, filtered_respondents
 
 
+# def get_selected_theme_summary(
+#     free_text_question_part: models.QuestionPart, respondents: QuerySet
+# ) -> tuple[QuerySet, dict]:
+#     """Get a summary of the selected themes for a free text question"""
+#     # Assume latest framework for now
+#     theme_mappings_qs = models.ThemeMapping.get_latest_theme_mappings(
+#         question_part=free_text_question_part
+#     )
+#     selected_theme_mappings = (
+#         theme_mappings_qs.filter(answer__respondent__in=respondents)
+#         .values("theme__name", "theme__description", "theme__id")
+#         .annotate(
+#             count=Count("id"),
+#             positive_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.POSITIVE)),
+#             negative_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.NEGATIVE)),
+#         )
+#     )
+#     return selected_theme_mappings
+
+
 def get_selected_theme_summary(
     free_text_question_part: models.QuestionPart, respondents: QuerySet
 ) -> tuple[QuerySet, dict]:
     """Get a summary of the selected themes for a free text question"""
     # Assume latest framework for now
-    theme_mappings_qs = models.ThemeMapping.get_latest_theme_mappings(
-        question_part=free_text_question_part
-    )
-    selected_theme_mappings = (
-        theme_mappings_qs.filter(answer__respondent__in=respondents)
+    theme_mappings_qs = (
+        models.ThemeMapping.get_latest_theme_mappings(question_part=free_text_question_part)
+        .select_related("theme")
+        .filter(answer__respondent__in=respondents)
         .values("theme__name", "theme__description", "theme__id")
         .annotate(
             count=Count("id"),
@@ -98,7 +117,7 @@ def get_selected_theme_summary(
             negative_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.NEGATIVE)),
         )
     )
-    return selected_theme_mappings
+    return theme_mappings_qs
 
 
 def get_selected_option_summary(question: models.Question, respondents: QuerySet) -> list[dict]:
