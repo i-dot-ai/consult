@@ -1,5 +1,6 @@
 import pytest
 from django.contrib.auth.models import Group
+from django.core.cache import cache
 from pytest_lazy_fixtures import lf
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
@@ -411,6 +412,8 @@ def test_get_selected_theme_summary(
         execution_run=theme_mapping_execution_run,
     )
 
+    # Check we generate the right set of respondents
+    cache.clear()
     selected_theme_mappings = get_selected_theme_summary(
         question_part,
         Respondent.objects.all(),
@@ -425,6 +428,11 @@ def test_get_selected_theme_summary(
     assert theme_b_summary["count"] == 2
     assert theme_b_summary["positive_count"] == 1
     assert theme_b_summary["negative_count"] == 1
+
+    # Check we correctly retrieve from cache
+    cache_key = f"theme_summary_{question_part.id}"
+    cached_data = cache.get(cache_key)
+    assert cached_data == selected_theme_mappings
 
 
 @pytest.mark.django_db
