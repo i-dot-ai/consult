@@ -103,7 +103,7 @@ def filter_by_demographic_data(
 
 def get_selected_theme_summary(
     free_text_question_part: models.QuestionPart, respondents: QuerySet
-) -> tuple[QuerySet, dict]:
+) -> list[dict]:
     """Get a summary of the selected themes for a free text question"""
     # Assume latest framework for now
     theme_mappings_qs = (
@@ -117,7 +117,8 @@ def get_selected_theme_summary(
             negative_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.NEGATIVE)),
         )
     )
-    return theme_mappings_qs
+    theme_summary = list(theme_mappings_qs)
+    return theme_summary
 
 
 def get_selected_option_summary(question: models.Question, respondents: QuerySet) -> list[dict]:
