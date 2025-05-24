@@ -105,19 +105,24 @@ def get_selected_theme_summary(
     free_text_question_part: models.QuestionPart, respondents: QuerySet
 ) -> list[dict]:
     """Get a summary of the selected themes for a free text question"""
-    # Assume latest framework for now
-    theme_mappings_qs = (
-        models.ThemeMapping.get_latest_theme_mappings(question_part=free_text_question_part)
-        .select_related("theme")
-        .filter(answer__respondent__in=respondents)
-        .values("theme__name", "theme__description", "theme__id")
-        .annotate(
-            count=Count("id"),
-            positive_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.POSITIVE)),
-            negative_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.NEGATIVE)),
+    cache_key = f"theme_summary_{free_text_question_part.id}"
+    cache_timeout = 60 * 20  #  20 mins
+    theme_summary = cache.get(cache_key)
+    if not theme_summary:
+        # Assume latest framework for now
+        theme_mappings_qs = (
+            models.ThemeMapping.get_latest_theme_mappings(question_part=free_text_question_part)
+            .select_related("theme")
+            .filter(answer__respondent__in=respondents)
+            .values("theme__name", "theme__description", "theme__id")
+            .annotate(
+                count=Count("id"),
+                positive_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.POSITIVE)),
+                negative_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.NEGATIVE)),
+            )
         )
-    )
-    theme_summary = list(theme_mappings_qs)
+        theme_summary = list(theme_mappings_qs)
+        cache.set(cache_key, theme_summary, timeout=cache_timeout)
     return theme_summary
 
 
