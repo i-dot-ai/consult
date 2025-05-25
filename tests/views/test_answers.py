@@ -15,7 +15,7 @@ from consultation_analyser.consultations.views.answers import (
     filter_by_response_and_theme,
     filter_by_word_count,
     get_selected_option_summary,
-    get_selected_theme_summary,
+    get_theme_summary,
 )
 from consultation_analyser.factories import (
     EvidenceRichMappingFactory,
@@ -373,7 +373,7 @@ def test_filter_by_demographic_data(individual_filter, should_filter):
 
 
 @pytest.mark.django_db
-def test_get_selected_theme_summary(
+def test_get_theme_summary(
     question_part, framework, theme_generation_execution_run, theme_mapping_execution_run
 ):
     theme_a = InitialThemeFactory(
@@ -414,7 +414,7 @@ def test_get_selected_theme_summary(
 
     # Check we generate the right set of respondents
     cache.clear()
-    selected_theme_mappings = get_selected_theme_summary(
+    selected_theme_mappings = get_theme_summary(
         question_part,
         Respondent.objects.all(),
     )

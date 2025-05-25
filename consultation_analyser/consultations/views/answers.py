@@ -82,7 +82,7 @@ def filter_by_demographic_data(
 
 
 
-def get_selected_theme_summary(
+def get_theme_summary(
     free_text_question_part: models.QuestionPart, respondents: QuerySet
 ) -> list[dict]:
     """Get a summary of the selected themes for a free text question"""
@@ -306,7 +306,7 @@ def index(
     has_individual_data = respondents.filter(data__has_key="individual").exists()
 
     # Get summary data for filtered respondents list
-    selected_theme_mappings = get_selected_theme_summary(free_text_question_part, respondents)
+    selected_theme_mappings = get_theme_summary(free_text_question_part, respondents)
     multiple_choice_summary = get_selected_option_summary(question, respondents)
 
     csv_button_data = [
