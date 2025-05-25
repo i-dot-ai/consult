@@ -416,7 +416,6 @@ def test_get_theme_summary(
     cache.clear()
     selected_theme_mappings = get_theme_summary(
         question_part,
-        Respondent.objects.all(),
     )
 
     theme_a_summary = [

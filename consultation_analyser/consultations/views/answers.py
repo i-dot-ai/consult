@@ -93,8 +93,6 @@ def get_theme_summary(
         # Assume latest framework for now
         theme_mappings_qs = (
             models.ThemeMapping.get_latest_theme_mappings(question_part=free_text_question_part)
-            .select_related("theme")
-            .filter(answer__question_part=free_text_question_part)
             .values("theme__name", "theme__description", "theme__id")
             .annotate(
                 count=Count("id"),
