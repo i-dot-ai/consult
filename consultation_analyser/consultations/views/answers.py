@@ -81,7 +81,6 @@ def filter_by_demographic_data(
     return has_individual_data, filtered_respondents
 
 
-
 def get_theme_summary(
     free_text_question_part: models.QuestionPart, respondents: QuerySet
 ) -> list[dict]:

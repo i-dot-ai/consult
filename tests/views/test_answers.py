@@ -419,12 +419,16 @@ def test_get_theme_summary(
         Respondent.objects.all(),
     )
 
-    theme_a_summary = [theme for theme in selected_theme_mappings if theme["theme__name"] == theme_a.name][0]
+    theme_a_summary = [
+        theme for theme in selected_theme_mappings if theme["theme__name"] == theme_a.name
+    ][0]
     assert theme_a_summary["count"] == 2
     assert theme_a_summary["positive_count"] == 2
     assert theme_a_summary["negative_count"] == 0
 
-    theme_b_summary = [theme for theme in selected_theme_mappings if theme["theme__name"] == theme_b.name][0]
+    theme_b_summary = [
+        theme for theme in selected_theme_mappings if theme["theme__name"] == theme_b.name
+    ][0]
     assert theme_b_summary["count"] == 2
     assert theme_b_summary["positive_count"] == 1
     assert theme_b_summary["negative_count"] == 1
