@@ -82,13 +82,12 @@ def filter_by_demographic_data(
 
 
 def get_theme_summary(
-    free_text_question_part: models.QuestionPart, respondents: QuerySet
+    free_text_question_part: models.QuestionPart, cache_timeout: int = 60 * 20
 ) -> list[dict]:
     """Get a summary of the selected themes for a free text question"""
     if not free_text_question_part:
         return []
     cache_key = f"theme_summary_{free_text_question_part.id}"
-    cache_timeout = 60 * 20  #  20 mins
     theme_summary = cache.get(cache_key)
     if not theme_summary:
         # Assume latest framework for now
