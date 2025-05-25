@@ -81,6 +81,7 @@ def filter_by_demographic_data(
     return has_individual_data, filtered_respondents
 
 
+
 def get_theme_summary(
     free_text_question_part: models.QuestionPart, respondents: QuerySet
 ) -> list[dict]:
@@ -100,6 +101,7 @@ def get_theme_summary(
                 positive_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.POSITIVE)),
                 negative_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.NEGATIVE)),
             )
+            # TODO - do we even need the positive and negative counts?
         )
         theme_summary = list(theme_mappings_qs)
         cache.set(cache_key, theme_summary, timeout=cache_timeout)
