@@ -7,6 +7,7 @@ from django.contrib import messages
 from django.core.management import call_command
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django_rq import job
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import (
@@ -29,6 +30,11 @@ from consultation_analyser.support_console.ingest import (
 )
 
 logger = logging.getLogger("export")
+
+
+@job("default", timeout=900)
+def delete_consultation_job(consultation: models.Consultation):
+    consultation.delete()
 
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -71,8 +77,11 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
     if request.POST:
         if "confirm_deletion" in request.POST:
-            consultation.delete()
-            messages.success(request, "The consultation has been deleted")
+            delete_consultation_job.delay(consultation=consultation)
+            messages.success(
+                request,
+                "The consultation has been sent for deletion - check queue dashboard for progress",
+            )
             return redirect("/support/consultations/")
 
     return render(request, "support_console/consultations/delete.html", context=context)

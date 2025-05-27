@@ -37,7 +37,7 @@ def test_managing_consultations_via_support(django_app):
     confirmation_page = consultation_page.click("Delete this consultation")
     consultations_page = confirmation_page.form.submit("confirm_deletion").follow()
 
-    assert "The consultation has been deleted" in consultations_page
+    assert "The consultation has been sent for deletion" in consultations_page
 
 
 @pytest.mark.django_db
