@@ -207,15 +207,17 @@ def respondents_json(
     # Filtering
     query = Q()
 
-    sentiment_filters = request.GET.getlist("sentimentFilters")
-    if sentiment_filters:
-        query &= Q(answer__sentimentmapping__position__in=sentiment_filters)
+    sentiment_filters = request.GET.get("sentimentFilters", "")
+    sentiment_list = sentiment_filters.split(",") if sentiment_filters else []
+    if sentiment_list:
+        query &= Q(answer__sentimentmapping__position__in=sentiment_list)
 
-    theme_filters = request.GET.getlist("themeFilters")
+    theme_filters = request.GET.get("themeFilters", "")
+    theme_list = theme_filters.split(",") if theme_filters else []
     if theme_filters:
-        query &= Q(answer__thememapping__theme__in=theme_filters)
+        query &= Q(answer__thememapping__theme__in=theme_list)
 
-    evidence_rich_filter = request.GET.get("evidenceRichFilters")
+    evidence_rich_filter = request.GET.get("evidenceRichFilter")
     if evidence_rich_filter and evidence_rich_filter == "evidence-rich":
         query &= Q(answer__evidencerichmapping__evidence_rich=True)
 
