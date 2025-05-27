@@ -615,5 +615,81 @@ def test_get_respondents_for_question():
     )
 
 
-# @pytest.mark.django_db
-# def test_respondents_json_filter_theme(client, question, consultation_user, question_part):
+@pytest.mark.django_db
+def test_all_respondents_json_filters(client, question, consultation_user):
+    # Set up a couple of questions and respondents
+    question_part_text = FreeTextQuestionPartFactory(question=question)
+    consultation = question.consultation
+    question_part_option = MultipleOptionQuestionPartFactory(question=question)
+
+    respondent_a = RespondentFactory(consultation=consultation)
+    respondent_b = RespondentFactory(consultation=consultation)
+    respondent_c = RespondentFactory(consultation=consultation)
+    respondent_d = RespondentFactory(consultation=consultation)
+
+    # Add answers for question
+    answer_1 = FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_a)
+    answer_2 = FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_b)
+    answer_3 = FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_c)
+    MultipleOptionAnswerFactory(question_part=question_part_option, respondent=respondent_a)
+    MultipleOptionAnswerFactory(question_part=question_part_option, respondent=respondent_d)
+
+    # Add themes and sentiment/evidence to free text
+    framework = InitialThemeFactory(question_part=question_part)
+    theme_x = InitialThemeFactory(question_part=question_part, framework=framework)
+    theme_y = InitialThemeFactory(question_part=question_part, framework=framework)
+    theme_z = InitialThemeFactory(question_part=question_part, framework=framework)
+
+    ThemeMapping.create(answer=answer_1, theme=theme_x)
+    ThemeMapping.create(answer=answer_1, theme=theme_y)
+    ThemeMapping.create(answer=answer_1, theme=theme_z)
+    ThemeMapping.create(answer=answer_2, theme=theme_y)
+
+    SentimentMappingFactory(answer_1, SentimentMapping.Position.AGREEMENT)
+    SentimentMappingFactory(answer_2, SentimentMapping.Position.DISAGREEMENT)
+    SentimentMappingFactory(answer_3, SentimentMapping.Position.UNCLEAR)
+
+    EvidenceRichMappingFactory(answer_1, evidence_rich=True)
+    EvidenceRichMappingFactory(answer_2, evidence_rich=False)
+    EvidenceRichMappingFactory(answer_3, evidence_rich=False)
+
+    client.force_login(consultation_user)
+    base_url = f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
+
+    # TODO - test for content
+    # Do we get all responses?
+    response = client.get(base_url)
+    all_respondents = response["all_respondents"]
+    assert len(all_respondents) == 4
+
+    # Filter on sentiment only
+    url = f"{base_url}?sentimentFilters=AGREEMENT,DISAGREEMENT"
+    response = client.get(url)
+    all_respondents = response["all_respondents"]
+    assert len(all_respondents) == 2
+
+    # Filter on theme only
+    url = f"{base_url}?themeFilters={theme_y.id}"
+    response = client.get(url)
+    all_respondents = response["all_respondents"]
+    assert len(all_respondents) == 2
+
+    url = f"{base_url}?themeFilters={theme_y.id},{theme_z.id}"
+    response = client.get(url)
+    all_respondents = response["all_respondents"]
+    assert len(all_respondents) == 2
+
+    # Filter on some sentiment, some theme
+    url = f"{base_url}?themeFilters={theme_x.id},{theme_y.id}&sentimentFilters=UNCLEAR"
+    response = client.get(url)
+    all_respondents = response["all_respondents"]
+    assert len(all_respondents) == 0
+
+    url = (
+        f"{base_url}?themeFilters={theme_x.id},{theme_y.id}&sentimentFilters=AGREEMENT,DISAGREEMENT"
+    )
+    response = client.get(url)
+    all_respondents = response["all_respondents"]
+    assert len(all_respondents) == 2
+
+    # What should the logic be around evidence rich?
