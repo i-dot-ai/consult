@@ -484,4 +484,28 @@ def test_all_respondents_json_filters(client, question, consultation_user):
     all_respondents = response.json().get("all_respondents")
     assert len(all_respondents) == 0
 
-    # TODO - add page size and page number parameters
+    # Test page parameters get us all the respondents
+    url = f"{base_url}?page_size=2&page=1"
+    response = client.get(url)
+    page_1_respondents = response.json().get("all_respondents")
+    assert response.json().get("has_more_pages")
+    assert len(page_1_respondents) == 2
+
+    url = f"{base_url}?page_size=2&page=2"
+    response = client.get(url)
+    page_2_respondents = response.json().get("all_respondents")
+    assert not response.json().get("has_more_pages")
+    assert len(page_2_respondents) == 2
+
+    both_pages = set(page_1_respondents).union(set(page_2_respondents))
+    assert len(both_pages) == 4
+
+
+    # Test pagination with other filters
+    url = f"{base_url}?themeFilters={theme_x.id},{theme_y.id}&sentimentFilters=AGREEMENT,DISAGREEMENT&page_size=3"
+    response = client.get(url)
+    page_respondents = response.json().get("all_respondents")
+    assert len(page_respondents) == 2
+    assert not response.json().get("has_more_pages")
+
+
