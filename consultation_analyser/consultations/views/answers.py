@@ -207,9 +207,9 @@ def respondents_json(
     # Filtering
     query = Q()
 
-    stance_filters = request.GET.getlist("stanceFilters")
-    if stance_filters:
-        query &= Q(answer__sentimentmapping__position__in=stance_filters)
+    sentiment_filters = request.GET.getlist("sentimentFilters")
+    if sentiment_filters:
+        query &= Q(answer__sentimentmapping__position__in=sentiment_filters)
 
     theme_filters = request.GET.getlist("themeFilters")
     if theme_filters:
