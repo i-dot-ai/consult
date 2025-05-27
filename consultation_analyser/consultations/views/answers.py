@@ -4,7 +4,7 @@ from uuid import UUID
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.db.models import Count, F, Prefetch, Q, QuerySet, Subquery, Value
+from django.db.models import Count, F, Prefetch, QuerySet, Subquery, Value
 from django.db.models.functions import Length, Replace
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -305,8 +305,6 @@ def index(
         {
             "Theme name": mapping.get("theme__name", ""),
             "Total mentions": mapping.get("count", -1),
-            "Positive mentions": mapping.get("positive_count", -1),
-            "Negative mentions": mapping.get("negative_count", -1),
         }
         for mapping in selected_theme_mappings
     ]
