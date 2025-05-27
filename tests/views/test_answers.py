@@ -418,13 +418,9 @@ def test_get_selected_theme_summary(
 
     theme_a_summary = selected_theme_mappings.get(theme=theme_a)
     assert theme_a_summary["count"] == 2
-    assert theme_a_summary["positive_count"] == 2
-    assert theme_a_summary["negative_count"] == 0
 
     theme_b_summary = selected_theme_mappings.get(theme=theme_b)
     assert theme_b_summary["count"] == 2
-    assert theme_b_summary["positive_count"] == 1
-    assert theme_b_summary["negative_count"] == 1
 
 
 @pytest.mark.django_db

@@ -94,8 +94,6 @@ def get_selected_theme_summary(
         .values("theme__name", "theme__description", "theme__id")
         .annotate(
             count=Count("id"),
-            positive_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.POSITIVE)),
-            negative_count=Count("id", filter=Q(stance=models.ThemeMapping.Stance.NEGATIVE)),
         )
     )
     return selected_theme_mappings
