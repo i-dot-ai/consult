@@ -424,7 +424,7 @@ def test_all_respondents_json_filters(client, question, consultation_user):
         f"response-{respondent_c.identifier}",
         f"response-{respondent_d.identifier}",
     }
-    response.json().get("has_more_pages") == False
+    assert not response.json().get("has_more_pages")
 
     # Filter on sentiment
     url = f"{base_url}?sentimentFilters=AGREEMENT,DISAGREEMENT"
@@ -435,7 +435,7 @@ def test_all_respondents_json_filters(client, question, consultation_user):
         f"response-{respondent_a.identifier}",
         f"response-{respondent_b.identifier}",
     }
-    response.json().get("has_more_pages") == False
+    assert not response.json().get("has_more_pages")
 
     url = f"{base_url}?sentimentFilters=AGREEMENT,DISAGREEMENT,UNCLEAR"
     response = client.get(url)
@@ -497,9 +497,10 @@ def test_all_respondents_json_filters(client, question, consultation_user):
     assert not response.json().get("has_more_pages")
     assert len(page_2_respondents) == 2
 
-    both_pages = set(page_1_respondents).union(set(page_2_respondents))
+    page_1_respondent_ids = {r["id"] for r in page_1_respondents}
+    page_2_respondent_ids = {r["id"] for r in page_2_respondents}
+    both_pages = set(page_1_respondent_ids).union(set(page_2_respondent_ids))
     assert len(both_pages) == 4
-
 
     # Test pagination with other filters
     url = f"{base_url}?themeFilters={theme_x.id},{theme_y.id}&sentimentFilters=AGREEMENT,DISAGREEMENT&page_size=3"
