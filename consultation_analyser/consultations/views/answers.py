@@ -20,35 +20,6 @@ class DataDict(TypedDict):
 
 
 # TODO: delete me
-def filter_by_response_and_theme(
-    question: models.Question,
-    respondents: QuerySet,
-    responseid: str | None = None,
-    responsesentiment: list[str] | None = None,
-    themesfilter: list[str] | None = None,
-    themesentiment: list[str] | None = None,
-) -> QuerySet:
-    """filter respondents by response themes"""
-    if responseid:
-        respondents = respondents.filter(
-            themefinder_respondent_id=responseid,
-            answer__question_part__question=question,
-        )
-    if responsesentiment:
-        respondents = respondents.filter(
-            answer__in=models.Answer.objects.filter(
-                sentimentmapping__position=responsesentiment, question_part__question=question
-            )
-        )
-    if themesfilter:
-        respondents = respondents.filter(answer__thememapping__theme__in=themesfilter)
-    if themesentiment:
-        respondents = respondents.filter(answer__thememapping__stance=themesentiment)
-
-    return respondents.distinct()
-
-
-# TODO: delete me
 def filter_by_word_count(
     respondents: QuerySet,
     question_slug: str,
