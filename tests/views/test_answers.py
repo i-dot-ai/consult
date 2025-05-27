@@ -375,7 +375,7 @@ def test_get_respondents_for_question():
 
 @pytest.mark.django_db
 def test_all_respondents_json_filters(client, question, consultation_user):
-    # Set up a couple of questions and respondents
+    # Set up question and respondents
     question_part_text = FreeTextQuestionPartFactory(question=question)
     consultation = question.consultation
     question_part_option = MultipleOptionQuestionPartFactory(question=question)
@@ -386,46 +386,61 @@ def test_all_respondents_json_filters(client, question, consultation_user):
     respondent_d = RespondentFactory(consultation=consultation)
 
     # Add answers for question
-    answer_1 = FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_a)
-    answer_2 = FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_b)
-    answer_3 = FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_c)
+    answer_a = FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_a)
+    answer_b = FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_b)
+    answer_c = FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_c)
     MultipleOptionAnswerFactory(question_part=question_part_option, respondent=respondent_a)
     MultipleOptionAnswerFactory(question_part=question_part_option, respondent=respondent_d)
 
-    # Add themes and sentiment/evidence to free text
+    # Add themes and sentiment/evidence to free text question part
     framework = InitialFrameworkFactory(question_part=question_part_text)
     theme_x = InitialThemeFactory(question_part=question_part_text, framework=framework, key="X")
     theme_y = InitialThemeFactory(question_part=question_part_text, framework=framework, key="Y")
     theme_z = InitialThemeFactory(question_part=question_part_text, framework=framework, key="Z")
 
-    ThemeMappingFactory(answer=answer_1, theme=theme_x)
-    ThemeMappingFactory(answer=answer_1, theme=theme_y)
-    ThemeMappingFactory(answer=answer_1, theme=theme_z)
-    ThemeMappingFactory(answer=answer_2, theme=theme_y)
+    ThemeMappingFactory(answer=answer_a, theme=theme_x)
+    ThemeMappingFactory(answer=answer_a, theme=theme_y)
+    ThemeMappingFactory(answer=answer_a, theme=theme_z)
+    ThemeMappingFactory(answer=answer_b, theme=theme_y)
 
-    SentimentMappingFactory(answer=answer_1, position=SentimentMapping.Position.AGREEMENT)
-    SentimentMappingFactory(answer=answer_2, position=SentimentMapping.Position.DISAGREEMENT)
-    SentimentMappingFactory(answer=answer_3, position=SentimentMapping.Position.UNCLEAR)
+    SentimentMappingFactory(answer=answer_a, position=SentimentMapping.Position.AGREEMENT)
+    SentimentMappingFactory(answer=answer_b, position=SentimentMapping.Position.DISAGREEMENT)
+    SentimentMappingFactory(answer=answer_c, position=SentimentMapping.Position.UNCLEAR)
 
-    EvidenceRichMappingFactory(answer=answer_1, evidence_rich=True)
-    EvidenceRichMappingFactory(answer=answer_2, evidence_rich=False)
+    EvidenceRichMappingFactory(answer=answer_a, evidence_rich=True)
+    EvidenceRichMappingFactory(answer=answer_b, evidence_rich=False)
 
+    # Login user and set up endpoint
     client.force_login(consultation_user)
     base_url = f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
 
-    # TODO - test for content as well as count
     # Do we get all responses?
     response = client.get(base_url)
     all_respondents = response.json().get("all_respondents")
     assert len(all_respondents) == 4
+    assert {r["id"] for r in all_respondents} == {
+        f"response-{respondent_a.identifier}",
+        f"response-{respondent_b.identifier}",
+        f"response-{respondent_c.identifier}",
+        f"response-{respondent_d.identifier}",
+    }
 
-    # Filter on sentiment only
+    # Filter on sentiment
     url = f"{base_url}?sentimentFilters=AGREEMENT,DISAGREEMENT"
     response = client.get(url)
     all_respondents = response.json().get("all_respondents")
     assert len(all_respondents) == 2
+    assert {r["id"] for r in all_respondents} == {
+        f"response-{respondent_a.identifier}",
+        f"response-{respondent_b.identifier}",
+    }
 
-    # Filter on theme only
+    url = f"{base_url}?sentimentFilters=AGREEMENT,DISAGREEMENT,UNCLEAR"
+    response = client.get(url)
+    all_respondents = response.json().get("all_respondents")
+    assert len(all_respondents) == 3
+
+    # Filter on theme
     url = f"{base_url}?themeFilters={theme_y.id}"
     response = client.get(url)
     all_respondents = response.json().get("all_respondents")
@@ -454,5 +469,17 @@ def test_all_respondents_json_filters(client, question, consultation_user):
     response = client.get(url)
     all_respondents = response.json().get("all_respondents")
     assert len(all_respondents) == 1
+    assert all_respondents[0]["id"] == f"response-{respondent_a.themefinder_respondent_id}"
 
-    # TODO - add page size and page number
+    url = f"{base_url}?evidenceRichFilter=evidence-rich&themeFilters={theme_y.id}"
+    response = client.get(url)
+    all_respondents = response.json().get("all_respondents")
+    assert len(all_respondents) == 1
+    assert all_respondents[0]["id"] == f"response-{respondent_a.themefinder_respondent_id}"
+
+    url = f"{base_url}?evidenceRichFilter=evidence-rich&themeFilters={theme_y.id}&sentimentFilters=UNCLEAR"
+    response = client.get(url)
+    all_respondents = response.json().get("all_respondents")
+    assert len(all_respondents) == 0
+
+    # TODO - add page size and page number parameters
