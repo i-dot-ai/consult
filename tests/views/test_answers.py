@@ -12,7 +12,6 @@ from consultation_analyser.consultations.models import (
 )
 from consultation_analyser.consultations.views.answers import (
     filter_by_demographic_data,
-    filter_by_word_count,
     get_respondents_for_question,
     get_selected_option_summary,
     get_selected_theme_summary,
@@ -191,44 +190,6 @@ def answer_not_matching_theme_stance(question_part, positive_sentiment, theme_a)
     SentimentMappingFactory(position=positive_sentiment, answer=answer)
     ThemeMappingFactory(theme=theme_a, stance=ThemeMapping.Stance.NEGATIVE, answer=answer)
     return answer
-
-
-
-# TODO: delete me
-@pytest.mark.django_db
-def test_filter_by_word_count():
-    question_1 = QuestionFactory()
-    qp_1 = FreeTextQuestionPartFactory(question=question_1)
-    question_2 = QuestionFactory()
-    qp_2 = FreeTextQuestionPartFactory(question=question_2)
-
-    respondent_short_answer = RespondentFactory()
-    FreeTextAnswerFactory(question_part=qp_1, respondent=respondent_short_answer, text="a")
-
-    respondent_borderline_answer = RespondentFactory()
-    FreeTextAnswerFactory(
-        question_part=qp_1, respondent=respondent_borderline_answer, text="a b c d e"
-    )
-
-    respondent_long_answer = RespondentFactory()
-    FreeTextAnswerFactory(
-        question_part=qp_1, respondent=respondent_long_answer, text="a b c d e f g h"
-    )
-
-    respondent_long_answer_other_question = RespondentFactory()
-    FreeTextAnswerFactory(
-        question_part=qp_1, respondent=respondent_long_answer_other_question, text="a"
-    )
-    FreeTextAnswerFactory(
-        question_part=qp_2, respondent=respondent_long_answer_other_question, text="a b c d e f g h"
-    )
-
-    result = filter_by_word_count(Respondent.objects.all(), question_1.slug, 5)
-
-    assert respondent_borderline_answer in result
-    assert respondent_long_answer in result
-    assert respondent_short_answer not in result
-    assert respondent_long_answer_other_question not in result
 
 
 # TODO: delete me - could leave as reference for demographic filter work

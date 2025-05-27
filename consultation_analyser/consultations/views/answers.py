@@ -19,30 +19,6 @@ class DataDict(TypedDict):
     has_more_pages: bool
 
 
-# TODO: delete me
-def filter_by_word_count(
-    respondents: QuerySet,
-    question_slug: str,
-    word_count: int,
-) -> QuerySet:
-    """filter respondents by word count"""
-    respondents = respondents.annotate(
-        # Calculates the difference between the length of the text and the length of the text with spaces removed and add 1
-        word_count=Length("answer__text")
-        - Length(Replace(F("answer__text"), Value(" "), Value("")))
-        + 1
-    )
-
-    annotated_responses = (
-        models.Answer.objects.filter(
-            question_part__question__slug=question_slug,
-        )
-        .annotate(word_count=Length("text") - Length(Replace(F("text"), Value(" "), Value(""))) + 1)
-        .filter(word_count__gte=word_count)
-    )
-
-    return respondents.filter(answer__in=annotated_responses)
-
 
 # TODO: delete me
 def filter_by_demographic_data(
