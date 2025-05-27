@@ -32,6 +32,11 @@ from consultation_analyser.support_console.ingest import (
 logger = logging.getLogger("export")
 
 
+@job("default", timeout=900)
+def delete_consultation_job(consultation: models.Consultation):
+    consultation.delete()
+
+
 def index(request: HttpRequest) -> HttpResponse:
     if request.POST:
         try:
@@ -62,11 +67,6 @@ def index(request: HttpRequest) -> HttpResponse:
     consultations = models.Consultation.objects.all()
     context = {"consultations": consultations, "production_env": HostingEnvironment.is_production()}
     return render(request, "support_console/consultations/index.html", context=context)
-
-
-@job("default", timeout=2100)
-def delete_consultation_job(consultation: models.Consultation):
-    consultation.delete()
 
 
 def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
