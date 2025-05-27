@@ -125,20 +125,11 @@ def get_selected_option_summary(question: models.Question, respondents: QuerySet
     return multichoice_summary
 
 
-@user_can_see_dashboards
-@user_can_see_consultation
-def respondents_json(
-    request: HttpRequest,
-    consultation_slug: str,
-    question_slug: str,
-):
-    page_size = request.GET.get("page_size")
-    page = request.GET.get(
-        "page", 1
-    )  # TODO: replace with `last_created_at` when we move to keyset pagination
-    # If needed, add request.user.id to make cache unique to each user
+def get_respondents_for_question(
+    consultation_slug: str, question_slug: str, cache_timeout: int = 60 * 20
+) -> QuerySet[models.Respondent]:
+    # Cache data for question/consultation. Default timeout to 20 mins.
     cache_key = f"respondents_{consultation_slug}_{question_slug}"
-    cache_timeout = 60 * 20  #  20 mins
 
     # Retrieve cached data
     respondents = cache.get(cache_key)
@@ -186,6 +177,23 @@ def respondents_json(
 
         # Update cache
         cache.set(cache_key, respondents, timeout=cache_timeout)
+    return respondents
+
+
+@user_can_see_dashboards
+@user_can_see_consultation
+def respondents_json(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    page_size = request.GET.get("page_size")
+    page = request.GET.get(
+        "page", 1
+    )  # TODO: replace with `last_created_at` when we move to keyset pagination
+    respondents = get_respondents_for_question(
+        consultation_slug=consultation_slug, question_slug=question_slug
+    )
 
     # Pagination
     if page_size:
@@ -287,12 +295,9 @@ def index(
         question=question, type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
     ).exists()
 
-    # TODO - could maybe rationalise with getting respondents from respondents_json above
     # Get all respondents for question
-    respondents = models.Respondent.objects.filter(
-        id__in=models.Answer.objects.filter(
-            question_part__question=question, question_part__question__consultation=consultation
-        ).values_list("respondent_id", flat=True)
+    respondents = get_respondents_for_question(
+        consultation_slug=consultation_slug, question_slug=question_slug
     )
 
     has_individual_data = respondents.filter(data__has_key="individual").exists()
