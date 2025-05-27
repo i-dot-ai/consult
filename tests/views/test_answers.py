@@ -1,7 +1,6 @@
 import pytest
 from django.contrib.auth.models import Group
 from django.core.cache import cache
-from pytest_lazy_fixtures import lf
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.models import (
@@ -11,7 +10,6 @@ from consultation_analyser.consultations.models import (
     ThemeMapping,
 )
 from consultation_analyser.consultations.views.answers import (
-    filter_by_demographic_data,
     get_respondents_for_question,
     get_selected_option_summary,
     get_selected_theme_summary,
@@ -190,39 +188,6 @@ def answer_not_matching_theme_stance(question_part, positive_sentiment, theme_a)
     SentimentMappingFactory(position=positive_sentiment, answer=answer)
     ThemeMappingFactory(theme=theme_a, stance=ThemeMapping.Stance.NEGATIVE, answer=answer)
     return answer
-
-
-# TODO: delete me - could leave as reference for demographic filter work
-@pytest.mark.django_db
-@pytest.mark.parametrize(
-    "individual_filter, should_filter",
-    [
-        (["individual"], True),
-        (None, False),
-    ],
-)
-def test_filter_by_demographic_data(individual_filter, should_filter):
-    respondent_individual = RespondentFactory(data={"individual": "individual"})
-    respondent_organisation = RespondentFactory(data={"individual": "organisation"})
-    respondent_no_data = RespondentFactory()
-    respondent_no_individual_data = RespondentFactory(data={"age": "18-24"})
-
-    has_individual_data, filtered_respondents = filter_by_demographic_data(
-        Respondent.objects.all(),
-        individual_filter,
-    )
-
-    assert has_individual_data
-    assert respondent_individual in filtered_respondents
-
-    if should_filter:
-        assert respondent_organisation not in filtered_respondents
-        assert respondent_no_data not in filtered_respondents
-        assert respondent_no_individual_data not in filtered_respondents
-    else:
-        assert respondent_organisation in filtered_respondents
-        assert respondent_no_data in filtered_respondents
-        assert respondent_no_individual_data in filtered_respondents
 
 
 @pytest.mark.django_db

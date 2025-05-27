@@ -5,8 +5,7 @@ from uuid import UUID
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.db.models import Count, F, Prefetch, Q, QuerySet, Subquery, Value
-from django.db.models.functions import Length, Replace
+from django.db.models import Count, Prefetch, Q, QuerySet, Subquery
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -17,24 +16,6 @@ from .decorators import user_can_see_consultation, user_can_see_dashboards
 class DataDict(TypedDict):
     all_respondents: list
     has_more_pages: bool
-
-
-
-# TODO: delete me
-def filter_by_demographic_data(
-    respondents: QuerySet,
-    demographicindividual: list[str] | None = None,
-) -> QuerySet:
-    """filter respondents by demographic data"""
-
-    has_individual_data = respondents.filter(data__has_key="individual").exists()
-
-    if not demographicindividual:
-        return has_individual_data, respondents
-
-    filtered_respondents = respondents.filter(data__individual__in=demographicindividual)
-
-    return has_individual_data, filtered_respondents
 
 
 def get_selected_theme_summary(
