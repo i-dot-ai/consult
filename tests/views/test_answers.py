@@ -635,61 +635,66 @@ def test_all_respondents_json_filters(client, question, consultation_user):
     MultipleOptionAnswerFactory(question_part=question_part_option, respondent=respondent_d)
 
     # Add themes and sentiment/evidence to free text
-    framework = InitialThemeFactory(question_part=question_part)
-    theme_x = InitialThemeFactory(question_part=question_part, framework=framework)
-    theme_y = InitialThemeFactory(question_part=question_part, framework=framework)
-    theme_z = InitialThemeFactory(question_part=question_part, framework=framework)
+    framework = InitialFrameworkFactory(question_part=question_part_text)
+    theme_x = InitialThemeFactory(question_part=question_part_text, framework=framework, key="X")
+    theme_y = InitialThemeFactory(question_part=question_part_text, framework=framework, key="Y")
+    theme_z = InitialThemeFactory(question_part=question_part_text, framework=framework, key="Z")
 
-    ThemeMapping.create(answer=answer_1, theme=theme_x)
-    ThemeMapping.create(answer=answer_1, theme=theme_y)
-    ThemeMapping.create(answer=answer_1, theme=theme_z)
-    ThemeMapping.create(answer=answer_2, theme=theme_y)
+    ThemeMappingFactory(answer=answer_1, theme=theme_x)
+    ThemeMappingFactory(answer=answer_1, theme=theme_y)
+    ThemeMappingFactory(answer=answer_1, theme=theme_z)
+    ThemeMappingFactory(answer=answer_2, theme=theme_y)
 
-    SentimentMappingFactory(answer_1, SentimentMapping.Position.AGREEMENT)
-    SentimentMappingFactory(answer_2, SentimentMapping.Position.DISAGREEMENT)
-    SentimentMappingFactory(answer_3, SentimentMapping.Position.UNCLEAR)
+    SentimentMappingFactory(answer=answer_1, position=SentimentMapping.Position.AGREEMENT)
+    SentimentMappingFactory(answer=answer_2, position=SentimentMapping.Position.DISAGREEMENT)
+    SentimentMappingFactory(answer=answer_3, position=SentimentMapping.Position.UNCLEAR)
 
-    EvidenceRichMappingFactory(answer_1, evidence_rich=True)
-    EvidenceRichMappingFactory(answer_2, evidence_rich=False)
-    EvidenceRichMappingFactory(answer_3, evidence_rich=False)
+    EvidenceRichMappingFactory(answer=answer_1, evidence_rich=True)
+    EvidenceRichMappingFactory(answer=answer_2, evidence_rich=False)
 
     client.force_login(consultation_user)
     base_url = f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
 
-    # TODO - test for content
+    # TODO - test for content as well as count
     # Do we get all responses?
     response = client.get(base_url)
-    all_respondents = response["all_respondents"]
+    all_respondents = response.json().get("all_respondents")
     assert len(all_respondents) == 4
 
     # Filter on sentiment only
     url = f"{base_url}?sentimentFilters=AGREEMENT,DISAGREEMENT"
     response = client.get(url)
-    all_respondents = response["all_respondents"]
+    all_respondents = response.json().get("all_respondents")
     assert len(all_respondents) == 2
 
     # Filter on theme only
     url = f"{base_url}?themeFilters={theme_y.id}"
     response = client.get(url)
-    all_respondents = response["all_respondents"]
+    all_respondents = response.json().get("all_respondents")
     assert len(all_respondents) == 2
 
     url = f"{base_url}?themeFilters={theme_y.id},{theme_z.id}"
     response = client.get(url)
-    all_respondents = response["all_respondents"]
+    all_respondents = response.json().get("all_respondents")
     assert len(all_respondents) == 2
 
     # Filter on some sentiment, some theme
     url = f"{base_url}?themeFilters={theme_x.id},{theme_y.id}&sentimentFilters=UNCLEAR"
     response = client.get(url)
-    all_respondents = response["all_respondents"]
+    all_respondents = response.json().get("all_respondents")
     assert len(all_respondents) == 0
 
     url = (
         f"{base_url}?themeFilters={theme_x.id},{theme_y.id}&sentimentFilters=AGREEMENT,DISAGREEMENT"
     )
     response = client.get(url)
-    all_respondents = response["all_respondents"]
+    all_respondents = response.json().get("all_respondents")
     assert len(all_respondents) == 2
 
-    # What should the logic be around evidence rich?
+    # Evidence rich filter
+    url = f"{base_url}?evidenceRichFilter=evidence-rich"
+    response = client.get(url)
+    all_respondents = response.json().get("all_respondents")
+    assert len(all_respondents) == 1
+
+    # TODO - add page size and page number
