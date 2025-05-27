@@ -1,4 +1,5 @@
 from datetime import datetime
+from typing import TypedDict
 from uuid import UUID
 
 from django.core.cache import cache
@@ -11,6 +12,11 @@ from django.shortcuts import get_object_or_404, redirect, render
 
 from .. import models
 from .decorators import user_can_see_consultation, user_can_see_dashboards
+
+
+class DataDict(TypedDict):
+    all_respondents: list
+    has_more_pages: bool
 
 
 def filter_by_response_and_theme(
@@ -195,13 +201,17 @@ def respondents_json(
         consultation_slug=consultation_slug, question_slug=question_slug
     )
 
+    data: DataDict = {
+        "all_respondents": [],
+        "has_more_pages": False,
+    }
+
     # Pagination
     if page_size:
         pagination = Paginator(respondents, page_size)
         current_page = pagination.page(page)
         respondents = current_page.object_list
-
-    data: dict[str, list] = {"all_respondents": []}
+        data["has_more_pages"] = current_page.has_next()
 
     # Get individual data for each displayed respondent
     for respondent in respondents:

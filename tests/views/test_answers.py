@@ -493,16 +493,16 @@ def test_respondents_json(client, question, consultation_user):
 
 
 @pytest.mark.parametrize(
-    "querystring, expected_count",
+    "querystring, expected_count, has_more_pages",
     [
-        ("?", 7),
-        ("?page_size=4", 4),
-        ("?page_size=4&page=2", 3),
+        ("?", 7, False),
+        ("?page_size=4", 4, True),
+        ("?page_size=4&page=2", 3, False),
     ],
 )
 @pytest.mark.django_db
 def test_respondents_json_pagination(
-    querystring, expected_count, client, consultation_user, question_part, question
+    querystring, expected_count, has_more_pages, client, consultation_user, question_part, question
 ):
     for i in range(7):
         respondent = RespondentFactory(
@@ -517,6 +517,7 @@ def test_respondents_json_pagination(
     assert response.status_code == 200
     response_json = response.json()
     assert len(response_json["all_respondents"]) == expected_count
+    assert response_json["has_more_pages"] == has_more_pages
 
 
 @pytest.mark.django_db
