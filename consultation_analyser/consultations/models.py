@@ -5,6 +5,7 @@ from enum import Enum
 
 import faker as _faker
 import pydantic
+from django.contrib.postgres.indexes import GinIndex
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.db import models
@@ -477,3 +478,68 @@ class EvidenceRichMapping(UUIDPrimaryKeyModel, TimeStampedModel):
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
+
+
+class Response(models.Model):
+    id: models.UUIDField = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+
+    consultation: models.ForeignKey = models.ForeignKey(
+        "Consultation", on_delete=models.CASCADE, related_name="responses"
+    )
+    respondent: models.ForeignKey = models.ForeignKey(
+        "Respondent", on_delete=models.CASCADE, related_name="responses"
+    )
+    question: models.ForeignKey = models.ForeignKey(
+        "Question",
+        on_delete=models.CASCADE,
+        related_name="responses",
+        null=True,
+        blank=True,
+    )
+
+    question_text_ft = models.TextField()
+    question_text_mc = models.TextField(blank=True, null=True)
+
+    free_text_answer = models.TextField(blank=True, null=True)
+
+    themes = models.JSONField(blank=True, null=True)
+
+    class EvidenceRich(models.TextChoices):
+        YES = "YES", "Yes"
+        NO = "NO", "No"
+
+    evidence_rich = models.CharField(
+        max_length=3,
+        choices=EvidenceRich.choices,
+        blank=True,
+        null=True,
+    )
+
+    class SentimentPosition(models.TextChoices):
+        AGREEMENT = "AGREEMENT", "Agreement"
+        DISAGREEMENT = "DISAGREEMENT", "Disagreement"
+        UNCLEAR = "UNCLEAR", "Unclear"
+
+    sentiment = models.CharField(
+        max_length=12,
+        choices=SentimentPosition.choices,
+        blank=True,
+        null=True,
+    )
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        indexes = [
+            # key-set pagination
+            models.Index(fields=["-created_at", "-id"], name="response_created_idx"),
+            # allow theme-path filtering
+            GinIndex(fields=["themes"], name="response_themes_gin", opclasses=["jsonb_path_ops"]),
+            # allow sentiment filtering
+            models.Index(fields=["sentiment"], name="response_sentiment_idx"),
+        ]
+        ordering = ["-created_at", "-id"]
+
+    def __str__(self) -> str:
+        return f"Response<{self.id}> r:{self.respondent_id} q:{self.question_id}"
