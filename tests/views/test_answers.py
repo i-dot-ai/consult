@@ -424,6 +424,7 @@ def test_all_respondents_json_filters(client, question, consultation_user):
         f"response-{respondent_c.identifier}",
         f"response-{respondent_d.identifier}",
     }
+    response.json().get("has_more_pages") == False
 
     # Filter on sentiment
     url = f"{base_url}?sentimentFilters=AGREEMENT,DISAGREEMENT"
@@ -434,6 +435,7 @@ def test_all_respondents_json_filters(client, question, consultation_user):
         f"response-{respondent_a.identifier}",
         f"response-{respondent_b.identifier}",
     }
+    response.json().get("has_more_pages") == False
 
     url = f"{base_url}?sentimentFilters=AGREEMENT,DISAGREEMENT,UNCLEAR"
     response = client.get(url)
