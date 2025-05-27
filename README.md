@@ -1,9 +1,14 @@
 # Consult
 
-Consult is a machine learning and LLM-powered tool to automate the processing of public consultations.
+Consult is an LLM-powered tool to automate the processing of public consultations.
 
 > [!IMPORTANT]
 > Incubation Project: This project is an incubation project; as such, we don't recommend using this for critical use cases yet. We are currently in a research stage, trialling the tool for case studies across the Civil Service. If you are a civil servant and wish to take part in our research stage, please contact us at i-dot-ai-enquiries@cabinetoffice.gov.uk.
+
+
+This repository is a work in progress, containing a Django app to visualise and explore consultation data and LLM-generated themes.
+
+For our core AI-pipeline used for topic modelling to classify consultation responses into themes, please see our [themefinder](https://pypi.org/project/themefinder/) Python package on PyPi.
 
 
 ## Setting up the application
