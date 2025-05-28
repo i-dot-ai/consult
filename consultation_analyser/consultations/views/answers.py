@@ -5,8 +5,7 @@ from uuid import UUID
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.db.models import Count, F, Prefetch, QuerySet, Subquery, Value
-from django.db.models.functions import Length, Replace
+from django.db.models import Count, Prefetch, Q, QuerySet, Subquery
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -17,74 +16,6 @@ from .decorators import user_can_see_consultation, user_can_see_dashboards
 class DataDict(TypedDict):
     all_respondents: list
     has_more_pages: bool
-
-
-def filter_by_response_and_theme(
-    question: models.Question,
-    respondents: QuerySet,
-    responseid: str | None = None,
-    responsesentiment: list[str] | None = None,
-    themesfilter: list[str] | None = None,
-    themesentiment: list[str] | None = None,
-) -> QuerySet:
-    """filter respondents by response themes"""
-    if responseid:
-        respondents = respondents.filter(
-            themefinder_respondent_id=responseid,
-            answer__question_part__question=question,
-        )
-    if responsesentiment:
-        respondents = respondents.filter(
-            answer__in=models.Answer.objects.filter(
-                sentimentmapping__position=responsesentiment, question_part__question=question
-            )
-        )
-    if themesfilter:
-        respondents = respondents.filter(answer__thememapping__theme__in=themesfilter)
-    if themesentiment:
-        respondents = respondents.filter(answer__thememapping__stance=themesentiment)
-
-    return respondents.distinct()
-
-
-def filter_by_word_count(
-    respondents: QuerySet,
-    question_slug: str,
-    word_count: int,
-) -> QuerySet:
-    """filter respondents by word count"""
-    respondents = respondents.annotate(
-        # Calculates the difference between the length of the text and the length of the text with spaces removed and add 1
-        word_count=Length("answer__text")
-        - Length(Replace(F("answer__text"), Value(" "), Value("")))
-        + 1
-    )
-
-    annotated_responses = (
-        models.Answer.objects.filter(
-            question_part__question__slug=question_slug,
-        )
-        .annotate(word_count=Length("text") - Length(Replace(F("text"), Value(" "), Value(""))) + 1)
-        .filter(word_count__gte=word_count)
-    )
-
-    return respondents.filter(answer__in=annotated_responses)
-
-
-def filter_by_demographic_data(
-    respondents: QuerySet,
-    demographicindividual: list[str] | None = None,
-) -> QuerySet:
-    """filter respondents by demographic data"""
-
-    has_individual_data = respondents.filter(data__has_key="individual").exists()
-
-    if not demographicindividual:
-        return has_individual_data, respondents
-
-    filtered_respondents = respondents.filter(data__individual__in=demographicindividual)
-
-    return has_individual_data, filtered_respondents
 
 
 def get_selected_theme_summary(
@@ -200,6 +131,25 @@ def respondents_json(
     respondents = get_respondents_for_question(
         consultation_slug=consultation_slug, question_slug=question_slug
     )
+
+    # Filtering
+    query = Q()
+
+    sentiment_filters = request.GET.get("sentimentFilters", "")
+    sentiment_list = sentiment_filters.split(",") if sentiment_filters else []
+    if sentiment_list:
+        query &= Q(answer__sentimentmapping__position__in=sentiment_list)
+
+    theme_filters = request.GET.get("themeFilters", "")
+    theme_list = theme_filters.split(",") if theme_filters else []
+    if theme_filters:
+        query &= Q(answer__thememapping__theme__in=theme_list)
+
+    evidence_rich_filter = request.GET.get("evidenceRichFilter")
+    if evidence_rich_filter and evidence_rich_filter == "evidence-rich":
+        query &= Q(answer__evidencerichmapping__evidence_rich=True)
+
+    respondents = respondents.filter(query).distinct()
 
     data: DataDict = {
         "all_respondents": [],
