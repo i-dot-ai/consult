@@ -1,0 +1,74 @@
+import { html, css } from 'lit';
+
+import IaiLitBase from '../../IaiLitBase.mjs';
+
+
+export default class IaiProgressBar extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        value: { type: Number },
+        label: { type: String },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        css`
+            iai-progress-bar .container {
+                border: 1px dotted;
+            }
+            iai-progress-bar .container .bar {
+                display: flex;
+                justify-content: end;
+                align-items: center;
+                position: relative;
+                height: 2em;
+                color: white;
+                transition: width 1s ease-in-out;
+                background: var(--iai-colour-brand);
+            }
+            iai-progress-bar .container .label {
+                display: block;    
+                position: absolute;
+                right: 0;
+                text-align: right;
+                color: white;
+                color: black;
+                font-weight: bold;
+            }
+            iai-progress-bar .container.low-value .label {
+                right: -1.5em;
+                color: var(--iai-colour-brand);
+                font-size: 1.2em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.value = 0;
+        this.label = "";
+        
+        this.applyStaticStyles("iai-progress-bar", IaiProgressBar.styles);
+    }
+
+    render() {
+        return html`
+            <div class=${"container" + (this.value < 30 ? " low-value" : "")}>
+                <div class="bar" style=${`width: ${this.value}%;`}>
+                    ${this.label
+                        ? html`
+                            <span class="label">
+                                ${this.label}
+                            </span>
+                        `
+                        : ""
+                    }
+                </div>
+            </div>
+        `;
+    }
+}
+customElements.define("iai-progress-bar", IaiProgressBar);

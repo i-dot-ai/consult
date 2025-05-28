@@ -7,7 +7,13 @@ import IaiIcon from "../questionsArchive/IaiIcon/iai-icon.mjs";
 export default class IaiCsvDownload extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
-        css``
+        css`
+            iai-csv-download a.govuk-button {
+                min-height: auto;
+                min-width: 13em;
+                justify-content: center;
+            }
+        `
     ]
 
     static properties = {
@@ -21,6 +27,8 @@ export default class IaiCsvDownload extends IaiLitBase {
 
         this.data = [];
         this.fileName = "data.csv";
+
+        this.applyStaticStyles("iai-csv-download", IaiCsvDownload.styles);
     }
 
     buildCsv(data) {

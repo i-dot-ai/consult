@@ -299,6 +299,78 @@ class IaiTextWithFallback extends IaiLitBase {
 }
 customElements.define("iai-text-with-fallback", IaiTextWithFallback);
 
+class IaiIcon extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        name: { type: String },
+        color: { type: String },
+        fill: {type: Number }, //  0 | 1
+        opsz: { type: Number },
+        wght: { type: Number },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-icon {
+                display: flex;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Google expect icon names to be alphabetically sorted
+        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond", "progress_activity", "sort"];
+        this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
+
+        // Prop defaults
+        this.name = "";
+        this.color = "";
+        this.fill = 0;
+        this.opsz = 48;
+        this.wght = 300;
+        
+        this.applyStaticStyles("iai-icon", IaiIcon.styles);
+    }
+
+    firstUpdated() {
+        this.addIconImport();
+    }
+
+    addIconImport() {
+        // Do not add if already added
+        if (document.querySelector(`link[href="${this._URL}"]`)) {
+            return;
+        }
+
+        const linkElement = document.createElement("link");
+        linkElement.rel = "stylesheet";
+        linkElement.href = this._URL;
+        document.head.append(linkElement);
+    }
+
+    render() {
+        return x`
+            <style>
+                #${this.contentId}.material-symbols-outlined {
+                    font-variation-settings:
+                        'FILL' ${this.fill},
+                        'opsz' ${this.opsz},
+                        'wght' ${this.wght};
+                    color: ${this.color};
+                }
+            </style>
+            <span id=${this.contentId} class="material-symbols-outlined">
+                ${this.name}
+            </span>
+        `;
+    }
+}
+customElements.define("iai-icon", IaiIcon);
+
 class IaiDataTable extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -310,6 +382,10 @@ class IaiDataTable extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         i$4`
+            iai-data-table h3 {
+                margin: 0;
+                font-size: 1em;
+            }
             iai-data-table tbody.govuk-table__body td {
                 vertical-align: middle;
             }
@@ -327,21 +403,32 @@ class IaiDataTable extends IaiLitBase {
             iai-data-table .header-button:hover {
                 color: var(--iai-colour-pink);
             }
-            iai-data-table .header-button:after {
-                content: "▾";
+            iai-data-table thead {
+                text-align: start;
+            }
+            iai-data-table thead th {
+                text-align: left;
+                margin-right: 1em;
+                padding-right: 2em;
+                position: relative;
+            }
+            iai-data-table .header-button iai-icon {
                 position: absolute;
-                right: -1em;
                 top: 0;
+                right: 0.5em;
                 opacity: 0;
                 transition: 0.3s ease-in-out;
-                transition-property: transform opacity;
+                transition-property: transform, opacity;
             }
-            iai-data-table .header-button.ascending:after {
+            iai-data-table thead .header-button:hover iai-icon {
+                opacity: 0.5;
+            }
+            iai-data-table thead .header-button.ascending iai-icon,
+            iai-data-table thead .header-button.descending iai-icon {
                 opacity: 1;
             }
-            iai-data-table .header-button.descending:after {
-                opacity: 1;
-                transform: rotate(180deg);
+            iai-data-table thead .header-button.ascending iai-icon {
+                transform: rotateX(180deg);
             }
         `
     ]
@@ -397,8 +484,14 @@ class IaiDataTable extends IaiLitBase {
             const currentSort = updatedSorts[sortIndex];
 
             if (sortIndex === 0) {
-                // If sort is the last to be applied, toggle direction
-                currentSort.ascending = !currentSort.ascending;
+                // If sort is the last to be applied
+                if (currentSort.ascending) {
+                    // if ascending make it descending
+                    currentSort.ascending = false;
+                } else {
+                    // if descending order, unapply it
+                    updatedSorts.splice(sortIndex, 1);
+                }
 
             } else {
                 // If sort is not last to be applied, update it's priority
@@ -471,9 +564,9 @@ class IaiDataTable extends IaiLitBase {
                 <thead class="govuk-table__head">
                     <tr class="govuk-table__row">    
                         ${this.getHeaders().map(header => x`
-                            <th scope="col" class="govuk-table__header">
-                                <div
-                                    class=${"header-button " + this.getCurrentSortDirection(header)}
+                            <th
+                                style="" scope="col" class="govuk-table__header"
+                                class=${"header-button " + this.getCurrentSortDirection(header)}
                                     role="button"
                                     aria-sort=${this.getCurrentSortDirection(header)}
                                     aria-label=${this.getCurrentSortDirection(header)
@@ -488,9 +581,13 @@ class IaiDataTable extends IaiLitBase {
                                             this.updateSorts(header);
                                         }
                                     }}
-                                >
-                                    ${header}
-                                </div>
+                            >
+                                <h3>${header}</h3>
+                                <iai-icon
+                                    name="sort"
+                                    .color=${"var(--iai-colour-text-secondary)"}
+                                    .fill=${0}
+                                ></iai-icon>
                             </th>
                         `)}
                     </tr>
@@ -516,82 +613,16 @@ class IaiDataTable extends IaiLitBase {
 }
 customElements.define("iai-data-table", IaiDataTable);
 
-class IaiIcon extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        name: { type: String },
-        color: { type: String },
-        fill: {type: Number }, //  0 | 1
-        opsz: { type: Number },
-        wght: { type: Number },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-icon {
-                display: flex;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Google expect icon names to be alphabetically sorted
-        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond", "progress_activity"];
-        this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
-
-        // Prop defaults
-        this.name = "";
-        this.color = "";
-        this.fill = 0;
-        this.opsz = 48;
-        this.wght = 300;
-        
-        this.applyStaticStyles("iai-icon", IaiIcon.styles);
-    }
-
-    firstUpdated() {
-        this.addIconImport();
-    }
-
-    addIconImport() {
-        // Do not add if already added
-        if (document.querySelector(`link[href="${this._URL}"]`)) {
-            return;
-        }
-
-        const linkElement = document.createElement("link");
-        linkElement.rel = "stylesheet";
-        linkElement.href = this._URL;
-        document.head.append(linkElement);
-    }
-
-    render() {
-        return x`
-            <style>
-                #${this.contentId}.material-symbols-outlined {
-                    font-variation-settings:
-                        'FILL' ${this.fill},
-                        'opsz' ${this.opsz},
-                        'wght' ${this.wght};
-                    color: ${this.color};
-                }
-            </style>
-            <span id=${this.contentId} class="material-symbols-outlined">
-                ${this.name}
-            </span>
-        `;
-    }
-}
-customElements.define("iai-icon", IaiIcon);
-
 class IaiCsvDownload extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
-        i$4``
+        i$4`
+            iai-csv-download a.govuk-button {
+                min-height: auto;
+                min-width: 13em;
+                justify-content: center;
+            }
+        `
     ]
 
     static properties = {
@@ -605,6 +636,8 @@ class IaiCsvDownload extends IaiLitBase {
 
         this.data = [];
         this.fileName = "data.csv";
+
+        this.applyStaticStyles("iai-csv-download", IaiCsvDownload.styles);
     }
 
     buildCsv(data) {
@@ -3388,6 +3421,133 @@ class IaiChip extends IaiLitBase {
 }
 customElements.define("iai-chip", IaiChip);
 
+class IaiProgressBar extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        value: { type: Number },
+        label: { type: String },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-progress-bar .container {
+                border: 1px dotted;
+            }
+            iai-progress-bar .container .bar {
+                display: flex;
+                justify-content: end;
+                align-items: center;
+                position: relative;
+                height: 2em;
+                color: white;
+                transition: width 1s ease-in-out;
+                background: var(--iai-colour-brand);
+            }
+            iai-progress-bar .container .label {
+                display: block;    
+                position: absolute;
+                right: 0;
+                text-align: right;
+                color: white;
+                color: black;
+                font-weight: bold;
+            }
+            iai-progress-bar .container.low-value .label {
+                right: -1.5em;
+                color: var(--iai-colour-brand);
+                font-size: 1.2em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.value = 0;
+        this.label = "";
+        
+        this.applyStaticStyles("iai-progress-bar", IaiProgressBar.styles);
+    }
+
+    render() {
+        return x`
+            <div class=${"container" + (this.value < 30 ? " low-value" : "")}>
+                <div class="bar" style=${`width: ${this.value}%;`}>
+                    ${this.label
+                        ? x`
+                            <span class="label">
+                                ${this.label}
+                            </span>
+                        `
+                        : ""
+                    }
+                </div>
+            </div>
+        `;
+    }
+}
+customElements.define("iai-progress-bar", IaiProgressBar);
+
+class IaiAnimatedNumber extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        number: { type: Number },
+        duration: { type: Number }, // miliseconds
+        _displayNumber: { type: Number },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4``
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.number = 0;
+        this.duration = 1000;
+        this._displayNumber = 0;
+        
+        this.applyStaticStyles("iai-animated-number", IaiAnimatedNumber.styles);
+    }
+
+    animate(start, end, duration) {
+        const element = this.querySelector("span");
+        const startTime = performance.now();
+
+        function update_number(currTime) {
+            const elapsedTime = currTime - startTime;
+            const time = Math.min(elapsedTime / duration, 1);
+            const currValue = start * (1 - time) + end * time;
+            element.textContent = currValue.toFixed(2);
+
+            if (time < 1) {
+                requestAnimationFrame(update_number);
+            }
+        }
+
+        requestAnimationFrame(update_number);
+    }
+
+    updated(changedProps) {
+        if (changedProps.has("number")) {
+            this.animate(this._displayNumber, this.number, this.duration);
+        }
+    }
+
+    render() {
+        return x`
+            <span>${this._displayNumber}</span>
+        `;
+    }
+}
+customElements.define("iai-animated-number", IaiAnimatedNumber);
+
 class IaiResponseDashboard extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -3414,6 +3574,7 @@ class IaiResponseDashboard extends IaiLitBase {
         _themesPanelVisible: { type: Boolean },
         _stanceFilters: { type: Array },
         _evidenceRichFilters: { type: Array },
+        _numberAnimationDuration: { type: Number },
     }
 
     static styles = [
@@ -3521,6 +3682,51 @@ class IaiResponseDashboard extends IaiLitBase {
             iai-response-dashboard .spinner iai-icon .material-symbols-outlined {
                 font-size: 3em;
             }
+            iai-response-dashboard thead tr {
+                color: var(--iai-colour-text-secondary);
+            }
+            iai-response-dashboard table iai-expanding-pill button {
+                display: flex;
+                justify-content: space-between;
+                width: 100%;
+                font-size: 1.2em;
+                color: black;
+                background: var(--iai-colour-pink-transparent-mid);
+            }
+            iai-response-dashboard table iai-expanding-pill .body {
+                font-size: 1.2em;
+                transition-property: margin, padding, max-height;
+            }
+            iai-response-dashboard table iai-expanding-pill .body:not(.expanded) {
+                margin: 0;
+            }
+            iai-response-dashboard table .percentage-cell {
+                display: flex;
+                gap: 0.2em;
+                min-width: 4.5em;
+                font-size: 2em;
+                font-weight: bold;
+                color: var(--iai-colour-text-secondary);
+            }
+            iai-response-dashboard table .total-count-cell {
+                min-width: 10em;
+            }
+            iai-response-dashboard .title-container {
+                display: flex;
+                gap: 2em;
+                align-items: center;
+            }
+            iai-response-dashboard .ternary-button {
+                padding: 0.5em 1em;
+                background: none;
+                border: none;
+                border-radius: var(--iai-border-radius);
+                cursor: pointer;
+                transition: background 0.3s ease-in-out;
+            }
+            iai-response-dashboard .ternary-button:hover {
+                background: var(--iai-colour-pink-transparent);
+            }
 
             @keyframes spin {
                 from {
@@ -3547,6 +3753,7 @@ class IaiResponseDashboard extends IaiLitBase {
         this._themeFilters = [];
         this._themesPanelVisible = false;
         this._demographicFilters = [];
+        this._numberAnimationDuration = 500;
 
         this.questionTitle = "";
         this.questionText = "";
@@ -3731,7 +3938,14 @@ class IaiResponseDashboard extends IaiLitBase {
             this._themeFilters.includes(themeMapping.value) ||
             themeMapping.label.toLocaleLowerCase().includes(this._themeSearchValue.toLocaleLowerCase())
         )
-    } 
+    }
+
+    getPercentage = (partialValue, totalValue) => {
+        if (totalValue === 0) {
+            return 0;
+        }
+        return parseFloat(((partialValue / totalValue) * 100).toFixed(2));
+    }
 
     render() {
         const visibleResponses = this.responses.filter(response => response.visible);
@@ -3767,9 +3981,28 @@ class IaiResponseDashboard extends IaiLitBase {
                             <div class="table-container">
 
                                 <div class="table-title themes-mentions">
-                                    <h2 class="govuk-heading-m">
-                                        Themes
-                                    </h2>
+                                    <div class="title-container">
+                                        <h2 class="govuk-heading-m">
+                                            Themes
+                                        </h2>
+
+                                        <button
+                                            class="ternary-button"
+                                            @click=${() => {
+                                                const pills = Array.from(this.querySelectorAll("table iai-expanding-pill"));
+
+                                                if (pills.filter(pill => !pill._expanded).length == 0) {
+                                                    // If all pills are extended, collapse them all
+                                                    pills.forEach(pill => pill._expanded = false);
+                                                } else {
+                                                    // else expand them all
+                                                    pills.forEach(pill => pill._expanded = true);
+                                                }
+                                            }}
+                                        >
+                                            Hide/show all descriptions
+                                        </button>
+                                    </div>
 
                                     <iai-csv-download
                                         fileName="theme_mentions.csv"
@@ -3817,7 +4050,8 @@ class IaiResponseDashboard extends IaiLitBase {
                                                 // particularly useful for html elements and dates.
                                                 "_sortValues": {
                                                     "Theme name and description": themeMapping.label,
-                                                    "Total mentions": parseInt(themeMapping.count),
+                                                    "Number of responses": parseInt(themeMapping.count),
+                                                    "Percentage of responses": this.getPercentage(parseInt(themeMapping.count), this.responses.length),
                                                 },
                                                 "Theme name and description": x`
                                                     <iai-expanding-pill
@@ -3826,7 +4060,26 @@ class IaiResponseDashboard extends IaiLitBase {
                                                         .initialExpanded=${true}
                                                     ></iai-expanding-pill>
                                                 `,
-                                                "Total mentions": themeMapping.count,
+                                                "Percentage of responses": x`
+                                                    <div class="percentage-cell">
+                                                        <iai-animated-number
+                                                            .number=${this.getPercentage(
+                                                                parseInt(themeMapping.count),
+                                                                this.responses.length
+                                                            )}
+                                                            .duration=${this._numberAnimationDuration}
+                                                        ></iai-animated-number>
+                                                        %
+                                                    <div>
+                                                `,
+                                                "Number of responses": x`
+                                                    <div class="total-count-cell">
+                                                        <iai-progress-bar
+                                                            .value=${this.getPercentage(parseInt(themeMapping.count), this.responses.length)}
+                                                            .label=${themeMapping.count}
+                                                        ></iai-progress-bar>
+                                                    </div>
+                                                `
                                             }
                                         ))
                                     }
