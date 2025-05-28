@@ -51,6 +51,9 @@ sentry_sdk.init(
     environment=ENVIRONMENT,  # noqa: F405
     release=GIT_SHA,
     before_send=sentry_before_send,
+    traces_sample_rate=1.0,
+    profile_session_sample_rate=1.0,
+    profile_lifecycle="trace",
 )
 
 
