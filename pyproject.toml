@@ -37,7 +37,7 @@ django-magic-link = "^1.0.0"
 django-crispy-forms = "^2.3"
 crispy-forms-gds = "^2.0.1"
 django-gov-notify = { git = "https://github.com/i-dot-ai/django-gov-notify", branch = "support-python-3-12" }
-sentry-sdk = { extras = ["redis", "rq"], version = "^2.29.1" }
+sentry-sdk = {version = ">=2.24.1", extras = ["django", "redis", "rq"]}
 psutil = "^7.0.0"
 pytest-random-order = "^1.1.1"
 django-rq = "^3.0.1"

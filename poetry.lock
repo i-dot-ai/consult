@@ -2209,6 +2209,7 @@ files = [
 
 [package.dependencies]
 certifi = "*"
+django = {version = ">=1.8", optional = true, markers = "extra == \"django\""}
 rq = {version = ">=0.6", optional = true, markers = "extra == \"rq\""}
 urllib3 = ">=1.26.11"
 
