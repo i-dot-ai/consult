@@ -9,6 +9,7 @@ export default class IaiResponses extends IaiLitBase {
         ...IaiLitBase.properties,
         responses: {type: Array},
         renderResponse: {type: Function},
+        handleScrollEnd: {type: Function},
     }
 
     static styles = [
@@ -36,6 +37,7 @@ export default class IaiResponses extends IaiLitBase {
         this.renderResponse = () => console.warn(
             "IaiResponses warning: renderResponse prop not passed"
         );
+        this.handleScrollEnd = () => {}
         
         this.applyStaticStyles("iai-responses", IaiResponses.styles);
     }
@@ -51,6 +53,13 @@ export default class IaiResponses extends IaiLitBase {
                 scroller
                 .items=${this.responses}
                 .renderItem=${this.renderResponse}
+                @scroll=${() => {
+                    const lastResponse = document.querySelector(".last-response");
+                    
+                    if (lastResponse && this.handleScrollEnd) {
+                        this.handleScrollEnd();
+                    }
+                }}
             ></lit-virtualizer>
         `;
     }
