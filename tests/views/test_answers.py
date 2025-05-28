@@ -509,4 +509,8 @@ def test_all_respondents_json_filters(client, question, consultation_user):
     assert len(page_respondents) == 2
     assert not response.json().get("has_more_pages")
 
-
+    url = f"{base_url}?themeFilters={theme_x.id},{theme_y.id}&page_size=1&page=2"
+    response = client.get(url)
+    page_respondents = response.json().get("all_respondents")
+    assert len(page_respondents) == 1
+    assert not response.json().get("has_more_pages")
