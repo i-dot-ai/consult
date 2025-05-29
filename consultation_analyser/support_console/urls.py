@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import include, path
 
-from .views import consultations, consultations_users, pages, question_parts, users
+from .views import consultations, consultations_users, pages, question_parts, users, cache
 
 urlpatterns = [
     path("", lambda request: redirect("/support/consultations/"), name="support"),
@@ -67,6 +67,8 @@ urlpatterns = [
         consultations.import_summary,
         name="import_summary",
     ),
+    path("cache/delete/", cache.show, name="cache-delete"),
+    path("cache/delete-confirm/", cache.delete, name="cache-delete-confirmation"),
     path("admin/", admin.site.urls),
     path("django-rq/", include("django_rq.urls")),
 ]
