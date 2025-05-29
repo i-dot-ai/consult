@@ -72,10 +72,6 @@ def get_respondents_for_question(
 
     # Retrieve cached data
     respondents = cache.get(cache_key)
-    if not respondents:
-        print("nothing cached")
-    else:
-        print(f"respondents: {respondents.count()}")
 
     # If no cached data found
     if respondents is None:
