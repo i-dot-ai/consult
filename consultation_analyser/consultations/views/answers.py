@@ -68,8 +68,6 @@ def get_respondents_for_question(
     # Cache data for question/consultation. Default timeout to not clearing cache ever.
     cache_key = f"respondents_{consultation_slug}_{question_slug}"
 
-    print(f"cache_key: {cache_key}")
-
     # Retrieve cached data
     respondents = cache.get(cache_key)
 
