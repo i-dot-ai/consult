@@ -1,8 +1,8 @@
-from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, redirect
-from django.core.cache import cache
-from django_rq import job
 from django.contrib import messages
+from django.core.cache import cache
+from django.http import HttpRequest, HttpResponse
+from django.shortcuts import redirect, render
+from django_rq import job
 
 
 @job("default", timeout=900)
@@ -26,4 +26,3 @@ def delete(request: HttpRequest) -> HttpResponse:
             )
             return redirect("support")
     return render(request, "support_console/cache/delete.html")
-

@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import include, path
 
-from .views import consultations, consultations_users, pages, question_parts, users, cache
+from .views import cache, consultations, consultations_users, pages, question_parts, users
 
 urlpatterns = [
     path("", lambda request: redirect("/support/consultations/"), name="support"),
