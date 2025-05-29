@@ -48,6 +48,11 @@ def app_config(request: HttpRequest):
                 path="/support/",
                 menu_items=[
                     {
+                        "href": "/support/cache/delete/",
+                        "text": "Clear cache",
+                        "active": request.path.startswith("/support/cache/delete"),
+                    },
+                    {
                         "href": "/support/consultations/",
                         "text": "Consultations",
                         "active": request.path.startswith("/support/consultations"),
