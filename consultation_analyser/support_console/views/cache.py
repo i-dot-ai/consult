@@ -17,4 +17,6 @@ def delete(request: HttpRequest) -> HttpResponse:
             cache.clear()
             messages.success(request, "The default cache has been deleted")
             return redirect("support")
+        elif "cancel_deletion" in request.POST:
+            return redirect("support")
     return render(request, "support_console/cache/delete.html")
