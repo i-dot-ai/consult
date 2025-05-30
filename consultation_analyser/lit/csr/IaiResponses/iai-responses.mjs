@@ -2,6 +2,7 @@ import { html, css } from 'lit';
 import '@lit-labs/virtualizer';
 
 import IaiLitBase from '../../IaiLitBase.mjs';
+import IaiIcon from '../questionsArchive/IaiIcon/iai-icon.mjs';
 
 
 export default class IaiResponses extends IaiLitBase {
@@ -9,6 +10,9 @@ export default class IaiResponses extends IaiLitBase {
         ...IaiLitBase.properties,
         responses: {type: Array},
         renderResponse: {type: Function},
+        handleScrollEnd: {type: Function},
+        message: {type: String},
+        _canCallCallback: {type: Boolean},
     }
 
     static styles = [
@@ -31,18 +35,23 @@ export default class IaiResponses extends IaiLitBase {
         super();
         this.contentId = this.generateId();
 
+        this._CALLBACK_COOLDOWN = 2000;
+
         // Prop defaults
         this.responses = [];
         this.renderResponse = () => console.warn(
             "IaiResponses warning: renderResponse prop not passed"
         );
+        this.handleScrollEnd = () => {};
+        this.message = "";
+        this._canCallCallback = true;
         
         this.applyStaticStyles("iai-responses", IaiResponses.styles);
     }
 
     render() {
-        if (this.responses.length === 0) {
-            return html`<p class="not-found">No matching responses found</p>`
+        if (this.message) {
+            return html`<p class="not-found">${this.message}</p>`;
         }
 
         return html`
@@ -51,6 +60,19 @@ export default class IaiResponses extends IaiLitBase {
                 scroller
                 .items=${this.responses}
                 .renderItem=${this.renderResponse}
+                @scroll=${() => {
+                    const lastResponse = document.querySelector(".last-response");
+
+                    if (lastResponse && this.handleScrollEnd && this._canCallCallback) {
+                        this.handleScrollEnd();
+
+                        this._canCallCallback = false;
+                        setTimeout(
+                            () => this._canCallCallback = true,
+                            this._CALLBACK_COOLDOWN
+                        );
+                    }
+                }}
             ></lit-virtualizer>
         `;
     }
