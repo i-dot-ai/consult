@@ -12,6 +12,7 @@ export default class IaiResponses extends IaiLitBase {
         renderResponse: {type: Function},
         handleScrollEnd: {type: Function},
         message: {type: String},
+        _canCallCallback: {type: Boolean},
     }
 
     static styles = [
@@ -34,6 +35,8 @@ export default class IaiResponses extends IaiLitBase {
         super();
         this.contentId = this.generateId();
 
+        this._CALLBACK_COOLDOWN = 2000;
+
         // Prop defaults
         this.responses = [];
         this.renderResponse = () => console.warn(
@@ -41,6 +44,7 @@ export default class IaiResponses extends IaiLitBase {
         );
         this.handleScrollEnd = () => {};
         this.message = "";
+        this._canCallCallback = true;
         
         this.applyStaticStyles("iai-responses", IaiResponses.styles);
     }
@@ -58,9 +62,15 @@ export default class IaiResponses extends IaiLitBase {
                 .renderItem=${this.renderResponse}
                 @scroll=${() => {
                     const lastResponse = document.querySelector(".last-response");
-                    
-                    if (lastResponse && this.handleScrollEnd) {
+
+                    if (lastResponse && this.handleScrollEnd && this._canCallCallback) {
                         this.handleScrollEnd();
+
+                        this._canCallCallback = false;
+                        setTimeout(
+                            () => this._canCallCallback = true,
+                            this._CALLBACK_COOLDOWN
+                        );
                     }
                 }}
             ></lit-virtualizer>

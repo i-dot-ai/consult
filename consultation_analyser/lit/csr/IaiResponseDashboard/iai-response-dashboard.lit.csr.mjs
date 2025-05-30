@@ -859,7 +859,6 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                 return;
                             }
                             this.fetchResponses();
-                            console.log("scrolled to the end");
                         }}
                         .isLoading=${this._isLoading}
                         .message=${this.getResponsesMessage()}
