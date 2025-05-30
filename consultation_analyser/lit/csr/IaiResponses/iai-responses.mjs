@@ -2,6 +2,7 @@ import { html, css } from 'lit';
 import '@lit-labs/virtualizer';
 
 import IaiLitBase from '../../IaiLitBase.mjs';
+import IaiIcon from '../questionsArchive/IaiIcon/iai-icon.mjs';
 
 
 export default class IaiResponses extends IaiLitBase {
@@ -10,6 +11,7 @@ export default class IaiResponses extends IaiLitBase {
         responses: {type: Array},
         renderResponse: {type: Function},
         handleScrollEnd: {type: Function},
+        message: {type: String},
     }
 
     static styles = [
@@ -37,14 +39,15 @@ export default class IaiResponses extends IaiLitBase {
         this.renderResponse = () => console.warn(
             "IaiResponses warning: renderResponse prop not passed"
         );
-        this.handleScrollEnd = () => {}
+        this.handleScrollEnd = () => {};
+        this.message = "";
         
         this.applyStaticStyles("iai-responses", IaiResponses.styles);
     }
 
     render() {
-        if (this.responses.length === 0) {
-            return html`<p class="not-found">No matching responses found</p>`
+        if (this.message) {
+            return html`<p class="not-found">${this.message}</p>`;
         }
 
         return html`

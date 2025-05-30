@@ -2109,6 +2109,8 @@ class IaiResponses extends IaiLitBase {
         ...IaiLitBase.properties,
         responses: {type: Array},
         renderResponse: {type: Function},
+        handleScrollEnd: {type: Function},
+        message: {type: String},
     }
 
     static styles = [
@@ -2136,13 +2138,15 @@ class IaiResponses extends IaiLitBase {
         this.renderResponse = () => console.warn(
             "IaiResponses warning: renderResponse prop not passed"
         );
+        this.handleScrollEnd = () => {};
+        this.message = "";
         
         this.applyStaticStyles("iai-responses", IaiResponses.styles);
     }
 
     render() {
-        if (this.responses.length === 0) {
-            return x`<p class="not-found">No matching responses found</p>`
+        if (this.message) {
+            return x`<p class="not-found">${this.message}</p>`;
         }
 
         return x`
@@ -2151,6 +2155,13 @@ class IaiResponses extends IaiLitBase {
                 scroller
                 .items=${this.responses}
                 .renderItem=${this.renderResponse}
+                @scroll=${() => {
+                    const lastResponse = document.querySelector(".last-response");
+                    
+                    if (lastResponse && this.handleScrollEnd) {
+                        this.handleScrollEnd();
+                    }
+                }}
             ></lit-virtualizer>
         `;
     }
@@ -3568,13 +3579,16 @@ class IaiResponseDashboard extends IaiLitBase {
         _isLoading: { type: Boolean },
         _searchValue: { type: String },
         _themeSearchValue: { type: String },
-        _minWordCount: { type: Number },
         _demographicFilters: { type: Array },
         _themeFilters: { type: Array },
         _themesPanelVisible: { type: Boolean },
         _stanceFilters: { type: Array },
         _evidenceRichFilters: { type: Array },
         _numberAnimationDuration: { type: Number },
+        _searchDebounceTimer: { type: Number },
+        _currentPage: { type: Number },
+        _hasMorePages: { type: Boolean },
+        _errorOccured: { type: Boolean },
     }
 
     static styles = [
@@ -3618,6 +3632,8 @@ class IaiResponseDashboard extends IaiLitBase {
                 margin-bottom: 2em;
             }
             iai-response-dashboard .responses-column {
+                display: flex;
+                flex-direction: column;
                 background: white;
                 padding: 1em 2em;
                 width: 73.5%;
@@ -3673,7 +3689,6 @@ class IaiResponseDashboard extends IaiLitBase {
             iai-response-dashboard .spinner {
                 display: flex;
                 justify-content: center;
-                margin-block: 5em;
                 animation-name: spin;
                 animation-duration: 1s;
                 animation-iteration-count: infinite;
@@ -3727,6 +3742,12 @@ class IaiResponseDashboard extends IaiLitBase {
             iai-response-dashboard .ternary-button:hover {
                 background: var(--iai-colour-pink-transparent);
             }
+            iai-response-dashboard .responses-row {
+                display: flex;
+            }
+            iai-response-dashboard .flex-grow {
+                flex-grow: 1;
+            }
 
             @keyframes spin {
                 from {
@@ -3742,6 +3763,10 @@ class IaiResponseDashboard extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
+
+        this._PAGE_SIZE = 50;
+        this._DEBOUNCE_DELAY = 500;
+        this._currentFetchController = null;
         
         // Prop defaults
         this._isLoading = true;
@@ -3749,11 +3774,14 @@ class IaiResponseDashboard extends IaiLitBase {
         this._themeSearchValue = "";
         this._stanceFilters = [];
         this._evidenceRichFilters = [];
-        this._minWordCount = null;
         this._themeFilters = [];
         this._themesPanelVisible = false;
         this._demographicFilters = [];
         this._numberAnimationDuration = 500;
+        this._searchDebounceTimer = null;
+        this._currentPage = 1;
+        this._hasMorePages = true;
+        this._errorOccured = false;
 
         this.questionTitle = "";
         this.questionText = "";
@@ -3776,37 +3804,81 @@ class IaiResponseDashboard extends IaiLitBase {
     }
 
     fetchResponses = async () => {
-        const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json`;
-        let response = await fetch(url);
+        if (!this._hasMorePages) {
+            console.warn("no more pages");
+            return;
+        }
+
+        if (this._currentFetchController) {
+            console.log("aborting stale request");
+            this._currentFetchController.abort();
+            this._isLoading = false;
+        }
+
+        const controller = new AbortController();
+        const signal = controller.signal;
+        this._currentFetchController = controller;
+
+        this._errorOccured = false;
+        this._isLoading = true;
+
+        const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
+        
+        let response;
+        try {
+            response = await fetch(url, { signal });
+        } catch (err) {
+            if (err.name == "AbortError") {
+                console.log("stale request aborted");
+                return;
+            } else {
+                console.error(err);
+                this._errorOccured = true;
+                return;
+            }
+        } finally {
+            if (this._currentFetchController === controller) {
+                this._currentFetchController = null;
+            }
+            this._isLoading = false;
+        }
 
         if (!response.ok) {
+            this._errorOccured = true;
             throw new Error(`Response status: ${response.status}`);
         }
         
         const responsesData = await response.json();
         
-        this.responses = responsesData.all_respondents.map(response => ({
-            ...response,
-            visible: true,
-        }));
+        this.responses = this.responses.concat(
+            responsesData.all_respondents.map(response => ({
+                ...response,
+                visible: true,
+            }))
+        );
+        
+        this._hasMorePages = responsesData.has_more_pages;
 
-        this._isLoading = false;
+        this._currentPage = this._currentPage + 1;
+    }
+
+    resetResponses = () => {
+        this.responses = [];
+        this._currentPage = 1;
+        this._hasMorePages = true;
     }
 
     updated(changedProps) {
-        if (changedProps.has("consultationSlug")) {
-            this.fetchResponses();
-        }
         if (
-            changedProps.has("_isLoading") ||
             changedProps.has("_stanceFilters") ||
             changedProps.has("_evidenceRichFilters") ||
-            changedProps.has("_minWordCount") ||
             changedProps.has("_searchValue")  ||
             changedProps.has("_themeFilters") ||
             changedProps.has("_demographicFilters")
         ) {
-            this.applyFilters();
+            this.resetResponses();
+            this.fetchResponses();
+            // this.applyFilters();
         }
     }
 
@@ -3815,16 +3887,17 @@ class IaiResponseDashboard extends IaiLitBase {
     }
 
     handleSearchInput = (e) => {
-        this._searchValue = e.target.value;
+        clearTimeout(this._searchDebounceTimer);
+
+        this._searchDebounceTimer = setTimeout(() => {
+            this._searchValue = e.target.value;
+        }, this._DEBOUNCE_DELAY);
     }
     handleStanceChange = (e) => {
         this._stanceFilters = this.addOrRemoveFilter(this._stanceFilters, e.target.value);
     }
     handleEvidenceRichChange = (e) => {
         this._evidenceRichFilters = this.addOrRemoveFilter(this._evidenceRichFilters, e.target.value);
-    }
-    handleMinWordCountInput = (e) => {
-        this._minWordCount = parseInt(e.target.value);
     }
     handleThemeFilterChange = (e) => {
         this._themeFilters = this.addOrRemoveFilter(this._themeFilters, e.target.value);
@@ -3847,12 +3920,6 @@ class IaiResponseDashboard extends IaiLitBase {
         if (!themesContainerEl.contains(e.target)) {
             this._themesPanelVisible = false;
         }
-    }
-
-    calculateResponsesHeight = () => {
-        const filtersEl = document.getElementsByTagName("iai-response-filters")[0];
-        const titleEl = document.querySelector("iai-response-dashboard .title-container");
-        return filtersEl && titleEl ? filtersEl.offsetHeight - titleEl.offsetHeight : 0;
     }
 
     addOrRemoveFilter = (filters, newFilter) => {
@@ -3919,13 +3986,6 @@ class IaiResponseDashboard extends IaiLitBase {
             }
         }
 
-        // filter by min word count
-        if (this._minWordCount) {
-            if (response.free_text_answer_text.length < this._minWordCount) {
-                visible = false;
-            }
-        }
-
         return visible;
     }
 
@@ -3940,11 +4000,45 @@ class IaiResponseDashboard extends IaiLitBase {
         )
     }
 
+    buildQuery = () => {
+        // conditionally add filters as query params
+        const params = new URLSearchParams({
+            ...(this._searchValue && {
+                searchValue: this._searchValue
+            }),
+            ...(this._stanceFilters.length > 0 && {
+                sentimentFilters: this._stanceFilters.join(",")
+            }),
+            ...(this._demographicFilters.length > 0 && {
+                demographicFilters: this._demographicFilters.join(",")
+            }),
+            ...(this._themeFilters.length > 0 && {
+                themeFilters: this._themeFilters.join(",")
+            }),
+            ...(this._evidenceRichFilters.length > 0 && {
+                evidenceRichFilter: this._evidenceRichFilters.join(",")
+            }),
+            page: this._currentPage,
+            page_size: this._PAGE_SIZE.toString(),
+        });
+        return params.toString();
+    }
+
     getPercentage = (partialValue, totalValue) => {
         if (totalValue === 0) {
             return 0;
         }
         return parseFloat(((partialValue / totalValue) * 100).toFixed(2));
+    }
+
+    getResponsesMessage = () => {
+        if (this._errorOccured) {
+            return "Something went wrong";
+        }
+        if (this.responses.length === 0 && !this._isLoading) {
+            return "No matching responses found";
+        }
+        return "";
     }
 
     render() {
@@ -4117,7 +4211,7 @@ class IaiResponseDashboard extends IaiLitBase {
                 `
                 : ""}
 
-            <div class="govuk-grid-row govuk-!-margin-top-5">
+            <div class="govuk-grid-row govuk-!-margin-top-5 responses-row">
                 <div class="govuk-grid-column-one-quarter-from-desktop filters-column">
                     <iai-response-filters>
                         <form slot="filters" method="GET">
@@ -4260,26 +4354,6 @@ class IaiResponseDashboard extends IaiLitBase {
                                         ></iai-checkbox-input>
                                     </div>
                                 </iai-response-filter-group>
-                        
-                                ${this.free_text_question_part 
-                                    ? x`
-                                        <hr />
-                                        
-                                        <iai-response-filter-group title="Response word count">
-                                            <div slot="content">
-                                                <iai-number-input
-                                                    inputId="min-word-count"
-                                                    name="min-word-count"
-                                                    label="Minimum:"
-                                                    value=${this._minWordCount}
-                                                    .handleInput=${this.handleMinWordCountInput}
-                                                    .horizontal=${true}
-                                                ></iai-number-input>
-                                            </div>
-                                        </iai-response-filter-group>
-                                    `
-                                    : ""
-                                }
                             </div>
                         </form>
                     </iai-response-filters>
@@ -4287,7 +4361,6 @@ class IaiResponseDashboard extends IaiLitBase {
 
                 <div class="govuk-grid-column-three-quarters-from-desktop responses-column">
                     <div class="title-container">
-                    
                         <h2 class="govuk-heading-m">
                             Individual responses
                         </h2>
@@ -4309,6 +4382,37 @@ class IaiResponseDashboard extends IaiLitBase {
                         ></iai-text-input>
                     </div>
 
+                    <iai-responses
+                        class=${this.responses.length > 0 ? " flex-grow" : ""}
+                        .responses=${visibleResponses}
+                        .renderResponse=${(response, index) => x`
+                            <iai-response
+                                class=${index === this.responses.length - 1 ? "last-response" : ""}
+                                role="listitem"
+                                .id=${response.inputId}
+                                .identifier=${response.identifier}
+                                .individual=${response.individual}
+                                .sentiment_position=${response.sentiment_position}
+                                .free_text_answer_text=${response.free_text_answer_text}
+                                .demographic_data=${response.demographic_data}
+                                .themes=${response.themes}
+                                .has_multiple_choice_question_part=${this.has_multiple_choice_question_part}
+                                .multiple_choice_answer=${response.multiple_choice_answer}
+                                .searchValue=${this._searchValue}
+                                .evidenceRich=${response.evidenceRich}
+                            ></iai-response>
+                        `}
+                        .handleScrollEnd=${() => {
+                            if (this._isLoading) {
+                                return;
+                            }
+                            this.fetchResponses();
+                            console.log("scrolled to the end");
+                        }}
+                        .isLoading=${this._isLoading}
+                        .message=${this.getResponsesMessage()}
+                    ></iai-responses>
+
                     ${this._isLoading
                         ? x`
                             <div class="spinner">
@@ -4319,28 +4423,7 @@ class IaiResponseDashboard extends IaiLitBase {
                                 ></iai-icon>
                             </div>
                         `
-                        : x`
-                            <iai-responses
-                                style="height: calc(${this.calculateResponsesHeight()}px - 2em);"
-                                .responses=${visibleResponses}
-                                .renderResponse=${response => x`
-                                    <iai-response
-                                        role="listitem"
-                                        .id=${response.inputId}
-                                        .identifier=${response.identifier}
-                                        .individual=${response.individual}
-                                        .sentiment_position=${response.sentiment_position}
-                                        .free_text_answer_text=${response.free_text_answer_text}
-                                        .demographic_data=${response.demographic_data}
-                                        .themes=${response.themes}
-                                        .has_multiple_choice_question_part=${this.has_multiple_choice_question_part}
-                                        .multiple_choice_answer=${response.multiple_choice_answer}
-                                        .searchValue=${this._searchValue}
-                                        .evidenceRich=${response.evidenceRich}
-                                    ></iai-response>
-                                `}
-                            ></iai-responses>   
-                        `
+                        : ""
                     }
                 </div>
             </div>
