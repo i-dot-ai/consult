@@ -170,6 +170,8 @@ def respondents_json(
         current_page = pagination.page(page)
         respondents = current_page.object_list
         data["has_more_pages"] = current_page.has_next()
+    else:
+        respondents = filtered_respondents
 
     # Get individual data for each displayed respondent
     for respondent in respondents:
