@@ -151,6 +151,10 @@ def respondents_json(
     if evidence_rich_filter and evidence_rich_filter == "evidence-rich":
         query &= Q(answer__evidencerichmapping__evidence_rich=True)
 
+    search_value = request.GET.get("searchValue")
+    if search_value:
+        query &= Q(answer__text__icontains=search_value)
+
     filtered_respondents = all_respondents.filter(query).distinct()
 
     data: DataDict = {
