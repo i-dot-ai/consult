@@ -7,30 +7,31 @@
 {% set page_title = "Import consultation input data" %}
 
 {% set questionNumberChoiceHtml %}
-    {{ govukInput({
-        'id': "question_number",
-        'name': "question_number",
-        'label': {
-          'text': "Which question do you want to import?"
-        },
-      }) }}
+{{ govukInput({
+'id': "question_number",
+'name': "question_number",
+'label': {
+'text': "Which question do you want to import?"
+},
+}) }}
 {% endset %}
 
 {% block content %}
 <h1 class="govuk-heading-l">{{ page_title }}</h1>
-  <p class="govuk-body">Import question and response data. This should be for a consultation where we have already imported the respondents data. Data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER].</p>
+<p class="govuk-body">Import question and response data. This should be for a consultation where we have already
+  imported the respondents data. Data should be saved in: {{ bucket_name }}/app_data/[CONSULTATION FOLDER].</p>
 
 <form method="post" enctype="multipart/form-data" novalidate>{{ csrf_input }}
 
   <div class="govuk-form-group">
     <p class="govuk-label-wrapper">
       {{ govukSelect({
-        'id': "consultation_id",
-        'name': "consultation_id",
-        'label': {
-          'text': "Select consultation"
-        },
-        'items': consultations_for_select
+      'id': "consultation_id",
+      'name': "consultation_id",
+      'label': {
+      'text': "Select consultation"
+      },
+      'items': consultations_for_select
       }) }}
     </p>
   </div>
@@ -39,12 +40,12 @@
     <p class="govuk-label-wrapper">
 
       {{ govukSelect({
-        'id': "consultation_code",
-        'name': "consultation_code",
-        'label': {
-          'text': "Select consultation folder",
-        },
-        'items': consultation_folders
+      'id': "consultation_code",
+      'name': "consultation_code",
+      'label': {
+      'text': "Select consultation folder",
+      },
+      'items': consultation_folders
       }) }}
     </p>
   </div>
@@ -52,40 +53,40 @@
   <div class="govuk-form-group">
     <p class="govuk-label-wrapper">
       {{ govukRadios({
-          'name': "question_choice",
-          'fieldset': {
-            'legend': {
-              'text': "Are you importing all questions for this consultation?",
-            }
-          },
-          'items': [
-            {
-              'value': "all",
-              'text': "Yes",
-              'checked': True,
-            },
-            {
-              'value': "one",
-              'text': "No",
-              'conditional': {
-                'html': questionNumberChoiceHtml
-              }
-            },
-          ]
-        }) }}
+      'name': "question_choice",
+      'fieldset': {
+      'legend': {
+      'text': "Are you importing all questions for this consultation?",
+      }
+      },
+      'items': [
+      {
+      'value': "all",
+      'text': "Yes",
+      'checked': True,
+      },
+      {
+      'value': "one",
+      'text': "No",
+      'conditional': {
+      'html': questionNumberChoiceHtml
+      }
+      },
+      ]
+      }) }}
     </p>
   </div>
 
   {{ govukButton({
-    'text': "Submit",
-    'name': "submit"
+  'text': "Submit",
+  'name': "submit"
   }) }}
 
 </form>
 
-<script src="{{ static("govuk-js/govuk-frontend.min.js") }}" type="module" ></script>
+<script src="{{ static(" govuk-js/govuk-frontend.min.js") }}" type="module"></script>
 <script type="module">
-  import { Radios } from "{{ static("govuk-js/govuk-frontend.min.js") }}"
+  import { Radios } from "{{ static("govuk - js / govuk - frontend.min.js") }}"
 
   const $radios = document.querySelectorAll('[data-module="govuk-radios"]')
   $radios.forEach(($radio) => {

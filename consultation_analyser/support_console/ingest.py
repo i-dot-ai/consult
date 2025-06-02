@@ -1,8 +1,11 @@
 import json
 import logging
+import re
 
 import boto3
+from botocore.exceptions import ClientError
 from django.conf import settings
+from django.db import transaction
 from django_rq import job
 from simple_history.utils import bulk_create_with_history
 
@@ -15,6 +18,7 @@ from consultation_analyser.consultations.models import (
     Question,
     QuestionPart,
     Respondent,
+    Response,
     SentimentMapping,
     Theme,
     ThemeMapping,
@@ -465,3 +469,168 @@ def import_all_evidence_rich_mappings_from_jsonl(
         import_evidence_rich_mappings_job.delay(
             question_part=question_part, evidence_rich_mapping_data=lines
         )
+
+
+def import_themefinder_outputs_from_s3(
+    *,
+    consultation: Consultation,
+    bucket_name: str,
+    consultation_prefix: str,  #  e.g. "app_data/desnz_example/"
+    mapping_timestamp: str,  #  e.g. "2025-05-22"
+    batch_size: int = 2_000,
+) -> None:
+    """
+    Build Questions and Responses for *every* question_part_<n>/ found in S3.
+    Respondents are created on-the-fly if they don’t already exist locally.
+    """
+    s3 = boto3.client("s3")
+    q_folders = _list_question_part_folders(bucket_name, f"{consultation_prefix}inputs/", s3)
+
+    qpk_by_num: dict[int, int] = {}
+    with transaction.atomic():
+        for folder, q_num in q_folders:
+            qpk_by_num[q_num] = _ensure_question(
+                consultation, bucket_name, f"{folder}question.json", q_num, s3
+            )
+
+    for folder, q_num in q_folders:
+        outputs_prefix = (
+            f"{consultation_prefix}outputs/mapping/{mapping_timestamp}/question_part_{q_num}/"
+        )
+        _enqueue_themefinder_batches(
+            consultation=consultation,
+            question_pk=qpk_by_num[q_num],
+            bucket_name=bucket_name,
+            outputs_prefix=outputs_prefix,
+            batch_size=batch_size,
+            s3=s3,
+        )
+
+    logger.info(
+        "Queued import: slug=%s  questions=%d",
+        consultation.slug,
+        len(qpk_by_num),
+    )
+
+
+S3_QPART_RE = re.compile(r"question_part_(\d+)/?")
+
+
+def _list_question_part_folders(bucket, prefix, s3):
+    """Return [(folder_with_trailing_slash, question_number), …]"""
+    paginator = s3.get_paginator("list_objects_v2")
+    pages = paginator.paginate(Bucket=bucket, Prefix=prefix, Delimiter="/")
+    out = []
+    for p in pages:
+        for cp in p.get("CommonPrefixes", []):
+            m = S3_QPART_RE.search(cp["Prefix"])
+            if m:
+                out.append((cp["Prefix"], int(m.group(1))))
+    return sorted(out, key=lambda t: t[1])
+
+
+def _ensure_question(consultation, bucket, key, num, s3) -> int:
+    try:
+        body = s3.get_object(Bucket=bucket, Key=key)["Body"].read()
+    except ClientError as e:
+        raise RuntimeError(f"Missing question.json at {key}: {e}")
+
+    text = json.loads(body)["question_text"]
+    q, _ = Question.objects.get_or_create(
+        consultation=consultation, number=num, defaults={"text": text}
+    )
+    if q.text != text:
+        q.text = text
+        q.save(update_fields=["text"])
+    return q.pk
+
+
+def _enqueue_themefinder_batches(
+    *, consultation, question_pk, bucket_name, outputs_prefix, batch_size, s3
+):
+    tf_key = f"{outputs_prefix}themefinder_outputs.jsonl"
+    obj = s3.get_object(Bucket=bucket_name, Key=tf_key)
+
+    batch = []
+    for line in obj["Body"].iter_lines():
+        batch.append(line)
+        if len(batch) == batch_size:
+            import_denormalised_responses_job.delay(
+                consultation_pk=consultation.pk,
+                question_pk=question_pk,
+                responses_data=batch,
+            )
+            batch = []
+    if batch:
+        import_denormalised_responses_job.delay(
+            consultation_pk=consultation.pk,
+            question_pk=question_pk,
+            responses_data=batch,
+        )
+
+
+@job("default", timeout=900)
+def import_denormalised_responses_job(*, consultation_pk, question_pk, responses_data):
+    consultation = Consultation.objects.get(pk=consultation_pk)
+    question = Question.objects.get(pk=question_pk)
+    _write_responses(consultation, question, responses_data)
+
+
+def _write_responses(consultation, question, responses_data):
+    """
+    Create (or fetch) Respondent rows as needed, then bulk-insert Responses.
+    """
+    # 1) Gather all respondent external IDs in this batch
+    ext_ids = {json.loads(r)["themefinder_id"] for r in responses_data}
+
+    # 2) Fetch existing respondents
+    existing = {
+        r.themefinder_respondent_id: r.pk
+        for r in Respondent.objects.filter(
+            consultation=consultation,
+            themefinder_respondent_id__in=ext_ids,
+        )
+    }
+
+    # 3) Create any missing respondents in one go
+    missing = [rid for rid in ext_ids if rid not in existing]
+    if missing:
+        Respondent.objects.bulk_create(
+            [
+                Respondent(
+                    consultation=consultation,
+                    themefinder_respondent_id=rid,
+                    data={},  # adjust if you store extra respondent data
+                )
+                for rid in missing
+            ]
+        )
+        # refresh the lookup dict with the newly added PKs
+        existing.update(
+            {
+                r.themefinder_respondent_id: r.pk
+                for r in Respondent.objects.filter(
+                    consultation=consultation,
+                    themefinder_respondent_id__in=missing,
+                )
+            }
+        )
+
+    # 4) Build Response objects
+    objs = []
+    for raw in responses_data:
+        rec = json.loads(raw)
+        objs.append(
+            Response(
+                id=rec["themefinder_id"],  # keeps external UUID if provided
+                consultation=consultation,
+                respondent_id=existing[rec["themefinder_id"]],
+                question=question,
+                question_text_ft=rec["question_text"],
+                free_text_answer=rec.get("free_text_answer"),
+                themes=rec.get("themes"),
+                evidence_rich=rec.get("evidence_rich"),
+                sentiment=rec.get("sentiment"),
+            )
+        )
+    Response.objects.bulk_create(objs, batch_size=len(objs))

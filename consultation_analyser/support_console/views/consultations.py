@@ -26,6 +26,7 @@ from consultation_analyser.support_console.ingest import (
     import_all_sentiment_mappings_from_jsonl,
     import_all_theme_mappings_from_jsonl,
     import_question_part,
+    import_themefinder_outputs_from_s3,
     import_themes_from_json_and_get_framework,
 )
 
@@ -370,3 +371,55 @@ def import_consultation_themes(request: HttpRequest) -> HttpResponse:
 
 def import_summary(request: HttpRequest) -> HttpResponse:
     return render(request, "support_console/consultations/import_summary.html", context={})
+
+
+def import_themefinder_outputs(request: HttpRequest) -> HttpResponse:
+    """
+    Kick-off import of the single denormalised `themefinder_outputs.jsonl`.
+
+    The file must live at:
+      app_data/<consultation_code>/outputs/mapping/<consultation_mapping_date>/themefinder_outputs.jsonl
+    (exactly the same location the old scripts wrote the separate files to).
+    """
+    # TODO could include import respondent data into this function as well, would create a single ingestion function
+    bucket_name = settings.AWS_BUCKET_NAME
+
+    context = {
+        "consultations": [
+            {"value": c.slug, "text": c.slug} for c in models.Consultation.objects.all()
+        ],
+        "bucket_name": bucket_name,
+        "consultation_folders": get_folder_names_for_dropdown(),
+    }
+
+    if request.POST:
+        slug = request.POST["consultation_slug"]
+        code = request.POST["consultation_code"]
+        dt_str = request.POST["consultation_mapping_date"]  # e.g. 2025-05-10
+
+        consultation = models.Consultation.objects.get(slug=slug)
+
+        try:
+            import_themefinder_outputs_from_s3(
+                consultation=consultation,
+                bucket_name=settings.AWS_BUCKET_NAME,
+                consultation_prefix=f"app_data/{code}/",
+                mapping_timestamp=dt_str,
+                batch_size=2000,
+            )
+            messages.success(
+                request,
+                f"Import for “{slug}” queued – check the jobs dashboard.",
+            )
+            return redirect("/support/consultations/import-summary/")
+
+        except ClientError as e:
+            messages.error(request, f"S3 error: {e}.")
+        except Exception as e:
+            messages.error(request, str(e))
+
+    return render(
+        request,
+        "support_console/consultations/import_themefinder_outputs.html",
+        context=context,
+    )

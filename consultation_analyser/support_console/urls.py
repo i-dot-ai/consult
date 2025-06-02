@@ -58,6 +58,11 @@ urlpatterns = [
         name="import_inputs",
     ),
     path(
+        "consultations/import-themefinder-outputs/",
+        consultations.import_themefinder_outputs,
+        name="import_themefinder_outputs",
+    ),
+    path(
         "consultations/import-themes/",
         consultations.import_consultation_themes,
         name="import_themes",
