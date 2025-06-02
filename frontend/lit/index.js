@@ -3468,10 +3468,9 @@ class IaiProgressBar extends IaiLitBase {
             iai-progress-bar .container .label {
                 display: block;    
                 position: absolute;
-                right: 0;
+                right: 0.5em;
                 text-align: right;
                 color: white;
-                color: black;
                 font-weight: bold;
             }
             iai-progress-bar .container.low-value .label {
@@ -3545,7 +3544,7 @@ class IaiAnimatedNumber extends IaiLitBase {
             const elapsedTime = currTime - startTime;
             const time = Math.min(elapsedTime / duration, 1);
             const currValue = start * (1 - time) + end * time;
-            element.textContent = currValue.toFixed(2);
+            element.textContent = Math.round(currValue);
 
             if (time < 1) {
                 requestAnimationFrame(update_number);
@@ -3581,6 +3580,8 @@ class IaiResponseDashboard extends IaiLitBase {
         stanceOptions: { type: Array },
         themeMappings: { type: Array },
         responses: { type: Array },
+        responsesTotal: { type: Number },
+        responsesFilteredTotal: { type: Number },
         free_text_question_part: { type: Boolean },
         has_individual_data: { type: Boolean },
         has_multiple_choice_question_part: { type: Boolean },
@@ -3799,6 +3800,8 @@ class IaiResponseDashboard extends IaiLitBase {
         this.consultationTitle = "";
         this.consultationSlug = "";
         this.responses = [];
+        this.responsesTotal = 0;
+        this.responsesFilteredTotal = 0;
         this.themeMappings = [];
         this.stanceOptions = [];
         this.free_text_question_part = false;
@@ -3867,6 +3870,8 @@ class IaiResponseDashboard extends IaiLitBase {
                     visible: true,
                 }))
             );
+            this.responsesTotal = responsesData.respondents_total;
+            this.responsesFilteredTotal = responsesData.filtered_total;
             
             this._hasMorePages = responsesData.has_more_pages;
     
@@ -4037,7 +4042,7 @@ class IaiResponseDashboard extends IaiLitBase {
         if (totalValue === 0) {
             return 0;
         }
-        return parseFloat(((partialValue / totalValue) * 100).toFixed(2));
+        return Math.round(((partialValue / totalValue) * 100));
     }
 
     getResponsesMessage = () => {
@@ -4061,7 +4066,7 @@ class IaiResponseDashboard extends IaiLitBase {
                             <div style="display: flex;">
                                 <span style="margin-right: 1em;">${this.questionTitle}</span>
                                 <span class="govuk-caption-m count-display">
-                                    <strong>${this.responses.length}</strong> responses
+                                    <strong>${this.responsesTotal}</strong> responses
                                 </span>
                             </div>
                         `}
@@ -4168,7 +4173,7 @@ class IaiResponseDashboard extends IaiLitBase {
                                                         <iai-animated-number
                                                             .number=${this.getPercentage(
                                                                 parseInt(themeMapping.count),
-                                                                this.responses.length
+                                                                this.responsesTotal
                                                             )}
                                                             .duration=${this._numberAnimationDuration}
                                                         ></iai-animated-number>
@@ -4178,7 +4183,7 @@ class IaiResponseDashboard extends IaiLitBase {
                                                 "Number of responses": x`
                                                     <div class="total-count-cell">
                                                         <iai-progress-bar
-                                                            .value=${this.getPercentage(parseInt(themeMapping.count), this.responses.length)}
+                                                            .value=${this.getPercentage(parseInt(themeMapping.count), this.responsesTotal)}
                                                             .label=${themeMapping.count}
                                                         ></iai-progress-bar>
                                                     </div>
@@ -4377,7 +4382,7 @@ class IaiResponseDashboard extends IaiLitBase {
                         <span class="govuk-caption-m count-display">
                             ${this._isLoading
                                 ? x`<strong>Loading</strong> responses`
-                                : x`Viewing <strong>${visibleResponses.length}</strong> responses`}
+                                : x`Viewing <strong>${this.responsesFilteredTotal}</strong> responses`}
                         </span>
 
                         <iai-text-input

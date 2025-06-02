@@ -16,6 +16,8 @@ from .decorators import user_can_see_consultation, user_can_see_dashboards
 class DataDict(TypedDict):
     all_respondents: list
     has_more_pages: bool
+    respondents_total: int
+    filtered_total: int
 
 
 def get_selected_theme_summary(
@@ -128,7 +130,7 @@ def respondents_json(
     page = request.GET.get(
         "page", 1
     )  # TODO: replace with `last_created_at` when we move to keyset pagination
-    respondents = get_respondents_for_question(
+    all_respondents = get_respondents_for_question(
         consultation_slug=consultation_slug, question_slug=question_slug
     )
 
@@ -149,19 +151,27 @@ def respondents_json(
     if evidence_rich_filter and evidence_rich_filter == "evidence-rich":
         query &= Q(answer__evidencerichmapping__evidence_rich=True)
 
-    respondents = respondents.filter(query).distinct()
+    search_value = request.GET.get("searchValue")
+    if search_value:
+        query &= Q(answer__text__icontains=search_value)
+
+    filtered_respondents = all_respondents.filter(query).distinct()
 
     data: DataDict = {
         "all_respondents": [],
         "has_more_pages": False,
+        "respondents_total": len(all_respondents),
+        "filtered_total": len(filtered_respondents),
     }
 
     # Pagination
     if page_size:
-        pagination = Paginator(respondents, page_size)
+        pagination = Paginator(filtered_respondents, page_size)
         current_page = pagination.page(page)
         respondents = current_page.object_list
         data["has_more_pages"] = current_page.has_next()
+    else:
+        respondents = filtered_respondents
 
     # Get individual data for each displayed respondent
     for respondent in respondents:
