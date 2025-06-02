@@ -29,10 +29,9 @@ export default class IaiProgressBar extends IaiLitBase {
             iai-progress-bar .container .label {
                 display: block;    
                 position: absolute;
-                right: 0;
+                right: 0.5em;
                 text-align: right;
                 color: white;
-                color: black;
                 font-weight: bold;
             }
             iai-progress-bar .container.low-value .label {

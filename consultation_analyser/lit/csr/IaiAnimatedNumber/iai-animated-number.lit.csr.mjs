@@ -36,7 +36,7 @@ export default class IaiAnimatedNumber extends IaiLitBase {
             const elapsedTime = currTime - startTime;
             const time = Math.min(elapsedTime / duration, 1);
             const currValue = start * (1 - time) + end * time;
-            element.textContent = currValue.toFixed(2);
+            element.textContent = Math.round(currValue);
 
             if (time < 1) {
                 requestAnimationFrame(update_number);

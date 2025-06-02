@@ -23,6 +23,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         stanceOptions: { type: Array },
         themeMappings: { type: Array },
         responses: { type: Array },
+        responsesTotal: { type: Number },
         free_text_question_part: { type: Boolean },
         has_individual_data: { type: Boolean },
         has_multiple_choice_question_part: { type: Boolean },
@@ -241,6 +242,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         this.consultationTitle = "";
         this.consultationSlug = "";
         this.responses = [];
+        this.responsesTotal = 0;
         this.themeMappings = [];
         this.stanceOptions = [];
         this.free_text_question_part = false;
@@ -309,6 +311,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                     visible: true,
                 }))
             );
+            this.responsesTotal = responsesData.respondents_total;
             
             this._hasMorePages = responsesData.has_more_pages;
     
@@ -479,7 +482,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         if (totalValue === 0) {
             return 0;
         }
-        return parseFloat(((partialValue / totalValue) * 100).toFixed(2));
+        return Math.round(((partialValue / totalValue) * 100));
     }
 
     getResponsesMessage = () => {
@@ -503,7 +506,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                             <div style="display: flex;">
                                 <span style="margin-right: 1em;">${this.questionTitle}</span>
                                 <span class="govuk-caption-m count-display">
-                                    <strong>${this.responses.length}</strong> responses
+                                    <strong>${this.responsesTotal}</strong> responses
                                 </span>
                             </div>
                         `}
@@ -610,7 +613,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                                         <iai-animated-number
                                                             .number=${this.getPercentage(
                                                                 parseInt(themeMapping.count),
-                                                                this.responses.length
+                                                                this.responsesTotal
                                                             )}
                                                             .duration=${this._numberAnimationDuration}
                                                         ></iai-animated-number>
@@ -620,7 +623,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                                 "Number of responses": html`
                                                     <div class="total-count-cell">
                                                         <iai-progress-bar
-                                                            .value=${this.getPercentage(parseInt(themeMapping.count), this.responses.length)}
+                                                            .value=${this.getPercentage(parseInt(themeMapping.count), this.responsesTotal)}
                                                             .label=${themeMapping.count}
                                                         ></iai-progress-bar>
                                                     </div>
