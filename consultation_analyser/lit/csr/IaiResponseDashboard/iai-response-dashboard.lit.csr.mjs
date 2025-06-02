@@ -24,6 +24,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         themeMappings: { type: Array },
         responses: { type: Array },
         responsesTotal: { type: Number },
+        responsesFilteredTotal: { type: Number },
         free_text_question_part: { type: Boolean },
         has_individual_data: { type: Boolean },
         has_multiple_choice_question_part: { type: Boolean },
@@ -243,6 +244,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         this.consultationSlug = "";
         this.responses = [];
         this.responsesTotal = 0;
+        this.responsesFilteredTotal = 0;
         this.themeMappings = [];
         this.stanceOptions = [];
         this.free_text_question_part = false;
@@ -312,6 +314,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 }))
             );
             this.responsesTotal = responsesData.respondents_total;
+            this.responsesFilteredTotal = responsesData.filtered_total;
             
             this._hasMorePages = responsesData.has_more_pages;
     
@@ -822,7 +825,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         <span class="govuk-caption-m count-display">
                             ${this._isLoading
                                 ? html`<strong>Loading</strong> responses`
-                                : html`Viewing <strong>${visibleResponses.length}</strong> responses`}
+                                : html`Viewing <strong>${this.responsesFilteredTotal}</strong> responses`}
                         </span>
 
                         <iai-text-input

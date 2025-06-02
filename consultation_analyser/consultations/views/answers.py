@@ -17,6 +17,7 @@ class DataDict(TypedDict):
     all_respondents: list
     has_more_pages: bool
     respondents_total: int
+    filtered_total: int
 
 
 def get_selected_theme_summary(
@@ -150,17 +151,18 @@ def respondents_json(
     if evidence_rich_filter and evidence_rich_filter == "evidence-rich":
         query &= Q(answer__evidencerichmapping__evidence_rich=True)
 
-    respondents = all_respondents.filter(query).distinct()
+    filtered_respondents = all_respondents.filter(query).distinct()
 
     data: DataDict = {
         "all_respondents": [],
         "has_more_pages": False,
         "respondents_total": len(all_respondents),
+        "filtered_total": len(filtered_respondents),
     }
 
     # Pagination
     if page_size:
-        pagination = Paginator(respondents, page_size)
+        pagination = Paginator(filtered_respondents, page_size)
         current_page = pagination.page(page)
         respondents = current_page.object_list
         data["has_more_pages"] = current_page.has_next()
