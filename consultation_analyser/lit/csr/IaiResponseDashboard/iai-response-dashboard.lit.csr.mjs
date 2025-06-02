@@ -256,68 +256,71 @@ export default class IaiResponseDashboard extends IaiLitBase {
     }
 
     fetchResponses = async () => {
-        if (!this._hasMorePages) {
-            console.warn("no more pages");
-            return;
-        }
+        clearTimeout(this._searchDebounceTimer);
 
-        if (this._currentFetchController) {
-            console.log("aborting stale request");
-            this._currentFetchController.abort();
-            this._isLoading = false;
-        }
-
-        const controller = new AbortController();
-        const signal = controller.signal;
-        this._currentFetchController = controller;
-
-        this._errorOccured = false;
-        this._isLoading = true;
-
-        const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
-        
-        let response;
-        try {
-            response = await fetch(url, { signal });
-        } catch (err) {
-            if (err.name == "AbortError") {
-                console.log("stale request aborted");
+        this._searchDebounceTimer = setTimeout(async () => {
+            if (!this._hasMorePages) {
                 return;
-            } else {
-                console.error(err);
+            }
+    
+            if (this._currentFetchController) {
+                console.log("aborting stale request");
+                this._currentFetchController.abort();
+            }
+    
+            const controller = new AbortController();
+            const signal = controller.signal;
+            this._currentFetchController = controller;
+    
+            this._errorOccured = false;
+            this._isLoading = true;
+    
+            const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
+            
+            let response;
+            try {
+                response = await fetch(url, { signal });
+            } catch (err) {
+                if (err.name == "AbortError") {
+                    console.log("stale request aborted");
+                    return;
+                } else {
+                    console.error(err);
+                    this._errorOccured = true;
+                    return;
+                }
+            } finally {
+                if (this._currentFetchController === controller) {
+                    this._currentFetchController = null;
+                }
+                this._isLoading = false;
+            }
+    
+            if (!response.ok) {
                 this._errorOccured = true;
-                return;
+                throw new Error(`Response status: ${response.status}`);
             }
-        } finally {
-            if (this._currentFetchController === controller) {
-                this._currentFetchController = null;
-            }
-            this._isLoading = false;
-        }
-
-        if (!response.ok) {
-            this._errorOccured = true;
-            throw new Error(`Response status: ${response.status}`);
-        }
-        
-        const responsesData = await response.json();
-        
-        this.responses = this.responses.concat(
-            responsesData.all_respondents.map(response => ({
-                ...response,
-                visible: true,
-            }))
-        );
-        
-        this._hasMorePages = responsesData.has_more_pages;
-
-        this._currentPage = this._currentPage + 1;
+            
+            const responsesData = await response.json();
+            
+            this.responses = this.responses.concat(
+                responsesData.all_respondents.map(response => ({
+                    ...response,
+                    visible: true,
+                }))
+            );
+            
+            this._hasMorePages = responsesData.has_more_pages;
+    
+            this._currentPage = this._currentPage + 1;
+        }, this._DEBOUNCE_DELAY);
     }
 
     resetResponses = () => {
         this.responses = [];
         this._currentPage = 1;
         this._hasMorePages = true;
+        this._isLoading = true;
     }
 
     updated(changedProps) {
@@ -339,11 +342,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
     }
 
     handleSearchInput = (e) => {
-        clearTimeout(this._searchDebounceTimer);
-
-        this._searchDebounceTimer = setTimeout(() => {
-            this._searchValue = e.target.value;
-        }, this._DEBOUNCE_DELAY);
+        this._searchValue = e.target.value;
     }
     handleStanceChange = (e) => {
         this._stanceFilters = this.addOrRemoveFilter(this._stanceFilters, e.target.value);
