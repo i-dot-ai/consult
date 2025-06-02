@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 from typing import TypedDict
 from uuid import UUID
@@ -5,7 +6,7 @@ from uuid import UUID
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.db.models import Count, F, Prefetch, QuerySet, Subquery, Value
+from django.db.models import Count, F, Prefetch, Q, QuerySet, Subquery, Value
 from django.db.models.functions import Length, Replace
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -188,140 +189,134 @@ def get_respondents_for_question(
 
 @user_can_see_dashboards
 @user_can_see_consultation
-def respondents_json(
-    request: HttpRequest,
-    consultation_slug: str,
-    question_slug: str,
-):
+def respondents_json(request: HttpRequest, consultation_slug: str, question_slug: str):
     page_size = request.GET.get("page_size")
-    page = request.GET.get(
-        "page", 1
-    )  # TODO: replace with `last_created_at` when we move to keyset pagination
-    respondents = get_respondents_for_question(
-        consultation_slug=consultation_slug, question_slug=question_slug
+    page = request.GET.get("page", 1)
+
+    # NEW: pull Response rows directly (denormalised)
+    respondents = (
+        models.Response.objects.select_related("respondent")
+        .filter(consultation__slug=consultation_slug, question__slug=question_slug)
+        .order_by("id")  # keep deterministic order for pagination
     )
+    query = Q()
 
-    data: DataDict = {
-        "all_respondents": [],
-        "has_more_pages": False,
-    }
+    sentiment_list = request.GET.get("sentimentFilters", "").split(",")
+    sentiment_list = [s for s in sentiment_list if s]
+    if sentiment_list:
+        query &= Q(sentiment__in=sentiment_list)
 
-    # Pagination
+    theme_list = request.GET.get("themeFilters", "").split(",")
+    theme_list = [t for t in theme_list if t]
+    if theme_list:
+        theme_q = Q()
+        for t in theme_list:
+            # simple text match inside JSON array
+            theme_q |= Q(themes__icontains=f'"theme_key":"{t}"')
+        query &= theme_q
+
+    if request.GET.get("evidenceRichFilter") == "evidence-rich":
+        query &= Q(evidence_rich=models.Response.EvidenceRich.YES)
+
+    respondents = respondents.filter(query)
+
+    data: dict[str, object] = {"all_respondents": [], "has_more_pages": False}
+
+    # Pagination (unchanged)
     if page_size:
         pagination = Paginator(respondents, page_size)
         current_page = pagination.page(page)
         respondents = current_page.object_list
         data["has_more_pages"] = current_page.has_next()
 
-    # Get individual data for each displayed respondent
-    for respondent in respondents:
-        # Defaults
-        free_text_answer = None
-        multiple_choice_answers = None
-
-        # Free text response
-        free_text_responses = [
-            answer
-            for answer in respondent.prefetched_answers
-            if answer.question_part.type == models.QuestionPart.QuestionType.FREE_TEXT
+    # Build payload
+    for resp in respondents:  # resp == Response instance
+        respondent = resp.respondent  # convenience
+        themes_payload = [
+            {
+                "id": t.get("theme_key"),  # was theme.theme.id
+                "name": t.get("theme_name"),
+                "description": t.get("theme_description"),
+            }
+            for t in (resp.themes or [])
         ]
 
-        if free_text_responses:
-            free_text_answer = free_text_responses[0]
-            respondent.themes = free_text_answer.prefetched_thememappings  # type: ignore
-
-            if free_text_answer.prefetched_sentimentmappings:
-                # Can assume at most one sentiment mapping
-                respondent.sentiment = free_text_answer.prefetched_sentimentmappings[0]  # type: ignore
-
-            if free_text_answer.prefetched_evidencerichmappings:
-                # Can assume at most one sentiment mapping
-                respondent.evidence_rich = free_text_answer.prefetched_evidencerichmappings[0]  # type: ignore
-
-        # Multiple choice response
-        multiple_choice_answers = [
-            answer
-            for answer in respondent.prefetched_answers
-            if answer.question_part.type == models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
-        ]
-
-        if multiple_choice_answers:
-            respondent.multiple_choice_answer = multiple_choice_answers[0]
-
-        # Build JSON response
         data["all_respondents"].append(
             {
-                "id": f"response-{getattr(respondent, 'identifier', '')}",
-                "identifier": getattr(respondent, "identifier", ""),
-                "sentiment_position": respondent.sentiment.position
-                if hasattr(respondent, "sentiment") and hasattr(respondent.sentiment, "position")
-                else "",
-                "free_text_answer_text": free_text_answer.text  # type: ignore
-                if hasattr(free_text_answer, "text")
-                else "",
-                "demographic_data": hasattr(respondent, "data") or "",
-                "themes": [
-                    {
-                        "id": theme.theme.id,
-                        "stance": theme.stance,
-                        "name": theme.theme.name,
-                        "description": theme.theme.description,
-                    }
-                    for theme in respondent.themes
-                ]
-                if hasattr(respondent, "themes")
-                else [],
-                "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options]
-                if hasattr(respondent, "multiple_choice_answer")
-                and hasattr(respondent.multiple_choice_answer, "chosen_options")
-                else [],
-                "evidenceRich": True
-                if hasattr(respondent, "evidence_rich") and respondent.evidence_rich.evidence_rich
-                else False,
-                "individual": True if hasattr(respondent, "individual") else False,
+                "id": f"response-{resp.id}",
+                "identifier": respondent.identifier,
+                "sentiment_position": resp.sentiment or "",
+                "free_text_answer_text": resp.free_text_answer or "",
+                "demographic_data": bool(respondent.data),
+                "themes": themes_payload,  # already denormalised JSON
+                "multiple_choice_answer": [],  # not present in new model
+                "evidenceRich": resp.evidence_rich == models.Response.EvidenceRich.YES,
+                "individual": False,  # adjust if you store flag elsewhere
             }
         )
+
+    # TODO: add filtering to this endpoint. see Nina's PR
 
     return JsonResponse(data)
 
 
+# THIS IS what we need to update for themes table, need to include filtering here. think of a better name!
 @user_can_see_dashboards
 @user_can_see_consultation
-def index(
-    request: HttpRequest,
-    consultation_slug: str,
-    question_slug: str,
-):
-    # Get question data
+def index(request: HttpRequest, consultation_slug: str, question_slug: str):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    question = models.Question.objects.get(
-        slug=question_slug,
-        consultation=consultation,
-    )
-    free_text_question_part = models.QuestionPart.objects.filter(
-        question=question, type=models.QuestionPart.QuestionType.FREE_TEXT
-    ).first()  # Assume that there is only one free text response
-    has_multiple_choice_question_part = models.QuestionPart.objects.filter(
-        question=question, type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
-    ).exists()
+    question = models.Question.objects.get(slug=question_slug, consultation=consultation)
 
-    # Get all respondents for question
-    respondents = get_respondents_for_question(
-        consultation_slug=consultation_slug, question_slug=question_slug
-    )
+    responses_qs = models.Response.objects.select_related("respondent").filter(question=question)
+    query = Q()
 
-    has_individual_data = respondents.filter(data__has_key="individual").exists()
+    sentiment_list = request.GET.get("sentimentFilters", "").split(",")
+    sentiment_list = [s for s in sentiment_list if s]
+    if sentiment_list:
+        query &= Q(sentiment__in=sentiment_list)
 
-    # Get summary data for filtered respondents list
-    selected_theme_mappings = get_selected_theme_summary(free_text_question_part, respondents)
-    multiple_choice_summary = get_selected_option_summary(question, respondents)
+    theme_list = request.GET.get("themeFilters", "").split(",")
+    theme_list = [t for t in theme_list if t]
+    if theme_list:
+        theme_q = Q()
+        for t in theme_list:
+            theme_q |= Q(themes__icontains=f'"theme_key":"{t}"')
+        query &= theme_q
+
+    if request.GET.get("evidenceRichFilter") == "evidence-rich":
+        query &= Q(evidence_rich=models.Response.EvidenceRich.YES)
+
+    responses_qs = responses_qs.filter(query)
+
+    has_individual_data = responses_qs.filter(respondent__data__has_key="individual").exists()
+    theme_counter: defaultdict[tuple[str, str, str], int] = defaultdict(int)
+
+    for resp in responses_qs:
+        for theme in resp.themes or []:
+            key = (
+                theme.get("theme_key", ""),
+                theme.get("theme_name", ""),
+                theme.get("theme_description", ""),
+            )
+            theme_counter[key] += 1
+
+    selected_theme_mappings = [
+        {
+            "theme__key": k,
+            "theme__name": n,
+            "theme__description": d,
+            "count": c,
+        }
+        for (k, n, d), c in theme_counter.items()
+    ]
+    selected_theme_mappings.sort(key=lambda m: m["count"], reverse=True)
+
+    has_multiple_choice_question_part = False
+    multiple_choice_summary = []
 
     csv_button_data = [
-        {
-            "Theme name": mapping.get("theme__name", ""),
-            "Total mentions": mapping.get("count", -1),
-        }
-        for mapping in selected_theme_mappings
+        {"Theme name": m["theme__name"], "Total mentions": m["count"]}
+        for m in selected_theme_mappings
     ]
 
     context = {
@@ -329,12 +324,12 @@ def index(
         "consultation_slug": consultation_slug,
         "question": question,
         "question_slug": question_slug,
-        "free_text_question_part": free_text_question_part,
+        "free_text_question_part": None,  # no longer used
         "has_multiple_choice_question_part": has_multiple_choice_question_part,
         "selected_theme_mappings": selected_theme_mappings,
         "csv_button_data": csv_button_data,
         "multiple_choice_summary": multiple_choice_summary,
-        "stance_options": models.SentimentMapping.Position.names,
+        "stance_options": models.Response.SentimentPosition.names,
         "has_individual_data": has_individual_data,
     }
 
