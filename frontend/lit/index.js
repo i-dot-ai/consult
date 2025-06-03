@@ -3474,7 +3474,7 @@ class IaiProgressBar extends IaiLitBase {
                 font-weight: bold;
             }
             iai-progress-bar .container.low-value .label {
-                right: -1.5em;
+                left: calc(100% + 0.5em);
                 color: var(--iai-colour-brand);
                 font-size: 1.2em;
             }
@@ -4159,7 +4159,7 @@ class IaiResponseDashboard extends IaiLitBase {
                                                 "_sortValues": {
                                                     "Theme name and description": themeMapping.label,
                                                     "Number of responses": parseInt(themeMapping.count),
-                                                    "Percentage of responses": this.getPercentage(parseInt(themeMapping.count), this.responses.length),
+                                                    "Percentage of responses": this.getPercentage(parseInt(themeMapping.count), this.responsesTotal),
                                                 },
                                                 "Theme name and description": x`
                                                     <iai-expanding-pill
