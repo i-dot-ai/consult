@@ -602,7 +602,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                                 "_sortValues": {
                                                     "Theme name and description": themeMapping.label,
                                                     "Number of responses": parseInt(themeMapping.count),
-                                                    "Percentage of responses": this.getPercentage(parseInt(themeMapping.count), this.responses.length),
+                                                    "Percentage of responses": this.getPercentage(parseInt(themeMapping.count), this.responsesTotal),
                                                 },
                                                 "Theme name and description": html`
                                                     <iai-expanding-pill

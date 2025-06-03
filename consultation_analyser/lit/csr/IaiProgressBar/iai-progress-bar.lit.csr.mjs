@@ -35,7 +35,7 @@ export default class IaiProgressBar extends IaiLitBase {
                 font-weight: bold;
             }
             iai-progress-bar .container.low-value .label {
-                right: -1.5em;
+                left: calc(100% + 0.5em);
                 color: var(--iai-colour-brand);
                 font-size: 1.2em;
             }
