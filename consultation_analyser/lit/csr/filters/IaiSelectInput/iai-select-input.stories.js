@@ -6,7 +6,7 @@ import IaiSelectInput from './iai-select-input.lit.csr.mjs';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Csr/IaiSelectInput',
+  title: 'Csr/Inputs/SelectInput',
   tags: ['autodocs'],
   argTypes: {
     inputId: { control: "text" },
