@@ -7,7 +7,7 @@ import { DEFAULT_DATA } from './testData.mjs';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Example/IaiDataTable',
+  title: 'Csr/DataTable',
   tags: ['autodocs'],
   render: (args) => {
     return html`
