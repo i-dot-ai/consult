@@ -3396,7 +3396,8 @@ class IaiChip extends IaiLitBase {
             
             iai-chip div {
                 display: flex;
-                place-items: center;
+                justify-content: space-between;
+                align-items: center;
                 gap: 1em;
                 padding: 0.5em 1em;
                 font-size: 1em;
@@ -3423,7 +3424,9 @@ class IaiChip extends IaiLitBase {
     render() {
         return x`    
             <div>
-                ${this.label}
+                <span>
+                    ${this.label}
+                </span>
 
                 <iai-icon-button
                     title="Remove theme filter"
