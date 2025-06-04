@@ -12,12 +12,23 @@ const TEST_THEMES = [
     description: "description 2"
   }
 ];
+const TEST_FREE_TEXT_ANSWER = "Test free text answer.";
 const TEST_MULTI_CHOICE_ANSWERS = ["answer 1", "answer 2"];
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
   title: 'Csr/Response',
   tags: ['autodocs'],
+  argTypes: {
+    sentiment_position: {
+      control: { type: "select" },
+      options: [
+        "AGREEMENT",
+        "DISAGREEMENT",
+        "UNCLEAR",
+      ]
+    }
+  },
   render: (args) => {
     return html`
       <iai-response
@@ -45,7 +56,7 @@ export const Default = {
     identifier: "test-response",
     individual: "test-individual",
     sentiment_position: "UNCLEAR",
-    free_text_answer_text: "Test free text answer.",
+    free_text_answer_text: TEST_FREE_TEXT_ANSWER,
     demographic_data: undefined,
     themes: TEST_THEMES,
     has_multiple_choice_question_part: true,
@@ -61,7 +72,7 @@ export const WithoutMultiChoice = {
     identifier: "test-response",
     individual: "test-individual",
     sentiment_position: "UNCLEAR",
-    free_text_answer_text: "Test free text answer.",
+    free_text_answer_text: TEST_FREE_TEXT_ANSWER,
     demographic_data: undefined,
     themes: TEST_THEMES,
     has_multiple_choice_question_part: false,
@@ -93,12 +104,60 @@ export const WithSearchHighlight = {
     identifier: "test-response",
     individual: "test-individual",
     sentiment_position: "UNCLEAR",
-    free_text_answer_text: "Test free text answer.",
+    free_text_answer_text: TEST_FREE_TEXT_ANSWER,
     demographic_data: undefined,
     themes: TEST_THEMES,
     has_multiple_choice_question_part: true,
     multiple_choice_answer: TEST_MULTI_CHOICE_ANSWERS,
     searchValue: "free text",
     evidenceRich: true,
+  }
+};
+
+export const NotEvidenceRich = {
+  args: {
+    id: "test-response",
+    identifier: "test-response",
+    individual: "test-individual",
+    sentiment_position: "UNCLEAR",
+    free_text_answer_text: TEST_FREE_TEXT_ANSWER,
+    demographic_data: undefined,
+    themes: TEST_THEMES,
+    has_multiple_choice_question_part: true,
+    multiple_choice_answer: TEST_MULTI_CHOICE_ANSWERS,
+    searchValue: "",
+    evidenceRich: false,
+  }
+};
+
+export const Agreement = {
+  args: {
+    id: "test-response",
+    identifier: "test-response",
+    individual: "test-individual",
+    sentiment_position: "AGREEMENT",
+    free_text_answer_text: TEST_FREE_TEXT_ANSWER,
+    demographic_data: undefined,
+    themes: TEST_THEMES,
+    has_multiple_choice_question_part: true,
+    multiple_choice_answer: TEST_MULTI_CHOICE_ANSWERS,
+    searchValue: "",
+    evidenceRich: false,
+  }
+};
+
+export const Disagreement = {
+  args: {
+    id: "test-response",
+    identifier: "test-response",
+    individual: "test-individual",
+    sentiment_position: "DISAGREEMENT",
+    free_text_answer_text: TEST_FREE_TEXT_ANSWER,
+    demographic_data: undefined,
+    themes: TEST_THEMES,
+    has_multiple_choice_question_part: true,
+    multiple_choice_answer: TEST_MULTI_CHOICE_ANSWERS,
+    searchValue: "",
+    evidenceRich: false,
   }
 };
