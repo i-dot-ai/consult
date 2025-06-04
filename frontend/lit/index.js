@@ -3463,7 +3463,7 @@ class IaiProgressBar extends IaiLitBase {
                 height: 2em;
                 color: white;
                 transition: width 1s ease-in-out;
-                background: var(--iai-colour-brand);
+                background: var(--iai-colour-pink);
             }
             iai-progress-bar .container .label {
                 display: block;    
@@ -3475,7 +3475,7 @@ class IaiProgressBar extends IaiLitBase {
             }
             iai-progress-bar .container.low-value .label {
                 left: calc(100% + 0.5em);
-                color: var(--iai-colour-brand);
+                color: var(--iai-colour-pink);
                 font-size: 1.2em;
             }
         `
