@@ -1,3 +1,6 @@
+import "../consultation_analyser/lit/storybookStyles.js"
+import "../frontend/style_.scss"
+
 /** @type { import('@storybook/web-components').Preview } */
 const preview = {
   parameters: {
