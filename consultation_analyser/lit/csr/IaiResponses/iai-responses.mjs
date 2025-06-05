@@ -2,7 +2,6 @@ import { html, css } from 'lit';
 import '@lit-labs/virtualizer';
 
 import IaiLitBase from '../../IaiLitBase.mjs';
-import IaiIcon from '../questionsArchive/IaiIcon/iai-icon.mjs';
 
 
 export default class IaiResponses extends IaiLitBase {
@@ -24,7 +23,7 @@ export default class IaiResponses extends IaiLitBase {
             iai-responses lit-virtualizer {
                 height: 100%;
             }
-            iai-responses p.not-found {
+            iai-responses p.message {
                 text-align: center;
                 font-style: italic;
             }
@@ -51,7 +50,7 @@ export default class IaiResponses extends IaiLitBase {
 
     render() {
         if (this.message) {
-            return html`<p class="not-found">${this.message}</p>`;
+            return html`<p class="message">${this.message}</p>`;
         }
 
         return html`

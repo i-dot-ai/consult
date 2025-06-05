@@ -3,12 +3,18 @@ import { html, css } from 'lit';
 import IaiLitBase from '../../IaiLitBase.mjs';
 import IaiResponseFilters from '../IaiResponseFilters/iai-response-filters.lit.csr.mjs';
 import IaiTextInput from '../filters/IaiTextInput/iai-text-input.lit.csr.mjs';
+import IaiCheckboxInput from '../filters/IaiCheckboxInput/iai-checkbox-input.lit.csr.mjs';
 import IaiResponseFilterGroup from '../IaiResponseFilterGroup/iai-response-filter-group.lit.csr.mjs';
 import IaiPageTitle from '../IaiPageTitle/iai-page-title.lit.csr.mjs';
 import IaiDataTable from '../IaiDataTable/iai-data-table.lit.csr.mjs';
 import IaiCsvDownload from '../IaiCsvDownload/iai-csv-download.lit.csr.mjs';
 import IaiProgressBar from '../IaiProgressBar/iai-progress-bar.lit.csr.mjs';
 import IaiAnimatedNumber from '../IaiAnimatedNumber/iai-animated-number.lit.csr.mjs';
+import IaiExpandingPill from '../IaiExpandingPill/iai-expanding-pill.lit.csr.mjs';
+import IaiChip from '../IaiChip/iai-chip.lit.csr.mjs';
+import IaiExpandingText from '../IaiExpandingText/iai-expanding-text.lit.csr.mjs';
+import IaiLoadingIndicator from '../IaiLoadingIndicator/iai-loading-indicator.lit.csr.mjs';
+import IaiResponses from '../IaiResponses/iai-responses.mjs';
 
 
 export default class IaiResponseDashboard extends IaiLitBase {
@@ -24,7 +30,6 @@ export default class IaiResponseDashboard extends IaiLitBase {
         themeMappings: { type: Array },
         responses: { type: Array },
         responsesTotal: { type: Number },
-        responsesFilteredTotal: { type: Number },
         free_text_question_part: { type: Boolean },
         has_individual_data: { type: Boolean },
         has_multiple_choice_question_part: { type: Boolean },
@@ -37,6 +42,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         _themeFilters: { type: Array },
         _themesPanelVisible: { type: Boolean },
         _stanceFilters: { type: Array },
+        _responsesFilteredTotal: { type: Number },
         _evidenceRichFilters: { type: Array },
         _numberAnimationDuration: { type: Number },
         _searchDebounceTimer: { type: Number },
@@ -140,17 +146,6 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 max-height: 40em;
                 overflow: auto;
             }
-            iai-response-dashboard .spinner {
-                display: flex;
-                justify-content: center;
-                animation-name: spin;
-                animation-duration: 1s;
-                animation-iteration-count: infinite;
-                animation-timing-function: ease-in-out;
-            }
-            iai-response-dashboard .spinner iai-icon .material-symbols-outlined {
-                font-size: 3em;
-            }
             iai-response-dashboard thead tr {
                 color: var(--iai-colour-text-secondary);
             }
@@ -202,15 +197,6 @@ export default class IaiResponseDashboard extends IaiLitBase {
             iai-response-dashboard .flex-grow {
                 flex-grow: 1;
             }
-
-            @keyframes spin {
-                from {
-                    transform:rotate(0deg);
-                }
-                to {
-                    transform:rotate(360deg);
-                }
-            }
         `
     ]
 
@@ -231,6 +217,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         this._themeFilters = [];
         this._themesPanelVisible = false;
         this._demographicFilters = [];
+        this._responsesFilteredTotal = 0;
         this._numberAnimationDuration = 500;
         this._searchDebounceTimer = null;
         this._currentPage = 1;
@@ -244,7 +231,6 @@ export default class IaiResponseDashboard extends IaiLitBase {
         this.consultationSlug = "";
         this.responses = [];
         this.responsesTotal = 0;
-        this.responsesFilteredTotal = 0;
         this.themeMappings = [];
         this.stanceOptions = [];
         this.free_text_question_part = false;
@@ -314,7 +300,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 }))
             );
             this.responsesTotal = responsesData.respondents_total;
-            this.responsesFilteredTotal = responsesData.filtered_total;
+            this._responsesFilteredTotal = responsesData.filtered_total;
             
             this._hasMorePages = responsesData.has_more_pages;
     
@@ -825,7 +811,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         <span class="govuk-caption-m count-display">
                             ${this._isLoading
                                 ? html`<strong>Loading</strong> responses`
-                                : html`Viewing <strong>${this.responsesFilteredTotal}</strong> responses`}
+                                : html`Viewing <strong>${this._responsesFilteredTotal}</strong> responses`}
                         </span>
 
                         <iai-text-input
@@ -870,15 +856,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                     ></iai-responses>
 
                     ${this._isLoading
-                        ? html`
-                            <div class="spinner">
-                                <iai-icon
-                                    name="progress_activity"
-                                    .opsz=${48}
-                                    .color=${"var(--iai-colour-pink)"}
-                                ></iai-icon>
-                            </div>
-                        `
+                        ? html`<iai-loading-indicator></iai-loading-indicator>`
                         : ""
                     }
                 </div>
