@@ -4,11 +4,11 @@ import '@lit-labs/virtualizer';
 import IaiLitBase from '../../IaiLitBase.mjs';
 
 
-export default class IaiResponses extends IaiLitBase {
+export default class IaiVirtualList extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
-        responses: {type: Array},
-        renderResponse: {type: Function},
+        data: {type: Array},
+        renderItem: {type: Function},
         handleScrollEnd: {type: Function},
         message: {type: String},
         _canCallCallback: {type: Boolean},
@@ -17,13 +17,13 @@ export default class IaiResponses extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         css`
-            iai-responses {
+            iai-virtual-list {
                 display: block;
             }
-            iai-responses lit-virtualizer {
+            iai-virtual-list lit-virtualizer {
                 height: 100%;
             }
-            iai-responses p.message {
+            iai-virtual-list p.message {
                 text-align: center;
                 font-style: italic;
             }
@@ -37,15 +37,15 @@ export default class IaiResponses extends IaiLitBase {
         this._CALLBACK_COOLDOWN = 2000;
 
         // Prop defaults
-        this.responses = [];
-        this.renderResponse = () => console.warn(
-            "IaiResponses warning: renderResponse prop not passed"
+        this.data = [];
+        this.renderItem = () => console.warn(
+            "IaiVirtualList warning: renderResponse prop not passed"
         );
         this.handleScrollEnd = () => {};
         this.message = "";
         this._canCallCallback = true;
         
-        this.applyStaticStyles("iai-responses", IaiResponses.styles);
+        this.applyStaticStyles("iai-virtual-list", IaiVirtualList.styles);
     }
 
     render() {
@@ -57,12 +57,12 @@ export default class IaiResponses extends IaiLitBase {
             <lit-virtualizer
                 role="list"
                 scroller
-                .items=${this.responses}
-                .renderItem=${this.renderResponse}
+                .items=${this.data}
+                .renderItem=${this.renderItem}
                 @scroll=${() => {
-                    const lastResponse = document.querySelector(".last-response");
+                    const lastItem = document.querySelector(".last-item");
 
-                    if (lastResponse && this.handleScrollEnd && this._canCallCallback) {
+                    if (lastItem && this.handleScrollEnd && this._canCallCallback) {
                         this.handleScrollEnd();
 
                         this._canCallCallback = false;
@@ -76,4 +76,4 @@ export default class IaiResponses extends IaiLitBase {
         `;
     }
 }
-customElements.define("iai-responses", IaiResponses);
+customElements.define("iai-virtual-list", IaiVirtualList);

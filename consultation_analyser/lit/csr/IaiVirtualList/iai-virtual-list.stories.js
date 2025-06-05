@@ -2,7 +2,7 @@ import { html } from 'lit';
 
 import { action } from "@storybook/addon-actions";
 
-import IaiResponses from './iai-responses.mjs';
+import IaiVirtualList from './iai-virtual-list.mjs';
 
 
 const TEST_RESPONSES = [
@@ -16,19 +16,19 @@ const TEST_RESPONSES = [
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Csr/ResponsesDashboard/Responses',
+  title: 'Csr/VirtualList',
   tags: ['autodocs'],
   argTypes: {
     message: { control: "text" },
   },
   render: (args) => {
     return html`
-      <iai-responses
-        .responses=${args.responses}
-        .renderResponse=${args.renderResponse}
+      <iai-virtual-list
+        .data=${args.data}
+        .renderItem=${args.renderItem}
         .message=${args.message}
         .handleScrollEnd=${args.handleScrollEnd}
-      ></iai-responses>
+      ></iai-virtual-list>
     `
   },
 };
@@ -36,8 +36,8 @@ export default {
 // More on writing stories with args: https://storybook.js.org/docs/writing-stories/args
 export const Default = {
   args: {
-    responses: TEST_RESPONSES,
-    renderResponse: (response) => html`<li>${response.text}</li>`,
+    data: TEST_RESPONSES,
+    renderItem: (response) => html`<li>${response.text}</li>`,
     message: undefined,
     handleScrollEnd: undefined,
   },
@@ -45,23 +45,23 @@ export const Default = {
 
 export const WithMessage = {
   args: {
-    responses: TEST_RESPONSES,
-    renderResponse: (response) => html`<li>${response.text}</li>`,
+    data: TEST_RESPONSES,
+    renderItem: (response) => html`<li>${response.text}</li>`,
     message: "Test Message",
   },
 };
 
 export const LongList = {
   args: {
-    responses: Array.from(Array(1000).keys()),
-    renderResponse: (response) => html`<li>${response}</li>`,
+    data: Array.from(Array(1000).keys()),
+    renderItem: (response) => html`<li>${response}</li>`,
   },
 };
 
 export const EmptyList = {
   args: {
-    responses: [],
-    renderResponse: (response) => html`
+    data: [],
+    renderItem: (response) => html`
       <li>${response}</li>
     `,
   },
@@ -69,9 +69,9 @@ export const EmptyList = {
 
 export const WithScrollCallback = {
   args: {
-    responses: Array.from(Array(100).keys()),
-    renderResponse: (response, index) => html`
-      <li class=${index === 99 ? "last-response" : ""}>
+    data: Array.from(Array(100).keys()),
+    renderItem: (response, index) => html`
+      <li class=${index === 99 ? "last-item" : ""}>
         ${response}
       </li>
     `,
