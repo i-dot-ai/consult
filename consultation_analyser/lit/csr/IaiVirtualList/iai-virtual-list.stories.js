@@ -2,7 +2,7 @@ import { html } from 'lit';
 
 import { action } from "@storybook/addon-actions";
 
-import IaiVirtualList from './iai-virtual-list.mjs';
+import IaiVirtualList from './iai-virtual-list.lit.csr.mjs';
 
 
 const TEST_RESPONSES = [
@@ -13,6 +13,7 @@ const TEST_RESPONSES = [
     text: "Test Response 2"
   },
 ];
+
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {

@@ -2,8 +2,8 @@ import { html, css } from 'lit';
 
 import IaiLitBase from '../../IaiLitBase.mjs';
 import IaiResponseFilters from '../IaiResponseFilters/iai-response-filters.lit.csr.mjs';
-import IaiTextInput from '../filters/IaiTextInput/iai-text-input.lit.csr.mjs';
-import IaiCheckboxInput from '../filters/IaiCheckboxInput/iai-checkbox-input.lit.csr.mjs';
+import IaiTextInput from '../inputs/IaiTextInput/iai-text-input.lit.csr.mjs';
+import IaiCheckboxInput from '../inputs/IaiCheckboxInput/iai-checkbox-input.lit.csr.mjs';
 import IaiResponseFilterGroup from '../IaiResponseFilterGroup/iai-response-filter-group.lit.csr.mjs';
 import IaiPageTitle from '../IaiPageTitle/iai-page-title.lit.csr.mjs';
 import IaiDataTable from '../IaiDataTable/iai-data-table.lit.csr.mjs';
@@ -14,7 +14,7 @@ import IaiExpandingPill from '../IaiExpandingPill/iai-expanding-pill.lit.csr.mjs
 import IaiChip from '../IaiChip/iai-chip.lit.csr.mjs';
 import IaiExpandingText from '../IaiExpandingText/iai-expanding-text.lit.csr.mjs';
 import IaiLoadingIndicator from '../IaiLoadingIndicator/iai-loading-indicator.lit.csr.mjs';
-import IaiVirtualList from '../IaiVirtualList/iai-virtual-list.mjs';
+import IaiVirtualList from '../IaiVirtualList/iai-virtual-list.lit.csr.mjs';
 
 
 export default class IaiResponseDashboard extends IaiLitBase {
@@ -651,8 +651,9 @@ export default class IaiResponseDashboard extends IaiLitBase {
                             </div>
                         </div>
                     </div>
-                `
-                : ""}
+                `    
+                : ""
+            }
 
             <div class="govuk-grid-row govuk-!-margin-top-5 responses-row">
                 <div class="govuk-grid-column-one-quarter-from-desktop filters-column">
@@ -663,12 +664,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                 ${this.free_text_question_part
                                     ? html`
                                         <iai-response-filter-group title="Themes">
-                                            <div
-                                                slot="content"
-                                                class="govuk-checkboxes govuk-checkboxes--small"
-                                                data-module="govuk-checkboxes"
-                                                data-govuk-checkboxes-init=""
-                                            >
+                                            <div slot="content" class="govuk-checkboxes govuk-checkboxes--small">
                                                 <div class="themes-container">
                                                     <div
                                                         class="input-container"
@@ -721,7 +717,8 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                                                 </ul>
                                                             </div>
                                                         `
-                                                        : ""}
+                                                        : ""
+                                                    }
                                                 </div>
                                             </div>
                                         </iai-response-filter-group>
@@ -731,42 +728,35 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                     : ""
                                 }
 
-                                ${this.has_individual_data ? html`
-                                    <iai-response-filter-group title="Response type">
-                                        <div
-                                            slot="content"
-                                            class="govuk-checkboxes govuk-checkboxes--small"
-                                            data-module="govuk-checkboxes"
-                                            data-govuk-checkboxes-init=""
-                                        >
-                                            <iai-checkbox-input
-                                                name="demographic-filter"
-                                                inputId="demographic-individual"
-                                                label="Hide Individual"
-                                                value="individual"
-                                                .handleChange=${this.handleDemographicChange}
-                                            ></iai-checkbox-input>
-                                            <iai-checkbox-input
-                                                name="demographic-filter"
-                                                inputId="demographic-organisation"
-                                                label="Hide Organisation"
-                                                value="organisation"
-                                                .handleChange=${this.handleDemographicChange}
-                                            ></iai-checkbox-input>
-                                        </div>
-                                    </iai-response-filter-group>
+                                ${this.has_individual_data
+                                    ? html`
+                                        <iai-response-filter-group title="Response type">
+                                            <div slot="content" class="govuk-checkboxes govuk-checkboxes--small">
+                                                <iai-checkbox-input
+                                                    name="demographic-filter"
+                                                    inputId="demographic-individual"
+                                                    label="Hide Individual"
+                                                    value="individual"
+                                                    .handleChange=${this.handleDemographicChange}
+                                                ></iai-checkbox-input>
+                                                <iai-checkbox-input
+                                                    name="demographic-filter"
+                                                    inputId="demographic-organisation"
+                                                    label="Hide Organisation"
+                                                    value="organisation"
+                                                    .handleChange=${this.handleDemographicChange}
+                                                ></iai-checkbox-input>
+                                            </div>
+                                        </iai-response-filter-group>
 
-                                    <hr />
-                                ` : ""}
+                                        <hr />
+                                    `
+                                    : ""
+                                }
 
 
                                 <iai-response-filter-group title="Response sentiment">
-                                    <div
-                                        slot="content"
-                                        class="govuk-checkboxes govuk-checkboxes--small"
-                                        data-module="govuk-checkboxes"
-                                        data-govuk-checkboxes-init=""
-                                    >
+                                    <div slot="content" class="govuk-checkboxes govuk-checkboxes--small">
                                         ${this.stanceOptions.map(option => html`
                                             <iai-checkbox-input
                                                 name=${option.name}
@@ -782,12 +772,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                 <hr />
 
                                 <iai-response-filter-group title="Evidence-rich responses">
-                                    <div
-                                        slot="content"
-                                        class="govuk-checkboxes govuk-checkboxes--small"
-                                        data-module="govuk-checkboxes"
-                                        data-govuk-checkboxes-init=""
-                                    >
+                                    <div slot="content" class="govuk-checkboxes govuk-checkboxes--small">
                                         <iai-checkbox-input
                                             name="evidence-rich"
                                             inputId="show-evidence-rich"
@@ -811,7 +796,8 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         <span class="govuk-caption-m count-display">
                             ${this._isLoading
                                 ? html`<strong>Loading</strong> responses`
-                                : html`Viewing <strong>${this._responsesFilteredTotal}</strong> responses`}
+                                : html`Viewing <strong>${this._responsesFilteredTotal}</strong> responses`
+                            }
                         </span>
 
                         <iai-text-input
