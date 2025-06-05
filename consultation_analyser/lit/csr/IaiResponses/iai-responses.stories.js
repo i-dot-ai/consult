@@ -18,6 +18,9 @@ const TEST_RESPONSES = [
 export default {
   title: 'Csr/Responses',
   tags: ['autodocs'],
+  argTypes: {
+    message: { control: "text" },
+  },
   render: (args) => {
     return html`
       <iai-responses
@@ -35,6 +38,8 @@ export const Default = {
   args: {
     responses: TEST_RESPONSES,
     renderResponse: (response) => html`<li>${response.text}</li>`,
+    message: undefined,
+    handleScrollEnd: undefined,
   },
 };
 
@@ -50,6 +55,15 @@ export const LongList = {
   args: {
     responses: Array.from(Array(1000).keys()),
     renderResponse: (response) => html`<li>${response}</li>`,
+  },
+};
+
+export const EmptyList = {
+  args: {
+    responses: [],
+    renderResponse: (response) => html`
+      <li>${response}</li>
+    `,
   },
 };
 
