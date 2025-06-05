@@ -14,7 +14,7 @@ import IaiExpandingPill from '../IaiExpandingPill/iai-expanding-pill.lit.csr.mjs
 import IaiChip from '../IaiChip/iai-chip.lit.csr.mjs';
 import IaiExpandingText from '../IaiExpandingText/iai-expanding-text.lit.csr.mjs';
 import IaiLoadingIndicator from '../IaiLoadingIndicator/iai-loading-indicator.lit.csr.mjs';
-import IaiResponses from '../IaiResponses/iai-responses.mjs';
+import IaiVirtualList from '../IaiVirtualList/iai-virtual-list.mjs';
 
 
 export default class IaiResponseDashboard extends IaiLitBase {
@@ -825,12 +825,12 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         ></iai-text-input>
                     </div>
 
-                    <iai-responses
+                    <iai-virtual-list
                         class=${this.responses.length > 0 ? " flex-grow" : ""}
-                        .responses=${visibleResponses}
-                        .renderResponse=${(response, index) => html`
+                        .data=${visibleResponses}
+                        .renderItem=${(response, index) => html`
                             <iai-response
-                                class=${index === this.responses.length - 1 ? "last-response" : ""}
+                                class=${index === this.responses.length - 1 ? "last-item" : ""}
                                 role="listitem"
                                 .id=${response.inputId}
                                 .identifier=${response.identifier}
@@ -853,7 +853,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         }}
                         .isLoading=${this._isLoading}
                         .message=${this.getResponsesMessage()}
-                    ></iai-responses>
+                    ></iai-virtual-list>
 
                     ${this._isLoading
                         ? html`<iai-loading-indicator></iai-loading-indicator>`
