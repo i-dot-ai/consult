@@ -6,7 +6,7 @@ import IaiResponseFilterGroup from './iai-response-filter-group.lit.csr.mjs';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Csr/ResponseFilterGroup',
+  title: 'Csr/ResponsesDashboard/ResponseFilterGroup',
   tags: ['autodocs'],
   render: (args) => {
     return html`

@@ -5,7 +5,7 @@ import { unsafeHTML } from 'lit/directives/unsafe-html.js';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Csr/ResponseFilters',
+  title: 'Csr/ResponsesDashboard/ResponseFilters',
   tags: ['autodocs'],
   render: (args) => {
     return html`
