@@ -17,7 +17,7 @@ const TEST_MULTI_CHOICE_ANSWERS = ["answer 1", "answer 2"];
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Csr/Response',
+  title: 'Csr/ResponsesDashboard/Response',
   tags: ['autodocs'],
   argTypes: {
     sentiment_position: {

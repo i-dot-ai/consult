@@ -16,7 +16,7 @@ const TEST_RESPONSES = [
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Csr/Responses',
+  title: 'Csr/ResponsesDashboard/Responses',
   tags: ['autodocs'],
   argTypes: {
     message: { control: "text" },
