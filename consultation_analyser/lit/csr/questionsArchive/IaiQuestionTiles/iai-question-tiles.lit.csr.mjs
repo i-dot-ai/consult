@@ -3,7 +3,7 @@ import { html, css } from 'lit';
 import IaiLitBase from '../../../IaiLitBase.mjs';
 import IaiQuestionOverview from '../IaiQuestionOverview/iai-question-overview.lit.csr.mjs';
 import IaiQuestionTile from '../IaiQuestionTile/iai-question-tile.lit.csr.mjs';
-import IaiTextInput from '../../filters/IaiTextInput/iai-text-input.lit.csr.mjs';
+import IaiTextInput from '../../inputs/IaiTextInput/iai-text-input.lit.csr.mjs';
 
 
 export default class IaiQuestionTiles extends IaiLitBase {

@@ -6,7 +6,7 @@ const LONG_TEXT = "Vestibulum ut velit a mauris consequat suscipit. Morbi sit am
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Csr/IaiExpandingText',
+  title: 'Csr/ExpandingText',
   tags: ['autodocs'],
   argTypes: {
     text: { control: { type: 'text' } },

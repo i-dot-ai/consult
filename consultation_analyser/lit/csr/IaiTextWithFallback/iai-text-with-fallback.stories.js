@@ -4,7 +4,7 @@ import IaiTextWithFallback from './iai-text-with-fallback.lit.csr.mjs';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Example/IaiTextWithFallback',
+  title: 'Csr/TextWithFallback',
   tags: ['autodocs'],
   render: (args) => {
     return html`
