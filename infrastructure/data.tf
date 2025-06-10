@@ -51,3 +51,15 @@ data "terraform_remote_state" "account" {
 }
 
 
+data "aws_caller_identity" "current" {}
+
+data "aws_region" "current" {}
+
+
+data "aws_secretsmanager_secret" "env_vars" {
+  name = "${local.name}-environment-variables"
+}
+
+data "aws_secretsmanager_secret_version" "env_vars" {
+  secret_id = data.aws_secretsmanager_secret.env_vars.id
+}

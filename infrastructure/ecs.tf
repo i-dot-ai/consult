@@ -24,20 +24,20 @@ locals {
   })
 
   ecs_env_vars = merge(local.base_env_vars, {
-    "BATCH_JOB_QUEUE"      = module.batch_job_definition.job_queue_name,
-    "BATCH_JOB_DEFINITION" = module.batch_job_definition.job_definition_name,
+    # "BATCH_JOB_QUEUE"      = module.batch_job_definition.job_queue_name,
+    # "BATCH_JOB_DEFINITION" = module.batch_job_definition.job_definition_name,
     "EXECUTION_CONTEXT"    = "ecs"
     "REDIS_HOST"           = module.elasticache.redis_address,
     "REDIS_PORT"           = module.elasticache.redis_port,
   })
 
-  additional_policy_arns = {for idx, arn in [aws_iam_policy.ecs.arn] : idx => arn}
+  additional_policy_arns = {for idx, arn in [aws_iam_policy.ecs_exec_custom_policy.arn] : idx => arn}
 }
 
 module "ecs" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source            = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
-  source             = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.0.0-ecs"
+  source             = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.3.0-ecs"
   name               = local.name
   image_tag          = var.image_tag
   ecr_repository_uri = var.ecr_repository_uri
@@ -74,7 +74,7 @@ module "ecs" {
 module "worker" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source            = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
-  source             = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.0.0-ecs"
+  source             = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.3.0-ecs"
   name               = "${local.name}-worker"
   image_tag          = var.image_tag
   ecr_repository_uri = var.ecr_repository_uri
@@ -110,55 +110,3 @@ module "worker" {
   entrypoint = ["./start-worker.sh"]
 }
 
-resource "aws_route53_record" "type_a_record" {
-  zone_id = var.hosted_zone_id
-  name    = local.host
-  type    = "A"
-
-  alias {
-    name                   = module.load_balancer.load_balancer_dns_name
-    zone_id                = module.load_balancer.load_balancer_zone_id
-    evaluate_target_health = true
-  }
-}
-
-
-resource "aws_iam_policy" "ecs" {
-  name        = "${local.name}-ecs-additional-policy"
-  description = "Additional permissions for consultations ECS task"
-  policy      = data.aws_iam_policy_document.ecs.json
-  tags = {
-    Environment = terraform.workspace
-    Deployed    = "github"
-  }
-}
-
-data "aws_iam_policy_document" "ecs" {
-  # checkov:skip=CKV_AWS_109:KMS policies can't be restricted
-  # checkov:skip=CKV_AWS_111:KMS policies can't be restricted
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "batch:DescribeJobQueues",
-      "batch:SubmitJob",
-      "kms:GenerateDataKey",
-      "kms:Decrypt",
-    ]
-    resources = [
-      "*",
-    ]
-  }
-  statement {
-    effect = "Allow"
-    actions = [
-      "s3:List*",
-      "s3:Get*",
-      "s3:PutObject*"
-    ]
-    resources = [
-      "arn:aws:s3:::${local.base_env_vars.AWS_BUCKET_NAME}",
-      "arn:aws:s3:::${local.base_env_vars.AWS_BUCKET_NAME}/app_data/*"
-    ]
-  }
-}

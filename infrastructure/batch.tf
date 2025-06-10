@@ -1,62 +1,50 @@
 locals {
-  batch_image_ecr_url = var.ecr_repository_uri
+  consult_pipeline_job_names = ["mapping"]
+  batch_mapping_image_url = "${var.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult-pipeline-mapping:${var.image_tag}"
+  backend_port = 8080
 }
 
 module "batch_compute" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   # source          = "../../i-ai-core-infrastructure/modules/batch/batch_compute_environment"
-  source          = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/batch-compute-environment?ref=v3.1.0-batch-compute-environment"
-  account_id      = var.account_id
-  name            = local.name
-  region          = var.region
-  vpc_id          = data.terraform_remote_state.vpc.outputs.vpc_id
-  desired_vcpus   = 8
-  min_vcpus       = 0
-  max_vcpus       = 20
-  private_subnets = data.terraform_remote_state.vpc.outputs.private_subnets
-  instance_type   = "g5.xlarge"
-  additional_iam_policies = { "batch" : aws_iam_policy.batch.arn }
+  source                  = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/batch-compute-environment?ref=v3.1.1-batch-compute-environment"
+  account_id              = data.aws_caller_identity.current.id
+  name                    = local.name
+  region                  = data.aws_region.current.id
+  vpc_id                  = data.terraform_remote_state.vpc.outputs.vpc_id
+  private_subnets         = data.terraform_remote_state.vpc.outputs.private_subnets
+  additional_iam_policies = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
+  use_fargate = true
+  desired_vcpus = 2
+  min_vcpus = 2
+  max_vcpus = 4
 }
 
-module "batch_job_definition" {
+module "batch_job_mapping" {
+  for_each = toset(local.consult_pipeline_job_names)
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   # source                  = "../../i-ai-core-infrastructure/modules/batch/batch_job_definitons"
-  source                   = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/batch-job-definitions?ref=v3.2.0-batch-job-definitions"
-  name                     = local.name
-  compute_environment_arn = [module.batch_compute.ec2_compute_environment_arn]
-  image                    = "${local.batch_image_ecr_url}:${var.image_tag}"
-  use_fargate              = false
-  env_vars                 = local.batch_env_vars
-  additional_iam_policies = { "batch" : aws_iam_policy.batch.arn }
-  task_memory_requirements = local.batch_memory
-  task_vcpu_requirements   = local.batch_vcpus
-}
-
-
-resource "aws_iam_policy" "batch" {
-  name        = "${local.name}-batch-additional-policy"
-  description = "Additional permissions for consultations Batch task"
-  policy      = data.aws_iam_policy_document.batch.json
-  tags = {
-    Environment = terraform.workspace
-    Deployed    = "github"
+  source                   = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/batch-job-definitions?ref=v3.2.1-batch-job-definitions"
+  name                     = "${local.name}-${each.value}"
+  image                    = local.batch_mapping_image_url
+  compute_environment_arn = [module.batch_compute.fargate_compute_environment_arn]
+  use_fargate              = true
+  iam_role_name            = "${local.name}-${each.value}-role"
+  platform_capabilities = ["FARGATE"]
+  task_memory_requirements = "2048"
+  env_vars                 = {
+    "ENVIRONMENT" : terraform.workspace,
+    "APP_NAME" : "${local.name}-${each.value}"
+    "PORT" : local.backend_port,
+    "REPO" : "consult-pipeline-${each.value}",
+    "AWS_ACCOUNT_ID": data.aws_caller_identity.current.id,
+    "DOCKER_BUILDER_CONTAINER": "consult-pipeline-${each.value}",
   }
-}
-
-data "aws_iam_policy_document" "batch" {
-  # checkov:skip=CKV_AWS_109:KMS policies can't be restricted
-  # checkov:skip=CKV_AWS_111:KMS policies can't be restricted
-  # checkov:skip=CKV_AWS_356:Allow for policies to not have resource limits
-
-  statement {
-    effect = "Allow"
-    actions = [
-      "bedrock:Invoke*",
-      "bedrock:Get*",
-      "bedrock:List*"
-    ]
-    resources = [
-      "*"
-    ]
-  }
+  additional_iam_policies  = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
+  secrets = [
+    for k, v in aws_ssm_parameter.env_secrets : {
+      name = regex("([^/]+$)", v.arn)[0], # Extract right-most string (param name) after the final slash
+      valueFrom = v.arn
+    }
+  ]
 }
