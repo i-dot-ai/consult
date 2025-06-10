@@ -15,21 +15,21 @@ def test_delete_question():
     theme = factories.InitialThemeFactory(framework=framework, key="A")
     factories.ThemeMappingFactory(answer=answer, theme=theme)
 
-    num_respondents = models.Respondent.objects.count()
+    num_respondents = models.RespondentOld.objects.count()
 
-    assert models.Question.objects.count() == 1
+    assert models.QuestionOld.objects.count() == 1
     assert models.QuestionPart.objects.count() == 1
     assert models.Answer.objects.count() == 1
     assert models.Framework.objects.count() == 1
-    assert models.Theme.objects.count() == 1
+    assert models.ThemeOld.objects.count() == 1
     assert models.ThemeMapping.objects.count() == 1
 
     question.delete()
 
-    assert models.Respondent.objects.count() == num_respondents
-    assert models.Question.objects.count() == 0
+    assert models.RespondentOld.objects.count() == num_respondents
+    assert models.QuestionOld.objects.count() == 0
     assert models.QuestionPart.objects.count() == 0
     assert models.Answer.objects.count() == 0
     assert models.Framework.objects.count() == 0
-    assert models.Theme.objects.count() == 0
+    assert models.ThemeOld.objects.count() == 0
     assert models.ThemeMapping.objects.count() == 0

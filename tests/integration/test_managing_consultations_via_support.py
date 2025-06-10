@@ -4,7 +4,7 @@ import pytest
 from django.db.models.query_utils import Q
 
 from consultation_analyser.consultations.models import (
-    Consultation,
+    ConsultationOld,
     EvidenceRichMapping,
     SentimentMapping,
     ThemeMapping,
@@ -30,7 +30,7 @@ def test_managing_consultations_via_support(django_app):
     consultations_page = django_app.get("/support/consultations/")
     consultations_page = consultations_page.form.submit("generate_dummy_consultation")
 
-    latest_consultation = Consultation.objects.all().order_by("created_at").last()
+    latest_consultation = ConsultationOld.objects.all().order_by("created_at").last()
     consultation_page = consultations_page.click(latest_consultation.title)
 
     # and I should be able to delete the consultation

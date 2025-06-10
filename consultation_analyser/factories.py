@@ -22,14 +22,14 @@ class UserFactory(DjangoModelFactory):
 
 class ConsultationFactory(DjangoModelFactory):
     class Meta:
-        model = models.Consultation
+        model = models.ConsultationOld
 
     title = factory.LazyAttribute(lambda o: fake.sentence())
 
 
 class QuestionFactory(DjangoModelFactory):
     class Meta:
-        model = models.Question
+        model = models.QuestionOld
 
     text = factory.LazyAttribute(lambda o: fake.sentence())
     consultation = factory.SubFactory(ConsultationFactory)
@@ -70,7 +70,7 @@ class MultipleOptionQuestionPartFactory(DjangoModelFactory):
 
 class RespondentFactory(DjangoModelFactory):
     class Meta:
-        model = models.Respondent
+        model = models.RespondentOld
 
     consultation = factory.SubFactory(ConsultationFactory)
     themefinder_respondent_id = factory.LazyAttribute(lambda o: random.randint(2, 500000000))
@@ -154,7 +154,7 @@ class DescendantFrameworkFactory(DjangoModelFactory):
 class InitialThemeFactory(DjangoModelFactory):
     # Create an initial theme (which will have come from the theme generation task)
     class Meta:
-        model = models.Theme
+        model = models.ThemeOld
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
@@ -177,7 +177,7 @@ class InitialThemeFactory(DjangoModelFactory):
 
 class DescendantThemeFactory(DjangoModelFactory):
     class Meta:
-        model = models.Theme
+        model = models.ThemeOld
 
     @classmethod
     def _create(cls, model_class, *args, **kwargs):
