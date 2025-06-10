@@ -73,6 +73,7 @@ class SlugFromTextModel(models.Model):
         abstract = True
 
 
+# TODO - old model to be deleted
 class ConsultationOld(UUIDPrimaryKeyModel, TimeStampedModel):
     title = models.CharField(max_length=256)
     slug = models.SlugField(null=False, editable=False, max_length=256)
@@ -107,6 +108,7 @@ class ConsultationOld(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
 
+# TODO - old model to be deleted
 class QuestionOld(UUIDPrimaryKeyModel, TimeStampedModel):
     text = models.TextField()
     slug = models.SlugField(null=False, editable=False, max_length=256)
@@ -148,6 +150,7 @@ class QuestionOld(UUIDPrimaryKeyModel, TimeStampedModel):
         ordering = ["number"]
 
 
+# TODO - old model to be deleted
 class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
     class QuestionType(models.TextChoices):
         FREE_TEXT = "free_text"
@@ -199,6 +202,7 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
         ordering = ["number"]
 
 
+# TODO - old model to be deleted
 class RespondentOld(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(ConsultationOld, on_delete=models.CASCADE)
     # demographic data, or anything else that is at respondent level
@@ -218,6 +222,7 @@ class RespondentOld(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.id
 
 
+# TODO - old model to be deleted
 class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
     respondent = models.ForeignKey(RespondentOld, on_delete=models.CASCADE)
@@ -243,6 +248,7 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         return None
 
 
+# TODO - old model to be deleted
 class ExecutionRun(UUIDPrimaryKeyModel, TimeStampedModel):
     class TaskType(models.TextChoices):
         SENTIMENT_ANALYSIS = "sentiment_analysis"
@@ -259,6 +265,7 @@ class ExecutionRun(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
+# TODO - old model to be deleted
 class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     """
     A Framework groups a set of themes, that are them used to
@@ -347,6 +354,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         return ThemeMapping.objects.filter(theme__framework=self)
 
 
+# TODO - old model to be deleted
 class ThemeOld(UUIDPrimaryKeyModel, TimeStampedModel):
     # The new theme is assigned to a new framework with the change reason and user.
     # The theme that it has been changed from is the precursor.
@@ -416,6 +424,7 @@ class ThemeOld(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.name
 
 
+# TODO - old model to be deleted
 class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     # When changing the mapping for an answer, don't change the answer
     # change the theme.
@@ -452,6 +461,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         return ThemeMapping.objects.none()
 
 
+# TODO - old model to be deleted
 class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     class Position(models.TextChoices, Enum):
         AGREEMENT = "AGREEMENT", "Agreement"
@@ -468,6 +478,7 @@ class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
+# TODO - old model to be deleted
 class EvidenceRichMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     evidence_evaluation_execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
