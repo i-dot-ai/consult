@@ -84,7 +84,7 @@ def test_import_question():
         question__consultation=consultation, type=QuestionPart.QuestionType.MULTIPLE_OPTIONS
     )
 
-    assert consultation.question_set.count() == 1
+    assert consultation.questionold_set.count() == 1
     assert Answer.objects.filter(question_part=free_text_qp).count() == 3
     assert (
         Answer.objects.filter(question_part=multiple_choice_qp).count() == 1
