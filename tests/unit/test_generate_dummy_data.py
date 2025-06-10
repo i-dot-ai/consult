@@ -10,12 +10,12 @@ from consultation_analyser.consultations.dummy_data import create_dummy_consulta
 @pytest.mark.django_db
 @patch("consultation_analyser.hosting_environment.HostingEnvironment.is_local", return_value=True)
 def test_a_consultation_is_generated(settings):
-    assert models.Consultation.objects.count() == 0
+    assert models.ConsultationOld.objects.count() == 0
 
     create_dummy_consultation_from_yaml()
 
-    assert models.Consultation.objects.count() == 1
-    assert models.Question.objects.count() == 5
+    assert models.ConsultationOld.objects.count() == 1
+    assert models.QuestionOld.objects.count() == 5
 
 
 @pytest.mark.django_db
@@ -37,7 +37,7 @@ def test_create_dummy_consultation_from_yaml():
     ):
         assert models.Framework.objects.filter(question_part=question_part).count() == 1
 
-    questions = models.Question.objects.filter(consultation=consultation)
+    questions = models.QuestionOld.objects.filter(consultation=consultation)
     assert questions.count() == 5
     assert questions.filter(
         text="What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?"
@@ -57,7 +57,7 @@ def test_create_dummy_consultation_from_yaml():
     assert answers.count() == 10
     theme_mapping = models.ThemeMapping.objects.filter(answer__in=answers)
     assert theme_mapping.count() >= 10
-    themes = models.Theme.objects.filter(framework__question_part=question_parts[1])
+    themes = models.ThemeOld.objects.filter(framework__question_part=question_parts[1])
     assert themes.count() == 2
     assert themes.filter(name="Standardized framework").exists()
 

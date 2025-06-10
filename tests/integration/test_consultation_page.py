@@ -3,7 +3,7 @@ from django.contrib.auth.models import Group
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
-from consultation_analyser.consultations.models import Question
+from consultation_analyser.consultations.models import QuestionOld
 from consultation_analyser.factories import UserFactory
 from tests.helpers import sign_in
 
@@ -20,7 +20,7 @@ def test_consultation_page(django_app):
     sign_in(django_app, user.email)
 
     consultation_slug = consultation.slug
-    question = Question.objects.filter(consultation=consultation).first()
+    question = QuestionOld.objects.filter(consultation=consultation).first()
     consultation_page = django_app.get(f"/consultations/{consultation_slug}/")
 
     assert "All Questions" in consultation_page
