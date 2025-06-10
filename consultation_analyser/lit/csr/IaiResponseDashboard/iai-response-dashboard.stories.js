@@ -2,6 +2,18 @@ import { html } from 'lit';
 
 import IaiResponseDashboard from './iai-response-dashboard.lit.csr.mjs';
 
+const mockFetch = () => 
+  Promise.resolve({
+    ok: true,
+    status: 200,
+    json: () => Promise.resolve({
+      "all_respondents": [],
+      "has_more_pages": false,
+      "respondents_total": 0,
+      "filtered_total": 0
+    })
+  })
+
 const TEST_STANCE_OPTIONS = [
   {
     name: "stances",
@@ -68,6 +80,7 @@ export default {
         .has_individual_data=${args.has_individual_data}
         .has_multiple_choice_question_part=${args.has_multiple_choice_question_part}
         .multiple_choice_summary=${args.multiple_choice_summary}
+        .fetchData=${mockFetch}
       ></iai-response-dashboard>
     `
   },

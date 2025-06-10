@@ -34,6 +34,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         has_individual_data: { type: Boolean },
         has_multiple_choice_question_part: { type: Boolean },
         multiple_choice_summary: { type: Array },
+        fetchData: { type: Function },
 
         _isLoading: { type: Boolean },
         _searchValue: { type: String },
@@ -237,6 +238,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         this.has_individual_data = false;
         this.has_multiple_choice_question_part = false;
         this.multiple_choice_summary = [];
+        this.fetchData = fetch;
 
         this.applyStaticStyles("iai-response-dashboard", IaiResponseDashboard.styles);
     }
@@ -269,7 +271,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
             
             let response;
             try {
-                response = await fetch(url, { signal });
+                response = await this.fetchData(url, { signal });
             } catch (err) {
                 if (err.name == "AbortError") {
                     console.log("stale request aborted");
