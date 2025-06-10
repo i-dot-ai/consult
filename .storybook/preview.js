@@ -1,5 +1,5 @@
 import "../consultation_analyser/lit/storybookStyles.js"
-import "../frontend/style_.scss"
+import "../frontend/_style.scss"
 
 /** @type { import('@storybook/web-components').Preview } */
 const preview = {
