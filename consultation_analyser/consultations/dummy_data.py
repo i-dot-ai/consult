@@ -42,7 +42,7 @@ def simulate_user_amending_themes(question_part: models.QuestionPart):
     latest_framework = (
         models.Framework.objects.filter(question_part=question_part).order_by("created_at").last()
     )
-    latest_themes = models.Theme.objects.filter(framework=latest_framework)
+    latest_themes = models.ThemeOld.objects.filter(framework=latest_framework)
     all_responses = models.Answer.objects.filter(question_part=question_part)
 
     # Delete some theme mappings
@@ -74,7 +74,7 @@ def simulate_user_amending_themes(question_part: models.QuestionPart):
 def create_dummy_consultation_from_yaml(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
-    consultation: Optional[models.Consultation] = None,
+    consultation: Optional[models.ConsultationOld] = None,
     include_changes_to_themes: bool = False,
 ) -> ConsultationFactory:
     """
@@ -230,7 +230,7 @@ def create_dummy_consultation_from_yaml(
 def create_dummy_consultation_from_yaml_job(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
-    consultation: Optional[models.Consultation] = None,
+    consultation: Optional[models.ConsultationOld] = None,
     include_changes_to_themes: bool = False,
 ):
     create_dummy_consultation_from_yaml(

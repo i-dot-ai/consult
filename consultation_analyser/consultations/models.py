@@ -73,7 +73,8 @@ class SlugFromTextModel(models.Model):
         abstract = True
 
 
-class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
+# TODO - old model to be deleted
+class ConsultationOld(UUIDPrimaryKeyModel, TimeStampedModel):
     title = models.CharField(max_length=256)
     slug = models.SlugField(null=False, editable=False, max_length=256)
     users = models.ManyToManyField(User)
@@ -83,7 +84,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         def slug_exists_for_another_consultation(self, slug):
             if self.slug == slug:
                 return False
-            return Consultation.objects.filter(slug=slug).exists()
+            return ConsultationOld.objects.filter(slug=slug).exists()
 
         cropped_length = 256
         slugified_title = slugify(self.title)[:cropped_length]
@@ -107,10 +108,11 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
 
-class Question(UUIDPrimaryKeyModel, TimeStampedModel):
+# TODO - old model to be deleted
+class QuestionOld(UUIDPrimaryKeyModel, TimeStampedModel):
     text = models.TextField()
     slug = models.SlugField(null=False, editable=False, max_length=256)
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    consultation = models.ForeignKey(ConsultationOld, on_delete=models.CASCADE)
     number = models.IntegerField(null=False, default=0)
 
     def save(self, *args, **kwargs):
@@ -120,14 +122,14 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         generated_slug = slugify(self.text)[:cropped_length]
         if self.pk:
             slug_exists = (
-                Question.objects.filter(slug=generated_slug)
+                QuestionOld.objects.filter(slug=generated_slug)
                 .filter(consultation=self.consultation)
                 .exclude(pk=self.pk)
                 .exists()
             )
         else:
             slug_exists = (
-                Question.objects.filter(slug=generated_slug)
+                QuestionOld.objects.filter(slug=generated_slug)
                 .filter(consultation=self.consultation)
                 .exists()
             )
@@ -148,13 +150,14 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         ordering = ["number"]
 
 
+# TODO - old model to be deleted
 class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
     class QuestionType(models.TextChoices):
         FREE_TEXT = "free_text"
         SINGLE_OPTION = "single_option"
         MULTIPLE_OPTIONS = "multiple_options"
 
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey(QuestionOld, on_delete=models.CASCADE)
     text = models.TextField()
     type = models.CharField(max_length=16, choices=QuestionType.choices)
     options = models.JSONField(null=True)  # List, null if free-text
@@ -199,8 +202,9 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
         ordering = ["number"]
 
 
-class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+# TODO - old model to be deleted
+class RespondentOld(UUIDPrimaryKeyModel, TimeStampedModel):
+    consultation = models.ForeignKey(ConsultationOld, on_delete=models.CASCADE)
     # demographic data, or anything else that is at respondent level
     data = models.JSONField(default=dict)
     themefinder_respondent_id = models.IntegerField(null=True)
@@ -218,9 +222,10 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.id
 
 
+# TODO - old model to be deleted
 class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
-    respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
+    respondent = models.ForeignKey(RespondentOld, on_delete=models.CASCADE)
     text = models.TextField()
     chosen_options = models.JSONField(default=list)
     is_theme_mapping_audited = models.BooleanField(default=False, null=True)
@@ -243,6 +248,7 @@ class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
         return None
 
 
+# TODO - old model to be deleted
 class ExecutionRun(UUIDPrimaryKeyModel, TimeStampedModel):
     class TaskType(models.TextChoices):
         SENTIMENT_ANALYSIS = "sentiment_analysis"
@@ -259,6 +265,7 @@ class ExecutionRun(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
+# TODO - old model to be deleted
 class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     """
     A Framework groups a set of themes, that are them used to
@@ -320,13 +327,13 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     def get_themes_removed_from_previous_framework(self) -> models.QuerySet:
         """Themes removed from the previous framework i.e. no longer exist in any format."""
         if not self.precursor:
-            return self.theme_set.none()
-        themes_in_this_framework = self.theme_set.all()
+            return self.themeold_set.none()
+        themes_in_this_framework = self.themeold_set.all()
         precursors_themes_that_persisted = themes_in_this_framework.values_list(
             "precursor__id", flat=True
         )
         persisted_ids = [id for id in precursors_themes_that_persisted if id]  # remove None
-        precursor_themes_removed = self.precursor.theme_set.exclude(id__in=persisted_ids).distinct()
+        precursor_themes_removed = self.precursor.themeold_set.exclude(id__in=persisted_ids).distinct()
         return precursor_themes_removed
 
     def get_themes_added_to_previous_framework(self) -> models.QuerySet:
@@ -335,10 +342,10 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         the previous framework.
         """
         if not self.precursor:
-            return self.theme_set.all()
+            return self.themeold_set.all()
 
-        previous_framework_themes = self.precursor.theme_set.values_list("id", flat=True)
-        new_themes = self.theme_set.exclude(precursor__id__in=previous_framework_themes)
+        previous_framework_themes = self.precursor.themeold_set.values_list("id", flat=True)
+        new_themes = self.themeold_set.exclude(precursor__id__in=previous_framework_themes)
         return new_themes
 
     def get_theme_mappings(self, history=False) -> models.QuerySet:
@@ -347,7 +354,8 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         return ThemeMapping.objects.filter(theme__framework=self)
 
 
-class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
+# TODO - old model to be deleted
+class ThemeOld(UUIDPrimaryKeyModel, TimeStampedModel):
     # The new theme is assigned to a new framework with the change reason and user.
     # The theme that it has been changed from is the precursor.
     framework = models.ForeignKey(Framework, on_delete=models.CASCADE)
@@ -368,12 +376,12 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     @classmethod
     def create_initial_theme(
         cls, framework: Framework, name: str, description: str, key: str | None = None
-    ) -> "Theme":
+    ) -> "ThemeOld":
         """Create initial theme for a framework."""
-        new_theme = Theme(
+        new_theme = ThemeOld(
             framework=framework, name=name, description=description, key=key, precursor=None
         )
-        super(Theme, new_theme).save()
+        super(ThemeOld, new_theme).save()
         return new_theme
 
     def create_descendant_theme(
@@ -382,7 +390,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
         name: str,
         description: str,
         key: str | None = None,
-    ) -> "Theme":
+    ) -> "ThemeOld":
         """
         Creates a new Theme object based on the existing theme.
         Allows us to track history and changes of a theme.
@@ -400,14 +408,14 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
             raise ValueError(
                 "Framework for new theme must be based on the framework for the existing theme."
             )
-        new_theme = Theme(
+        new_theme = ThemeOld(
             precursor=self,
             name=name,
             description=description,
             framework=new_framework,
             key=key,
         )
-        super(Theme, new_theme).save()
+        super(ThemeOld, new_theme).save()
         return new_theme
 
     def get_identifier(self) -> str:
@@ -416,6 +424,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.name
 
 
+# TODO - old model to be deleted
 class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     # When changing the mapping for an answer, don't change the answer
     # change the theme.
@@ -424,7 +433,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         NEGATIVE = "NEGATIVE", "Negative"
 
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
-    theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
+    theme = models.ForeignKey(ThemeOld, on_delete=models.CASCADE)
     reason = models.TextField()
     # This is the theme mapping execution run
     # TODO - rename field to be more explicit, amend save to ensure correct type
@@ -452,6 +461,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         return ThemeMapping.objects.none()
 
 
+# TODO - old model to be deleted
 class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     class Position(models.TextChoices, Enum):
         AGREEMENT = "AGREEMENT", "Agreement"
@@ -468,6 +478,7 @@ class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         pass
 
 
+# TODO - old model to be deleted
 class EvidenceRichMapping(UUIDPrimaryKeyModel, TimeStampedModel):
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
     evidence_evaluation_execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)

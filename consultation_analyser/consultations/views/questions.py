@@ -12,8 +12,8 @@ def show(
     consultation_slug: str,
     question_slug: str,
 ):
-    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
+    consultation = get_object_or_404(models.ConsultationOld, slug=consultation_slug)
+    question = get_object_or_404(models.QuestionOld, slug=question_slug, consultation=consultation)
 
     question_parts = models.QuestionPart.objects.filter(question=question).order_by("number")
 
@@ -39,7 +39,7 @@ def show(
         if theme_counts:
             highest_theme_count = theme_counts[0]["count"]
             theme_counts_dict = {
-                models.Theme.objects.get(id=theme_count["theme"]): theme_count["count"]
+                models.ThemeOld.objects.get(id=theme_count["theme"]): theme_count["count"]
                 for theme_count in theme_counts
             }
 
@@ -57,7 +57,7 @@ def show(
 
 @user_can_see_consultation
 def index(request, consultation_slug: str):
-    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+    consultation = get_object_or_404(models.ConsultationOld, slug=consultation_slug)
     question_parts = models.QuestionPart.objects.filter(
         question__consultation=consultation, type=models.QuestionPart.QuestionType.FREE_TEXT
     )

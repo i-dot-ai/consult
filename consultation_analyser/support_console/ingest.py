@@ -8,15 +8,15 @@ from simple_history.utils import bulk_create_with_history
 
 from consultation_analyser.consultations.models import (
     Answer,
-    Consultation,
+    ConsultationOld,
     EvidenceRichMapping,
     ExecutionRun,
     Framework,
-    Question,
+    QuestionOld,
     QuestionPart,
-    Respondent,
+    RespondentOld,
     SentimentMapping,
-    Theme,
+    ThemeOld,
     ThemeMapping,
 )
 
@@ -86,7 +86,7 @@ def get_themefinder_outputs_for_question(
     return json.loads(response["Body"].read())
 
 
-def import_respondent_data(consultation: Consultation, respondent_data: list):
+def import_respondent_data(consultation: ConsultationOld, respondent_data: list):
     logger.info(f"Importing respondent data for consultation: {consultation.title}")
     respondents_to_save = []
     for respondent in respondent_data:
@@ -94,15 +94,15 @@ def import_respondent_data(consultation: Consultation, respondent_data: list):
         themefinder_respondent_id = respondent["themefinder_id"]
         # TODO - add further fields e.g. user supplied ID
         respondents_to_save.append(
-            Respondent(
+            RespondentOld(
                 consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
             )
         )
-    Respondent.objects.bulk_create(respondents_to_save)
+    RespondentOld.objects.bulk_create(respondents_to_save)
     logger.info(f"Saved batch of respondents for consultation: {consultation.title}")
 
 
-def import_question_part_data(consultation: Consultation, question_part_dict: dict) -> QuestionPart:
+def import_question_part_data(consultation: ConsultationOld, question_part_dict: dict) -> QuestionPart:
     type_mapping = {
         "free_text": QuestionPart.QuestionType.FREE_TEXT,
         "single_option": QuestionPart.QuestionType.SINGLE_OPTION,
@@ -121,7 +121,7 @@ def import_question_part_data(consultation: Consultation, question_part_dict: di
     question_part_type = question_part_dict.get("question_part_type", "free_text")
     question_part_type = type_mapping[question_part_type]
 
-    question, _ = Question.objects.get_or_create(
+    question, _ = QuestionOld.objects.get_or_create(
         consultation=consultation, number=question_number, text=question_text
     )
 
@@ -156,7 +156,7 @@ def import_responses(question_part: QuestionPart, responses_data: list) -> None:
     # Respondents should have been imported already
     decoded_responses = [json.loads(response.decode("utf-8")) for response in responses_data]
     themefinder_ids = [response["themefinder_id"] for response in decoded_responses]
-    corresponding_respondents = Respondent.objects.filter(consultation=consultation).filter(
+    corresponding_respondents = RespondentOld.objects.filter(consultation=consultation).filter(
         themefinder_respondent_id__in=themefinder_ids
     )
     respondent_dictionary = {r.themefinder_respondent_id: r for r in corresponding_respondents}
@@ -187,7 +187,7 @@ def import_themes_and_get_framework(question_part: QuestionPart, theme_data: lis
     )
 
     themes = [
-        Theme(
+        ThemeOld(
             framework=framework,
             name=theme["theme_name"],
             description=theme["theme_description"],
@@ -196,7 +196,7 @@ def import_themes_and_get_framework(question_part: QuestionPart, theme_data: lis
         for theme in theme_data
     ]
 
-    Theme.objects.bulk_create(themes)
+    ThemeOld.objects.bulk_create(themes)
     logger.info(
         f"Saved batch of themes for question_number {question_part.question.number} and question part {question_part.number}"
     )
@@ -218,13 +218,13 @@ def import_theme_mappings(
         themefinder_respondent_id = data["themefinder_id"]
         answer = Answer.objects.get(
             question_part=question_part,
-            respondent=Respondent.objects.get(
+            respondent=RespondentOld.objects.get(
                 consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
             ),
         )
 
         for theme_key in data["theme_keys"]:
-            theme = Theme.objects.get(framework=framework, key=theme_key)
+            theme = ThemeOld.objects.get(framework=framework, key=theme_key)
             theme_mappings.append(
                 ThemeMapping(
                     answer=answer,
@@ -252,7 +252,7 @@ def import_sentiment_mappings(question_part: QuestionPart, sentimentmapping_data
         themefinder_respondent_id = sentiment_mapping["themefinder_id"]
         answer = Answer.objects.get(
             question_part=question_part,
-            respondent=Respondent.objects.get(
+            respondent=RespondentOld.objects.get(
                 consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
             ),
         )
@@ -284,7 +284,7 @@ def import_evidence_rich_mappings(
         themefinder_respondent_id = evidence_rich_mapping["themefinder_id"]
         answer = Answer.objects.get(
             question_part=question_part,
-            respondent=Respondent.objects.get(
+            respondent=RespondentOld.objects.get(
                 consultation=consultation, themefinder_respondent_id=themefinder_respondent_id
             ),
         )
@@ -302,7 +302,7 @@ def import_evidence_rich_mappings(
 
 
 @job("default", timeout=900)
-def import_respondent_data_job(consultation: Consultation, respondent_data: list):
+def import_respondent_data_job(consultation: ConsultationOld, respondent_data: list):
     import_respondent_data(consultation=consultation, respondent_data=respondent_data)
 
 
@@ -331,7 +331,7 @@ def import_evidence_rich_mappings_job(
 
 
 def import_all_respondents_from_jsonl(
-    consultation: Consultation, bucket_name: str, inputs_folder_key: str, batch_size: int
+    consultation: ConsultationOld, bucket_name: str, inputs_folder_key: str, batch_size: int
 ) -> None:
     logger.info(f"Importing respondents from {inputs_folder_key}, batch_size {batch_size}")
     respondents_file_key = f"{inputs_folder_key}respondents.jsonl"
@@ -347,7 +347,7 @@ def import_all_respondents_from_jsonl(
         import_respondent_data_job.delay(consultation=consultation, respondent_data=lines)
 
 
-def import_question_part(consultation: Consultation, question_part_folder_key: str) -> QuestionPart:
+def import_question_part(consultation: ConsultationOld, question_part_folder_key: str) -> QuestionPart:
     s3 = boto3.client("s3")
     data_key = f"{question_part_folder_key}question.json"
     response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=data_key)

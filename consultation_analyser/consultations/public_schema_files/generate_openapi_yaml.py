@@ -16,14 +16,14 @@ from django.db.models import (
 
 from consultation_analyser.consultations.models import (
     Answer,
-    Consultation,
+    ConsultationOld,
     EvidenceRichMapping,
     ExecutionRun,
     Framework,
-    Question,
+    QuestionOld,
     QuestionPart,
     SentimentMapping,
-    Theme,
+    ThemeOld,
     ThemeMapping,
 )
 
@@ -37,13 +37,13 @@ FIELDS_TO_EXCLUDE = [
     "themefinder_respondent_id",
 ]  # These are either auto-generated or populated after import
 MODELS_TO_INCLUDE = [
-    Consultation,
-    Question,
+    ConsultationOld,
+    QuestionOld,
     QuestionPart,
     Answer,
     ExecutionRun,
     Framework,
-    Theme,
+    ThemeOld,
     ThemeMapping,
     SentimentMapping,
     EvidenceRichMapping,

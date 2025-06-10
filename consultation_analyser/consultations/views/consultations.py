@@ -7,11 +7,11 @@ from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
 from consultation_analyser.consultations.models import (
-    Consultation,
-    Question,
+    ConsultationOld,
+    QuestionOld,
     QuestionPart,
     SentimentMapping,
-    Theme,
+    ThemeOld,
     ThemeMapping,
 )
 
@@ -22,7 +22,7 @@ logger = logging.getLogger("upload")
 
 def index(request: HttpRequest) -> HttpResponse:
     user = request.user
-    consultations_for_user = Consultation.objects.filter(users=user)
+    consultations_for_user = ConsultationOld.objects.filter(users=user)
     context = {
         "consultations": consultations_for_user,
         "user_has_dashboard_access": user.has_dashboard_access,
@@ -75,7 +75,7 @@ def get_top_themes_for_free_text_question_part(
     )
     top_themes_by_counts_list = []
     for item in top_themes_counts_qs:
-        theme_obj = Theme.objects.get(id=item["theme"])
+        theme_obj = ThemeOld.objects.get(id=item["theme"])
         output = {
             "theme": theme_obj,
             "count": item["theme_count"],
@@ -88,8 +88,8 @@ def get_top_themes_for_free_text_question_part(
 @user_can_see_consultation
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     # Dashboard page
-    consultation = get_object_or_404(Consultation, slug=consultation_slug)
-    questions = Question.objects.filter(consultation__slug=consultation_slug).order_by("number")
+    consultation = get_object_or_404(ConsultationOld, slug=consultation_slug)
+    questions = QuestionOld.objects.filter(consultation__slug=consultation_slug).order_by("number")
 
     all_questions = []
     for question in questions:

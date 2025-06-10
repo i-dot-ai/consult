@@ -5,7 +5,7 @@ import boto3
 import pandas as pd
 from django.conf import settings
 
-from consultation_analyser.consultations.models import Consultation, QuestionPart, Respondent
+from consultation_analyser.consultations.models import ConsultationOld, QuestionPart, RespondentOld
 
 logger = logging.getLogger("export")
 s3 = boto3.client("s3")
@@ -24,7 +24,7 @@ def get_key_for_question_part(question_part: QuestionPart) -> str:
 
 
 def get_urls_for_respondent(
-    respondent: Respondent, consultation: Consultation, base_url: str
+    respondent: RespondentOld, consultation: ConsultationOld, base_url: str
 ) -> dict:
     urls = {}
 
@@ -40,7 +40,7 @@ def get_urls_for_respondent(
 
 
 def get_urls_for_consultation(
-    consultation: Consultation,
+    consultation: ConsultationOld,
     base_url: str,
     s3_key: str,
     file_name: str,
@@ -52,7 +52,7 @@ def get_urls_for_consultation(
     for id, respondent_key in response_id_mapping.items():
         try:
             logger.info(f"Processing respondent {id}")
-            respondent = Respondent.objects.get(
+            respondent = RespondentOld.objects.get(
                 consultation=consultation, themefinder_respondent_id=id
             )
             respondent_data = {
@@ -65,7 +65,7 @@ def get_urls_for_consultation(
             )
 
             data.append(respondent_data)
-        except Respondent.DoesNotExist:
+        except RespondentOld.DoesNotExist:
             logger.info(f"Respondent with themefinder_response_id {id} does not exist")
 
     with io.BytesIO() as output:

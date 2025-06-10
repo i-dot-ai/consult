@@ -1,7 +1,7 @@
 import pytest
 from django.db.utils import IntegrityError
 
-from consultation_analyser.consultations.models import Theme
+from consultation_analyser.consultations.models import ThemeOld
 from consultation_analyser.factories import (
     DescendantFrameworkFactory,
     FreeTextQuestionPartFactory,
@@ -23,7 +23,7 @@ def test_create_initial_theme():
     framework = InitialFrameworkFactory()
     name = "Test Theme"
     description = "Test Description"
-    new_theme = Theme.create_initial_theme(framework=framework, name=name, description=description)
+    new_theme = ThemeOld.create_initial_theme(framework=framework, name=name, description=description)
     assert new_theme.framework == framework
     assert not new_theme.precursor
 
@@ -57,10 +57,10 @@ def test_create_descendant_theme():
 @pytest.mark.django_db
 def test_get_theme_identifier():
     framework = InitialFrameworkFactory()
-    theme_1 = Theme.create_initial_theme(
+    theme_1 = ThemeOld.create_initial_theme(
         framework=framework, name="Theme 1", description=""
     )  # no key
-    theme_2 = Theme.create_initial_theme(
+    theme_2 = ThemeOld.create_initial_theme(
         framework=framework, name="Theme 2", description="", key="A"
     )  # with key
 
@@ -71,12 +71,12 @@ def test_get_theme_identifier():
 @pytest.mark.django_db
 def test_theme_key_uniqueness():
     framework = InitialFrameworkFactory()
-    Theme.create_initial_theme(framework=framework, name="Theme 1", description="", key="A")
+    ThemeOld.create_initial_theme(framework=framework, name="Theme 1", description="", key="A")
 
     # Can have two themes with the same key in different frameworks
     framework_2 = InitialFrameworkFactory()
-    Theme.create_initial_theme(framework=framework_2, name="Theme 1", description="", key="A")
+    ThemeOld.create_initial_theme(framework=framework_2, name="Theme 1", description="", key="A")
 
     # Cannot have two themes in the same framework with the same key
     with pytest.raises(IntegrityError):
-        Theme.create_initial_theme(framework=framework, name="Theme 1", description="", key="A")
+        ThemeOld.create_initial_theme(framework=framework, name="Theme 1", description="", key="A")
