@@ -33,7 +33,7 @@ logger = logging.getLogger("export")
 
 
 @job("default", timeout=900)
-def delete_consultation_job(consultation: models.Consultation):
+def delete_consultation_job(consultation: models.ConsultationOld):
     consultation.delete()
 
 
@@ -47,7 +47,7 @@ def index(request: HttpRequest) -> HttpResponse:
                 messages.success(request, "A dummy consultation has been generated")
             elif request.POST.get("generate_giant_dummy_consultation") is not None:
                 n = 10000
-                consultation = models.Consultation.objects.create(
+                consultation = models.ConsultationOld.objects.create(
                     title=f"Giant dummy consultation - {n} respondents, with theme changes"
                 )
                 user = request.user
@@ -64,13 +64,13 @@ def index(request: HttpRequest) -> HttpResponse:
                 messages.success(request, "Synthetic data imported")
         except RuntimeError as error:
             messages.error(request, error.args[0])
-    consultations = models.Consultation.objects.all()
+    consultations = models.ConsultationOld.objects.all()
     context = {"consultations": consultations, "production_env": HostingEnvironment.is_production()}
     return render(request, "support_console/consultations/index.html", context=context)
 
 
 def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    consultation = models.Consultation.objects.get(id=consultation_id)
+    consultation = models.ConsultationOld.objects.get(id=consultation_id)
     context = {
         "consultation": consultation,
     }
@@ -88,7 +88,7 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
 
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    consultation = models.Consultation.objects.get(id=consultation_id)
+    consultation = models.ConsultationOld.objects.get(id=consultation_id)
     question_parts = models.QuestionPart.objects.filter(
         question__consultation=consultation
     ).order_by("question__number", "number")
@@ -112,7 +112,7 @@ def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
 
 
 def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    consultation = get_object_or_404(models.Consultation, id=consultation_id)
+    consultation = get_object_or_404(models.ConsultationOld, id=consultation_id)
     question_parts = models.QuestionPart.objects.filter(
         question__consultation=consultation, type=models.QuestionPart.QuestionType.FREE_TEXT
     ).order_by("question__number")
@@ -157,7 +157,7 @@ def export_urls_for_consultation(request: HttpRequest, consultation_id: UUID) ->
         filename = request.POST.get("filename")
 
         try:
-            consultation = get_object_or_404(models.Consultation, id=consultation_id)
+            consultation = get_object_or_404(models.ConsultationOld, id=consultation_id)
             base_url = request.build_absolute_uri("/")
             get_urls_for_consultation(consultation, base_url, s3_key, filename)
 
@@ -184,7 +184,7 @@ def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
         consultation_code = request.POST.get("consultation_code")
         if not consultation_name:
             consultation_name = "New Consultation"
-        consultation = models.Consultation.objects.create(title=consultation_name)
+        consultation = models.ConsultationOld.objects.create(title=consultation_name)
         consultation.users.add(current_user)
         consultation.save()
         input_folder_name = f"app_data/{consultation_code}/inputs/"
@@ -207,7 +207,7 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
     bucket_name = settings.AWS_BUCKET_NAME
     batch_size = 100
 
-    all_consultations = models.Consultation.objects.all().order_by("-created_at")
+    all_consultations = models.ConsultationOld.objects.all().order_by("-created_at")
     consultations_for_select = all_consultations.values("id", "title")
     consultations_for_select = [
         {"text": f"{d['title']} ({d['id']})", "value": d["id"]} for d in consultations_for_select
@@ -222,7 +222,7 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
         question_number = request.POST.get("question_number")
 
         path_to_inputs = f"app_data/{consultation_code}/inputs/"
-        consultation = models.Consultation.objects.get(id=consultation_id)
+        consultation = models.ConsultationOld.objects.get(id=consultation_id)
 
         try:
             if question_choice == "all":
@@ -269,7 +269,7 @@ def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
 
 
 def import_question_part_themefinder_outputs(
-    consultation: models.Consultation,
+    consultation: models.ConsultationOld,
     question_number: int,
     bucket_name: str,
     folder: str,
@@ -312,7 +312,7 @@ def import_consultation_themes(request: HttpRequest) -> HttpResponse:
     # Responses should already have been imported
     bucket_name = settings.AWS_BUCKET_NAME
     consultation_options = [
-        {"value": c.slug, "text": c.slug} for c in models.Consultation.objects.all()
+        {"value": c.slug, "text": c.slug} for c in models.ConsultationOld.objects.all()
     ]
     consultation_folders = get_folder_names_for_dropdown()
     context = {
@@ -330,8 +330,8 @@ def import_consultation_themes(request: HttpRequest) -> HttpResponse:
         question_number = request.POST.get("question_number")
         path_to_themes = f"app_data/{consultation_code}/outputs/mapping/{consultation_mapping_date}"
 
-        consultation = models.Consultation.objects.get(slug=consultation_slug)
-        if not models.Question.objects.filter(consultation=consultation).exists():
+        consultation = models.ConsultationOld.objects.get(slug=consultation_slug)
+        if not models.QuestionOld.objects.filter(consultation=consultation).exists():
             messages.error(request, "Questions have not yet been imported for this Consultation")
             return render(
                 request, "support_console/consultations/import_themes.html", context=context

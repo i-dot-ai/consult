@@ -38,7 +38,7 @@ def get_selected_theme_summary(
     return selected_theme_mappings
 
 
-def get_selected_option_summary(question: models.Question, respondents: QuerySet) -> list[dict]:
+def get_selected_option_summary(question: models.QuestionOld, respondents: QuerySet) -> list[dict]:
     """Get a summary of the selected options for a multiple choice question"""
     annotated_responses = [
         models.Answer.objects.filter(question_part=question_part, respondent__in=respondents)
@@ -66,7 +66,7 @@ def get_selected_option_summary(question: models.Question, respondents: QuerySet
 
 def get_respondents_for_question(
     consultation_slug: str, question_slug: str, cache_timeout: int = 60 * 20
-) -> QuerySet[models.Respondent]:
+) -> QuerySet[models.RespondentOld]:
     # Cache data for question/consultation. Default timeout to 20 mins.
     cache_key = f"respondents_{consultation_slug}_{question_slug}"
 
@@ -103,7 +103,7 @@ def get_respondents_for_question(
         )
 
         respondents = (
-            models.Respondent.objects.filter(
+            models.RespondentOld.objects.filter(
                 id__in=Subquery(answers.values_list("respondent_id", flat=True))
             )
             .prefetch_related(
@@ -253,8 +253,8 @@ def index(
     question_slug: str,
 ):
     # Get question data
-    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    question = models.Question.objects.get(
+    consultation = get_object_or_404(models.ConsultationOld, slug=consultation_slug)
+    question = models.QuestionOld.objects.get(
         slug=question_slug,
         consultation=consultation,
     )
@@ -310,8 +310,8 @@ def show(
 ):
     # Allow user to review and update theme mappings for a response.
     # Assume latest theme mappings i.e. from latest framework.
-    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
+    consultation = get_object_or_404(models.ConsultationOld, slug=consultation_slug)
+    question = get_object_or_404(models.QuestionOld, slug=question_slug, consultation=consultation)
     response = get_object_or_404(models.Answer, id=response_id)
     question_part = response.question_part
 
@@ -320,7 +320,7 @@ def show(
     latest_framework = (
         models.Framework.objects.filter(question_part=question_part).order_by("created_at").last()
     )
-    all_themes = models.Theme.objects.filter(
+    all_themes = models.ThemeOld.objects.filter(
         framework=latest_framework
     )  # May include themes not mapped to anything
 
@@ -375,8 +375,8 @@ def show(
 
 @user_can_see_consultation
 def show_next(request: HttpRequest, consultation_slug: str, question_slug: str):
-    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
+    consultation = get_object_or_404(models.ConsultationOld, slug=consultation_slug)
+    question = get_object_or_404(models.QuestionOld, slug=question_slug, consultation=consultation)
 
     def handle_no_responses():
         context = {

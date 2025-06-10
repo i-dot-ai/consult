@@ -73,7 +73,7 @@ class SlugFromTextModel(models.Model):
         abstract = True
 
 
-class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
+class ConsultationOld(UUIDPrimaryKeyModel, TimeStampedModel):
     title = models.CharField(max_length=256)
     slug = models.SlugField(null=False, editable=False, max_length=256)
     users = models.ManyToManyField(User)
@@ -83,7 +83,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         def slug_exists_for_another_consultation(self, slug):
             if self.slug == slug:
                 return False
-            return Consultation.objects.filter(slug=slug).exists()
+            return ConsultationOld.objects.filter(slug=slug).exists()
 
         cropped_length = 256
         slugified_title = slugify(self.title)[:cropped_length]
@@ -107,10 +107,10 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
 
-class Question(UUIDPrimaryKeyModel, TimeStampedModel):
+class QuestionOld(UUIDPrimaryKeyModel, TimeStampedModel):
     text = models.TextField()
     slug = models.SlugField(null=False, editable=False, max_length=256)
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    consultation = models.ForeignKey(ConsultationOld, on_delete=models.CASCADE)
     number = models.IntegerField(null=False, default=0)
 
     def save(self, *args, **kwargs):
@@ -120,14 +120,14 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         generated_slug = slugify(self.text)[:cropped_length]
         if self.pk:
             slug_exists = (
-                Question.objects.filter(slug=generated_slug)
+                QuestionOld.objects.filter(slug=generated_slug)
                 .filter(consultation=self.consultation)
                 .exclude(pk=self.pk)
                 .exists()
             )
         else:
             slug_exists = (
-                Question.objects.filter(slug=generated_slug)
+                QuestionOld.objects.filter(slug=generated_slug)
                 .filter(consultation=self.consultation)
                 .exists()
             )
@@ -154,7 +154,7 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
         SINGLE_OPTION = "single_option"
         MULTIPLE_OPTIONS = "multiple_options"
 
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    question = models.ForeignKey(QuestionOld, on_delete=models.CASCADE)
     text = models.TextField()
     type = models.CharField(max_length=16, choices=QuestionType.choices)
     options = models.JSONField(null=True)  # List, null if free-text
@@ -199,8 +199,8 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
         ordering = ["number"]
 
 
-class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+class RespondentOld(UUIDPrimaryKeyModel, TimeStampedModel):
+    consultation = models.ForeignKey(ConsultationOld, on_delete=models.CASCADE)
     # demographic data, or anything else that is at respondent level
     data = models.JSONField(default=dict)
     themefinder_respondent_id = models.IntegerField(null=True)
@@ -220,7 +220,7 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
     question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
-    respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
+    respondent = models.ForeignKey(RespondentOld, on_delete=models.CASCADE)
     text = models.TextField()
     chosen_options = models.JSONField(default=list)
     is_theme_mapping_audited = models.BooleanField(default=False, null=True)
@@ -347,7 +347,7 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         return ThemeMapping.objects.filter(theme__framework=self)
 
 
-class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
+class ThemeOld(UUIDPrimaryKeyModel, TimeStampedModel):
     # The new theme is assigned to a new framework with the change reason and user.
     # The theme that it has been changed from is the precursor.
     framework = models.ForeignKey(Framework, on_delete=models.CASCADE)
@@ -368,12 +368,12 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     @classmethod
     def create_initial_theme(
         cls, framework: Framework, name: str, description: str, key: str | None = None
-    ) -> "Theme":
+    ) -> "ThemeOld":
         """Create initial theme for a framework."""
-        new_theme = Theme(
+        new_theme = ThemeOld(
             framework=framework, name=name, description=description, key=key, precursor=None
         )
-        super(Theme, new_theme).save()
+        super(ThemeOld, new_theme).save()
         return new_theme
 
     def create_descendant_theme(
@@ -382,7 +382,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
         name: str,
         description: str,
         key: str | None = None,
-    ) -> "Theme":
+    ) -> "ThemeOld":
         """
         Creates a new Theme object based on the existing theme.
         Allows us to track history and changes of a theme.
@@ -400,14 +400,14 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
             raise ValueError(
                 "Framework for new theme must be based on the framework for the existing theme."
             )
-        new_theme = Theme(
+        new_theme = ThemeOld(
             precursor=self,
             name=name,
             description=description,
             framework=new_framework,
             key=key,
         )
-        super(Theme, new_theme).save()
+        super(ThemeOld, new_theme).save()
         return new_theme
 
     def get_identifier(self) -> str:
@@ -424,7 +424,7 @@ class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
         NEGATIVE = "NEGATIVE", "Negative"
 
     answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
-    theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
+    theme = models.ForeignKey(ThemeOld, on_delete=models.CASCADE)
     reason = models.TextField()
     # This is the theme mapping execution run
     # TODO - rename field to be more explicit, amend save to ensure correct type

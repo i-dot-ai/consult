@@ -7,9 +7,9 @@ from consultation_analyser.consultations.models import (
     Answer,
     EvidenceRichMapping,
     QuestionPart,
-    Respondent,
+    RespondentOld,
     SentimentMapping,
-    Theme,
+    ThemeOld,
     ThemeMapping,
 )
 from consultation_analyser.support_console.ingest import (
@@ -146,7 +146,7 @@ def test_import_respondent_data():
     ]
     consultation = factories.ConsultationFactory()
     import_respondent_data(consultation=consultation, respondent_data=respondent_data)
-    respondents = Respondent.objects.filter(consultation=consultation).order_by(
+    respondents = RespondentOld.objects.filter(consultation=consultation).order_by(
         "themefinder_respondent_id"
     )
     assert respondents.count() == 3
@@ -165,7 +165,7 @@ def test_import_all_respondents_from_jsonl(mock_consultation_input_objects):
     )
     # TODO - improve this, but it works for now!
     time.sleep(5)
-    respondents = Respondent.objects.filter(consultation=consultation).order_by(
+    respondents = RespondentOld.objects.filter(consultation=consultation).order_by(
         "themefinder_respondent_id"
     )
     assert respondents.count() == 5
@@ -182,7 +182,7 @@ def test_import_themes():
     ]
     question_part = factories.FreeTextQuestionPartFactory()
     framework = import_themes_and_get_framework(question_part=question_part, theme_data=theme_data)
-    themes = Theme.objects.filter(framework=framework).order_by("key")
+    themes = ThemeOld.objects.filter(framework=framework).order_by("key")
     assert themes.count() == 3
     assert themes[0].key == "A"
     assert themes[2].key == "C"
@@ -196,7 +196,7 @@ def test_import_themes_from_json_and_get_framework(mock_consultation_input_objec
         bucket_name="test-bucket",
         question_part_folder_key="app_data/con1/outputs/mapping/2025-04-01/question_part_1/",
     )
-    themes = Theme.objects.filter(framework=framework).order_by("key")
+    themes = ThemeOld.objects.filter(framework=framework).order_by("key")
     assert themes.count() == 3
     assert themes[0].key == "A"
     assert themes[2].key == "C"

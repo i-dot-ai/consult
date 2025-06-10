@@ -7,13 +7,13 @@ from django.core.management.base import BaseCommand
 
 from consultation_analyser.consultations.models import (
     Answer,
-    Consultation,
+    ConsultationOld,
     ExecutionRun,
     Framework,
-    Question,
+    QuestionOld,
     QuestionPart,
-    Respondent,
-    Theme,
+    RespondentOld,
+    ThemeOld,
     ThemeMapping,
 )
 
@@ -42,8 +42,8 @@ class Command(BaseCommand):
         question_text = question_response.get("Body").read().decode("utf-8")
         theme_dict = json.loads(themes_response["Body"].read())
 
-        consultation = Consultation.objects.create(title="Test Consultation")
-        question = Question.objects.create(
+        consultation = ConsultationOld.objects.create(title="Test Consultation")
+        question = QuestionOld.objects.create(
             consultation=consultation,
             text=question_text,
             number=1,
@@ -65,7 +65,7 @@ class Command(BaseCommand):
         theme_object_lookup = {}
 
         for key, value in theme_dict.items():
-            theme = Theme.create_initial_theme(
+            theme = ThemeOld.create_initial_theme(
                 framework=framework,
                 name=value["topic_name"],
                 description=value["rationale"],
@@ -82,7 +82,7 @@ class Command(BaseCommand):
         answer_df = pd.read_excel(answer_response["Body"].read())
 
         for _, row in answer_df.iterrows():
-            respondent = Respondent.objects.create(
+            respondent = RespondentOld.objects.create(
                 consultation=consultation,
             )
 

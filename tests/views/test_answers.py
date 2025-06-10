@@ -5,7 +5,7 @@ from django.core.cache import cache
 from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.models import (
     ExecutionRun,
-    Respondent,
+    RespondentOld,
     SentimentMapping,
     ThemeMapping,
 )
@@ -232,7 +232,7 @@ def test_get_selected_theme_summary(
 
     selected_theme_mappings = get_selected_theme_summary(
         question_part,
-        Respondent.objects.all(),
+        RespondentOld.objects.all(),
     )
 
     theme_a_summary = selected_theme_mappings.get(theme=theme_a)
@@ -262,7 +262,7 @@ def test_get_selected_option_summary(question):
 
     option_summary = get_selected_option_summary(
         question,
-        Respondent.objects.all(),
+        RespondentOld.objects.all(),
     )
 
     assert option_summary[0]["A"] == 2

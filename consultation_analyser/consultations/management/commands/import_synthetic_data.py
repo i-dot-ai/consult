@@ -14,10 +14,10 @@ class Command(BaseCommand):
 
         try:
             key = next(filter(lambda k: search_string in str(theme_dict[k]), theme_dict.keys()))
-            return models.Theme.objects.get(framework=framework, key=key)
+            return models.ThemeOld.objects.get(framework=framework, key=key)
         except StopIteration:
             return None
-        except models.Theme.DoesNotExist:
+        except models.ThemeOld.DoesNotExist:
             return None
 
     def import_question(self, index, consultation):
@@ -26,7 +26,7 @@ class Command(BaseCommand):
         with open(f"synthetic_data/question_{index}/expanded_question.json") as f:
             question_data = json.load(f)
 
-        question = models.Question.objects.create(
+        question = models.QuestionOld.objects.create(
             consultation=consultation,
             text=question_data["text"],
             number=index,
@@ -49,7 +49,7 @@ class Command(BaseCommand):
                 theme_data = json.load(f)
 
             for key, value in (theme_data["Agreement"] | theme_data["Disagreement"]).items():
-                models.Theme.create_initial_theme(
+                models.ThemeOld.create_initial_theme(
                     framework=framework,
                     # The synthetic data topics have several synonyms, but we're only using the first one
                     name=value["topics"][0]["topic_name"],
@@ -73,7 +73,7 @@ class Command(BaseCommand):
         for i, response in enumerate(responses):
             self.stdout.write(f"Creating responses for {i}")
 
-            respondent = models.Respondent.objects.get(
+            respondent = models.RespondentOld.objects.get(
                 consultation=consultation,
                 themefinder_respondent_id=(response["response_id"] + 1),
             )
@@ -133,20 +133,20 @@ class Command(BaseCommand):
     def handle(self, *args, **options):
         self.stdout.write("Importing synthetic data")
 
-        consultation = models.Consultation.objects.create(title="Synthetic Data Consultation")
+        consultation = models.ConsultationOld.objects.create(title="Synthetic Data Consultation")
 
         # Generating respondents. In the synthetic data, the respondents were regenerated for each question, but as we're only using this for local testing, we'll just use the first batch.
         with open("synthetic_data/question_3/responses.json") as f:
             responses = json.load(f)
 
         for response in responses:
-            if models.Respondent.objects.filter(
+            if models.RespondentOld.objects.filter(
                 consultation=consultation,
                 themefinder_respondent_id=(response["response_id"] + 1),
             ).exists():
                 continue
 
-            models.Respondent.objects.create(
+            models.RespondentOld.objects.create(
                 consultation=consultation,
                 themefinder_respondent_id=(response["response_id"] + 1),
                 data={
