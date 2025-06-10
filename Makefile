@@ -129,15 +129,15 @@ endif
 
 .PHONY: docker_build
 docker_build: ## Build the docker container for the specified service when running in CI/CD
-	ifeq ($(service),consult)
-		DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
-		--cache-to type=local,dest=$(cache) \
-		--cache-from type=local,src=$(cache) .
-    else
-		DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
-		--cache-to type=local,dest=$(cache) \
-		--cache-from type=local,src=$(cache) -f $(service)/Dockerfile .
-	endif
+ifeq ($(service),consult)
+	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
+	--cache-to type=local,dest=$(cache) \
+	--cache-from type=local,src=$(cache) .
+else
+	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
+	--cache-to type=local,dest=$(cache) \
+	--cache-from type=local,src=$(cache) -f $(service)/Dockerfile .
+endif
 
 .PHONY: docker_build_local
 docker_build_local: ## Build the docker container for the specified service locally
