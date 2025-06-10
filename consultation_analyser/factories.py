@@ -1,6 +1,7 @@
 import random
 
 import factory
+from django.utils import timezone
 from factory import fuzzy
 from factory.django import DjangoModelFactory
 from faker import Faker
@@ -11,7 +12,10 @@ from consultation_analyser.consultations import models
 fake = Faker()
 
 
-class UserFactory(DjangoModelFactory):
+# OLD FACTORIES
+
+
+class UserFactoryOld(DjangoModelFactory):
     class Meta:
         model = User
 
@@ -20,19 +24,19 @@ class UserFactory(DjangoModelFactory):
     password = factory.LazyAttribute(lambda o: fake.password())
 
 
-class ConsultationFactory(DjangoModelFactory):
+class ConsultationFactoryOld(DjangoModelFactory):
     class Meta:
         model = models.ConsultationOld
 
     title = factory.LazyAttribute(lambda o: fake.sentence())
 
 
-class QuestionFactory(DjangoModelFactory):
+class QuestionFactoryOld(DjangoModelFactory):
     class Meta:
         model = models.QuestionOld
 
     text = factory.LazyAttribute(lambda o: fake.sentence())
-    consultation = factory.SubFactory(ConsultationFactory)
+    consultation = factory.SubFactory(ConsultationFactoryOld)
     number = factory.Sequence(lambda n: n + 1)  # Unique number within consultation
 
 
@@ -40,7 +44,7 @@ class FreeTextQuestionPartFactory(DjangoModelFactory):
     class Meta:
         model = models.QuestionPart
 
-    question = factory.SubFactory(QuestionFactory)
+    question = factory.SubFactory(QuestionFactoryOld)
     text = factory.LazyAttribute(lambda o: fake.sentence())
     type = models.QuestionPart.QuestionType.FREE_TEXT
     number = factory.Sequence(lambda n: n + 1)  # Unique number within question
@@ -50,7 +54,7 @@ class SingleOptionQuestionPartFactory(DjangoModelFactory):
     class Meta:
         model = models.QuestionPart
 
-    question = factory.SubFactory(QuestionFactory)
+    question = factory.SubFactory(QuestionFactoryOld)
     text = factory.LazyAttribute(lambda o: fake.sentence())
     type = models.QuestionPart.QuestionType.SINGLE_OPTION
     number = factory.Sequence(lambda n: n + 1)  # Unique number within question
@@ -61,18 +65,18 @@ class MultipleOptionQuestionPartFactory(DjangoModelFactory):
     class Meta:
         model = models.QuestionPart
 
-    question = factory.SubFactory(QuestionFactory)
+    question = factory.SubFactory(QuestionFactoryOld)
     text = factory.LazyAttribute(lambda o: fake.sentence())
     type = models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
     number = factory.Sequence(lambda n: n + 1)  # Unique number within question
     options = factory.LazyAttribute(lambda o: [fake.word() for _ in range(random.randint(2, 5))])
 
 
-class RespondentFactory(DjangoModelFactory):
+class RespondentFactoryOld(DjangoModelFactory):
     class Meta:
         model = models.RespondentOld
 
-    consultation = factory.SubFactory(ConsultationFactory)
+    consultation = factory.SubFactory(ConsultationFactoryOld)
     themefinder_respondent_id = factory.LazyAttribute(lambda o: random.randint(2, 500000000))
 
 
@@ -81,7 +85,7 @@ class FreeTextAnswerFactory(DjangoModelFactory):
         model = models.Answer
 
     question_part = factory.SubFactory(FreeTextQuestionPartFactory)
-    respondent = factory.SubFactory(RespondentFactory)
+    respondent = factory.SubFactory(RespondentFactoryOld)
     text = factory.LazyAttribute(lambda o: fake.paragraph())
 
 
@@ -90,7 +94,7 @@ class SingleOptionAnswerFactory(DjangoModelFactory):
         model = models.Answer
 
     question_part = factory.SubFactory(SingleOptionQuestionPartFactory)
-    respondent = factory.SubFactory(RespondentFactory)
+    respondent = factory.SubFactory(RespondentFactoryOld)
     chosen_options = factory.LazyAttribute(lambda o: [random.choice(o.question_part.options)])
 
 
@@ -99,7 +103,7 @@ class MultipleOptionAnswerFactory(DjangoModelFactory):
         model = models.Answer
 
     question_part = factory.SubFactory(MultipleOptionQuestionPartFactory)
-    respondent = factory.SubFactory(RespondentFactory)
+    respondent = factory.SubFactory(RespondentFactoryOld)
     chosen_options = factory.LazyAttribute(
         lambda o: random.sample(
             o.question_part.options, k=random.randint(1, len(o.question_part.options))
@@ -145,7 +149,7 @@ class DescendantFrameworkFactory(DjangoModelFactory):
         if not precursor:
             precursor = InitialFrameworkFactory()
         if not user:
-            user = UserFactory()
+            user = UserFactoryOld()
         if not change_reason:
             change_reason = fake.sentence()
         return precursor.create_descendant_framework(user=user, change_reason=change_reason)
@@ -228,3 +232,135 @@ class EvidenceRichMappingFactory(DjangoModelFactory):
     answer = factory.SubFactory(FreeTextAnswerFactory)
     evidence_evaluation_execution_run = factory.SubFactory(ExecutionRunFactory)
     evidence_rich = fake.boolean()
+
+
+# NEW FACTORIES
+
+
+class UserFactory(DjangoModelFactory):
+    class Meta:
+        model = User
+
+    email = factory.LazyAttribute(lambda o: fake.email())
+    is_staff = False
+    password = factory.LazyAttribute(lambda o: fake.password())
+
+
+class ConsultationFactory(DjangoModelFactory):
+    class Meta:
+        model = models.Consultation
+
+    title = factory.LazyAttribute(lambda o: fake.sentence())
+
+
+class QuestionFactory(DjangoModelFactory):
+    class Meta:
+        model = models.Question
+
+    consultation = factory.SubFactory(ConsultationFactory)
+    text = factory.LazyAttribute(lambda o: fake.sentence())
+    number = factory.Sequence(lambda n: n + 1)
+    has_free_text = True
+    has_multiple_choice = False
+    multiple_choice_options = None
+
+
+class QuestionWithMultipleChoiceFactory(QuestionFactory):
+    has_free_text = False
+    has_multiple_choice = True
+    multiple_choice_options = factory.LazyAttribute(
+        lambda o: [fake.word() for _ in range(random.randint(2, 5))]
+    )
+
+
+class QuestionWithBothFactory(QuestionFactory):
+    has_free_text = True
+    has_multiple_choice = True
+    multiple_choice_options = factory.LazyAttribute(
+        lambda o: [fake.word() for _ in range(random.randint(2, 5))]
+    )
+
+
+class RespondentFactory(DjangoModelFactory):
+    class Meta:
+        model = models.Respondent
+
+    consultation = factory.SubFactory(ConsultationFactory)
+    themefinder_id = factory.LazyAttribute(lambda o: random.randint(2, 500000000))
+    demographics = factory.LazyAttribute(lambda o: {"age": random.randint(18, 80)})
+
+
+class ResponseFactory(DjangoModelFactory):
+    class Meta:
+        model = models.Response
+
+    respondent = factory.SubFactory(RespondentFactory)
+    question = factory.SubFactory(QuestionFactory)
+    free_text = factory.LazyAttribute(lambda o: fake.paragraph())
+    chosen_options = factory.LazyFunction(list)  # Empty list
+
+
+class ResponseWithMultipleChoiceFactory(ResponseFactory):
+    question = factory.SubFactory(QuestionWithMultipleChoiceFactory)
+    free_text = ""
+    chosen_options = factory.LazyAttribute(
+        lambda o: random.sample(
+            o.question.multiple_choice_options,
+            k=random.randint(1, len(o.question.multiple_choice_options)),
+        )
+    )
+
+
+class ResponseWithBothFactory(ResponseFactory):
+    question = factory.SubFactory(QuestionWithBothFactory)
+    free_text = factory.LazyAttribute(lambda o: fake.paragraph())
+    chosen_options = factory.LazyAttribute(
+        lambda o: random.sample(
+            o.question.multiple_choice_options,
+            k=random.randint(1, len(o.question.multiple_choice_options)),
+        )
+    )
+
+
+class ThemeFactory(DjangoModelFactory):
+    class Meta:
+        model = models.Theme
+
+    question = factory.SubFactory(QuestionFactory)
+    name = factory.LazyAttribute(lambda o: fake.sentence())
+    description = factory.LazyAttribute(lambda o: fake.paragraph())
+    key = factory.LazyAttribute(lambda o: fake.word())
+
+
+class ResponseAnnotationFactory(DjangoModelFactory):
+    class Meta:
+        model = models.ResponseAnnotation
+
+    response = factory.SubFactory(ResponseFactory)
+    sentiment = fuzzy.FuzzyChoice(models.ResponseAnnotation.Sentiment.values)
+    evidence_rich = fuzzy.FuzzyChoice(models.ResponseAnnotation.EvidenceRich.values)
+    human_reviewed = False
+    reviewed_by = None
+    reviewed_at = None
+
+    @factory.post_generation
+    def themes(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            # If themes were passed in, use them
+            for theme in extracted:
+                self.themes.add(theme)
+        else:
+            # Create some themes for the same question
+            num_themes = random.randint(1, 3)
+            for _ in range(num_themes):
+                theme = ThemeFactory(question=self.response.question)
+                self.themes.add(theme)
+
+
+class ReviewedResponseAnnotationFactory(ResponseAnnotationFactory):
+    human_reviewed = True
+    reviewed_by = factory.SubFactory(UserFactory)
+    reviewed_at = factory.LazyAttribute(lambda o: timezone.now())
