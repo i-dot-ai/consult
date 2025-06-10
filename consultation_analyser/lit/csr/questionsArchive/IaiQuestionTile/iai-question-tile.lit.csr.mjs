@@ -3,7 +3,7 @@ import { html, css } from 'lit';
 import IaiLitBase from '../../../IaiLitBase.mjs';
 import IaiQuestionTopbar from '../IaiQuestionTopbar/iai-question-topbar.lit.csr.mjs';
 import IaiQuestionBody from '../IaiQuestionBody/iai-question-body.lit.csr.mjs';
-import IaiIcon from '../IaiIcon/iai-icon.mjs';
+import IaiIcon from '../../IaiIcon/iai-icon.mjs';
 import IaiIconButton from '../IaiIconButton/iai-icon-button.lit.csr.mjs';
 
 

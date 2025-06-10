@@ -1,6 +1,6 @@
 import { html, css } from 'lit';
 import IaiLitBase from '../../IaiLitBase.mjs';
-import IaiIcon from '../questionsArchive/IaiIcon/iai-icon.mjs';
+import IaiIcon from '../IaiIcon/iai-icon.mjs';
 
 
 export default class IaiDataTable extends IaiLitBase {

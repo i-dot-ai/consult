@@ -16,7 +16,7 @@ import IaiQuestionTiles from "./questionsArchive/IaiQuestionTiles/iai-question-t
 import IaiQuestionOverview from "./questionsArchive/IaiQuestionOverview/iai-question-overview.lit.csr.mjs";
 import IaiQuestionTopbar from "./questionsArchive/IaiQuestionTopbar/iai-question-topbar.lit.csr.mjs";
 import IaiQuestionBody from "./questionsArchive/IaiQuestionBody/iai-question-body.lit.csr.mjs";
-import IaiIcon from "./questionsArchive/IaiIcon/iai-icon.mjs";
+import IaiIcon from "./IaiIcon/iai-icon.mjs";
 import IaiIconButton from "./questionsArchive/IaiIconButton/iai-icon-button.lit.csr.mjs";
 import IaiQuestionOverviewSubtitle from "./questionsArchive/IaiQuestionOverviewSubtitle/iai-question-overview-subtitle.lit.csr.mjs";
 import IaiMultiResponseItem from "./questionsArchive/IaiMultiResponseItem/iai-multi-response-item.lit.csr.mjs";

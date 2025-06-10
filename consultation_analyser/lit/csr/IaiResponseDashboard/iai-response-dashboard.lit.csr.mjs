@@ -238,7 +238,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         this.has_individual_data = false;
         this.has_multiple_choice_question_part = false;
         this.multiple_choice_summary = [];
-        this.fetchData = fetch;
+        this.fetchData = window.fetch.bind(window);
 
         this.applyStaticStyles("iai-response-dashboard", IaiResponseDashboard.styles);
     }

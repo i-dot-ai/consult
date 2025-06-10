@@ -3,7 +3,7 @@ import { html, css } from 'lit';
 import IaiLitBase from '../../IaiLitBase.mjs';
 import IaiExpandingText from '../IaiExpandingText/iai-expanding-text.lit.csr.mjs';
 import IaiExpandingPill from '../IaiExpandingPill/iai-expanding-pill.lit.csr.mjs';
-import IaiIcon from '../questionsArchive/IaiIcon/iai-icon.mjs';
+import IaiIcon from '../IaiIcon/iai-icon.mjs';
 
 
 export default class IaiResponse extends IaiLitBase {
