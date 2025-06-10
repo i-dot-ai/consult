@@ -8,6 +8,7 @@ import pydantic
 from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
 from simple_history.models import HistoricalRecords
 
@@ -333,7 +334,9 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
             "precursor__id", flat=True
         )
         persisted_ids = [id for id in precursors_themes_that_persisted if id]  # remove None
-        precursor_themes_removed = self.precursor.themeold_set.exclude(id__in=persisted_ids).distinct()
+        precursor_themes_removed = self.precursor.themeold_set.exclude(
+            id__in=persisted_ids
+        ).distinct()
         return precursor_themes_removed
 
     def get_themes_added_to_previous_framework(self) -> models.QuerySet:
@@ -488,3 +491,168 @@ class EvidenceRichMapping(UUIDPrimaryKeyModel, TimeStampedModel):
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         pass
+
+
+# NEW MODELS
+
+
+class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
+    title = models.CharField(max_length=256)
+    slug = models.SlugField(max_length=256, unique=True)
+    users = models.ManyToManyField(User)
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.title)[:250]
+            slug = base_slug
+            counter = 1
+            while Consultation.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
+        return super().save(*args, **kwargs)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(fields=["slug"], name="unique_consultation_slug"),
+        ]
+
+
+class Question(UUIDPrimaryKeyModel, TimeStampedModel):
+    """
+    Combined question model - can have free text, multiple choice, or both.
+    Replaces the Question/QuestionPart split.
+    """
+
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    text = models.TextField()
+    slug = models.SlugField(max_length=256)
+    number = models.IntegerField()
+
+    # Question configuration
+    has_free_text = models.BooleanField(default=True)
+    has_multiple_choice = models.BooleanField(default=False)
+    multiple_choice_options = models.JSONField(
+        null=True, blank=True
+    )  # List of options when has_multiple_choice=True
+
+    def save(self, *args, **kwargs):
+        if not self.slug:
+            base_slug = slugify(self.text)[:240]
+            self.slug = f"{base_slug}-{self.number}" if base_slug else str(self.number)
+        return super().save(*args, **kwargs)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(fields=["consultation", "slug"], name="unique_question_slug"),
+            models.UniqueConstraint(
+                fields=["consultation", "number"], name="unique_question_number"
+            ),
+        ]
+        ordering = ["number"]
+        indexes = [
+            models.Index(fields=["consultation", "has_free_text"]),
+        ]
+
+
+class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    themefinder_id = models.IntegerField(null=True, blank=True)
+    demographics = models.JSONField(default=dict)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        indexes = [
+            models.Index(fields=["consultation", "themefinder_id"]),
+        ]
+
+    @property
+    def identifier(self):
+        return self.themefinder_id if self.themefinder_id else self.id
+
+
+class Response(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Response to a question - can include both free text and multiple choice"""
+
+    respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+
+    # Response content
+    free_text = models.TextField(blank=True)  # Free text response
+    chosen_options = models.JSONField(default=list)  # Multiple choice selections
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                fields=["respondent", "question"], name="unique_question_response"
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["question"]),
+            models.Index(fields=["free_text"]),  # For search functionality
+            models.Index(fields=["respondent", "question"]),  # For efficient joins
+        ]
+
+
+class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
+    """AI-generated themes for a question (only for free text parts)"""
+
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    name = models.CharField(max_length=256)
+    description = models.TextField()
+    key = models.CharField(max_length=128, null=True, blank=True)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                fields=["question", "key"],
+                name="unique_theme",
+                condition=models.Q(key__isnull=False),
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["question"]),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
+    """AI outputs and human reviews for a response"""
+
+    class Sentiment(models.TextChoices):
+        AGREEMENT = "AGREEMENT", "Agreement"
+        DISAGREEMENT = "DISAGREEMENT", "Disagreement"
+        UNCLEAR = "UNCLEAR", "Unclear"
+
+    class EvidenceRich(models.TextChoices):
+        YES = "YES", "Yes"
+        NO = "NO", "No"
+
+    response = models.OneToOneField(Response, on_delete=models.CASCADE, related_name="annotation")
+
+    # AI-generated outputs (only for free text responses)
+    themes = models.ManyToManyField(Theme, blank=True)
+    sentiment = models.CharField(max_length=12, choices=Sentiment.choices, null=True, blank=True)
+    evidence_rich = models.CharField(
+        max_length=3, choices=EvidenceRich.choices, null=True, blank=True
+    )
+
+    # Human review tracking
+    human_reviewed = models.BooleanField(default=False)
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        indexes = [
+            models.Index(fields=["human_reviewed"]),
+            models.Index(fields=["sentiment"]),
+            models.Index(fields=["evidence_rich"]),
+        ]
+
+    def mark_human_reviewed(self, user):
+        """Helper method to mark as human reviewed"""
+        self.human_reviewed = True
+        self.reviewed_by = user
+        self.reviewed_at = timezone.now()
+        self.save()
