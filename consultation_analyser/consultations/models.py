@@ -327,13 +327,13 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
     def get_themes_removed_from_previous_framework(self) -> models.QuerySet:
         """Themes removed from the previous framework i.e. no longer exist in any format."""
         if not self.precursor:
-            return self.theme_set.none()
-        themes_in_this_framework = self.theme_set.all()
+            return self.themeold_set.none()
+        themes_in_this_framework = self.themeold_set.all()
         precursors_themes_that_persisted = themes_in_this_framework.values_list(
             "precursor__id", flat=True
         )
         persisted_ids = [id for id in precursors_themes_that_persisted if id]  # remove None
-        precursor_themes_removed = self.precursor.theme_set.exclude(id__in=persisted_ids).distinct()
+        precursor_themes_removed = self.precursor.themeold_set.exclude(id__in=persisted_ids).distinct()
         return precursor_themes_removed
 
     def get_themes_added_to_previous_framework(self) -> models.QuerySet:
@@ -342,10 +342,10 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
         the previous framework.
         """
         if not self.precursor:
-            return self.theme_set.all()
+            return self.themeold_set.all()
 
-        previous_framework_themes = self.precursor.theme_set.values_list("id", flat=True)
-        new_themes = self.theme_set.exclude(precursor__id__in=previous_framework_themes)
+        previous_framework_themes = self.precursor.themeold_set.values_list("id", flat=True)
+        new_themes = self.themeold_set.exclude(precursor__id__in=previous_framework_themes)
         return new_themes
 
     def get_theme_mappings(self, history=False) -> models.QuerySet:
