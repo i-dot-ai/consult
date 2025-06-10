@@ -1,5 +1,7 @@
 import { html, css } from 'lit';
 
+import IaiIcon from '../../IaiIcon/iai-icon.mjs';
+
 import IaiLitBase from '../../../IaiLitBase.mjs';
 
 
