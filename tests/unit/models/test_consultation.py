@@ -12,10 +12,10 @@ def test_consultation_save_unique_slugs():
     assert consultation.slug == slugified
     another_consultation = ConsultationFactory(title=consultation_title)
     assert another_consultation.slug != consultation.slug
-    assert another_consultation.slug == f"{slugified}-2"
+    assert another_consultation.slug == f"{slugified}-1"
     yet_another_consultation = ConsultationFactory(title=consultation_title)
     assert yet_another_consultation.slug != consultation.slug
-    assert yet_another_consultation.slug == f"{slugified}-3"
+    assert yet_another_consultation.slug == f"{slugified}-2"
 
 
 @pytest.mark.django_db
@@ -25,7 +25,8 @@ def test_consultation_save_update_slugs():
     assert consultation.slug == "my-first-consultation"
     consultation.title = "My Second Consultation"
     consultation.save()
-    assert consultation.slug == "my-second-consultation"
+    # New model doesn't update slug once set
+    assert consultation.slug == "my-first-consultation"
 
 
 @pytest.mark.django_db
@@ -39,6 +40,6 @@ def test_consultation_cant_save_long_title():
 def test_consultation_save_long_title_twice():
     title = "T" * 256
     consultation = ConsultationFactory(title=title)
-    assert consultation.slug == "t" * 256
+    assert consultation.slug == "t" * 250  # Truncated to 250 chars
     consultation2 = ConsultationFactory(title=title)
-    assert consultation2.slug == f"{'t' * 254}-2"
+    assert consultation2.slug == f"{'t' * 250}-1"
