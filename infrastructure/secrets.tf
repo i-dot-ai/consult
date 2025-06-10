@@ -12,37 +12,18 @@ locals {
       name  = "DATA_S3_BUCKET"
       value = module.app_bucket.id
     },
-    
-    {
-      name  = "SENTRY_DSN"
-      value = "placeholder" # Update value in SSM - Do not hardcode - Empty value will disable sentry
-    },
-    
-    {
-      name  = "EXAMPLE_VAR"
-      value = "placeholder" # Update value in SSM - Do not hardcode
-    },
-
     {
       name  = "AZURE_OPENAI_API_KEY"
       value = "placeholder" # Update value in SSM - Do not hardcode
     },
-
     {
       name  = "AZURE_OPENAI_ENDPOINT"
       value = "placeholder" # Update value in SSM - Do not hardcode
     },
-
     {
-      name  = "AZURE_OPENAI_BASE_URL"
+      name  = "OPENAI_API_VERSION"
       value = "placeholder" # Update value in SSM - Do not hardcode
     },
-    
-    {
-      name  = "AZURE_OPENAI_API_VERSION"
-      value = "placeholder" # Update value in SSM - Do not hardcode
-    },
-
     {
       name  = "DEPLOYMENT_NAME"
       value = "placeholder" # Update value in SSM - Do not hardcode

@@ -20,7 +20,6 @@ logger = logging.getLogger(__name__)
 llm = AzureChatOpenAI(
     model="gpt-4o",
     temperature=0,
-    model_kwargs={"response_format": {"type": "json_object"}},
 )
 BUCKET_NAME = "i-dot-ai-dev-consult-pipeline-data"
 BASE_PREFIX = "app_data/"
