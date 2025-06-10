@@ -2308,15 +2308,22 @@ class IaiAnimatedNumber extends IaiLitBase {
         this.applyStaticStyles("iai-animated-number", IaiAnimatedNumber.styles);
     }
 
-    animate(start, end, duration) {
-        const element = this.querySelector("span");
+    setDisplayNumber = (newDisplayNumber) => {
+        this._displayNumber = newDisplayNumber;
+    }
+
+    animate = (start, end, duration) => {
+        const setDisplayNumber = (newDisplayNumber) => {
+            this._displayNumber = newDisplayNumber;
+        };
         const startTime = performance.now();
 
         function update_number(currTime) {
             const elapsedTime = currTime - startTime;
             const time = Math.min(elapsedTime / duration, 1);
             const currValue = start * (1 - time) + end * time;
-            element.textContent = Math.round(currValue);
+
+            setDisplayNumber(Math.round(currValue));
 
             if (time < 1) {
                 requestAnimationFrame(update_number);
