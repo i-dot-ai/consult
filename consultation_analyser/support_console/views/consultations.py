@@ -211,66 +211,11 @@ def import_question_part_themefinder_outputs(
     )
 
 
-def import_consultation_themes(request: HttpRequest) -> HttpResponse:
-    # Imports themefinder outputs: themes, theme mappings and sentiment mappings
-    # Responses should already have been imported
-    bucket_name = settings.AWS_BUCKET_NAME
-    consultation_options = [
-        {"value": c.slug, "text": c.slug} for c in models.ConsultationOld.objects.all()
-    ]
-    consultation_folders = get_folder_names_for_dropdown()
-    context = {
-        "consultations": consultation_options,
-        "bucket_name": bucket_name,
-        "consultation_folders": consultation_folders,
-    }
-    batch_size = 100
-
-    if request.POST:
-        consultation_slug = request.POST.get("consultation_slug")
-        consultation_code = request.POST.get("consultation_code")
-        consultation_mapping_date = request.POST.get("consultation_mapping_date")
-        question_choice = request.POST.get("question_choice")
-        question_number = request.POST.get("question_number")
-        path_to_themes = f"app_data/{consultation_code}/outputs/mapping/{consultation_mapping_date}"
-
-        consultation = models.ConsultationOld.objects.get(slug=consultation_slug)
-        if not models.QuestionOld.objects.filter(consultation=consultation).exists():
-            messages.error(request, "Questions have not yet been imported for this Consultation")
-            return render(
-                request, "support_console/consultations/import_themes.html", context=context
-            )
-
-        try:
-            if question_choice == "all":
-                question_part_subfolders = get_all_question_part_subfolders(
-                    folder_name=path_to_themes, bucket_name=bucket_name
-                )
-
-                for folder in question_part_subfolders:
-                    question_number = int(folder.split("/")[-2].split("question_part_")[-1])
-                    import_question_part_themefinder_outputs(
-                        consultation, question_number, bucket_name, folder, batch_size
-                    )
-
-            else:
-                # importing a single question
-                int(question_number)  # tests a number is passed
-                folder = f"{path_to_themes}question_part_{question_number}/"
-
-                import_question_part_themefinder_outputs(
-                    consultation, question_number, bucket_name, folder, batch_size
-                )
-
-            msg = f"Importing themefinder outputs started for consultation with slug {consultation.slug} - check for progress in dashboard"
-            messages.success(request, msg)
-            return redirect("/support/consultations/import-summary/")
-
-        except (ClientError, ValueError) as e:
-            messages.error(request, e.__str__())
-
-    return render(request, "support_console/consultations/import_themes.html", context=context)
 
 
 def import_summary(request: HttpRequest) -> HttpResponse:
     return render(request, "support_console/consultations/import_summary.html", context={})
+
+
+def import_consultation(request: HttpRequest) -> HttpResponse:
+    return render(request, "support_console/consultations/import_consultation.html", context={})
