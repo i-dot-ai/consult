@@ -1,7 +1,6 @@
 import logging
 from uuid import UUID
 
-from botocore.exceptions import ClientError
 from django.conf import settings
 from django.contrib import messages
 from django.core.management import call_command
@@ -18,15 +17,13 @@ from consultation_analyser.consultations.export_user_theme import export_user_th
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
 from consultation_analyser.support_console.ingest import (
-    get_all_question_part_subfolders,
+    format_validation_error,
     get_folder_names_for_dropdown,
     import_all_evidence_rich_mappings_from_jsonl,
-    import_all_respondents_from_jsonl,
-    import_all_responses_from_jsonl,
     import_all_sentiment_mappings_from_jsonl,
     import_all_theme_mappings_from_jsonl,
-    import_question_part,
     import_themes_from_json_and_get_framework,
+    validate_consultation_s3_structure,
 )
 
 logger = logging.getLogger("export")
@@ -211,11 +208,36 @@ def import_question_part_themefinder_outputs(
     )
 
 
-
-
 def import_summary(request: HttpRequest) -> HttpResponse:
     return render(request, "support_console/consultations/import_summary.html", context={})
 
 
 def import_consultation(request: HttpRequest) -> HttpResponse:
-    return render(request, "support_console/consultations/import_consultation.html", context={})
+    bucket_name = settings.AWS_BUCKET_NAME
+    consultation_folders = get_folder_names_for_dropdown()
+    batch_size = 100
+
+    context = {
+        "bucket_name": bucket_name,
+        "consultation_folders": consultation_folders,
+    }
+
+    if request.POST:
+        consultation_name = request.POST.get("consultation_name")
+        consultation_code = request.POST.get("consultation_code")
+        timestamp = request.POST.get("timestamp")
+
+        is_valid, validation_errors = validate_consultation_s3_structure(
+            bucket_name=bucket_name, consultation_code=consultation_code, timestamp=timestamp
+        )
+
+        if not is_valid:
+            formatted_errors = [format_validation_error(error) for error in validation_errors]
+            context["validation_errors"] = formatted_errors
+            return render(
+                request, "support_console/consultations/import_consultation.html", context=context
+            )
+
+    return render(
+        request, "support_console/consultations/import_consultation.html", context=context
+    )

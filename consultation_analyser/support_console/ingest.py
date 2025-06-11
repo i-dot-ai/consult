@@ -465,3 +465,233 @@ def import_all_evidence_rich_mappings_from_jsonl(
         import_evidence_rich_mappings_job.delay(
             question_part=question_part, evidence_rich_mapping_data=lines
         )
+
+
+def format_validation_error(error_message: str) -> dict[str, str]:
+    """
+    Formats a validation error message into a more user-friendly format.
+    
+    Returns:
+        dict: {"type": error_type, "message": user_friendly_message, "technical": original_message}
+    """
+    error_message = error_message.strip()
+    
+    # Missing files
+    if error_message.startswith("Missing required file:"):
+        file_path = error_message.replace("Missing required file: ", "")
+        return {
+            "type": "missing_file",
+            "message": f"Required file is missing: {file_path.split('/')[-1]}",
+            "technical": error_message,
+            "file_path": file_path
+        }
+    
+    if error_message.startswith("Missing "):
+        file_path = error_message.replace("Missing ", "")
+        file_name = file_path.split('/')[-1]
+        question_part = None
+        if "question_part_" in file_path:
+            question_part = file_path.split("question_part_")[1].split("/")[0]
+        
+        return {
+            "type": "missing_file",
+            "message": f"Missing {file_name}" + (f" for question part {question_part}" if question_part else ""),
+            "technical": error_message,
+            "file_path": file_path
+        }
+    
+    if error_message.startswith("Missing output file:"):
+        file_path = error_message.replace("Missing output file: ", "")
+        file_name = file_path.split('/')[-1]
+        question_part = None
+        if "question_part_" in file_path:
+            question_part = file_path.split("question_part_")[1].split("/")[0]
+        
+        return {
+            "type": "missing_output",
+            "message": f"Missing AI output file: {file_name}" + (f" for question part {question_part}" if question_part else ""),
+            "technical": error_message,
+            "file_path": file_path
+        }
+    
+    # No question folders
+    if "No question_part folders found" in error_message:
+        return {
+            "type": "no_questions",
+            "message": "No question folders found. Please ensure your consultation has at least one question_part folder.",
+            "technical": error_message
+        }
+    
+    # File validation errors
+    if error_message.startswith("Invalid JSON"):
+        file_path = error_message.split("Invalid JSON in ")[1]
+        return {
+            "type": "invalid_format",
+            "message": f"The file {file_path.split('/')[-1]} contains invalid JSON format",
+            "technical": error_message,
+            "file_path": file_path
+        }
+    
+    if error_message.startswith("Invalid JSONL"):
+        file_path = error_message.split("Invalid JSONL in ")[1]
+        return {
+            "type": "invalid_format",
+            "message": f"The file {file_path.split('/')[-1]} contains invalid JSONL format",
+            "technical": error_message,
+            "file_path": file_path
+        }
+    
+    if error_message.startswith("Empty file:"):
+        file_path = error_message.replace("Empty file: ", "")
+        return {
+            "type": "empty_file",
+            "message": f"The file {file_path.split('/')[-1]} is empty",
+            "technical": error_message,
+            "file_path": file_path
+        }
+    
+    # Access errors (404, etc.)
+    if "An error occurred (404)" in error_message and "HeadObject operation: Not Found" in error_message:
+        file_path = error_message.split("Error checking ")[1].split(":")[0]
+        return {
+            "type": "file_not_found",
+            "message": f"Cannot find file: {file_path.split('/')[-1]}",
+            "technical": error_message,
+            "file_path": file_path
+        }
+    
+    # Generic error checking
+    if error_message.startswith("Error checking "):
+        parts = error_message.split(": ", 1)
+        if len(parts) > 1:
+            file_path = parts[0].replace("Error checking ", "")
+            error_detail = parts[1]
+            return {
+                "type": "file_error",
+                "message": f"Problem accessing {file_path.split('/')[-1]}: {error_detail}",
+                "technical": error_message,
+                "file_path": file_path
+            }
+    
+    # Unexpected errors
+    if error_message.startswith("Unexpected error during validation:"):
+        return {
+            "type": "system_error",
+            "message": "An unexpected error occurred during validation. Please check your S3 configuration and try again.",
+            "technical": error_message
+        }
+    
+    # Default fallback
+    return {
+        "type": "unknown",
+        "message": error_message,
+        "technical": error_message
+    }
+
+
+def validate_consultation_s3_structure(
+    bucket_name: str, consultation_code: str, timestamp: str
+) -> tuple[bool, list[str]]:
+    """
+    Validates that the S3 structure contains all required files for import.
+    
+    Returns:
+        tuple: (is_valid, error_messages)
+    """
+    s3 = boto3.client("s3")
+    errors = []
+    
+    # Define required structure
+    base_path = f"app_data/{consultation_code}/"
+    inputs_path = f"{base_path}inputs/"
+    outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
+    
+    required_files = {
+        "respondents": f"{inputs_path}respondents.jsonl",
+    }
+    
+    required_outputs = [
+        "themes.json",
+        "mapping.jsonl",
+        "sentiment.jsonl",
+        "detail_detection.jsonl"
+    ]
+    
+    try:
+        # Check if respondents file exists
+        try:
+            s3.head_object(Bucket=bucket_name, Key=required_files["respondents"])
+        except s3.exceptions.NoSuchKey:
+            errors.append(f"Missing required file: {required_files['respondents']}")
+        except Exception as e:
+            errors.append(f"Error checking respondents file: {str(e)}")
+        
+        # Get all question part folders
+        question_folders = get_all_question_part_subfolders(inputs_path, bucket_name)
+        
+        if not question_folders:
+            errors.append(f"No question_part folders found in {inputs_path}")
+        
+        # Check each question part has required input files
+        for folder in question_folders:
+            question_num = folder.split("/")[-2]
+            
+            # Check input files
+            question_file = f"{folder}question.json"
+            responses_file = f"{folder}responses.jsonl"
+            
+            try:
+                s3.head_object(Bucket=bucket_name, Key=question_file)
+            except s3.exceptions.NoSuchKey:
+                errors.append(f"Missing {question_file}")
+            except Exception as e:
+                errors.append(f"Error checking {question_file}: {str(e)}")
+                
+            try:
+                s3.head_object(Bucket=bucket_name, Key=responses_file)
+            except s3.exceptions.NoSuchKey:
+                errors.append(f"Missing {responses_file}")
+            except Exception as e:
+                errors.append(f"Error checking {responses_file}: {str(e)}")
+            
+            # Check output files for this question part
+            output_folder = f"{outputs_path}{question_num}/"
+            for output_file in required_outputs:
+                output_key = f"{output_folder}{output_file}"
+                try:
+                    s3.head_object(Bucket=bucket_name, Key=output_key)
+                except s3.exceptions.NoSuchKey:
+                    errors.append(f"Missing output file: {output_key}")
+                except Exception as e:
+                    errors.append(f"Error checking {output_key}: {str(e)}")
+        
+        # Validate JSON/JSONL files are parseable (spot check first question part)
+        if question_folders and not errors:
+            first_folder = question_folders[0]
+            
+            # Check question.json is valid JSON
+            try:
+                response = s3.get_object(Bucket=bucket_name, Key=f"{first_folder}question.json")
+                json.loads(response["Body"].read())
+            except json.JSONDecodeError:
+                errors.append(f"Invalid JSON in {first_folder}question.json")
+            except Exception as e:
+                errors.append(f"Error reading {first_folder}question.json: {str(e)}")
+            
+            # Check first line of responses.jsonl is valid
+            try:
+                response = s3.get_object(Bucket=bucket_name, Key=f"{first_folder}responses.jsonl")
+                first_line = response["Body"].iter_lines().__next__()
+                json.loads(first_line.decode("utf-8"))
+            except json.JSONDecodeError:
+                errors.append(f"Invalid JSONL in {first_folder}responses.jsonl")
+            except StopIteration:
+                errors.append(f"Empty file: {first_folder}responses.jsonl")
+            except Exception as e:
+                errors.append(f"Error reading {first_folder}responses.jsonl: {str(e)}")
+                
+    except Exception as e:
+        errors.append(f"Unexpected error during validation: {str(e)}")
+    
+    is_valid = len(errors) == 0
+    return is_valid, errors
