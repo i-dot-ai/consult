@@ -35,12 +35,9 @@ def download_s3_subdir(subdir: str) -> None:
     logger.info("prefix: %s", prefix)
     logger.info("bucket: %s", BUCKET_NAME)
 
+    credentials = boto3.Session().get_credentials()
     s3 = boto3.client("s3")
 
-    # Test credentials by trying to list buckets
-    logger.info("Testing AWS credentials...")
-    s3.list_buckets()
-    logger.info("AWS credentials verified successfully")
     
     paginator = s3.get_paginator("list_objects_v2")
     inputs_prefix = str(Path(BASE_PREFIX) / subdir / "inputs").rstrip("/") + "/"
