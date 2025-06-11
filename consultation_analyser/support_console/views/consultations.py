@@ -101,16 +101,6 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     return render(request, "support_console/consultations/show.html", context=context)
 
 
-def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
-    if request.POST:
-        s3_key = request.POST.get("s3_key")
-        call_command("import_consultation_data", s3_key)
-        messages.success(request, "Consultations imported")
-
-        return redirect("/support/consultations/")
-    return render(request, "support_console/consultations/import_xlsx.html")
-
-
 def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = get_object_or_404(models.ConsultationOld, id=consultation_id)
     question_parts = models.QuestionPart.objects.filter(
