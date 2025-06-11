@@ -24,10 +24,12 @@ export const Default = {
   args: {
     consultationName: "test-question",
     questions: [...Array(10).keys()].map(n => ({
-      questionId: `question-${n}`,
+      id: `question-${n}`,
       url: `/questions/question-${n}`,
       title: `Question ${n}`,
       body: "This is a test question".repeat(10),
+      responses: {},
+      multiResponses: {},
     }))
   },
 };

@@ -62,4 +62,7 @@ export default class IaiLitBase extends LitElement {
         })
     }
 
+    accessibleKeyPressed = (key) => {
+        return key === "Enter" || key === " ";
+    }
 }

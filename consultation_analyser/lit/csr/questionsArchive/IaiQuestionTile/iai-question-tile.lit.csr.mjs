@@ -105,7 +105,20 @@ export default class IaiQuestionTile extends IaiLitBase {
         return html`
             <div
                 class=${"question-tile" + (this.highlighted ? " highlighted" : "")}
+                role="button"
+                tabindex="0"
                 @click=${this.handleBodyClick}
+                @keydown=${(e) => {
+                    e.stopPropagation();
+
+                    if (e.repeat) {
+                        return;
+                    }
+
+                    if (this.accessibleKeyPressed(e.key)) {
+                        this.handleBodyClick(e);
+                    }
+                }}
             >
                 <iai-question-topbar .title=${this.title}>
                     <div slot="buttons">
@@ -115,6 +128,7 @@ export default class IaiQuestionTile extends IaiLitBase {
                                 e.stopPropagation();
                                 this.handleViewClick(e);
                             }}
+                            @keydown=${(e) => e.stopPropagation()}
                         >
                             <iai-icon
                                 slot="icon"
@@ -130,6 +144,7 @@ export default class IaiQuestionTile extends IaiLitBase {
                                 e.stopPropagation();
                                 this.handleFavouriteClick(e);
                             }}
+                            @keydown=${(e) => e.stopPropagation()}
                         >    
                             <iai-icon
                                 slot="icon"
