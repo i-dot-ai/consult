@@ -1460,7 +1460,6 @@ class IaiQuestionTile extends IaiLitBase {
         questionId: { type: String },
         title: { type: String },
         body: { type: String },
-        url: { type: String },
         maxLength: { type: Number },
         highlighted: { type: Boolean },
         searchValue: { type: String },
@@ -1506,7 +1505,6 @@ class IaiQuestionTile extends IaiLitBase {
         this.questionId = "";
         this.title = "";
         this.body = "";
-        this.url = "";
         this.maxLength = 90;
         this.highlighted = false;
         this.searchValue = "";
@@ -1667,7 +1665,7 @@ class IaiTextResponseItem extends IaiLitBase {
             }
             iai-text-response-item li {
                 display: flex;
-                justify-content: center;
+                justify-content: flex-start;
                 align-items: center;
                 gap: 1em;
             }
@@ -1705,6 +1703,58 @@ class IaiTextResponseItem extends IaiLitBase {
 }
 customElements.define("iai-text-response-item", IaiTextResponseItem);
 
+class IaiMultiResponseItem extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        countName: { type: String },
+        countValue: { type: Number },
+        totalCounts: { type: Number },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-multi-response-item p {
+                margin: 0;
+            }
+            iai-multi-response-item progress {
+                width: 100%;
+            }
+            iai-multi-response-item progress {
+                accent-color: var(--iai-colour-pink);
+            }
+            iai-multi-response-item li {
+                margin-bottom: 0.5em;
+                list-style: none;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.key = "";
+        this.count = 0;
+        this.totalCounts = 0;
+
+        this.applyStaticStyles("iai-multi-response-item", IaiMultiResponseItem.styles);
+    }
+
+    render() {
+        return x`
+            <li>
+                <p>
+                    ${this.countName ? this.countName + ": " : ""}<strong>${this.countValue}</strong>
+                </p>
+                <progress value=${this.countValue} max=${this.totalCounts}></progress>
+            </li>
+        `;
+    }
+}
+customElements.define("iai-multi-response-item", IaiMultiResponseItem);
+
 class IaiQuestionOverview extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -1713,8 +1763,6 @@ class IaiQuestionOverview extends IaiLitBase {
         responses: { type: Object }, //  agreement | unclear | disagreement
         multiResponses: { type: Object },
         handleClose: { type: Function },
-        favourited: { type: Boolean },
-        handleFavouriteClick: { type: Function },
     }
 
     static styles = [
@@ -1752,8 +1800,6 @@ class IaiQuestionOverview extends IaiLitBase {
         this.responses = {};
         this.multiResponses = {};
         this.handleClose = () => {};
-        this.favourited = false;
-        this.handleFavouriteClick = () => {};
         
         this.applyStaticStyles("iai-question-overview", IaiQuestionOverview.styles);
     }
@@ -1778,7 +1824,7 @@ class IaiQuestionOverview extends IaiLitBase {
             <div class="question-overview">
                 <iai-question-topbar .title=${this.title}>
                     <div slot="buttons">
-                         <iai-icon-button
+                        <iai-icon-button
                             title="Close question overview"
                             .handleClick=${this.handleClose}
                         >
@@ -2024,7 +2070,6 @@ class IaiQuestionTiles extends IaiLitBase {
                             ? this._visibleQuestions.map(question => x`
                                 <iai-question-tile
                                     .questionId=${question.id}
-                                    .url=${question.url}
                                     .title=${question.title}
                                     .body=${question.body}
                                     .highlighted=${this._selectedQuestion == question}
@@ -2074,58 +2119,6 @@ class IaiQuestionTiles extends IaiLitBase {
     }
 }
 customElements.define("iai-question-tiles", IaiQuestionTiles);
-
-class IaiMultiResponseItem extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        countName: { type: String },
-        countValue: { type: Number },
-        totalCounts: { type: Number },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-multi-response-item p {
-                margin: 0;
-            }
-            iai-multi-response-item progress {
-                width: 100%;
-            }
-            iai-multi-response-item progress {
-                accent-color: var(--iai-colour-pink);
-            }
-            iai-multi-response-item li {
-                margin-bottom: 0.5em;
-                list-style: none;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.key = "";
-        this.count = 0;
-        this.totalCounts = 0;
-
-        this.applyStaticStyles("iai-multi-response-item", IaiMultiResponseItem.styles);
-    }
-
-    render() {
-        return x`
-            <li>
-                <p>
-                    ${this.countName ? this.countName + ": " : ""}<strong>${this.countValue}</strong>
-                </p>
-                <progress value=${this.countValue} max=${this.totalCounts}></progress>
-            </li>
-        `;
-    }
-}
-customElements.define("iai-multi-response-item", IaiMultiResponseItem);
 
 class IaiPageTitle extends IaiLitBase {
     static properties = {
