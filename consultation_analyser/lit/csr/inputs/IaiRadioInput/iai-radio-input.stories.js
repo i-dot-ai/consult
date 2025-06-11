@@ -6,7 +6,7 @@ import IaiRadioInput from './iai-radio-input.lit.csr.mjs';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Csr/IaiRadioInput',
+  title: 'Csr/Inputs/RadioInput',
   tags: ['autodocs'],
   argTypes: {
     name: { control: "text" },

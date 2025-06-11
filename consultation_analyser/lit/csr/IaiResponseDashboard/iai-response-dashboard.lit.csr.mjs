@@ -2,13 +2,19 @@ import { html, css } from 'lit';
 
 import IaiLitBase from '../../IaiLitBase.mjs';
 import IaiResponseFilters from '../IaiResponseFilters/iai-response-filters.lit.csr.mjs';
-import IaiTextInput from '../filters/IaiTextInput/iai-text-input.lit.csr.mjs';
+import IaiTextInput from '../inputs/IaiTextInput/iai-text-input.lit.csr.mjs';
+import IaiCheckboxInput from '../inputs/IaiCheckboxInput/iai-checkbox-input.lit.csr.mjs';
 import IaiResponseFilterGroup from '../IaiResponseFilterGroup/iai-response-filter-group.lit.csr.mjs';
 import IaiPageTitle from '../IaiPageTitle/iai-page-title.lit.csr.mjs';
 import IaiDataTable from '../IaiDataTable/iai-data-table.lit.csr.mjs';
 import IaiCsvDownload from '../IaiCsvDownload/iai-csv-download.lit.csr.mjs';
 import IaiProgressBar from '../IaiProgressBar/iai-progress-bar.lit.csr.mjs';
 import IaiAnimatedNumber from '../IaiAnimatedNumber/iai-animated-number.lit.csr.mjs';
+import IaiExpandingPill from '../IaiExpandingPill/iai-expanding-pill.lit.csr.mjs';
+import IaiChip from '../IaiChip/iai-chip.lit.csr.mjs';
+import IaiExpandingText from '../IaiExpandingText/iai-expanding-text.lit.csr.mjs';
+import IaiLoadingIndicator from '../IaiLoadingIndicator/iai-loading-indicator.lit.csr.mjs';
+import IaiVirtualList from '../IaiVirtualList/iai-virtual-list.lit.csr.mjs';
 
 
 export default class IaiResponseDashboard extends IaiLitBase {
@@ -24,11 +30,11 @@ export default class IaiResponseDashboard extends IaiLitBase {
         themeMappings: { type: Array },
         responses: { type: Array },
         responsesTotal: { type: Number },
-        responsesFilteredTotal: { type: Number },
         free_text_question_part: { type: Boolean },
         has_individual_data: { type: Boolean },
         has_multiple_choice_question_part: { type: Boolean },
         multiple_choice_summary: { type: Array },
+        fetchData: { type: Function },
 
         _isLoading: { type: Boolean },
         _searchValue: { type: String },
@@ -37,6 +43,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         _themeFilters: { type: Array },
         _themesPanelVisible: { type: Boolean },
         _stanceFilters: { type: Array },
+        _responsesFilteredTotal: { type: Number },
         _evidenceRichFilters: { type: Array },
         _numberAnimationDuration: { type: Number },
         _searchDebounceTimer: { type: Number },
@@ -140,17 +147,6 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 max-height: 40em;
                 overflow: auto;
             }
-            iai-response-dashboard .spinner {
-                display: flex;
-                justify-content: center;
-                animation-name: spin;
-                animation-duration: 1s;
-                animation-iteration-count: infinite;
-                animation-timing-function: ease-in-out;
-            }
-            iai-response-dashboard .spinner iai-icon .material-symbols-outlined {
-                font-size: 3em;
-            }
             iai-response-dashboard thead tr {
                 color: var(--iai-colour-text-secondary);
             }
@@ -202,15 +198,6 @@ export default class IaiResponseDashboard extends IaiLitBase {
             iai-response-dashboard .flex-grow {
                 flex-grow: 1;
             }
-
-            @keyframes spin {
-                from {
-                    transform:rotate(0deg);
-                }
-                to {
-                    transform:rotate(360deg);
-                }
-            }
         `
     ]
 
@@ -231,6 +218,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
         this._themeFilters = [];
         this._themesPanelVisible = false;
         this._demographicFilters = [];
+        this._responsesFilteredTotal = 0;
         this._numberAnimationDuration = 500;
         this._searchDebounceTimer = null;
         this._currentPage = 1;
@@ -244,13 +232,13 @@ export default class IaiResponseDashboard extends IaiLitBase {
         this.consultationSlug = "";
         this.responses = [];
         this.responsesTotal = 0;
-        this.responsesFilteredTotal = 0;
         this.themeMappings = [];
         this.stanceOptions = [];
         this.free_text_question_part = false;
         this.has_individual_data = false;
         this.has_multiple_choice_question_part = false;
         this.multiple_choice_summary = [];
+        this.fetchData = window.fetch.bind(window);
 
         this.applyStaticStyles("iai-response-dashboard", IaiResponseDashboard.styles);
     }
@@ -283,7 +271,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
             
             let response;
             try {
-                response = await fetch(url, { signal });
+                response = await this.fetchData(url, { signal });
             } catch (err) {
                 if (err.name == "AbortError") {
                     console.log("stale request aborted");
@@ -314,7 +302,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 }))
             );
             this.responsesTotal = responsesData.respondents_total;
-            this.responsesFilteredTotal = responsesData.filtered_total;
+            this._responsesFilteredTotal = responsesData.filtered_total;
             
             this._hasMorePages = responsesData.has_more_pages;
     
@@ -665,8 +653,9 @@ export default class IaiResponseDashboard extends IaiLitBase {
                             </div>
                         </div>
                     </div>
-                `
-                : ""}
+                `    
+                : ""
+            }
 
             <div class="govuk-grid-row govuk-!-margin-top-5 responses-row">
                 <div class="govuk-grid-column-one-quarter-from-desktop filters-column">
@@ -677,12 +666,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                 ${this.free_text_question_part
                                     ? html`
                                         <iai-response-filter-group title="Themes">
-                                            <div
-                                                slot="content"
-                                                class="govuk-checkboxes govuk-checkboxes--small"
-                                                data-module="govuk-checkboxes"
-                                                data-govuk-checkboxes-init=""
-                                            >
+                                            <div slot="content" class="govuk-checkboxes govuk-checkboxes--small">
                                                 <div class="themes-container">
                                                     <div
                                                         class="input-container"
@@ -735,7 +719,8 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                                                 </ul>
                                                             </div>
                                                         `
-                                                        : ""}
+                                                        : ""
+                                                    }
                                                 </div>
                                             </div>
                                         </iai-response-filter-group>
@@ -745,42 +730,35 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                     : ""
                                 }
 
-                                ${this.has_individual_data ? html`
-                                    <iai-response-filter-group title="Response type">
-                                        <div
-                                            slot="content"
-                                            class="govuk-checkboxes govuk-checkboxes--small"
-                                            data-module="govuk-checkboxes"
-                                            data-govuk-checkboxes-init=""
-                                        >
-                                            <iai-checkbox-input
-                                                name="demographic-filter"
-                                                inputId="demographic-individual"
-                                                label="Hide Individual"
-                                                value="individual"
-                                                .handleChange=${this.handleDemographicChange}
-                                            ></iai-checkbox-input>
-                                            <iai-checkbox-input
-                                                name="demographic-filter"
-                                                inputId="demographic-organisation"
-                                                label="Hide Organisation"
-                                                value="organisation"
-                                                .handleChange=${this.handleDemographicChange}
-                                            ></iai-checkbox-input>
-                                        </div>
-                                    </iai-response-filter-group>
+                                ${this.has_individual_data
+                                    ? html`
+                                        <iai-response-filter-group title="Response type">
+                                            <div slot="content" class="govuk-checkboxes govuk-checkboxes--small">
+                                                <iai-checkbox-input
+                                                    name="demographic-filter"
+                                                    inputId="demographic-individual"
+                                                    label="Hide Individual"
+                                                    value="individual"
+                                                    .handleChange=${this.handleDemographicChange}
+                                                ></iai-checkbox-input>
+                                                <iai-checkbox-input
+                                                    name="demographic-filter"
+                                                    inputId="demographic-organisation"
+                                                    label="Hide Organisation"
+                                                    value="organisation"
+                                                    .handleChange=${this.handleDemographicChange}
+                                                ></iai-checkbox-input>
+                                            </div>
+                                        </iai-response-filter-group>
 
-                                    <hr />
-                                ` : ""}
+                                        <hr />
+                                    `
+                                    : ""
+                                }
 
 
                                 <iai-response-filter-group title="Response sentiment">
-                                    <div
-                                        slot="content"
-                                        class="govuk-checkboxes govuk-checkboxes--small"
-                                        data-module="govuk-checkboxes"
-                                        data-govuk-checkboxes-init=""
-                                    >
+                                    <div slot="content" class="govuk-checkboxes govuk-checkboxes--small">
                                         ${this.stanceOptions.map(option => html`
                                             <iai-checkbox-input
                                                 name=${option.name}
@@ -796,12 +774,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                 <hr />
 
                                 <iai-response-filter-group title="Evidence-rich responses">
-                                    <div
-                                        slot="content"
-                                        class="govuk-checkboxes govuk-checkboxes--small"
-                                        data-module="govuk-checkboxes"
-                                        data-govuk-checkboxes-init=""
-                                    >
+                                    <div slot="content" class="govuk-checkboxes govuk-checkboxes--small">
                                         <iai-checkbox-input
                                             name="evidence-rich"
                                             inputId="show-evidence-rich"
@@ -825,7 +798,8 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         <span class="govuk-caption-m count-display">
                             ${this._isLoading
                                 ? html`<strong>Loading</strong> responses`
-                                : html`Viewing <strong>${this.responsesFilteredTotal}</strong> responses`}
+                                : html`Viewing <strong>${this._responsesFilteredTotal}</strong> responses`
+                            }
                         </span>
 
                         <iai-text-input
@@ -839,12 +813,12 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         ></iai-text-input>
                     </div>
 
-                    <iai-responses
+                    <iai-virtual-list
                         class=${this.responses.length > 0 ? " flex-grow" : ""}
-                        .responses=${visibleResponses}
-                        .renderResponse=${(response, index) => html`
+                        .data=${visibleResponses}
+                        .renderItem=${(response, index) => html`
                             <iai-response
-                                class=${index === this.responses.length - 1 ? "last-response" : ""}
+                                class=${index === this.responses.length - 1 ? "last-item" : ""}
                                 role="listitem"
                                 .id=${response.inputId}
                                 .identifier=${response.identifier}
@@ -867,18 +841,10 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         }}
                         .isLoading=${this._isLoading}
                         .message=${this.getResponsesMessage()}
-                    ></iai-responses>
+                    ></iai-virtual-list>
 
                     ${this._isLoading
-                        ? html`
-                            <div class="spinner">
-                                <iai-icon
-                                    name="progress_activity"
-                                    .opsz=${48}
-                                    .color=${"var(--iai-colour-pink)"}
-                                ></iai-icon>
-                            </div>
-                        `
+                        ? html`<iai-loading-indicator></iai-loading-indicator>`
                         : ""
                     }
                 </div>

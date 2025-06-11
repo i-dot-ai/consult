@@ -25,6 +25,7 @@ export default class IaiMultiResponseItem extends IaiLitBase {
             }
             iai-multi-response-item li {
                 margin-bottom: 0.5em;
+                list-style: none;
             }
         `
     ]
@@ -45,7 +46,7 @@ export default class IaiMultiResponseItem extends IaiLitBase {
         return html`
             <li>
                 <p>
-                    ${this.countName}: <strong>${this.countValue}</strong>
+                    ${this.countName ? this.countName + ": " : ""}<strong>${this.countValue}</strong>
                 </p>
                 <progress value=${this.countValue} max=${this.totalCounts}></progress>
             </li>

@@ -3,8 +3,7 @@ import { html, css } from 'lit';
 import IaiLitBase from '../../IaiLitBase.mjs';
 import IaiExpandingText from '../IaiExpandingText/iai-expanding-text.lit.csr.mjs';
 import IaiExpandingPill from '../IaiExpandingPill/iai-expanding-pill.lit.csr.mjs';
-import IaiIcon from '../questionsArchive/IaiIcon/iai-icon.mjs';
-import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import IaiIcon from '../IaiIcon/iai-icon.mjs';
 
 
 export default class IaiResponse extends IaiLitBase {
@@ -143,7 +142,8 @@ export default class IaiResponse extends IaiLitBase {
                                     .opsz=${48}
                                 ></iai-icon>
                             `
-                            : ""}
+                            : ""
+                        }
                     </div>
                 </div>
 
@@ -189,7 +189,8 @@ export default class IaiResponse extends IaiLitBase {
                         <p class="govuk-body answer">
                             ${this.multiple_choice_answer.length > 0
                                 ? this.multiple_choice_answer.join(", ")
-                                : "Not answered"}
+                                : "Not answered"
+                            }
                         </p>
                     `
                     : ""
@@ -203,7 +204,8 @@ export default class IaiResponse extends IaiLitBase {
                                 ${Object.keys(this.demographic_data).map(key => html`
                                     <li>
                                         ${key.slice(0, 1).toLocaleUpperCase()
-                                            + key.slice(1)}: ${this.demographic_data[key]}
+                                            + key.slice(1)}: ${this.demographic_data[key]
+                                        }
                                     </li>
                                 `)}
                             </ul>

@@ -3,7 +3,7 @@ import { html, css } from 'lit';
 import IaiLitBase from '../../../IaiLitBase.mjs';
 import IaiQuestionTopbar from '../IaiQuestionTopbar/iai-question-topbar.lit.csr.mjs';
 import IaiQuestionBody from '../IaiQuestionBody/iai-question-body.lit.csr.mjs';
-import IaiIcon from '../IaiIcon/iai-icon.mjs';
+import IaiIcon from '../../IaiIcon/iai-icon.mjs';
 import IaiIconButton from '../IaiIconButton/iai-icon-button.lit.csr.mjs';
 
 
@@ -14,11 +14,12 @@ export default class IaiQuestionTile extends IaiLitBase {
         questionId: { type: String },
         title: { type: String },
         body: { type: String },
-        url: { type: String },
         maxLength: { type: Number },
         highlighted: { type: Boolean },
         searchValue: { type: String },
         handleViewClick: { type: Function },
+        handleBodyClick: { type: Function },
+        handleFavouriteClick: { type: Function },
     }
 
     static styles = [
@@ -58,11 +59,12 @@ export default class IaiQuestionTile extends IaiLitBase {
         this.questionId = "";
         this.title = "";
         this.body = "";
-        this.url = "";
         this.maxLength = 90;
         this.highlighted = false;
         this.searchValue = "";
         this.handleViewClick = () => {};
+        this.handleBodyClick = () => {};
+        this.handleFavouriteClick = this.handleFavouriteClick_;
 
         this.applyStaticStyles("iai-question-tile", IaiQuestionTile.styles);
     }
@@ -75,7 +77,7 @@ export default class IaiQuestionTile extends IaiLitBase {
         this._favourited = this.getStoredIds().includes(this.questionId);
     }
 
-    handleFavouriteClick = (e) => {
+    handleFavouriteClick_ = (e) => {
         e.stopPropagation();
 
         this.toggleStorage();
@@ -101,12 +103,32 @@ export default class IaiQuestionTile extends IaiLitBase {
 
     render() {
         return html`
-            <div class=${"question-tile" + (this.highlighted ? " highlighted" : "")}>
+            <div
+                class=${"question-tile" + (this.highlighted ? " highlighted" : "")}
+                role="button"
+                tabindex="0"
+                @click=${this.handleBodyClick}
+                @keydown=${(e) => {
+                    e.stopPropagation();
+
+                    if (e.repeat) {
+                        return;
+                    }
+
+                    if (this.accessibleKeyPressed(e.key)) {
+                        this.handleBodyClick(e);
+                    }
+                }}
+            >
                 <iai-question-topbar .title=${this.title}>
                     <div slot="buttons">
                         <iai-icon-button
                             title="View question details"
-                            .handleClick=${this.handleViewClick}
+                            .handleClick=${(e) => {
+                                e.stopPropagation();
+                                this.handleViewClick(e);
+                            }}
+                            @keydown=${(e) => e.stopPropagation()}
                         >
                             <iai-icon
                                 slot="icon"
@@ -118,7 +140,11 @@ export default class IaiQuestionTile extends IaiLitBase {
 
                         <iai-icon-button
                             title="Favourite this question"
-                            .handleClick=${this.handleFavouriteClick}
+                            .handleClick=${(e) => {
+                                e.stopPropagation();
+                                this.handleFavouriteClick(e);
+                            }}
+                            @keydown=${(e) => e.stopPropagation()}
                         >    
                             <iai-icon
                                 slot="icon"

@@ -1,7 +1,8 @@
 import { html, css } from 'lit';
 
 import IaiLitBase from '../../IaiLitBase.mjs';
-import IaiIcon from '../questionsArchive/IaiIcon/iai-icon.mjs';
+import IaiIcon from '../IaiIcon/iai-icon.mjs';
+import IaiIconButton from '../questionsArchive/IaiIconButton/iai-icon-button.lit.csr.mjs';
 
 
 export default class IaiChip extends IaiLitBase {
@@ -20,7 +21,8 @@ export default class IaiChip extends IaiLitBase {
             
             iai-chip div {
                 display: flex;
-                place-items: center;
+                justify-content: space-between;
+                align-items: center;
                 gap: 1em;
                 padding: 0.5em 1em;
                 font-size: 1em;
@@ -47,7 +49,9 @@ export default class IaiChip extends IaiLitBase {
     render() {
         return html`    
             <div>
-                ${this.label}
+                <span>
+                    ${this.label}
+                </span>
 
                 <iai-icon-button
                     title="Remove theme filter"

@@ -1,4 +1,5 @@
 import { html } from 'lit';
+
 import { action } from "@storybook/addon-actions";
 
 import IaiTextInput from './iai-text-input.lit.csr.mjs';
@@ -6,7 +7,7 @@ import IaiTextInput from './iai-text-input.lit.csr.mjs';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Csr/IaiTextInput',
+  title: 'Csr/Inputs/TextInput',
   tags: ['autodocs'],
   argTypes: {
     inputId: { control: "text" },
@@ -24,6 +25,7 @@ export default {
         label=${args.label}
         placeholder=${args.placeholder}
         value=${args.value}
+        .hideLabel=${args.hideLabel}
         .handleInput=${args.handleInput}
       ></iai-text-input>
     `

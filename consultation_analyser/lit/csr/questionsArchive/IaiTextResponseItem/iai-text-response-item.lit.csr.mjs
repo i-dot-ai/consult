@@ -1,5 +1,7 @@
 import { html, css } from 'lit';
 
+import IaiIcon from '../../IaiIcon/iai-icon.mjs';
+
 import IaiLitBase from '../../../IaiLitBase.mjs';
 
 
@@ -18,7 +20,7 @@ export default class IaiTextResponseItem extends IaiLitBase {
             }
             iai-text-response-item li {
                 display: flex;
-                justify-content: center;
+                justify-content: flex-start;
                 align-items: center;
                 gap: 1em;
             }

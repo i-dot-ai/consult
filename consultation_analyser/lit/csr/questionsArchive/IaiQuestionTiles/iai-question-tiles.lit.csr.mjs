@@ -3,7 +3,7 @@ import { html, css } from 'lit';
 import IaiLitBase from '../../../IaiLitBase.mjs';
 import IaiQuestionOverview from '../IaiQuestionOverview/iai-question-overview.lit.csr.mjs';
 import IaiQuestionTile from '../IaiQuestionTile/iai-question-tile.lit.csr.mjs';
-import IaiTextInput from '../../filters/IaiTextInput/iai-text-input.lit.csr.mjs';
+import IaiTextInput from '../../inputs/IaiTextInput/iai-text-input.lit.csr.mjs';
 
 
 export default class IaiQuestionTiles extends IaiLitBase {
@@ -116,13 +116,12 @@ export default class IaiQuestionTiles extends IaiLitBase {
                             ? this._visibleQuestions.map(question => html`
                                 <iai-question-tile
                                     .questionId=${question.id}
-                                    .url=${question.url}
                                     .title=${question.title}
                                     .body=${question.body}
                                     .highlighted=${this._selectedQuestion == question}
                                     .searchValue=${this._searchValue}
                                     .handleViewClick=${(e) => this.handleViewClick(e, question)}
-                                    @click=${(e) => this.handleTileClick(e, question.url)}
+                                    .handleBodyClick=${(e) => this.handleTileClick(e, question.url)}
                                 ></iai-question-tile>
                             `)
                             : html`<p>No matching question found.</p>`

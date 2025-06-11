@@ -1,7 +1,7 @@
 import { html, css } from 'lit';
 
 import IaiLitBase from '../../IaiLitBase.mjs';
-import IaiIcon from '../questionsArchive/IaiIcon/iai-icon.mjs';
+import IaiIcon from '../IaiIcon/iai-icon.mjs';
 
 
 export default class IaiExpandingPill extends IaiLitBase {
@@ -22,7 +22,8 @@ export default class IaiExpandingPill extends IaiLitBase {
             
             iai-expanding-pill button {
                 display: flex;
-                place-items: center;
+                justify-content: space-between;
+                align-items: center;
                 padding: 0.3em 0.8em;
                 gap: 1em;
                 font-size: 1em;

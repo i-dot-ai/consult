@@ -6,7 +6,7 @@ import { DEFAULT_DATA } from './testData.mjs';
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Csr/IaiCsvDownload',
+  title: 'Csr/CsvDownload',
   tags: ['autodocs'],
   render: (args) => {
     return html`
