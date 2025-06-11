@@ -1,82 +1,72 @@
 import pytest
 from django.db.utils import IntegrityError
 
-from consultation_analyser.consultations.models import ThemeOld
+from consultation_analyser.consultations.models import Theme
 from consultation_analyser.factories import (
-    DescendantFrameworkFactory,
-    FreeTextQuestionPartFactory,
-    InitialFrameworkFactory,
-    InitialThemeFactory,
+    QuestionFactory,
+    ThemeFactory,
 )
 
 
 @pytest.mark.django_db
-def test_cant_use_save():
-    theme = InitialThemeFactory()
-    with pytest.raises(ValueError) as excinfo:
-        theme.save()
-    assert "Direct save() method is not allowed" in str(excinfo.value)
-
-
-@pytest.mark.django_db
-def test_create_initial_theme():
-    framework = InitialFrameworkFactory()
-    name = "Test Theme"
-    description = "Test Description"
-    new_theme = ThemeOld.create_initial_theme(framework=framework, name=name, description=description)
-    assert new_theme.framework == framework
-    assert not new_theme.precursor
-
-
-@pytest.mark.django_db
-def test_create_descendant_theme():
-    question_part = FreeTextQuestionPartFactory()
-    initial_framework = InitialFrameworkFactory(question_part=question_part)
-    initial_theme = InitialThemeFactory(framework=initial_framework)
-    descendant_framework = DescendantFrameworkFactory(precursor=initial_framework)
-    random_framework = InitialFrameworkFactory(question_part=question_part)
-
-    # The descendant theme must be based on a descendant framework
-    with pytest.raises(ValueError) as excinfo:
-        initial_theme.create_descendant_theme(
-            name="name", description="description", new_framework=random_framework
-        )
-    assert "Framework for new theme must be based on the framework for the existing theme." in str(
-        excinfo.value
-    )
-
-    new_theme = initial_theme.create_descendant_theme(
-        new_framework=descendant_framework, name="name", description="description"
-    )
-    assert new_theme.framework == descendant_framework
-    assert new_theme.precursor == initial_theme
-    assert new_theme.name == "name"
-    assert new_theme.description == "description"
-
-
-@pytest.mark.django_db
-def test_get_theme_identifier():
-    framework = InitialFrameworkFactory()
-    theme_1 = ThemeOld.create_initial_theme(
-        framework=framework, name="Theme 1", description=""
-    )  # no key
-    theme_2 = ThemeOld.create_initial_theme(
-        framework=framework, name="Theme 2", description="", key="A"
-    )  # with key
-
-    assert theme_1.get_identifier() == "Theme 1"
-    assert theme_2.get_identifier() == "A"
-
-
-@pytest.mark.django_db
-def test_theme_key_uniqueness():
-    framework = InitialFrameworkFactory()
-    ThemeOld.create_initial_theme(framework=framework, name="Theme 1", description="", key="A")
-
-    # Can have two themes with the same key in different frameworks
-    framework_2 = InitialFrameworkFactory()
-    ThemeOld.create_initial_theme(framework=framework_2, name="Theme 1", description="", key="A")
-
-    # Cannot have two themes in the same framework with the same key
-    with pytest.raises(IntegrityError):
-        ThemeOld.create_initial_theme(framework=framework, name="Theme 1", description="", key="A")
+class TestTheme:
+    def test_theme_creation(self):
+        """Test basic theme creation"""
+        theme = ThemeFactory()
+        assert isinstance(theme, Theme)
+        assert theme.name
+        assert theme.description
+        assert theme.key
+        assert theme.question
+        
+    def test_theme_str_representation(self):
+        """Test string representation of theme"""
+        theme = ThemeFactory(name="Environmental Impact")
+        assert str(theme) == "Environmental Impact"
+        
+    def test_theme_key_uniqueness_per_question(self):
+        """Test that theme keys must be unique within a question"""
+        question = QuestionFactory()
+        theme1 = ThemeFactory(question=question, key="ENV")
+        
+        # Can't create another theme with same key for same question
+        with pytest.raises(IntegrityError):
+            Theme.objects.create(
+                question=question,
+                name="Another Environmental Theme", 
+                description="Different description",
+                key="ENV"
+            )
+            
+    def test_theme_key_can_be_reused_across_questions(self):
+        """Test that same key can be used for themes in different questions"""
+        question1 = QuestionFactory()
+        question2 = QuestionFactory()
+        
+        theme1 = ThemeFactory(question=question1, key="ENV")
+        theme2 = ThemeFactory(question=question2, key="ENV")
+        
+        assert theme1.key == theme2.key
+        assert theme1.question != theme2.question
+        
+    def test_theme_without_key(self):
+        """Test that themes can be created without a key"""
+        theme1 = ThemeFactory(key=None)
+        theme2 = ThemeFactory(key=None, question=theme1.question)
+        
+        # Both themes can exist without keys even for same question
+        assert theme1.key is None
+        assert theme2.key is None
+        assert theme1.question == theme2.question
+        
+    def test_theme_question_relationship(self):
+        """Test the foreign key relationship with Question"""
+        question = QuestionFactory()
+        theme1 = ThemeFactory(question=question)
+        theme2 = ThemeFactory(question=question)
+        
+        # Check reverse relationship
+        question_themes = question.theme_set.all()
+        assert theme1 in question_themes
+        assert theme2 in question_themes
+        assert question_themes.count() == 2
