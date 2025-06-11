@@ -13,6 +13,10 @@ locals {
       value = module.app_bucket.id
     },
     {
+      name  = "AWS_REGION"
+      value = var.region
+    },
+    {
       name  = "AZURE_OPENAI_API_KEY"
       value = "placeholder" # Update value in SSM - Do not hardcode
     },

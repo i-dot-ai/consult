@@ -33,6 +33,7 @@ def download_s3_subdir(subdir: str) -> None:
     """
     prefix = str(Path(BASE_PREFIX) / subdir).rstrip("/") + "/"
     logger.info("prefix: %s", prefix)
+    logger.info("bucket: %s", BUCKET_NAME)
 
     s3 = boto3.client("s3")
 
