@@ -79,7 +79,7 @@ export default class IaiQuestionOverview extends IaiLitBase {
             <div class="question-overview">
                 <iai-question-topbar .title=${this.title}>
                     <div slot="buttons">
-                         <iai-icon-button
+                        <iai-icon-button
                             title="Close question overview"
                             .handleClick=${this.handleClose}
                         >
