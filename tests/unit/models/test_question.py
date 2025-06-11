@@ -2,7 +2,12 @@ import django
 import pytest
 
 from consultation_analyser.consultations.models import Question
-from consultation_analyser.factories import ConsultationFactory, QuestionFactory, QuestionWithMultipleChoiceFactory, QuestionWithBothFactory
+from consultation_analyser.factories import (
+    ConsultationFactory,
+    QuestionFactory,
+    QuestionWithBothFactory,
+    QuestionWithMultipleChoiceFactory,
+)
 
 
 @pytest.mark.django_db

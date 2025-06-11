@@ -16,8 +16,8 @@ from consultation_analyser.consultations.models import (
     QuestionPart,
     RespondentOld,
     SentimentMapping,
-    ThemeOld,
     ThemeMapping,
+    ThemeOld,
 )
 
 logger = logging.getLogger("import")
