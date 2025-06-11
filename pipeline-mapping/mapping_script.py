@@ -21,8 +21,9 @@ llm = AzureChatOpenAI(
     model="gpt-4o",
     temperature=0,
 )
-BUCKET_NAME = "i-dot-ai-dev-consult-pipeline-data"
-BASE_PREFIX = "app_data/"
+BUCKET_NAME = "i-dot-ai-dev-consult-data"
+BASE_PREFIX = "app_data/consultations/"
+
 
 
 def download_s3_subdir(subdir: str) -> None:
