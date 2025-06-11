@@ -1,4 +1,5 @@
 import { html } from 'lit';
+
 import { action } from "@storybook/addon-actions";
 
 import IaiTextInput from './iai-text-input.lit.csr.mjs';
@@ -24,6 +25,7 @@ export default {
         label=${args.label}
         placeholder=${args.placeholder}
         value=${args.value}
+        .hideLabel=${args.hideLabel}
         .handleInput=${args.handleInput}
       ></iai-text-input>
     `
