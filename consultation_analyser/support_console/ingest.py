@@ -102,7 +102,9 @@ def import_respondent_data(consultation: ConsultationOld, respondent_data: list)
     logger.info(f"Saved batch of respondents for consultation: {consultation.title}")
 
 
-def import_question_part_data(consultation: ConsultationOld, question_part_dict: dict) -> QuestionPart:
+def import_question_part_data(
+    consultation: ConsultationOld, question_part_dict: dict
+) -> QuestionPart:
     type_mapping = {
         "free_text": QuestionPart.QuestionType.FREE_TEXT,
         "single_option": QuestionPart.QuestionType.SINGLE_OPTION,
@@ -347,7 +349,9 @@ def import_all_respondents_from_jsonl(
         import_respondent_data_job.delay(consultation=consultation, respondent_data=lines)
 
 
-def import_question_part(consultation: ConsultationOld, question_part_folder_key: str) -> QuestionPart:
+def import_question_part(
+    consultation: ConsultationOld, question_part_folder_key: str
+) -> QuestionPart:
     s3 = boto3.client("s3")
     data_key = f"{question_part_folder_key}question.json"
     response = s3.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=data_key)
