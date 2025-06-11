@@ -52,6 +52,11 @@ urlpatterns = [
         consultations.import_summary,
         name="import_summary",
     ),
+    path(
+        "consultations/import-consultation/",
+        consultations.import_consultation,
+        name="import_consultation",
+    ),
     path("admin/", admin.site.urls),
     path("django-rq/", include("django_rq.urls")),
 ]
