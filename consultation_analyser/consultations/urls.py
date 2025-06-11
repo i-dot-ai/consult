@@ -13,11 +13,6 @@ urlpatterns = [
     path("consultations/", consultations.index, name="consultations"),
     path("consultations/<str:consultation_slug>/", consultations.show, name="consultation"),
     path(
-        "consultations/<str:consultation_slug>/questions/<str:question_slug>/",
-        questions.show,
-        name="show_question",
-    ),
-    path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/",
         answers.index,
         name="question_responses",
