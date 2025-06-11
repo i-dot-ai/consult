@@ -21,7 +21,7 @@ llm = AzureChatOpenAI(
     model="gpt-4o",
     temperature=0,
 )
-BUCKET_NAME = "i-dot-ai-dev-consult-data"
+BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 BASE_PREFIX = "app_data/consultations/"
 
 
@@ -32,6 +32,7 @@ def download_s3_subdir(subdir: str) -> None:
     to a local directory with the same name as the subdir.
     """
     prefix = str(Path(BASE_PREFIX) / subdir).rstrip("/") + "/"
+    logger.info("prefix: %s", prefix)
 
     s3 = boto3.client("s3")
 
