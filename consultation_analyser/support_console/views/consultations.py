@@ -70,7 +70,7 @@ def index(request: HttpRequest) -> HttpResponse:
 
 
 def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    consultation = models.ConsultationOld.objects.get(id=consultation_id)
+    consultation = models.Consultation.objects.get(id=consultation_id)
     context = {
         "consultation": consultation,
     }
