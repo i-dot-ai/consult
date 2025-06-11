@@ -343,7 +343,7 @@ def import_consultation(
         for line in response["Body"].iter_lines():
             respondent_data = json.loads(line.decode("utf-8"))
             themefinder_id = respondent_data.get("themefinder_id")
-            demographics = respondent_data.get("demographics", {})
+            demographics = respondent_data.get("demographic_data", {})
             
             respondents_to_save.append(
                 Respondent(
