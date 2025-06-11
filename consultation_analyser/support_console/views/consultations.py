@@ -16,22 +16,69 @@ from consultation_analyser.consultations.dummy_data import (
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
-from consultation_analyser.support_console.ingest import (
-    format_validation_error,
-    get_folder_names_for_dropdown,
-    import_all_evidence_rich_mappings_from_jsonl,
-    import_all_sentiment_mappings_from_jsonl,
-    import_all_theme_mappings_from_jsonl,
-    import_themes_from_json_and_get_framework,
-    validate_consultation_s3_structure,
-)
+from consultation_analyser.support_console import ingest
 
 logger = logging.getLogger("export")
 
 
+@job("default", timeout=1800)
+def import_consultation_job(
+    consultation_name: str, 
+    consultation_code: str, 
+    timestamp: str,
+    current_user_id: int
+) -> None:
+    """Job wrapper for importing consultations."""
+    return ingest.import_consultation(
+        consultation_name=consultation_name,
+        consultation_code=consultation_code,
+        timestamp=timestamp,
+        current_user_id=current_user_id
+    )
+
+
 @job("default", timeout=900)
-def delete_consultation_job(consultation: models.ConsultationOld):
-    consultation.delete()
+def delete_consultation_job(consultation: models.Consultation):
+    from django.db import transaction, connection
+    
+    consultation_id = consultation.id
+    consultation_title = consultation.title
+    
+    try:
+        # Close any existing connections to start fresh
+        connection.close()
+        
+        with transaction.atomic():
+            # Refetch the consultation to ensure we have a fresh DB connection
+            consultation = models.Consultation.objects.get(id=consultation_id)
+            
+            # Delete related objects in order to avoid foreign key constraints
+            logger.info(f"Deleting consultation '{consultation_title}' (ID: {consultation_id})")
+            
+            # Delete in batches to avoid memory issues
+            logger.info("Deleting response annotations...")
+            models.ResponseAnnotation.objects.filter(response__question__consultation=consultation).delete()
+            
+            logger.info("Deleting responses...")
+            models.Response.objects.filter(question__consultation=consultation).delete()
+            
+            logger.info("Deleting themes...")
+            models.Theme.objects.filter(question__consultation=consultation).delete()
+            
+            logger.info("Deleting questions...")
+            models.Question.objects.filter(consultation=consultation).delete()
+            
+            logger.info("Deleting respondents...")
+            models.Respondent.objects.filter(consultation=consultation).delete()
+            
+            logger.info("Deleting consultation...")
+            consultation.delete()
+            
+        logger.info(f"Successfully deleted consultation '{consultation_title}' (ID: {consultation_id})")
+        
+    except Exception as e:
+        logger.error(f"Error deleting consultation '{consultation_title}' (ID: {consultation_id}): {str(e)}")
+        raise
 
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -44,7 +91,7 @@ def index(request: HttpRequest) -> HttpResponse:
                 messages.success(request, "A dummy consultation has been generated")
             elif request.POST.get("generate_giant_dummy_consultation") is not None:
                 n = 10000
-                consultation = models.ConsultationOld.objects.create(
+                consultation = models.Consultation.objects.create(
                     title=f"Giant dummy consultation - {n} respondents, with theme changes"
                 )
                 user = request.user
@@ -61,13 +108,13 @@ def index(request: HttpRequest) -> HttpResponse:
                 messages.success(request, "Synthetic data imported")
         except RuntimeError as error:
             messages.error(request, error.args[0])
-    consultations = models.ConsultationOld.objects.all()
+    consultations = models.Consultation.objects.all()
     context = {"consultations": consultations, "production_env": HostingEnvironment.is_production()}
     return render(request, "support_console/consultations/index.html", context=context)
 
 
 def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    consultation = models.ConsultationOld.objects.get(id=consultation_id)
+    consultation = models.Consultation.objects.get(id=consultation_id)
     context = {
         "consultation": consultation,
     }
@@ -85,15 +132,15 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
 
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    consultation = models.ConsultationOld.objects.get(id=consultation_id)
-    question_parts = models.QuestionPart.objects.filter(
-        question__consultation=consultation
-    ).order_by("question__number", "number")
+    consultation = models.Consultation.objects.get(id=consultation_id)
+    questions = models.Question.objects.filter(
+        consultation=consultation
+    ).order_by("number")
 
     context = {
         "consultation": consultation,
         "users": consultation.users.all(),
-        "question_parts": question_parts,
+        "questions": questions,
     }
     return render(request, "support_console/consultations/show.html", context=context)
 
@@ -109,10 +156,10 @@ def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
 
 
 def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    consultation = get_object_or_404(models.ConsultationOld, id=consultation_id)
-    question_parts = models.QuestionPart.objects.filter(
-        question__consultation=consultation, type=models.QuestionPart.QuestionType.FREE_TEXT
-    ).order_by("question__number")
+    consultation = get_object_or_404(models.Consultation, id=consultation_id)
+    questions = models.Question.objects.filter(
+        consultation=consultation, has_free_text=True
+    ).order_by("number")
 
     question_parts_items = [
         {"value": qp.id, "text": f"Question {qp.question.number} - {qp.question.text} {qp.text}"}
@@ -154,7 +201,7 @@ def export_urls_for_consultation(request: HttpRequest, consultation_id: UUID) ->
         filename = request.POST.get("filename")
 
         try:
-            consultation = get_object_or_404(models.ConsultationOld, id=consultation_id)
+            consultation = get_object_or_404(models.Consultation, id=consultation_id)
             base_url = request.build_absolute_uri("/")
             get_urls_for_consultation(consultation, base_url, s3_key, filename)
 
