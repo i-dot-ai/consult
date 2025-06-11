@@ -46,7 +46,7 @@ export default class IaiMultiResponseItem extends IaiLitBase {
         return html`
             <li>
                 <p>
-                    ${this.countName || "Value"}: <strong>${this.countValue}</strong>
+                    ${this.countName ? this.countName + ": " : ""}<strong>${this.countValue}</strong>
                 </p>
                 <progress value=${this.countValue} max=${this.totalCounts}></progress>
             </li>
