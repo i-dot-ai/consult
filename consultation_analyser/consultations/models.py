@@ -112,7 +112,7 @@ class ConsultationOld(UUIDPrimaryKeyModel, TimeStampedModel):
 class QuestionOld(UUIDPrimaryKeyModel, TimeStampedModel):
     text = models.TextField()
     slug = models.SlugField(null=False, editable=False, max_length=256)
-    consultation = models.ForeignKey(ConsultationOld, on_delete=models.CASCADE)
+    consultation = models.ForeignKey(ConsultationOld, on_delete=models.CASCADE, db_index=False)
     number = models.IntegerField(null=False, default=0)
 
     def save(self, *args, **kwargs):
@@ -148,6 +148,9 @@ class QuestionOld(UUIDPrimaryKeyModel, TimeStampedModel):
             models.UniqueConstraint(fields=["consultation", "number"], name="unique_q_number"),
         ]
         ordering = ["number"]
+        indexes = [
+            models.Index(fields=["consultation_id"], name="explicit_con_q"),
+        ]  # This is going to be deleted anyway
 
 
 # TODO - old model to be deleted
@@ -204,7 +207,7 @@ class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
 
 # TODO - old model to be deleted
 class RespondentOld(UUIDPrimaryKeyModel, TimeStampedModel):
-    consultation = models.ForeignKey(ConsultationOld, on_delete=models.CASCADE)
+    consultation = models.ForeignKey(ConsultationOld, on_delete=models.CASCADE, db_index=False)
     # demographic data, or anything else that is at respondent level
     data = models.JSONField(default=dict)
     themefinder_respondent_id = models.IntegerField(null=True)
@@ -213,7 +216,9 @@ class RespondentOld(UUIDPrimaryKeyModel, TimeStampedModel):
     )  # Optional response ID supplied by department
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+        indexes = [
+            models.Index(fields=["consultation_id"], name="explicit_con_respondent"),
+        ]  # This is going to be deleted anyway
 
     @property
     def identifier(self) -> uuid.UUID | int:
@@ -333,7 +338,9 @@ class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
             "precursor__id", flat=True
         )
         persisted_ids = [id for id in precursors_themes_that_persisted if id]  # remove None
-        precursor_themes_removed = self.precursor.themeold_set.exclude(id__in=persisted_ids).distinct()
+        precursor_themes_removed = self.precursor.themeold_set.exclude(
+            id__in=persisted_ids
+        ).distinct()
         return precursor_themes_removed
 
     def get_themes_added_to_previous_framework(self) -> models.QuerySet:

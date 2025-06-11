@@ -5,7 +5,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("consultations", "0048_alter_executionrun_type_evidencerichmapping_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
