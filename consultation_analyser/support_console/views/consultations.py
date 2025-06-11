@@ -16,7 +16,6 @@ from consultation_analyser.consultations.dummy_data import (
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
 from consultation_analyser.support_console.ingest import (
     get_all_question_part_subfolders,
     get_folder_names_for_dropdown,
@@ -147,29 +146,6 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
         return redirect("/support/consultations/")
 
     return render(request, "support_console/consultations/export_audit.html", context)
-
-
-def export_urls_for_consultation(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    context = {"bucket_name": settings.AWS_BUCKET_NAME}
-
-    if request.method == "POST":
-        s3_key = request.POST.get("s3_key")
-        filename = request.POST.get("filename")
-
-        try:
-            consultation = get_object_or_404(models.ConsultationOld, id=consultation_id)
-            base_url = request.build_absolute_uri("/")
-            get_urls_for_consultation(consultation, base_url, s3_key, filename)
-
-            messages.success(
-                request, f"Consultation URLs exported to {settings.AWS_BUCKET_NAME}/{s3_key}"
-            )
-            return redirect("/support/consultations/")
-        except Exception as e:
-            messages.error(request, e)
-            return render(request, "support_console/consultations/export_urls.html", context)
-
-    return render(request, "support_console/consultations/export_urls.html", context)
 
 
 def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
