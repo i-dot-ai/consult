@@ -54,7 +54,7 @@ urlpatterns = [
     ),
     path(
         "consultations/import-consultation/",
-        consultations.import_consultation,
+        consultations.import_consultation_view,
         name="import_consultation",
     ),
     path("admin/", admin.site.urls),

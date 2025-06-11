@@ -169,53 +169,16 @@ def export_urls_for_consultation(request: HttpRequest, consultation_id: UUID) ->
     return render(request, "support_console/consultations/export_urls.html", context)
 
 
-def import_question_part_themefinder_outputs(
-    consultation: models.ConsultationOld,
-    question_number: int,
-    bucket_name: str,
-    folder: str,
-    batch_size: int,
-):
-    question_part = models.QuestionPart.objects.get(
-        question__consultation=consultation,
-        question__number=question_number,
-        type=models.QuestionPart.QuestionType.FREE_TEXT,
-    )
-    framework = import_themes_from_json_and_get_framework(
-        question_part=question_part,
-        bucket_name=bucket_name,
-        question_part_folder_key=folder,
-    )
-
-    import_all_theme_mappings_from_jsonl(
-        question_part=question_part,
-        framework=framework,
-        bucket_name=bucket_name,
-        question_part_folder_key=folder,
-        batch_size=batch_size,
-    )
-    import_all_sentiment_mappings_from_jsonl(
-        question_part=question_part,
-        bucket_name=bucket_name,
-        question_part_folder_key=folder,
-        batch_size=batch_size,
-    )
-    import_all_evidence_rich_mappings_from_jsonl(
-        question_part=question_part,
-        bucket_name=bucket_name,
-        question_part_folder_key=folder,
-        batch_size=batch_size,
-    )
+# Legacy import function removed - using new import_consultation function instead
 
 
 def import_summary(request: HttpRequest) -> HttpResponse:
     return render(request, "support_console/consultations/import_summary.html", context={})
 
 
-def import_consultation(request: HttpRequest) -> HttpResponse:
+def import_consultation_view(request: HttpRequest) -> HttpResponse:
     bucket_name = settings.AWS_BUCKET_NAME
-    consultation_folders = get_folder_names_for_dropdown()
-    batch_size = 100
+    consultation_folders = ingest.get_consultation_codes()
 
     context = {
         "bucket_name": bucket_name,
@@ -227,13 +190,30 @@ def import_consultation(request: HttpRequest) -> HttpResponse:
         consultation_code = request.POST.get("consultation_code")
         timestamp = request.POST.get("timestamp")
 
-        is_valid, validation_errors = validate_consultation_s3_structure(
+        # Validate structure
+        is_valid, validation_errors = ingest.validate_consultation_structure(
             bucket_name=bucket_name, consultation_code=consultation_code, timestamp=timestamp
         )
 
         if not is_valid:
-            formatted_errors = [format_validation_error(error) for error in validation_errors]
+            formatted_errors = [ingest.format_validation_error(error) for error in validation_errors]
             context["validation_errors"] = formatted_errors
+            return render(
+                request, "support_console/consultations/import_consultation.html", context=context
+            )
+
+        # If valid, queue the import job
+        try:
+            import_consultation_job.delay(
+                consultation_name=consultation_name,
+                consultation_code=consultation_code,
+                timestamp=timestamp,
+                current_user_id=request.user.id
+            )
+            messages.success(request, f"Import started for consultation: {consultation_name}")
+            return redirect("support_consultations")  # Fixed URL name
+        except Exception as e:
+            messages.error(request, f"Failed to start import: {str(e)}")
             return render(
                 request, "support_console/consultations/import_consultation.html", context=context
             )
