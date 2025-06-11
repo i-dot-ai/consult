@@ -15,7 +15,6 @@ export default {
         .questionId=${args.questionId}
         .title=${args.title}
         .body=${args.body}
-        .url=${args.url}
         .maxLength=${args.maxLength}
         .highlighted=${args.highlighted}
         .searchValue=${args.searchValue}
@@ -33,7 +32,6 @@ export const Default = {
     questionId: "test-question",
     title: "Test Question",
     body: "This is a test question".repeat(10),
-    url: "/test/url",
     maxLength: 100,
     highlighted: "",
     searchValue: "",
@@ -46,7 +44,6 @@ export const LongBody = {
     questionId: "test-question",
     title: "Test Question",
     body: "This is a test question".repeat(100),
-    url: "/test/url",
     maxLength: 500,
     highlighted: "",
     searchValue: "",
@@ -59,7 +56,6 @@ export const WithClickHandlers = {
     questionId: "test-question",
     title: "Test Question",
     body: "This is a test question".repeat(10),
-    url: "/test/url",
     maxLength: 100,
     highlighted: "",
     searchValue: "",

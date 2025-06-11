@@ -1,4 +1,5 @@
 import { html, css } from 'lit';
+
 import IaiLitBase from '../../../IaiLitBase.mjs';
 import IaiQuestionTopbar from '../IaiQuestionTopbar/iai-question-topbar.lit.csr.mjs';
 import IaiQuestionBody from '../IaiQuestionBody/iai-question-body.lit.csr.mjs';
@@ -6,6 +7,7 @@ import IaiIcon from '../../IaiIcon/iai-icon.mjs';
 import IaiIconButton from '../IaiIconButton/iai-icon-button.lit.csr.mjs';
 import IaiQuestionOverviewSubtitle from '../IaiQuestionOverviewSubtitle/iai-question-overview-subtitle.lit.csr.mjs';
 import IaiTextResponseItem from '../IaiTextResponseItem/iai-text-response-item.lit.csr.mjs';
+import IaiMultiResponseItem from '../IaiMultiResponseItem/iai-multi-response-item.lit.csr.mjs';
 
 
 export default class IaiQuestionOverview extends IaiLitBase {
@@ -16,8 +18,6 @@ export default class IaiQuestionOverview extends IaiLitBase {
         responses: { type: Object }, //  agreement | unclear | disagreement
         multiResponses: { type: Object },
         handleClose: { type: Function },
-        favourited: { type: Boolean },
-        handleFavouriteClick: { type: Function },
     }
 
     static styles = [
@@ -55,8 +55,6 @@ export default class IaiQuestionOverview extends IaiLitBase {
         this.responses = {};
         this.multiResponses = {};
         this.handleClose = () => {};
-        this.favourited = false;
-        this.handleFavouriteClick = () => {};
         
         this.applyStaticStyles("iai-question-overview", IaiQuestionOverview.styles);
     }

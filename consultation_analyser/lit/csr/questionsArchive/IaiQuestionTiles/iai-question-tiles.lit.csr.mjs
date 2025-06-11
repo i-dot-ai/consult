@@ -116,7 +116,6 @@ export default class IaiQuestionTiles extends IaiLitBase {
                             ? this._visibleQuestions.map(question => html`
                                 <iai-question-tile
                                     .questionId=${question.id}
-                                    .url=${question.url}
                                     .title=${question.title}
                                     .body=${question.body}
                                     .highlighted=${this._selectedQuestion == question}

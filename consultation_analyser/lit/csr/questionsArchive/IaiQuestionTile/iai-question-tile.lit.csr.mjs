@@ -14,7 +14,6 @@ export default class IaiQuestionTile extends IaiLitBase {
         questionId: { type: String },
         title: { type: String },
         body: { type: String },
-        url: { type: String },
         maxLength: { type: Number },
         highlighted: { type: Boolean },
         searchValue: { type: String },
@@ -60,7 +59,6 @@ export default class IaiQuestionTile extends IaiLitBase {
         this.questionId = "";
         this.title = "";
         this.body = "";
-        this.url = "";
         this.maxLength = 90;
         this.highlighted = false;
         this.searchValue = "";
