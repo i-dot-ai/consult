@@ -1465,6 +1465,8 @@ class IaiQuestionTile extends IaiLitBase {
         highlighted: { type: Boolean },
         searchValue: { type: String },
         handleViewClick: { type: Function },
+        handleBodyClick: { type: Function },
+        handleFavouriteClick: { type: Function },
     }
 
     static styles = [
@@ -1509,6 +1511,8 @@ class IaiQuestionTile extends IaiLitBase {
         this.highlighted = false;
         this.searchValue = "";
         this.handleViewClick = () => {};
+        this.handleBodyClick = () => {};
+        this.handleFavouriteClick = this.handleFavouriteClick_;
 
         this.applyStaticStyles("iai-question-tile", IaiQuestionTile.styles);
     }
@@ -1521,7 +1525,7 @@ class IaiQuestionTile extends IaiLitBase {
         this._favourited = this.getStoredIds().includes(this.questionId);
     }
 
-    handleFavouriteClick = (e) => {
+    handleFavouriteClick_ = (e) => {
         e.stopPropagation();
 
         this.toggleStorage();
@@ -1547,12 +1551,18 @@ class IaiQuestionTile extends IaiLitBase {
 
     render() {
         return x`
-            <div class=${"question-tile" + (this.highlighted ? " highlighted" : "")}>
+            <div
+                class=${"question-tile" + (this.highlighted ? " highlighted" : "")}
+                @click=${this.handleBodyClick}
+            >
                 <iai-question-topbar .title=${this.title}>
                     <div slot="buttons">
                         <iai-icon-button
                             title="View question details"
-                            .handleClick=${this.handleViewClick}
+                            .handleClick=${(e) => {
+                                e.stopPropagation();
+                                this.handleViewClick(e);
+                            }}
                         >
                             <iai-icon
                                 slot="icon"
@@ -1564,7 +1574,10 @@ class IaiQuestionTile extends IaiLitBase {
 
                         <iai-icon-button
                             title="Favourite this question"
-                            .handleClick=${this.handleFavouriteClick}
+                            .handleClick=${(e) => {
+                                e.stopPropagation();
+                                this.handleFavouriteClick(e);
+                            }}
                         >    
                             <iai-icon
                                 slot="icon"
@@ -2017,7 +2030,7 @@ class IaiQuestionTiles extends IaiLitBase {
                                     .highlighted=${this._selectedQuestion == question}
                                     .searchValue=${this._searchValue}
                                     .handleViewClick=${(e) => this.handleViewClick(e, question)}
-                                    @click=${(e) => this.handleTileClick(e, question.url)}
+                                    .handleBodyClick=${(e) => this.handleTileClick(e, question.url)}
                                 ></iai-question-tile>
                             `)
                             : x`<p>No matching question found.</p>`
@@ -2084,6 +2097,7 @@ class IaiMultiResponseItem extends IaiLitBase {
             }
             iai-multi-response-item li {
                 margin-bottom: 0.5em;
+                list-style: none;
             }
         `
     ]
@@ -2104,7 +2118,7 @@ class IaiMultiResponseItem extends IaiLitBase {
         return x`
             <li>
                 <p>
-                    ${this.countName}: <strong>${this.countValue}</strong>
+                    ${this.countName ? this.countName + ": " : ""}<strong>${this.countValue}</strong>
                 </p>
                 <progress value=${this.countValue} max=${this.totalCounts}></progress>
             </li>

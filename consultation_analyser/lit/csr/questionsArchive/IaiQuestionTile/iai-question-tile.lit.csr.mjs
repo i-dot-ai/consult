@@ -19,6 +19,8 @@ export default class IaiQuestionTile extends IaiLitBase {
         highlighted: { type: Boolean },
         searchValue: { type: String },
         handleViewClick: { type: Function },
+        handleBodyClick: { type: Function },
+        handleFavouriteClick: { type: Function },
     }
 
     static styles = [
@@ -63,6 +65,8 @@ export default class IaiQuestionTile extends IaiLitBase {
         this.highlighted = false;
         this.searchValue = "";
         this.handleViewClick = () => {};
+        this.handleBodyClick = () => {};
+        this.handleFavouriteClick = this.handleFavouriteClick_;
 
         this.applyStaticStyles("iai-question-tile", IaiQuestionTile.styles);
     }
@@ -75,7 +79,7 @@ export default class IaiQuestionTile extends IaiLitBase {
         this._favourited = this.getStoredIds().includes(this.questionId);
     }
 
-    handleFavouriteClick = (e) => {
+    handleFavouriteClick_ = (e) => {
         e.stopPropagation();
 
         this.toggleStorage();
@@ -101,12 +105,18 @@ export default class IaiQuestionTile extends IaiLitBase {
 
     render() {
         return html`
-            <div class=${"question-tile" + (this.highlighted ? " highlighted" : "")}>
+            <div
+                class=${"question-tile" + (this.highlighted ? " highlighted" : "")}
+                @click=${this.handleBodyClick}
+            >
                 <iai-question-topbar .title=${this.title}>
                     <div slot="buttons">
                         <iai-icon-button
                             title="View question details"
-                            .handleClick=${this.handleViewClick}
+                            .handleClick=${(e) => {
+                                e.stopPropagation();
+                                this.handleViewClick(e);
+                            }}
                         >
                             <iai-icon
                                 slot="icon"
@@ -118,7 +128,10 @@ export default class IaiQuestionTile extends IaiLitBase {
 
                         <iai-icon-button
                             title="Favourite this question"
-                            .handleClick=${this.handleFavouriteClick}
+                            .handleClick=${(e) => {
+                                e.stopPropagation();
+                                this.handleFavouriteClick(e);
+                            }}
                         >    
                             <iai-icon
                                 slot="icon"
