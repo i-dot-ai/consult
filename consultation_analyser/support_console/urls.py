@@ -48,24 +48,14 @@ urlpatterns = [
         name="delete_question_part",
     ),
     path(
-        "consultations/import-respondents/",
-        consultations.import_consultation_respondents,
-        name="import_respondents",
-    ),
-    path(
-        "consultations/import-inputs/",
-        consultations.import_consultation_inputs,
-        name="import_inputs",
-    ),
-    path(
-        "consultations/import-themes/",
-        consultations.import_consultation_themes,
-        name="import_themes",
-    ),
-    path(
         "consultations/import-summary/",
         consultations.import_summary,
         name="import_summary",
+    ),
+    path(
+        "consultations/import-consultation/",
+        consultations.import_consultation_view,
+        name="import_consultation",
     ),
     path("admin/", admin.site.urls),
     path("django-rq/", include("django_rq.urls")),

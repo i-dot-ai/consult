@@ -34,7 +34,7 @@ class TestResponse:
         
         # Try to create another response for same respondent and question
         with pytest.raises(Exception):  # Will raise IntegrityError
-            duplicate = models.Response.objects.create(
+            models.Response.objects.create(
                 respondent=response.respondent,
                 question=response.question,
                 free_text="Duplicate response"

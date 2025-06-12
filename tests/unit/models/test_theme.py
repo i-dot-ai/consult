@@ -27,7 +27,7 @@ class TestTheme:
     def test_theme_key_uniqueness_per_question(self):
         """Test that theme keys must be unique within a question"""
         question = QuestionFactory()
-        theme1 = ThemeFactory(question=question, key="ENV")
+        ThemeFactory(question=question, key="ENV")
         
         # Can't create another theme with same key for same question
         with pytest.raises(IntegrityError):
