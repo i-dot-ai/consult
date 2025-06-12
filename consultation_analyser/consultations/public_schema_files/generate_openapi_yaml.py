@@ -23,8 +23,8 @@ from consultation_analyser.consultations.models import (
     QuestionOld,
     QuestionPart,
     SentimentMapping,
-    ThemeOld,
     ThemeMapping,
+    ThemeOld,
 )
 
 FIELDS_TO_EXCLUDE = [

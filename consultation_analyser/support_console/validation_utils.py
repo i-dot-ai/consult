@@ -83,8 +83,8 @@ def _format_missing_file_errors(error_message: str) -> dict[str, str] | None:
 def _format_file_format_errors(error_message: str) -> dict[str, str] | None:
     """Handle file format and validation errors."""
     format_patterns = [
-        ("Invalid JSON", "invalid_format", "contains invalid JSON format"),
         ("Invalid JSONL", "invalid_format", "contains invalid JSONL format"),
+        ("Invalid JSON", "invalid_format", "contains invalid JSON format"),
         ("Empty file:", "empty_file", "is empty")
     ]
     

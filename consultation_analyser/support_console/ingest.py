@@ -3,7 +3,6 @@ import logging
 
 import boto3
 from django.conf import settings
-from django_rq import job
 
 from consultation_analyser.consultations.models import (
     Consultation,

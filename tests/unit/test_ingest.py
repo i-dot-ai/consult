@@ -1,4 +1,3 @@
-import json
 from unittest.mock import Mock, patch
 
 import pytest
@@ -17,7 +16,6 @@ from consultation_analyser.support_console.ingest import (
     import_consultation,
     validate_consultation_structure,
 )
-
 
 
 class TestGetQuestionFolders:

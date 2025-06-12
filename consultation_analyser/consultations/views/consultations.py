@@ -11,8 +11,8 @@ from consultation_analyser.consultations.models import (
     QuestionOld,
     QuestionPart,
     SentimentMapping,
-    ThemeOld,
     ThemeMapping,
+    ThemeOld,
 )
 
 from .decorators import user_can_see_consultation, user_can_see_dashboards
