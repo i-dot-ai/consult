@@ -20,6 +20,7 @@ class DataDict(TypedDict):
     respondents_total: int
     filtered_total: int
     theme_mappings: list
+    demographic_options: dict[str, list[str]]
 
 
 class FilterParams(TypedDict, total=False):
@@ -27,6 +28,7 @@ class FilterParams(TypedDict, total=False):
     theme_list: list[str]
     evidence_rich: bool
     search_value: str
+    demographic_filters: dict[str, list[str]]  # e.g. {"individual": ["true"], "region": ["north", "south"]}
 
 
 def parse_filters_from_request(request: HttpRequest) -> FilterParams:
@@ -49,6 +51,19 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
     if search_value:
         filters["search_value"] = search_value
 
+    # Parse demographic filters
+    # Expected format: demographicFilters[field]=value1,value2
+    demographic_filters = {}
+    for key in request.GET:
+        if key.startswith("demographicFilters[") and key.endswith("]"):
+            field_name = key[19:-1]  # Extract field name from demographicFilters[fieldname]
+            values = request.GET.get(key, "").split(",")
+            if values and values[0]:  # Only add if there are actual values
+                demographic_filters[field_name] = values
+    
+    if demographic_filters:
+        filters["demographic_filters"] = demographic_filters
+
     return filters
 
 
@@ -67,6 +82,21 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
 
     if filters.get("search_value"):
         query &= Q(free_text__icontains=filters["search_value"])
+
+    # Handle demographic filters
+    if filters.get("demographic_filters"):
+        for field, values in filters["demographic_filters"].items():
+            # Create a Q object that matches any of the values for this field
+            field_query = Q()
+            for value in values:
+                # Handle boolean values
+                if value.lower() in ["true", "false"]:
+                    bool_value = value.lower() == "true"
+                    field_query |= Q(**{f"respondent__demographics__{field}": bool_value})
+                else:
+                    # Handle string values
+                    field_query |= Q(**{f"respondent__demographics__{field}": value})
+            query &= field_query
 
     return query
 
@@ -165,6 +195,26 @@ def build_respondent_data(respondent: models.Respondent, response: models.Respon
     return data
 
 
+def get_demographic_options(consultation: models.Consultation) -> dict[str, list]:
+    """Discover all demographic fields and their possible values in a consultation"""
+    # Get all unique demographic keys and values
+    demographic_data = {}
+    
+    # Query all respondents for this consultation
+    respondents = models.Respondent.objects.filter(consultation=consultation)
+    
+    for respondent in respondents:
+        if respondent.demographics:
+            for key, value in respondent.demographics.items():
+                if key not in demographic_data:
+                    demographic_data[key] = set()
+                # Convert value to string for consistency
+                demographic_data[key].add(str(value))
+    
+    # Convert sets to sorted lists
+    return {key: sorted(list(values)) for key, values in demographic_data.items()}
+
+
 def derive_option_summary_from_responses(responses) -> list[dict]:
     """Get a summary of the selected options for a multiple choice question from response queryset"""
     option_counts = {}
@@ -238,12 +288,16 @@ def question_responses_json(
         .aggregate(count=Count("respondent_id", distinct=True))["count"]
     )
 
+    # Get demographic options for this consultation
+    demographic_options = get_demographic_options(question.consultation)
+    
     data: DataDict = {
         "all_respondents": [],
         "has_more_pages": False,
         "respondents_total": all_respondents_count,
         "filtered_total": filtered_total,
         "theme_mappings": theme_mappings,
+        "demographic_options": demographic_options,
     }
 
     # Pagination
