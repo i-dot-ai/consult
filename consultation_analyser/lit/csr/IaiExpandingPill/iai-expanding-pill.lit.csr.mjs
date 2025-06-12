@@ -24,6 +24,7 @@ export default class IaiExpandingPill extends IaiLitBase {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+                text-align: start;
                 padding: 0.3em 0.8em;
                 gap: 1em;
                 font-size: 1em;
