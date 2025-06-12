@@ -135,7 +135,6 @@ def test_delete_consultation_job_success(mock_connection):
     annotation.themes.add(theme)
 
     consultation_id = consultation.id
-    consultation_title = consultation.title
 
     # Verify objects exist before deletion
     assert Consultation.objects.filter(id=consultation_id).exists()
@@ -236,15 +235,15 @@ def test_delete_consultation_preserves_other_consultations():
     consultation2 = Consultation.objects.create(title="Consultation 2")
 
     # Add data to both
-    question1 = Question.objects.create(
+    Question.objects.create(
         consultation=consultation1, text="Question 1", slug="question-1-1", number=1
     )
-    question2 = Question.objects.create(
+    Question.objects.create(
         consultation=consultation2, text="Question 2", slug="question-2-1", number=1
     )
 
-    respondent1 = Respondent.objects.create(consultation=consultation1, themefinder_id=1)
-    respondent2 = Respondent.objects.create(consultation=consultation2, themefinder_id=2)
+    Respondent.objects.create(consultation=consultation1, themefinder_id=1)
+    Respondent.objects.create(consultation=consultation2, themefinder_id=2)
 
     # Verify both exist
     assert Consultation.objects.count() == 2

@@ -15,8 +15,8 @@ from consultation_analyser.consultations.dummy_data import (
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
 from consultation_analyser.support_console import ingest
+from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
 
 logger = logging.getLogger("export")
 
@@ -39,7 +39,7 @@ def import_consultation_job(
 
 @job("default", timeout=900)
 def delete_consultation_job(consultation: models.Consultation):
-    from django.db import transaction, connection
+    from django.db import connection, transaction
     
     consultation_id = consultation.id
     consultation_title = consultation.title
@@ -162,8 +162,8 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
     ).order_by("number")
 
     question_parts_items = [
-        {"value": qp.id, "text": f"Question {qp.question.number} - {qp.question.text} {qp.text}"}
-        for qp in question_parts
+        {"value": q.id, "text": f"Question {q.number} - {q.text}"}
+        for q in questions
     ]
 
     context = {
