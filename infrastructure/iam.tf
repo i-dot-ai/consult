@@ -5,12 +5,23 @@ data "aws_iam_policy_document" "ecs_exec_custom_policy" {
       "s3:Get*",
       "s3:List*",
       "s3:Put*",
+      "s3:Delete*",
     ]
     resources = [
       "${module.app_bucket.arn}/app_data/*",
     ]
   }
 
+  statement {
+    effect = "Allow"
+    actions = [
+      "s3:Get*",
+      "s3:List*",
+    ]
+    resources = [
+      module.app_bucket.arn
+    ]
+  }
 
   statement {
     effect = "Allow"

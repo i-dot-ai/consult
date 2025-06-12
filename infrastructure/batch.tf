@@ -24,7 +24,7 @@ module "batch_job_mapping" {
   for_each = toset(local.consult_pipeline_job_names)
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   # source                  = "../../i-ai-core-infrastructure/modules/batch/batch_job_definitons"
-  source                   = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/batch-job-definitions?ref=v3.2.1-batch-job-definitions"
+  source                   = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/batch-job-definitions?ref=dk-add-job-role"
   name                     = "${local.name}-${each.value}"
   image                    = local.batch_mapping_image_url
   compute_environment_arn = [module.batch_compute.fargate_compute_environment_arn]
