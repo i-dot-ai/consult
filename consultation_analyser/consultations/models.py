@@ -4,15 +4,12 @@ from collections import Counter, OrderedDict
 from enum import Enum
 
 import faker as _faker
-import pydantic
-from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.db import models
 from django.utils.text import slugify
 from simple_history.models import HistoricalRecords
 
 from consultation_analyser.authentication.models import User
-from consultation_analyser.consultations import public_schema
 
 faker = _faker.Faker()
 
@@ -20,12 +17,7 @@ faker = _faker.Faker()
 # TODO: we don't use this anymore, remove it without manage.py makemigrations complaining
 class MultipleChoiceSchemaValidator(BaseValidator):
     def compare(self, value, _limit_value):
-        if not value:
-            return
-        try:
-            public_schema.MultipleChoice(value)
-        except pydantic.ValidationError as e:
-            raise ValidationError(e.json())
+        pass
 
 
 class UUIDPrimaryKeyModel(models.Model):

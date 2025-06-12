@@ -82,12 +82,6 @@ dev_admin_user:
 .PHONY: dev_environment
 dev_environment: reset_dev_db migrate dummy_data reset_test_db govuk_frontend dev_admin_user ## set up the database with dummy data and configure govuk_frontend
 
-.PHONY: generate_public_schema
-generate_public_schema:
-	poetry run python manage.py generate_yaml_schema
-	poetry run datamodel-codegen --input consultation_analyser/consultations/public_schema_files/public_schema.yaml --output consultation_analyser/consultations/public_schema.py --input-file-type=openapi --field-constraints --output-model-type pydantic_v2.BaseModel
-	poetry run ruff format consultation_analyser/consultations/public_schema.py
-	poetry run python manage.py generate_json_schema
 
 # Docker
 AWS_REGION=eu-west-2
