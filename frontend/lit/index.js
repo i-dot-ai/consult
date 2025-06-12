@@ -44,7 +44,7 @@ class IaiLitBase extends i$1 {
         super();
         this.props = {};
     }
-    
+
     createRenderRoot() {
         return this;
     }
@@ -167,7 +167,7 @@ class IaiExpandingText extends IaiLitBase {
             iai-expanding-text .iai-text-content:not(.iai-text-truncated).clickable::before {
                 transform: rotate(90deg);
             }
-                
+
             iai-expanding-text .iai-text-content.iai-text-truncated {
                 display: -webkit-box;
                 display: box;
@@ -210,7 +210,7 @@ class IaiExpandingText extends IaiLitBase {
             this.querySelector(".iai-text-content"),
             this.lines
         );
-    } 
+    }
 
     firstUpdated() {
         this.applyStaticStyles("iai-expanding-text", IaiExpandingText.styles);
@@ -287,7 +287,7 @@ class IaiTextWithFallback extends IaiLitBase {
         super();
 
         this.applyStaticStyles("iai-text-with-fallback", IaiTextWithFallback.styles);
-        
+
         // By default, render fallback if text is falsy
         this.fallbackCondition = (text) => !text;
     }
@@ -335,7 +335,7 @@ class IaiIcon extends IaiLitBase {
         this.fill = 0;
         this.opsz = 48;
         this.wght = 300;
-        
+
         this.applyStaticStyles("iai-icon", IaiIcon.styles);
     }
 
@@ -542,7 +542,7 @@ class IaiDataTable extends IaiLitBase {
             }
             return 0;
         });
-        
+
         return result;
     }
 
@@ -570,7 +570,7 @@ class IaiDataTable extends IaiLitBase {
         return x`
             <table class="govuk-table govuk-body" mentionstable="">
                 <thead class="govuk-table__head">
-                    <tr class="govuk-table__row">    
+                    <tr class="govuk-table__row">
                         ${this.getHeaders().map(header => x`
                             <th
                                 style="" scope="col" class="govuk-table__header"
@@ -600,7 +600,7 @@ class IaiDataTable extends IaiLitBase {
                         `)}
                     </tr>
                 </thead>
-          
+
                 <tbody class="govuk-table__body">
                     ${this._sortedData.map(row => x`
                         <tr class=${
@@ -654,7 +654,7 @@ class IaiCsvDownload extends IaiLitBase {
         }
 
         const localData = Array.isArray(data) ? data : [data];
-        
+
         const keys = Object.keys(data[0]);
         const rows = [
             keys.join(","),
@@ -760,7 +760,7 @@ class IaiResponseFilters extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-        
+
         this._SLOT_NAMES = ["filters"];
 
         this.applyStaticStyles("iai-response-filters", IaiResponseFilters.styles);
@@ -930,7 +930,7 @@ class IaiResponsesTitle extends IaiLitBase {
 
         // Prop defaults
         this.total = 0;
-        
+
         this.applyStaticStyles("iai-responses-title", IaiResponsesTitle.styles);
     }
 
@@ -966,7 +966,7 @@ class IaiExpandingPill extends IaiLitBase {
             iai-expanding-pill {
                 font-size: 0.9em;
             }
-            
+
             iai-expanding-pill button {
                 display: flex;
                 justify-content: space-between;
@@ -1020,7 +1020,7 @@ class IaiExpandingPill extends IaiLitBase {
     }
 
     render() {
-        return x`    
+        return x`
             <button
                 class=${this._expanded ? "expanded" : ""}
                 @click=${_ => this._expanded = !this._expanded}
@@ -1076,7 +1076,7 @@ class IaiResponse extends IaiLitBase {
                 width: 24px;
                 height: 24px;
             }
-            
+
             iai-response .answer,
             iai-response .answer {
                 line-height: 2em;
@@ -1199,7 +1199,7 @@ class IaiResponse extends IaiLitBase {
                     ? x`
                         <p class=${"govuk-body answer" + (this.skeleton ? " skeleton" : "")}>
                             <iai-expanding-text
-                                .text=${this.getHighlightedText(this.free_text_answer_text, this.searchValue)}    
+                                .text=${this.getHighlightedText(this.free_text_answer_text, this.searchValue)}
                                 .lines=${2}
                             ></iai-expanding-text>
                         </p>
@@ -1283,12 +1283,12 @@ class IaiResponseFilterGroup extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-        
+
         this._SLOT_NAMES = ["content"];
-        
+
         // Prop defaults
         this.title = "";
-        
+
         this.applyStaticStyles("iai-response-filter-group", IaiResponseFilterGroup.styles);
     }
 
@@ -1307,7 +1307,7 @@ class IaiResponseFilterGroup extends IaiLitBase {
                     <slot name="content"></slot>
 
                 </fieldset>
-            </div>      
+            </div>
         `;
     }
 }
@@ -1352,10 +1352,10 @@ class IaiQuestionTopbar extends IaiLitBase {
 
         // Prop defaults
         this.title = "";
-        
+
         this.applyStaticStyles("iai-question-topbar", IaiQuestionTopbar.styles);
     }
-    
+
     updated() {
         this._SLOT_NAMES.forEach(slotName => this.applySlots(slotName));
     }
@@ -1401,7 +1401,7 @@ class IaiQuestionBody extends IaiLitBase {
         // Prop defaults
         this.text = "";
         this.searchValue = "";
-        
+
         this.applyStaticStyles("iai-question-body", IaiQuestionBody.styles);
     }
 
@@ -1409,7 +1409,7 @@ class IaiQuestionBody extends IaiLitBase {
         const regex = new RegExp(matchedText, "gi");
         return o$2(fullText.replace(regex, match => `<span class="matched-text">${match}</span>`));
     }
-    
+
     render() {
         return x`
             <p>${this.getHighlightedText(this.text, this.searchValue)}</p>
@@ -1458,7 +1458,7 @@ class IaiIconButton extends IaiLitBase {
         // Prop defaults
         this.title = "";
         this.handleClick = () => {};
-        
+
         this.applyStaticStyles("iai-icon-button", IaiIconButton.styles);
     }
 
@@ -1502,7 +1502,7 @@ class IaiQuestionTile extends IaiLitBase {
                 width: 31%;
             }
             iai-question-tile .question-tile {
-                height: 100%;    
+                height: 100%;
                 background: white;
                 padding: 1em;
                 border-radius: var(--iai-border-radius);
@@ -1618,7 +1618,7 @@ class IaiQuestionTile extends IaiLitBase {
                                 this.handleFavouriteClick(e);
                             }}
                             @keydown=${(e) => e.stopPropagation()}
-                        >    
+                        >
                             <iai-icon
                                 slot="icon"
                                 name="star"
@@ -1631,7 +1631,7 @@ class IaiQuestionTile extends IaiLitBase {
                         </iai-icon-button>
                     </div>
                 </iai-question-topbar>
-                
+
                 <iai-question-body
                     .text=${this.getTruncatedText(this.body, this.maxLength)}
                     .searchValue=${this.searchValue}
@@ -1675,7 +1675,7 @@ class IaiQuestionOverviewSubtitle extends IaiLitBase {
         // Prop defaults
         this.title = "";
         this.total = 0;
-        
+
         this.applyStaticStyles("iai-question-overview-subtitle", IaiQuestionOverviewSubtitle.styles);
     }
 
@@ -1842,7 +1842,7 @@ class IaiQuestionOverview extends IaiLitBase {
         this.responses = {};
         this.multiResponses = {};
         this.handleClose = () => {};
-        
+
         this.applyStaticStyles("iai-question-overview", IaiQuestionOverview.styles);
     }
 
@@ -1861,7 +1861,7 @@ class IaiQuestionOverview extends IaiLitBase {
     render() {
         const textResponseTotal = this.getTextResponseTotal();
         const multiResponseTotal = this.getMultiResponseTotal();
-        
+
         return x`
             <div class="question-overview">
                 <iai-question-topbar .title=${this.title}>
@@ -1889,7 +1889,7 @@ class IaiQuestionOverview extends IaiLitBase {
                     title="Free Text Responses"
                     .total=${textResponseTotal}
                 ></iai-question-overview-subtitle>
-                
+
                 ${!this.responses.agreement && !this.responses.disagreement && !this.responses.unclear
                     ? x`<p class="govuk-body">This question does not have free text responses</p>`
                     : x`
@@ -1927,7 +1927,7 @@ class IaiQuestionOverview extends IaiLitBase {
                                     .countValue=${this.multiResponses[key]}
                                     .totalCounts=${multiResponseTotal}
                                 ></iai-multi-response-item>
-                                
+
                             `)}
                         </ul>
                     `
@@ -2128,7 +2128,7 @@ class IaiQuestionTiles extends IaiLitBase {
                 <div class="govuk-grid-column-one-quarter-from-desktop overview-panel">
                     <div class="search-container">
                         <iai-text-input
-                            inputId="question-search"  
+                            inputId="question-search"
                             name="question-search"
                             .label=${x`
                                 <iai-icon
@@ -2145,7 +2145,7 @@ class IaiQuestionTiles extends IaiLitBase {
                             .hideLabel=${false}
                         ></iai-text-input>
                     </div>
-                    
+
                     ${this._selectedQuestion ? x`
                         <iai-question-overview
                             .title=${this._selectedQuestion.title}
@@ -2181,7 +2181,7 @@ class IaiPageTitle extends IaiLitBase {
         // Prop defaults
         this.title = "";
         this.subtitle = "";
-        
+
         this.applyStaticStyles("iai-page-title", IaiPageTitle.styles);
     }
 
@@ -2211,7 +2211,7 @@ class IaiChip extends IaiLitBase {
             iai-chip {
                 font-size: 0.9em;
             }
-            
+
             iai-chip div {
                 display: flex;
                 justify-content: space-between;
@@ -2240,7 +2240,7 @@ class IaiChip extends IaiLitBase {
     }
 
     render() {
-        return x`    
+        return x`
             <div>
                 <span>
                     ${this.label}
@@ -2287,7 +2287,7 @@ class IaiProgressBar extends IaiLitBase {
                 background: var(--iai-colour-pink);
             }
             iai-progress-bar .container .label {
-                display: block;    
+                display: block;
                 position: absolute;
                 right: 0.5em;
                 text-align: right;
@@ -2309,7 +2309,7 @@ class IaiProgressBar extends IaiLitBase {
         // Prop defaults
         this.value = 0;
         this.label = "";
-        
+
         this.applyStaticStyles("iai-progress-bar", IaiProgressBar.styles);
     }
 
@@ -2353,7 +2353,7 @@ class IaiAnimatedNumber extends IaiLitBase {
         this.number = 0;
         this.duration = 1000;
         this._displayNumber = 0;
-        
+
         this.applyStaticStyles("iai-animated-number", IaiAnimatedNumber.styles);
     }
 
@@ -2430,7 +2430,7 @@ class IaiLoadingIndicator extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-        
+
         this.applyStaticStyles("iai-loading-indicator", IaiLoadingIndicator.styles);
     }
 
@@ -3649,7 +3649,7 @@ class IaiVirtualList extends IaiLitBase {
         this.handleScrollEnd = () => {};
         this.message = "";
         this._canCallCallback = true;
-        
+
         this.applyStaticStyles("iai-virtual-list", IaiVirtualList.styles);
     }
 
@@ -3694,6 +3694,7 @@ class IaiResponseDashboard extends IaiLitBase {
         questionSlug: { type: String },
         stanceOptions: { type: Array },
         themeMappings: { type: Array },
+        demographicOptions: { type: Object },  // e.g. {"individual": ["true", "false"], "region": ["north", "south"]}
         responses: { type: Array },
         responsesTotal: { type: Number },
         free_text_question_part: { type: Boolean },
@@ -3705,7 +3706,7 @@ class IaiResponseDashboard extends IaiLitBase {
         _isLoading: { type: Boolean },
         _searchValue: { type: String },
         _themeSearchValue: { type: String },
-        _demographicFilters: { type: Array },
+        _demographicFilters: { type: Object },  // Changed from Array to Object to store filters by field
         _themeFilters: { type: Array },
         _themesPanelVisible: { type: Boolean },
         _stanceFilters: { type: Array },
@@ -3809,7 +3810,7 @@ class IaiResponseDashboard extends IaiLitBase {
                 position: relative;
             }
             iai-response-dashboard .table-container iai-data-table {
-                display: block;    
+                display: block;
                 max-height: 40em;
                 overflow: auto;
             }
@@ -3874,7 +3875,7 @@ class IaiResponseDashboard extends IaiLitBase {
         this._PAGE_SIZE = 50;
         this._DEBOUNCE_DELAY = 500;
         this._currentFetchController = null;
-        
+
         // Prop defaults
         this._isLoading = true;
         this._searchValue = "";
@@ -3883,8 +3884,7 @@ class IaiResponseDashboard extends IaiLitBase {
         this._evidenceRichFilters = [];
         this._themeFilters = [];
         this._themesPanelVisible = false;
-        this._demographicFilters = [];
-        this._responsesFilteredTotal = 0;
+        this._demographicFilters = {};
         this._numberAnimationDuration = 500;
         this._searchDebounceTimer = null;
         this._currentPage = 1;
@@ -3900,6 +3900,7 @@ class IaiResponseDashboard extends IaiLitBase {
         this.responsesTotal = 0;
         this.themeMappings = [];
         this.stanceOptions = [];
+        this.demographicOptions = {};
         this.free_text_question_part = false;
         this.has_individual_data = false;
         this.has_multiple_choice_question_part = false;
@@ -3920,21 +3921,21 @@ class IaiResponseDashboard extends IaiLitBase {
             if (!this._hasMorePages) {
                 return;
             }
-    
+
             if (this._currentFetchController) {
                 console.log("aborting stale request");
                 this._currentFetchController.abort();
             }
-    
+
             const controller = new AbortController();
             const signal = controller.signal;
             this._currentFetchController = controller;
-    
+
             this._errorOccured = false;
             this._isLoading = true;
-    
+
             const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
-            
+
             let response;
             try {
                 response = await this.fetchData(url, { signal });
@@ -3953,14 +3954,14 @@ class IaiResponseDashboard extends IaiLitBase {
                 }
                 this._isLoading = false;
             }
-    
+
             if (!response.ok) {
                 this._errorOccured = true;
                 throw new Error(`Response status: ${response.status}`);
             }
-            
+
             const responsesData = await response.json();
-            
+
             this.responses = this.responses.concat(
                 responsesData.all_respondents.map(response => ({
                     ...response,
@@ -3969,14 +3970,19 @@ class IaiResponseDashboard extends IaiLitBase {
             );
             this.responsesTotal = responsesData.respondents_total;
             this._responsesFilteredTotal = responsesData.filtered_total;
-            
+
             // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
             if (this._currentPage === 1 && responsesData.theme_mappings) {
                 this.themeMappings = responsesData.theme_mappings;
             }
-            
+
+            // Update demographic options if available
+            if (responsesData.demographic_options) {
+                this.demographicOptions = responsesData.demographic_options;
+            }
+
             this._hasMorePages = responsesData.has_more_pages;
-    
+
             this._currentPage = this._currentPage + 1;
         }, this._DEBOUNCE_DELAY);
     }
@@ -4018,8 +4024,27 @@ class IaiResponseDashboard extends IaiLitBase {
     handleThemeFilterChange = (e) => {
         this._themeFilters = this.addOrRemoveFilter(this._themeFilters, e.target.value);
     }
-    handleDemographicChange = (e) => {
-        this._demographicFilters = this.addOrRemoveFilter(this._demographicFilters, e.target.value);
+    handleDemographicChange = (field, value) => {
+        if (!this._demographicFilters[field]) {
+            this._demographicFilters[field] = [];
+        }
+
+        const currentValues = this._demographicFilters[field];
+        const valueIndex = currentValues.indexOf(value);
+
+        if (valueIndex > -1) {
+            // Remove the value
+            currentValues.splice(valueIndex, 1);
+            if (currentValues.length === 0) {
+                delete this._demographicFilters[field];
+            }
+        } else {
+            // Add the value
+            currentValues.push(value);
+        }
+
+        // Trigger reactive update
+        this._demographicFilters = { ...this._demographicFilters };
     }
 
     getVisibleResponseTotal() {
@@ -4077,7 +4102,7 @@ class IaiResponseDashboard extends IaiLitBase {
         {
             visible = false;
         }
-        
+
         // filter by themes selected
         if (this._themeFilters.length > 0) {
             if (!response.themes.find(theme => this._themeFilters.includes(theme.id))) {
@@ -4125,9 +4150,6 @@ class IaiResponseDashboard extends IaiLitBase {
             ...(this._stanceFilters.length > 0 && {
                 sentimentFilters: this._stanceFilters.join(",")
             }),
-            ...(this._demographicFilters.length > 0 && {
-                demographicFilters: this._demographicFilters.join(",")
-            }),
             ...(this._themeFilters.length > 0 && {
                 themeFilters: this._themeFilters.join(",")
             }),
@@ -4137,6 +4159,14 @@ class IaiResponseDashboard extends IaiLitBase {
             page: this._currentPage,
             page_size: this._PAGE_SIZE.toString(),
         });
+
+        // Add demographic filters using square bracket notation
+        Object.entries(this._demographicFilters).forEach(([field, values]) => {
+            if (values.length > 0) {
+                params.append(`demographicFilters[${field}]`, values.join(","));
+            }
+        });
+
         return params.toString();
     }
 
@@ -4145,6 +4175,25 @@ class IaiResponseDashboard extends IaiLitBase {
             return 0;
         }
         return Math.round(((partialValue / totalValue) * 100));
+    }
+
+    formatFieldName = (field) => {
+        // Convert field name to Title Case and handle special cases
+        return field
+            .replace(/_/g, ' ')
+            .replace(/\b\w/g, l => l.toUpperCase());
+    }
+
+    formatDemographicValue = (field, value) => {
+        // Special formatting for boolean values
+        if (value === "true" || value === "false") {
+            if (field === "individual") {
+                return value === "true" ? "Individual" : "Organisation";
+            }
+            return value === "true" ? "Yes" : "No";
+        }
+        // Capitalize first letter for other values
+        return value.charAt(0).toUpperCase() + value.slice(1);
     }
 
     getResponsesMessage = () => {
@@ -4297,7 +4346,7 @@ class IaiResponseDashboard extends IaiLitBase {
                             </div>
                         </div>
                     </div>
-                ` 
+                `
                 : ""
             }
 
@@ -4324,7 +4373,7 @@ class IaiResponseDashboard extends IaiLitBase {
                             </div>
                         </div>
                     </div>
-                `    
+                `
                 : ""
             }
 
@@ -4401,31 +4450,29 @@ class IaiResponseDashboard extends IaiLitBase {
                                     : ""
                                 }
 
-                                ${this.has_individual_data
-                                    ? x`
-                                        <iai-response-filter-group title="Response type">
-                                            <div slot="content" class="govuk-checkboxes govuk-checkboxes--small">
-                                                <iai-checkbox-input
-                                                    name="demographic-filter"
-                                                    inputId="demographic-individual"
-                                                    label="Hide Individual"
-                                                    value="individual"
-                                                    .handleChange=${this.handleDemographicChange}
-                                                ></iai-checkbox-input>
-                                                <iai-checkbox-input
-                                                    name="demographic-filter"
-                                                    inputId="demographic-organisation"
-                                                    label="Hide Organisation"
-                                                    value="organisation"
-                                                    .handleChange=${this.handleDemographicChange}
-                                                ></iai-checkbox-input>
+                                ${this.demographicOptions && Object.keys(this.demographicOptions).length > 0 ?
+                                    Object.entries(this.demographicOptions).map(([field, values]) => x`
+                                        <iai-response-filter-group title="${this.formatFieldName(field)}">
+                                            <div
+                                                slot="content"
+                                                class="govuk-checkboxes govuk-checkboxes--small"
+                                                data-module="govuk-checkboxes"
+                                                data-govuk-checkboxes-init=""
+                                            >
+                                                ${values.map((value, index) => x`
+                                                    <iai-checkbox-input
+                                                        name="demographic-filter-${field}"
+                                                        inputId="demographic-${field}-${index}"
+                                                        label="${this.formatDemographicValue(field, value)}"
+                                                        value="${value}"
+                                                        .handleChange=${() => this.handleDemographicChange(field, value)}
+                                                    ></iai-checkbox-input>
+                                                `)}
                                             </div>
                                         </iai-response-filter-group>
-
                                         <hr />
-                                    `
-                                    : ""
-                                }
+                                    `)
+                                : ""}
 
 
                                 <iai-response-filter-group title="Response sentiment">
