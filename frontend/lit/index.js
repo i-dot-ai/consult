@@ -3873,6 +3873,11 @@ class IaiResponseDashboard extends IaiLitBase {
             this.responsesTotal = responsesData.respondents_total;
             this.responsesFilteredTotal = responsesData.filtered_total;
             
+            // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
+            if (this._currentPage === 1 && responsesData.theme_mappings) {
+                this.themeMappings = responsesData.theme_mappings;
+            }
+            
             this._hasMorePages = responsesData.has_more_pages;
     
             this._currentPage = this._currentPage + 1;
@@ -4115,9 +4120,6 @@ class IaiResponseDashboard extends IaiLitBase {
                                     <iai-csv-download
                                         fileName="theme_mentions.csv"
                                         .data=${this.themeMappings
-                                            .filter(themeMapping => (
-                                                this._themeFilters.includes(themeMapping.value) || this._themeFilters.length == 0
-                                            ))
                                             .map(themeMapping => (
                                                 {
                                                     "Theme name": themeMapping.label,
@@ -4148,9 +4150,6 @@ class IaiResponseDashboard extends IaiLitBase {
 
                                 <iai-data-table
                                     .data=${this.themeMappings
-                                        .filter(themeMapping => (
-                                            this._themeFilters.includes(themeMapping.value) || this._themeFilters.length == 0
-                                        ))
                                         .map(themeMapping => (
                                             {
                                                 // _sortValues are the values used for sorting comparison
