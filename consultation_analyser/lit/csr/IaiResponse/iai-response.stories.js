@@ -43,6 +43,7 @@ export default {
         .multiple_choice_answer=${args.multiple_choice_answer}
         .searchValue=${args.searchValue}
         .evidenceRich=${args.evidenceRich}
+        .skeleton=${args.skeleton}
       ></iai-response>
     `
   },
@@ -159,5 +160,15 @@ export const Disagreement = {
     multiple_choice_answer: TEST_MULTI_CHOICE_ANSWERS,
     searchValue: "",
     evidenceRich: false,
+  }
+};
+
+export const Skeleton = {
+  args: {
+    id: "skeleton-response",
+    identifier: "skeleton-response",
+    individual: "skeleton-individual",
+    free_text_answer_text: TEST_FREE_TEXT_ANSWER.repeat(5),
+    skeleton: true,
   }
 };

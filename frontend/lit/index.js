@@ -1045,7 +1045,8 @@ class IaiResponse extends IaiLitBase {
         has_multiple_choice_question_part: {type: Boolean},
         multiple_choice_answer: {type: Array},
         searchValue: {type: String},
-        evidenceRich: { type: Boolean },
+        evidenceRich: {type: Boolean},
+        skeleton: {type: Boolean},
     }
 
     static styles = [
@@ -1103,6 +1104,20 @@ class IaiResponse extends IaiLitBase {
                 display: flex;
                 flex-direction: column;
             }
+            iai-response .skeleton {
+                background: black;
+                color: transparent;
+                animation: fadeInOut 1s ease-in-out infinite alternate;
+                user-select: none;
+            }
+            @keyframes fadeInOut {
+                from {
+                    opacity: 0.1;
+                }
+                to {
+                    opacity: 0.2;
+                }
+            }
         `
     ]
 
@@ -1116,11 +1131,12 @@ class IaiResponse extends IaiLitBase {
         this.free_text_answer_text = "";
         this.themes = [];
         this.sentiment_position = "";
-        this.demographic_data = "";
+        this.demographic_data = undefined;
         this.has_multiple_choice_question_part = false;
         this.multiple_choice_answer = [];
         this.searchValue = "";
         this.evidenceRich = false;
+        this.skeleton = false;
 
         this.applyStaticStyles("iai-response", IaiResponse.styles);
     }
@@ -1156,7 +1172,7 @@ class IaiResponse extends IaiLitBase {
             <div class="iai-panel response govuk-!-margin-bottom-4">
                 <div class="govuk-grid-row">
                     <div class="govuk-grid-column-two-thirds space-between">
-                        <h2 class="govuk-heading-m">
+                        <h2 class=${"govuk-heading-m" + (this.skeleton ? " skeleton" : "")}>
                             Respondent ${this.identifier}
                         </h2>
 
@@ -1175,7 +1191,7 @@ class IaiResponse extends IaiLitBase {
 
                 ${this.free_text_answer_text
                     ? x`
-                        <p class="govuk-body answer">
+                        <p class=${"govuk-body answer" + (this.skeleton ? " skeleton" : "")}>
                             <iai-expanding-text
                                 .text=${this.getHighlightedText(this.free_text_answer_text, this.searchValue)}    
                                 .lines=${2}
@@ -1195,13 +1211,15 @@ class IaiResponse extends IaiLitBase {
                         }
 
                         <div class="themes">
-                            ${this.themes.map(theme => x`
-                                <iai-expanding-pill
-                                    .label=${theme.name}
-                                    .body=${theme.description}
-                                    .initialExpanded=${false}
-                                ></iai-expanding-pill>
-                            `)}
+                            ${Array.isArray(this.themes)
+                                ? this.themes.map(theme => x`
+                                    <iai-expanding-pill
+                                        .label=${theme.name}
+                                        .body=${theme.description}
+                                        .initialExpanded=${false}
+                                    ></iai-expanding-pill>
+                                `)
+                                : ""}
                         </div>
                     `
                     : ""
@@ -4456,8 +4474,18 @@ class IaiResponseDashboard extends IaiLitBase {
                     </div>
 
                     <iai-virtual-list
-                        class=${this.responses.length > 0 ? " flex-grow" : ""}
-                        .data=${visibleResponses}
+                        class="flex-grow"
+                        .data=${this._isLoading && this.responses.length === 0
+                            ? [...Array(10).keys()].map(i => ({
+                                id: "skeleton-response",
+                                identifier: "skeleton-response",
+                                individual: "skeleton-individual",
+                                free_text_answer_text: "Skeleton Body".repeat(50),
+                                has_multiple_choice_question_part: false,
+                                skeleton: true,
+                              }))
+                            : visibleResponses
+                        }
                         .renderItem=${(response, index) => x`
                             <iai-response
                                 class=${index === this.responses.length - 1 ? "last-item" : ""}
@@ -4469,10 +4497,15 @@ class IaiResponseDashboard extends IaiLitBase {
                                 .free_text_answer_text=${response.free_text_answer_text}
                                 .demographic_data=${response.demographic_data}
                                 .themes=${response.themes}
-                                .has_multiple_choice_question_part=${this.has_multiple_choice_question_part}
+                                .has_multiple_choice_question_part=${
+                                response.hasOwnProperty("has_multiple_choice_question_part")
+                                    ? response.has_multiple_choice_question_part
+                                    : this.has_multiple_choice_question_part
+                                }
                                 .multiple_choice_answer=${response.multiple_choice_answer}
                                 .searchValue=${this._searchValue}
                                 .evidenceRich=${response.evidenceRich}
+                                .skeleton=${response.skeleton}
                             ></iai-response>
                         `}
                         .handleScrollEnd=${() => {
