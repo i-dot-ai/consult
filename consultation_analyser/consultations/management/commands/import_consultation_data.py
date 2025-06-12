@@ -13,8 +13,8 @@ from consultation_analyser.consultations.models import (
     QuestionOld,
     QuestionPart,
     RespondentOld,
-    ThemeOld,
     ThemeMapping,
+    ThemeOld,
 )
 
 

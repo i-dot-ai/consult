@@ -4,8 +4,8 @@ from freezegun import freeze_time
 
 from consultation_analyser.consultations.models import ResponseAnnotation
 from consultation_analyser.factories import (
-    ResponseFactory,
     ResponseAnnotationFactory,
+    ResponseFactory,
     ReviewedResponseAnnotationFactory,
     ThemeFactory,
     UserFactory,
