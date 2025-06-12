@@ -13,6 +13,7 @@ export default {
     return html`
       <iai-data-table
         .data=${args.data}
+        .initialSorts=${args.initialSorts}
       ></iai-data-table>
     `
   },
@@ -50,4 +51,11 @@ export const TableWithEncodedProps = {
       ></iai-data-table>
     `
   },
+};
+
+export const WithInitialSorts = {
+  args: {
+    data: DEFAULT_DATA,
+    initialSorts: [{ "field": "Total mentions", "ascending": false }],
+  }
 };

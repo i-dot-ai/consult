@@ -578,6 +578,12 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                 </div>
 
                                 <iai-data-table
+                                    .initialSorts=${[
+                                        {
+                                            field: "Number of responses",
+                                            ascending: false,
+                                        }
+                                    ]}
                                     .data=${this.themeMappings
                                         .filter(themeMapping => (
                                             this._themeFilters.includes(themeMapping.value) || this._themeFilters.length == 0

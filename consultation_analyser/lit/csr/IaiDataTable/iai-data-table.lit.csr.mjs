@@ -7,6 +7,7 @@ export default class IaiDataTable extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         data: { type: Array },
+        initialSorts: { type: Array },
         _sortedData: { type: Array },
         _sorts: { type: Array },
     }
@@ -81,6 +82,10 @@ export default class IaiDataTable extends IaiLitBase {
 
     firstUpdated() {
         this.applyStaticStyles("iai-data-table", IaiDataTable.styles);
+
+        if (this.initialSorts) {
+            this._sorts = this.initialSorts;
+        }
 
         this.updateSortedData();
     }
