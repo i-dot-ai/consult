@@ -814,7 +814,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                     </div>
 
                     <iai-virtual-list
-                        class=${this.responses.length > 0 || true ? " flex-grow" : ""}
+                        class="flex-grow"
                         .data=${this._isLoading && this.responses.length === 0
                             ? [...Array(10).keys()].map(i => ({
                                 id: "skeleton-response",
