@@ -1,3 +1,4 @@
+import hashlib
 from datetime import datetime
 from typing import TypedDict
 from uuid import UUID
@@ -5,7 +6,7 @@ from uuid import UUID
 from django.core.cache import cache
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
-from django.db.models import Count, Prefetch, Q, QuerySet, Subquery
+from django.db.models import Count, Prefetch, Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -18,150 +19,231 @@ class DataDict(TypedDict):
     has_more_pages: bool
     respondents_total: int
     filtered_total: int
+    theme_mappings: list
 
 
-def get_selected_theme_summary(
-    free_text_question_part: models.QuestionPart, respondents: QuerySet
-) -> tuple[QuerySet, dict]:
-    """Get a summary of the selected themes for a free text question"""
-    # Assume latest framework for now
-    theme_mappings_qs = models.ThemeMapping.get_latest_theme_mappings(
-        question_part=free_text_question_part
+class FilterParams(TypedDict, total=False):
+    sentiment_list: list[str]
+    theme_list: list[str]
+    evidence_rich: bool
+    search_value: str
+
+
+def parse_filters_from_request(request: HttpRequest) -> FilterParams:
+    """Parse filter parameters from request GET params"""
+    filters = FilterParams()
+
+    sentiment_filters = request.GET.get("sentimentFilters", "")
+    if sentiment_filters:
+        filters["sentiment_list"] = sentiment_filters.split(",")
+
+    theme_filters = request.GET.get("themeFilters", "")
+    if theme_filters:
+        filters["theme_list"] = theme_filters.split(",")
+
+    evidence_rich_filter = request.GET.get("evidenceRichFilter")
+    if evidence_rich_filter == "evidence-rich":
+        filters["evidence_rich"] = True
+
+    search_value = request.GET.get("searchValue")
+    if search_value:
+        filters["search_value"] = search_value
+
+    return filters
+
+
+def build_response_filter_query(filters: FilterParams, question: models.Question) -> Q:
+    """Build a Q object for filtering responses based on filter params"""
+    query = Q(question=question)
+
+    if filters.get("sentiment_list"):
+        query &= Q(annotation__sentiment__in=filters["sentiment_list"])
+
+    if filters.get("theme_list"):
+        query &= Q(annotation__themes__id__in=filters["theme_list"])
+
+    if filters.get("evidence_rich"):
+        query &= Q(annotation__evidence_rich=models.ResponseAnnotation.EvidenceRich.YES)
+
+    if filters.get("search_value"):
+        query &= Q(free_text__icontains=filters["search_value"])
+
+    return query
+
+
+def get_filtered_responses_with_themes(
+    question: models.Question, filters: FilterParams | None = None
+):
+    """Single optimized query to get all filtered responses with their themes"""
+    response_filter = build_response_filter_query(filters or {}, question)
+    return (
+        models.Response.objects.filter(response_filter)
+        .select_related("respondent", "annotation")
+        .prefetch_related("annotation__themes")
+        .order_by("created_at")  # Consistent ordering for pagination
     )
-    selected_theme_mappings = (
-        theme_mappings_qs.filter(answer__respondent__in=respondents)
-        .values("theme__name", "theme__description", "theme__id")
-        .annotate(
-            count=Count("id"),
-        )
+
+
+def get_theme_summary_optimized(question: models.Question, filters: FilterParams | None = None) -> list[dict]:
+    """Database-optimized theme aggregation - shows all themes in filtered responses"""
+    # Get the filtered responses first
+    response_filter = build_response_filter_query(filters or {}, question)
+    filtered_responses = models.Response.objects.filter(response_filter)
+    
+    # Now get all themes that appear in those filtered responses
+    # This shows ALL themes that appear in responses matching the filter criteria
+    theme_data = (
+        models.Theme.objects
+        .filter(responseannotation__response__in=filtered_responses)
+        .annotate(response_count=Count('responseannotation__response', distinct=True))
+        .values('id', 'name', 'description', 'response_count')
+        .order_by('-response_count')
     )
-    return selected_theme_mappings
-
-
-def get_selected_option_summary(question: models.QuestionOld, respondents: QuerySet) -> list[dict]:
-    """Get a summary of the selected options for a multiple choice question"""
-    annotated_responses = [
-        models.Answer.objects.filter(question_part=question_part, respondent__in=respondents)
-        .distinct()
-        .values("chosen_options")
-        .order_by("chosen_options")
-        .annotate(count=Count("id"))
-        for question_part in question.questionpart_set.filter(
-            type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
-        )
+    
+    return [
+        {
+            "theme__id": theme["id"],
+            "theme__name": theme["name"],
+            "theme__description": theme["description"],
+            "count": theme["response_count"],
+        }
+        for theme in theme_data
     ]
 
-    multichoice_summary = []
-    for responses in annotated_responses:
-        option_counts = {}
-        for response in responses:
-            for option in response["chosen_options"]:
-                if option not in option_counts:
-                    option_counts[option] = 0
-                option_counts[option] += response["count"]
-        multichoice_summary.append(option_counts)
 
-    return multichoice_summary
+def get_cached_theme_summary(question_id: str, filters_hash: str) -> list[dict] | None:
+    """Get cached theme summary or None if not cached"""
+    cache_key = f"theme_summary:{question_id}:{filters_hash}"
+    return cache.get(cache_key)
 
 
-def get_respondents_for_question(
-    consultation_slug: str, question_slug: str, cache_timeout: int = 60 * 20
-) -> QuerySet[models.RespondentOld]:
-    # Cache data for question/consultation. Default timeout to 20 mins.
-    cache_key = f"respondents_{consultation_slug}_{question_slug}"
+def set_cached_theme_summary(question_id: str, filters_hash: str, data: list[dict], timeout: int = 300):
+    """Cache theme summary for 5 minutes"""
+    cache_key = f"theme_summary:{question_id}:{filters_hash}"
+    cache.set(cache_key, data, timeout)
 
-    # Retrieve cached data
-    respondents = cache.get(cache_key)
 
-    # If no cached data found
-    if respondents is None:
-        # Prefetch all related data to avoid multiple db hits
-        # filtered_answers is not querying the database yet,
-        # only building the query (as querysets are lazily fetched).
-        # This then gets passed as the queryset param of respondent prefetch,
-        # updating that query with the filter logic.
-        # Ultimately the returned answers are only for the current consultation.
-        answers = (
-            models.Answer.objects.filter(
-                question_part__question__slug=question_slug,
-                question_part__question__consultation__slug=consultation_slug,
-            )
-            .select_related("respondent")
-            .prefetch_related(
-                Prefetch(
-                    "thememapping_set",
-                    queryset=models.ThemeMapping.objects.select_related("theme"),
-                    to_attr="prefetched_thememappings",
-                )
-            )
-            .prefetch_related(
-                Prefetch("evidencerichmapping_set", to_attr="prefetched_evidencerichmappings")
-            )
-            .prefetch_related(
-                Prefetch("sentimentmapping_set", to_attr="prefetched_sentimentmappings")
-            )
-        )
+def get_filters_hash(filters: FilterParams) -> str:
+    """Generate a hash for caching based on filter parameters"""
+    return hashlib.md5(str(sorted(filters.items())).encode()).hexdigest()
 
-        respondents = (
-            models.RespondentOld.objects.filter(
-                id__in=Subquery(answers.values_list("respondent_id", flat=True))
-            )
-            .prefetch_related(
-                Prefetch(
-                    "answer_set", queryset=answers, to_attr="prefetched_answers"
-                )  # Prefetch the necessary answers
-            )
-            .order_by("pk")
-        )
 
-        # Update cache
-        cache.set(cache_key, respondents, timeout=cache_timeout)
-    return respondents
+def build_respondent_data(respondent: models.Respondent, response: models.Response) -> dict:
+    """Extract respondent data building to separate function"""
+    data = {
+        "id": f"response-{respondent.identifier}",
+        "identifier": str(respondent.identifier),
+        "sentiment_position": "",
+        "free_text_answer_text": response.free_text or "",
+        "demographic_data": respondent.demographics or {},
+        "themes": [],
+        "multiple_choice_answer": [response.chosen_options] if response.chosen_options else [],
+        "evidenceRich": False,
+        "individual": respondent.demographics.get("individual", False),
+    }
+    
+    if hasattr(response, "annotation") and response.annotation:
+        annotation = response.annotation
+        
+        if annotation.sentiment:
+            data["sentiment_position"] = annotation.sentiment
+        
+        if annotation.evidence_rich == models.ResponseAnnotation.EvidenceRich.YES:
+            data["evidenceRich"] = True
+        
+        # Add themes (already prefetched)
+        data["themes"] = [
+            {
+                "id": theme.id,
+                "stance": None,  # Stance is no longer stored in new models
+                "name": theme.name,
+                "description": theme.description,
+            }
+            for theme in annotation.themes.all()
+        ]
+    
+    return data
+
+
+def derive_option_summary_from_responses(responses) -> list[dict]:
+    """Get a summary of the selected options for a multiple choice question from response queryset"""
+    option_counts = {}
+    for response in responses:
+        if response.chosen_options:
+            for option in response.chosen_options:
+                option_counts[option] = option_counts.get(option, 0) + 1
+
+    return [option_counts] if option_counts else []
 
 
 @user_can_see_dashboards
 @user_can_see_consultation
-def respondents_json(
+def question_responses_json(
     request: HttpRequest,
     consultation_slug: str,
     question_slug: str,
 ):
     page_size = request.GET.get("page_size")
-    page = request.GET.get(
-        "page", 1
-    )  # TODO: replace with `last_created_at` when we move to keyset pagination
-    all_respondents = get_respondents_for_question(
-        consultation_slug=consultation_slug, question_slug=question_slug
+    page = request.GET.get("page", 1)
+
+    # Get the question object with consultation in one query
+    question = get_object_or_404(
+        models.Question.objects.select_related("consultation"), 
+        slug=question_slug, 
+        consultation__slug=consultation_slug
     )
 
-    # Filtering
-    query = Q()
+    # Parse filters from request
+    filters = parse_filters_from_request(request)
+    filters_hash = get_filters_hash(filters)
 
-    sentiment_filters = request.GET.get("sentimentFilters", "")
-    sentiment_list = sentiment_filters.split(",") if sentiment_filters else []
-    if sentiment_list:
-        query &= Q(answer__sentimentmapping__position__in=sentiment_list)
+    # Generate theme mappings (disable cache temporarily for debugging)
+    theme_mappings = []
+    if question.has_free_text:
+        # Generate theme mappings using optimized database query
+        theme_data = get_theme_summary_optimized(question, filters)
+        theme_mappings = [
+            {
+                "inputId": f"themesfilter-{i}",
+                "value": str(theme.get("theme__id", "")),
+                "label": theme.get("theme__name", ""),
+                "description": theme.get("theme__description", ""),
+                "count": str(theme.get("count", 0)),
+            }
+            for i, theme in enumerate(theme_data)
+        ]
 
-    theme_filters = request.GET.get("themeFilters", "")
-    theme_list = theme_filters.split(",") if theme_filters else []
-    if theme_filters:
-        query &= Q(answer__thememapping__theme__in=theme_list)
+    # Get respondents with their filtered responses using optimized query
+    response_filter = build_response_filter_query(filters, question)
+    filtered_respondents = (
+        models.Respondent.objects
+        .filter(response__in=models.Response.objects.filter(response_filter))
+        .prefetch_related(
+            Prefetch(
+                'response_set',
+                queryset=models.Response.objects.filter(response_filter)
+                .select_related('annotation')
+                .prefetch_related('annotation__themes'),
+                to_attr='filtered_responses'
+            )
+        )
+        .distinct()
+        .order_by('pk')
+    )
 
-    evidence_rich_filter = request.GET.get("evidenceRichFilter")
-    if evidence_rich_filter and evidence_rich_filter == "evidence-rich":
-        query &= Q(answer__evidencerichmapping__evidence_rich=True)
-
-    search_value = request.GET.get("searchValue")
-    if search_value:
-        query &= Q(answer__text__icontains=search_value)
-
-    filtered_respondents = all_respondents.filter(query).distinct()
+    # Efficient counting using database aggregation
+    filtered_total = filtered_respondents.count()
+    all_respondents_count = (
+        models.Response.objects.filter(question=question)
+        .aggregate(count=Count("respondent_id", distinct=True))["count"]
+    )
 
     data: DataDict = {
         "all_respondents": [],
         "has_more_pages": False,
-        "respondents_total": len(all_respondents),
-        "filtered_total": len(filtered_respondents),
+        "respondents_total": all_respondents_count,
+        "filtered_total": filtered_total,
+        "theme_mappings": theme_mappings,
     }
 
     # Pagination
@@ -173,74 +255,15 @@ def respondents_json(
     else:
         respondents = filtered_respondents
 
-    # Get individual data for each displayed respondent
+    # Build response data efficiently using prefetched data
     for respondent in respondents:
-        # Defaults
-        free_text_answer = None
-        multiple_choice_answers = None
+        # Use prefetched filtered_responses
+        response = respondent.filtered_responses[0] if respondent.filtered_responses else None
+        if not response:
+            continue
 
-        # Free text response
-        free_text_responses = [
-            answer
-            for answer in respondent.prefetched_answers
-            if answer.question_part.type == models.QuestionPart.QuestionType.FREE_TEXT
-        ]
-
-        if free_text_responses:
-            free_text_answer = free_text_responses[0]
-            respondent.themes = free_text_answer.prefetched_thememappings  # type: ignore
-
-            if free_text_answer.prefetched_sentimentmappings:
-                # Can assume at most one sentiment mapping
-                respondent.sentiment = free_text_answer.prefetched_sentimentmappings[0]  # type: ignore
-
-            if free_text_answer.prefetched_evidencerichmappings:
-                # Can assume at most one sentiment mapping
-                respondent.evidence_rich = free_text_answer.prefetched_evidencerichmappings[0]  # type: ignore
-
-        # Multiple choice response
-        multiple_choice_answers = [
-            answer
-            for answer in respondent.prefetched_answers
-            if answer.question_part.type == models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
-        ]
-
-        if multiple_choice_answers:
-            respondent.multiple_choice_answer = multiple_choice_answers[0]
-
-        # Build JSON response
-        data["all_respondents"].append(
-            {
-                "id": f"response-{getattr(respondent, 'identifier', '')}",
-                "identifier": getattr(respondent, "identifier", ""),
-                "sentiment_position": respondent.sentiment.position
-                if hasattr(respondent, "sentiment") and hasattr(respondent.sentiment, "position")
-                else "",
-                "free_text_answer_text": free_text_answer.text  # type: ignore
-                if hasattr(free_text_answer, "text")
-                else "",
-                "demographic_data": hasattr(respondent, "data") or "",
-                "themes": [
-                    {
-                        "id": theme.theme.id,
-                        "stance": theme.stance,
-                        "name": theme.theme.name,
-                        "description": theme.theme.description,
-                    }
-                    for theme in respondent.themes
-                ]
-                if hasattr(respondent, "themes")
-                else [],
-                "multiple_choice_answer": [respondent.multiple_choice_answer.chosen_options]
-                if hasattr(respondent, "multiple_choice_answer")
-                and hasattr(respondent.multiple_choice_answer, "chosen_options")
-                else [],
-                "evidenceRich": True
-                if hasattr(respondent, "evidence_rich") and respondent.evidence_rich.evidence_rich
-                else False,
-                "individual": True if hasattr(respondent, "individual") else False,
-            }
-        )
+        respondent_data = build_respondent_data(respondent, response)
+        data["all_respondents"].append(respondent_data)
 
     return JsonResponse(data)
 
@@ -253,48 +276,31 @@ def index(
     question_slug: str,
 ):
     # Get question data
-    consultation = get_object_or_404(models.ConsultationOld, slug=consultation_slug)
-    question = models.QuestionOld.objects.get(
+    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+    question = get_object_or_404(
+        models.Question,
         slug=question_slug,
         consultation=consultation,
     )
-    free_text_question_part = models.QuestionPart.objects.filter(
-        question=question, type=models.QuestionPart.QuestionType.FREE_TEXT
-    ).first()  # Assume that there is only one free text response
-    has_multiple_choice_question_part = models.QuestionPart.objects.filter(
-        question=question, type=models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
+
+    """Simplified index that just renders the template - all data loaded via AJAX"""
+    # Check for individual data (lightweight query)
+    has_individual_data = models.Respondent.objects.filter(
+        consultation=consultation, demographics__has_key="individual"
     ).exists()
 
-    # Get all respondents for question
-    respondents = get_respondents_for_question(
-        consultation_slug=consultation_slug, question_slug=question_slug
-    )
-
-    has_individual_data = respondents.filter(data__has_key="individual").exists()
-
-    # Get summary data for filtered respondents list
-    selected_theme_mappings = get_selected_theme_summary(free_text_question_part, respondents)
-    multiple_choice_summary = get_selected_option_summary(question, respondents)
-
-    csv_button_data = [
-        {
-            "Theme name": mapping.get("theme__name", ""),
-            "Total mentions": mapping.get("count", -1),
-        }
-        for mapping in selected_theme_mappings
-    ]
-
+    # Minimal context - all dynamic data loaded via respondents_json
     context = {
         "consultation_name": consultation.title,
         "consultation_slug": consultation_slug,
         "question": question,
         "question_slug": question_slug,
-        "free_text_question_part": free_text_question_part,
-        "has_multiple_choice_question_part": has_multiple_choice_question_part,
-        "selected_theme_mappings": selected_theme_mappings,
-        "csv_button_data": csv_button_data,
-        "multiple_choice_summary": multiple_choice_summary,
-        "stance_options": models.SentimentMapping.Position.names,
+        "free_text_question_part": question if question.has_free_text else None,
+        "has_multiple_choice_question_part": question.has_multiple_choice,
+        "selected_theme_mappings": [],  # Empty - loaded via AJAX
+        "csv_button_data": [],  # Empty - loaded via AJAX
+        "multiple_choice_summary": [],  # Empty - loaded via AJAX
+        "stance_options": models.ResponseAnnotation.Sentiment.names,
         "has_individual_data": has_individual_data,
     }
 
