@@ -72,6 +72,9 @@ export const Default = {
     const multiChoiceTitle = canvas.queryByText("Response to multiple choice");
     expect(multiChoiceTitle).toBeInTheDocument();
 
+    const freeTextAnswer = canvas.getByTestId("free-text-answer");
+    expect(freeTextAnswer).toBeInTheDocument();
+
     const multiChoiceAnswers = canvas.getByText(TEST_MULTI_CHOICE_ANSWERS.join(", "));
     expect(multiChoiceAnswers).toBeInTheDocument();
   }
@@ -111,6 +114,11 @@ export const WithoutFreeText = {
     multiple_choice_answer: TEST_MULTI_CHOICE_ANSWERS,
     searchValue: "",
     evidenceRich: true,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const freeTextAnswer = canvas.queryByTestId("free-text-answer");
+    expect(freeTextAnswer).toBe(null);
   }
 };
 
@@ -127,6 +135,10 @@ export const WithSearchHighlight = {
     multiple_choice_answer: TEST_MULTI_CHOICE_ANSWERS,
     searchValue: "free text",
     evidenceRich: true,
+  },
+  play: async ({ canvasElement }) => {
+    const highlightedText = canvasElement.querySelector(".matched-text");
+    expect(highlightedText.innerText).toBe("free text");
   }
 };
 
