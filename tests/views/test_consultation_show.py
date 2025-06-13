@@ -1,7 +1,7 @@
 import pytest
 
 from consultation_analyser import factories
-from consultation_analyser.consultations.models import ResponseAnnotation
+from consultation_analyser.consultations import models
 from consultation_analyser.consultations.views.consultations import (
     get_counts_of_sentiment,
     get_top_themes_for_question,
@@ -10,37 +10,26 @@ from consultation_analyser.consultations.views.consultations import (
 
 @pytest.mark.django_db
 def test_get_counts_of_sentiment():
-    # Create consultation and question using current factories
-    consultation = factories.ConsultationFactory()
-    question = factories.QuestionFactory(
-        consultation=consultation,
-        has_free_text=True,
-        has_multiple_choice=False
-    )
-    
-    # Create responses with different sentiment annotations
+    question = factories.QuestionFactory()
+
+    # Create responses with annotations and sentiment
     for _ in range(3):
-        respondent = factories.RespondentFactory(consultation=consultation)
-        response = factories.ResponseFactory(question=question, respondent=respondent)
+        response = factories.ResponseFactory(question=question)
         factories.ResponseAnnotationFactory(
-            response=response, sentiment=ResponseAnnotation.Sentiment.AGREEMENT
+            response=response, sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT
         )
     for _ in range(4):
-        respondent = factories.RespondentFactory(consultation=consultation)
-        response = factories.ResponseFactory(question=question, respondent=respondent)
+        response = factories.ResponseFactory(question=question)
         factories.ResponseAnnotationFactory(
-            response=response, sentiment=ResponseAnnotation.Sentiment.DISAGREEMENT
+            response=response, sentiment=models.ResponseAnnotation.Sentiment.DISAGREEMENT
         )
     for _ in range(2):
-        respondent = factories.RespondentFactory(consultation=consultation)
-        response = factories.ResponseFactory(question=question, respondent=respondent)
+        response = factories.ResponseFactory(question=question)
         factories.ResponseAnnotationFactory(
-            response=response, sentiment=ResponseAnnotation.Sentiment.UNCLEAR
+            response=response, sentiment=models.ResponseAnnotation.Sentiment.UNCLEAR
         )
-    # Create response with no sentiment annotation
-    respondent = factories.RespondentFactory(consultation=consultation)
-    factories.ResponseFactory(question=question, respondent=respondent)
-    
+    factories.ResponseFactory(question=question)  # No annotation/position
+
     actual = get_counts_of_sentiment(question)
     expected = {
         "agreement": 3,
@@ -53,48 +42,29 @@ def test_get_counts_of_sentiment():
 
 @pytest.mark.django_db
 def test_get_top_themes_for_question():
-    # Create consultation and question using current factories
-    consultation = factories.ConsultationFactory()
-    question = factories.QuestionFactory(
-        consultation=consultation,
-        has_free_text=True,
-        has_multiple_choice=False
-    )
-    
-    # Create themes for the question
-    theme_a = factories.ThemeFactory(name="Theme A", question=question)
-    theme_b = factories.ThemeFactory(name="Theme B", question=question)
-    theme_c = factories.ThemeFactory(name="Theme C", question=question)
+    question = factories.QuestionFactory(has_free_text=True)
 
-    # Create responses and annotations with themes
+    # Create themes
+    theme_a = factories.ThemeFactory(question=question, name="Theme A", key="A")
+    theme_b = factories.ThemeFactory(question=question, name="Theme B", key="B")
+    theme_c = factories.ThemeFactory(question=question, name="Theme C", key="C")
+
+    # Create responses with annotations that include only specific themes
     for _ in range(10):
-        respondent = factories.RespondentFactory(consultation=consultation)
-        response = factories.ResponseFactory(question=question, respondent=respondent)
-        annotation = factories.ResponseAnnotationFactory(response=response)
-        annotation.themes.clear()
-        annotation.themes.add(theme_a)
-        
+        response = factories.ResponseFactory(question=question)
+        annotation = factories.ResponseAnnotationFactory(response=response, themes=[theme_a])
     for _ in range(5):
-        respondent = factories.RespondentFactory(consultation=consultation)
-        response = factories.ResponseFactory(question=question, respondent=respondent)
-        annotation = factories.ResponseAnnotationFactory(response=response)
-        annotation.themes.clear()
-        annotation.themes.add(theme_b)
-        
+        response = factories.ResponseFactory(question=question)
+        annotation = factories.ResponseAnnotationFactory(response=response, themes=[theme_b])
     for _ in range(3):
-        respondent = factories.RespondentFactory(consultation=consultation)
-        response = factories.ResponseFactory(question=question, respondent=respondent)
-        annotation = factories.ResponseAnnotationFactory(response=response)
-        annotation.themes.clear()
-        annotation.themes.add(theme_c)
+        response = factories.ResponseFactory(question=question)
+        annotation = factories.ResponseAnnotationFactory(response=response, themes=[theme_c])
 
-    # Test with large number to get all themes
     actual = get_top_themes_for_question(question, number_top_themes=30)
     assert len(actual) == 3, actual
     assert actual[0]["theme"] == theme_a
     assert actual[0]["count"] == 10
 
-    # Test with limit
     actual = get_top_themes_for_question(question, 3)
     expected = [
         {"theme": theme_a, "count": 10},

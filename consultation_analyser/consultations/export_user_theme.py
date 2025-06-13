@@ -13,7 +13,6 @@ from consultation_analyser.consultations.models import (
     Question,
     Response,
     ResponseAnnotation,
-    Theme,
 )
 
 logger = logging.getLogger("export")
@@ -99,7 +98,6 @@ def get_theme_mapping_rows(question: Question) -> list[dict]:
     output = []
     # Get all responses with free text for this question
     # Import here to avoid circular import
-    from consultation_analyser.consultations.models import ResponseAnnotationTheme
     
     response_qs = Response.objects.filter(
         question=question,
