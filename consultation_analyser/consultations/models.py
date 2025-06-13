@@ -692,6 +692,27 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.name
 
 
+class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Through model to track original AI vs human-reviewed theme assignments"""
+    
+    response_annotation = models.ForeignKey('ResponseAnnotation', on_delete=models.CASCADE)
+    theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
+    is_original_ai_assignment = models.BooleanField(default=True)  # True for AI, False for human review
+    assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)  # None for AI, User for human
+    
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                fields=['response_annotation', 'theme', 'is_original_ai_assignment'], 
+                name='unique_theme_assignment'
+            ),
+        ]
+        indexes = [
+            models.Index(fields=['response_annotation', 'is_original_ai_assignment']),
+            models.Index(fields=['theme', 'is_original_ai_assignment']),
+        ]
+
+
 class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
     """AI outputs and human reviews for a response"""
 
@@ -707,7 +728,7 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
     response = models.OneToOneField(Response, on_delete=models.CASCADE, related_name="annotation")
 
     # AI-generated outputs (only for free text responses)
-    themes = models.ManyToManyField(Theme, blank=True)
+    themes = models.ManyToManyField(Theme, through='ResponseAnnotationTheme', blank=True)
     sentiment = models.CharField(max_length=12, choices=Sentiment.choices, null=True, blank=True)
     evidence_rich = models.CharField(
         max_length=3, choices=EvidenceRich.choices, null=True, blank=True
@@ -731,3 +752,42 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
         self.reviewed_by = user
         self.reviewed_at = timezone.now()
         self.save()
+
+    def add_original_ai_themes(self, themes):
+        """Add themes as original AI assignments"""
+        for theme in themes:
+            ResponseAnnotationTheme.objects.get_or_create(
+                response_annotation=self,
+                theme=theme,
+                is_original_ai_assignment=True,
+                defaults={'assigned_by': None}
+            )
+
+    def set_human_reviewed_themes(self, themes, user):
+        """Set themes as human-reviewed, preserving original AI assignments"""
+        # Remove existing human-reviewed theme assignments
+        ResponseAnnotationTheme.objects.filter(
+            response_annotation=self,
+            is_original_ai_assignment=False
+        ).delete()
+        
+        # Add new human-reviewed theme assignments
+        for theme in themes:
+            ResponseAnnotationTheme.objects.get_or_create(
+                response_annotation=self,
+                theme=theme,
+                is_original_ai_assignment=False,
+                defaults={'assigned_by': user}
+            )
+
+    def get_original_ai_themes(self):
+        """Get themes that were originally assigned by AI"""
+        return self.themes.filter(
+            responseannotationtheme__is_original_ai_assignment=True
+        )
+
+    def get_human_reviewed_themes(self):
+        """Get themes that were assigned by human review"""
+        return self.themes.filter(
+            responseannotationtheme__is_original_ai_assignment=False
+        )

@@ -378,11 +378,13 @@ def show(
     if request.method == "POST":
         requested_themes = request.POST.getlist("theme")
         
-        # Clear existing themes and set new ones
-        annotation.themes.clear()
+        # Set human-reviewed themes (preserves original AI assignments)
         if requested_themes:
             themes_to_add = models.Theme.objects.filter(id__in=requested_themes, question=question)
-            annotation.themes.set(themes_to_add)
+            annotation.set_human_reviewed_themes(themes_to_add, request.user)
+        else:
+            # No themes selected - clear human-reviewed assignments
+            annotation.set_human_reviewed_themes([], request.user)
         
         # Mark as human reviewed
         annotation.mark_human_reviewed(request.user)
