@@ -3,6 +3,7 @@ import { html } from 'lit';
 import { action } from "@storybook/addon-actions";
 
 import IaiVirtualList from './iai-virtual-list.lit.csr.mjs';
+import { expect, waitFor, within } from '@storybook/test';
 
 
 const TEST_RESPONSES = [
@@ -55,8 +56,23 @@ export const WithMessage = {
 export const LongList = {
   args: {
     data: Array.from(Array(1000).keys()),
-    renderItem: (response) => html`<li>${response}</li>`,
+    renderItem: (response) => html`<li>Response ${response}</li>`,
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    await waitFor(() => {
+      if (!canvasElement.querySelector("lit-virtualizer li")) {
+        throw new Error("awaiting render");
+      }
+    }, {timeout: 2000});
+
+    const responseOne = canvas.getByText("Response 1");
+    expect(responseOne).toBeInTheDocument();
+
+    const responseNineHundred = canvas.queryByText("Response 900");
+    expect(responseNineHundred).toBe(null);
+  }
 };
 
 export const EmptyList = {
