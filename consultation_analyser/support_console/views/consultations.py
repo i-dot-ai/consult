@@ -162,25 +162,25 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
         consultation=consultation, has_free_text=True
     ).order_by("number")
 
-    question_parts_items = [
+    question_items = [
         {"value": q.id, "text": f"Question {q.number} - {q.text}"}
         for q in questions
     ]
 
     context = {
         "consultation": consultation,
-        "question_parts_items": question_parts_items,
+        "question_parts_items": question_items,  # Keep the same template variable name
         "bucket_name": settings.AWS_BUCKET_NAME,
         "environment": settings.ENVIRONMENT,
     }
 
     if request.method == "POST":
         s3_key = request.POST.get("s3_key", "")
-        question_part_ids = request.POST.getlist("question_parts")
-        for id in question_part_ids:
+        question_ids = request.POST.getlist("question_parts")  # Keep the same form field name
+        for id in question_ids:
             try:
                 logging.info("Exporting theme audit data - sending to queue")
-                export_user_theme_job.delay(question_part_id=id, s3_key=s3_key)
+                export_user_theme_job.delay(question_id=UUID(id), s3_key=s3_key)
             except Exception as e:
                 messages.error(request, e)
                 return render(request, "support_console/consultations/export_audit.html", context)
