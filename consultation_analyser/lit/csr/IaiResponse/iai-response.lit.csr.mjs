@@ -149,7 +149,7 @@ export default class IaiResponse extends IaiLitBase {
 
                 ${this.free_text_answer_text
                     ? html`
-                        <p class="govuk-body answer">
+                        <p class="govuk-body answer" data-testid="free-text-answer">
                             <iai-expanding-text
                                 .text=${this.getHighlightedText(this.free_text_answer_text, this.searchValue)}    
                                 .lines=${2}
