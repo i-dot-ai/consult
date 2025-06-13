@@ -44,13 +44,14 @@ def get_position(response: Response) -> str | None:
 def get_theme_mapping_output_row(
     response: Response,
 ) -> dict:
-    # In new model, themes are stored as ManyToMany in ResponseAnnotation
+    # In new model, themes are stored as ManyToMany with through table tracking original vs current
     question = response.question
     consultation_title = question.consultation.title
 
     position = get_position(response=response)
 
-    # Get current themes from the annotation
+    # Get original and current themes from the annotation
+    original_themes = []
     current_themes = []
     audited = False
     auditor_email = None
@@ -58,7 +59,8 @@ def get_theme_mapping_output_row(
     
     try:
         annotation = response.annotation
-        current_themes = annotation.themes.all()
+        original_themes = annotation.get_original_ai_themes()
+        current_themes = annotation.get_human_reviewed_themes() if annotation.human_reviewed else annotation.get_original_ai_themes()
         audited = annotation.human_reviewed
         if annotation.reviewed_by:
             auditor_email = annotation.reviewed_by.email
@@ -67,10 +69,15 @@ def get_theme_mapping_output_row(
         pass
 
     # Build theme identifiers
-    theme_identifiers = []
+    original_theme_identifiers = []
+    for theme in original_themes:
+        identifier = theme.key if theme.key else theme.name
+        original_theme_identifiers.append(identifier)
+
+    current_theme_identifiers = []
     for theme in current_themes:
         identifier = theme.key if theme.key else theme.name
-        theme_identifiers.append(identifier)
+        current_theme_identifiers.append(identifier)
 
     row_data = {
         "Response ID": response.respondent.themefinder_id,
@@ -79,8 +86,8 @@ def get_theme_mapping_output_row(
         "Question text": question.text,
         "Response text": response.free_text,
         "Response has been audited": audited,
-        "Original themes": "",  # No longer tracking original vs current separately
-        "Current themes": ", ".join(sorted(theme_identifiers)),
+        "Original themes": ", ".join(sorted(original_theme_identifiers)),
+        "Current themes": ", ".join(sorted(current_theme_identifiers)),
         "Position": position,
         "Auditors": auditor_email or "",
         "First audited at": reviewed_at,
@@ -91,11 +98,21 @@ def get_theme_mapping_output_row(
 def get_theme_mapping_rows(question: Question) -> list[dict]:
     output = []
     # Get all responses with free text for this question
+    # Import here to avoid circular import
+    from consultation_analyser.consultations.models import ResponseAnnotationTheme
+    
     response_qs = Response.objects.filter(
         question=question,
         free_text__isnull=False,
         free_text__gt=""
-    ).select_related('respondent', 'annotation', 'annotation__reviewed_by').prefetch_related('annotation__themes')
+    ).select_related(
+        'respondent', 
+        'annotation', 
+        'annotation__reviewed_by'
+    ).prefetch_related(
+        'annotation__themes',
+        'annotation__responseannotationtheme_set__theme'
+    )
     
     for response in response_qs:
         row = get_theme_mapping_output_row(response=response)
