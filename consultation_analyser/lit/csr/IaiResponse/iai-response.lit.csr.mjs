@@ -137,6 +137,9 @@ export default class IaiResponse extends IaiLitBase {
     }
 
     getHighlightedText = (fullText, matchedText) => {
+        if (!matchedText) {
+            return "";
+        }
         const regex = new RegExp(matchedText, "gi");
         return fullText.replace(regex, match => `<span class="matched-text">${match}</span>`);
     }

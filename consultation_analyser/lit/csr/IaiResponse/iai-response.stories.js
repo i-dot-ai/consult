@@ -77,6 +77,9 @@ export const Default = {
 
     const multiChoiceAnswers = canvas.getByText(TEST_MULTI_CHOICE_ANSWERS.join(", "));
     expect(multiChoiceAnswers).toBeInTheDocument();
+
+    const highlightedTexts = canvasElement.querySelectorAll(".matched-text");
+    expect(highlightedTexts.length).toBe(0);
   }
 };
 
