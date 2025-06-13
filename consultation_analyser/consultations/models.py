@@ -547,6 +547,30 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
             self.slug = f"{base_slug}-{self.number}" if base_slug else str(self.number)
         return super().save(*args, **kwargs)
 
+    @property
+    def proportion_of_audited_answers(self) -> float:
+        """Calculate proportion of human-reviewed responses for free text questions"""
+        if not self.has_free_text:
+            return 0
+        
+        # Count total responses with free text
+        total_responses = self.response_set.filter(
+            free_text__isnull=False,
+            free_text__gt=""
+        ).count()
+        
+        if total_responses == 0:
+            return 0
+        
+        # Count human-reviewed responses
+        reviewed_responses = self.response_set.filter(
+            free_text__isnull=False,
+            free_text__gt="",
+            annotation__human_reviewed=True
+        ).count()
+        
+        return reviewed_responses / total_responses
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(fields=["consultation", "slug"], name="unique_question_slug"),
