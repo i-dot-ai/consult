@@ -1,5 +1,7 @@
 import { html } from 'lit';
 
+import { expect, within } from '@storybook/test';
+
 import IaiResponse from './iai-response.lit.csr.mjs';
 
 const TEST_THEMES = [
@@ -64,6 +66,14 @@ export const Default = {
     multiple_choice_answer: TEST_MULTI_CHOICE_ANSWERS,
     searchValue: "",
     evidenceRich: true,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const multiChoiceTitle = canvas.queryByText("Response to multiple choice");
+    expect(multiChoiceTitle).toBeInTheDocument();
+
+    const multiChoiceAnswers = canvas.getByText(TEST_MULTI_CHOICE_ANSWERS.join(", "));
+    expect(multiChoiceAnswers).toBeInTheDocument();
   }
 };
 
@@ -80,6 +90,11 @@ export const WithoutMultiChoice = {
     multiple_choice_answer: undefined,
     searchValue: "",
     evidenceRich: true,
+  },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const multiChoiceTitle = canvas.queryByText("Response to multiple choice");
+    expect(multiChoiceTitle).toBe(null);
   }
 };
 
