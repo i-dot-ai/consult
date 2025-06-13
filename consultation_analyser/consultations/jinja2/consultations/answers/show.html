@@ -21,19 +21,13 @@
         {{ question.text }}
       </noscript>
     </h1>
-    {% if response.question_part.text %}
-    <h2 class="govuk-body-s govuk-!-font-weight-regular">
-      {{ response.question_part.text }}
-    </h2>
-    {% endif %}
-
     <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
     <p class="govuk-body" id="text">
-      Response{% if response.respondent.themefinder_respondent_id or response.respondent.themefinder_respondent_id == 0
-      %} {{response.respondent.themefinder_respondent_id}}{% endif %}:
+      Response{% if response.respondent.themefinder_id or response.respondent.themefinder_id == 0
+      %} {{response.respondent.themefinder_id}}{% endif %}:
       <br>
-      {{ response.text }}
+      {{ response.free_text }}
     </p>
 
   </div>
