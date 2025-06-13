@@ -1,30 +1,20 @@
 import pytest
 from django.contrib.auth.models import Group
-from django.core.cache import cache
 from django.test import RequestFactory
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
-from consultation_analyser.consultations.models import (
-    Consultation,
-    Question,
-    Respondent,
-    Response,
-    ResponseAnnotation,
-    Theme,
-)
 from consultation_analyser.consultations.views.answers import (
-    parse_filters_from_request,
     build_response_filter_query,
-    get_theme_summary_optimized,
     get_demographic_options,
-    question_responses_json,
+    get_theme_summary_optimized,
+    parse_filters_from_request,
 )
 from consultation_analyser.factories import (
     ConsultationFactory,
     QuestionFactory,
     RespondentFactory,
-    ResponseFactory,
     ResponseAnnotationFactory,
+    ResponseFactory,
     ThemeFactory,
     UserFactory,
 )
