@@ -3,7 +3,7 @@ import { html } from 'lit';
 import { action } from "@storybook/addon-actions";
 
 import IaiVirtualList from './iai-virtual-list.lit.csr.mjs';
-import { expect, waitFor, within } from '@storybook/test';
+import { expect, fn, waitFor, within } from '@storybook/test';
 
 
 const TEST_RESPONSES = [
@@ -88,10 +88,43 @@ export const WithScrollCallback = {
   args: {
     data: Array.from(Array(100).keys()),
     renderItem: (response, index) => html`
-      <li class=${index === 99 ? "last-item" : ""}>
-        ${response}
+      <li data-testid=${`response-${index}`} class=${index === 99 ? "last-item" : ""}>
+        Response ${response}
       </li>
     `,
     handleScrollEnd: () => action("Scroll end reached")()
   },
+  play: async ({ canvasElement, args }) => {
+    const iaiVirtualListElement = canvasElement.querySelector("iai-virtual-list")
+    iaiVirtualListElement.handleScrollEnd = fn();
+
+    const canvas = within(canvasElement);
+
+    await waitFor(() => {
+      if (!canvasElement.querySelector("lit-virtualizer li")) {
+        throw new Error("awaiting render");
+      }
+    }, {timeout: 2000});
+
+    const scrollEndCallback = args.handleScrollEnd;
+    expect(scrollEndCallback).toBeDefined();
+
+    const virtualizerElement = canvasElement.querySelector("lit-virtualizer");
+    virtualizerElement.scrollTop = virtualizerElement.scrollHeight;
+    virtualizerElement.dispatchEvent(new Event("scroll"));
+
+    await waitFor(() => {
+      expect(iaiVirtualListElement.handleScrollEnd).toHaveBeenCalled();
+    }, {timeout: 2000});
+
+    expect(iaiVirtualListElement.handleScrollEnd).toHaveBeenCalled();
+
+    const responseNinetyNine = canvas.queryByText("Response 99");
+    expect(responseNinetyNine).toBeInTheDocument();
+  },
+  parameters: {
+    test: {
+      dangerouslyIgnoreUnhandledErrors: true
+    }
+  }
 };
