@@ -14,7 +14,7 @@
     "build-lit-csr": "npx rollup -c",
     "build-lit": "npm run build-lit-ssr && npm run build-lit-csr",
     "storybook": "storybook dev -p 6006",
-    "storybook-test": "npx test-storybook --watch",
+    "storybook-test": "npx test-storybook --watchAll --coverage",
     "build-storybook": "storybook build"
   },
   "author": "",
