@@ -43,6 +43,18 @@ export const Default = {
     message: undefined,
     handleScrollEnd: undefined,
   },
+  play: async ({ canvasElement }) => {
+    await waitFor(() => {
+      if (!canvasElement.querySelector("lit-virtualizer li")) {
+        throw new Error("awaiting render");
+      }
+    }, {timeout: 2000});
+
+    const canvas = within(canvasElement);
+
+    const messageElement = canvas.getByText("Test Response 1");
+    expect(messageElement).toBeInTheDocument();
+  }
 };
 
 export const WithMessage = {
@@ -51,6 +63,12 @@ export const WithMessage = {
     renderItem: (response) => html`<li>${response.text}</li>`,
     message: "Test Message",
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+
+    const messageElement = canvas.getByText("Test Message");
+    expect(messageElement).toBeInTheDocument();
+  }
 };
 
 export const LongList = {
@@ -59,13 +77,13 @@ export const LongList = {
     renderItem: (response) => html`<li>Response ${response}</li>`,
   },
   play: async ({ canvasElement }) => {
-    const canvas = within(canvasElement);
-
     await waitFor(() => {
       if (!canvasElement.querySelector("lit-virtualizer li")) {
         throw new Error("awaiting render");
       }
     }, {timeout: 2000});
+
+    const canvas = within(canvasElement);
 
     const responseOne = canvas.getByText("Response 1");
     expect(responseOne).toBeInTheDocument();
@@ -82,6 +100,12 @@ export const EmptyList = {
       <li>${response}</li>
     `,
   },
+  play: async ({ canvasElement }) => {
+    await new Promise(resolve => setTimeout(resolve, 200));
+
+    const itemElements = canvasElement.querySelectorAll("iai-virtual-list li");
+    expect(itemElements.length).toBe(0);
+  }
 };
 
 export const WithScrollCallback = {
