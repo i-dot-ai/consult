@@ -378,6 +378,7 @@ class IaiDataTable extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         data: { type: Array },
+        initialSorts: { type: Array },
         _sortedData: { type: Array },
         _sorts: { type: Array },
     }
@@ -452,6 +453,10 @@ class IaiDataTable extends IaiLitBase {
 
     firstUpdated() {
         this.applyStaticStyles("iai-data-table", IaiDataTable.styles);
+
+        if (this.initialSorts) {
+            this._sorts = this.initialSorts;
+        }
 
         this.updateSortedData();
     }
@@ -966,6 +971,7 @@ class IaiExpandingPill extends IaiLitBase {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+                text-align: start;
                 padding: 0.3em 0.8em;
                 gap: 1em;
                 font-size: 1em;
@@ -4238,6 +4244,12 @@ class IaiResponseDashboard extends IaiLitBase {
                                 </div>
 
                                 <iai-data-table
+                                    .initialSorts=${[
+                                        {
+                                            field: "Number of responses",
+                                            ascending: false,
+                                        }
+                                    ]}
                                     .data=${this.themeMappings
                                         .filter(themeMapping => (
                                             this._themeFilters.includes(themeMapping.value) || this._themeFilters.length == 0
