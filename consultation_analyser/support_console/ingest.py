@@ -6,6 +6,7 @@ from django.conf import settings
 
 from consultation_analyser.consultations.models import (
     Consultation,
+    DemographicOption,
     Question,
     Respondent,
     Response,
@@ -234,6 +235,10 @@ def import_consultation(
         
         Respondent.objects.bulk_create(respondents_to_save)
         logger.info(f"Imported {respondent_count} respondents")
+        
+        # Build demographic options from respondent data
+        demographic_options_count = DemographicOption.rebuild_for_consultation(consultation)
+        logger.info(f"Created {demographic_options_count} demographic options")
         
         # 3. Process each question
         question_folders = get_question_folders(inputs_path, bucket_name)
