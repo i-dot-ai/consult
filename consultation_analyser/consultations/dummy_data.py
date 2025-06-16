@@ -11,9 +11,9 @@ from consultation_analyser.factories import (
     ConsultationFactory,
     QuestionFactory,
     RespondentFactory,
-    ThemeFactory,
     ResponseAnnotationFactory,
-    ResponseFactory
+    ResponseFactory,
+    ThemeFactory,
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
 
@@ -47,7 +47,7 @@ def create_dummy_consultation_from_yaml(
 
     # Save all questions, and corresponding question parts and answers
     for question_data in questions_data:
-        logger.info(f"Creating a new question...")
+        logger.info("Creating a new question...")
         has_free_text = question_data["has_free_text"]
         has_multiple_choice=question_data["has_multiple_choice"]
 
@@ -66,7 +66,7 @@ def create_dummy_consultation_from_yaml(
         )
 
         if has_free_text:
-            logger.info(f"Free text question - create themes")
+            logger.info("Free text question - create themes")
             theme_objects = []
             themes_data = question_data["themes"]
             for data in themes_data:
@@ -78,7 +78,7 @@ def create_dummy_consultation_from_yaml(
 
         # For each respondent add random response and themes
         for respondent in respondents:
-            logger.info(f"Add responses")
+            logger.info("Add responses")
             response = ResponseFactory(question=question, free_text="", respondent=respondent)
 
             if has_free_text:
@@ -92,7 +92,7 @@ def create_dummy_consultation_from_yaml(
                 # Also haven't considered human changes to themes.
 
             if has_multiple_choice:
-                logger.info(f"Add multiple choice responses")
+                logger.info("Add multiple choice responses")
                 chosen_options = random.sample(
                     question_data["multiple_choice_options"], k=random.randint(1, len(question_data["multiple_choice_options"]))
                 )
