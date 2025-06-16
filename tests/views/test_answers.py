@@ -275,6 +275,9 @@ def test_question_responses_json_with_demographic_filters(client, consultation_u
     ResponseFactory(question=question, respondent=respondent1)
     ResponseFactory(question=question, respondent=respondent2)
     
+    # Rebuild demographic options from respondent data
+    DemographicOption.rebuild_for_consultation(question.consultation)
+    
     # Test filtering by individual=true
     client.force_login(consultation_user)
     response = client.get(
