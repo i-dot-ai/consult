@@ -3,6 +3,7 @@ from django.contrib.auth.models import Group
 from django.test import RequestFactory
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
+from consultation_analyser.consultations.models import DemographicOption
 from consultation_analyser.consultations.views.answers import (
     parse_filters_from_request,
     build_response_filter_query,
@@ -138,11 +139,57 @@ def test_get_demographic_options_with_data(consultation):
         demographics={"individual": True, "region": "north", "age": 45}
     )
     
+    # Rebuild demographic options from respondent data
+    DemographicOption.rebuild_for_consultation(consultation)
+    
     options = get_demographic_options(consultation)
     
     assert set(options["individual"]) == {"False", "True"}
     assert set(options["region"]) == {"north", "south"}
     assert set(options["age"]) == {"25", "35", "45"}
+
+
+@pytest.mark.django_db
+def test_demographic_option_rebuild_for_consultation(consultation):
+    """Test the DemographicOption.rebuild_for_consultation method"""
+    # Create respondents with different demographic data
+    RespondentFactory(
+        consultation=consultation,
+        demographics={"category": "A", "score": 10}
+    )
+    RespondentFactory(
+        consultation=consultation,
+        demographics={"category": "B", "score": 20}
+    )
+    
+    # Initially no demographic options should exist
+    assert DemographicOption.objects.filter(consultation=consultation).count() == 0
+    
+    # Rebuild should create the options
+    count = DemographicOption.rebuild_for_consultation(consultation)
+    assert count == 4  # 2 categories + 2 scores
+    
+    # Verify options were created correctly
+    options = DemographicOption.objects.filter(consultation=consultation)
+    field_values = {(opt.field_name, opt.field_value) for opt in options}
+    expected = {("category", "A"), ("category", "B"), ("score", "10"), ("score", "20")}
+    assert field_values == expected
+    
+    # Test rebuilding again should clear old options and create new ones
+    RespondentFactory(
+        consultation=consultation,
+        demographics={"category": "C", "new_field": "test"}
+    )
+    
+    count = DemographicOption.rebuild_for_consultation(consultation)
+    assert count == 6  # 3 categories + 2 scores + 1 new_field
+    
+    # Verify the new state
+    options = DemographicOption.objects.filter(consultation=consultation)
+    field_values = {(opt.field_name, opt.field_value) for opt in options}
+    expected = {("category", "A"), ("category", "B"), ("category", "C"), 
+                ("score", "10"), ("score", "20"), ("new_field", "test")}
+    assert field_values == expected
 
 
 @pytest.mark.django_db

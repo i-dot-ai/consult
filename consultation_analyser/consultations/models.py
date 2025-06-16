@@ -597,6 +597,53 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
 
+class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Normalized storage of demographic field options for efficient querying across pages"""
+    
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    field_name = models.CharField(max_length=128)
+    field_value = models.CharField(max_length=256)
+    
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                fields=["consultation", "field_name", "field_value"],
+                name="unique_demographic_option"
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["consultation", "field_name"]),
+        ]
+    
+    @classmethod
+    def rebuild_for_consultation(cls, consultation: "Consultation") -> int:
+        """Rebuild demographic options for a consultation from respondent data"""
+        # Clear existing options
+        cls.objects.filter(consultation=consultation).delete()
+        
+        # Collect unique demographic field/value pairs
+        demographic_options_to_create = set()
+        
+        respondents = Respondent.objects.filter(consultation=consultation)
+        for respondent in respondents:
+            if respondent.demographics:
+                for field_name, field_value in respondent.demographics.items():
+                    demographic_options_to_create.add((field_name, str(field_value)))
+        
+        # Bulk create new options
+        options_to_save = [
+            cls(
+                consultation=consultation,
+                field_name=field_name,
+                field_value=field_value
+            ) 
+            for field_name, field_value in demographic_options_to_create
+        ]
+        
+        cls.objects.bulk_create(options_to_save)
+        return len(options_to_save)
+
+
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     """AI-generated themes for a question (only for free text parts)"""
 
