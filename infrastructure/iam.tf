@@ -67,6 +67,26 @@ data "aws_iam_policy_document" "lambda_exec_custom_policy" {
           "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/i-dot-ai-dev-consult-mapping*"
     ]
   }
+  statement {
+    effect = "Allow"
+    actions = [
+        "sqs:ReceiveMessage",
+        "sqs:DeleteMessage",
+        "sqs:GetQueueAttributes"
+    ]
+    resources = [aws_sqs_queue.batch_job_queue.arn]
+  }
+  statement {
+    effect = "Allow"
+    actions = [
+      "kms:Decrypt",
+      "kms:GenerateDataKey",
+      "kms:DescribeKey"
+    ]
+    resources = [
+      data.terraform_remote_state.platform.outputs.kms_key_arn
+    ]
+  }
   
 }
 

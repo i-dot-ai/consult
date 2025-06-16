@@ -5,6 +5,7 @@ resource "aws_sqs_queue" "batch_job_queue" {
   max_message_size          = 262144  # 256 KB
   message_retention_seconds = 345600  # 4 days
   receive_wait_time_seconds = 0
+  visibility_timeout_seconds = 900
 
   kms_master_key_id = data.terraform_remote_state.platform.outputs.kms_key_arn
 
