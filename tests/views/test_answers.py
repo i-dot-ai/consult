@@ -1,23 +1,14 @@
 import pytest
 from django.contrib.auth.models import Group
-from django.core.cache import cache
 from django.test import RequestFactory
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
-from consultation_analyser.consultations.models import (
-    Consultation,
-    Question,
-    Respondent,
-    Response,
-    ResponseAnnotation,
-    Theme,
-)
 from consultation_analyser.consultations.views.answers import (
     parse_filters_from_request,
     build_response_filter_query,
     get_theme_summary_optimized,
     get_demographic_options,
-    question_responses_json,
+    get_filtered_responses_with_themes,
 )
 from consultation_analyser.factories import (
     ConsultationFactory,
@@ -298,3 +289,48 @@ def test_question_responses_json_theme_mappings(client, consultation_user, quest
     our_theme = next((t for t in data["theme_mappings"] if t["label"] == theme.name), None)
     assert our_theme is not None
     assert our_theme["count"] == "1"
+
+
+@pytest.mark.django_db
+def test_get_filtered_responses_with_themes_no_filters(question):
+    """Test get_filtered_responses_with_themes with no filters"""
+    respondent = RespondentFactory(consultation=question.consultation)
+    response = ResponseFactory(question=question, respondent=respondent)
+    theme = ThemeFactory(question=question)
+    
+    # Create annotation with theme
+    annotation = ResponseAnnotationFactory(response=response)
+    annotation.themes.clear()
+    annotation.themes.add(theme)
+    
+    # Test with no filters
+    responses = get_filtered_responses_with_themes(question)
+    
+    assert responses.count() == 1
+    assert responses.first().id == response.id
+    assert responses.first().annotation.themes.count() == 1
+
+
+@pytest.mark.django_db
+def test_get_filtered_responses_with_themes_with_filters(question):
+    """Test get_filtered_responses_with_themes with filters"""
+    # Create two respondents with different demographics
+    respondent1 = RespondentFactory(
+        consultation=question.consultation,
+        demographics={"individual": True}
+    )
+    respondent2 = RespondentFactory(
+        consultation=question.consultation,
+        demographics={"individual": False}
+    )
+    
+    response1 = ResponseFactory(question=question, respondent=respondent1)
+    ResponseFactory(question=question, respondent=respondent2)
+    
+    # Test with demographic filter
+    filters = {"demographic_filters": {"individual": ["true"]}}
+    responses = get_filtered_responses_with_themes(question, filters)
+    
+    assert responses.count() == 1
+    assert responses.first().id == response1.id
+    assert responses.first().respondent.demographics["individual"]
