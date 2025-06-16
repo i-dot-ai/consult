@@ -148,6 +148,8 @@ export const WithScrollCallback = {
   },
   parameters: {
     test: {
+      // ignore unhandled errors for this test
+      // likely caused by unresolved promise used to fully render component for testing
       dangerouslyIgnoreUnhandledErrors: true
     }
   }
