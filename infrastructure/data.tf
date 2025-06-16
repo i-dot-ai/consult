@@ -63,3 +63,9 @@ data "aws_secretsmanager_secret" "env_vars" {
 data "aws_secretsmanager_secret_version" "env_vars" {
   secret_id = data.aws_secretsmanager_secret.env_vars.id
 }
+
+data "archive_file" "consult_mapping_archive" {
+  type        = "zip"
+  source_file = "${path.root}/../pipeline-mapping/lambda_main.py"
+  output_path = "${path.root}/../pipeline-mapping/lambda_main.zip"
+}

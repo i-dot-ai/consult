@@ -14,3 +14,13 @@ output "db_master_password" {
   description = "The master password of the rds instance"
   sensitive   = true
 }
+
+output "sqs_queue_url" {
+  description = "The URL of the SQS queue"
+  value       = aws_sqs_queue.batch_job_queue.id
+}
+
+output "sqs_queue_arn" {
+  description = "The ARN of the SQS queue"
+  value       = aws_sqs_queue.batch_job_queue.arn
+}

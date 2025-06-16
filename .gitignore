@@ -188,3 +188,5 @@ tmp
 # Docker cache
 .build-cache
 *storybook.log
+
+*.zip
