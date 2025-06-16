@@ -196,23 +196,18 @@ def build_respondent_data(respondent: models.Respondent, response: models.Respon
 
 
 def get_demographic_options(consultation: models.Consultation) -> dict[str, list]:
-    """Discover all demographic fields and their possible values in a consultation"""
-    # Get all unique demographic keys and values
-    demographic_data = {}
+    """Get all demographic fields and their possible values from normalized storage"""
+    options = models.DemographicOption.objects.filter(
+        consultation=consultation
+    ).values_list('field_name', 'field_value').order_by('field_name', 'field_value')
     
-    # Query all respondents for this consultation
-    respondents = models.Respondent.objects.filter(consultation=consultation)
+    result = {}
+    for field_name, field_value in options:
+        if field_name not in result:
+            result[field_name] = []
+        result[field_name].append(field_value)
     
-    for respondent in respondents:
-        if respondent.demographics:
-            for key, value in respondent.demographics.items():
-                if key not in demographic_data:
-                    demographic_data[key] = set()
-                # Convert value to string for consistency
-                demographic_data[key].add(str(value))
-    
-    # Convert sets to sorted lists
-    return {key: sorted(list(values)) for key, values in demographic_data.items()}
+    return result
 
 
 def derive_option_summary_from_responses(responses) -> list[dict]:
