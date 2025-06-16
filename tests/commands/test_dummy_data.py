@@ -8,7 +8,6 @@ from django.core.management import call_command
 from consultation_analyser.consultations import models
 
 
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
 @pytest.mark.django_db
 @patch("consultation_analyser.hosting_environment.HostingEnvironment.is_local", return_value=True)
 def test_name_parameter_sets_consultation_name(mock_is_local):
@@ -17,11 +16,10 @@ def test_name_parameter_sets_consultation_name(mock_is_local):
         stdout=StringIO(),  # we'll ignore this
     )
 
-    assert models.ConsultationOld.objects.count() == 1
-    assert models.QuestionOld.objects.count() == 5
+    assert models.Consultation.objects.count() == 1
+    assert models.Question.objects.count() == 4
 
 
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
 @pytest.mark.django_db
 @pytest.mark.parametrize("environment", ["prod"])
 def test_the_tool_will_only_run_in_dev(environment):
