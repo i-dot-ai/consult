@@ -236,3 +236,11 @@ If the import fails half-way, delete the consultation or question (which will de
 To run locally you must have access to your AWS account
 
 
+## Front-End Tests Suites
+Run the below command to run all unit tests for front-end components, using Storybook as test runner.
+
+```
+npm run storybook-test
+```
+
+Each component also displays its test cases inside the "Component tests" panel when Storybook is viewed on the browser.
