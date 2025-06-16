@@ -60,7 +60,7 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
             values = request.GET.get(key, "").split(",")
             if values and values[0]:  # Only add if there are actual values
                 demographic_filters[field_name] = values
-    
+
     if demographic_filters:
         filters["demographic_filters"] = demographic_filters
 
@@ -119,7 +119,7 @@ def get_theme_summary_optimized(question: models.Question, filters: FilterParams
     # Get the filtered responses first
     response_filter = build_response_filter_query(filters or {}, question)
     filtered_responses = models.Response.objects.filter(response_filter)
-    
+
     # Now get all themes that appear in those filtered responses
     # This shows ALL themes that appear in responses matching the filter criteria
     theme_data = (
@@ -129,7 +129,7 @@ def get_theme_summary_optimized(question: models.Question, filters: FilterParams
         .values('id', 'name', 'description', 'response_count')
         .order_by('-response_count')
     )
-    
+
     return [
         {
             "theme__id": theme["id"],
@@ -155,7 +155,7 @@ def set_cached_theme_summary(question_id: str, filters_hash: str, data: list[dic
 
 def get_filters_hash(filters: FilterParams) -> str:
     """Generate a hash for caching based on filter parameters"""
-    return hashlib.md5(str(sorted(filters.items())).encode()).hexdigest()
+    return hashlib.md5(str(sorted(filters.items())).encode()).hexdigest() #nosec - not used for security
 
 
 def build_respondent_data(respondent: models.Respondent, response: models.Response) -> dict:
@@ -171,16 +171,16 @@ def build_respondent_data(respondent: models.Respondent, response: models.Respon
         "evidenceRich": False,
         "individual": respondent.demographics.get("individual", False),
     }
-    
+
     if hasattr(response, "annotation") and response.annotation:
         annotation = response.annotation
-        
+
         if annotation.sentiment:
             data["sentiment_position"] = annotation.sentiment
-        
+
         if annotation.evidence_rich == models.ResponseAnnotation.EvidenceRich.YES:
             data["evidenceRich"] = True
-        
+
         # Add themes (already prefetched)
         data["themes"] = [
             {
@@ -191,7 +191,7 @@ def build_respondent_data(respondent: models.Respondent, response: models.Respon
             }
             for theme in annotation.themes.all()
         ]
-    
+
     return data
 
 
@@ -200,19 +200,19 @@ def get_demographic_options(consultation: models.Consultation) -> dict[str, list
     options = models.DemographicOption.objects.filter(
         consultation=consultation
     ).values_list('field_name', 'field_value').order_by('field_name', 'field_value')
-    
-    result = {}
+
+    result = {} # type: ignore[var-annotated]
     for field_name, field_value in options:
         if field_name not in result:
             result[field_name] = []
         result[field_name].append(field_value)
-    
+
     return result
 
 
 def derive_option_summary_from_responses(responses) -> list[dict]:
     """Get a summary of the selected options for a multiple choice question from response queryset"""
-    option_counts = {}
+    option_counts = {} # type: ignore[var-annotated]
     for response in responses:
         if response.chosen_options:
             for option in response.chosen_options:
@@ -233,8 +233,8 @@ def question_responses_json(
 
     # Get the question object with consultation in one query
     question = get_object_or_404(
-        models.Question.objects.select_related("consultation"), 
-        slug=question_slug, 
+        models.Question.objects.select_related("consultation"),
+        slug=question_slug,
         consultation__slug=consultation_slug
     )
 
@@ -285,7 +285,7 @@ def question_responses_json(
 
     # Get demographic options for this consultation
     demographic_options = get_demographic_options(question.consultation)
-    
+
     data: DataDict = {
         "all_respondents": [],
         "has_more_pages": False,
