@@ -814,8 +814,18 @@ export default class IaiResponseDashboard extends IaiLitBase {
                     </div>
 
                     <iai-virtual-list
-                        class=${this.responses.length > 0 ? " flex-grow" : ""}
-                        .data=${visibleResponses}
+                        class="flex-grow"
+                        .data=${this._isLoading && this.responses.length === 0
+                            ? [...Array(10).keys()].map(i => ({
+                                id: "skeleton-response",
+                                identifier: "skeleton-response",
+                                individual: "skeleton-individual",
+                                free_text_answer_text: "Skeleton Body".repeat(50),
+                                has_multiple_choice_question_part: false,
+                                skeleton: true,
+                              }))
+                            : visibleResponses
+                        }
                         .renderItem=${(response, index) => html`
                             <iai-response
                                 class=${index === this.responses.length - 1 ? "last-item" : ""}
@@ -827,10 +837,15 @@ export default class IaiResponseDashboard extends IaiLitBase {
                                 .free_text_answer_text=${response.free_text_answer_text}
                                 .demographic_data=${response.demographic_data}
                                 .themes=${response.themes}
-                                .has_multiple_choice_question_part=${this.has_multiple_choice_question_part}
+                                .has_multiple_choice_question_part=${
+                                response.hasOwnProperty("has_multiple_choice_question_part")
+                                    ? response.has_multiple_choice_question_part
+                                    : this.has_multiple_choice_question_part
+                                }
                                 .multiple_choice_answer=${response.multiple_choice_answer}
                                 .searchValue=${this._searchValue}
                                 .evidenceRich=${response.evidenceRich}
+                                .skeleton=${response.skeleton}
                             ></iai-response>
                         `}
                         .handleScrollEnd=${() => {
