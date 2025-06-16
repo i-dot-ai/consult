@@ -593,7 +593,6 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
         indexes = [
             models.Index(fields=["question"]),
-            models.Index(fields=["free_text"]),  # For search functionality
             models.Index(fields=["respondent", "question"]),  # For efficient joins
         ]
 
