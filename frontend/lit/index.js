@@ -4082,10 +4082,11 @@ class IaiResponseDashboard extends IaiLitBase {
     }
     
     formatFieldName = (field) => {
-        // Convert field name to Title Case and handle special cases
-        return field
-            .replace(/_/g, ' ')
-            .replace(/\b\w/g, l => l.toUpperCase());
+        // Convert field name to sentence case and handle special cases
+        const words = field.replace(/_/g, ' ').split(' ');
+        return words.map((word, index) => 
+            index === 0 ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word.toLowerCase()
+        ).join(' ');
     }
     
     formatDemographicValue = (field, value) => {
