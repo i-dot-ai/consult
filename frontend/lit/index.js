@@ -3579,6 +3579,7 @@ class IaiResponseDashboard extends IaiLitBase {
         questionSlug: { type: String },
         stanceOptions: { type: Array },
         themeMappings: { type: Array },
+        demographicOptions: { type: Object },  // e.g. {"individual": ["true", "false"], "region": ["north", "south"]}
         responses: { type: Array },
         responsesTotal: { type: Number },
         responsesFilteredTotal: { type: Number },
@@ -3590,7 +3591,7 @@ class IaiResponseDashboard extends IaiLitBase {
         _isLoading: { type: Boolean },
         _searchValue: { type: String },
         _themeSearchValue: { type: String },
-        _demographicFilters: { type: Array },
+        _demographicFilters: { type: Object },  // Changed from Array to Object to store filters by field
         _themeFilters: { type: Array },
         _themesPanelVisible: { type: Boolean },
         _stanceFilters: { type: Array },
@@ -3787,7 +3788,7 @@ class IaiResponseDashboard extends IaiLitBase {
         this._evidenceRichFilters = [];
         this._themeFilters = [];
         this._themesPanelVisible = false;
-        this._demographicFilters = [];
+        this._demographicFilters = {};
         this._numberAnimationDuration = 500;
         this._searchDebounceTimer = null;
         this._currentPage = 1;
@@ -3804,6 +3805,7 @@ class IaiResponseDashboard extends IaiLitBase {
         this.responsesFilteredTotal = 0;
         this.themeMappings = [];
         this.stanceOptions = [];
+        this.demographicOptions = {};
         this.free_text_question_part = false;
         this.has_individual_data = false;
         this.has_multiple_choice_question_part = false;
@@ -3873,6 +3875,16 @@ class IaiResponseDashboard extends IaiLitBase {
             this.responsesTotal = responsesData.respondents_total;
             this.responsesFilteredTotal = responsesData.filtered_total;
             
+            // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
+            if (this._currentPage === 1 && responsesData.theme_mappings) {
+                this.themeMappings = responsesData.theme_mappings;
+            }
+            
+            // Update demographic options if available
+            if (responsesData.demographic_options) {
+                this.demographicOptions = responsesData.demographic_options;
+            }
+            
             this._hasMorePages = responsesData.has_more_pages;
     
             this._currentPage = this._currentPage + 1;
@@ -3916,8 +3928,27 @@ class IaiResponseDashboard extends IaiLitBase {
     handleThemeFilterChange = (e) => {
         this._themeFilters = this.addOrRemoveFilter(this._themeFilters, e.target.value);
     }
-    handleDemographicChange = (e) => {
-        this._demographicFilters = this.addOrRemoveFilter(this._demographicFilters, e.target.value);
+    handleDemographicChange = (field, value) => {
+        if (!this._demographicFilters[field]) {
+            this._demographicFilters[field] = [];
+        }
+        
+        const currentValues = this._demographicFilters[field];
+        const valueIndex = currentValues.indexOf(value);
+        
+        if (valueIndex > -1) {
+            // Remove the value
+            currentValues.splice(valueIndex, 1);
+            if (currentValues.length === 0) {
+                delete this._demographicFilters[field];
+            }
+        } else {
+            // Add the value
+            currentValues.push(value);
+        }
+        
+        // Trigger reactive update
+        this._demographicFilters = { ...this._demographicFilters };
     }
 
     getVisibleResponseTotal() {
@@ -4023,9 +4054,6 @@ class IaiResponseDashboard extends IaiLitBase {
             ...(this._stanceFilters.length > 0 && {
                 sentimentFilters: this._stanceFilters.join(",")
             }),
-            ...(this._demographicFilters.length > 0 && {
-                demographicFilters: this._demographicFilters.join(",")
-            }),
             ...(this._themeFilters.length > 0 && {
                 themeFilters: this._themeFilters.join(",")
             }),
@@ -4035,6 +4063,14 @@ class IaiResponseDashboard extends IaiLitBase {
             page: this._currentPage,
             page_size: this._PAGE_SIZE.toString(),
         });
+        
+        // Add demographic filters using square bracket notation
+        Object.entries(this._demographicFilters).forEach(([field, values]) => {
+            if (values.length > 0) {
+                params.append(`demographicFilters[${field}]`, values.join(","));
+            }
+        });
+        
         return params.toString();
     }
 
@@ -4043,6 +4079,26 @@ class IaiResponseDashboard extends IaiLitBase {
             return 0;
         }
         return Math.round(((partialValue / totalValue) * 100));
+    }
+    
+    formatFieldName = (field) => {
+        // Convert field name to sentence case and handle special cases
+        const words = field.replace(/_/g, ' ').split(' ');
+        return words.map((word, index) => 
+            index === 0 ? word.charAt(0).toUpperCase() + word.slice(1).toLowerCase() : word.toLowerCase()
+        ).join(' ');
+    }
+    
+    formatDemographicValue = (field, value) => {
+        // Special formatting for boolean values
+        if (value === "true" || value === "false") {
+            if (field === "individual") {
+                return value === "true" ? "Individual" : "Organisation";
+            }
+            return value === "true" ? "Yes" : "No";
+        }
+        // Capitalize first letter for other values
+        return value.charAt(0).toUpperCase() + value.slice(1);
     }
 
     getResponsesMessage = () => {
@@ -4115,9 +4171,6 @@ class IaiResponseDashboard extends IaiLitBase {
                                     <iai-csv-download
                                         fileName="theme_mentions.csv"
                                         .data=${this.themeMappings
-                                            .filter(themeMapping => (
-                                                this._themeFilters.includes(themeMapping.value) || this._themeFilters.length == 0
-                                            ))
                                             .map(themeMapping => (
                                                 {
                                                     "Theme name": themeMapping.label,
@@ -4148,9 +4201,6 @@ class IaiResponseDashboard extends IaiLitBase {
 
                                 <iai-data-table
                                     .data=${this.themeMappings
-                                        .filter(themeMapping => (
-                                            this._themeFilters.includes(themeMapping.value) || this._themeFilters.length == 0
-                                        ))
                                         .map(themeMapping => (
                                             {
                                                 // _sortValues are the values used for sorting comparison
@@ -4302,33 +4352,29 @@ class IaiResponseDashboard extends IaiLitBase {
                                     : ""
                                 }
 
-                                ${this.has_individual_data ? x`
-                                    <iai-response-filter-group title="Response type">
-                                        <div
-                                            slot="content"
-                                            class="govuk-checkboxes govuk-checkboxes--small"
-                                            data-module="govuk-checkboxes"
-                                            data-govuk-checkboxes-init=""
-                                        >
-                                            <iai-checkbox-input
-                                                name="demographic-filter"
-                                                inputId="demographic-individual"
-                                                label="Hide Individual"
-                                                value="individual"
-                                                .handleChange=${this.handleDemographicChange}
-                                            ></iai-checkbox-input>
-                                            <iai-checkbox-input
-                                                name="demographic-filter"
-                                                inputId="demographic-organisation"
-                                                label="Hide Organisation"
-                                                value="organisation"
-                                                .handleChange=${this.handleDemographicChange}
-                                            ></iai-checkbox-input>
-                                        </div>
-                                    </iai-response-filter-group>
-
-                                    <hr />
-                                ` : ""}
+                                ${this.demographicOptions && Object.keys(this.demographicOptions).length > 0 ? 
+                                    Object.entries(this.demographicOptions).map(([field, values]) => x`
+                                        <iai-response-filter-group title="${this.formatFieldName(field)}">
+                                            <div
+                                                slot="content"
+                                                class="govuk-checkboxes govuk-checkboxes--small"
+                                                data-module="govuk-checkboxes"
+                                                data-govuk-checkboxes-init=""
+                                            >
+                                                ${values.map((value, index) => x`
+                                                    <iai-checkbox-input
+                                                        name="demographic-filter-${field}"
+                                                        inputId="demographic-${field}-${index}"
+                                                        label="${this.formatDemographicValue(field, value)}"
+                                                        value="${value}"
+                                                        .handleChange=${() => this.handleDemographicChange(field, value)}
+                                                    ></iai-checkbox-input>
+                                                `)}
+                                            </div>
+                                        </iai-response-filter-group>
+                                        <hr />
+                                    `)
+                                : ""}
 
 
                                 <iai-response-filter-group title="Response sentiment">

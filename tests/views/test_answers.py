@@ -1,522 +1,386 @@
 import pytest
 from django.contrib.auth.models import Group
-from django.core.cache import cache
+from django.test import RequestFactory
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
-from consultation_analyser.consultations.models import (
-    ExecutionRun,
-    RespondentOld,
-    SentimentMapping,
-    ThemeMapping,
-)
+from consultation_analyser.consultations.models import DemographicOption
 from consultation_analyser.consultations.views.answers import (
-    get_respondents_for_question,
-    get_selected_option_summary,
-    get_selected_theme_summary,
+    parse_filters_from_request,
+    build_response_filter_query,
+    get_theme_summary_optimized,
+    get_demographic_options,
+    get_filtered_responses_with_themes,
 )
 from consultation_analyser.factories import (
-    EvidenceRichMappingFactory,
-    ExecutionRunFactory,
-    FreeTextAnswerFactory,
-    FreeTextQuestionPartFactory,
-    InitialFrameworkFactory,
-    InitialThemeFactory,
-    MultipleOptionAnswerFactory,
-    MultipleOptionQuestionPartFactory,
+    ConsultationFactory,
     QuestionFactory,
     RespondentFactory,
-    SentimentMappingFactory,
-    ThemeMappingFactory,
+    ResponseFactory,
+    ResponseAnnotationFactory,
+    ThemeFactory,
     UserFactory,
 )
 
 
 @pytest.fixture()
-def themefinder_respondent_id():
-    return 1
+def consultation():
+    return ConsultationFactory()
 
 
 @pytest.fixture()
-def matching_respondent(themefinder_respondent_id):
-    return RespondentFactory(themefinder_respondent_id=themefinder_respondent_id)
+def question(consultation):
+    return QuestionFactory(
+        consultation=consultation,
+        has_free_text=True,
+        has_multiple_choice=False
+    )
 
 
 @pytest.fixture()
-def question():
-    return QuestionFactory()
+def theme(question):
+    return ThemeFactory(question=question)
 
 
 @pytest.fixture()
-def question_part(question):
-    return FreeTextQuestionPartFactory(question=question)
-
-
-@pytest.fixture()
-def consultation_user(question):
+def consultation_user(consultation):
     user = UserFactory()
     dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
     user.groups.add(dash_access)
     user.save()
-    question.consultation.users.add(user)
+    consultation.users.add(user)
     return user
 
 
 @pytest.fixture()
-def framework(question_part):
-    return InitialFrameworkFactory(question_part=question_part)
+def request_factory():
+    return RequestFactory()
 
 
-@pytest.fixture()
-def theme_mapping_execution_run():
-    return ExecutionRunFactory(type=ExecutionRun.TaskType.THEME_MAPPING)
-
-
-@pytest.fixture()
-def theme_generation_execution_run():
-    return ExecutionRunFactory(type=ExecutionRun.TaskType.THEME_GENERATION)
-
-
-@pytest.fixture()
-def evidence_evaluation_execution_run():
-    return ExecutionRunFactory(type=ExecutionRun.TaskType.EVIDENCE_EVALUATION)
-
-
-@pytest.fixture()
-def positive_sentiment():
-    return SentimentMapping.Position.AGREEMENT
-
-
-@pytest.fixture()
-def theme_a(framework):
-    return InitialThemeFactory(framework=framework, key="A")
-
-
-# TODO: delete me
-@pytest.fixture()
-def positive_theme_stance():
-    return ThemeMapping.Stance.POSITIVE
-
-
-@pytest.fixture()
-def answer_matching_all_filters(
-    matching_respondent,
-    question_part,
-    positive_sentiment,
-    theme_a,
-    evidence_evaluation_execution_run,
-):
-    answer = FreeTextAnswerFactory(respondent=matching_respondent, question_part=question_part)
-    SentimentMappingFactory(position=positive_sentiment, answer=answer)
-    ThemeMappingFactory(theme=theme_a, answer=answer)
-    EvidenceRichMappingFactory(
-        answer=answer,
-        evidence_rich=True,
-        evidence_evaluation_execution_run=evidence_evaluation_execution_run,
-    )
-    return answer
-
-
-# TODO: delete me
-@pytest.fixture()
-def answer_not_matching_respondent_id(
-    question_part, positive_sentiment, theme_a, positive_theme_stance
-):
-    answer = FreeTextAnswerFactory(question_part=question_part)
-    SentimentMappingFactory(position=positive_sentiment, answer=answer)
-    ThemeMappingFactory(theme=theme_a, stance=positive_theme_stance, answer=answer)
-    return answer
-
-
-@pytest.fixture()
-def answer_not_matching_positive_sentiment(
-    question_part, theme_a, positive_theme_stance, evidence_evaluation_execution_run
-):
-    answer = FreeTextAnswerFactory(question_part=question_part)
-    SentimentMappingFactory(position=SentimentMapping.Position.DISAGREEMENT, answer=answer)
-    ThemeMappingFactory(theme=theme_a, answer=answer)
-    EvidenceRichMappingFactory(
-        answer=answer,
-        evidence_rich=True,
-        evidence_evaluation_execution_run=evidence_evaluation_execution_run,
-    )
-    return answer
-
-
-@pytest.fixture()
-def answer_not_matching_theme(
-    question_part,
-    positive_sentiment,
-    positive_theme_stance,
-    framework,
-    evidence_evaluation_execution_run,
-):
-    answer = FreeTextAnswerFactory(question_part=question_part)
-    SentimentMappingFactory(position=positive_sentiment, answer=answer)
-    theme = InitialThemeFactory(key="B", framework=framework)
-    ThemeMappingFactory(theme=theme, answer=answer)
-    EvidenceRichMappingFactory(
-        answer=answer,
-        evidence_rich=True,
-        evidence_evaluation_execution_run=evidence_evaluation_execution_run,
-    )
-    return answer
-
-
-@pytest.fixture()
-def answer_not_matching_evidence_rich(
-    matching_respondent,
-    question_part,
-    positive_sentiment,
-    theme_a,
-    evidence_evaluation_execution_run,
-):
-    answer = FreeTextAnswerFactory(respondent=matching_respondent, question_part=question_part)
-    SentimentMappingFactory(position=positive_sentiment, answer=answer)
-    ThemeMappingFactory(theme=theme_a, answer=answer)
-    EvidenceRichMappingFactory(
-        answer=answer,
-        evidence_rich=False,
-        evidence_evaluation_execution_run=evidence_evaluation_execution_run,
-    )
-    return answer
-
-
-# TODO: delete me
-@pytest.fixture()
-def answer_not_matching_theme_stance(question_part, positive_sentiment, theme_a):
-    answer = FreeTextAnswerFactory(question_part=question_part)
-    SentimentMappingFactory(position=positive_sentiment, answer=answer)
-    ThemeMappingFactory(theme=theme_a, stance=ThemeMapping.Stance.NEGATIVE, answer=answer)
-    return answer
-
-
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
 @pytest.mark.django_db
-def test_get_selected_theme_summary(
-    question_part, framework, theme_generation_execution_run, theme_mapping_execution_run
-):
-    theme_a = InitialThemeFactory(
-        framework=framework, key="A", execution_run=theme_generation_execution_run
-    )
-    theme_b = InitialThemeFactory(
-        framework=framework, key="B", execution_run=theme_generation_execution_run
-    )
-    InitialThemeFactory(framework=framework, key="C", execution_run=theme_generation_execution_run)
-
-    answer_theme_a = FreeTextAnswerFactory(question_part=question_part)
-    ThemeMappingFactory(
-        theme=theme_a,
-        answer=answer_theme_a,
-        stance=ThemeMapping.Stance.POSITIVE,
-        execution_run=theme_mapping_execution_run,
-    )
-    answer_theme_b = FreeTextAnswerFactory(question_part=question_part)
-    ThemeMappingFactory(
-        theme=theme_b,
-        answer=answer_theme_b,
-        stance=ThemeMapping.Stance.POSITIVE,
-        execution_run=theme_mapping_execution_run,
-    )
-    answer_theme_a_and_b = FreeTextAnswerFactory(question_part=question_part)
-    ThemeMappingFactory(
-        theme=theme_a,
-        answer=answer_theme_a_and_b,
-        stance=ThemeMapping.Stance.POSITIVE,
-        execution_run=theme_mapping_execution_run,
-    )
-    ThemeMappingFactory(
-        theme=theme_b,
-        answer=answer_theme_a_and_b,
-        stance=ThemeMapping.Stance.NEGATIVE,
-        execution_run=theme_mapping_execution_run,
-    )
-
-    selected_theme_mappings = get_selected_theme_summary(
-        question_part,
-        RespondentOld.objects.all(),
-    )
-
-    theme_a_summary = selected_theme_mappings.get(theme=theme_a)
-    assert theme_a_summary["count"] == 2
-
-    theme_b_summary = selected_theme_mappings.get(theme=theme_b)
-    assert theme_b_summary["count"] == 2
+def test_parse_filters_from_request_empty(request_factory):
+    """Test parsing filters from empty request"""
+    request = request_factory.get("/")
+    filters = parse_filters_from_request(request)
+    
+    assert filters == {}
 
 
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
 @pytest.mark.django_db
-def test_get_selected_option_summary(question):
-    question_part = MultipleOptionQuestionPartFactory(question=question, options=["A", "B", "C"])
-
-    respondent_a = RespondentFactory(consultation=question.consultation)
-    respondent_b = RespondentFactory(consultation=question.consultation)
-    respondent_c = RespondentFactory(consultation=question.consultation)
-
-    MultipleOptionAnswerFactory(
-        question_part=question_part, respondent=respondent_a, chosen_options=["A", "B"]
+def test_parse_filters_from_request_all_filters(request_factory):
+    """Test parsing all types of filters from request"""
+    request = request_factory.get(
+        "/", {
+            "sentimentFilters": "AGREEMENT,DISAGREEMENT",
+            "themeFilters": "1,2,3",
+            "evidenceRichFilter": "evidence-rich",
+            "searchValue": "test search",
+            "demographicFilters[individual]": "true,false",
+            "demographicFilters[region]": "north,south",
+        }
     )
-    MultipleOptionAnswerFactory(
-        question_part=question_part, respondent=respondent_b, chosen_options=["A"]
-    )
-    MultipleOptionAnswerFactory(
-        question_part=question_part, respondent=respondent_c, chosen_options=[]
-    )
-
-    option_summary = get_selected_option_summary(
-        question,
-        RespondentOld.objects.all(),
-    )
-
-    assert option_summary[0]["A"] == 2
-    assert option_summary[0]["B"] == 1
-
-    with pytest.raises(KeyError):
-        option_summary[0]["C"]
+    filters = parse_filters_from_request(request)
+    
+    assert filters["sentiment_list"] == ["AGREEMENT", "DISAGREEMENT"]
+    assert filters["theme_list"] == ["1", "2", "3"]
+    assert filters["evidence_rich"] == True
+    assert filters["search_value"] == "test search"
+    assert filters["demographic_filters"]["individual"] == ["true", "false"]
+    assert filters["demographic_filters"]["region"] == ["north", "south"]
 
 
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
 @pytest.mark.django_db
-def test_respondents_json(client, question, consultation_user):
-    # set up responses with evidence-rich details
-    question_part = FreeTextQuestionPartFactory(question=question)
-    respondent_1 = RespondentFactory(
-        consultation=question.consultation, themefinder_respondent_id=1
-    )
-    respondent_2 = RespondentFactory(
-        consultation=question.consultation, themefinder_respondent_id=2
-    )
-    response_1 = FreeTextAnswerFactory(question_part=question_part, respondent=respondent_1)
-    response_2 = FreeTextAnswerFactory(question_part=question_part, respondent=respondent_2)
+def test_build_response_filter_query_basic(question):
+    """Test building basic filter query"""
+    filters = {"sentiment_list": ["AGREEMENT"]}
+    query = build_response_filter_query(filters, question)
+    
+    # Should include question filter and sentiment filter
+    assert "question" in str(query)
+    assert "annotation__sentiment__in" in str(query)
 
-    execution_run = ExecutionRunFactory()
 
-    EvidenceRichMappingFactory(
-        answer=response_1, evidence_evaluation_execution_run=execution_run, evidence_rich=True
-    )
-    EvidenceRichMappingFactory(
-        answer=response_2, evidence_evaluation_execution_run=execution_run, evidence_rich=False
-    )
+@pytest.mark.django_db
+def test_build_response_filter_query_demographic_filters(question):
+    """Test building filter query with demographic filters"""
+    filters = {
+        "demographic_filters": {
+            "individual": ["true"],
+            "region": ["north", "south"]
+        }
+    }
+    query = build_response_filter_query(filters, question)
+    
+    # Should include demographic filters
+    assert "respondent__demographics__individual" in str(query)
+    assert "respondent__demographics__region" in str(query)
 
-    # Query json endpoint
+
+@pytest.mark.django_db
+def test_get_demographic_options_empty(consultation):
+    """Test getting demographic options with no respondents"""
+    options = get_demographic_options(consultation)
+    assert options == {}
+
+
+@pytest.mark.django_db
+def test_get_demographic_options_with_data(consultation):
+    """Test getting demographic options with respondent data"""
+    # Create respondents with different demographic data
+    RespondentFactory(
+        consultation=consultation,
+        demographics={"individual": True, "region": "north", "age": 25}
+    )
+    RespondentFactory(
+        consultation=consultation,
+        demographics={"individual": False, "region": "south", "age": 35}
+    )
+    RespondentFactory(
+        consultation=consultation,
+        demographics={"individual": True, "region": "north", "age": 45}
+    )
+    
+    # Rebuild demographic options from respondent data
+    DemographicOption.rebuild_for_consultation(consultation)
+    
+    options = get_demographic_options(consultation)
+    
+    assert set(options["individual"]) == {"False", "True"}
+    assert set(options["region"]) == {"north", "south"}
+    assert set(options["age"]) == {"25", "35", "45"}
+
+
+@pytest.mark.django_db
+def test_demographic_option_rebuild_for_consultation(consultation):
+    """Test the DemographicOption.rebuild_for_consultation method"""
+    # Create respondents with different demographic data
+    RespondentFactory(
+        consultation=consultation,
+        demographics={"category": "A", "score": 10}
+    )
+    RespondentFactory(
+        consultation=consultation,
+        demographics={"category": "B", "score": 20}
+    )
+    
+    # Initially no demographic options should exist
+    assert DemographicOption.objects.filter(consultation=consultation).count() == 0
+    
+    # Rebuild should create the options
+    count = DemographicOption.rebuild_for_consultation(consultation)
+    assert count == 4  # 2 categories + 2 scores
+    
+    # Verify options were created correctly
+    options = DemographicOption.objects.filter(consultation=consultation)
+    field_values = {(opt.field_name, opt.field_value) for opt in options}
+    expected = {("category", "A"), ("category", "B"), ("score", "10"), ("score", "20")}
+    assert field_values == expected
+    
+    # Test rebuilding again should clear old options and create new ones
+    RespondentFactory(
+        consultation=consultation,
+        demographics={"category": "C", "new_field": "test"}
+    )
+    
+    count = DemographicOption.rebuild_for_consultation(consultation)
+    assert count == 6  # 3 categories + 2 scores + 1 new_field
+    
+    # Verify the new state
+    options = DemographicOption.objects.filter(consultation=consultation)
+    field_values = {(opt.field_name, opt.field_value) for opt in options}
+    expected = {("category", "A"), ("category", "B"), ("category", "C"), 
+                ("score", "10"), ("score", "20"), ("new_field", "test")}
+    assert field_values == expected
+
+
+@pytest.mark.django_db
+def test_get_theme_summary_optimized_no_responses(question):
+    """Test theme summary with no responses"""
+    theme_summary = get_theme_summary_optimized(question)
+    assert theme_summary == []
+
+
+@pytest.mark.django_db
+def test_get_theme_summary_optimized_with_responses(question, theme):
+    """Test theme summary with responses and themes"""
+    # Create respondents and responses
+    respondent1 = RespondentFactory(consultation=question.consultation)
+    respondent2 = RespondentFactory(consultation=question.consultation)
+    
+    response1 = ResponseFactory(question=question, respondent=respondent1)
+    response2 = ResponseFactory(question=question, respondent=respondent2)
+    
+    # Create annotations with themes
+    annotation1 = ResponseAnnotationFactory(response=response1)
+    annotation1.themes.clear()  # Clear any auto-generated themes
+    annotation1.themes.add(theme)
+    
+    annotation2 = ResponseAnnotationFactory(response=response2)
+    annotation2.themes.clear()  # Clear any auto-generated themes
+    annotation2.themes.add(theme)
+    
+    theme_summary = get_theme_summary_optimized(question)
+    
+    # Find our specific theme in the results
+    our_theme = next((t for t in theme_summary if t["theme__id"] == theme.id), None)
+    assert our_theme is not None
+    assert our_theme["theme__name"] == theme.name
+    assert our_theme["count"] == 2
+
+
+@pytest.mark.django_db
+def test_question_responses_json_basic(client, consultation_user, question):
+    """Test the question_responses_json endpoint basic functionality"""
+    # Create some test data
+    respondent = RespondentFactory(
+        consultation=question.consultation,
+        demographics={"individual": True}
+    )
+    response = ResponseFactory(
+        question=question,
+        respondent=respondent,
+        free_text="Test response"
+    )
+    
+    # Make request
     client.force_login(consultation_user)
     response = client.get(
         f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
     )
+    
     assert response.status_code == 200
+    data = response.json()
+    
+    assert "all_respondents" in data
+    assert "respondents_total" in data
+    assert "filtered_total" in data
+    assert "theme_mappings" in data
+    assert "demographic_options" in data
+    assert data["respondents_total"] == 1
+    assert data["filtered_total"] == 1
 
-    response_json = response.json()
 
-    data_1 = list(filter(lambda x: x["identifier"] == 1, response_json["all_respondents"]))[0]
-    assert data_1["evidenceRich"]
-    data_2 = list(filter(lambda x: x["identifier"] == 2, response_json["all_respondents"]))[0]
-    assert not data_2["evidenceRich"]
-
-
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
-@pytest.mark.parametrize(
-    "querystring, expected_count, has_more_pages",
-    [
-        ("?", 7, False),
-        ("?page_size=4", 4, True),
-        ("?page_size=4&page=2", 3, False),
-    ],
-)
 @pytest.mark.django_db
-def test_respondents_json_pagination(
-    querystring, expected_count, has_more_pages, client, consultation_user, question_part, question
-):
-    for i in range(7):
-        respondent = RespondentFactory(
-            consultation=question.consultation, themefinder_respondent_id=i + 1
-        )
-        FreeTextAnswerFactory(question_part=question_part, respondent=respondent)
-
+def test_question_responses_json_with_demographic_filters(client, consultation_user, question):
+    """Test the question_responses_json endpoint with demographic filtering"""
+    # Create respondents with different demographics
+    respondent1 = RespondentFactory(
+        consultation=question.consultation,
+        demographics={"individual": True, "region": "north"}
+    )
+    respondent2 = RespondentFactory(
+        consultation=question.consultation,
+        demographics={"individual": False, "region": "south"}
+    )
+    
+    ResponseFactory(question=question, respondent=respondent1)
+    ResponseFactory(question=question, respondent=respondent2)
+    
+    # Rebuild demographic options from respondent data
+    DemographicOption.rebuild_for_consultation(question.consultation)
+    
+    # Test filtering by individual=true
     client.force_login(consultation_user)
     response = client.get(
-        f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/{querystring}"
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
+        "?demographicFilters[individual]=true"
     )
+    
     assert response.status_code == 200
-    response_json = response.json()
-    assert len(response_json["all_respondents"]) == expected_count
-    assert response_json["has_more_pages"] == has_more_pages
+    data = response.json()
+    
+    assert data["respondents_total"] == 2  # Total respondents
+    assert data["filtered_total"] == 1     # Filtered to individuals only
+    assert data["demographic_options"]["individual"] == ["False", "True"]
+    assert data["demographic_options"]["region"] == ["north", "south"]
 
 
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
 @pytest.mark.django_db
-def test_get_respondents_for_question():
-    # Set up a couple of questions and respondents
-    question_part_text = FreeTextQuestionPartFactory()
-    question = question_part_text.question
-    consultation = question.consultation
-    question_part_option = MultipleOptionQuestionPartFactory(question=question)
-    another_question = QuestionFactory(consultation=consultation)
-    another_question_part = FreeTextQuestionPartFactory(question=another_question)
-    respondent_a = RespondentFactory(consultation=consultation)
-    respondent_b = RespondentFactory(consultation=consultation)
-    respondent_c = RespondentFactory(consultation=consultation)
-
-    # Add answers for question
-    FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_a)
-    FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_b)
-    MultipleOptionAnswerFactory(question_part=question_part_option, respondent=respondent_a)
-
-    # Add answers for another_question
-    FreeTextAnswerFactory(question_part=another_question_part, respondent=respondent_a)
-    FreeTextAnswerFactory(question_part=another_question_part, respondent=respondent_c)
-
-    # Check we generate the right set of respondents
-    cache.clear()
-    respondents = get_respondents_for_question(consultation.slug, question.slug)
-    assert respondents.count() == 2
-    assert respondent_a in respondents
-    assert respondent_c not in respondents
-
-    # Check we correctly retrieve from cache
-    cached_respondents = cache.get(f"respondents_{consultation.slug}_{question.slug}")
-    assert set(cached_respondents.values_list("id", flat=True)) == set(
-        respondents.values_list("id", flat=True)
-    )
-
-
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
-@pytest.mark.django_db
-def test_all_respondents_json_filters(client, question, consultation_user):
-    # Set up question and respondents
-    question_part_text = FreeTextQuestionPartFactory(question=question)
-    consultation = question.consultation
-    question_part_option = MultipleOptionQuestionPartFactory(question=question)
-
-    respondent_a = RespondentFactory(consultation=consultation)
-    respondent_b = RespondentFactory(consultation=consultation)
-    respondent_c = RespondentFactory(consultation=consultation)
-    respondent_d = RespondentFactory(consultation=consultation)
-
-    # Add answers for question
-    answer_a = FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_a)
-    answer_b = FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_b)
-    answer_c = FreeTextAnswerFactory(question_part=question_part_text, respondent=respondent_c)
-    MultipleOptionAnswerFactory(question_part=question_part_option, respondent=respondent_a)
-    MultipleOptionAnswerFactory(question_part=question_part_option, respondent=respondent_d)
-
-    # Add themes and sentiment/evidence to free text question part
-    framework = InitialFrameworkFactory(question_part=question_part_text)
-    theme_x = InitialThemeFactory(question_part=question_part_text, framework=framework, key="X")
-    theme_y = InitialThemeFactory(question_part=question_part_text, framework=framework, key="Y")
-    theme_z = InitialThemeFactory(question_part=question_part_text, framework=framework, key="Z")
-
-    ThemeMappingFactory(answer=answer_a, theme=theme_x)
-    ThemeMappingFactory(answer=answer_a, theme=theme_y)
-    ThemeMappingFactory(answer=answer_a, theme=theme_z)
-    ThemeMappingFactory(answer=answer_b, theme=theme_y)
-
-    SentimentMappingFactory(answer=answer_a, position=SentimentMapping.Position.AGREEMENT)
-    SentimentMappingFactory(answer=answer_b, position=SentimentMapping.Position.DISAGREEMENT)
-    SentimentMappingFactory(answer=answer_c, position=SentimentMapping.Position.UNCLEAR)
-
-    EvidenceRichMappingFactory(answer=answer_a, evidence_rich=True)
-    EvidenceRichMappingFactory(answer=answer_b, evidence_rich=False)
-
-    # Login user and set up endpoint
+def test_question_responses_json_pagination(client, consultation_user, question):
+    """Test pagination in question_responses_json"""
+    # Create multiple respondents
+    for i in range(5):
+        respondent = RespondentFactory(consultation=question.consultation)
+        ResponseFactory(question=question, respondent=respondent)
+    
     client.force_login(consultation_user)
-    base_url = f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
-
-    # Do we get all responses?
-    response = client.get(base_url)
-    all_respondents = response.json().get("all_respondents")
-    assert len(all_respondents) == 4
-    assert {r["id"] for r in all_respondents} == {
-        f"response-{respondent_a.identifier}",
-        f"response-{respondent_b.identifier}",
-        f"response-{respondent_c.identifier}",
-        f"response-{respondent_d.identifier}",
-    }
-    assert not response.json().get("has_more_pages")
-
-    # Filter on sentiment
-    url = f"{base_url}?sentimentFilters=AGREEMENT,DISAGREEMENT"
-    response = client.get(url)
-    all_respondents = response.json().get("all_respondents")
-    assert len(all_respondents) == 2
-    assert {r["id"] for r in all_respondents} == {
-        f"response-{respondent_a.identifier}",
-        f"response-{respondent_b.identifier}",
-    }
-    assert not response.json().get("has_more_pages")
-
-    url = f"{base_url}?sentimentFilters=AGREEMENT,DISAGREEMENT,UNCLEAR"
-    response = client.get(url)
-    all_respondents = response.json().get("all_respondents")
-    assert len(all_respondents) == 3
-
-    # Filter on theme
-    url = f"{base_url}?themeFilters={theme_y.id}"
-    response = client.get(url)
-    all_respondents = response.json().get("all_respondents")
-    assert len(all_respondents) == 2
-
-    url = f"{base_url}?themeFilters={theme_y.id},{theme_z.id}"
-    response = client.get(url)
-    all_respondents = response.json().get("all_respondents")
-    assert len(all_respondents) == 2
-
-    # Filter on some sentiment, some theme
-    url = f"{base_url}?themeFilters={theme_x.id},{theme_y.id}&sentimentFilters=UNCLEAR"
-    response = client.get(url)
-    all_respondents = response.json().get("all_respondents")
-    assert len(all_respondents) == 0
-
-    url = (
-        f"{base_url}?themeFilters={theme_x.id},{theme_y.id}&sentimentFilters=AGREEMENT,DISAGREEMENT"
+    response = client.get(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
+        "?page_size=2&page=1"
     )
-    response = client.get(url)
-    all_respondents = response.json().get("all_respondents")
-    assert len(all_respondents) == 2
+    
+    assert response.status_code == 200
+    data = response.json()
+    
+    assert len(data["all_respondents"]) == 2
+    assert data["has_more_pages"] == True
+    assert data["respondents_total"] == 5
 
-    # Evidence rich filter
-    url = f"{base_url}?evidenceRichFilter=evidence-rich"
-    response = client.get(url)
-    all_respondents = response.json().get("all_respondents")
-    assert len(all_respondents) == 1
-    assert all_respondents[0]["id"] == f"response-{respondent_a.themefinder_respondent_id}"
 
-    url = f"{base_url}?evidenceRichFilter=evidence-rich&themeFilters={theme_y.id}"
-    response = client.get(url)
-    all_respondents = response.json().get("all_respondents")
-    assert len(all_respondents) == 1
-    assert all_respondents[0]["id"] == f"response-{respondent_a.themefinder_respondent_id}"
+@pytest.mark.django_db 
+def test_question_responses_json_theme_mappings(client, consultation_user, question, theme):
+    """Test that theme mappings are included in response"""
+    respondent = RespondentFactory(consultation=question.consultation)
+    response = ResponseFactory(question=question, respondent=respondent)
+    
+    # Create annotation with theme
+    annotation = ResponseAnnotationFactory(response=response)
+    annotation.themes.clear()  # Clear any auto-generated themes
+    annotation.themes.add(theme)
+    
+    client.force_login(consultation_user)
+    response = client.get(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
+    )
+    
+    assert response.status_code == 200
+    data = response.json()
+    
+    # Find our specific theme in the mappings
+    our_theme = next((t for t in data["theme_mappings"] if t["label"] == theme.name), None)
+    assert our_theme is not None
+    assert our_theme["count"] == "1"
 
-    url = f"{base_url}?evidenceRichFilter=evidence-rich&themeFilters={theme_y.id}&sentimentFilters=UNCLEAR"
-    response = client.get(url)
-    all_respondents = response.json().get("all_respondents")
-    assert len(all_respondents) == 0
 
-    # Test page parameters get us all the respondents
-    url = f"{base_url}?page_size=2&page=1"
-    response = client.get(url)
-    page_1_respondents = response.json().get("all_respondents")
-    assert response.json().get("has_more_pages")
-    assert len(page_1_respondents) == 2
+@pytest.mark.django_db
+def test_get_filtered_responses_with_themes_no_filters(question):
+    """Test get_filtered_responses_with_themes with no filters"""
+    respondent = RespondentFactory(consultation=question.consultation)
+    response = ResponseFactory(question=question, respondent=respondent)
+    theme = ThemeFactory(question=question)
+    
+    # Create annotation with theme
+    annotation = ResponseAnnotationFactory(response=response)
+    annotation.themes.clear()
+    annotation.themes.add(theme)
+    
+    # Test with no filters
+    responses = get_filtered_responses_with_themes(question)
+    
+    assert responses.count() == 1
+    assert responses.first().id == response.id
+    assert responses.first().annotation.themes.count() == 1
 
-    url = f"{base_url}?page_size=2&page=2"
-    response = client.get(url)
-    page_2_respondents = response.json().get("all_respondents")
-    assert not response.json().get("has_more_pages")
-    assert len(page_2_respondents) == 2
 
-    page_1_respondent_ids = {r["id"] for r in page_1_respondents}
-    page_2_respondent_ids = {r["id"] for r in page_2_respondents}
-    both_pages = set(page_1_respondent_ids).union(set(page_2_respondent_ids))
-    assert len(both_pages) == 4
-
-    # Test pagination with other filters
-    url = f"{base_url}?themeFilters={theme_x.id},{theme_y.id}&sentimentFilters=AGREEMENT,DISAGREEMENT&page_size=3"
-    response = client.get(url)
-    page_respondents = response.json().get("all_respondents")
-    assert len(page_respondents) == 2
-    assert not response.json().get("has_more_pages")
-
-    url = f"{base_url}?themeFilters={theme_x.id},{theme_y.id}&page_size=1&page=2"
-    response = client.get(url)
-    page_respondents = response.json().get("all_respondents")
-    assert len(page_respondents) == 1
-    assert not response.json().get("has_more_pages")
+@pytest.mark.django_db
+def test_get_filtered_responses_with_themes_with_filters(question):
+    """Test get_filtered_responses_with_themes with filters"""
+    # Create two respondents with different demographics
+    respondent1 = RespondentFactory(
+        consultation=question.consultation,
+        demographics={"individual": True}
+    )
+    respondent2 = RespondentFactory(
+        consultation=question.consultation,
+        demographics={"individual": False}
+    )
+    
+    response1 = ResponseFactory(question=question, respondent=respondent1)
+    ResponseFactory(question=question, respondent=respondent2)
+    
+    # Test with demographic filter
+    filters = {"demographic_filters": {"individual": ["true"]}}
+    responses = get_filtered_responses_with_themes(question, filters)
+    
+    assert responses.count() == 1
+    assert responses.first().id == response1.id
+    assert responses.first().respondent.demographics["individual"]

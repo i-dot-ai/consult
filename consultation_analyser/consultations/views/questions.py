@@ -12,42 +12,34 @@ def show(
     consultation_slug: str,
     question_slug: str,
 ):
-    consultation = get_object_or_404(models.ConsultationOld, slug=consultation_slug)
-    question = get_object_or_404(models.QuestionOld, slug=question_slug, consultation=consultation)
-
-    question_parts = models.QuestionPart.objects.filter(question=question).order_by("number")
-
-    # Assume at most one free text part per question.
-    free_text_question_part = question_parts.filter(
-        type=models.QuestionPart.QuestionType.FREE_TEXT
-    ).first()
+    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+    question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
 
     # Get counts
-    total_responses = models.Answer.objects.filter(question_part=question_parts.first()).count()
+    total_responses = models.Response.objects.filter(question=question).count()
 
     # Get latest themes for the free text part
     theme_counts_dict = {}
     highest_theme_count = 0
 
-    if free_text_question_part:
-        latest_theme_mappings = models.ThemeMapping.get_latest_theme_mappings(
-            question_part=free_text_question_part
-        )
+    if question.has_free_text:
         theme_counts = (
-            latest_theme_mappings.values("theme").annotate(count=Count("theme")).order_by("-count")
+            models.Theme.objects.filter(
+                question=question,
+                responseannotation__isnull=False
+            )
+            .annotate(count=Count("responseannotation"))
+            .order_by("-count")
         )
         if theme_counts:
-            highest_theme_count = theme_counts[0]["count"]
-            theme_counts_dict = {
-                models.ThemeOld.objects.get(id=theme_count["theme"]): theme_count["count"]
-                for theme_count in theme_counts
-            }
+            highest_theme_count = theme_counts[0].count
+            theme_counts_dict = {theme: theme.count for theme in theme_counts}
 
     context = {
         "consultation_slug": consultation_slug,
         "consultation_name": consultation.title,
         "question": question,
-        "question_parts": question_parts,
+        "question_parts": [question],  # For template compatibility
         "total_responses": total_responses,
         "theme_counts": theme_counts_dict,
         "highest_theme_count": highest_theme_count,
@@ -57,17 +49,17 @@ def show(
 
 @user_can_see_consultation
 def index(request, consultation_slug: str):
-    consultation = get_object_or_404(models.ConsultationOld, slug=consultation_slug)
-    question_parts = models.QuestionPart.objects.filter(
-        question__consultation=consultation, type=models.QuestionPart.QuestionType.FREE_TEXT
-    )
-    question_parts_with_themes = [
-        q
-        for q in question_parts
-        if models.ThemeMapping.get_latest_theme_mappings(question_part=q).exists()
-    ]
+    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+    
+    # Get questions that have free text and have themes
+    questions_with_themes = models.Question.objects.filter(
+        consultation=consultation,
+        has_free_text=True,
+        theme__isnull=False
+    ).distinct()
+    
     context = {
         "consultation": consultation,
-        "question_parts": question_parts_with_themes,
+        "question_parts": questions_with_themes,  # Using same variable name for template compatibility
     }
     return render(request, "consultations/questions/index.html", context)
