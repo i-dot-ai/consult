@@ -11,7 +11,7 @@ from consultation_analyser.factories import (
     ConsultationFactory,
     QuestionFactory,
     RespondentFactory,
-    ResponseAnnotationFactory,
+    ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
     ThemeFactory,
 )
@@ -93,13 +93,13 @@ def create_dummy_consultation_from_yaml(
                 random_evidence_rich = random.choice(
                     [e[0] for e in models.ResponseAnnotation.EvidenceRich.choices]
                 )
-                ResponseAnnotationFactory(
+                response_annotation = ResponseAnnotationFactoryNoThemes(
                     response=response,
-                    themes=themes_for_response,
                     sentiment=random_sentiment,
                     evidence_rich=random_evidence_rich,
                 )
-                # Haven't considered human changes to themes.
+                response_annotation.add_original_ai_themes(themes_for_response)
+                # Haven't considered human changes to themes, just AI generated
 
             if has_multiple_choice:
                 logger.info("Add multiple choice responses")
