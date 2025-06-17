@@ -329,7 +329,7 @@ class ThemeFactory(DjangoModelFactory):
     question = factory.SubFactory(QuestionFactory)
     name = factory.LazyAttribute(lambda o: fake.sentence())
     description = factory.LazyAttribute(lambda o: fake.paragraph())
-    key = factory.LazyAttribute(lambda o: fake.word())
+    key = factory.Sequence(lambda n: f"theme-{n}")
 
 
 class ResponseAnnotationFactory(DjangoModelFactory):
