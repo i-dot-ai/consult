@@ -1,6 +1,6 @@
 - question_text: "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?"
   number: 1
-  has_free_text: False
+  has_free_text: True
   has_multiple_choice: True
   multiple_choice_options: ["Yes", "No", "Don't know", "No answer"]
   free_text_answers:
