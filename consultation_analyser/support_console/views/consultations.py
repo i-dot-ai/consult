@@ -15,7 +15,6 @@ from consultation_analyser.consultations.dummy_data import (
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
-from consultation_analyser.support_console.validation_utils import format_validation_error
 
 logger = logging.getLogger("export")
 
@@ -25,7 +24,7 @@ def import_consultation_job(
     consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
 ) -> None:
     """Job wrapper for importing consultations."""
-    return ingest.import_consultation(
+    return ingest.create_consultation(
         consultation_name=consultation_name,
         consultation_code=consultation_code,
         timestamp=timestamp,
@@ -56,7 +55,6 @@ def delete_consultation_job(consultation: models.Consultation):
             models.ResponseAnnotation.objects.filter(
                 response__question__consultation=consultation
             ).delete()
-
             logger.info("Deleting responses...")
             models.Response.objects.filter(question__consultation=consultation).delete()
 
@@ -198,17 +196,18 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
         consultation_code = request.POST.get("consultation_code")
         timestamp = request.POST.get("timestamp")
 
-        # Validate structure
-        is_valid, validation_errors = ingest.validate_consultation_structure(
-            bucket_name=bucket_name, consultation_code=consultation_code, timestamp=timestamp
-        )
-
-        if not is_valid:
-            formatted_errors = [format_validation_error(error) for error in validation_errors]
-            context["validation_errors"] = formatted_errors
-            return render(
-                request, "support_console/consultations/import_consultation.html", context=context
-            )
+        # TODO: fix this so it doesn't timeout at scale
+        # # Validate structure
+        # is_valid, validation_errors = ingest.validate_consultation_structure(
+        #     bucket_name=bucket_name, consultation_code=consultation_code, timestamp=timestamp
+        # )
+        #
+        # if not is_valid:
+        #     formatted_errors = [format_validation_error(error) for error in validation_errors]
+        #     context["validation_errors"] = formatted_errors
+        #     return render(
+        #         request, "support_console/consultations/import_consultation.html", context=context
+        #     )
 
         # If valid, queue the import job
         try:
