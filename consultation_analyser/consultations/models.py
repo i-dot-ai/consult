@@ -4,8 +4,6 @@ from collections import Counter, OrderedDict
 from enum import Enum
 
 import faker as _faker
-import pydantic
-from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.db import models
 from django.utils import timezone
@@ -13,7 +11,6 @@ from django.utils.text import slugify
 from simple_history.models import HistoricalRecords
 
 from consultation_analyser.authentication.models import User
-from consultation_analyser.consultations import public_schema
 
 faker = _faker.Faker()
 
@@ -21,12 +18,7 @@ faker = _faker.Faker()
 # TODO: we don't use this anymore, remove it without manage.py makemigrations complaining
 class MultipleChoiceSchemaValidator(BaseValidator):
     def compare(self, value, _limit_value):
-        if not value:
-            return
-        try:
-            public_schema.MultipleChoice(value)
-        except pydantic.ValidationError as e:
-            raise ValidationError(e.json())
+        pass
 
 
 class UUIDPrimaryKeyModel(models.Model):
@@ -552,23 +544,20 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         """Calculate proportion of human-reviewed responses for free text questions"""
         if not self.has_free_text:
             return 0
-        
+
         # Count total responses with free text
         total_responses = self.response_set.filter(
-            free_text__isnull=False,
-            free_text__gt=""
+            free_text__isnull=False, free_text__gt=""
         ).count()
-        
+
         if total_responses == 0:
             return 0
-        
+
         # Count human-reviewed responses
         reviewed_responses = self.response_set.filter(
-            free_text__isnull=False,
-            free_text__gt="",
-            annotation__human_reviewed=True
+            free_text__isnull=False, free_text__gt="", annotation__human_reviewed=True
         ).count()
-        
+
         return reviewed_responses / total_responses
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
@@ -623,47 +612,43 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
     """Normalized storage of demographic field options for efficient querying across pages"""
-    
+
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     field_name = models.CharField(max_length=128)
     field_value = models.CharField(max_length=256)
-    
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(
                 fields=["consultation", "field_name", "field_value"],
-                name="unique_demographic_option"
+                name="unique_demographic_option",
             ),
         ]
         indexes = [
             models.Index(fields=["consultation", "field_name"]),
         ]
-    
+
     @classmethod
     def rebuild_for_consultation(cls, consultation: "Consultation") -> int:
         """Rebuild demographic options for a consultation from respondent data"""
         # Clear existing options
         cls.objects.filter(consultation=consultation).delete()
-        
+
         # Collect unique demographic field/value pairs
         demographic_options_to_create = set()
-        
+
         respondents = Respondent.objects.filter(consultation=consultation)
         for respondent in respondents:
             if respondent.demographics:
                 for field_name, field_value in respondent.demographics.items():
                     demographic_options_to_create.add((field_name, str(field_value)))
-        
+
         # Bulk create new options
         options_to_save = [
-            cls(
-                consultation=consultation,
-                field_name=field_name,
-                field_value=field_value
-            ) 
+            cls(consultation=consultation, field_name=field_name, field_value=field_value)
             for field_name, field_value in demographic_options_to_create
         ]
-        
+
         cls.objects.bulk_create(options_to_save)
         return len(options_to_save)
 
@@ -694,22 +679,26 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
 
 class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     """Through model to track original AI vs human-reviewed theme assignments"""
-    
-    response_annotation = models.ForeignKey('ResponseAnnotation', on_delete=models.CASCADE)
+
+    response_annotation = models.ForeignKey("ResponseAnnotation", on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
-    is_original_ai_assignment = models.BooleanField(default=True)  # True for AI, False for human review
-    assigned_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)  # None for AI, User for human
-    
+    is_original_ai_assignment = models.BooleanField(
+        default=True
+    )  # True for AI, False for human review
+    assigned_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True
+    )  # None for AI, User for human
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(
-                fields=['response_annotation', 'theme', 'is_original_ai_assignment'], 
-                name='unique_theme_assignment'
+                fields=["response_annotation", "theme", "is_original_ai_assignment"],
+                name="unique_theme_assignment",
             ),
         ]
         indexes = [
-            models.Index(fields=['response_annotation', 'is_original_ai_assignment']),
-            models.Index(fields=['theme', 'is_original_ai_assignment']),
+            models.Index(fields=["response_annotation", "is_original_ai_assignment"]),
+            models.Index(fields=["theme", "is_original_ai_assignment"]),
         ]
 
 
@@ -728,7 +717,7 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
     response = models.OneToOneField(Response, on_delete=models.CASCADE, related_name="annotation")
 
     # AI-generated outputs (only for free text responses)
-    themes = models.ManyToManyField(Theme, through='ResponseAnnotationTheme', blank=True)
+    themes = models.ManyToManyField(Theme, through="ResponseAnnotationTheme", blank=True)
     sentiment = models.CharField(max_length=12, choices=Sentiment.choices, null=True, blank=True)
     evidence_rich = models.CharField(
         max_length=3, choices=EvidenceRich.choices, null=True, blank=True
@@ -760,37 +749,32 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
                 response_annotation=self,
                 theme=theme,
                 is_original_ai_assignment=True,
-                defaults={'assigned_by': None}
+                defaults={"assigned_by": None},
             )
 
     def set_human_reviewed_themes(self, themes, user):
         """Set themes as human-reviewed, preserving original AI assignments"""
         # Remove existing human-reviewed theme assignments
         ResponseAnnotationTheme.objects.filter(
-            response_annotation=self,
-            is_original_ai_assignment=False
+            response_annotation=self, is_original_ai_assignment=False
         ).delete()
-        
+
         # Add new human-reviewed theme assignments
         for theme in themes:
             ResponseAnnotationTheme.objects.get_or_create(
                 response_annotation=self,
                 theme=theme,
                 is_original_ai_assignment=False,
-                defaults={'assigned_by': user}
+                defaults={"assigned_by": user},
             )
 
     def get_original_ai_themes(self):
         """Get themes that were originally assigned by AI"""
-        return self.themes.filter(
-            responseannotationtheme__is_original_ai_assignment=True
-        )
+        return self.themes.filter(responseannotationtheme__is_original_ai_assignment=True)
 
     def get_human_reviewed_themes(self):
         """Get themes that were assigned by human review"""
-        return self.themes.filter(
-            responseannotationtheme__is_original_ai_assignment=False
-        )
+        return self.themes.filter(responseannotationtheme__is_original_ai_assignment=False)
 
     def save(self, *args, **kwargs) -> None:
         """
@@ -798,10 +782,10 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
         Themes should be added using add_original_ai_themes() or set_human_reviewed_themes().
         """
         # Check if themes are being passed via save (which shouldn't happen)
-        if 'themes' in kwargs:
+        if "themes" in kwargs:
             raise ValueError(
                 "Direct theme assignment through save() is not allowed. "
                 "Use add_original_ai_themes() or set_human_reviewed_themes() instead."
             )
-        
+
         super().save(*args, **kwargs)
