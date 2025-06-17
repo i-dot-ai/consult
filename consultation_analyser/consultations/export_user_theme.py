@@ -23,14 +23,6 @@ def get_timestamp() -> str:
     return now.strftime("%Y-%m-%d-%H%M%S")
 
 
-def get_latest_sentiment_for_question(
-    question: Question,
-) -> None:
-    # In the new model, sentiment is directly stored in ResponseAnnotation
-    # No execution run concept exists
-    return None
-
-
 def get_position(response: Response) -> str | None:
     # In the new model, sentiment is stored directly in ResponseAnnotation
     try:
@@ -55,11 +47,15 @@ def get_theme_mapping_output_row(
     audited = False
     auditor_email = None
     reviewed_at = None
-    
+
     try:
         annotation = response.annotation
         original_themes = annotation.get_original_ai_themes()
-        current_themes = annotation.get_human_reviewed_themes() if annotation.human_reviewed else annotation.get_original_ai_themes()
+        current_themes = (
+            annotation.get_human_reviewed_themes()
+            if annotation.human_reviewed
+            else annotation.get_original_ai_themes()
+        )
         audited = annotation.human_reviewed
         if annotation.reviewed_by:
             auditor_email = annotation.reviewed_by.email
@@ -98,20 +94,13 @@ def get_theme_mapping_rows(question: Question) -> list[dict]:
     output = []
     # Get all responses with free text for this question
     # Import here to avoid circular import
-    
-    response_qs = Response.objects.filter(
-        question=question,
-        free_text__isnull=False,
-        free_text__gt=""
-    ).select_related(
-        'respondent', 
-        'annotation', 
-        'annotation__reviewed_by'
-    ).prefetch_related(
-        'annotation__themes',
-        'annotation__responseannotationtheme_set__theme'
+
+    response_qs = (
+        Response.objects.filter(question=question, free_text__isnull=False, free_text__gt="")
+        .select_related("respondent", "annotation", "annotation__reviewed_by")
+        .prefetch_related("annotation__themes", "annotation__responseannotationtheme_set__theme")
     )
-    
+
     for response in response_qs:
         row = get_theme_mapping_output_row(response=response)
         output.append(row)
