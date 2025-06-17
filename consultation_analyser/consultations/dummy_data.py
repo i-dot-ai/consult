@@ -26,9 +26,9 @@ def create_dummy_consultation_from_yaml(
     consultation: Optional[models.Consultation] = None,
 ) -> ConsultationFactory:
     """
-    Create consultation with question, question parts, answers and themes from yaml file.
-    Creates relevant objects: Consultation, Question, QuestionPart, Answer, Theme, ThemeMapping,
-    SentimentMapping, Framework, ExecutionRun.
+    Create consultation with questions, responses and themes from yaml file.
+    Creates relevant objects: Consultation, Question, Response, Theme, ResponseAnnotation,
+    Respondent.
     """
     if HostingEnvironment.is_production():
         raise RuntimeError("Dummy data generation should not be run in production")
