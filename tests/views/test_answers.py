@@ -7,6 +7,7 @@ from consultation_analyser.consultations.models import DemographicOption
 from consultation_analyser.consultations.views.answers import (
     build_response_filter_query,
     get_demographic_options,
+    get_filtered_responses_with_themes,
     get_theme_summary_optimized,
     parse_filters_from_request,
 )
@@ -15,6 +16,7 @@ from consultation_analyser.factories import (
     QuestionFactory,
     RespondentFactory,
     ResponseAnnotationFactory,
+    ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
     ThemeFactory,
     UserFactory,
@@ -362,3 +364,204 @@ def test_get_filtered_responses_with_themes_with_filters(question):
     assert responses.count() == 1
     assert responses.first().id == response1.id
     assert responses.first().respondent.demographics["individual"]
+
+
+@pytest.mark.django_db
+def test_human_review(client, consultation_user, question):
+    """Test that human review properly preserves AI assignments and handles theme changes"""
+    # Create respondent and response
+    respondent = RespondentFactory(consultation=question.consultation)
+    response = ResponseFactory(question=question, respondent=respondent, free_text="Test response")
+    
+    # Create themes
+    ai_theme1 = ThemeFactory(question=question, name="AI Theme 1")
+    ai_theme2 = ThemeFactory(question=question, name="AI Theme 2") 
+    human_theme = ThemeFactory(question=question, name="Human Theme")
+    
+    # Set up initial AI annotation with themes
+    annotation = ResponseAnnotationFactoryNoThemes(response=response)
+    annotation.add_original_ai_themes([ai_theme1, ai_theme2])
+    
+    # Verify initial state - should have 2 AI themes
+    assert annotation.themes.count() == 2
+    assert set(annotation.get_original_ai_themes()) == {ai_theme1, ai_theme2}
+    assert annotation.get_human_reviewed_themes().count() == 0
+    assert not annotation.human_reviewed
+    
+    client.force_login(consultation_user)
+    
+    # Test Case 1: Human keeps one AI theme, removes one, adds new theme
+    response_obj = client.post(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/{response.id}/",
+        {"theme": [str(ai_theme1.id), str(human_theme.id)]}  # Keep ai_theme1, add human_theme, remove ai_theme2
+    )
+    
+    # Should redirect to show_next
+    assert response_obj.status_code == 302
+    assert "show-next" in response_obj.url
+    
+    # Reload annotation to check state
+    annotation.refresh_from_db()
+    
+    # Verify human review tracking
+    assert annotation.human_reviewed == True
+    assert annotation.reviewed_by == consultation_user
+    assert annotation.reviewed_at is not None
+    
+    # Verify original AI assignments are preserved
+    original_ai_themes = set(annotation.get_original_ai_themes())
+    assert original_ai_themes == {ai_theme1, ai_theme2}  # Both original AI themes preserved
+    
+    # Verify human-reviewed themes
+    human_reviewed_themes = set(annotation.get_human_reviewed_themes())  
+    assert human_reviewed_themes == {ai_theme1, human_theme}  # Human kept ai_theme1 and added human_theme
+    
+    # Verify total themes visible (union of AI and human, no duplicates)
+    all_current_themes = set(annotation.themes.all())
+    assert all_current_themes == {ai_theme1, ai_theme2, human_theme}
+    
+    # Test Case 2: Human removes all themes
+    response_obj = client.post(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/{response.id}/",
+        {"theme": []}  # No themes selected
+    )
+    
+    annotation.refresh_from_db()
+    
+    # Original AI assignments should still be preserved
+    assert set(annotation.get_original_ai_themes()) == {ai_theme1, ai_theme2}
+    
+    # Human-reviewed themes should be empty
+    assert annotation.get_human_reviewed_themes().count() == 0
+    
+    # All themes should still be visible (original AI assignments)
+    all_current_themes = set(annotation.themes.all())
+    assert all_current_themes == {ai_theme1, ai_theme2}
+    
+    # Test Case 3: Human adds only new themes, keeps none of AI themes
+    response_obj = client.post(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/{response.id}/",
+        {"theme": [str(human_theme.id)]}  # Only human theme
+    )
+    
+    annotation.refresh_from_db()
+    
+    # Original AI assignments should still be preserved
+    assert set(annotation.get_original_ai_themes()) == {ai_theme1, ai_theme2}
+    
+    # Human-reviewed themes should only be the human theme
+    assert set(annotation.get_human_reviewed_themes()) == {human_theme}
+    
+    # All themes should be visible
+    all_current_themes = set(annotation.themes.all())
+    assert all_current_themes == {ai_theme1, ai_theme2, human_theme}
+
+
+@pytest.mark.django_db 
+def test_concurrent_human_review_handling(client, consultation_user, question):
+    """Test that concurrent human reviewers are handled correctly when reviewing the same theme"""
+    # Create another user for concurrent reviewing
+    user2 = UserFactory()
+    dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
+    user2.groups.add(dash_access)
+    question.consultation.users.add(user2)
+    
+    # Create respondent and response
+    respondent = RespondentFactory(consultation=question.consultation)
+    response = ResponseFactory(question=question, respondent=respondent, free_text="Test response")
+    
+    # Create themes
+    theme1 = ThemeFactory(question=question, name="Theme 1")
+    theme2 = ThemeFactory(question=question, name="Theme 2")
+    
+    # Set up initial AI annotation
+    annotation = ResponseAnnotationFactoryNoThemes(response=response)
+    annotation.add_original_ai_themes([theme1])
+    
+    # Verify initial state
+    assert not annotation.human_reviewed
+    
+    client.force_login(consultation_user)
+    
+    # User 1 gets the response for review via show_next
+    response_obj = client.get(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/show-next/"
+    )
+    
+    # Should redirect to the specific response
+    assert response_obj.status_code == 302
+    assert str(response.id) in response_obj.url
+    
+    # Now simulate user 1 reviewing the response (adds theme2, keeps theme1)
+    review_response = client.post(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/{response.id}/",
+        {"theme": [str(theme1.id), str(theme2.id)]}
+    )
+    
+    # Should redirect to show_next
+    assert review_response.status_code == 302
+    
+    # Reload annotation to verify user 1's review
+    annotation.refresh_from_db()
+    assert annotation.human_reviewed == True
+    assert annotation.reviewed_by == consultation_user
+    
+    # Create a second client for user 2
+    from django.test import Client
+    client2 = Client()
+    client2.force_login(user2)
+    
+    # User 2 tries to get next response - should not get the already reviewed response
+    response_obj2 = client2.get(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/show-next/"
+    )
+    
+    # Should get no_responses template since the only response is already reviewed
+    assert response_obj2.status_code == 200
+    assert "consultations/answers/no_responses.html" in [t.name for t in response_obj2.templates]
+    
+    # Now test the edge case where user 2 somehow gets the same response URL
+    # (e.g., bookmarked or concurrent access before user 1 completed review)
+    
+    # Reset the annotation to unreviewed to simulate the race condition
+    annotation.human_reviewed = False
+    annotation.reviewed_by = None
+    annotation.reviewed_at = None
+    annotation.save()
+    
+    # Both users attempt to review simultaneously
+    # User 1 submits review
+    review_response1 = client.post(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/{response.id}/",
+        {"theme": [str(theme1.id)]}  # User 1 keeps only theme1
+    )
+    
+    # User 2 submits review immediately after (simulating race condition)
+    review_response2 = client2.post(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/{response.id}/",
+        {"theme": [str(theme2.id)]}  # User 2 wants only theme2
+    )
+    
+    # Both should succeed (return 302)
+    assert review_response1.status_code == 302
+    assert review_response2.status_code == 302
+    
+    # Reload annotation to check final state
+    annotation.refresh_from_db()
+    
+    # Should be marked as human reviewed
+    assert annotation.human_reviewed == True
+    
+    # The last reviewer should be recorded (user 2 in this case)
+    assert annotation.reviewed_by == user2
+    
+    # The final theme assignment should be from the last reviewer
+    human_reviewed_themes = set(annotation.get_human_reviewed_themes())
+    assert human_reviewed_themes == {theme2}
+    
+    # Original AI themes should still be preserved
+    assert set(annotation.get_original_ai_themes()) == {theme1}
+    
+    # Total themes should include both original AI and final human review
+    all_current_themes = set(annotation.themes.all())
+    assert all_current_themes == {theme1, theme2}  # theme1 from AI, theme2 from user2's review
