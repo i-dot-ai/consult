@@ -1,16 +1,25 @@
 {% extends "base.html" %}
 {%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
 
-{% set page_title = "Delete question part" %}
+{% if question %}
+  {% set page_title = "Delete question" %}
+  {% set consultation_title = question.consultation.title %}
+  {% set question_text = question.text %}
+  {% set item_type = "question" %}
+{% else %}
+  {% set page_title = "Delete question part" %}
+  {% set consultation_title = question_part.question.consultation.title %}
+  {% set question_text = question_part.question.text %}
+  {% set item_type = "question part" %}
+{% endif %}
 
 {% block content %}
   <h1 class="govuk-heading-l">{{ page_title }}</h1>
   <div>
-    <p class="govuk-body">This question part is part of the consultation with title: {{ question_part.question.consultation.title }}</p>
-    <p class="govuk-body">Are you sure you want to delete the following question part?</p>
+    <p class="govuk-body">This {{ item_type }} is part of the consultation with title: {{ consultation_title }}</p>
+    <p class="govuk-body">Are you sure you want to delete the following {{ item_type }}?</p>
     <p class="govuk-inset-text">
-      {{ question_part.question.text }}
-      {{ question_part.question.text }}
+      {{ question_text }}
     </p>
   </div>
 
