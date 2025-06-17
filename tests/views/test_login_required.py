@@ -15,7 +15,6 @@ PUBLIC_URL_NAMES = [
 ]
 GENERIC_CONSULTATION_URL_NAMES = [
     "consultations",
-    "schema",
 ]
 AUTHENTICATION_URL_NAMES = [
     "sign_in",
