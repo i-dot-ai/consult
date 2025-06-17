@@ -4,7 +4,6 @@ from typing import TypedDict
 from uuid import UUID
 
 from django.core.cache import cache
-from django.core.exceptions import ObjectDoesNotExist
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, Q
 from django.http import HttpRequest, JsonResponse
@@ -240,7 +239,6 @@ def question_responses_json(
 
     # Parse filters from request
     filters = parse_filters_from_request(request)
-    filters_hash = get_filters_hash(filters)
 
     # Generate theme mappings (disable cache temporarily for debugging)
     theme_mappings = []
@@ -364,52 +362,33 @@ def show(
     response_id: UUID,
 ):
     # Allow user to review and update theme mappings for a response.
-    # Assume latest theme mappings i.e. from latest framework.
-    consultation = get_object_or_404(models.ConsultationOld, slug=consultation_slug)
-    question = get_object_or_404(models.QuestionOld, slug=question_slug, consultation=consultation)
-    response = get_object_or_404(models.Answer, id=response_id)
-    question_part = response.question_part
+    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+    question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
+    response = get_object_or_404(models.Response, id=response_id, question=question)
 
-    all_theme_mappings_for_framework = models.ThemeMapping.get_latest_theme_mappings(question_part)
+    # Get or create annotation for this response
+    annotation, _ = models.ResponseAnnotation.objects.get_or_create(response=response)
 
-    latest_framework = (
-        models.Framework.objects.filter(question_part=question_part).order_by("created_at").last()
-    )
-    all_themes = models.ThemeOld.objects.filter(
-        framework=latest_framework
-    )  # May include themes not mapped to anything
+    # Get all themes for this question
+    all_themes = models.Theme.objects.filter(question=question)
 
-    existing_themes = all_theme_mappings_for_framework.filter(answer=response).values_list(
-        "theme", flat=True
-    )
+    # Get existing themes for this response
+    existing_themes = annotation.themes.all().values_list("id", flat=True)
 
     if request.method == "POST":
         requested_themes = request.POST.getlist("theme")
-        existing_mappings = all_theme_mappings_for_framework.filter(answer=response).select_related(
-            "theme"
-        )
-
-        # themes to delete
-        existing_mappings.exclude(theme_id__in=requested_themes).delete()
-
-        # themes to update to show set by human
-        existing_mappings.filter(theme_id__in=requested_themes).exclude(
-            user_audited=True,
-        ).update(user_audited=True)
-
-        # themes to add
-        themes_to_add = set(requested_themes) - set(map(str, existing_themes))
-        for theme_id in themes_to_add:
-            models.ThemeMapping.objects.create(
-                answer=response,
-                theme_id=theme_id,
-                user_audited=True,
-            )  # From the theme we can infer it's from this framework
-
-        # flag
-        response.is_theme_mapping_audited = True
-        response.save()
-
+        
+        # Set human-reviewed themes (preserves original AI assignments)
+        if requested_themes:
+            themes_to_add = models.Theme.objects.filter(id__in=requested_themes, question=question)
+            annotation.set_human_reviewed_themes(themes_to_add, request.user)
+        else:
+            # No themes selected - clear human-reviewed assignments
+            annotation.set_human_reviewed_themes([], request.user)
+        
+        # Mark as human reviewed
+        annotation.mark_human_reviewed(request.user)
+        
         return redirect(
             "show_next_response", consultation_slug=consultation_slug, question_slug=question_slug
         )
@@ -430,8 +409,8 @@ def show(
 
 @user_can_see_consultation
 def show_next(request: HttpRequest, consultation_slug: str, question_slug: str):
-    consultation = get_object_or_404(models.ConsultationOld, slug=consultation_slug)
-    question = get_object_or_404(models.QuestionOld, slug=question_slug, consultation=consultation)
+    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+    question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
 
     def handle_no_responses():
         context = {
@@ -441,18 +420,20 @@ def show_next(request: HttpRequest, consultation_slug: str, question_slug: str):
         }
         return render(request, "consultations/answers/no_responses.html", context)
 
-    # Get the question part with themes
-    try:
-        question_part_with_themes = question.questionpart_set.get(
-            type=models.QuestionPart.QuestionType.FREE_TEXT
-        )
-    except ObjectDoesNotExist:
+    # Check if this question has free text (only free text questions have themes)
+    if not question.has_free_text:
         return handle_no_responses()
 
-    # Get the next response that has not been checked
+    # Get the next response that has not been human reviewed
+    # Left join with annotation to find responses without annotations or not reviewed
     next_response = (
-        models.Answer.objects.filter(
-            question_part=question_part_with_themes, is_theme_mapping_audited=False
+        models.Response.objects.filter(
+            question=question,
+            free_text__isnull=False,  # Only responses with free text
+            free_text__gt=""  # Non-empty free text
+        )
+        .exclude(
+            annotation__human_reviewed=True  # Exclude already reviewed
         )
         .order_by("?")
         .first()

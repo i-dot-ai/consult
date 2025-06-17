@@ -329,7 +329,7 @@ class ThemeFactory(DjangoModelFactory):
     question = factory.SubFactory(QuestionFactory)
     name = factory.LazyAttribute(lambda o: fake.sentence())
     description = factory.LazyAttribute(lambda o: fake.paragraph())
-    key = factory.LazyAttribute(lambda o: fake.word())
+    key = factory.Sequence(lambda n: f"theme-{n}")
 
 
 class ResponseAnnotationFactory(DjangoModelFactory):
@@ -349,18 +349,31 @@ class ResponseAnnotationFactory(DjangoModelFactory):
             return
 
         if extracted:
-            # If themes were passed in, use them
-            for theme in extracted:
-                self.themes.add(theme)
+            # If themes were passed in, use the proper helper method
+            self.add_original_ai_themes(extracted)
         else:
             # Create some themes for the same question
             num_themes = random.randint(1, 3)
+            themes_to_add = []
             for _ in range(num_themes):
                 theme = ThemeFactory(question=self.response.question)
-                self.themes.add(theme)
+                themes_to_add.append(theme)
+            self.add_original_ai_themes(themes_to_add)
 
 
 class ReviewedResponseAnnotationFactory(ResponseAnnotationFactory):
     human_reviewed = True
     reviewed_by = factory.SubFactory(UserFactory)
     reviewed_at = factory.LazyAttribute(lambda o: timezone.now())
+
+
+class ResponseAnnotationFactoryNoThemes(ResponseAnnotationFactory):
+    """Factory that doesn't automatically create themes"""
+    class Meta:
+        model = models.ResponseAnnotation
+        skip_postgeneration_save = True
+    
+    @factory.post_generation
+    def themes(self, create, extracted, **kwargs):
+        # Don't create any themes automatically
+        pass
