@@ -1,12 +1,11 @@
 import pytest
 
 from consultation_analyser.authentication.models import User
-from consultation_analyser.consultations.models import ConsultationOld
+from consultation_analyser.consultations.models import Consultation
 from consultation_analyser.factories import UserFactory
 from tests.helpers import sign_in
 
 
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
 @pytest.mark.django_db
 def test_adding_users_to_consultations_via_support(django_app):
     # given I am an admin user
@@ -20,7 +19,7 @@ def test_adding_users_to_consultations_via_support(django_app):
     consultations_index = django_app.get("/support/consultations/")
     consultations_index = consultations_index.form.submit("generate_dummy_consultation")
 
-    latest_consultation = ConsultationOld.objects.all().order_by("created_at").last()
+    latest_consultation = Consultation.objects.all().order_by("created_at").last()
     consultation_page = consultations_index.click(latest_consultation.title)
 
     assert user.email in consultation_page
