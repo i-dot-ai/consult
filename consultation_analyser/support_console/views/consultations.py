@@ -244,3 +244,23 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
     return render(
         request, "support_console/consultations/import_consultation.html", context=context
     )
+
+
+def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UUID) -> HttpResponse:
+    """Delete a question from a consultation"""
+    question = models.Question.objects.get(
+        consultation__id=consultation_id, id=question_id
+    )
+    context = {
+        "question": question,
+        "consultation": question.consultation,
+    }
+
+    if request.POST:
+        if "confirm_deletion" in request.POST:
+            question.delete()
+            messages.success(request, "The question has been deleted")
+            return redirect(f"/support/consultations/{consultation_id}/")
+        else:
+            return redirect(f"/support/consultations/{consultation_id}/")
+    return render(request, "support_console/question_parts/delete.html", context=context)
