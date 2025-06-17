@@ -28,3 +28,22 @@ def test_the_tool_will_only_run_in_dev(environment):
             create_dummy_consultation_from_yaml()
 
 
+
+@pytest.mark.django_db
+def test_create_dummy_consultation_from_yaml():
+    consultation = create_dummy_consultation_from_yaml(number_respondents=10)
+    questions = models.Question.objects.filter(consultation=consultation)
+    assert questions.count() == 4
+
+    q1 = questions.get(number=1)
+    assert q1.has_free_text
+    assert q1.has_multiple_choice
+
+    q1_themes = models.Theme.objects.filter(question=q1)
+    assert len(q1_themes) == 2
+    assert q1_themes.get(key="A").name == "Standardized framework"
+
+    q3 = questions.get(number=3)
+    assert not q3.has_free_text
+    assert q3.has_multiple_choice
+    assert q3.multiple_choice_options
