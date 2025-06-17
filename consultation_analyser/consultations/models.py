@@ -791,3 +791,17 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.themes.filter(
             responseannotationtheme__is_original_ai_assignment=False
         )
+
+    def save(self, *args, **kwargs) -> None:
+        """
+        Override save to prevent accidental direct theme manipulation.
+        Themes should be added using add_original_ai_themes() or set_human_reviewed_themes().
+        """
+        # Check if themes are being passed via save (which shouldn't happen)
+        if 'themes' in kwargs:
+            raise ValueError(
+                "Direct theme assignment through save() is not allowed. "
+                "Use add_original_ai_themes() or set_human_reviewed_themes() instead."
+            )
+        
+        super().save(*args, **kwargs)
