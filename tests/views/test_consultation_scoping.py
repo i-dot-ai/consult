@@ -8,7 +8,6 @@ from consultation_analyser.consultations.views import consultations
 from consultation_analyser.factories import ConsultationFactory, UserFactory
 
 
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
 @pytest.mark.django_db
 def test_get_consultation_we_own(client):
     user = UserFactory()
@@ -22,7 +21,6 @@ def test_get_consultation_we_own(client):
     assert response.status_code == 200
 
 
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
 @pytest.mark.django_db
 def test_get_consultation_we_do_not_own():
     user = UserFactory()

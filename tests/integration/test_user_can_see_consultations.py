@@ -4,7 +4,6 @@ from consultation_analyser.factories import ConsultationFactory, UserFactory
 from tests.helpers import sign_in
 
 
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
 @pytest.mark.django_db
 def test_user_can_see_consultations(django_app):
     # given i am a user without consultations
