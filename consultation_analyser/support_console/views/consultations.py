@@ -104,9 +104,6 @@ def index(request: HttpRequest) -> HttpResponse:
                     request,
                     "A giant dummy consultation is being created - see progress in the Django RQ dashboard",
                 )
-            elif request.POST.get("create_synthetic_consultation") is not None:
-                call_command("import_synthetic_data")
-                messages.success(request, "Synthetic data imported")
         except RuntimeError as error:
             messages.error(request, error.args[0])
     consultations = models.Consultation.objects.all()
