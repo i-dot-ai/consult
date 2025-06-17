@@ -387,13 +387,13 @@ def import_consultation(
             # Bulk create annotations
             created_annotations = ResponseAnnotation.objects.bulk_create(annotations_to_save)
             
-            # Add theme relationships
+            # Add theme relationships using the proper helper method
             for i, (annotation, theme_keys) in enumerate(annotation_theme_mappings):
                 created_annotation = created_annotations[i]
                 themes_to_add = [theme_dict[key] for key in theme_keys if key in theme_dict]
                 
                 if themes_to_add:
-                    created_annotation.themes.set(themes_to_add)
+                    created_annotation.add_original_ai_themes(themes_to_add)
             
             logger.info(f"Imported {len(created_annotations)} response annotations for question {question_number}")
         
