@@ -15,7 +15,6 @@ from consultation_analyser.factories import (
     ConsultationFactory,
     QuestionFactory,
     RespondentFactory,
-    ResponseAnnotationFactory,
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
     ThemeFactory,
@@ -199,13 +198,11 @@ def test_get_theme_summary_optimized_with_responses(question, theme):
     response2 = ResponseFactory(question=question, respondent=respondent2)
 
     # Create annotations with themes
-    annotation1 = ResponseAnnotationFactory(response=response1)
-    annotation1.themes.clear()  # Clear any auto-generated themes
-    annotation1.themes.add(theme)
+    annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
+    annotation1.add_original_ai_themes([theme])
 
-    annotation2 = ResponseAnnotationFactory(response=response2)
-    annotation2.themes.clear()  # Clear any auto-generated themes
-    annotation2.themes.add(theme)
+    annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
+    annotation2.add_original_ai_themes([theme])
 
     theme_summary = get_theme_summary_optimized(question)
 
@@ -305,9 +302,8 @@ def test_question_responses_json_theme_mappings(client, consultation_user, quest
     response = ResponseFactory(question=question, respondent=respondent)
 
     # Create annotation with theme
-    annotation = ResponseAnnotationFactory(response=response)
-    annotation.themes.clear()  # Clear any auto-generated themes
-    annotation.themes.add(theme)
+    annotation = ResponseAnnotationFactoryNoThemes(response=response)
+    annotation.add_original_ai_themes([theme])
 
     client.force_login(consultation_user)
     response = client.get(
@@ -331,9 +327,8 @@ def test_get_filtered_responses_with_themes_no_filters(question):
     theme = ThemeFactory(question=question)
 
     # Create annotation with theme
-    annotation = ResponseAnnotationFactory(response=response)
-    annotation.themes.clear()
-    annotation.themes.add(theme)
+    annotation = ResponseAnnotationFactoryNoThemes(response=response)
+    annotation.add_original_ai_themes([theme])
 
     # Test with no filters
     responses = get_filtered_responses_with_themes(question)
