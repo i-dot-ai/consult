@@ -34,7 +34,7 @@ def create_dummy_consultation_from_yaml(
         raise RuntimeError("Dummy data generation should not be run in production")
 
     if not consultation:
-        consultation = ConsultationFactory()
+        consultation = ConsultationFactory(title="Dummy Consultation")
 
     respondents = [
         RespondentFactory(consultation=consultation, themefinder_id=i + 1)
@@ -49,12 +49,12 @@ def create_dummy_consultation_from_yaml(
     for question_data in questions_data:
         logger.info("Creating a new question...")
         has_free_text = question_data["has_free_text"]
-        has_multiple_choice=question_data["has_multiple_choice"]
+        has_multiple_choice = question_data["has_multiple_choice"]
 
         if has_multiple_choice:
-            options=json.loads(json.dumps(question_data.get("multiple_choice_options")))
+            options = json.loads(json.dumps(question_data.get("multiple_choice_options")))
         else:
-            options=None
+            options = None
 
         question = QuestionFactory(
             text=question_data["question_text"],
@@ -62,7 +62,7 @@ def create_dummy_consultation_from_yaml(
             consultation=consultation,
             has_free_text=has_free_text,
             has_multiple_choice=has_multiple_choice,
-            multiple_choice_options=options
+            multiple_choice_options=options,
         )
 
         if has_free_text:
@@ -73,7 +73,9 @@ def create_dummy_consultation_from_yaml(
                 theme_name = data["name"]
                 theme_desc = data["description"]
                 theme_key = data["key"]
-                theme_obj = ThemeFactory(question=question, description=theme_desc, key=theme_key, name=theme_name)
+                theme_obj = ThemeFactory(
+                    question=question, description=theme_desc, key=theme_key, name=theme_name
+                )
                 theme_objects.append(theme_obj)
 
         # For each respondent add random response and themes
@@ -87,14 +89,23 @@ def create_dummy_consultation_from_yaml(
                 themes_for_response = random.sample(
                     theme_objects, k=random.randint(1, len(theme_objects))
                 )
-                ResponseAnnotationFactory(response=response, themes=themes_for_response, sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT, evidence_rich=models.ResponseAnnotation.EvidenceRich.YES)
-                # For simplicity have just added single sentiment/evidence_rich.
-                # Also haven't considered human changes to themes.
+                random_sentiment = random.choice([s[0] for s in models.ResponseAnnotation.Sentiment.choices])
+                random_evidence_rich = random.choice(
+                    [e[0] for e in models.ResponseAnnotation.EvidenceRich.choices]
+                )
+                ResponseAnnotationFactory(
+                    response=response,
+                    themes=themes_for_response,
+                    sentiment=random_sentiment,
+                    evidence_rich=random_evidence_rich,
+                )
+                # Haven't considered human changes to themes.
 
             if has_multiple_choice:
                 logger.info("Add multiple choice responses")
                 chosen_options = random.sample(
-                    question_data["multiple_choice_options"], k=random.randint(1, len(question_data["multiple_choice_options"]))
+                    question_data["multiple_choice_options"],
+                    k=random.randint(1, len(question_data["multiple_choice_options"])),
                 )
                 response.chosen_options = chosen_options
                 response.save()
