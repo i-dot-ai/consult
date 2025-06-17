@@ -364,3 +364,15 @@ class ReviewedResponseAnnotationFactory(ResponseAnnotationFactory):
     human_reviewed = True
     reviewed_by = factory.SubFactory(UserFactory)
     reviewed_at = factory.LazyAttribute(lambda o: timezone.now())
+
+
+class ResponseAnnotationFactoryNoThemes(ResponseAnnotationFactory):
+    """Factory that doesn't automatically create themes"""
+    class Meta:
+        model = models.ResponseAnnotation
+        skip_postgeneration_save = True
+    
+    @factory.post_generation
+    def themes(self, create, extracted, **kwargs):
+        # Don't create any themes automatically
+        pass
