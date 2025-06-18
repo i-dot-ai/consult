@@ -27,7 +27,9 @@ class FilterParams(TypedDict, total=False):
     theme_list: list[str]
     evidence_rich: bool
     search_value: str
-    demographic_filters: dict[str, list[str]]  # e.g. {"individual": ["true"], "region": ["north", "south"]}
+    demographic_filters: dict[
+        str, list[str]
+    ]  # e.g. {"individual": ["true"], "region": ["north", "south"]}
 
 
 def parse_filters_from_request(request: HttpRequest) -> FilterParams:
@@ -73,9 +75,6 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
     if filters.get("sentiment_list"):
         query &= Q(annotation__sentiment__in=filters["sentiment_list"])
 
-    if filters.get("theme_list"):
-        query &= Q(annotation__themes__id__in=filters["theme_list"])
-
     if filters.get("evidence_rich"):
         query &= Q(annotation__evidence_rich=models.ResponseAnnotation.EvidenceRich.YES)
 
@@ -105,28 +104,54 @@ def get_filtered_responses_with_themes(
 ):
     """Single optimized query to get all filtered responses with their themes"""
     response_filter = build_response_filter_query(filters or {}, question)
-    return (
+    queryset = (
         models.Response.objects.filter(response_filter)
         .select_related("respondent", "annotation")
         .prefetch_related("annotation__themes")
-        .order_by("created_at")  # Consistent ordering for pagination
     )
 
+    # Handle theme filtering with AND logic
+    if filters and filters.get("theme_list"):
+        # For AND logic: response must have ALL selected themes
+        # We need to check that the response's annotation has all the required themes
+        from django.db.models import Exists, OuterRef
 
-def get_theme_summary_optimized(question: models.Question, filters: FilterParams | None = None) -> list[dict]:
+        # Create subqueries for each theme
+        for theme_id in filters["theme_list"]:
+            theme_exists = models.ResponseAnnotationTheme.objects.filter(
+                response_annotation__response=OuterRef("pk"), theme_id=theme_id
+            )
+            queryset = queryset.filter(Exists(theme_exists))
+
+    return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination
+
+
+def get_theme_summary_optimized(
+    question: models.Question, filters: FilterParams | None = None
+) -> list[dict]:
     """Database-optimized theme aggregation - shows all themes in filtered responses"""
-    # Get the filtered responses first
+    # Get the filtered responses using the same logic as get_filtered_responses_with_themes
     response_filter = build_response_filter_query(filters or {}, question)
     filtered_responses = models.Response.objects.filter(response_filter)
+
+    # Apply theme filtering with AND logic if needed
+    if filters and filters.get("theme_list"):
+        from django.db.models import Exists, OuterRef
+
+        # Create subqueries for each theme
+        for theme_id in filters["theme_list"]:
+            theme_exists = models.ResponseAnnotationTheme.objects.filter(
+                response_annotation__response=OuterRef("pk"), theme_id=theme_id
+            )
+            filtered_responses = filtered_responses.filter(Exists(theme_exists))
 
     # Now get all themes that appear in those filtered responses
     # This shows ALL themes that appear in responses matching the filter criteria
     theme_data = (
-        models.Theme.objects
-        .filter(responseannotation__response__in=filtered_responses)
-        .annotate(response_count=Count('responseannotation__response', distinct=True))
-        .values('id', 'name', 'description', 'response_count')
-        .order_by('-response_count')
+        models.Theme.objects.filter(responseannotation__response__in=filtered_responses)
+        .annotate(response_count=Count("responseannotation__response", distinct=True))
+        .values("id", "name", "description", "response_count")
+        .order_by("-response_count")
     )
 
     return [
@@ -146,7 +171,9 @@ def get_cached_theme_summary(question_id: str, filters_hash: str) -> list[dict] 
     return cache.get(cache_key)
 
 
-def set_cached_theme_summary(question_id: str, filters_hash: str, data: list[dict], timeout: int = 300):
+def set_cached_theme_summary(
+    question_id: str, filters_hash: str, data: list[dict], timeout: int = 300
+):
     """Cache theme summary for 5 minutes"""
     cache_key = f"theme_summary:{question_id}:{filters_hash}"
     cache.set(cache_key, data, timeout)
@@ -154,7 +181,7 @@ def set_cached_theme_summary(question_id: str, filters_hash: str, data: list[dic
 
 def get_filters_hash(filters: FilterParams) -> str:
     """Generate a hash for caching based on filter parameters"""
-    return hashlib.md5(str(sorted(filters.items())).encode()).hexdigest() #nosec - not used for security
+    return hashlib.md5(str(sorted(filters.items())).encode()).hexdigest()  # nosec - not used for security
 
 
 def build_respondent_data(respondent: models.Respondent, response: models.Response) -> dict:
@@ -196,11 +223,13 @@ def build_respondent_data(respondent: models.Respondent, response: models.Respon
 
 def get_demographic_options(consultation: models.Consultation) -> dict[str, list]:
     """Get all demographic fields and their possible values from normalized storage"""
-    options = models.DemographicOption.objects.filter(
-        consultation=consultation
-    ).values_list('field_name', 'field_value').order_by('field_name', 'field_value')
+    options = (
+        models.DemographicOption.objects.filter(consultation=consultation)
+        .values_list("field_name", "field_value")
+        .order_by("field_name", "field_value")
+    )
 
-    result = {} # type: ignore[var-annotated]
+    result = {}  # type: ignore[var-annotated]
     for field_name, field_value in options:
         if field_name not in result:
             result[field_name] = []
@@ -211,7 +240,7 @@ def get_demographic_options(consultation: models.Consultation) -> dict[str, list
 
 def derive_option_summary_from_responses(responses) -> list[dict]:
     """Get a summary of the selected options for a multiple choice question from response queryset"""
-    option_counts = {} # type: ignore[var-annotated]
+    option_counts = {}  # type: ignore[var-annotated]
     for response in responses:
         if response.chosen_options:
             for option in response.chosen_options:
@@ -234,7 +263,7 @@ def question_responses_json(
     question = get_object_or_404(
         models.Question.objects.select_related("consultation"),
         slug=question_slug,
-        consultation__slug=consultation_slug
+        consultation__slug=consultation_slug,
     )
 
     # Parse filters from request
@@ -256,30 +285,31 @@ def question_responses_json(
             for i, theme in enumerate(theme_data)
         ]
 
-    # Get respondents with their filtered responses using optimized query
-    response_filter = build_response_filter_query(filters, question)
+    # Get respondents with their filtered responses using the same logic as theme filtering
+    # First get the filtered responses using AND logic for themes
+    filtered_responses = get_filtered_responses_with_themes(question, filters)
+
+    # Then get respondents who have these filtered responses
     filtered_respondents = (
-        models.Respondent.objects
-        .filter(response__in=models.Response.objects.filter(response_filter))
+        models.Respondent.objects.filter(response__in=filtered_responses)
         .prefetch_related(
             Prefetch(
-                'response_set',
-                queryset=models.Response.objects.filter(response_filter)
-                .select_related('annotation')
-                .prefetch_related('annotation__themes'),
-                to_attr='filtered_responses'
+                "response_set",
+                queryset=filtered_responses.select_related("annotation").prefetch_related(
+                    "annotation__themes"
+                ),
+                to_attr="filtered_responses",
             )
         )
         .distinct()
-        .order_by('pk')
+        .order_by("pk")
     )
 
     # Efficient counting using database aggregation
     filtered_total = filtered_respondents.count()
-    all_respondents_count = (
-        models.Response.objects.filter(question=question)
-        .aggregate(count=Count("respondent_id", distinct=True))["count"]
-    )
+    all_respondents_count = models.Response.objects.filter(question=question).aggregate(
+        count=Count("respondent_id", distinct=True)
+    )["count"]
 
     # Get demographic options for this consultation
     demographic_options = get_demographic_options(question.consultation)
@@ -377,7 +407,7 @@ def show(
 
     if request.method == "POST":
         requested_themes = request.POST.getlist("theme")
-        
+
         # Set human-reviewed themes (preserves original AI assignments)
         if requested_themes:
             themes_to_add = models.Theme.objects.filter(id__in=requested_themes, question=question)
@@ -385,10 +415,10 @@ def show(
         else:
             # No themes selected - clear human-reviewed assignments
             annotation.set_human_reviewed_themes([], request.user)
-        
+
         # Mark as human reviewed
         annotation.mark_human_reviewed(request.user)
-        
+
         return redirect(
             "show_next_response", consultation_slug=consultation_slug, question_slug=question_slug
         )
@@ -430,7 +460,7 @@ def show_next(request: HttpRequest, consultation_slug: str, question_slug: str):
         models.Response.objects.filter(
             question=question,
             free_text__isnull=False,  # Only responses with free text
-            free_text__gt=""  # Non-empty free text
+            free_text__gt="",  # Non-empty free text
         )
         .exclude(
             annotation__human_reviewed=True  # Exclude already reviewed
