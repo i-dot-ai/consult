@@ -2,12 +2,12 @@ resource "aws_cloudwatch_event_rule" "batch_job_state_change" {
   name        = "${local.name}-batch-job-state"
   description = "Capture AWS Batch job state changes"
 
-  event_pattern = jsonencode({
-    source      = ["aws.batch"]
-    detail-type = ["Batch Job State Change"]
+   event_pattern = jsonencode({
+    source      = ["aws.batch"],
+    detail-type = ["Batch Job State Change"],
     detail = {
-      status = ["SUCCEEDED", "FAILED", "RUNNING"]
-      jobName = [{"prefix": "${local.name}-*"}]
+      status  = ["SUCCEEDED", "FAILED", "RUNNING"],
+      jobName = ["i-dot-ai-dev-consult-mapping-FARGATE-job"]
     }
   })
   tags = var.universal_tags

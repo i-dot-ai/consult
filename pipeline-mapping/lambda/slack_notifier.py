@@ -6,7 +6,7 @@ import urllib3
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-SLACK_WEBHOOK_URL = "https://hooks.slack.com/services/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"
+SLACK_WEBHOOK_URL = "https://hooks.slack.com/services/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"
 
 http = urllib3.PoolManager()
 
@@ -100,7 +100,7 @@ def lambda_handler(event, context):
         job_status = detail.get('status', 'Unknown Status')
 
         # Only proceed for SUCCEEDED or RUNNING
-        if job_status not in ['SUCCEEDED', 'RUNNING']:
+        if job_status not in ['SUCCEEDED', 'RUNNING', 'FAILED']:
             logger.info(f"Ignoring job with status {job_status}")
             return {
                 'statusCode': 200,
