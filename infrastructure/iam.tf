@@ -95,3 +95,4 @@ resource "aws_iam_policy" "lambda_exec_custom_policy" {
   description = "lambda custom policy"
   policy      = data.aws_iam_policy_document.lambda_exec_custom_policy.json
 }
+
