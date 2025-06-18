@@ -8,7 +8,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("consultations", "0053_remove_themes_field"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),

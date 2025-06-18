@@ -32,7 +32,7 @@ def test_question_unique_slugs():
     assert another_question.slug != question.slug
     assert another_question.slug == f"{slugified}-2"
 
-    # Test empty question text. 
+    # Test empty question text.
     question_text = ""
     question = QuestionFactory(text=question_text, number=3)
     assert question.slug == "3"  # Falls back to number when text is empty
@@ -58,14 +58,14 @@ def test_question_configuration():
     assert question.has_free_text
     assert not question.has_multiple_choice
     assert question.multiple_choice_options is None
-    
+
     # Test multiple choice only question
     mc_question = QuestionWithMultipleChoiceFactory()
     assert mc_question.has_multiple_choice
     assert not mc_question.has_free_text  # Factory sets this to False
     assert isinstance(mc_question.multiple_choice_options, list)
     assert len(mc_question.multiple_choice_options) >= 2
-    
+
     # Test question with both
     both_question = QuestionWithBothFactory()
     assert both_question.has_free_text
@@ -73,7 +73,7 @@ def test_question_configuration():
     assert isinstance(both_question.multiple_choice_options, list)
 
 
-@pytest.mark.django_db  
+@pytest.mark.django_db
 def test_question_save_too_long():
     long_title = "T" * 257
     question = QuestionFactory(text=long_title, number=1)

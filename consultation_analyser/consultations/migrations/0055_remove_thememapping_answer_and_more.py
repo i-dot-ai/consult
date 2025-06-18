@@ -4,7 +4,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("consultations", "0054_add_responseannotationtheme_through_model"),
     ]

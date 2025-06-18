@@ -16,7 +16,6 @@ def test_a_consultation_is_generated(settings):
     assert models.Question.objects.count() == 4
 
 
-
 @pytest.mark.django_db
 @pytest.mark.parametrize("environment", ["prod"])
 def test_the_tool_will_only_run_in_dev(environment):
@@ -25,7 +24,6 @@ def test_the_tool_will_only_run_in_dev(environment):
             Exception, match=r"Dummy data generation should not be run in production"
         ):
             create_dummy_consultation_from_yaml()
-
 
 
 @pytest.mark.django_db

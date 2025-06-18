@@ -33,13 +33,13 @@ def test_question_factories():
     assert question.has_free_text
     assert not question.has_multiple_choice
     assert question.multiple_choice_options is None
-    
+
     # Test question with multiple choice only
     mc_question = factories.QuestionWithMultipleChoiceFactory()
     assert mc_question.has_multiple_choice
     assert mc_question.multiple_choice_options
     assert len(mc_question.multiple_choice_options) >= 2
-    
+
     # Test question with both free text and multiple choice
     both_question = factories.QuestionWithBothFactory()
     assert both_question.has_free_text
@@ -62,13 +62,15 @@ def test_response_factories():
     assert models.Response.objects.filter(id=response.id).exists()
     assert response.free_text
     assert response.chosen_options == []
-    
+
     # Test response with multiple choice
     mc_response = factories.ResponseWithMultipleChoiceFactory()
     assert mc_response.free_text == ""
     assert mc_response.chosen_options
-    assert all(opt in mc_response.question.multiple_choice_options for opt in mc_response.chosen_options)
-    
+    assert all(
+        opt in mc_response.question.multiple_choice_options for opt in mc_response.chosen_options
+    )
+
     # Test response with both
     both_response = factories.ResponseWithBothFactory()
     assert both_response.free_text
@@ -89,10 +91,12 @@ def test_response_annotation_factory():
     annotation = factories.ResponseAnnotationFactory()
     assert models.ResponseAnnotation.objects.filter(id=annotation.id).exists()
     assert annotation.sentiment in [choice.value for choice in models.ResponseAnnotation.Sentiment]
-    assert annotation.evidence_rich in [choice.value for choice in models.ResponseAnnotation.EvidenceRich]
+    assert annotation.evidence_rich in [
+        choice.value for choice in models.ResponseAnnotation.EvidenceRich
+    ]
     assert not annotation.human_reviewed
     assert annotation.themes.count() >= 1
-    
+
     # Test themes are for the same question
     for theme in annotation.themes.all():
         assert theme.question == annotation.response.question

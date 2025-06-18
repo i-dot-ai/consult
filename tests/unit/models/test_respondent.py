@@ -13,33 +13,29 @@ class TestRespondent:
         assert respondent.consultation
         assert respondent.themefinder_id
         assert isinstance(respondent.demographics, dict)
-        
+
     def test_respondent_identifier_property(self):
         """Test the identifier property"""
         # With themefinder_id
         respondent = factories.RespondentFactory(themefinder_id=12345)
         assert respondent.identifier == 12345
-        
+
         # Without themefinder_id
         respondent_no_tf = factories.RespondentFactory(themefinder_id=None)
         assert respondent_no_tf.identifier == respondent_no_tf.id
-        
+
     def test_respondent_demographics(self):
         """Test demographics field"""
-        demographics = {
-            "age": 35,
-            "gender": "female",
-            "location": "London"
-        }
+        demographics = {"age": 35, "gender": "female", "location": "London"}
         respondent = factories.RespondentFactory(demographics=demographics)
         assert respondent.demographics == demographics
-        
+
     def test_respondent_consultation_relationship(self):
         """Test foreign key relationship with Consultation"""
         consultation = factories.ConsultationFactory()
         respondent1 = factories.RespondentFactory(consultation=consultation)
         respondent2 = factories.RespondentFactory(consultation=consultation)
-        
+
         # Check reverse relationship
         consultation_respondents = consultation.respondent_set.all()
         assert respondent1 in consultation_respondents

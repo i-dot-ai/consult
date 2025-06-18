@@ -1,4 +1,3 @@
-
 from consultation_analyser.support_console.validation_utils import (
     format_validation_error,
 )
@@ -71,5 +70,3 @@ class TestFormatValidationError:
         result = format_validation_error(error)
         assert result["type"] == "unknown"
         assert result["message"] == "Some random error message"
-
-

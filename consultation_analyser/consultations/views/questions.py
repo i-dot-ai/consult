@@ -24,10 +24,7 @@ def show(
 
     if question.has_free_text:
         theme_counts = (
-            models.Theme.objects.filter(
-                question=question,
-                responseannotation__isnull=False
-            )
+            models.Theme.objects.filter(question=question, responseannotation__isnull=False)
             .annotate(count=Count("responseannotation"))
             .order_by("-count")
         )
@@ -50,14 +47,12 @@ def show(
 @user_can_see_consultation
 def index(request, consultation_slug: str):
     consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    
+
     # Get questions that have free text and have themes
     questions_with_themes = models.Question.objects.filter(
-        consultation=consultation,
-        has_free_text=True,
-        theme__isnull=False
+        consultation=consultation, has_free_text=True, theme__isnull=False
     ).distinct()
-    
+
     context = {
         "consultation": consultation,
         "question_parts": questions_with_themes,  # Using same variable name for template compatibility

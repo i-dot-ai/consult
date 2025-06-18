@@ -89,7 +89,9 @@ def create_dummy_consultation_from_yaml(
                 themes_for_response = random.sample(
                     theme_objects, k=random.randint(1, len(theme_objects))
                 )
-                random_sentiment = random.choice([s[0] for s in models.ResponseAnnotation.Sentiment.choices])
+                random_sentiment = random.choice(
+                    [s[0] for s in models.ResponseAnnotation.Sentiment.choices]
+                )
                 random_evidence_rich = random.choice(
                     [e[0] for e in models.ResponseAnnotation.EvidenceRich.choices]
                 )

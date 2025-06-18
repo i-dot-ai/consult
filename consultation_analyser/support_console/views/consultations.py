@@ -23,61 +23,64 @@ logger = logging.getLogger("export")
 
 @job("default", timeout=1800)
 def import_consultation_job(
-    consultation_name: str, 
-    consultation_code: str, 
-    timestamp: str,
-    current_user_id: int
+    consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
 ) -> None:
     """Job wrapper for importing consultations."""
     return ingest.import_consultation(
         consultation_name=consultation_name,
         consultation_code=consultation_code,
         timestamp=timestamp,
-        current_user_id=current_user_id
+        current_user_id=current_user_id,
     )
 
 
 @job("default", timeout=900)
 def delete_consultation_job(consultation: models.Consultation):
     from django.db import connection, transaction
-    
+
     consultation_id = consultation.id
     consultation_title = consultation.title
-    
+
     try:
         # Close any existing connections to start fresh
         connection.close()
-        
+
         with transaction.atomic():
             # Refetch the consultation to ensure we have a fresh DB connection
             consultation = models.Consultation.objects.get(id=consultation_id)
-            
+
             # Delete related objects in order to avoid foreign key constraints
             logger.info(f"Deleting consultation '{consultation_title}' (ID: {consultation_id})")
-            
+
             # Delete in batches to avoid memory issues
             logger.info("Deleting response annotations...")
-            models.ResponseAnnotation.objects.filter(response__question__consultation=consultation).delete()
-            
+            models.ResponseAnnotation.objects.filter(
+                response__question__consultation=consultation
+            ).delete()
+
             logger.info("Deleting responses...")
             models.Response.objects.filter(question__consultation=consultation).delete()
-            
+
             logger.info("Deleting themes...")
             models.Theme.objects.filter(question__consultation=consultation).delete()
-            
+
             logger.info("Deleting questions...")
             models.Question.objects.filter(consultation=consultation).delete()
-            
+
             logger.info("Deleting respondents...")
             models.Respondent.objects.filter(consultation=consultation).delete()
-            
+
             logger.info("Deleting consultation...")
             consultation.delete()
-            
-        logger.info(f"Successfully deleted consultation '{consultation_title}' (ID: {consultation_id})")
-        
+
+        logger.info(
+            f"Successfully deleted consultation '{consultation_title}' (ID: {consultation_id})"
+        )
+
     except Exception as e:
-        logger.error(f"Error deleting consultation '{consultation_title}' (ID: {consultation_id}): {str(e)}")
+        logger.error(
+            f"Error deleting consultation '{consultation_title}' (ID: {consultation_id}): {str(e)}"
+        )
         raise
 
 
@@ -130,9 +133,7 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
-    questions = models.Question.objects.filter(
-        consultation=consultation
-    ).order_by("number")
+    questions = models.Question.objects.filter(consultation=consultation).order_by("number")
 
     context = {
         "consultation": consultation,
@@ -158,10 +159,7 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
         consultation=consultation, has_free_text=True
     ).order_by("number")
 
-    question_items = [
-        {"value": q.id, "text": f"Question {q.number} - {q.text}"}
-        for q in questions
-    ]
+    question_items = [{"value": q.id, "text": f"Question {q.number} - {q.text}"} for q in questions]
 
     context = {
         "consultation": consultation,
@@ -188,8 +186,6 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
         return redirect("/support/consultations/")
 
     return render(request, "support_console/consultations/export_audit.html", context)
-
-
 
 
 # Legacy import function removed - using new import_consultation function instead
@@ -231,7 +227,7 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
                 consultation_name=consultation_name,
                 consultation_code=consultation_code,
                 timestamp=timestamp,
-                current_user_id=request.user.id
+                current_user_id=request.user.id,
             )
             messages.success(request, f"Import started for consultation: {consultation_name}")
             return redirect("support_consultations")  # Fixed URL name
@@ -248,9 +244,7 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
 
 def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UUID) -> HttpResponse:
     """Delete a question from a consultation"""
-    question = models.Question.objects.get(
-        consultation__id=consultation_id, id=question_id
-    )
+    question = models.Question.objects.get(consultation__id=consultation_id, id=question_id)
     context = {
         "question": question,
         "consultation": question.consultation,
