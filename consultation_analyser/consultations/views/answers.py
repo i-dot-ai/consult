@@ -130,8 +130,6 @@ def get_theme_summary_optimized(
 
     # Apply theme filtering with AND logic if needed
     if filters and filters.get("theme_list"):
-        from django.db.models import Exists, OuterRef
-
         # Create subqueries for each theme
         for theme_id in filters["theme_list"]:
             theme_exists = models.ResponseAnnotationTheme.objects.filter(
