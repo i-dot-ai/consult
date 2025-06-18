@@ -3,7 +3,7 @@ from typing import TypedDict
 from uuid import UUID
 
 from django.core.paginator import Paginator
-from django.db.models import Count, Prefetch, Q
+from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 
@@ -110,10 +110,6 @@ def get_filtered_responses_with_themes(
 
     # Handle theme filtering with AND logic
     if filters and filters.get("theme_list"):
-        # For AND logic: response must have ALL selected themes
-        # We need to check that the response's annotation has all the required themes
-        from django.db.models import Exists, OuterRef
-
         # Create subqueries for each theme
         for theme_id in filters["theme_list"]:
             theme_exists = models.ResponseAnnotationTheme.objects.filter(
@@ -161,8 +157,6 @@ def get_theme_summary_optimized(
         }
         for theme in theme_data
     ]
-
-
 
 
 def build_respondent_data(respondent: models.Respondent, response: models.Response) -> dict:
