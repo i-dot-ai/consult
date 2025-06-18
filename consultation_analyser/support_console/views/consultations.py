@@ -16,7 +16,6 @@ from consultation_analyser.consultations.dummy_data import (
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
-from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
 from consultation_analyser.support_console.validation_utils import format_validation_error
 
 logger = logging.getLogger("export")
@@ -191,27 +190,6 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
     return render(request, "support_console/consultations/export_audit.html", context)
 
 
-def export_urls_for_consultation(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    context = {"bucket_name": settings.AWS_BUCKET_NAME}
-
-    if request.method == "POST":
-        s3_key = request.POST.get("s3_key")
-        filename = request.POST.get("filename")
-
-        try:
-            consultation = get_object_or_404(models.Consultation, id=consultation_id)
-            base_url = request.build_absolute_uri("/")
-            get_urls_for_consultation(consultation, base_url, s3_key, filename)
-
-            messages.success(
-                request, f"Consultation URLs exported to {settings.AWS_BUCKET_NAME}/{s3_key}"
-            )
-            return redirect("/support/consultations/")
-        except Exception as e:
-            messages.error(request, e)
-            return render(request, "support_console/consultations/export_urls.html", context)
-
-    return render(request, "support_console/consultations/export_urls.html", context)
 
 
 # Legacy import function removed - using new import_consultation function instead
@@ -266,3 +244,23 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
     return render(
         request, "support_console/consultations/import_consultation.html", context=context
     )
+
+
+def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UUID) -> HttpResponse:
+    """Delete a question from a consultation"""
+    question = models.Question.objects.get(
+        consultation__id=consultation_id, id=question_id
+    )
+    context = {
+        "question": question,
+        "consultation": question.consultation,
+    }
+
+    if request.POST:
+        if "confirm_deletion" in request.POST:
+            question.delete()
+            messages.success(request, "The question has been deleted")
+            return redirect(f"/support/consultations/{consultation_id}/")
+        else:
+            return redirect(f"/support/consultations/{consultation_id}/")
+    return render(request, "support_console/question_parts/delete.html", context=context)

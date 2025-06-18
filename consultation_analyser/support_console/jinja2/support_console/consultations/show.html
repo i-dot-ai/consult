@@ -26,11 +26,6 @@
           </a>
         </p>
 
-        <p class="govuk-body">
-          <a href="{{ url('export_urls_for_consultation', kwargs={'consultation_id': consultation.id}) }}" class="govuk-link govuk-body">
-            Export respondent ID / URL mapping for this consultation
-          </a>
-        </p>
 
         <p class="govuk-body">
           <a href="{{ url('delete_consultation', kwargs={'consultation_id': consultation.id}) }}" class="govuk-link govuk-link--warning govuk-body">
@@ -90,36 +85,40 @@
 
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
-      <h2 class="govuk-heading-m">Question parts</h2>
-      {% if question_parts %}
+      <h2 class="govuk-heading-m">Questions</h2>
+      {% if questions %}
       <table class="govuk-table">
         <thead class="govuk-table__head">
           <tr class="govuk-table__row">
             <th scope="col" class="govuk-table__header">Question number</th>
-            <th scope="col" class="govuk-table__header">Question part number</th>
-            <th scope="col" class="govuk-table__header">Question part type</th>
             <th scope="col" class="govuk-table__header">Text</th>
+            <th scope="col" class="govuk-table__header">Type</th>
             <th scope="col" class="govuk-table__header">Actions</th>
           </tr>
         </thead>
         <tbody class="govuk-table__body">
-        {% for part in question_parts %}
+        {% for question in questions %}
           <tr class="govuk-table__row">
             <td class="govuk-table__cell">
-              {{ part.question.number }}
+              {{ question.number }}
             </td>
             <td class="govuk-table__cell">
-              {{ part.number }}
+              {{ question.text }}
             </td>
             <td class="govuk-table__cell">
-              {{ part.type }}
+              {% if question.has_free_text and question.has_multiple_choice %}
+                Free text + Multiple choice
+              {% elif question.has_free_text %}
+                Free text
+              {% elif question.has_multiple_choice %}
+                Multiple choice
+              {% else %}
+                Unknown
+              {% endif %}
             </td>
             <td class="govuk-table__cell">
-              {{ part.question.text }} {{ part.text }}
-            </td>
-            <td class="govuk-table__cell">
-              <a href="{{ url('delete_question_part', kwargs={'consultation_id': consultation.id, 'question_part_id': part.id}) }}" class="govuk-link govuk-link--warning govuk-body">
-                Delete this question part
+              <a href="{{ url('delete_question', kwargs={'consultation_id': consultation.id, 'question_id': question.id}) }}" class="govuk-link govuk-link--warning govuk-body">
+                Delete this question
               </a>
             </td>
           </tr>

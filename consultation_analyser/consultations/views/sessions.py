@@ -1,6 +1,7 @@
 import logging
 
 import magic_link.views
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_not_required
@@ -21,10 +22,15 @@ def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
         user = User.objects.get(email=email)
         link = MagicLink.objects.create(user=user, redirect_to="/")
         magic_link = request.build_absolute_uri(link.get_absolute_url())
+        # Log magic link in local environment only
         if HostingEnvironment.is_local():
             logger = logging.getLogger("django.server")
             logger.info(f"##################### Sending magic link to {email}: {magic_link}")
-        else:
+        
+        # Send email in test and deployed environments (test backend will capture it)
+        # Use Django's test detection as fallback
+        is_test_environment = HostingEnvironment.is_test() or 'test' in settings.SETTINGS_MODULE
+        if not HostingEnvironment.is_local() or is_test_environment:
             send_magic_link_email(email, magic_link)
     except User.DoesNotExist:
         pass

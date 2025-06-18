@@ -4,33 +4,27 @@ from consultation_analyser import factories
 from consultation_analyser.consultations import models
 
 
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
 @pytest.mark.django_db
 def test_delete_question():
     consultation = factories.ConsultationFactory()
     question = factories.QuestionFactory(consultation=consultation)
-    question_part = factories.FreeTextQuestionPartFactory(question=question)
     respondent = factories.RespondentFactory(consultation=consultation)
-    answer = factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent)
-    framework = factories.InitialFrameworkFactory(question_part=question_part)
-    theme = factories.InitialThemeFactory(framework=framework, key="A")
-    factories.ThemeMappingFactory(answer=answer, theme=theme)
+    response = factories.ResponseFactory(question=question, respondent=respondent)
+    theme = factories.ThemeFactory(question=question)
+    annotation = factories.ResponseAnnotationFactoryNoThemes(response=response)
+    annotation.add_original_ai_themes([theme])
 
-    num_respondents = models.RespondentOld.objects.count()
+    num_respondents = models.Respondent.objects.count()
 
-    assert models.QuestionOld.objects.count() == 1
-    assert models.QuestionPart.objects.count() == 1
-    assert models.Answer.objects.count() == 1
-    assert models.Framework.objects.count() == 1
-    assert models.ThemeOld.objects.count() == 1
-    assert models.ThemeMapping.objects.count() == 1
+    assert models.Question.objects.count() == 1
+    assert models.Response.objects.count() == 1
+    assert models.Theme.objects.count() == 1
+    assert models.ResponseAnnotationTheme.objects.count() == 1
 
     question.delete()
 
-    assert models.RespondentOld.objects.count() == num_respondents
-    assert models.QuestionOld.objects.count() == 0
-    assert models.QuestionPart.objects.count() == 0
-    assert models.Answer.objects.count() == 0
-    assert models.Framework.objects.count() == 0
-    assert models.ThemeOld.objects.count() == 0
-    assert models.ThemeMapping.objects.count() == 0
+    assert models.Respondent.objects.count() == num_respondents
+    assert models.Question.objects.count() == 0
+    assert models.Response.objects.count() == 0
+    assert models.Theme.objects.count() == 0
+    assert models.ResponseAnnotationTheme.objects.count() == 0

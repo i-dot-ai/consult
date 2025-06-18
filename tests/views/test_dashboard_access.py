@@ -6,7 +6,6 @@ from consultation_analyser import factories
 from consultation_analyser.constants import DASHBOARD_ACCESS
 
 
-@pytest.mark.skip(reason="Doesn't work whilst in the middle of model changes")
 @pytest.mark.django_db
 def test_dashboard_access(client):
     dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
