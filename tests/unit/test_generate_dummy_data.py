@@ -7,7 +7,6 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml
 
 
-
 @pytest.mark.django_db
 @patch("consultation_analyser.hosting_environment.HostingEnvironment.is_local", return_value=True)
 def test_a_consultation_is_generated(settings):

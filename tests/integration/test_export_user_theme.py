@@ -2,13 +2,11 @@ import csv
 from unittest.mock import patch
 
 import pytest
-from django.urls import reverse
 from freezegun import freeze_time
 
 from consultation_analyser import factories
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.export_user_theme import export_user_theme
-from tests.helpers import sign_in
 from tests.utils import get_sorted_theme_string
 
 
