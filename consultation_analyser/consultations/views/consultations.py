@@ -102,7 +102,7 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
 
             # Get option counts
             responses = models.Response.objects.filter(question=question).values("chosen_options")
-            option_counts = {}
+            option_counts: dict[str, int] = {}
             for response in responses:
                 for option in response["chosen_options"]:
                     option_counts[option] = option_counts.get(option, 0) + 1
