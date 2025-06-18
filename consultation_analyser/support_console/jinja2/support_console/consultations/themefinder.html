@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+{%- from 'govuk_frontend_jinja/components/select/macro.html' import govukSelect -%}
+{%- from 'govuk_frontend_jinja/components/input/macro.html' import govukInput -%}
+{%- from 'govuk_frontend_jinja/components/details/macro.html' import govukDetails -%}
+
+{% set page_title = "Run Themefinder" %}
+
+{% block content %}
+<h1 class="govuk-heading-l">{{ page_title }}</h1>
+
+{% if validation_errors %}
+<div class="govuk-error-summary" data-module="govuk-error-summary">
+  <div role="alert">
+    <h2 class="govuk-error-summary__title">
+      There is a problem with your consultation data
+    </h2>
+    <div class="govuk-error-summary__body">
+      <p class="govuk-body">The following issues were found during validation:</p>
+      <ul class="govuk-list govuk-error-summary__list">
+        {% for error in validation_errors %}
+        <li>
+          {% if error.type == 'missing_file' %}
+            <strong>Missing file:</strong> {{ error.message }}
+          {% elif error.type == 'missing_output' %}
+            <strong>Missing AI output:</strong> {{ error.message }}
+          {% elif error.type in ['invalid_format', 'empty_file'] %}
+            <strong>File format issue:</strong> {{ error.message }}
+          {% elif error.type == 'no_questions' %}
+            <strong>Structure issue:</strong> {{ error.message }}
+          {% elif error.type == 'file_not_found' %}
+            <strong>File not found:</strong> {{ error.message }}
+          {% elif error.type == 'system_error' %}
+            <strong>System error:</strong> {{ error.message }}
+          {% else %}
+            {{ error.message }}
+          {% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+      
+      {% set missing_files = validation_errors | selectattr('type', 'equalto', 'missing_file') | list %}
+      {% set missing_outputs = validation_errors | selectattr('type', 'equalto', 'missing_output') | list %}
+      {% set format_issues = validation_errors | selectattr('type', 'in', ['invalid_format', 'empty_file']) | list %}
+      
+      {% if missing_files or missing_outputs %}
+      <div class="govuk-inset-text">
+        <h3 class="govuk-heading-s">What you need to do:</h3>
+        <ul class="govuk-list govuk-list--bullet">
+          {% if missing_files %}
+          <li>Upload the missing consultation files to your S3 bucket</li>
+          {% endif %}
+          {% if missing_outputs %}
+          <li>Run the AI analysis pipeline to generate the missing output files</li>
+          {% endif %}
+          {% if format_issues %}
+          <li>Check that your JSON/JSONL files are properly formatted</li>
+          {% endif %}
+        </ul>
+        <p class="govuk-body-s">Once you've resolved these issues, you can try importing again.</p>
+      </div>
+      {% endif %}
+      
+      <details class="govuk-details">
+        <summary class="govuk-details__summary">
+          <span class="govuk-details__summary-text">
+            Show technical details
+          </span>
+        </summary>
+        <div class="govuk-details__text">
+          <ul class="govuk-list">
+            {% for error in validation_errors %}
+            <li><code>{{ error.technical }}</code></li>
+            {% endfor %}
+          </ul>
+        </div>
+      </details>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<p class="govuk-body-l">Run Themefinder to the consultation.</p>
+<p class="govuk-body">This will process consulatation data and generate themes.</p>
+
+<p class="govuk-body">Data will be saved in: <code>{{ bucket_name }}/{{ consultation_code }}/app_data/[CONSULTATION FOLDER]</code></p>
+
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <form method="post" novalidate>{{ csrf_input }}
+
+      {{ govukSelect({
+      'id': 'consultation_code',
+      'name': 'consultation_code',
+      'label': {
+      'text': 'Select consultation folder',
+      'classes': 'govuk-label--s'
+      },
+      'items': consultation_folders
+      }) }}
+
+
+      {{ govukButton({
+      'text': 'Run Themefinder',
+      'classes': 'govuk-button--primary'
+      }) }}
+    </form>
+  </div>
+</div>
+
+
+{% endblock %}

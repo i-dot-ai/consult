@@ -64,8 +64,14 @@ data "aws_secretsmanager_secret_version" "env_vars" {
   secret_id = data.aws_secretsmanager_secret.env_vars.id
 }
 
-data "archive_file" "consult_mapping_archive" {
+data "archive_file" "mapping_archive" {
   type        = "zip"
-  source_file = "${path.root}/../pipeline-mapping/lambda_main.py"
-  output_path = "${path.root}/../pipeline-mapping/lambda_main.zip"
+  source_file = "${path.root}/../pipeline-mapping/lambda/mapping.py"
+  output_path = "${path.root}/../pipeline-mapping/lambda/mapping.zip"
+}
+
+data "archive_file" "slack_notifier_archive" {
+  type        = "zip"
+  source_file = "${path.root}/../pipeline-mapping/lambda/slack_notifier.py"
+  output_path = "${path.root}/../pipeline-mapping/lambda/slack_notifier.zip"
 }
