@@ -1,9 +1,7 @@
-import hashlib
 from datetime import datetime
 from typing import TypedDict
 from uuid import UUID
 
-from django.core.cache import cache
 from django.core.paginator import Paginator
 from django.db.models import Count, Prefetch, Q
 from django.http import HttpRequest, JsonResponse
@@ -165,23 +163,6 @@ def get_theme_summary_optimized(
     ]
 
 
-def get_cached_theme_summary(question_id: str, filters_hash: str) -> list[dict] | None:
-    """Get cached theme summary or None if not cached"""
-    cache_key = f"theme_summary:{question_id}:{filters_hash}"
-    return cache.get(cache_key)
-
-
-def set_cached_theme_summary(
-    question_id: str, filters_hash: str, data: list[dict], timeout: int = 300
-):
-    """Cache theme summary for 5 minutes"""
-    cache_key = f"theme_summary:{question_id}:{filters_hash}"
-    cache.set(cache_key, data, timeout)
-
-
-def get_filters_hash(filters: FilterParams) -> str:
-    """Generate a hash for caching based on filter parameters"""
-    return hashlib.md5(str(sorted(filters.items())).encode()).hexdigest()  # nosec - not used for security
 
 
 def build_respondent_data(respondent: models.Respondent, response: models.Response) -> dict:
@@ -269,7 +250,7 @@ def question_responses_json(
     # Parse filters from request
     filters = parse_filters_from_request(request)
 
-    # Generate theme mappings (disable cache temporarily for debugging)
+    # Generate theme mappings
     theme_mappings = []
     if question.has_free_text:
         # Generate theme mappings using optimized database query
