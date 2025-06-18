@@ -8,7 +8,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("consultations", "0050_alter_questionold_consultation_and_more"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -233,9 +232,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddConstraint(
             model_name="consultation",
-            constraint=models.UniqueConstraint(
-                fields=("slug",), name="unique_consultation_slug"
-            ),
+            constraint=models.UniqueConstraint(fields=("slug",), name="unique_consultation_slug"),
         ),
         migrations.AddIndex(
             model_name="question",
@@ -265,15 +262,11 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="response",
-            index=models.Index(
-                fields=["question"], name="consultatio_questio_481645_idx"
-            ),
+            index=models.Index(fields=["question"], name="consultatio_questio_481645_idx"),
         ),
         migrations.AddIndex(
             model_name="response",
-            index=models.Index(
-                fields=["free_text"], name="consultatio_free_te_47c4fc_idx"
-            ),
+            index=models.Index(fields=["free_text"], name="consultatio_free_te_47c4fc_idx"),
         ),
         migrations.AddIndex(
             model_name="response",
@@ -289,9 +282,7 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="theme",
-            index=models.Index(
-                fields=["question"], name="consultatio_questio_e016ff_idx"
-            ),
+            index=models.Index(fields=["question"], name="consultatio_questio_e016ff_idx"),
         ),
         migrations.AddConstraint(
             model_name="theme",
@@ -303,20 +294,14 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name="responseannotation",
-            index=models.Index(
-                fields=["human_reviewed"], name="consultatio_human_r_7f8c1d_idx"
-            ),
+            index=models.Index(fields=["human_reviewed"], name="consultatio_human_r_7f8c1d_idx"),
         ),
         migrations.AddIndex(
             model_name="responseannotation",
-            index=models.Index(
-                fields=["sentiment"], name="consultatio_sentime_323d6b_idx"
-            ),
+            index=models.Index(fields=["sentiment"], name="consultatio_sentime_323d6b_idx"),
         ),
         migrations.AddIndex(
             model_name="responseannotation",
-            index=models.Index(
-                fields=["evidence_rich"], name="consultatio_evidenc_43c687_idx"
-            ),
+            index=models.Index(fields=["evidence_rich"], name="consultatio_evidenc_43c687_idx"),
         ),
     ]

@@ -14,36 +14,38 @@ class TestResponse:
         assert response.chosen_options == []
         assert response.respondent
         assert response.question
-        
+
     def test_response_with_multiple_choice(self):
         """Test response with multiple choice selections"""
         response = factories.ResponseWithMultipleChoiceFactory()
         assert response.free_text == ""
         assert len(response.chosen_options) >= 1
-        assert all(opt in response.question.multiple_choice_options for opt in response.chosen_options)
-        
+        assert all(
+            opt in response.question.multiple_choice_options for opt in response.chosen_options
+        )
+
     def test_response_with_both(self):
         """Test response with both free text and multiple choice"""
         response = factories.ResponseWithBothFactory()
         assert response.free_text
         assert len(response.chosen_options) >= 1
-        
+
     def test_unique_constraint(self):
         """Test that only one response per respondent per question is allowed"""
         response = factories.ResponseFactory()
-        
+
         # Try to create another response for same respondent and question
         with pytest.raises(Exception):  # Will raise IntegrityError
             models.Response.objects.create(
                 respondent=response.respondent,
                 question=response.question,
-                free_text="Duplicate response"
+                free_text="Duplicate response",
             )
-            
+
     def test_response_annotation_relationship(self):
         """Test one-to-one relationship with ResponseAnnotation"""
         response = factories.ResponseFactory()
         annotation = factories.ResponseAnnotationFactory(response=response)
-        
+
         assert response.annotation == annotation
         assert annotation.response == response

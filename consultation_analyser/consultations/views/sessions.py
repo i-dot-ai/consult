@@ -26,10 +26,10 @@ def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
         if HostingEnvironment.is_local():
             logger = logging.getLogger("django.server")
             logger.info(f"##################### Sending magic link to {email}: {magic_link}")
-        
+
         # Send email in test and deployed environments (test backend will capture it)
         # Use Django's test detection as fallback
-        is_test_environment = HostingEnvironment.is_test() or 'test' in settings.SETTINGS_MODULE
+        is_test_environment = HostingEnvironment.is_test() or "test" in settings.SETTINGS_MODULE
         if not HostingEnvironment.is_local() or is_test_environment:
             send_magic_link_email(email, magic_link)
     except User.DoesNotExist:

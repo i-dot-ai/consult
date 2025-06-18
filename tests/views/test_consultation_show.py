@@ -52,13 +52,13 @@ def test_get_top_themes_for_question():
     # Create responses with annotations that include only specific themes
     for _ in range(10):
         response = factories.ResponseFactory(question=question)
-        annotation = factories.ResponseAnnotationFactory(response=response, themes=[theme_a])
+        factories.ResponseAnnotationFactory(response=response, themes=[theme_a])
     for _ in range(5):
         response = factories.ResponseFactory(question=question)
-        annotation = factories.ResponseAnnotationFactory(response=response, themes=[theme_b])
+        factories.ResponseAnnotationFactory(response=response, themes=[theme_b])
     for _ in range(3):
         response = factories.ResponseFactory(question=question)
-        annotation = factories.ResponseAnnotationFactory(response=response, themes=[theme_c])
+        factories.ResponseAnnotationFactory(response=response, themes=[theme_c])
 
     actual = get_top_themes_for_question(question, number_top_themes=30)
     assert len(actual) == 3, actual

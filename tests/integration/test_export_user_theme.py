@@ -20,9 +20,7 @@ def test_export_user_theme(mock_boto_client, django_app):
     consultation.users.add(user)
     question = factories.QuestionFactory(consultation=consultation)
     respondent = factories.RespondentFactory(consultation=consultation, themefinder_id=1)
-    respondent2 = factories.RespondentFactory(
-        consultation=consultation, themefinder_id=2
-    )
+    respondent2 = factories.RespondentFactory(consultation=consultation, themefinder_id=2)
     response = factories.ResponseFactory(question=question, respondent=respondent)
     response2 = factories.ResponseFactory(question=question, respondent=respondent2)
 
@@ -35,14 +33,14 @@ def test_export_user_theme(mock_boto_client, django_app):
     annotation1 = factories.ResponseAnnotationFactoryNoThemes(
         response=response,
         sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT,
-        human_reviewed=False
+        human_reviewed=False,
     )
     annotation1.add_original_ai_themes([theme1, theme2])
 
     annotation2 = factories.ResponseAnnotationFactoryNoThemes(
         response=response2,
         sentiment=models.ResponseAnnotation.Sentiment.UNCLEAR,
-        human_reviewed=False
+        human_reviewed=False,
     )
     annotation2.add_original_ai_themes([theme3])
 
@@ -91,37 +89,37 @@ def test_export_user_theme(mock_boto_client, django_app):
     }
 
 
-@pytest.mark.django_db  
+@pytest.mark.django_db
 @patch("django_rq.enqueue")
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
 def test_start_export_job(mock_boto_client, mock_enqueue):
     """Test that the export job is correctly enqueued"""
     from consultation_analyser.consultations.export_user_theme import export_user_theme_job
-    
+
     user = factories.UserFactory(is_staff=True)
     # Set up consultation with question and response
     consultation = factories.ConsultationFactory()
     consultation.users.add(user)
-    
+
     # Create at least one question with responses for the export to work
     question = factories.QuestionFactory(consultation=consultation)
     respondent = factories.RespondentFactory(consultation=consultation)
     response = factories.ResponseFactory(question=question, respondent=respondent)
-    
+
     # Create annotation so there's something to export
     annotation = factories.ResponseAnnotationFactoryNoThemes(
-        response=response,
-        sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT
+        response=response, sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT
     )
     theme = factories.ThemeFactory(question=question)
     annotation.add_original_ai_themes([theme])
 
     # Mock the enqueue to capture the call
     mock_enqueue.return_value = None
-    
+
     # Import and call the enqueue function directly
     from django_rq import enqueue
+
     enqueue(export_user_theme_job, question.id, "test_key")
-    
+
     # Verify the job was enqueued
     mock_enqueue.assert_called_once_with(export_user_theme_job, question.id, "test_key")
