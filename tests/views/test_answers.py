@@ -452,6 +452,165 @@ def test_human_review(client, consultation_user, question):
     assert all_current_themes == {ai_theme1, ai_theme2, human_theme}
 
 
+@pytest.mark.django_db
+def test_theme_filtering_and_logic(question):
+    """Test that theme filtering uses AND logic - responses must have ALL selected themes"""
+    # Create themes
+    theme1 = ThemeFactory(question=question, name="Theme 1")
+    theme2 = ThemeFactory(question=question, name="Theme 2")
+    theme3 = ThemeFactory(question=question, name="Theme 3")
+    
+    # Create respondents and responses with different theme combinations
+    # Response 1: has theme1 and theme2
+    respondent1 = RespondentFactory(consultation=question.consultation)
+    response1 = ResponseFactory(question=question, respondent=respondent1, free_text="Response 1")
+    annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
+    annotation1.add_original_ai_themes([theme1, theme2])
+    
+    # Response 2: has only theme1
+    respondent2 = RespondentFactory(consultation=question.consultation)
+    response2 = ResponseFactory(question=question, respondent=respondent2, free_text="Response 2")
+    annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
+    annotation2.add_original_ai_themes([theme1])
+    
+    # Response 3: has theme1, theme2, and theme3
+    respondent3 = RespondentFactory(consultation=question.consultation)
+    response3 = ResponseFactory(question=question, respondent=respondent3, free_text="Response 3")
+    annotation3 = ResponseAnnotationFactoryNoThemes(response=response3)
+    annotation3.add_original_ai_themes([theme1, theme2, theme3])
+    
+    # Response 4: has only theme2
+    respondent4 = RespondentFactory(consultation=question.consultation)
+    response4 = ResponseFactory(question=question, respondent=respondent4, free_text="Response 4")
+    annotation4 = ResponseAnnotationFactoryNoThemes(response=response4)
+    annotation4.add_original_ai_themes([theme2])
+    
+    # Test 1: Filter by theme1 only (OR behavior would return all 4, AND returns 3)
+    filters = {"theme_list": [str(theme1.id)]}
+    responses = get_filtered_responses_with_themes(question, filters)
+    response_ids = set(responses.values_list('id', flat=True))
+    
+    # Should return responses that have theme1: response1, response2, response3
+    assert response_ids == {response1.id, response2.id, response3.id}
+    
+    # Test 2: Filter by theme1 AND theme2 
+    filters = {"theme_list": [str(theme1.id), str(theme2.id)]}
+    responses = get_filtered_responses_with_themes(question, filters)
+    response_ids = set(responses.values_list('id', flat=True))
+    
+    # Should return only responses that have BOTH theme1 AND theme2: response1, response3
+    assert response_ids == {response1.id, response3.id}
+    
+    # Test 3: Filter by all three themes
+    filters = {"theme_list": [str(theme1.id), str(theme2.id), str(theme3.id)]}
+    responses = get_filtered_responses_with_themes(question, filters)
+    response_ids = set(responses.values_list('id', flat=True))
+    
+    # Should return only response3 which has all three themes
+    assert response_ids == {response3.id}
+    
+    # Test 4: Verify theme summary counts reflect AND filtering
+    # When filtering by theme1 AND theme2, the theme summary should show counts
+    # only for themes appearing in responses that have BOTH theme1 AND theme2
+    filters = {"theme_list": [str(theme1.id), str(theme2.id)]}
+    theme_summary = get_theme_summary_optimized(question, filters)
+    
+    # Convert to dict for easier testing
+    theme_counts = {t["theme__id"]: t["count"] for t in theme_summary}
+    
+    # response1 and response3 have both theme1 and theme2
+    # response1 has: theme1, theme2
+    # response3 has: theme1, theme2, theme3
+    # So theme1 appears in 2 responses, theme2 in 2 responses, theme3 in 1 response
+    assert theme_counts[theme1.id] == 2
+    assert theme_counts[theme2.id] == 2
+    assert theme_counts[theme3.id] == 1
+
+
+@pytest.mark.django_db
+def test_question_responses_json_theme_filtering_and_logic(client, consultation_user, question):
+    """Test that the JSON endpoint uses AND logic for theme filtering"""
+    # Create themes
+    theme1 = ThemeFactory(question=question, name="Theme 1")
+    theme2 = ThemeFactory(question=question, name="Theme 2")
+    theme3 = ThemeFactory(question=question, name="Theme 3")
+    
+    # Create respondents and responses with different theme combinations
+    # Response 1: has theme1 and theme2
+    respondent1 = RespondentFactory(consultation=question.consultation)
+    response1 = ResponseFactory(question=question, respondent=respondent1, free_text="Response 1")
+    annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
+    annotation1.add_original_ai_themes([theme1, theme2])
+    
+    # Response 2: has only theme1
+    respondent2 = RespondentFactory(consultation=question.consultation)
+    response2 = ResponseFactory(question=question, respondent=respondent2, free_text="Response 2")
+    annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
+    annotation2.add_original_ai_themes([theme1])
+    
+    # Response 3: has theme1, theme2, and theme3
+    respondent3 = RespondentFactory(consultation=question.consultation)
+    response3 = ResponseFactory(question=question, respondent=respondent3, free_text="Response 3")
+    annotation3 = ResponseAnnotationFactoryNoThemes(response=response3)
+    annotation3.add_original_ai_themes([theme1, theme2, theme3])
+    
+    # Response 4: has only theme2
+    respondent4 = RespondentFactory(consultation=question.consultation)
+    response4 = ResponseFactory(question=question, respondent=respondent4, free_text="Response 4")
+    annotation4 = ResponseAnnotationFactoryNoThemes(response=response4)
+    annotation4.add_original_ai_themes([theme2])
+    
+    client.force_login(consultation_user)
+    
+    # Test 1: Filter by theme1 only - should return 3 responses
+    response = client.get(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
+        f"?themeFilters={theme1.id}"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    
+    returned_identifiers = {r["identifier"] for r in data["all_respondents"]}
+    expected_identifiers = {str(respondent1.identifier), str(respondent2.identifier), str(respondent3.identifier)}
+    assert returned_identifiers == expected_identifiers
+    assert data["filtered_total"] == 3
+    
+    # Test 2: Filter by theme1 AND theme2 - should return only 2 responses
+    response = client.get(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
+        f"?themeFilters={theme1.id},{theme2.id}"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    
+    returned_identifiers = {r["identifier"] for r in data["all_respondents"]}
+    expected_identifiers = {str(respondent1.identifier), str(respondent3.identifier)}
+    assert returned_identifiers == expected_identifiers
+    assert data["filtered_total"] == 2
+    
+    # Test 3: Filter by all three themes - should return only 1 response
+    response = client.get(
+        f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
+        f"?themeFilters={theme1.id},{theme2.id},{theme3.id}"
+    )
+    assert response.status_code == 200
+    data = response.json()
+    
+    returned_identifiers = {r["identifier"] for r in data["all_respondents"]}
+    expected_identifiers = {str(respondent3.identifier)}
+    assert returned_identifiers == expected_identifiers
+    assert data["filtered_total"] == 1
+    
+    # Also verify the theme counts in the theme_mappings reflect AND filtering
+    theme_mapping_counts = {tm["value"]: int(tm["count"]) for tm in data["theme_mappings"]}
+    
+    # Only response3 has all three themes, so when filtering by all three:
+    # Each theme should show count of 1
+    assert theme_mapping_counts[str(theme1.id)] == 1
+    assert theme_mapping_counts[str(theme2.id)] == 1
+    assert theme_mapping_counts[str(theme3.id)] == 1
+
+
 @pytest.mark.django_db 
 def test_concurrent_human_review_handling(client, consultation_user, question):
     """Test that concurrent human reviewers are handled correctly when reviewing the same theme"""
