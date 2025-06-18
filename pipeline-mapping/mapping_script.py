@@ -186,7 +186,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     logger.info("Starting processing for subdirectory: %s", args.subdir)
-    # download_s3_subdir(args.subdir)
-    # output_dir = asyncio.run(process_consultation(args.subdir))
-    # upload_directory_to_s3(output_dir)
+    download_s3_subdir(args.subdir)
+    output_dir = asyncio.run(process_consultation(args.subdir))
+    upload_directory_to_s3(output_dir)
     logger.info("Processing completed for subdirectory: %s", args.subdir)

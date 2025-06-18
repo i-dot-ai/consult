@@ -27,7 +27,7 @@ module "batch_job_mapping" {
   source                   = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/batch-job-definitions?ref=dk-add-job-role"
   name                     = "${local.name}-${each.value}"
   image                    = local.batch_mapping_image_url
-  compute_environment_arn = [module.batch_compute.fargate_compute_environment_arn]
+  compute_environment_arn  = [module.batch_compute.fargate_compute_environment_arn]
   use_fargate              = true
   iam_role_name            = "${local.name}-${each.value}-role"
   platform_capabilities = ["FARGATE"]
