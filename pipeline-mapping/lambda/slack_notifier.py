@@ -6,7 +6,7 @@ import urllib3
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-SLACK_WEBHOOK_URL = "https://hooks.slack.com/services/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"
+SLACK_WEBHOOK_URL = "slack webhook url"
 
 http = urllib3.PoolManager()
 
