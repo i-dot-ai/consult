@@ -2,7 +2,14 @@ import pytest
 from django.urls import reverse
 
 from consultation_analyser.consultations import models
-from consultation_analyser.factories import QuestionWithBothFactory, ResponseFactory, UserFactory, RespondentFactory, ResponseAnnotationFactory, ThemeFactory, ResponseAnnotationFactoryNoThemes
+from consultation_analyser.factories import (
+    QuestionWithBothFactory,
+    RespondentFactory,
+    ResponseAnnotationFactoryNoThemes,
+    ResponseFactory,
+    ThemeFactory,
+    UserFactory,
+)
 from tests.helpers import sign_in
 
 
@@ -32,21 +39,26 @@ def test_review_show_response(django_app):
     review_response_page = django_app.get(url)
     review_response_page.form["theme"] = [str(theme_a.id), str(theme_b.id)]
     next_response = review_response_page.form.submit().follow()
-    assert "No responses" not in next_response # Haven't reviewed all responses
+    assert "No responses" not in next_response  # Haven't reviewed all responses
 
     # Check the response (annotation) is now audited
     response_annotation1.refresh_from_db()
     assert set(response_annotation1.themes.all()) == set([theme_a, theme_b])
 
-
     assert response_annotation1.human_reviewed
     assert response_annotation1.reviewed_by == user
 
     # Check that we have a record of what has been human reviewed in the theme annotation
-    ai_annotation_themes = models.ResponseAnnotationTheme.objects.filter(response_annotation=response_annotation1, is_original_ai_assignment=True)
+    ai_annotation_themes = models.ResponseAnnotationTheme.objects.filter(
+        response_annotation=response_annotation1, is_original_ai_assignment=True
+    )
     assert set(ai_annotation_themes.values_list("theme_id", flat=True)) == set([theme_a.id])
-    human_reviewed_themes = models.ResponseAnnotationTheme.objects.filter(response_annotation=response_annotation1, is_original_ai_assignment=False)
-    assert set(human_reviewed_themes.values_list("theme_id", flat=True)) == set([theme_a.id, theme_b.id])
+    human_reviewed_themes = models.ResponseAnnotationTheme.objects.filter(
+        response_annotation=response_annotation1, is_original_ai_assignment=False
+    )
+    assert set(human_reviewed_themes.values_list("theme_id", flat=True)) == set(
+        [theme_a.id, theme_b.id]
+    )
 
     # Now test reviewing a response making no further changes
     url = reverse("show_response", args=(consultation.slug, question.slug, response2.id))
@@ -59,5 +71,9 @@ def test_review_show_response(django_app):
     assert response_annotation2.human_reviewed
 
     # Check the response themes are marked correctly.
-    models.ResponseAnnotationTheme.objects.filter(response_annotation=response_annotation2, is_original_ai_assignment=True).count() == 2
-    models.ResponseAnnotationTheme.objects.filter(response_annotation=response_annotation2, is_original_ai_assignment=False).count() == 2
+    models.ResponseAnnotationTheme.objects.filter(
+        response_annotation=response_annotation2, is_original_ai_assignment=True
+    ).count() == 2
+    models.ResponseAnnotationTheme.objects.filter(
+        response_annotation=response_annotation2, is_original_ai_assignment=False
+    ).count() == 2
