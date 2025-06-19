@@ -62,7 +62,12 @@ class RespondentFactory(DjangoModelFactory):
 
     consultation = factory.SubFactory(ConsultationFactory)
     themefinder_id = factory.LazyAttribute(lambda o: random.randint(2, 500000000))
-    demographics = factory.LazyAttribute(lambda o: {"Nation": random.choice(["England", "Wales", "Northern Ireland", "Scotland"]), "Age": random.choice(["Under 18", "18-35", "36-50", "51-65", "66+"])})
+    demographics = factory.LazyAttribute(
+        lambda o: {
+            "Nation": random.choice(["England", "Wales", "Northern Ireland", "Scotland"]),
+            "Age": random.choice(["Under 18", "18-35", "36-50", "51-65", "66+"]),
+        }
+    )
 
 
 class ResponseFactory(DjangoModelFactory):
