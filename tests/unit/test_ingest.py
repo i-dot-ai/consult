@@ -1,345 +1,315 @@
-import time
+from unittest.mock import Mock, patch
 
 import pytest
 
-from consultation_analyser import factories
 from consultation_analyser.consultations.models import (
-    Answer,
-    EvidenceRichMapping,
-    QuestionPart,
+    Consultation,
+    Question,
     Respondent,
-    SentimentMapping,
+    Response,
+    ResponseAnnotation,
     Theme,
-    ThemeMapping,
 )
 from consultation_analyser.support_console.ingest import (
-    import_all_evidence_rich_mappings_from_jsonl,
-    import_all_respondents_from_jsonl,
-    import_all_responses_from_jsonl,
-    import_all_sentiment_mappings_from_jsonl,
-    import_all_theme_mappings_from_jsonl,
-    import_evidence_rich_mappings,
-    import_question_part_data,
-    import_respondent_data,
-    import_responses,
-    import_sentiment_mappings,
-    import_theme_mappings,
-    import_themes_and_get_framework,
-    import_themes_from_json_and_get_framework,
+    get_consultation_codes,
+    get_question_folders,
+    import_consultation,
+    validate_consultation_structure,
 )
 
 
+class TestGetQuestionFolders:
+    @patch("consultation_analyser.support_console.ingest.boto3")
+    def test_get_question_folders(self, mock_boto3):
+        # Mock S3 objects
+        mock_objects = [
+            Mock(key="app_data/test/inputs/question_part_1/question.json"),
+            Mock(key="app_data/test/inputs/question_part_1/responses.jsonl"),
+            Mock(key="app_data/test/inputs/question_part_2/question.json"),
+            Mock(key="app_data/test/inputs/question_part_2/responses.jsonl"),
+            Mock(key="app_data/test/inputs/other_file.txt"),
+        ]
+
+        mock_bucket = Mock()
+        mock_bucket.objects.filter.return_value = mock_objects
+        mock_boto3.resource.return_value.Bucket.return_value = mock_bucket
+
+        result = get_question_folders("app_data/test/inputs/", "test-bucket")
+
+        expected = [
+            "app_data/test/inputs/question_part_1/",
+            "app_data/test/inputs/question_part_2/",
+        ]
+        assert sorted(result) == sorted(expected)
+
+    @patch("consultation_analyser.support_console.ingest.boto3")
+    def test_get_question_folders_empty(self, mock_boto3):
+        mock_bucket = Mock()
+        mock_bucket.objects.filter.return_value = []
+        mock_boto3.resource.return_value.Bucket.return_value = mock_bucket
+
+        result = get_question_folders("app_data/test/inputs/", "test-bucket")
+        assert result == []
+
+
+class TestGetConsultationCodes:
+    @patch("consultation_analyser.support_console.ingest.boto3")
+    @patch("consultation_analyser.support_console.ingest.settings")
+    def test_get_consultation_codes(self, mock_settings, mock_boto3):
+        mock_settings.AWS_BUCKET_NAME = "test-bucket"
+
+        mock_objects = [
+            Mock(key="app_data/consultation1/inputs/file.json"),
+            Mock(key="app_data/consultation2/inputs/file.json"),
+            Mock(key="app_data/consultation1/outputs/file.json"),
+            Mock(key="app_data/other/file.json"),
+        ]
+
+        mock_bucket = Mock()
+        mock_bucket.objects.filter.return_value = mock_objects
+        mock_boto3.resource.return_value.Bucket.return_value = mock_bucket
+
+        result = get_consultation_codes()
+
+        expected = [
+            {"text": "consultation1", "value": "consultation1"},
+            {"text": "consultation2", "value": "consultation2"},
+            {"text": "other", "value": "other"},
+        ]
+        assert sorted(result, key=lambda x: x["text"]) == sorted(expected, key=lambda x: x["text"])
+
+    @patch("consultation_analyser.support_console.ingest.boto3")
+    @patch("consultation_analyser.support_console.ingest.settings")
+    def test_get_consultation_codes_exception(self, mock_settings, mock_boto3):
+        mock_settings.AWS_BUCKET_NAME = "test-bucket"
+        mock_boto3.resource.side_effect = Exception("S3 error")
+
+        result = get_consultation_codes()
+        assert result == []
+
+
+class TestValidateConsultationStructure:
+    @patch("consultation_analyser.support_console.ingest.boto3")
+    @patch("consultation_analyser.support_console.ingest.get_question_folders")
+    def test_validate_consultation_structure_valid(self, mock_get_folders, mock_boto3):
+        mock_get_folders.return_value = ["app_data/test/inputs/question_part_1/"]
+
+        mock_s3_client = Mock()
+        mock_s3_client.head_object.return_value = {}
+
+        # Create properly mocked Body object with both read() and iter_lines() methods
+        def mock_get_object(Bucket, Key):
+            if "question.json" in Key:
+                return {"Body": Mock(read=Mock(return_value=b'{"question_text": "Test"}'))}
+            elif "responses.jsonl" in Key:
+                return {
+                    "Body": Mock(
+                        iter_lines=Mock(
+                            return_value=iter([b'{"themefinder_id": 1, "text": "test"}'])
+                        )
+                    )
+                }
+            return {"Body": Mock()}
+
+        mock_s3_client.get_object = mock_get_object
+        mock_boto3.client.return_value = mock_s3_client
+
+        is_valid, errors = validate_consultation_structure("bucket", "test", "2024-01-01")
+
+        assert is_valid is True
+        assert errors == []
+
+    @patch("consultation_analyser.support_console.ingest.boto3")
+    @patch("consultation_analyser.support_console.ingest.get_question_folders")
+    def test_validate_consultation_structure_missing_respondents(
+        self, mock_get_folders, mock_boto3
+    ):
+        mock_get_folders.return_value = ["app_data/test/inputs/question_part_1/"]
+
+        mock_s3_client = Mock()
+
+        # Create a proper NoSuchKey exception
+        class NoSuchKeyException(Exception):
+            pass
+
+        mock_boto3.client.return_value.exceptions.NoSuchKey = NoSuchKeyException
+        mock_s3_client.head_object.side_effect = NoSuchKeyException("Not found")
+        mock_s3_client.exceptions = Mock()
+        mock_s3_client.exceptions.NoSuchKey = NoSuchKeyException
+        mock_boto3.client.return_value = mock_s3_client
+
+        is_valid, errors = validate_consultation_structure("bucket", "test", "2024-01-01")
+
+        assert is_valid is False
+        assert "Missing required file" in errors[0]
+        assert "respondents.jsonl" in errors[0]
+
+    @patch("consultation_analyser.support_console.ingest.boto3")
+    @patch("consultation_analyser.support_console.ingest.get_question_folders")
+    def test_validate_consultation_structure_no_questions(self, mock_get_folders, mock_boto3):
+        mock_get_folders.return_value = []
+
+        mock_s3_client = Mock()
+        mock_s3_client.head_object.return_value = {}
+        mock_boto3.client.return_value = mock_s3_client
+
+        is_valid, errors = validate_consultation_structure("bucket", "test", "2024-01-01")
+
+        assert is_valid is False
+        assert "No question_part folders found" in errors[0]
+
+
 @pytest.mark.django_db
-def test_import_question_part_data():
-    consultation = factories.ConsultationFactory()
-    # Set up sample question_part.json dictionaries
-    new_free_text_question = {
-        "question_text": "What is your favourite?",
-        "question_part_text": "Please explain your answer",
-        "question_number": 3,
-        "question_part_type": "free_text",
-    }
-    existing_question_with_options = {
-        "question_text": "What is your favourite?",
-        "question_number": 3,
-        "question_part_number": 2,
-        "options": ["cats", "dogs"],
-        "question_part_type": "single_option",
-    }
-    failing_no_text = {
-        "question_text": "",
-        "question_part_text": "",
-        "question_number": 4,
-        "question_part_type": "free_text",
-    }
-    failing_no_question_number = {
-        "question_text": "What is your favourite?",
-        "question_part_type": "free_text",
-    }
+class TestImportConsultation:
+    @patch("consultation_analyser.support_console.ingest.boto3")
+    @patch("consultation_analyser.support_console.ingest.get_question_folders")
+    @patch("consultation_analyser.support_console.ingest.settings")
+    def test_import_consultation_success(self, mock_settings, mock_get_folders, mock_boto3):
+        from consultation_analyser.authentication.models import User
 
-    import_question_part_data(consultation=consultation, question_part_dict=new_free_text_question)
-    question_part = QuestionPart.objects.get(
-        question__consultation=consultation, question__number=3, number=1
-    )
-    assert question_part.text == "Please explain your answer"
-    assert question_part.question.text == "What is your favourite?"
-    assert question_part.number == 1
-    assert question_part.type == QuestionPart.QuestionType.FREE_TEXT
+        # Create test user
+        user = User.objects.create_user(email="test@example.com")
 
-    import_question_part_data(
-        consultation=consultation, question_part_dict=existing_question_with_options
-    )
-    question_part = QuestionPart.objects.get(
-        question__consultation=consultation, question__number=3, number=2
-    )
-    assert question_part.text == ""
-    assert question_part.question.text == "What is your favourite?"
-    assert question_part.options == ["cats", "dogs"]
-    assert question_part.type == QuestionPart.QuestionType.SINGLE_OPTION
+        mock_settings.AWS_BUCKET_NAME = "test-bucket"
+        mock_get_folders.return_value = ["app_data/test/inputs/question_part_1/"]
 
-    with pytest.raises(ValueError):
-        import_question_part_data(consultation=consultation, question_part_dict=failing_no_text)
+        # Mock S3 responses
+        mock_s3_client = Mock()
 
-    with pytest.raises(KeyError):
-        import_question_part_data(
-            consultation=consultation, question_part_dict=failing_no_question_number
+        # Mock respondents file
+        respondents_data = (
+            b'{"themefinder_id": 1, "demographics": {}}\n{"themefinder_id": 2, "demographics": {}}'
         )
 
+        # Mock question file
+        question_data = b'{"question_text": "What do you think?"}'
 
-# TODO - add a test for non-free text cases
-@pytest.mark.django_db
-def test_import_responses():
-    question_part = factories.FreeTextQuestionPartFactory()
-    consultation = question_part.question.consultation
-    for i in range(1, 5):
-        factories.RespondentFactory(consultation=consultation, themefinder_respondent_id=i)
-    responses_data = [
-        b'{"themefinder_id":1, "text":"response 1"}',
-        b'{"themefinder_id":2, "text":"response 2"}',
-        b'{"themefinder_id":4, "text":"response 4"}',
-    ]
+        # Mock responses file
+        responses_data = (
+            b'{"themefinder_id": 1, "text": "Good idea"}\n{"themefinder_id": 2, "text": "Bad idea"}'
+        )
 
-    import_responses(question_part=question_part, responses_data=responses_data)
-    assert Answer.objects.all().count() == 3
-    response = Answer.objects.get(
-        question_part=question_part, respondent__themefinder_respondent_id=1
-    )
-    assert response.text == "response 1"
-    response = Answer.objects.get(
-        question_part=question_part, respondent__themefinder_respondent_id=2
-    )
-    assert response.text == "response 2"
+        # Mock themes file
+        themes_data = (
+            b'[{"theme_key": "A", "theme_name": "Theme A", "theme_description": "Description A"}]'
+        )
 
+        # Mock mapping file
+        mapping_data = b'{"themefinder_id": 1, "theme_keys": ["A"]}\n{"themefinder_id": 2, "theme_keys": ["A"]}'
 
-@pytest.mark.django_db
-def test_import_all_responses_from_jsonl(mock_consultation_input_objects):
-    question = factories.QuestionFactory(number=3)
-    question_part = factories.FreeTextQuestionPartFactory(question=question, number=1)
-    consultation = question.consultation
-    for i in range(1, 6):
-        factories.RespondentFactory(consultation=consultation, themefinder_respondent_id=i)
-    import_all_responses_from_jsonl(
-        question_part,
-        bucket_name="test-bucket",
-        question_part_folder_key="app_data/con1/inputs/question_part_2/",
-        batch_size=2,
-    )
-    # TODO - improve this, but it works for now!
-    time.sleep(5)
-    responses = Answer.objects.filter(question_part=question_part)
-    historical_responses = Answer.history.filter(question_part=question_part)
-    assert responses.count() == 3
-    assert responses[0].respondent.themefinder_respondent_id == 1
-    assert responses[0].text == "It's really fun."
-    assert responses[2].text == "I need more info."
-    assert responses[2].respondent.themefinder_respondent_id == 4
-    assert historical_responses.count() == 3
-    assert historical_responses[0].history_type == "+"
+        # Mock sentiment file
+        sentiment_data = b'{"themefinder_id": 1, "sentiment": "AGREEMENT"}\n{"themefinder_id": 2, "sentiment": "DISAGREEMENT"}'
 
+        # Mock evidence file
+        evidence_data = b'{"themefinder_id": 1, "evidence_rich": "YES"}\n{"themefinder_id": 2, "evidence_rich": "NO"}'
 
-@pytest.mark.django_db
-def test_import_respondent_data():
-    respondent_data = [
-        b'{"themefinder_id":1}',
-        b'{"themefinder_id":2}',
-        b'{"themefinder_id":3}',
-    ]
-    consultation = factories.ConsultationFactory()
-    import_respondent_data(consultation=consultation, respondent_data=respondent_data)
-    respondents = Respondent.objects.filter(consultation=consultation).order_by(
-        "themefinder_respondent_id"
-    )
-    assert respondents.count() == 3
-    assert respondents[0].themefinder_respondent_id == 1
-    assert respondents[2].themefinder_respondent_id == 3
+        def get_object_side_effect(Bucket, Key):
+            if "respondents.jsonl" in Key:
+                return {"Body": Mock(iter_lines=Mock(return_value=respondents_data.split(b"\n")))}
+            elif "question.json" in Key:
+                return {"Body": Mock(read=Mock(return_value=question_data))}
+            elif "responses.jsonl" in Key:
+                return {"Body": Mock(iter_lines=Mock(return_value=responses_data.split(b"\n")))}
+            elif "themes.json" in Key:
+                return {"Body": Mock(read=Mock(return_value=themes_data))}
+            elif "mapping.jsonl" in Key:
+                return {"Body": Mock(iter_lines=Mock(return_value=mapping_data.split(b"\n")))}
+            elif "sentiment.jsonl" in Key:
+                return {"Body": Mock(iter_lines=Mock(return_value=sentiment_data.split(b"\n")))}
+            elif "detail_detection.jsonl" in Key:
+                return {"Body": Mock(iter_lines=Mock(return_value=evidence_data.split(b"\n")))}
 
+        mock_s3_client.get_object.side_effect = get_object_side_effect
+        mock_boto3.client.return_value = mock_s3_client
 
-@pytest.mark.django_db
-def test_import_all_respondents_from_jsonl(mock_consultation_input_objects):
-    consultation = factories.ConsultationFactory()
-    import_all_respondents_from_jsonl(
-        consultation=consultation,
-        bucket_name="test-bucket",
-        inputs_folder_key="app_data/con1/inputs/",
-        batch_size=2,
-    )
-    # TODO - improve this, but it works for now!
-    time.sleep(5)
-    respondents = Respondent.objects.filter(consultation=consultation).order_by(
-        "themefinder_respondent_id"
-    )
-    assert respondents.count() == 5
-    assert respondents[0].themefinder_respondent_id == 1
-    assert respondents[4].themefinder_respondent_id == 5
+        # Run the import
+        import_consultation(
+            consultation_name="Test Consultation",
+            consultation_code="test",
+            timestamp="2024-01-01",
+            current_user_id=user.id,
+        )
 
+        # Verify results
+        consultation = Consultation.objects.get(title="Test Consultation")
+        assert consultation.users.filter(id=user.id).exists()
 
-@pytest.mark.django_db
-def test_import_themes():
-    theme_data = [
-        {"theme_key": "A", "theme_name": "Theme A", "theme_description": "A description"},
-        {"theme_key": "B", "theme_name": "Theme B", "theme_description": "B description"},
-        {"theme_key": "C", "theme_name": "Theme C", "theme_description": "C description"},
-    ]
-    question_part = factories.FreeTextQuestionPartFactory()
-    framework = import_themes_and_get_framework(question_part=question_part, theme_data=theme_data)
-    themes = Theme.objects.filter(framework=framework).order_by("key")
-    assert themes.count() == 3
-    assert themes[0].key == "A"
-    assert themes[2].key == "C"
+        respondents = Respondent.objects.filter(consultation=consultation)
+        assert respondents.count() == 2
 
+        questions = Question.objects.filter(consultation=consultation)
+        assert questions.count() == 1
+        assert questions.first().text == "What do you think?"
 
-@pytest.mark.django_db
-def test_import_themes_from_json_and_get_framework(mock_consultation_input_objects):
-    question_part = factories.FreeTextQuestionPartFactory()
-    framework = import_themes_from_json_and_get_framework(
-        question_part=question_part,
-        bucket_name="test-bucket",
-        question_part_folder_key="app_data/con1/outputs/mapping/2025-04-01/question_part_1/",
-    )
-    themes = Theme.objects.filter(framework=framework).order_by("key")
-    assert themes.count() == 3
-    assert themes[0].key == "A"
-    assert themes[2].key == "C"
+        responses = Response.objects.filter(question__consultation=consultation)
+        assert responses.count() == 2
 
+        themes = Theme.objects.filter(question__consultation=consultation)
+        assert themes.count() == 1
+        assert themes.first().key == "A"
 
-@pytest.mark.django_db
-def test_import_theme_mappings():
-    thememapping_data = [
-        b'{"themefinder_id":1,"theme_keys":["A"]}',
-        b'{"themefinder_id":2,"theme_keys":["B"]}',
-        b'{"themefinder_id":3,"theme_keys":["A", "B"]}',
-    ]
-    question_part = factories.FreeTextQuestionPartFactory()
-    consultation = question_part.question.consultation
-    respondent_1 = factories.RespondentFactory(
-        themefinder_respondent_id=1, consultation=consultation
-    )
-    respondent_2 = factories.RespondentFactory(
-        themefinder_respondent_id=2, consultation=consultation
-    )
-    respondent_3 = factories.RespondentFactory(
-        themefinder_respondent_id=3, consultation=consultation
-    )
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_1)
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_2)
-    factories.FreeTextAnswerFactory(question_part=question_part, respondent=respondent_3)
+        annotations = ResponseAnnotation.objects.filter(
+            response__question__consultation=consultation
+        )
+        assert annotations.count() == 2
 
-    framework = factories.InitialFrameworkFactory(question_part=question_part)
+    @patch("consultation_analyser.support_console.ingest.boto3")
+    @patch("consultation_analyser.support_console.ingest.settings")
+    def test_import_consultation_s3_error(self, mock_settings, mock_boto3):
+        from consultation_analyser.authentication.models import User
 
-    factories.InitialThemeFactory(key="A", framework=framework)
-    factories.InitialThemeFactory(key="B", framework=framework)
+        user = User.objects.create_user(email="test@example.com")
+        mock_settings.AWS_BUCKET_NAME = "test-bucket"
 
-    import_theme_mappings(
-        question_part=question_part, thememapping_data=thememapping_data, framework=framework
-    )
-    theme_mappings = ThemeMapping.objects.filter(answer__question_part=question_part).order_by(
-        "answer__respondent__themefinder_respondent_id", "theme__key"
-    )
-    assert theme_mappings.count() == 4
-    assert theme_mappings[0].theme.key == "A"
-    assert theme_mappings[3].theme.key == "B"
+        mock_s3_client = Mock()
+        mock_s3_client.get_object.side_effect = Exception("S3 Error")
+        mock_boto3.client.return_value = mock_s3_client
 
+        with pytest.raises(Exception) as exc_info:
+            import_consultation(
+                consultation_name="Test Consultation",
+                consultation_code="test",
+                timestamp="2024-01-01",
+                current_user_id=user.id,
+            )
 
-@pytest.mark.django_db
-def test_import_all_theme_mappings_from_jsonl(
-    question_part_with_4_responses, mock_consultation_input_objects
-):
-    framework = factories.InitialFrameworkFactory(question_part=question_part_with_4_responses)
-    factories.InitialThemeFactory(key="A", framework=framework)
-    factories.InitialThemeFactory(key="B", framework=framework)
+        assert "S3 Error" in str(exc_info.value)
 
-    import_all_theme_mappings_from_jsonl(
-        question_part=question_part_with_4_responses,
-        framework=framework,
-        bucket_name="test-bucket",
-        question_part_folder_key="app_data/con1/outputs/mapping/2025-04-01/question_part_1/",
-        batch_size=2,
-    )
+    @patch("consultation_analyser.support_console.ingest.boto3")
+    @patch("consultation_analyser.support_console.ingest.get_question_folders")
+    @patch("consultation_analyser.support_console.ingest.settings")
+    def test_import_consultation_missing_question_text(
+        self, mock_settings, mock_get_folders, mock_boto3
+    ):
+        from consultation_analyser.authentication.models import User
 
-    # TODO - improve this, but it works for now!
-    time.sleep(5)
-    theme_mappings = ThemeMapping.objects.all().order_by("created_at")
-    assert theme_mappings.count() == 4
-    assert theme_mappings[0].answer.question_part.id == question_part_with_4_responses.id
-    assert theme_mappings[0].theme.key == "A"
-    assert theme_mappings[3].answer.question_part.id == question_part_with_4_responses.id
-    assert theme_mappings[3].theme.key == "B"
+        user = User.objects.create_user(email="test@example.com")
+        mock_settings.AWS_BUCKET_NAME = "test-bucket"
+        mock_get_folders.return_value = ["app_data/test/inputs/question_part_1/"]
 
+        mock_s3_client = Mock()
 
-@pytest.mark.django_db
-def test_import_sentiment_mappings(question_part_with_4_responses):
-    sentimentmapping_data = [
-        b'{"themefinder_id":1,"sentiment":"AGREEMENT"}',
-        b'{"themefinder_id":2,"sentiment":"DISAGREEMENT"}',
-        b'{"themefinder_id":4,"sentiment":"UNCLEAR"}',
-    ]
+        # Mock empty respondents file
+        respondents_data = b'{"themefinder_id": 1}'
 
-    import_sentiment_mappings(
-        question_part=question_part_with_4_responses, sentimentmapping_data=sentimentmapping_data
-    )
-    sentiment_mappings = SentimentMapping.objects.filter(
-        answer__question_part=question_part_with_4_responses
-    ).order_by("answer__respondent__themefinder_respondent_id")
-    assert sentiment_mappings.count() == 3
-    assert sentiment_mappings[0].position == SentimentMapping.Position.AGREEMENT
-    assert sentiment_mappings[2].position == SentimentMapping.Position.UNCLEAR
+        # Mock question file with empty text
+        question_data = b'{"question_text": ""}'
 
+        def get_object_side_effect(Bucket, Key):
+            if "respondents.jsonl" in Key:
+                return {"Body": Mock(iter_lines=Mock(return_value=[respondents_data]))}
+            elif "question.json" in Key:
+                return {"Body": Mock(read=Mock(return_value=question_data))}
 
-@pytest.mark.django_db
-def test_import_all_sentiment_mappings_from_jsonl(
-    question_part_with_4_responses, mock_consultation_input_objects
-):
-    import_all_sentiment_mappings_from_jsonl(
-        question_part=question_part_with_4_responses,
-        bucket_name="test-bucket",
-        question_part_folder_key="app_data/con1/outputs/mapping/2025-04-01/question_part_1/",
-        batch_size=2,
-    )
-    # TODO - improve this, but it works for now!
-    time.sleep(5)
-    sentiment_mappings = SentimentMapping.objects.all().order_by("created_at")
-    assert sentiment_mappings.count() == 3
-    assert sentiment_mappings[0].position == SentimentMapping.Position.AGREEMENT
-    assert sentiment_mappings[2].position == SentimentMapping.Position.UNCLEAR
+        mock_s3_client.get_object.side_effect = get_object_side_effect
+        mock_boto3.client.return_value = mock_s3_client
 
+        with pytest.raises(ValueError) as exc_info:
+            import_consultation(
+                consultation_name="Test Consultation",
+                consultation_code="test",
+                timestamp="2024-01-01",
+                current_user_id=user.id,
+            )
 
-@pytest.mark.django_db
-def test_import_evidence_rich_mappings(question_part_with_4_responses):
-    evidence_rich_mapping_data = [
-        b'{"themefinder_id":1,"evidence_rich":"YES"}',
-        b'{"themefinder_id":2,"evidence_rich":"NO"}',
-        b'{"themefinder_id":4,"evidence_rich":"YES"}',
-    ]
-
-    import_evidence_rich_mappings(
-        question_part=question_part_with_4_responses,
-        evidence_rich_mapping_data=evidence_rich_mapping_data,
-    )
-    evidence_rich_mappings = EvidenceRichMapping.objects.filter(
-        answer__question_part=question_part_with_4_responses
-    ).order_by("answer__respondent__themefinder_respondent_id")
-    assert evidence_rich_mappings.count() == 3
-    assert evidence_rich_mappings[0].evidence_rich
-    assert not evidence_rich_mappings[1].evidence_rich
-    assert evidence_rich_mappings[2].evidence_rich
-
-
-@pytest.mark.django_db
-def test_import_all_evidence_rich_mappings_from_jsonl(
-    question_part_with_4_responses, mock_consultation_input_objects
-):
-    import_all_evidence_rich_mappings_from_jsonl(
-        question_part=question_part_with_4_responses,
-        bucket_name="test-bucket",
-        question_part_folder_key="app_data/con1/outputs/mapping/2025-04-01/question_part_1/",
-        batch_size=2,
-    )
-    # TODO - improve this, but it works for now!
-    time.sleep(5)
-    evidence_rich_mappings = EvidenceRichMapping.objects.filter(
-        answer__question_part=question_part_with_4_responses
-    ).order_by("answer__respondent__themefinder_respondent_id")
-    assert evidence_rich_mappings.count() == 3
-    assert evidence_rich_mappings[0].evidence_rich
-    assert not evidence_rich_mappings[1].evidence_rich
-    assert evidence_rich_mappings[2].evidence_rich
+        assert "Question text is required" in str(exc_info.value)

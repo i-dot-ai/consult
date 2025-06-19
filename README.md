@@ -96,15 +96,6 @@ make test
 
 ## The database
 
-### Importing synthetic data
-Will create a consultation with 9 questions in both free-text and multiple
-choice formats and around 300 answers for each.
-
-```
-poetry run python manage.py import_synthetic_data
-```
-Or go to `/support/consultations/` and import a synthetic consultation from there.
-
 ### Generating dummy data
 Only run this in development. Will create a consultation with 100 complete
 responses in a variety of question formats. This runs as part of `make
@@ -237,11 +228,8 @@ Data should be stored in a specific structure in S3 (bucket specified by `AWS_BU
 
 The import should be run in stages, which can be navigated to from `support/consultations/import-summary/`:
 
-1. Create a consultation and import data on respondents `support/consultations/import-respondents`.
+1. Create a consultation and import data on respondents `support/consultations/import-consultation`.
 2. The import is running asynchronously - you can check its progress by looking at the queue in `support/django-rq/`.
-3. Once the respondents import is done, import the question and response data `support/consultations/import-inputs/`.
-4. Again, wait for this to be completed - check progress in `support/django-rq/`. For a long consultation, this might take a while.
-5. Once done, import the ThemeFinder outputs from `support/consultations/import-themes/`.
 
 If the import fails half-way, delete the consultation or question (which will delete all related objects) and re-import. This can be done by navigating to the individual consultation from `/support/consultations/`.
 

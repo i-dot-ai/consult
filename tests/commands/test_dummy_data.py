@@ -17,7 +17,7 @@ def test_name_parameter_sets_consultation_name(mock_is_local):
     )
 
     assert models.Consultation.objects.count() == 1
-    assert models.Question.objects.count() == 5
+    assert models.Question.objects.count() == 4
 
 
 @pytest.mark.django_db
