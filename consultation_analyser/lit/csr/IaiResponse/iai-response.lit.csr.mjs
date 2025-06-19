@@ -137,6 +137,9 @@ export default class IaiResponse extends IaiLitBase {
     }
 
     getHighlightedText = (fullText, matchedText) => {
+        if (!matchedText) {
+            return "";
+        }
         const regex = new RegExp(matchedText, "gi");
         return fullText.replace(regex, match => `<span class="matched-text">${match}</span>`);
     }
@@ -165,7 +168,10 @@ export default class IaiResponse extends IaiLitBase {
 
                 ${this.free_text_answer_text
                     ? html`
-                        <p class=${"govuk-body answer" + (this.skeleton ? " skeleton" : "")}>
+                        <p 
+                            class=${"govuk-body answer" + (this.skeleton ? " skeleton" : "")}
+                            data-testid="free-text-answer"
+                        >
                             <iai-expanding-text
                                 .text=${this.getHighlightedText(this.free_text_answer_text, this.searchValue)}    
                                 .lines=${2}
