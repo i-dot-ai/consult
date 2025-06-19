@@ -782,18 +782,21 @@ types-psycopg2 = ">=2.9.21.13"
 
 [[package]]
 name = "django-waffle"
-version = "4.2.0"
+version = "5.0.0"
 description = "A feature flipper for Django."
 optional = false
-python-versions = ">=3.8"
+python-versions = ">=3.9"
 groups = ["main"]
 files = [
-    {file = "django_waffle-4.2.0-py3-none-any.whl", hash = "sha256:774f45b929627c9d303620c85419ce1da54066f2082d741af014f5bbd747e372"},
-    {file = "django_waffle-4.2.0.tar.gz", hash = "sha256:97709550f4e75ce2a20b13e29f39777e1439a968569f2ee89398ca368afd586c"},
+    {file = "django_waffle-5.0.0-py3-none-any.whl", hash = "sha256:3312851d9d926b76b9e90712355781700a383b82b5bf2b61e1f1be97532c0f3d"},
+    {file = "django_waffle-5.0.0.tar.gz", hash = "sha256:62f9d00eedf68dafb82657beab56e601bddedc1ea1ccfef91d83df8658708509"},
 ]
 
 [package.dependencies]
-django = ">=3.2"
+django = ">=4.2"
+
+[package.extras]
+docs = ["sphinx", "sphinx-rtd-theme"]
 
 [[package]]
 name = "django-webtest"
@@ -2556,4 +2559,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = "3.12.3"
-content-hash = "1f5e93ce66867909459af5b7549f0a33074424fd8449e57ababb3b56a0a3d406"
+content-hash = "67fe7c8d0d9187f65193be3befed54ce0cf695679c030ed1944ccbd2ba352b32"
