@@ -112,11 +112,12 @@ def create_dummy_consultation_from_yaml(
                 response.chosen_options = chosen_options
                 response.save()
         logger.info(f"Finished adding question and responses for question {question.number}")
+        models.DemographicOption.rebuild_for_consultation(consultation=consultation)
+        logger.info(f"Finished adding dummy data for consultation {consultation.slug}")
     return consultation
 
 
-# Will only be run occasionally to create dummy data
-# Not in prod
+# Will only be run occasionally to create dummy data - not in prod
 @job("default", timeout=2100)
 def create_dummy_consultation_from_yaml_job(
     file_path: str = "./tests/examples/sample_questions.yml",
