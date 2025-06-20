@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+{%- from 'govuk_frontend_jinja/components/select/macro.html' import govukSelect -%}
+
+{% set page_title = "Run Themefinder" %}
+
+{% block content %}
+<h1 class="govuk-heading-l">{{ page_title }}</h1>
+
+{% if success_message %}
+<div class="govuk-notification-banner govuk-notification-banner--success" role="alert" aria-labelledby="govuk-notification-banner-title" data-module="govuk-notification-banner">
+  <div class="govuk-notification-banner__header">
+    <h2 class="govuk-notification-banner__title" id="govuk-notification-banner-title">
+      Success
+    </h2>
+  </div>
+  <div class="govuk-notification-banner__content">
+    <h3 class="govuk-notification-banner__heading">
+      {{ success_message | safe }}
+    </h3>
+    <p class="govuk-body">The details of the job will be tracked at <strong>#consult-internal channel</strong></p>
+  </div>
+</div>
+{% endif %}
+
+{% if validation_errors %}
+<div class="govuk-error-summary" data-module="govuk-error-summary">
+  <div role="alert">
+    <h2 class="govuk-error-summary__title">
+      There is a problem with your consultation data
+    </h2>
+    <div class="govuk-error-summary__body">
+      <ul class="govuk-list govuk-error-summary__list">
+        {% for error in validation_errors %}
+        <li>{{ error.message }}</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
+</div>
+{% endif %}
+
+<p class="govuk-body-l">Run Themefinder to analyse the consultation responses.</p>
+<p class="govuk-body">Themefinder automatically processes consultation responses using advanced topic modelling techniques to identify common themes and patterns.</p>
+
+<div class="govuk-grid-row">
+  <div class="govuk-grid-column-two-thirds">
+    <form method="post" novalidate>{{ csrf_input }}
+
+      {{ govukSelect({
+        'id': 'consultation_code',
+        'name': 'consultation_code',
+        'label': {
+          'text': 'Select consultation folder',
+          'classes': 'govuk-label--s'
+        },
+        'items': consultation_folders
+      }) }}
+
+      {{ govukButton({
+        'text': 'Run Themefinder',
+        'classes': 'govuk-button--primary'
+      }) }}
+    </form>
+  </div>
+</div>
+
+{% endblock %}
