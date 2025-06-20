@@ -62,6 +62,11 @@ def app_config(request: HttpRequest):
                         "text": "Import",
                         "active": request.path.startswith("/support/consultations/import-summary"),
                     },
+                {
+                        "href": "/support/consultations/themefinder/",
+                        "text": "Themefinder",
+                        "active": request.path.startswith("/support/consultations/themefinder"),
+                    },
                     {
                         "href": "/support/sign-out/",
                         "text": "Sign out",
