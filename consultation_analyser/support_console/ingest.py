@@ -5,6 +5,7 @@ import boto3
 from django.conf import settings
 from django_rq import job
 from simple_history.utils import bulk_create_with_history
+import os
 
 from consultation_analyser.consultations.models import (
     Answer,
@@ -55,21 +56,33 @@ def get_all_question_part_subfolders(folder_name: str, bucket_name: str) -> list
 
 
 def get_all_folder_names_within_folder(folder_name: str, bucket_name: str) -> set:
-    s3 = boto3.resource("s3")
-    objects = s3.Bucket(bucket_name).objects.filter(Prefix=folder_name)
-    set_object_names = {obj.key for obj in objects}
-    # Remove prefix
-    set_object_names = {name.replace("folder_name/", "") for name in set_object_names}
-    # Folders end in slash
-    folder_names = {name.split("/")[1] for name in set_object_names}
-    folder_names = set(folder_names) - {""}
+    s3 = boto3.client("s3")
+    
+    # Use list_objects_v2 with delimiter to get "folders" directly
+    response = s3.list_objects_v2(
+        Bucket=bucket_name,
+        Prefix=folder_name,
+        Delimiter='/'
+    )
+    
+    folder_names = set()
+    
+    # Get folder names from CommonPrefixes
+    if 'CommonPrefixes' in response:
+        for prefix in response['CommonPrefixes']:
+            # Extract folder name by removing the base prefix and trailing slash
+            folder_path = prefix['Prefix']
+            folder_name_only = folder_path.replace(folder_name, '').rstrip('/')
+            if folder_name_only:
+                folder_names.add(folder_name_only)
+    
     return folder_names
 
 
 def get_folder_names_for_dropdown() -> list[dict]:
     try:
         consultation_folder_names = get_all_folder_names_within_folder(
-            folder_name="app_data", bucket_name=settings.AWS_BUCKET_NAME
+            folder_name="app_data/consultations/", bucket_name=settings.AWS_BUCKET_NAME
         )
     except RuntimeError:  # If no credentials for AWS
         consultation_folder_names = set()
@@ -465,3 +478,37 @@ def import_all_evidence_rich_mappings_from_jsonl(
         import_evidence_rich_mappings_job.delay(
             question_part=question_part, evidence_rich_mapping_data=lines
         )
+
+
+def send_job_to_sqs(consultation_code: str):
+    """Send a message to AWS SQS to trigger the themefinder batch job"""
+
+    # SQS configuration - you should move these to settings.py
+    QUEUE_URL = os.environ.get("MAPPING_SQS_QUEUE_URL") 
+
+    # Message body with the consultation_code
+    message_body = {
+        "jobName": os.environ.get("MAPPING_BATCH_JOB_NAME"),
+        "jobQueue": os.environ.get("MAPPING_BATCH_JOB_QUEUE"),
+        "jobDefinition": os.environ.get("MAPPING_BATCH_JOB_DEFINITION"),
+        "containerOverrides": {
+            "command": ["--subdir", consultation_code]
+        }
+    }
+
+    # Create SQS client
+    sqs = boto3.client('sqs')
+
+    try:
+        # Send message to SQS
+        response = sqs.send_message(
+            QueueUrl=QUEUE_URL,
+            MessageBody=json.dumps(message_body)
+        )
+
+        print(f"Message sent to SQS. MessageId: {response['MessageId']}")
+        return response
+
+    except Exception as e:
+        print(f"Error sending message to SQS: {str(e)}")
+        raise e
