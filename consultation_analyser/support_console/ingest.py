@@ -1,9 +1,9 @@
 import json
 import logging
+import os
 
 import boto3
 from django.conf import settings
-import os
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -410,28 +410,24 @@ def import_consultation(
         logger.error(f"Error importing consultation {consultation_name}: {str(e)}")
         raise
 
-        
+
 def get_all_folder_names_within_folder(folder_name: str, bucket_name: str) -> set:
     s3 = boto3.client("s3")
-    
+
     # Use list_objects_v2 with delimiter to get "folders" directly
-    response = s3.list_objects_v2(
-        Bucket=bucket_name,
-        Prefix=folder_name,
-        Delimiter='/'
-    )
-    
+    response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name, Delimiter="/")
+
     folder_names = set()
-    
+
     # Get folder names from CommonPrefixes
-    if 'CommonPrefixes' in response:
-        for prefix in response['CommonPrefixes']:
+    if "CommonPrefixes" in response:
+        for prefix in response["CommonPrefixes"]:
             # Extract folder name by removing the base prefix and trailing slash
-            folder_path = prefix['Prefix']
-            folder_name_only = folder_path.replace(folder_name, '').rstrip('/')
+            folder_path = prefix["Prefix"]
+            folder_name_only = folder_path.replace(folder_name, "").rstrip("/")
             if folder_name_only:
                 folder_names.add(folder_name_only)
-    
+
     return folder_names
 
 
@@ -450,27 +446,22 @@ def send_job_to_sqs(consultation_code: str):
     """Send a message to AWS SQS to trigger the themefinder batch job"""
 
     # SQS configuration - you should move these to settings.py
-    QUEUE_URL = os.environ.get("MAPPING_SQS_QUEUE_URL") 
+    QUEUE_URL = os.environ.get("MAPPING_SQS_QUEUE_URL")
 
     # Message body with the consultation_code
     message_body = {
         "jobName": os.environ.get("MAPPING_BATCH_JOB_NAME"),
         "jobQueue": os.environ.get("MAPPING_BATCH_JOB_QUEUE"),
         "jobDefinition": os.environ.get("MAPPING_BATCH_JOB_DEFINITION"),
-        "containerOverrides": {
-            "command": ["--subdir", consultation_code]
-        }
+        "containerOverrides": {"command": ["--subdir", consultation_code]},
     }
 
     # Create SQS client
-    sqs = boto3.client('sqs')
+    sqs = boto3.client("sqs")
 
     try:
         # Send message to SQS
-        response = sqs.send_message(
-            QueueUrl=QUEUE_URL,
-            MessageBody=json.dumps(message_body)
-        )
+        response = sqs.send_message(QueueUrl=QUEUE_URL, MessageBody=json.dumps(message_body))
 
         print(f"Message sent to SQS. MessageId: {response['MessageId']}")
         return response
@@ -478,4 +469,3 @@ def send_job_to_sqs(consultation_code: str):
     except Exception as e:
         print(f"Error sending message to SQS: {str(e)}")
         raise e
-        

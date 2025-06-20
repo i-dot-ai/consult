@@ -265,25 +265,25 @@ def themefinder(request: HttpRequest) -> HttpResponse:
     bucket_name = settings.AWS_BUCKET_NAME
 
     consultation_code = None
-    if request.method == 'POST':
-        consultation_code = request.POST.get('consultation_code')
+    if request.method == "POST":
+        consultation_code = request.POST.get("consultation_code")
         if consultation_code:
             try:
                 # Send message to SQS
                 ingest.send_job_to_sqs(consultation_code)
-                messages.success(request, f'Themefinder job submitted successfully for {consultation_code}!')
+                messages.success(
+                    request, f"Themefinder job submitted successfully for {consultation_code}!"
+                )
 
             except Exception as e:
-                messages.error(request, f'Error submitting job: {str(e)}')
+                messages.error(request, f"Error submitting job: {str(e)}")
         else:
-            messages.error(request, 'Please select a consultation folder.')
+            messages.error(request, "Please select a consultation folder.")
 
     context = {
         "bucket_name": bucket_name,
         "consultation_folders": consultation_folders,
-        "consultation_code": consultation_code
+        "consultation_code": consultation_code,
     }
 
     return render(request, "support_console/consultations/themefinder.html", context=context)
-  
- 
