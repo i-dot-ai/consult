@@ -14,10 +14,10 @@ module "batch_compute" {
   vpc_id                  = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets         = data.terraform_remote_state.vpc.outputs.private_subnets
   additional_iam_policies = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
-  use_fargate = true
-  desired_vcpus = 2
-  min_vcpus = 2
-  max_vcpus = 4
+  use_fargate             = true
+  desired_vcpus           = 2
+  min_vcpus               = 2
+  max_vcpus               = 4
 }
 
 module "batch_job_mapping" {

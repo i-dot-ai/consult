@@ -1,18 +1,13 @@
 import datetime
 import uuid
-from collections import Counter, OrderedDict
-from enum import Enum
 
 import faker as _faker
-import pydantic
-from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.db import models
+from django.utils import timezone
 from django.utils.text import slugify
-from simple_history.models import HistoricalRecords
 
 from consultation_analyser.authentication.models import User
-from consultation_analyser.consultations import public_schema
 
 faker = _faker.Faker()
 
@@ -20,12 +15,7 @@ faker = _faker.Faker()
 # TODO: we don't use this anymore, remove it without manage.py makemigrations complaining
 class MultipleChoiceSchemaValidator(BaseValidator):
     def compare(self, value, _limit_value):
-        if not value:
-            return
-        try:
-            public_schema.MultipleChoice(value)
-        except pydantic.ValidationError as e:
-            raise ValidationError(e.json())
+        pass
 
 
 class UUIDPrimaryKeyModel(models.Model):
@@ -75,405 +65,297 @@ class SlugFromTextModel(models.Model):
 
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     title = models.CharField(max_length=256)
-    slug = models.SlugField(null=False, editable=False, max_length=256)
+    slug = models.SlugField(max_length=256, unique=True)
     users = models.ManyToManyField(User)
 
     def save(self, *args, **kwargs):
-        # Generate slug from text - if needed, append integer for uniqueness.
-        def slug_exists_for_another_consultation(self, slug):
-            if self.slug == slug:
-                return False
-            return Consultation.objects.filter(slug=slug).exists()
-
-        cropped_length = 256
-        slugified_title = slugify(self.title)[:cropped_length]
-
-        i = 2
-        generated_slug = slugified_title
-        slug_exists = slug_exists_for_another_consultation(self, generated_slug)
-        while slug_exists:
-            str_to_append = f"-{i}"
-            n = len(str_to_append)
-            generated_slug = f"{slugified_title[: (cropped_length - n)]}{str_to_append}"
-            i = i + 1
-            slug_exists = slug_exists_for_another_consultation(self, generated_slug)
-
-        self.slug = generated_slug
+        if not self.slug:
+            base_slug = slugify(self.title)[:250]
+            slug = base_slug
+            counter = 1
+            while Consultation.objects.filter(slug=slug).exclude(pk=self.pk).exists():
+                slug = f"{base_slug}-{counter}"
+                counter += 1
+            self.slug = slug
         return super().save(*args, **kwargs)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
-            models.UniqueConstraint(fields=["slug"], name="unique_consult_slug"),
+            models.UniqueConstraint(fields=["slug"], name="unique_consultation_slug"),
         ]
 
 
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
-    text = models.TextField()
-    slug = models.SlugField(null=False, editable=False, max_length=256)
+    """
+    Combined question model - can have free text, multiple choice, or both.
+    Replaces the Question/QuestionPart split.
+    """
+
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
-    number = models.IntegerField(null=False, default=0)
+    text = models.TextField()
+    slug = models.SlugField(max_length=256)
+    number = models.IntegerField()
+
+    # Question configuration
+    has_free_text = models.BooleanField(default=True)
+    has_multiple_choice = models.BooleanField(default=False)
+    multiple_choice_options = models.JSONField(
+        null=True, blank=True
+    )  # List of options when has_multiple_choice=True
 
     def save(self, *args, **kwargs):
-        # Generate slug from text - if needed, add question number for uniqueness.
-        # if needed (usually won't be). Don't allow empty slug.
-        cropped_length = 256
-        generated_slug = slugify(self.text)[:cropped_length]
-        if self.pk:
-            slug_exists = (
-                Question.objects.filter(slug=generated_slug)
-                .filter(consultation=self.consultation)
-                .exclude(pk=self.pk)
-                .exists()
-            )
-        else:
-            slug_exists = (
-                Question.objects.filter(slug=generated_slug)
-                .filter(consultation=self.consultation)
-                .exists()
-            )
-        if not generated_slug:
-            generated_slug = str(self.number)
-        elif slug_exists:
-            str_to_append = f"-{str(self.number)}"
-            n = len(str_to_append)
-            generated_slug = f"{generated_slug[: (cropped_length - n)]}{str_to_append}"
-        self.slug = generated_slug
+        if not self.slug:
+            base_slug = slugify(self.text)[:240]
+            self.slug = f"{base_slug}-{self.number}" if base_slug else str(self.number)
         return super().save(*args, **kwargs)
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        constraints = [
-            models.UniqueConstraint(fields=["consultation", "slug"], name="unique_q_slug"),
-            models.UniqueConstraint(fields=["consultation", "number"], name="unique_q_number"),
-        ]
-        ordering = ["number"]
-
-
-class QuestionPart(UUIDPrimaryKeyModel, TimeStampedModel):
-    class QuestionType(models.TextChoices):
-        FREE_TEXT = "free_text"
-        SINGLE_OPTION = "single_option"
-        MULTIPLE_OPTIONS = "multiple_options"
-
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    text = models.TextField()
-    type = models.CharField(max_length=16, choices=QuestionType.choices)
-    options = models.JSONField(null=True)  # List, null if free-text
-    number = models.IntegerField(null=False, default=0)
 
     @property
     def proportion_of_audited_answers(self) -> float:
-        # Only relevant for free text questions
-        total_answers = self.answer_set.count()
-        if total_answers == 0:
+        """Calculate proportion of human-reviewed responses for free text questions"""
+        if not self.has_free_text:
             return 0
-        audited_answers = self.answer_set.filter(is_theme_mapping_audited=True).count()
-        return audited_answers / total_answers
 
-    def get_option_counts(self) -> OrderedDict:
-        """
-        Get the counts of each option chosen for the corresponding answers.
-        Keep counts in the same order as specified in QuestionPart.options.
-        """
-        all_chosen_options = []
+        # Count total responses with free text
+        total_responses = self.response_set.filter(
+            free_text__isnull=False, free_text__gt=""
+        ).count()
 
-        for answer in self.answer_set.all():
-            chosen_options = answer.chosen_options if answer.chosen_options else []
-            all_chosen_options.extend(chosen_options)
-        counts = Counter(all_chosen_options)
+        if total_responses == 0:
+            return 0
 
-        all_possible_options = self.options or []
-        # We may care about the order they appear
-        ordered_counts = OrderedDict((option, counts[option]) for option in all_possible_options)
-        return ordered_counts
+        # Count human-reviewed responses
+        reviewed_responses = self.response_set.filter(
+            free_text__isnull=False, free_text__gt="", annotation__human_reviewed=True
+        ).count()
+
+        return reviewed_responses / total_responses
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
-            models.UniqueConstraint(fields=["question", "number"], name="unique_part_per_question"),
+            models.UniqueConstraint(fields=["consultation", "slug"], name="unique_question_slug"),
             models.UniqueConstraint(
-                fields=["question"],
-                condition=models.Q(type="free_text"),
-                name="unique_free_text_per_question",
+                fields=["consultation", "number"], name="unique_question_number"
             ),
         ]
-        # Assume at most one free_text part per question, that is what we expect from data we've seen to date
         ordering = ["number"]
+        indexes = [
+            models.Index(fields=["consultation", "has_free_text"]),
+        ]
 
 
 class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
-    # demographic data, or anything else that is at respondent level
-    data = models.JSONField(default=dict)
-    themefinder_respondent_id = models.IntegerField(null=True)
-    user_provided_id = models.CharField(
-        max_length=128, null=True
-    )  # Optional response ID supplied by department
+    themefinder_id = models.IntegerField(null=True, blank=True)
+    demographics = models.JSONField(default=dict)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+        indexes = [
+            models.Index(fields=["consultation", "themefinder_id"]),
+        ]
 
     @property
-    def identifier(self) -> uuid.UUID | int:
-        if self.themefinder_respondent_id:
-            return self.themefinder_respondent_id
-        return self.id
+    def identifier(self):
+        return self.themefinder_id if self.themefinder_id else self.id
 
 
-class Answer(UUIDPrimaryKeyModel, TimeStampedModel):
-    question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
+class Response(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Response to a question - can include both free text and multiple choice"""
+
     respondent = models.ForeignKey(Respondent, on_delete=models.CASCADE)
-    text = models.TextField()
-    chosen_options = models.JSONField(default=list)
-    is_theme_mapping_audited = models.BooleanField(default=False, null=True)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
-    history = HistoricalRecords()
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
-
-    @property
-    def datetime_theme_mapping_audited(self) -> datetime.datetime | None:
-        if not self.is_theme_mapping_audited:
-            return None
-
-        # Use history to find the first date it was marked as audited
-        history_for_answer = self.history.all().order_by("history_date")
-        for historical_record in history_for_answer:
-            if historical_record.is_theme_mapping_audited:
-                return historical_record.modified_at
-        return None
-
-
-class ExecutionRun(UUIDPrimaryKeyModel, TimeStampedModel):
-    class TaskType(models.TextChoices):
-        SENTIMENT_ANALYSIS = "sentiment_analysis"
-        THEME_GENERATION = "theme_generation"
-        THEME_MAPPING = "theme_mapping"
-        EVIDENCE_EVALUATION = "evidence_evaluation"
-
-    type = models.CharField(max_length=32, choices=TaskType.choices)
-    # TODO - add metadata e.g. langfuse_id
-    # Note, the execution run will be run on responses to a particular
-    # question part - but this will be stored in the correspondong framework/mapping etc.
+    # Response content
+    free_text = models.TextField(blank=True)  # Free text response
+    chosen_options = models.JSONField(default=list)  # Multiple choice selections
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+        constraints = [
+            models.UniqueConstraint(
+                fields=["respondent", "question"], name="unique_question_response"
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["question"]),
+            models.Index(fields=["respondent", "question"]),  # For efficient joins
+        ]
 
 
-class Framework(UUIDPrimaryKeyModel, TimeStampedModel):
-    """
-    A Framework groups a set of themes, that are them used to
-    classify consultation responses.
-    Create a new Framework every time the set of themes changes.
-    """
+class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Normalized storage of demographic field options for efficient querying across pages"""
 
-    # Execution run is the theme generation execution run that has generated the framework
-    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
-    question_part = models.ForeignKey(QuestionPart, on_delete=models.CASCADE)
-    # When Framework is created - record reason it was changed & user that created it
-    change_reason = models.CharField(max_length=256)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)  # None when AI generated
-    precursor = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
+    field_name = models.CharField(max_length=128)
+    field_value = models.CharField(max_length=256)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
-
-    def save(self, *args, **kwargs):
-        raise ValueError("Direct save() method is not allowed for Frameworks - use custom methods.")
+        constraints = [
+            models.UniqueConstraint(
+                fields=["consultation", "field_name", "field_value"],
+                name="unique_demographic_option",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["consultation", "field_name"]),
+        ]
 
     @classmethod
-    def create_initial_framework(
-        cls, execution_run: ExecutionRun, question_part: QuestionPart
-    ) -> "Framework":
-        """Create initial framework for a question part."""
-        # We require an execution run for the initial framework
-        # user, change_reason, precursor are all None
-        if not execution_run:
-            raise ValueError("An initial Framework needs an execution run.")
+    def rebuild_for_consultation(cls, consultation: "Consultation") -> int:
+        """Rebuild demographic options for a consultation from respondent data"""
+        # Clear existing options
+        cls.objects.filter(consultation=consultation).delete()
 
-        if execution_run.type != ExecutionRun.TaskType.THEME_GENERATION:
-            raise ValueError("Initial framework must be based on theme generation")
+        # Collect unique demographic field/value pairs
+        demographic_options_to_create = set()
 
-        new_framework = Framework(
-            execution_run=execution_run,
-            question_part=question_part,
-        )
-        super(Framework, new_framework).save()
-        return new_framework
+        respondents = Respondent.objects.filter(consultation=consultation)
+        for respondent in respondents:
+            if respondent.demographics:
+                for field_name, field_value in respondent.demographics.items():
+                    demographic_options_to_create.add((field_name, str(field_value)))
 
-    def create_descendant_framework(self, user: User, change_reason: str) -> "Framework":
-        """
-        Creates a new Framework object based on the existing framework.
-        This allows us to track history and changes of a framework.
-        Add themes manually.
-        """
-        new_framework = Framework(
-            execution_run=None,
-            question_part=self.question_part,
-            user=user,
-            change_reason=change_reason,
-            precursor=self,
-        )
-        super(Framework, new_framework).save()
-        # Only have execution_run when we AI generate framework
-        return new_framework
+        # Bulk create new options
+        options_to_save = [
+            cls(consultation=consultation, field_name=field_name, field_value=field_value)
+            for field_name, field_value in demographic_options_to_create
+        ]
 
-    def get_themes_removed_from_previous_framework(self) -> models.QuerySet:
-        """Themes removed from the previous framework i.e. no longer exist in any format."""
-        if not self.precursor:
-            return self.theme_set.none()
-        themes_in_this_framework = self.theme_set.all()
-        precursors_themes_that_persisted = themes_in_this_framework.values_list(
-            "precursor__id", flat=True
-        )
-        persisted_ids = [id for id in precursors_themes_that_persisted if id]  # remove None
-        precursor_themes_removed = self.precursor.theme_set.exclude(id__in=persisted_ids).distinct()
-        return precursor_themes_removed
-
-    def get_themes_added_to_previous_framework(self) -> models.QuerySet:
-        """
-        Themes that were added in this framework, and didn't exist in
-        the previous framework.
-        """
-        if not self.precursor:
-            return self.theme_set.all()
-
-        previous_framework_themes = self.precursor.theme_set.values_list("id", flat=True)
-        new_themes = self.theme_set.exclude(precursor__id__in=previous_framework_themes)
-        return new_themes
-
-    def get_theme_mappings(self, history=False) -> models.QuerySet:
-        if history:
-            return ThemeMapping.history.filter(theme__framework=self)
-        return ThemeMapping.objects.filter(theme__framework=self)
+        cls.objects.bulk_create(options_to_save)
+        return len(options_to_save)
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
-    # The new theme is assigned to a new framework with the change reason and user.
-    # The theme that it has been changed from is the precursor.
-    framework = models.ForeignKey(Framework, on_delete=models.CASCADE)
-    precursor = models.ForeignKey("self", on_delete=models.CASCADE, null=True)
+    """AI-generated themes for a question (only for free text parts)"""
 
-    name = models.CharField(max_length=256)  # TODO - is this long enough
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    name = models.CharField(max_length=256)
     description = models.TextField()
-    key = models.CharField(max_length=128, null=True)
+    key = models.CharField(max_length=128, null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
-            models.UniqueConstraint(fields=["framework", "key"], name="unique_framework_key"),
+            models.UniqueConstraint(
+                fields=["question", "key"],
+                name="unique_theme",
+                condition=models.Q(key__isnull=False),
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["question"]),
         ]
 
-    def save(self, *args, **kwargs):
-        raise ValueError("Direct save() method is not allowed for Themes - use custom methods.")
-
-    @classmethod
-    def create_initial_theme(
-        cls, framework: Framework, name: str, description: str, key: str | None = None
-    ) -> "Theme":
-        """Create initial theme for a framework."""
-        new_theme = Theme(
-            framework=framework, name=name, description=description, key=key, precursor=None
-        )
-        super(Theme, new_theme).save()
-        return new_theme
-
-    def create_descendant_theme(
-        self,
-        new_framework: Framework,
-        name: str,
-        description: str,
-        key: str | None = None,
-    ) -> "Theme":
-        """
-        Creates a new Theme object based on the existing theme.
-        Allows us to track history and changes of a theme.
-
-        Args:
-            self: The existing theme that we want to make changes to.
-            new_framework: The new framework that the new theme will be assigned to.
-                Should be based on the framework of the existing theme.
-            **kwargs: Update the name, description etc.
-
-        Returns:
-            A new theme based on the existing theme, changed according to kwargs.
-        """
-        if self.framework != new_framework.precursor:
-            raise ValueError(
-                "Framework for new theme must be based on the framework for the existing theme."
-            )
-        new_theme = Theme(
-            precursor=self,
-            name=name,
-            description=description,
-            framework=new_framework,
-            key=key,
-        )
-        super(Theme, new_theme).save()
-        return new_theme
-
-    def get_identifier(self) -> str:
-        if self.key:
-            return self.key
+    def __str__(self):
         return self.name
 
 
-class ThemeMapping(UUIDPrimaryKeyModel, TimeStampedModel):
-    # When changing the mapping for an answer, don't change the answer
-    # change the theme.
-    class Stance(models.TextChoices, Enum):
-        POSITIVE = "POSITIVE", "Positive"
-        NEGATIVE = "NEGATIVE", "Negative"
+class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Through model to track original AI vs human-reviewed theme assignments"""
 
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
+    response_annotation = models.ForeignKey("ResponseAnnotation", on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
-    reason = models.TextField()
-    # This is the theme mapping execution run
-    # TODO - rename field to be more explicit, amend save to ensure correct type
-    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE, null=True)
-    stance = models.CharField(max_length=8, choices=Stance.choices, null=True)
-    history = HistoricalRecords()
-    user_audited = models.BooleanField(default=False)
+    is_original_ai_assignment = models.BooleanField(
+        default=True
+    )  # True for AI, False for human review
+    assigned_by = models.ForeignKey(
+        User, on_delete=models.SET_NULL, null=True, blank=True
+    )  # None for AI, User for human
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
-            models.UniqueConstraint(fields=["answer", "theme"], name="unique_theme_answer"),
+            models.UniqueConstraint(
+                fields=["response_annotation", "theme", "is_original_ai_assignment"],
+                name="unique_theme_assignment",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["response_annotation", "is_original_ai_assignment"]),
+            models.Index(fields=["theme", "is_original_ai_assignment"]),
         ]
 
-    @classmethod
-    def get_latest_theme_mappings(
-        cls, question_part: QuestionPart, history: bool = False
-    ) -> models.QuerySet:
-        latest_framework = (
-            Framework.objects.filter(question_part=question_part).order_by("created_at").last()
-        )
-        if latest_framework:
-            return latest_framework.get_theme_mappings(history=history)
-        if history:
-            return ThemeMapping.history.none()
-        return ThemeMapping.objects.none()
 
+class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
+    """AI outputs and human reviews for a response"""
 
-class SentimentMapping(UUIDPrimaryKeyModel, TimeStampedModel):
-    class Position(models.TextChoices, Enum):
+    class Sentiment(models.TextChoices):
         AGREEMENT = "AGREEMENT", "Agreement"
         DISAGREEMENT = "DISAGREEMENT", "Disagreement"
         UNCLEAR = "UNCLEAR", "Unclear"
 
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
-    execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
-    position = models.CharField(max_length=12, choices=Position.choices)
+    class EvidenceRich(models.TextChoices):
+        YES = "YES", "Yes"
+        NO = "NO", "No"
 
-    history = HistoricalRecords()
+    response = models.OneToOneField(Response, on_delete=models.CASCADE, related_name="annotation")
+
+    # AI-generated outputs (only for free text responses)
+    themes = models.ManyToManyField(Theme, through="ResponseAnnotationTheme", blank=True)
+    sentiment = models.CharField(max_length=12, choices=Sentiment.choices, null=True, blank=True)
+    evidence_rich = models.CharField(
+        max_length=3, choices=EvidenceRich.choices, null=True, blank=True
+    )
+
+    # Human review tracking
+    human_reviewed = models.BooleanField(default=False)
+    reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
+    reviewed_at = models.DateTimeField(null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+        indexes = [
+            models.Index(fields=["human_reviewed"]),
+            models.Index(fields=["sentiment"]),
+            models.Index(fields=["evidence_rich"]),
+        ]
 
+    def mark_human_reviewed(self, user):
+        """Helper method to mark as human reviewed"""
+        self.human_reviewed = True
+        self.reviewed_by = user
+        self.reviewed_at = timezone.now()
+        self.save()
 
-class EvidenceRichMapping(UUIDPrimaryKeyModel, TimeStampedModel):
-    answer = models.ForeignKey(Answer, on_delete=models.CASCADE)
-    evidence_evaluation_execution_run = models.ForeignKey(ExecutionRun, on_delete=models.CASCADE)
-    evidence_rich = models.BooleanField(default=False)
+    def add_original_ai_themes(self, themes):
+        """Add themes as original AI assignments"""
+        for theme in themes:
+            ResponseAnnotationTheme.objects.get_or_create(
+                response_annotation=self,
+                theme=theme,
+                is_original_ai_assignment=True,
+                defaults={"assigned_by": None},
+            )
 
-    history = HistoricalRecords()
+    def set_human_reviewed_themes(self, themes, user):
+        """Set themes as human-reviewed, preserving original AI assignments"""
+        # Remove existing human-reviewed theme assignments
+        ResponseAnnotationTheme.objects.filter(
+            response_annotation=self, is_original_ai_assignment=False
+        ).delete()
 
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        pass
+        # Add new human-reviewed theme assignments
+        for theme in themes:
+            ResponseAnnotationTheme.objects.get_or_create(
+                response_annotation=self,
+                theme=theme,
+                is_original_ai_assignment=False,
+                defaults={"assigned_by": user},
+            )
+
+    def get_original_ai_themes(self):
+        """Get themes that were originally assigned by AI"""
+        return self.themes.filter(responseannotationtheme__is_original_ai_assignment=True)
+
+    def get_human_reviewed_themes(self):
+        """Get themes that were assigned by human review"""
+        return self.themes.filter(responseannotationtheme__is_original_ai_assignment=False)
+
+    def save(self, *args, **kwargs) -> None:
+        """
+        Override save to prevent accidental direct theme manipulation.
+        Themes should be added using add_original_ai_themes() or set_human_reviewed_themes().
+        """
+        # Check if themes are being passed via save (which shouldn't happen)
+        if "themes" in kwargs:
+            raise ValueError(
+                "Direct theme assignment through save() is not allowed. "
+                "Use add_original_ai_themes() or set_human_reviewed_themes() instead."
+            )
+
+        super().save(*args, **kwargs)

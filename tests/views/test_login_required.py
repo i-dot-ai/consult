@@ -15,7 +15,6 @@ PUBLIC_URL_NAMES = [
 ]
 GENERIC_CONSULTATION_URL_NAMES = [
     "consultations",
-    "schema",
 ]
 AUTHENTICATION_URL_NAMES = [
     "sign_in",
@@ -65,13 +64,12 @@ def set_up_consultation(user):
     consultation.users.add(user)
     consultation.save()
 
-    question_part = factories.FreeTextQuestionPartFactory(question=question)
-    answer = factories.FreeTextAnswerFactory(question_part=question_part)
-    factories.ThemeMappingFactory(answer=answer)
+    response = factories.ResponseFactory(question=question)
+    factories.ResponseAnnotationFactory(response=response)
     possible_args = {
         "consultation_slug": consultation.slug,
         "question_slug": question.slug,
-        "response_id": answer.id,
+        "response_id": response.id,
     }
     return possible_args
 

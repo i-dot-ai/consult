@@ -1,6 +1,7 @@
 import random
 
 import factory
+from django.utils import timezone
 from factory import fuzzy
 from factory.django import DjangoModelFactory
 from faker import Faker
@@ -31,41 +32,28 @@ class QuestionFactory(DjangoModelFactory):
     class Meta:
         model = models.Question
 
-    text = factory.LazyAttribute(lambda o: fake.sentence())
     consultation = factory.SubFactory(ConsultationFactory)
-    number = factory.Sequence(lambda n: n + 1)  # Unique number within consultation
-
-
-class FreeTextQuestionPartFactory(DjangoModelFactory):
-    class Meta:
-        model = models.QuestionPart
-
-    question = factory.SubFactory(QuestionFactory)
     text = factory.LazyAttribute(lambda o: fake.sentence())
-    type = models.QuestionPart.QuestionType.FREE_TEXT
-    number = factory.Sequence(lambda n: n + 1)  # Unique number within question
+    number = factory.Sequence(lambda n: n + 1)
+    has_free_text = True
+    has_multiple_choice = False
+    multiple_choice_options = None
 
 
-class SingleOptionQuestionPartFactory(DjangoModelFactory):
-    class Meta:
-        model = models.QuestionPart
-
-    question = factory.SubFactory(QuestionFactory)
-    text = factory.LazyAttribute(lambda o: fake.sentence())
-    type = models.QuestionPart.QuestionType.SINGLE_OPTION
-    number = factory.Sequence(lambda n: n + 1)  # Unique number within question
-    options = factory.LazyAttribute(lambda o: [fake.word() for _ in range(random.randint(2, 5))])
+class QuestionWithMultipleChoiceFactory(QuestionFactory):
+    has_free_text = False
+    has_multiple_choice = True
+    multiple_choice_options = factory.LazyAttribute(
+        lambda o: [fake.word() for _ in range(random.randint(2, 5))]
+    )
 
 
-class MultipleOptionQuestionPartFactory(DjangoModelFactory):
-    class Meta:
-        model = models.QuestionPart
-
-    question = factory.SubFactory(QuestionFactory)
-    text = factory.LazyAttribute(lambda o: fake.sentence())
-    type = models.QuestionPart.QuestionType.MULTIPLE_OPTIONS
-    number = factory.Sequence(lambda n: n + 1)  # Unique number within question
-    options = factory.LazyAttribute(lambda o: [fake.word() for _ in range(random.randint(2, 5))])
+class QuestionWithBothFactory(QuestionFactory):
+    has_free_text = True
+    has_multiple_choice = True
+    multiple_choice_options = factory.LazyAttribute(
+        lambda o: [fake.word() for _ in range(random.randint(2, 5))]
+    )
 
 
 class RespondentFactory(DjangoModelFactory):
@@ -73,158 +61,95 @@ class RespondentFactory(DjangoModelFactory):
         model = models.Respondent
 
     consultation = factory.SubFactory(ConsultationFactory)
-    themefinder_respondent_id = factory.LazyAttribute(lambda o: random.randint(2, 500000000))
+    themefinder_id = factory.LazyAttribute(lambda o: random.randint(2, 500000000))
+    demographics = factory.LazyAttribute(lambda o: {"age": random.randint(18, 80)})
 
 
-class FreeTextAnswerFactory(DjangoModelFactory):
+class ResponseFactory(DjangoModelFactory):
     class Meta:
-        model = models.Answer
+        model = models.Response
 
-    question_part = factory.SubFactory(FreeTextQuestionPartFactory)
     respondent = factory.SubFactory(RespondentFactory)
-    text = factory.LazyAttribute(lambda o: fake.paragraph())
+    question = factory.SubFactory(QuestionFactory)
+    free_text = factory.LazyAttribute(lambda o: fake.paragraph())
+    chosen_options = factory.LazyFunction(list)  # Empty list
 
 
-class SingleOptionAnswerFactory(DjangoModelFactory):
-    class Meta:
-        model = models.Answer
-
-    question_part = factory.SubFactory(SingleOptionQuestionPartFactory)
-    respondent = factory.SubFactory(RespondentFactory)
-    chosen_options = factory.LazyAttribute(lambda o: [random.choice(o.question_part.options)])
-
-
-class MultipleOptionAnswerFactory(DjangoModelFactory):
-    class Meta:
-        model = models.Answer
-
-    question_part = factory.SubFactory(MultipleOptionQuestionPartFactory)
-    respondent = factory.SubFactory(RespondentFactory)
+class ResponseWithMultipleChoiceFactory(ResponseFactory):
+    question = factory.SubFactory(QuestionWithMultipleChoiceFactory)
+    free_text = ""
     chosen_options = factory.LazyAttribute(
         lambda o: random.sample(
-            o.question_part.options, k=random.randint(1, len(o.question_part.options))
+            o.question.multiple_choice_options,
+            k=random.randint(1, len(o.question.multiple_choice_options)),
         )
     )
 
 
-class ExecutionRunFactory(DjangoModelFactory):
-    class Meta:
-        model = models.ExecutionRun
-
-    type = factory.Iterator(models.ExecutionRun.TaskType.values)
-
-
-class InitialFrameworkFactory(DjangoModelFactory):
-    # Creates an initial framework
-    class Meta:
-        model = models.Framework
-
-    @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        execution_run = kwargs.get("execution_run")
-        question_part = kwargs.get("question_part")
-        if not execution_run:
-            execution_run = ExecutionRunFactory(type=models.ExecutionRun.TaskType.THEME_GENERATION)
-        if not question_part:
-            question_part = FreeTextQuestionPartFactory()
-        return model_class.create_initial_framework(
-            execution_run=execution_run, question_part=question_part
+class ResponseWithBothFactory(ResponseFactory):
+    question = factory.SubFactory(QuestionWithBothFactory)
+    free_text = factory.LazyAttribute(lambda o: fake.paragraph())
+    chosen_options = factory.LazyAttribute(
+        lambda o: random.sample(
+            o.question.multiple_choice_options,
+            k=random.randint(1, len(o.question.multiple_choice_options)),
         )
+    )
 
 
-class DescendantFrameworkFactory(DjangoModelFactory):
-    # Creates a framework that is is derived from another framework
-    class Meta:
-        model = models.Framework
-
-    @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        precursor = kwargs.get("precursor")
-        user = kwargs.get("user")
-        change_reason = kwargs.get("change_reason")
-        if not precursor:
-            precursor = InitialFrameworkFactory()
-        if not user:
-            user = UserFactory()
-        if not change_reason:
-            change_reason = fake.sentence()
-        return precursor.create_descendant_framework(user=user, change_reason=change_reason)
-
-
-class InitialThemeFactory(DjangoModelFactory):
-    # Create an initial theme (which will have come from the theme generation task)
+class ThemeFactory(DjangoModelFactory):
     class Meta:
         model = models.Theme
 
-    @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        framework = kwargs.get("framework")
-        name = kwargs.get("name")
-        description = kwargs.get("description")
-        key = kwargs.get("key")
-        if not framework:
-            framework = InitialFrameworkFactory()
-        if not name:
-            name = fake.sentence()
-        if not description:
-            description = fake.paragraph()
-        if not key:
-            key = fake.random_letter()
-        return model_class.create_initial_theme(
-            framework=framework, name=name, description=description, key=key
-        )
+    question = factory.SubFactory(QuestionFactory)
+    name = factory.LazyAttribute(lambda o: fake.sentence())
+    description = factory.LazyAttribute(lambda o: fake.paragraph())
+    key = factory.Sequence(lambda n: f"theme-{n}")
 
 
-class DescendantThemeFactory(DjangoModelFactory):
+class ResponseAnnotationFactory(DjangoModelFactory):
     class Meta:
-        model = models.Theme
+        model = models.ResponseAnnotation
 
-    @classmethod
-    def _create(cls, model_class, *args, **kwargs):
-        precursor = kwargs.get("precursor")
-        framework = kwargs.get("framework")
-        name = kwargs.get("name")
-        description = kwargs.get("description")
-        key = kwargs.get("key")
-        if not precursor:
-            precursor = InitialThemeFactory()
-        if not framework:
-            framework = DescendantFrameworkFactory(precursor=precursor.framework)
-        if not name:
-            name = fake.sentence()
-        if not description:
-            description = fake.paragraph()
-        if not key:
-            key = fake.random_letter()
-        return precursor.create_descendant_theme(
-            new_framework=framework, name=name, description=description, key=key
-        )
+    response = factory.SubFactory(ResponseFactory)
+    sentiment = fuzzy.FuzzyChoice(models.ResponseAnnotation.Sentiment.values)
+    evidence_rich = fuzzy.FuzzyChoice(models.ResponseAnnotation.EvidenceRich.values)
+    human_reviewed = False
+    reviewed_by = None
+    reviewed_at = None
+
+    @factory.post_generation
+    def themes(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        if extracted:
+            # If themes were passed in, use the proper helper method
+            self.add_original_ai_themes(extracted)
+        else:
+            # Create some themes for the same question
+            num_themes = random.randint(1, 3)
+            themes_to_add = []
+            for _ in range(num_themes):
+                theme = ThemeFactory(question=self.response.question)
+                themes_to_add.append(theme)
+            self.add_original_ai_themes(themes_to_add)
 
 
-class ThemeMappingFactory(DjangoModelFactory):
+class ReviewedResponseAnnotationFactory(ResponseAnnotationFactory):
+    human_reviewed = True
+    reviewed_by = factory.SubFactory(UserFactory)
+    reviewed_at = factory.LazyAttribute(lambda o: timezone.now())
+
+
+class ResponseAnnotationFactoryNoThemes(ResponseAnnotationFactory):
+    """Factory that doesn't automatically create themes"""
+
     class Meta:
-        model = models.ThemeMapping
+        model = models.ResponseAnnotation
+        skip_postgeneration_save = True
 
-    answer = factory.SubFactory(FreeTextAnswerFactory)
-    theme = factory.SubFactory(InitialThemeFactory)
-    reason = factory.LazyAttribute(lambda o: fake.sentence())
-    execution_run = factory.SubFactory(ExecutionRunFactory)
-    stance = fuzzy.FuzzyChoice(models.ThemeMapping.Stance.values)
-
-
-class SentimentMappingFactory(DjangoModelFactory):
-    class Meta:
-        model = models.SentimentMapping
-
-    answer = factory.SubFactory(FreeTextAnswerFactory)
-    execution_run = factory.SubFactory(ExecutionRunFactory)
-    position = fuzzy.FuzzyChoice(models.SentimentMapping.Position.values)
-
-
-class EvidenceRichMappingFactory(DjangoModelFactory):
-    class Meta:
-        model = models.EvidenceRichMapping
-
-    answer = factory.SubFactory(FreeTextAnswerFactory)
-    evidence_evaluation_execution_run = factory.SubFactory(ExecutionRunFactory)
-    evidence_rich = fake.boolean()
+    @factory.post_generation
+    def themes(self, create, extracted, **kwargs):
+        # Don't create any themes automatically
+        pass

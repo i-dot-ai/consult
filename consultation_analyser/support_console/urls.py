@@ -2,7 +2,7 @@ from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import include, path
 
-from .views import consultations, consultations_users, pages, question_parts, users
+from .views import consultations, consultations_users, pages, users
 
 urlpatterns = [
     path("", lambda request: redirect("/support/consultations/"), name="support"),
@@ -37,30 +37,12 @@ urlpatterns = [
         consultations.export_consultation_theme_audit,
         name="export_consultation_theme_audit",
     ),
+    # DEPRECATED: Question parts have been merged into questions
+    # Use delete_question URL pattern instead
     path(
-        "consultations/<uuid:consultation_id>/export-urls/",
-        consultations.export_urls_for_consultation,
-        name="export_urls_for_consultation",
-    ),
-    path(
-        "consultations/<uuid:consultation_id>/question-parts/<uuid:question_part_id>/delete/",
-        question_parts.delete,
-        name="delete_question_part",
-    ),
-    path(
-        "consultations/import-respondents/",
-        consultations.import_consultation_respondents,
-        name="import_respondents",
-    ),
-    path(
-        "consultations/import-inputs/",
-        consultations.import_consultation_inputs,
-        name="import_inputs",
-    ),
-    path(
-        "consultations/import-themes/",
-        consultations.import_consultation_themes,
-        name="import_themes",
+        "consultations/<uuid:consultation_id>/questions/<uuid:question_id>/delete/",
+        consultations.delete_question,
+        name="delete_question",
     ),
     path(
         "consultations/themefinder/",
@@ -71,6 +53,11 @@ urlpatterns = [
         "consultations/import-summary/",
         consultations.import_summary,
         name="import_summary",
+    ),
+    path(
+        "consultations/import-consultation/",
+        consultations.import_consultation_view,
+        name="import_consultation",
     ),
     path("admin/", admin.site.urls),
     path("django-rq/", include("django_rq.urls")),

@@ -1,7 +1,6 @@
 import logging
 from uuid import UUID
 
-from botocore.exceptions import ClientError
 from django.conf import settings
 from django.contrib import messages
 from django.core.management import call_command
@@ -16,26 +15,73 @@ from consultation_analyser.consultations.dummy_data import (
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.hosting_environment import HostingEnvironment
-from consultation_analyser.support_console.export_url_guidance import get_urls_for_consultation
-from consultation_analyser.support_console.ingest import (
-    get_all_question_part_subfolders,
-    get_folder_names_for_dropdown,
-    import_all_evidence_rich_mappings_from_jsonl,
-    import_all_respondents_from_jsonl,
-    import_all_responses_from_jsonl,
-    import_all_sentiment_mappings_from_jsonl,
-    import_all_theme_mappings_from_jsonl,
-    import_question_part,
-    import_themes_from_json_and_get_framework,
-    send_job_to_sqs,
-)
+from consultation_analyser.support_console import ingest
+from consultation_analyser.support_console.validation_utils import format_validation_error
 
 logger = logging.getLogger("export")
 
 
+@job("default", timeout=1800)
+def import_consultation_job(
+    consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
+) -> None:
+    """Job wrapper for importing consultations."""
+    return ingest.import_consultation(
+        consultation_name=consultation_name,
+        consultation_code=consultation_code,
+        timestamp=timestamp,
+        current_user_id=current_user_id,
+    )
+
+
 @job("default", timeout=900)
 def delete_consultation_job(consultation: models.Consultation):
-    consultation.delete()
+    from django.db import connection, transaction
+
+    consultation_id = consultation.id
+    consultation_title = consultation.title
+
+    try:
+        # Close any existing connections to start fresh
+        connection.close()
+
+        with transaction.atomic():
+            # Refetch the consultation to ensure we have a fresh DB connection
+            consultation = models.Consultation.objects.get(id=consultation_id)
+
+            # Delete related objects in order to avoid foreign key constraints
+            logger.info(f"Deleting consultation '{consultation_title}' (ID: {consultation_id})")
+
+            # Delete in batches to avoid memory issues
+            logger.info("Deleting response annotations...")
+            models.ResponseAnnotation.objects.filter(
+                response__question__consultation=consultation
+            ).delete()
+
+            logger.info("Deleting responses...")
+            models.Response.objects.filter(question__consultation=consultation).delete()
+
+            logger.info("Deleting themes...")
+            models.Theme.objects.filter(question__consultation=consultation).delete()
+
+            logger.info("Deleting questions...")
+            models.Question.objects.filter(consultation=consultation).delete()
+
+            logger.info("Deleting respondents...")
+            models.Respondent.objects.filter(consultation=consultation).delete()
+
+            logger.info("Deleting consultation...")
+            consultation.delete()
+
+        logger.info(
+            f"Successfully deleted consultation '{consultation_title}' (ID: {consultation_id})"
+        )
+
+    except Exception as e:
+        logger.error(
+            f"Error deleting consultation '{consultation_title}' (ID: {consultation_id}): {str(e)}"
+        )
+        raise
 
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -60,9 +106,6 @@ def index(request: HttpRequest) -> HttpResponse:
                     request,
                     "A giant dummy consultation is being created - see progress in the Django RQ dashboard",
                 )
-            elif request.POST.get("create_synthetic_consultation") is not None:
-                call_command("import_synthetic_data")
-                messages.success(request, "Synthetic data imported")
         except RuntimeError as error:
             messages.error(request, error.args[0])
     consultations = models.Consultation.objects.all()
@@ -90,14 +133,12 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = models.Consultation.objects.get(id=consultation_id)
-    question_parts = models.QuestionPart.objects.filter(
-        question__consultation=consultation
-    ).order_by("question__number", "number")
+    questions = models.Question.objects.filter(consultation=consultation).order_by("number")
 
     context = {
         "consultation": consultation,
         "users": consultation.users.all(),
-        "question_parts": question_parts,
+        "questions": questions,
     }
     return render(request, "support_console/consultations/show.html", context=context)
 
@@ -114,29 +155,26 @@ def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
 
 def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = get_object_or_404(models.Consultation, id=consultation_id)
-    question_parts = models.QuestionPart.objects.filter(
-        question__consultation=consultation, type=models.QuestionPart.QuestionType.FREE_TEXT
-    ).order_by("question__number")
+    questions = models.Question.objects.filter(
+        consultation=consultation, has_free_text=True
+    ).order_by("number")
 
-    question_parts_items = [
-        {"value": qp.id, "text": f"Question {qp.question.number} - {qp.question.text} {qp.text}"}
-        for qp in question_parts
-    ]
+    question_items = [{"value": q.id, "text": f"Question {q.number} - {q.text}"} for q in questions]
 
     context = {
         "consultation": consultation,
-        "question_parts_items": question_parts_items,
+        "question_parts_items": question_items,  # Keep the same template variable name
         "bucket_name": settings.AWS_BUCKET_NAME,
         "environment": settings.ENVIRONMENT,
     }
 
     if request.method == "POST":
         s3_key = request.POST.get("s3_key", "")
-        question_part_ids = request.POST.getlist("question_parts")
-        for id in question_part_ids:
+        question_ids = request.POST.getlist("question_parts")  # Keep the same form field name
+        for id in question_ids:
             try:
                 logging.info("Exporting theme audit data - sending to queue")
-                export_user_theme_job.delay(question_part_id=id, s3_key=s3_key)
+                export_user_theme_job.delay(question_id=UUID(id), s3_key=s3_key)
             except Exception as e:
                 messages.error(request, e)
                 return render(request, "support_console/consultations/export_audit.html", context)
@@ -150,227 +188,77 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
     return render(request, "support_console/consultations/export_audit.html", context)
 
 
-def export_urls_for_consultation(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
-    context = {"bucket_name": settings.AWS_BUCKET_NAME}
-
-    if request.method == "POST":
-        s3_key = request.POST.get("s3_key")
-        filename = request.POST.get("filename")
-
-        try:
-            consultation = get_object_or_404(models.Consultation, id=consultation_id)
-            base_url = request.build_absolute_uri("/")
-            get_urls_for_consultation(consultation, base_url, s3_key, filename)
-
-            messages.success(
-                request, f"Consultation URLs exported to {settings.AWS_BUCKET_NAME}/{s3_key}"
-            )
-            return redirect("/support/consultations/")
-        except Exception as e:
-            messages.error(request, e)
-            return render(request, "support_console/consultations/export_urls.html", context)
-
-    return render(request, "support_console/consultations/export_urls.html", context)
-
-
-def import_consultation_respondents(request: HttpRequest) -> HttpResponse:
-    current_user = request.user
-    bucket_name = settings.AWS_BUCKET_NAME
-    batch_size = 100
-
-    consultation_folders = get_folder_names_for_dropdown()
-
-    if request.POST:
-        consultation_name = request.POST.get("consultation_name")
-        consultation_code = request.POST.get("consultation_code")
-        if not consultation_name:
-            consultation_name = "New Consultation"
-        consultation = models.Consultation.objects.create(title=consultation_name)
-        consultation.users.add(current_user)
-        consultation.save()
-        input_folder_name = f"app_data/{consultation_code}/inputs/"
-        import_all_respondents_from_jsonl(
-            consultation=consultation,
-            bucket_name=bucket_name,
-            inputs_folder_key=input_folder_name,
-            batch_size=batch_size,
-        )
-        msg = f"Importing respondents started for consultation with slug {consultation.slug} - check for progress in dashboard"
-        messages.success(request, msg)
-        return redirect("/support/consultations/import-summary/")
-    context = {"bucket_name": bucket_name, "consultation_folders": consultation_folders}
-    return render(request, "support_console/consultations/import_respondents.html", context=context)
-
-
-def import_consultation_inputs(request: HttpRequest) -> HttpResponse:
-    # Inputs are question text and responses, no themefinder outputs.
-    # Respondents should already have been imported
-    bucket_name = settings.AWS_BUCKET_NAME
-    batch_size = 100
-
-    all_consultations = models.Consultation.objects.all().order_by("-created_at")
-    consultations_for_select = all_consultations.values("id", "title")
-    consultations_for_select = [
-        {"text": f"{d['title']} ({d['id']})", "value": d["id"]} for d in consultations_for_select
-    ]
-
-    consultation_folders = get_folder_names_for_dropdown()
-
-    if request.POST:
-        consultation_id = request.POST.get("consultation_id")
-        consultation_code = request.POST.get("consultation_code")
-        question_choice = request.POST.get("question_choice")
-        question_number = request.POST.get("question_number")
-
-        path_to_inputs = f"app_data/{consultation_code}/inputs/"
-        consultation = models.Consultation.objects.get(id=consultation_id)
-
-        try:
-            if question_choice == "all":
-                question_part_subfolders = get_all_question_part_subfolders(
-                    folder_name=path_to_inputs, bucket_name=bucket_name
-                )
-                for folder in question_part_subfolders:
-                    question_part = import_question_part(
-                        consultation=consultation, question_part_folder_key=folder
-                    )
-                    import_all_responses_from_jsonl(
-                        question_part=question_part,
-                        bucket_name=bucket_name,
-                        question_part_folder_key=folder,
-                        batch_size=batch_size,
-                    )
-            else:
-                # importing a single question
-                int(question_number)  # tests a number is passed
-                folder = f"{path_to_inputs}question_part_{question_number}/"
-                question_part = import_question_part(
-                    consultation=consultation, question_part_folder_key=folder
-                )
-                import_all_responses_from_jsonl(
-                    question_part=question_part,
-                    bucket_name=bucket_name,
-                    question_part_folder_key=folder,
-                    batch_size=batch_size,
-                )
-
-            msg = f"Import for consultation inputs started for consultation with slug {consultation.slug} - check for progress in dashboard"
-            messages.success(request, msg)
-            return redirect("/support/consultations/import-summary/")
-
-        except (ClientError, ValueError) as e:
-            messages.error(request, e.__str__())
-
-    context = {
-        "bucket_name": bucket_name,
-        "consultations_for_select": consultations_for_select,
-        "consultation_folders": consultation_folders,
-    }
-    return render(request, "support_console/consultations/import_inputs.html", context=context)
-
-
-def import_question_part_themefinder_outputs(
-    consultation: models.Consultation,
-    question_number: int,
-    bucket_name: str,
-    folder: str,
-    batch_size: int,
-):
-    question_part = models.QuestionPart.objects.get(
-        question__consultation=consultation,
-        question__number=question_number,
-        type=models.QuestionPart.QuestionType.FREE_TEXT,
-    )
-    framework = import_themes_from_json_and_get_framework(
-        question_part=question_part,
-        bucket_name=bucket_name,
-        question_part_folder_key=folder,
-    )
-
-    import_all_theme_mappings_from_jsonl(
-        question_part=question_part,
-        framework=framework,
-        bucket_name=bucket_name,
-        question_part_folder_key=folder,
-        batch_size=batch_size,
-    )
-    import_all_sentiment_mappings_from_jsonl(
-        question_part=question_part,
-        bucket_name=bucket_name,
-        question_part_folder_key=folder,
-        batch_size=batch_size,
-    )
-    import_all_evidence_rich_mappings_from_jsonl(
-        question_part=question_part,
-        bucket_name=bucket_name,
-        question_part_folder_key=folder,
-        batch_size=batch_size,
-    )
-
-
-def import_consultation_themes(request: HttpRequest) -> HttpResponse:
-    # Imports themefinder outputs: themes, theme mappings and sentiment mappings
-    # Responses should already have been imported
-    bucket_name = settings.AWS_BUCKET_NAME
-    consultation_options = [
-        {"value": c.slug, "text": c.slug} for c in models.Consultation.objects.all()
-    ]
-    consultation_folders = get_folder_names_for_dropdown()
-    context = {
-        "consultations": consultation_options,
-        "bucket_name": bucket_name,
-        "consultation_folders": consultation_folders,
-    }
-    batch_size = 100
-
-    if request.POST:
-        consultation_slug = request.POST.get("consultation_slug")
-        consultation_code = request.POST.get("consultation_code")
-        consultation_mapping_date = request.POST.get("consultation_mapping_date")
-        question_choice = request.POST.get("question_choice")
-        question_number = request.POST.get("question_number")
-        path_to_themes = f"app_data/{consultation_code}/outputs/mapping/{consultation_mapping_date}"
-
-        consultation = models.Consultation.objects.get(slug=consultation_slug)
-        if not models.Question.objects.filter(consultation=consultation).exists():
-            messages.error(request, "Questions have not yet been imported for this Consultation")
-            return render(
-                request, "support_console/consultations/import_themes.html", context=context
-            )
-
-        try:
-            if question_choice == "all":
-                question_part_subfolders = get_all_question_part_subfolders(
-                    folder_name=path_to_themes, bucket_name=bucket_name
-                )
-
-                for folder in question_part_subfolders:
-                    question_number = int(folder.split("/")[-2].split("question_part_")[-1])
-                    import_question_part_themefinder_outputs(
-                        consultation, question_number, bucket_name, folder, batch_size
-                    )
-
-            else:
-                # importing a single question
-                int(question_number)  # tests a number is passed
-                folder = f"{path_to_themes}question_part_{question_number}/"
-
-                import_question_part_themefinder_outputs(
-                    consultation, question_number, bucket_name, folder, batch_size
-                )
-
-            msg = f"Importing themefinder outputs started for consultation with slug {consultation.slug} - check for progress in dashboard"
-            messages.success(request, msg)
-            return redirect("/support/consultations/import-summary/")
-
-        except (ClientError, ValueError) as e:
-            messages.error(request, e.__str__())
-
-    return render(request, "support_console/consultations/import_themes.html", context=context)
+# Legacy import function removed - using new import_consultation function instead
 
 
 def import_summary(request: HttpRequest) -> HttpResponse:
     return render(request, "support_console/consultations/import_summary.html", context={})
+
+
+def import_consultation_view(request: HttpRequest) -> HttpResponse:
+    bucket_name = settings.AWS_BUCKET_NAME
+    consultation_folders = ingest.get_consultation_codes()
+
+    context = {
+        "bucket_name": bucket_name,
+        "consultation_folders": consultation_folders,
+    }
+
+    if request.POST:
+        consultation_name = request.POST.get("consultation_name")
+        consultation_code = request.POST.get("consultation_code")
+        timestamp = request.POST.get("timestamp")
+
+        # Validate structure
+        is_valid, validation_errors = ingest.validate_consultation_structure(
+            bucket_name=bucket_name, consultation_code=consultation_code, timestamp=timestamp
+        )
+
+        if not is_valid:
+            formatted_errors = [format_validation_error(error) for error in validation_errors]
+            context["validation_errors"] = formatted_errors
+            return render(
+                request, "support_console/consultations/import_consultation.html", context=context
+            )
+
+        # If valid, queue the import job
+        try:
+            import_consultation_job.delay(
+                consultation_name=consultation_name,
+                consultation_code=consultation_code,
+                timestamp=timestamp,
+                current_user_id=request.user.id,
+            )
+            messages.success(request, f"Import started for consultation: {consultation_name}")
+            return redirect("support_consultations")  # Fixed URL name
+        except Exception as e:
+            messages.error(request, f"Failed to start import: {str(e)}")
+            return render(
+                request, "support_console/consultations/import_consultation.html", context=context
+            )
+
+    return render(
+        request, "support_console/consultations/import_consultation.html", context=context
+    )
+
+
+def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UUID) -> HttpResponse:
+    """Delete a question from a consultation"""
+    question = models.Question.objects.get(consultation__id=consultation_id, id=question_id)
+    context = {
+        "question": question,
+        "consultation": question.consultation,
+    }
+
+    if request.POST:
+        if "confirm_deletion" in request.POST:
+            question.delete()
+            messages.success(request, "The question has been deleted")
+            return redirect(f"/support/consultations/{consultation_id}/")
+        else:
+            return redirect(f"/support/consultations/{consultation_id}/")
+    return render(request, "support_console/question_parts/delete.html", context=context)
+ 
 
 def themefinder(request: HttpRequest) -> HttpResponse:
     consultation_folders = get_folder_names_for_dropdown()
@@ -382,7 +270,7 @@ def themefinder(request: HttpRequest) -> HttpResponse:
         if consultation_code:
             try:
                 # Send message to SQS
-                send_job_to_sqs(consultation_code)
+                ingest.send_job_to_sqs(consultation_code)
                 messages.success(request, f'Themefinder job submitted successfully for {consultation_code}!')
 
             except Exception as e:
@@ -397,3 +285,5 @@ def themefinder(request: HttpRequest) -> HttpResponse:
     }
 
     return render(request, "support_console/consultations/themefinder.html", context=context)
+  
+ 

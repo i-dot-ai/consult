@@ -10,11 +10,9 @@ from django.conf import settings
 from django_rq import job
 
 from consultation_analyser.consultations.models import (
-    Answer,
-    ExecutionRun,
-    QuestionPart,
-    SentimentMapping,
-    ThemeMapping,
+    Question,
+    Response,
+    ResponseAnnotation,
 )
 
 logger = logging.getLogger("export")
@@ -25,105 +23,100 @@ def get_timestamp() -> str:
     return now.strftime("%Y-%m-%d-%H%M%S")
 
 
-def get_latest_sentiment_execution_run_for_question_part(
-    question_part: QuestionPart,
-) -> ExecutionRun | None:
-    sentiment_qs = SentimentMapping.objects.select_related("execution_run").filter(
-        answer__question_part=question_part,
-        execution_run__type=ExecutionRun.TaskType.SENTIMENT_ANALYSIS,
-    )
-    execution_run_ids = sentiment_qs.values_list("execution_run", flat=True)
-    execution_runs = ExecutionRun.objects.filter(id__in=execution_run_ids)
-
-    if execution_runs:
-        return execution_runs.order_by("created_at").last()
-    return None
-
-
-def get_position(answer: Answer, execution_run: ExecutionRun | None) -> str | None:
-    if not execution_run:
+def get_position(response: Response) -> str | None:
+    # In the new model, sentiment is stored directly in ResponseAnnotation
+    try:
+        annotation = response.annotation
+        return annotation.sentiment
+    except ResponseAnnotation.DoesNotExist:
         return None
-    sentiment = SentimentMapping.objects.filter(answer=answer, execution_run=execution_run)
-    if sentiment:
-        # There will only be one
-        return sentiment.first().position
-    return None
 
 
 def get_theme_mapping_output_row(
-    mappings_for_framework: ThemeMapping,
-    historical_mappings_for_framework: ThemeMapping.history.model,
-    response: Answer,
-    sentiment_execution_run: ExecutionRun | None,
+    response: Response,
 ) -> dict:
-    # Default to theme mappings for latest framework
-    question_part = response.question_part
-    question = question_part.question
+    # In new model, themes are stored as ManyToMany with through table tracking original vs current
+    question = response.question
     consultation_title = question.consultation.title
 
-    position = get_position(answer=response, execution_run=sentiment_execution_run)
+    position = get_position(response=response)
 
-    original_themes = (
-        historical_mappings_for_framework.filter(answer=response)
-        .filter(user_audited=False)
-        .filter(history_type="+")
-    )
-    original_themes_identifiers = {tm.theme.get_identifier(): tm.stance for tm in original_themes}
-    ordered_theme_identifiers = sorted(list(original_themes_identifiers.keys()))
+    # Get original and current themes from the annotation
+    original_themes = []
+    current_themes = []
+    audited = False
+    auditor_email = None
+    reviewed_at = None
 
-    current_themes = mappings_for_framework.filter(answer=response).filter(user_audited=True)
-    auditors = set(
-        [r.history_user.email for r in response.history.filter(is_theme_mapping_audited=True)]
-    )
+    try:
+        annotation = response.annotation
+        original_themes = annotation.get_original_ai_themes()
+        current_themes = (
+            annotation.get_human_reviewed_themes()
+            if annotation.human_reviewed
+            else annotation.get_original_ai_themes()
+        )
+        audited = annotation.human_reviewed
+        if annotation.reviewed_by:
+            auditor_email = annotation.reviewed_by.email
+        reviewed_at = annotation.reviewed_at
+    except ResponseAnnotation.DoesNotExist:
+        pass
+
+    # Build theme identifiers
+    original_theme_identifiers = []
+    for theme in original_themes:
+        identifier = theme.key if theme.key else theme.name
+        original_theme_identifiers.append(identifier)
+
+    current_theme_identifiers = []
+    for theme in current_themes:
+        identifier = theme.key if theme.key else theme.name
+        current_theme_identifiers.append(identifier)
+
     row_data = {
-        "Response ID": response.respondent.themefinder_respondent_id,
+        "Response ID": response.respondent.themefinder_id,
         "Consultation": consultation_title,
         "Question number": question.number,
         "Question text": question.text,
-        "Question part text": question_part.text,
-        "Response text": response.text,
-        "Response has been audited": response.is_theme_mapping_audited,
-        "Original themes": ", ".join(ordered_theme_identifiers),
-        "Current themes": ", ".join(
-            sorted([theme_mapping.theme.get_identifier() for theme_mapping in current_themes])
-        ),
+        "Response text": response.free_text,
+        "Response has been audited": audited,
+        "Original themes": ", ".join(sorted(original_theme_identifiers)),
+        "Current themes": ", ".join(sorted(current_theme_identifiers)),
         "Position": position,
-        "Auditors": ", ".join(list(auditors)),
-        "First audited at": response.datetime_theme_mapping_audited,  # First time audited
+        "Auditors": auditor_email or "",
+        "First audited at": reviewed_at,
     }
     return row_data
 
 
-def get_theme_mapping_rows(question_part: QuestionPart) -> list[dict]:
+def get_theme_mapping_rows(question: Question) -> list[dict]:
     output = []
-    # Default to latest execution run
-    sentiment_run = get_latest_sentiment_execution_run_for_question_part(question_part)
-    answer_qs = Answer.objects.filter(question_part=question_part)
-    # Get themes from latest framework
-    current_theme_mappings = ThemeMapping.get_latest_theme_mappings(
-        question_part=question_part, history=False
+    # Get all responses with free text for this question
+    # Import here to avoid circular import
+
+    response_qs = (
+        Response.objects.filter(question=question, free_text__isnull=False, free_text__gt="")
+        .select_related("respondent", "annotation", "annotation__reviewed_by")
+        .prefetch_related("annotation__themes", "annotation__responseannotationtheme_set__theme")
     )
-    historical_theme_mappings = ThemeMapping.get_latest_theme_mappings(
-        question_part=question_part, history=True
-    )
-    for response in answer_qs:
-        row = get_theme_mapping_output_row(
-            mappings_for_framework=current_theme_mappings,
-            historical_mappings_for_framework=historical_theme_mappings,
-            response=response,
-            sentiment_execution_run=sentiment_run,
-        )
+
+    for response in response_qs:
+        row = get_theme_mapping_output_row(response=response)
         output.append(row)
     return output
 
 
-def export_user_theme(question_part_id: uuid.UUID, s3_key: str) -> None:
-    question_part = QuestionPart.objects.get(id=question_part_id)
-    output = get_theme_mapping_rows(question_part)
+def export_user_theme(question_id: uuid.UUID, s3_key: str) -> None:
+    question = Question.objects.get(id=question_id)
+    output = get_theme_mapping_rows(question)
     timestamp = get_timestamp()
-    # unique as only one free text question part per question
-    question_number = question_part.question.number
+    question_number = question.number
     filename = f"{timestamp}_question_{question_number}_theme_changes.csv"
+
+    if not output:
+        logger.warning(f"No responses found for question {question_number}")
+        return
 
     if settings.ENVIRONMENT == "local":
         if not os.path.exists("downloads"):
@@ -152,10 +145,10 @@ def export_user_theme(question_part_id: uuid.UUID, s3_key: str) -> None:
         )
         csv_buffer.close()
     logger.info(
-        f"Finishing export for question {question_number} for consultation {question_part.question.consultation.title}"
+        f"Finishing export for question {question_number} for consultation {question.consultation.title}"
     )
 
 
 @job("default", timeout=900)
-def export_user_theme_job(question_part_id: uuid.UUID, s3_key: str) -> None:
-    export_user_theme(question_part_id, s3_key)
+def export_user_theme_job(question_id: uuid.UUID, s3_key: str) -> None:
+    export_user_theme(question_id, s3_key)
