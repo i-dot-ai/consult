@@ -98,8 +98,8 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
     with responses_path.open() as f:
         for line in f:
             responses.append(json.loads(line))
-    responses = pd.DataFrame(responses)
-    responses = responses.rename(columns={"themefinder_id": "response_id", "text": "response"})
+    responses_df = pd.DataFrame(responses)
+    responses = responses_df.rename(columns={"themefinder_id": "response_id", "text": "response"})
 
     with themes_path.open() as f:
         themes = pd.read_csv(themes_path)
