@@ -27,6 +27,7 @@ from consultation_analyser.support_console.ingest import (
     import_all_theme_mappings_from_jsonl,
     import_question_part,
     import_themes_from_json_and_get_framework,
+    send_job_to_sqs,
 )
 
 logger = logging.getLogger("export")
@@ -370,3 +371,29 @@ def import_consultation_themes(request: HttpRequest) -> HttpResponse:
 
 def import_summary(request: HttpRequest) -> HttpResponse:
     return render(request, "support_console/consultations/import_summary.html", context={})
+
+def themefinder(request: HttpRequest) -> HttpResponse:
+    consultation_folders = get_folder_names_for_dropdown()
+    bucket_name = settings.AWS_BUCKET_NAME
+
+    consultation_code = None
+    if request.method == 'POST':
+        consultation_code = request.POST.get('consultation_code')
+        if consultation_code:
+            try:
+                # Send message to SQS
+                send_job_to_sqs(consultation_code)
+                messages.success(request, f'Themefinder job submitted successfully for {consultation_code}!')
+
+            except Exception as e:
+                messages.error(request, f'Error submitting job: {str(e)}')
+        else:
+            messages.error(request, 'Please select a consultation folder.')
+
+    context = {
+        "bucket_name": bucket_name,
+        "consultation_folders": consultation_folders,
+        "consultation_code": consultation_code
+    }
+
+    return render(request, "support_console/consultations/themefinder.html", context=context)
