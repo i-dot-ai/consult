@@ -13,7 +13,9 @@ from themefinder import detail_detection, sentiment_analysis, theme_mapping
 
 # Configure logging
 logging.basicConfig(
-    level=logging.INFO, format="%(asctime)s - %(name)s - %(levelname)s - %(message)s", datefmt="%Y-%m-%d %H:%M:%S"
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
 
@@ -25,7 +27,6 @@ BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 BASE_PREFIX = "app_data/consultations/"
 
 
-
 def download_s3_subdir(subdir: str) -> None:
     """
     Recursively downloads the contents of a specified subdirectory from S3
@@ -35,10 +36,8 @@ def download_s3_subdir(subdir: str) -> None:
     logger.info("prefix: %s", prefix)
     logger.info("bucket: %s", BUCKET_NAME)
 
-    credentials = boto3.Session().get_credentials()
     s3 = boto3.client("s3")
 
-    
     paginator = s3.get_paginator("list_objects_v2")
     inputs_prefix = str(Path(BASE_PREFIX) / subdir / "inputs").rstrip("/") + "/"
     logger.info("S3 inputs prefix: %s", inputs_prefix)
@@ -130,7 +129,9 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
         if "question" in question_dir:
             logger.info("Processing %s...", question_dir)
             try:
-                question_output_dir = Path(consultation_dir) / "outputs" / "mapping" / date / question_dir
+                question_output_dir = (
+                    Path(consultation_dir) / "outputs" / "mapping" / date / question_dir
+                )
                 if not question_output_dir.exists():
                     question_output_dir.mkdir(parents=True, exist_ok=True)
                     logger.info("Created outputs directory at: %s", question_output_dir)
@@ -143,8 +144,12 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
                     concurrency=1,
                 )
                 sentiment_df = sentiment_df[["response_id", "position"]]
-                sentiment_df = sentiment_df.rename(columns={"response_id": "themefinder_id", "position": "sentiment"})
-                sentiment_df.to_json(question_output_dir / "sentiment.jsonl", orient="records", lines=True)
+                sentiment_df = sentiment_df.rename(
+                    columns={"response_id": "themefinder_id", "position": "sentiment"}
+                )
+                sentiment_df.to_json(
+                    question_output_dir / "sentiment.jsonl", orient="records", lines=True
+                )
 
                 detail_df, _ = await detail_detection(
                     responses_df,
@@ -154,7 +159,9 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
                 )
                 detail_df = detail_df[["response_id", "evidence_rich"]]
                 detail_df = detail_df.rename(columns={"response_id": "themefinder_id"})
-                detail_df.to_json(question_output_dir / "detail_detection.jsonl", orient="records", lines=True)
+                detail_df.to_json(
+                    question_output_dir / "detail_detection.jsonl", orient="records", lines=True
+                )
 
                 mapped_df, _ = await theme_mapping(
                     responses_df,
@@ -164,14 +171,20 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
                     concurrency=1,
                 )
                 mapped_df = mapped_df[["response_id", "labels", "stances"]]
-                mapped_df = mapped_df.rename(columns={"response_id": "themefinder_id", "labels": "theme_keys"})
-                mapped_df.to_json(question_output_dir / "mapping.jsonl", orient="records", lines=True)
+                mapped_df = mapped_df.rename(
+                    columns={"response_id": "themefinder_id", "labels": "theme_keys"}
+                )
+                mapped_df.to_json(
+                    question_output_dir / "mapping.jsonl", orient="records", lines=True
+                )
 
                 themes_df = themes_df[["topic_id", "Theme Name", "Theme Description"]]
                 themes_df.columns = ["theme_key", "theme_name", "theme_description"]
                 themes_df.to_json(question_output_dir / "themes.json", orient="records")
 
-                logger.info("Completed processing %s, saved to %s", question_dir, question_output_dir)
+                logger.info(
+                    "Completed processing %s, saved to %s", question_dir, question_output_dir
+                )
             except Exception:
                 logger.exception("Error processing %s", question_dir)
                 skipped_questions.append(question_dir)
@@ -182,7 +195,12 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser(description="Download a subdirectory from S3.")
-    parser.add_argument("--subdir", type=str, required=True, help="Subdirectory within the base S3 path to download.")
+    parser.add_argument(
+        "--subdir",
+        type=str,
+        required=True,
+        help="Subdirectory within the base S3 path to download.",
+    )
     args = parser.parse_args()
 
     logger.info("Starting processing for subdirectory: %s", args.subdir)

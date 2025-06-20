@@ -259,7 +259,6 @@ def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UU
             return redirect(f"/support/consultations/{consultation_id}/")
     return render(request, "support_console/question_parts/delete.html", context=context)
 
-
 def themefinder(request: HttpRequest) -> HttpResponse:
     consultation_folders = ingest.get_folder_names_for_dropdown()
     bucket_name = settings.AWS_BUCKET_NAME
@@ -316,4 +315,3 @@ def sign_off(request: HttpRequest) -> HttpResponse:
     }
 
     return render(request, "support_console/consultations/sign_off.html", context=context)
-

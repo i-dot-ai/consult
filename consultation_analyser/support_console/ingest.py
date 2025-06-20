@@ -431,26 +431,6 @@ def get_all_folder_names_within_folder(folder_name: str, bucket_name: str) -> se
     return folder_names
 
 
-def get_all_folder_names_within_folder(folder_name: str, bucket_name: str) -> set:
-    s3 = boto3.client("s3")
-
-    # Use list_objects_v2 with delimiter to get "folders" directly
-    response = s3.list_objects_v2(Bucket=bucket_name, Prefix=folder_name, Delimiter="/")
-
-    folder_names = set()
-
-    # Get folder names from CommonPrefixes
-    if "CommonPrefixes" in response:
-        for prefix in response["CommonPrefixes"]:
-            # Extract folder name by removing the base prefix and trailing slash
-            folder_path = prefix["Prefix"]
-            folder_name_only = folder_path.replace(folder_name, "").rstrip("/")
-            if folder_name_only:
-                folder_names.add(folder_name_only)
-
-    return folder_names
-
-
 def get_folder_names_for_dropdown() -> list[dict]:
     try:
         consultation_folder_names = get_all_folder_names_within_folder(
