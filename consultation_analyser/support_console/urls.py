@@ -45,6 +45,11 @@ urlpatterns = [
         name="delete_question",
     ),
     path(
+        "consultations/themefinder/",
+        consultations.themefinder,
+        name="themefinder",
+    ),
+    path(
         "consultations/import-summary/",
         consultations.import_summary,
         name="import_summary",
