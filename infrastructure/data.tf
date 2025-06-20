@@ -50,4 +50,34 @@ data "terraform_remote_state" "account" {
   }
 }
 
+data "aws_caller_identity" "current" {}
 
+data "aws_region" "current" {}
+
+
+data "aws_secretsmanager_secret" "env_vars" {
+  name = "${local.name}-environment-variables"
+}
+
+data "aws_secretsmanager_secret_version" "env_vars" {
+  secret_id = data.aws_secretsmanager_secret.env_vars.id
+}
+
+data "archive_file" "mapping_archive" {
+  type        = "zip"
+  source_file = "${path.root}/../pipeline-mapping/lambda/mapping.py"
+  output_path = "${path.root}/../pipeline-mapping/lambda/mapping.zip"
+}
+
+data "archive_file" "slack_notifier_archive" {
+  type        = "zip"
+  source_file = "${path.root}/../pipeline-mapping/lambda/slack_notifier.py"
+  output_path = "${path.root}/../pipeline-mapping/lambda/slack_notifier.zip"
+}
+
+data "aws_ssm_parameter" "slack_webhook_url" {
+  name = "/i-dot-ai-${terraform.workspace}-consult/env_secrets/THEMEFINDER_SLACK_WEBHOOK_URL"
+  depends_on = [
+    aws_ssm_parameter.env_secrets  # Replace with your actual resource name
+  ]
+}
