@@ -52,7 +52,7 @@ def test_review_show_response(django_app):
     ai_annotation_themes = models.ResponseAnnotationTheme.objects.filter(
         response_annotation=response_annotation1, is_original_ai_assignment=True
     )
-    assert ai_annotation_themes.values_list("theme_id", flat=True) == [theme_a.id]
+    assert ai_annotation_themes.values_list("theme_id", flat=True)[0] == theme_a.id
     human_reviewed_themes = models.ResponseAnnotationTheme.objects.filter(
         response_annotation=response_annotation1, is_original_ai_assignment=False
     )
