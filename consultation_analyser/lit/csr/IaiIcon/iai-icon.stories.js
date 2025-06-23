@@ -1,6 +1,7 @@
 import { html } from 'lit';
 
 import IaiIcon from './iai-icon.mjs';
+import { expect, within } from '@storybook/test';
 
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
@@ -38,4 +39,9 @@ export const Default = {
     fill: true,
     wght: 300,
   },
+  play: async ({ canvasElement }) => {
+    const canvas = within(canvasElement);
+    const iconElement = canvas.getByText("thumb_up");
+    expect(iconElement).toBeInTheDocument();
+  }
 };

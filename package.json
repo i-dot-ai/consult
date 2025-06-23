@@ -14,6 +14,7 @@
     "build-lit-csr": "npx rollup -c",
     "build-lit": "npm run build-lit-ssr && npm run build-lit-csr",
     "storybook": "storybook dev -p 6006",
+    "storybook-test": "npx test-storybook --watchAll --coverage",
     "build-storybook": "storybook build"
   },
   "author": "",
@@ -40,6 +41,7 @@
     "@storybook/blocks": "^8.6.12",
     "@storybook/experimental-addon-test": "^8.6.14",
     "@storybook/test": "^8.6.12",
+    "@storybook/test-runner": "^0.23.0",
     "@storybook/web-components": "^8.6.12",
     "@storybook/web-components-vite": "^8.6.12",
     "@types/chart.js": "^2.9.41",
