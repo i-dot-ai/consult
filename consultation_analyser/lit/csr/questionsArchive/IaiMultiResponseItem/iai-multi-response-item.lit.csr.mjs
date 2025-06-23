@@ -51,6 +51,9 @@ export default class IaiMultiResponseItem extends IaiLitBase {
     }
 
     getPercentage = (part, whole) => {
+        if (part === 0){
+            return 0;
+        }
         return Math.round((part / whole) * 100);
     }
 
