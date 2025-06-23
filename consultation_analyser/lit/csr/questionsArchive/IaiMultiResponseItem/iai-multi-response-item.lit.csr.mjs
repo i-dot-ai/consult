@@ -1,6 +1,7 @@
 import { html, css } from 'lit';
 
 import IaiLitBase from '../../../IaiLitBase.mjs';
+import IaiProgressBar from '../../IaiProgressBar/iai-progress-bar.lit.csr.mjs';
 
 
 export default class IaiMultiResponseItem extends IaiLitBase {
@@ -27,6 +28,13 @@ export default class IaiMultiResponseItem extends IaiLitBase {
                 margin-bottom: 0.5em;
                 list-style: none;
             }
+            iai-multi-response-item iai-progress-bar .container .bar {
+                height: 1.3em;
+            }
+            iai-multi-response-item iai-progress-bar .container .label,
+            iai-multi-response-item iai-progress-bar .container.low-value .label {
+                font-size: 0.9em;
+            }
         `
     ]
 
@@ -42,13 +50,23 @@ export default class IaiMultiResponseItem extends IaiLitBase {
         this.applyStaticStyles("iai-multi-response-item", IaiMultiResponseItem.styles);
     }
 
+    getPercentage = (part, whole) => {
+        if (part === 0){
+            return 0;
+        }
+        return Math.round((part / whole) * 100);
+    }
+
     render() {
         return html`
             <li>
                 <p>
                     ${this.countName ? this.countName + ": " : ""}<strong>${this.countValue}</strong>
                 </p>
-                <progress value=${this.countValue} max=${this.totalCounts}></progress>
+                <iai-progress-bar
+                    .value=${this.getPercentage(this.countValue, this.totalCounts)}
+                    .label=${this.getPercentage(this.countValue, this.totalCounts) + "%"}
+                ></iai-progress-bar>
             </li>
         `;
     }
