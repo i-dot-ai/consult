@@ -1138,6 +1138,7 @@ class IaiResponse extends IaiLitBase {
                 color: transparent;
                 animation: fadeInOut 1s ease-in-out infinite alternate;
                 user-select: none;
+                pointer-events: none;
             }
             @keyframes fadeInOut {
                 from {
@@ -1193,7 +1194,7 @@ class IaiResponse extends IaiLitBase {
 
     getHighlightedText = (fullText, matchedText) => {
         if (!matchedText) {
-            return "";
+            return fullText;
         }
         const regex = new RegExp(matchedText, "gi");
         return fullText.replace(regex, match => `<span class="matched-text">${match}</span>`);
@@ -1774,6 +1775,75 @@ class IaiTextResponseItem extends IaiLitBase {
 }
 customElements.define("iai-text-response-item", IaiTextResponseItem);
 
+class IaiProgressBar extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        value: { type: Number },
+        label: { type: String },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-progress-bar .container {
+                border: 1px dotted;
+            }
+            iai-progress-bar .container .bar {
+                display: flex;
+                justify-content: end;
+                align-items: center;
+                position: relative;
+                height: 2em;
+                color: white;
+                transition: width 1s ease-in-out;
+                background: var(--iai-colour-pink);
+            }
+            iai-progress-bar .container .label {
+                display: block;    
+                position: absolute;
+                right: 0.5em;
+                text-align: right;
+                color: white;
+                font-weight: bold;
+            }
+            iai-progress-bar .container.low-value .label {
+                left: calc(100% + 0.5em);
+                color: var(--iai-colour-pink);
+                font-size: 1.2em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.value = 0;
+        this.label = "";
+        
+        this.applyStaticStyles("iai-progress-bar", IaiProgressBar.styles);
+    }
+
+    render() {
+        return x`
+            <div class=${"container" + (this.value < 30 ? " low-value" : "")}>
+                <div class="bar" style=${`width: ${this.value}%;`}>
+                    ${this.label
+                        ? x`
+                            <span class="label">
+                                ${this.label}
+                            </span>
+                        `
+                        : ""
+                    }
+                </div>
+            </div>
+        `;
+    }
+}
+customElements.define("iai-progress-bar", IaiProgressBar);
+
 class IaiMultiResponseItem extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -1798,6 +1868,13 @@ class IaiMultiResponseItem extends IaiLitBase {
                 margin-bottom: 0.5em;
                 list-style: none;
             }
+            iai-multi-response-item iai-progress-bar .container .bar {
+                height: 1.3em;
+            }
+            iai-multi-response-item iai-progress-bar .container .label,
+            iai-multi-response-item iai-progress-bar .container.low-value .label {
+                font-size: 0.9em;
+            }
         `
     ]
 
@@ -1813,13 +1890,23 @@ class IaiMultiResponseItem extends IaiLitBase {
         this.applyStaticStyles("iai-multi-response-item", IaiMultiResponseItem.styles);
     }
 
+    getPercentage = (part, whole) => {
+        if (part === 0){
+            return 0;
+        }
+        return Math.round((part / whole) * 100);
+    }
+
     render() {
         return x`
             <li>
                 <p>
                     ${this.countName ? this.countName + ": " : ""}<strong>${this.countValue}</strong>
                 </p>
-                <progress value=${this.countValue} max=${this.totalCounts}></progress>
+                <iai-progress-bar
+                    .value=${this.getPercentage(this.countValue, this.totalCounts)}
+                    .label=${this.getPercentage(this.countValue, this.totalCounts) + "%"}
+                ></iai-progress-bar>
             </li>
         `;
     }
@@ -1981,16 +2068,7 @@ class IaiTextInput extends IaiLitBase {
 
     static styles = [
         IaiLitBase.styles,
-        i$4`
-            iai-text-input .visually-hidden {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 0;
-                height: 0;
-                overflow: hidden;
-            }
-        `
+        i$4``
     ]
 
     constructor() {
@@ -2075,6 +2153,12 @@ class IaiQuestionTiles extends IaiLitBase {
             iai-question-tiles .questions {
                 max-height: 80vh;
                 overflow: auto;
+            }
+            @media only screen and (max-width: 770px) {
+                iai-question-tiles .overview-panel {
+                    padding: 1em;
+                    padding-top: 2em;
+                }
             }
         `
     ]
@@ -2170,7 +2254,7 @@ class IaiQuestionTiles extends IaiLitBase {
                             `}
                             placeholder=${"Search..."}
                             value=${this._searchValue}
-                            .handleInput=${(e) => this._searchValue = e.target.value}
+                            .handleInput=${(e) => this._searchValue = e.target.value.trim()}
                             .hideLabel=${false}
                         ></iai-text-input>
                     </div>
@@ -2291,75 +2375,6 @@ class IaiChip extends IaiLitBase {
     }
 }
 customElements.define("iai-chip", IaiChip);
-
-class IaiProgressBar extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        value: { type: Number },
-        label: { type: String },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-progress-bar .container {
-                border: 1px dotted;
-            }
-            iai-progress-bar .container .bar {
-                display: flex;
-                justify-content: end;
-                align-items: center;
-                position: relative;
-                height: 2em;
-                color: white;
-                transition: width 1s ease-in-out;
-                background: var(--iai-colour-pink);
-            }
-            iai-progress-bar .container .label {
-                display: block;    
-                position: absolute;
-                right: 0.5em;
-                text-align: right;
-                color: white;
-                font-weight: bold;
-            }
-            iai-progress-bar .container.low-value .label {
-                left: calc(100% + 0.5em);
-                color: var(--iai-colour-pink);
-                font-size: 1.2em;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.value = 0;
-        this.label = "";
-        
-        this.applyStaticStyles("iai-progress-bar", IaiProgressBar.styles);
-    }
-
-    render() {
-        return x`
-            <div class=${"container" + (this.value < 30 ? " low-value" : "")}>
-                <div class="bar" style=${`width: ${this.value}%;`}>
-                    ${this.label
-                        ? x`
-                            <span class="label">
-                                ${this.label}
-                            </span>
-                        `
-                        : ""
-                    }
-                </div>
-            </div>
-        `;
-    }
-}
-customElements.define("iai-progress-bar", IaiProgressBar);
 
 class IaiAnimatedNumber extends IaiLitBase {
     static properties = {
@@ -3799,7 +3814,13 @@ class IaiResponseDashboard extends IaiLitBase {
                 display: flex;
                 justify-content:space-between;
                 align-items: center;
+                row-gap: 1em;
                 padding-block: 1em;
+                flex-wrap: wrap;
+            }
+            iai-response-dashboard .responses-column .title-container>*:first-child,
+            iai-response-dashboard .responses-column .title-container>*:last-child {
+                flex-grow: 1;
             }
             iai-response-dashboard .responses-column .title-container h2 {
                 margin: 0;
@@ -3874,22 +3895,26 @@ class IaiResponseDashboard extends IaiLitBase {
             }
             iai-response-dashboard .title-container {
                 display: flex;
-                gap: 2em;
                 align-items: center;
+                row-gap: 0;
+                column-gap: 2em;
+                flex-wrap: wrap;
             }
             iai-response-dashboard .ternary-button {
-                padding: 0.5em 1em;
                 background: none;
                 border: none;
                 border-radius: var(--iai-border-radius);
                 cursor: pointer;
-                transition: background 0.3s ease-in-out;
+                transition: color 0.3s ease-in-out;
+                padding: 0;
+                text-align: start;
             }
             iai-response-dashboard .ternary-button:hover {
-                background: var(--iai-colour-pink-transparent);
+                color: var(--iai-colour-pink);
             }
             iai-response-dashboard .responses-row {
                 display: flex;
+                min-height: 90vh;
             }
             iai-response-dashboard .flex-grow {
                 flex-grow: 1;
@@ -4042,7 +4067,7 @@ class IaiResponseDashboard extends IaiLitBase {
     }
 
     handleSearchInput = (e) => {
-        this._searchValue = e.target.value;
+        this._searchValue = e.target.value.trim();
     }
     handleStanceChange = (e) => {
         this._stanceFilters = this.addOrRemoveFilter(this._stanceFilters, e.target.value);

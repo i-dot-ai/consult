@@ -93,14 +93,12 @@ def index(request: HttpRequest) -> HttpResponse:
             elif request.POST.get("generate_giant_dummy_consultation") is not None:
                 n = 10000
                 consultation = models.Consultation.objects.create(
-                    title=f"Giant dummy consultation - {n} respondents, with theme changes"
+                    title=f"Giant dummy consultation - {n} respondents"
                 )
                 user = request.user
                 consultation.users.add(user)
-                async_task(
-                    create_dummy_consultation_from_yaml_job,
-                    number_respondents=n, include_changes_to_themes=True, consultation=consultation,
-                    timeout=2100
+                create_dummy_consultation_from_yaml_job.delay(
+                    number_respondents=n, consultation=consultation
                 )
                 messages.success(
                     request,

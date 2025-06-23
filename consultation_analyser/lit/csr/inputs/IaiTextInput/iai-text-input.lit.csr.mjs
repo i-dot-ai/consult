@@ -16,16 +16,7 @@ export default class IaiTextInput extends IaiLitBase {
 
     static styles = [
         IaiLitBase.styles,
-        css`
-            iai-text-input .visually-hidden {
-                position: absolute;
-                top: 0;
-                left: 0;
-                width: 0;
-                height: 0;
-                overflow: hidden;
-            }
-        `
+        css``
     ]
 
     constructor() {

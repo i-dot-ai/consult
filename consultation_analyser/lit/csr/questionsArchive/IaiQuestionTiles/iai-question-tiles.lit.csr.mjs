@@ -51,6 +51,12 @@ export default class IaiQuestionTiles extends IaiLitBase {
                 max-height: 80vh;
                 overflow: auto;
             }
+            @media only screen and (max-width: 770px) {
+                iai-question-tiles .overview-panel {
+                    padding: 1em;
+                    padding-top: 2em;
+                }
+            }
         `
     ]
 
@@ -145,7 +151,7 @@ export default class IaiQuestionTiles extends IaiLitBase {
                             `}
                             placeholder=${"Search..."}
                             value=${this._searchValue}
-                            .handleInput=${(e) => this._searchValue = e.target.value}
+                            .handleInput=${(e) => this._searchValue = e.target.value.trim()}
                             .hideLabel=${false}
                         ></iai-text-input>
                     </div>
