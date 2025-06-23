@@ -33,6 +33,22 @@ class IaiLitBase extends i$1 {
             --iai-colour-secondary-transparent: #0b84781a;
             --iai-colour-pink-transparent: #c5087812;
             --iai-colour-pink-transparent-mid: #F0B5D8;
+
+            --iai-silver-color-light: #f8f9fa;
+            --iai-silver-color-mid: rgba(0, 0, 0, 0.3);
+            --iai-silver-color-dark: #030213;
+            --iai-silver-color-text: rgb(95, 99, 104);
+            --iai-silver-color-teal: #0b8478;
+            --iai-silver-color-teal-light: #e9f2f1;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            overflow: hidden;
         }
     `
 
@@ -43,6 +59,13 @@ class IaiLitBase extends i$1 {
     constructor() {
         super();
         this.props = {};
+
+        this.CONSULTATION_STATUSES = {
+            open: "Open",
+            analysing: "Analysing",
+            completed: "Completed",
+            closed: "Closed",
+        };
     }
     
     createRenderRoot() {
@@ -79,7 +102,7 @@ class IaiLitBase extends i$1 {
 
     applySlots = (slotName) => {
         Promise.resolve().then(() => {
-            const slottedChildren = this.querySelectorAll(`[slot='${slotName}']`);
+            const slottedChildren = this.querySelectorAll(`:scope > [slot='${slotName}']`);
             const slot = this.querySelector(`slot[name='${slotName}']`);
             slottedChildren.forEach(child => slot.appendChild(child));
         });
@@ -326,7 +349,7 @@ class IaiIcon extends IaiLitBase {
         this.contentId = this.generateId();
 
         // Google expect icon names to be alphabetically sorted
-        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond", "progress_activity", "sort"];
+        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond", "progress_activity", "sort", "schedule", "calendar_month", "group", "description", "monitoring", "settings", "help", "chat_bubble", "wand_stars"];
         this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
 
         // Prop defaults
@@ -1169,6 +1192,9 @@ class IaiResponse extends IaiLitBase {
         }    }
 
     getHighlightedText = (fullText, matchedText) => {
+        if (!matchedText) {
+            return "";
+        }
         const regex = new RegExp(matchedText, "gi");
         return fullText.replace(regex, match => `<span class="matched-text">${match}</span>`);
     }
@@ -1197,7 +1223,10 @@ class IaiResponse extends IaiLitBase {
 
                 ${this.free_text_answer_text
                     ? x`
-                        <p class=${"govuk-body answer" + (this.skeleton ? " skeleton" : "")}>
+                        <p 
+                            class=${"govuk-body answer" + (this.skeleton ? " skeleton" : "")}
+                            data-testid="free-text-answer"
+                        >
                             <iai-expanding-text
                                 .text=${this.getHighlightedText(this.free_text_answer_text, this.searchValue)}    
                                 .lines=${2}
