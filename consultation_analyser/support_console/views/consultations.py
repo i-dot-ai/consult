@@ -16,6 +16,8 @@ from consultation_analyser.consultations.export_user_theme import export_user_th
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
 
+# from consultation_analyser.support_console.validation_utils import format_validation_error
+
 logger = logging.getLogger("export")
 
 
