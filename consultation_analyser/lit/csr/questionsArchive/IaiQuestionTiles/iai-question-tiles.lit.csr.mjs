@@ -151,7 +151,7 @@ export default class IaiQuestionTiles extends IaiLitBase {
                             `}
                             placeholder=${"Search..."}
                             value=${this._searchValue}
-                            .handleInput=${(e) => this._searchValue = e.target.value}
+                            .handleInput=${(e) => this._searchValue = e.target.value.trim()}
                             .hideLabel=${false}
                         ></iai-text-input>
                     </div>
