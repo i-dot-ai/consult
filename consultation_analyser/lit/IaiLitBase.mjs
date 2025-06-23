@@ -10,6 +10,22 @@ export default class IaiLitBase extends LitElement {
             --iai-colour-secondary-transparent: #0b84781a;
             --iai-colour-pink-transparent: #c5087812;
             --iai-colour-pink-transparent-mid: #F0B5D8;
+
+            --iai-silver-color-light: #f8f9fa;
+            --iai-silver-color-mid: rgba(0, 0, 0, 0.3);
+            --iai-silver-color-dark: #030213;
+            --iai-silver-color-text: rgb(95, 99, 104);
+            --iai-silver-color-teal: #0b8478;
+            --iai-silver-color-teal-light: #e9f2f1;
+        }
+
+        .visually-hidden {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            overflow: hidden;
         }
     `
 
@@ -20,6 +36,13 @@ export default class IaiLitBase extends LitElement {
     constructor() {
         super();
         this.props = {};
+
+        this.CONSULTATION_STATUSES = {
+            open: "Open",
+            analysing: "Analysing",
+            completed: "Completed",
+            closed: "Closed",
+        }
     }
     
     createRenderRoot() {
@@ -56,7 +79,7 @@ export default class IaiLitBase extends LitElement {
 
     applySlots = (slotName) => {
         Promise.resolve().then(() => {
-            const slottedChildren = this.querySelectorAll(`[slot='${slotName}']`);
+            const slottedChildren = this.querySelectorAll(`:scope > [slot='${slotName}']`);
             const slot = this.querySelector(`slot[name='${slotName}']`);
             slottedChildren.forEach(child => slot.appendChild(child));
         })
