@@ -104,6 +104,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 display: flex;
                 justify-content:space-between;
                 align-items: center;
+                row-gap: 2em;
                 padding-block: 1em;
                 flex-wrap: wrap;
             }
@@ -184,19 +185,22 @@ export default class IaiResponseDashboard extends IaiLitBase {
             }
             iai-response-dashboard .title-container {
                 display: flex;
-                gap: 2em;
                 align-items: center;
+                row-gap: 0;
+                column-gap: 2em;
+                flex-wrap: wrap;
             }
             iai-response-dashboard .ternary-button {
-                padding: 0.5em 1em;
                 background: none;
                 border: none;
                 border-radius: var(--iai-border-radius);
                 cursor: pointer;
-                transition: background 0.3s ease-in-out;
+                transition: color 0.3s ease-in-out;
+                padding: 0;
+                text-align: start;
             }
             iai-response-dashboard .ternary-button:hover {
-                background: var(--iai-colour-pink-transparent);
+                color: var(--iai-colour-pink);
             }
             iai-response-dashboard .responses-row {
                 display: flex;
