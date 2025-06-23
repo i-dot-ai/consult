@@ -6,7 +6,7 @@ from django.contrib import messages
 from django.core.management import call_command
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django_rq import job
+from django_q.tasks import async_task
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import (
@@ -21,7 +21,6 @@ from consultation_analyser.support_console.validation_utils import format_valida
 logger = logging.getLogger("export")
 
 
-@job("default", timeout=1800)
 def import_consultation_job(
     consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
 ) -> None:
@@ -34,7 +33,6 @@ def import_consultation_job(
     )
 
 
-@job("default", timeout=900)
 def delete_consultation_job(consultation: models.Consultation):
     from django.db import connection, transaction
 
@@ -99,12 +97,14 @@ def index(request: HttpRequest) -> HttpResponse:
                 )
                 user = request.user
                 consultation.users.add(user)
-                create_dummy_consultation_from_yaml_job.delay(
-                    number_respondents=n, include_changes_to_themes=True, consultation=consultation
+                async_task(
+                    create_dummy_consultation_from_yaml_job,
+                    number_respondents=n, include_changes_to_themes=True, consultation=consultation,
+                    timeout=2100
                 )
                 messages.success(
                     request,
-                    "A giant dummy consultation is being created - see progress in the Django RQ dashboard",
+                    "A giant dummy consultation is being created - see progress in the Django-Q dashboard",
                 )
         except RuntimeError as error:
             messages.error(request, error.args[0])
@@ -121,10 +121,10 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
     if request.POST:
         if "confirm_deletion" in request.POST:
-            delete_consultation_job.delay(consultation=consultation)
+            async_task(delete_consultation_job, consultation=consultation, timeout=900)
             messages.success(
                 request,
-                "The consultation has been sent for deletion - check queue dashboard for progress",
+                "The consultation has been sent for deletion - check Django-Q dashboard for progress",
             )
             return redirect("/support/consultations/")
 
@@ -174,14 +174,14 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
         for id in question_ids:
             try:
                 logging.info("Exporting theme audit data - sending to queue")
-                export_user_theme_job.delay(question_id=UUID(id), s3_key=s3_key)
+                async_task(export_user_theme_job, question_id=UUID(id), s3_key=s3_key, timeout=900)
             except Exception as e:
                 messages.error(request, e)
                 return render(request, "support_console/consultations/export_audit.html", context)
 
         messages.success(
             request,
-            "Consultation theme audit export started for question - see Django RQ dashboard for progress",
+            "Consultation theme audit export started for question - see Django-Q dashboard for progress",
         )
         return redirect("/support/consultations/")
 
@@ -223,11 +223,13 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
 
         # If valid, queue the import job
         try:
-            import_consultation_job.delay(
+            async_task(
+                import_consultation_job,
                 consultation_name=consultation_name,
                 consultation_code=consultation_code,
                 timestamp=timestamp,
                 current_user_id=request.user.id,
+                timeout=1800
             )
             messages.success(request, f"Import started for consultation: {consultation_name}")
             return redirect("support_consultations")  # Fixed URL name

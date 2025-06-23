@@ -15,9 +15,8 @@ STORAGES["default"] = {
     "BACKEND": "django.core.files.storage.InMemoryStorage",
 }
 
-# process all async jobs inline
-for queueConfig in RQ_QUEUES.values():  # noqa
-    queueConfig["ASYNC"] = False
+# process all async jobs inline for testing
+Q_CLUSTER['sync'] = True
 
 # Use memory email backend for tests
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"

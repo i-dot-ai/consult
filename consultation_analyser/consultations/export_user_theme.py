@@ -7,7 +7,7 @@ from io import StringIO
 
 import boto3
 from django.conf import settings
-from django_rq import job
+from django_q.tasks import async_task
 
 from consultation_analyser.consultations.models import (
     Question,
@@ -149,6 +149,5 @@ def export_user_theme(question_id: uuid.UUID, s3_key: str) -> None:
     )
 
 
-@job("default", timeout=900)
 def export_user_theme_job(question_id: uuid.UUID, s3_key: str) -> None:
     export_user_theme(question_id, s3_key)
