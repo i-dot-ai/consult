@@ -16,17 +16,15 @@ from consultation_analyser.consultations.dummy_data import (
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
-from consultation_analyser.support_console.validation_utils import format_validation_error
+
+# from consultation_analyser.support_console.validation_utils import format_validation_error
 
 logger = logging.getLogger("export")
 
 
 @job("default", timeout=1800)
 def import_consultation_job(
-    consultation_name: str,
-    consultation_code: str,
-    timestamp: str,
-    current_user_id: int
+    consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
 ) -> None:
     """Job wrapper for importing consultations."""
     return ingest.create_consultation(
