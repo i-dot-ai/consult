@@ -57,7 +57,7 @@ def test_review_show_response(django_app):
         response_annotation=response_annotation1, is_original_ai_assignment=False
     )
     assert set(human_reviewed_themes.values_list("theme_id", flat=True)) == set(
-        [theme_a.id, theme_b.id]
+        {theme_a.id, theme_b.id}
     )
 
     # Now test reviewing a response making no further changes
