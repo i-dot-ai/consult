@@ -105,6 +105,11 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 justify-content:space-between;
                 align-items: center;
                 padding-block: 1em;
+                flex-wrap: wrap;
+            }
+            iai-response-dashboard .responses-column .title-container>*:first-child,
+            iai-response-dashboard .responses-column .title-container>*:last-child {
+                flex-grow: 1;
             }
             iai-response-dashboard .responses-column .title-container h2 {
                 margin: 0;
@@ -348,7 +353,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
     }
 
     handleSearchInput = (e) => {
-        this._searchValue = e.target.value;
+        this._searchValue = e.target.value.trim();
     }
     handleStanceChange = (e) => {
         this._stanceFilters = this.addOrRemoveFilter(this._stanceFilters, e.target.value);
