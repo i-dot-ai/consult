@@ -1138,6 +1138,7 @@ class IaiResponse extends IaiLitBase {
                 color: transparent;
                 animation: fadeInOut 1s ease-in-out infinite alternate;
                 user-select: none;
+                pointer-events: none;
             }
             @keyframes fadeInOut {
                 from {
@@ -1193,7 +1194,7 @@ class IaiResponse extends IaiLitBase {
 
     getHighlightedText = (fullText, matchedText) => {
         if (!matchedText) {
-            return "";
+            return fullText;
         }
         const regex = new RegExp(matchedText, "gi");
         return fullText.replace(regex, match => `<span class="matched-text">${match}</span>`);
@@ -3890,6 +3891,7 @@ class IaiResponseDashboard extends IaiLitBase {
             }
             iai-response-dashboard .responses-row {
                 display: flex;
+                height: 100vh;
             }
             iai-response-dashboard .flex-grow {
                 flex-grow: 1;

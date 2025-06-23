@@ -195,6 +195,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
             }
             iai-response-dashboard .responses-row {
                 display: flex;
+                height: 100vh;
             }
             iai-response-dashboard .flex-grow {
                 flex-grow: 1;
