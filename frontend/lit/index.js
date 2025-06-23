@@ -1775,6 +1775,75 @@ class IaiTextResponseItem extends IaiLitBase {
 }
 customElements.define("iai-text-response-item", IaiTextResponseItem);
 
+class IaiProgressBar extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        value: { type: Number },
+        label: { type: String },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-progress-bar .container {
+                border: 1px dotted;
+            }
+            iai-progress-bar .container .bar {
+                display: flex;
+                justify-content: end;
+                align-items: center;
+                position: relative;
+                height: 2em;
+                color: white;
+                transition: width 1s ease-in-out;
+                background: var(--iai-colour-pink);
+            }
+            iai-progress-bar .container .label {
+                display: block;    
+                position: absolute;
+                right: 0.5em;
+                text-align: right;
+                color: white;
+                font-weight: bold;
+            }
+            iai-progress-bar .container.low-value .label {
+                left: calc(100% + 0.5em);
+                color: var(--iai-colour-pink);
+                font-size: 1.2em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.value = 0;
+        this.label = "";
+        
+        this.applyStaticStyles("iai-progress-bar", IaiProgressBar.styles);
+    }
+
+    render() {
+        return x`
+            <div class=${"container" + (this.value < 30 ? " low-value" : "")}>
+                <div class="bar" style=${`width: ${this.value}%;`}>
+                    ${this.label
+                        ? x`
+                            <span class="label">
+                                ${this.label}
+                            </span>
+                        `
+                        : ""
+                    }
+                </div>
+            </div>
+        `;
+    }
+}
+customElements.define("iai-progress-bar", IaiProgressBar);
+
 class IaiMultiResponseItem extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -1799,6 +1868,13 @@ class IaiMultiResponseItem extends IaiLitBase {
                 margin-bottom: 0.5em;
                 list-style: none;
             }
+            iai-multi-response-item iai-progress-bar .container .bar {
+                height: 1.3em;
+            }
+            iai-multi-response-item iai-progress-bar .container .label,
+            iai-multi-response-item iai-progress-bar .container.low-value .label {
+                font-size: 0.9em;
+            }
         `
     ]
 
@@ -1814,13 +1890,20 @@ class IaiMultiResponseItem extends IaiLitBase {
         this.applyStaticStyles("iai-multi-response-item", IaiMultiResponseItem.styles);
     }
 
+    getPercentage = (part, whole) => {
+        return Math.round((part / whole) * 100);
+    }
+
     render() {
         return x`
             <li>
                 <p>
                     ${this.countName ? this.countName + ": " : ""}<strong>${this.countValue}</strong>
                 </p>
-                <progress value=${this.countValue} max=${this.totalCounts}></progress>
+                <iai-progress-bar
+                    .value=${this.getPercentage(this.countValue, this.totalCounts)}
+                    .label=${this.getPercentage(this.countValue, this.totalCounts) + "%"}
+                ></iai-progress-bar>
             </li>
         `;
     }
@@ -2283,75 +2366,6 @@ class IaiChip extends IaiLitBase {
     }
 }
 customElements.define("iai-chip", IaiChip);
-
-class IaiProgressBar extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        value: { type: Number },
-        label: { type: String },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-progress-bar .container {
-                border: 1px dotted;
-            }
-            iai-progress-bar .container .bar {
-                display: flex;
-                justify-content: end;
-                align-items: center;
-                position: relative;
-                height: 2em;
-                color: white;
-                transition: width 1s ease-in-out;
-                background: var(--iai-colour-pink);
-            }
-            iai-progress-bar .container .label {
-                display: block;    
-                position: absolute;
-                right: 0.5em;
-                text-align: right;
-                color: white;
-                font-weight: bold;
-            }
-            iai-progress-bar .container.low-value .label {
-                left: calc(100% + 0.5em);
-                color: var(--iai-colour-pink);
-                font-size: 1.2em;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.value = 0;
-        this.label = "";
-        
-        this.applyStaticStyles("iai-progress-bar", IaiProgressBar.styles);
-    }
-
-    render() {
-        return x`
-            <div class=${"container" + (this.value < 30 ? " low-value" : "")}>
-                <div class="bar" style=${`width: ${this.value}%;`}>
-                    ${this.label
-                        ? x`
-                            <span class="label">
-                                ${this.label}
-                            </span>
-                        `
-                        : ""
-                    }
-                </div>
-            </div>
-        `;
-    }
-}
-customElements.define("iai-progress-bar", IaiProgressBar);
 
 class IaiAnimatedNumber extends IaiLitBase {
     static properties = {
