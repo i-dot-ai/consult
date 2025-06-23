@@ -104,7 +104,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 display: flex;
                 justify-content:space-between;
                 align-items: center;
-                row-gap: 2em;
+                row-gap: 1em;
                 padding-block: 1em;
                 flex-wrap: wrap;
             }
