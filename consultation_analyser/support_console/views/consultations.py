@@ -97,7 +97,7 @@ def index(request: HttpRequest) -> HttpResponse:
                 )
                 user = request.user
                 consultation.users.add(user)
-                create_dummy_consultation_from_yaml_job.delay(
+                create_dummy_consultation_from_yaml_job(
                     number_respondents=n, consultation=consultation
                 )
                 messages.success(
