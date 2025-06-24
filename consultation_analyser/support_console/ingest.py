@@ -413,7 +413,7 @@ def import_questions(
             logger.info(f"Imported {len(themes)} themes for question {question_number}")
 
             # Enqueue response ingestion task
-            queue = get_queue(default_timeout=900)
+            queue = get_queue(default_timeout=1500)
             output_folder = f"{outputs_path}question_part_{question_num_str}/"
             responses_task = queue.enqueue(
                 import_responses, consultation, question, question_folder
@@ -453,10 +453,14 @@ def import_respondents(
 
         respondents_to_save = []
         respondent_count = 0
+        # TODO: remove me - used for ECS debugging in dev
+        logger.info("Respondents import task: line 457)")
 
         for line in response["Body"].iter_lines():
+            # TODO: remove me - used for ECS debugging in dev
             respondent_data = json.loads(line.decode("utf-8"))
             themefinder_id = respondent_data.get("themefinder_id")
+            logger.info(f"Respondents import task themefinder_id {themefinder_id})")
             demographics = respondent_data.get("demographic_data", {})
 
             respondents_to_save.append(
@@ -468,6 +472,8 @@ def import_respondents(
             )
             respondent_count += 1
 
+        # TODO: remove me - used for ECS debugging in dev
+        logger.info(f"Respondents import count {respondent_count})")
         Respondent.objects.bulk_create(respondents_to_save)
         logger.info(f"Imported {respondent_count} respondents")
 
@@ -509,7 +515,7 @@ def create_consultation(
 
         logger.info(f"Created consultation: {consultation.title} (ID: {consultation.id})")
 
-        queue = get_queue(default_timeout=900)
+        queue = get_queue(default_timeout=1500)
         respondents_task = queue.enqueue(import_respondents, consultation, consultation_code)
         queue.enqueue(
             import_questions,
