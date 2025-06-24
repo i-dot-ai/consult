@@ -260,11 +260,6 @@ Q_CLUSTER = {
     "queue_limit": 50,
     "bulk": 10,
     "orm": "default",
-    "redis": {
-        "host": redis_host,
-        "port": int(redis_port),
-        "db": 0,
-    },
 }
 
 # Django debug toolbar
