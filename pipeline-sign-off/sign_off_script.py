@@ -5,11 +5,18 @@ import json
 import logging
 import os
 from pathlib import Path
+from typing import Any, Dict
 
 import boto3
 import pandas as pd
 from langchain_openai import AzureChatOpenAI
-from themefinder import sentiment_analysis, theme_generation, theme_condensation, theme_refinement, theme_mapping
+from themefinder import (
+    sentiment_analysis,
+    theme_condensation,
+    theme_generation,
+    theme_mapping,
+    theme_refinement,
+)
 
 # Configure logging
 logging.basicConfig(
@@ -89,7 +96,7 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
 
     with question_path.open() as f:
         question = json.load(f)["question_text"]
-    
+
     # Read JSONL file line by line
     responses = []
     with responses_path.open() as f:
@@ -237,7 +244,7 @@ def produce_short_list_df(themes_df: pd.DataFrame, mapped_df: pd.DataFrame) -> p
     short_list = short_list[["Theme Name", "Theme Description"]]
 
     # Count occurrences of each topic in the mapped responses
-    topic_counts = {}
+    topic_counts: Dict[Any, Any] = {}
     for labels in mapped_df["labels"]:
         for topic_id in labels:
             topic_counts[topic_id] = topic_counts.get(topic_id, 0) + 1
