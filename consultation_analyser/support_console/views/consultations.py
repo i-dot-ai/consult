@@ -91,7 +91,7 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
     if request.POST:
         if "confirm_deletion" in request.POST:
-            async_task(delete_consultation_job, consultation_id=consultation.id, timeout=900)
+            async_task(delete_consultation_job, consultation_id=consultation.id)
             messages.success(
                 request,
                 "The consultation has been sent for deletion - check Django-Q dashboard for progress",
@@ -144,7 +144,7 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
         for id in question_ids:
             try:
                 logging.info("Exporting theme audit data - sending to queue")
-                async_task(export_user_theme_job, question_id=UUID(id), s3_key=s3_key, timeout=900)
+                async_task(export_user_theme_job, question_id=UUID(id), s3_key=s3_key)
             except Exception as e:
                 messages.error(request, e)
                 return render(request, "support_console/consultations/export_audit.html", context)
@@ -199,7 +199,7 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
                 consultation_code=consultation_code,
                 timestamp=timestamp,
                 current_user_id=request.user.id,
-                timeout=1800,
+                task_name=f"ingest-{consultation_name}"
             )
             messages.success(request, f"Import started for consultation: {consultation_name}")
             return redirect("support_consultations")  # Fixed URL name
