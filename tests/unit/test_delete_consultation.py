@@ -186,9 +186,9 @@ def test_delete_consultation_job_handles_exceptions(mock_logger):
 
     consultation = Consultation.objects.create(title="Test Consultation")
 
-    # Mock an exception during _delete_consultation_job
+    # Mock an exception during delete
     with patch(
-        "consultation_analyser.support_console.views.consultations._delete_consultation_job",
+        "consultation_analyser.consultations.models.Consultation.delete",
         side_effect=Exception("Database error"),
     ):
         with pytest.raises(Exception) as exc_info:

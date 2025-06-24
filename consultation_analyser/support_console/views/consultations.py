@@ -32,10 +32,6 @@ def import_consultation_job(
         current_user_id=current_user_id,
     )
 
-def _delete_consultation_job(consultation: models.Consultation):
-    consultation.delete()
-
-
 
 def delete_consultation_job(consultation_id: UUID):
 
@@ -46,7 +42,7 @@ def delete_consultation_job(consultation_id: UUID):
         raise
 
     try:
-        _delete_consultation_job(consultation=consultation)
+        consultation.delete()
     except Exception as e:
         logger.error(
             f"Error deleting consultation '{consultation.title}' (ID: {consultation_id}): {str(e)}"
