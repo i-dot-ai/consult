@@ -4,7 +4,6 @@ import random
 from typing import Optional
 
 import yaml
-from django_q.tasks import async_task
 
 from consultation_analyser.consultations import models
 from consultation_analyser.factories import (

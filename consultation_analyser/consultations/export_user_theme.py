@@ -7,7 +7,6 @@ from io import StringIO
 
 import boto3
 from django.conf import settings
-from django_q.tasks import async_task
 
 from consultation_analyser.consultations.models import (
     Question,

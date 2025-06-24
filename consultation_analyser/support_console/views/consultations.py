@@ -227,7 +227,7 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
                 consultation_code=consultation_code,
                 timestamp=timestamp,
                 current_user_id=request.user.id,
-                timeout=1800
+                timeout=1800,
             )
             messages.success(request, f"Import started for consultation: {consultation_name}")
             return redirect("support_consultations")  # Fixed URL name

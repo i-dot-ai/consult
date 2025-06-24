@@ -16,7 +16,7 @@ STORAGES["default"] = {
 }
 
 # process all async jobs inline for testing
-Q_CLUSTER['sync'] = True
+Q_CLUSTER["sync"] = True  # noqa
 
 # Use memory email backend for tests
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"

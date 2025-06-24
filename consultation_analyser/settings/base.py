@@ -252,19 +252,19 @@ CACHES = {
 
 # django-q2
 Q_CLUSTER = {
-    'name': 'consultation_analyser',
-    'workers': 4,
-    'recycle': 500,
-    'timeout': 60,
-    'retry': 120,
-    'queue_limit': 50,
-    'bulk': 10,
-    'orm': 'default',
-    'redis': {
-        'host': redis_host,
-        'port': int(redis_port),
-        'db': 0,
-    }
+    "name": "consultation_analyser",
+    "workers": 4,
+    "recycle": 500,
+    "timeout": 60,
+    "retry": 120,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
+    "redis": {
+        "host": redis_host,
+        "port": int(redis_port),
+        "db": 0,
+    },
 }
 
 # Django debug toolbar
