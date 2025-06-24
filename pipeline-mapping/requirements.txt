@@ -1,1 +1,1 @@
-themefinder==0.6.3
+themefinder
