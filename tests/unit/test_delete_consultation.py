@@ -177,8 +177,6 @@ def test_delete_consultation_job_with_logging(mock_logger):
     )
 
 
-
-
 @pytest.mark.django_db
 @patch("consultation_analyser.support_console.views.consultations.logger")
 def test_delete_consultation_job_handles_exceptions(mock_logger):

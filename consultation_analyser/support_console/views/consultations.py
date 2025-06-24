@@ -34,7 +34,6 @@ def import_consultation_job(
 
 
 def delete_consultation_job(consultation_id: UUID):
-
     try:
         consultation = models.Consultation.objects.get(id=consultation_id)
     except models.Consultation.DoesNotExist:
@@ -48,10 +47,7 @@ def delete_consultation_job(consultation_id: UUID):
             f"Error deleting consultation '{consultation.title}' (ID: {consultation_id}): {str(e)}"
         )
         raise
-    logger.info(
-        f"Successfully deleted consultation '{consultation.title}' (ID: {consultation_id})"
-    )
-
+    logger.info(f"Successfully deleted consultation '{consultation.title}' (ID: {consultation_id})")
 
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -91,7 +87,12 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
     if request.POST:
         if "confirm_deletion" in request.POST:
-            async_task(delete_consultation_job, consultation_id=consultation.id, group="delete-consultation", task_name=str(consultation.id),)
+            async_task(
+                delete_consultation_job,
+                consultation_id=consultation.id,
+                group="delete-consultation",
+                task_name=str(consultation.id),
+            )
             messages.success(
                 request,
                 "The consultation has been sent for deletion - check Django-Q dashboard for progress",
@@ -146,9 +147,10 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
                 logging.info("Exporting theme audit data - sending to queue")
                 async_task(
                     export_user_theme_job,
-                    question_id=UUID(id), s3_key=s3_key,
+                    question_id=UUID(id),
+                    s3_key=s3_key,
                     group="export-question",
-                    task_name=str(id)
+                    task_name=str(id),
                 )
             except Exception as e:
                 messages.error(request, e)
@@ -205,7 +207,7 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
                 timestamp=timestamp,
                 current_user_id=request.user.id,
                 group="ingest-consultation",
-                task_name=consultation_name
+                task_name=consultation_name,
             )
             messages.success(request, f"Import started for consultation: {consultation_name}")
             return redirect("support_consultations")  # Fixed URL name
