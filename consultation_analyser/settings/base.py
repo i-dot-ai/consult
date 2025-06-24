@@ -231,10 +231,6 @@ LOGIN_URL = "/sign-in/"
 # version info
 GIT_SHA = env("GIT_SHA", default=None)
 
-# redis
-redis_host = env.str("REDIS_HOST", "localhost")
-redis_port = env.str("REDIS_PORT", "6379")
-redis_url = f"redis://{redis_host}:{redis_port}"
 
 CACHES = {
     "default": {
