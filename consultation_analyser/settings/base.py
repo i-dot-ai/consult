@@ -240,14 +240,6 @@ CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     },
-    "redis": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": redis_url,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "MAX_ENTRIES": 5000,
-        },
-    },
 }
 
 # django-q2
