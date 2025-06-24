@@ -1,0 +1,26 @@
+{
+  "type": "object",
+  "properties": {
+    "question_text": {
+      "type": "string",
+      "description": "This is the text of a question."
+    },
+    "question_number": {
+      "type": "integer",
+      "description": "This gives the order of the question in the consultation, and also the display label."
+    },
+    "question_multiple_choice_options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "nullable": true,
+      "description": "All possible options for a closed question. Might not be present for free text question (or empty)."
+    }
+  },
+  "required": [
+    "question_number",
+    "question_text"
+  ],
+  "additionalProperties": true
+}
