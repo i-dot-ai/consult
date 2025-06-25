@@ -85,6 +85,13 @@ jobs:
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
           BATCH_JOB_QUEUE: dummy-queue
           BATCH_JOB_DEFINITION: dummy-definition
+          SQS_QUEUE_URL: dummy-queue-url
+          MAPPING_BATCH_JOB_NAME: dummy-name
+          MAPPING_BATCH_JOB_QUEUE: dummy-name
+          MAPPING_BATCH_JOB_DEFINITION: dummy-name
+          SIGN_OFF_BATCH_JOB_NAME: dummy-name
+          SIGN_OFF_BATCH_JOB_QUEUE: dummy-name
+          SIGN_OFF_BATCH_JOB_DEFINITION: dummy-name
 
       - name: Run tests for migrations
         run:
@@ -94,3 +101,10 @@ jobs:
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
           BATCH_JOB_QUEUE: dummy-queue
           BATCH_JOB_DEFINITION: dummy-definition
+          SQS_QUEUE_URL: dummy-queue-url
+          MAPPING_BATCH_JOB_NAME: dummy-name
+          MAPPING_BATCH_JOB_QUEUE: dummy-name
+          MAPPING_BATCH_JOB_DEFINITION: dummy-name
+          SIGN_OFF_BATCH_JOB_NAME: dummy-name
+          SIGN_OFF_BATCH_JOB_QUEUE: dummy-name
+          SIGN_OFF_BATCH_JOB_DEFINITION: dummy-name
