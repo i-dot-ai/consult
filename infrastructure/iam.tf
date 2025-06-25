@@ -1,4 +1,5 @@
 data "aws_iam_policy_document" "ecs_exec_custom_policy" {
+  version = "2012-10-17"
   statement {
     effect = "Allow"
     actions = [
@@ -63,8 +64,8 @@ data "aws_iam_policy_document" "lambda_exec_custom_policy" {
       "batch:Describe*",
     ]
     resources = [
-          "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-queue/${local.name}-mapping*",
-          "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/${local.name}-mapping*"
+          "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-queue/${local.name}*",
+          "arn:aws:batch:${var.region}:${data.aws_caller_identity.current.account_id}:job-definition/${local.name}*"
     ]
   }
   statement {
@@ -74,7 +75,7 @@ data "aws_iam_policy_document" "lambda_exec_custom_policy" {
         "sqs:DeleteMessage",
         "sqs:GetQueueAttributes"
     ]
-    resources = [aws_sqs_queue.batch_job_queue.arn]
+    resources = [module.batch_job_queue.sqs_queue_arn]
   }
   statement {
     effect = "Allow"

@@ -63,6 +63,11 @@ def app_config(request: HttpRequest):
                         "active": request.path.startswith("/support/consultations/import-summary"),
                     },
                     {
+                        "href": "/support/consultations/sign-off/",
+                        "text": "Sign-off",
+                        "active": request.path.startswith("/support/consultations/sign-off"),
+                    },
+                    {
                         "href": "/support/consultations/themefinder/",
                         "text": "Themefinder",
                         "active": request.path.startswith("/support/consultations/themefinder"),

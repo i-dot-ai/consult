@@ -12,17 +12,27 @@ SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
 http = urllib3.PoolManager()
 
 
-def create_slack_message(job_name, status, job_id, subdir):
+def create_slack_message(job_name, status, job_id, job_type, subdir):
     region = os.environ.get("LAMBDA_AWS_REGION")
 
-    # Friendly, branded titles
+    if job_type == "THEMEFINDER":
+        job_type_name = "Themefinder"
+    elif job_type == "SIGNOFF":
+        job_type_name = "Sign-off"
+    elif not job_type or job_type.strip() == "":
+        logger.error(f"Job type is blank or null for job_id: {job_id}")
+        raise ValueError("Job type cannot be blank or null")
+    else:
+        logger.error(f"Unknown job type: {job_type} for job_id: {job_id}")
+        raise ValueError(f"Unknown job type: {job_type}")
+
     status_title_map = {
-        "SUCCEEDED": "✅ Themefinder Job Completed",
-        "RUNNING": "🚀 Themefinder Job Started",
-        "FAILED": "❌ Themefinder Job Failed",
+        "SUCCEEDED": f"✅ {job_type_name} Job Completed",
+        "RUNNING": f"🚀 {job_type_name} Job Started",
+        "FAILED": f"❌ {job_type_name} Job Failed",
     }
     status_emoji_map = {"SUCCEEDED": "✅", "RUNNING": "🟢", "FAILED": "❌"}
-    title = status_title_map.get(status, f"ℹ️ Themefinder Job {status}")
+    title = status_title_map.get(status, f"ℹ️ {job_type_name} Job {status}")
     emoji = status_emoji_map.get(status, "ℹ️")
 
     # AWS console URLs
@@ -91,21 +101,67 @@ def lambda_handler(event, context):
 
         job_name = detail.get("jobName", "Unknown Job")
         job_id = detail.get("jobId", "Unknown ID")
+
+        subdir, job_type = extract_job_details(detail, job_id)
+
+        slack_message = create_slack_message(job_name, job_status, job_id, job_type, subdir)
+
+        send_to_slack(slack_message)
+
+    except Exception as e:
+        logger.error("Error processing event: %s", str(e))
+
+
+def extract_job_details(detail, job_id):
+    """
+    Extract subdir and job_type from the Batch job details
+    """
+    subdir = "unknown"
+    job_type = "unknown"
+
+    try:
+        # Try to get from the event detail (if available)
         container = detail.get("container", {})
         command = container.get("command", [])
 
-        subdir = None
-        if command and "--subdir" in command:
+        if command:  # Check if command exists and is not empty
+            subdir, job_type = parse_command_args(command)
+            logger.info(f"Extracted job details: subdir={subdir}, job_type={job_type}")
+        else:
+            logger.warning(f"No command found in container details for job {job_id}")
+
+    except Exception as e:
+        logger.warning(f"Could not extract job details: {e}")
+
+    return subdir, job_type
+
+
+def parse_command_args(command):
+    """
+    Parse command array to extract subdir and job_type
+    Example: ["--subdir", "dwp", "--job-type", "THEMEFINDER"]
+    """
+    subdir = "unknown"
+    job_type = "unknown"
+
+    try:
+        logger.debug(f"Parsing command: {command}")
+
+        # Find --subdir value
+        if "--subdir" in command:
             idx = command.index("--subdir")
             if idx + 1 < len(command):
                 subdir = command[idx + 1]
 
-        slack_message = create_slack_message(job_name, job_status, job_id, subdir)
+        # Find --job-type value
+        if "--job-type" in command:
+            idx = command.index("--job-type")
+            if idx + 1 < len(command):
+                job_type = command[idx + 1]
 
-        send_to_slack(slack_message)
-
-        return {"statusCode": 200, "body": json.dumps("Slack notification sent successfully")}
+        logger.info(f"Parsed from command: subdir={subdir}, job_type={job_type}")
 
     except Exception as e:
-        logger.error("Error processing event: %s", str(e))
-        return {"statusCode": 500, "body": json.dumps("Error processing event")}
+        logger.warning(f"Error parsing command args: {e}")
+
+    return subdir, job_type

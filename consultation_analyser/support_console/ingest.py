@@ -1,6 +1,5 @@
 import json
 import logging
-import os
 
 import boto3
 from django.conf import settings
@@ -442,18 +441,26 @@ def get_folder_names_for_dropdown() -> list[dict]:
     return consultation_folders_formatted
 
 
-def send_job_to_sqs(consultation_code: str):
-    """Send a message to AWS SQS to trigger the themefinder batch job"""
-
+def send_job_to_sqs(consultation_code: str, job_type: str) -> dict:
     # SQS configuration - you should move these to settings.py
-    QUEUE_URL = os.environ.get("MAPPING_SQS_QUEUE_URL")
+    QUEUE_URL = settings.SQS_QUEUE_URL
+
+    # Choose environment variables based on job_type
+    if job_type == "SIGNOFF":
+        job_name = settings.SIGN_OFF_BATCH_JOB_NAME
+        job_queue = settings.SIGN_OFF_BATCH_JOB_QUEUE
+        job_definition = settings.SIGN_OFF_BATCH_JOB_DEFINITION
+    else:
+        job_name = settings.MAPPING_BATCH_JOB_NAME
+        job_queue = settings.MAPPING_BATCH_JOB_QUEUE
+        job_definition = settings.MAPPING_BATCH_JOB_DEFINITION
 
     # Message body with the consultation_code
     message_body = {
-        "jobName": os.environ.get("MAPPING_BATCH_JOB_NAME"),
-        "jobQueue": os.environ.get("MAPPING_BATCH_JOB_QUEUE"),
-        "jobDefinition": os.environ.get("MAPPING_BATCH_JOB_DEFINITION"),
-        "containerOverrides": {"command": ["--subdir", consultation_code]},
+        "jobName": job_name,
+        "jobQueue": job_queue,
+        "jobDefinition": job_definition,
+        "containerOverrides": {"command": ["--subdir", consultation_code, "--job-type", job_type]},
     }
 
     # Create SQS client
@@ -461,11 +468,12 @@ def send_job_to_sqs(consultation_code: str):
 
     try:
         # Send message to SQS
+        logger.info(f"Sending message to SQS: {json.dumps(message_body)}")
         response = sqs.send_message(QueueUrl=QUEUE_URL, MessageBody=json.dumps(message_body))
 
-        print(f"Message sent to SQS. MessageId: {response['MessageId']}")
+        logger.info(f"Message sent to SQS. MessageId: {response['MessageId']}")
         return response
 
     except Exception as e:
-        print(f"Error sending message to SQS: {str(e)}")
+        logger.error(f"Error sending message to SQS: {str(e)}")
         raise e

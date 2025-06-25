@@ -201,6 +201,12 @@ if __name__ == "__main__":
         required=True,
         help="Subdirectory within the base S3 path to download.",
     )
+    parser.add_argument(
+        "--job-type",
+        type=str,
+        required=False,
+        help="Type of job to execute.",
+    )
     args = parser.parse_args()
 
     logger.info("Starting processing for subdirectory: %s", args.subdir)
