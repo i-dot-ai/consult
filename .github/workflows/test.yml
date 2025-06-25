@@ -69,6 +69,7 @@ jobs:
           LLM_BACKEND: fake
           AWS_REGION: eu-west-2
           AWS_BUCKET_NAME: test-bucket
+          SQS_QUEUE_URL: dummy-queue-url
 
       - name: Run app tests
         run:
