@@ -32,7 +32,6 @@ export default class IaiResponseDashboard extends IaiLitBase {
         responses: { type: Array },
         responsesTotal: { type: Number },
         free_text_question_part: { type: Boolean },
-        has_individual_data: { type: Boolean },
         has_multiple_choice_question_part: { type: Boolean },
         multiple_choice_summary: { type: Array },
         fetchData: { type: Function },
@@ -246,7 +245,6 @@ export default class IaiResponseDashboard extends IaiLitBase {
         this.stanceOptions = [];
         this.demographicOptions = {};
         this.free_text_question_part = false;
-        this.has_individual_data = false;
         this.has_multiple_choice_question_part = false;
         this.multiple_choice_summary = [];
         this.fetchData = window.fetch.bind(window);
