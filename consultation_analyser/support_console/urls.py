@@ -45,6 +45,11 @@ urlpatterns = [
         name="delete_question",
     ),
     path(
+        "consultations/sign-off/",
+        consultations.sign_off,
+        name="sign_off",
+    ),
+    path(
         "consultations/themefinder/",
         consultations.themefinder,
         name="themefinder",

@@ -315,3 +315,4 @@ def sign_off(request: HttpRequest) -> HttpResponse:
     }
 
     return render(request, "support_console/consultations/sign_off.html", context=context)
+

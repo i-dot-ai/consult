@@ -7,7 +7,7 @@ resource "aws_cloudwatch_event_rule" "batch_job_state_change" {
     detail-type = ["Batch Job State Change"],
     detail = {
       status  = ["SUCCEEDED", "FAILED", "RUNNING"],
-      jobName = ["${local.name}-mapping-job"]
+      jobName = ["${local.name}-mapping-job", "${local.name}-sign-off-job"]
     }
   })
   tags = var.universal_tags

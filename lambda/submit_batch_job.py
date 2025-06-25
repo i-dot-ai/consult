@@ -13,38 +13,28 @@ batch_client = boto3.client("batch")
 
 def lambda_handler(event, context):
     """
-    Lambda handler to process SQS messages and submit jobs to AWS Batch
+    Lambda handler to process a single SQS message and submit job to AWS Batch.
     """
     logger.info(f"Received event with {len(event['Records'])} records")
 
-    success_count = 0
-    failure_count = 0
+    records = event.get("Records", [])
 
-    for record in event["Records"]:
-        try:
-            message_body = record["body"]
-            try:
-                message_data = json.loads(message_body)
-                logger.info(f"Parsed message: {message_data}")
-            except json.JSONDecodeError:
-                logger.warning(f"Invalid JSON, treating as raw text: {message_body}")
-                message_data = message_body  # Could skip this if your messages are always JSON
+    if len(records) != 1:
+        raise ValueError(f"Expected exactly 1 SQS record, but received {len(records)}")
 
-            process_message(message_data)
-            success_count += 1
+    record = records[0]
+    logger.info("Processing SQS record")
 
-        except Exception as e:
-            logger.error(f"Error processing record: {str(e)}")
-            failure_count += 1
-            # Letting it raise here would cause all messages to be retried. We handle gracefully.
-            # To force retry of individual messages, raise here instead.
+    message_body = record["body"]
+    try:
+        message_data = json.loads(message_body)
+        logger.info(f"Parsed message: {message_data}")
+    except json.JSONDecodeError as e:
+        raise ValueError(f"Invalid JSON in message body: {str(e)}")
 
-    return {
-        "statusCode": 200,
-        "body": json.dumps(
-            {"message": f"Processed {success_count} successfully, {failure_count} failed."}
-        ),
-    }
+    process_message(message_data)
+
+    logger.info("Successfully processed SQS record")
 
 
 def process_message(message_data):
@@ -54,7 +44,8 @@ def process_message(message_data):
     - jobName
     - jobQueue
     - jobDefinition
-    - containerOverrides (optional)
+    - containerOverrides
+    - jobType
     - parameters (optional, for backward compatibility)
     """
     if not isinstance(message_data, dict):

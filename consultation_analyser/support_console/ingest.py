@@ -478,3 +478,4 @@ def send_job_to_sqs(consultation_code: str, job_type: str) -> dict:
     except Exception as e:
         logger.error(f"Error sending message to SQS: {str(e)}")
         raise e
+
