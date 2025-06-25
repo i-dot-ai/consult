@@ -101,3 +101,9 @@ jobs:
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
           BATCH_JOB_QUEUE: dummy-queue
           BATCH_JOB_DEFINITION: dummy-definition
+          MAPPING_BATCH_JOB_NAME: i-dot-ai-dev-consult-mapping-job
+          MAPPING_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-queue
+          MAPPING_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-definition
+          SIGN_OFF_BATCH_JOB_NAME: i-dot-ai-dev-consult-sign-off-job
+          SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
+          SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
