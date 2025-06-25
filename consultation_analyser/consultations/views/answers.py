@@ -334,11 +334,6 @@ def index(
     )
 
     """Simplified index that just renders the template - all data loaded via AJAX"""
-    # Check for individual data (lightweight query)
-    has_individual_data = models.Respondent.objects.filter(
-        consultation=consultation, demographics__has_key="individual"
-    ).exists()
-
     # Minimal context - all dynamic data loaded via respondents_json
     context = {
         "consultation_name": consultation.title,
@@ -351,7 +346,7 @@ def index(
         "csv_button_data": [],  # Empty - loaded via AJAX
         "multiple_choice_summary": [],  # Empty - loaded via AJAX
         "stance_options": models.ResponseAnnotation.Sentiment.names,
-        "has_individual_data": has_individual_data,
+        "has_individual_data": False, # Shouldn't use this, demographic filters work more generally
     }
 
     return render(request, "consultations/answers/index.html", context)
