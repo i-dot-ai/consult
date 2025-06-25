@@ -36,6 +36,17 @@ data "aws_iam_policy_document" "ecs_exec_custom_policy" {
   }
 
   statement {
+      effect = "Allow"
+      actions = [
+          "sqs:ReceiveMessage",
+          "sqs:DeleteMessage",
+          "sqs:GetQueueAttributes",
+          "sqs:SendMessage",
+      ]
+      resources = [module.batch_job_queue.sqs_queue_arn]
+  }
+  
+  statement {
     effect = "Allow"
     actions = [
       "kms:Decrypt",
@@ -73,7 +84,8 @@ data "aws_iam_policy_document" "lambda_exec_custom_policy" {
     actions = [
         "sqs:ReceiveMessage",
         "sqs:DeleteMessage",
-        "sqs:GetQueueAttributes"
+        "sqs:GetQueueAttributes",
+        "sqs:SendMessage",
     ]
     resources = [module.batch_job_queue.sqs_queue_arn]
   }
