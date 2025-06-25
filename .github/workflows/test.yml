@@ -69,6 +69,13 @@ jobs:
           LLM_BACKEND: fake
           AWS_REGION: eu-west-2
           AWS_BUCKET_NAME: test-bucket
+          SQS_QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/123456789012/test-queue
+          MAPPING_BATCH_JOB_NAME: i-dot-ai-dev-consult-mapping-job
+          MAPPING_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-queue
+          MAPPING_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-definition
+          SIGN_OFF_BATCH_JOB_NAME: i-dot-ai-dev-consult-sign-off-job
+          SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
+          SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
 
       - name: Run app tests
         run:
