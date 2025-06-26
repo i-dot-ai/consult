@@ -741,7 +741,7 @@ def test_build_respondent_data():
     respondent = response.respondent
     question = response.question
     theme = ThemeFactory(question=question, name="Theme A")
-    annotation = ResponseAnnotationFactory(response=response, themes=[theme], sentiment="AGREEMENT", evidence_rich="Yes")
+    ResponseAnnotationFactory(response=response, themes=[theme], sentiment="AGREEMENT", evidence_rich="YES")
 
     actual = build_respondent_data(respondent=respondent, response=response)
     expected = {
