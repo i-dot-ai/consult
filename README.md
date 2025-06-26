@@ -176,40 +176,39 @@ It should be stored in the following structure for a given consultation:
     ├── inputs/
     │   ├── question_part_<id>/
     │   │   ├── responses.jsonl
-    │   │   └── question_part.json
+    │   │   └── question.json
     │   ├──  question_part_<id>/
     │   │   ├── responses.jsonl
-    │   │   └── question_part.json
+    │   │   └── question.json
     │   ├── ...
     │   └── respondents.jsonl
     └── outputs/
         ├── mapping/
         │   ├── <timestamp>/
         │   │   ├── question_part_<id>/
-        │   │   │   ├── meta.json
-        │   │   │   ├── themes.json
-        │   │   │   ├── sentiment.jsonl
         │   │   │   ├── detail_detection.jsonl
-        │   │   │   └── mapping.jsonl
+        │   │   │   ├── mapping.jsonl
+        │   │   │   ├── sentiment.jsonl
+        │   │   │   └── themes.json
         │   │   ├── question_part_<id>/
         │   │   ├── ...
         │   ...  
         └── sign_off/
 ```
 
-Note that we have the notion of "question part" to reflect the sub-questions within a question.
+Note that we have the notion of "question part" reflects historic notation, this represents one question.
 
 The format for each of these files is in `consultation_analyser/consultations/import_schema`. Some of the files are JSONL files - [JSONLines](https://jsonlines.org/). The schema are given in [JSON Schema format](https://json-schema.org/). In Python you can use the `jsonschema` library to validate a JSON instance.
 
 Format of each of the files:
 * `respondents.jsonl` - this is a JSONL file per consultation, where each entry is the format given in the `respondent.json` schema.
-* `responses.jsonl` - this is a JSONL file per question part, where each entry is in the format given in the `response.json` schema.
-* `question_part.json` - this is a JSON file per question part, and this must satisfy the format given in the `question_part.json` schema.
-* `meta.json` - this is a file with metadata allowing us to match up inputs and outputs
-* `themes.json` - this gives the themes for a given question part and run of ThemeFinder, with `theme_key` as a unique identifier for a theme (for a given question part). This is the format given by the `themes.json` schema.
-* `sentiment.jsonl` - this a JSONL file per question part and run of themefinder, each row is a line in the format of `sentiment.json` with one row per response.
-* `detail_detection.jsonl` - this a JSONL file per question part and run of themefinder, each row is a line in the format of `detail_detection.json` with one row per response.
-* `mapping.jsonl` - this is a JSONL file per question part and run of themefinder, each row is a line in the format of `mapping.json`. Each row maps a given response to its themes.
+* `responses.jsonl` - this is a JSONL file per question, where each entry is in the format given in the `response.json` schema.
+* `question.json` - this is a JSON file per question, and this must satisfy the format given in the `question.json` schema.
+* `detail_detection.jsonl` - this a JSONL file per question and run of `themefinder`, each row is a line in the format of `detail_detection.json` with one row per response.
+* `mapping.jsonl` - this is a JSONL file per question and run of `themefinder`, each row is a line in the format of `mapping.json`. Each row maps a given response to its themes.
+* `sentiment.jsonl` - this a JSONL file per question part and run of `themefinder`, each row is a line in the format of `sentiment.json` with one row per response.
+* `themes.json` - this gives the themes for a given question part and run of `themefinder`, with `theme_key` as a unique identifier for a theme (for a given question). This is the format given by the `themes.json` schema.
+
 
 
 ### Data import process

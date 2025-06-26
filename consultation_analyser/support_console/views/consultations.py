@@ -59,7 +59,7 @@ def index(request: HttpRequest) -> HttpResponse:
                 consultation.users.add(user)
                 messages.success(request, "A dummy consultation has been generated")
             elif request.POST.get("generate_giant_dummy_consultation") is not None:
-                n = 10000
+                n = 100000
                 consultation = models.Consultation.objects.create(
                     title=f"Giant dummy consultation - {n} respondents"
                 )

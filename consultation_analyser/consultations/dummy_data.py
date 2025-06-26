@@ -116,8 +116,7 @@ def create_dummy_consultation_from_yaml(
     return consultation
 
 
-# Will only be run occasionally to create dummy data
-# Not in prod
+# Will only be run occasionally to create dummy data - not in prod
 def create_dummy_consultation_from_yaml_job(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
