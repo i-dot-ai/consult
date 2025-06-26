@@ -89,7 +89,12 @@ ECR_URL=$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 ECR_REPO_URL=$(ECR_URL)/$(ECR_REPO_NAME)
 DOCKER_CACHE_BUCKET=i-dot-ai-docker-cache
 
-ECR_REPO_NAME=$(APP_NAME)
+ifeq ($(service),consult)
+    ECR_REPO_NAME=$(APP_NAME)
+else
+    ECR_REPO_NAME=$(APP_NAME)-$(service)
+endif
+
 DOCKER_BUILDER_CONTAINER=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
 
@@ -117,9 +122,15 @@ endif
 
 .PHONY: docker_build
 docker_build: ## Build the docker container for the specified service when running in CI/CD
+ifeq ($(service),consult)
 	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
 	--cache-to type=local,dest=$(cache) \
 	--cache-from type=local,src=$(cache) .
+else
+	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
+	--cache-to type=local,dest=$(cache) \
+	--cache-from type=local,src=$(cache) -f $(service)/Dockerfile .
+endif
 
 .PHONY: docker_build_local
 docker_build_local: ## Build the docker container for the specified service locally

@@ -50,4 +50,34 @@ data "terraform_remote_state" "account" {
   }
 }
 
+data "aws_caller_identity" "current" {}
 
+data "aws_region" "current" {}
+
+
+data "aws_secretsmanager_secret" "env_vars" {
+  name = "${local.name}-environment-variables"
+}
+
+data "aws_secretsmanager_secret_version" "env_vars" {
+  secret_id = data.aws_secretsmanager_secret.env_vars.id
+}
+
+data "archive_file" "submit_batch_job_archive" {
+  type        = "zip"
+  source_file = "${path.root}/../lambda/submit_batch_job.py"
+  output_path = "${path.root}/../lambda/submit_batch_job.zip"
+}
+
+data "archive_file" "slack_notifier_archive" {
+  type        = "zip"
+  source_file = "${path.root}/../lambda/slack_notifier.py"
+  output_path = "${path.root}/../lambda/slack_notifier.zip"
+}
+
+data "aws_ssm_parameter" "slack_webhook_url" {
+  name = "/i-dot-ai-${terraform.workspace}-consult/env_secrets/THEMEFINDER_SLACK_WEBHOOK_URL"
+  depends_on = [
+    aws_ssm_parameter.env_secrets 
+  ]
+}
