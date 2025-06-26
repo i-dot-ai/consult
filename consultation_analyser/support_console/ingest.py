@@ -410,7 +410,6 @@ def import_consultation(
         raise
 
 
-
 def get_all_folder_names_within_folder(folder_name: str, bucket_name: str) -> set:
     s3 = boto3.client("s3")
 
@@ -478,4 +477,3 @@ def send_job_to_sqs(consultation_code: str, job_type: str) -> dict:
     except Exception as e:
         logger.error(f"Error sending message to SQS: {str(e)}")
         raise e
-
