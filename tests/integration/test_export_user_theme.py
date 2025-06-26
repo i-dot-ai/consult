@@ -90,9 +90,9 @@ def test_export_user_theme(mock_boto_client, django_app):
 
 
 @pytest.mark.django_db
-@patch("django_rq.enqueue")
+@patch("django_q.tasks.async_task")
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
-def test_start_export_job(mock_boto_client, mock_enqueue):
+def test_start_export_job(mock_boto_client, mock_async_task):
     """Test that the export job is correctly enqueued"""
     from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 
@@ -113,13 +113,13 @@ def test_start_export_job(mock_boto_client, mock_enqueue):
     theme = factories.ThemeFactory(question=question)
     annotation.add_original_ai_themes([theme])
 
-    # Mock the enqueue to capture the call
-    mock_enqueue.return_value = None
+    # Mock the async_task to capture the call
+    mock_async_task.return_value = None
 
-    # Import and call the enqueue function directly
-    from django_rq import enqueue
+    # Import and call the async_task function directly
+    from django_q.tasks import async_task
 
-    enqueue(export_user_theme_job, question.id, "test_key")
+    async_task(export_user_theme_job, question.id, "test_key")
 
     # Verify the job was enqueued
-    mock_enqueue.assert_called_once_with(export_user_theme_job, question.id, "test_key")
+    mock_async_task.assert_called_once_with(export_user_theme_job, question.id, "test_key")

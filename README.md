@@ -16,7 +16,6 @@ For our core AI-pipeline used for topic modelling to classify consultation respo
 ### External dependencies
 
 - PostgreSQL (`brew install postgresql`)
-- redis (`brew install redis`)
 - GraphViz (`brew install graphviz`), for generating diagrams
 - precommit (`brew install pre-commit`)
 
@@ -74,12 +73,7 @@ make check_db
 
 ### Run the application
 
-Make sure redis is running:
-```
-brew services start redis
-```
-
-The database should also be running as described above.
+Make sure the database should also be running as described above.
 
 Then run:
 ```
