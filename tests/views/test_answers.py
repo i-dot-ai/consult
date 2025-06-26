@@ -741,7 +741,9 @@ def test_build_respondent_data():
     respondent = response.respondent
     question = response.question
     theme = ThemeFactory(question=question, name="Theme A")
-    ResponseAnnotationFactory(response=response, themes=[theme], sentiment="AGREEMENT", evidence_rich="YES")
+    ResponseAnnotationFactory(
+        response=response, themes=[theme], sentiment="AGREEMENT", evidence_rich="YES"
+    )
 
     actual = build_respondent_data(respondent=respondent, response=response)
     expected = {
@@ -750,7 +752,9 @@ def test_build_respondent_data():
         "sentiment_position": "AGREEMENT",
         "free_text_answer_text": "Response 1",
         "demographic_data": respondent.demographics or {},
-        "themes": [{"id": theme.id, "stance": None, "name": "Theme A", "description": theme.description}],
+        "themes": [
+            {"id": theme.id, "stance": None, "name": "Theme A", "description": theme.description}
+        ],
         "multiple_choice_answer": [],
         "evidenceRich": True,
     }
