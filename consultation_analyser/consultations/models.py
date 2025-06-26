@@ -1,6 +1,7 @@
 import uuid
 
 import faker as _faker
+from django.contrib.postgres.fields import ArrayField
 from django.core.validators import BaseValidator
 from django.db import models
 from django.utils import timezone
@@ -69,9 +70,9 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     # Question configuration
     has_free_text = models.BooleanField(default=True)
     has_multiple_choice = models.BooleanField(default=False)
-    # multiple_choice_options = models.JSONField(
-    #     null=True, blank=True
-    # )  # List of options when has_multiple_choice=True
+    multiple_choice_options = ArrayField(
+        models.TextField(null=False), null=True, default=None
+    )  # List of options when has_multiple_choice=True
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -136,7 +137,9 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
 
     # Response content
     free_text = models.TextField(blank=True)  # Free text response
-    # chosen_options = models.JSONField(default=list)  # Multiple choice selections
+    chosen_options = ArrayField(
+        models.TextField(null=False), null=True, default=None
+    )  # Multiple choice selections
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
