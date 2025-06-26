@@ -1066,7 +1066,6 @@ class IaiResponse extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         identifier: {type: String},
-        individual: {type: String},
         free_text_answer_text: {type: String},
         themes: {type: Array}, // theme.stance, theme.name, theme.description
         sentiment_position: {type: String},
@@ -1099,7 +1098,7 @@ class IaiResponse extends IaiLitBase {
                 width: 24px;
                 height: 24px;
             }
-            
+
             iai-response .answer,
             iai-response .answer {
                 line-height: 2em;
@@ -1157,7 +1156,6 @@ class IaiResponse extends IaiLitBase {
 
         // Prop defaults
         this.identifier = "";
-        this.individual = "";
         this.free_text_answer_text = "";
         this.themes = [];
         this.sentiment_position = "";
@@ -1224,12 +1222,12 @@ class IaiResponse extends IaiLitBase {
 
                 ${this.free_text_answer_text
                     ? x`
-                        <p 
+                        <p
                             class=${"govuk-body answer" + (this.skeleton ? " skeleton" : "")}
                             data-testid="free-text-answer"
                         >
                             <iai-expanding-text
-                                .text=${this.getHighlightedText(this.free_text_answer_text, this.searchValue)}    
+                                .text=${this.getHighlightedText(this.free_text_answer_text, this.searchValue)}
                                 .lines=${2}
                             ></iai-expanding-text>
                         </p>
@@ -3742,7 +3740,6 @@ class IaiResponseDashboard extends IaiLitBase {
         responses: { type: Array },
         responsesTotal: { type: Number },
         free_text_question_part: { type: Boolean },
-        has_individual_data: { type: Boolean },
         has_multiple_choice_question_part: { type: Boolean },
         multiple_choice_summary: { type: Array },
         fetchData: { type: Function },
@@ -3956,7 +3953,6 @@ class IaiResponseDashboard extends IaiLitBase {
         this.stanceOptions = [];
         this.demographicOptions = {};
         this.free_text_question_part = false;
-        this.has_individual_data = false;
         this.has_multiple_choice_question_part = false;
         this.multiple_choice_summary = [];
         this.fetchData = window.fetch.bind(window);
@@ -4145,18 +4141,6 @@ class IaiResponseDashboard extends IaiLitBase {
             visible = false;
         }
 
-        // filter by demographic
-        if (
-            this._demographicFilters.length > 0 &&
-            (
-                (this._demographicFilters.includes("individual") && response.individual) ||
-                (this._demographicFilters.includes("organisation") && !response.individual)
-            )
-        )
-        {
-            visible = false;
-        }
-
         // filter by themes selected
         if (this._themeFilters.length > 0) {
             if (!response.themes.find(theme => this._themeFilters.includes(theme.id))) {
@@ -4241,9 +4225,6 @@ class IaiResponseDashboard extends IaiLitBase {
     formatDemographicValue = (field, value) => {
         // Special formatting for boolean values
         if (value === "true" || value === "false") {
-            if (field === "individual") {
-                return value === "true" ? "Individual" : "Organisation";
-            }
             return value === "true" ? "Yes" : "No";
         }
         // Capitalize first letter for other values
@@ -4591,7 +4572,6 @@ class IaiResponseDashboard extends IaiLitBase {
                             ? [...Array(10).keys()].map(i => ({
                                 id: "skeleton-response",
                                 identifier: "skeleton-response",
-                                individual: "skeleton-individual",
                                 free_text_answer_text: "Skeleton Body".repeat(50),
                                 has_multiple_choice_question_part: false,
                                 skeleton: true,
@@ -4604,7 +4584,6 @@ class IaiResponseDashboard extends IaiLitBase {
                                 role="listitem"
                                 .id=${response.inputId}
                                 .identifier=${response.identifier}
-                                .individual=${response.individual}
                                 .sentiment_position=${response.sentiment_position}
                                 .free_text_answer_text=${response.free_text_answer_text}
                                 .demographic_data=${response.demographic_data}

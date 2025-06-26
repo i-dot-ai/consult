@@ -2,7 +2,7 @@ import { html } from 'lit';
 
 import IaiResponseDashboard from './iai-response-dashboard.lit.csr.mjs';
 
-const mockFetch = () => 
+const mockFetch = () =>
   Promise.resolve({
     ok: true,
     status: 200,
@@ -77,7 +77,6 @@ export default {
         .responsesTotal=${args.responsesTotal}
         .responsesFilteredTotal=${args.responsesFilteredTotal}
         .free_text_question_part=${args.free_text_question_part}
-        .has_individual_data=${args.has_individual_data}
         .has_multiple_choice_question_part=${args.has_multiple_choice_question_part}
         .multiple_choice_summary=${args.multiple_choice_summary}
         .fetchData=${mockFetch}
@@ -100,7 +99,6 @@ export const Default = {
     responsesTotal: 100,
     responsesFilteredTotal: 100,
     free_text_question_part: true,
-    has_individual_data: true,
     has_multiple_choice_question_part: true,
     multiple_choice_summary: TEST_MULTI_CHOICE,
   },
