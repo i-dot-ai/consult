@@ -166,7 +166,7 @@ def build_respondent_data(respondent: models.Respondent, response: models.Respon
         "free_text_answer_text": response.free_text or "",
         "demographic_data": respondent.demographics or {},
         "themes": [],
-        "multiple_choice_answer": [response.chosen_options] if response.chosen_options else [],
+        "multiple_choice_answer": response.chosen_options or [],
         "evidenceRich": False,
     }
 
