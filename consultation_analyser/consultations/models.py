@@ -1,4 +1,3 @@
-import datetime
 import uuid
 
 import faker as _faker
@@ -32,35 +31,6 @@ class TimeStampedModel(models.Model):
     class Meta:
         abstract = True
         ordering = ["created_at"]
-
-
-class SlugFromTextModel(models.Model):
-    text = models.CharField(max_length=256)
-    slug = models.SlugField(null=False, editable=False, max_length=256)
-
-    def save(self, *args, **kwargs):
-        # Generate slug from text - ensure unique by adding timestamp
-        # if needed (usually won't be). Don't allow empty slug.
-        ModelClass = self.__class__
-        cropped_length = 220
-        cropped_text = self.text[:cropped_length]
-        generated_slug = slugify(cropped_text)
-        if self.pk:
-            slug_exists = (
-                ModelClass.objects.filter(slug=generated_slug).exclude(pk=self.pk).exists()
-            )
-        else:
-            slug_exists = ModelClass.objects.filter(slug=generated_slug).exists()
-        timestamp = datetime.datetime.now().strftime("%Y%m%d-%H%M%S%f")
-        if not generated_slug:
-            generated_slug = timestamp
-        elif slug_exists:
-            generated_slug = f"{generated_slug}-{timestamp}"
-        self.slug = generated_slug
-        return super().save(*args, **kwargs)
-
-    class Meta:
-        abstract = True
 
 
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):

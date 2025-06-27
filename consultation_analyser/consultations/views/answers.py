@@ -345,6 +345,7 @@ def index(
         "csv_button_data": [],  # Empty - loaded via AJAX
         "multiple_choice_summary": [],  # Empty - loaded via AJAX
         "stance_options": models.ResponseAnnotation.Sentiment.names,
+        "has_individual_data": False,  # Shouldn't use this, demographic filters work more generally
     }
 
     return render(request, "consultations/answers/index.html", context)
