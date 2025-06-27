@@ -13,7 +13,8 @@ from consultation_analyser.consultations.models import (
     Respondent,
     Response,
     ResponseAnnotation,
-    Theme, ResponseAnnotationTheme,
+    ResponseAnnotationTheme,
+    Theme,
 )
 
 logger = logging.getLogger("import")
@@ -175,8 +176,6 @@ def validate_consultation_structure(
     return is_valid, errors
 
 
-
-
 def import_mapping(
     consultation_id: UUID,
     question_id: UUID,
@@ -236,16 +235,14 @@ def import_mapping(
                 else ResponseAnnotation.EvidenceRich.NO
             )
 
-
         # Create annotations
         annotation_theme_mappings = []
         response = Response.objects.filter(question_id=question_id).values_list(
-            'id', 'respondent__themefinder_id'
+            "id", "respondent__themefinder_id"
         )
 
         annotations_to_save = []
         for response_id, themefinder_id in response:
-
             annotation = ResponseAnnotation(
                 response=response_id,
                 sentiment=sentiment_dict.get(themefinder_id, ResponseAnnotation.Sentiment.UNCLEAR),
@@ -257,28 +254,21 @@ def import_mapping(
             for key in mapping_dict.get(themefinder_id, []):
                 annotation_theme_mappings.append((annotation.id, key))
 
-
         ResponseAnnotation.objects.bulk_create(annotations_to_save)
 
-
-        existing_themes = Theme.objects.filter(
-            question_id=question_id        ).values_list('key', 'pk')
+        existing_themes = Theme.objects.filter(question_id=question_id).values_list("key", "pk")
 
         theme_key_dict = dict(existing_themes)
-
 
         # Add theme relationships
         themes_to_save = []
         for annotation_id, key in annotation_theme_mappings:
-            if theme_id:=theme_key_dict.get(key):
+            if theme_id := theme_key_dict.get(key):
                 response_annotation_theme = ResponseAnnotationTheme.objects.create(
-                    response_annotation_id=annotation_id,
-                    theme_id=theme_id
+                    response_annotation_id=annotation_id, theme_id=theme_id
                 )
                 themes_to_save.append(response_annotation_theme)
         ResponseAnnotationTheme.objects.bulk_create(annotations_to_save)
-
-
 
     except Exception as e:
         logger.error(
@@ -446,7 +436,11 @@ def import_questions(
             )
             output_folder = f"{outputs_path}question_part_{question_num_str}/"
             queue.enqueue(
-                import_mapping, consultation.id, question.id, output_folder, depends_on=responses_tasks
+                import_mapping,
+                consultation.id,
+                question.id,
+                output_folder,
+                depends_on=responses_tasks,
             )
 
         logger.info(f"Imported {len(question_folders)} questions")
