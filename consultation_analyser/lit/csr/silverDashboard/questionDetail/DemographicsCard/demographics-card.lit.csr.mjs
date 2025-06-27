@@ -90,7 +90,7 @@ export default class DemographicsCard extends IaiLitBase {
                                         .value=${this.getPercentage(count, totalCount)}
                                     ></iai-silver-progress-bar>
                                     <span>
-                                        ${count}
+                                        ${count.toLocaleString()}
                                     </span>
                                 </div>
                             </li>
