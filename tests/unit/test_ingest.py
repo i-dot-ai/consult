@@ -437,7 +437,7 @@ class TestMappingImport:
         Response.objects.create(respondent=respondent_2, question=question)
 
         # Run the import
-        import_mapping(consultation, question, output_folder)
+        import_mapping(consultation.id, question.id, output_folder)
 
         # Verify results
         annotations = ResponseAnnotation.objects.filter(

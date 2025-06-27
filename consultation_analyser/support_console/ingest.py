@@ -1,5 +1,6 @@
 import json
 import logging
+from uuid import UUID
 
 import boto3
 from django.conf import settings
@@ -12,7 +13,7 @@ from consultation_analyser.consultations.models import (
     Respondent,
     Response,
     ResponseAnnotation,
-    Theme,
+    Theme, ResponseAnnotationTheme,
 )
 
 logger = logging.getLogger("import")
@@ -174,85 +175,23 @@ def validate_consultation_structure(
     return is_valid, errors
 
 
-def save_mapping_data(
-    consultation: Consultation,
-    question: Question,
-    mapping_dict: dict,
-    sentiment_dict: dict,
-    evidence_dict: dict,
-    responses: list[Response],
-):
-    """
-    Creates ResponseAnnotations in batches
-
-    Args:
-        consultation: Consultation object for mapping
-        question: Question object for mapping
-        mapping_dict: dict containing mapping data
-        sentiment_dict: dict containing sentiment data
-        evidence_dict: dict containing evidence data
-        responses: list of Responses to be annotated
-    """
-    logger.info(
-        f"Starting mapping storage for consultation {consultation.id} with question {question.id}"
-    )
-    try:
-        annotations_to_save = []
-        annotation_theme_mappings = []
-
-        for response_obj in responses:
-            themefinder_id = response_obj.respondent.themefinder_id
-
-            annotation = ResponseAnnotation(
-                response=response_obj,
-                sentiment=sentiment_dict.get(themefinder_id, ResponseAnnotation.Sentiment.UNCLEAR),
-                evidence_rich=evidence_dict.get(themefinder_id, ResponseAnnotation.EvidenceRich.NO),
-                human_reviewed=False,
-            )
-            annotations_to_save.append(annotation)
-
-            # Store theme mappings for after bulk create
-            theme_keys = mapping_dict.get(themefinder_id, [])
-            annotation_theme_mappings.append((annotation, theme_keys))
-
-        # Bulk create annotations
-        created_annotations = ResponseAnnotation.objects.bulk_create(annotations_to_save)
-
-        # Add theme relationships
-        themes = Theme.objects.filter(question=question)
-        theme_dict = {theme.key: theme for theme in themes}
-        for i, (annotation, theme_keys) in enumerate(annotation_theme_mappings):
-            created_annotation = created_annotations[i]
-            themes_to_add = [theme_dict[key] for key in theme_keys if key in theme_dict]
-
-            if themes_to_add:
-                created_annotation.themes.set(themes_to_add)
-
-        logger.info(
-            f"Imported {len(created_annotations)} response annotations for question {question.number}"
-        )
-    except Exception as e:
-        logger.error(
-            f"Error importing mapping for consultation {consultation.title}, question {question.number}: {str(e)}"
-        )
-        raise
 
 
 def import_mapping(
-    consultation: Consultation,
-    question: Question,
+    consultation_id: UUID,
+    question_id: UUID,
     output_folder: str,
 ):
     """
     Import mapping data for a Consultation Question
 
     Args:
-        consultation: Consultation object for mapping
-        question: Question object for mapping
+        consultation_id: Consultation object for mapping
+        question_id: Question object for mapping
         output_folder: S3 folder name containing the output data
     """
     logger.info(
-        f"Starting mapping import for consultation {consultation.title}, question {question.number})"
+        f"Starting mapping import for consultation {consultation_id}, question {question_id})"
     )
 
     bucket_name = settings.AWS_BUCKET_NAME
@@ -297,40 +236,56 @@ def import_mapping(
                 else ResponseAnnotation.EvidenceRich.NO
             )
 
-        # Create annotations
-        responses = Response.objects.filter(question=question)
-        # save_mapping_data
-        queue = get_queue(default_timeout=1500)
-        responses_data = []
 
-        for response in responses:
-            responses_data.append(response)
-            if len(responses_data) == DEFAULT_BATCH_SIZE:
-                logger.info("Enqueuing import mapping batch")
-                queue.enqueue(
-                    save_mapping_data,
-                    consultation,
-                    question,
-                    mapping_dict,
-                    sentiment_dict,
-                    evidence_dict,
-                    responses=responses_data,
-                )
-                responses_data = []
-        if responses_data:  # Any remaining lines < batch size
-            logger.info("Enqueuing final import mapping batch")
-            queue.enqueue(
-                save_mapping_data,
-                consultation,
-                question,
-                mapping_dict,
-                sentiment_dict,
-                evidence_dict,
-                responses=responses_data,
+        # Create annotations
+        annotation_theme_mappings = []
+        response = Response.objects.filter(question_id=question_id).values_list(
+            'id', 'respondent__themefinder_id'
+        )
+
+        annotations_to_save = []
+        for response_id, themefinder_id in response:
+
+            annotation = ResponseAnnotation(
+                response=response_id,
+                sentiment=sentiment_dict.get(themefinder_id, ResponseAnnotation.Sentiment.UNCLEAR),
+                evidence=evidence_dict.get(themefinder_id, ResponseAnnotation.EvidenceRich.NO),
+                human_reviewed=False,
             )
+            annotations_to_save.append(annotation)
+
+            for key in mapping_dict.get(themefinder_id, []):
+                annotation_theme_mappings.append((annotation.id, key))
+
+
+        ResponseAnnotation.objects.bulk_create(annotations_to_save)
+
+        distinct_theme_keys = {key for _, key in annotation_theme_mappings}
+
+        existing_themes = Theme.objects.filter(
+            question_id=question_id,
+            key__in=distinct_theme_keys
+        ).values_list('key', 'pk')
+
+        theme_key_dict = dict(existing_themes)
+
+
+        # Add theme relationships
+        themes_to_save = []
+        for annotation_id, key in annotation_theme_mappings:
+            if theme_id:=theme_key_dict.get(key):
+                response_annotation_theme = ResponseAnnotationTheme.objects.create(
+                    response_annotation_id=annotation_id,
+                    theme_id=theme_id
+                )
+                themes_to_save.append(response_annotation_theme)
+        ResponseAnnotationTheme.objects.bulk_create(annotations_to_save)
+
+
+
     except Exception as e:
         logger.error(
-            f"Error importing mapping for consultation {consultation.title}, question {question.number}: {str(e)}"
+            f"Error importing mapping for consultation {consultation_id}, question {question_id}: {str(e)}"
         )
         raise
 
@@ -494,7 +449,7 @@ def import_questions(
             )
             output_folder = f"{outputs_path}question_part_{question_num_str}/"
             queue.enqueue(
-                import_mapping, consultation, question, output_folder, depends_on=responses_tasks
+                import_mapping, consultation.id, question.id, output_folder, depends_on=responses_tasks
             )
 
         logger.info(f"Imported {len(question_folders)} questions")
