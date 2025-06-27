@@ -278,16 +278,16 @@ def import_mapping(
 
 
 def import_responses(
-    consultation: Consultation,
-    question: Question,
+    consultation_id: UUID,
+    question_id: UUID,
     responses_data: list,
 ):
     """
     Import response data for a Consultation Question.
 
     Args:
-        consultation: Consultation object for response
-        question: Question object for response
+        consultation_id: Consultation for response
+        question_id: Question for response
         responses_data: list of responses data
     """
 
@@ -300,7 +300,7 @@ def import_responses(
 
         # Get respondents
         respondents = Respondent.objects.filter(
-            consultation=consultation, themefinder_id__in=themefinder_ids
+            consultation_id=consultation_id, themefinder_id__in=themefinder_ids
         )
         respondent_dict = {r.themefinder_id: r for r in respondents}
 
@@ -317,18 +317,18 @@ def import_responses(
             responses_to_save.append(
                 Response(
                     respondent=respondent_dict[themefinder_id],
-                    question=question,
+                    question_id=question_id,
                     free_text=response_data.get("text", ""),
                     chosen_options=response_data.get("chosen_options", []),
                 )
             )
 
         Response.objects.bulk_create(responses_to_save)
-        logger.info(f"Imported {len(responses_to_save)} responses for question {question.number}")
+        logger.info(f"Imported {len(responses_to_save)} responses for question {question_id}")
 
     except Exception as e:
         logger.error(
-            f"Error importing responses for consultation {consultation.title}, question {question.number}: {str(e)}"
+            f"Error importing responses for consultation {consultation_id}, question {question_id}: {str(e)}"
         )
         raise
 
@@ -419,14 +419,14 @@ def import_questions(
                 if len(lines) == DEFAULT_BATCH_SIZE:
                     logger.info("Enqueuing import responses batch")
                     responses_task = queue.enqueue(
-                        import_responses, consultation, question, responses_data=lines
+                        import_responses, consultation.id, question.id, responses_data=lines
                     )
                     responses_tasks.append(responses_task)
                     lines = []
             if lines:  # Any remaining lines < batch size
                 logger.info("Enqueuing final import responses batch")
                 responses_task = queue.enqueue(
-                    import_responses, consultation, question, responses_data=lines
+                    import_responses, consultation.id, question.id, responses_data=lines
                 )
                 responses_tasks.append(responses_task)
             # lines = []

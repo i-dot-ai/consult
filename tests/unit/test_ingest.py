@@ -344,8 +344,8 @@ class TestQuestionsImport:
         assert len(mock_queue.mock_calls) == 2
         assert mock_queue.enqueue.call_args_list[0] == call(
             import_responses,
-            consultation,
-            questions.first(),
+            consultation.id,
+            questions.first().id,
             "app_data/test/inputs/question_part_1/",
         )
 
@@ -408,7 +408,7 @@ class TestResponsesImport:
         Respondent.objects.create(consultation=consultation, themefinder_id=2)
 
         # Run the import
-        import_responses(consultation, question, question_folder)
+        import_responses(consultation.id, question.id, question_folder)
 
         # Verify results
         responses = Response.objects.filter(question=question)
