@@ -37,11 +37,11 @@ export default class Panel extends IaiLitBase {
     render() {
         return html`
             <style>
-                iai-silver-panel .panel {
+                #${this.contentId} {
                     border-color: ${this.borderColor || "var(--iai-silver-color-mid-light)"};
                 }
             </style>
-            <div class="panel">
+            <div id=${this.contentId} class="panel">
                 <slot name="content"></slot>
             </div>
         `
