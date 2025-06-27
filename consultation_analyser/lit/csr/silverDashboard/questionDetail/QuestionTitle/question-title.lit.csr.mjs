@@ -121,13 +121,13 @@ export default class QuestionTitle extends IaiLitBase {
     render() {
         return html`
             <style>
-                iai-silver-question-title .tag.status {
+                #${this.contentId} .tag.status {
                     color: ${this.getTagColor(this.status).primary};
                     background: ${this.getTagColor(this.status).secondary};
                     border: 1px solid ${this.getTagColor(this.status).primary};
                 }
             </style>
-            <iai-silver-panel>
+            <iai-silver-panel id=${this.contentId}>
                 <div slot="content">
                     <div class="title-container">
                         <iai-silver-title
