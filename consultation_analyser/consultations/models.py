@@ -199,15 +199,15 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
     @classmethod
-    def rebuild_for_consultation(cls, consultation: "Consultation") -> int:
+    def rebuild_for_consultation(cls, consultation_id: uuid.UUID) -> int:
         """Rebuild demographic options for a consultation from respondent data"""
         # Clear existing options
-        cls.objects.filter(consultation=consultation).delete()
+        cls.objects.filter(consultation_id=consultation_id).delete()
 
         # Collect unique demographic field/value pairs
         demographic_options_to_create = set()
 
-        respondents = Respondent.objects.filter(consultation=consultation)
+        respondents = Respondent.objects.filter(consultation_id=consultation_id)
         for respondent in respondents:
             if respondent.demographics:
                 for field_name, field_value in respondent.demographics.items():
@@ -215,7 +215,7 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
 
         # Bulk create new options
         options_to_save = [
-            cls(consultation=consultation, field_name=field_name, field_value=field_value)
+            cls(consultation_id=consultation_id, field_name=field_name, field_value=field_value)
             for field_name, field_value in demographic_options_to_create
         ]
 

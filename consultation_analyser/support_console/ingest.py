@@ -334,7 +334,7 @@ def import_responses(
 
 
 def import_questions(
-    consultation: Consultation,
+    consultation_id: UUID,
     consultation_code: str,
     timestamp: str,
 ):
@@ -342,12 +342,12 @@ def import_questions(
     Import question data for a consultation.
 
     Args:
-        consultation: Consultation object for questions
+        consultation_id: Consultation for questions
         consultation_code: S3 folder name containing the consultation data
         timestamp: Timestamp folder name for the AI outputs
     """
 
-    logger.info(f"Starting question import for consultation {consultation.title})")
+    logger.info(f"Starting question import for consultation {consultation_id})")
 
     bucket_name = settings.AWS_BUCKET_NAME
     base_path = f"app_data/{consultation_code}/"
@@ -373,7 +373,7 @@ def import_questions(
                 raise ValueError(f"Question text is required for question {question_number}")
 
             question = Question.objects.create(
-                consultation=consultation,
+                consultation_id=consultation_id,
                 text=question_text,
                 slug=f"question-{question_number}",
                 number=question_number,
@@ -408,7 +408,7 @@ def import_questions(
             responses_tasks = []
 
             logger.info(
-                f"Getting responses data for consultation {consultation.title}, question {question.number}"
+                f"Getting responses data for consultation {consultation_id}, question {question.number}"
             )
             responses_file_key = f"{question_folder}responses.jsonl"
             response = s3_client.get_object(Bucket=bucket_name, Key=responses_file_key)
@@ -419,25 +419,25 @@ def import_questions(
                 if len(lines) == DEFAULT_BATCH_SIZE:
                     logger.info("Enqueuing import responses batch")
                     responses_task = queue.enqueue(
-                        import_responses, consultation.id, question.id, responses_data=lines
+                        import_responses, consultation_id, question.id, responses_data=lines
                     )
                     responses_tasks.append(responses_task)
                     lines = []
             if lines:  # Any remaining lines < batch size
                 logger.info("Enqueuing final import responses batch")
                 responses_task = queue.enqueue(
-                    import_responses, consultation.id, question.id, responses_data=lines
+                    import_responses, consultation_id, question.id, responses_data=lines
                 )
                 responses_tasks.append(responses_task)
             # lines = []
 
             logger.info(
-                f"Creating mapping task for {consultation.title}, question {question.number}"
+                f"Creating mapping task for {consultation_id}, question {question.number}"
             )
             output_folder = f"{outputs_path}question_part_{question_num_str}/"
             queue.enqueue(
                 import_mapping,
-                consultation.id,
+                consultation_id,
                 question.id,
                 output_folder,
                 depends_on=responses_tasks,
@@ -450,15 +450,15 @@ def import_questions(
         raise
 
 
-def import_respondents(consultation: Consultation, respondents_data: list):
+def import_respondents(consultation_id: UUID, respondents_data: list):
     """
     Import respondent data for a consultation.
 
     Args:
-        consultation: Consultation object for respondents
+        consultation_id: Consultation object for respondents
         respondents_data: list of respondent data
     """
-    logger.info(f"Starting import_respondents batch for consultation {consultation.title})")
+    logger.info(f"Starting import_respondents batch for consultation {consultation_id})")
 
     try:
         respondents_to_save = []
@@ -472,7 +472,7 @@ def import_respondents(consultation: Consultation, respondents_data: list):
 
             respondents_to_save.append(
                 Respondent(
-                    consultation=consultation,
+                    consultation_id=consultation_id,
                     themefinder_id=themefinder_id,
                     demographics=demographics,
                 )
@@ -485,10 +485,10 @@ def import_respondents(consultation: Consultation, respondents_data: list):
         logger.info(f"Imported {respondent_count} respondents")
 
         # Build demographic options from respondent data
-        demographic_options_count = DemographicOption.rebuild_for_consultation(consultation)
+        demographic_options_count = DemographicOption.rebuild_for_consultation(consultation_id)
         logger.info(f"Created {demographic_options_count} demographic options")
     except Exception as e:
-        logger.error(f"Error importing respondent data for {consultation.slug}: {str(e)}")
+        logger.error(f"Error importing respondent data for {consultation_id}: {str(e)}")
         raise
 
 
@@ -541,21 +541,21 @@ def create_consultation(
             if len(lines) == DEFAULT_BATCH_SIZE:
                 logger.info("Enqueuing import respondents batch")
                 respondents_task = queue.enqueue(
-                    import_respondents, consultation, respondents_data=lines
+                    import_respondents, consultation.id, respondents_data=lines
                 )
                 respondents_tasks.append(respondents_task)
                 lines = []
         if lines:  # Any remaining lines < batch size
             logger.info("Enqueuing final import respondents batch")
             respondents_task = queue.enqueue(
-                import_respondents, consultation, respondents_data=lines
+                import_respondents, consultation.id, respondents_data=lines
             )
             respondents_tasks.append(respondents_task)
 
         # Enqueue questions task, to occur when respondents task complete
         queue.enqueue(
             import_questions,
-            consultation,
+            consultation.id,
             consultation_code,
             timestamp,
             depends_on=respondents_tasks,

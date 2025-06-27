@@ -276,7 +276,7 @@ class TestRespondentsImport:
         consultation_code = "test"
 
         # Run the import
-        import_respondents(consultation, consultation_code)
+        import_respondents(consultation.id, consultation_code)
 
         # Verify results
         respondents = Respondent.objects.filter(consultation=consultation)
@@ -298,7 +298,7 @@ class TestRespondentsImport:
         consultation_code = "test"
 
         with pytest.raises(Exception) as exc_info:
-            import_respondents(consultation, consultation_code)
+            import_respondents(consultation.id, consultation_code)
 
         assert "S3 Error" in str(exc_info.value)
 
@@ -329,7 +329,7 @@ class TestQuestionsImport:
         mock_queue.enqueue = MagicMock()
 
         # Run the import
-        import_questions(consultation, consultation_code, "2024-01-01")
+        import_questions(consultation.id, consultation_code, "2024-01-01")
 
         # Verify results
         questions = Question.objects.filter(consultation=consultation)
@@ -384,7 +384,7 @@ class TestQuestionsImport:
         consultation_code = "test"
 
         with pytest.raises(ValueError) as exc_info:
-            import_questions(consultation, consultation_code, "2024-01-01")
+            import_questions(consultation.id, consultation_code, "2024-01-01")
 
         assert "Question text is required" in str(exc_info.value)
 
