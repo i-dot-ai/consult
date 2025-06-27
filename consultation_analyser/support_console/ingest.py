@@ -260,12 +260,9 @@ def import_mapping(
 
         ResponseAnnotation.objects.bulk_create(annotations_to_save)
 
-        distinct_theme_keys = {key for _, key in annotation_theme_mappings}
 
         existing_themes = Theme.objects.filter(
-            question_id=question_id,
-            key__in=distinct_theme_keys
-        ).values_list('key', 'pk')
+            question_id=question_id        ).values_list('key', 'pk')
 
         theme_key_dict = dict(existing_themes)
 
