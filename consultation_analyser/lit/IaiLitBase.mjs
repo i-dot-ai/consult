@@ -12,11 +12,14 @@ export default class IaiLitBase extends LitElement {
             --iai-colour-pink-transparent-mid: #F0B5D8;
 
             --iai-silver-color-light: #f8f9fa;
+            --iai-silver-color-mid-light: #e5e5e5;
             --iai-silver-color-mid: rgba(0, 0, 0, 0.3);
             --iai-silver-color-dark: #030213;
             --iai-silver-color-text: rgb(95, 99, 104);
-            --iai-silver-color-teal: #0b8478;
-            --iai-silver-color-teal-light: #e9f2f1;
+            --iai-silver-color-teal: #00786f;
+            --iai-silver-color-teal-light: #f1fdfa;
+            --iai-silver-color-accent: #c50978;
+            --iai-silver-color-accent-light: #fcf1f6;
         }
 
         .visually-hidden {
@@ -87,5 +90,12 @@ export default class IaiLitBase extends LitElement {
 
     accessibleKeyPressed = (key) => {
         return key === "Enter" || key === " ";
+    }
+
+    getPercentage = (partialValue, totalValue) => {
+        if (totalValue === 0) {
+            return 0;
+        }
+        return Math.round(((partialValue / totalValue) * 100));
     }
 }
