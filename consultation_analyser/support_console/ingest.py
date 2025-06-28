@@ -300,15 +300,12 @@ def import_mapping(
         # Create annotations
         responses = Response.objects.filter(question=question)
         # save_mapping_data
-        queue = get_queue(default_timeout=1500)
         responses_data = []
 
         for response in responses:
             responses_data.append(response)
             if len(responses_data) == DEFAULT_BATCH_SIZE:
-                logger.info("Enqueuing import mapping batch")
-                queue.enqueue(
-                    save_mapping_data,
+                save_mapping_data(
                     consultation,
                     question,
                     mapping_dict,
@@ -318,9 +315,7 @@ def import_mapping(
                 )
                 responses_data = []
         if responses_data:  # Any remaining lines < batch size
-            logger.info("Enqueuing final import mapping batch")
-            queue.enqueue(
-                save_mapping_data,
+            save_mapping_data(
                 consultation,
                 question,
                 mapping_dict,
@@ -391,6 +386,82 @@ def import_responses(
         raise
 
 
+def import_question(
+    consultation: Consultation, bucket_name: str, question_folder: str, outputs_path: str
+):
+    s3_client = boto3.client("s3")
+
+    question_num_str = question_folder.split("/")[-2].replace("question_part_", "")
+    question_number = int(question_num_str)
+
+    logger.info(f"Processing question {question_number}")
+
+    question_file_key = f"{question_folder}question.json"
+    response = s3_client.get_object(Bucket=bucket_name, Key=question_file_key)
+    question_data = json.loads(response["Body"].read())
+
+    question_text = question_data.get("question_text", "")
+    if not question_text:
+        raise ValueError(f"Question text is required for question {question_number}")
+
+    question = Question.objects.create(
+        consultation=consultation,
+        text=question_text,
+        slug=f"question-{question_number}",
+        number=question_number,
+        has_free_text=True,  # Default for now
+        has_multiple_choice=False,  # Default for now
+        multiple_choice_options=None,
+    )
+
+    # Import themes
+    # TODO: decide whether to split this out into a new task
+    output_folder = f"{outputs_path}question_part_{question_num_str}/"
+    themes_file_key = f"{output_folder}themes.json"
+    response = s3_client.get_object(Bucket=bucket_name, Key=themes_file_key)
+    theme_data = json.loads(response["Body"].read())
+
+    themes_to_save = []
+    for theme in theme_data:
+        themes_to_save.append(
+            Theme(
+                question=question,
+                name=theme["theme_name"],
+                description=theme["theme_description"],
+                key=theme["theme_key"],
+            )
+        )
+
+    themes = Theme.objects.bulk_create(themes_to_save)
+    logger.info(f"Imported {len(themes)} themes for question {question_number}")
+
+    responses_tasks = []
+
+    logger.info(
+        f"Getting responses data for consultation {consultation.title}, question {question.number}"
+    )
+    responses_file_key = f"{question_folder}responses.jsonl"
+    response = s3_client.get_object(Bucket=bucket_name, Key=responses_file_key)
+    lines = []
+
+    for line in response["Body"].iter_lines():
+        lines.append(line)
+        if len(lines) == DEFAULT_BATCH_SIZE:
+            logger.info("Enqueuing import responses batch")
+            responses_task = import_responses(consultation, question, responses_data=lines)
+            responses_tasks.append(responses_task)
+            lines = []
+    if lines:  # Any remaining lines < batch size
+        logger.info("Enqueuing final import responses batch")
+        responses_task = import_responses(consultation, question, responses_data=lines)
+        responses_tasks.append(responses_task)
+    # lines = []
+
+    logger.info(f"Creating mapping task for {consultation.title}, question {question.number}")
+    output_folder = f"{outputs_path}question_part_{question_num_str}/"
+    import_mapping(consultation, question, output_folder)
+
+
 def import_questions(
     consultation: Consultation,
     consultation_code: str,
@@ -411,90 +482,17 @@ def import_questions(
     base_path = f"app_data/{consultation_code}/"
     inputs_path = f"{base_path}inputs/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
-
+    queue = get_queue(default_timeout=1500)
     try:
-        s3_client = boto3.client("s3")
         question_folders = get_question_folders(inputs_path, bucket_name)
 
         for question_folder in question_folders:
-            question_num_str = question_folder.split("/")[-2].replace("question_part_", "")
-            question_number = int(question_num_str)
-
-            logger.info(f"Processing question {question_number}")
-
-            question_file_key = f"{question_folder}question.json"
-            response = s3_client.get_object(Bucket=bucket_name, Key=question_file_key)
-            question_data = json.loads(response["Body"].read())
-
-            question_text = question_data.get("question_text", "")
-            if not question_text:
-                raise ValueError(f"Question text is required for question {question_number}")
-
-            question = Question.objects.create(
-                consultation=consultation,
-                text=question_text,
-                slug=f"question-{question_number}",
-                number=question_number,
-                has_free_text=True,  # Default for now
-                has_multiple_choice=False,  # Default for now
-                multiple_choice_options=None,
-            )
-
-            # Import themes
-            # TODO: decide whether to split this out into a new task
-            output_folder = f"{outputs_path}question_part_{question_num_str}/"
-            themes_file_key = f"{output_folder}themes.json"
-            response = s3_client.get_object(Bucket=bucket_name, Key=themes_file_key)
-            theme_data = json.loads(response["Body"].read())
-
-            themes_to_save = []
-            for theme in theme_data:
-                themes_to_save.append(
-                    Theme(
-                        question=question,
-                        name=theme["theme_name"],
-                        description=theme["theme_description"],
-                        key=theme["theme_key"],
-                    )
-                )
-
-            themes = Theme.objects.bulk_create(themes_to_save)
-            logger.info(f"Imported {len(themes)} themes for question {question_number}")
-
-            # Get response data and queue batches of importing
-            queue = get_queue(default_timeout=1500)
-            responses_tasks = []
-
-            logger.info(
-                f"Getting responses data for consultation {consultation.title}, question {question.number}"
-            )
-            responses_file_key = f"{question_folder}responses.jsonl"
-            response = s3_client.get_object(Bucket=bucket_name, Key=responses_file_key)
-            lines = []
-
-            for line in response["Body"].iter_lines():
-                lines.append(line)
-                if len(lines) == DEFAULT_BATCH_SIZE:
-                    logger.info("Enqueuing import responses batch")
-                    responses_task = queue.enqueue(
-                        import_responses, consultation, question, responses_data=lines
-                    )
-                    responses_tasks.append(responses_task)
-                    lines = []
-            if lines:  # Any remaining lines < batch size
-                logger.info("Enqueuing final import responses batch")
-                responses_task = queue.enqueue(
-                    import_responses, consultation, question, responses_data=lines
-                )
-                responses_tasks.append(responses_task)
-            # lines = []
-
-            logger.info(
-                f"Creating mapping task for {consultation.title}, question {question.number}"
-            )
-            output_folder = f"{outputs_path}question_part_{question_num_str}/"
             queue.enqueue(
-                import_mapping, consultation, question, output_folder, depends_on=responses_tasks
+                import_question,
+                consultation,
+                bucket_name,
+                question_folder,
+                outputs_path,
             )
 
         logger.info(f"Imported {len(question_folders)} questions")
@@ -576,8 +574,6 @@ def create_consultation(
 
         logger.info(f"Created consultation: {consultation.title} (ID: {consultation.id})")
 
-        # Get respondents data and queue task
-        queue = get_queue(default_timeout=1500)
         respondents_tasks = []
 
         logger.info(f"Getting respondents data for: {consultation.title} (ID: {consultation.id})")
@@ -593,26 +589,18 @@ def create_consultation(
         for line in response["Body"].iter_lines():
             lines.append(line)
             if len(lines) == DEFAULT_BATCH_SIZE:
-                logger.info("Enqueuing import respondents batch")
-                respondents_task = queue.enqueue(
-                    import_respondents, consultation, respondents_data=lines
-                )
+                respondents_task = import_respondents(consultation, respondents_data=lines)
                 respondents_tasks.append(respondents_task)
                 lines = []
         if lines:  # Any remaining lines < batch size
-            logger.info("Enqueuing final import respondents batch")
-            respondents_task = queue.enqueue(
-                import_respondents, consultation, respondents_data=lines
-            )
+            respondents_task = import_respondents(consultation, respondents_data=lines)
             respondents_tasks.append(respondents_task)
 
         # Enqueue questions task, to occur when respondents task complete
-        queue.enqueue(
-            import_questions,
+        import_questions(
             consultation,
             consultation_code,
             timestamp,
-            depends_on=respondents_tasks,
         )
 
     except Exception as e:
