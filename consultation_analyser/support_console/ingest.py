@@ -19,6 +19,8 @@ from consultation_analyser.consultations.models import (
 
 logger = logging.getLogger("import")
 DEFAULT_BATCH_SIZE = 10000
+bucket_name = settings.AWS_BUCKET_NAME
+s3_client = boto3.client("s3")
 
 
 def get_question_folders(inputs_path: str, bucket_name: str) -> list[str]:
@@ -193,10 +195,8 @@ def import_mapping(
         f"Starting mapping import for consultation {consultation_id}, question {question_id})"
     )
 
-    bucket_name = settings.AWS_BUCKET_NAME
 
     try:
-        s3_client = boto3.client("s3")
 
         mapping_file_key = f"{output_folder}mapping.jsonl"
         sentiment_file_key = f"{output_folder}sentiment.jsonl"
@@ -349,13 +349,11 @@ def import_questions(
 
     logger.info(f"Starting question import for consultation {consultation_id})")
 
-    bucket_name = settings.AWS_BUCKET_NAME
     base_path = f"app_data/{consultation_code}/"
     inputs_path = f"{base_path}inputs/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
 
     try:
-        s3_client = boto3.client("s3")
         question_folders = get_question_folders(inputs_path, bucket_name)
 
         for question_folder in question_folders:
@@ -404,7 +402,6 @@ def import_questions(
             logger.info(f"Imported {len(themes)} themes for question {question_number}")
 
             # Get response data and queue batches of importing
-            queue = get_queue(default_timeout=1500)
             responses_tasks = []
 
             logger.info(
@@ -417,17 +414,10 @@ def import_questions(
             for line in response["Body"].iter_lines():
                 lines.append(line)
                 if len(lines) == DEFAULT_BATCH_SIZE:
-                    logger.info("Enqueuing import responses batch")
-                    responses_task = queue.enqueue(
-                        import_responses, consultation_id, question.id, responses_data=lines
-                    )
-                    responses_tasks.append(responses_task)
+                    import_responses(consultation_id, question.id, responses_data=lines)
                     lines = []
             if lines:  # Any remaining lines < batch size
-                logger.info("Enqueuing final import responses batch")
-                responses_task = queue.enqueue(
-                    import_responses, consultation_id, question.id, responses_data=lines
-                )
+                responses_task = import_responses(consultation_id, question.id, responses_data=lines)
                 responses_tasks.append(responses_task)
             # lines = []
 
@@ -435,12 +425,10 @@ def import_questions(
                 f"Creating mapping task for {consultation_id}, question {question.number}"
             )
             output_folder = f"{outputs_path}question_part_{question_num_str}/"
-            queue.enqueue(
-                import_mapping,
+            import_mapping(
                 consultation_id,
                 question.id,
                 output_folder,
-                depends_on=responses_tasks,
             )
 
         logger.info(f"Imported {len(question_folders)} questions")
@@ -450,47 +438,38 @@ def import_questions(
         raise
 
 
-def import_respondents(consultation_id: UUID, respondents_data: list):
+def import_respondents(consultation_id: UUID, consultation_code: str):
     """
-    Import respondent data for a consultation.
-
-    Args:
-        consultation_id: Consultation object for respondents
-        respondents_data: list of respondent data
+    Batch safe Import respondent data for a consultation.
     """
-    logger.info(f"Starting import_respondents batch for consultation {consultation_id})")
+    logger.info(f"Starting import_respondents batch for consultation {consultation_id}")
 
-    try:
-        respondents_to_save = []
-        respondent_count = 0
+    respondents_file_key = f"app_data/{consultation_code}/inputs/respondents.jsonl"
+    response = s3_client.get_object(Bucket=bucket_name, Key=respondents_file_key)
 
-        for line in respondents_data:
-            respondent_data = json.loads(line.decode("utf-8"))
-            themefinder_id = respondent_data.get("themefinder_id")
-            logger.info(f"Respondents import task themefinder_id {themefinder_id})")
-            demographics = respondent_data.get("demographic_data", {})
+    batch_size = 1000
+    respondents_batch = []
 
-            respondents_to_save.append(
-                Respondent(
-                    consultation_id=consultation_id,
-                    themefinder_id=themefinder_id,
-                    demographics=demographics,
-                )
+    for line in response["Body"].iter_lines():
+        respondent_data = json.loads(line.decode("utf-8"))
+        respondents_batch.append(
+            Respondent(
+                consultation_id=consultation_id,
+                themefinder_id=respondent_data["themefinder_id"],
+                demographics=respondent_data.get("demographic_data", {}),
             )
-            respondent_count += 1
+        )
 
-        # TODO: remove me - used for ECS debugging in dev
-        logger.info(f"Respondents import count {respondent_count})")
-        Respondent.objects.bulk_create(respondents_to_save)
-        logger.info(f"Imported {respondent_count} respondents")
+        # Process batch when it reaches the limit
+        if len(respondents_batch) >= batch_size:
+            Respondent.objects.bulk_create(respondents_batch, batch_size=batch_size)
+            respondents_batch = []  # Clear the batch
+            logger.info(f"Processed batch of {batch_size} respondents")
 
-        # Build demographic options from respondent data
-        demographic_options_count = DemographicOption.rebuild_for_consultation(consultation_id)
-        logger.info(f"Created {demographic_options_count} demographic options")
-    except Exception as e:
-        logger.error(f"Error importing respondent data for {consultation_id}: {str(e)}")
-        raise
-
+    # Don't forget the final batch if it's not empty
+    if respondents_batch:
+        Respondent.objects.bulk_create(respondents_batch, batch_size=len(respondents_batch))
+        logger.info(f"Processed final batch of {len(respondents_batch)} respondents")
 
 def create_consultation(
     consultation_name: str,
@@ -522,43 +501,14 @@ def create_consultation(
 
         logger.info(f"Created consultation: {consultation.title} (ID: {consultation.id})")
 
-        # Get respondents data and queue task
-        queue = get_queue(default_timeout=1500)
-        respondents_tasks = []
-
         logger.info(f"Getting respondents data for: {consultation.title} (ID: {consultation.id})")
-        bucket_name = settings.AWS_BUCKET_NAME
-        base_path = f"app_data/{consultation_code}/"
-        inputs_path = f"{base_path}inputs/"
 
-        s3_client = boto3.client("s3")
-        respondents_file_key = f"{inputs_path}respondents.jsonl"
-        response = s3_client.get_object(Bucket=bucket_name, Key=respondents_file_key)
-        lines = []
+        import_respondents(consultation.id, consultation_code)
 
-        for line in response["Body"].iter_lines():
-            lines.append(line)
-            if len(lines) == DEFAULT_BATCH_SIZE:
-                logger.info("Enqueuing import respondents batch")
-                respondents_task = queue.enqueue(
-                    import_respondents, consultation.id, respondents_data=lines
-                )
-                respondents_tasks.append(respondents_task)
-                lines = []
-        if lines:  # Any remaining lines < batch size
-            logger.info("Enqueuing final import respondents batch")
-            respondents_task = queue.enqueue(
-                import_respondents, consultation.id, respondents_data=lines
-            )
-            respondents_tasks.append(respondents_task)
-
-        # Enqueue questions task, to occur when respondents task complete
-        queue.enqueue(
-            import_questions,
+        import_questions(
             consultation.id,
             consultation_code,
             timestamp,
-            depends_on=respondents_tasks,
         )
 
     except Exception as e:
