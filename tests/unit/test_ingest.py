@@ -15,7 +15,7 @@ from consultation_analyser.support_console.ingest import (
     get_consultation_codes,
     get_question_folders,
     import_mapping,
-    import_questions,
+    import_question,
     import_respondents,
     import_responses,
     validate_consultation_structure,
@@ -329,7 +329,7 @@ class TestQuestionsImport:
         mock_queue.enqueue = MagicMock()
 
         # Run the import
-        import_questions(consultation, consultation_code, "2024-01-01")
+        import_question(consultation, consultation_code, "2024-01-01")
 
         # Verify results
         questions = Question.objects.filter(consultation=consultation)
@@ -384,7 +384,7 @@ class TestQuestionsImport:
         consultation_code = "test"
 
         with pytest.raises(ValueError) as exc_info:
-            import_questions(consultation, consultation_code, "2024-01-01")
+            import_question(consultation, consultation_code, "2024-01-01")
 
         assert "Question text is required" in str(exc_info.value)
 

@@ -492,7 +492,7 @@ def import_respondents(consultation: Consultation, consultation_code: str):
 
     respondents_to_save = []
 
-    for line in response["Body"].iter_lines():
+    for i, line in enumerate(response["Body"].iter_lines()):
         respondent_data = json.loads(line.decode("utf-8"))
         themefinder_id = respondent_data.get("themefinder_id")
         demographics = respondent_data.get("demographic_data", {})
@@ -507,7 +507,7 @@ def import_respondents(consultation: Consultation, consultation_code: str):
         if len(respondents_to_save) >= DEFAULT_BATCH_SIZE:
             Respondent.objects.bulk_create(respondents_to_save)
             respondents_to_save = []
-            logger.info("saved batch of Respondents")
+            logger.info("saved %s Respondents", i)
 
     Respondent.objects.bulk_create(respondents_to_save)
 
@@ -557,6 +557,7 @@ def create_consultation(
         for question_folder in question_folders:
             queue.enqueue(
                 import_question,
+                consultation,
                 consultation_code,
                 timestamp,
                 question_folder,
