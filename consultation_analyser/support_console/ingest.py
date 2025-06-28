@@ -273,60 +273,41 @@ def import_mapping(
         raise
 
 
-def import_responses(
-    consultation_id: UUID,
-    question_id: UUID,
-    responses_data: list,
-):
+def import_responses(consultation_id: UUID, question_id: UUID, question_folder: str):
     """
-    Import response data for a Consultation Question.
+    Batch Safe Import response data for a Consultation Question.
 
     Args:
         consultation_id: Consultation for response
         question_id: Question for response
-        responses_data: list of responses data
+        question_folder: list of responses data
     """
+    responses_file_key = f"{question_folder}responses.jsonl"
+    response = s3_client.get_object(Bucket=bucket_name, Key=responses_file_key)
+    responses_to_save = []
 
-    try:
-        # First pass: collect themefinder_ids
-        themefinder_ids = []
-        for line in responses_data:
-            response_data = json.loads(line.decode("utf-8"))
-            themefinder_ids.append(response_data["themefinder_id"])
-
-        # Get respondents
-        respondents = Respondent.objects.filter(
-            consultation_id=consultation_id, themefinder_id__in=themefinder_ids
+    for line in response["Body"].iter_lines():
+        response_data = json.loads(line.decode("utf-8"))
+        themefinder_id = response_data["themefinder_id"]
+        respondent = Respondent.objects.get(
+            consultation_id=consultation_id, themefinder_id=themefinder_id
         )
-        respondent_dict = {r.themefinder_id: r for r in respondents}
 
-        # Second pass: create responses
-        responses_to_save = []
-        for line in responses_data:
-            response_data = json.loads(line.decode("utf-8"))
-            themefinder_id = response_data["themefinder_id"]
+        response = Response(
+            respondent=respondent.id,
+            question_id=question_id,
+            free_text=response_data.get("text", ""),
+            chosen_options=response_data.get("chosen_options", []),
+        )
 
-            if themefinder_id not in respondent_dict:
-                logger.warning(f"No respondent found for themefinder_id: {themefinder_id}")
-                continue
+        responses_to_save.append(response)
 
-            responses_to_save.append(
-                Response(
-                    respondent=respondent_dict[themefinder_id],
-                    question_id=question_id,
-                    free_text=response_data.get("text", ""),
-                    chosen_options=response_data.get("chosen_options", []),
-                )
-            )
+        if len(responses_to_save) >= DEFAULT_BATCH_SIZE:
+            Response.objects.bulk_create(responses_to_save)
+            responses_to_save = []
 
+    if responses_to_save:
         Response.objects.bulk_create(responses_to_save)
-        logger.info(f"Imported {len(responses_to_save)} responses for question {question_id}")
-
-    except Exception as e:
-        logger.error(
-            f"Error importing responses for consultation {consultation_id}, question {question_id}: {str(e)}"
-        )
-        raise
 
 
 def import_questions(
@@ -398,26 +379,11 @@ def import_questions(
             logger.info(f"Imported {len(themes)} themes for question {question_number}")
 
             # Get response data and queue batches of importing
-            responses_tasks = []
-
             logger.info(
                 f"Getting responses data for consultation {consultation_id}, question {question.number}"
             )
             responses_file_key = f"{question_folder}responses.jsonl"
-            response = s3_client.get_object(Bucket=bucket_name, Key=responses_file_key)
-            lines = []
-
-            for line in response["Body"].iter_lines():
-                lines.append(line)
-                if len(lines) == DEFAULT_BATCH_SIZE:
-                    import_responses(consultation_id, question.id, responses_data=lines)
-                    lines = []
-            if lines:  # Any remaining lines < batch size
-                responses_task = import_responses(
-                    consultation_id, question.id, responses_data=lines
-                )
-                responses_tasks.append(responses_task)
-            # lines = []
+            import_responses(consultation_id, question.id, responses_file_key)
 
             logger.info(f"Creating mapping task for {consultation_id}, question {question.number}")
             output_folder = f"{outputs_path}question_part_{question_num_str}/"
