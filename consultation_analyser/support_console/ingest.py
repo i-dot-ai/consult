@@ -184,7 +184,7 @@ def bulk_create_response_annotation(
         "id", "respondent__themefinder_id"
     )
 
-    annotations_to_save = []
+    objs_to_save = []
     for response_id, themefinder_id in responses:
         annotation = ResponseAnnotation(
             response_id=response_id,
@@ -192,12 +192,16 @@ def bulk_create_response_annotation(
             evidence_rich=evidence_dict.get(themefinder_id, ResponseAnnotation.EvidenceRich.NO),
             human_reviewed=False,
         )
-        annotations_to_save.append(annotation)
+        objs_to_save.append(annotation)
 
         for key in mapping_dict.get(themefinder_id, []):
             annotation_theme_mappings.append((annotation.id, key))
 
-    ResponseAnnotation.objects.bulk_create(annotations_to_save)
+        if len(objs_to_save) >= 1000:
+            ResponseAnnotation.objects.bulk_create(objs_to_save)
+            objs_to_save = []
+
+    ResponseAnnotation.objects.bulk_create(objs_to_save)
     return annotation_theme_mappings
 
 
