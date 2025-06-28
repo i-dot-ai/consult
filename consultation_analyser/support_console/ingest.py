@@ -4,6 +4,7 @@ from uuid import UUID
 
 import boto3
 from django.conf import settings
+from pydantic import BaseModel, Field
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -18,6 +19,14 @@ from consultation_analyser.consultations.models import (
 logger = logging.getLogger("import")
 DEFAULT_BATCH_SIZE = 10000
 bucket_name = settings.AWS_BUCKET_NAME
+
+
+class ThemeFinderRecord(BaseModel):
+    themes: list[str] = Field(default_factory=list)
+    sentiment: ResponseAnnotation.Sentiment = Field(default=ResponseAnnotation.Sentiment.UNCLEAR)
+    evidence_rich: ResponseAnnotation.EvidenceRich = Field(
+        default=ResponseAnnotation.EvidenceRich.NO
+    )
 
 
 def get_question_folders(inputs_path: str, bucket_name: str) -> list[str]:
@@ -176,7 +185,7 @@ def validate_consultation_structure(
 
 
 def bulk_create_response_annotation(
-    question_id: UUID, sentiment_dict, evidence_dict, mapping_dict
+    question_id: UUID, theme_finder_records: dict[str, ThemeFinderRecord]
 ) -> list[tuple[UUID, str]]:
     annotation_theme_mappings: list[tuple[UUID, str]] = []
 
@@ -186,16 +195,17 @@ def bulk_create_response_annotation(
 
     objs_to_save = []
     for response_id, themefinder_id in responses:
+        theme_finder_record = theme_finder_records.get(themefinder_id) or ThemeFinderRecord()
         annotation = ResponseAnnotation(
             response_id=response_id,
-            sentiment=sentiment_dict.get(themefinder_id, ResponseAnnotation.Sentiment.UNCLEAR),
-            evidence_rich=evidence_dict.get(themefinder_id, ResponseAnnotation.EvidenceRich.NO),
+            sentiment=theme_finder_record.sentiment,
+            evidence_rich=theme_finder_record.evidence_rich,
             human_reviewed=False,
         )
         objs_to_save.append(annotation)
 
-        for key in mapping_dict.get(themefinder_id, []):
-            annotation_theme_mappings.append((annotation.id, key))
+        for theme in theme_finder_record.themes:
+            annotation_theme_mappings.append((annotation.id, theme))
 
         if len(objs_to_save) >= 1000:
             ResponseAnnotation.objects.bulk_create(objs_to_save)
@@ -284,9 +294,18 @@ def import_mapping(
                 else ResponseAnnotation.EvidenceRich.NO
             )
 
+        theme_finder_records = {
+            key: ThemeFinderRecord(
+                sentiment=sentiment_dict[key],
+                evidence_rich=evidence_dict[key],
+                themes=mapping_dict[key],
+            )
+            for key in sentiment_dict.keys() & evidence_dict.keys() & mapping_dict.keys()
+        }
+
         # Create annotations
         annotation_theme_mappings = bulk_create_response_annotation(
-            question_id, sentiment_dict, evidence_dict, mapping_dict
+            question_id, theme_finder_records
         )
 
         # Add theme relationships
