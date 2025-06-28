@@ -388,8 +388,25 @@ def import_responses(
 
 
 def import_question(
-    consultation: Consultation, bucket_name: str, question_folder: str, outputs_path: str
+    consultation: Consultation,
+    consultation_code: str,
+    timestamp: str,
+    question_folder: str,
 ):
+    """
+    Import question data for a consultation.
+    Args:
+        consultation: Consultation object for questions
+        consultation_code:
+        timestamp: Timestamp folder name for the AI outputs
+        question_folder: S3 folder name containing the consultation data
+    """
+    logger.info(f"Starting question import for consultation {consultation.title})")
+
+    bucket_name = settings.AWS_BUCKET_NAME
+    base_path = f"app_data/{consultation_code}/"
+    outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
+
     s3_client = boto3.client("s3")
 
     question_num_str = question_folder.split("/")[-2].replace("question_part_", "")
@@ -537,10 +554,9 @@ def create_consultation(
         for question_folder in question_folders:
             queue.enqueue(
                 import_question,
-                consultation,
-                settings.AWS_BUCKET_NAME,
+                consultation_code,
+                timestamp,
                 question_folder,
-                f"app_data/{consultation_code}/outputs/mapping/{timestamp}/",
             )
 
         logger.info(f"Imported {len(question_folders)} questions")
