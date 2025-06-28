@@ -456,46 +456,6 @@ def import_question(
     import_mapping(consultation, question, output_folder)
 
 
-def import_questions(
-    consultation: Consultation,
-    consultation_code: str,
-    timestamp: str,
-):
-    """
-    Import question data for a consultation.
-
-    Args:
-        consultation: Consultation object for questions
-        consultation_code: S3 folder name containing the consultation data
-        timestamp: Timestamp folder name for the AI outputs
-    """
-
-    logger.info(f"Starting question import for consultation {consultation.title})")
-
-    bucket_name = settings.AWS_BUCKET_NAME
-    base_path = f"app_data/{consultation_code}/"
-    inputs_path = f"{base_path}inputs/"
-    outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
-    queue = get_queue(default_timeout=15000)
-    try:
-        question_folders = get_question_folders(inputs_path, bucket_name)
-
-        for question_folder in question_folders:
-            queue.enqueue(
-                import_question,
-                consultation,
-                bucket_name,
-                question_folder,
-                outputs_path,
-            )
-
-        logger.info(f"Imported {len(question_folders)} questions")
-
-    except Exception as e:
-        logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
-        raise
-
-
 def import_respondents(consultation: Consultation, consultation_code: str):
     """
     Import respondent data for a consultation.
