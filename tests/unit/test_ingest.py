@@ -1,4 +1,4 @@
-from unittest.mock import Mock, patch
+from unittest.mock import MagicMock, Mock, patch
 
 import pytest
 
@@ -305,10 +305,11 @@ class TestRespondentsImport:
 
 @pytest.mark.django_db
 class TestQuestionsImport:
+    @patch("consultation_analyser.support_console.ingest.get_queue")
     @patch("consultation_analyser.support_console.ingest.boto3")
     @patch("consultation_analyser.support_console.ingest.get_question_folders")
     @patch("consultation_analyser.support_console.ingest.settings")
-    def test_import_questions(self, mock_settings, mock_get_folders, mock_boto3):
+    def test_import_questions(self, mock_settings, mock_get_folders, mock_boto3, mock_get_queue):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 
         # Mock S3 responses
@@ -333,6 +334,14 @@ class TestQuestionsImport:
         themes = Theme.objects.filter(question__consultation=consultation)
         assert themes.count() == 1
         assert themes.first().key == "A"
+
+        # Mock queue setup
+        mock_queue = Mock()
+        mock_get_queue.return_value = mock_queue
+        mock_queue.enqueue = MagicMock()
+
+        # Run the import	        # Run the import
+        import_questions(consultation, consultation_code, "2024-01-01")
 
     @patch("consultation_analyser.support_console.ingest.boto3")
     @patch("consultation_analyser.support_console.ingest.get_question_folders")

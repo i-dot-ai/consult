@@ -4,6 +4,7 @@ from uuid import UUID
 
 import boto3
 from django.conf import settings
+from django_rq import get_queue
 from pydantic import BaseModel, Field
 
 from consultation_analyser.consultations.models import (
@@ -440,12 +441,13 @@ def import_questions(
 
     base_path = f"app_data/{consultation_code}/"
     inputs_path = f"{base_path}inputs/"
+    queue = get_queue(default_timeout=1500)
 
     try:
         question_folders = get_question_folders(inputs_path, bucket_name)
 
         for question_folder in question_folders:
-            import_question(consultation_id, question_folder, base_path, timestamp)
+            queue.enqueue(import_question, consultation_id, question_folder, base_path, timestamp)
 
         logger.info(f"Imported {len(question_folders)} questions")
 
