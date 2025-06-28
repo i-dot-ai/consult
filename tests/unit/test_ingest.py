@@ -1,4 +1,4 @@
-from unittest.mock import MagicMock, Mock, call, patch
+from unittest.mock import Mock, patch
 
 import pytest
 
@@ -305,11 +305,10 @@ class TestRespondentsImport:
 
 @pytest.mark.django_db
 class TestQuestionsImport:
-    @patch("consultation_analyser.support_console.ingest.get_queue")
     @patch("consultation_analyser.support_console.ingest.boto3")
     @patch("consultation_analyser.support_console.ingest.get_question_folders")
     @patch("consultation_analyser.support_console.ingest.settings")
-    def test_import_questions(self, mock_settings, mock_get_folders, mock_boto3, mock_get_queue):
+    def test_import_question(self, mock_settings, mock_get_folders, mock_boto3):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 
         # Mock S3 responses
@@ -323,13 +322,10 @@ class TestQuestionsImport:
         Respondent.objects.create(consultation=consultation, themefinder_id=1)
         Respondent.objects.create(consultation=consultation, themefinder_id=2)
 
-        # Mock queue setup
-        mock_queue = Mock()
-        mock_get_queue.return_value = mock_queue
-        mock_queue.enqueue = MagicMock()
-
         # Run the import
-        import_question(consultation, consultation_code, "2024-01-01")
+        import_question(
+            consultation, consultation_code, "2024-01-01", "app_data/test/inputs/question_part_1/"
+        )
 
         # Verify results
         questions = Question.objects.filter(consultation=consultation)
@@ -339,15 +335,6 @@ class TestQuestionsImport:
         themes = Theme.objects.filter(question__consultation=consultation)
         assert themes.count() == 1
         assert themes.first().key == "A"
-
-        # check other tasks queued
-        assert len(mock_queue.mock_calls) == 2
-        assert mock_queue.enqueue.call_args_list[0] == call(
-            import_responses,
-            consultation,
-            questions.first(),
-            "app_data/test/inputs/question_part_1/",
-        )
 
     @patch("consultation_analyser.support_console.ingest.boto3")
     @patch("consultation_analyser.support_console.ingest.get_question_folders")
@@ -384,7 +371,12 @@ class TestQuestionsImport:
         consultation_code = "test"
 
         with pytest.raises(ValueError) as exc_info:
-            import_question(consultation, consultation_code, "2024-01-01")
+            import_question(
+                consultation,
+                consultation_code,
+                "2024-01-01",
+                "app_data/test/inputs/question_part_1/",
+            )
 
         assert "Question text is required" in str(exc_info.value)
 

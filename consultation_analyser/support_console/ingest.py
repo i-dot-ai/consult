@@ -476,6 +476,7 @@ def import_question(
         logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
         raise
 
+
 def import_respondents(consultation: Consultation, consultation_code: str):
     """
     Import respondent data for a consultation.
@@ -507,7 +508,7 @@ def import_respondents(consultation: Consultation, consultation_code: str):
         if len(respondents_to_save) >= DEFAULT_BATCH_SIZE:
             Respondent.objects.bulk_create(respondents_to_save)
             respondents_to_save = []
-            logger.info("saved %s Respondents", i)
+            logger.info("saved %s Respondents", i + 1)
 
     Respondent.objects.bulk_create(respondents_to_save)
 
