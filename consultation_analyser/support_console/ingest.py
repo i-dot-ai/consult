@@ -397,7 +397,7 @@ def import_question(
     Import question data for a consultation.
     Args:
         consultation: Consultation object for questions
-        consultation_code:
+        consultation_code: S3 folder name containing the consultation data
         timestamp: Timestamp folder name for the AI outputs
         question_folder: S3 folder name containing the consultation data
     """
@@ -406,72 +406,75 @@ def import_question(
     bucket_name = settings.AWS_BUCKET_NAME
     base_path = f"app_data/{consultation_code}/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
+    try:
+        s3_client = boto3.client("s3")
 
-    s3_client = boto3.client("s3")
+        question_num_str = question_folder.split("/")[-2].replace("question_part_", "")
+        question_number = int(question_num_str)
 
-    question_num_str = question_folder.split("/")[-2].replace("question_part_", "")
-    question_number = int(question_num_str)
+        logger.info(f"Processing question {question_number}")
 
-    logger.info(f"Processing question {question_number}")
+        question_file_key = f"{question_folder}question.json"
+        response = s3_client.get_object(Bucket=bucket_name, Key=question_file_key)
+        question_data = json.loads(response["Body"].read())
 
-    question_file_key = f"{question_folder}question.json"
-    response = s3_client.get_object(Bucket=bucket_name, Key=question_file_key)
-    question_data = json.loads(response["Body"].read())
+        question_text = question_data.get("question_text", "")
+        if not question_text:
+            raise ValueError(f"Question text is required for question {question_number}")
 
-    question_text = question_data.get("question_text", "")
-    if not question_text:
-        raise ValueError(f"Question text is required for question {question_number}")
-
-    question = Question.objects.create(
-        consultation=consultation,
-        text=question_text,
-        slug=f"question-{question_number}",
-        number=question_number,
-        has_free_text=True,  # Default for now
-        has_multiple_choice=False,  # Default for now
-        multiple_choice_options=None,
-    )
-
-    # Import themes
-    # TODO: decide whether to split this out into a new task
-    output_folder = f"{outputs_path}question_part_{question_num_str}/"
-    themes_file_key = f"{output_folder}themes.json"
-    response = s3_client.get_object(Bucket=bucket_name, Key=themes_file_key)
-    theme_data = json.loads(response["Body"].read())
-
-    themes_to_save = []
-    for theme in theme_data:
-        themes_to_save.append(
-            Theme(
-                question=question,
-                name=theme["theme_name"],
-                description=theme["theme_description"],
-                key=theme["theme_key"],
-            )
+        question = Question.objects.create(
+            consultation=consultation,
+            text=question_text,
+            slug=f"question-{question_number}",
+            number=question_number,
+            has_free_text=True,  # Default for now
+            has_multiple_choice=False,  # Default for now
+            multiple_choice_options=None,
         )
 
-    themes = Theme.objects.bulk_create(themes_to_save)
-    logger.info(f"Imported {len(themes)} themes for question {question_number}")
+        # Import themes
+        # TODO: decide whether to split this out into a new task
+        output_folder = f"{outputs_path}question_part_{question_num_str}/"
+        themes_file_key = f"{output_folder}themes.json"
+        response = s3_client.get_object(Bucket=bucket_name, Key=themes_file_key)
+        theme_data = json.loads(response["Body"].read())
 
-    logger.info(
-        f"Getting responses data for consultation {consultation.title}, question {question.number}"
-    )
-    responses_file_key = f"{question_folder}responses.jsonl"
-    response = s3_client.get_object(Bucket=bucket_name, Key=responses_file_key)
-    lines = []
+        themes_to_save = []
+        for theme in theme_data:
+            themes_to_save.append(
+                Theme(
+                    question=question,
+                    name=theme["theme_name"],
+                    description=theme["theme_description"],
+                    key=theme["theme_key"],
+                )
+            )
 
-    for line in response["Body"].iter_lines():
-        lines.append(line)
-        if len(lines) >= DEFAULT_BATCH_SIZE:
+        themes = Theme.objects.bulk_create(themes_to_save)
+        logger.info(f"Imported {len(themes)} themes for question {question_number}")
+
+        logger.info(
+            f"Getting responses data for consultation {consultation.title}, question {question.number}"
+        )
+        responses_file_key = f"{question_folder}responses.jsonl"
+        response = s3_client.get_object(Bucket=bucket_name, Key=responses_file_key)
+        lines = []
+
+        for line in response["Body"].iter_lines():
+            lines.append(line)
+            if len(lines) >= DEFAULT_BATCH_SIZE:
+                import_responses(consultation, question, responses_data=lines)
+                lines = []
+        if lines:  # Any remaining lines < batch size
             import_responses(consultation, question, responses_data=lines)
-            lines = []
-    if lines:  # Any remaining lines < batch size
-        import_responses(consultation, question, responses_data=lines)
 
-    logger.info(f"Creating mapping task for {consultation.title}, question {question.number}")
-    output_folder = f"{outputs_path}question_part_{question_num_str}/"
-    import_mapping(consultation, question, output_folder)
+        logger.info(f"Creating mapping task for {consultation.title}, question {question.number}")
+        output_folder = f"{outputs_path}question_part_{question_num_str}/"
+        import_mapping(consultation, question, output_folder)
 
+    except Exception as e:
+        logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
+        raise
 
 def import_respondents(consultation: Consultation, consultation_code: str):
     """
