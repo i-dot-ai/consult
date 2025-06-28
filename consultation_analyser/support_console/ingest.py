@@ -569,11 +569,21 @@ def create_consultation(
         import_respondents(consultation, consultation_code)
 
         # Enqueue questions task, to occur when respondents task complete
-        import_questions(
-            consultation,
-            consultation_code,
-            timestamp,
+        queue = get_queue(default_timeout=30_000)
+        question_folders = get_question_folders(
+            f"app_data/{consultation_code}/inputs/", settings.AWS_BUCKET_NAME
         )
+
+        for question_folder in question_folders:
+            queue.enqueue(
+                import_question,
+                consultation,
+                settings.AWS_BUCKET_NAME,
+                question_folder,
+                f"app_data/{consultation_code}/outputs/mapping/{timestamp}/",
+            )
+
+        logger.info(f"Imported {len(question_folders)} questions")
 
     except Exception as e:
         logger.error(f"Error importing consultation {consultation_name}: {str(e)}")
