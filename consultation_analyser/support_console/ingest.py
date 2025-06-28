@@ -176,21 +176,69 @@ def validate_consultation_structure(
     return is_valid, errors
 
 
+def bulk_create_response_annotation(
+    question_id: UUID, sentiment_dict, evidence_dict, mapping_dict
+) -> list[tuple[UUID, str]]:
+    annotation_theme_mappings: list[tuple[UUID, str]] = []
+
+    responses = Response.objects.filter(question_id=question_id).values_list(
+        "id", "respondent__themefinder_id"
+    )
+
+    annotations_to_save = []
+    for response_id, themefinder_id in responses:
+        annotation = ResponseAnnotation(
+            response=response_id,
+            sentiment=sentiment_dict.get(themefinder_id, ResponseAnnotation.Sentiment.UNCLEAR),
+            evidence=evidence_dict.get(themefinder_id, ResponseAnnotation.EvidenceRich.NO),
+            human_reviewed=False,
+        )
+        annotations_to_save.append(annotation)
+
+        for key in mapping_dict.get(themefinder_id, []):
+            annotation_theme_mappings.append((annotation.id, key))
+
+    ResponseAnnotation.objects.bulk_create(annotations_to_save)
+    return annotation_theme_mappings
+
+
+def bulk_create_response_annotation_themes(
+    annotation_theme_mappings: list[tuple[UUID, str]], question_id: UUID
+):
+    existing_themes = Theme.objects.filter(question_id=question_id).values_list("key", "pk")
+
+    theme_keys = dict(existing_themes)
+
+    objs_to_save = []
+    for annotation_id, key in annotation_theme_mappings:
+        if theme_id := theme_keys.get(key):
+            response_annotation_theme = ResponseAnnotationTheme.objects.create(
+                response_annotation_id=annotation_id, theme_id=theme_id
+            )
+            objs_to_save.append(response_annotation_theme)
+
+        if len(objs_to_save) >= 1000:
+            ResponseAnnotationTheme.objects.bulk_create(objs_to_save)
+            objs_to_save = []
+
+    ResponseAnnotationTheme.objects.bulk_create(objs_to_save)
+
+
 def import_mapping(
-    consultation_id: UUID,
     question_id: UUID,
-    output_folder: str,
+    outputs_path: str,
 ):
     """
     Import mapping data for a Consultation Question
 
     Args:
-        consultation_id: Consultation object for mapping
         question_id: Question object for mapping
-        output_folder: S3 folder name containing the output data
+        outputs_path: S3 folder name containing the output data
     """
+    question = Question.objects.get(pk=question_id)
+    output_folder = f"{outputs_path}question_part_{question.number}/"
     logger.info(
-        f"Starting mapping import for consultation {consultation_id}, question {question_id})"
+        f"Starting mapping import for consultation {question.consultation.id}, question {question_id})"
     )
 
     try:
@@ -232,57 +280,36 @@ def import_mapping(
             )
 
         # Create annotations
-        annotation_theme_mappings = []
-        response = Response.objects.filter(question_id=question_id).values_list(
-            "id", "respondent__themefinder_id"
+        annotation_theme_mappings = bulk_create_response_annotation(
+            question_id, sentiment_dict, evidence_dict, mapping_dict
         )
 
-        annotations_to_save = []
-        for response_id, themefinder_id in response:
-            annotation = ResponseAnnotation(
-                response=response_id,
-                sentiment=sentiment_dict.get(themefinder_id, ResponseAnnotation.Sentiment.UNCLEAR),
-                evidence=evidence_dict.get(themefinder_id, ResponseAnnotation.EvidenceRich.NO),
-                human_reviewed=False,
-            )
-            annotations_to_save.append(annotation)
-
-            for key in mapping_dict.get(themefinder_id, []):
-                annotation_theme_mappings.append((annotation.id, key))
-
-        ResponseAnnotation.objects.bulk_create(annotations_to_save)
-
-        existing_themes = Theme.objects.filter(question_id=question_id).values_list("key", "pk")
-
-        theme_key_dict = dict(existing_themes)
-
         # Add theme relationships
-        themes_to_save = []
-        for annotation_id, key in annotation_theme_mappings:
-            if theme_id := theme_key_dict.get(key):
-                response_annotation_theme = ResponseAnnotationTheme.objects.create(
-                    response_annotation_id=annotation_id, theme_id=theme_id
-                )
-                themes_to_save.append(response_annotation_theme)
-        ResponseAnnotationTheme.objects.bulk_create(annotations_to_save)
+        bulk_create_response_annotation_themes(annotation_theme_mappings, question_id)
 
     except Exception as e:
         logger.error(
-            f"Error importing mapping for consultation {consultation_id}, question {question_id}: {str(e)}"
+            f"Error importing mapping for consultation {question.consultation.id}, question {question_id}: {str(e)}"
         )
         raise
 
 
-def import_responses(consultation_id: UUID, question_id: UUID, question_folder: str):
+def import_responses(question_id: UUID, question_folder: str):
     """
     Batch Safe Import response data for a Consultation Question.
 
     Args:
-        consultation_id: Consultation for response
         question_id: Question for response
         question_folder: list of responses data
     """
+
+    question = Question.objects.get(pk=question_id)
+
+    logger.info(
+        f"Getting responses data for consultation {question.consultation.id}, question {question_id}"
+    )
     responses_file_key = f"{question_folder}responses.jsonl"
+
     response = s3_client.get_object(Bucket=bucket_name, Key=responses_file_key)
     responses_to_save = []
 
@@ -290,7 +317,7 @@ def import_responses(consultation_id: UUID, question_id: UUID, question_folder: 
         response_data = json.loads(line.decode("utf-8"))
         themefinder_id = response_data["themefinder_id"]
         respondent = Respondent.objects.get(
-            consultation_id=consultation_id, themefinder_id=themefinder_id
+            consultation=question.consultation, themefinder_id=themefinder_id
         )
 
         response = Response(
@@ -308,6 +335,28 @@ def import_responses(consultation_id: UUID, question_id: UUID, question_folder: 
 
     if responses_to_save:
         Response.objects.bulk_create(responses_to_save)
+
+
+def import_themes(question_id: UUID, outputs_path: str):
+    question = Question.objects.get(pk=question_id)
+    themes_file_key = f"{outputs_path}question_part_{question.number}/themes.json"
+
+    response = s3_client.get_object(Bucket=bucket_name, Key=themes_file_key)
+    theme_data = json.loads(response["Body"].read())
+
+    themes_to_save = []
+    for theme in theme_data:
+        themes_to_save.append(
+            Theme(
+                question_id=question_id,
+                name=theme["theme_name"],
+                description=theme["theme_description"],
+                key=theme["theme_key"],
+            )
+        )
+
+    themes = Theme.objects.bulk_create(themes_to_save)
+    logger.info(f"Imported {len(themes)} themes for question {question_id}")
 
 
 def import_questions(
@@ -357,40 +406,13 @@ def import_questions(
                 multiple_choice_options=None,
             )
 
-            # Import themes
-            # TODO: decide whether to split this out into a new task
-            output_folder = f"{outputs_path}question_part_{question_num_str}/"
-            themes_file_key = f"{output_folder}themes.json"
-            response = s3_client.get_object(Bucket=bucket_name, Key=themes_file_key)
-            theme_data = json.loads(response["Body"].read())
+            import_themes(question.id, outputs_path)
 
-            themes_to_save = []
-            for theme in theme_data:
-                themes_to_save.append(
-                    Theme(
-                        question=question,
-                        name=theme["theme_name"],
-                        description=theme["theme_description"],
-                        key=theme["theme_key"],
-                    )
-                )
+            import_responses(question.id, question_folder)
 
-            themes = Theme.objects.bulk_create(themes_to_save)
-            logger.info(f"Imported {len(themes)} themes for question {question_number}")
-
-            # Get response data and queue batches of importing
-            logger.info(
-                f"Getting responses data for consultation {consultation_id}, question {question.number}"
-            )
-            responses_file_key = f"{question_folder}responses.jsonl"
-            import_responses(consultation_id, question.id, responses_file_key)
-
-            logger.info(f"Creating mapping task for {consultation_id}, question {question.number}")
-            output_folder = f"{outputs_path}question_part_{question_num_str}/"
             import_mapping(
-                consultation_id,
                 question.id,
-                output_folder,
+                outputs_path,
             )
 
         logger.info(f"Imported {len(question_folders)} questions")
