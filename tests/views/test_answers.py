@@ -129,7 +129,7 @@ def test_get_demographic_options_with_data(consultation):
     )
 
     # Rebuild demographic options from respondent data
-    DemographicOption.rebuild_for_consultation(consultation)
+    DemographicOption.rebuild_for_consultation(consultation.id)
 
     options = get_demographic_options(consultation)
 
@@ -149,7 +149,7 @@ def test_demographic_option_rebuild_for_consultation(consultation):
     assert DemographicOption.objects.filter(consultation=consultation).count() == 0
 
     # Rebuild should create the options
-    count = DemographicOption.rebuild_for_consultation(consultation)
+    count = DemographicOption.rebuild_for_consultation(consultation.id)
     assert count == 4  # 2 categories + 2 scores
 
     # Verify options were created correctly
@@ -163,7 +163,7 @@ def test_demographic_option_rebuild_for_consultation(consultation):
         consultation=consultation, demographics={"category": "C", "new_field": "test"}
     )
 
-    count = DemographicOption.rebuild_for_consultation(consultation)
+    count = DemographicOption.rebuild_for_consultation(consultation.id)
     assert count == 6  # 3 categories + 2 scores + 1 new_field
 
     # Verify the new state
@@ -255,7 +255,7 @@ def test_question_responses_json_with_demographic_filters(client, consultation_u
     ResponseFactory(question=question, respondent=respondent2)
 
     # Rebuild demographic options from respondent data
-    DemographicOption.rebuild_for_consultation(question.consultation)
+    DemographicOption.rebuild_for_consultation(question.consultation.id)
 
     # Test filtering by individual=true
     client.force_login(consultation_user)

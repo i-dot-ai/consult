@@ -112,7 +112,7 @@ def create_dummy_consultation_from_yaml(
                 response.chosen_options = chosen_options
                 response.save()
         logger.info(f"Finished adding question and responses for question {question.number}")
-        models.DemographicOption.rebuild_for_consultation(consultation=consultation)
+        models.DemographicOption.rebuild_for_consultation(consultation_id=consultation.id)
         logger.info(f"Finished adding dummy data for consultation {consultation.slug}")
     return consultation
 

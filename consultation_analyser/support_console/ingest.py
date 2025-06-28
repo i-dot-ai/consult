@@ -18,7 +18,6 @@ from consultation_analyser.consultations.models import (
 logger = logging.getLogger("import")
 DEFAULT_BATCH_SIZE = 10000
 bucket_name = settings.AWS_BUCKET_NAME
-s3_client = boto3.client("s3")
 
 
 def get_question_folders(inputs_path: str, bucket_name: str) -> list[str]:
@@ -188,9 +187,9 @@ def bulk_create_response_annotation(
     annotations_to_save = []
     for response_id, themefinder_id in responses:
         annotation = ResponseAnnotation(
-            response=response_id,
+            response_id=response_id,
             sentiment=sentiment_dict.get(themefinder_id, ResponseAnnotation.Sentiment.UNCLEAR),
-            evidence=evidence_dict.get(themefinder_id, ResponseAnnotation.EvidenceRich.NO),
+            evidence_rich=evidence_dict.get(themefinder_id, ResponseAnnotation.EvidenceRich.NO),
             human_reviewed=False,
         )
         annotations_to_save.append(annotation)
@@ -235,6 +234,8 @@ def import_mapping(
         question_id: Question object for mapping
         outputs_path: S3 folder name containing the output data
     """
+    s3_client = boto3.client("s3")
+
     question = Question.objects.get(pk=question_id)
     output_folder = f"{outputs_path}question_part_{question.number}/"
     logger.info(
@@ -302,6 +303,7 @@ def import_responses(question_id: UUID, question_folder: str):
         question_id: Question for response
         question_folder: list of responses data
     """
+    s3_client = boto3.client("s3")
 
     question = Question.objects.get(pk=question_id)
 
@@ -321,7 +323,7 @@ def import_responses(question_id: UUID, question_folder: str):
         )
 
         response = Response(
-            respondent=respondent.id,
+            respondent_id=respondent.id,
             question_id=question_id,
             free_text=response_data.get("text", ""),
             chosen_options=response_data.get("chosen_options", []),
@@ -338,6 +340,7 @@ def import_responses(question_id: UUID, question_folder: str):
 
 
 def import_themes(question_id: UUID, outputs_path: str):
+    s3_client = boto3.client("s3")
     question = Question.objects.get(pk=question_id)
     themes_file_key = f"{outputs_path}question_part_{question.number}/themes.json"
 
@@ -372,6 +375,7 @@ def import_questions(
         consultation_code: S3 folder name containing the consultation data
         timestamp: Timestamp folder name for the AI outputs
     """
+    s3_client = boto3.client("s3")
 
     logger.info(f"Starting question import for consultation {consultation_id})")
 
@@ -426,6 +430,8 @@ def import_respondents(consultation_id: UUID, consultation_code: str):
     """
     Batch safe Import respondent data for a consultation.
     """
+    s3_client = boto3.client("s3")
+
     logger.info(f"Starting import_respondents batch for consultation {consultation_id}")
 
     respondents_file_key = f"app_data/{consultation_code}/inputs/respondents.jsonl"
