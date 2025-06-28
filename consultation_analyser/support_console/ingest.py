@@ -4,11 +4,9 @@ from uuid import UUID
 
 import boto3
 from django.conf import settings
-from django_rq import get_queue
 
 from consultation_analyser.consultations.models import (
     Consultation,
-    DemographicOption,
     Question,
     Respondent,
     Response,
@@ -195,9 +193,7 @@ def import_mapping(
         f"Starting mapping import for consultation {consultation_id}, question {question_id})"
     )
 
-
     try:
-
         mapping_file_key = f"{output_folder}mapping.jsonl"
         sentiment_file_key = f"{output_folder}sentiment.jsonl"
         evidence_file_key = f"{output_folder}detail_detection.jsonl"
@@ -417,13 +413,13 @@ def import_questions(
                     import_responses(consultation_id, question.id, responses_data=lines)
                     lines = []
             if lines:  # Any remaining lines < batch size
-                responses_task = import_responses(consultation_id, question.id, responses_data=lines)
+                responses_task = import_responses(
+                    consultation_id, question.id, responses_data=lines
+                )
                 responses_tasks.append(responses_task)
             # lines = []
 
-            logger.info(
-                f"Creating mapping task for {consultation_id}, question {question.number}"
-            )
+            logger.info(f"Creating mapping task for {consultation_id}, question {question.number}")
             output_folder = f"{outputs_path}question_part_{question_num_str}/"
             import_mapping(
                 consultation_id,
@@ -470,6 +466,7 @@ def import_respondents(consultation_id: UUID, consultation_code: str):
     if respondents_batch:
         Respondent.objects.bulk_create(respondents_batch, batch_size=len(respondents_batch))
         logger.info(f"Processed final batch of {len(respondents_batch)} respondents")
+
 
 def create_consultation(
     consultation_name: str,
