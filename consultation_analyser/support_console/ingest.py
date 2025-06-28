@@ -1,5 +1,6 @@
 import json
 import logging
+from uuid import UUID
 
 import boto3
 from django.conf import settings
@@ -180,7 +181,7 @@ def save_mapping_data(
     mapping_dict: dict,
     sentiment_dict: dict,
     evidence_dict: dict,
-    responses: list[Response],
+    responses: list[tuple[UUID, UUID]],
 ):
     """
     Creates ResponseAnnotations in batches
@@ -200,11 +201,9 @@ def save_mapping_data(
         annotations_to_save = []
         annotation_theme_mappings = []
 
-        for response_obj in responses:
-            themefinder_id = response_obj.respondent.themefinder_id
-
+        for response_id, themefinder_id in responses:
             annotation = ResponseAnnotation(
-                response=response_obj,
+                response_id=response_id,
                 sentiment=sentiment_dict.get(themefinder_id, ResponseAnnotation.Sentiment.UNCLEAR),
                 evidence_rich=evidence_dict.get(themefinder_id, ResponseAnnotation.EvidenceRich.NO),
                 human_reviewed=False,
@@ -298,7 +297,9 @@ def import_mapping(
             )
 
         # Create annotations
-        responses = Response.objects.filter(question=question)
+        responses = Response.objects.filter(question=question).values_list(
+            "id", "respondent__themefinder_id"
+        )
         # save_mapping_data
         responses_data = []
 
@@ -435,8 +436,6 @@ def import_question(
     themes = Theme.objects.bulk_create(themes_to_save)
     logger.info(f"Imported {len(themes)} themes for question {question_number}")
 
-    responses_tasks = []
-
     logger.info(
         f"Getting responses data for consultation {consultation.title}, question {question.number}"
     )
@@ -446,16 +445,11 @@ def import_question(
 
     for line in response["Body"].iter_lines():
         lines.append(line)
-        if len(lines) == DEFAULT_BATCH_SIZE:
-            logger.info("Enqueuing import responses batch")
-            responses_task = import_responses(consultation, question, responses_data=lines)
-            responses_tasks.append(responses_task)
+        if len(lines) >= DEFAULT_BATCH_SIZE:
+            import_responses(consultation, question, responses_data=lines)
             lines = []
     if lines:  # Any remaining lines < batch size
-        logger.info("Enqueuing final import responses batch")
-        responses_task = import_responses(consultation, question, responses_data=lines)
-        responses_tasks.append(responses_task)
-    # lines = []
+        import_responses(consultation, question, responses_data=lines)
 
     logger.info(f"Creating mapping task for {consultation.title}, question {question.number}")
     output_folder = f"{outputs_path}question_part_{question_num_str}/"
@@ -482,7 +476,7 @@ def import_questions(
     base_path = f"app_data/{consultation_code}/"
     inputs_path = f"{base_path}inputs/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
-    queue = get_queue(default_timeout=1500)
+    queue = get_queue(default_timeout=15000)
     try:
         question_folders = get_question_folders(inputs_path, bucket_name)
 
@@ -502,46 +496,44 @@ def import_questions(
         raise
 
 
-def import_respondents(consultation: Consultation, respondents_data: list):
+def import_respondents(consultation: Consultation, consultation_code: str):
     """
     Import respondent data for a consultation.
 
     Args:
         consultation: Consultation object for respondents
-        respondents_data: list of respondent data
+        consultation_code: list of respondent data
     """
     logger.info(f"Starting import_respondents batch for consultation {consultation.title})")
 
-    try:
-        respondents_to_save = []
-        respondent_count = 0
+    s3_client = boto3.client("s3")
+    respondents_file_key = f"app_data/{consultation_code}/inputs/respondents.jsonl"
+    response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=respondents_file_key)
 
-        for line in respondents_data:
-            respondent_data = json.loads(line.decode("utf-8"))
-            themefinder_id = respondent_data.get("themefinder_id")
-            logger.info(f"Respondents import task themefinder_id {themefinder_id})")
-            demographics = respondent_data.get("demographic_data", {})
+    respondents_to_save = []
 
-            respondents_to_save.append(
-                Respondent(
-                    consultation=consultation,
-                    themefinder_id=themefinder_id,
-                    demographics=demographics,
-                )
+    for line in response["Body"].iter_lines():
+        respondent_data = json.loads(line.decode("utf-8"))
+        themefinder_id = respondent_data.get("themefinder_id")
+        demographics = respondent_data.get("demographic_data", {})
+
+        respondents_to_save.append(
+            Respondent(
+                consultation=consultation,
+                themefinder_id=themefinder_id,
+                demographics=demographics,
             )
-            respondent_count += 1
+        )
+        if len(respondents_to_save) >= DEFAULT_BATCH_SIZE:
+            Respondent.objects.bulk_create(respondents_to_save)
+            respondents_to_save = []
+            logger.info("saved batch of Respondents")
 
-        # TODO: remove me - used for ECS debugging in dev
-        logger.info(f"Respondents import count {respondent_count})")
-        Respondent.objects.bulk_create(respondents_to_save)
-        logger.info(f"Imported {respondent_count} respondents")
+    Respondent.objects.bulk_create(respondents_to_save)
 
-        # Build demographic options from respondent data
-        demographic_options_count = DemographicOption.rebuild_for_consultation(consultation)
-        logger.info(f"Created {demographic_options_count} demographic options")
-    except Exception as e:
-        logger.error(f"Error importing respondent data for {consultation.slug}: {str(e)}")
-        raise
+    # Build demographic options from respondent data
+    demographic_options_count = DemographicOption.rebuild_for_consultation(consultation)
+    logger.info(f"Created {demographic_options_count} demographic options")
 
 
 def create_consultation(
@@ -574,27 +566,7 @@ def create_consultation(
 
         logger.info(f"Created consultation: {consultation.title} (ID: {consultation.id})")
 
-        respondents_tasks = []
-
-        logger.info(f"Getting respondents data for: {consultation.title} (ID: {consultation.id})")
-        bucket_name = settings.AWS_BUCKET_NAME
-        base_path = f"app_data/{consultation_code}/"
-        inputs_path = f"{base_path}inputs/"
-
-        s3_client = boto3.client("s3")
-        respondents_file_key = f"{inputs_path}respondents.jsonl"
-        response = s3_client.get_object(Bucket=bucket_name, Key=respondents_file_key)
-        lines = []
-
-        for line in response["Body"].iter_lines():
-            lines.append(line)
-            if len(lines) == DEFAULT_BATCH_SIZE:
-                respondents_task = import_respondents(consultation, respondents_data=lines)
-                respondents_tasks.append(respondents_task)
-                lines = []
-        if lines:  # Any remaining lines < batch size
-            respondents_task = import_respondents(consultation, respondents_data=lines)
-            respondents_tasks.append(respondents_task)
+        import_respondents(consultation, consultation_code)
 
         # Enqueue questions task, to occur when respondents task complete
         import_questions(
