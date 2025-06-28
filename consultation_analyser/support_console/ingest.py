@@ -385,6 +385,43 @@ def import_themes(question_id: UUID, outputs_path: str):
     logger.info(f"Imported {len(themes)} themes for question {question_id}")
 
 
+def import_question(consultation_id: UUID, question_folder: str, base_path: str, timestamp: str):
+    question_num_str = question_folder.split("/")[-2].replace("question_part_", "")
+    question_number = int(question_num_str)
+    s3_client = boto3.client("s3")
+    outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
+
+    logger.info(f"Processing question {question_number}")
+
+    question_file_key = f"{question_folder}question.json"
+
+    response = s3_client.get_object(Bucket=bucket_name, Key=question_file_key)
+    question_data = json.loads(response["Body"].read())
+
+    question_text = question_data.get("question_text", "")
+    if not question_text:
+        raise ValueError(f"Question text is required for question {question_number}")
+
+    question = Question.objects.create(
+        consultation_id=consultation_id,
+        text=question_text,
+        slug=f"question-{question_number}",
+        number=question_number,
+        has_free_text=True,  # Default for now
+        has_multiple_choice=False,  # Default for now
+        multiple_choice_options=None,
+    )
+
+    import_themes(question.id, outputs_path)
+
+    import_responses(question.id, question_folder)
+
+    import_mapping(
+        question.id,
+        outputs_path,
+    )
+
+
 def import_questions(
     consultation_id: UUID,
     consultation_code: str,
@@ -398,49 +435,17 @@ def import_questions(
         consultation_code: S3 folder name containing the consultation data
         timestamp: Timestamp folder name for the AI outputs
     """
-    s3_client = boto3.client("s3")
 
     logger.info(f"Starting question import for consultation {consultation_id})")
 
     base_path = f"app_data/{consultation_code}/"
     inputs_path = f"{base_path}inputs/"
-    outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
 
     try:
         question_folders = get_question_folders(inputs_path, bucket_name)
 
         for question_folder in question_folders:
-            question_num_str = question_folder.split("/")[-2].replace("question_part_", "")
-            question_number = int(question_num_str)
-
-            logger.info(f"Processing question {question_number}")
-
-            question_file_key = f"{question_folder}question.json"
-            response = s3_client.get_object(Bucket=bucket_name, Key=question_file_key)
-            question_data = json.loads(response["Body"].read())
-
-            question_text = question_data.get("question_text", "")
-            if not question_text:
-                raise ValueError(f"Question text is required for question {question_number}")
-
-            question = Question.objects.create(
-                consultation_id=consultation_id,
-                text=question_text,
-                slug=f"question-{question_number}",
-                number=question_number,
-                has_free_text=True,  # Default for now
-                has_multiple_choice=False,  # Default for now
-                multiple_choice_options=None,
-            )
-
-            import_themes(question.id, outputs_path)
-
-            import_responses(question.id, question_folder)
-
-            import_mapping(
-                question.id,
-                outputs_path,
-            )
+            import_question(consultation_id, question_folder, base_path, timestamp)
 
         logger.info(f"Imported {len(question_folders)} questions")
 
@@ -514,8 +519,6 @@ def create_consultation(
         consultation.users.add(user)
 
         logger.info(f"Created consultation: {consultation.title} (ID: {consultation.id})")
-
-        logger.info(f"Getting respondents data for: {consultation.title} (ID: {consultation.id})")
 
         import_respondents(consultation.id, consultation_code)
 
