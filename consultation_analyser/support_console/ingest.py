@@ -3,6 +3,7 @@ import logging
 
 import boto3
 from django.conf import settings
+from django_rq import get_queue
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -15,6 +16,7 @@ from consultation_analyser.consultations.models import (
 )
 
 logger = logging.getLogger("import")
+DEFAULT_BATCH_SIZE = 10000
 
 
 def get_question_folders(inputs_path: str, bucket_name: str) -> list[str]:
@@ -172,19 +174,238 @@ def validate_consultation_structure(
     return is_valid, errors
 
 
-def import_consultation(
-    consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
-) -> None:
+def save_mapping_data(
+    consultation: Consultation,
+    question: Question,
+    mapping_dict: dict,
+    sentiment_dict: dict,
+    evidence_dict: dict,
+    responses: list[Response],
+):
     """
-    Import a complete consultation including questions, respondents, responses, themes, and annotations.
+    Creates ResponseAnnotations in batches
 
     Args:
-        consultation_name: Display name for the consultation
+        consultation: Consultation object for mapping
+        question: Question object for mapping
+        mapping_dict: dict containing mapping data
+        sentiment_dict: dict containing sentiment data
+        evidence_dict: dict containing evidence data
+        responses: list of Responses to be annotated
+    """
+    logger.info(
+        f"Starting mapping storage for consultation {consultation.id} with question {question.id}"
+    )
+    try:
+        annotations_to_save = []
+        annotation_theme_mappings = []
+
+        for response_obj in responses:
+            themefinder_id = response_obj.respondent.themefinder_id
+
+            annotation = ResponseAnnotation(
+                response=response_obj,
+                sentiment=sentiment_dict.get(themefinder_id, ResponseAnnotation.Sentiment.UNCLEAR),
+                evidence_rich=evidence_dict.get(themefinder_id, ResponseAnnotation.EvidenceRich.NO),
+                human_reviewed=False,
+            )
+            annotations_to_save.append(annotation)
+
+            # Store theme mappings for after bulk create
+            theme_keys = mapping_dict.get(themefinder_id, [])
+            annotation_theme_mappings.append((annotation, theme_keys))
+
+        # Bulk create annotations
+        created_annotations = ResponseAnnotation.objects.bulk_create(annotations_to_save)
+
+        # Add theme relationships
+        themes = Theme.objects.filter(question=question)
+        theme_dict = {theme.key: theme for theme in themes}
+        for i, (annotation, theme_keys) in enumerate(annotation_theme_mappings):
+            created_annotation = created_annotations[i]
+            themes_to_add = [theme_dict[key] for key in theme_keys if key in theme_dict]
+
+            if themes_to_add:
+                created_annotation.themes.set(themes_to_add)
+
+        logger.info(
+            f"Imported {len(created_annotations)} response annotations for question {question.number}"
+        )
+    except Exception as e:
+        logger.error(
+            f"Error importing mapping for consultation {consultation.title}, question {question.number}: {str(e)}"
+        )
+        raise
+
+
+def import_mapping(
+    consultation: Consultation,
+    question: Question,
+    output_folder: str,
+):
+    """
+    Import mapping data for a Consultation Question
+
+    Args:
+        consultation: Consultation object for mapping
+        question: Question object for mapping
+        output_folder: S3 folder name containing the output data
+    """
+    logger.info(
+        f"Starting mapping import for consultation {consultation.title}, question {question.number})"
+    )
+
+    bucket_name = settings.AWS_BUCKET_NAME
+
+    try:
+        s3_client = boto3.client("s3")
+
+        mapping_file_key = f"{output_folder}mapping.jsonl"
+        sentiment_file_key = f"{output_folder}sentiment.jsonl"
+        evidence_file_key = f"{output_folder}detail_detection.jsonl"
+
+        # Read all annotation data
+        mapping_response = s3_client.get_object(Bucket=bucket_name, Key=mapping_file_key)
+        mapping_dict = {}
+        for line in mapping_response["Body"].iter_lines():
+            mapping = json.loads(line.decode("utf-8"))
+            mapping_dict[mapping["themefinder_id"]] = mapping.get("theme_keys", [])
+
+        sentiment_response = s3_client.get_object(Bucket=bucket_name, Key=sentiment_file_key)
+        sentiment_dict = {}
+        for line in sentiment_response["Body"].iter_lines():
+            sentiment = json.loads(line.decode("utf-8"))
+            sentiment_value = sentiment.get("sentiment", "UNCLEAR").upper()
+
+            if sentiment_value == "AGREEMENT":
+                sentiment_dict[sentiment["themefinder_id"]] = ResponseAnnotation.Sentiment.AGREEMENT
+            elif sentiment_value == "DISAGREEMENT":
+                sentiment_dict[sentiment["themefinder_id"]] = (
+                    ResponseAnnotation.Sentiment.DISAGREEMENT
+                )
+            else:
+                sentiment_dict[sentiment["themefinder_id"]] = ResponseAnnotation.Sentiment.UNCLEAR
+
+        evidence_response = s3_client.get_object(Bucket=bucket_name, Key=evidence_file_key)
+        evidence_dict = {}
+        for line in evidence_response["Body"].iter_lines():
+            evidence = json.loads(line.decode("utf-8"))
+            evidence_value = evidence.get("evidence_rich", "NO").upper()
+            evidence_dict[evidence["themefinder_id"]] = (
+                ResponseAnnotation.EvidenceRich.YES
+                if evidence_value == "YES"
+                else ResponseAnnotation.EvidenceRich.NO
+            )
+
+        # Create annotations
+        responses = Response.objects.filter(question=question)
+        # save_mapping_data
+        queue = get_queue(default_timeout=1500)
+        responses_data = []
+
+        for response in responses:
+            responses_data.append(response)
+            if len(responses_data) == DEFAULT_BATCH_SIZE:
+                logger.info("Enqueuing import mapping batch")
+                queue.enqueue(
+                    save_mapping_data,
+                    consultation,
+                    question,
+                    mapping_dict,
+                    sentiment_dict,
+                    evidence_dict,
+                    responses=responses_data,
+                )
+                responses_data = []
+        if responses_data:  # Any remaining lines < batch size
+            logger.info("Enqueuing final import mapping batch")
+            queue.enqueue(
+                save_mapping_data,
+                consultation,
+                question,
+                mapping_dict,
+                sentiment_dict,
+                evidence_dict,
+                responses=responses_data,
+            )
+    except Exception as e:
+        logger.error(
+            f"Error importing mapping for consultation {consultation.title}, question {question.number}: {str(e)}"
+        )
+        raise
+
+
+def import_responses(
+    consultation: Consultation,
+    question: Question,
+    responses_data: list,
+):
+    """
+    Import response data for a Consultation Question.
+
+    Args:
+        consultation: Consultation object for response
+        question: Question object for response
+        responses_data: list of responses data
+    """
+
+    try:
+        # First pass: collect themefinder_ids
+        themefinder_ids = []
+        for line in responses_data:
+            response_data = json.loads(line.decode("utf-8"))
+            themefinder_ids.append(response_data["themefinder_id"])
+
+        # Get respondents
+        respondents = Respondent.objects.filter(
+            consultation=consultation, themefinder_id__in=themefinder_ids
+        )
+        respondent_dict = {r.themefinder_id: r for r in respondents}
+
+        # Second pass: create responses
+        responses_to_save = []
+        for line in responses_data:
+            response_data = json.loads(line.decode("utf-8"))
+            themefinder_id = response_data["themefinder_id"]
+
+            if themefinder_id not in respondent_dict:
+                logger.warning(f"No respondent found for themefinder_id: {themefinder_id}")
+                continue
+
+            responses_to_save.append(
+                Response(
+                    respondent=respondent_dict[themefinder_id],
+                    question=question,
+                    free_text=response_data.get("text", ""),
+                    chosen_options=response_data.get("chosen_options", []),
+                )
+            )
+
+        Response.objects.bulk_create(responses_to_save)
+        logger.info(f"Imported {len(responses_to_save)} responses for question {question.number}")
+
+    except Exception as e:
+        logger.error(
+            f"Error importing responses for consultation {consultation.title}, question {question.number}: {str(e)}"
+        )
+        raise
+
+
+def import_questions(
+    consultation: Consultation,
+    consultation_code: str,
+    timestamp: str,
+):
+    """
+    Import question data for a consultation.
+
+    Args:
+        consultation: Consultation object for questions
         consultation_code: S3 folder name containing the consultation data
         timestamp: Timestamp folder name for the AI outputs
-        current_user_id: ID of the user initiating the import
     """
-    logger.info(f"Starting consultation import: {consultation_name} (code: {consultation_code})")
+
+    logger.info(f"Starting question import for consultation {consultation.title})")
 
     bucket_name = settings.AWS_BUCKET_NAME
     base_path = f"app_data/{consultation_code}/"
@@ -192,47 +413,7 @@ def import_consultation(
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
 
     try:
-        # 1. Create consultation
-        consultation = Consultation.objects.create(title=consultation_name)
-
-        # Add the current user to the consultation
-        from consultation_analyser.authentication.models import User
-
-        user = User.objects.get(id=current_user_id)
-        consultation.users.add(user)
-
-        logger.info(f"Created consultation: {consultation.title} (ID: {consultation.id})")
-
-        # 2. Import respondents
         s3_client = boto3.client("s3")
-        respondents_file_key = f"{inputs_path}respondents.jsonl"
-        response = s3_client.get_object(Bucket=bucket_name, Key=respondents_file_key)
-
-        respondents_to_save = []
-        respondent_count = 0
-
-        for line in response["Body"].iter_lines():
-            respondent_data = json.loads(line.decode("utf-8"))
-            themefinder_id = respondent_data.get("themefinder_id")
-            demographics = respondent_data.get("demographic_data", {})
-
-            respondents_to_save.append(
-                Respondent(
-                    consultation=consultation,
-                    themefinder_id=themefinder_id,
-                    demographics=demographics,
-                )
-            )
-            respondent_count += 1
-
-        Respondent.objects.bulk_create(respondents_to_save)
-        logger.info(f"Imported {respondent_count} respondents")
-
-        # Build demographic options from respondent data
-        demographic_options_count = DemographicOption.rebuild_for_consultation(consultation)
-        logger.info(f"Created {demographic_options_count} demographic options")
-
-        # 3. Process each question
         question_folders = get_question_folders(inputs_path, bucket_name)
 
         for question_folder in question_folders:
@@ -241,7 +422,6 @@ def import_consultation(
 
             logger.info(f"Processing question {question_number}")
 
-            # 3a. Import question
             question_file_key = f"{question_folder}question.json"
             response = s3_client.get_object(Bucket=bucket_name, Key=question_file_key)
             question_data = json.loads(response["Body"].read())
@@ -260,48 +440,8 @@ def import_consultation(
                 multiple_choice_options=None,
             )
 
-            # 3b. Import responses
-            responses_file_key = f"{question_folder}responses.jsonl"
-            response = s3_client.get_object(Bucket=bucket_name, Key=responses_file_key)
-
-            # First pass: collect themefinder_ids
-            response_lines = list(response["Body"].iter_lines())
-            themefinder_ids = []
-            for line in response_lines:
-                response_data = json.loads(line.decode("utf-8"))
-                themefinder_ids.append(response_data["themefinder_id"])
-
-            # Get respondents
-            respondents = Respondent.objects.filter(
-                consultation=consultation, themefinder_id__in=themefinder_ids
-            )
-            respondent_dict = {r.themefinder_id: r for r in respondents}
-
-            # Second pass: create responses
-            responses_to_save = []
-            for line in response_lines:
-                response_data = json.loads(line.decode("utf-8"))
-                themefinder_id = response_data["themefinder_id"]
-
-                if themefinder_id not in respondent_dict:
-                    logger.warning(f"No respondent found for themefinder_id: {themefinder_id}")
-                    continue
-
-                responses_to_save.append(
-                    Response(
-                        respondent=respondent_dict[themefinder_id],
-                        question=question,
-                        free_text=response_data.get("text", ""),
-                        chosen_options=response_data.get("chosen_options", []),
-                    )
-                )
-
-            Response.objects.bulk_create(responses_to_save)
-            logger.info(
-                f"Imported {len(responses_to_save)} responses for question {question_number}"
-            )
-
-            # 3c. Import themes
+            # Import themes
+            # TODO: decide whether to split this out into a new task
             output_folder = f"{outputs_path}question_part_{question_num_str}/"
             themes_file_key = f"{output_folder}themes.json"
             response = s3_client.get_object(Bucket=bucket_name, Key=themes_file_key)
@@ -319,91 +459,161 @@ def import_consultation(
                 )
 
             themes = Theme.objects.bulk_create(themes_to_save)
-            theme_dict = {theme.key: theme for theme in themes}
             logger.info(f"Imported {len(themes)} themes for question {question_number}")
 
-            # 3d. Import response annotations (combining mapping, sentiment, and evidence)
-            mapping_file_key = f"{output_folder}mapping.jsonl"
-            sentiment_file_key = f"{output_folder}sentiment.jsonl"
-            evidence_file_key = f"{output_folder}detail_detection.jsonl"
-
-            # Read all annotation data
-            mapping_response = s3_client.get_object(Bucket=bucket_name, Key=mapping_file_key)
-            mapping_dict = {}
-            for line in mapping_response["Body"].iter_lines():
-                mapping = json.loads(line.decode("utf-8"))
-                mapping_dict[mapping["themefinder_id"]] = mapping.get("theme_keys", [])
-
-            sentiment_response = s3_client.get_object(Bucket=bucket_name, Key=sentiment_file_key)
-            sentiment_dict = {}
-            for line in sentiment_response["Body"].iter_lines():
-                sentiment = json.loads(line.decode("utf-8"))
-                sentiment_value = sentiment.get("sentiment", "UNCLEAR").upper()
-
-                if sentiment_value == "AGREEMENT":
-                    sentiment_dict[sentiment["themefinder_id"]] = (
-                        ResponseAnnotation.Sentiment.AGREEMENT
-                    )
-                elif sentiment_value == "DISAGREEMENT":
-                    sentiment_dict[sentiment["themefinder_id"]] = (
-                        ResponseAnnotation.Sentiment.DISAGREEMENT
-                    )
-                else:
-                    sentiment_dict[sentiment["themefinder_id"]] = (
-                        ResponseAnnotation.Sentiment.UNCLEAR
-                    )
-
-            evidence_response = s3_client.get_object(Bucket=bucket_name, Key=evidence_file_key)
-            evidence_dict = {}
-            for line in evidence_response["Body"].iter_lines():
-                evidence = json.loads(line.decode("utf-8"))
-                evidence_value = evidence.get("evidence_rich", "NO").upper()
-                evidence_dict[evidence["themefinder_id"]] = (
-                    ResponseAnnotation.EvidenceRich.YES
-                    if evidence_value == "YES"
-                    else ResponseAnnotation.EvidenceRich.NO
-                )
-
-            # Create annotations
-            responses = Response.objects.filter(question=question)
-            annotations_to_save = []
-            annotation_theme_mappings = []
-
-            for response_obj in responses:
-                themefinder_id = response_obj.respondent.themefinder_id
-
-                annotation = ResponseAnnotation(
-                    response=response_obj,
-                    sentiment=sentiment_dict.get(
-                        themefinder_id, ResponseAnnotation.Sentiment.UNCLEAR
-                    ),
-                    evidence_rich=evidence_dict.get(
-                        themefinder_id, ResponseAnnotation.EvidenceRich.NO
-                    ),
-                    human_reviewed=False,
-                )
-                annotations_to_save.append(annotation)
-
-                # Store theme mappings for after bulk create
-                theme_keys = mapping_dict.get(themefinder_id, [])
-                annotation_theme_mappings.append((annotation, theme_keys))
-
-            # Bulk create annotations
-            created_annotations = ResponseAnnotation.objects.bulk_create(annotations_to_save)
-
-            # Add theme relationships using the proper helper method
-            for i, (annotation, theme_keys) in enumerate(annotation_theme_mappings):
-                created_annotation = created_annotations[i]
-                themes_to_add = [theme_dict[key] for key in theme_keys if key in theme_dict]
-
-                if themes_to_add:
-                    created_annotation.add_original_ai_themes(themes_to_add)
+            # Get response data and queue batches of importing
+            queue = get_queue(default_timeout=1500)
+            responses_tasks = []
 
             logger.info(
-                f"Imported {len(created_annotations)} response annotations for question {question_number}"
+                f"Getting responses data for consultation {consultation.title}, question {question.number}"
+            )
+            responses_file_key = f"{question_folder}responses.jsonl"
+            response = s3_client.get_object(Bucket=bucket_name, Key=responses_file_key)
+            lines = []
+
+            for line in response["Body"].iter_lines():
+                lines.append(line)
+                if len(lines) == DEFAULT_BATCH_SIZE:
+                    logger.info("Enqueuing import responses batch")
+                    responses_task = queue.enqueue(
+                        import_responses, consultation, question, responses_data=lines
+                    )
+                    responses_tasks.append(responses_task)
+                    lines = []
+            if lines:  # Any remaining lines < batch size
+                logger.info("Enqueuing final import responses batch")
+                responses_task = queue.enqueue(
+                    import_responses, consultation, question, responses_data=lines
+                )
+                responses_tasks.append(responses_task)
+            # lines = []
+
+            logger.info(
+                f"Creating mapping task for {consultation.title}, question {question.number}"
+            )
+            output_folder = f"{outputs_path}question_part_{question_num_str}/"
+            queue.enqueue(
+                import_mapping, consultation, question, output_folder, depends_on=responses_tasks
             )
 
-        logger.info(f"Successfully completed import for consultation: {consultation_name}")
+        logger.info(f"Imported {len(question_folders)} questions")
+
+    except Exception as e:
+        logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
+        raise
+
+
+def import_respondents(consultation: Consultation, respondents_data: list):
+    """
+    Import respondent data for a consultation.
+
+    Args:
+        consultation: Consultation object for respondents
+        respondents_data: list of respondent data
+    """
+    logger.info(f"Starting import_respondents batch for consultation {consultation.title})")
+
+    try:
+        respondents_to_save = []
+        respondent_count = 0
+
+        for line in respondents_data:
+            respondent_data = json.loads(line.decode("utf-8"))
+            themefinder_id = respondent_data.get("themefinder_id")
+            logger.info(f"Respondents import task themefinder_id {themefinder_id})")
+            demographics = respondent_data.get("demographic_data", {})
+
+            respondents_to_save.append(
+                Respondent(
+                    consultation=consultation,
+                    themefinder_id=themefinder_id,
+                    demographics=demographics,
+                )
+            )
+            respondent_count += 1
+
+        # TODO: remove me - used for ECS debugging in dev
+        logger.info(f"Respondents import count {respondent_count})")
+        Respondent.objects.bulk_create(respondents_to_save)
+        logger.info(f"Imported {respondent_count} respondents")
+
+        # Build demographic options from respondent data
+        demographic_options_count = DemographicOption.rebuild_for_consultation(consultation)
+        logger.info(f"Created {demographic_options_count} demographic options")
+    except Exception as e:
+        logger.error(f"Error importing respondent data for {consultation.slug}: {str(e)}")
+        raise
+
+
+def create_consultation(
+    consultation_name: str,
+    consultation_code: str,
+    current_user_id: int,
+    timestamp: str,
+):
+    """
+    Create a consultation.
+
+    Args:
+        consultation_name: Display name for the consultation
+        consultation_code: S3 folder name containing the consultation data
+        current_user_id: ID of the user initiating the import
+        timestamp: Timestamp folder name for the AI outputs
+    """
+    try:
+        logger.info(
+            f"Starting consultation import: {consultation_name} (code: {consultation_code})"
+        )
+
+        consultation = Consultation.objects.create(title=consultation_name)
+
+        # Add the current user to the consultation
+        from consultation_analyser.authentication.models import User
+
+        user = User.objects.get(id=current_user_id)
+        consultation.users.add(user)
+
+        logger.info(f"Created consultation: {consultation.title} (ID: {consultation.id})")
+
+        # Get respondents data and queue task
+        queue = get_queue(default_timeout=1500)
+        respondents_tasks = []
+
+        logger.info(f"Getting respondents data for: {consultation.title} (ID: {consultation.id})")
+        bucket_name = settings.AWS_BUCKET_NAME
+        base_path = f"app_data/{consultation_code}/"
+        inputs_path = f"{base_path}inputs/"
+
+        s3_client = boto3.client("s3")
+        respondents_file_key = f"{inputs_path}respondents.jsonl"
+        response = s3_client.get_object(Bucket=bucket_name, Key=respondents_file_key)
+        lines = []
+
+        for line in response["Body"].iter_lines():
+            lines.append(line)
+            if len(lines) == DEFAULT_BATCH_SIZE:
+                logger.info("Enqueuing import respondents batch")
+                respondents_task = queue.enqueue(
+                    import_respondents, consultation, respondents_data=lines
+                )
+                respondents_tasks.append(respondents_task)
+                lines = []
+        if lines:  # Any remaining lines < batch size
+            logger.info("Enqueuing final import respondents batch")
+            respondents_task = queue.enqueue(
+                import_respondents, consultation, respondents_data=lines
+            )
+            respondents_tasks.append(respondents_task)
+
+        # Enqueue questions task, to occur when respondents task complete
+        queue.enqueue(
+            import_questions,
+            consultation,
+            consultation_code,
+            timestamp,
+            depends_on=respondents_tasks,
+        )
 
     except Exception as e:
         logger.error(f"Error importing consultation {consultation_name}: {str(e)}")
