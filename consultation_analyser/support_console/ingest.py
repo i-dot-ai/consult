@@ -186,16 +186,19 @@ def import_response_annotation_themes(question: Question, output_folder: str):
         mapping_dict[mapping["themefinder_id"]] = mapping.get("theme_keys", [])
 
     objects_to_save = []
-    themes = Theme.objects.filter(question=question)
-    theme_dict = {theme.key: theme for theme in themes}
+
+    theme_mappings = dict(Theme.objects.filter(question=question).values_list("key", "pk"))
+
     annotation_theme_mappings = ResponseAnnotation.objects.filter(
         response__question=question
     ).values_list("id", "response__respondent__themefinder_id")
+
     for i, (response_annotation_id, themefinder_id) in enumerate(annotation_theme_mappings):
         for key in mapping_dict.get(themefinder_id, []):
             objects_to_save.append(
                 ResponseAnnotationTheme(
-                    response_annotation_id=response_annotation_id, theme=theme_dict[key]
+                    response_annotation_id=response_annotation_id,
+                    theme_id=theme_mappings[key],
                 )
             )
             if len(objects_to_save) >= DEFAULT_BATCH_SIZE:
@@ -271,21 +274,11 @@ def import_responses(question: Question, responses_file_key: str):
     """
     s3_client = boto3.client("s3")
 
-    # First pass: collect themefinder_ids
-    responses_data_1 = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key)
-
-    themefinder_ids = []
-    for line in responses_data_1["Body"].iter_lines():
-        response_data = json.loads(line.decode("utf-8"))
-        themefinder_ids.append(response_data["themefinder_id"])
-
     responses_data = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key)
 
     try:
         # Get respondents
-        respondents = Respondent.objects.filter(
-            consultation=question.consultation, themefinder_id__in=themefinder_ids
-        )
+        respondents = Respondent.objects.filter(consultation=question.consultation)
         respondent_dict = {r.themefinder_id: r for r in respondents}
 
         # Second pass: create responses
@@ -310,7 +303,7 @@ def import_responses(question: Question, responses_file_key: str):
             if len(responses_to_save) >= DEFAULT_BATCH_SIZE:
                 Response.objects.bulk_create(responses_to_save)
                 responses_to_save = []
-                logger.info("saved %s Responses for question %s", i, question.number)
+                logger.info("saved %s Responses for question %s", i + 1, question.number)
 
         Response.objects.bulk_create(responses_to_save)
 
@@ -354,7 +347,6 @@ def import_questions(
         consultation: Consultation object for questions
         consultation_code: S3 folder name containing the consultation data
         timestamp: Timestamp folder name for the AI outputs
-        question_folder: S3 folder name containing the consultation data
     """
     logger.info(f"Starting question import for consultation {consultation.title})")
 
