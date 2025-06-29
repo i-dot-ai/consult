@@ -175,7 +175,7 @@ def validate_consultation_structure(
     return is_valid, errors
 
 
-def create_response_annotation_themes(question: Question, output_folder: str):
+def import_response_annotation_themes(question: Question, output_folder: str):
     mapping_file_key = f"{output_folder}mapping.jsonl"
     s3_client = boto3.client("s3")
 
@@ -208,7 +208,7 @@ def create_response_annotation_themes(question: Question, output_folder: str):
     ResponseAnnotationTheme.objects.batch_create(objects_to_save)
 
 
-def create_response_annotations(question: Question, output_folder: str):
+def import_response_annotations(question: Question, output_folder: str):
     sentiment_file_key = f"{output_folder}sentiment.jsonl"
     evidence_file_key = f"{output_folder}detail_detection.jsonl"
     s3_client = boto3.client("s3")
@@ -266,24 +266,22 @@ def import_responses(question: Question, responses_file_key: str):
     Import response data for a Consultation Question.
 
     Args:
-        consultation: Consultation object for response
         question: Question object for response
-        responses_data: list of responses data
+        responses_file_key: s3key
     """
     s3_client = boto3.client("s3")
 
-    responses_data = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key)
+    # First pass: collect themefinder_ids
+    responses_data_1 = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key)
 
     themefinder_ids = []
-    for line in responses_data:
+    for line in responses_data_1["Body"].iter_lines():
         response_data = json.loads(line.decode("utf-8"))
         themefinder_ids.append(response_data["themefinder_id"])
 
     responses_data = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key)
 
     try:
-        # First pass: collect themefinder_ids
-
         # Get respondents
         respondents = Respondent.objects.filter(
             consultation=question.consultation, themefinder_id__in=themefinder_ids
@@ -292,7 +290,7 @@ def import_responses(question: Question, responses_file_key: str):
 
         # Second pass: create responses
         responses_to_save = []
-        for i, line in enumerate(responses_data):
+        for i, line in enumerate(responses_data["Body"].iter_lines()):
             response_data = json.loads(line.decode("utf-8"))
             themefinder_id = response_data["themefinder_id"]
 
@@ -323,7 +321,7 @@ def import_responses(question: Question, responses_file_key: str):
         raise
 
 
-def create_themes(question: Question, outputs_path: str):
+def import_themes(question: Question, outputs_path: str):
     s3_client = boto3.client("s3")
     output_folder = f"{outputs_path}question_part_{question.number}/"
     themes_file_key = f"{output_folder}themes.json"
@@ -345,11 +343,10 @@ def create_themes(question: Question, outputs_path: str):
     logger.info(f"Imported {len(themes)} themes for question {question.number}")
 
 
-def import_question(
+def import_questions(
     consultation: Consultation,
     consultation_code: str,
     timestamp: str,
-    question_folder: str,
 ):
     """
     Import question data for a consultation.
@@ -364,39 +361,53 @@ def import_question(
     bucket_name = settings.AWS_BUCKET_NAME
     base_path = f"app_data/{consultation_code}/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
+
+    queue = get_queue(default_timeout=30_000)
+
     try:
         s3_client = boto3.client("s3")
-
-        question_num_str = question_folder.split("/")[-2].replace("question_part_", "")
-        question_number = int(question_num_str)
-
-        logger.info(f"Processing question {question_number}")
-
-        question_file_key = f"{question_folder}question.json"
-        response = s3_client.get_object(Bucket=bucket_name, Key=question_file_key)
-        question_data = json.loads(response["Body"].read())
-
-        question_text = question_data.get("question_text", "")
-        if not question_text:
-            raise ValueError(f"Question text is required for question {question_number}")
-
-        question = Question.objects.create(
-            consultation=consultation,
-            text=question_text,
-            slug=f"question-{question_number}",
-            number=question_number,
-            has_free_text=True,  # Default for now
-            has_multiple_choice=False,  # Default for now
-            multiple_choice_options=None,
+        question_folders = get_question_folders(
+            f"app_data/{consultation_code}/inputs/", settings.AWS_BUCKET_NAME
         )
 
-        responses_file_key = f"{question_folder}responses.jsonl"
-        import_responses(question, responses_file_key)
+        for question_folder in question_folders:
+            question_num_str = question_folder.split("/")[-2].replace("question_part_", "")
+            question_number = int(question_num_str)
 
-        output_folder = f"{outputs_path}question_part_{question_num_str}/"
-        create_themes(question, output_folder)
-        create_response_annotations(question, output_folder)
-        create_response_annotation_themes(question, output_folder)
+            logger.info(f"Processing question {question_number}")
+
+            question_file_key = f"{question_folder}question.json"
+            response = s3_client.get_object(Bucket=bucket_name, Key=question_file_key)
+            question_data = json.loads(response["Body"].read())
+
+            question_text = question_data.get("question_text", "")
+            if not question_text:
+                raise ValueError(f"Question text is required for question {question_number}")
+
+            question = Question.objects.create(
+                consultation=consultation,
+                text=question_text,
+                slug=f"question-{question_number}",
+                number=question_number,
+                has_free_text=True,  # Default for now
+                has_multiple_choice=False,  # Default for now
+                multiple_choice_options=None,
+            )
+
+            responses_file_key = f"{question_folder}responses.jsonl"
+            responses = queue.enqueue(import_responses, question, responses_file_key)
+
+            output_folder = f"{outputs_path}question_part_{question_num_str}/"
+            themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
+            response_annotations = queue.enqueue(
+                import_response_annotations, question, output_folder, depends_on=themes
+            )
+            queue.enqueue(
+                import_response_annotation_themes,
+                question,
+                output_folder,
+                depends_on=response_annotations,
+            )
 
     except Exception as e:
         logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
@@ -475,22 +486,11 @@ def create_consultation(
 
         import_respondents(consultation, consultation_code)
 
-        # Enqueue questions task, to occur when respondents task complete
-        queue = get_queue(default_timeout=30_000)
-        question_folders = get_question_folders(
-            f"app_data/{consultation_code}/inputs/", settings.AWS_BUCKET_NAME
+        import_questions(
+            consultation,
+            consultation_code,
+            timestamp,
         )
-
-        for question_folder in question_folders:
-            queue.enqueue(
-                import_question,
-                consultation,
-                consultation_code,
-                timestamp,
-                question_folder,
-            )
-
-        logger.info(f"Imported {len(question_folders)} questions")
 
     except Exception as e:
         logger.error(f"Error importing consultation {consultation_name}: {str(e)}")

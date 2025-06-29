@@ -14,9 +14,9 @@ from consultation_analyser.support_console.ingest import (
     create_consultation,
     get_consultation_codes,
     get_question_folders,
-    import_mapping,
-    import_question,
+    import_questions,
     import_respondents,
+    import_response_annotations,
     import_responses,
     validate_consultation_structure,
 )
@@ -323,8 +323,10 @@ class TestQuestionsImport:
         Respondent.objects.create(consultation=consultation, themefinder_id=2)
 
         # Run the import
-        import_question(
-            consultation, consultation_code, "2024-01-01", "app_data/test/inputs/question_part_1/"
+        import_questions(
+            consultation,
+            consultation_code,
+            "2024-01-01",
         )
 
         # Verify results
@@ -371,11 +373,10 @@ class TestQuestionsImport:
         consultation_code = "test"
 
         with pytest.raises(ValueError) as exc_info:
-            import_question(
+            import_questions(
                 consultation,
                 consultation_code,
                 "2024-01-01",
-                "app_data/test/inputs/question_part_1/",
             )
 
         assert "Question text is required" in str(exc_info.value)
@@ -400,7 +401,8 @@ class TestResponsesImport:
         Respondent.objects.create(consultation=consultation, themefinder_id=2)
 
         # Run the import
-        import_responses(consultation, question, question_folder)
+        responses_file_key = f"{question_folder}responses.jsonl"
+        import_responses(question, responses_file_key)
 
         # Verify results
         responses = Response.objects.filter(question=question)
@@ -429,7 +431,7 @@ class TestMappingImport:
         Response.objects.create(respondent=respondent_2, question=question)
 
         # Run the import
-        import_mapping(consultation, question, output_folder)
+        import_response_annotations(question, output_folder)
 
         # Verify results
         annotations = ResponseAnnotation.objects.filter(
