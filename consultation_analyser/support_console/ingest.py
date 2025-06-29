@@ -314,9 +314,8 @@ def import_responses(question: Question, responses_file_key: str):
         raise
 
 
-def import_themes(question: Question, outputs_path: str):
+def import_themes(question: Question, output_folder: str):
     s3_client = boto3.client("s3")
-    output_folder = f"{outputs_path}question_part_{question.number}/"
     themes_file_key = f"{output_folder}themes.json"
     response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
     theme_data = json.loads(response["Body"].read())
