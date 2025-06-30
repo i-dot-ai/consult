@@ -362,7 +362,7 @@ def import_questions(
             f"app_data/{consultation_code}/inputs/", settings.AWS_BUCKET_NAME
         )
 
-        for question_folder in question_folders[:4]:  # temp hack
+        for question_folder in question_folders:
             question_num_str = question_folder.split("/")[-2].replace("question_part_", "")
             question_number = int(question_num_str)
 
