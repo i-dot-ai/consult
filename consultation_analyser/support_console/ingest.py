@@ -3,7 +3,7 @@ import logging
 
 import boto3
 from django.conf import settings
-from django_rq import get_queue
+from django_q.tasks import async_task, Chain
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -354,8 +354,6 @@ def import_questions(
     base_path = f"app_data/{consultation_code}/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
 
-    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
-
     try:
         s3_client = boto3.client("s3")
         question_folders = get_question_folders(
@@ -387,19 +385,14 @@ def import_questions(
             )
 
             responses_file_key = f"{question_folder}responses.jsonl"
-            responses = queue.enqueue(import_responses, question, responses_file_key)
-
             output_folder = f"{outputs_path}question_part_{question_num_str}/"
-            themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
-            response_annotations = queue.enqueue(
-                import_response_annotations, question, output_folder, depends_on=themes
-            )
-            queue.enqueue(
-                import_response_annotation_themes,
-                question,
-                output_folder,
-                depends_on=response_annotations,
-            )
+
+            chain = Chain(cached=True)
+            chain.append(import_responses, question, responses_file_key)
+            chain.append(import_themes, question, output_folder)
+            chain.append(import_response_annotations, question, output_folder)
+            chain.append(import_response_annotation_themes, question, output_folder)
+            chain.run()
 
     except Exception as e:
         logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
