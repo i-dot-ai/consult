@@ -3,7 +3,7 @@ import logging
 
 import boto3
 from django.conf import settings
-from django_q.tasks import async_task, Chain
+from django_q.tasks import Chain
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -353,7 +353,6 @@ def import_questions(
     bucket_name = settings.AWS_BUCKET_NAME
     base_path = f"app_data/{consultation_code}/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
-
 
     try:
         s3_client = boto3.client("s3")
