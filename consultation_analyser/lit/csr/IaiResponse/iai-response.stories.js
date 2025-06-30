@@ -36,7 +36,6 @@ export default {
       <iai-response
         .id=${args.inputId}
         .identifier=${args.identifier}
-        .individual=${args.individual}
         .sentiment_position=${args.sentiment_position}
         .free_text_answer_text=${args.free_text_answer_text}
         .demographic_data=${args.demographic_data}
@@ -57,7 +56,6 @@ export const Default = {
   args: {
     id: "test-response",
     identifier: "test-response",
-    individual: "test-individual",
     sentiment_position: "UNCLEAR",
     free_text_answer_text: TEST_FREE_TEXT_ANSWER,
     demographic_data: undefined,
@@ -87,7 +85,6 @@ export const WithoutMultiChoice = {
   args: {
     id: "test-response",
     identifier: "test-response",
-    individual: "test-individual",
     sentiment_position: "UNCLEAR",
     free_text_answer_text: TEST_FREE_TEXT_ANSWER,
     demographic_data: undefined,
@@ -108,7 +105,6 @@ export const WithoutFreeText = {
   args: {
     id: "test-response",
     identifier: "test-response",
-    individual: "test-individual",
     sentiment_position: "UNCLEAR",
     free_text_answer_text: undefined,
     demographic_data: undefined,
@@ -129,7 +125,6 @@ export const WithSearchHighlight = {
   args: {
     id: "test-response",
     identifier: "test-response",
-    individual: "test-individual",
     sentiment_position: "UNCLEAR",
     free_text_answer_text: TEST_FREE_TEXT_ANSWER,
     demographic_data: undefined,
@@ -149,7 +144,6 @@ export const NotEvidenceRich = {
   args: {
     id: "test-response",
     identifier: "test-response",
-    individual: "test-individual",
     sentiment_position: "UNCLEAR",
     free_text_answer_text: TEST_FREE_TEXT_ANSWER,
     demographic_data: undefined,
@@ -165,7 +159,6 @@ export const Agreement = {
   args: {
     id: "test-response",
     identifier: "test-response",
-    individual: "test-individual",
     sentiment_position: "AGREEMENT",
     free_text_answer_text: TEST_FREE_TEXT_ANSWER,
     demographic_data: undefined,
@@ -181,7 +174,6 @@ export const Disagreement = {
   args: {
     id: "test-response",
     identifier: "test-response",
-    individual: "test-individual",
     sentiment_position: "DISAGREEMENT",
     free_text_answer_text: TEST_FREE_TEXT_ANSWER,
     demographic_data: undefined,
@@ -197,7 +189,6 @@ export const Skeleton = {
   args: {
     id: "skeleton-response",
     identifier: "skeleton-response",
-    individual: "skeleton-individual",
     free_text_answer_text: TEST_FREE_TEXT_ANSWER.repeat(5),
     skeleton: true,
   }

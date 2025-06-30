@@ -3,7 +3,6 @@ from uuid import UUID
 
 from django.conf import settings
 from django.contrib import messages
-from django.core.management import call_command
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django_q.tasks import async_task
@@ -114,16 +113,6 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     return render(request, "support_console/consultations/show.html", context=context)
 
 
-def import_consultations_xlsx(request: HttpRequest) -> HttpResponse:
-    if request.POST:
-        s3_key = request.POST.get("s3_key")
-        call_command("import_consultation_data", s3_key)
-        messages.success(request, "Consultations imported")
-
-        return redirect("/support/consultations/")
-    return render(request, "support_console/consultations/import_xlsx.html")
-
-
 def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     consultation = get_object_or_404(models.Consultation, id=consultation_id)
     questions = models.Question.objects.filter(
@@ -186,7 +175,7 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
         consultation_code = request.POST.get("consultation_code")
         timestamp = request.POST.get("timestamp")
 
-        # Validate structure
+        # # Validate structure
         is_valid, validation_errors = ingest.validate_consultation_structure(
             bucket_name=bucket_name, consultation_code=consultation_code, timestamp=timestamp
         )
@@ -238,3 +227,61 @@ def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UU
         else:
             return redirect(f"/support/consultations/{consultation_id}/")
     return render(request, "support_console/question_parts/delete.html", context=context)
+
+
+def themefinder(request: HttpRequest) -> HttpResponse:
+    consultation_folders = ingest.get_folder_names_for_dropdown()
+    bucket_name = settings.AWS_BUCKET_NAME
+
+    consultation_code = None
+    if request.method == "POST":
+        consultation_code = request.POST.get("consultation_code")
+        if consultation_code:
+            try:
+                # Send message to SQS
+                ingest.send_job_to_sqs(consultation_code, "THEMEFINDER")
+                messages.success(
+                    request, f"Themefinder job submitted successfully for {consultation_code}!"
+                )
+
+            except Exception as e:
+                messages.error(request, f"Error submitting job: {str(e)}")
+        else:
+            messages.error(request, "Please select a consultation folder.")
+
+    context = {
+        "bucket_name": bucket_name,
+        "consultation_folders": consultation_folders,
+        "consultation_code": consultation_code,
+    }
+
+    return render(request, "support_console/consultations/themefinder.html", context=context)
+
+
+def sign_off(request: HttpRequest) -> HttpResponse:
+    consultation_folders = ingest.get_folder_names_for_dropdown()
+    bucket_name = settings.AWS_BUCKET_NAME
+
+    consultation_code = None
+    if request.method == "POST":
+        consultation_code = request.POST.get("consultation_code")
+        if consultation_code:
+            try:
+                # Send message to SQS
+                ingest.send_job_to_sqs(consultation_code, "SIGNOFF")
+                messages.success(
+                    request, f"Sign-off job submitted successfully for {consultation_code}!"
+                )
+
+            except Exception as e:
+                messages.error(request, f"Error submitting job: {str(e)}")
+        else:
+            messages.error(request, "Please select a consultation folder.")
+
+    context = {
+        "bucket_name": bucket_name,
+        "consultation_folders": consultation_folders,
+        "consultation_code": consultation_code,
+    }
+
+    return render(request, "support_console/consultations/sign_off.html", context=context)

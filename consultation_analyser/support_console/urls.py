@@ -28,11 +28,6 @@ urlpatterns = [
         name="add_user",
     ),
     path(
-        "consultations/import-xlsx/",
-        consultations.import_consultations_xlsx,
-        name="import_consultations_xlsx",
-    ),
-    path(
         "consultations/<uuid:consultation_id>/export/",
         consultations.export_consultation_theme_audit,
         name="export_consultation_theme_audit",
@@ -43,6 +38,16 @@ urlpatterns = [
         "consultations/<uuid:consultation_id>/questions/<uuid:question_id>/delete/",
         consultations.delete_question,
         name="delete_question",
+    ),
+    path(
+        "consultations/sign-off/",
+        consultations.sign_off,
+        name="sign_off",
+    ),
+    path(
+        "consultations/themefinder/",
+        consultations.themefinder,
+        name="themefinder",
     ),
     path(
         "consultations/import-summary/",

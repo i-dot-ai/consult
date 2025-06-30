@@ -5,6 +5,7 @@ from django.test import RequestFactory
 from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.models import DemographicOption
 from consultation_analyser.consultations.views.answers import (
+    build_respondent_data,
     build_response_filter_query,
     get_demographic_options,
     get_filtered_responses_with_themes,
@@ -15,6 +16,7 @@ from consultation_analyser.factories import (
     ConsultationFactory,
     QuestionFactory,
     RespondentFactory,
+    ResponseAnnotationFactory,
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
     ThemeFactory,
@@ -729,3 +731,32 @@ def test_concurrent_human_review_handling(client, consultation_user, question):
     # Total themes should include both original AI and final human review
     all_current_themes = set(annotation.themes.all())
     assert all_current_themes == {theme1, theme2}  # theme1 from AI, theme2 from user2's review
+
+
+@pytest.mark.django_db
+def test_build_respondent_data():
+    question = QuestionFactory(has_free_text=True, has_multiple_choice=False)
+    respondent = RespondentFactory(consultation=question.consultation, themefinder_id=5)
+    response = ResponseFactory(free_text="Response 1", respondent=respondent, chosen_options=None)
+    respondent = response.respondent
+    question = response.question
+    theme = ThemeFactory(question=question, name="Theme A")
+    ResponseAnnotationFactory(
+        response=response, themes=[theme], sentiment="AGREEMENT", evidence_rich="YES"
+    )
+
+    actual = build_respondent_data(respondent=respondent, response=response)
+    expected = {
+        "id": "response-5",
+        "identifier": "5",
+        "sentiment_position": "AGREEMENT",
+        "free_text_answer_text": "Response 1",
+        "demographic_data": respondent.demographics or {},
+        "themes": [
+            {"id": theme.id, "stance": None, "name": "Theme A", "description": theme.description}
+        ],
+        "multiple_choice_answer": [],
+        "evidenceRich": True,
+    }
+
+    assert actual == expected
