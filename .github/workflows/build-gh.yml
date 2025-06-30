@@ -30,7 +30,7 @@ jobs:
           echo "docker-build-instance=${DOCKER_BUILD_INSTANCE}" >> $GITHUB_OUTPUT
           echo "service=${SERVICE}" >> $GITHUB_OUTPUT
       
-      - uses: actions/github-script@v6
+      - uses: actions/github-script@v7
         id: build-services-matrix
         env:
           SERVICES: ${{ steps.export.outputs.service }}  
