@@ -25,7 +25,7 @@ def import_consultation_job(
     consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
 ) -> None:
     """Job wrapper for importing consultations."""
-    return ingest.import_consultation(
+    return ingest.create_consultation(
         consultation_name=consultation_name,
         consultation_code=consultation_code,
         timestamp=timestamp,
@@ -56,7 +56,6 @@ def delete_consultation_job(consultation: models.Consultation):
             models.ResponseAnnotation.objects.filter(
                 response__question__consultation=consultation
             ).delete()
-
             logger.info("Deleting responses...")
             models.Response.objects.filter(question__consultation=consultation).delete()
 
@@ -198,7 +197,7 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
         consultation_code = request.POST.get("consultation_code")
         timestamp = request.POST.get("timestamp")
 
-        # Validate structure
+        # # Validate structure
         is_valid, validation_errors = ingest.validate_consultation_structure(
             bucket_name=bucket_name, consultation_code=consultation_code, timestamp=timestamp
         )
