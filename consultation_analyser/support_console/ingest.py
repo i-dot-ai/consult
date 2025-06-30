@@ -17,7 +17,8 @@ from consultation_analyser.consultations.models import (
 )
 
 logger = logging.getLogger("import")
-DEFAULT_BATCH_SIZE = 10000
+DEFAULT_BATCH_SIZE = 10_000
+DEFAULT_TIMEOUT_SECONDS = 3_600
 
 
 def get_question_folders(inputs_path: str, bucket_name: str) -> list[str]:
@@ -353,7 +354,7 @@ def import_questions(
     base_path = f"app_data/{consultation_code}/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
 
-    queue = get_queue(default_timeout=30_000)
+    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
 
     try:
         s3_client = boto3.client("s3")
@@ -361,7 +362,7 @@ def import_questions(
             f"app_data/{consultation_code}/inputs/", settings.AWS_BUCKET_NAME
         )
 
-        for question_folder in question_folders:
+        for question_folder in question_folders[:4]:  # temp hack
             question_num_str = question_folder.split("/")[-2].replace("question_part_", "")
             question_number = int(question_num_str)
 
