@@ -25,7 +25,7 @@ def import_consultation_job(
     consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
 ) -> None:
     """Job wrapper for importing consultations."""
-    return ingest.import_consultation(
+    return ingest.create_consultation(
         consultation_name=consultation_name,
         consultation_code=consultation_code,
         timestamp=timestamp,
