@@ -35,12 +35,6 @@ def import_consultation_job(
 def delete_consultation_job(consultation_id: UUID):
     from django.db import transaction
 
-    def delete_in_batches(what):
-        while True:
-            deleted_count, _ = what[:10_000].delete()
-            if deleted_count == 0:
-                break
-
     try:
         with transaction.atomic():
             # Refetch the consultation to ensure we have a fresh DB connection
@@ -52,23 +46,31 @@ def delete_consultation_job(consultation_id: UUID):
             # Delete in batches to avoid memory issues
             logger.info("Deleting response annotations...")
 
-            delete_in_batches(
+            models.ResponseAnnotation.objects.bulk_delete(
                 models.ResponseAnnotation.objects.filter(
                     response__question__consultation=consultation
                 )
             )
 
             logger.info("Deleting responses...")
-            delete_in_batches(models.Response.objects.filter(question__consultation=consultation))
+            models.Response.objects.bulk_delete(
+                models.Response.objects.filter(question__consultation=consultation)
+            )
 
             logger.info("Deleting themes...")
-            delete_in_batches(models.Theme.objects.filter(question__consultation=consultation))
+            models.Theme.objects.bulk_delete(
+                models.Theme.objects.filter(question__consultation=consultation)
+            )
 
             logger.info("Deleting questions...")
-            delete_in_batches(models.Question.objects.filter(consultation=consultation))
+            models.Question.objects.bulk_delete(
+                models.Question.objects.filter(consultation=consultation)
+            )
 
             logger.info("Deleting respondents...")
-            delete_in_batches(models.Respondent.objects.filter(consultation=consultation))
+            models.Respondent.objects.bulk_delete(
+                models.Respondent.objects.filter(consultation=consultation)
+            )
 
             logger.info("Deleting consultation...")
             consultation.delete()
