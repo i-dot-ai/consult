@@ -47,8 +47,8 @@ def delete_consultation_job(consultation_id: UUID):
             logger.info("Deleting response annotations...")
 
             for item in models.ResponseAnnotation.objects.filter(
-                    response__question__consultation=consultation
-                ):
+                response__question__consultation=consultation
+            ):
                 item.delete()
 
             logger.info("Deleting responses...")
