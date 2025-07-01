@@ -251,7 +251,7 @@ Q_CLUSTER = {
     "name": "consultation_analyser",
     "workers": 4,
     "recycle": 500,
-    "timeout": 60,
+    "timeout": 3_600,
     "retry": 120,
     "queue_limit": 50,
     "bulk": 10,

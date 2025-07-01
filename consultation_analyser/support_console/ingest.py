@@ -18,7 +18,6 @@ from consultation_analyser.consultations.models import (
 
 logger = logging.getLogger("import")
 DEFAULT_BATCH_SIZE = 10_000
-DEFAULT_TIMEOUT_SECONDS = 3_600
 
 
 def get_question_folders(inputs_path: str, bucket_name: str) -> list[str]:
