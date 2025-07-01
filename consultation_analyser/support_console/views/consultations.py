@@ -70,7 +70,7 @@ def delete_consultation_job(consultation_id: UUID):
             f"Error deleting consultation '{consultation_id}'): {str(e)}"
         )
         raise
-    logger.info(f"Successfully deleted consultation {consultation_id}")
+    logger.info(f"Successfully deleted consultation: {consultation_id}")
 
 
 def index(request: HttpRequest) -> HttpResponse:
