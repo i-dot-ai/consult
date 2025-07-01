@@ -46,31 +46,27 @@ def delete_consultation_job(consultation_id: UUID):
             # Delete in batches to avoid memory issues
             logger.info("Deleting response annotations...")
 
-            models.ResponseAnnotation.objects.bulk_delete(
-                models.ResponseAnnotation.objects.filter(
+            for item in models.ResponseAnnotation.objects.filter(
                     response__question__consultation=consultation
-                )
-            )
+                ):
+                item.delete()
 
             logger.info("Deleting responses...")
-            models.Response.objects.bulk_delete(
-                models.Response.objects.filter(question__consultation=consultation)
-            )
+
+            for item in models.Response.objects.filter(question__consultation=consultation):
+                item.delete()
 
             logger.info("Deleting themes...")
-            models.Theme.objects.bulk_delete(
-                models.Theme.objects.filter(question__consultation=consultation)
-            )
+            for item in models.Theme.objects.filter(question__consultation=consultation):
+                item.delete()
 
             logger.info("Deleting questions...")
-            models.Question.objects.bulk_delete(
-                models.Question.objects.filter(consultation=consultation)
-            )
+            for item in models.Question.objects.filter(consultation=consultation):
+                item.delete()
 
             logger.info("Deleting respondents...")
-            models.Respondent.objects.bulk_delete(
-                models.Respondent.objects.filter(consultation=consultation)
-            )
+            for item in models.Respondent.objects.filter(consultation=consultation):
+                item.delete()
 
             logger.info("Deleting consultation...")
             consultation.delete()
