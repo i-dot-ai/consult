@@ -252,7 +252,7 @@ Q_CLUSTER = {
     "workers": 4,
     "recycle": 500,
     "timeout": 3_600,
-    "retry": 120,
+    "retry": 3_601,
     "queue_limit": 50,
     "bulk": 10,
     "orm": "default",
