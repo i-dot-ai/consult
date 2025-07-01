@@ -38,39 +38,40 @@ def delete_consultation_job(consultation_id: UUID):
     try:
         with transaction.atomic():
             # Refetch the consultation to ensure we have a fresh DB connection
-            logger.info(f"Deleting consultation '{consultation_id}'")
+            consultation = models.Consultation.objects.get(id=consultation_id)
+
+            # Delete related objects in order to avoid foreign key constraints
+            logger.info(f"Deleting consultation '{consultation.title}' (ID: {consultation_id})")
 
             # Delete in batches to avoid memory issues
             logger.info("Deleting response annotations...")
             models.ResponseAnnotation.objects.filter(
-                response__question__consultation_id=consultation_id
+                response__question__consultation=consultation
             ).delete()
-
             logger.info("Deleting responses...")
-            models.Response.objects.filter(question__consultation_id=consultation_id).delete()
+            models.Response.objects.filter(question__consultation=consultation).delete()
 
             logger.info("Deleting themes...")
-            models.Theme.objects.filter(question__consultation_id=consultation_id).delete()
+            models.Theme.objects.filter(question__consultation=consultation).delete()
 
             logger.info("Deleting questions...")
-            models.Question.objects.filter(consultation_id=consultation_id).delete()
+            models.Question.objects.filter(consultation=consultation).delete()
 
             logger.info("Deleting respondents...")
-            models.Respondent.objects.filter(consultation_id=consultation_id).delete()
+            models.Respondent.objects.filter(consultation=consultation).delete()
 
             logger.info("Deleting consultation...")
-            models.Consultation.objects.get(id=consultation_id).delete()
+            consultation.delete()
 
-    except models.Consultation.DoesNotExist:
-        logger.error("consultation id=%s already deleted", consultation_id)
-        raise
+        logger.info(
+            f"Successfully deleted consultation '{consultation.title}' (ID: {consultation_id})"
+        )
 
     except Exception as e:
         logger.error(
-            f"Error deleting consultation '{consultation_id}'): {str(e)}"
+            f"Error deleting consultation '{consultation.title}' (ID: {consultation_id}): {str(e)}"
         )
         raise
-    logger.info(f"Successfully deleted consultation: {consultation_id}")
 
 
 def index(request: HttpRequest) -> HttpResponse:

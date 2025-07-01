@@ -173,7 +173,16 @@ def test_delete_consultation_job_with_logging(mock_logger):
 
     # Verify logging call
     mock_logger.info.assert_any_call(
-        f"Successfully deleted consultation: {consultation.id}"
+        f"Deleting consultation 'Test Consultation' (ID: {consultation.id})"
+    )
+    mock_logger.info.assert_any_call("Deleting response annotations...")
+    mock_logger.info.assert_any_call("Deleting responses...")
+    mock_logger.info.assert_any_call("Deleting themes...")
+    mock_logger.info.assert_any_call("Deleting questions...")
+    mock_logger.info.assert_any_call("Deleting respondents...")
+    mock_logger.info.assert_any_call("Deleting consultation...")
+    mock_logger.info.assert_any_call(
+        f"Successfully deleted consultation 'Test Consultation' (ID: {consultation.id})"
     )
 
 
@@ -195,7 +204,7 @@ def test_delete_consultation_job_handles_exceptions(mock_logger):
         assert "Database error" in str(exc_info.value)
         mock_logger.error.assert_called_once()
         error_call = mock_logger.error.call_args[0]
-        assert f"Error deleting consultation '{consultation.id}'" in error_call[0]
+        assert "Error deleting consultation 'Test Consultation'" in error_call[0]
         assert "Database error" in error_call[0]
 
 
