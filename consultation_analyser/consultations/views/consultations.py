@@ -40,29 +40,6 @@ def get_counts_of_sentiment(question: models.Question) -> dict:
     return sentiment_dict
 
 
-def get_top_themes_for_question(
-    question: models.Question, number_top_themes: int = 8
-) -> list[dict]:
-    # Get theme counts for questions with free text
-    if not question.has_free_text:
-        return []
-
-    top_themes = (
-        models.Theme.objects.filter(question=question, responseannotation__isnull=False)
-        .annotate(theme_count=Count("responseannotation"))
-        .order_by("-theme_count")
-    )[:number_top_themes]
-
-    top_themes_by_counts_list = []
-    for theme in top_themes:
-        output = {
-            "theme": theme,
-            "count": theme.theme_count,
-        }
-        top_themes_by_counts_list.append(output)
-    return top_themes_by_counts_list
-
-
 @user_can_see_dashboards
 @user_can_see_consultation
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
@@ -77,8 +54,6 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
         # Handle free text questions
         if question.has_free_text:
             question_dict["free_text_question_part"] = question  # For template compatibility
-            top_themes_by_counts_list = get_top_themes_for_question(question)
-            question_dict["theme_counts"] = top_themes_by_counts_list
             question_dict["sentiment_counts"] = get_counts_of_sentiment(question)
 
         # Handle multiple choice questions

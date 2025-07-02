@@ -55,7 +55,7 @@
   </div>
 
   <div style="margin-bottom: 10em;"></div>
-  
+
   <noscript>
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-three-quarters">
@@ -79,24 +79,6 @@
                         , {{ question_dict.sentiment_counts.no_position }} No opinion
                       {% endif %}
                     </p>
-
-                    <p class="govuk-body govuk-!-margin-bottom-2">Top themes</p>
-
-                    <div class="con-pill-container" style="display: flex;align-items:center;gap: 0.6%">
-                      {% for item in question_dict.theme_counts %}
-                        <div class="con-pill">
-                          <tool-tip class="iai-tooltip">
-                            <div class="iai-tooltip__button">
-                              <span>{{ item.theme.name }}</span>
-                              <img src="{{ static('icons/question-mark.svg') }}" alt="" width="14"/>
-                            </div>
-                            <div class="iai-tooltip__content">
-                              {{ item.theme.description }}
-                            </div>
-                          </tool-tip>
-                        </div>
-                      {% endfor %}
-                    </div>
                 {% else %}
                   <p class="govuk-body">This question does not have free text responses</p>
                 {% endif %}
