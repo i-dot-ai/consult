@@ -1,8 +1,6 @@
-import json
 import logging
 
 from django.core.paginator import Paginator
-from django.db.models import Count
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
@@ -23,21 +21,6 @@ def index(request: HttpRequest) -> HttpResponse:
     return render(request, "consultations/consultations/index.html", context)
 
 
-def get_counts_of_sentiment(question: models.Question) -> dict:
-    """Gives agree/disagree/unclear/no position counts for responses to the question."""
-
-    response_annotations_query = models.ResponseAnnotation.objects.filter(
-        response__question=question, sentiment__isnull=False
-    ).values("sentiment")
-    sentiment_counts = response_annotations_query.annotate(count=Count("sentiment"))
-    sentiment_dict = {
-        sentiment_count["sentiment"].lower(): sentiment_count["count"]
-        for sentiment_count in sentiment_counts
-    }
-
-    return sentiment_dict
-
-
 @user_can_see_dashboards
 @user_can_see_consultation
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
@@ -52,7 +35,9 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
         # Handle free text questions
         if question.has_free_text:
             question_dict["free_text_question_part"] = question  # For template compatibility
-            question_dict["sentiment_counts"] = get_counts_of_sentiment(question)
+            question_dict["free_text_count"] = models.Response.objects.filter(
+                question=question, free_text__isnull=False
+            ).count()
 
         # Handle multiple choice questions
         if question.has_multiple_choice:
@@ -66,7 +51,7 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
                     for option in options:
                         option_counts[option] = option_counts.get(option, 0) + 1
 
-            question_dict["multiple_option_counts"] = json.dumps(option_counts)
+            question_dict["multiple_option_counts"] = option_counts
 
         all_questions.append(question_dict)
 
