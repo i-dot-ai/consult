@@ -33,43 +33,40 @@ def import_consultation_job(
 
 
 def delete_consultation_job(consultation_id: UUID):
-    from django.db import transaction
-
     try:
-        with transaction.atomic():
-            # Refetch the consultation to ensure we have a fresh DB connection
-            consultation = models.Consultation.objects.get(id=consultation_id)
+        # Refetch the consultation to ensure we have a fresh DB connection
+        consultation = models.Consultation.objects.get(id=consultation_id)
 
-            # Delete related objects in order to avoid foreign key constraints
-            logger.info(f"Deleting consultation '{consultation.title}' (ID: {consultation_id})")
+        # Delete related objects in order to avoid foreign key constraints
+        logger.info(f"Deleting consultation '{consultation.title}' (ID: {consultation_id})")
 
-            # Delete in batches to avoid memory issues
-            logger.info("Deleting response annotations...")
+        # Delete in batches to avoid memory issues
+        logger.info("Deleting response annotations...")
 
-            for item in models.ResponseAnnotation.objects.filter(
-                response__question__consultation=consultation
-            ):
-                item.delete()
+        for item in models.ResponseAnnotation.objects.filter(
+            response__question__consultation=consultation
+        ):
+            item.delete()
 
-            logger.info("Deleting responses...")
+        logger.info("Deleting responses...")
 
-            for item in models.Response.objects.filter(question__consultation=consultation):
-                item.delete()
+        for item in models.Response.objects.filter(question__consultation=consultation):
+            item.delete()
 
-            logger.info("Deleting themes...")
-            for item in models.Theme.objects.filter(question__consultation=consultation):
-                item.delete()
+        logger.info("Deleting themes...")
+        for item in models.Theme.objects.filter(question__consultation=consultation):
+            item.delete()
 
-            logger.info("Deleting questions...")
-            for item in models.Question.objects.filter(consultation=consultation):
-                item.delete()
+        logger.info("Deleting questions...")
+        for item in models.Question.objects.filter(consultation=consultation):
+            item.delete()
 
-            logger.info("Deleting respondents...")
-            for item in models.Respondent.objects.filter(consultation=consultation):
-                item.delete()
+        logger.info("Deleting respondents...")
+        for item in models.Respondent.objects.filter(consultation=consultation):
+            item.delete()
 
-            logger.info("Deleting consultation...")
-            consultation.delete()
+        logger.info("Deleting consultation...")
+        consultation.delete()
 
         logger.info(
             f"Successfully deleted consultation '{consultation.title}' (ID: {consultation_id})"
