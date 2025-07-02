@@ -28,11 +28,11 @@ class ResponseAdmin(admin.ModelAdmin):
 
 
 class ResponseAnnotationAdmin(admin.ModelAdmin):
-    list_filter = ["question__consultation"]
+    list_filter = ["response__question__consultation"]
 
 
 class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
-    list_filter = ["response__question__consultation"]
+    list_filter = ["response_annotation__response__question__consultation"]
 
 
 class ThemeAdmin(admin.ModelAdmin):
