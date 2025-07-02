@@ -12,7 +12,7 @@ from consultation_analyser.consultations.models import (
 
 
 class ConsultationAdmin(admin.ModelAdmin):
-    pass
+    list_display = ["title"]
 
 
 class QuestionAdmin(admin.ModelAdmin):
