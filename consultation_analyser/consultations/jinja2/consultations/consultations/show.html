@@ -75,9 +75,6 @@
                       {{ question_dict.sentiment_counts.agreement }} Agreement,
                       {{ question_dict.sentiment_counts.disagreement}} Disagreement,
                       {{ question_dict.sentiment_counts.unclear }} Unclear
-                      {% if question_dict.sentiment_counts.no_position %}
-                        , {{ question_dict.sentiment_counts.no_position }} No opinion
-                      {% endif %}
                     </p>
                 {% else %}
                   <p class="govuk-body">This question does not have free text responses</p>

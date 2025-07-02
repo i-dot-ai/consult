@@ -25,7 +25,6 @@ def index(request: HttpRequest) -> HttpResponse:
 
 def get_counts_of_sentiment(question: models.Question) -> dict:
     """Gives agree/disagree/unclear/no position counts for responses to the question."""
-    total_responses = models.Response.objects.filter(question=question).count()
 
     response_annotations_query = models.ResponseAnnotation.objects.filter(
         response__question=question, sentiment__isnull=False
@@ -35,7 +34,6 @@ def get_counts_of_sentiment(question: models.Question) -> dict:
         sentiment_count["sentiment"].lower(): sentiment_count["count"]
         for sentiment_count in sentiment_counts
     }
-    sentiment_dict["no_position"] = total_responses - response_annotations_query.count()
 
     return sentiment_dict
 

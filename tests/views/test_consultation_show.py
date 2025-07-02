@@ -39,6 +39,5 @@ def test_get_counts_of_sentiment():
         "agreement": 3,
         "disagreement": 4,
         "unclear": 2,
-        "no_position": 2,
     }
     assert actual == expected
