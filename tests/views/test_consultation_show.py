@@ -28,14 +28,21 @@ def test_get_counts_of_sentiment():
         factories.ResponseAnnotationFactory(
             response=response, sentiment=models.ResponseAnnotation.Sentiment.UNCLEAR
         )
-    factories.ResponseFactory(question=question)  # No annotation/position
+    # Response annotated with no sentiment
+    response = factories.ResponseFactory(question=question)
+    factories.ResponseAnnotationFactory(
+        response=response,
+        sentiment=None,
+    )
+    # Response not annotated
+    factories.ResponseFactory(question=question)
 
     actual = get_counts_of_sentiment(question)
     expected = {
         "agreement": 3,
         "disagreement": 4,
         "unclear": 2,
-        "no_position": 1,
+        "no_position": 2,
     }
     assert actual == expected
 

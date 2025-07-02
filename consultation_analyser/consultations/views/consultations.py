@@ -27,32 +27,17 @@ def get_counts_of_sentiment(question: models.Question) -> dict:
     """Gives agree/disagree/unclear/no position counts for responses to the question."""
     total_responses = models.Response.objects.filter(question=question).count()
 
-    annotations_with_sentiment = models.ResponseAnnotation.objects.filter(
+    response_annotations_query = models.ResponseAnnotation.objects.filter(
         response__question=question, sentiment__isnull=False
-    )
-
-    number_in_agreement = annotations_with_sentiment.filter(
-        sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT
-    ).count()
-    number_in_disagreement = annotations_with_sentiment.filter(
-        sentiment=models.ResponseAnnotation.Sentiment.DISAGREEMENT
-    ).count()
-    number_unclear = annotations_with_sentiment.filter(
-        sentiment=models.ResponseAnnotation.Sentiment.UNCLEAR
-    ).count()
-
-    # Any responses not assigned a position
-    number_no_position = (
-        total_responses - number_in_agreement - number_in_disagreement - number_unclear
-    )
-
-    sentiment_counts = {
-        "agreement": number_in_agreement,
-        "disagreement": number_in_disagreement,
-        "unclear": number_unclear,
-        "no_position": number_no_position,
+    ).values("sentiment")
+    sentiment_counts = response_annotations_query.annotate(count=Count("sentiment"))
+    sentiment_dict = {
+        sentiment_count["sentiment"].lower(): sentiment_count["count"]
+        for sentiment_count in sentiment_counts
     }
-    return sentiment_counts
+    sentiment_dict["no_position"] = total_responses - response_annotations_query.count()
+
+    return sentiment_dict
 
 
 def get_top_themes_for_question(
