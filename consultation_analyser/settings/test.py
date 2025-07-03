@@ -23,4 +23,4 @@ for queueConfig in RQ_QUEUES.values():  # noqa
 # Use memory email backend for tests
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
 
-EMBEDDING_MODEL =  FakeEmbeddings(size=EMBEDDING_DIMENSION)
+EMBEDDING_MODEL = FakeEmbeddings(size=EMBEDDING_DIMENSION)  # noqa
