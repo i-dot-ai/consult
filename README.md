@@ -148,6 +148,14 @@ which will mean that every request is served from the cache.
 `django-compressor` also takes care of fingerprinting and setting cache headers
 for our CSS.
 
+
+#### JS
+
+[//]: # (TODO: add more information here about the JS architecture)
+
+If you have made changes to the Lit components, run `npm run build-lit
+` to see changes
+
 #### Fonts and images
 
 The govuk assets are versioned in the `npm` package. `make dev_environment`

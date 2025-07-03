@@ -28,9 +28,7 @@ export const Default = {
     title: "Test Question",
     body: "This is a test question".repeat(10),
     responses: {
-      agreement: true,
-      disagreement: true,
-      unclear: true,
+      count: 100,
     },
     multiResponses: {
       "one": 10,
@@ -58,9 +56,7 @@ export const WithoutMultiResponses = {
     title: "Test Question",
     body: "This is a test question".repeat(10),
     responses: {
-      agreement: true,
-      disagreement: true,
-      unclear: true,
+      count: 100,
     },
     multiResponses: {},
     handleClose: action("Close button clicked"),
