@@ -1,5 +1,6 @@
 import json
 import logging
+from uuid import UUID
 
 import boto3
 from django.conf import settings
@@ -175,7 +176,8 @@ def validate_consultation_structure(
     return is_valid, errors
 
 
-def import_response_annotation_themes(question: Question, output_folder: str):
+def import_response_annotation_themes(question_id: UUID, output_folder: str):
+    question = Question.objects.get(id=question_id)
     mapping_file_key = f"{output_folder}mapping.jsonl"
     s3_client = boto3.client("s3")
 
@@ -211,7 +213,8 @@ def import_response_annotation_themes(question: Question, output_folder: str):
     ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
 
 
-def import_response_annotations(question: Question, output_folder: str):
+def import_response_annotations(question_id: UUID, output_folder: str):
+    question = Question.objects.get(id=question_id)
     sentiment_file_key = f"{output_folder}sentiment.jsonl"
     evidence_file_key = f"{output_folder}detail_detection.jsonl"
     s3_client = boto3.client("s3")
@@ -264,17 +267,18 @@ def import_response_annotations(question: Question, output_folder: str):
     ResponseAnnotation.objects.bulk_create(annotations_to_save)
 
 
-def import_responses(question: Question, responses_file_key: str):
+def import_responses(question_id: UUID, responses_file_key: str):
     """
     Import response data for a Consultation Question.
 
     Args:
-        question: Question object for response
+        question_id: UUID object for response
         responses_file_key: s3key
     """
     s3_client = boto3.client("s3")
 
     responses_data = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key)
+    question = Question.objects.get(id=question_id)
 
     try:
         # Get respondents
@@ -314,7 +318,8 @@ def import_responses(question: Question, responses_file_key: str):
         raise
 
 
-def import_themes(question: Question, output_folder: str):
+def import_themes(question_id: UUID, output_folder: str):
+    question = Question.objects.get(id=question_id)
     s3_client = boto3.client("s3")
     themes_file_key = f"{output_folder}themes.json"
     response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
@@ -387,10 +392,10 @@ def import_questions(
             output_folder = f"{outputs_path}question_part_{question_num_str}/"
 
             chain = Chain(cached=True)
-            chain.append(import_responses, question, responses_file_key)
-            chain.append(import_themes, question, output_folder)
-            chain.append(import_response_annotations, question, output_folder)
-            chain.append(import_response_annotation_themes, question, output_folder)
+            chain.append(import_responses, question.id, responses_file_key)
+            chain.append(import_themes, question.id, output_folder)
+            chain.append(import_response_annotations, question.id, output_folder)
+            chain.append(import_response_annotation_themes, question.id, output_folder)
             chain.run()
 
     except Exception as e:
