@@ -375,6 +375,7 @@ def import_questions(
             question_data = json.loads(response["Body"].read())
 
             question_text = question_data.get("question_text", "")
+            multiple_choice_options = question_data.get("options", [])
             if not question_text:
                 raise ValueError(f"Question text is required for question {question_number}")
 
@@ -383,9 +384,9 @@ def import_questions(
                 text=question_text,
                 slug=f"question-{question_number}",
                 number=question_number,
-                has_free_text=True,  # Default for now
-                has_multiple_choice=False,  # Default for now
-                multiple_choice_options=None,
+                has_free_text=question_data.get("has_free_text", True),
+                has_multiple_choice=(True if multiple_choice_options else False),
+                multiple_choice_options=multiple_choice_options,
             )
 
             responses_file_key = f"{question_folder}responses.jsonl"
