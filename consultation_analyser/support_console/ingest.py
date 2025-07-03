@@ -265,9 +265,9 @@ def import_response_annotations(question: Question, output_folder: str):
     ResponseAnnotation.objects.bulk_create(annotations_to_save)
 
 
-def _embed_responses(responses: list[dict]) ->  list[Response]:
+def _embed_responses(responses: list[dict]) -> list[Response]:
     embeddings = settings.EMBEDDING_MODEL.embed_documents([r["free_text"] for r in responses])
-    return  [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
+    return [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
 
 
 def import_responses(question: Question, responses_file_key: str):

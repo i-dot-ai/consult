@@ -15,6 +15,6 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="response",
             name="embedding",
-            field=pgvector.django.vector.VectorField(blank=True, dimensions=100, null=True),
+            field=pgvector.django.vector.VectorField(blank=True, dimensions=1024, null=True),
         ),
     ]
