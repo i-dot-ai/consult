@@ -71,7 +71,9 @@ def delete_consultation_job(consultation_id: UUID):
         logger.error("consultation id=%s already deleted", consultation_id)
         raise
     except Exception as e:
-        logger.error(f"Error deleting consultation '{consultation.title}': {e}")
+        logger.error(
+            f"Error deleting consultation '{consultation.title}' (ID: {consultation_id}): {str(e)}"
+        )
         raise
 
 

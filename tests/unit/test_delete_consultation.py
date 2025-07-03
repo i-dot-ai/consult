@@ -173,6 +173,16 @@ def test_delete_consultation_job_with_logging(mock_logger):
 
     # Verify logging call
     mock_logger.info.assert_any_call(
+        f"Deleting consultation 'Test Consultation' (ID: {consultation.id})"
+    )
+    mock_logger.info.assert_any_call("Deleting response annotations...")
+    mock_logger.info.assert_any_call("Deleting responses...")
+    mock_logger.info.assert_any_call("Deleting themes...")
+    mock_logger.info.assert_any_call("Deleting questions...")
+    mock_logger.info.assert_any_call("Deleting respondents...")
+    mock_logger.info.assert_any_call("Deleting consultation...")
+
+    mock_logger.info.assert_any_call(
         f"Successfully deleted consultation 'Test Consultation' (ID: {consultation.id})"
     )
 
