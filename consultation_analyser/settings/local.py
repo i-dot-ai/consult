@@ -1,6 +1,7 @@
-from django.conf.global_settings import STORAGES
+from langchain_core.embeddings import FakeEmbeddings
 
 from consultation_analyser.settings.base import *  # noqa
+from django.conf.global_settings import STORAGES
 
 INSTALLED_APPS.append("django_extensions")  # noqa F405
 INSTALLED_APPS.append("pyflame")  # noqa F405
@@ -29,3 +30,5 @@ STORAGES["default"] = {  # noqa
         "location": BASE_DIR / "tmp"  # noqa
     },
 }
+
+EMBEDDING_MODEL =  FakeEmbeddings(size=EMBEDDING_DIMENSION)

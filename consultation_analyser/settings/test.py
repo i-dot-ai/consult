@@ -3,6 +3,7 @@ from pathlib import Path
 
 import environ
 from django.conf.global_settings import STORAGES
+from langchain_core.embeddings import FakeEmbeddings
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
@@ -21,3 +22,5 @@ for queueConfig in RQ_QUEUES.values():  # noqa
 
 # Use memory email backend for tests
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
+
+EMBEDDING_MODEL =  FakeEmbeddings(size=EMBEDDING_DIMENSION)

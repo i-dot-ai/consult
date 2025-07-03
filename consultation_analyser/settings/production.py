@@ -1,5 +1,6 @@
 import sentry_sdk
 from django.conf.global_settings import STORAGES
+from langchain_openai import OpenAIEmbeddings
 
 from consultation_analyser.settings.base import *  # noqa
 
@@ -58,3 +59,5 @@ sentry_sdk.init(
 
 
 sentry_sdk.set_tags({"execution_context": EXECUTION_CONTEXT})
+
+EMBEDDING_MODEL =  OpenAIEmbeddings(dimension=EMBEDDING_DIMENSION, model="text-embedding-3-large",)
