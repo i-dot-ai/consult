@@ -180,7 +180,7 @@ On any environment, if you are a staff user, you can give other users permission
 ## Importing data
 
 ### Data import format
-Data should be stored in the appropriate S3 bucket (`AWS_DATA_BUCKET`) and within a folder called `app_data`.
+Data should be stored in the appropriate S3 bucket (`AWS_DATA_BUCKET`) and within a folder called `app_data/consultations/`.
 
 It should be stored in the following structure for a given consultation:
 ```
