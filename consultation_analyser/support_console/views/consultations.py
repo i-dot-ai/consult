@@ -36,9 +36,10 @@ def delete_consultation_job(consultation_id: UUID):
     from django.db import transaction
 
     try:
+        consultation = models.Consultation.objects.get(id=consultation_id)
+
         with transaction.atomic():
             # Refetch the consultation to ensure we have a fresh DB connection
-            consultation = models.Consultation.objects.get(id=consultation_id)
 
             # Delete related objects in order to avoid foreign key constraints
             logger.info(f"Deleting consultation '{consultation.title}' (ID: {consultation_id})")
@@ -68,6 +69,9 @@ def delete_consultation_job(consultation_id: UUID):
         )
     except models.Consultation.DoesNotExist:
         logger.error("consultation id=%s already deleted", consultation_id)
+        raise
+    except Exception as e:
+        logger.error(f"Error deleting consultation '{consultation.title}': {e}")
         raise
 
 
