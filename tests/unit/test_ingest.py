@@ -30,9 +30,7 @@ def get_object_side_effect(Bucket, Key):
     question_data = b'{"question_text": "What do you think?", "has_free_text": true, "options": ["a", "b", "c"]}'
 
     # Mock responses file
-    responses_data = (
-        b'{"themefinder_id": 1, "text": "Good idea"}\n{"themefinder_id": 2, "text": "Bad idea"}'
-    )
+    responses_data = b'{"themefinder_id": 1, "text": "Good idea", "chosen_options": ["a"]}\n{"themefinder_id": 2, "text": "Bad idea", "chosen_options": ["b", "c"]}'
 
     # Mock themes file
     themes_data = (
