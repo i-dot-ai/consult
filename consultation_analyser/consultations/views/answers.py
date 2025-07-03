@@ -107,7 +107,9 @@ def get_filtered_responses_with_themes(
 
     if filters and "search_value" in filters:
         embedded_query = settings.EMBEDDING_MODEL.embed_query(filters["search_value"])
-        responses = models.Response.objects.annotate(distance=CosineDistance("embedding", embedded_query)).order_by("distance")
+        responses = models.Response.objects.annotate(
+            distance=CosineDistance("embedding", embedded_query)
+        ).order_by("distance")
     else:
         responses = models.Response.objects
 

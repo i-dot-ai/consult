@@ -60,4 +60,4 @@ sentry_sdk.init(
 
 sentry_sdk.set_tags({"execution_context": EXECUTION_CONTEXT})
 
-EMBEDDING_MODEL =  OpenAIEmbeddings(dimension=EMBEDDING_DIMENSION, model="text-embedding-3-large",)
+EMBEDDING_MODEL = OpenAIEmbeddings(dimension=EMBEDDING_DIMENSION, model="text-embedding-3-large")  # noqa
