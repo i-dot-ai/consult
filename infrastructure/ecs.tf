@@ -16,6 +16,7 @@ locals {
     "APP_BUCKET"                           = local.secret_env_vars.APP_BUCKET,
     "GUNICORN_WORKERS"                     = local.secret_env_vars.GUNICORN_WORKERS,
     "GUNICORN_TIMEOUT"                     = local.secret_env_vars.GUNICORN_TIMEOUT,
+    "ADMIN_USERS"                          = local.secret_env_vars.ADMIN_USERS
 
   }
 
