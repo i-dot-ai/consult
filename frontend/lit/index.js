@@ -1968,6 +1968,12 @@ class IaiQuestionOverview extends IaiLitBase {
         return Object.values(this.multiResponses).reduce((acc, curr) => acc + curr, 0);
     }
 
+    renderCountFallback = () => {
+      if (!this.responses.count) {
+        return x`<p class="govuk-body">This question does not have free text responses</p>`
+      }
+    }
+
     render() {
         const textResponseTotal = this.getTextResponseTotal();
         const multiResponseTotal = this.getMultiResponseTotal();
@@ -2000,10 +2006,8 @@ class IaiQuestionOverview extends IaiLitBase {
                     .total=${textResponseTotal}
                 ></iai-question-overview-subtitle>
 
-              ${!this.responses.count
-                ? x`<p class="govuk-body">This question does not have free text responses</p>`
-                : ''
-              }
+              ${this.renderCountFallback()}
+
                 <hr />
 
                 <iai-question-overview-subtitle

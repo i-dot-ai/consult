@@ -67,6 +67,12 @@ export default class IaiQuestionOverview extends IaiLitBase {
         return Object.values(this.multiResponses).reduce((acc, curr) => acc + curr, 0);
     }
 
+    renderCountFallback = () => {
+      if (!this.responses.count) {
+        return html`<p class="govuk-body">This question does not have free text responses</p>`
+      }
+    }
+
     render() {
         const textResponseTotal = this.getTextResponseTotal();
         const multiResponseTotal = this.getMultiResponseTotal();
@@ -99,10 +105,8 @@ export default class IaiQuestionOverview extends IaiLitBase {
                     .total=${textResponseTotal}
                 ></iai-question-overview-subtitle>
 
-              ${!this.responses.count
-                ? html`<p class="govuk-body">This question does not have free text responses</p>`
-                : ''
-              }
+              ${this.renderCountFallback()}
+
                 <hr />
 
                 <iai-question-overview-subtitle
