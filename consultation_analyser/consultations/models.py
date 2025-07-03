@@ -1,11 +1,13 @@
 import uuid
 
 import faker as _faker
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import BaseValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
+from pgvector.django import VectorField
 
 from consultation_analyser.authentication.models import User
 
@@ -140,6 +142,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     chosen_options = ArrayField(
         models.TextField(null=False), null=True, default=None
     )  # Multiple choice selections
+    embedding = VectorField(dimensions=settings.EMBEDDING_DIMENSION, null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
