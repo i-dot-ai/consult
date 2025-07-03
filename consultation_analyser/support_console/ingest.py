@@ -1,6 +1,5 @@
 import json
 import logging
-from uuid import UUID
 
 import boto3
 from django.conf import settings
@@ -16,7 +15,6 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
     Theme,
 )
-from consultation_analyser.embeddings import embed_text
 
 logger = logging.getLogger("import")
 DEFAULT_BATCH_SIZE = 10_000
@@ -59,16 +57,14 @@ def get_consultation_codes() -> list[dict]:
     """
     try:
         s3 = boto3.resource("s3")
-        objects = s3.Bucket(settings.AWS_BUCKET_NAME).objects.filter(
-            Prefix="app_data/consultations/"
-        )
+        objects = s3.Bucket(settings.AWS_BUCKET_NAME).objects.filter(Prefix="app_data/")
 
         # Get unique consultation folders
         consultation_codes = set()
         for obj in objects:
             parts = obj.key.split("/")
-            if len(parts) >= 3 and parts[2]:  # Has consultation code
-                consultation_codes.add(parts[2])
+            if len(parts) >= 2 and parts[1]:  # Has consultation code
+                consultation_codes.add(parts[1])
 
         # Format for dropdown
         return [{"text": code, "value": code} for code in sorted(consultation_codes)]
@@ -90,7 +86,7 @@ def validate_consultation_structure(
     errors = []
 
     # Define required structure
-    base_path = f"app_data/consultations/{consultation_code}/"
+    base_path = f"app_data/{consultation_code}/"
     inputs_path = f"{base_path}inputs/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
 
@@ -178,25 +174,6 @@ def validate_consultation_structure(
 
     is_valid = len(errors) == 0
     return is_valid, errors
-
-
-def create_embeddings(consultation_id: UUID):
-    queryset = Response.objects.filter(
-        question__consultation_id=consultation_id, free_text__isnull=False
-    )
-    total = queryset.count()
-    batch_size = 1_000
-
-    for i in range(0, total, batch_size):
-        responses = queryset.order_by("id")[i : i + batch_size]
-
-        free_texts = [response.free_text or "" for response in responses]
-        embeddings = embed_text(free_texts)
-
-        for response, embedding in zip(responses, embeddings):
-            response.embedding = embedding
-
-        Response.objects.bulk_update(responses, ["embedding"])
 
 
 def import_response_annotation_themes(question: Question, output_folder: str):
@@ -288,9 +265,9 @@ def import_response_annotations(question: Question, output_folder: str):
     ResponseAnnotation.objects.bulk_create(annotations_to_save)
 
 
-def _embed_responses(responses: list[dict]) -> list[Response]:
-    embeddings = embed_text([r["free_text"] for r in responses])
-    return [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
+def _embed_responses(responses: list[dict]) ->  list[Response]:
+    embeddings = settings.EMBEDDING_MODEL.embed_documents([r["free_text"] for r in responses])
+    return  [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
 
 
 def import_responses(question: Question, responses_file_key: str):
@@ -381,7 +358,7 @@ def import_questions(
     logger.info(f"Starting question import for consultation {consultation.title})")
 
     bucket_name = settings.AWS_BUCKET_NAME
-    base_path = f"app_data/consultations/{consultation_code}/"
+    base_path = f"app_data/{consultation_code}/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
 
     queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
@@ -389,7 +366,7 @@ def import_questions(
     try:
         s3_client = boto3.client("s3")
         question_folders = get_question_folders(
-            f"app_data/consultations/{consultation_code}/inputs/", settings.AWS_BUCKET_NAME
+            f"app_data/{consultation_code}/inputs/", settings.AWS_BUCKET_NAME
         )
 
         for question_folder in question_folders:
@@ -447,7 +424,7 @@ def import_respondents(consultation: Consultation, consultation_code: str):
     logger.info(f"Starting import_respondents batch for consultation {consultation.title})")
 
     s3_client = boto3.client("s3")
-    respondents_file_key = f"app_data/consultations/{consultation_code}/inputs/respondents.jsonl"
+    respondents_file_key = f"app_data/{consultation_code}/inputs/respondents.jsonl"
     response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=respondents_file_key)
 
     respondents_to_save = []
