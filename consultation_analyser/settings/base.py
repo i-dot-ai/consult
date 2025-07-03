@@ -278,5 +278,4 @@ if DEBUG:
     INSTALLED_APPS += ["debug_toolbar"]
     INTERNAL_IPS = ["127.0.0.1"]
 
-# changing this will require a database migration
-EMBEDDING_DIMENSION = 1024
+EMBEDDING_DIMENSION = 100
