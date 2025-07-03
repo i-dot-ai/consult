@@ -265,6 +265,11 @@ def import_response_annotations(question: Question, output_folder: str):
     ResponseAnnotation.objects.bulk_create(annotations_to_save)
 
 
+def _embed_responses(responses: list[dict]) ->  list[Response]:
+    embeddings = settings.EMBEDDING_MODEL.embed_documents([r["free_text"] for r in responses])
+    return  [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
+
+
 def import_responses(question: Question, responses_file_key: str):
     """
     Import response data for a Consultation Question.
@@ -293,7 +298,7 @@ def import_responses(question: Question, responses_file_key: str):
                 continue
 
             responses_to_save.append(
-                Response(
+                dict(
                     respondent=respondent_dict[themefinder_id],
                     question=question,
                     free_text=response_data.get("text", ""),
@@ -302,11 +307,13 @@ def import_responses(question: Question, responses_file_key: str):
             )
 
             if len(responses_to_save) >= DEFAULT_BATCH_SIZE:
-                Response.objects.bulk_create(responses_to_save)
+                embedded_responses_to_save = _embed_responses(responses_to_save)
+                Response.objects.bulk_create(embedded_responses_to_save)
                 responses_to_save = []
                 logger.info("saved %s Responses for question %s", i + 1, question.number)
 
-        Response.objects.bulk_create(responses_to_save)
+        embedded_responses_to_save = _embed_responses(responses_to_save)
+        Response.objects.bulk_create(embedded_responses_to_save)
 
     except Exception as e:
         logger.error(
