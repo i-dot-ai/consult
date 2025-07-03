@@ -115,44 +115,50 @@ def mock_consultation_input_objects(mock_s3_bucket):
         [json.dumps(evidence_rich_mapping) for evidence_rich_mapping in evidence_rich_mappings_2]
     )
 
-    conn.Object(mock_s3_bucket, "app_data/con1/inputs/respondents.jsonl").put(
+    conn.Object(mock_s3_bucket, "app_data/consultations/con1/inputs/respondents.jsonl").put(
         Body=respondents_jsonl
     )
-    conn.Object(mock_s3_bucket, "app_data/con1/inputs/question_part_1/question.json").put(
-        Body=json.dumps(question_part_1)
-    )
-    conn.Object(mock_s3_bucket, "app_data/con1/inputs/question_part_1/responses.jsonl").put(
-        Body=responses_jsonl_1
-    )
-    conn.Object(mock_s3_bucket, "app_data/con1/inputs/question_part_2/question.json").put(
-        Body=json.dumps(question_part_2)
-    )
-    conn.Object(mock_s3_bucket, "app_data/con1/inputs/question_part_2/responses.jsonl").put(
-        Body=responses_jsonl_2
-    )
     conn.Object(
-        mock_s3_bucket, "app_data/con1/outputs/mapping/2025-04-01/question_part_1/themes.json"
+        mock_s3_bucket, "app_data/consultations/con1/inputs/question_part_1/question.json"
+    ).put(Body=json.dumps(question_part_1))
+    conn.Object(
+        mock_s3_bucket, "app_data/consultations/con1/inputs/question_part_1/responses.jsonl"
+    ).put(Body=responses_jsonl_1)
+    conn.Object(
+        mock_s3_bucket, "app_data/consultations/con1/inputs/question_part_2/question.json"
+    ).put(Body=json.dumps(question_part_2))
+    conn.Object(
+        mock_s3_bucket, "app_data/consultations/con1/inputs/question_part_2/responses.jsonl"
+    ).put(Body=responses_jsonl_2)
+    conn.Object(
+        mock_s3_bucket,
+        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_1/themes.json",
     ).put(Body=json.dumps(themes))
     conn.Object(
-        mock_s3_bucket, "app_data/con1/outputs/mapping/2025-04-01/question_part_2/themes.json"
+        mock_s3_bucket,
+        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/themes.json",
     ).put(Body=json.dumps(themes))
     conn.Object(
-        mock_s3_bucket, "app_data/con1/outputs/mapping/2025-04-01/question_part_1/mapping.jsonl"
+        mock_s3_bucket,
+        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_1/mapping.jsonl",
     ).put(Body=theme_mappings_jsonl)
     conn.Object(
-        mock_s3_bucket, "app_data/con1/outputs/mapping/2025-04-01/question_part_2/mapping.jsonl"
+        mock_s3_bucket,
+        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/mapping.jsonl",
     ).put(Body=theme_mappings_2_jsonl)
     conn.Object(
-        mock_s3_bucket, "app_data/con1/outputs/mapping/2025-04-01/question_part_1/sentiment.jsonl"
+        mock_s3_bucket,
+        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_1/sentiment.jsonl",
     ).put(Body=sentiment_mappings_jsonl)
     conn.Object(
-        mock_s3_bucket, "app_data/con1/outputs/mapping/2025-04-01/question_part_2/sentiment.jsonl"
+        mock_s3_bucket,
+        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/sentiment.jsonl",
     ).put(Body=sentiment_mappings_2_jsonl)
     conn.Object(
         mock_s3_bucket,
-        "app_data/con1/outputs/mapping/2025-04-01/question_part_1/detail_detection.jsonl",
+        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_1/detail_detection.jsonl",
     ).put(Body=evidence_rich_mappings_jsonl)
     conn.Object(
         mock_s3_bucket,
-        "app_data/con1/outputs/mapping/2025-04-01/question_part_2/detail_detection.jsonl",
+        "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/detail_detection.jsonl",
     ).put(Body=evidence_rich_mappings_2_jsonl)
