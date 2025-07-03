@@ -402,7 +402,7 @@ class TestResponsesImport:
 
         # Run the import
         responses_file_key = f"{question_folder}responses.jsonl"
-        import_responses(question, responses_file_key)
+        import_responses(question.id, responses_file_key)
 
         # Verify results
         responses = Response.objects.filter(question=question)
@@ -431,7 +431,7 @@ class TestMappingImport:
         Response.objects.create(respondent=respondent_2, question=question)
 
         # Run the import
-        import_response_annotations(question, output_folder)
+        import_response_annotations(question.id, output_folder)
 
         # Verify results
         annotations = ResponseAnnotation.objects.filter(

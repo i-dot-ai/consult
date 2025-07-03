@@ -5,7 +5,7 @@ from django.conf import settings
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django_rq import job
+from django_q.tasks import async_task
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import (
@@ -20,7 +20,6 @@ from consultation_analyser.support_console.validation_utils import format_valida
 logger = logging.getLogger("export")
 
 
-@job("default", timeout=1800)
 def import_consultation_job(
     consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
 ) -> None:
@@ -33,23 +32,17 @@ def import_consultation_job(
     )
 
 
-@job("default", timeout=900)
-def delete_consultation_job(consultation: models.Consultation):
-    from django.db import connection, transaction
-
-    consultation_id = consultation.id
-    consultation_title = consultation.title
+def delete_consultation_job(consultation_id: UUID):
+    from django.db import transaction
 
     try:
-        # Close any existing connections to start fresh
-        connection.close()
+        consultation = models.Consultation.objects.get(id=consultation_id)
 
         with transaction.atomic():
             # Refetch the consultation to ensure we have a fresh DB connection
-            consultation = models.Consultation.objects.get(id=consultation_id)
 
             # Delete related objects in order to avoid foreign key constraints
-            logger.info(f"Deleting consultation '{consultation_title}' (ID: {consultation_id})")
+            logger.info(f"Deleting consultation '{consultation.title}' (ID: {consultation_id})")
 
             # Delete in batches to avoid memory issues
             logger.info("Deleting response annotations...")
@@ -72,12 +65,14 @@ def delete_consultation_job(consultation: models.Consultation):
             consultation.delete()
 
         logger.info(
-            f"Successfully deleted consultation '{consultation_title}' (ID: {consultation_id})"
+            f"Successfully deleted consultation '{consultation.title}' (ID: {consultation_id})"
         )
-
+    except models.Consultation.DoesNotExist:
+        logger.error("consultation id=%s already deleted", consultation_id)
+        raise
     except Exception as e:
         logger.error(
-            f"Error deleting consultation '{consultation_title}' (ID: {consultation_id}): {str(e)}"
+            f"Error deleting consultation '{consultation.title}' (ID: {consultation_id}): {str(e)}"
         )
         raise
 
@@ -97,12 +92,12 @@ def index(request: HttpRequest) -> HttpResponse:
                 )
                 user = request.user
                 consultation.users.add(user)
-                create_dummy_consultation_from_yaml_job.delay(
+                create_dummy_consultation_from_yaml_job(
                     number_respondents=n, consultation=consultation
                 )
                 messages.success(
                     request,
-                    "A giant dummy consultation is being created - see progress in the Django RQ dashboard",
+                    "A giant dummy consultation is being created - see progress in the Django-Q dashboard",
                 )
         except RuntimeError as error:
             messages.error(request, error.args[0])
@@ -119,10 +114,15 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
     if request.POST:
         if "confirm_deletion" in request.POST:
-            delete_consultation_job.delay(consultation=consultation)
+            async_task(
+                delete_consultation_job,
+                consultation_id=consultation.id,
+                group="delete-consultation",
+                task_name=str(consultation.id),
+            )
             messages.success(
                 request,
-                "The consultation has been sent for deletion - check queue dashboard for progress",
+                "The consultation has been sent for deletion - check Django-Q dashboard for progress",
             )
             return redirect("/support/consultations/")
 
@@ -162,14 +162,20 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
         for id in question_ids:
             try:
                 logging.info("Exporting theme audit data - sending to queue")
-                export_user_theme_job.delay(question_id=UUID(id), s3_key=s3_key)
+                async_task(
+                    export_user_theme_job,
+                    question_id=UUID(id),
+                    s3_key=s3_key,
+                    group="export-question",
+                    task_name=str(id),
+                )
             except Exception as e:
                 messages.error(request, e)
                 return render(request, "support_console/consultations/export_audit.html", context)
 
         messages.success(
             request,
-            "Consultation theme audit export started for question - see Django RQ dashboard for progress",
+            "Consultation theme audit export started for question - see Django-Q dashboard for progress",
         )
         return redirect("/support/consultations/")
 
@@ -211,11 +217,14 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
 
         # If valid, queue the import job
         try:
-            import_consultation_job.delay(
+            async_task(
+                import_consultation_job,
                 consultation_name=consultation_name,
                 consultation_code=consultation_code,
                 timestamp=timestamp,
                 current_user_id=request.user.id,
+                group="ingest-consultation",
+                task_name=consultation_name,
             )
             messages.success(request, f"Import started for consultation: {consultation_name}")
             return redirect("support_consultations")  # Fixed URL name

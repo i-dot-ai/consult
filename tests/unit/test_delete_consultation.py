@@ -147,7 +147,7 @@ def test_delete_consultation_job_success(mock_connection):
     ).exists()
 
     # Run the delete job
-    delete_consultation_job(consultation)
+    delete_consultation_job(consultation.id)
 
     # Verify all objects are deleted
     assert not Consultation.objects.filter(id=consultation_id).exists()
@@ -161,20 +161,17 @@ def test_delete_consultation_job_success(mock_connection):
 
 
 @pytest.mark.django_db
-@patch("django.db.connection")
 @patch("consultation_analyser.support_console.views.consultations.logger")
-def test_delete_consultation_job_with_logging(mock_logger, mock_connection):
+def test_delete_consultation_job_with_logging(mock_logger):
     """Test that the delete job logs appropriately."""
-    # Mock connection.close() to prevent test database connection issues
-    mock_connection.close = Mock()
 
     # Create minimal test data
     consultation = Consultation.objects.create(title="Test Consultation")
 
     # Run the delete job
-    delete_consultation_job(consultation)
+    delete_consultation_job(consultation.id)
 
-    # Verify logging calls
+    # Verify logging call
     mock_logger.info.assert_any_call(
         f"Deleting consultation 'Test Consultation' (ID: {consultation.id})"
     )
@@ -184,41 +181,26 @@ def test_delete_consultation_job_with_logging(mock_logger, mock_connection):
     mock_logger.info.assert_any_call("Deleting questions...")
     mock_logger.info.assert_any_call("Deleting respondents...")
     mock_logger.info.assert_any_call("Deleting consultation...")
+
     mock_logger.info.assert_any_call(
         f"Successfully deleted consultation 'Test Consultation' (ID: {consultation.id})"
     )
 
 
 @pytest.mark.django_db
-@patch("django.db.connection")
-def test_delete_consultation_job_handles_database_connection(mock_connection):
-    """Test that the delete job properly handles database connections."""
-    consultation = Consultation.objects.create(title="Test Consultation")
-
-    # Run the delete job
-    delete_consultation_job(consultation)
-
-    # Verify connection.close() was called
-    mock_connection.close.assert_called_once()
-
-
-@pytest.mark.django_db
-@patch("django.db.connection")
 @patch("consultation_analyser.support_console.views.consultations.logger")
-def test_delete_consultation_job_handles_exceptions(mock_logger, mock_connection):
+def test_delete_consultation_job_handles_exceptions(mock_logger):
     """Test that the delete job properly handles and logs exceptions."""
-    # Mock connection.close() to prevent test database connection issues
-    mock_connection.close = Mock()
 
     consultation = Consultation.objects.create(title="Test Consultation")
 
-    # Mock an exception during the model get operation (after connection.close but before deletion)
+    # Mock an exception during delete
     with patch(
-        "consultation_analyser.consultations.models.Consultation.objects.get",
+        "consultation_analyser.consultations.models.Consultation.delete",
         side_effect=Exception("Database error"),
     ):
         with pytest.raises(Exception) as exc_info:
-            delete_consultation_job(consultation)
+            delete_consultation_job(consultation.id)
 
         assert "Database error" in str(exc_info.value)
         mock_logger.error.assert_called_once()

@@ -52,7 +52,7 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_forms_gds",
     "django.contrib.humanize",
-    "django_rq",
+    "django_q",
     "simple_history",
 ]
 
@@ -170,10 +170,6 @@ LOGGING = {
             "format": "[{server_time}] {name}: {message}",
             "style": "{",
         },
-        "rq_console": {
-            "format": "%(asctime)s %(message)s",
-            "datefmt": "%H:%M:%S",
-        },
     },
     "handlers": {
         "stdout": {
@@ -182,12 +178,11 @@ LOGGING = {
             "stream": sys.stdout,
             "formatter": "pipeline",
         },
-        "rq_console": {
+        "django_q": {
             "level": "INFO",
-            "class": "rq.logutils.ColorizingStreamHandler",
+            "class": "logging.StreamHandler",
             "stream": sys.stdout,
-            "formatter": "rq_console",
-            "exclude": ["%(asctime)s"],
+            "formatter": "pipeline",
         },
     },
     "loggers": {
@@ -196,7 +191,7 @@ LOGGING = {
         "import": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "export": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "dummy_data": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
-        "rq.worker": {"handlers": ["rq_console"], "level": "INFO"},
+        "django_q": {"handlers": ["django_q"], "level": "INFO"},
     },
 }
 
@@ -244,31 +239,23 @@ LOGIN_URL = "/sign-in/"
 # version info
 GIT_SHA = env("GIT_SHA", default=None)
 
-# redis
-redis_host = env.str("REDIS_HOST", "localhost")
-redis_port = env.str("REDIS_PORT", "6379")
-redis_url = f"redis://{redis_host}:{redis_port}"
 
 CACHES = {
     "default": {
         "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
     },
-    "redis": {
-        "BACKEND": "django_redis.cache.RedisCache",
-        "LOCATION": redis_url,
-        "OPTIONS": {
-            "CLIENT_CLASS": "django_redis.client.DefaultClient",
-            "MAX_ENTRIES": 5000,
-        },
-    },
 }
 
-# rq
-RQ_QUEUES = {
-    "default": {
-        "USE_REDIS_CACHE": "redis",
-        "ASYNC": True,
-    },
+# django-q2
+Q_CLUSTER = {
+    "name": "consultation_analyser",
+    "workers": 4,
+    "recycle": 500,
+    "timeout": 3_600,
+    "retry": 3_600,
+    "queue_limit": 50,
+    "bulk": 10,
+    "orm": "default",
 }
 
 # Django debug toolbar

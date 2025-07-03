@@ -1,9 +1,10 @@
 import json
 import logging
+from uuid import UUID
 
 import boto3
 from django.conf import settings
-from django_rq import get_queue
+from django_q.tasks import Chain
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -18,7 +19,6 @@ from consultation_analyser.consultations.models import (
 
 logger = logging.getLogger("import")
 DEFAULT_BATCH_SIZE = 10_000
-DEFAULT_TIMEOUT_SECONDS = 3_600
 
 
 def get_question_folders(inputs_path: str, bucket_name: str) -> list[str]:
@@ -176,7 +176,8 @@ def validate_consultation_structure(
     return is_valid, errors
 
 
-def import_response_annotation_themes(question: Question, output_folder: str):
+def import_response_annotation_themes(question_id: UUID, output_folder: str):
+    question = Question.objects.get(id=question_id)
     mapping_file_key = f"{output_folder}mapping.jsonl"
     s3_client = boto3.client("s3")
 
@@ -212,7 +213,8 @@ def import_response_annotation_themes(question: Question, output_folder: str):
     ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
 
 
-def import_response_annotations(question: Question, output_folder: str):
+def import_response_annotations(question_id: UUID, output_folder: str):
+    question = Question.objects.get(id=question_id)
     sentiment_file_key = f"{output_folder}sentiment.jsonl"
     evidence_file_key = f"{output_folder}detail_detection.jsonl"
     s3_client = boto3.client("s3")
@@ -265,17 +267,18 @@ def import_response_annotations(question: Question, output_folder: str):
     ResponseAnnotation.objects.bulk_create(annotations_to_save)
 
 
-def import_responses(question: Question, responses_file_key: str):
+def import_responses(question_id: UUID, responses_file_key: str):
     """
     Import response data for a Consultation Question.
 
     Args:
-        question: Question object for response
+        question_id: UUID object for response
         responses_file_key: s3key
     """
     s3_client = boto3.client("s3")
 
     responses_data = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key)
+    question = Question.objects.get(id=question_id)
 
     try:
         # Get respondents
@@ -315,7 +318,8 @@ def import_responses(question: Question, responses_file_key: str):
         raise
 
 
-def import_themes(question: Question, output_folder: str):
+def import_themes(question_id: UUID, output_folder: str):
+    question = Question.objects.get(id=question_id)
     s3_client = boto3.client("s3")
     themes_file_key = f"{output_folder}themes.json"
     response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
@@ -354,15 +358,13 @@ def import_questions(
     base_path = f"app_data/{consultation_code}/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
 
-    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
-
     try:
         s3_client = boto3.client("s3")
         question_folders = get_question_folders(
             f"app_data/{consultation_code}/inputs/", settings.AWS_BUCKET_NAME
         )
 
-        for question_folder in question_folders:
+        for question_folder in question_folders[:4]:
             question_num_str = question_folder.split("/")[-2].replace("question_part_", "")
             question_number = int(question_num_str)
 
@@ -387,19 +389,14 @@ def import_questions(
             )
 
             responses_file_key = f"{question_folder}responses.jsonl"
-            responses = queue.enqueue(import_responses, question, responses_file_key)
-
             output_folder = f"{outputs_path}question_part_{question_num_str}/"
-            themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
-            response_annotations = queue.enqueue(
-                import_response_annotations, question, output_folder, depends_on=themes
-            )
-            queue.enqueue(
-                import_response_annotation_themes,
-                question,
-                output_folder,
-                depends_on=response_annotations,
-            )
+
+            chain = Chain(cached=True)
+            chain.append(import_responses, question.id, responses_file_key)
+            chain.append(import_themes, question.id, output_folder)
+            chain.append(import_response_annotations, question.id, output_folder)
+            chain.append(import_response_annotation_themes, question.id, output_folder)
+            chain.run()
 
     except Exception as e:
         logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
