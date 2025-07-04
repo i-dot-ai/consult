@@ -5414,10 +5414,30 @@ class CrossSearchCard extends IaiLitBase {
                 font-size: 0.9em;
                 margin: 0;
             }
+            iai-silver-cross-search-card .container {
+                display: flex;
+                gap: 0.5em;
+            }
+            iai-silver-cross-search-card .body-container {
+                flex-grow: 1;
+            }
+            iai-silver-cross-search-card .title-container {
+                display: flex;
+                justify-content: space-between;
+            }
             iai-silver-cross-search-card .tags {
                 display: flex;
                 gap: 0.5em;
                 flex-wrap: wrap;
+            }
+            iai-silver-cross-search-card .tag {
+                display: flex;
+                justify-content: center;
+                align-items: center;    
+                padding: 0.3em 0.5em;
+                background: #e6e6e7;
+                font-size: 0.8em;
+                border-radius: 0.5em;
             }
             iai-silver-cross-search-card .matched-text {
                 background: yellow;
@@ -5453,7 +5473,7 @@ class CrossSearchCard extends IaiLitBase {
         return x`
             <iai-silver-panel>
                 <article slot="content">
-                    <div style="display: flex; gap: 0.5em;">
+                    <div class="container">
                         <div>
                             <iai-icon
                                 .name=${this.type == "question" ? "help" : "chat_bubble"}
@@ -5464,8 +5484,8 @@ class CrossSearchCard extends IaiLitBase {
                             ></iai-icon>
                         </div>
 
-                        <div style="flex-grow: 1;">
-                            <div style="display: flex; justify-content: space-between;">
+                        <div class="body-container">
+                            <div class="title-container">
                                 <h3>
                                     ${this.applyTextHighlight(this.title)}
                                 </h3>
@@ -5480,7 +5500,7 @@ class CrossSearchCard extends IaiLitBase {
                             <footer class="tags">
                                 ${this.footer}
                                 ${this.tags.map(tag => x`
-                                    <span class="tag" style="border-radius: 0.5em; background: #e6e6e7; padding: 0.3em 0.5em; font-size: 0.8em; display: flex; justify-content: center; align-items: center;">
+                                    <span class="tag">
                                         ${tag}
                                     </span>
                                 `)}
