@@ -1,3 +1,4 @@
+from collections import defaultdict
 from datetime import datetime
 from typing import TypedDict
 from uuid import UUID
@@ -18,6 +19,7 @@ class DataDict(TypedDict):
     filtered_total: int
     theme_mappings: list
     demographic_options: dict[str, list[str]]
+    demographic_aggregations: dict[str, dict[str, int]]
 
 
 class FilterParams(TypedDict, total=False):
@@ -221,6 +223,26 @@ def derive_option_summary_from_responses(responses) -> list[dict]:
     return [option_counts] if option_counts else []
 
 
+def get_demographic_aggregations_from_responses(filtered_responses) -> dict[str, dict[str, int]]:
+    """Aggregate demographic data for filtered responses using efficient database queries"""
+    respondent_ids = filtered_responses.values_list("respondent_id", flat=True).distinct()
+
+    # Fetch all demographic data for these respondents in one query
+    respondents_data = models.Respondent.objects.filter(id__in=respondent_ids).values_list(
+        "demographics", flat=True
+    )
+
+    # Aggregate in memory (much faster than nested loops)
+    aggregations: defaultdict[str, defaultdict[str, int]] = defaultdict(lambda: defaultdict(int))
+    for demographics in respondents_data:
+        if demographics:
+            for field_name, field_value in demographics.items():
+                value_str = str(field_value)
+                aggregations[field_name][value_str] += 1
+
+    return {field: dict(counts) for field, counts in aggregations.items()}
+
+
 @user_can_see_dashboards
 @user_can_see_consultation
 def question_responses_json(
@@ -286,6 +308,9 @@ def question_responses_json(
     # Get demographic options for this consultation
     demographic_options = get_demographic_options(question.consultation)
 
+    # Get demographic aggregations for filtered responses
+    demographic_aggregations = get_demographic_aggregations_from_responses(filtered_responses)
+
     data: DataDict = {
         "all_respondents": [],
         "has_more_pages": False,
@@ -293,6 +318,7 @@ def question_responses_json(
         "filtered_total": filtered_total,
         "theme_mappings": theme_mappings,
         "demographic_options": demographic_options,
+        "demographic_aggregations": demographic_aggregations,
     }
 
     # Pagination
