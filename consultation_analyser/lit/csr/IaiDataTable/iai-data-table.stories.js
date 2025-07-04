@@ -22,6 +22,7 @@ export default {
       <iai-data-table
         .data=${args.data}
         .initialSorts=${args.initialSorts}
+        .sortable=${args.sortable}
       ></iai-data-table>
     `
   },
@@ -36,6 +37,7 @@ export const DefaultTable = {
       field: "Total mentions",
       ascending: false,
     }],
+    sortable: true,
   }
 };
 
@@ -48,12 +50,14 @@ export const TableWithRawHtml = {
         "Theme name": unsafeHTML(`<span style=\"color: red;\">All Themes</span>`)
       }
     ],
+    sortable: true,
   }
 };
 
 export const TableWithEncodedProps = {
   args: {
     data: DEFAULT_DATA,
+    sortable: true,
   },
 
   render: (args) => {
@@ -69,5 +73,13 @@ export const WithInitialSorts = {
   args: {
     data: DEFAULT_DATA,
     initialSorts: [{ "field": "Total mentions", "ascending": false }],
+    sortable: true,
+  }
+};
+
+export const NotSortable = {
+  args: {
+    data: DEFAULT_DATA,
+    sortable: false,
   }
 };
