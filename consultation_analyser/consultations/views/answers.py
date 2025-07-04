@@ -2,13 +2,13 @@ from datetime import datetime
 from typing import TypedDict
 from uuid import UUID
 
-from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from pgvector.django import CosineDistance
 
+from ...embeddings import embed_text
 from .. import models
 from .decorators import user_can_see_consultation, user_can_see_dashboards
 
@@ -106,7 +106,7 @@ def get_filtered_responses_with_themes(
     response_filter = build_response_filter_query(filters or {}, question)
 
     if filters and "search_value" in filters:
-        embedded_query = settings.EMBEDDING_MODEL.embed_query(filters["search_value"])
+        embedded_query = embed_text(filters["search_value"])
         responses = models.Response.objects.annotate(
             distance=CosineDistance("embedding", embedded_query)
         ).order_by("distance")
