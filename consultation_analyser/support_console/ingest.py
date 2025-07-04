@@ -122,7 +122,9 @@ def validate_consultation_structure(
             responses_file = f"{folder}responses.jsonl"
 
             try:
-                s3.head_object(Bucket=bucket_name, Key=question_file)
+                response = s3.get_object(Bucket=bucket_name, Key=question_file)
+                question_data = json.loads(response["Body"].read())
+                has_free_text = question_data.get("has_free_text", True)
             except s3.exceptions.NoSuchKey:
                 errors.append(f"Missing {question_file}")
             except Exception as e:
@@ -135,16 +137,17 @@ def validate_consultation_structure(
             except Exception as e:
                 errors.append(f"Error checking {responses_file}: {str(e)}")
 
-            # Check output files for this question part
-            output_folder = f"{outputs_path}{question_num}/"
-            for output_file in required_outputs:
-                output_key = f"{output_folder}{output_file}"
-                try:
-                    s3.head_object(Bucket=bucket_name, Key=output_key)
-                except s3.exceptions.NoSuchKey:
-                    errors.append(f"Missing output file: {output_key}")
-                except Exception as e:
-                    errors.append(f"Error checking {output_key}: {str(e)}")
+            # Check output files for this question part, if it is a free-text question
+            if has_free_text:
+                output_folder = f"{outputs_path}{question_num}/"
+                for output_file in required_outputs:
+                    output_key = f"{output_folder}{output_file}"
+                    try:
+                        s3.head_object(Bucket=bucket_name, Key=output_key)
+                    except s3.exceptions.NoSuchKey:
+                        errors.append(f"Missing output file: {output_key}")
+                    except Exception as e:
+                        errors.append(f"Error checking {output_key}: {str(e)}")
 
         # Validate JSON/JSONL files are parseable (spot check first question part)
         if question_folders and not errors:
@@ -392,17 +395,18 @@ def import_questions(
             responses_file_key = f"{question_folder}responses.jsonl"
             responses = queue.enqueue(import_responses, question, responses_file_key)
 
-            output_folder = f"{outputs_path}question_part_{question_num_str}/"
-            themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
-            response_annotations = queue.enqueue(
-                import_response_annotations, question, output_folder, depends_on=themes
-            )
-            queue.enqueue(
-                import_response_annotation_themes,
-                question,
-                output_folder,
-                depends_on=response_annotations,
-            )
+            if question.has_free_text:
+                output_folder = f"{outputs_path}question_part_{question_num_str}/"
+                themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
+                response_annotations = queue.enqueue(
+                    import_response_annotations, question, output_folder, depends_on=themes
+                )
+                queue.enqueue(
+                    import_response_annotation_themes,
+                    question,
+                    output_folder,
+                    depends_on=response_annotations,
+                )
 
     except Exception as e:
         logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
