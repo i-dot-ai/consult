@@ -32,6 +32,7 @@ def delete_selected_no_confirm(modeladmin, request, queryset):
 class ResponseAdmin(admin.ModelAdmin):
     list_filter = ["question"]
     list_display = ["free_text", "question"]
+    list_select_related = True
     actions = [update_embeddings, delete_selected_no_confirm]
 
 
@@ -40,6 +41,9 @@ class ConsultationAdmin(admin.ModelAdmin):
 
 
 class QuestionAdmin(admin.ModelAdmin):
+    list_filter = ["consultation"]
+    list_display = ["title", "consultation"]
+    list_select_related = True
     actions = [delete_selected_no_confirm]
 
 
