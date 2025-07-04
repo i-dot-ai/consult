@@ -4672,6 +4672,12 @@ class SearchBox extends IaiLitBase {
                 left: 0.5em;
                 bottom: 0.5em;
             }
+            iai-silver-search-box .clear-button {
+                position: absolute;
+                top: 50%;
+                right: 2em;
+                z-index: 1;
+            }
         `
     ]
 
@@ -4695,11 +4701,11 @@ class SearchBox extends IaiLitBase {
         return x`
             <div class="search-box-container">
                 <iai-text-input
-                    inputId=${this.inputId}
-                    name=${this.name}
-                    label=${this.label}
-                    placeholder=${this.placeholder}
-                    value=${this.value}
+                    .inputId=${this.inputId}
+                    .name=${this.name}
+                    .label=${this.label}
+                    .placeholder=${this.placeholder}
+                    .value=${this.value}
                     .hideLabel=${this.hideLabel}
                     .handleInput=${this.handleInput}
                 ></iai-text-input>
@@ -4713,7 +4719,7 @@ class SearchBox extends IaiLitBase {
                 ${this.value
                     ? x`
                         <iai-icon-button
-                            style="position: absolute;right: 2em;top: 50%; z-index: 1;"
+                            class="clear-button"
                             .title="Clear search"
                             @click=${() => {
                                 this.value = "";
