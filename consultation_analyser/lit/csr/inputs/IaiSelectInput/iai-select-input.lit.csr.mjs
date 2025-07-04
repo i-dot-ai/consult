@@ -55,10 +55,10 @@ export default class IaiSelectInput extends IaiLitBase {
                     ${this.label}
                 </label>
                 <select
-                    class="govuk-select"    
-                    id=${this.inputId}    
-                    name=${this.name}
-                    value=${this.value}
+                    class="govuk-select"
+                    .id=${this.inputId}
+                    .name=${this.name}
+                    .value=${this.value}
                     @change=${this.handleChange}
                 >
                     ${[ // Add placeholder empty option to options
@@ -70,7 +70,7 @@ export default class IaiSelectInput extends IaiLitBase {
                         }
                         return html`
                             <option
-                                value=${option.value}
+                                .value=${option.value}
                                 ?selected=${option.value === this.value}
                             >
                                 ${option.text}

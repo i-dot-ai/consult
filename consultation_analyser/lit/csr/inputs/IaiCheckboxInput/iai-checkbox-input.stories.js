@@ -22,7 +22,7 @@ export default {
           inputId=${input.inputId}
           label=${input.label}
           value=${input.value}
-        ></iai-checkbox-input>  
+        ></iai-checkbox-input>
       `)}
       
     `
