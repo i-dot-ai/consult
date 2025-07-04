@@ -556,9 +556,14 @@ def test_semantic_search(fake_embed_text, consultation, question):
     ResponseFactory(question=question, free_text="orthogonal", embedding=v3)
 
     fake_embed_text.return_value = v1
-    responses = get_filtered_responses_with_themes(question, filters)
+
+    responses = get_filtered_responses_with_themes(question, filters, 3)
     assert [x.free_text for x in responses] == ["exact match", "orthogonal", "opposite"]
     assert [x.distance for x in responses] == [0, 1, 2]
+
+    responses = get_filtered_responses_with_themes(question, filters, 1)
+    assert [x.free_text for x in responses] == ["exact match", "orthogonal"]
+    assert [x.distance for x in responses] == [0, 1]
 
 
 @pytest.mark.django_db
