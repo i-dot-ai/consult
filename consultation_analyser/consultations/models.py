@@ -161,6 +161,9 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     def __str__(self):
         return shorten(self.free_text, width=64, placeholder="...")
 
+    def __str__(self):
+        return shorten(self.free_text, width=64, placeholder="...")
+
 
 class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
     """Normalized storage of demographic field options for efficient querying across pages"""
