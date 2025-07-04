@@ -24,6 +24,8 @@ def update_embeddings(modeladmin, request, queryset):
 
 
 class ResponseAdmin(admin.ModelAdmin):
+    list_filter = ["question", "question__consultation"]
+    list_display = ["free_text", "question"]
     actions = [update_embeddings]
 
 
