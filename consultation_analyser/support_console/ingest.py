@@ -64,6 +64,7 @@ def get_consultation_codes() -> list[dict]:
 
         # Get unique consultation folders
         consultation_codes = set()
+        print("trying", settings.AWS_BUCKET_NAME)
         for obj in objects:
             parts = obj.key.split("/")
             if len(parts) >= 3 and parts[2]:  # Has consultation code
