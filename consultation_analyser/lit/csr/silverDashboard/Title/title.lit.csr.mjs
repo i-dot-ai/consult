@@ -11,6 +11,7 @@ export default class Title extends IaiLitBase {
         text: { type: String },
         subtext: { type: String },
         icon: { type: String },
+        aside: { type: String },
     }
 
     static styles = [
@@ -32,6 +33,11 @@ export default class Title extends IaiLitBase {
             }
             iai-silver-title .container {
                 display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+            }
+            iai-silver-title .icon-container {
+                display: flex;
                 align-items: center;
                 gap: 0.5em;
                 margin-bottom: 1.5em;
@@ -48,6 +54,7 @@ export default class Title extends IaiLitBase {
         this.text = "";
         this.subtext = "";
         this.icon = "";
+        this.aside = "";
 
         this.applyStaticStyles("iai-silver-title", Title.styles);
     }
@@ -60,12 +67,15 @@ export default class Title extends IaiLitBase {
                 return html`<h2>${this.text}</h2>`;
             case 3:
                 return html`<h3>${this.text}</h3>`;
+            case 4:
+                return html`<h4>${this.text}</h4>`;
         }
     }
 
     render() {
         return html`
-            <div class="container">
+        <div class="container">
+            <div class="icon-container">
                 ${this.icon
                     ? html`
                         <iai-silver-icon-tile
@@ -90,6 +100,11 @@ export default class Title extends IaiLitBase {
                     }
                 </div>
             </div>
+
+            <aside>
+                ${this.aside}
+            </aside>
+        </div>
         `
     }
 }
