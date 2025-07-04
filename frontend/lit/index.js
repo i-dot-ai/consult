@@ -5597,10 +5597,9 @@ customElements.define("iai-silver-tag", Tag);
 class QuestionOverviewPage extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
-        _questions: { type: Array },
-        _searchValue: { type: String },
         questions: { type: Array },
         consultationName: { type: String },
+        _searchValue: { type: String },
     }
 
     static styles = [
@@ -5640,29 +5639,10 @@ class QuestionOverviewPage extends IaiLitBase {
         this._STORAGE_KEY = "favouriteQuestions";
 
         // Prop defaults
-        this._questions = [
-            {
-                id: "1",
-                title: "What regulatory frameworks should be established to govern AI systems in critical sectors such as healthcare, finance, and transportation?",
-                numResponses: 6700,
-                status: this.CONSULTATION_STATUSES.open,
-            },
-            {
-                id: "2",
-                title: "How should data protection principles be adapted for AI-driven systems whilst maintaining innovation?",
-                numResponses: 4635,
-                status: this.CONSULTATION_STATUSES.open,
-            },
-            {
-                id: "3",
-                title: "Should organisations be required to implement AI ethics boards?",
-                numResponses: 5230,
-                status: this.CONSULTATION_STATUSES.open,
-            }
-        ];
-        this._searchValue = "";
         this.consultationName = "";
         this.questions = [];
+
+        this._searchValue = "";
 
         this.applyStaticStyles("iai-question-overview-page", QuestionOverviewPage.styles);
     }
@@ -5735,7 +5715,9 @@ class QuestionOverviewPage extends IaiLitBase {
                                             </iai-icon-button>
                                         `}
                                         .footer=${x`
-                                            <small class="response-total">${question.numResponses.toLocaleString()} responses</small>
+                                            <small class="response-total">
+                                                ${question.numResponses.toLocaleString()} responses
+                                            </small>
                                             <iai-silver-tag
                                                 .status=${question.status}
                                                 .text=${question.status}
