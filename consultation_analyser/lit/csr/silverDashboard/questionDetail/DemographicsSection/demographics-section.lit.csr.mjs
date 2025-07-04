@@ -10,6 +10,7 @@ export default class DemographicsSection extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         data: { type: Array },
+        themeFilters: { type: Array },
     }
 
     static styles = [
@@ -33,6 +34,7 @@ export default class DemographicsSection extends IaiLitBase {
 
         // Prop defaults
         this.data = [];
+        this.themeFilters = [];
         
         this.applyStaticStyles("iai-demographics-section", DemographicsSection.styles);
     }
@@ -49,11 +51,23 @@ export default class DemographicsSection extends IaiLitBase {
                             .level=${2}
                         ></iai-silver-title>
 
+                        ${this.themeFilters.length > 0
+                            ? html`
+                                <iai-silver-tag
+                                    .text=${"Active theme analysis filters"}
+                                    .subtext=${`Showing data for 4,020 responses (filtered by: ${this.themeFilters.length} themes)`}
+                                    .icon=${"help"}
+                                    .status=${"Closed"}
+                                ></iai-silver-tag>
+                            `
+                            : ""
+                        }
+
                         <div class="cards">
-                            ${this.data.map(category => html`
+                            ${Object.keys(this.data).map(category => html`
                                 <iai-demographics-card
-                                    .title=${category.title}
-                                    .data=${category.data}
+                                    .title=${this.toTitleCase(category)}
+                                    .data=${this.data[category]}
                                 ></iai-demographics-card>
                             `)}
                         </div>
