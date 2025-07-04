@@ -98,7 +98,7 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
 
 
 def get_filtered_responses_with_themes(
-    question: models.Question, filters: FilterParams | None = None, similarity_threshold = .2
+    question: models.Question, filters: FilterParams | None = None, similarity_threshold=0.2
 ):
     """Single optimized query to get all filtered responses with their themes"""
     response_filter = build_response_filter_query(filters or {}, question)
@@ -121,7 +121,8 @@ def get_filtered_responses_with_themes(
         embedded_query = embed_text(filters["search_value"])
         responses = (
             queryset.annotate(distance=CosineDistance("embedding", embedded_query))
-            .distinct().filter(distance__lte=similarity_threshold)
+            .distinct()
+            .filter(distance__lte=similarity_threshold)
             .order_by("distance")
         )
         return responses
@@ -268,7 +269,9 @@ def question_responses_json(
 
     # Get respondents with their filtered responses using the same logic as theme filtering
     # First get the filtered responses using AND logic for themes
-    filtered_responses = get_filtered_responses_with_themes(question, filters, settings.SIMILARITY_THRESHOLD)
+    filtered_responses = get_filtered_responses_with_themes(
+        question, filters, settings.SIMILARITY_THRESHOLD
+    )
 
     # Then get respondents who have these filtered responses
     filtered_respondents = (
