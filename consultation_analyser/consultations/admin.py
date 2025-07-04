@@ -23,18 +23,24 @@ def update_embeddings(modeladmin, request, queryset):
     modeladmin.message_user(request, f"Processed {total} responses in batches of {batch_size}")
 
 
+@admin.action(description="delete")
+def delete_selected_no_confirm(modeladmin, request, queryset):
+    queryset.delete()
+    modeladmin.message_user(request, f"Successfully deleted {queryset.count()} items.")
+
+
 class ResponseAdmin(admin.ModelAdmin):
     list_filter = ["question"]
     list_display = ["free_text", "question"]
-    actions = [update_embeddings]
+    actions = [update_embeddings, delete_selected_no_confirm]
 
 
 class ConsultationAdmin(admin.ModelAdmin):
-    pass
+    actions = [delete_selected_no_confirm]
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    pass
+    actions = [delete_selected_no_confirm]
 
 
 admin.site.register(Response, ResponseAdmin)
