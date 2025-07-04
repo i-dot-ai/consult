@@ -1,5 +1,5 @@
 from django.conf.global_settings import STORAGES
-from langchain_openai import OpenAIEmbeddings
+from langchain_core.embeddings import FakeEmbeddings
 
 from consultation_analyser.settings.base import *  # noqa
 
@@ -31,4 +31,4 @@ STORAGES["default"] = {  # noqa
     },
 }
 
-EMBEDDING_MODEL = OpenAIEmbeddings(dimension=EMBEDDING_DIMENSION, model="text-embedding-3-large")  # noqa
+EMBEDDING_MODEL = FakeEmbeddings(size=EMBEDDING_DIMENSION)  # noqa
