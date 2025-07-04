@@ -2,6 +2,7 @@ from datetime import datetime
 from typing import TypedDict
 from uuid import UUID
 
+from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Count, Exists, OuterRef, Prefetch, Q
 from django.http import HttpRequest, JsonResponse
@@ -78,9 +79,6 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
     if filters.get("evidence_rich"):
         query &= Q(annotation__evidence_rich=models.ResponseAnnotation.EvidenceRich.YES)
 
-    # if filters.get("search_value"):
-    #     query &= Q(free_text__icontains=filters["search_value"])
-
     # Handle demographic filters
     if filters.get("demographic_filters"):
         for field, values in filters["demographic_filters"].items():
@@ -100,7 +98,7 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
 
 
 def get_filtered_responses_with_themes(
-    question: models.Question, filters: FilterParams | None = None
+    question: models.Question, filters: FilterParams | None = None, similarity_threshold = .2
 ):
     """Single optimized query to get all filtered responses with their themes"""
     response_filter = build_response_filter_query(filters or {}, question)
@@ -123,7 +121,7 @@ def get_filtered_responses_with_themes(
         embedded_query = embed_text(filters["search_value"])
         responses = (
             queryset.annotate(distance=CosineDistance("embedding", embedded_query))
-            .distinct()
+            .distinct().filter(distance__lte=similarity_threshold)
             .order_by("distance")
         )
         return responses
@@ -270,7 +268,7 @@ def question_responses_json(
 
     # Get respondents with their filtered responses using the same logic as theme filtering
     # First get the filtered responses using AND logic for themes
-    filtered_responses = get_filtered_responses_with_themes(question, filters)
+    filtered_responses = get_filtered_responses_with_themes(question, filters, settings.SIMILARITY_THRESHOLD)
 
     # Then get respondents who have these filtered responses
     filtered_respondents = (
