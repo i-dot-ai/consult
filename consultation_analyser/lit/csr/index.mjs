@@ -35,3 +35,4 @@ import Title from "./silverDashboard/Title/title.lit.csr.mjs";
 import Panel from "./silverDashboard/Panel/panel.lit.csr.mjs";
 import CrossSearchCard from "./silverDashboard/CrossSearchCard/cross-search-card.lit.csr.mjs";
 import Tag from "./silverDashboard/Tag/tag.lit.csr.mjs";
+import ToggleInput from "./inputs/ToggleInput/iai-toggle-input.lit.csr.mjs";
