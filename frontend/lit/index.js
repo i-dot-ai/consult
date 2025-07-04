@@ -5500,12 +5500,9 @@ class Tag extends IaiLitBase {
         IaiLitBase.styles,
         i$4`
             iai-silver-tag .tag {
-                // display: flex;
                 display: grid;
                 width: max-content;
-                gap: 0.5em;
-                // justify-content: center;
-                // align-items: center;    
+                gap: 0.5em; 
                 padding: 0.3em 0.5em;
                 font-size: 0.8em;
                 color: white;
@@ -5517,6 +5514,10 @@ class Tag extends IaiLitBase {
             }
             iai-silver-tag iai-icon .material-symbols-outlined {
                 font-size: 1.3em;
+            }
+            iai-silver-tag .text-container {
+                display: flex;
+                font-weight: bold;
             }
         `
     ]
@@ -5569,7 +5570,7 @@ class Tag extends IaiLitBase {
             </style>
             
             <span id=${this.contentId} class="tag">
-                <span style="display: flex; font-weight: bold;">
+                <span class="text-container">
                     ${this.icon
                         ? x`
                             <iai-icon
@@ -5738,7 +5739,7 @@ class QuestionOverviewPage extends IaiLitBase {
                                             <iai-silver-tag
                                                 .status=${question.status}
                                                 .text=${question.status}
-                                                .icon=${"star"}
+                                                .icon=${"chat_bubble"}
                                             ></iai-silver-tag>
                                         `}
                                         .highlightText=${this._searchValue}
