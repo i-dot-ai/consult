@@ -42,7 +42,7 @@ class ConsultationAdmin(admin.ModelAdmin):
 
 class QuestionAdmin(admin.ModelAdmin):
     list_filter = ["consultation"]
-    list_display = ["title", "consultation"]
+    list_display = ["slug", "consultation"]
     list_select_related = True
     actions = [delete_selected_no_confirm]
 
