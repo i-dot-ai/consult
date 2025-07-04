@@ -17,42 +17,42 @@
 
   {%- from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs -%}
 
+  <style>
+    .govuk-main-wrapper {
+      background: white;
+    }
+  </style>
+
   <div class="govuk-grid-row">
     <div class="govuk-grid-column-full">
+      <iai-question-overview-page></iai-question-overview-page>
+      <script>
+        const questionOverviewPage = document.getElementsByTagName("iai-question-overview-page")[0];
 
-      <iai-question-tiles></iai-question-tiles>
-        <script>
-          const questionTilesEl = document.getElementsByTagName("iai-question-tiles")[0];
-
-          questionTilesEl.consultationName = "{{ consultation.title }}"
-          questionTilesEl.questions = [
-            {% for question_dict in all_questions_list %}
-              {
-                id: "{{ question_dict.question.id }}",
-                title: "Question {{ question_dict.question.number }}",
-                body: `{{ question_dict.question.text }}`,
-                url: "{{ url('question_responses', kwargs={'consultation_slug': consultation.slug, 'question_slug': question_dict.question.slug}) }}",
-                responses: {
-                  {% if question_dict.free_text_question_part %}
-                    count: {{ question_dict.free_text_count }}
-                  {% endif %}
-                },
-                multiResponses:
-                  {% if question_dict.single_option_question_part %}
-                    {{ question_dict.single_option_counts | safe }}
-                  {% elif question_dict.multiple_option_question_part %}
-                    {{ question_dict.multiple_option_counts | safe }}
-                  {% else %}
-                    {}
-                  {% endif %}
-              },
-            {% endfor %}
-          ]
-        </script>
+        questionOverviewPage.consultationName = "{{ consultation.title }}"
+        questionOverviewPage.questions = [
+          {% for question_dict in all_questions_list %}
+            {
+              id: "{{ question_dict.question.id }}",
+              title: "{{ question_dict.question.text }}",
+              url: "{{ url('question_responses', kwargs={'consultation_slug': consultation.slug, 'question_slug': question_dict.question.slug}) }}",
+              numResponses:
+                {% if question_dict.has_free_text %}
+                  {{ question_dict.free_text_count }}
+                {% else %}
+                  0
+                {% endif %}
+                
+                {% if question_dict.has_multiple_choice %}
+                  + {{ question_dict.multiple_option_counts }}
+                {% endif %},
+              status: "Open",
+            },
+          {% endfor %}
+        ]
+      </script>
     </div>
   </div>
-
-  <div style="margin-bottom: 10em;"></div>
 
   <noscript>
     <div class="govuk-grid-row">

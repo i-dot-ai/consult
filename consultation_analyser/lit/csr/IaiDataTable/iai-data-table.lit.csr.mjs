@@ -8,6 +8,7 @@ export default class IaiDataTable extends IaiLitBase {
         ...IaiLitBase.properties,
         data: { type: Array },
         initialSorts: { type: Array },
+        sortable: { type: Boolean },
         _sortedData: { type: Array },
         _sorts: { type: Array },
     }
@@ -76,6 +77,7 @@ export default class IaiDataTable extends IaiLitBase {
 
         // Prop defaults
         this.data = [];
+        this.sortable = true;
         this._sorts = [];
         this._sortedData = [];
     }
@@ -197,38 +199,52 @@ export default class IaiDataTable extends IaiLitBase {
         return this._sorts[currentSortIndex].ascending ? "ascending" : "descending";
     }
 
+    renderHeader = (header) => {
+        if (!this.sortable) {
+            return html`
+                <th
+                    scope="col"
+                    class="govuk-table__header"
+                >
+                    <h3>${header}</h3>
+                </th>
+            `
+        }
+        return html`
+            <th
+                style="" scope="col" class="govuk-table__header"
+                class=${"header-button " + this.getCurrentSortDirection(header)}
+                role="button"
+                aria-sort=${this.getCurrentSortDirection(header)}
+                aria-label=${this.getCurrentSortDirection(header)
+                    ? `Sorted by "${header}" in ${this.getCurrentSortDirection(header)} order. Click to sort in reverse.`
+                    : `Click to sort by "${header}" in ascending order`
+                }
+                tabindex=0
+                @click=${() => this.updateSorts(header)}
+                @keydown=${(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        this.updateSorts(header);
+                    }
+                }}
+            >
+                <h3>${header}</h3>
+                <iai-icon
+                    name="sort"
+                    .color=${"var(--iai-colour-text-secondary)"}
+                    .fill=${0}
+                ></iai-icon>
+            </th>
+        `
+    }
+
     render() {
         return html`
             <table class="govuk-table govuk-body" mentionstable="">
                 <thead class="govuk-table__head">
                     <tr class="govuk-table__row">    
-                        ${this.getHeaders().map(header => html`
-                            <th
-                                style="" scope="col" class="govuk-table__header"
-                                class=${"header-button " + this.getCurrentSortDirection(header)}
-                                    role="button"
-                                    aria-sort=${this.getCurrentSortDirection(header)}
-                                    aria-label=${this.getCurrentSortDirection(header)
-                                        ? `Sorted by "${header}" in ${this.getCurrentSortDirection(header)} order. Click to sort in reverse.`
-                                        : `Click to sort by "${header}" in ascending order`
-                                    }
-                                    tabindex=0
-                                    @click=${() => this.updateSorts(header)}
-                                    @keydown=${(e) => {
-                                        if (e.key === "Enter" || e.key === " ") {
-                                            e.preventDefault();
-                                            this.updateSorts(header);
-                                        }
-                                    }}
-                            >
-                                <h3>${header}</h3>
-                                <iai-icon
-                                    name="sort"
-                                    .color=${"var(--iai-colour-text-secondary)"}
-                                    .fill=${0}
-                                ></iai-icon>
-                            </th>
-                        `)}
+                        ${this.getHeaders().map(header => this.renderHeader(header))}
                     </tr>
                 </thead>
           
