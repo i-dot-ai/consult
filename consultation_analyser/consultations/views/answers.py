@@ -78,8 +78,8 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
     if filters.get("evidence_rich"):
         query &= Q(annotation__evidence_rich=models.ResponseAnnotation.EvidenceRich.YES)
 
-    if filters.get("search_value"):
-        query &= Q(free_text__icontains=filters["search_value"])
+    # if filters.get("search_value"):
+    #     query &= Q(free_text__icontains=filters["search_value"])
 
     # Handle demographic filters
     if filters.get("demographic_filters"):
@@ -104,17 +104,8 @@ def get_filtered_responses_with_themes(
 ):
     """Single optimized query to get all filtered responses with their themes"""
     response_filter = build_response_filter_query(filters or {}, question)
-
-    if filters and "search_value" in filters:
-        embedded_query = embed_text(filters["search_value"])
-        responses = models.Response.objects.annotate(
-            distance=CosineDistance("embedding", embedded_query)
-        ).order_by("distance")
-    else:
-        responses = models.Response.objects
-
     queryset = (
-        responses.filter(response_filter)
+        models.Response.objects.filter(response_filter)
         .select_related("respondent", "annotation")
         .prefetch_related("annotation__themes")
     )
@@ -127,6 +118,15 @@ def get_filtered_responses_with_themes(
                 response_annotation__response=OuterRef("pk"), theme_id=theme_id
             )
             queryset = queryset.filter(Exists(theme_exists))
+
+    if filters and "search_value" in filters:
+        embedded_query = embed_text(filters["search_value"])
+        responses = (
+            queryset.annotate(distance=CosineDistance("embedding", embedded_query))
+            .distinct()
+            .order_by("distance")
+        )
+        return responses
 
     return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination
 
