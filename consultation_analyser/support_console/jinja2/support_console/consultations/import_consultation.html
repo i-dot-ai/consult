@@ -38,11 +38,11 @@
         </li>
         {% endfor %}
       </ul>
-      
+
       {% set missing_files = validation_errors | selectattr('type', 'equalto', 'missing_file') | list %}
       {% set missing_outputs = validation_errors | selectattr('type', 'equalto', 'missing_output') | list %}
       {% set format_issues = validation_errors | selectattr('type', 'in', ['invalid_format', 'empty_file']) | list %}
-      
+
       {% if missing_files or missing_outputs %}
       <div class="govuk-inset-text">
         <h3 class="govuk-heading-s">What you need to do:</h3>
@@ -60,7 +60,7 @@
         <p class="govuk-body-s">Once you've resolved these issues, you can try importing again.</p>
       </div>
       {% endif %}
-      
+
       <details class="govuk-details">
         <summary class="govuk-details__summary">
           <span class="govuk-details__summary-text">
@@ -84,7 +84,7 @@
 <p class="govuk-body">This will import both the consultation data (questions, respondents, responses) and AI analysis
   results (themes, sentiment, evidence) sequentially.</p>
 
-<p class="govuk-body">Data should be saved in: <code>{{ bucket_name }}/app_data/[CONSULTATION FOLDER]</code></p>
+<p class="govuk-body">Data should be saved in: <code>{{ bucket_name }}/app_data/consultations/[CONSULTATION FOLDER]</code></p>
 
 {{ govukDetails({
 'summaryText': 'Expected S3 Structure',

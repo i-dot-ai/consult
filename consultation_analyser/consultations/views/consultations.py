@@ -1,8 +1,6 @@
-import json
 import logging
 
 from django.core.paginator import Paginator
-from django.db.models import Count
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
@@ -23,61 +21,6 @@ def index(request: HttpRequest) -> HttpResponse:
     return render(request, "consultations/consultations/index.html", context)
 
 
-def get_counts_of_sentiment(question: models.Question) -> dict:
-    """Gives agree/disagree/unclear/no position counts for responses to the question."""
-    total_responses = models.Response.objects.filter(question=question).count()
-
-    annotations_with_sentiment = models.ResponseAnnotation.objects.filter(
-        response__question=question, sentiment__isnull=False
-    )
-
-    number_in_agreement = annotations_with_sentiment.filter(
-        sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT
-    ).count()
-    number_in_disagreement = annotations_with_sentiment.filter(
-        sentiment=models.ResponseAnnotation.Sentiment.DISAGREEMENT
-    ).count()
-    number_unclear = annotations_with_sentiment.filter(
-        sentiment=models.ResponseAnnotation.Sentiment.UNCLEAR
-    ).count()
-
-    # Any responses not assigned a position
-    number_no_position = (
-        total_responses - number_in_agreement - number_in_disagreement - number_unclear
-    )
-
-    sentiment_counts = {
-        "agreement": number_in_agreement,
-        "disagreement": number_in_disagreement,
-        "unclear": number_unclear,
-        "no_position": number_no_position,
-    }
-    return sentiment_counts
-
-
-def get_top_themes_for_question(
-    question: models.Question, number_top_themes: int = 8
-) -> list[dict]:
-    # Get theme counts for questions with free text
-    if not question.has_free_text:
-        return []
-
-    top_themes = (
-        models.Theme.objects.filter(question=question, responseannotation__isnull=False)
-        .annotate(theme_count=Count("responseannotation"))
-        .order_by("-theme_count")
-    )[:number_top_themes]
-
-    top_themes_by_counts_list = []
-    for theme in top_themes:
-        output = {
-            "theme": theme,
-            "count": theme.theme_count,
-        }
-        top_themes_by_counts_list.append(output)
-    return top_themes_by_counts_list
-
-
 @user_can_see_dashboards
 @user_can_see_consultation
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
@@ -92,9 +35,9 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
         # Handle free text questions
         if question.has_free_text:
             question_dict["free_text_question_part"] = question  # For template compatibility
-            top_themes_by_counts_list = get_top_themes_for_question(question)
-            question_dict["theme_counts"] = top_themes_by_counts_list
-            question_dict["sentiment_counts"] = get_counts_of_sentiment(question)
+            question_dict["free_text_count"] = models.Response.objects.filter(
+                question=question, free_text__isnull=False
+            ).count()
 
         # Handle multiple choice questions
         if question.has_multiple_choice:
@@ -108,7 +51,7 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
                     for option in options:
                         option_counts[option] = option_counts.get(option, 0) + 1
 
-            question_dict["multiple_option_counts"] = json.dumps(option_counts)
+            question_dict["multiple_option_counts"] = option_counts
 
         all_questions.append(question_dict)
 

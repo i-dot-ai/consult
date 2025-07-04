@@ -73,22 +73,22 @@ class TestGetQuestionFolders:
     def test_get_question_folders(self, mock_boto3):
         # Mock S3 objects
         mock_objects = [
-            Mock(key="app_data/test/inputs/question_part_1/question.json"),
-            Mock(key="app_data/test/inputs/question_part_1/responses.jsonl"),
-            Mock(key="app_data/test/inputs/question_part_2/question.json"),
-            Mock(key="app_data/test/inputs/question_part_2/responses.jsonl"),
-            Mock(key="app_data/test/inputs/other_file.txt"),
+            Mock(key="app_data/consultations/test/inputs/question_part_1/question.json"),
+            Mock(key="app_data/consultations/test/inputs/question_part_1/responses.jsonl"),
+            Mock(key="app_data/consultations/test/inputs/question_part_2/question.json"),
+            Mock(key="app_data/consultations/test/inputs/question_part_2/responses.jsonl"),
+            Mock(key="app_data/consultations/test/inputs/other_file.txt"),
         ]
 
         mock_bucket = Mock()
         mock_bucket.objects.filter.return_value = mock_objects
         mock_boto3.resource.return_value.Bucket.return_value = mock_bucket
 
-        result = get_question_folders("app_data/test/inputs/", "test-bucket")
+        result = get_question_folders("app_data/consultations/test/inputs/", "test-bucket")
 
         expected = [
-            "app_data/test/inputs/question_part_1/",
-            "app_data/test/inputs/question_part_2/",
+            "app_data/consultations/test/inputs/question_part_1/",
+            "app_data/consultations/test/inputs/question_part_2/",
         ]
         assert sorted(result) == sorted(expected)
 
@@ -98,7 +98,7 @@ class TestGetQuestionFolders:
         mock_bucket.objects.filter.return_value = []
         mock_boto3.resource.return_value.Bucket.return_value = mock_bucket
 
-        result = get_question_folders("app_data/test/inputs/", "test-bucket")
+        result = get_question_folders("app_data/consultations/test/inputs/", "test-bucket")
         assert result == []
 
 
@@ -109,10 +109,10 @@ class TestGetConsultationCodes:
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 
         mock_objects = [
-            Mock(key="app_data/consultation1/inputs/file.json"),
-            Mock(key="app_data/consultation2/inputs/file.json"),
-            Mock(key="app_data/consultation1/outputs/file.json"),
-            Mock(key="app_data/other/file.json"),
+            Mock(key="app_data/consultations/consultation1/inputs/file.json"),
+            Mock(key="app_data/consultations/consultation2/inputs/file.json"),
+            Mock(key="app_data/consultations/consultation1/outputs/file.json"),
+            Mock(key="app_data/consultations/other/file.json"),
         ]
 
         mock_bucket = Mock()
@@ -142,7 +142,7 @@ class TestValidateConsultationStructure:
     @patch("consultation_analyser.support_console.ingest.boto3")
     @patch("consultation_analyser.support_console.ingest.get_question_folders")
     def test_validate_consultation_structure_valid(self, mock_get_folders, mock_boto3):
-        mock_get_folders.return_value = ["app_data/test/inputs/question_part_1/"]
+        mock_get_folders.return_value = ["app_data/consultations/test/inputs/question_part_1/"]
 
         mock_s3_client = Mock()
         mock_s3_client.head_object.return_value = {}
@@ -174,7 +174,7 @@ class TestValidateConsultationStructure:
     def test_validate_consultation_structure_missing_respondents(
         self, mock_get_folders, mock_boto3
     ):
-        mock_get_folders.return_value = ["app_data/test/inputs/question_part_1/"]
+        mock_get_folders.return_value = ["app_data/consultations/test/inputs/question_part_1/"]
 
         mock_s3_client = Mock()
 
@@ -221,7 +221,7 @@ class TestImportConsultationFullFlow:
         user = User.objects.create_user(email="test@example.com")
 
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
-        mock_get_folders.return_value = ["app_data/test/inputs/question_part_1/"]
+        mock_get_folders.return_value = ["app_data/consultations/test/inputs/question_part_1/"]
 
         # Mock S3 responses
         mock_s3_client = Mock()
@@ -313,7 +313,7 @@ class TestQuestionsImport:
 
         # Mock S3 responses
         mock_s3_client = Mock()
-        mock_get_folders.return_value = ["app_data/test/inputs/question_part_1/"]
+        mock_get_folders.return_value = ["app_data/consultations/test/inputs/question_part_1/"]
         mock_s3_client.get_object.side_effect = get_object_side_effect
         mock_boto3.client.return_value = mock_s3_client
 
@@ -348,7 +348,7 @@ class TestQuestionsImport:
 
         # Mock S3 responses
         mock_s3_client = Mock()
-        mock_get_folders.return_value = ["app_data/test/inputs/question_part_1/"]
+        mock_get_folders.return_value = ["app_data/consultations/test/inputs/question_part_1/"]
 
         # Mock question file
         question_data = b'{"question_text": ""}'
@@ -396,7 +396,7 @@ class TestResponsesImport:
 
         consultation = Consultation.objects.create(title="Test Consultation")
         question = Question.objects.create(consultation=consultation, number=1)
-        question_folder = "app_data/test/outputs/2024-01-01/question_part_1/"
+        question_folder = "app_data/consultations/test/outputs/2024-01-01/question_part_1/"
         Respondent.objects.create(consultation=consultation, themefinder_id=1)
         Respondent.objects.create(consultation=consultation, themefinder_id=2)
 
@@ -420,7 +420,7 @@ class TestMappingImport:
         mock_s3_client = Mock()
         mock_s3_client.get_object.side_effect = get_object_side_effect
         mock_boto3.client.return_value = mock_s3_client
-        output_folder = "app_data/test/outputs/mapping/2024-01-01/"
+        output_folder = "app_data/consultations/test/outputs/mapping/2024-01-01/"
 
         consultation = Consultation.objects.create(title="Test Consultation")
         question = Question.objects.create(consultation=consultation, number=1)

@@ -34,9 +34,7 @@
                 url: "{{ url('question_responses', kwargs={'consultation_slug': consultation.slug, 'question_slug': question_dict.question.slug}) }}",
                 responses: {
                   {% if question_dict.free_text_question_part %}
-                    agreement: {{ question_dict.sentiment_counts.agreement }},
-                    unclear: {{ question_dict.sentiment_counts.unclear }},
-                    disagreement: {{ question_dict.sentiment_counts.disagreement}},
+                    count: {{ question_dict.free_text_count }}
                   {% endif %}
                 },
                 multiResponses:
@@ -55,7 +53,7 @@
   </div>
 
   <div style="margin-bottom: 10em;"></div>
-  
+
   <noscript>
     <div class="govuk-grid-row">
       <div class="govuk-grid-column-three-quarters">
@@ -70,45 +68,20 @@
 
                 {% if question_dict.free_text_question_part %}
                     <h3 class="govuk-heading-s">Free text response</h3>
-                    <p class="govuk-body" style="display: flex;align-items:center;gap: 0.6%">
-                      <img src="{{ static('icons/thumbs-up-down.svg') }}"/>
-                      {{ question_dict.sentiment_counts.agreement }} Agreement,
-                      {{ question_dict.sentiment_counts.disagreement}} Disagreement,
-                      {{ question_dict.sentiment_counts.unclear }} Unclear
-                      {% if question_dict.sentiment_counts.no_position %}
-                        , {{ question_dict.sentiment_counts.no_position }} No opinion
-                      {% endif %}
+                    <p class="govuk-body">
+                      This question has {{ question_dict.free_text_count }} free text responses.
                     </p>
-
-                    <p class="govuk-body govuk-!-margin-bottom-2">Top themes</p>
-
-                    <div class="con-pill-container" style="display: flex;align-items:center;gap: 0.6%">
-                      {% for item in question_dict.theme_counts %}
-                        <div class="con-pill">
-                          <tool-tip class="iai-tooltip">
-                            <div class="iai-tooltip__button">
-                              <span>{{ item.theme.name }}</span>
-                              <img src="{{ static('icons/question-mark.svg') }}" alt="" width="14"/>
-                            </div>
-                            <div class="iai-tooltip__content">
-                              {{ item.theme.description }}
-                            </div>
-                          </tool-tip>
-                        </div>
-                      {% endfor %}
-                    </div>
                 {% else %}
                   <p class="govuk-body">This question does not have free text responses</p>
                 {% endif %}
 
                 <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
 
-                {% if question_dict.single_option_question_part %}
+                {% if question_dict.multiple_option_question_part %}
                   <h3 class="govuk-heading-s">Response to multiple choice</h3>
-                  <horizontal-bar-chart data='{{ question_dict.single_option_counts }}' data-format="percentage"></horizontal-bar-chart>
-                {% elif question_dict.multiple_option_question_part %}
-                  <h3 class="govuk-heading-s">Response to multiple choice</h3>
-                  <horizontal-bar-chart data='{{ question_dict.multiple_option_counts }}' data-format="raw"></horizontal-bar-chart>
+                  {% for key, value in question_dict.multiple_option_counts.items() %}
+                      <p>{{key}}: {{value}}</p>
+                   {% endfor %}
                 {% else %}
                   <p class="govuk-body">This question does not have a multiple choice part</p>
                 {% endif %}
@@ -125,8 +98,5 @@
     </div>
   </noscript>
 
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-  <script src="{{ static('scripts/horizontal-bar-chart.js') }}"></script>
 
 {% endblock %}

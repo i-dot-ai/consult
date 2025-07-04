@@ -55,26 +55,28 @@ export default class IaiQuestionOverview extends IaiLitBase {
         this.responses = {};
         this.multiResponses = {};
         this.handleClose = () => {};
-        
+
         this.applyStaticStyles("iai-question-overview", IaiQuestionOverview.styles);
     }
 
     getTextResponseTotal = () => {
-        return (
-            (this.responses.agreement || 0) +
-            (this.responses.unclear || 0) +
-            (this.responses.disagreement || 0)
-        );
+        return this.responses.count || 0;
     }
 
     getMultiResponseTotal = () => {
         return Object.values(this.multiResponses).reduce((acc, curr) => acc + curr, 0);
     }
 
+    renderCountFallback = () => {
+      if (!this.responses.count) {
+        return html`<p class="govuk-body">This question does not have free text responses</p>`
+      }
+    }
+
     render() {
         const textResponseTotal = this.getTextResponseTotal();
         const multiResponseTotal = this.getMultiResponseTotal();
-        
+
         return html`
             <div class="question-overview">
                 <iai-question-topbar .title=${this.title}>
@@ -102,26 +104,8 @@ export default class IaiQuestionOverview extends IaiLitBase {
                     title="Free Text Responses"
                     .total=${textResponseTotal}
                 ></iai-question-overview-subtitle>
-                
-                ${!this.responses.agreement && !this.responses.disagreement && !this.responses.unclear
-                    ? html`<p class="govuk-body">This question does not have free text responses</p>`
-                    : html`
-                        <ul class="text-response-list">
-                            <iai-text-response-item
-                                iconName="thumb_up"
-                                .text=${html`<strong>${this.responses.agreement}</strong> responses <strong>agree</strong> with the question`}
-                            ></iai-text-response-item>
-                            <iai-text-response-item
-                                iconName="thumbs_up_down"
-                                .text=${html`<strong>${this.responses.unclear}</strong> responses are <strong>unclear</strong> on whether agree or disagree with the question`}
-                            ></iai-text-response-item>
-                            <iai-text-response-item
-                                iconName="thumb_down"
-                                .text=${html`<strong>${this.responses.disagreement}</strong> responses <strong>disagree</strong> with the question`}
-                            ></iai-text-response-item>
-                        </ul>
-                    `
-                }
+
+              ${this.renderCountFallback()}
 
                 <hr />
 
@@ -140,7 +124,7 @@ export default class IaiQuestionOverview extends IaiLitBase {
                                     .countValue=${this.multiResponses[key]}
                                     .totalCounts=${multiResponseTotal}
                                 ></iai-multi-response-item>
-                                
+
                             `)}
                         </ul>
                     `

@@ -58,14 +58,16 @@ def get_consultation_codes() -> list[dict]:
     """
     try:
         s3 = boto3.resource("s3")
-        objects = s3.Bucket(settings.AWS_BUCKET_NAME).objects.filter(Prefix="app_data/")
+        objects = s3.Bucket(settings.AWS_BUCKET_NAME).objects.filter(
+            Prefix="app_data/consultations/"
+        )
 
         # Get unique consultation folders
         consultation_codes = set()
         for obj in objects:
             parts = obj.key.split("/")
-            if len(parts) >= 2 and parts[1]:  # Has consultation code
-                consultation_codes.add(parts[1])
+            if len(parts) >= 3 and parts[2]:  # Has consultation code
+                consultation_codes.add(parts[2])
 
         # Format for dropdown
         return [{"text": code, "value": code} for code in sorted(consultation_codes)]
@@ -87,7 +89,7 @@ def validate_consultation_structure(
     errors = []
 
     # Define required structure
-    base_path = f"app_data/{consultation_code}/"
+    base_path = f"app_data/consultations/{consultation_code}/"
     inputs_path = f"{base_path}inputs/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
 
@@ -359,7 +361,7 @@ def import_questions(
     logger.info(f"Starting question import for consultation {consultation.title})")
 
     bucket_name = settings.AWS_BUCKET_NAME
-    base_path = f"app_data/{consultation_code}/"
+    base_path = f"app_data/consultations/{consultation_code}/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
 
     queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
@@ -367,7 +369,7 @@ def import_questions(
     try:
         s3_client = boto3.client("s3")
         question_folders = get_question_folders(
-            f"app_data/{consultation_code}/inputs/", settings.AWS_BUCKET_NAME
+            f"app_data/consultations/{consultation_code}/inputs/", settings.AWS_BUCKET_NAME
         )
 
         for question_folder in question_folders:
@@ -425,7 +427,7 @@ def import_respondents(consultation: Consultation, consultation_code: str):
     logger.info(f"Starting import_respondents batch for consultation {consultation.title})")
 
     s3_client = boto3.client("s3")
-    respondents_file_key = f"app_data/{consultation_code}/inputs/respondents.jsonl"
+    respondents_file_key = f"app_data/consultations/{consultation_code}/inputs/respondents.jsonl"
     response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=respondents_file_key)
 
     respondents_to_save = []
