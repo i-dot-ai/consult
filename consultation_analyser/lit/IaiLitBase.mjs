@@ -20,6 +20,8 @@ export default class IaiLitBase extends LitElement {
             --iai-silver-color-teal-light: #f1fdfa;
             --iai-silver-color-accent: #c50978;
             --iai-silver-color-accent-light: #fcf1f6;
+            --iai-silver-color-amber: #ba4d00;
+            --iai-silver-color-amber-light: #fffbea;
         }
 
         .visually-hidden {
@@ -97,5 +99,14 @@ export default class IaiLitBase extends LitElement {
             return 0;
         }
         return Math.round(((partialValue / totalValue) * 100));
+    }
+
+    toTitleCase = (text) => {
+        return text
+            .replace("-", " ")
+            .replace(
+                /\w\S*/g,
+                text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+            );
     }
 }
