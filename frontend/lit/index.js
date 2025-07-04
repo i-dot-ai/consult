@@ -35,11 +35,16 @@ class IaiLitBase extends i$1 {
             --iai-colour-pink-transparent-mid: #F0B5D8;
 
             --iai-silver-color-light: #f8f9fa;
+            --iai-silver-color-mid-light: #e5e5e5;
             --iai-silver-color-mid: rgba(0, 0, 0, 0.3);
             --iai-silver-color-dark: #030213;
             --iai-silver-color-text: rgb(95, 99, 104);
-            --iai-silver-color-teal: #0b8478;
-            --iai-silver-color-teal-light: #e9f2f1;
+            --iai-silver-color-teal: #00786f;
+            --iai-silver-color-teal-light: #f1fdfa;
+            --iai-silver-color-accent: #c50978;
+            --iai-silver-color-accent-light: #fcf1f6;
+            --iai-silver-color-amber: #ba4d00;
+            --iai-silver-color-amber-light: #fffbea;
         }
 
         .visually-hidden {
@@ -110,6 +115,22 @@ class IaiLitBase extends i$1 {
 
     accessibleKeyPressed = (key) => {
         return key === "Enter" || key === " ";
+    }
+
+    getPercentage = (partialValue, totalValue) => {
+        if (totalValue === 0) {
+            return 0;
+        }
+        return Math.round(((partialValue / totalValue) * 100));
+    }
+
+    toTitleCase = (text) => {
+        return text
+            .replace("-", " ")
+            .replace(
+                /\w\S*/g,
+                text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+            );
     }
 }
 
@@ -349,7 +370,7 @@ class IaiIcon extends IaiLitBase {
         this.contentId = this.generateId();
 
         // Google expect icon names to be alphabetically sorted
-        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond", "progress_activity", "sort", "schedule", "calendar_month", "group", "description", "monitoring", "settings", "help", "chat_bubble", "wand_stars"];
+        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond", "progress_activity", "sort", "schedule", "calendar_month", "group", "description", "monitoring", "settings", "help", "chat_bubble", "wand_stars", "lan"];
         this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
 
         // Prop defaults
@@ -402,6 +423,7 @@ class IaiDataTable extends IaiLitBase {
         ...IaiLitBase.properties,
         data: { type: Array },
         initialSorts: { type: Array },
+        sortable: { type: Boolean },
         _sortedData: { type: Array },
         _sorts: { type: Array },
     }
@@ -470,6 +492,7 @@ class IaiDataTable extends IaiLitBase {
 
         // Prop defaults
         this.data = [];
+        this.sortable = true;
         this._sorts = [];
         this._sortedData = [];
     }
@@ -589,38 +612,52 @@ class IaiDataTable extends IaiLitBase {
         return this._sorts[currentSortIndex].ascending ? "ascending" : "descending";
     }
 
+    renderHeader = (header) => {
+        if (!this.sortable) {
+            return x`
+                <th
+                    scope="col"
+                    class="govuk-table__header"
+                >
+                    <h3>${header}</h3>
+                </th>
+            `
+        }
+        return x`
+            <th
+                style="" scope="col" class="govuk-table__header"
+                class=${"header-button " + this.getCurrentSortDirection(header)}
+                role="button"
+                aria-sort=${this.getCurrentSortDirection(header)}
+                aria-label=${this.getCurrentSortDirection(header)
+                    ? `Sorted by "${header}" in ${this.getCurrentSortDirection(header)} order. Click to sort in reverse.`
+                    : `Click to sort by "${header}" in ascending order`
+                }
+                tabindex=0
+                @click=${() => this.updateSorts(header)}
+                @keydown=${(e) => {
+                    if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        this.updateSorts(header);
+                    }
+                }}
+            >
+                <h3>${header}</h3>
+                <iai-icon
+                    name="sort"
+                    .color=${"var(--iai-colour-text-secondary)"}
+                    .fill=${0}
+                ></iai-icon>
+            </th>
+        `
+    }
+
     render() {
         return x`
             <table class="govuk-table govuk-body" mentionstable="">
                 <thead class="govuk-table__head">
                     <tr class="govuk-table__row">    
-                        ${this.getHeaders().map(header => x`
-                            <th
-                                style="" scope="col" class="govuk-table__header"
-                                class=${"header-button " + this.getCurrentSortDirection(header)}
-                                    role="button"
-                                    aria-sort=${this.getCurrentSortDirection(header)}
-                                    aria-label=${this.getCurrentSortDirection(header)
-                                        ? `Sorted by "${header}" in ${this.getCurrentSortDirection(header)} order. Click to sort in reverse.`
-                                        : `Click to sort by "${header}" in ascending order`
-                                    }
-                                    tabindex=0
-                                    @click=${() => this.updateSorts(header)}
-                                    @keydown=${(e) => {
-                                        if (e.key === "Enter" || e.key === " ") {
-                                            e.preventDefault();
-                                            this.updateSorts(header);
-                                        }
-                                    }}
-                            >
-                                <h3>${header}</h3>
-                                <iai-icon
-                                    name="sort"
-                                    .color=${"var(--iai-colour-text-secondary)"}
-                                    .fill=${0}
-                                ></iai-icon>
-                            </th>
-                        `)}
+                        ${this.getHeaders().map(header => this.renderHeader(header))}
                     </tr>
                 </thead>
           
@@ -876,6 +913,7 @@ class IaiCheckboxInput extends IaiLitBase {
         ...IaiLitBase.properties,
         inputId: { type: String },
         label: { type: String },
+        hideLabel: { type: Boolean },
         checked: {type: Boolean },
         value: { type: String },
         handleChange: { type: Function },
@@ -898,6 +936,7 @@ class IaiCheckboxInput extends IaiLitBase {
     constructor() {
         super();
         this.inputId = "";
+        this.hideLabel = false;
         this.label = "";
         this.checked = false;
         this.value = "";
@@ -928,7 +967,7 @@ class IaiCheckboxInput extends IaiLitBase {
                     class="govuk-label govuk-checkboxes__label"
                     for=${this.inputId}
                 >
-                    ${this.label}
+                    ${this.hideLabel ? "" : this.label}
                 </label>
             </div>
         `
@@ -4603,4 +4642,1116 @@ class IaiResponseDashboard extends IaiLitBase {
     }
 }
 customElements.define("iai-response-dashboard", IaiResponseDashboard);
+
+class SearchBox extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        inputId: { type: String },
+        name: { type: String },
+        label: { type: String },
+        placeholder: { type: String },
+        value: { type: String },
+        hideLabel: { type: Boolean },
+        handleInput: { type: Function },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-search-box .search-box-container {
+                position: relative;
+            }
+            iai-silver-search-box .search-box-container input {
+                padding-left: 2.5em;
+                border-radius: 0.5em;
+                background: var(--iai-silver-color-light);
+                border: none;
+            }
+            iai-silver-search-box .search-box-container iai-icon {
+                position: absolute;
+                left: 0.5em;
+                bottom: 0.5em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.inputId = "";
+        this.name = "";
+        this.label = "";
+        this.placeholder = "";
+        this.value = "";
+        this.hideLabel = true;
+        this.handleInput = () => {};
+
+        this.applyStaticStyles("iai-silver-search-box", SearchBox.styles);
+    }
+
+    render() {
+        return x`
+            <div class="search-box-container">
+                <iai-text-input
+                    inputId=${this.inputId}
+                    name=${this.name}
+                    label=${this.label}
+                    placeholder=${this.placeholder}
+                    value=${this.value}
+                    .hideLabel=${this.hideLabel}
+                    .handleInput=${this.handleInput}
+                ></iai-text-input>
+
+                <iai-icon
+                    name="search"
+                    .color=${"var(--iai-colour-text-secondary)"}
+                    .fill=${0}
+                ></iai-icon>
+
+                ${this.value
+                    ? x`
+                        <iai-icon-button
+                            style="position: absolute;right: 2em;top: 50%; z-index: 1;"
+                            .title="Clear search"
+                            @click=${() => {
+                                this.value = "";
+                                this.handleInput({target: {value: ""}});
+                                this.querySelector("input").value = "";
+                            }}
+                        >
+                            <iai-icon
+                                slot="icon"
+                                .name=${"close"}
+                                .color=${"var(--iai-silver-color-text)"}
+                            ></iai-icon>
+                        </iai-icon-button>
+                    `
+                    : ""
+                }
+            </div>
+        `;
+    }
+}
+customElements.define("iai-silver-search-box", SearchBox);
+
+class IconTile extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        color: { type: String },
+        backgroundColor: { type: String },
+        name: { type: String },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-icon-tile {
+                display: block;    
+                width: max-content;
+            }
+            iai-silver-icon-tile .icon-tile-container {
+                display: flex;    
+                justify-content: center;
+                align-items: center;
+                background: salmon;
+                padding: 0.4em;
+                border-radius: 0.5em;
+            }
+            iai-silver-icon-tile .material-symbols-outlined {
+                font-size: 2em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.color = "white";
+        this.backgroundColor = "black";
+        this.name = "";
+
+        this.applyStaticStyles("iai-silver-icon-tile", IconTile.styles);
+    }
+
+    render() {
+        return x`
+            <style>
+                #${this.contentId} {
+                    color: ${this.color};
+                    background: ${this.backgroundColor};
+                }
+            </style>
+            <div id=${this.contentId} class="icon-tile-container">
+                <iai-icon
+                    .name=${this.name}
+                ></iai-icon>
+            </div>
+        `
+    }
+}
+customElements.define("iai-silver-icon-tile", IconTile);
+
+class Title extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        level: { type: Number },
+        text: { type: String },
+        subtext: { type: String },
+        icon: { type: String },
+        aside: { type: String },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-title h1,
+            iai-silver-title h2,
+            iai-silver-title h3 {
+                margin: 0;
+            }
+            iai-silver-title h1 {
+                font-size: 1.3em;
+            }
+            iai-silver-title h2 {
+                font-size: 1em;
+            }
+            iai-silver-title h3 {
+                font-size: 0.9em;
+            }
+            iai-silver-title .container {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+            }
+            iai-silver-title .icon-container {
+                display: flex;
+                align-items: center;
+                gap: 0.5em;
+                margin-bottom: 1.5em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.level = 2;
+        this.text = "";
+        this.subtext = "";
+        this.icon = "";
+        this.aside = "";
+
+        this.applyStaticStyles("iai-silver-title", Title.styles);
+    }
+
+    renderTitleTag = () => {
+        switch (this.level) {
+            case 1:
+                return x`<h1>${this.text}</h1>`;
+            case 2:
+                return x`<h2>${this.text}</h2>`;
+            case 3:
+                return x`<h3>${this.text}</h3>`;
+            case 4:
+                return x`<h4>${this.text}</h4>`;
+        }
+    }
+
+    render() {
+        return x`
+        <div class="container">
+            <div class="icon-container">
+                ${this.icon
+                    ? x`
+                        <iai-silver-icon-tile
+                            .backgroundColor=${"var(--iai-silver-color-accent-light)"}
+                            .color=${"var(--iai-silver-color-accent)"}
+                            .name=${this.icon}
+                        ></iai-silver-icon-tile>
+                    `
+                    : ""
+                }
+
+                <div>
+                    ${this.renderTitleTag()}
+
+                    ${this.subtext
+                        ? x`
+                            <small>
+                                ${this.subtext}
+                            </small>
+                        `
+                        : ""
+                    }
+                </div>
+            </div>
+
+            <aside>
+                ${this.aside}
+            </aside>
+        </div>
+        `
+    }
+}
+customElements.define("iai-silver-title", Title);
+
+class Panel extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        borderColor: { type: String },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-panel .panel {
+                padding: 1em;
+                border: 1px solid;
+                border-radius: 1em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+        
+        // Prop defaults
+        this.borderColor = "";
+
+        this.applyStaticStyles("iai-silver-panel", Panel.styles);
+    }
+
+    updated() {
+        this.applySlots("content");
+    }
+
+    render() {
+        return x`
+            <style>
+                #${this.contentId} {
+                    border-color: ${this.borderColor || "var(--iai-silver-color-mid-light)"};
+                }
+            </style>
+            <div id=${this.contentId} class="panel">
+                <slot name="content"></slot>
+            </div>
+        `
+    }
+}
+customElements.define("iai-silver-panel", Panel);
+
+class IaiSelectInput extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        inputId: { type: String },
+        name: {type: String},
+        label: { type: String },
+        hideLabel: { type: Boolean },
+        placeholder: { type: String },
+        options: { type: Array },
+        value: { type: String },
+        handleInput: { type: Function },
+        horizontal: { type: Boolean },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            .horizontal {
+                display: flex;
+                align-items: center;
+                gap: 0.5em;
+            }
+            .horizontal label {
+                margin: 0;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.inputId = "";
+        this.name = "";
+        this.label = "";
+        this.hideLabel = true;
+        this.placeholder = "";
+        this.options = [];
+        this.value = "";
+        this.handleChange = () => {};
+        this.horizontal = false;
+
+        this.applyStaticStyles("iai-select-input", IaiSelectInput.styles);
+    }
+
+    render() {
+        return x`
+            <div class=${"govuk-form-group" + (this.horizontal ? " horizontal" : "")}>
+                <label
+                    class=${"govuk-label" + (this.hideLabel ? " visually-hidden" : "")}
+                    for=${this.inputId}
+                >
+                    ${this.label}
+                </label>
+                <select
+                    class="govuk-select"
+                    .id=${this.inputId}
+                    .name=${this.name}
+                    .value=${this.value}
+                    @change=${this.handleChange}
+                >
+                    ${[ // Add placeholder empty option to options
+                        { value: "", text: this.placeholder },
+                        ...this.options
+                    ].map(option => {
+                        if (!option.value && !this.placeholder) {
+                            return "";
+                        }
+                        return x`
+                            <option
+                                .value=${option.value}
+                                ?selected=${option.value === this.value}
+                            >
+                                ${option.text}
+                            </option>
+                        `})
+                    }
+                </select>
+            </div>
+        `
+    }
+}
+customElements.define("iai-select-input", IaiSelectInput);
+
+class SelectInput extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        inputId: { type: String },
+        name: { type: String },
+        label: { type: String },
+        hideLabel: { type: Boolean },
+        placeholder: { type: String },
+        options: { type: Array },
+        value: { type: String },
+        handleInput: { type: Function },
+        horizontal: { type: Boolean },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-select-input iai-select-input select.govuk-select {
+                border: none;
+                background: var(--iai-silver-color-light);
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.inputId = "";
+        this.name = "";
+        this.label = "";
+        this.hideLabel = true;
+        this.placeholder = "";
+        this.options = [];
+        this.value = "";
+        this.handleChange = () => {};
+        this.horizontal = false;
+
+        this.applyStaticStyles("iai-silver-select-input", SelectInput.styles);
+    }
+
+    render() {
+        return x`
+            <iai-select-input
+                .inputId=${this.inputId}
+                .name=${this.name}
+                .label=${this.label}
+                .hideLabel=${this.hideLabel}
+                .placeholder=${this.placeholder}
+                .options=${this.options}
+                .value=${this.value}
+                .handleChange=${this.handleChange}
+                .horizontal=${this.horizontal}
+            ></iai-select-input>
+        `
+    }
+}
+customElements.define("iai-silver-select-input", SelectInput);
+
+class Card extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        color: { type: String },
+        backgroundColor: { type: String },
+        text: { type: String },
+        number: { type: Number },
+        icon: { type: String },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-card {
+                display: block;    
+                width: max-content;
+            }
+            iai-silver-card p {
+                margin: 0;
+            }
+            iai-silver-card .number {
+                font-size: 1.3em;
+            }
+            iai-silver-card .text {
+                font-size: 0.8em;
+            }
+            iai-silver-card div[slot="content"] {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 1em;
+                padding: 1em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.color = "white";
+        this.backgroundColor = "black";
+        this.text = "";
+        this.number = 0;
+        this.icon = "";
+
+        this.applyStaticStyles("iai-silver-card", Card.styles);
+    }
+
+    render() {
+        return x`
+            <iai-silver-panel .borderColor=${this.color}>
+                <div slot="content">
+                    <iai-silver-icon-tile
+                        .color=${this.color}
+                        .backgroundColor=${this.backgroundColor}
+                        .name=${this.name}
+                    ></iai-silver-icon-tile>
+                    <div>
+                        <p class="text">${this.text}</p>
+                        <p class="number">${this.number}</p>
+                    </div>
+                </div>
+            </iai-silver-panel>
+        `
+    }
+}
+customElements.define("iai-silver-card", Card);
+
+class Button extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        text: { type: String },
+        handleClick: { type: Function },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-button button {
+                background: white;
+                outline: none;
+                border: 1px solid var(--iai-silver-color-mid-light);
+                padding: 0.5em 1em;
+                border-radius: 0.5em;
+                cursor: pointer;
+                transition: background 0.3s ease-in-out;
+            }
+            iai-silver-button button:hover {
+                background: var(--iai-silver-color-light);
+            }
+            iai-silver-button button:focus-visible {
+                outline: 3px solid #fd0;
+                outline-offset: 0;
+                box-shadow: inset 0 0 0 2px;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.text = "white";
+        this.handleClick = () => {};
+
+        this.applyStaticStyles("iai-silver-button", Button.styles);
+    }
+
+    render() {
+        return x`
+            <button @click=${this.handleClick}>
+                ${this.text}
+            </button>
+        `
+    }
+}
+customElements.define("iai-silver-button", Button);
+
+class Consultation extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        status: { type: String },
+        title: { type: String },
+        description: { type: String },
+        department: { type: String },
+        numResponses: { type: Number },
+        numQuestions: { type: Number },
+        numThemes: { type: Number },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-consultation .topbar {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 1em;
+            }
+            iai-silver-consultation .topbar .tags {
+                display: flex;    
+                align-items: center;
+                gap: 0.5em;
+            }
+
+            iai-silver-consultation .tag {
+                padding: 0.3em 0.5em;
+            }
+
+            iai-silver-consultation .status {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 0.8em;
+                color: white;
+                background: #85d07e;                
+                border-radius: 0.5em;
+            }
+            iai-silver-consultation .department {
+                font-size: 0.8em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.status = "";
+        this.title = "";
+        this.description = "";
+        this.department = "";
+        this.numResponses = 0;
+        this.numQuestions = 0;
+        this.numThemes = 0;
+
+        this.applyStaticStyles("iai-silver-consultation", Consultation.styles);
+    }
+
+    getIconColor = (status) => {
+        switch (status) {
+            case this.CONSULTATION_STATUSES.open:
+                return "#85d07e";
+            case this.CONSULTATION_STATUSES.analysing:
+                return "#efdb5d";
+            case this.CONSULTATION_STATUSES.completed:
+                return "#0b8478";
+            case this.CONSULTATION_STATUSES.closed:
+                return "var(--iai-silver-color-text)";
+            default:
+                return "#85d07e";
+        }
+    }
+
+    getTagColor = (status) => {
+        switch (status) {
+            case this.CONSULTATION_STATUSES.open:
+                return "#85d07e";
+            case this.CONSULTATION_STATUSES.analysing:
+                return "#efdb5d";
+            case this.CONSULTATION_STATUSES.completed:
+                return "#0b8478";
+            case this.CONSULTATION_STATUSES.closed:
+                return "#f8f9fa";
+            default:
+                return "#85d07e";
+        }
+    }
+
+    render() {
+        return x`
+            <iai-silver-panel>
+                <div slot="content">
+                    <div class="topbar">
+                        <div class="tags">
+                            <iai-icon
+                                name="schedule"
+                                .color=${this.getIconColor(this.status)}
+                            ></iai-icon>
+
+                            <span class="tag status" style=${`background: ${this.getTagColor(this.status)}; color: ${this.status == this.CONSULTATION_STATUSES.closed ? "black" : "white"}`}>
+                                ${this.status}
+                            </span>
+
+                            <span class="tag" style="border-radius: 0.5em; background: white; border: 1px solid var(--iai-silver-color-mid); padding-inline: 0.5em; font-size: 0.8em; display: flex; justify-content: center; align-items: center;">
+                                Transport
+                            </span>
+                        </div>
+                        <div>
+                            <iai-silver-button
+                                .text=${"View analysis"}
+                                .handleClick=${() => console.log("button clicked")}
+                            ></iai-silver-button>
+                        </div>
+                    </div>
+
+                    <iai-silver-title
+                        .text=${this.title}
+                        .variant=${"secondary"}
+                    ></iai-silver-title>
+
+                    <p>
+                        ${this.description}
+                    </p>
+                    
+                    <div style="display: flex; gap: 1em;">
+                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
+                            <iai-icon
+                                name="calendar_month"
+                                color="var(--iai-silver-color-text)"
+                            ></iai-icon>
+                            <small>
+                                4 May 2024 - 8 Aug 2024
+                            </small>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
+                            <iai-icon
+                                name="group"
+                                color="var(--iai-silver-color-text)"
+                            ></iai-icon>
+                            <small>
+                                ${this.numResponses.toLocaleString()} responses
+                            </small>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
+                            <iai-icon
+                                name="description"
+                                color="var(--iai-silver-color-text)"
+                            ></iai-icon>
+                            <small>
+                                ${this.numQuestions} questions
+                            </small>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
+                            <iai-icon
+                                name="monitoring"
+                                color="var(--iai-silver-color-text)"
+                            ></iai-icon>
+                            <small>
+                                ${this.numThemes} themes
+                            </small>
+                        </div>
+                    </div>
+
+                    <small class="department">
+                        ${this.department}
+                    </small>
+                </div>
+            </iai-silver-panel>
+        `
+    }
+}
+customElements.define("iai-silver-consultation", Consultation);
+
+class CrossSearchCard extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        title: { type: String },
+        aside: { type: String },
+        description: { type: String },
+        tags: { type: Array }, //  Array<String>
+        type: { type: String }, //  "question" | "response"
+        highlightText: { type: String },
+        footer: { type: String },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-cross-search-card h3 {
+                font-size: 0.9em;
+                margin: 0;
+            }
+            iai-silver-cross-search-card .tags {
+                display: flex;
+                gap: 0.5em;
+                flex-wrap: wrap;
+            }
+            iai-silver-cross-search-card .matched-text {
+                background: yellow;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.title = "";
+        this.aside = "";
+        this.description = "";
+        this.tags = [];
+        this.type = "question";
+        this.highlightText = "";
+        this.footer = "";
+
+        this.applyStaticStyles("iai-silver-cross-search-card", CrossSearchCard.styles);
+    }
+
+    applyTextHighlight = (text) => {
+        if (!this.highlightText) {
+            return text;
+        }
+        const regex = new RegExp(this.highlightText, "gi");
+        return o$2(text.replace(regex, match => `<span class="matched-text">${match}</span>`));
+    }
+
+    render() {
+        return x`
+            <iai-silver-panel>
+                <article slot="content">
+                    <div style="display: flex; gap: 0.5em;">
+                        <div>
+                            <iai-icon
+                                .name=${this.type == "question" ? "help" : "chat_bubble"}
+                                .color=${this.type == "question"
+                                    ? "oklch(.6 .118 184.704)"
+                                    : "oklch(.828 .189 84.429)"
+                                }
+                            ></iai-icon>
+                        </div>
+
+                        <div style="flex-grow: 1;">
+                            <div style="display: flex; justify-content: space-between;">
+                                <h3>
+                                    ${this.applyTextHighlight(this.title)}
+                                </h3>
+
+                                ${this.aside ? this.aside : ""}
+                            </div>
+
+                            <p>
+                                ${this.applyTextHighlight(this.description)}
+                            </p>
+
+                            <footer class="tags">
+                                ${this.footer}
+                                ${this.tags.map(tag => x`
+                                    <span class="tag" style="border-radius: 0.5em; background: #e6e6e7; padding: 0.3em 0.5em; font-size: 0.8em; display: flex; justify-content: center; align-items: center;">
+                                        ${tag}
+                                    </span>
+                                `)}
+                            </footer>
+                        <div>
+                    </div>
+                </article>
+            </iai-silver-panel>
+        `
+    }
+}
+customElements.define("iai-silver-cross-search-card", CrossSearchCard);
+
+class Tag extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        status: { type: String },
+        text: { type: String },
+        subtext: { type: String },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-tag .tag {
+                // display: flex;
+                display: grid;
+                width: max-content;
+                gap: 0.5em;
+                // justify-content: center;
+                // align-items: center;    
+                padding: 0.3em 0.5em;
+                font-size: 0.8em;
+                color: white;
+                background: #85d07e;                
+                border-radius: 0.5em;
+            }
+            iai-silver-tag iai-icon {
+                margin-right: 0.3em;
+            }
+            iai-silver-tag iai-icon .material-symbols-outlined {
+                font-size: 1.3em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.status = "";
+        this.text = "";
+        this.subtext = "";
+        
+        this.applyStaticStyles("iai-silver-tag", Tag.styles);
+    }
+
+    getTagColor = (status) => {
+        switch (status) {
+            case this.CONSULTATION_STATUSES.open:
+                return {
+                    primary: "var(--iai-silver-color-teal)",
+                    secondary: "var(--iai-silver-color-teal-light)",
+                };
+            case this.CONSULTATION_STATUSES.analysing:
+                return {
+                    primary: "var(--iai-silver-color-teal)",
+                    secondary: "var(--iai-silver-color-teal-light)",
+                };
+            case this.CONSULTATION_STATUSES.completed:
+                return {
+                    primary: "var(--iai-silver-color-teal)",
+                    secondary: "var(--iai-silver-color-teal-light)",
+                };
+            case this.CONSULTATION_STATUSES.closed:
+                return {
+                    primary: "var(--iai-silver-color-amber)",
+                    secondary: "var(--iai-silver-color-amber-light)",
+                };
+        }
+    }
+
+    render() {
+        return x`
+            <style>
+                #${this.contentId} {
+                    color: ${this.getTagColor(this.status).primary};
+                    background: ${this.getTagColor(this.status).secondary};
+                    border: 1px solid ${this.getTagColor(this.status).primary};
+                }
+            </style>
+            
+            <span id=${this.contentId} class="tag">
+                <span style="display: flex; font-weight: bold;">
+                    ${this.icon
+                        ? x`
+                            <iai-icon
+                                .name=${this.icon}
+                                .color=${this.getTagColor(this.status).primary}
+                            ></iai-icon>
+                        `
+                        : ""
+                    }
+                    ${this.text}
+                </span>
+
+                ${this.subtext ? x`
+                    <span>
+                        ${this.subtext}
+                    </span>    
+                ` : ""}
+            </span>
+        `
+    }
+}
+customElements.define("iai-silver-tag", Tag);
+
+class QuestionOverviewPage extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        _questions: { type: Array },
+        _searchValue: { type: String },
+        questions: { type: Array },
+        consultationName: { type: String },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-question-overview-page {
+                color: var(--iai-silver-color-text);
+            }
+            iai-question-overview-page ul {
+                padding-left: 0;
+            }
+            iai-question-overview-page li {
+                list-style: none;
+                margin-top: 1em;
+                cursor: pointer;
+                transition: background 0.3s ease-in-out;
+            }
+            iai-question-overview-page li:hover {
+                background: var(--iai-silver-color-light);
+            }
+            iai-question-overview-page iai-silver-cross-search-card .icon-container {
+                margin-bottom: 0;
+            }
+            iai-question-overview-page .response-total {
+                display: flex;
+                align-items: center;
+            }
+            iai-question-overview-page .favourite-button {
+                margin-top: -0.4em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+        this._STORAGE_KEY = "favouriteQuestions";
+
+        // Prop defaults
+        this._questions = [
+            {
+                id: "1",
+                title: "What regulatory frameworks should be established to govern AI systems in critical sectors such as healthcare, finance, and transportation?",
+                numResponses: 6700,
+                status: this.CONSULTATION_STATUSES.open,
+            },
+            {
+                id: "2",
+                title: "How should data protection principles be adapted for AI-driven systems whilst maintaining innovation?",
+                numResponses: 4635,
+                status: this.CONSULTATION_STATUSES.open,
+            },
+            {
+                id: "3",
+                title: "Should organisations be required to implement AI ethics boards?",
+                numResponses: 5230,
+                status: this.CONSULTATION_STATUSES.open,
+            }
+        ];
+        this._searchValue = "";
+        this.consultationName = "";
+        this.questions = [];
+
+        this.applyStaticStyles("iai-question-overview-page", QuestionOverviewPage.styles);
+    }
+
+    getStoredIds = () => {
+        const storedValue = localStorage.getItem(this._STORAGE_KEY);
+        return storedValue ? JSON.parse(storedValue) : [];
+    }
+
+    toggleStorage = (newQuestionId) => {
+        let questionIds = this.getStoredIds();
+
+        if (questionIds.includes(newQuestionId)) {
+            questionIds = questionIds.filter(questionId => questionId != newQuestionId);
+        } else {
+            questionIds.push(newQuestionId);
+        }
+        localStorage.setItem(this._STORAGE_KEY, JSON.stringify(questionIds));
+    }
+
+    render() {
+        return x`
+            <section>
+                <iai-silver-title
+                    .level=${2}
+                    .text=${"All consultation questions"}
+                    .subtext=${"Browse or search through all questions in this consultation."}
+                    .aside=${x`<small>${this.questions.length} questions</small>`}
+                    .icon=${"help"}
+                ></iai-silver-title>
+
+                <iai-silver-panel>
+                    <div slot="content">
+
+                        <iai-silver-search-box
+                            .inputId=${"search-value"}
+                            .name=${"search-value"}
+                            .label=${"Search"}
+                            .placeholder=${"Search..."}
+                            .value=${this._searchValue}
+                            .hideLabel=${true}
+                            .handleInput=${(e) => this._searchValue = e.target.value.trim()}
+                        ></iai-silver-search-box>
+
+                        <ul>
+                            ${this.questions
+                                .filter(question => !this._searchValue
+                                    || question.title.toLocaleLowerCase().includes(this._searchValue.toLocaleLowerCase()))
+                                .map((question, index) => x`
+                                <li>
+                                    <iai-silver-cross-search-card
+                                        @click=${() => window.location.href = question.url}
+                                        .type=${"question"}
+                                        .title=${`Q${index+1}: ${question.title}`}
+                                        .aside=${x`
+                                            <iai-icon-button
+                                                class="favourite-button"
+                                                title="Favourite this question"
+                                                @click=${(e) => {
+                                                    e.stopPropagation();
+                                                    this.toggleStorage(question.id);
+                                                }}
+                                            >
+                                                <iai-icon
+                                                    slot="icon"
+                                                    name="star"
+                                                    .color=${"var(--iai-silver-color-text)"}
+                                                    .fill=${0}
+                                                ></iai-icon>
+                                            </iai-icon-button>
+                                        `}
+                                        .footer=${x`
+                                            <small class="response-total">${question.numResponses.toLocaleString()} responses</small>
+                                            <iai-silver-tag
+                                                .status=${question.status}
+                                                .text=${question.status}
+                                                .icon=${"star"}
+                                            ></iai-silver-tag>
+                                        `}
+                                        .highlightText=${this._searchValue}
+                                    ></iai-silver-cross-search-card>
+                                </li>
+                            `)}
+                        </ul>
+
+                    </div>
+                </iai-silver-panel>
+            </section>
+        `
+    }
+}
+customElements.define("iai-question-overview-page", QuestionOverviewPage);
 //# sourceMappingURL=index.js.map
