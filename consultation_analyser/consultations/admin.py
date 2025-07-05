@@ -33,9 +33,9 @@ class ResponseAdmin(admin.ModelAdmin):
     # list_filter = ["question"]
     # list_display = ["free_text", "question"]
     # list_select_related = True
-    actions = [update_embeddings, delete_selected_no_confirm]
+    # actions = [update_embeddings, delete_selected_no_confirm]
     list_display = ['id',]  # only show essential fields
-    list_per_page = 50
+    list_per_page = 5
     show_full_result_count = False
 
 class ConsultationAdmin(admin.ModelAdmin):
