@@ -36,6 +36,7 @@ class ResponseAdmin(admin.ModelAdmin):
     actions = [update_embeddings, delete_selected_no_confirm]
     list_display = ['id',]  # only show essential fields
     list_per_page = 50
+    show_full_result_count = False
 
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [delete_selected_no_confirm]
