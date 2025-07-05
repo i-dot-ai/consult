@@ -33,7 +33,7 @@ def import_consultation_job(
     )
 
 
-@job("default", timeout=900)
+@job("default")
 def delete_consultation_job(consultation: models.Consultation):
     from django.db import connection, transaction
 
