@@ -8,6 +8,7 @@ from faker import Faker
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import models
+from consultation_analyser.embeddings import embed_text
 
 fake = Faker()
 
@@ -78,6 +79,7 @@ class ResponseFactory(DjangoModelFactory):
     question = factory.SubFactory(QuestionFactory)
     free_text = factory.LazyAttribute(lambda o: fake.paragraph())
     chosen_options = factory.LazyFunction(list)  # Empty list
+    embedding = factory.LazyAttribute(lambda o: embed_text(o.free_text))
 
 
 class ResponseWithMultipleChoiceFactory(ResponseFactory):

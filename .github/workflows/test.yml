@@ -23,7 +23,7 @@ jobs:
           --health-retries 5
 
       postgres:
-        image: postgres
+        image: pgvector/pgvector:pg17
         env:
           POSTGRES_USER: pguser
           POSTGRES_PASSWORD: pgpass

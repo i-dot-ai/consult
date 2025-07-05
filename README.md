@@ -15,7 +15,7 @@ For our core AI-pipeline used for topic modelling to classify consultation respo
 
 ### External dependencies
 
-- PostgreSQL (`brew install postgresql`)
+- PostgreSQL (`brew install postgresql` &, `brew install pgvector`)
 - redis (`brew install redis`)
 - GraphViz (`brew install graphviz`), for generating diagrams
 - precommit (`brew install pre-commit`)

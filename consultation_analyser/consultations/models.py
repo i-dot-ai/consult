@@ -1,11 +1,14 @@
 import uuid
+from textwrap import shorten
 
 import faker as _faker
+from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.core.validators import BaseValidator
 from django.db import models
 from django.utils import timezone
 from django.utils.text import slugify
+from pgvector.django import VectorField
 
 from consultation_analyser.authentication.models import User
 
@@ -54,6 +57,9 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         constraints = [
             models.UniqueConstraint(fields=["slug"], name="unique_consultation_slug"),
         ]
+
+    def __str__(self):
+        return shorten(self.slug, width=64, placeholder="...")
 
 
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -113,6 +119,9 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
             models.Index(fields=["consultation", "has_free_text"]),
         ]
 
+    def __str__(self):
+        return shorten(self.slug, width=64, placeholder="...")
+
 
 class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
@@ -140,6 +149,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     chosen_options = ArrayField(
         models.TextField(null=False), null=True, default=None
     )  # Multiple choice selections
+    embedding = VectorField(dimensions=settings.EMBEDDING_DIMENSION, null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -151,6 +161,9 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
             models.Index(fields=["question"]),
             models.Index(fields=["respondent", "question"]),  # For efficient joins
         ]
+
+    def __str__(self):
+        return shorten(self.free_text, width=64, placeholder="...")
 
 
 class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):

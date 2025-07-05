@@ -17,7 +17,7 @@ locals {
     "GUNICORN_WORKERS"                     = local.secret_env_vars.GUNICORN_WORKERS,
     "GUNICORN_TIMEOUT"                     = local.secret_env_vars.GUNICORN_TIMEOUT,
     "ADMIN_USERS"                          = local.secret_env_vars.ADMIN_USERS
-
+    "SIMILARITY_THRESHOLD"                 = local.secret_env_vars.SIMILARITY_THRESHOLD
   }
 
   batch_env_vars = merge(local.base_env_vars, {

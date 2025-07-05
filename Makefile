@@ -15,6 +15,7 @@ setup_dev_db: ## Set up the development db on a local postgres
 	createdb consultations_dev
 	-createuser consultations_dev
 	-psql -d postgres -c 'GRANT ALL ON database consultations_dev TO consultations_dev;'
+	-psql -d postgres -c 'ALTER USER consultations_dev WITH SUPERUSER;'
 
 .PHONY: reset_dev_db
 reset_dev_db: ## Reset the dev db
@@ -26,6 +27,7 @@ setup_test_db:  ## Set up the test db on a local postgres
 	createdb consultations_test
 	-createuser consultations_test
 	-psql -d postgres -c 'GRANT ALL ON database consultations_test TO consultations_test; ALTER USER consultations_test CREATEDB;'
+	-psql -d postgres -c 'ALTER USER consultations_test WITH SUPERUSER;'
 
 .PHONY: reset_test_db
 reset_test_db: ## Reset the test db
