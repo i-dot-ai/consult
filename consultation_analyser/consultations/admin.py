@@ -11,7 +11,7 @@ def update_embeddings_admin(modeladmin, request, queryset):
     for consultation in queryset:
         queue.enqueue(update_embeddings, consultation.id)
 
-    modeladmin.message_user(request, f"Processing {queue.count()} consultations")
+    modeladmin.message_user(request, f"Processing {queryset.count()} consultations")
 
 
 @admin.action(description="Delete selected (without checking)")
