@@ -1,5 +1,6 @@
 import json
 import logging
+from uuid import UUID
 
 import boto3
 from django.conf import settings
@@ -176,6 +177,23 @@ def validate_consultation_structure(
 
     is_valid = len(errors) == 0
     return is_valid, errors
+
+
+def update_embeddings(consultation_id: UUID):
+    queryset = Response.objects.filter(question__consultation_id=consultation_id)
+    total = queryset.count()
+    batch_size = 1_000
+
+    for i in range(0, total, batch_size):
+        responses = queryset.order_by("id")[i : i + batch_size]
+
+        free_texts = [response.free_text for response in responses]
+        embeddings = embed_text(free_texts)
+
+        for response, embedding in zip(responses, embeddings):
+            response.embedding = embedding
+
+        Response.objects.bulk_update(responses, ["embedding"])
 
 
 def import_response_annotation_themes(question: Question, output_folder: str):

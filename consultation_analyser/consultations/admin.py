@@ -1,29 +1,20 @@
 from django.contrib import admin
+from django_rq import get_queue
 
 from consultation_analyser.consultations.models import Consultation, Question, Response
-from consultation_analyser.embeddings import embed_text
+from consultation_analyser.support_console.ingest import DEFAULT_TIMEOUT_SECONDS, update_embeddings
 
 
-@admin.action(description="(re)embed free text")
-def update_embeddings(modeladmin, request, queryset):
-    total = queryset.count()
-    batch_size = 1_000
+@admin.action(description="(re)embed responses")
+def update_embeddings_admin(modeladmin, request, queryset):
+    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
+    for consultation in queryset:
+        queue.enqueue(update_embeddings, consultation.id)
 
-    for i in range(0, total, batch_size):
-        responses = queryset.order_by("id")[i : i + batch_size]
-
-        free_texts = [response.free_text for response in responses]
-        embeddings = embed_text(free_texts)
-
-        for response, embedding in zip(responses, embeddings):
-            response.embedding = embedding
-
-        Response.objects.bulk_update(responses, ["embedding"])
-
-    modeladmin.message_user(request, f"Processed {total} responses in batches of {batch_size}")
+    modeladmin.message_user(request, f"Processing {queue.count()} consultations")
 
 
-@admin.action(description="delete")
+@admin.action(description="Delete selected (without checking)")
 def delete_selected_no_confirm(modeladmin, request, queryset):
     queryset.delete()
     modeladmin.message_user(request, f"Successfully deleted {queryset.count()} items.")
@@ -34,12 +25,15 @@ class ResponseAdmin(admin.ModelAdmin):
     # list_display = ["free_text", "question"]
     # list_select_related = True
     # actions = [update_embeddings, delete_selected_no_confirm]
-    list_display = ['id',]  # only show essential fields
+    list_display = [
+        "id",
+    ]  # only show essential fields
     list_per_page = 5
     show_full_result_count = False
 
+
 class ConsultationAdmin(admin.ModelAdmin):
-    actions = [delete_selected_no_confirm]
+    actions = [delete_selected_no_confirm, update_embeddings_admin]
 
 
 class QuestionAdmin(admin.ModelAdmin):
