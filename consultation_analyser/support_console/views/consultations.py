@@ -13,6 +13,7 @@ from consultation_analyser.consultations.dummy_data import (
     create_dummy_consultation_from_yaml_job,
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
+from consultation_analyser.gunicorn import timeout
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
 from consultation_analyser.support_console.validation_utils import format_validation_error
@@ -33,7 +34,7 @@ def import_consultation_job(
     )
 
 
-@job("default")
+@job("default", timeout=3_600)
 def delete_consultation_job(consultation: models.Consultation):
     from django.db import connection, transaction
 
@@ -49,7 +50,10 @@ def delete_consultation_job(consultation: models.Consultation):
             consultation = models.Consultation.objects.get(id=consultation_id)
 
             # Delete related objects in order to avoid foreign key constraints
-            logger.info(f"Deleting consultation '{consultation_title}' (ID: {consultation_id})")
+            logger.info("Deleting response annotations themes...")
+            models.ResponseAnnotationTheme.objects.filter(
+                response_annotation__response__question__consultation=consultation
+            ).delete()
 
             # Delete in batches to avoid memory issues
             logger.info("Deleting response annotations...")
