@@ -31,6 +31,9 @@ class ResponseAdmin(admin.ModelAdmin):
     list_per_page = 5
     show_full_result_count = False
 
+    def get_queryset(self, request):
+        return Response.objects.all()
+
 
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [delete_selected_no_confirm, update_embeddings_admin]
