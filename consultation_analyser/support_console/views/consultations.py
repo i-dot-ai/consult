@@ -35,48 +35,42 @@ def import_consultation_job(
 
 @job("default", timeout=3_600)
 def delete_consultation_job(consultation: models.Consultation):
-    from django.db import connection, transaction
-
     consultation_id = consultation.id
     consultation_title = consultation.title
 
     try:
-        # Close any existing connections to start fresh
-        connection.close()
+        # Refetch the consultation to ensure we have a fresh DB connection
+        consultation = models.Consultation.objects.get(id=consultation_id)
 
-        with transaction.atomic():
-            # Refetch the consultation to ensure we have a fresh DB connection
-            consultation = models.Consultation.objects.get(id=consultation_id)
+        # Delete related objects in order to avoid foreign key constraints
+        logger.info(f"Deleting consultation '{consultation_title}' (ID: {consultation_id})")
+        models.ResponseAnnotationTheme.objects.filter(
+            response_annotation__response__question__consultation=consultation
+        ).delete()
 
-            # Delete related objects in order to avoid foreign key constraints
-            logger.info(f"Deleting consultation '{consultation_title}' (ID: {consultation_id})")
-            models.ResponseAnnotationTheme.objects.filter(
-                response_annotation__response__question__consultation=consultation
-            ).delete()
+        models.ResponseAnnotationTheme.objects.filter(
+            response_annotation__response__question__consultation=consultation
+        ).delete()
 
-            models.ResponseAnnotationTheme.objects.filter(
-                response_annotation__response__question__consultation=consultation
-            ).delete()
+        # Delete in batches to avoid memory issues
+        logger.info("Deleting response annotations...")
+        models.ResponseAnnotation.objects.filter(
+            response__question__consultation=consultation
+        ).delete()
+        logger.info("Deleting responses...")
+        models.Response.objects.filter(question__consultation=consultation).delete()
 
-            # Delete in batches to avoid memory issues
-            logger.info("Deleting response annotations...")
-            models.ResponseAnnotation.objects.filter(
-                response__question__consultation=consultation
-            ).delete()
-            logger.info("Deleting responses...")
-            models.Response.objects.filter(question__consultation=consultation).delete()
+        logger.info("Deleting themes...")
+        models.Theme.objects.filter(question__consultation=consultation).delete()
 
-            logger.info("Deleting themes...")
-            models.Theme.objects.filter(question__consultation=consultation).delete()
+        logger.info("Deleting questions...")
+        models.Question.objects.filter(consultation=consultation).delete()
 
-            logger.info("Deleting questions...")
-            models.Question.objects.filter(consultation=consultation).delete()
+        logger.info("Deleting respondents...")
+        models.Respondent.objects.filter(consultation=consultation).delete()
 
-            logger.info("Deleting respondents...")
-            models.Respondent.objects.filter(consultation=consultation).delete()
-
-            logger.info("Deleting consultation...")
-            consultation.delete()
+        logger.info("Deleting consultation...")
+        consultation.delete()
 
         logger.info(
             f"Successfully deleted consultation '{consultation_title}' (ID: {consultation_id})"
