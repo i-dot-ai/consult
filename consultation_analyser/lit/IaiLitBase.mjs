@@ -17,10 +17,12 @@ export default class IaiLitBase extends LitElement {
             --iai-silver-color-dark: #030213;
             --iai-silver-color-text: rgb(95, 99, 104);
             --iai-silver-color-teal: #00786f;
+            --iai-silver-color-teal-mid: #85d07e;
             --iai-silver-color-teal-light: #f1fdfa;
             --iai-silver-color-accent: #c50978;
             --iai-silver-color-accent-light: #fcf1f6;
             --iai-silver-color-amber: #ba4d00;
+            --iai-silver-color-amber-mid: #ffe020;
             --iai-silver-color-amber-light: #fffbea;
         }
 

@@ -10,6 +10,7 @@ export default class Tag extends IaiLitBase {
         status: { type: String },
         text: { type: String },
         subtext: { type: String },
+        matchBackground: { type: Boolean },
     }
 
     static styles = [
@@ -18,11 +19,12 @@ export default class Tag extends IaiLitBase {
             iai-silver-tag .tag {
                 display: grid;
                 width: max-content;
+                max-width: 100%;
                 gap: 0.5em; 
                 padding: 0.3em 0.5em;
                 font-size: 0.8em;
+                line-height: 1.5em;
                 color: white;
-                background: #85d07e;                
                 border-radius: 0.5em;
             }
             iai-silver-tag iai-icon {
@@ -33,6 +35,7 @@ export default class Tag extends IaiLitBase {
             }
             iai-silver-tag .text-container {
                 display: flex;
+                align-items: center;
                 font-weight: bold;
             }
         `
@@ -46,6 +49,7 @@ export default class Tag extends IaiLitBase {
         this.status = "";
         this.text = "";
         this.subtext = "";
+        this.matchBackground = false;
         
         this.applyStaticStyles("iai-silver-tag", Tag.styles);
     }
@@ -56,21 +60,31 @@ export default class Tag extends IaiLitBase {
                 return {
                     primary: "var(--iai-silver-color-teal)",
                     secondary: "var(--iai-silver-color-teal-light)",
+                    ternary: "var(--iai-silver-color-teal-mid)",
                 };
             case this.CONSULTATION_STATUSES.analysing:
                 return {
                     primary: "var(--iai-silver-color-teal)",
                     secondary: "var(--iai-silver-color-teal-light)",
+                    ternary: "var(--iai-silver-color-teal-mid)",
                 };
             case this.CONSULTATION_STATUSES.completed:
                 return {
                     primary: "var(--iai-silver-color-teal)",
                     secondary: "var(--iai-silver-color-teal-light)",
+                    ternary: "var(--iai-silver-color-teal-mid)",
                 };
             case this.CONSULTATION_STATUSES.closed:
                 return {
                     primary: "var(--iai-silver-color-amber)",
                     secondary: "var(--iai-silver-color-amber-light)",
+                    ternary: "var(--iai-silver-color-amber-mid)",
+                };
+            default:
+                return {
+                    primary: "var(--iai-silver-color-dark)",
+                    secondary: "var(--iai-silver-color-light)",
+                    ternary: "var(--iai-silver-color-mid-light)",
                 };
         }
     }
@@ -80,8 +94,11 @@ export default class Tag extends IaiLitBase {
             <style>
                 #${this.contentId} {
                     color: ${this.getTagColor(this.status).primary};
-                    background: ${this.getTagColor(this.status).secondary};
-                    border: 1px solid ${this.getTagColor(this.status).primary};
+                    background: ${this.matchBackground
+                        ? this.getTagColor(this.status).ternary
+                        : this.getTagColor(this.status).secondary
+                    };
+                    border: 1px solid ${this.getTagColor(this.status).ternary};
                 }
             </style>
             
