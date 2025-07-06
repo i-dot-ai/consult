@@ -1,7 +1,13 @@
 from django.contrib import admin
 from django_rq import get_queue
 
-from consultation_analyser.consultations.models import Consultation, Question, Response
+from consultation_analyser.consultations.models import (
+    Consultation,
+    Question,
+    Response,
+    ResponseAnnotation,
+    ResponseAnnotationTheme,
+)
 from consultation_analyser.support_console.ingest import DEFAULT_TIMEOUT_SECONDS, update_embeddings
 
 
@@ -46,6 +52,16 @@ class QuestionAdmin(admin.ModelAdmin):
     actions = [delete_selected_no_confirm]
 
 
+class ResponseAnnotationAdmin(admin.ModelAdmin):
+    pass
+
+
+class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
+    pass
+
+
 admin.site.register(Response, ResponseAdmin)
 admin.site.register(Consultation, ConsultationAdmin)
 admin.site.register(Question, QuestionAdmin)
+admin.site.register(ResponseAnnotation, ResponseAnnotationAdmin)
+admin.site.register(ResponseAnnotationTheme, ResponseAnnotationThemeAdmin)
