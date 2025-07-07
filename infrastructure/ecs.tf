@@ -19,7 +19,6 @@ locals {
     "ADMIN_USERS"                          = local.secret_env_vars.ADMIN_USERS,
     "SIMILARITY_THRESHOLD"                 = local.secret_env_vars.SIMILARITY_THRESHOLD,
     "AZURE_OPENAI_API_KEY"                 = local.secret_env_vars.AZURE_OPENAI_API_KEY,
-    "AZURE_OPENAI_API_KEY"                 = local.secret_env_vars.AZURE_OPENAI_API_KEY,
     "OPENAI_API_VERSION"                   = local.secret_env_vars.OPENAI_API_VERSION,
     "AZURE_OPENAI_ENDPOINT"                = local.secret_env_vars.AZURE_OPENAI_ENDPOINT
   }
