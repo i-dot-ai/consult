@@ -120,7 +120,7 @@ def get_filtered_responses_with_themes(
             )
             queryset = queryset.filter(Exists(theme_exists))
 
-    if filters and "search_value" in filters:
+    if filters and filters.get("search_value"):
         embedded_query = embed_text(filters["search_value"])
         logger.info("embedded %s", filters["search_value"])
         responses = queryset.annotate(
