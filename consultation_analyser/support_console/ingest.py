@@ -182,14 +182,16 @@ def validate_consultation_structure(
 
 
 def update_embeddings(consultation_id: UUID):
-    queryset = Response.objects.filter(question__consultation_id=consultation_id)
+    queryset = Response.objects.filter(
+        question__consultation_id=consultation_id, free_text__isnull=False
+    )
     total = queryset.count()
     batch_size = 1_000
 
     for i in range(0, total, batch_size):
         responses = queryset.order_by("id")[i : i + batch_size]
 
-        free_texts = [response.free_text for response in responses]
+        free_texts = [response.free_text or "" for response in responses]
         embeddings = embed_text(free_texts)
 
         for response, embedding in zip(responses, embeddings):

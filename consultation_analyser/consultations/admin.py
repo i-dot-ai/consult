@@ -11,7 +11,7 @@ from consultation_analyser.consultations.models import (
 from consultation_analyser.support_console.ingest import DEFAULT_TIMEOUT_SECONDS, update_embeddings
 
 
-@admin.action(description="(re)embed responses")
+@admin.action(description="(Re)Embed selected Consultations")
 def update_embeddings_admin(modeladmin, request, queryset):
     queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
     for consultation in queryset:
@@ -24,7 +24,6 @@ class ResponseAdmin(admin.ModelAdmin):
     list_filter = ["question"]
     list_display = ["free_text", "question"]
     list_select_related = True
-    actions = [update_embeddings]
 
 
 class ConsultationAdmin(admin.ModelAdmin):
