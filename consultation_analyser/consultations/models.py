@@ -77,7 +77,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     has_free_text = models.BooleanField(default=True)
     has_multiple_choice = models.BooleanField(default=False)
     multiple_choice_options = ArrayField(
-        models.TextField(), null=True, default=None, blank=True
+        models.TextField(null=False), null=True, default=None
     )  # List of options when has_multiple_choice=True
 
     def save(self, *args, **kwargs):
@@ -161,9 +161,6 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     def __str__(self):
         return shorten(self.free_text, width=64, placeholder="...")
 
-    def __str__(self):
-        return shorten(self.free_text, width=64, placeholder="...")
-
 
 class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
     """Normalized storage of demographic field options for efficient querying across pages"""
@@ -200,11 +197,7 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
 
         # Bulk create new options
         options_to_save = [
-            cls(
-                consultation=consultation,
-                field_name=field_name[:128],
-                field_value=field_value[:256],
-            )
+            cls(consultation=consultation, field_name=field_name, field_value=field_value)
             for field_name, field_value in demographic_options_to_create
         ]
 
