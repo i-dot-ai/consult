@@ -3,6 +3,7 @@ from uuid import UUID
 
 from django.conf import settings
 from django.contrib import messages
+from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django_rq import job
@@ -44,30 +45,75 @@ def delete_consultation_job(consultation: models.Consultation):
 
         # Delete related objects in order to avoid foreign key constraints
         logger.info(f"Deleting consultation '{consultation_title}' (ID: {consultation_id})")
-        models.ResponseAnnotationTheme.objects.filter(
-            response_annotation__response__question__consultation=consultation
-        ).delete()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+            DELETE FROM consultations_responseannotationtheme
+            WHERE response_annotation_id IN (
+                SELECT a.id from consultations_responseannotation a
+                JOIN consultations_response r ON a.response_id = r.id
+                JOIN consultations_question q ON r.question_id = q.id
+                WHERE q.consultation_id = %s
+            )""",
+                [consultation_id],
+            )
 
-        models.ResponseAnnotationTheme.objects.filter(
-            response_annotation__response__question__consultation=consultation
-        ).delete()
-
-        # Delete in batches to avoid memory issues
         logger.info("Deleting response annotations...")
-        models.ResponseAnnotation.objects.filter(
-            response__question__consultation=consultation
-        ).delete()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+            DELETE FROM consultations_responseannotation
+            WHERE response_id IN (
+                SELECT r.id from consultations_response r
+                JOIN consultations_question q ON r.question_id = q.id
+                WHERE q.consultation_id = %s
+            )""",
+                [consultation_id],
+            )
+
         logger.info("Deleting responses...")
-        models.Response.objects.filter(question__consultation=consultation).delete()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+            DELETE FROM consultations_response
+            WHERE question_id IN (
+                SELECT id FROM consultations_question
+                WHERE consultation_id = %s
+            )""",
+                [consultation_id],
+            )
 
         logger.info("Deleting themes...")
-        models.Theme.objects.filter(question__consultation=consultation).delete()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+            DELETE FROM consultations_theme
+            WHERE question_id IN (
+                SELECT id FROM consultations_question
+                WHERE consultation_id = %s
+            )""",
+                [consultation_id],
+            )
 
         logger.info("Deleting questions...")
-        models.Question.objects.filter(consultation=consultation).delete()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                DELETE FROM consultations_question
+                WHERE consultation_id = %s
+            """,
+                [consultation_id],
+            )
 
         logger.info("Deleting respondents...")
-        models.Respondent.objects.filter(consultation=consultation).delete()
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                DELETE FROM consultations_respondent
+                WHERE consultation_id = %s
+            """,
+                [consultation_id],
+            )
 
         logger.info("Deleting consultation...")
         consultation.delete()
