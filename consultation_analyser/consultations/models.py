@@ -147,19 +147,15 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     # Response content
     free_text = models.TextField(blank=True)  # Free text response
     chosen_options = ArrayField(
-        models.TextField(null=False), null=True, default=None
+        models.TextField(), null=True, default=None
     )  # Multiple choice selections
     embedding = VectorField(dimensions=settings.EMBEDDING_DIMENSION, null=True, blank=True)
 
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+    class Meta:
         constraints = [
             models.UniqueConstraint(
                 fields=["respondent", "question"], name="unique_question_response"
             ),
-        ]
-        indexes = [
-            models.Index(fields=["question"]),
-            models.Index(fields=["respondent", "question"]),  # For efficient joins
         ]
 
     def __str__(self):
