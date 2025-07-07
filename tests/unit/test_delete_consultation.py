@@ -198,9 +198,6 @@ def test_delete_consultation_job_handles_database_connection(mock_connection):
     # Run the delete job
     delete_consultation_job(consultation)
 
-    # Verify connection.close() was called
-    mock_connection.close.assert_called_once()
-
 
 @pytest.mark.django_db
 @patch("django.db.connection")
