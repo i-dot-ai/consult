@@ -16,6 +16,7 @@ from .decorators import user_can_see_consultation, user_can_see_dashboards
 
 logger = getLogger(__file__)
 
+
 class DataDict(TypedDict):
     all_respondents: list
     has_more_pages: bool
@@ -124,12 +125,12 @@ def get_filtered_responses_with_themes(
         logger.info("embedded %s", filters["search_value"])
         responses = (
             queryset.annotate(distance=CosineDistance("embedding", embedded_query))
-            .distinct()
-            # .filter(distance__lte=similarity_threshold)
             .order_by("distance")
         )
         logger.info("responses %s", responses.values_list("free_text", "distance")[:3])
-        return responses
+        return responses.filter(distance__lte=similarity_threshold).distinct().order_by("distance")
+
+
 
     return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination
 
