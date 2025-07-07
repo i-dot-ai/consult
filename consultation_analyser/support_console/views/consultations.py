@@ -72,16 +72,25 @@ def delete_consultation_job(consultation: models.Consultation):
             )
 
         logger.info("Deleting responses...")
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-            DELETE FROM consultations_response
-            WHERE question_id IN (
-                SELECT id FROM consultations_question
-                WHERE consultation_id = %s
-            )""",
-                [consultation_id],
-            )
+        while True:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                DELETE FROM consultations_response
+                WHERE ctid IN (
+                    SELECT cr.ctid
+                    FROM consultations_response cr
+                    JOIN consultations_question cq ON cr.question_id = cq.id
+                    WHERE cq.consultation_id = %s
+                    LIMIT 1000
+                );
+                """,
+                    [consultation_id],
+                )
+                logger.info("Deleted 1000 responses")
+
+                if cursor.rowcount == 0:
+                    break
 
         logger.info("Deleting themes...")
         with connection.cursor() as cursor:
