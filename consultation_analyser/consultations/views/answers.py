@@ -1,4 +1,5 @@
 from datetime import datetime
+from logging import getLogger
 from typing import TypedDict
 from uuid import UUID
 
@@ -13,6 +14,7 @@ from ...embeddings import embed_text
 from .. import models
 from .decorators import user_can_see_consultation, user_can_see_dashboards
 
+logger = getLogger(__file__)
 
 class DataDict(TypedDict):
     all_respondents: list
@@ -119,12 +121,14 @@ def get_filtered_responses_with_themes(
 
     if filters and "search_value" in filters:
         embedded_query = embed_text(filters["search_value"])
+        logger.info("embedded %s", filters["search_value"])
         responses = (
             queryset.annotate(distance=CosineDistance("embedding", embedded_query))
             .distinct()
-            .filter(distance__lte=similarity_threshold)
+            # .filter(distance__lte=similarity_threshold)
             .order_by("distance")
         )
+        logger.info("responses %s", responses.values_list("free_text", "distance")[:3])
         return responses
 
     return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination

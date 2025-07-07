@@ -20,28 +20,21 @@ def update_embeddings_admin(modeladmin, request, queryset):
     modeladmin.message_user(request, f"Processing {queryset.count()} consultations")
 
 
-@admin.action(description="Delete selected (without checking)")
-def delete_selected_no_confirm(modeladmin, request, queryset):
-    queryset.delete()
-    modeladmin.message_user(request, f"Successfully deleted {queryset.count()} items.")
-
-
 class ResponseAdmin(admin.ModelAdmin):
     list_filter = ["question"]
     list_display = ["free_text", "question"]
     list_select_related = True
-    actions = [update_embeddings, delete_selected_no_confirm]
+    actions = [update_embeddings]
 
 
 class ConsultationAdmin(admin.ModelAdmin):
-    actions = [delete_selected_no_confirm, update_embeddings_admin]
+    actions = [update_embeddings_admin]
 
 
 class QuestionAdmin(admin.ModelAdmin):
     list_filter = ["consultation"]
     list_display = ["slug", "consultation"]
     list_select_related = True
-    actions = [delete_selected_no_confirm]
 
 
 class ResponseAnnotationAdmin(admin.ModelAdmin):
