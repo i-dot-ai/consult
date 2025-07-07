@@ -123,14 +123,11 @@ def get_filtered_responses_with_themes(
     if filters and "search_value" in filters:
         embedded_query = embed_text(filters["search_value"])
         logger.info("embedded %s", filters["search_value"])
-        responses = (
-            queryset.annotate(distance=CosineDistance("embedding", embedded_query))
-            .order_by("distance")
-        )
+        responses = queryset.annotate(
+            distance=CosineDistance("embedding", embedded_query)
+        ).order_by("distance")
         logger.info("responses=%s", responses.values_list("free_text", "distance")[:3])
         return responses.filter(distance__lte=similarity_threshold).distinct().order_by("distance")
-
-
 
     return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination
 
