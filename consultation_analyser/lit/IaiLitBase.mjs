@@ -34,6 +34,10 @@ export default class IaiLitBase extends LitElement {
             height: 0;
             overflow: hidden;
         }
+
+        .matched-text {
+            background: yellow;
+        }
     `
 
     static properties = {
@@ -110,5 +114,13 @@ export default class IaiLitBase extends LitElement {
                 /\w\S*/g,
                 text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
             );
+    }
+
+    getHighlightedText = (fullText, matchedText) => {
+        if (!matchedText) {
+            return fullText;
+        }
+        const regex = new RegExp(matchedText, "gi");
+        return fullText.replace(regex, match => `<span class="matched-text">${match}</span>`);
     }
 }

@@ -40,10 +40,12 @@ class IaiLitBase extends i$1 {
             --iai-silver-color-dark: #030213;
             --iai-silver-color-text: rgb(95, 99, 104);
             --iai-silver-color-teal: #00786f;
+            --iai-silver-color-teal-mid: #85d07e;
             --iai-silver-color-teal-light: #f1fdfa;
             --iai-silver-color-accent: #c50978;
             --iai-silver-color-accent-light: #fcf1f6;
             --iai-silver-color-amber: #ba4d00;
+            --iai-silver-color-amber-mid: #ffe020;
             --iai-silver-color-amber-light: #fffbea;
         }
 
@@ -54,6 +56,10 @@ class IaiLitBase extends i$1 {
             width: 0;
             height: 0;
             overflow: hidden;
+        }
+
+        .matched-text {
+            background: yellow;
         }
     `
 
@@ -131,6 +137,14 @@ class IaiLitBase extends i$1 {
                 /\w\S*/g,
                 text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
             );
+    }
+
+    getHighlightedText = (fullText, matchedText) => {
+        if (!matchedText) {
+            return fullText;
+        }
+        const regex = new RegExp(matchedText, "gi");
+        return fullText.replace(regex, match => `<span class="matched-text">${match}</span>`);
     }
 }
 
@@ -1499,13 +1513,14 @@ class IaiIconButton extends IaiLitBase {
                 background: none;
                 border: none;
                 cursor: pointer;
-                border-radius: 50%;
+                border-radius: 0.5em;
                 padding: 0.3em 0.5em;
                 transition: 0.3s ease-in-out;
-                transition-property: background-color;
+                transition-property: background-color, color;
             }
             iai-icon-button button:hover {
-                background: var(--iai-colour-pink-transparent);
+                color: black;
+                background: #cbfbf1;
             }
             iai-icon-button iai-icon {
                 font-size: 1.2em;
@@ -5520,6 +5535,7 @@ class Tag extends IaiLitBase {
         status: { type: String },
         text: { type: String },
         subtext: { type: String },
+        matchBackground: { type: Boolean },
     }
 
     static styles = [
@@ -5528,11 +5544,12 @@ class Tag extends IaiLitBase {
             iai-silver-tag .tag {
                 display: grid;
                 width: max-content;
+                max-width: 100%;
                 gap: 0.5em; 
                 padding: 0.3em 0.5em;
                 font-size: 0.8em;
+                line-height: 1.5em;
                 color: white;
-                background: #85d07e;                
                 border-radius: 0.5em;
             }
             iai-silver-tag iai-icon {
@@ -5543,6 +5560,7 @@ class Tag extends IaiLitBase {
             }
             iai-silver-tag .text-container {
                 display: flex;
+                align-items: center;
                 font-weight: bold;
             }
         `
@@ -5556,6 +5574,7 @@ class Tag extends IaiLitBase {
         this.status = "";
         this.text = "";
         this.subtext = "";
+        this.matchBackground = false;
         
         this.applyStaticStyles("iai-silver-tag", Tag.styles);
     }
@@ -5566,21 +5585,31 @@ class Tag extends IaiLitBase {
                 return {
                     primary: "var(--iai-silver-color-teal)",
                     secondary: "var(--iai-silver-color-teal-light)",
+                    ternary: "var(--iai-silver-color-teal-mid)",
                 };
             case this.CONSULTATION_STATUSES.analysing:
                 return {
                     primary: "var(--iai-silver-color-teal)",
                     secondary: "var(--iai-silver-color-teal-light)",
+                    ternary: "var(--iai-silver-color-teal-mid)",
                 };
             case this.CONSULTATION_STATUSES.completed:
                 return {
                     primary: "var(--iai-silver-color-teal)",
                     secondary: "var(--iai-silver-color-teal-light)",
+                    ternary: "var(--iai-silver-color-teal-mid)",
                 };
             case this.CONSULTATION_STATUSES.closed:
                 return {
                     primary: "var(--iai-silver-color-amber)",
                     secondary: "var(--iai-silver-color-amber-light)",
+                    ternary: "var(--iai-silver-color-amber-mid)",
+                };
+            default:
+                return {
+                    primary: "var(--iai-silver-color-dark)",
+                    secondary: "var(--iai-silver-color-light)",
+                    ternary: "var(--iai-silver-color-mid-light)",
                 };
         }
     }
@@ -5590,8 +5619,11 @@ class Tag extends IaiLitBase {
             <style>
                 #${this.contentId} {
                     color: ${this.getTagColor(this.status).primary};
-                    background: ${this.getTagColor(this.status).secondary};
-                    border: 1px solid ${this.getTagColor(this.status).primary};
+                    background: ${this.matchBackground
+                        ? this.getTagColor(this.status).ternary
+                        : this.getTagColor(this.status).secondary
+                    };
+                    border: 1px solid ${this.getTagColor(this.status).ternary};
                 }
             </style>
             
@@ -5865,4 +5897,2062 @@ class ToggleInput extends IaiLitBase {
     }
 }
 customElements.define("iai-toggle-input", ToggleInput);
+
+class ThemesTable extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        themes: { type: Array },
+        themeFilters: { type: Array },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-themes-table iai-data-table {
+                max-height: 40em;
+                overflow: auto;
+                display: block;
+            }
+            iai-themes-table .theme-title {
+                font-weight: bold;
+                font-size: 0.9em;
+                color: var(--iai-silver-color-text);
+            }
+            iai-themes-table .theme-description {
+                white-space: nowrap;
+                font-size: 0.9em;
+                overflow: hidden;
+                max-width: 30em;
+                display: block;
+                text-overflow: ellipsis;
+            }
+            iai-themes-table .percentage-cell {
+                gap: 0.5em;
+                display: flex;
+                align-items: center;
+            }
+            // iai-themes-table .percentage-cell iai-progress-bar {
+            //     flex-grow: 1;
+            // }
+            // iai-themes-table .percentage-cell iai-progress-bar .container {
+            //     border-radius: 0.5em;
+            //     background: var(--iai-silver-color-mid);
+            //     border: none;
+            //     opacity: 0.7;
+            // }
+
+            iai-themes-table .percentage-cell iai-progress-bar .bar {
+                background: var(--iai-silver-color-accent);
+            }
+            iai-themes-table .percentage-cell iai-progress-bar .container {
+                background: var(--iai-silver-color-mid-light);
+            }
+
+            // iai-themes-table .percentage-cell iai-progress-bar .bar {
+            //     height: 0.5em;
+            //     border-top-left-radius: 0.5em;
+            //     border-bottom-left-radius: 0.5em;
+            //     background: var(--iai-silver-color-dark);
+            // }
+            iai-themes-table iai-silver-button button {
+                width: max-content;
+                display: flex;
+                align-items: center;
+                padding-inline: 0.5em;
+                gap: 0.5em;
+                font-weight: bold;
+                color: var(--iai-silver-color-text);
+            }
+            iai-themes-table input {
+                cursor: pointer;
+            }
+            iai-themes-table tr {
+                transition: background 0.3s ease-in-out;
+            }
+            iai-themes-table tr:has(input:checked) {
+                background: var(--iai-silver-color-teal-light);
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+        this._NUMBER_ANIMATION_DURATION = 1000;
+
+        this.themes = [];
+        this.themeFilters = [];
+
+        this.applyStaticStyles("iai-themes-table", ThemesTable.styles);
+    }
+
+    getPercentage = (partialValue, totalValue) => {
+        if (totalValue === 0) {
+            return 0;
+        }
+        return Math.round(((partialValue / totalValue) * 100));
+    }
+
+    updated(changedProps) {
+        if (changedProps.has("themeFilters")) {
+            this.querySelectorAll(`.theme-checkbox`).forEach(el => {
+                el.checked = this.themeFilters.includes(el.value);
+            });
+        }
+    }
+
+    render() {
+        const totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
+
+        return x`
+            <iai-data-table
+                .sortable=${false}
+                .initialSorts=${[
+                    {
+                        field: "Number of responses",
+                        ascending: false,
+                    }
+                ]}
+                .data=${this.themes
+                    .map(theme => (
+                        {
+                            // _sortValues are the values used for sorting comparison
+                            // instead of the actual value of a cell, which can be an obj etc.
+                            // particularly useful for html elements and dates.
+                            "_sortValues": {
+                                "Mentions": parseInt(theme.mentions),
+                                "Percentage": parseInt(theme.percentage),
+                                "Theme": theme.title,
+                            },
+                            "Theme": x`
+                                <div style="display: flex; align-items: center; gap: 1em;">
+                                    <div>
+                                        <input
+                                            style="filter: grayscale(0.5) hue-rotate(75deg);"
+                                            type="checkbox"
+                                            class="theme-checkbox"
+                                            id=${"theme-filters" + theme.title.toLowerCase().replace(" ", "-")}
+                                            name="theme-filters"
+                                            .value=${theme.id}
+                                            @change=${(e) => {
+                                                this.setThemeFilters(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <span class="theme-title">
+                                            ${theme.title}
+                                        </span>
+                                        <span class="theme-description">
+                                            ${theme.description}
+                                        </span>
+                                    </div>
+                                </div>
+                            `,
+                            "Mentions": x`
+                                <iai-animated-number
+                                    .number=${theme.mentions}
+                                    .duration=${this._NUMBER_ANIMATION_DURATION}
+                                ></iai-animated-number>
+                            `,
+                            "Percentage": x`
+                                <div class="percentage-cell">
+                                    <div>
+                                        <iai-animated-number
+                                            .number=${this.getPercentage(theme.mentions, totalMentions)}
+                                            .duration=${this._NUMBER_ANIMATION_DURATION}
+                                        ></iai-animated-number>
+                                        %
+                                    </div>
+
+                                    <iai-progress-bar
+                                        .value=${this.getPercentage(theme.mentions, totalMentions)}
+                                        .label=${""}
+                                    ></iai-progress-bar>
+                                </div>
+                            `,
+                            "Actions": x`
+                                <iai-silver-button
+                                    .text=${x`
+                                        <iai-icon
+                                            .name=${"search"}
+                                        ></iai-icon>
+                                        <span>View responses</span>
+                                    `}
+                                    .handleClick=${theme.handleClick}
+                                ></iai-silver-button>
+                            `
+                        }
+                    ))
+                }
+            ></iai-data-table>
+        `;
+    }
+}
+customElements.define("iai-themes-table", ThemesTable);
+
+class ThemeAnalysis extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        themes: { type: Array },
+        demoData: { type: Array },
+        themeFilters: { type: Array },
+        updateThemeFilters: { type: Function },
+        _sortColumn: { type: String },
+        _sortDirection: { type: String },
+        _themeFilters: { type: Array }, //  Array<theme.id>
+        _demoFilters: { type: Object },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-theme-analysis .table-container iai-data-table {
+                // display: block;
+                // max-height: 40em;
+                // overflow: auto;
+            }
+            iai-theme-analysis iai-silver-icon-tile {
+                font-size: 0.8em;
+            }
+            iai-theme-analysis .theme-title {
+                font-weight: bold;
+                color: var(--iai-silver-color-text);
+            }
+            iai-theme-analysis .percentage-cell {
+                gap: 0.5em;
+                display: flex;
+                align-items: center;
+            }
+            iai-theme-analysis .percentage-cell iai-progress-bar {
+                flex-grow: 1;
+            }
+            iai-theme-analysis .percentage-cell iai-progress-bar .container {
+                border-radius: 0.5em;
+                background: var(--iai-silver-color-mid);
+                border: none;
+                opacity: 0.7;
+            }
+            iai-theme-analysis .percentage-cell iai-progress-bar .bar {
+                height: 0.5em;
+                border-top-left-radius: 0.5em;
+                border-bottom-left-radius: 0.5em;
+                background: var(--iai-silver-color-dark);
+            }
+            iai-theme-analysis iai-silver-button button {
+                width: max-content;
+                display: flex;
+                align-items: center;
+                padding-inline: 0.5em;
+                gap: 0.5em;
+                font-weight: bold;
+                color: var(--iai-silver-color-text);
+            }
+            iai-theme-analysis .filters-row {
+                display: grid;
+                gap: 1em;
+            }
+            iai-theme-analysis .total-themes {
+                display: flex;
+                flex-direction: column;    
+                max-height: max-content;
+                padding: 1em;
+                font-size: 0.8em;
+                white-space: nowrap;
+                background: #fcf1f6;
+                border-radius: 0.5em;
+            }
+            iai-theme-analysis .total-themes span {
+                font-size: 1.5em;
+                font-weight: bold;
+            }
+            iai-theme-analysis .filters-row {
+                margin-bottom: 1em;
+                background: var(--iai-silver-color-light);
+                padding: 1em;
+                border-radius: 0.5em;
+            }
+            iai-theme-analysis .filters {
+                display: flex;
+                flex-wrap: wrap;
+                column-gap: 0.5em;
+                row-gap: 1em;
+                align-items: center;
+                // margin-left: 0.5em;
+            }
+            iai-theme-analysis .top-panel {
+                margin-bottom: 2em;
+            }
+            iai-theme-analysis .filters select.govuk-select {
+                font-size: 0.9em;
+                background: #f3f3f5;
+            }
+            iai-theme-analysis .export-button button {
+                padding-block: 0.2em;
+            }
+            iai-theme-analysis .filters .demographics-title .icon-container {
+                margin: 0;
+                color: var(--iai-silver-color-dark);
+            }
+            iai-theme-analysis .filters .govuk-form-group:has(select){
+                margin: 0;
+            }
+            @media (min-width: 40.0625em) {
+                .govuk-form-group {
+                    margin-bottom: 0;
+                }
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+        this._NUMBER_ANIMATION_DURATION = 1000;
+
+        this.themes = [
+            {
+                id: "1",
+                title: "Healthcare AI Regulatory Standards",
+                description: "Detailed analysis of healthcare ai regulatory standards responses from consultation participants across various demographic groups and sectors.",
+                mentions: 1240,
+                percentage: 18.5
+            },
+            {
+                id: "2",
+                title: "Encryption Technology Requirements",
+                description: "Detailed analysis of encryption technology requirements responses from consultation participants across various demographic groups and sectors.",
+                mentions: 1725,
+                percentage: 12.1
+            }
+        ];
+        this.demoData = [];
+        this.themeFilters = [];
+        this.updateThemeFilters = () => {};
+
+        this._sortColumn = "theme-mentions";
+        this._sortDirection = "descending";
+        this._themeFilters = [];
+        this._demoFilters = {};
+
+        this.applyStaticStyles("iai-theme-analysis", ThemeAnalysis.styles);
+    }
+
+    getPercentage = (partialValue, totalValue) => {
+        if (totalValue === 0) {
+            return 0;
+        }
+        return Math.round(((partialValue / totalValue) * 100));
+    }
+
+    updated(changedProps) {
+        if (changedProps.has("_demoFilters")) {
+            console.log("New Demo Filters:", this._demoFilters);
+        }
+    }
+
+    
+    render() {
+        return x`
+            <iai-silver-panel>
+                <div slot="content" style="padding-block: 0.5em;">
+                    <div class="top-panel">
+                        <iai-silver-title
+                            .text=${"Theme Analysis"}
+                            .variant=${"secondary"}
+                            .icon=${"lan"}
+                            .aside=${x`
+                                <iai-silver-button
+                                    class="export-button"
+                                    .text=${x`
+                                        <iai-icon
+                                            .name=${"download"}
+                                        ></iai-icon>
+                                        <span>Export</span>
+                                    `}
+                                    .handleClick=${() => console.log("export initiated")}
+                                ></iai-silver-button>
+                            `}
+                        ></iai-silver-title>
+
+                        <div class="filters-row">
+                            <div class="filters" style="display: flex;">
+                                <iai-silver-select-input
+                                    style="white-space: nowrap;"
+                                    .inputId=${"sort-value"}
+                                    .name=${"sort-value"}
+                                    .label=${"Sort by:"}
+                                    .hideLabel=${false}
+                                    .value=${this._sortColumn}
+                                    .options=${[
+                                        { value: "theme-mentions", text: "Frequency" },
+                                        { value: "theme-title", text: "A-Z" },
+                                    ]}
+                                    .handleChange=${(e) => this._sortColumn = e.target.value}
+                                    .horizontal=${true}
+                                ></iai-silver-select-input>
+
+                                <iai-silver-select-input
+                                    .inputId=${"sort-direction"}
+                                    .name=${"sort-direction"}
+                                    .label=${"Sort Direction"}
+                                    .hideLabel=${true}
+                                    .value=${this._sortDirection}
+                                    .options=${[
+                                        { value: "descending", text: "Descending" },
+                                        { value: "asc", text: "Ascending" },
+                                    ]}
+                                    .handleChange=${(e) => this._sortDirection = e.target.value}
+                                    .horizontal=${true}
+                                ></iai-silver-select-input>
+                            </div>
+
+                            <div class="filters">
+
+                                <!--
+                                <iai-silver-select-input
+                                    .inputId=${"theme-filter"}
+                                    .name=${"theme-filter"}
+                                    .label=${"Filter Themes"}
+                                    .placeholder=${"All Themes"}
+                                    .hideLabel=${true}
+                                    .value=${this._themeFilters}
+                                    .options=${this.themes.map(theme => ({
+                                        value: theme.id,
+                                        text: theme.title,
+                                    }))}
+                                    .handleChange=${(e) => {
+                                        if (!e.target.value) {
+                                            // remove all theme filters if "all filters" value is selected
+                                            this._themeFilters = [];
+                                        } else {
+                                            this._themeFilters = [...this._themeFilters, e.target.value];
+                                        }
+                                    }}
+                                    .horizontal=${true}
+                                ></iai-silver-select-input>
+
+                                <iai-silver-select-input
+                                    .inputId=${"respondent-type"}
+                                    .name=${"respondent-type"}
+                                    .label=${"Respondent Type"}
+                                    .hideLabel=${true}
+                                    .value=${this._themeFilters}
+                                    .placeholder=${"All Respondents"}
+                                    .options=${[
+                                        {id: "1", text: "Individual Respondents"},
+                                        {id: "2", text: "Organisation Respondents"},
+                                    ].map(respondent => ({
+                                        value: respondent.id,
+                                        text: respondent.text,
+                                    }))}
+                                    .handleChange=${(e) => console.log("respondent selected:", e.target.value)}
+                                    .horizontal=${true}
+                                ></iai-silver-select-input>
+                                -->
+
+
+                                <iai-silver-title
+                                    class="demographics-title"
+                                    .text=${"Demographics"}
+                                    .level=${3}
+                                ></iai-silver-title>
+
+                                ${Object.keys(this.demoData).map(category => {
+                                    const getSlug = (string) => string.toLowerCase().replace(" ", "-");
+
+                                    return x`
+                                        <iai-silver-select-input
+                                            .inputId=${getSlug(category)}
+                                            .name=${getSlug(category)}
+                                            .label=${this.toTitleCase(category)}
+                                            .hideLabel=${true}
+                                            .value=${this.themeFilters /* make object */}
+                                            .placeholder=${`Select ${this.toTitleCase(category)}`}
+                                            .options=${(Object.keys(this.demoData[category])).map(key => ({
+                                                value: getSlug(key),
+                                                text: this.toTitleCase(key)
+                                            }))}
+                                            .handleChange=${(e) => {
+                                                const newDemoFilters = {...this._demoFilters};
+                                                newDemoFilters[getSlug(category)] = e.target.value;
+                                                this._demoFilters = newDemoFilters;
+                                            }}
+                                            .horizontal=${true}
+                                        ></iai-silver-select-input>
+                                    `
+                                })}
+                            </div>
+                        </div>
+
+                        <div style="display: flex; justify-content: space-between;">
+                            <small>
+                                Click themes to select up to 3 for detailed analysis.
+                            </small>
+
+                            <small>
+                                Total Themes
+                                <span>${this.themes.length}<span>
+                            </small>
+                        </div>
+                    </div>
+
+                    <iai-themes-table
+                        .themes=${this.themes
+                            // .filter(theme => this._themeFilters.length > 0
+                            //     ? this._themeFilters.includes(theme.id)
+                            //     : true
+                            // )
+                            .filter(theme => {
+                                for (const demoFilter of Object.keys(this._demoFilters)) {
+                                    if (!theme.demographicsData) {
+                                        return false;
+                                    }
+                                    const demoFilterValue = this._demoFilters[demoFilter];
+                                    const themeDemoValue = theme.demographicsData[demoFilter];
+
+                                    if (demoFilterValue && demoFilterValue !== themeDemoValue) {
+                                        return false;
+                                    }
+                                }
+                                return true;
+                            })
+                            // .sort()
+                        }
+                        .themeFilters=${this.themeFilters}
+                        .setThemeFilters=${this.updateThemeFilters}
+                    ></iai-themes-table>
+                </div>
+            </iai-silver-panel>
+        `;
+    }
+}
+customElements.define("iai-theme-analysis", ThemeAnalysis);
+
+class QuestionTitle extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        status: { type: String },
+        title: { type: String },
+        description: { type: String },
+        department: { type: String },
+        numResponses: { type: Number },
+        numQuestions: { type: Number },
+        numThemes: { type: Number },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-question-title {
+                color: var(--iai-silver-color-text);
+            }
+            iai-silver-question-title .topbar {
+                display: flex;
+                justify-content: space-between;
+                margin-bottom: 1em;
+            }
+            iai-silver-question-title .topbar .tags {
+                display: flex;    
+                align-items: center;
+                gap: 0.5em;
+            }
+
+            iai-silver-question-title .tag {
+                padding: 0.3em 0.5em;
+            }
+
+            iai-silver-question-title .status {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                font-size: 0.8em;
+                color: white;
+                background: #85d07e;                
+                border-radius: 0.5em;
+            }
+            iai-silver-question-title .responses {
+                font-weight: bold;
+            }
+            iai-silver-question-title .department {
+                font-size: 0.8em;
+            }
+
+            iai-silver-question-title iai-silver-button button {
+                padding: 0.3em;
+                border: none;
+                font-size: 1.5em;
+            }
+            iai-silver-question-title .details {
+                display: flex;
+                align-items: center;
+                gap: 1em;
+                flex-wrap: wrap;
+                margin-top: 1em;
+            }
+            iai-silver-question-title .title-container {
+                display: flex;
+                justify-content:
+                space-between; gap: 1em;
+                line-height: 1.5em;
+            }
+            iai-silver-question-title [slot="content"] {
+                padding-block: 0.5em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.status = "";
+        this.title = "";
+        this.department = "";
+        this.numResponses = 0;
+
+        this.applyStaticStyles("iai-silver-question-title", QuestionTitle.styles);
+    }
+
+    getTagColor = (status) => {
+        switch (status) {
+            case this.CONSULTATION_STATUSES.open:
+                return {
+                    primary: "var(--iai-silver-color-teal)",
+                    secondary: "var(--iai-silver-color-teal-light)",
+                };
+            case this.CONSULTATION_STATUSES.analysing:
+                return {
+                    primary: "var(--iai-silver-color-teal)",
+                    secondary: "var(--iai-silver-color-teal-light)",
+                };
+            case this.CONSULTATION_STATUSES.completed:
+                return {
+                    primary: "var(--iai-silver-color-teal)",
+                    secondary: "var(--iai-silver-color-teal-light)",
+                };
+            case this.CONSULTATION_STATUSES.closed:
+                return {
+                    primary: "var(--iai-silver-color-teal)",
+                    secondary: "var(--iai-silver-color-teal-light)",
+                };
+        }
+    }
+
+    render() {
+        return x`
+            <style>
+                #${this.contentId} .tag.status {
+                    color: ${this.getTagColor(this.status).primary};
+                    background: ${this.getTagColor(this.status).secondary};
+                    border: 1px solid ${this.getTagColor(this.status).primary};
+                }
+            </style>
+            <iai-silver-panel id=${this.contentId}>
+                <div slot="content">
+                    <div class="title-container">
+                        <iai-silver-title
+                            .text=${this.title}
+                            .level=${2}
+                        ></iai-silver-title>
+
+                        <iai-silver-button
+                            .text=${x`
+                                <iai-icon
+                                    .name=${"star"}
+                                    .color=${"var(--iai-silver-color-text)"}
+                                ></iai-icon>
+                            `}
+                            .handleClick=${() => console.log("button clicked")}
+                        ></iai-silver-button>
+                    </div>
+
+                    <div class="details">
+                        <small class="responses">
+                            ${this.numResponses.toLocaleString()} responses
+                        </small>
+
+                        <span class="tag status">
+                            ${this.status}
+                        </span>
+
+                        <small class="department">
+                            ${this.department}
+                        </small>
+                    </div>
+                </div>
+            </iai-silver-panel>
+        `
+    }
+}
+customElements.define("iai-silver-question-title", QuestionTitle);
+
+class TabView extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        tabs: { type: Array },
+        activeTab: { type: String },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-tab-view nav {
+                display: flex;
+                background: var(--iai-silver-color-light);
+                margin-bottom: 1em;
+                font-size: 0.9em;
+            }
+            iai-tab-view .tab-button {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                gap: 0.5em;
+                flex-grow: 1;
+                padding: 0.5em;
+                list-style: none;
+                text-align: center;
+                color: var(--iai-silver-color-dark);
+                background: var(--iai-silver-color-light);
+                border-radius: 0.5em;
+                transition: 0.3s ease-in-out;
+                cursor: pointer;
+            }
+            iai-tab-view .tab-button:hover {
+                background: var(--iai-silver-color-mid-light);
+            }
+            iai-tab-view .tab-button.active {
+                color: white;    
+                background: var(--iai-silver-color-dark);
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        console.log(this.tabs);
+        this.tabs = [];
+        this.activeTab = 0;
+        this.handleTabChange = () => {};
+
+        this.applyStaticStyles("iai-tab-view", TabView.styles);
+    }
+
+    render() {
+        return x`
+            <nav>
+                ${this.tabs.map((tab, index) => x`
+                    <li
+                        role="button"
+                        tabindex="0"
+                        class=${"tab-button" + (this.activeTab === index ? " active" : "")}
+                        @click=${() => this.handleTabChange(index)}
+                    >
+                        ${tab.title}
+                    </li>
+                `)}
+            </nav>
+            <div>
+                ${this.tabs.map((tab, index) => x`
+                    <section class=${this.activeTab === index ? "" : "visually-hidden"}>
+                        ${tab.content}
+                    </section>
+                `)}
+            </div>
+        `;
+    }
+}
+customElements.define("iai-tab-view", TabView);
+
+class CrossSearch extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        searchValue: { type: String },
+        searchMode: { type: String },
+        searchType: { type: String },
+        searchHighlight: { type: Boolean },
+        _settingsVisible: { type: Boolean },
+
+        results: { type: Array },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-cross-search {
+                color: var(--iai-silver-color-text);
+            }
+            iai-silver-cross-search section {
+                margin-block: 2em;
+            }
+            iai-silver-cross-search .govuk-form-group {
+                margin: 0;
+            }
+
+            iai-silver-cross-search .cards {
+                display: flex;
+                gap: 1em;
+                justify-content: space-between;
+                margin-block: 2em;
+            }
+            iai-silver-cross-search .cards iai-silver-card {
+                width: 23%;
+            }
+
+
+            iai-silver-cross-search div[slot="content"] {
+                padding: 1em;
+            }
+            iai-silver-cross-search .inputs {
+                display: flex;
+                justify-content: space-between;
+                gap: 1em;
+                margin-block: 0.5em;
+                flex-wrap: wrap;
+            }
+            iai-silver-cross-search div[slot="content"] .info {
+                display: flex;
+                gap: 0.5em;
+                margin-top: 0.5em;
+            }
+            iai-silver-cross-search small {
+                display: flex;
+                align-items: center;
+                font-size: 0.8em;
+            }
+            iai-silver-cross-search .inputs .group {
+                display: flex;
+                gap: 1em;
+                flex-wrap: wrap;
+                position: relative;
+            }
+            iai-silver-cross-search .inputs .popup {
+                position: absolute;
+                top: 2em;
+                width: max-content;
+                right: 0;
+                background: white;
+                padding: 1em;
+                margin: 0;
+                z-index: 2;
+                border: 1px solid var(--iai-silver-color-mid);
+                border-radius: 0.5em;
+                opacity: 1;
+                transition: opacity 0.3s ease-in-out;
+                box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
+            }
+            iai-silver-cross-search .inputs iai-icon-button button:hover {
+                background-color: var(--iai-silver-color-light);
+            }
+           
+            iai-silver-cross-search iai-silver-search-box {
+                flex-grow: 1;
+            }
+            
+            iai-silver-cross-search ul.results-list {
+                display: flex;
+                flex-direction: column;
+                gap: 1.5em;
+                list-style: none;
+                padding-left: 0;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.searchValue = "";
+        this.searchMode = "keyword";
+        this.searchType = "all";
+        this.searchHighlight = true;
+        this._settingsVisible = false;
+
+        this.results = [
+            {
+                title: "DGSF air quality consultation",
+                description: "Public consultation on air quality improvement measures and policy recommendations for local communities.",
+                type: "question",
+            },
+            {
+            
+                title: "Future of Transport Strategy",
+                description: "Consultation on sustainable transport infrastructure and policies for the next decade.",
+                type: "response",
+            },
+            {
+                title: "Digital Services Accessibility Standards",
+                description: "Review of accessibility requirements for government digital services and public websites.",
+                type: "question",
+            },
+            {
+                title: "Social Housing Policy Review",
+                description: "Comprehensive review of social housing policies and affordable housing provision.",
+                type: "response",
+            },
+        ];
+
+        this.applyStaticStyles("iai-silver-cross-search", CrossSearch.styles);
+    }
+
+    shouldDisplay = (result) => {
+        if (this.searchValue && (
+            !result.title.toLocaleLowerCase().includes(this.searchValue.toLocaleLowerCase()) &&
+            !result.description.toLocaleLowerCase().includes(this.searchValue.toLocaleLowerCase())
+        )) {
+            return false;
+        }
+
+        if (this.searchType !== "all" && (
+            this.searchType !== result.type
+        )) {
+            return false;
+        }
+        return true;
+    }
+
+    render() {
+        return x`
+            <section>
+                <iai-silver-panel>
+                    <div slot="content">
+                        <div class="inputs">
+                            <div class="group">
+                                <iai-silver-select-input
+                                    .inputId=${"search-mode"}
+                                    .name=${"search-mode"}
+                                    .label=${"Search:"}
+                                    .hideLabel=${false}
+                                    .value=${this.searchMode}
+                                    .options=${[
+                                        { value: "keyword", text: "Keyword" },
+                                        { value: "semantic", text: "Semantic" },
+                                    ]}
+                                    .handleChange=${(e) => this.searchMode = e.target.value}
+                                    .horizontal=${true}
+                                ></iai-silver-select-input>
+
+                                <iai-silver-select-input
+                                    .inputId=${"search-type"}
+                                    .name=${"search-type"}
+                                    .label=${"Show:"}
+                                    .hideLabel=${false}
+                                    .value=${this.searchType}
+                                    .options=${[
+                                        { value: "all", text: "All Types" },
+                                        { value: "question", text: "Questions" },
+                                        { value: "response", text: "Responses" },
+                                    ]}
+                                    .handleChange=${(e) => this.searchType = e.target.value}
+                                    .horizontal=${true}
+                                ></iai-silver-select-input>
+                            </div>
+
+                            <div class="group">
+                                <iai-icon-button
+                                    title="Search settings"
+                                    @click=${() => this._settingsVisible = !this._settingsVisible}
+                                >
+                                    <iai-icon
+                                        slot="icon"
+                                        name="settings"
+                                        .color=${this._settingsVisible ? "var(--iai-silver-color-dark)" : "var(--iai-silver-color-text)"}
+                                        .fill=${1}
+                                    ></iai-icon>
+                                </iai-icon-button>
+
+                                <div class="popup" style=${`opacity: ${this._settingsVisible ? 1 : 0}; pointer-events: ${this._settingsVisible ? "auto" : "none"};`}>
+                                    <iai-silver-title
+                                        .text=${"Search Settings"}
+                                        .variant=${"secondary"}
+                                    ></iai-silver-title>
+                                    <div style="display: flex; align-items: center; gap: 1em;">
+                                        <iai-toggle-input
+                                            style="margin-top: 1em;"
+                                            name=${"highligh-matches"}
+                                            .handleChange=${(e) => {
+                                                console.log(e.target.value);
+                                                this.searchHighlight = !this.searchHighlight;
+                                            }}
+                                            inputId=${"highligh-matches-toggle"}
+                                            label=${"Highlight Matches"}
+                                            value=${this.searchHighlight}
+                                            .checked=${this.searchHighlight}
+                                        ></iai-toggle-input>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <iai-silver-search-box
+                            .inputId=${"default-search"}
+                            .name=${"default-search"}
+                            .label=${"Search"}
+                            .placeholder=${this.searchMode == "keyword"
+                                ? "Search by keywords in questions, themes or descriptions..."
+                                : "Search by concepts like 'pollution sources', 'health effects', 'solutions'..."
+                            }
+                            .value=${this.searchValue}
+                            .handleInput=${(e) => this.searchValue = e.target.value.trim()}
+                        ></iai-silver-search-box>
+
+                        ${this.searchMode === "semantic"
+                            ? x`
+                                <div class="info">
+                                    <iai-icon
+                                        .name=${"wand_stars"}
+                                    ></iai-icon>
+                                    <small>AI understands the meaning of your search</small>
+                                </div>
+                            `
+                            : ""
+                        }
+
+                        <ul class="results-list">
+                            ${this.results
+                                .filter(result => this.shouldDisplay(result))
+                                .map(result => x`
+                                    <li>
+                                        <iai-silver-cross-search-card
+                                            .type=${result.type}
+                                            .title=${result.title}
+                                            .description=${result.description}
+                                            .tags=${["test tag 1", "test tag 2","test tag 1 test tag 1 test tag 1", "test tag 2","test tag 1", "test tag 2","test tag 1", "test tag 2","test tag 1", "test tag 2","test tag 1 test tag 1", "test tag 2","test tag 1", "test tag 2"]}
+                                            .highlightText=${this.searchHighlight ? this.searchValue : ""}
+                                        ></iai-silver-cross-search-card>
+                                    </li>
+                                `)
+                            }
+                        </ul>
+                    </div>
+                </iai-silver-panel>
+            </section>
+        `
+    }
+}
+customElements.define("iai-silver-cross-search", CrossSearch);
+
+class ProgressBar extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        value: { type: Number },
+        variant: { type: String }, //  "primary" | "secondary"
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-progress-bar {
+                flex-grow: 1;
+            }
+            iai-silver-progress-bar iai-progress-bar .container {
+                border-radius: 0.5em;
+                background: var(--iai-silver-color-mid);
+                border: none;
+                opacity: 0.7;
+            }
+            iai-silver-progress-bar .bar {
+                height: 0.5em;
+                border-top-left-radius: 0.5em;
+                border-bottom-left-radius: 0.5em;
+                background: var(--iai-silver-color-dark);
+            }
+            iai-silver-progress-bar iai-progress-bar.primary .bar {
+                background: var(--iai-silver-color-accent);
+            }
+            iai-silver-progress-bar iai-progress-bar.primary .container {
+                background: var(--iai-silver-color-mid-light);
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        this.value = 0;
+        this.variant = "primary";
+        
+        this.applyStaticStyles("iai-silver-progress-bar", ProgressBar.styles);
+    }
+
+    render() {
+        return x`
+            <iai-progress-bar
+                class=${this.variant === "primary" ? "primary" : "secondary"}
+                .value=${this.value}
+                .label=${""}
+            ></iai-progress-bar>
+        `;
+    }
+}
+customElements.define("iai-silver-progress-bar", ProgressBar);
+
+class DemographicsCard extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        title: { type: String },
+        data: { type: Object }, //  key/value pairs
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-demographics-card article {
+                height: 100%;
+                padding: 1em;
+                font-size: 1em;
+                color: var(--iai-silver-color-text);
+                background: var(--iai-silver-color-light);
+                border-radius: 0.5em;
+            }
+            iai-demographics-card ul {
+                display: flex;
+                flex-direction: column;
+                gap: 0.5em;    
+                margin: 0;
+                padding-left: 0;
+                font-weight: bold;
+                font-size: 0.9em;
+            }
+            iai-demographics-card li {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                list-style: none;
+            }
+            iai-demographics-card li>* {
+                width: 50%;
+            }
+            iai-demographics-card .counts {
+                display: flex;
+                align-items: center;
+                gap: 1em;
+                font-weight: normal;
+                font-size: 0.8em;
+            }
+            
+            iai-demographics-card iai-silver-progress-bar .container,
+            iai-demographics-card iai-silver-progress-bar .container .bar {
+                height: 0.5em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.data = {};
+        
+        this.applyStaticStyles("iai-demographics-card", DemographicsCard.styles);
+    }
+
+    render() {
+        return x`
+            <article>
+                <iai-silver-title
+                    .text=${this.title}
+                    .level=${3}
+                ></iai-silver-title>
+
+                <ul>
+                    ${Object.keys(this.data).map(key => {
+                        const label = key;
+                        const count = this.data[key];
+                        const totalCount = Object.values(this.data).reduce( (a, b) => a + b, 0 );
+
+                        return x`
+                            <li>
+                                <div>
+                                    <span>${label}</span>
+                                </div>
+                                <div class="counts">
+                                    <iai-silver-progress-bar
+                                        .value=${this.getPercentage(count, totalCount)}
+                                    ></iai-silver-progress-bar>
+                                    <span>
+                                        ${count.toLocaleString()}
+                                    </span>
+                                </div>
+                            </li>
+                        `
+                    })}
+                </ul>
+            </article>
+        `
+    }
+}
+customElements.define("iai-demographics-card", DemographicsCard);
+
+class DemographicsSection extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        data: { type: Array },
+        themeFilters: { type: Array },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4` 
+            iai-demographics-section .cards {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1em;
+            }    
+            iai-demographics-section iai-demographics-card {
+                flex-grow: 1;    
+                min-width: max-content;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.data = [];
+        this.themeFilters = [];
+        
+        this.applyStaticStyles("iai-demographics-section", DemographicsSection.styles);
+    }
+
+    render() {
+        return x`
+            <iai-silver-panel>
+                <div slot="content">
+                    <div class="top-panel">
+                        <iai-silver-title
+                            .text=${"Demographics"}
+                            .subtext=${"Demographic breakdown for this question"}
+                            .icon=${"group"}
+                            .level=${2}
+                        ></iai-silver-title>
+
+                        ${this.themeFilters.length > 0
+                            ? x`
+                                <iai-silver-tag
+                                    .text=${"Active theme analysis filters"}
+                                    .subtext=${`Showing data for 4,020 responses (filtered by: ${this.themeFilters.length} themes)`}
+                                    .icon=${"help"}
+                                    .status=${"Closed"}
+                                ></iai-silver-tag>
+                            `
+                            : ""
+                        }
+
+                        <div class="cards">
+                            ${Object.keys(this.data).map(category => x`
+                                <iai-demographics-card
+                                    .title=${this.toTitleCase(category)}
+                                    .data=${this.data[category]}
+                                ></iai-demographics-card>
+                            `)}
+                        </div>
+                    </div>
+                </div>
+            </iai-silver-panel>
+        `
+    }
+}
+customElements.define("iai-demographics-section", DemographicsSection);
+
+class ResponseRefinement extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        responses: { type: Array },
+        highlightMatches: { type: Boolean },
+        
+        searchValue: { type: String },
+        setSearchValue: { type: Function },
+
+        searchMode: { type: Boolean },
+        setSearchMode: { type: Function },
+
+        evidenceRich: { type: Boolean },
+        setEvidenceRich: { type: Function },
+
+        demoFilters: { type: Array },
+        setDemoFilters: { type: Function },
+
+        themesFilters: { type: Array },
+        setThemesFilters: { type: Function },
+
+        highlightMatches: { type: Boolean },
+        setHighlightMatches: { type: Function },
+
+        _settingsVisible: { type: Boolean },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-response-refinement ul {
+                padding-left: 0;
+            }
+            iai-response-refinement li {
+                list-style: none;
+            }
+            iai-response-refinement li article {
+                background: var(--iai-silver-color-light);
+                border-radius: 0.5em;
+                padding: 1em;
+                line-height: 1.5em;
+            }
+            iai-response-refinement li article header,
+            iai-response-refinement li article footer {
+                display: flex;
+                gap: 0.5em;
+                font-size: 0.9em;
+            }
+            iai-response-refinement li article footer iai-silver-tag .tag {
+                background: var(--iai-silver-color-mid-light);
+                border: none;
+            }
+
+            iai-response-refinement .popup-button {
+                position: relative;
+            }
+            iai-response-refinement .popup-button .popup-panel {
+                position: absolute;
+                top: 2em;
+                width: max-content;
+                right: 0;
+                background: white;
+                padding: 1em;
+                margin: 0;
+                z-index: 2;
+                border: 1px solid var(--iai-silver-color-mid);
+                border-radius: 0.5em;
+                opacity: 1;
+                transition: opacity 0.3s ease-in-out;
+                box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
+            }
+            iai-response-refinement .tag {
+                width: 100%;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.responses = [];
+
+        this.highlightMatches = true;
+        this.setHighlightMatches = () => {};
+
+        this.searchValue = "";
+        this.setSearchValue = () => {};
+
+        this.evidenceRich = false;
+        this.setEvidenceRich = () => {};
+
+        this.searchMode = "keyword";
+        this.setSearchMode = () => {};
+
+        this._settingsVisible = false;
+        
+        this.applyStaticStyles("iai-response-refinement", ResponseRefinement.styles);
+    }
+
+    render() {
+        return x`
+            <iai-silver-panel>
+                <div slot="content">
+                    <iai-silver-title
+                        .icon=${"help"}
+                        .text=${`Response Refinement`}
+                        .subtext=${"Filter and search through individual responses to this question."}
+                        .level=${2}
+                    ></iai-silver-title>
+
+                    <div style="display: grid; gap: 1em;">
+                        <iai-silver-select-input
+                            style="width: max-content;"
+                            .inputId=${"search-mode"}
+                            .name=${"search-mode"}
+                            .label=${"Search:"}
+                            .hideLabel=${false}
+                            .value=${this.searchMode}
+                            .options=${[
+                                { value: "keyword", text: "Keyword" },
+                                { value: "semantic", text: "Semantic" },
+                            ]}
+                            .handleChange=${(e) => this.setSearchMode(e.target.value)}
+                            .horizontal=${true}
+                        ></iai-silver-select-input>
+
+                        ${this.searchMode === "semantic" ? x`
+                            <iai-silver-tag
+                                .status=${"Open"}
+                                .icon=${"help"}
+                                .text=${"Semantic search uses AI to understand the meaning behind your search terms, finding responses with similar concepts even if they don't contain the exact words."}
+                            ></iai-silver-tag>
+                        ` : ""}
+
+                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5em;">
+                            <iai-silver-search-box
+                                style="flex-grow: 1;"
+                                .inputId=${"search-value"}
+                                .name=${"search-value"}
+                                .label=${"Search"}
+                                .placeholder=${this.searchMode == "keyword"
+                                    ? "Search by keywords in questions, themes or descriptions..."
+                                    : "Search by concepts like 'pollution sources', 'health effects', 'solutions'..."
+                                }
+                                .value=${this.searchValue}
+                                .handleInput=${(e) => this.setSearchValue(e.target.value.trim())}
+                            ></iai-silver-search-box>
+
+                            <div class="popup-button">
+                                <iai-icon-button
+                                    title="Search settings"
+                                    @click=${() => this._settingsVisible = !this._settingsVisible}
+                                >
+                                    <iai-icon
+                                        slot="icon"
+                                        name="settings"
+                                        .color=${this._settingsVisible ? "var(--iai-silver-color-dark)" : "var(--iai-silver-color-text)"}
+                                        .fill=${1}
+                                    ></iai-icon>
+                                </iai-icon-button>
+
+                                <div class="popup-panel" style=${`opacity: ${this._settingsVisible ? 1 : 0}; pointer-events: ${this._settingsVisible ? "auto" : "none"};`}>
+                                    <iai-silver-title
+                                        .text=${"Search Settings"}
+                                        .variant=${"secondary"}
+                                    ></iai-silver-title>
+                                    <div style="display: flex; align-items: center; gap: 1em;">
+                                        <iai-toggle-input
+                                            name=${"highligh-matches"}
+                                            .handleChange=${(e) => {
+                                                console.log(e.target.value);
+                                                this.setHighlightMatches(!this.highlightMatches);
+                                            }}
+                                            inputId=${"highligh-matches-toggle"}
+                                            label=${"Highlight Matches"}
+                                            value=${this.highlightMatches}
+                                            .checked=${this.highlightMatches}
+                                        ></iai-toggle-input>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div style="display: flex; align-items: center; gap: 1em;">
+                            <iai-toggle-input
+                                name=${"evidence-rich"}
+                                .handleChange=${(e) => {
+                                    console.log(e.target.value);
+                                    this.setEvidenceRich(!this.evidenceRich);
+                                }}
+                                inputId=${"evidence-rich-input"}
+                                label=${"Evidence-rich responses"}
+                                value=${this.evidenceRich}
+                                .checked=${this.evidenceRich}
+                            ></iai-toggle-input>
+                        </div>
+                    </div>
+                </div>
+            </iai-silver-panel>
+        `
+    }
+}
+customElements.define("iai-response-refinement", ResponseRefinement);
+
+class ResponsesList extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        responses: { type: Array },
+        responsesTotal: { type: Number },
+        handleScrollEnd: { type: Function },
+        isLoading: { type: Boolean },
+        highlightedText: { type: String },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-responses-list ul {
+                padding-left: 0;
+            }
+            iai-silver-responses-list li {
+                list-style: none;
+            }
+            iai-silver-responses-list article {
+                display: grid;
+                gap: 1em;
+                width: 100%;
+                margin-block: 1em;
+                padding: 1em;
+                line-height: 1.5em;
+                background: var(--iai-silver-color-light);
+                border-radius: 0.5em;
+            }
+            iai-silver-responses-list article p {
+                margin: 0;
+            }
+            iai-silver-responses-list article header,
+            iai-silver-responses-list article footer {
+                display: flex;
+                gap: 0.5em;
+                font-size: 0.9em;
+            }
+            iai-silver-responses-list article footer iai-silver-tag .tag {
+                background: var(--iai-silver-color-mid-light);
+                border: none;
+            }
+            iai-silver-responses-list iai-virtual-list {
+                height: 50em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.responses = [];
+        this.responsesTotal = 0;
+        this.handleScrollEnd = () => {};
+        this.isLoading = false;
+        this.highlightedText = "";
+        
+        this.applyStaticStyles("iai-silver-responses-list", ResponsesList.styles);
+    }
+
+    render() {
+        return x`
+            <iai-silver-panel>
+                <div slot="content">
+                    <iai-silver-title
+                        .text=${`Responses (${this.responsesTotal})`}
+                        .subtext=${"All responses to this question"}
+                        .level=${2}
+                    ></iai-silver-title>
+
+                    <iai-virtual-list
+                        style=${this.isLoading ? "height: auto;" : ""}
+                        .data=${this.responses}
+                        .renderItem=${(response, index) => x`
+                            <article class=${index === this.responses.length-1
+                                ? "last-item"
+                                : ""
+                            }>
+                                ${response.demoData.length > 0 || response.evidenceRich ? x`
+                                    <header>
+                                        ${response.demoData
+                                            ? response.demoData.map(data => x`
+                                                <iai-silver-tag
+                                                    .text=${data}
+                                                ></iai-silver-tag>
+                                            `)
+                                            : ""
+                                        }
+                                        ${response.evidenceRich
+                                            ? x`
+                                                <iai-silver-tag
+                                                    .icon=${"diamond"}
+                                                    .text=${"Evidence rich"}
+                                                    .status=${"Closed"}
+                                                ></iai-silver-tag>
+                                            `
+                                            : ""
+                                        }
+                                    </header>
+                                ` : ""}
+                                
+                                ${response.text ? x`
+                                    <p>
+                                        ${this.highlightedText
+                                            ? o$2(this.getHighlightedText(response.text, this.highlightedText))
+                                            : response.text
+                                        }
+                                    </p>
+                                ` : ""}
+
+                                ${response.multiAnswers.length > 0 ? x`
+                                    <ul style="display: flex; gap: 0.5em;">
+                                        ${response.multiAnswers.map(answer => x`
+                                            <iai-silver-tag
+                                                .text=${answer}
+                                            ></iai-silver-tag>
+                                        `)}
+                                    </ul>
+                                ` : ""}
+                                
+                                <footer>
+                                    ${response.themes.map((theme) => x`
+                                        <iai-silver-tag
+                                            @click=${() => console.log(theme.id)}
+                                            .text=${theme.text}
+                                            .matchBackground=${true}
+                                        ></iai-silver-tag>
+                                    `)}
+                                </footer>
+                            </article>
+                        `}
+                        .handleScrollEnd=${this.handleScrollEnd}
+                    ></iai-virtual-list>
+
+                    ${this.isLoading
+                        ? x`<iai-loading-indicator></iai-loading-indicator>`
+                        : ""
+                    }
+                </div>
+            </iai-silver-panel>
+        `
+    }
+}
+customElements.define("iai-silver-responses-list", ResponsesList);
+
+class QuestionDetailPage extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        _numResponses: { type: Number },
+        _activeTab: { type: String },
+        _demographicsData: { type: Array },
+        _themeFilters: { type: Array },
+
+        _isLoading: { type: Boolean },
+        _currentPage: { type: Number},
+        _hasMorePages: { type: Boolean},
+        _errorOccured: { type: Boolean},
+        fetchData: { type: Function },
+
+
+        consultationSlug: { type: String },
+        questionSlug: { type: String },
+        consultationTitle: { type: String},
+        questionText: { type: String},
+        questionId: { type: String },
+
+        responses: { type: Array },
+        responsesTotal: { type: Number },
+        _themes: { type: Array },
+        _highlightMatches: { type: Boolean },
+
+        _searchValue: { type: String },
+        _searchMode: { type: String },
+        _demoData: { type: Object },
+        _evidenceRichFilter: { type: Boolean },
+
+        demographicOptions: { type: Array },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-question-detail-page {
+                color: var(--iai-silver-color-text);
+            }
+            iai-question-detail-page select,
+            iai-question-detail-page input {
+                width: 100%;
+            }
+            iai-question-detail-page section {
+                margin-bottom: 1em;
+            }
+            iai-question-detail-page section.breadcrumbs {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }
+            iai-question-detail-page section.breadcrumbs iai-silver-button button {
+                display: flex;
+                gap: 0.5em;
+                align-items: center;
+                justify-content: space-between;
+            }
+            iai-question-detail-page .response-total {
+                display: flex;
+                align-items: center;
+            }
+            iai-question-detail-page iai-icon-button {
+                margin-top: -0.4em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+        
+        this._MAX_THEME_FILTERS = 3;
+        this._PAGE_SIZE = 50;
+        this._DEBOUNCE_DELAY = 500;
+        this._currentFetchController = null;
+        this._activeTab = 0;
+
+        // Prop defaults
+        this._isLoading = false;
+        this._currentPage = 1;
+        this._hasMorePages = true;
+        this._errorOccured = false;
+        this.fetchData = window.fetch.bind(window);
+
+        this.consultationSlug = "";
+        this.questionSlug = "";
+        this.consultationTitle = "";
+        this.questionText = "";
+        this.questionId = "";
+
+        this._numResponses = 7000;
+        this.responsesTotal = 0;
+        this.responses = [];
+        this._themes = [];
+        this._demoData = {};
+        this._highlightMatches = true;
+        
+        this._searchValue = "";
+        this._searchMode = "keyword";
+        this._evidenceRichFilter = false;
+        this._themeFilters = [];
+
+        this.applyStaticStyles("iai-question-detail-page", QuestionDetailPage.styles);
+    }
+
+    updateThemeFilters = (newFilter) => {
+        if (this._themeFilters.includes(newFilter)) {
+            this._themeFilters = [...this._themeFilters.filter(filter => filter !== newFilter)];
+        } else {
+            if (this._themeFilters.length === this._MAX_THEME_FILTERS) {
+                this._themeFilters = [...this._themeFilters.slice(1), newFilter];
+            } else {
+                this._themeFilters = [...this._themeFilters, newFilter];
+            }
+        }
+        console.log("NEW THEME FILTERS:", this._themeFilters);
+    }
+
+    buildQuery = () => {
+        // conditionally add filters as query params
+        const params = new URLSearchParams({
+            ...(this._searchValue && {
+                searchValue: this._searchValue
+            }),
+            ...(this._themeFilters.length > 0 && {
+                themeFilters: this._themeFilters.join(",")
+            }),
+            ...(this._searchMode && {
+                searchMode: this._searchMode
+            }),
+            ...(this._evidenceRichFilter && {
+                evidenceRich: this._evidenceRichFilter
+            }),
+            // ...(this._evidenceRichFilters.length > 0 && {
+            //     evidenceRichFilter: this._evidenceRichFilters.join(",")
+            // }),
+            page: this._currentPage,
+            page_size: this._PAGE_SIZE.toString(),
+        });
+
+        // Add demographic filters using square bracket notation
+        // Object.entries(this._demographicFilters).forEach(([field, values]) => {
+        //     if (values.length > 0) {
+        //         params.append(`demographicFilters[${field}]`, values.join(","));
+        //     }
+        // });
+
+        return params.toString();
+    }
+
+    fetchResponses = async () => {
+        clearTimeout(this._searchDebounceTimer);
+
+        this._searchDebounceTimer = setTimeout(async () => {
+            if (!this._hasMorePages) {
+                return;
+            }
+
+            if (this._currentFetchController) {
+                console.log("aborting stale request");
+                this._currentFetchController.abort();
+            }
+
+            const controller = new AbortController();
+            const signal = controller.signal;
+            this._currentFetchController = controller;
+
+            this._errorOccured = false;
+            this._isLoading = true;
+
+            const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
+
+            let response;
+            try {
+                response = await this.fetchData(url, { signal });
+            } catch (err) {
+                if (err.name == "AbortError") {
+                    console.log("stale request aborted");
+                    return;
+                } else {
+                    console.error(err);
+                    this._errorOccured = true;
+                    return;
+                }
+            } finally {
+                if (this._currentFetchController === controller) {
+                    this._currentFetchController = null;
+                }
+                this._isLoading = false;
+            }
+
+            if (!response.ok) {
+                this._errorOccured = true;
+                throw new Error(`Response status: ${response.status}`);
+            }
+
+            const responsesData = await response.json();
+
+            this.responses = this.responses.concat(
+                responsesData.all_respondents.map(response => ({
+                    ...response,
+                    visible: true,
+                }))
+            );
+
+            this.responsesTotal = responsesData.respondents_total;
+
+            this._themes = responsesData.theme_mappings.map(mapping => ({
+                id: mapping.value,
+                title: mapping.label,
+                description: mapping.description,
+                mentions: parseInt(mapping.count),
+                handleClick: () => {
+                    this._themeFilters = [mapping.value];
+                    this._activeTab = 1;
+                }
+            }));
+            console.log(this._themes);
+
+            this._demoData = responsesData.demographic_aggregations || {
+                "age": {
+                    "28": 2,
+                    "71": 3,
+                    "44": 2,
+                    "22": 3,
+                    "37": 6,
+                },
+                "country": {
+                    "england": 4,
+                    "scotland": 8,
+                    "wales": 15,
+                    "n.ireland": 16,
+                }
+            };
+            this._responsesFilteredTotal = responsesData.filtered_total;
+
+            // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
+            if (this._currentPage === 1 && responsesData.theme_mappings) {
+                this.themeMappings = responsesData.theme_mappings;
+            }
+
+            // Update demographic options if available
+            if (responsesData.demographic_options) {
+                this.demographicOptions = responsesData.demographic_options;
+            }
+
+            this._hasMorePages = responsesData.has_more_pages;
+
+            this._currentPage = this._currentPage + 1;
+        }, this._DEBOUNCE_DELAY);
+    }
+
+    resetResponses = () => {
+        this.responses = [];
+        this._currentPage = 1;
+        this._hasMorePages = true;
+        this._isLoading = true;
+    }
+
+    updated(changedProps) {
+        console.log("This responses:", this.responses);
+        console.log("highlightMatches", this._highlightMatches);
+
+        if (
+            changedProps.has("_searchValue")        ||
+            changedProps.has("_searchMode")         ||
+            changedProps.has("_evidenceRichFilter") ||
+            changedProps.has("_themeFilters")       ||
+            changedProps.has("_demographicFilters")
+        ) {
+            console.log("about to fetch");
+            this.resetResponses();
+            this.fetchResponses();
+        }
+    }
+
+    buildDemoData = () => {
+        return {};
+    }
+
+    renderThemeAnalysisSection = () => {
+        return x`
+            <section class="theme-analysis">
+                <iai-theme-analysis
+                    .demoData=${this._demoData /*this.buildDemoData()*/}
+                    .themes=${this._themes}
+                    .themeFilters=${this._themeFilters}
+                    .updateThemeFilters=${this.updateThemeFilters}
+                ></iai-theme-analysis>
+            </section>
+        `
+    }
+
+    renderResponsesSection = () => {
+        return x`
+            <section>
+                <iai-response-refinement
+                    .searchValue=${this._searchValue}
+                    .setSearchValue=${newSearchValue => this._searchValue = newSearchValue}
+
+                    .searchMode=${this._searchMode}
+                    .setSearchMode=${newSearchMode => this._searchMode = newSearchMode}
+
+                    .evidenceRich=${this._evidenceRichFilter}
+                    .setEvidenceRich=${newEvidenceRich => this._evidenceRichFilter = newEvidenceRich}
+
+                    .highlightMatches=${this._highlightMatches}
+                    .setHighlightMatches=${newHighlightMatches => this._highlightMatches = newHighlightMatches}
+                ></iai-response-refinement>
+            </section>
+
+            <section>
+                <iai-silver-responses-list
+                    .responses=${
+                        this.responses.map(response => ({
+                            text: response.free_text_answer_text,
+                            themes: response.themes.map(theme => ({
+                                id: theme.id,
+                                text: theme.description,
+                            })),
+                            evidenceRich: response.evidenceRich,
+                            multiAnswers: response.multiple_choice_answer || [], // Array
+                            demoData: response.demoData || [],
+                        }))
+
+                        // [{
+                        // text: "Healthcare AI systems must undergo rigorous clinical validation before deployment. The current regulatory framework lacks sector-specific guidance for medical AI applications. Data from the UK's Centre for Data Ethics shows 89% of citizens support transparency requirements for AI systems.",
+                        // themes: [
+                        //   {id: "theme-1", text: "Theme 1"},
+                        //   {id: "theme-2", text: "Theme 2"},
+                        // ],
+                        // evidenceRich: true,
+                        // demoData: ["Individual", "Wales", "Disability: Prefer not to say"],
+                    }
+                    .handleScrollEnd=${() => {
+                        if (this._isLoading) {
+                            return;
+                        }
+                        this.fetchResponses();
+                    }}
+                    .responsesTotal=${this.responsesTotal}
+                    .isLoading=${this._isLoading}
+                    .highlightedText=${this._highlightMatches ? this._searchValue : ""}
+                ></iai-silver-responses-list>
+            </section>
+        `
+    }
+
+    renderTabButton = (text, icon) => {
+        return x`
+            <iai-icon
+                .name=${icon}
+            ></iai-icon>
+            <span>
+                ${text}
+            </span>
+        `
+    }
+
+    render() {
+        return x`
+            <section class="breadcrumbs">
+                <iai-silver-button
+                    .text=${x`
+                        <iai-icon
+                            .name=${"star"}
+                            .color=${"var(--iai-silver-color-text)"}
+                        ></iai-icon>
+                        <span>Back to all questions</span>
+                    `}
+                    .handleClick=${() => window.location.href = `/consultations/${this.consultationSlug}/`}
+                ></iai-silver-button>
+
+                <small>
+                    Choose a different question to analyse
+                </small>
+            </section>
+
+            <section class="question-title">
+                <iai-silver-cross-search-card
+                    .type=${"question"}
+                    .title=${this.questionText}
+                    .aside=${x`
+                        <iai-icon-button
+                            class="favourite-button"
+                            title="Favourite this question"
+                            @click=${(e) => {
+                                e.stopPropagation();
+                                console.log(this.questionId);
+                            }}
+                        >
+                            <iai-icon
+                                slot="icon"
+                                name="star"
+                                .color=${"var(--iai-silver-color-text)"}
+                                .fill=${0}
+                            ></iai-icon>
+                        </iai-icon-button>
+                    `}
+                    .footer=${x`
+                        <small class="response-total">
+                            ${this.responsesTotal.toLocaleString()} responses
+                        </small>
+                        <iai-silver-tag
+                            .status=${"Open"}
+                            .text=${"Open"}
+                            .icon=${"star"}
+                        ></iai-silver-tag>
+                    `}
+                ></iai-silver-cross-search-card>
+            </section>
+
+            <section>
+                <iai-demographics-section
+                    .data=${this._demoData}
+                    .themeFilters=${this._themeFilters}
+                ></iai-demographics-section>
+            </section>
+
+            <iai-tab-view
+                .activeTab=${this._activeTab}
+                .handleTabChange=${(newTab) => this._activeTab = newTab}
+                .tabs=${[
+                    {
+                        title: this.renderTabButton("Question Summary", "star"),
+                        content: this.renderThemeAnalysisSection()
+                    },
+                    {
+                        title: this.renderTabButton("Response Analysis", "star"),
+                        content: this.renderResponsesSection()
+                    },
+                ]}
+            ></iai-tab-view>
+        `
+    }
+}
+customElements.define("iai-question-detail-page", QuestionDetailPage);
 //# sourceMappingURL=index.js.map
