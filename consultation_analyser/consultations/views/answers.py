@@ -127,7 +127,7 @@ def get_filtered_responses_with_themes(
             queryset.annotate(distance=CosineDistance("embedding", embedded_query))
             .order_by("distance")
         )
-        logger.info("responses %s", responses.values_list("free_text", "distance")[:3])
+        logger.info("responses=%s", responses.values_list("free_text", "distance")[:3])
         return responses.filter(distance__lte=similarity_threshold).distinct().order_by("distance")
 
 

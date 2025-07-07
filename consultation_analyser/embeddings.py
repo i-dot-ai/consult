@@ -1,7 +1,7 @@
 import random
 
 from django.conf import settings
-from openai import OpenAI
+from openai import AzureOpenAI
 
 from consultation_analyser.hosting_environment import HostingEnvironment
 
@@ -24,7 +24,7 @@ if hosting_environment.is_development_environment():
         raise ValueError(f"expected str or list[str] not {type(text)}")
 
 else:
-    client = OpenAI()
+    client = AzureOpenAI()
 
     def embed_text(text: str | list[str]) -> list[float] | list[list[float]]:
         response = client.embeddings.create(
