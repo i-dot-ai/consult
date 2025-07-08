@@ -416,7 +416,7 @@ def import_questions(
                 slug=f"question-{question_number}",
                 number=question_number,
                 has_free_text=question_data.get("has_free_text", True),
-                has_multiple_choice=(True if multiple_choice_options else False),
+                has_multiple_choice=bool(multiple_choice_options),
                 multiple_choice_options=multiple_choice_options,
             )
 
