@@ -77,7 +77,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     has_free_text = models.BooleanField(default=True)
     has_multiple_choice = models.BooleanField(default=False)
     multiple_choice_options = ArrayField(
-        models.TextField(null=False), null=True, default=None
+        models.TextField(), null=True, default=None, blank=True
     )  # List of options when has_multiple_choice=True
 
     def save(self, *args, **kwargs):

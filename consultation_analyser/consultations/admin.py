@@ -21,27 +21,57 @@ def update_embeddings_admin(modeladmin, request, queryset):
 
 
 class ResponseAdmin(admin.ModelAdmin):
-    list_filter = ["question"]
+    list_filter = ["question", "question__consultation"]
     list_display = ["free_text", "question"]
     list_select_related = True
+    readonly_fields = [
+        "respondent",
+        "question",
+        "free_text",
+        "chosen_options",
+        "embedding",
+    ]
 
 
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [update_embeddings_admin]
+    readonly_fields = ["title", "slug", "users"]
 
 
 class QuestionAdmin(admin.ModelAdmin):
     list_filter = ["consultation"]
     list_display = ["slug", "consultation"]
     list_select_related = True
+    readonly_fields = [
+        "consultation",
+        "text",
+        "slug",
+        "number",
+        "has_free_text",
+        "has_multiple_choice",
+        "multiple_choice_options",
+    ]
 
 
 class ResponseAnnotationAdmin(admin.ModelAdmin):
-    pass
+    readonly_fields = [
+        "response",
+        "themes",
+        "sentiment",
+        "evidence_rich",
+        "human_reviewed",
+        "reviewed_by",
+        "reviewed_at",
+    ]
 
 
 class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
-    pass
+    readonly_fields = [
+        "response_annotation",
+        "theme",
+        "is_original_ai_assignment",
+        "assigned_by",
+    ]
 
 
 admin.site.register(Response, ResponseAdmin)
