@@ -5981,16 +5981,6 @@ class ThemesTable extends IaiLitBase {
         this.applyStaticStyles("iai-themes-table", ThemesTable.styles);
     }
 
-    // updated(changedProps) {
-    //     if (changedProps.has("themeFilters")) {
-    //         setTimeout(() => {
-    //             this.querySelectorAll(`.theme-checkbox`).forEach(el => {
-    //                 el.checked = this.themeFilters.includes(el.value);
-    //             });
-    //         }, 1000);
-    //     }
-    // }
-
     render() {
         const totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
 
@@ -6081,6 +6071,7 @@ class ThemeAnalysis extends IaiLitBase {
         ...IaiLitBase.properties,
         themes: { type: Array },
         demoData: { type: Array },
+
         themeFilters: { type: Array },
         updateThemeFilters: { type: Function },
 
@@ -6097,11 +6088,6 @@ class ThemeAnalysis extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         i$4`
-            iai-theme-analysis .table-container iai-data-table {
-                // display: block;
-                // max-height: 40em;
-                // overflow: auto;
-            }
             iai-theme-analysis div[slot="content"] {
                 padding-block: 0.5em;
             }
@@ -6225,13 +6211,6 @@ class ThemeAnalysis extends IaiLitBase {
         this.setSortDirection = () => {};
 
         this.applyStaticStyles("iai-theme-analysis", ThemeAnalysis.styles);
-    }
-
-    getPercentage = (partialValue, totalValue) => {
-        if (totalValue === 0) {
-            return 0;
-        }
-        return Math.round(((partialValue / totalValue) * 100));
     }
     
     render() {
