@@ -21,6 +21,8 @@ if hosting_environment.is_deployed():
         response = client.embeddings.create(
             input=text, model="text-embedding-3-small", dimensions=settings.EMBEDDING_DIMENSION
         )
+        if isinstance(text, str):
+            return response.data[0].embedding
         return [item.embedding for item in response.data]
 
 else:
