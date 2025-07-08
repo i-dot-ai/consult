@@ -6171,6 +6171,9 @@ class ThemeAnalysis extends IaiLitBase {
                 align-items: center;
                 // margin-left: 0.5em;
             }
+            iai-theme-analysis .filters iai-silver-select-input{
+                white-space: nowrap;
+            }
             iai-theme-analysis .top-panel {
                 margin-bottom: 2em;
             }
@@ -6187,6 +6190,10 @@ class ThemeAnalysis extends IaiLitBase {
             }
             iai-theme-analysis .filters .govuk-form-group:has(select){
                 margin: 0;
+            }
+            iai-theme-analysis .info-container {
+                display: flex;
+                justify-content: space-between;
             }
             @media (min-width: 40.0625em) {
                 .govuk-form-group {
@@ -6270,9 +6277,8 @@ class ThemeAnalysis extends IaiLitBase {
                         ></iai-silver-title>
 
                         <div class="filters-row">
-                            <div class="filters" style="display: flex;">
+                            <div class="filters">
                                 <iai-silver-select-input
-                                    style="white-space: nowrap;"
                                     .inputId=${"sort-value"}
                                     .name=${"sort-value"}
                                     .label=${"Sort by:"}
@@ -6287,7 +6293,7 @@ class ThemeAnalysis extends IaiLitBase {
                                 ></iai-silver-select-input>
 
                                 <iai-icon-button .handleClick=${
-                                    () => this.setSortDirection(this._sortDirection === "ascending"
+                                    () => this.setSortDirection(this.sortDirection === "ascending"
                                         ? "descending"
                                         : "ascending"
                                 )}>
@@ -6335,7 +6341,7 @@ class ThemeAnalysis extends IaiLitBase {
                             </div>
                         </div>
 
-                        <div style="display: flex; justify-content: space-between;">
+                        <div class="info-container">
                             <small>
                                 Click themes to select up to 3 for detailed analysis.
                             </small>
