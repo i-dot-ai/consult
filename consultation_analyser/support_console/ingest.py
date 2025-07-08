@@ -180,7 +180,7 @@ def validate_consultation_structure(
     return is_valid, errors
 
 
-def update_embeddings(consultation_id: UUID):
+def create_embeddings(consultation_id: UUID):
     queryset = Response.objects.filter(
         question__consultation_id=consultation_id, free_text__isnull=False
     )
