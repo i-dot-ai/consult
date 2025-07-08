@@ -1,0 +1,254 @@
+import { html, css } from 'lit';
+
+import IaiLitBase from '../../../../IaiLitBase.mjs';
+import Title from '../../Title/title.lit.csr.mjs';
+import Panel from '../../Panel/panel.lit.csr.mjs';
+import Tag from '../../Tag/tag.lit.csr.mjs';
+import ToggleInput from '../../../inputs/ToggleInput/iai-toggle-input.lit.csr.mjs';
+import SelectInput from '../../inputs/SelectInput/select-input.lit.csr.mjs';
+
+
+export default class ResponseRefinement extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        responses: { type: Array },
+        highlightMatches: { type: Boolean },
+        demoData: { type: Object },
+        themes: { type: Array },
+        
+        searchValue: { type: String },
+        setSearchValue: { type: Function },
+
+        searchMode: { type: Boolean },
+        setSearchMode: { type: Function },
+
+        evidenceRich: { type: Boolean },
+        setEvidenceRich: { type: Function },
+
+        demoFilters: { type: Array },
+        setDemoFilters: { type: Function },
+
+        themesFilters: { type: Array },
+        setThemesFilters: { type: Function },
+
+        highlightMatches: { type: Boolean },
+        setHighlightMatches: { type: Function },
+
+        demoFilters: { type: Object },
+        setDemoFilters: { type: Function },
+
+        _settingsVisible: { type: Boolean },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        css`
+            iai-response-refinement label,
+            iai-response-refinement select,
+            iai-response-refinement input {
+                font-size: 0.9em !important;
+            }
+            iai-response-refinement .filters {
+                display: grid;
+                gap: 1em;
+            }
+            iai-response-refinement iai-silver-select-input {
+                display: block;
+                width: max-content;
+            }
+            iai-response-refinement .search-container {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 0.5em;
+            }
+            iai-response-refinement .search-container iai-silver-search-box {
+                flex-grow: 1;
+            }
+            iai-response-refinement .search-container iai-silver-search-box .clear-button {
+                top: 70%;
+            }
+            iai-response-refinement iai-silver-tag .material-symbols-outlined {
+                font-size: 2em;
+            }
+            iai-response-refinement .popup-button {
+                position: relative;
+            }
+            iai-response-refinement .popup-button .popup-panel {
+                position: absolute;
+                top: 2em;
+                width: max-content;
+                right: 0;
+                background: white;
+                padding: 1em;
+                margin: 0;
+                z-index: 2;
+                border: 1px solid var(--iai-silver-color-mid);
+                border-radius: 0.5em;
+                opacity: 1;
+                transition: opacity 0.3s ease-in-out;
+                box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
+            }
+            iai-response-refinement .popup-panel .content {
+                display: flex;
+                align-items: center;
+                gap: 1em;
+            }
+            iai-response-refinement .tag {
+                width: 100%;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.demoData = {};
+        this.themes = [];
+
+        this.searchValue = "";
+        this.setSearchValue = () => {};
+
+        this.searchMode = "keyword";
+        this.setSearchMode = () => {};
+
+        this.highlightMatches = true;
+        this.setHighlightMatches = () => {};
+
+        this.evidenceRich = false;
+        this.setEvidenceRich = () => {};
+
+        this.demoFilters = {};
+        this.setDemoFilters = () => {};
+
+        this._settingsVisible = false;
+        
+        this.applyStaticStyles("iai-response-refinement", ResponseRefinement.styles);
+    }
+
+    render() {
+        return html`
+            <iai-silver-panel>
+                <div slot="content">
+                    <iai-silver-title
+                        .icon=${"filter_alt"}
+                        .text=${`Response Refinement`}
+                        .subtext=${"Filter and search through individual responses to this question."}
+                        .level=${2}
+                    ></iai-silver-title>
+
+                    <div class="filters">
+                        <iai-silver-select-input
+                            .inputId=${"search-mode"}
+                            .name=${"search-mode"}
+                            .label=${"Search:"}
+                            .hideLabel=${false}
+                            .value=${this.searchMode}
+                            .options=${[
+                                { value: "keyword", text: "Keyword" },
+                                { value: "semantic", text: "Semantic" },
+                            ]}
+                            .handleChange=${(e) => this.setSearchMode(e.target.value)}
+                            .horizontal=${true}
+                        ></iai-silver-select-input>
+
+                        ${this.searchMode === "semantic" ? html`
+                            <iai-silver-tag
+                                .status=${"Open"}
+                                .icon=${"network_intelligence"}
+                                .text=${"Semantic search uses AI to understand the meaning behind your search terms, finding responses with similar concepts even if they don't contain the exact words."}
+                            ></iai-silver-tag>
+                        ` : ""}
+
+                        <div class="search-container">
+                            <iai-silver-search-box
+                                .inputId=${"search-value"}
+                                .name=${"search-value"}
+                                .label=${"Search"}
+                                .placeholder=${this.searchMode == "keyword"
+                                    ? "Search by keywords in questions, themes or descriptions..."
+                                    : "Search by concepts like 'pollution sources', 'health effects', 'solutions'..."
+                                }
+                                .value=${this.searchValue}
+                                .handleInput=${(e) => this.setSearchValue(e.target.value.trim())}
+                            ></iai-silver-search-box>
+
+                            <div class="popup-button">
+                                <iai-icon-button
+                                    title="Search settings"
+                                    @click=${() => this._settingsVisible = !this._settingsVisible}
+                                >
+                                    <iai-icon
+                                        slot="icon"
+                                        name="settings"
+                                        .color=${this._settingsVisible ? "var(--iai-silver-color-dark)" : "var(--iai-silver-color-text)"}
+                                        .fill=${1}
+                                    ></iai-icon>
+                                </iai-icon-button>
+
+                                <div class="popup-panel" style=${`
+                                    opacity: ${this._settingsVisible ? 1 : 0};
+                                    pointer-events: ${this._settingsVisible ? "auto" : "none"};
+                                `}>
+                                    <iai-silver-title
+                                        .text=${"Search Settings"}
+                                        .variant=${"secondary"}
+                                    ></iai-silver-title>
+                                    <div class="content">
+                                        <iai-toggle-input
+                                            name=${"highligh-matches"}
+                                            .handleChange=${(e) => {
+                                                this.setHighlightMatches(!this.highlightMatches);
+                                            }}
+                                            inputId=${"highligh-matches-toggle"}
+                                            label=${"Highlight Matches"}
+                                            value=${this.highlightMatches}
+                                            .checked=${this.highlightMatches}
+                                        ></iai-toggle-input>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div >
+                            <iai-toggle-input
+                                name=${"evidence-rich"}
+                                .handleChange=${(e) => {
+                                    this.setEvidenceRich(!this.evidenceRich);
+                                }}
+                                inputId=${"evidence-rich-input"}
+                                label=${"Evidence-rich responses"}
+                                value=${this.evidenceRich}
+                                .checked=${this.evidenceRich}
+                            ></iai-toggle-input>
+                        </div>
+                        
+                        <div>
+                            ${Object.keys(this.demoData).map(key => html`
+                                <iai-silver-select-input
+                                    .inputId=${`demo-filter-${key}`}
+                                    .name=${"demo-filter"}
+                                    .label=${this.toTitleCase(key)}
+                                    .hideLabel=${false}
+                                    .value=${this.demoFilters[key] || ""}
+                                    .options=${
+                                        Object.keys(this.demoData[key]).map(demoDataOption => ({
+                                            value: demoDataOption, text: this.toTitleCase(demoDataOption)
+                                        }))
+                                    }
+                                    .handleChange=${(e) => {
+                                        this.setDemoFilters(key, e.target.value);
+                                    }}
+                                    .horizontal=${false}
+                                ></iai-silver-select-input>
+                            `)}
+                        </div>
+                    </div>
+                </div>
+            </iai-silver-panel>
+        `
+    }
+}
+customElements.define("iai-response-refinement", ResponseRefinement);
