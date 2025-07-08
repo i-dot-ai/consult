@@ -193,7 +193,9 @@ def update_embeddings(consultation_id: UUID):
 
         for response, embedding in zip(responses, embeddings):
             response.embedding = embedding
-            response.save()
+
+        Response.objects.bulk_update(responses, ["embedding"])
+
 
 def import_response_annotation_themes(question: Question, output_folder: str):
     mapping_file_key = f"{output_folder}mapping.jsonl"
