@@ -197,7 +197,11 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
 
         # Bulk create new options
         options_to_save = [
-            cls(consultation=consultation, field_name=field_name, field_value=field_value)
+            cls(
+                consultation=consultation,
+                field_name=field_name[:128],
+                field_value=field_value[:256],
+            )
             for field_name, field_value in demographic_options_to_create
         ]
 
