@@ -101,9 +101,14 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
 
 
 def get_filtered_responses_with_themes(
-    question: models.Question, filters: FilterParams | None = None, similarity_threshold=0.2
+    question: models.Question,
+    filters: FilterParams | None = None,
+    similarity_threshold: float | None = None,
 ):
     """Single optimized query to get all filtered responses with their themes"""
+    if similarity_threshold is None:
+        similarity_threshold = settings.SIMILARITY_THRESHOLD
+
     response_filter = build_response_filter_query(filters or {}, question)
     queryset = (
         models.Response.objects.filter(response_filter)
