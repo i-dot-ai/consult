@@ -92,26 +92,12 @@ export default class ThemesTable extends IaiLitBase {
         this.applyStaticStyles("iai-themes-table", ThemesTable.styles);
     }
 
-    updated(changedProps) {
-        if (changedProps.has("themeFilters")) {
-            this.querySelectorAll(`.theme-checkbox`).forEach(el => {
-                el.checked = this.themeFilters.includes(el.value)
-            });
-        }
-    }
-
     render() {
         const totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
 
         return html`
             <iai-data-table
                 .sortable=${false}
-                .initialSorts=${[
-                    {
-                        field: "Number of responses",
-                        ascending: false,
-                    }
-                ]}
                 .data=${this.themes
                     .map(theme => (
                         {
@@ -132,7 +118,9 @@ export default class ThemesTable extends IaiLitBase {
                                             id=${"theme-filters" + theme.title.toLowerCase().replace(" ", "-")}
                                             name="theme-filters"
                                             .value=${theme.id}
-                                            @change=${(e) => {
+                                            ?checked=${this.themeFilters.includes(theme.id)}
+                                            @click=${(e) => {
+                                                e.preventDefault();
                                                 this.setThemeFilters(e.target.value);
                                             }}
                                         />

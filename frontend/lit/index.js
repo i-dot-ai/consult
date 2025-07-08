@@ -5981,13 +5981,15 @@ class ThemesTable extends IaiLitBase {
         this.applyStaticStyles("iai-themes-table", ThemesTable.styles);
     }
 
-    updated(changedProps) {
-        if (changedProps.has("themeFilters")) {
-            this.querySelectorAll(`.theme-checkbox`).forEach(el => {
-                el.checked = this.themeFilters.includes(el.value);
-            });
-        }
-    }
+    // updated(changedProps) {
+    //     if (changedProps.has("themeFilters")) {
+    //         setTimeout(() => {
+    //             this.querySelectorAll(`.theme-checkbox`).forEach(el => {
+    //                 el.checked = this.themeFilters.includes(el.value);
+    //             });
+    //         }, 1000);
+    //     }
+    // }
 
     render() {
         const totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
@@ -5995,12 +5997,6 @@ class ThemesTable extends IaiLitBase {
         return x`
             <iai-data-table
                 .sortable=${false}
-                .initialSorts=${[
-                    {
-                        field: "Number of responses",
-                        ascending: false,
-                    }
-                ]}
                 .data=${this.themes
                     .map(theme => (
                         {
@@ -6021,7 +6017,9 @@ class ThemesTable extends IaiLitBase {
                                             id=${"theme-filters" + theme.title.toLowerCase().replace(" ", "-")}
                                             name="theme-filters"
                                             .value=${theme.id}
-                                            @change=${(e) => {
+                                            ?checked=${this.themeFilters.includes(theme.id)}
+                                            @click=${(e) => {
+                                                e.preventDefault();
                                                 this.setThemeFilters(e.target.value);
                                             }}
                                         />
@@ -6092,7 +6090,8 @@ class ThemeAnalysis extends IaiLitBase {
         sortDirection: { type: String },
         setSortDirection: { type: Function },
 
-        _demoFilters: { type: Object },
+        demoFilters: { type: Object },
+        setDemoFilters: { type: Function },
     }
 
     static styles = [
@@ -6102,6 +6101,9 @@ class ThemeAnalysis extends IaiLitBase {
                 // display: block;
                 // max-height: 40em;
                 // overflow: auto;
+            }
+            iai-theme-analysis div[slot="content"] {
+                padding-block: 0.5em;
             }
             iai-theme-analysis iai-silver-icon-tile {
                 font-size: 0.8em;
@@ -6169,7 +6171,6 @@ class ThemeAnalysis extends IaiLitBase {
                 column-gap: 0.5em;
                 row-gap: 1em;
                 align-items: center;
-                // margin-left: 0.5em;
             }
             iai-theme-analysis .filters iai-silver-select-input{
                 white-space: nowrap;
@@ -6208,27 +6209,14 @@ class ThemeAnalysis extends IaiLitBase {
         this.contentId = this.generateId();
         this._NUMBER_ANIMATION_DURATION = 1000;
 
-        this.themes = [
-            {
-                id: "1",
-                title: "Healthcare AI Regulatory Standards",
-                description: "Detailed analysis of healthcare ai regulatory standards responses from consultation participants across various demographic groups and sectors.",
-                mentions: 1240,
-                percentage: 18.5
-            },
-            {
-                id: "2",
-                title: "Encryption Technology Requirements",
-                description: "Detailed analysis of encryption technology requirements responses from consultation participants across various demographic groups and sectors.",
-                mentions: 1725,
-                percentage: 12.1
-            }
-        ];
+        this.themes = [];
         this.demoData = [];
+
         this.themeFilters = [];
         this.updateThemeFilters = () => {};
 
-        this._demoFilters = {};
+        this.demoFilters = {};
+        this.setDemoFilters = () => {};
         
         this.sortType = "";
         this.setSortType = () => {};
@@ -6245,18 +6233,11 @@ class ThemeAnalysis extends IaiLitBase {
         }
         return Math.round(((partialValue / totalValue) * 100));
     }
-
-    updated(changedProps) {
-        if (changedProps.has("_demoFilters")) {
-            console.log("New Demo Filters:", this._demoFilters);
-        }
-    }
-
     
     render() {
         return x`
             <iai-silver-panel>
-                <div slot="content" style="padding-block: 0.5em;">
+                <div slot="content">
                     <div class="top-panel">
                         <iai-silver-title
                             .text=${"Theme Analysis"}
@@ -6323,16 +6304,14 @@ class ThemeAnalysis extends IaiLitBase {
                                             .name=${getSlug(category)}
                                             .label=${this.toTitleCase(category)}
                                             .hideLabel=${true}
-                                            .value=${this.themeFilters /* make object */}
+                                            .value=${this.demoFilters[category] || ""}
                                             .placeholder=${`Select ${this.toTitleCase(category)}`}
                                             .options=${(Object.keys(this.demoData[category])).map(key => ({
-                                                value: getSlug(key),
+                                                value: key,
                                                 text: this.toTitleCase(key)
                                             }))}
                                             .handleChange=${(e) => {
-                                                const newDemoFilters = {...this._demoFilters};
-                                                newDemoFilters[getSlug(category)] = e.target.value;
-                                                this._demoFilters = newDemoFilters;
+                                                this.setDemoFilters(category, e.target.value);
                                             }}
                                             .horizontal=${true}
                                         ></iai-silver-select-input>
@@ -7050,7 +7029,7 @@ class DemographicsSection extends IaiLitBase {
                 flex-grow: 1;    
                 min-width: max-content;
             }
-            .themes-warning .tag {    
+            .themes-warning .tag {
                 width: 100%;
                 margin-bottom: 1em;
             }
@@ -7617,6 +7596,7 @@ class QuestionDetailPage extends IaiLitBase {
 
         this._numResponses = 7000;
         this._responsesTotal = 0;
+        this._filteredTotal = 0;
         this.responses = [];
         this._themes = [];
         this._demoData = {};
@@ -7804,6 +7784,12 @@ class QuestionDetailPage extends IaiLitBase {
 
                     .sortDirection=${this._themesSortDirection}
                     .setSortDirection=${newSortDirection => this._themesSortDirection = newSortDirection}
+
+                    .demoFilters=${this._demoFilters}
+                    .setDemoFilters=${(newFilterKey, newFilterValue) => this._demoFilters = {
+                        ...this._demoFilters,
+                        [newFilterKey]: newFilterValue
+                    }}
                 ></iai-theme-analysis>
             </section>
         `
