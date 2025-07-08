@@ -384,7 +384,7 @@ class IaiIcon extends IaiLitBase {
         this.contentId = this.generateId();
 
         // Google expect icon names to be alphabetically sorted
-        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond", "progress_activity", "sort", "schedule", "calendar_month", "group", "description", "monitoring", "settings", "help", "chat_bubble", "wand_stars", "lan"];
+        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond", "progress_activity", "sort", "schedule", "calendar_month", "group", "description", "monitoring", "settings", "help", "chat_bubble", "wand_stars", "lan", "finance", "filter_alt", "network_intelligence", "arrow_downward", "arrow_upward"];
         this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
 
         // Prop defaults
@@ -6292,19 +6292,16 @@ class ThemeAnalysis extends IaiLitBase {
                                     .horizontal=${true}
                                 ></iai-silver-select-input>
 
-                                <iai-silver-select-input
-                                    .inputId=${"sort-direction"}
-                                    .name=${"sort-direction"}
-                                    .label=${"Sort Direction"}
-                                    .hideLabel=${true}
-                                    .value=${this._sortDirection}
-                                    .options=${[
-                                        { value: "descending", text: "Descending" },
-                                        { value: "asc", text: "Ascending" },
-                                    ]}
-                                    .handleChange=${(e) => this._sortDirection = e.target.value}
-                                    .horizontal=${true}
-                                ></iai-silver-select-input>
+                                <iai-icon-button .handleClick=${() => this._sortDirection = this._sortDirection === "ascending" ? "descending" : "ascending"}>
+                                    <iai-icon
+                                        slot="icon"
+                                        .name=${this._sortDirection === "ascending"
+                                            ? "arrow_downward"
+                                            : "arrow_upward"
+                                        }
+                                    ></iai-icon>
+                                </iai-icon-button>
+
                             </div>
 
                             <div class="filters">
@@ -7005,6 +7002,8 @@ class DemographicsCard extends IaiLitBase {
         i$4`
             iai-demographics-card article {
                 height: 100%;
+                max-height: 15em;
+                overflow: auto;
                 padding: 1em;
                 font-size: 1em;
                 color: var(--iai-silver-color-text);
@@ -7169,6 +7168,8 @@ class ResponseRefinement extends IaiLitBase {
         ...IaiLitBase.properties,
         responses: { type: Array },
         highlightMatches: { type: Boolean },
+        demoData: { type: Object },
+        themes: { type: Array },
         
         searchValue: { type: String },
         setSearchValue: { type: Function },
@@ -7188,35 +7189,43 @@ class ResponseRefinement extends IaiLitBase {
         highlightMatches: { type: Boolean },
         setHighlightMatches: { type: Function },
 
+        demoFilters: { type: Object },
+        setDemoFilters: { type: Function },
+
         _settingsVisible: { type: Boolean },
     }
 
     static styles = [
         IaiLitBase.styles,
         i$4`
-            iai-response-refinement ul {
-                padding-left: 0;
+            iai-response-refinement label,
+            iai-response-refinement select,
+            iai-response-refinement input {
+                font-size: 0.9em !important;
             }
-            iai-response-refinement li {
-                list-style: none;
+            iai-response-refinement .filters {
+                display: grid;
+                gap: 1em;
             }
-            iai-response-refinement li article {
-                background: var(--iai-silver-color-light);
-                border-radius: 0.5em;
-                padding: 1em;
-                line-height: 1.5em;
+            iai-response-refinement iai-silver-select-input {
+                display: block;
+                width: max-content;
             }
-            iai-response-refinement li article header,
-            iai-response-refinement li article footer {
+            iai-response-refinement .search-container {
                 display: flex;
+                justify-content: space-between;
+                align-items: center;
                 gap: 0.5em;
-                font-size: 0.9em;
             }
-            iai-response-refinement li article footer iai-silver-tag .tag {
-                background: var(--iai-silver-color-mid-light);
-                border: none;
+            iai-response-refinement .search-container iai-silver-search-box {
+                flex-grow: 1;
             }
-
+            iai-response-refinement .search-container iai-silver-search-box .clear-button {
+                top: 70%;
+            }
+            iai-response-refinement iai-silver-tag .material-symbols-outlined {
+                font-size: 2em;
+            }
             iai-response-refinement .popup-button {
                 position: relative;
             }
@@ -7235,6 +7244,11 @@ class ResponseRefinement extends IaiLitBase {
                 transition: opacity 0.3s ease-in-out;
                 box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
             }
+            iai-response-refinement .popup-panel .content {
+                display: flex;
+                align-items: center;
+                gap: 1em;
+            }
             iai-response-refinement .tag {
                 width: 100%;
             }
@@ -7246,19 +7260,23 @@ class ResponseRefinement extends IaiLitBase {
         this.contentId = this.generateId();
 
         // Prop defaults
-        this.responses = [];
-
-        this.highlightMatches = true;
-        this.setHighlightMatches = () => {};
+        this.demoData = {};
+        this.themes = [];
 
         this.searchValue = "";
         this.setSearchValue = () => {};
 
+        this.searchMode = "keyword";
+        this.setSearchMode = () => {};
+
+        this.highlightMatches = true;
+        this.setHighlightMatches = () => {};
+
         this.evidenceRich = false;
         this.setEvidenceRich = () => {};
 
-        this.searchMode = "keyword";
-        this.setSearchMode = () => {};
+        this.demoFilters = {};
+        this.setDemoFilters = () => {};
 
         this._settingsVisible = false;
         
@@ -7270,15 +7288,14 @@ class ResponseRefinement extends IaiLitBase {
             <iai-silver-panel>
                 <div slot="content">
                     <iai-silver-title
-                        .icon=${"help"}
+                        .icon=${"filter_alt"}
                         .text=${`Response Refinement`}
                         .subtext=${"Filter and search through individual responses to this question."}
                         .level=${2}
                     ></iai-silver-title>
 
-                    <div style="display: grid; gap: 1em;">
+                    <div class="filters">
                         <iai-silver-select-input
-                            style="width: max-content;"
                             .inputId=${"search-mode"}
                             .name=${"search-mode"}
                             .label=${"Search:"}
@@ -7295,14 +7312,13 @@ class ResponseRefinement extends IaiLitBase {
                         ${this.searchMode === "semantic" ? x`
                             <iai-silver-tag
                                 .status=${"Open"}
-                                .icon=${"help"}
+                                .icon=${"network_intelligence"}
                                 .text=${"Semantic search uses AI to understand the meaning behind your search terms, finding responses with similar concepts even if they don't contain the exact words."}
                             ></iai-silver-tag>
                         ` : ""}
 
-                        <div style="display: flex; justify-content: space-between; align-items: center; gap: 0.5em;">
+                        <div class="search-container">
                             <iai-silver-search-box
-                                style="flex-grow: 1;"
                                 .inputId=${"search-value"}
                                 .name=${"search-value"}
                                 .label=${"Search"}
@@ -7327,16 +7343,18 @@ class ResponseRefinement extends IaiLitBase {
                                     ></iai-icon>
                                 </iai-icon-button>
 
-                                <div class="popup-panel" style=${`opacity: ${this._settingsVisible ? 1 : 0}; pointer-events: ${this._settingsVisible ? "auto" : "none"};`}>
+                                <div class="popup-panel" style=${`
+                                    opacity: ${this._settingsVisible ? 1 : 0};
+                                    pointer-events: ${this._settingsVisible ? "auto" : "none"};
+                                `}>
                                     <iai-silver-title
                                         .text=${"Search Settings"}
                                         .variant=${"secondary"}
                                     ></iai-silver-title>
-                                    <div style="display: flex; align-items: center; gap: 1em;">
+                                    <div class="content">
                                         <iai-toggle-input
                                             name=${"highligh-matches"}
                                             .handleChange=${(e) => {
-                                                console.log(e.target.value);
                                                 this.setHighlightMatches(!this.highlightMatches);
                                             }}
                                             inputId=${"highligh-matches-toggle"}
@@ -7349,11 +7367,10 @@ class ResponseRefinement extends IaiLitBase {
                             </div>
                         </div>
 
-                        <div style="display: flex; align-items: center; gap: 1em;">
+                        <div >
                             <iai-toggle-input
                                 name=${"evidence-rich"}
                                 .handleChange=${(e) => {
-                                    console.log(e.target.value);
                                     this.setEvidenceRich(!this.evidenceRich);
                                 }}
                                 inputId=${"evidence-rich-input"}
@@ -7361,6 +7378,27 @@ class ResponseRefinement extends IaiLitBase {
                                 value=${this.evidenceRich}
                                 .checked=${this.evidenceRich}
                             ></iai-toggle-input>
+                        </div>
+                        
+                        <div>
+                            ${Object.keys(this.demoData).map(key => x`
+                                <iai-silver-select-input
+                                    .inputId=${`demo-filter-${key}`}
+                                    .name=${"demo-filter"}
+                                    .label=${this.toTitleCase(key)}
+                                    .hideLabel=${false}
+                                    .value=${this.demoFilters[key] || ""}
+                                    .options=${
+                                        Object.keys(this.demoData[key]).map(demoDataOption => ({
+                                            value: demoDataOption, text: this.toTitleCase(demoDataOption)
+                                        }))
+                                    }
+                                    .handleChange=${(e) => {
+                                        this.setDemoFilters(key, e.target.value);
+                                    }}
+                                    .horizontal=${false}
+                                ></iai-silver-select-input>
+                            `)}
                         </div>
                     </div>
                 </div>
@@ -7523,14 +7561,12 @@ class QuestionDetailPage extends IaiLitBase {
         _numResponses: { type: Number },
         _activeTab: { type: String },
         _demographicsData: { type: Array },
-        _themeFilters: { type: Array },
-
+        
         _isLoading: { type: Boolean },
         _currentPage: { type: Number},
         _hasMorePages: { type: Boolean},
         _errorOccured: { type: Boolean},
         fetchData: { type: Function },
-
 
         consultationSlug: { type: String },
         questionSlug: { type: String },
@@ -7541,12 +7577,14 @@ class QuestionDetailPage extends IaiLitBase {
         responses: { type: Array },
         responsesTotal: { type: Number },
         _themes: { type: Array },
-        _highlightMatches: { type: Boolean },
 
+        _highlightMatches: { type: Boolean },
         _searchValue: { type: String },
         _searchMode: { type: String },
         _demoData: { type: Object },
         _evidenceRichFilter: { type: Boolean },
+        _themeFilters: { type: Array },
+        _demoFilters: { type: Object },
 
         demographicOptions: { type: Array },
     }
@@ -7619,6 +7657,7 @@ class QuestionDetailPage extends IaiLitBase {
         this._searchMode = "keyword";
         this._evidenceRichFilter = false;
         this._themeFilters = [];
+        this._demoFilters = {};
 
         this.applyStaticStyles("iai-question-detail-page", QuestionDetailPage.styles);
     }
@@ -7637,6 +7676,9 @@ class QuestionDetailPage extends IaiLitBase {
     }
 
     buildQuery = () => {
+
+        console.log(this._demoFilters);
+        console.log(Object.keys(this._demoFilters).map(key => `${key}:${this._demoFilters[key]}`).join(","));
         // conditionally add filters as query params
         const params = new URLSearchParams({
             ...(this._searchValue && {
@@ -7650,6 +7692,9 @@ class QuestionDetailPage extends IaiLitBase {
             }),
             ...(this._evidenceRichFilter && {
                 evidenceRich: this._evidenceRichFilter
+            }),
+            ...(Object.entries(this._demoFilters).length > 0 && {
+                demoFilters: Object.keys(this._demoFilters).map(key => `${key}:${this._demoFilters[key]}`).join(",")
             }),
             // ...(this._evidenceRichFilters.length > 0 && {
             //     evidenceRichFilter: this._evidenceRichFilters.join(",")
@@ -7786,7 +7831,8 @@ class QuestionDetailPage extends IaiLitBase {
             changedProps.has("_searchMode")         ||
             changedProps.has("_evidenceRichFilter") ||
             changedProps.has("_themeFilters")       ||
-            changedProps.has("_demographicFilters")
+            changedProps.has("_demoFilters")
+            // changedProps.has("_demographicFilters")
         ) {
             console.log("about to fetch");
             this.resetResponses();
@@ -7815,6 +7861,9 @@ class QuestionDetailPage extends IaiLitBase {
         return x`
             <section>
                 <iai-response-refinement
+                    .demoData=${this._demoData}
+                    .themes=${this._themes}
+
                     .searchValue=${this._searchValue}
                     .setSearchValue=${newSearchValue => this._searchValue = newSearchValue}
 
@@ -7826,6 +7875,12 @@ class QuestionDetailPage extends IaiLitBase {
 
                     .highlightMatches=${this._highlightMatches}
                     .setHighlightMatches=${newHighlightMatches => this._highlightMatches = newHighlightMatches}
+
+                    .demoFilters=${this._demoFilters}
+                    .setDemoFilters=${(newFilterKey, newFilterValue) => this._demoFilters = {
+                        ...this._demoFilters,
+                        [newFilterKey]: newFilterValue
+                    }}
                 ></iai-response-refinement>
             </section>
 
@@ -7840,17 +7895,8 @@ class QuestionDetailPage extends IaiLitBase {
                             })),
                             evidenceRich: response.evidenceRich,
                             multiAnswers: response.multiple_choice_answer || [], // Array
-                            demoData: response.demoData || [],
+                            demoData: Object.values(response.demographic_data) || [],
                         }))
-
-                        // [{
-                        // text: "Healthcare AI systems must undergo rigorous clinical validation before deployment. The current regulatory framework lacks sector-specific guidance for medical AI applications. Data from the UK's Centre for Data Ethics shows 89% of citizens support transparency requirements for AI systems.",
-                        // themes: [
-                        //   {id: "theme-1", text: "Theme 1"},
-                        //   {id: "theme-2", text: "Theme 2"},
-                        // ],
-                        // evidenceRich: true,
-                        // demoData: ["Individual", "Wales", "Disability: Prefer not to say"],
                     }
                     .handleScrollEnd=${() => {
                         if (this._isLoading) {
@@ -7942,11 +7988,11 @@ class QuestionDetailPage extends IaiLitBase {
                 .handleTabChange=${(newTab) => this._activeTab = newTab}
                 .tabs=${[
                     {
-                        title: this.renderTabButton("Question Summary", "star"),
+                        title: this.renderTabButton("Question Summary", "lan"),
                         content: this.renderThemeAnalysisSection()
                     },
                     {
-                        title: this.renderTabButton("Response Analysis", "star"),
+                        title: this.renderTabButton("Response Analysis", "finance"),
                         content: this.renderResponsesSection()
                     },
                 ]}
