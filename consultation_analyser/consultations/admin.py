@@ -24,13 +24,12 @@ class ResponseAdmin(admin.ModelAdmin):
     list_filter = ["question", "question__consultation"]
     list_display = ["free_text", "question"]
     list_select_related = True
-    # readonly_fields = [
-    #     "respondent",
-    #     "question",
-    #     "free_text",
-    #     "chosen_options",
-    #     "embedding",
-    # ]
+    readonly_fields = [
+        "respondent",
+        "question",
+        "free_text",
+        "embedding",
+    ]
 
 
 class ConsultationAdmin(admin.ModelAdmin):
