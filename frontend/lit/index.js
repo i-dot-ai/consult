@@ -6529,6 +6529,7 @@ class TabView extends IaiLitBase {
         ...IaiLitBase.properties,
         tabs: { type: Array },
         activeTab: { type: String },
+        handleTabChange: { type: Function },
     }
 
     static styles = [
@@ -7368,7 +7369,8 @@ class ResponsesList extends IaiLitBase {
                 list-style: none;
             }
             iai-silver-responses-list article {
-                display: grid;
+                display: flex;
+                flex-direction: column;
                 gap: 1em;
                 width: 100%;
                 margin-block: 1em;
@@ -7385,6 +7387,7 @@ class ResponsesList extends IaiLitBase {
                 display: flex;
                 gap: 0.5em;
                 font-size: 0.9em;
+                flex-wrap: wrap;
             }
             iai-silver-responses-list article footer iai-silver-tag .tag {
                 background: var(--iai-silver-color-mid-light);
@@ -7392,6 +7395,10 @@ class ResponsesList extends IaiLitBase {
             }
             iai-silver-responses-list iai-virtual-list {
                 height: 50em;
+            }
+            iai-silver-responses-list multi-answers-list {
+                display: flex;
+                gap: 0.5em;
             }
         `
     ]
@@ -7465,7 +7472,7 @@ class ResponsesList extends IaiLitBase {
                                 ` : ""}
 
                                 ${response.multiAnswers.length > 0 ? x`
-                                    <ul style="display: flex; gap: 0.5em;">
+                                    <ul class="multi-answers-list">
                                         ${response.multiAnswers.map(answer => x`
                                             <iai-silver-tag
                                                 .text=${answer}
@@ -7474,15 +7481,17 @@ class ResponsesList extends IaiLitBase {
                                     </ul>
                                 ` : ""}
                                 
-                                <footer>
-                                    ${response.themes.map((theme) => x`
-                                        <iai-silver-tag
-                                            @click=${() => console.log(theme.id)}
-                                            .text=${theme.text}
-                                            .matchBackground=${true}
-                                        ></iai-silver-tag>
-                                    `)}
-                                </footer>
+                                ${response.themes.length > 0 ? x`
+                                    <footer>
+                                        ${response.themes.map((theme) => x`
+                                            <iai-silver-tag
+                                                @click=${() => console.log(theme.id)}
+                                                .text=${theme.text}
+                                                .matchBackground=${true}
+                                            ></iai-silver-tag>
+                                        `)}
+                                    </footer>
+                                ` : ""}
                             </article>
                         `}
                         .handleScrollEnd=${this.handleScrollEnd}
