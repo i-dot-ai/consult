@@ -384,7 +384,7 @@ class IaiIcon extends IaiLitBase {
         this.contentId = this.generateId();
 
         // Google expect icon names to be alphabetically sorted
-        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond", "progress_activity", "sort", "schedule", "calendar_month", "group", "description", "monitoring", "settings", "help", "chat_bubble", "wand_stars", "lan", "finance", "filter_alt", "network_intelligence", "arrow_downward", "arrow_upward"];
+        this._ALL_ICON_NAMES = ["visibility", "close", "star", "search", "thumb_up", "thumb_down", "thumbs_up_down", "arrow_drop_down_circle", "download", "diamond", "progress_activity", "sort", "schedule", "calendar_month", "group", "description", "monitoring", "settings", "help", "chat_bubble", "wand_stars", "lan", "finance", "filter_alt", "network_intelligence", "arrow_downward", "arrow_upward", "report", "chevron_left"];
         this._URL = "https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&icon_names=" + [...this._ALL_ICON_NAMES].sort().join(",");
 
         // Prop defaults
@@ -7035,6 +7035,7 @@ class DemographicsSection extends IaiLitBase {
         ...IaiLitBase.properties,
         data: { type: Array },
         themeFilters: { type: Array },
+        total: { type: Number },
     }
 
     static styles = [
@@ -7049,6 +7050,10 @@ class DemographicsSection extends IaiLitBase {
                 flex-grow: 1;    
                 min-width: max-content;
             }
+            .themes-warning .tag {    
+                width: 100%;
+                margin-bottom: 1em;
+            }
         `
     ]
 
@@ -7059,6 +7064,7 @@ class DemographicsSection extends IaiLitBase {
         // Prop defaults
         this.data = [];
         this.themeFilters = [];
+        this.total = 0;
         
         this.applyStaticStyles("iai-demographics-section", DemographicsSection.styles);
     }
@@ -7078,9 +7084,10 @@ class DemographicsSection extends IaiLitBase {
                         ${this.themeFilters.length > 0
                             ? x`
                                 <iai-silver-tag
+                                    class="themes-warning"
                                     .text=${"Active theme analysis filters"}
-                                    .subtext=${`Showing data for 4,020 responses (filtered by: ${this.themeFilters.length} themes)`}
-                                    .icon=${"help"}
+                                    .subtext=${`Showing data for ${this.total.toLocaleString()} responses (filtered by: ${this.themeFilters.length} themes)`}
+                                    .icon=${"report"}
                                     .status=${"Closed"}
                                 ></iai-silver-tag>
                             `
@@ -7667,13 +7674,6 @@ class QuestionDetailPage extends IaiLitBase {
             page_size: this._PAGE_SIZE.toString(),
         });
 
-        // Add demographic filters using square bracket notation
-        // Object.entries(this._demographicFilters).forEach(([field, values]) => {
-        //     if (values.length > 0) {
-        //         params.append(`demographicFilters[${field}]`, values.join(","));
-        //     }
-        // });
-
         return params.toString();
     }
 
@@ -7726,13 +7726,15 @@ class QuestionDetailPage extends IaiLitBase {
             const responsesData = await response.json();
 
             this.responses = this.responses.concat(
-                responsesData.all_respondents.map(response => ({
-                    ...response,
-                    visible: true,
-                }))
+                responsesData.all_respondents
+                // responsesData.all_respondents.map(response => ({
+                //     ...response,
+                //     visible: true,
+                // }))
             );
 
             this._responsesTotal = responsesData.respondents_total;
+            this._filteredTotal = responsesData.filtered_total;
 
             this._themes = responsesData.theme_mappings.map(mapping => ({
                 id: mapping.value,
@@ -7744,10 +7746,8 @@ class QuestionDetailPage extends IaiLitBase {
                     this._activeTab = 1;
                 }
             }));
-            console.log(this._themes);
 
             this._demoData = responsesData.demographic_aggregations || {};
-            this._filteredTotal = responsesData.filtered_total;
 
             // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
             if (this._currentPage === 1 && responsesData.theme_mappings) {
@@ -7785,7 +7785,6 @@ class QuestionDetailPage extends IaiLitBase {
             changedProps.has("_themesSortType")     ||
             changedProps.has("_themesSortDirection")
         ) {
-            console.log("about to fetch");
             this.resetResponses();
             this.fetchResponses();
         }
@@ -7867,7 +7866,7 @@ class QuestionDetailPage extends IaiLitBase {
                 ${this._hasMorePages ? x`
                     <iai-silver-button
                         class="load-more-button"
-                        .text=${`Load more (${this._responsesTotal - this.responses.length} remaining)`}
+                        .text=${`Load more (${this._filteredTotal - this.responses.length} remaining)`}
                         .handleClick=${() => {
                             if (this._isLoading) {
                                 return;
@@ -7897,7 +7896,7 @@ class QuestionDetailPage extends IaiLitBase {
                 <iai-silver-button
                     .text=${x`
                         <iai-icon
-                            .name=${"star"}
+                            .name=${"chevron_left"}
                             .color=${"var(--iai-silver-color-text)"}
                         ></iai-icon>
                         <span>Back to all questions</span>
@@ -7938,7 +7937,7 @@ class QuestionDetailPage extends IaiLitBase {
                         <iai-silver-tag
                             .status=${"Open"}
                             .text=${"Open"}
-                            .icon=${"star"}
+                            .icon=${"chat_bubble"}
                         ></iai-silver-tag>
                     `}
                 ></iai-silver-cross-search-card>
@@ -7948,6 +7947,7 @@ class QuestionDetailPage extends IaiLitBase {
                 <iai-demographics-section
                     .data=${this._demoData}
                     .themeFilters=${this._themeFilters}
+                    .total=${this._filteredTotal}
                 ></iai-demographics-section>
             </section>
 

@@ -11,6 +11,7 @@ export default class DemographicsSection extends IaiLitBase {
         ...IaiLitBase.properties,
         data: { type: Array },
         themeFilters: { type: Array },
+        total: { type: Number },
     }
 
     static styles = [
@@ -25,6 +26,10 @@ export default class DemographicsSection extends IaiLitBase {
                 flex-grow: 1;    
                 min-width: max-content;
             }
+            .themes-warning .tag {
+                width: 100%;
+                margin-bottom: 1em;
+            }
         `
     ]
 
@@ -35,6 +40,7 @@ export default class DemographicsSection extends IaiLitBase {
         // Prop defaults
         this.data = [];
         this.themeFilters = [];
+        this.total = 0;
         
         this.applyStaticStyles("iai-demographics-section", DemographicsSection.styles);
     }
@@ -54,9 +60,10 @@ export default class DemographicsSection extends IaiLitBase {
                         ${this.themeFilters.length > 0
                             ? html`
                                 <iai-silver-tag
+                                    class="themes-warning"
                                     .text=${"Active theme analysis filters"}
-                                    .subtext=${`Showing data for 4,020 responses (filtered by: ${this.themeFilters.length} themes)`}
-                                    .icon=${"help"}
+                                    .subtext=${`Showing data for ${this.total.toLocaleString()} responses (filtered by: ${this.themeFilters.length} themes)`}
+                                    .icon=${"report"}
                                     .status=${"Closed"}
                                 ></iai-silver-tag>
                             `
