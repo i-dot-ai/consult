@@ -7476,10 +7476,8 @@ customElements.define("iai-silver-responses-list", ResponsesList);
 class QuestionDetailPage extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
-        _numResponses: { type: Number },
+
         _activeTab: { type: String },
-        _demographicsData: { type: Array },
-        
         _isLoading: { type: Boolean },
         _currentPage: { type: Number},
         _hasMorePages: { type: Boolean},
@@ -7493,22 +7491,20 @@ class QuestionDetailPage extends IaiLitBase {
         questionId: { type: String },
 
         responses: { type: Array },
-        responsesTotal: { type: Number },
+        _responsesTotal: { type: Number },
         _filteredTotal: { type: Number },
         _themes: { type: Array },
+        _demoData: { type: Object },
 
-        _highlightMatches: { type: Boolean },
         _searchValue: { type: String },
         _searchMode: { type: String },
-        _demoData: { type: Object },
+        _highlightMatches: { type: Boolean },
         _evidenceRichFilter: { type: Boolean },
         _themeFilters: { type: Array },
         _demoFilters: { type: Object },
 
         _themesSortType: { type: String },
         _themesSortDirection: { type: String },
-
-        demographicOptions: { type: Array },
     }
 
     static styles = [
@@ -7557,10 +7553,14 @@ class QuestionDetailPage extends IaiLitBase {
         this._MAX_THEME_FILTERS = 3;
         this._PAGE_SIZE = 50;
         this._DEBOUNCE_DELAY = 500;
+        this._TAB_INDECES = {
+            "Question Summary" : 0,
+            "Response Analysis" : 1,
+        };
         this._currentFetchController = null;
-        this._activeTab = 0;
 
         // Prop defaults
+        this._activeTab = this._TAB_INDECES["Question Summary"];
         this._isLoading = false;
         this._currentPage = 1;
         this._hasMorePages = true;
@@ -7573,16 +7573,15 @@ class QuestionDetailPage extends IaiLitBase {
         this.questionText = "";
         this.questionId = "";
 
-        this._numResponses = 7000;
+        this.responses = [];
         this._responsesTotal = 0;
         this._filteredTotal = 0;
-        this.responses = [];
         this._themes = [];
         this._demoData = {};
-        this._highlightMatches = true;
         
         this._searchValue = "";
         this._searchMode = "keyword";
+        this._highlightMatches = true;
         this._evidenceRichFilter = false;
         this._themeFilters = [];
         this._demoFilters = {};
@@ -7620,6 +7619,7 @@ class QuestionDetailPage extends IaiLitBase {
             ...(this._evidenceRichFilter && {
                 evidenceRich: this._evidenceRichFilter
             }),
+            // Add demofilters as string formatted as "foo:1,bar:2"
             ...(Object.entries(this._demoFilters).length > 0 && {
                 demoFilters: Object.keys(this._demoFilters).map(key => `${key}:${this._demoFilters[key]}`).join(",")
             }),
@@ -7684,13 +7684,7 @@ class QuestionDetailPage extends IaiLitBase {
 
             const responsesData = await response.json();
 
-            this.responses = this.responses.concat(
-                responsesData.all_respondents
-                // responsesData.all_respondents.map(response => ({
-                //     ...response,
-                //     visible: true,
-                // }))
-            );
+            this.responses = this.responses.concat(responsesData.all_respondents);
 
             this._responsesTotal = responsesData.respondents_total;
             this._filteredTotal = responsesData.filtered_total;
@@ -7702,7 +7696,7 @@ class QuestionDetailPage extends IaiLitBase {
                 mentions: parseInt(mapping.count),
                 handleClick: () => {
                     this._themeFilters = [mapping.value];
-                    this._activeTab = 1;
+                    this._activeTab = this._TAB_INDECES["Response Analysis"];
                 }
             }));
 
@@ -7711,11 +7705,6 @@ class QuestionDetailPage extends IaiLitBase {
             // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
             if (this._currentPage === 1 && responsesData.theme_mappings) {
                 this.themeMappings = responsesData.theme_mappings;
-            }
-
-            // Update demographic options if available
-            if (responsesData.demographic_options) {
-                this.demographicOptions = responsesData.demographic_options;
             }
 
             this._hasMorePages = responsesData.has_more_pages;
@@ -7732,9 +7721,6 @@ class QuestionDetailPage extends IaiLitBase {
     }
 
     updated(changedProps) {
-        console.log("This responses:", this.responses);
-        console.log("highlightMatches", this._highlightMatches);
-
         if (
             changedProps.has("_searchValue")        ||
             changedProps.has("_searchMode")         ||
@@ -7755,6 +7741,7 @@ class QuestionDetailPage extends IaiLitBase {
                 <iai-theme-analysis
                     .demoData=${this._demoData}
                     .themes=${this._themes}
+
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
                     
@@ -7811,7 +7798,7 @@ class QuestionDetailPage extends IaiLitBase {
                                 text: theme.description,
                             })),
                             evidenceRich: response.evidenceRich,
-                            multiAnswers: response.multiple_choice_answer || [], // Array
+                            multiAnswers: response.multiple_choice_answer || [],
                             demoData: Object.values(response.demographic_data) || [],
                         }))
                     }
