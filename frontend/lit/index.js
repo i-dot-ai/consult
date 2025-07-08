@@ -5903,6 +5903,7 @@ class ThemesTable extends IaiLitBase {
         ...IaiLitBase.properties,
         themes: { type: Array },
         themeFilters: { type: Array },
+        setThemeFilters: { type: Function },
     }
 
     static styles = [
@@ -5931,15 +5932,14 @@ class ThemesTable extends IaiLitBase {
                 display: flex;
                 align-items: center;
             }
-            // iai-themes-table .percentage-cell iai-progress-bar {
-            //     flex-grow: 1;
-            // }
-            // iai-themes-table .percentage-cell iai-progress-bar .container {
-            //     border-radius: 0.5em;
-            //     background: var(--iai-silver-color-mid);
-            //     border: none;
-            //     opacity: 0.7;
-            // }
+            iai-themes-table .title-container {
+                display: flex;
+                align-items: center;
+                gap: 1em;
+            }
+            iai-themes-table input[type="checkbox"] {
+                filter: grayscale(0.5) hue-rotate(75deg);
+            }
 
             iai-themes-table .percentage-cell iai-progress-bar .bar {
                 background: var(--iai-silver-color-accent);
@@ -5948,12 +5948,6 @@ class ThemesTable extends IaiLitBase {
                 background: var(--iai-silver-color-mid-light);
             }
 
-            // iai-themes-table .percentage-cell iai-progress-bar .bar {
-            //     height: 0.5em;
-            //     border-top-left-radius: 0.5em;
-            //     border-bottom-left-radius: 0.5em;
-            //     background: var(--iai-silver-color-dark);
-            // }
             iai-themes-table iai-silver-button button {
                 width: max-content;
                 display: flex;
@@ -5982,15 +5976,9 @@ class ThemesTable extends IaiLitBase {
 
         this.themes = [];
         this.themeFilters = [];
+        this.setThemeFilters = () => {};
 
         this.applyStaticStyles("iai-themes-table", ThemesTable.styles);
-    }
-
-    getPercentage = (partialValue, totalValue) => {
-        if (totalValue === 0) {
-            return 0;
-        }
-        return Math.round(((partialValue / totalValue) * 100));
     }
 
     updated(changedProps) {
@@ -6025,10 +6013,9 @@ class ThemesTable extends IaiLitBase {
                                 "Theme": theme.title,
                             },
                             "Theme": x`
-                                <div style="display: flex; align-items: center; gap: 1em;">
+                                <div class="title-container">
                                     <div>
                                         <input
-                                            style="filter: grayscale(0.5) hue-rotate(75deg);"
                                             type="checkbox"
                                             class="theme-checkbox"
                                             id=${"theme-filters" + theme.title.toLowerCase().replace(" ", "-")}
@@ -6098,9 +6085,13 @@ class ThemeAnalysis extends IaiLitBase {
         demoData: { type: Array },
         themeFilters: { type: Array },
         updateThemeFilters: { type: Function },
-        _sortColumn: { type: String },
-        _sortDirection: { type: String },
-        _themeFilters: { type: Array }, //  Array<theme.id>
+
+        sortType: { type: String },
+        setSortType: { type: Function },
+
+        sortDirection: { type: String },
+        setSortDirection: { type: Function },
+
         _demoFilters: { type: Object },
     }
 
@@ -6230,10 +6221,13 @@ class ThemeAnalysis extends IaiLitBase {
         this.themeFilters = [];
         this.updateThemeFilters = () => {};
 
-        this._sortColumn = "theme-mentions";
-        this._sortDirection = "descending";
-        this._themeFilters = [];
         this._demoFilters = {};
+        
+        this.sortType = "";
+        this.setSortType = () => {};
+
+        this.sortDirection = "";
+        this.setSortDirection = () => {};
 
         this.applyStaticStyles("iai-theme-analysis", ThemeAnalysis.styles);
     }
@@ -6283,72 +6277,31 @@ class ThemeAnalysis extends IaiLitBase {
                                     .name=${"sort-value"}
                                     .label=${"Sort by:"}
                                     .hideLabel=${false}
-                                    .value=${this._sortColumn}
+                                    .value=${this.sortType}
                                     .options=${[
-                                        { value: "theme-mentions", text: "Frequency" },
-                                        { value: "theme-title", text: "A-Z" },
+                                        { value: "frequency", text: "Frequency" },
+                                        { value: "alphabetical", text: "A-Z" },
                                     ]}
-                                    .handleChange=${(e) => this._sortColumn = e.target.value}
+                                    .handleChange=${(e) => this.setSortType(e.target.value)}
                                     .horizontal=${true}
                                 ></iai-silver-select-input>
 
-                                <iai-icon-button .handleClick=${() => this._sortDirection = this._sortDirection === "ascending" ? "descending" : "ascending"}>
+                                <iai-icon-button .handleClick=${
+                                    () => this.setSortDirection(this._sortDirection === "ascending"
+                                        ? "descending"
+                                        : "ascending"
+                                )}>
                                     <iai-icon
                                         slot="icon"
-                                        .name=${this._sortDirection === "ascending"
+                                        .name=${this.sortDirection === "ascending"
                                             ? "arrow_downward"
                                             : "arrow_upward"
                                         }
                                     ></iai-icon>
                                 </iai-icon-button>
-
                             </div>
 
                             <div class="filters">
-
-                                <!--
-                                <iai-silver-select-input
-                                    .inputId=${"theme-filter"}
-                                    .name=${"theme-filter"}
-                                    .label=${"Filter Themes"}
-                                    .placeholder=${"All Themes"}
-                                    .hideLabel=${true}
-                                    .value=${this._themeFilters}
-                                    .options=${this.themes.map(theme => ({
-                                        value: theme.id,
-                                        text: theme.title,
-                                    }))}
-                                    .handleChange=${(e) => {
-                                        if (!e.target.value) {
-                                            // remove all theme filters if "all filters" value is selected
-                                            this._themeFilters = [];
-                                        } else {
-                                            this._themeFilters = [...this._themeFilters, e.target.value];
-                                        }
-                                    }}
-                                    .horizontal=${true}
-                                ></iai-silver-select-input>
-
-                                <iai-silver-select-input
-                                    .inputId=${"respondent-type"}
-                                    .name=${"respondent-type"}
-                                    .label=${"Respondent Type"}
-                                    .hideLabel=${true}
-                                    .value=${this._themeFilters}
-                                    .placeholder=${"All Respondents"}
-                                    .options=${[
-                                        {id: "1", text: "Individual Respondents"},
-                                        {id: "2", text: "Organisation Respondents"},
-                                    ].map(respondent => ({
-                                        value: respondent.id,
-                                        text: respondent.text,
-                                    }))}
-                                    .handleChange=${(e) => console.log("respondent selected:", e.target.value)}
-                                    .horizontal=${true}
-                                ></iai-silver-select-input>
-                                -->
-
-
                                 <iai-silver-title
                                     class="demographics-title"
                                     .text=${"Demographics"}
@@ -6395,27 +6348,7 @@ class ThemeAnalysis extends IaiLitBase {
                     </div>
 
                     <iai-themes-table
-                        .themes=${this.themes
-                            // .filter(theme => this._themeFilters.length > 0
-                            //     ? this._themeFilters.includes(theme.id)
-                            //     : true
-                            // )
-                            .filter(theme => {
-                                for (const demoFilter of Object.keys(this._demoFilters)) {
-                                    if (!theme.demographicsData) {
-                                        return false;
-                                    }
-                                    const demoFilterValue = this._demoFilters[demoFilter];
-                                    const themeDemoValue = theme.demographicsData[demoFilter];
-
-                                    if (demoFilterValue && demoFilterValue !== themeDemoValue) {
-                                        return false;
-                                    }
-                                }
-                                return true;
-                            })
-                            // .sort()
-                        }
+                        .themes=${this.themes}
                         .themeFilters=${this.themeFilters}
                         .setThemeFilters=${this.updateThemeFilters}
                     ></iai-themes-table>
@@ -7413,6 +7346,7 @@ class ResponsesList extends IaiLitBase {
         ...IaiLitBase.properties,
         responses: { type: Array },
         responsesTotal: { type: Number },
+        filteredTotal: { type: Number },
         handleScrollEnd: { type: Function },
         isLoading: { type: Boolean },
         highlightedText: { type: String },
@@ -7463,6 +7397,7 @@ class ResponsesList extends IaiLitBase {
         // Prop defaults
         this.responses = [];
         this.responsesTotal = 0;
+        this.filteredTotal = 0;
         this.handleScrollEnd = () => {};
         this.isLoading = false;
         this.highlightedText = "";
@@ -7475,13 +7410,16 @@ class ResponsesList extends IaiLitBase {
             <iai-silver-panel>
                 <div slot="content">
                     <iai-silver-title
-                        .text=${`Responses (${this.responsesTotal})`}
+                        .text=${`Responses (${this.filteredTotal})`}
                         .subtext=${"All responses to this question"}
                         .level=${2}
                     ></iai-silver-title>
 
                     <iai-virtual-list
-                        style=${this.isLoading ? "height: auto;" : ""}
+                        style=${this.isLoading && this.responses.length === 0
+                            ? "height: auto;"
+                            : ""
+                        }
                         .data=${this.responses}
                         .renderItem=${(response, index) => x`
                             <article class=${index === this.responses.length-1
@@ -7576,6 +7514,7 @@ class QuestionDetailPage extends IaiLitBase {
 
         responses: { type: Array },
         responsesTotal: { type: Number },
+        _filteredTotal: { type: Number },
         _themes: { type: Array },
 
         _highlightMatches: { type: Boolean },
@@ -7585,6 +7524,9 @@ class QuestionDetailPage extends IaiLitBase {
         _evidenceRichFilter: { type: Boolean },
         _themeFilters: { type: Array },
         _demoFilters: { type: Object },
+
+        _themesSortType: { type: String },
+        _themesSortDirection: { type: String },
 
         demographicOptions: { type: Array },
     }
@@ -7620,6 +7562,11 @@ class QuestionDetailPage extends IaiLitBase {
             iai-question-detail-page iai-icon-button {
                 margin-top: -0.4em;
             }
+            iai-question-detail-page .load-more-button {
+                margin-top: 1em;
+                display: flex;
+                justify-content: center;
+            }
         `
     ]
 
@@ -7647,7 +7594,7 @@ class QuestionDetailPage extends IaiLitBase {
         this.questionId = "";
 
         this._numResponses = 7000;
-        this.responsesTotal = 0;
+        this._responsesTotal = 0;
         this.responses = [];
         this._themes = [];
         this._demoData = {};
@@ -7658,6 +7605,9 @@ class QuestionDetailPage extends IaiLitBase {
         this._evidenceRichFilter = false;
         this._themeFilters = [];
         this._demoFilters = {};
+
+        this._themesSortType = "frequency"; // "frequency" | "alphabetical"
+        this._themesSortDirection = "descending"; // "ascending" | "descending"
 
         this.applyStaticStyles("iai-question-detail-page", QuestionDetailPage.styles);
     }
@@ -7672,13 +7622,9 @@ class QuestionDetailPage extends IaiLitBase {
                 this._themeFilters = [...this._themeFilters, newFilter];
             }
         }
-        console.log("NEW THEME FILTERS:", this._themeFilters);
     }
 
     buildQuery = () => {
-
-        console.log(this._demoFilters);
-        console.log(Object.keys(this._demoFilters).map(key => `${key}:${this._demoFilters[key]}`).join(","));
         // conditionally add filters as query params
         const params = new URLSearchParams({
             ...(this._searchValue && {
@@ -7696,9 +7642,12 @@ class QuestionDetailPage extends IaiLitBase {
             ...(Object.entries(this._demoFilters).length > 0 && {
                 demoFilters: Object.keys(this._demoFilters).map(key => `${key}:${this._demoFilters[key]}`).join(",")
             }),
-            // ...(this._evidenceRichFilters.length > 0 && {
-            //     evidenceRichFilter: this._evidenceRichFilters.join(",")
-            // }),
+            ...(this._themesSortType && {
+                themesSortType: this._themesSortType
+            }),
+            ...(this._themesSortDirection && {
+                themesSortDirection: this._themesSortDirection
+            }),
             page: this._currentPage,
             page_size: this._PAGE_SIZE.toString(),
         });
@@ -7768,7 +7717,7 @@ class QuestionDetailPage extends IaiLitBase {
                 }))
             );
 
-            this.responsesTotal = responsesData.respondents_total;
+            this._responsesTotal = responsesData.respondents_total;
 
             this._themes = responsesData.theme_mappings.map(mapping => ({
                 id: mapping.value,
@@ -7782,22 +7731,8 @@ class QuestionDetailPage extends IaiLitBase {
             }));
             console.log(this._themes);
 
-            this._demoData = responsesData.demographic_aggregations || {
-                "age": {
-                    "28": 2,
-                    "71": 3,
-                    "44": 2,
-                    "22": 3,
-                    "37": 6,
-                },
-                "country": {
-                    "england": 4,
-                    "scotland": 8,
-                    "wales": 15,
-                    "n.ireland": 16,
-                }
-            };
-            this._responsesFilteredTotal = responsesData.filtered_total;
+            this._demoData = responsesData.demographic_aggregations || {};
+            this._filteredTotal = responsesData.filtered_total;
 
             // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
             if (this._currentPage === 1 && responsesData.theme_mappings) {
@@ -7831,8 +7766,9 @@ class QuestionDetailPage extends IaiLitBase {
             changedProps.has("_searchMode")         ||
             changedProps.has("_evidenceRichFilter") ||
             changedProps.has("_themeFilters")       ||
-            changedProps.has("_demoFilters")
-            // changedProps.has("_demographicFilters")
+            changedProps.has("_demoFilters")        ||
+            changedProps.has("_themesSortType")     ||
+            changedProps.has("_themesSortDirection")
         ) {
             console.log("about to fetch");
             this.resetResponses();
@@ -7840,18 +7776,20 @@ class QuestionDetailPage extends IaiLitBase {
         }
     }
 
-    buildDemoData = () => {
-        return {};
-    }
-
     renderThemeAnalysisSection = () => {
         return x`
             <section class="theme-analysis">
                 <iai-theme-analysis
-                    .demoData=${this._demoData /*this.buildDemoData()*/}
+                    .demoData=${this._demoData}
                     .themes=${this._themes}
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
+                    
+                    .sortType=${this._themesSortType}
+                    .setSortType=${newSortType => this._themesSortType = newSortType}
+
+                    .sortDirection=${this._themesSortDirection}
+                    .setSortDirection=${newSortDirection => this._themesSortDirection = newSortDirection}
                 ></iai-theme-analysis>
             </section>
         `
@@ -7899,15 +7837,30 @@ class QuestionDetailPage extends IaiLitBase {
                         }))
                     }
                     .handleScrollEnd=${() => {
-                        if (this._isLoading) {
-                            return;
-                        }
-                        this.fetchResponses();
+                        // // Uncomment to enable infinite scroll
+                        // if (this._isLoading) {
+                        //     return;
+                        // }
+                        // this.fetchResponses();
                     }}
-                    .responsesTotal=${this.responsesTotal}
+                    .responsesTotal=${this._responsesTotal}
+                    .filteredTotal=${this._filteredTotal}
                     .isLoading=${this._isLoading}
                     .highlightedText=${this._highlightMatches ? this._searchValue : ""}
                 ></iai-silver-responses-list>
+
+                ${this._hasMorePages ? x`
+                    <iai-silver-button
+                        class="load-more-button"
+                        .text=${`Load more (${this._responsesTotal - this.responses.length} remaining)`}
+                        .handleClick=${() => {
+                            if (this._isLoading) {
+                                return;
+                            }
+                            this.fetchResponses();
+                        }}
+                    ></iai-silver-button>`
+                : ""}
             </section>
         `
     }
@@ -7965,7 +7918,7 @@ class QuestionDetailPage extends IaiLitBase {
                     `}
                     .footer=${x`
                         <small class="response-total">
-                            ${this.responsesTotal.toLocaleString()} responses
+                            ${this._responsesTotal.toLocaleString()} responses
                         </small>
                         <iai-silver-tag
                             .status=${"Open"}
