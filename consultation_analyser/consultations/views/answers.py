@@ -163,7 +163,7 @@ def get_theme_summary_optimized(
 
     if filters:
         # Apply theme filtering with AND logic if needed
-        if filters.get("theme_list"):
+        for theme in filters.get("theme_list", []):
             # Create subqueries for each theme
             for theme_id in filters["theme_list"]:
                 theme_exists = models.ResponseAnnotationTheme.objects.filter(
