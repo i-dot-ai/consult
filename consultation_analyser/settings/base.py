@@ -280,4 +280,3 @@ if DEBUG:
 
 # changing this will require a database migration
 EMBEDDING_DIMENSION = 1024
-SIMILARITY_THRESHOLD = env.float("SIMILARITY_THRESHOLD", default=0.2)
