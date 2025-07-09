@@ -1,15 +1,20 @@
 from collections import defaultdict
 from datetime import datetime
+from logging import getLogger
 from typing import TypedDict
 from uuid import UUID
 
 from django.core.paginator import Paginator
-from django.db.models import Count, Exists, OuterRef, Prefetch, Q
+from django.db.models import Count, Exists, OuterRef, Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from pgvector.django import CosineDistance
 
+from ...embeddings import embed_text
 from .. import models
 from .decorators import user_can_see_consultation, user_can_see_dashboards
+
+logger = getLogger(__file__)
 
 
 class DataDict(TypedDict):
@@ -78,9 +83,6 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
     if filters.get("evidence_rich"):
         query &= Q(annotation__evidence_rich=models.ResponseAnnotation.EvidenceRich.YES)
 
-    if filters.get("search_value"):
-        query &= Q(free_text__icontains=filters["search_value"])
-
     # Handle demographic filters
     if filters.get("demographic_filters"):
         for field, values in filters["demographic_filters"].items():
@@ -100,7 +102,8 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
 
 
 def get_filtered_responses_with_themes(
-    question: models.Question, filters: FilterParams | None = None
+    question: models.Question,
+    filters: FilterParams | None = None,
 ):
     """Single optimized query to get all filtered responses with their themes"""
     response_filter = build_response_filter_query(filters or {}, question)
@@ -118,6 +121,14 @@ def get_filtered_responses_with_themes(
                 response_annotation__response=OuterRef("pk"), theme_id=theme_id
             )
             queryset = queryset.filter(Exists(theme_exists))
+
+    if filters and filters.get("search_value"):
+        embedded_query = embed_text(filters["search_value"])
+        logger.info("embedded %s", filters["search_value"])
+
+        responses = queryset.annotate(distance=CosineDistance("embedding", embedded_query))
+
+        return responses.distinct().order_by("distance")
 
     return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination
 
@@ -159,14 +170,14 @@ def get_theme_summary_optimized(
     ]
 
 
-def build_respondent_data(respondent: models.Respondent, response: models.Response) -> dict:
+def build_respondent_data(response: models.Response) -> dict:
     """Extract respondent data building to separate function"""
     data = {
-        "id": f"response-{respondent.identifier}",
-        "identifier": str(respondent.identifier),
+        "id": f"response-{response.respondent.identifier}",
+        "identifier": str(response.respondent.identifier),
         "sentiment_position": "",
         "free_text_answer_text": response.free_text or "",
-        "demographic_data": respondent.demographics or {},
+        "demographic_data": response.respondent.demographics or {},
         "themes": [],
         "multiple_choice_answer": response.chosen_options or [],
         "evidenceRich": False,
@@ -284,23 +295,10 @@ def question_responses_json(
     filtered_responses = get_filtered_responses_with_themes(question, filters)
 
     # Then get respondents who have these filtered responses
-    filtered_respondents = (
-        models.Respondent.objects.filter(response__in=filtered_responses)
-        .prefetch_related(
-            Prefetch(
-                "response_set",
-                queryset=filtered_responses.select_related("annotation").prefetch_related(
-                    "annotation__themes"
-                ),
-                to_attr="filtered_responses",
-            )
-        )
-        .distinct()
-        .order_by("pk")
-    )
+    filtered_annotated_responses = filtered_responses.prefetch_related("annotation__themes")
 
     # Efficient counting using database aggregation
-    filtered_total = filtered_respondents.count()
+    filtered_total = filtered_annotated_responses.count()
     all_respondents_count = models.Response.objects.filter(question=question).aggregate(
         count=Count("respondent_id", distinct=True)
     )["count"]
@@ -323,22 +321,15 @@ def question_responses_json(
 
     # Pagination
     if page_size:
-        pagination = Paginator(filtered_respondents, page_size)
+        pagination = Paginator(filtered_annotated_responses, page_size)
         current_page = pagination.page(page)
-        respondents = current_page.object_list
+        annotated_responses = current_page.object_list
         data["has_more_pages"] = current_page.has_next()
     else:
-        respondents = filtered_respondents
+        annotated_responses = filtered_annotated_responses
 
     # Build response data efficiently using prefetched data
-    for respondent in respondents:
-        # Use prefetched filtered_responses
-        response = respondent.filtered_responses[0] if respondent.filtered_responses else None
-        if not response:
-            continue
-
-        respondent_data = build_respondent_data(respondent, response)
-        data["all_respondents"].append(respondent_data)
+    data["all_respondents"] = list(map(build_respondent_data, annotated_responses))
 
     return JsonResponse(data)
 

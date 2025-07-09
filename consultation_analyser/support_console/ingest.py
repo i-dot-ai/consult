@@ -1,5 +1,6 @@
 import json
 import logging
+from uuid import UUID
 
 import boto3
 from django.conf import settings
@@ -15,6 +16,7 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
     Theme,
 )
+from consultation_analyser.embeddings import embed_text
 
 logger = logging.getLogger("import")
 DEFAULT_BATCH_SIZE = 10_000
@@ -178,6 +180,25 @@ def validate_consultation_structure(
     return is_valid, errors
 
 
+def create_embeddings(consultation_id: UUID):
+    queryset = Response.objects.filter(
+        question__consultation_id=consultation_id, free_text__isnull=False
+    )
+    total = queryset.count()
+    batch_size = 1_000
+
+    for i in range(0, total, batch_size):
+        responses = queryset.order_by("id")[i : i + batch_size]
+
+        free_texts = [response.free_text or "" for response in responses]
+        embeddings = embed_text(free_texts)
+
+        for response, embedding in zip(responses, embeddings):
+            response.embedding = embedding
+
+        Response.objects.bulk_update(responses, ["embedding"])
+
+
 def import_response_annotation_themes(question: Question, output_folder: str):
     mapping_file_key = f"{output_folder}mapping.jsonl"
     s3_client = boto3.client("s3")
@@ -267,6 +288,11 @@ def import_response_annotations(question: Question, output_folder: str):
     ResponseAnnotation.objects.bulk_create(annotations_to_save)
 
 
+def _embed_responses(responses: list[dict]) -> list[Response]:
+    embeddings = embed_text([r["free_text"] for r in responses])
+    return [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
+
+
 def import_responses(question: Question, responses_file_key: str):
     """
     Import response data for a Consultation Question.
@@ -295,7 +321,7 @@ def import_responses(question: Question, responses_file_key: str):
                 continue
 
             responses_to_save.append(
-                Response(
+                dict(
                     respondent=respondent_dict[themefinder_id],
                     question=question,
                     free_text=response_data.get("text", ""),
@@ -304,11 +330,13 @@ def import_responses(question: Question, responses_file_key: str):
             )
 
             if len(responses_to_save) >= DEFAULT_BATCH_SIZE:
-                Response.objects.bulk_create(responses_to_save)
+                embedded_responses_to_save = _embed_responses(responses_to_save)
+                Response.objects.bulk_create(embedded_responses_to_save)
                 responses_to_save = []
                 logger.info("saved %s Responses for question %s", i + 1, question.number)
 
-        Response.objects.bulk_create(responses_to_save)
+        embedded_responses_to_save = _embed_responses(responses_to_save)
+        Response.objects.bulk_create(embedded_responses_to_save)
 
     except Exception as e:
         logger.error(

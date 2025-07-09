@@ -1,4 +1,7 @@
+from unittest.mock import patch
+
 import pytest
+from django.conf import settings
 from django.contrib.auth.models import Group
 from django.test import RequestFactory
 
@@ -536,6 +539,31 @@ def test_theme_filtering_and_logic(question):
 
 
 @pytest.mark.django_db
+@patch("consultation_analyser.consultations.views.answers.embed_text")
+def test_semantic_search(fake_embed_text, consultation, question):
+    filters = {"search_value": "i am a question"}
+
+    v1 = list(0 for _ in range(settings.EMBEDDING_DIMENSION))
+    v1[0] = 1
+
+    v2 = list(0 for _ in range(settings.EMBEDDING_DIMENSION))
+    v2[0] = -1
+
+    v3 = list(0 for _ in range(settings.EMBEDDING_DIMENSION))
+    v3[1] = 1
+
+    ResponseFactory(question=question, free_text="exact match", embedding=v1)
+    ResponseFactory(question=question, free_text="opposite", embedding=v2)
+    ResponseFactory(question=question, free_text="orthogonal", embedding=v3)
+
+    fake_embed_text.return_value = v1
+
+    responses = get_filtered_responses_with_themes(question, filters)
+    assert [x.free_text for x in responses] == ["exact match", "orthogonal", "opposite"]
+    assert [x.distance for x in responses] == [0, 1, 2]
+
+
+@pytest.mark.django_db
 def test_question_responses_json_theme_filtering_and_logic(client, consultation_user, question):
     """Test that the JSON endpoint uses AND logic for theme filtering"""
     # Create themes
@@ -746,7 +774,7 @@ def test_build_respondent_data():
         response=response, themes=[theme], sentiment="AGREEMENT", evidence_rich="YES"
     )
 
-    actual = build_respondent_data(respondent=respondent, response=response)
+    actual = build_respondent_data(response=response)
     expected = {
         "id": "response-5",
         "identifier": "5",

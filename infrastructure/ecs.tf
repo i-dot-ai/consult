@@ -16,8 +16,10 @@ locals {
     "APP_BUCKET"                           = local.secret_env_vars.APP_BUCKET,
     "GUNICORN_WORKERS"                     = local.secret_env_vars.GUNICORN_WORKERS,
     "GUNICORN_TIMEOUT"                     = local.secret_env_vars.GUNICORN_TIMEOUT,
-    "ADMIN_USERS"                          = local.secret_env_vars.ADMIN_USERS
-
+    "ADMIN_USERS"                          = local.secret_env_vars.ADMIN_USERS,
+    "AZURE_OPENAI_API_KEY"                 = local.secret_env_vars.AZURE_OPENAI_API_KEY,
+    "OPENAI_API_VERSION"                   = local.secret_env_vars.OPENAI_API_VERSION,
+    "AZURE_OPENAI_ENDPOINT"                = local.secret_env_vars.AZURE_OPENAI_ENDPOINT
   }
 
   batch_env_vars = merge(local.base_env_vars, {
