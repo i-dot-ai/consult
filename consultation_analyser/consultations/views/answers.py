@@ -35,6 +35,9 @@ class FilterParams(TypedDict, total=False):
     demographic_filters: dict[
         str, list[str]
     ]  # e.g. {"individual": ["true"], "region": ["north", "south"]}
+    themes_sort_type: str # "frequency" or "alphabetical"
+    themes_sort_direction: str # "ascending" or "descending"
+
 
 
 def parse_filters_from_request(request: HttpRequest) -> FilterParams:
@@ -49,10 +52,24 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
     if theme_filters:
         filters["theme_list"] = theme_filters.split(",")
 
+    themes_sort_direction = request.GET.get("themeSortDirection", "")
+    if themes_sort_direction in ["ascending", "descending"]:
+        filters["themes_sort_direction"] = themes_sort_direction
+
+    themes_sort_type = request.GET.get("themeSortType", "")
+    if themes_sort_type in ["frequency", "alphabetical"]:
+        filters["themes_sort_type"] == themes_sort_type
+
+    # TODO - remove once v1 of the dashboard is removed
     evidence_rich_filter = request.GET.get("evidenceRichFilter")
     if evidence_rich_filter == "evidence-rich":
         filters["evidence_rich"] = True
 
+    evidence_rich_filter = request.GET.get("evidenceRich")
+    if evidence_rich_filter:
+        filters["evidence_rich"] = True
+
+    # TODO - remove this when v1 of dashboard is removed
     search_value = request.GET.get("searchValue")
     if search_value:
         filters["search_value"] = search_value
