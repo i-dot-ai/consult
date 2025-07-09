@@ -4,13 +4,17 @@ from textwrap import shorten
 import faker as _faker
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField, SearchVector, SearchQuery, SearchRank
 from django.core.validators import BaseValidator
 from django.db import models
+from django.db.models import F
 from django.utils import timezone
 from django.utils.text import slugify
-from pgvector.django import VectorField
+from pgvector.django import VectorField, CosineDistance
 
 from consultation_analyser.authentication.models import User
+from consultation_analyser.embeddings import embed_text
 
 faker = _faker.Faker()
 
@@ -147,9 +151,10 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     # Response content
     free_text = models.TextField(blank=True)  # Free text response
     chosen_options = ArrayField(
-        models.TextField(), null=True, default=None
+        models.TextField(), null=True, default=None, blank=True
     )  # Multiple choice selections
     embedding = VectorField(dimensions=settings.EMBEDDING_DIMENSION, null=True, blank=True)
+    search_vector = SearchVectorField(null=True, blank=True)
 
     class Meta:
         constraints = [
@@ -157,6 +162,14 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
                 fields=["respondent", "question"], name="unique_question_response"
             ),
         ]
+        indexes = [
+            GinIndex(fields=['search_vector']),
+        ]
+
+
+    def save(self, *args, **kwargs):
+        self.search_vector = SearchVector('free_text')
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return shorten(self.free_text, width=64, placeholder="...")
