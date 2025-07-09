@@ -777,7 +777,7 @@ def test_build_respondent_data():
         response=response, themes=[theme], sentiment="AGREEMENT", evidence_rich="YES"
     )
 
-    actual = build_respondent_data(respondent=respondent, response=response)
+    actual = build_respondent_data(response=response)
     expected = {
         "id": "response-5",
         "identifier": "5",
