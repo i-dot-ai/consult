@@ -67,8 +67,9 @@ def test_parse_filters_from_request_empty(request_factory):
     assert filters == {}
 
 
+# TODO - remove these filters and test when v1 of dashboard is deleted
 @pytest.mark.django_db
-def test_parse_filters_from_request_all_filters(request_factory):
+def test_parse_filters_from_request_all_filters_v1(request_factory):
     """Test parsing all types of filters from request"""
     request = request_factory.get(
         "/",
@@ -89,6 +90,36 @@ def test_parse_filters_from_request_all_filters(request_factory):
     assert filters["search_value"] == "test search"
     assert filters["demographic_filters"]["individual"] == ["true", "false"]
     assert filters["demographic_filters"]["region"] == ["north", "south"]
+
+
+@pytest.mark.django_db
+def test_parse_filters_from_request_all_filters(request_factory):
+    """Test parsing all types of filters from request"""
+    request = request_factory.get(
+        "/",
+        {
+            "sentimentFilters": "AGREEMENT,DISAGREEMENT",
+            "themeFilters": "1,2,3",
+            "evidenceRich": "true",
+            "searchValue": "test search",
+            "demographicFilters[individual]": "true,false",
+            "demographicFilters[region]": "north,south",
+            "themesSortDirection": "ascending",
+            "themesSortType": "frequency"
+        },
+    )
+    filters = parse_filters_from_request(request)
+
+    print(filters)
+
+    assert filters["sentiment_list"] == ["AGREEMENT", "DISAGREEMENT"]
+    assert filters["theme_list"] == ["1", "2", "3"]
+    assert filters["evidence_rich"]
+    assert filters["search_value"] == "test search"
+    assert filters["demographic_filters"]["individual"] == ["true", "false"]
+    assert filters["demographic_filters"]["region"] == ["north", "south"]
+    assert filters["themes_sort_direction"] == "ascending"
+    assert filters["themes_sort_type"] == "frequency"
 
 
 @pytest.mark.django_db

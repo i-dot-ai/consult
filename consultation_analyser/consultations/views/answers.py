@@ -31,7 +31,7 @@ class FilterParams(TypedDict, total=False):
     sentiment_list: list[str]
     theme_list: list[str]
     evidence_rich: bool
-    search_value: str
+    search_value: str # TODO - remove when v1 dash deleted
     demographic_filters: dict[
         str, list[str]
     ]  # e.g. {"individual": ["true"], "region": ["north", "south"]}
@@ -51,13 +51,13 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
     if theme_filters:
         filters["theme_list"] = theme_filters.split(",")
 
-    themes_sort_direction = request.GET.get("themeSortDirection", "")
+    themes_sort_direction = request.GET.get("themesSortDirection", "")
     if themes_sort_direction in ["ascending", "descending"]:
         filters["themes_sort_direction"] = themes_sort_direction
 
-    themes_sort_type = request.GET.get("themeSortType", "")
+    themes_sort_type = request.GET.get("themesSortType", "")
     if themes_sort_type in ["frequency", "alphabetical"]:
-        filters["themes_sort_type"] == themes_sort_type
+        filters["themes_sort_type"] = themes_sort_type
 
     # TODO - remove once v1 of the dashboard is removed
     evidence_rich_filter = request.GET.get("evidenceRichFilter")
