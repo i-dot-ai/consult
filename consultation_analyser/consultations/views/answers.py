@@ -4,6 +4,7 @@ from logging import getLogger
 from typing import TypedDict
 from uuid import UUID
 
+from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.paginator import Paginator
 from django.db.models import Count, Exists, OuterRef, Q
 from django.http import HttpRequest, JsonResponse
@@ -140,11 +141,17 @@ def get_filtered_responses_with_themes(
 
     if filters and filters.get("search_value"):
         embedded_query = embed_text(filters["search_value"])
-        logger.info("embedded %s", filters["search_value"])
+        search_query = SearchQuery(filters["search_value"])
 
-        responses = queryset.annotate(distance=CosineDistance("embedding", embedded_query))
+        # semantic_distance: exact match = 0, exact opposite = 2
+        semantic_distance = CosineDistance("embedding", embedded_query)
 
-        return responses.distinct().order_by("distance")
+        # term_frequency: exact match = 1+, no match = 0
+        term_frequency = SearchRank("search_vector", search_query)
+
+        # TODO find a better (or indeed any!) normalisation
+        distance = semantic_distance - term_frequency
+        return queryset.annotate(distance=distance).order_by("distance")
 
     return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination
 
@@ -163,13 +170,11 @@ def get_theme_summary_optimized(
 
     if filters:
         # Apply theme filtering with AND logic if needed
-        for theme in filters.get("theme_list", []):
-            # Create subqueries for each theme
-            for theme_id in filters["theme_list"]:
-                theme_exists = models.ResponseAnnotationTheme.objects.filter(
-                    response_annotation__response=OuterRef("pk"), theme_id=theme_id
-                )
-                filtered_responses = filtered_responses.filter(Exists(theme_exists))
+        for theme_id in filters.get("theme_list", []):
+            theme_exists = models.ResponseAnnotationTheme.objects.filter(
+                response_annotation__response=OuterRef("pk"), theme_id=theme_id
+            )
+            filtered_responses = filtered_responses.filter(Exists(theme_exists))
 
         if filters.get("themes_sort_type", "") == "alphabetical":
             order_by_field_name = "name"
