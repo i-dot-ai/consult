@@ -185,7 +185,7 @@ export default class ThemeAnalysis extends IaiLitBase {
                 <div slot="content">
                     <div class="top-panel">
                         <iai-silver-title
-                            .text=${"Theme Analysis"}
+                            .text=${"Theme analysis"}
                             .variant=${"secondary"}
                             .icon=${"lan"}
                             .aside=${html`

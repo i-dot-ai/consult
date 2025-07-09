@@ -458,11 +458,11 @@ export default class QuestionDetailPage extends IaiLitBase {
                 .handleTabChange=${(newTab) => this._activeTab = newTab}
                 .tabs=${[
                     {
-                        title: this.renderTabButton("Question Summary", "lan"),
+                        title: this.renderTabButton("Question summary", "lan"),
                         content: this.renderThemeAnalysisSection()
                     },
                     {
-                        title: this.renderTabButton("Response Analysis", "finance"),
+                        title: this.renderTabButton("Response analysis", "finance"),
                         content: this.renderResponsesSection()
                     },
                 ]}

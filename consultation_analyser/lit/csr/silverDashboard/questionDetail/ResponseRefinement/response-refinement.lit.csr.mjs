@@ -134,7 +134,7 @@ export default class ResponseRefinement extends IaiLitBase {
                 <div slot="content">
                     <iai-silver-title
                         .icon=${"filter_alt"}
-                        .text=${`Response Refinement`}
+                        .text=${`Response refinement`}
                         .subtext=${"Filter and search through individual responses to this question."}
                         .level=${2}
                     ></iai-silver-title>

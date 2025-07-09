@@ -6239,7 +6239,7 @@ class ThemeAnalysis extends IaiLitBase {
                 <div slot="content">
                     <div class="top-panel">
                         <iai-silver-title
-                            .text=${"Theme Analysis"}
+                            .text=${"Theme analysis"}
                             .variant=${"secondary"}
                             .icon=${"lan"}
                             .aside=${x`
@@ -7249,7 +7249,7 @@ class ResponseRefinement extends IaiLitBase {
                 <div slot="content">
                     <iai-silver-title
                         .icon=${"filter_alt"}
-                        .text=${`Response Refinement`}
+                        .text=${`Response refinement`}
                         .subtext=${"Filter and search through individual responses to this question."}
                         .level=${2}
                     ></iai-silver-title>
@@ -7968,11 +7968,11 @@ class QuestionDetailPage extends IaiLitBase {
                 .handleTabChange=${(newTab) => this._activeTab = newTab}
                 .tabs=${[
                     {
-                        title: this.renderTabButton("Question Summary", "lan"),
+                        title: this.renderTabButton("Question summary", "lan"),
                         content: this.renderThemeAnalysisSection()
                     },
                     {
-                        title: this.renderTabButton("Response Analysis", "finance"),
+                        title: this.renderTabButton("Response analysis", "finance"),
                         content: this.renderResponsesSection()
                     },
                 ]}
