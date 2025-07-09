@@ -10,6 +10,7 @@ import SelectInput from '../inputs/SelectInput/select-input.lit.csr.mjs';
 import ThemesTable from '../ThemesTable/themes-table.lit.csr.mjs';
 import Title from '../Title/title.lit.csr.mjs';
 import IconTile from '../IconTile/icon-tile.lit.csr.mjs';
+import IaiIconButton from '../../questionsArchive/IaiIconButton/iai-icon-button.lit.csr.mjs';
 
 
 export default class ThemeAnalysis extends IaiLitBase {
@@ -128,6 +129,25 @@ export default class ThemeAnalysis extends IaiLitBase {
                 display: flex;
                 justify-content: space-between;
             }
+            iai-theme-analysis .theme-filters-warning {
+                width: 100%;
+                display: block;
+                margin-bottom: 1em;
+            }
+            iai-theme-analysis .theme-filters-warning .tag-container {
+                display: flex;
+                gap: 0.5em;
+                align-items: center;
+            }
+            iai-theme-analysis .theme-filters-warning .theme-tag {
+                display: flex;
+                gap: 0.5em;
+                font-size: 1.2em;
+                align-items: center;
+            }
+            iai-theme-analysis .theme-filters-warning .theme-tag iai-icon-button {
+                margin-top: 0.1em;
+            }
             @media (min-width: 40.0625em) {
                 .govuk-form-group {
                     margin-bottom: 0;
@@ -244,6 +264,41 @@ export default class ThemeAnalysis extends IaiLitBase {
                                 })}
                             </div>
                         </div>
+
+                        ${this.themeFilters.length > 0 ? html`
+                            <iai-silver-tag
+                                class="theme-filters-warning"
+                                .status=${"Closed"}
+                                .icon=${"report"}
+                                .text=${`Selected themes (${this.themeFilters.length}/3)`}
+                                .subtext=${html`
+                                    <div class="tag-container">
+                                        ${this.themeFilters.map(themeFilter => html`
+                                        <iai-silver-tag
+                                            .text=${html`
+                                                <div class="theme-tag">
+                                                    ${this.themes.find(theme => theme.id == themeFilter).title}
+
+                                                    <iai-icon-button .handleClick=${() => this.updateThemeFilters(themeFilter)}>
+                                                        <iai-icon
+                                                            slot="icon"
+                                                            .name=${"close"}
+                                                        ></iai-icon>
+                                                    </iai-icon-button>
+                                                    
+                                                </div>`}
+                                        ></iai-silver-tag>
+                                        `)}
+
+                                        <iai-silver-button
+                                            .text=${"Clear all"}
+                                            .handleClick=${() => this.updateThemeFilters()}
+                                        ></iai-silver-button>
+                                    </div>
+                                `}
+                            >
+                            </iai-silver-tag>
+                        `: ""}
 
                         <div class="info-container">
                             <small>

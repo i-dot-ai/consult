@@ -5983,25 +5983,6 @@ class ThemesTable extends IaiLitBase {
         this.applyStaticStyles("iai-themes-table", ThemesTable.styles);
     }
 
-    // updated(changedProps) {
-    //     if (changedProps.has("themeFilters")) {
-    //         console.log("themeFilters has updated!", this.themeFilters);
-
-    //         setTimeout(() => {
-    //             document.querySelectorAll(".theme-checkbox").forEach(el => {
-    //                 console.log("el.value:", el.value);
-    //                 el.checked = this.themeFilters.includes(el.value);
-    //             })
-    //         }, 1000);
-
-    //     }
-    // }
-
-    isChecked = (val) => {
-        console.log(val, this.themeFilters, this.themeFilters.includes(val));
-        return this.themeFilters.includes(val);
-    }
-
     render() {
         const totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
 
@@ -6202,6 +6183,25 @@ class ThemeAnalysis extends IaiLitBase {
                 display: flex;
                 justify-content: space-between;
             }
+            iai-theme-analysis .theme-filters-warning {
+                width: 100%;
+                display: block;
+                margin-bottom: 1em;
+            }
+            iai-theme-analysis .theme-filters-warning .tag-container {
+                display: flex;
+                gap: 0.5em;
+                align-items: center;
+            }
+            iai-theme-analysis .theme-filters-warning .theme-tag {
+                display: flex;
+                gap: 0.5em;
+                font-size: 1.2em;
+                align-items: center;
+            }
+            iai-theme-analysis .theme-filters-warning .theme-tag iai-icon-button {
+                margin-top: 0.1em;
+            }
             @media (min-width: 40.0625em) {
                 .govuk-form-group {
                     margin-bottom: 0;
@@ -6318,6 +6318,41 @@ class ThemeAnalysis extends IaiLitBase {
                                 })}
                             </div>
                         </div>
+
+                        ${this.themeFilters.length > 0 ? x`
+                            <iai-silver-tag
+                                class="theme-filters-warning"
+                                .status=${"Closed"}
+                                .icon=${"report"}
+                                .text=${`Selected themes (${this.themeFilters.length}/3)`}
+                                .subtext=${x`
+                                    <div class="tag-container">
+                                        ${this.themeFilters.map(themeFilter => x`
+                                        <iai-silver-tag
+                                            .text=${x`
+                                                <div class="theme-tag">
+                                                    ${this.themes.find(theme => theme.id == themeFilter).title}
+
+                                                    <iai-icon-button .handleClick=${() => this.updateThemeFilters(themeFilter)}>
+                                                        <iai-icon
+                                                            slot="icon"
+                                                            .name=${"close"}
+                                                        ></iai-icon>
+                                                    </iai-icon-button>
+                                                    
+                                                </div>`}
+                                        ></iai-silver-tag>
+                                        `)}
+
+                                        <iai-silver-button
+                                            .text=${"Clear all"}
+                                            .handleClick=${() => this.updateThemeFilters()}
+                                        ></iai-silver-button>
+                                    </div>
+                                `}
+                            >
+                            </iai-silver-tag>
+                        `: ""}
 
                         <div class="info-container">
                             <small>
@@ -7613,6 +7648,11 @@ class QuestionDetailPage extends IaiLitBase {
     }
 
     updateThemeFilters = (newFilter) => {
+        if (!newFilter) {
+            // Clear filters if newFilter is falsy
+            this._themeFilters = [];
+            return;
+        }
         if (this._themeFilters.includes(newFilter)) {
             this._themeFilters = [...this._themeFilters.filter(filter => filter !== newFilter)];
         } else {

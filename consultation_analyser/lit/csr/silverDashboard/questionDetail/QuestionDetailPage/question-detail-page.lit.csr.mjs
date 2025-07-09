@@ -138,6 +138,11 @@ export default class QuestionDetailPage extends IaiLitBase {
     }
 
     updateThemeFilters = (newFilter) => {
+        if (!newFilter) {
+            // Clear filters if newFilter is falsy
+            this._themeFilters = [];
+            return;
+        }
         if (this._themeFilters.includes(newFilter)) {
             this._themeFilters = [...this._themeFilters.filter(filter => filter !== newFilter)];
         } else {
