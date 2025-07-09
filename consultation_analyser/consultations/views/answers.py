@@ -31,7 +31,7 @@ class FilterParams(TypedDict, total=False):
     sentiment_list: list[str]
     theme_list: list[str]
     evidence_rich: bool
-    search_value: str # TODO - remove when v1 dash deleted
+    search_value: str  # TODO - remove when v1 dash deleted
     demographic_filters: dict[
         str, list[str]
     ]  # e.g. {"individual": ["true"], "region": ["north", "south"]}

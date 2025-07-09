@@ -8,6 +8,7 @@ from django.test import RequestFactory
 from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.models import DemographicOption
 from consultation_analyser.consultations.views.answers import (
+    FilterParams,
     build_respondent_data,
     build_response_filter_query,
     get_demographic_aggregations_from_responses,
@@ -15,7 +16,6 @@ from consultation_analyser.consultations.views.answers import (
     get_filtered_responses_with_themes,
     get_theme_summary_optimized,
     parse_filters_from_request,
-    FilterParams
 )
 from consultation_analyser.factories import (
     ConsultationFactory,
@@ -111,7 +111,7 @@ def test_parse_filters_from_request_all_filters(request_factory):
             "demographicFilters[individual]": "true,false",
             "demographicFilters[region]": "north,south",
             "themesSortDirection": "ascending",
-            "themesSortType": "frequency"
+            "themesSortType": "frequency",
         },
     )
     filters = parse_filters_from_request(request)
@@ -245,7 +245,6 @@ def test_get_theme_summary_optimized_with_responses(question, theme, theme2):
     annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
     annotation2.add_original_ai_themes([theme, theme2])
 
-
     theme_summary = get_theme_summary_optimized(question)
     # Find our specific theme in the results
     our_theme = next((t for t in theme_summary if t["theme__id"] == theme.id), None)
@@ -266,7 +265,6 @@ def test_get_theme_summary_optimized_with_responses(question, theme, theme2):
     filters = FilterParams(themes_sort_type="alphabetic", themes_sort_direction="ascending")
     theme_summary = get_theme_summary_optimized(question=question, filters=filters)
     theme_summary[0]["theme__name"] = theme.name
-
 
 
 @pytest.mark.django_db
