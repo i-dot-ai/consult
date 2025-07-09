@@ -7348,6 +7348,7 @@ class ResponseRefinement extends IaiLitBase {
                                     .label=${this.toTitleCase(key)}
                                     .hideLabel=${false}
                                     .value=${this.demoFilters[key] || ""}
+                                    .placeholder=${`Select ${key}`}
                                     .options=${
                                         Object.keys(this.demoData[key]).map(demoDataOption => ({
                                             value: demoDataOption, text: this.toTitleCase(demoDataOption)
@@ -7680,8 +7681,11 @@ class QuestionDetailPage extends IaiLitBase {
                 evidenceRich: this._evidenceRichFilter
             }),
             // Add demofilters as string formatted as "foo:1,bar:2"
-            ...(Object.entries(this._demoFilters).length > 0 && {
-                demoFilters: Object.keys(this._demoFilters).map(key => `${key}:${this._demoFilters[key]}`).join(",")
+            ...(Object.values(this._demoFilters).filter(Boolean).length > 0 && {
+                demoFilters: Object.keys(this._demoFilters)
+                    .filter(Boolean)
+                    .map(key => `${key}:${this._demoFilters[key]}`)
+                    .join(",")
             }),
             ...(this._themesSortType && {
                 themesSortType: this._themesSortType
