@@ -196,9 +196,6 @@ def create_embeddings(consultation_id: UUID):
 
         Response.objects.bulk_update(responses, ["embedding"])
 
-    for r in queryset:
-        r.save()
-
 
 def import_response_annotation_themes(question: Question, output_folder: str):
     mapping_file_key = f"{output_folder}mapping.jsonl"

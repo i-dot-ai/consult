@@ -6,7 +6,6 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("consultations", "0059_alter_response_options_and_more"),
     ]
@@ -15,9 +14,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name="response",
             name="search_vector",
-            field=django.contrib.postgres.search.SearchVectorField(
-                blank=True, null=True
-            ),
+            field=django.contrib.postgres.search.SearchVectorField(blank=True, null=True),
         ),
         migrations.AddIndex(
             model_name="response",

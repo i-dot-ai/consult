@@ -5,16 +5,16 @@ import faker as _faker
 from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex
-from django.contrib.postgres.search import SearchVectorField, SearchVector, SearchQuery, SearchRank
+from django.contrib.postgres.search import SearchVector, SearchVectorField
 from django.core.validators import BaseValidator
 from django.db import models
-from django.db.models import F
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.text import slugify
-from pgvector.django import VectorField, CosineDistance
+from pgvector.django import VectorField
 
 from consultation_analyser.authentication.models import User
-from consultation_analyser.embeddings import embed_text
 
 faker = _faker.Faker()
 
@@ -163,16 +163,21 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
             ),
         ]
         indexes = [
-            GinIndex(fields=['search_vector']),
+            GinIndex(fields=["search_vector"]),
         ]
-
-
-    def save(self, *args, **kwargs):
-        self.search_vector = SearchVector('free_text')
-        super().save(*args, **kwargs)
 
     def __str__(self):
         return shorten(self.free_text, width=64, placeholder="...")
+
+
+@receiver(post_save, sender=Response)
+def update_search_vector(sender, instance, created, **kwargs):
+    # Avoid infinite recursion
+    if "search_vector" in (kwargs.get("update_fields") or []):
+        return
+
+    # Update the search vector
+    Response.objects.filter(pk=instance.pk).update(search_vector=SearchVector("free_text"))
 
 
 class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):

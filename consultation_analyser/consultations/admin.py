@@ -28,8 +28,7 @@ class ResponseAdmin(admin.ModelAdmin):
         "respondent",
         "question",
         "free_text",
-        # "embedding",
-        # "search_vector",
+        "search_vector",
     ]
 
 

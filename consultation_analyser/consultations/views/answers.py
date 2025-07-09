@@ -5,8 +5,7 @@ from uuid import UUID
 
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.paginator import Paginator
-from django.db.models import Count, Exists, OuterRef, Q, F, When, Case, Value, Max, Min
-from django.forms import FloatField
+from django.db.models import Count, Exists, OuterRef, Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from pgvector.django import CosineDistance
@@ -32,6 +31,7 @@ class FilterParams(TypedDict, total=False):
     theme_list: list[str]
     evidence_rich: bool
     search_value: str
+    keywords: str
     demographic_filters: dict[
         str, list[str]
     ]  # e.g. {"individual": ["true"], "region": ["north", "south"]}
@@ -101,22 +101,9 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
     return query
 
 
-def search(queryset, query: str, semantic_weight=0.7, min_semantic_threshold=0.3):
-    search_query = SearchQuery(query)
-    embedded_query = embed_text(query)
-
-    # Base annotation with raw scores
-    return queryset.annotate(
-        semantic_score=1 - CosineDistance("embedding", embedded_query),
-        tfidf_score=SearchRank(F('search_vector'), search_query),
-        distnace = F('semantic_score') * semantic_weight + F('tfidf_score') *  (1-semantic_weight)
-    )
-
-
 def get_filtered_responses_with_themes(
     question: models.Question,
     filters: FilterParams | None = None,
-    semantic_weight: float = 0.7
 ):
     """Single optimized query to get all filtered responses with their themes"""
     response_filter = build_response_filter_query(filters or {}, question)
@@ -135,10 +122,17 @@ def get_filtered_responses_with_themes(
             )
             queryset = queryset.filter(Exists(theme_exists))
 
-    if filters and filters.get("search_value"):
-        query = filters["search_value"]
-        qs = search(queryset, query)
-        return qs
+    if filters:
+        if query := filters.get("search_value"):
+            embedded_query = embed_text(query)
+            search_query = SearchQuery(query)
+
+            # Base annotation with raw scores
+            semantic_distance = CosineDistance("embedding", embedded_query)
+            tfidf_distance = -SearchRank("search_vector", search_query)
+            return queryset.annotate(distance=semantic_distance + tfidf_distance).order_by(
+                "distance"
+            )
 
     return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination
 
