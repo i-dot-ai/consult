@@ -54,6 +54,8 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django_rq",
     "simple_history",
+    "rest_framework",
+    "django_filters",
 ]
 
 
@@ -277,3 +279,10 @@ if DEBUG:
     MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
     INSTALLED_APPS += ["debug_toolbar"]
     INTERNAL_IPS = ["127.0.0.1"]
+
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+}

@@ -18,7 +18,7 @@ filterwarnings = [
 ]
 
 [tool.poetry.dependencies]
-python = "3.12.3"
+python = ">=3.12,<3.13"
 django = "^5.2"
 django-environ = "^0.12.0"
 psycopg = "^3.2.9"
@@ -54,6 +54,9 @@ pyflame = "^0.3.2"
 freezegun = "^1.5.2"
 django-test-migrations = "^1.5.0"
 pytest-lazy-fixtures = "^1.1.4"
+djangorestframework = "^3.16.0"
+django-filter = "^25.1"
+drf-nested-routers = "^0.94.2"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.12.2"
