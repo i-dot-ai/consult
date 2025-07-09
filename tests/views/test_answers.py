@@ -796,49 +796,47 @@ def test_get_demographic_aggregations_from_responses():
     # Create test data
     consultation = ConsultationFactory()
     question = QuestionFactory(consultation=consultation)
-    
+
     # Create respondents with different demographic data
     respondent1 = RespondentFactory(
         consultation=consultation,
-        demographics={"gender": "male", "age_group": "25-34", "region": "north"}
+        demographics={"gender": "male", "age_group": "25-34", "region": "north"},
     )
     respondent2 = RespondentFactory(
         consultation=consultation,
-        demographics={"gender": "female", "age_group": "25-34", "region": "south"}
+        demographics={"gender": "female", "age_group": "25-34", "region": "south"},
     )
     respondent3 = RespondentFactory(
         consultation=consultation,
-        demographics={"gender": "male", "age_group": "35-44", "region": "north"}
+        demographics={"gender": "male", "age_group": "35-44", "region": "north"},
     )
     respondent4 = RespondentFactory(
         consultation=consultation,
-        demographics={"gender": "female", "age_group": "25-34", "region": "north"}
+        demographics={"gender": "female", "age_group": "25-34", "region": "north"},
     )
     # Create one respondent with empty demographics
-    respondent5 = RespondentFactory(
-        consultation=consultation,
-        demographics={}
-    )
-    
+    respondent5 = RespondentFactory(consultation=consultation, demographics={})
+
     # Create responses for each respondent
     ResponseFactory(respondent=respondent1, question=question)
     ResponseFactory(respondent=respondent2, question=question)
     ResponseFactory(respondent=respondent3, question=question)
     ResponseFactory(respondent=respondent4, question=question)
     ResponseFactory(respondent=respondent5, question=question)
-    
+
     # Get all responses as a queryset
     from consultation_analyser.consultations.models import Response
+
     filtered_responses = Response.objects.filter(question=question)
-    
+
     # Test the aggregation function
     result = get_demographic_aggregations_from_responses(filtered_responses)
-    
+
     # Verify the aggregations
     assert result == {
         "gender": {"male": 2, "female": 2},
         "age_group": {"25-34": 3, "35-44": 1},
-        "region": {"north": 3, "south": 1}
+        "region": {"north": 3, "south": 1},
     }
 
 
@@ -847,35 +845,33 @@ def test_get_demographic_aggregations_from_responses_with_boolean_values():
     # Test with boolean demographic values
     consultation = ConsultationFactory()
     question = QuestionFactory(consultation=consultation)
-    
+
     # Create respondents with boolean demographic data
     respondent1 = RespondentFactory(
-        consultation=consultation,
-        demographics={"is_individual": True, "has_disability": False}
+        consultation=consultation, demographics={"is_individual": True, "has_disability": False}
     )
     respondent2 = RespondentFactory(
-        consultation=consultation,
-        demographics={"is_individual": True, "has_disability": True}
+        consultation=consultation, demographics={"is_individual": True, "has_disability": True}
     )
     respondent3 = RespondentFactory(
-        consultation=consultation,
-        demographics={"is_individual": False, "has_disability": False}
+        consultation=consultation, demographics={"is_individual": False, "has_disability": False}
     )
-    
+
     # Create responses
     ResponseFactory(respondent=respondent1, question=question)
     ResponseFactory(respondent=respondent2, question=question)
     ResponseFactory(respondent=respondent3, question=question)
-    
+
     # Get responses and test aggregation
     from consultation_analyser.consultations.models import Response
+
     filtered_responses = Response.objects.filter(question=question)
     result = get_demographic_aggregations_from_responses(filtered_responses)
-    
+
     # Verify boolean values are converted to strings
     assert result == {
         "is_individual": {"True": 2, "False": 1},
-        "has_disability": {"False": 2, "True": 1}
+        "has_disability": {"False": 2, "True": 1},
     }
 
 
@@ -883,12 +879,13 @@ def test_get_demographic_aggregations_from_responses_with_boolean_values():
 def test_get_demographic_aggregations_from_responses_empty_queryset():
     # Test with empty queryset
     question = QuestionFactory()
-    
+
     from consultation_analyser.consultations.models import Response
+
     filtered_responses = Response.objects.filter(question=question)
-    
+
     result = get_demographic_aggregations_from_responses(filtered_responses)
-    
+
     # Should return empty dict for empty queryset
     assert result == {}
 
@@ -898,33 +895,31 @@ def test_get_demographic_aggregations_from_responses_partial_demographics():
     # Test when some respondents have partial demographic data
     consultation = ConsultationFactory()
     question = QuestionFactory(consultation=consultation)
-    
+
     # Create respondents with varying demographic fields
     respondent1 = RespondentFactory(
         consultation=consultation,
-        demographics={"gender": "male", "age_group": "25-34"}  # has both
+        demographics={"gender": "male", "age_group": "25-34"},  # has both
     )
     respondent2 = RespondentFactory(
         consultation=consultation,
-        demographics={"gender": "female"}  # only has gender
+        demographics={"gender": "female"},  # only has gender
     )
     respondent3 = RespondentFactory(
         consultation=consultation,
-        demographics={"age_group": "35-44"}  # only has age_group
+        demographics={"age_group": "35-44"},  # only has age_group
     )
-    
+
     # Create responses
     ResponseFactory(respondent=respondent1, question=question)
     ResponseFactory(respondent=respondent2, question=question)
     ResponseFactory(respondent=respondent3, question=question)
-    
+
     # Get responses and test aggregation
     from consultation_analyser.consultations.models import Response
+
     filtered_responses = Response.objects.filter(question=question)
     result = get_demographic_aggregations_from_responses(filtered_responses)
-    
+
     # Verify aggregations handle partial data correctly
-    assert result == {
-        "gender": {"male": 1, "female": 1},
-        "age_group": {"25-34": 1, "35-44": 1}
-    }
+    assert result == {"gender": {"male": 1, "female": 1}, "age_group": {"25-34": 1, "35-44": 1}}

@@ -35,9 +35,8 @@ class FilterParams(TypedDict, total=False):
     demographic_filters: dict[
         str, list[str]
     ]  # e.g. {"individual": ["true"], "region": ["north", "south"]}
-    themes_sort_type: str # "frequency" or "alphabetical"
-    themes_sort_direction: str # "ascending" or "descending"
-
+    themes_sort_type: str  # "frequency" or "alphabetical"
+    themes_sort_direction: str  # "ascending" or "descending"
 
 
 def parse_filters_from_request(request: HttpRequest) -> FilterParams:
@@ -185,7 +184,6 @@ def get_theme_summary_optimized(
         .values("id", "name", "description", "response_count")
         .order_by(f"{direction}{order_by_field_name}")
     )
-
 
     return [
         {
