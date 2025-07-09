@@ -15,6 +15,7 @@ from consultation_analyser.consultations.views.answers import (
     get_filtered_responses_with_themes,
     get_theme_summary_optimized,
     parse_filters_from_request,
+    FilterParams
 )
 from consultation_analyser.factories import (
     ConsultationFactory,
@@ -40,7 +41,12 @@ def question(consultation):
 
 @pytest.fixture()
 def theme(question):
-    return ThemeFactory(question=question)
+    return ThemeFactory(question=question, name="Theme A", key="A")
+
+
+@pytest.fixture()
+def theme2(question):
+    return ThemeFactory(question=question, name="Theme B", key="B")
 
 
 @pytest.fixture()
@@ -223,7 +229,7 @@ def test_get_theme_summary_optimized_no_responses(question):
 
 
 @pytest.mark.django_db
-def test_get_theme_summary_optimized_with_responses(question, theme):
+def test_get_theme_summary_optimized_with_responses(question, theme, theme2):
     """Test theme summary with responses and themes"""
     # Create respondents and responses
     respondent1 = RespondentFactory(consultation=question.consultation)
@@ -237,15 +243,30 @@ def test_get_theme_summary_optimized_with_responses(question, theme):
     annotation1.add_original_ai_themes([theme])
 
     annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
-    annotation2.add_original_ai_themes([theme])
+    annotation2.add_original_ai_themes([theme, theme2])
+
 
     theme_summary = get_theme_summary_optimized(question)
-
     # Find our specific theme in the results
     our_theme = next((t for t in theme_summary if t["theme__id"] == theme.id), None)
     assert our_theme is not None
     assert our_theme["theme__name"] == theme.name
     assert our_theme["count"] == 2
+
+    # Now test with filters
+    # Theme B assigned to 1 response, Theme A assigned to 2 responses
+    filters = FilterParams(themes_sort_type="frequency", themes_sort_direction="ascending")
+    theme_summary = get_theme_summary_optimized(question=question, filters=filters)
+    theme_summary[0]["theme__name"] = theme2.name
+
+    filters = FilterParams(themes_sort_type="frequency")
+    theme_summary = get_theme_summary_optimized(question=question, filters=filters)
+    theme_summary[0]["theme__name"] = theme.name
+
+    filters = FilterParams(themes_sort_type="alphabetic", themes_sort_direction="ascending")
+    theme_summary = get_theme_summary_optimized(question=question, filters=filters)
+    theme_summary[0]["theme__name"] = theme.name
+
 
 
 @pytest.mark.django_db
