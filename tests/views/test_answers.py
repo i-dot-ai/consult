@@ -252,8 +252,7 @@ def test_get_theme_summary_optimized_with_responses(question, theme, theme2):
     assert our_theme["theme__name"] == theme.name
     assert our_theme["count"] == 2
 
-    # Now test with filters
-    # Theme B assigned to 1 response, Theme A assigned to 2 responses
+    # Now test with filters - Theme B assigned to 1 response, Theme A assigned to 2 responses
     filters = FilterParams(themes_sort_type="frequency", themes_sort_direction="ascending")
     theme_summary = get_theme_summary_optimized(question=question, filters=filters)
     theme_summary[0]["theme__name"] = theme2.name
@@ -262,9 +261,13 @@ def test_get_theme_summary_optimized_with_responses(question, theme, theme2):
     theme_summary = get_theme_summary_optimized(question=question, filters=filters)
     theme_summary[0]["theme__name"] = theme.name
 
-    filters = FilterParams(themes_sort_type="alphabetic", themes_sort_direction="ascending")
+    filters = FilterParams(themes_sort_type="alphabetical", themes_sort_direction="ascending")
     theme_summary = get_theme_summary_optimized(question=question, filters=filters)
-    theme_summary[0]["theme__name"] = theme.name
+    theme_summary[1]["theme__name"] = theme2.name
+
+    filters = FilterParams(themes_sort_type="alphabetical", themes_sort_direction="descending")
+    theme_summary = get_theme_summary_optimized(question=question, filters=filters)
+    theme_summary[0]["theme__name"] = theme2.name
 
 
 @pytest.mark.django_db
