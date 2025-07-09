@@ -6202,6 +6202,9 @@ class ThemeAnalysis extends IaiLitBase {
             iai-theme-analysis .theme-filters-warning .theme-tag iai-icon-button {
                 margin-top: 0.1em;
             }
+            iai-theme-analysis .theme-filters-warning .tag {
+                width: 100%;
+            }
             @media (min-width: 40.0625em) {
                 .govuk-form-group {
                     margin-bottom: 0;
@@ -6301,13 +6304,13 @@ class ThemeAnalysis extends IaiLitBase {
                                         <iai-silver-select-input
                                             .inputId=${getSlug(category)}
                                             .name=${getSlug(category)}
-                                            .label=${this.toTitleCase(category)}
+                                            .label=${category}
                                             .hideLabel=${true}
                                             .value=${this.demoFilters[category] || ""}
                                             .placeholder=${`Select ${this.toTitleCase(category)}`}
                                             .options=${(Object.keys(this.demoData[category])).map(key => ({
                                                 value: key,
-                                                text: this.toTitleCase(key)
+                                                text: key
                                             }))}
                                             .handleChange=${(e) => {
                                                 this.setDemoFilters(category, e.target.value);
