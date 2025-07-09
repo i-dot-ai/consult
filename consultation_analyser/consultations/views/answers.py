@@ -31,10 +31,12 @@ class FilterParams(TypedDict, total=False):
     sentiment_list: list[str]
     theme_list: list[str]
     evidence_rich: bool
-    search_value: str
+    search_value: str  # TODO - remove when v1 dash deleted
     demographic_filters: dict[
         str, list[str]
     ]  # e.g. {"individual": ["true"], "region": ["north", "south"]}
+    themes_sort_type: str  # "frequency" or "alphabetical"
+    themes_sort_direction: str  # "ascending" or "descending"
 
 
 def parse_filters_from_request(request: HttpRequest) -> FilterParams:
@@ -49,10 +51,24 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
     if theme_filters:
         filters["theme_list"] = theme_filters.split(",")
 
+    themes_sort_direction = request.GET.get("themesSortDirection", "")
+    if themes_sort_direction in ["ascending", "descending"]:
+        filters["themes_sort_direction"] = themes_sort_direction
+
+    themes_sort_type = request.GET.get("themesSortType", "")
+    if themes_sort_type in ["frequency", "alphabetical"]:
+        filters["themes_sort_type"] = themes_sort_type
+
+    # TODO - remove once v1 of the dashboard is removed
     evidence_rich_filter = request.GET.get("evidenceRichFilter")
     if evidence_rich_filter == "evidence-rich":
         filters["evidence_rich"] = True
 
+    evidence_rich_filter = request.GET.get("evidenceRich")
+    if evidence_rich_filter:
+        filters["evidence_rich"] = True
+
+    # TODO - remove this when v1 of dashboard is removed
     search_value = request.GET.get("searchValue")
     if search_value:
         filters["search_value"] = search_value
@@ -141,14 +157,24 @@ def get_theme_summary_optimized(
     response_filter = build_response_filter_query(filters or {}, question)
     filtered_responses = models.Response.objects.filter(response_filter)
 
-    # Apply theme filtering with AND logic if needed
-    if filters and filters.get("theme_list"):
-        # Create subqueries for each theme
-        for theme_id in filters["theme_list"]:
-            theme_exists = models.ResponseAnnotationTheme.objects.filter(
-                response_annotation__response=OuterRef("pk"), theme_id=theme_id
-            )
-            filtered_responses = filtered_responses.filter(Exists(theme_exists))
+    # Ordering of responses - default to order by frequency, descengind
+    order_by_field_name = "response_count"
+    direction = "-"
+
+    if filters:
+        # Apply theme filtering with AND logic if needed
+        for theme in filters.get("theme_list", []):
+            # Create subqueries for each theme
+            for theme_id in filters["theme_list"]:
+                theme_exists = models.ResponseAnnotationTheme.objects.filter(
+                    response_annotation__response=OuterRef("pk"), theme_id=theme_id
+                )
+                filtered_responses = filtered_responses.filter(Exists(theme_exists))
+
+        if filters.get("themes_sort_type", "") == "alphabetical":
+            order_by_field_name = "name"
+        if filters.get("themes_sort_direction", "") == "ascending":
+            direction = ""
 
     # Now get all themes that appear in those filtered responses
     # This shows ALL themes that appear in responses matching the filter criteria
@@ -156,7 +182,7 @@ def get_theme_summary_optimized(
         models.Theme.objects.filter(responseannotation__response__in=filtered_responses)
         .annotate(response_count=Count("responseannotation__response", distinct=True))
         .values("id", "name", "description", "response_count")
-        .order_by("-response_count")
+        .order_by(f"{direction}{order_by_field_name}")
     )
 
     return [
