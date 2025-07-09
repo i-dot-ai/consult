@@ -667,6 +667,8 @@ class IaiDataTable extends IaiLitBase {
     }
 
     render() {
+        const data = this.sortable ? this._sortedData : this.data;
+
         return x`
             <table class="govuk-table govuk-body" mentionstable="">
                 <thead class="govuk-table__head">
@@ -676,7 +678,7 @@ class IaiDataTable extends IaiLitBase {
                 </thead>
           
                 <tbody class="govuk-table__body">
-                    ${this._sortedData.map(row => x`
+                    ${data.map(row => x`
                         <tr class=${
                             "govuk-table__row" +
                             (row._bottomRow ? " bottom-row" : "")
@@ -5981,6 +5983,25 @@ class ThemesTable extends IaiLitBase {
         this.applyStaticStyles("iai-themes-table", ThemesTable.styles);
     }
 
+    // updated(changedProps) {
+    //     if (changedProps.has("themeFilters")) {
+    //         console.log("themeFilters has updated!", this.themeFilters);
+
+    //         setTimeout(() => {
+    //             document.querySelectorAll(".theme-checkbox").forEach(el => {
+    //                 console.log("el.value:", el.value);
+    //                 el.checked = this.themeFilters.includes(el.value);
+    //             })
+    //         }, 1000);
+
+    //     }
+    // }
+
+    isChecked = (val) => {
+        console.log(val, this.themeFilters, this.themeFilters.includes(val));
+        return this.themeFilters.includes(val);
+    }
+
     render() {
         const totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
 
@@ -6007,9 +6028,8 @@ class ThemesTable extends IaiLitBase {
                                             id=${"theme-filters" + theme.title.toLowerCase().replace(" ", "-")}
                                             name="theme-filters"
                                             .value=${theme.id}
-                                            ?checked=${this.themeFilters.includes(theme.id)}
+                                            .checked=${this.themeFilters.includes(theme.id)}
                                             @click=${(e) => {
-                                                e.preventDefault();
                                                 this.setThemeFilters(e.target.value);
                                             }}
                                         />

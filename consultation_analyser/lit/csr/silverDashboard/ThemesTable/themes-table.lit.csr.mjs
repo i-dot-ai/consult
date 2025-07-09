@@ -118,9 +118,8 @@ export default class ThemesTable extends IaiLitBase {
                                             id=${"theme-filters" + theme.title.toLowerCase().replace(" ", "-")}
                                             name="theme-filters"
                                             .value=${theme.id}
-                                            ?checked=${this.themeFilters.includes(theme.id)}
+                                            .checked=${this.themeFilters.includes(theme.id)}
                                             @click=${(e) => {
-                                                e.preventDefault();
                                                 this.setThemeFilters(e.target.value);
                                             }}
                                         />

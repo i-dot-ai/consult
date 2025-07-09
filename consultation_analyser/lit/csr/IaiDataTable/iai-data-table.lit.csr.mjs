@@ -240,6 +240,8 @@ export default class IaiDataTable extends IaiLitBase {
     }
 
     render() {
+        const data = this.sortable ? this._sortedData : this.data;
+
         return html`
             <table class="govuk-table govuk-body" mentionstable="">
                 <thead class="govuk-table__head">
@@ -249,7 +251,7 @@ export default class IaiDataTable extends IaiLitBase {
                 </thead>
           
                 <tbody class="govuk-table__body">
-                    ${this._sortedData.map(row => html`
+                    ${data.map(row => html`
                         <tr class=${
                             "govuk-table__row" +
                             (row._bottomRow ? " bottom-row" : "")
