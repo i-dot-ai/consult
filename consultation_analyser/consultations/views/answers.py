@@ -122,17 +122,19 @@ def get_filtered_responses_with_themes(
             )
             queryset = queryset.filter(Exists(theme_exists))
 
-    if filters:
-        if query := filters.get("search_value"):
-            embedded_query = embed_text(query)
-            search_query = SearchQuery(query)
+    if filters and filters.get("search_value"):
+        embedded_query = embed_text(filters["search_value"])
+        search_query = SearchQuery(filters["search_value"])
 
-            # Base annotation with raw scores
-            semantic_distance = CosineDistance("embedding", embedded_query)
-            tfidf_distance = -SearchRank("search_vector", search_query)
-            return queryset.annotate(distance=semantic_distance + tfidf_distance).order_by(
-                "distance"
-            )
+        # semantic_distance: exact match = 0, exact opposite = 2
+        semantic_distance = CosineDistance("embedding", embedded_query)
+
+        # term_frequency: exact match = 1+, no match = 0
+        term_frequency = SearchRank("search_vector", search_query)
+
+        # TODO find a better (or indeed any!) normalisation
+        distance = semantic_distance - term_frequency
+        return queryset.annotate(distance=distance).order_by("distance")
 
     return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination
 
