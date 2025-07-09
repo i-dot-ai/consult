@@ -3,7 +3,6 @@ from logging import getLogger
 from typing import TypedDict
 from uuid import UUID
 
-from django.conf import settings
 from django.core.paginator import Paginator
 from django.db.models import Count, Exists, OuterRef, Q
 from django.http import HttpRequest, JsonResponse
@@ -103,12 +102,8 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
 def get_filtered_responses_with_themes(
     question: models.Question,
     filters: FilterParams | None = None,
-    similarity_threshold: float | None = None,
 ):
     """Single optimized query to get all filtered responses with their themes"""
-    if similarity_threshold is None:
-        similarity_threshold = settings.SIMILARITY_THRESHOLD
-
     response_filter = build_response_filter_query(filters or {}, question)
     queryset = (
         models.Response.objects.filter(response_filter)
@@ -131,9 +126,6 @@ def get_filtered_responses_with_themes(
 
         responses = queryset.annotate(distance=CosineDistance("embedding", embedded_query))
 
-        responses = responses.filter(
-            Q(distance__lte=similarity_threshold) | Q(free_text__icontains=filters["search_value"])
-        )
         return responses.distinct().order_by("distance")
 
     return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination
@@ -278,9 +270,7 @@ def question_responses_json(
 
     # Get respondents with their filtered responses using the same logic as theme filtering
     # First get the filtered responses using AND logic for themes
-    filtered_responses = get_filtered_responses_with_themes(
-        question, filters, settings.SIMILARITY_THRESHOLD
-    )
+    filtered_responses = get_filtered_responses_with_themes(question, filters)
 
     # Then get respondents who have these filtered responses
     filtered_annotated_responses = filtered_responses.prefetch_related("annotation__themes")
