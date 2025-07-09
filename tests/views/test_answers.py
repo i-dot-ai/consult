@@ -110,8 +110,6 @@ def test_parse_filters_from_request_all_filters(request_factory):
     )
     filters = parse_filters_from_request(request)
 
-    print(filters)
-
     assert filters["sentiment_list"] == ["AGREEMENT", "DISAGREEMENT"]
     assert filters["theme_list"] == ["1", "2", "3"]
     assert filters["evidence_rich"]
