@@ -158,14 +158,24 @@ def get_theme_summary_optimized(
     response_filter = build_response_filter_query(filters or {}, question)
     filtered_responses = models.Response.objects.filter(response_filter)
 
-    # Apply theme filtering with AND logic if needed
-    if filters and filters.get("theme_list"):
-        # Create subqueries for each theme
-        for theme_id in filters["theme_list"]:
-            theme_exists = models.ResponseAnnotationTheme.objects.filter(
-                response_annotation__response=OuterRef("pk"), theme_id=theme_id
-            )
-            filtered_responses = filtered_responses.filter(Exists(theme_exists))
+    # Ordering of responses - default to order by frequency, descengind
+    order_by_field_name = "response_count"
+    direction = "-"
+
+    if filters:
+        # Apply theme filtering with AND logic if needed
+        if filters.get("theme_list"):
+            # Create subqueries for each theme
+            for theme_id in filters["theme_list"]:
+                theme_exists = models.ResponseAnnotationTheme.objects.filter(
+                    response_annotation__response=OuterRef("pk"), theme_id=theme_id
+                )
+                filtered_responses = filtered_responses.filter(Exists(theme_exists))
+
+        if filters.get("themes_sort_type", "") == "alphabetical":
+            order_by_field_name = "name"
+        if filters.get("themes_sort_direction", "") == "ascending":
+            direction = ""
 
     # Now get all themes that appear in those filtered responses
     # This shows ALL themes that appear in responses matching the filter criteria
@@ -173,8 +183,9 @@ def get_theme_summary_optimized(
         models.Theme.objects.filter(responseannotation__response__in=filtered_responses)
         .annotate(response_count=Count("responseannotation__response", distinct=True))
         .values("id", "name", "description", "response_count")
-        .order_by("-response_count")
+        .order_by(f"{direction}{order_by_field_name}")
     )
+
 
     return [
         {
