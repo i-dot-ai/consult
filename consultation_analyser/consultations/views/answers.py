@@ -1,3 +1,4 @@
+import math
 from collections import defaultdict
 from datetime import datetime
 from logging import getLogger
@@ -147,7 +148,8 @@ def get_filtered_responses_with_themes(
         semantic_distance = CosineDistance("embedding", embedded_query)
 
         # term_frequency: exact match = 1+, no match = 0
-        term_frequency = SearchRank("search_vector", search_query)
+        # normalization = 1: divides the rank by 1 + the logarithm of the document length
+        term_frequency = SearchRank("search_vector", search_query, normalization=1)
 
         # TODO find a better (or indeed any!) normalisation
         distance = semantic_distance - term_frequency
