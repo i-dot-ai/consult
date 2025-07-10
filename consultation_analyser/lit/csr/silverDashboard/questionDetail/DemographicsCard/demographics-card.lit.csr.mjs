@@ -10,6 +10,7 @@ export default class DemographicsCard extends IaiLitBase {
         ...IaiLitBase.properties,
         title: { type: String },
         data: { type: Object }, //  key/value pairs
+        _totalCount: { type: Number },
     }
 
     static styles = [
@@ -64,8 +65,15 @@ export default class DemographicsCard extends IaiLitBase {
 
         // Prop defaults
         this.data = {};
+        this._totalCount = 0;
         
         this.applyStaticStyles("iai-demographics-card", DemographicsCard.styles);
+    }
+
+    updated(changedProps) {
+        if (changedProps.has("data")) {
+            this._totalCount = Object.values(this.data).reduce( (a, b) => a + b, 0 );
+        }
     }
 
     render() {
@@ -80,7 +88,6 @@ export default class DemographicsCard extends IaiLitBase {
                     ${Object.keys(this.data).map(key => {
                         const label = key;
                         const count = this.data[key];
-                        const totalCount = Object.values(this.data).reduce( (a, b) => a + b, 0 );
 
                         return html`
                             <li>
@@ -89,7 +96,7 @@ export default class DemographicsCard extends IaiLitBase {
                                 </div>
                                 <div class="counts">
                                     <iai-silver-progress-bar
-                                        .value=${this.getPercentage(count, totalCount)}
+                                        .value=${this.getPercentage(count, this._totalCount)}
                                     ></iai-silver-progress-bar>
                                     <span>
                                         ${count.toLocaleString()}

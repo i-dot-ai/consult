@@ -6,6 +6,7 @@ import Panel from '../../Panel/panel.lit.csr.mjs';
 import Tag from '../../Tag/tag.lit.csr.mjs';
 import ToggleInput from '../../../inputs/ToggleInput/iai-toggle-input.lit.csr.mjs';
 import SelectInput from '../../inputs/SelectInput/select-input.lit.csr.mjs';
+import Button from '../../Button/button.lit.csr.mjs';
 
 
 export default class ResponseRefinement extends IaiLitBase {
@@ -37,7 +38,11 @@ export default class ResponseRefinement extends IaiLitBase {
         demoFilters: { type: Object },
         setDemoFilters: { type: Function },
 
+        themeFilters: { type: Array },
+        updateThemeFilters: { type: Function },
+
         _settingsVisible: { type: Boolean },
+        _themeFiltersVisible: { type: Boolean },
     }
 
     static styles = [
@@ -97,6 +102,32 @@ export default class ResponseRefinement extends IaiLitBase {
             iai-response-refinement .tag {
                 width: 100%;
             }
+            iai-response-refinement input[type="checkbox"] {
+                width: auto;
+                filter: grayscale(0.5) hue-rotate(75deg);
+                cursor: pointer;
+            },
+            iai-response-refinement label {
+                cursor: pointer;
+                white-space: nowrap;
+            }
+            iai-response-refinement .dropdown-filters {
+                display: flex;
+                justify-content:
+                space-between;
+                align-items: flex-end;
+            }
+            iai-response-refinement .theme-filter-list {
+                list-style: none;
+                padding-left: 0;
+                margin: 0;
+            }
+            iai-response-refinement .theme-filter-list li {
+                display: flex;
+                gap: 0.5em;
+                justify-content: flex-start;
+                margin-bottom: 0.5em;
+            }
         `
     ]
 
@@ -123,7 +154,11 @@ export default class ResponseRefinement extends IaiLitBase {
         this.demoFilters = {};
         this.setDemoFilters = () => {};
 
+        this.themeFilters = [];
+        this.updateThemeFilters = () => {};
+
         this._settingsVisible = false;
+        this._themeFiltersVisible = false;
         
         this.applyStaticStyles("iai-response-refinement", ResponseRefinement.styles);
     }
@@ -225,7 +260,7 @@ export default class ResponseRefinement extends IaiLitBase {
                             ></iai-toggle-input>
                         </div>
                         
-                        <div>
+                        <div class="dropdown-filters">
                             ${Object.keys(this.demoData).map(key => html`
                                 <iai-silver-select-input
                                     .inputId=${`demo-filter-${key}`}
@@ -245,6 +280,42 @@ export default class ResponseRefinement extends IaiLitBase {
                                     .horizontal=${false}
                                 ></iai-silver-select-input>
                             `)}
+
+                            <div class="popup-button">
+                                <iai-silver-button
+                                    .text=${`Themes (${this.themeFilters.length}/3)`}
+                                    .handleClick=${() => this._themeFiltersVisible = !this._themeFiltersVisible}
+                                ></iai-silver-button>
+
+                                <div class="popup-panel" style=${`
+                                    opacity: ${this._themeFiltersVisible ? 1 : 0};
+                                    pointer-events: ${this._themeFiltersVisible ? "auto" : "none"};
+                                `}>
+                                    <div class="content">
+                                        <ul class="theme-filter-list">
+                                            ${this.themes.map(theme => html`
+                                                <li>
+                                                    <input
+                                                        type="checkbox"
+                                                        class="theme-checkbox"
+                                                        id=${"responses-theme-filters" + theme.id}
+                                                        name="theme-filters"
+                                                        .value=${theme.id}
+                                                        .checked=${this.themeFilters.includes(theme.id)}
+                                                        @click=${(e) => {
+                                                            this.updateThemeFilters(theme.id);
+                                                        }}
+                                                    />
+                                                    <label for=${"responses-theme-filters" + theme.id}>
+                                                        ${theme.title}
+                                                    </label>
+                                                </li>
+                                            `)}
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                            </div>
                         </div>
                     </div>
                 </div>

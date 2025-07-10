@@ -338,6 +338,9 @@ export default class QuestionDetailPage extends IaiLitBase {
                         ...this._demoFilters,
                         [newFilterKey]: newFilterValue
                     }}
+
+                    .themeFilters=${this._themeFilters}
+                    .updateThemeFilters=${this.updateThemeFilters}
                 ></iai-response-refinement>
             </section>
 

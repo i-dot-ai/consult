@@ -6951,6 +6951,7 @@ class DemographicsCard extends IaiLitBase {
         ...IaiLitBase.properties,
         title: { type: String },
         data: { type: Object }, //  key/value pairs
+        _totalCount: { type: Number },
     }
 
     static styles = [
@@ -7005,8 +7006,15 @@ class DemographicsCard extends IaiLitBase {
 
         // Prop defaults
         this.data = {};
+        this._totalCount = 0;
         
         this.applyStaticStyles("iai-demographics-card", DemographicsCard.styles);
+    }
+
+    updated(changedProps) {
+        if (changedProps.has("data")) {
+            this._totalCount = Object.values(this.data).reduce( (a, b) => a + b, 0 );
+        }
     }
 
     render() {
@@ -7021,7 +7029,6 @@ class DemographicsCard extends IaiLitBase {
                     ${Object.keys(this.data).map(key => {
                         const label = key;
                         const count = this.data[key];
-                        const totalCount = Object.values(this.data).reduce( (a, b) => a + b, 0 );
 
                         return x`
                             <li>
@@ -7030,7 +7037,7 @@ class DemographicsCard extends IaiLitBase {
                                 </div>
                                 <div class="counts">
                                     <iai-silver-progress-bar
-                                        .value=${this.getPercentage(count, totalCount)}
+                                        .value=${this.getPercentage(count, this._totalCount)}
                                     ></iai-silver-progress-bar>
                                     <span>
                                         ${count.toLocaleString()}
@@ -7155,7 +7162,11 @@ class ResponseRefinement extends IaiLitBase {
         demoFilters: { type: Object },
         setDemoFilters: { type: Function },
 
+        themeFilters: { type: Array },
+        updateThemeFilters: { type: Function },
+
         _settingsVisible: { type: Boolean },
+        _themeFiltersVisible: { type: Boolean },
     }
 
     static styles = [
@@ -7215,6 +7226,32 @@ class ResponseRefinement extends IaiLitBase {
             iai-response-refinement .tag {
                 width: 100%;
             }
+            iai-response-refinement input[type="checkbox"] {
+                width: auto;
+                filter: grayscale(0.5) hue-rotate(75deg);
+                cursor: pointer;
+            },
+            iai-response-refinement label {
+                cursor: pointer;
+                white-space: nowrap;
+            }
+            iai-response-refinement .dropdown-filters {
+                display: flex;
+                justify-content:
+                space-between;
+                align-items: flex-end;
+            }
+            iai-response-refinement .theme-filter-list {
+                list-style: none;
+                padding-left: 0;
+                margin: 0;
+            }
+            iai-response-refinement .theme-filter-list li {
+                display: flex;
+                gap: 0.5em;
+                justify-content: flex-start;
+                margin-bottom: 0.5em;
+            }
         `
     ]
 
@@ -7241,7 +7278,11 @@ class ResponseRefinement extends IaiLitBase {
         this.demoFilters = {};
         this.setDemoFilters = () => {};
 
+        this.themeFilters = [];
+        this.updateThemeFilters = () => {};
+
         this._settingsVisible = false;
+        this._themeFiltersVisible = false;
         
         this.applyStaticStyles("iai-response-refinement", ResponseRefinement.styles);
     }
@@ -7343,7 +7384,7 @@ class ResponseRefinement extends IaiLitBase {
                             ></iai-toggle-input>
                         </div>
                         
-                        <div>
+                        <div class="dropdown-filters">
                             ${Object.keys(this.demoData).map(key => x`
                                 <iai-silver-select-input
                                     .inputId=${`demo-filter-${key}`}
@@ -7363,6 +7404,42 @@ class ResponseRefinement extends IaiLitBase {
                                     .horizontal=${false}
                                 ></iai-silver-select-input>
                             `)}
+
+                            <div class="popup-button">
+                                <iai-silver-button
+                                    .text=${`Themes (${this.themeFilters.length}/3)`}
+                                    .handleClick=${() => this._themeFiltersVisible = !this._themeFiltersVisible}
+                                ></iai-silver-button>
+
+                                <div class="popup-panel" style=${`
+                                    opacity: ${this._themeFiltersVisible ? 1 : 0};
+                                    pointer-events: ${this._themeFiltersVisible ? "auto" : "none"};
+                                `}>
+                                    <div class="content">
+                                        <ul class="theme-filter-list">
+                                            ${this.themes.map(theme => x`
+                                                <li>
+                                                    <input
+                                                        type="checkbox"
+                                                        class="theme-checkbox"
+                                                        id=${"responses-theme-filters" + theme.id}
+                                                        name="theme-filters"
+                                                        .value=${theme.id}
+                                                        .checked=${this.themeFilters.includes(theme.id)}
+                                                        @click=${(e) => {
+                                                            this.updateThemeFilters(theme.id);
+                                                        }}
+                                                    />
+                                                    <label for=${"responses-theme-filters" + theme.id}>
+                                                        ${theme.title}
+                                                    </label>
+                                                </li>
+                                            `)}
+                                        </ul>
+                                    </div>
+                                </div>
+                                
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -7852,6 +7929,9 @@ class QuestionDetailPage extends IaiLitBase {
                         ...this._demoFilters,
                         [newFilterKey]: newFilterValue
                     }}
+
+                    .themeFilters=${this._themeFilters}
+                    .updateThemeFilters=${this.updateThemeFilters}
                 ></iai-response-refinement>
             </section>
 
