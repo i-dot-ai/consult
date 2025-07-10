@@ -54,8 +54,10 @@ export default class ResponseRefinement extends IaiLitBase {
                 font-size: 0.9em !important;
             }
             iai-response-refinement .filters {
-                display: grid;
+                display: flex;
                 gap: 1em;
+                width: 100%;
+                flex-direction: column;
             }
             iai-response-refinement iai-silver-select-input {
                 display: block;
@@ -94,6 +96,10 @@ export default class ResponseRefinement extends IaiLitBase {
                 transition: opacity 0.3s ease-in-out;
                 box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
             }
+            iai-response-refinement .popup-button .popup-panel.themes-panel {
+                right: unset;
+                left: 0;
+            }
             iai-response-refinement .popup-panel .content {
                 display: flex;
                 align-items: center;
@@ -113,8 +119,6 @@ export default class ResponseRefinement extends IaiLitBase {
             }
             iai-response-refinement .dropdown-filters {
                 display: flex;
-                justify-content:
-                space-between;
                 align-items: flex-end;
                 flex-wrap: wrap;
                 gap: 1em;
@@ -293,7 +297,7 @@ export default class ResponseRefinement extends IaiLitBase {
                                 ></iai-silver-button>
 
                                 ${this.themes.length > 0 ? html`
-                                    <div class="popup-panel" style=${`
+                                    <div class="popup-panel themes-panel" style=${`
                                         opacity: ${this._themeFiltersVisible ? 1 : 0};
                                         pointer-events: ${this._themeFiltersVisible ? "auto" : "none"};
                                     `}>
