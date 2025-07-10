@@ -120,7 +120,7 @@ def test_parse_filters_from_request_all_filters(request_factory):
     assert filters["theme_list"] == ["1", "2", "3"]
     assert filters["evidence_rich"]
     assert filters["search_value"] == "test search"
-    assert filters["demo_filters"]["individual"] == 'true'
+    assert filters["demo_filters"]["individual"] == "true"
     assert filters["demo_filters"]["region"] == "south"
     assert filters["themes_sort_direction"] == "ascending"
     assert filters["themes_sort_type"] == "frequency"
