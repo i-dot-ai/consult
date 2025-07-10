@@ -116,6 +116,8 @@ export default class ResponseRefinement extends IaiLitBase {
                 justify-content:
                 space-between;
                 align-items: flex-end;
+                flex-wrap: wrap;
+                gap: 1em;
             }
             iai-response-refinement .theme-filter-list {
                 list-style: none;
@@ -127,6 +129,9 @@ export default class ResponseRefinement extends IaiLitBase {
                 gap: 0.5em;
                 justify-content: flex-start;
                 margin-bottom: 0.5em;
+            }
+            iai-response-refinement iai-silver-select-input .govuk-form-group {
+                margin-bottom: 0;
             }
         `
     ]

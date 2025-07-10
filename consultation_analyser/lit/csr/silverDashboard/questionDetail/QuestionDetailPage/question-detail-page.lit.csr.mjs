@@ -69,6 +69,8 @@ export default class QuestionDetailPage extends IaiLitBase {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+                flex-wrap: wrap;
+                gap: 1em;
             }
             iai-question-detail-page section.breadcrumbs iai-silver-button button {
                 display: flex;
@@ -87,6 +89,11 @@ export default class QuestionDetailPage extends IaiLitBase {
                 margin-top: 1em;
                 display: flex;
                 justify-content: center;
+            }
+            @media screen and (max-width: 500px) {
+                iai-question-detail-page section.breadcrumbs {
+                    justify-content: center;
+                }
             }
         `
     ]
