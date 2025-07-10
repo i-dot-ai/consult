@@ -7,6 +7,7 @@ export default class IaiCheckboxInput extends IaiLitBase {
         ...IaiLitBase.properties,
         inputId: { type: String },
         label: { type: String },
+        hideLabel: { type: Boolean },
         checked: {type: Boolean },
         value: { type: String },
         handleChange: { type: Function },
@@ -29,6 +30,7 @@ export default class IaiCheckboxInput extends IaiLitBase {
     constructor() {
         super();
         this.inputId = "";
+        this.hideLabel = false;
         this.label = "";
         this.checked = false;
         this.value = "";
@@ -59,7 +61,7 @@ export default class IaiCheckboxInput extends IaiLitBase {
                     class="govuk-label govuk-checkboxes__label"
                     for=${this.inputId}
                 >
-                    ${this.label}
+                    ${this.hideLabel ? "" : this.label}
                 </label>
             </div>
         `

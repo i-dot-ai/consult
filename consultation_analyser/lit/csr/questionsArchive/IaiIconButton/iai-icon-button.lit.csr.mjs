@@ -17,13 +17,14 @@ export default class IaiIconButton extends IaiLitBase {
                 background: none;
                 border: none;
                 cursor: pointer;
-                border-radius: 50%;
+                border-radius: 0.5em;
                 padding: 0.3em 0.5em;
                 transition: 0.3s ease-in-out;
-                transition-property: background-color;
+                transition-property: background-color, color;
             }
             iai-icon-button button:hover {
-                background: var(--iai-colour-pink-transparent);
+                color: black;
+                background: #cbfbf1;
             }
             iai-icon-button iai-icon {
                 font-size: 1.2em;

@@ -25,52 +25,18 @@
     ]
   }) }}
 
-<iai-response-dashboard></iai-response-dashboard>
-<script>
-  const responseDashboardEl = document.getElementsByTagName("iai-response-dashboard")[0];
+<style>
+  .govuk-main-wrapper {
+    background: white;
+  }
+</style>
 
-  responseDashboardEl.consultationTitle = "{{ consultation_name }}";
-  responseDashboardEl.consultationSlug = "{{ consultation_slug }}"
-  responseDashboardEl.questionTitle = "Question {{question.number}}";
-  responseDashboardEl.questionSlug = "{{ question_slug }}";
-  responseDashboardEl.questionText = "{{ question.text }}";
-  responseDashboardEl.responses = [];
-
-  responseDashboardEl.themeMappings = [
-      {% for theme_mapping in selected_theme_mappings %}
-        {
-          inputId: "themesfilter-{{loop.index0}}",
-          value: "{{ theme_mapping.theme__id }}",
-          label: "{{ theme_mapping.theme__name }}",
-          description: "{{ theme_mapping.theme__description | safe }}",
-          count: "{{ theme_mapping.count }}",
-        },
-      {% endfor %}
-  ];
-
-  responseDashboardEl.stanceOptions = [
-    {% for option in stance_options %}
-      {
-          inputId: "responsesentiment-{{loop.index0}}",
-          name: "responsesentiment",
-          value: "{{option}}",
-          label: "{{ option|capitalize }}",
-      },
-    {% endfor %}
-  ];
-
-  responseDashboardEl.free_text_question_part = {% if free_text_question_part %}true{% else %}false{% endif %};
-  responseDashboardEl.has_multiple_choice_question_part = {% if has_multiple_choice_question_part %}true{% else %}false{% endif %};
-
-  responseDashboardEl.multiple_choice_summary = [
-  {% if has_multiple_choice_question_part %}
-      {% for summary in multiple_choice_summary %}
-        {% for option, count in summary.items() %}
-          {"{{ option }}": {{ count }}},
-        {% endfor %}
-      {% endfor %}
-    {% endif %}
-  ];
-</script>
+<iai-question-detail-page
+  consultationSlug="{{ consultation_slug }}"
+  questionSlug="{{ question_slug }}"
+  questionText="{{ question.text }}"
+  questionId="{{ question.id }}"
+  consultationTitle="{{ question.consultation_name }}"
+></iai-question-detail-page>
 
 {% endblock %}
