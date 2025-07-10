@@ -7,6 +7,7 @@ import Tag from '../../Tag/tag.lit.csr.mjs';
 import IaiVirtualList from '../../../IaiVirtualList/iai-virtual-list.lit.csr.mjs';
 import IaiLoadingIndicator from '../../../IaiLoadingIndicator/iai-loading-indicator.lit.csr.mjs';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
+import Button from '../../Button/button.lit.csr.mjs';
 
 
 export default class ResponsesList extends IaiLitBase {
@@ -18,6 +19,7 @@ export default class ResponsesList extends IaiLitBase {
         handleScrollEnd: { type: Function },
         isLoading: { type: Boolean },
         highlightedText: { type: String },
+        handleThemeTagClick: { type: Function },
     }
 
     static styles = [
@@ -75,6 +77,7 @@ export default class ResponsesList extends IaiLitBase {
         this.handleScrollEnd = () => {};
         this.isLoading = false;
         this.highlightedText = "";
+        this.handleThemeTagClick = () => {};
         
         this.applyStaticStyles("iai-silver-responses-list", ResponsesList.styles);
     }
@@ -145,11 +148,10 @@ export default class ResponsesList extends IaiLitBase {
                                 ${response.themes.length > 0 ? html`
                                     <footer>
                                         ${response.themes.map((theme) => html`
-                                            <iai-silver-tag
-                                                @click=${() => console.log(theme.id)}
+                                            <iai-silver-button
+                                                @click=${() => this.handleThemeTagClick(theme.id)}
                                                 .text=${theme.text}
-                                                .matchBackground=${true}
-                                            ></iai-silver-tag>
+                                            ></iai-silver-button>
                                         `)}
                                     </footer>
                                 ` : ""}

@@ -7468,6 +7468,7 @@ class ResponsesList extends IaiLitBase {
         handleScrollEnd: { type: Function },
         isLoading: { type: Boolean },
         highlightedText: { type: String },
+        handleThemeTagClick: { type: Function },
     }
 
     static styles = [
@@ -7525,6 +7526,7 @@ class ResponsesList extends IaiLitBase {
         this.handleScrollEnd = () => {};
         this.isLoading = false;
         this.highlightedText = "";
+        this.handleThemeTagClick = () => {};
         
         this.applyStaticStyles("iai-silver-responses-list", ResponsesList.styles);
     }
@@ -7595,11 +7597,11 @@ class ResponsesList extends IaiLitBase {
                                 ${response.themes.length > 0 ? x`
                                     <footer>
                                         ${response.themes.map((theme) => x`
-                                            <iai-silver-tag
-                                                @click=${() => console.log(theme.id)}
+                                            <iai-silver-button
+                                                class="theme-tag"
+                                                @click=${() => this.handleThemeTagClick(theme.id)}
                                                 .text=${theme.text}
-                                                .matchBackground=${true}
-                                            ></iai-silver-tag>
+                                            ></iai-silver-button>
                                         `)}
                                     </footer>
                                 ` : ""}
@@ -7977,6 +7979,10 @@ class QuestionDetailPage extends IaiLitBase {
                     .filteredTotal=${this._filteredTotal}
                     .isLoading=${this._isLoading}
                     .highlightedText=${this._highlightMatches ? this._searchValue : ""}
+                    .handleThemeTagClick=${(themeId) => {
+                        this.updateThemeFilters(themeId);
+                        this._activeTab = this._TAB_INDECES["Question Summary"];
+                    }}
                 ></iai-silver-responses-list>
 
                 ${this._hasMorePages ? x`

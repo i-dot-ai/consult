@@ -376,6 +376,10 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .filteredTotal=${this._filteredTotal}
                     .isLoading=${this._isLoading}
                     .highlightedText=${this._highlightMatches ? this._searchValue : ""}
+                    .handleThemeTagClick=${(themeId) => {
+                        this.updateThemeFilters(themeId);
+                        this._activeTab = this._TAB_INDECES["Question Summary"];
+                    }}
                 ></iai-silver-responses-list>
 
                 ${this._hasMorePages ? html`
