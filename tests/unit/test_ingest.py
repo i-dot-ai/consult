@@ -27,12 +27,10 @@ def get_object_side_effect(Bucket, Key):
     respondents_data = b'{"themefinder_id": 1, "demographic_data": {"location": "Wales"}}\n{"themefinder_id": 2, "demographic_data": {"location": "Scotland"}}'
 
     # Mock question file
-    question_data = b'{"question_text": "What do you think?"}'
+    question_data = b'{"question_text": "What do you think?", "has_free_text": true, "options": ["a", "b", "c"]}'
 
     # Mock responses file
-    responses_data = (
-        b'{"themefinder_id": 1, "text": "Good idea"}\n{"themefinder_id": 2, "text": "Bad idea"}'
-    )
+    responses_data = b'{"themefinder_id": 1, "text": "Good idea", "chosen_options": ["a"]}\n{"themefinder_id": 2, "text": "Bad idea", "chosen_options": ["b", "c"]}'
 
     # Mock themes file
     themes_data = (
@@ -333,6 +331,9 @@ class TestQuestionsImport:
         questions = Question.objects.filter(consultation=consultation)
         assert questions.count() == 1
         assert questions.first().text == "What do you think?"
+        assert questions.first().has_free_text
+        assert questions.first().has_multiple_choice
+        assert questions.first().multiple_choice_options == ["a", "b", "c"]
 
         themes = Theme.objects.filter(question__consultation=consultation)
         assert themes.count() == 1
