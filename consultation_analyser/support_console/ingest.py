@@ -4,6 +4,7 @@ from uuid import UUID
 
 import boto3
 from django.conf import settings
+from django.contrib.postgres.search import SearchVector
 from django_rq import get_queue
 
 from consultation_analyser.consultations.models import (
@@ -195,8 +196,9 @@ def create_embeddings(consultation_id: UUID):
 
         for response, embedding in zip(responses, embeddings):
             response.embedding = embedding
+            response.search_vector = SearchVector("free_text")
 
-        Response.objects.bulk_update(responses, ["embedding"])
+        Response.objects.bulk_update(responses, ["embedding", "search_vector"])
 
 
 def import_response_annotation_themes(question: Question, output_folder: str):
