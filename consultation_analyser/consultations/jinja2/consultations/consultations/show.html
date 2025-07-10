@@ -36,12 +36,7 @@
               id: "{{ question_dict.question.id }}",
               title: "{{ question_dict.question.text }}",
               url: "{{ url('question_responses', kwargs={'consultation_slug': consultation.slug, 'question_slug': question_dict.question.slug}) }}",
-              numResponses:
-                {% if question_dict.free_text_count %}
-                  "{{ question_dict.free_text_count }}"
-                {% else %}
-                  "0"
-                {% endif %},
+              numResponses: "{{ question_dict.number_responses }}",
               status: "Open",
             },
           {% endfor %}

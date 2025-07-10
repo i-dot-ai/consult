@@ -128,7 +128,7 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
             query &= field_query
 
     demo_filters = filters.get("demo_filters")
-    if demo_filters:=filters.get("demo_filters"):
+    if demo_filters := filters.get("demo_filters"):
         for field, value in demo_filters.items():
             field_query = Q()
             # Handle boolean values
