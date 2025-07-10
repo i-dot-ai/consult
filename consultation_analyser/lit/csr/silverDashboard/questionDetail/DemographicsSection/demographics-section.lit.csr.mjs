@@ -25,8 +25,8 @@ export default class DemographicsSection extends IaiLitBase {
                 overflow: auto;
             }    
             iai-demographics-section iai-demographics-card {
-                flex-grow: 1;    
-                min-width: max-content;
+                flex-grow: 1;
+                max-width: 100%;
             }
             .themes-warning .tag {
                 width: 100%;

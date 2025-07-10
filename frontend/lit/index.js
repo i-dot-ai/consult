@@ -6976,7 +6976,7 @@ class DemographicsCard extends IaiLitBase {
             iai-demographics-card ul {
                 display: flex;
                 flex-direction: column;
-                gap: 0.5em;    
+                gap: 1em;
                 margin: 0;
                 padding-left: 0;
                 font-weight: bold;
@@ -6987,6 +6987,7 @@ class DemographicsCard extends IaiLitBase {
                 justify-content: space-between;
                 align-items: center;
                 list-style: none;
+                line-height: 1.5em;
             }
             iai-demographics-card li>* {
                 width: 50%;
@@ -7079,8 +7080,8 @@ class DemographicsSection extends IaiLitBase {
                 overflow: auto;
             }    
             iai-demographics-section iai-demographics-card {
-                flex-grow: 1;    
-                min-width: max-content;
+                flex-grow: 1;
+                max-width: 100%;
             }
             .themes-warning .tag {
                 width: 100%;

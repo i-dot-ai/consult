@@ -29,7 +29,7 @@ export default class DemographicsCard extends IaiLitBase {
             iai-demographics-card ul {
                 display: flex;
                 flex-direction: column;
-                gap: 0.5em;    
+                gap: 1em;
                 margin: 0;
                 padding-left: 0;
                 font-weight: bold;
@@ -40,6 +40,7 @@ export default class DemographicsCard extends IaiLitBase {
                 justify-content: space-between;
                 align-items: center;
                 list-style: none;
+                line-height: 1.5em;
             }
             iai-demographics-card li>* {
                 width: 50%;
