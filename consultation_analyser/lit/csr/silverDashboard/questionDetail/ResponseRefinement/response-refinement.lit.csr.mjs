@@ -287,33 +287,35 @@ export default class ResponseRefinement extends IaiLitBase {
                                     .handleClick=${() => this._themeFiltersVisible = !this._themeFiltersVisible}
                                 ></iai-silver-button>
 
-                                <div class="popup-panel" style=${`
-                                    opacity: ${this._themeFiltersVisible ? 1 : 0};
-                                    pointer-events: ${this._themeFiltersVisible ? "auto" : "none"};
-                                `}>
-                                    <div class="content">
-                                        <ul class="theme-filter-list">
-                                            ${this.themes.map(theme => html`
-                                                <li>
-                                                    <input
-                                                        type="checkbox"
-                                                        class="theme-checkbox"
-                                                        id=${"responses-theme-filters" + theme.id}
-                                                        name="theme-filters"
-                                                        .value=${theme.id}
-                                                        .checked=${this.themeFilters.includes(theme.id)}
-                                                        @click=${(e) => {
-                                                            this.updateThemeFilters(theme.id);
-                                                        }}
-                                                    />
-                                                    <label for=${"responses-theme-filters" + theme.id}>
-                                                        ${theme.title}
-                                                    </label>
-                                                </li>
-                                            `)}
-                                        </ul>
+                                ${this.themes.length > 0 ? html`
+                                    <div class="popup-panel" style=${`
+                                        opacity: ${this._themeFiltersVisible ? 1 : 0};
+                                        pointer-events: ${this._themeFiltersVisible ? "auto" : "none"};
+                                    `}>
+                                        <div class="content">
+                                            <ul class="theme-filter-list">
+                                                ${this.themes.map(theme => html`
+                                                    <li>
+                                                        <input
+                                                            type="checkbox"
+                                                            class="theme-checkbox"
+                                                            id=${"responses-theme-filters" + theme.id}
+                                                            name="theme-filters"
+                                                            .value=${theme.id}
+                                                            .checked=${this.themeFilters.includes(theme.id)}
+                                                            @click=${(e) => {
+                                                                this.updateThemeFilters(theme.id);
+                                                            }}
+                                                        />
+                                                        <label for=${"responses-theme-filters" + theme.id}>
+                                                            ${theme.title}
+                                                        </label>
+                                                    </li>
+                                                `)}
+                                            </ul>
+                                        </div>
                                     </div>
-                                </div>
+                                ` : ""}
                                 
                             </div>
                         </div>
