@@ -45,6 +45,9 @@ export default class ResponsesList extends IaiLitBase {
             iai-silver-responses-list article p {
                 margin: 0;
             }
+            iai-silver-responses-list article .demo-tag {
+                max-width: 100%;
+            }
             iai-silver-responses-list article header,
             iai-silver-responses-list article footer {
                 display: flex;
@@ -108,6 +111,7 @@ export default class ResponsesList extends IaiLitBase {
                                         ${response.demoData
                                             ? response.demoData.map(data => html`
                                                 <iai-silver-tag
+                                                    class="demo-tag"
                                                     .text=${data}
                                                 ></iai-silver-tag>
                                             `)
