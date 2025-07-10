@@ -611,7 +611,11 @@ def test_semantic_search(fake_embed_text, consultation, question):
 
     responses = get_filtered_responses_with_themes(question, filters)
     assert [x.free_text for x in responses] == ["exact match", "orthogonal", "opposite"]
-    assert [x.distance for x in responses] == [0, 1, 2]
+    assert [x.distance for x in responses] == [
+        0 * settings.SEMANTIC_WEIGHT,
+        1 * settings.SEMANTIC_WEIGHT,
+        2 * settings.SEMANTIC_WEIGHT,
+    ]
 
 
 @pytest.mark.django_db
@@ -626,22 +630,23 @@ def test_lexical_search(fake_embed_text, consultation, question):
     orthogonal = list(0 for _ in range(settings.EMBEDDING_DIMENSION))
     orthogonal[1] = 1
 
-    text_1 = "Mary had a little lamb, His fleece was white as snow, And everywhere that Mary went, The lamb was sure to go"
-    text_2 = "He followed her to school one day, Which was against the rule, It made the children laugh and play, To see a lamb at school."
-    text_3 = "And so the teacher turned him out, But still he lingered near, And waited patiently about, Till Mary did appear."
-    text_4 = "What makes the lamb love Mary so? The eager children cry; Why, Mary loves the lamb, you know, The teacher did reply."
+    texts = [
+        "Mary had a little lamb, His fleece was white as snow, And everywhere that Mary went, The lamb was sure to go",
+        "He followed her to school one day, Which was against the rule, It made the children laugh and play, To see a lamb at school.",
+        "And so the teacher turned him out, But still he lingered near, And waited patiently about, Till Mary did appear.",
+        "What makes the lamb love Mary so? The eager children cry; Why, Mary loves the lamb, you know, The teacher did reply.",
+    ]
 
-
-    ResponseFactory(question=question, free_text=text_1, embedding=baseline)
-    ResponseFactory(question=question, free_text=text_2, embedding=baseline)
-    ResponseFactory(question=question, free_text=text_3, embedding=baseline)
-    ResponseFactory(question=question, free_text=text_4, embedding=baseline)
+    ResponseFactory(question=question, free_text=texts[0], embedding=baseline)
+    ResponseFactory(question=question, free_text=texts[1], embedding=baseline)
+    ResponseFactory(question=question, free_text=texts[2], embedding=baseline)
+    ResponseFactory(question=question, free_text=texts[3], embedding=baseline)
 
     fake_embed_text.return_value = orthogonal
 
     responses = get_filtered_responses_with_themes(question, filters)
-    assert [x.free_text for x in responses] == [text_1, text_4, text_2, text_3]
-    assert [x.distance for x in responses] == [0.9797747898846865, 0.9859406910836697, 1.0, 1.0]
+    assert [texts.index(x.free_text) for x in responses] == [0, 3, 1, 2]
+    assert [x.distance for x in responses] == [0.6939324369654059, 0.6957822073251009, 0.7, 0.7]
 
 
 @pytest.mark.django_db

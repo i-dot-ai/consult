@@ -4,9 +4,10 @@ from logging import getLogger
 from typing import TypedDict
 from uuid import UUID
 
+from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.paginator import Paginator
-from django.db.models import Count, Exists, OuterRef, Q
+from django.db.models import Count, Exists, OuterRef, Q, Value
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from pgvector.django import CosineDistance
@@ -151,7 +152,9 @@ def get_filtered_responses_with_themes(
         term_frequency = SearchRank("search_vector", search_query, normalization=1)
 
         # TODO find a better (or indeed any!) normalisation
-        distance = semantic_distance - term_frequency
+        distance = semantic_distance * Value(settings.SEMANTIC_WEIGHT) - term_frequency * Value(
+            1 - settings.SEMANTIC_WEIGHT
+        )
         return queryset.annotate(distance=distance).order_by("distance")
 
     return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination
