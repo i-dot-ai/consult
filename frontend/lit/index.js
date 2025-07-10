@@ -7598,7 +7598,6 @@ class ResponsesList extends IaiLitBase {
                                     <footer>
                                         ${response.themes.map((theme) => x`
                                             <iai-silver-button
-                                                class="theme-tag"
                                                 @click=${() => this.handleThemeTagClick(theme.id)}
                                                 .text=${theme.text}
                                             ></iai-silver-button>
