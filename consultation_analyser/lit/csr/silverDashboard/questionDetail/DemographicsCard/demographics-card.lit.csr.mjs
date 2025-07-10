@@ -43,6 +43,7 @@ export default class DemographicsCard extends IaiLitBase {
             }
             iai-demographics-card li>* {
                 width: 50%;
+                word-wrap: break-word;
             }
             iai-demographics-card .counts {
                 display: flex;

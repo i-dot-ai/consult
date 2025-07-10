@@ -21,6 +21,8 @@ export default class DemographicsSection extends IaiLitBase {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 1em;
+                max-width: 100%;
+                overflow: auto;
             }    
             iai-demographics-section iai-demographics-card {
                 flex-grow: 1;    

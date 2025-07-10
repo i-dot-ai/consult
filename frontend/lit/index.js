@@ -6984,6 +6984,7 @@ class DemographicsCard extends IaiLitBase {
             }
             iai-demographics-card li>* {
                 width: 50%;
+                word-wrap: break-word;
             }
             iai-demographics-card .counts {
                 display: flex;
@@ -7068,6 +7069,8 @@ class DemographicsSection extends IaiLitBase {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 1em;
+                max-width: 100%;
+                overflow: auto;
             }    
             iai-demographics-section iai-demographics-card {
                 flex-grow: 1;    
