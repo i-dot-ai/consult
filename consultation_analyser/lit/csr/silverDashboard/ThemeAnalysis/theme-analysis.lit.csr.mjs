@@ -253,7 +253,7 @@ export default class ThemeAnalysis extends IaiLitBase {
                                             .label=${category}
                                             .hideLabel=${true}
                                             .value=${this.demoFilters[category] || ""}
-                                            .placeholder=${`Select ${this.toTitleCase(category)}`}
+                                            .placeholder=${this.toTitleCase(category)}
                                             .options=${(Object.keys(this.demoData[category])).map(key => ({
                                                 value: key,
                                                 text: key

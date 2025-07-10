@@ -268,7 +268,7 @@ export default class ResponseRefinement extends IaiLitBase {
                                     .label=${this.toTitleCase(key)}
                                     .hideLabel=${false}
                                     .value=${this.demoFilters[key] || ""}
-                                    .placeholder=${`Select ${key}`}
+                                    .placeholder=${this.toTitleCase(key)}
                                     .options=${
                                         Object.keys(this.demoData[key]).map(demoDataOption => ({
                                             value: demoDataOption, text: this.toTitleCase(demoDataOption)

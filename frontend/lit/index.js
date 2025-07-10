@@ -6307,7 +6307,7 @@ class ThemeAnalysis extends IaiLitBase {
                                             .label=${category}
                                             .hideLabel=${true}
                                             .value=${this.demoFilters[category] || ""}
-                                            .placeholder=${`Select ${this.toTitleCase(category)}`}
+                                            .placeholder=${this.toTitleCase(category)}
                                             .options=${(Object.keys(this.demoData[category])).map(key => ({
                                                 value: key,
                                                 text: key
@@ -7395,7 +7395,7 @@ class ResponseRefinement extends IaiLitBase {
                                     .label=${this.toTitleCase(key)}
                                     .hideLabel=${false}
                                     .value=${this.demoFilters[key] || ""}
-                                    .placeholder=${`Select ${key}`}
+                                    .placeholder=${this.toTitleCase(key)}
                                     .options=${
                                         Object.keys(this.demoData[key]).map(demoDataOption => ({
                                             value: demoDataOption, text: this.toTitleCase(demoDataOption)
