@@ -96,6 +96,7 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
         for pair in pairs:
             key, value = pair.split(":")
             filters_dict[key] = value
+        filters["demo_filters"] = filters_dict
 
     return filters
 
