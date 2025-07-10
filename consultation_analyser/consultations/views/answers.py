@@ -131,14 +131,13 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
     if demo_filters:
         for field, value in demo_filters.items():
             field_query = Q()
-            for value in values:
-                # Handle boolean values
-                if value.lower() in ["true", "false"]:
-                    bool_value = value.lower() == "true"
-                    field_query |= Q(**{f"respondent__demographics__{field}": bool_value})
-                else:
-                    # Handle string values
-                    field_query |= Q(**{f"respondent__demographics__{field}": value})
+            # Handle boolean values
+            if value.lower() in ["true", "false"]:
+                bool_value = value.lower() == "true"
+                field_query |= Q(**{f"respondent__demographics__{field}": bool_value})
+            else:
+                # Handle string values
+                field_query |= Q(**{f"respondent__demographics__{field}": value})
             query &= field_query
 
     return query
