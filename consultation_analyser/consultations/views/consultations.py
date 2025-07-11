@@ -35,9 +35,14 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
         # Handle free text questions
         if question.has_free_text:
             question_dict["free_text_question_part"] = question  # For template compatibility
-            question_dict["free_text_count"] = models.Response.objects.filter(
-                question=question, free_text__isnull=False
-            ).count()
+
+        non_null_responses_count = (
+            models.Response.objects.filter(question=question)
+            .exclude(free_text__isnull=True)
+            .exclude(chosen_options__isnull=True)
+            .count()
+        )
+        question_dict["number_responses"] = non_null_responses_count
 
         # Handle multiple choice questions
         if question.has_multiple_choice:
