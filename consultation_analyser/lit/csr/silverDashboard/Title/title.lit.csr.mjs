@@ -19,7 +19,8 @@ export default class Title extends IaiLitBase {
         css`
             iai-silver-title h1,
             iai-silver-title h2,
-            iai-silver-title h3 {
+            iai-silver-title h3,
+            iai-silver-title h4 {
                 margin: 0;
             }
             iai-silver-title h1 {
@@ -28,7 +29,8 @@ export default class Title extends IaiLitBase {
             iai-silver-title h2 {
                 font-size: 1em;
             }
-            iai-silver-title h3 {
+            iai-silver-title h3,
+            iai-silver-title h4 {
                 font-size: 0.9em;
             }
             iai-silver-title .container {
