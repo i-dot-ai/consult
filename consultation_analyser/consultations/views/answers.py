@@ -90,14 +90,11 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
 
     # Expected format - `demoFilters=age:18,country:england`
     demo_filters = request.GET.get("demoFilters")
+    print(demo_filters)
     if demo_filters:
-        filters_dict = dict(pair.split(":") for pair in demo_filters.split(","))
-        pairs = demo_filters.split(",")
-        for pair in pairs:
-            key, value = pair.split(":")
-            filters_dict[key] = value
+        demographics = demo_filters.split(",")
+        filters_dict = dict(demographic.split(":") for demographic in demographics)
         filters["demo_filters"] = filters_dict
-
     return filters
 
 
