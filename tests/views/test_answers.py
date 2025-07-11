@@ -73,31 +73,6 @@ def test_parse_filters_from_request_empty(request_factory):
     assert filters == {}
 
 
-# TODO - remove these filters and test when v1 of dashboard is deleted
-@pytest.mark.django_db
-def test_parse_filters_from_request_all_filters_v1(request_factory):
-    """Test parsing all types of filters from request"""
-    request = request_factory.get(
-        "/",
-        {
-            "sentimentFilters": "AGREEMENT,DISAGREEMENT",
-            "themeFilters": "1,2,3",
-            "evidenceRichFilter": "evidence-rich",
-            "searchValue": "test search",
-            "demographicFilters[individual]": "true,false",
-            "demographicFilters[region]": "north,south",
-        },
-    )
-    filters = parse_filters_from_request(request)
-
-    assert filters["sentiment_list"] == ["AGREEMENT", "DISAGREEMENT"]
-    assert filters["theme_list"] == ["1", "2", "3"]
-    assert filters["evidence_rich"]
-    assert filters["search_value"] == "test search"
-    assert filters["demographic_filters"]["individual"] == ["true", "false"]
-    assert filters["demographic_filters"]["region"] == ["north", "south"]
-
-
 @pytest.mark.django_db
 def test_parse_filters_from_request_all_filters(request_factory):
     """Test parsing all types of filters from request"""
@@ -108,7 +83,15 @@ def test_parse_filters_from_request_all_filters(request_factory):
             "themeFilters": "1,2,3",
             "evidenceRich": "true",
             "searchValue": "test search",
+<<<<<<< HEAD
             "demoFilters": ["individual:true", "UK region:south", "Do+you+live+in::England"],
+=======
+<<<<<<< HEAD
+            "demoFilters": ["individual:true", "UK region:south"],
+=======
+            "demoFilters": "individual:true,region:south",
+>>>>>>> 799d6e5c (remove legacy parameters now we have moved to new version of the dashboard)
+>>>>>>> 9deaaf32 (remove legacy parameters now we have moved to new version of the dashboard)
             "themesSortDirection": "ascending",
             "themesSortType": "frequency",
         },
@@ -140,7 +123,7 @@ def test_build_response_filter_query_basic(question):
 @pytest.mark.django_db
 def test_build_response_filter_query_demographic_filters(question):
     """Test building filter query with demographic filters"""
-    filters = {"demographic_filters": {"individual": ["true"], "region": ["north", "south"]}}
+    filters = {"demo_filters": {"individual": "true", "region": "north"}}
     query = build_response_filter_query(filters, question)
 
     # Should include demographic filters
@@ -318,7 +301,7 @@ def test_question_responses_json_with_demographic_filters(client, consultation_u
     client.force_login(consultation_user)
     response = client.get(
         f"/consultations/{question.consultation.slug}/responses/{question.slug}/json/"
-        "?demographicFilters[individual]=true"
+        "?demoFilters=individual:true"
     )
 
     assert response.status_code == 200
@@ -410,7 +393,7 @@ def test_get_filtered_responses_with_themes_with_filters(question):
     ResponseFactory(question=question, respondent=respondent2)
 
     # Test with demographic filter
-    filters = {"demographic_filters": {"individual": ["true"]}}
+    filters = {"demo_filters": {"individual": "true"}}
     responses = get_filtered_responses_with_themes(question, filters)
 
     assert responses.count() == 1
