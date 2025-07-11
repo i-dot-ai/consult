@@ -146,6 +146,12 @@ class IaiLitBase extends i$1 {
         const regex = new RegExp(matchedText, "gi");
         return fullText.replace(regex, match => `<span class="matched-text">${match}</span>`);
     }
+
+    limitChars = (text, maxChars) => {
+        return text.length > maxChars
+            ? text.substring(0, maxChars) + "..."
+            : text
+    }
 }
 
 class IaiLitCsrExample extends IaiLitBase {
@@ -4833,7 +4839,8 @@ class Title extends IaiLitBase {
         i$4`
             iai-silver-title h1,
             iai-silver-title h2,
-            iai-silver-title h3 {
+            iai-silver-title h3,
+            iai-silver-title h4 {
                 margin: 0;
             }
             iai-silver-title h1 {
@@ -4842,7 +4849,8 @@ class Title extends IaiLitBase {
             iai-silver-title h2 {
                 font-size: 1em;
             }
-            iai-silver-title h3 {
+            iai-silver-title h3,
+            iai-silver-title h4 {
                 font-size: 0.9em;
             }
             iai-silver-title .container {
@@ -6970,7 +6978,7 @@ class DemographicsCard extends IaiLitBase {
             iai-demographics-card ul {
                 display: flex;
                 flex-direction: column;
-                gap: 0.5em;    
+                gap: 1em;
                 margin: 0;
                 padding-left: 0;
                 font-weight: bold;
@@ -6981,6 +6989,7 @@ class DemographicsCard extends IaiLitBase {
                 justify-content: space-between;
                 align-items: center;
                 list-style: none;
+                line-height: 1.5em;
             }
             iai-demographics-card li>* {
                 width: 50%;
@@ -7073,8 +7082,8 @@ class DemographicsSection extends IaiLitBase {
                 overflow: auto;
             }    
             iai-demographics-section iai-demographics-card {
-                flex-grow: 1;    
-                min-width: max-content;
+                flex-grow: 1;
+                max-width: 100%;
             }
             .themes-warning .tag {
                 width: 100%;
@@ -7086,6 +7095,7 @@ class DemographicsSection extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
+        this._MAX_DEMO_ANSWERS = 10;
 
         // Prop defaults
         this.data = [];
@@ -7121,12 +7131,14 @@ class DemographicsSection extends IaiLitBase {
                         }
 
                         <div class="cards">
-                            ${Object.keys(this.data).map(category => x`
-                                <iai-demographics-card
-                                    .title=${this.toTitleCase(category)}
-                                    .data=${this.data[category]}
-                                ></iai-demographics-card>
-                            `)}
+                            ${Object.keys(this.data).map(category => {
+                                return Object.values(this.data[category]).length <= this._MAX_DEMO_ANSWERS
+                                    ? x`
+                                        <iai-demographics-card
+                                            .title=${this.toTitleCase(category)}
+                                            .data=${this.data[category]}
+                                        ></iai-demographics-card>
+                                    ` : ""})}
                         </div>
                     </div>
                 </div>
@@ -7181,8 +7193,10 @@ class ResponseRefinement extends IaiLitBase {
                 font-size: 0.9em !important;
             }
             iai-response-refinement .filters {
-                display: grid;
+                display: flex;
                 gap: 1em;
+                width: 100%;
+                flex-direction: column;
             }
             iai-response-refinement iai-silver-select-input {
                 display: block;
@@ -7221,6 +7235,10 @@ class ResponseRefinement extends IaiLitBase {
                 transition: opacity 0.3s ease-in-out;
                 box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
             }
+            iai-response-refinement .popup-button .popup-panel.themes-panel {
+                right: unset;
+                left: 0;
+            }
             iai-response-refinement .popup-panel .content {
                 display: flex;
                 align-items: center;
@@ -7240,8 +7258,6 @@ class ResponseRefinement extends IaiLitBase {
             }
             iai-response-refinement .dropdown-filters {
                 display: flex;
-                justify-content:
-                space-between;
                 align-items: flex-end;
                 flex-wrap: wrap;
                 gap: 1em;
@@ -7420,7 +7436,7 @@ class ResponseRefinement extends IaiLitBase {
                                 ></iai-silver-button>
 
                                 ${this.themes.length > 0 ? x`
-                                    <div class="popup-panel" style=${`
+                                    <div class="popup-panel themes-panel" style=${`
                                         opacity: ${this._themeFiltersVisible ? 1 : 0};
                                         pointer-events: ${this._themeFiltersVisible ? "auto" : "none"};
                                     `}>
@@ -7494,6 +7510,12 @@ class ResponsesList extends IaiLitBase {
             iai-silver-responses-list article p {
                 margin: 0;
             }
+            iai-silver-responses-list article .demo-tag {
+                max-width: 100%;
+            }
+            iai-silver-responses-list article .theme-tag button {
+                text-align: start;
+            }
             iai-silver-responses-list article header,
             iai-silver-responses-list article footer {
                 display: flex;
@@ -7557,6 +7579,7 @@ class ResponsesList extends IaiLitBase {
                                         ${response.demoData
                                             ? response.demoData.map(data => x`
                                                 <iai-silver-tag
+                                                    class="demo-tag"
                                                     .text=${data}
                                                 ></iai-silver-tag>
                                             `)
@@ -7598,6 +7621,7 @@ class ResponsesList extends IaiLitBase {
                                     <footer>
                                         ${response.themes.map((theme) => x`
                                             <iai-silver-button
+                                                class="theme-tag"
                                                 @click=${() => this.handleThemeTagClick(theme.id)}
                                                 .text=${theme.text}
                                             ></iai-silver-button>

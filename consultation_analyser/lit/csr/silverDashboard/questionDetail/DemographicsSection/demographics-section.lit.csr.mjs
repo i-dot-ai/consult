@@ -25,8 +25,8 @@ export default class DemographicsSection extends IaiLitBase {
                 overflow: auto;
             }    
             iai-demographics-section iai-demographics-card {
-                flex-grow: 1;    
-                min-width: max-content;
+                flex-grow: 1;
+                max-width: 100%;
             }
             .themes-warning .tag {
                 width: 100%;
@@ -38,6 +38,7 @@ export default class DemographicsSection extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
+        this._MAX_DEMO_ANSWERS = 10;
 
         // Prop defaults
         this.data = [];
@@ -73,12 +74,14 @@ export default class DemographicsSection extends IaiLitBase {
                         }
 
                         <div class="cards">
-                            ${Object.keys(this.data).map(category => html`
-                                <iai-demographics-card
-                                    .title=${this.toTitleCase(category)}
-                                    .data=${this.data[category]}
-                                ></iai-demographics-card>
-                            `)}
+                            ${Object.keys(this.data).map(category => {
+                                return Object.values(this.data[category]).length <= this._MAX_DEMO_ANSWERS
+                                    ? html`
+                                        <iai-demographics-card
+                                            .title=${this.toTitleCase(category)}
+                                            .data=${this.data[category]}
+                                        ></iai-demographics-card>
+                                    ` : ""})}
                         </div>
                     </div>
                 </div>

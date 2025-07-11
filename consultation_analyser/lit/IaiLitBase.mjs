@@ -123,4 +123,10 @@ export default class IaiLitBase extends LitElement {
         const regex = new RegExp(matchedText, "gi");
         return fullText.replace(regex, match => `<span class="matched-text">${match}</span>`);
     }
+
+    limitChars = (text, maxChars) => {
+        return text.length > maxChars
+            ? text.substring(0, maxChars) + "..."
+            : text
+    }
 }

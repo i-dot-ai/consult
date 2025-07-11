@@ -45,6 +45,12 @@ export default class ResponsesList extends IaiLitBase {
             iai-silver-responses-list article p {
                 margin: 0;
             }
+            iai-silver-responses-list article .demo-tag {
+                max-width: 100%;
+            }
+            iai-silver-responses-list article .theme-tag button {
+                text-align: start;
+            }
             iai-silver-responses-list article header,
             iai-silver-responses-list article footer {
                 display: flex;
@@ -108,6 +114,7 @@ export default class ResponsesList extends IaiLitBase {
                                         ${response.demoData
                                             ? response.demoData.map(data => html`
                                                 <iai-silver-tag
+                                                    class="demo-tag"
                                                     .text=${data}
                                                 ></iai-silver-tag>
                                             `)
@@ -149,6 +156,7 @@ export default class ResponsesList extends IaiLitBase {
                                     <footer>
                                         ${response.themes.map((theme) => html`
                                             <iai-silver-button
+                                                class="theme-tag"
                                                 @click=${() => this.handleThemeTagClick(theme.id)}
                                                 .text=${theme.text}
                                             ></iai-silver-button>
