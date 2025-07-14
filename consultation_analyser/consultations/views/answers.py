@@ -1,16 +1,16 @@
 from collections import defaultdict
 from datetime import datetime
 from logging import getLogger
-from typing import TypedDict
+from typing import Literal, TypedDict
 from uuid import UUID
 
-from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.paginator import Paginator
-from django.db.models import Count, Exists, OuterRef, Q, Value
+from django.db.models import Count, Exists, OuterRef, Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from pgvector.django import CosineDistance
+from rest_framework.exceptions import ValidationError
 
 from ...embeddings import embed_text
 from .. import models
@@ -34,6 +34,7 @@ class FilterParams(TypedDict, total=False):
     theme_list: list[str]
     evidence_rich: bool
     search_value: str  # TODO - remove when v1 dash deleted
+    search_mode: Literal["semantic", "keyword"]
     demographic_filters: dict[  # TODO - remove when v1 dash deleted
         str, list[str]
     ]  # e.g. {"individual": ["true"], "region": ["north", "south"]}
@@ -76,6 +77,12 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
     if search_value:
         filters["search_value"] = search_value
 
+    search_mode = request.GET.get("searchMode")
+    if search_mode:
+        if search_mode not in ("semantic", "keyword"):
+            raise ValidationError("search mode must be one of semantic, keyword")
+        filters["search_mode"] = search_mode
+
     # TODO - remove when v1 of dashboard removed - just use demoFilters
     # Parse demographic filters
     # Expected format: demographicFilters[field]=value1,value2
@@ -92,7 +99,6 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
 
     # Expected format - `demoFilters=age:18,country:england`
     demo_filters = request.GET.get("demoFilters")
-    print(demo_filters)
     if demo_filters:
         demographics = demo_filters.split(",")
         filters_dict = dict(demographic.split(":") for demographic in demographics)
@@ -164,21 +170,22 @@ def get_filtered_responses_with_themes(
             queryset = queryset.filter(Exists(theme_exists))
 
     if filters and filters.get("search_value"):
-        embedded_query = embed_text(filters["search_value"])
         search_query = SearchQuery(filters["search_value"])
 
-        # semantic_distance: exact match = 0, exact opposite = 2
-        semantic_distance = CosineDistance("embedding", embedded_query)
-
-        # term_frequency: exact match = 1+, no match = 0
-        # normalization = 1: divides the rank by 1 + the logarithm of the document length
-        term_frequency = SearchRank("search_vector", search_query, normalization=1)
-
-        # TODO find a better (or indeed any!) normalisation
-        distance = semantic_distance * Value(settings.SEMANTIC_WEIGHT) - term_frequency * Value(
-            1 - settings.SEMANTIC_WEIGHT
-        )
-        return queryset.annotate(distance=distance).order_by("distance")
+        if filters.get("search_mode") == "semantic":
+            # semantic_distance: exact match = 0, exact opposite = 2
+            embedded_query = embed_text(filters["search_value"])
+            distance = CosineDistance("embedding", embedded_query)
+            return queryset.annotate(distance=distance).order_by("distance")
+        else:
+            # term_frequency: exact match = 1+, no match = 0
+            # normalization = 1: divides the rank by 1 + the logarithm of the document length
+            distance = SearchRank("search_vector", search_query, normalization=1)
+            return (
+                queryset.filter(search_vector=search_query)
+                .annotate(distance=distance)
+                .order_by("-distance")
+            )
 
     return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination
 
