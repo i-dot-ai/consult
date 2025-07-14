@@ -5978,7 +5978,7 @@ class ThemesTable extends IaiLitBase {
         themes: { type: Array },
         themeFilters: { type: Array },
         setThemeFilters: { type: Function },
-        totalMentions: { type: Number },
+        totalResponses: { type: Number },
     }
 
     static styles = [
@@ -6049,7 +6049,7 @@ class ThemesTable extends IaiLitBase {
         this.themes = [];
         this.themeFilters = [];
         this.setThemeFilters = () => {};
-        this.totalMentions = 0;
+        this.totalResponses = 0;
 
         this.applyStaticStyles("iai-themes-table", ThemesTable.styles);
     }
@@ -6104,14 +6104,14 @@ class ThemesTable extends IaiLitBase {
                                 <div class="percentage-cell">
                                     <div>
                                         <iai-animated-number
-                                            .number=${this.getPercentage(theme.mentions, this.totalMentions)}
+                                            .number=${this.getPercentage(theme.mentions, this.totalResponses)}
                                             .duration=${this._NUMBER_ANIMATION_DURATION}
                                         ></iai-animated-number>
                                         %
                                     </div>
 
                                     <iai-progress-bar
-                                        .value=${this.getPercentage(theme.mentions, this.totalMentions)}
+                                        .value=${this.getPercentage(theme.mentions, this.totalResponses)}
                                         .label=${""}
                                     ></iai-progress-bar>
                                 </div>
@@ -6142,6 +6142,7 @@ class ThemeAnalysis extends IaiLitBase {
         themes: { type: Array },
         demoData: { type: Object },
         demoOptions: { type: Object },
+        totalResponses: { type: Number },
 
         themeFilters: { type: Array },
         updateThemeFilters: { type: Function },
@@ -6154,8 +6155,6 @@ class ThemeAnalysis extends IaiLitBase {
 
         demoFilters: { type: Object },
         setDemoFilters: { type: Function },
-
-        _totalMentions: { type: Number },
     }
 
     static styles = [
@@ -6293,6 +6292,7 @@ class ThemeAnalysis extends IaiLitBase {
         this.themes = [];
         this.demoData = {};
         this.demoOptions = {};
+        this.totalResponses = 0;
 
         this.themeFilters = [];
         this.updateThemeFilters = () => {};
@@ -6307,12 +6307,6 @@ class ThemeAnalysis extends IaiLitBase {
         this.setSortDirection = () => {};
 
         this.applyStaticStyles("iai-theme-analysis", ThemeAnalysis.styles);
-    }
-
-    updated(changedProps) {
-        if (changedProps.has("themes")) {
-            this._totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
-        }
     }
 
     filtersApplied() {
@@ -6340,7 +6334,7 @@ class ThemeAnalysis extends IaiLitBase {
                                             "Theme Name": theme.title,
                                             "Theme Description": theme.description,
                                             "Mentions": theme.mentions,
-                                            "Percentage": this.getPercentage(theme.mentions, this._totalMentions),
+                                            "Percentage": this.getPercentage(theme.mentions, this.totalResponses),
                                         }))
                                     }
                                 >
@@ -6472,7 +6466,7 @@ class ThemeAnalysis extends IaiLitBase {
                         .themes=${this.themes}
                         .themeFilters=${this.themeFilters}
                         .setThemeFilters=${this.updateThemeFilters}
-                        .totalMentions=${this._totalMentions}
+                        .totalResponses=${this.totalResponses}
                     ></iai-themes-table>
                 </div>
             </iai-silver-panel>
@@ -7901,13 +7895,6 @@ class QuestionDetailPage extends IaiLitBase {
             ...(this._evidenceRichFilter && {
                 evidenceRich: this._evidenceRichFilter
             }),
-            // Add demofilters as string formatted as "foo:1,bar:2"
-            ...(Object.values(this._demoFilters).filter(Boolean).length > 0 && {
-                demoFilters: Object.keys(this._demoFilters)
-                    .filter(Boolean)
-                    .map(key => `${key}:${this._demoFilters[key]}`)
-                    .join(",")
-            }),
             ...(this._themesSortType && {
                 themesSortType: this._themesSortType
             }),
@@ -7917,6 +7904,13 @@ class QuestionDetailPage extends IaiLitBase {
             page: this._currentPage,
             page_size: this._PAGE_SIZE.toString(),
         });
+
+        // Filter out demo filter keys with no value
+        const validDemoFilterKeys = Object.keys(this._demoFilters).filter(key => Boolean(this._demoFilters[key]));
+        // Add each demo filter as a duplicate demoFilter param
+        for (const key of validDemoFilterKeys) {
+            params.append("demoFilters", this._demoFilters[key]);
+        }
 
         return params.toString();
     }
@@ -7986,7 +7980,7 @@ class QuestionDetailPage extends IaiLitBase {
             }));
 
             this._demoData = responsesData.demographic_aggregations || {};
-            this._demoOptions =  responsesData.demographic_options || {};
+            this._demoOptions = responsesData.demographic_options || {};
 
             // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
             if (this._currentPage === 1 && responsesData.theme_mappings) {
@@ -8036,6 +8030,7 @@ class QuestionDetailPage extends IaiLitBase {
                     .themes=${this._themes}
                     .demoData=${this._demoData}
                     .demoOptions=${this._demoOptions}
+                    .totalResponses=${this._responsesTotal}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}

@@ -20,6 +20,7 @@ export default class ThemeAnalysis extends IaiLitBase {
         themes: { type: Array },
         demoData: { type: Object },
         demoOptions: { type: Object },
+        totalResponses: { type: Number },
 
         themeFilters: { type: Array },
         updateThemeFilters: { type: Function },
@@ -32,8 +33,6 @@ export default class ThemeAnalysis extends IaiLitBase {
 
         demoFilters: { type: Object },
         setDemoFilters: { type: Function },
-
-        _totalMentions: { type: Number },
     }
 
     static styles = [
@@ -171,6 +170,7 @@ export default class ThemeAnalysis extends IaiLitBase {
         this.themes = [];
         this.demoData = {};
         this.demoOptions = {};
+        this.totalResponses = 0;
 
         this.themeFilters = [];
         this.updateThemeFilters = () => {};
@@ -185,12 +185,6 @@ export default class ThemeAnalysis extends IaiLitBase {
         this.setSortDirection = () => {};
 
         this.applyStaticStyles("iai-theme-analysis", ThemeAnalysis.styles);
-    }
-
-    updated(changedProps) {
-        if (changedProps.has("themes")) {
-            this._totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
-        }
     }
 
     filtersApplied() {
@@ -218,7 +212,7 @@ export default class ThemeAnalysis extends IaiLitBase {
                                             "Theme Name": theme.title,
                                             "Theme Description": theme.description,
                                             "Mentions": theme.mentions,
-                                            "Percentage": this.getPercentage(theme.mentions, this._totalMentions),
+                                            "Percentage": this.getPercentage(theme.mentions, this.totalResponses),
                                         }))
                                     }
                                 >
@@ -350,7 +344,7 @@ export default class ThemeAnalysis extends IaiLitBase {
                         .themes=${this.themes}
                         .themeFilters=${this.themeFilters}
                         .setThemeFilters=${this.updateThemeFilters}
-                        .totalMentions=${this._totalMentions}
+                        .totalResponses=${this.totalResponses}
                     ></iai-themes-table>
                 </div>
             </iai-silver-panel>

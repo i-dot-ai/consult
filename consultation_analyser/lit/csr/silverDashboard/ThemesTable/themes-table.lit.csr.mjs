@@ -15,7 +15,7 @@ export default class ThemesTable extends IaiLitBase {
         themes: { type: Array },
         themeFilters: { type: Array },
         setThemeFilters: { type: Function },
-        totalMentions: { type: Number },
+        totalResponses: { type: Number },
     }
 
     static styles = [
@@ -86,7 +86,7 @@ export default class ThemesTable extends IaiLitBase {
         this.themes = [];
         this.themeFilters = [];
         this.setThemeFilters = () => {};
-        this.totalMentions = 0;
+        this.totalResponses = 0;
 
         this.applyStaticStyles("iai-themes-table", ThemesTable.styles);
     }
@@ -141,14 +141,14 @@ export default class ThemesTable extends IaiLitBase {
                                 <div class="percentage-cell">
                                     <div>
                                         <iai-animated-number
-                                            .number=${this.getPercentage(theme.mentions, this.totalMentions)}
+                                            .number=${this.getPercentage(theme.mentions, this.totalResponses)}
                                             .duration=${this._NUMBER_ANIMATION_DURATION}
                                         ></iai-animated-number>
                                         %
                                     </div>
 
                                     <iai-progress-bar
-                                        .value=${this.getPercentage(theme.mentions, this.totalMentions)}
+                                        .value=${this.getPercentage(theme.mentions, this.totalResponses)}
                                         .label=${""}
                                     ></iai-progress-bar>
                                 </div>

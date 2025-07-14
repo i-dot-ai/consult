@@ -180,13 +180,6 @@ export default class QuestionDetailPage extends IaiLitBase {
             ...(this._evidenceRichFilter && {
                 evidenceRich: this._evidenceRichFilter
             }),
-            // Add demofilters as string formatted as "foo:1,bar:2"
-            ...(Object.values(this._demoFilters).filter(Boolean).length > 0 && {
-                demoFilters: Object.keys(this._demoFilters)
-                    .filter(Boolean)
-                    .map(key => `${key}:${this._demoFilters[key]}`)
-                    .join(",")
-            }),
             ...(this._themesSortType && {
                 themesSortType: this._themesSortType
             }),
@@ -196,6 +189,13 @@ export default class QuestionDetailPage extends IaiLitBase {
             page: this._currentPage,
             page_size: this._PAGE_SIZE.toString(),
         })
+
+        // Filter out demo filter keys with no value
+        const validDemoFilterKeys = Object.keys(this._demoFilters).filter(key => Boolean(this._demoFilters[key]));
+        // Add each demo filter as a duplicate demoFilter param
+        for (const key of validDemoFilterKeys) {
+            params.append("demoFilters", this._demoFilters[key]);
+        }
 
         return params.toString();
     }
@@ -265,7 +265,7 @@ export default class QuestionDetailPage extends IaiLitBase {
             }));
 
             this._demoData = responsesData.demographic_aggregations || {};
-            this._demoOptions =  responsesData.demographic_options || {};
+            this._demoOptions = responsesData.demographic_options || {};
 
             // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
             if (this._currentPage === 1 && responsesData.theme_mappings) {
@@ -315,6 +315,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .themes=${this._themes}
                     .demoData=${this._demoData}
                     .demoOptions=${this._demoOptions}
+                    .totalResponses=${this._responsesTotal}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
