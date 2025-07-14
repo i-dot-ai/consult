@@ -11,6 +11,7 @@ export default class DemographicsSection extends IaiLitBase {
         ...IaiLitBase.properties,
         data: { type: Array },
         themeFilters: { type: Array },
+        demoFilters: { type: Object},
         total: { type: Number },
     }
 
@@ -43,9 +44,26 @@ export default class DemographicsSection extends IaiLitBase {
         // Prop defaults
         this.data = [];
         this.themeFilters = [];
+        this.demoFilters = {};
         this.total = 0;
         
         this.applyStaticStyles("iai-demographics-section", DemographicsSection.styles);
+    }
+
+    getFilterWarningText() {
+        const demoFiltersText = Object.values(this.demoFilters).filter(Boolean).join(", ");
+        const themeFiltersText = this.themeFilters.length
+            ? `${this.themeFilters.length} themes`
+            : "";
+        return [demoFiltersText, themeFiltersText].filter(Boolean).join(", ");
+    }
+
+    demoFiltersApplied() {
+        return Object.values(this.demoFilters).filter(Boolean).length > 0;
+    }
+
+    themeFiltersApplied() {
+        return this.themeFilters.length > 0;
     }
 
     render() {
@@ -60,12 +78,12 @@ export default class DemographicsSection extends IaiLitBase {
                             .level=${2}
                         ></iai-silver-title>
 
-                        ${this.themeFilters.length > 0
+                        ${this.themeFiltersApplied() || this.demoFiltersApplied()
                             ? html`
                                 <iai-silver-tag
                                     class="themes-warning"
                                     .text=${"Active theme analysis filters"}
-                                    .subtext=${`Showing data for ${this.total.toLocaleString()} responses (filtered by: ${this.themeFilters.length} themes)`}
+                                    .subtext=${`Showing data for ${this.total.toLocaleString()} responses (filtered by: ${this.getFilterWarningText()})`}
                                     .icon=${"report"}
                                     .status=${"Closed"}
                                 ></iai-silver-tag>

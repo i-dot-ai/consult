@@ -493,6 +493,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                 <iai-demographics-section
                     .data=${this._demoData}
                     .themeFilters=${this._themeFilters}
+                    .demoFilters=${this._demoFilters}
                     .total=${this._filteredTotal}
                 ></iai-demographics-section>
             </section>
