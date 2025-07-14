@@ -8004,7 +8004,7 @@ class QuestionDetailPage extends IaiLitBase {
         const validDemoFilterKeys = Object.keys(this._demoFilters).filter(key => Boolean(this._demoFilters[key]));
         // Add each demo filter as a duplicate demoFilter param
         for (const key of validDemoFilterKeys) {
-            params.append("demoFilters", this._demoFilters[key]);
+            params.append("demoFilters", `${key}:${this._demoFilters[key]}`);
         }
 
         return params.toString();
