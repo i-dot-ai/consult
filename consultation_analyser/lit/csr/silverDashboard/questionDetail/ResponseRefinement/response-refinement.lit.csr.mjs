@@ -292,7 +292,7 @@ export default class ResponseRefinement extends IaiLitBase {
 
                             <div class="popup-button">
                                 <iai-silver-button
-                                    .text=${`Themes (${this.themeFilters.length}/3)`}
+                                    .text=${`Themes (${this.themeFilters.length})`}
                                     .handleClick=${() => this._themeFiltersVisible = !this._themeFiltersVisible}
                                 ></iai-silver-button>
 

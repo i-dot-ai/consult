@@ -302,7 +302,7 @@ export default class ThemeAnalysis extends IaiLitBase {
                                 class="theme-filters-warning"
                                 .status=${"Closed"}
                                 .icon=${"report"}
-                                .text=${`Selected themes (${this.themeFilters.length}/3)`}
+                                .text=${`Selected themes (${this.themeFilters.length})`}
                                 .subtext=${html`
                                     <div class="tag-container">
                                         ${this.themeFilters.map(themeFilter => html`

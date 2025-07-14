@@ -103,7 +103,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         super();
         this.contentId = this.generateId();
         
-        this._MAX_THEME_FILTERS = 3;
+        this._MAX_THEME_FILTERS = Infinity;
         this._PAGE_SIZE = 50;
         this._DEBOUNCE_DELAY = 500;
         this._TAB_INDECES = {

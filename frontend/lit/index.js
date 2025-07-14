@@ -6424,7 +6424,7 @@ class ThemeAnalysis extends IaiLitBase {
                                 class="theme-filters-warning"
                                 .status=${"Closed"}
                                 .icon=${"report"}
-                                .text=${`Selected themes (${this.themeFilters.length}/3)`}
+                                .text=${`Selected themes (${this.themeFilters.length})`}
                                 .subtext=${x`
                                     <div class="tag-container">
                                         ${this.themeFilters.map(themeFilter => x`
@@ -7521,7 +7521,7 @@ class ResponseRefinement extends IaiLitBase {
 
                             <div class="popup-button">
                                 <iai-silver-button
-                                    .text=${`Themes (${this.themeFilters.length}/3)`}
+                                    .text=${`Themes (${this.themeFilters.length})`}
                                     .handleClick=${() => this._themeFiltersVisible = !this._themeFiltersVisible}
                                 ></iai-silver-button>
 
@@ -7819,7 +7819,7 @@ class QuestionDetailPage extends IaiLitBase {
         super();
         this.contentId = this.generateId();
         
-        this._MAX_THEME_FILTERS = 3;
+        this._MAX_THEME_FILTERS = Infinity;
         this._PAGE_SIZE = 50;
         this._DEBOUNCE_DELAY = 500;
         this._TAB_INDECES = {
