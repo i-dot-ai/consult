@@ -380,7 +380,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                             text: response.free_text_answer_text,
                             themes: response.themes.map(theme => ({
                                 id: theme.id,
-                                text: theme.description,
+                                text: theme.name,
                             })),
                             evidenceRich: response.evidenceRich,
                             multiAnswers: response.multiple_choice_answer || [],
