@@ -3,7 +3,9 @@ from django_rq import get_queue
 
 from consultation_analyser.consultations.models import (
     Consultation,
+    DemographicOption,
     Question,
+    Respondent,
     Response,
     ResponseAnnotation,
     ResponseAnnotationTheme,
@@ -73,8 +75,18 @@ class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
     ]
 
 
+class RespondentAdmin(admin.ModelAdmin):
+    readonly_fields = ["consultation", "themefinder_id", "demographics"]
+
+
+class DemographicOptionAdmin(admin.ModelAdmin):
+    readonly_fields = ["consultation", "field_name", "field_value"]
+
+
 admin.site.register(Response, ResponseAdmin)
 admin.site.register(Consultation, ConsultationAdmin)
 admin.site.register(Question, QuestionAdmin)
 admin.site.register(ResponseAnnotation, ResponseAnnotationAdmin)
 admin.site.register(ResponseAnnotationTheme, ResponseAnnotationThemeAdmin)
+admin.site.register(Respondent, RespondentAdmin)
+admin.site.register(DemographicOption, DemographicOptionAdmin)
