@@ -6135,6 +6135,117 @@ class ThemesTable extends IaiLitBase {
 }
 customElements.define("iai-themes-table", ThemesTable);
 
+class ThemeFiltersWarning extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        themes: { type: Array },
+        themeFilters: { type: Array },
+        updateThemeFilters: { type: Function },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-theme-filters-warning .theme-tag .material-symbols-outlined {
+                font-size: 1.3em;
+            }
+            iai-theme-filters-warning iai-silver-button button {
+                width: max-content;
+                display: flex;
+                align-items: center;
+                padding-inline: 0.5em;
+                gap: 0.5em;
+                font-weight: bold;
+                color: var(--iai-silver-color-text);
+            }
+            iai-theme-filters-warning iai-silver-tag {
+                width: 100%;
+                display: block;
+                margin-bottom: 1em;
+            }
+            iai-theme-filters-warning .tag-container iai-silver-tag {
+                width: auto;
+                margin: 0;
+            }
+            iai-theme-filters-warning iai-silver-tag .tag-container {
+                display: flex;
+                gap: 0.5em;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            iai-theme-filters-warning iai-silver-tag .theme-tag {
+                display: flex;
+                gap: 0.5em;
+                font-size: 1.2em;
+                align-items: center;
+            }
+            iai-theme-filters-warning iai-silver-tag .theme-tag iai-icon-button {
+                margin-top: 0.1em;
+            }
+            iai-theme-filters-warning iai-silver-tag .tag {
+                width: 100%;
+            }
+            iai-theme-filters-warning iai-silver-button button {
+                width: max-content;
+                display: flex;
+                align-items: center;
+                padding-inline: 0.5em;
+                gap: 0.5em;
+                font-weight: bold;
+                color: var(--iai-silver-color-text);
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        this.themes = [];
+        this.themeFilters = [];
+        this.updateThemeFilters = () => {};
+
+        this.applyStaticStyles("iai-theme-filters-warning", ThemeFiltersWarning.styles);
+    }
+    
+    render() {
+        return x`
+            <iai-silver-tag
+                .status=${"Closed"}
+                .icon=${"report"}
+                .text=${`Selected themes (${this.themeFilters.length})`}
+                .subtext=${x`
+                    <div class="tag-container">
+                        ${this.themeFilters.map(themeFilter => x`
+                        <iai-silver-tag
+                            .text=${x`
+                                <div class="theme-tag">
+                                    ${this.themes.find(theme => theme.id == themeFilter).title}
+
+                                    <iai-icon-button .handleClick=${() => this.updateThemeFilters(themeFilter)}>
+                                        <iai-icon
+                                            slot="icon"
+                                            .name=${"close"}
+                                        ></iai-icon>
+                                    </iai-icon-button>
+                                    
+                                </div>`}
+                        ></iai-silver-tag>
+                        `)}
+
+                        <iai-silver-button
+                            .text=${"Clear all"}
+                            .handleClick=${() => this.updateThemeFilters()}
+                        ></iai-silver-button>
+                    </div>
+                `}
+            >
+            </iai-silver-tag>
+        `;
+    }
+}
+customElements.define("iai-theme-filters-warning", ThemeFiltersWarning);
+
 class ThemeAnalysis extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -6253,29 +6364,6 @@ class ThemeAnalysis extends IaiLitBase {
             iai-theme-analysis .info-container {
                 display: flex;
                 justify-content: space-between;
-            }
-            iai-theme-analysis .theme-filters-warning {
-                width: 100%;
-                display: block;
-                margin-bottom: 1em;
-            }
-            iai-theme-analysis .theme-filters-warning .tag-container {
-                display: flex;
-                gap: 0.5em;
-                align-items: center;
-                flex-wrap: wrap;
-            }
-            iai-theme-analysis .theme-filters-warning .theme-tag {
-                display: flex;
-                gap: 0.5em;
-                font-size: 1.2em;
-                align-items: center;
-            }
-            iai-theme-analysis .theme-filters-warning .theme-tag iai-icon-button {
-                margin-top: 0.1em;
-            }
-            iai-theme-analysis .theme-filters-warning .tag {
-                width: 100%;
             }
             @media (min-width: 40.0625em) {
                 .govuk-form-group {
@@ -6420,40 +6508,13 @@ class ThemeAnalysis extends IaiLitBase {
                         </div>
 
                         ${this.themeFilters.length > 0 ? x`
-                            <iai-silver-tag
-                                class="theme-filters-warning"
-                                .status=${"Closed"}
-                                .icon=${"report"}
-                                .text=${`Selected themes (${this.themeFilters.length})`}
-                                .subtext=${x`
-                                    <div class="tag-container">
-                                        ${this.themeFilters.map(themeFilter => x`
-                                        <iai-silver-tag
-                                            .text=${x`
-                                                <div class="theme-tag">
-                                                    ${this.themes.find(theme => theme.id == themeFilter).title}
-
-                                                    <iai-icon-button .handleClick=${() => this.updateThemeFilters(themeFilter)}>
-                                                        <iai-icon
-                                                            slot="icon"
-                                                            .name=${"close"}
-                                                        ></iai-icon>
-                                                    </iai-icon-button>
-                                                    
-                                                </div>`}
-                                        ></iai-silver-tag>
-                                        `)}
-
-                                        <iai-silver-button
-                                            .text=${"Clear all"}
-                                            .handleClick=${() => this.updateThemeFilters()}
-                                        ></iai-silver-button>
-                                    </div>
-                                `}
-                            >
-                            </iai-silver-tag>
-                        `: ""}
-
+                            <iai-theme-filters-warning
+                                .themes=${this.themes}
+                                .themeFilters=${this.themeFilters}
+                                .updateThemeFilters=${this.updateThemeFilters}
+                            ></iai-theme-filters-warning>
+                        ` : ""}
+                        
                         <div class="info-container">
                             <small>
                                 Click themes to select up to 3 for detailed analysis.
@@ -7259,9 +7320,6 @@ class ResponseRefinement extends IaiLitBase {
         demoFilters: { type: Array },
         setDemoFilters: { type: Function },
 
-        themesFilters: { type: Array },
-        setThemesFilters: { type: Function },
-
         highlightMatches: { type: Boolean },
         setHighlightMatches: { type: Function },
 
@@ -7347,7 +7405,7 @@ class ResponseRefinement extends IaiLitBase {
                 cursor: pointer;
                 white-space: nowrap;
             }
-            iai-response-refinement .dropdown-filters {
+            iai-response-refinement .filters-row {
                 display: flex;
                 align-items: flex-end;
                 flex-wrap: wrap;
@@ -7366,6 +7424,9 @@ class ResponseRefinement extends IaiLitBase {
             }
             iai-response-refinement iai-silver-select-input .govuk-form-group {
                 margin-bottom: 0;
+            }
+            iai-response-refinement iai-theme-filters-warning {
+                width: 100%;
             }
         `
     ]
@@ -7500,7 +7561,7 @@ class ResponseRefinement extends IaiLitBase {
                             ></iai-toggle-input>
                         </div>
                         
-                        <div class="dropdown-filters">
+                        <div class="filters-row">
                             ${Object.keys(this.demoOptions).map(key => x`
                                 <iai-silver-select-input
                                     .inputId=${`demo-filter-${key}`}
@@ -7523,7 +7584,7 @@ class ResponseRefinement extends IaiLitBase {
                             `)}
                         </div>
 
-                        <div class="dropdown-filters">
+                        <div class="filters-row">
                             <div class="popup-button">
                                 <iai-silver-button
                                     .text=${`Themes (${this.themeFilters.length})`}
@@ -7561,6 +7622,16 @@ class ResponseRefinement extends IaiLitBase {
                                 ` : ""}
                                 
                             </div>
+                        </div>
+
+                        <div class="filters-row">
+                            ${this.themeFilters.length > 0 ? x`
+                                <iai-theme-filters-warning
+                                    .themes=${this.themes}
+                                    .themeFilters=${this.themeFilters}
+                                    .updateThemeFilters=${this.updateThemeFilters}
+                                ></iai-theme-filters-warning>
+                            ` : ""}
                         </div>
                     </div>
                 </div>

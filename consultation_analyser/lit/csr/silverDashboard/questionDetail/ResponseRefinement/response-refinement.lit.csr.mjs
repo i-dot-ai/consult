@@ -7,6 +7,7 @@ import Tag from '../../Tag/tag.lit.csr.mjs';
 import ToggleInput from '../../../inputs/ToggleInput/iai-toggle-input.lit.csr.mjs';
 import SelectInput from '../../inputs/SelectInput/select-input.lit.csr.mjs';
 import Button from '../../Button/button.lit.csr.mjs';
+import ThemeFiltersWarning from '../../ThemeFiltersWarning/theme-filters-warning.lit.csr.mjs';
 
 
 export default class ResponseRefinement extends IaiLitBase {
@@ -29,9 +30,6 @@ export default class ResponseRefinement extends IaiLitBase {
 
         demoFilters: { type: Array },
         setDemoFilters: { type: Function },
-
-        themesFilters: { type: Array },
-        setThemesFilters: { type: Function },
 
         highlightMatches: { type: Boolean },
         setHighlightMatches: { type: Function },
@@ -118,7 +116,7 @@ export default class ResponseRefinement extends IaiLitBase {
                 cursor: pointer;
                 white-space: nowrap;
             }
-            iai-response-refinement .dropdown-filters {
+            iai-response-refinement .filters-row {
                 display: flex;
                 align-items: flex-end;
                 flex-wrap: wrap;
@@ -137,6 +135,9 @@ export default class ResponseRefinement extends IaiLitBase {
             }
             iai-response-refinement iai-silver-select-input .govuk-form-group {
                 margin-bottom: 0;
+            }
+            iai-response-refinement iai-theme-filters-warning {
+                width: 100%;
             }
         `
     ]
@@ -271,7 +272,7 @@ export default class ResponseRefinement extends IaiLitBase {
                             ></iai-toggle-input>
                         </div>
                         
-                        <div class="dropdown-filters">
+                        <div class="filters-row">
                             ${Object.keys(this.demoOptions).map(key => html`
                                 <iai-silver-select-input
                                     .inputId=${`demo-filter-${key}`}
@@ -294,7 +295,7 @@ export default class ResponseRefinement extends IaiLitBase {
                             `)}
                         </div>
 
-                        <div class="dropdown-filters">
+                        <div class="filters-row">
                             <div class="popup-button">
                                 <iai-silver-button
                                     .text=${`Themes (${this.themeFilters.length})`}
@@ -332,6 +333,16 @@ export default class ResponseRefinement extends IaiLitBase {
                                 ` : ""}
                                 
                             </div>
+                        </div>
+
+                        <div class="filters-row">
+                            ${this.themeFilters.length > 0 ? html`
+                                <iai-theme-filters-warning
+                                    .themes=${this.themes}
+                                    .themeFilters=${this.themeFilters}
+                                    .updateThemeFilters=${this.updateThemeFilters}
+                                ></iai-theme-filters-warning>
+                            ` : ""}
                         </div>
                     </div>
                 </div>
