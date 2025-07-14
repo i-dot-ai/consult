@@ -250,24 +250,17 @@ export default class ThemeAnalysis extends IaiLitBase {
                                         }
                                     ></iai-icon>
                                 </iai-icon-button>
-
-                                ${this.filtersApplied() ? html`
-                                    <iai-silver-button
-                                        .text=${"Clear filters"}
-                                        .handleClick=${() => {
-                                            this.updateThemeFilters();
-                                            this.setDemoFilters({});
-                                        }}
-                                    ></iai-silver-button>
-                                ` : ""}
                             </div>
 
                             <div class="filters">
-                                <iai-silver-title
-                                    class="demographics-title"
-                                    .text=${"Demographics"}
-                                    .level=${3}
-                                ></iai-silver-title>
+                                ${Object.keys(this.demoOptions).length > 0
+                                    ? html`
+                                        <iai-silver-title
+                                            class="demographics-title"
+                                            .text=${"Demographics"}
+                                            .level=${3}
+                                        ></iai-silver-title>`
+                                    : ""}
 
                                 ${Object.keys(this.demoOptions).map(category => {
                                     const getSlug = (string) => string.toLowerCase().replace(" ", "-");
@@ -291,6 +284,16 @@ export default class ThemeAnalysis extends IaiLitBase {
                                         ></iai-silver-select-input>
                                     `
                                 })}
+
+                                ${this.filtersApplied() ? html`
+                                    <iai-silver-button
+                                        .text=${"Clear filters"}
+                                        .handleClick=${() => {
+                                            this.updateThemeFilters();
+                                            this.setDemoFilters({});
+                                        }}
+                                    ></iai-silver-button>
+                                ` : ""}
                             </div>
                         </div>
 

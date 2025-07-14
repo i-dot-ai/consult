@@ -292,7 +292,9 @@ export default class ResponseRefinement extends IaiLitBase {
                                     .horizontal=${false}
                                 ></iai-silver-select-input>
                             `)}
+                        </div>
 
+                        <div class="dropdown-filters">
                             <div class="popup-button">
                                 <iai-silver-button
                                     .text=${`Themes (${this.themeFilters.length})`}

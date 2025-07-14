@@ -6372,24 +6372,17 @@ class ThemeAnalysis extends IaiLitBase {
                                         }
                                     ></iai-icon>
                                 </iai-icon-button>
-
-                                ${this.filtersApplied() ? x`
-                                    <iai-silver-button
-                                        .text=${"Clear filters"}
-                                        .handleClick=${() => {
-                                            this.updateThemeFilters();
-                                            this.setDemoFilters({});
-                                        }}
-                                    ></iai-silver-button>
-                                ` : ""}
                             </div>
 
                             <div class="filters">
-                                <iai-silver-title
-                                    class="demographics-title"
-                                    .text=${"Demographics"}
-                                    .level=${3}
-                                ></iai-silver-title>
+                                ${Object.keys(this.demoOptions).length > 0
+                                    ? x`
+                                        <iai-silver-title
+                                            class="demographics-title"
+                                            .text=${"Demographics"}
+                                            .level=${3}
+                                        ></iai-silver-title>`
+                                    : ""}
 
                                 ${Object.keys(this.demoOptions).map(category => {
                                     const getSlug = (string) => string.toLowerCase().replace(" ", "-");
@@ -6413,6 +6406,16 @@ class ThemeAnalysis extends IaiLitBase {
                                         ></iai-silver-select-input>
                                     `
                                 })}
+
+                                ${this.filtersApplied() ? x`
+                                    <iai-silver-button
+                                        .text=${"Clear filters"}
+                                        .handleClick=${() => {
+                                            this.updateThemeFilters();
+                                            this.setDemoFilters({});
+                                        }}
+                                    ></iai-silver-button>
+                                ` : ""}
                             </div>
                         </div>
 
@@ -7518,7 +7521,9 @@ class ResponseRefinement extends IaiLitBase {
                                     .horizontal=${false}
                                 ></iai-silver-select-input>
                             `)}
+                        </div>
 
+                        <div class="dropdown-filters">
                             <div class="popup-button">
                                 <iai-silver-button
                                     .text=${`Themes (${this.themeFilters.length})`}
