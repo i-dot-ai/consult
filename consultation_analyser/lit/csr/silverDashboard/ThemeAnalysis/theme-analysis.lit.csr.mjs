@@ -214,17 +214,6 @@ export default class ThemeAnalysis extends IaiLitBase {
                                     }
                                 >
                                 </iai-csv-download>
-
-                                <iai-silver-button
-                                    class="export-button"
-                                    .text=${html`
-                                        <iai-icon
-                                            .name=${"download"}
-                                        ></iai-icon>
-                                        <span>Export</span>
-                                    `}
-                                    .handleClick=${() => console.log("export initiated")}
-                                ></iai-silver-button>
                             `}
                         ></iai-silver-title>
 
