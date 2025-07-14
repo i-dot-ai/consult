@@ -32,12 +32,9 @@ export default class ThemesTable extends IaiLitBase {
                 color: var(--iai-silver-color-text);
             }
             iai-themes-table .theme-description {
-                white-space: nowrap;
-                font-size: 0.9em;
-                overflow: hidden;
-                max-width: 30em;
                 display: block;
-                text-overflow: ellipsis;
+                max-width: 30em;
+                font-size: 0.9em;
             }
             iai-themes-table .percentage-cell {
                 gap: 0.5em;
