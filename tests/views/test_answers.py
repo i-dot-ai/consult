@@ -27,10 +27,6 @@ from consultation_analyser.factories import (
     ThemeFactory,
     UserFactory,
 )
-from django.urls import reverse
-
-from consultation_analyser import factories
-
 
 
 @pytest.fixture()
@@ -1012,4 +1008,3 @@ def test_get_demographic_aggregations_from_responses_partial_demographics():
 
     # Verify aggregations handle partial data correctly
     assert result == {"gender": {"male": 1, "female": 1}, "age_group": {"25-34": 1, "35-44": 1}}
-
