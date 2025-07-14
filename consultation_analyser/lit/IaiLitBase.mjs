@@ -54,6 +54,9 @@ export default class IaiLitBase extends LitElement {
             completed: "Completed",
             closed: "Closed",
         }
+        this._STORAGE_KEYS = {
+            FAVOURITE_QUESTIONS: "favouriteQuestions",
+        };
     }
     
     createRenderRoot() {
@@ -128,5 +131,21 @@ export default class IaiLitBase extends LitElement {
         return text.length > maxChars
             ? text.substring(0, maxChars) + "..."
             : text
+    }
+
+    toggleStorage = (newValue, storageKey) => {
+        let existingValues = this.getStoredValues(storageKey);
+
+        if (existingValues.includes(newValue)) {
+            existingValues = existingValues.filter(value => value !== newValue);
+        } else {
+            existingValues.push(newValue);
+        }
+        localStorage.setItem(storageKey, JSON.stringify(existingValues));
+    }
+
+    getStoredValues = (storageKey) => {
+        const storedValue = localStorage.getItem(storageKey);
+        return storedValue ? JSON.parse(storedValue) : [];
     }
 }

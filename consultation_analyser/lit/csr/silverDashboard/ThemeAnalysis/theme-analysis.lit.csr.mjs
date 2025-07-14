@@ -11,6 +11,7 @@ import ThemesTable from '../ThemesTable/themes-table.lit.csr.mjs';
 import Title from '../Title/title.lit.csr.mjs';
 import IconTile from '../IconTile/icon-tile.lit.csr.mjs';
 import IaiIconButton from '../../questionsArchive/IaiIconButton/iai-icon-button.lit.csr.mjs';
+import IaiCsvDownload from '../../IaiCsvDownload/iai-csv-download.lit.csr.mjs';
 
 
 export default class ThemeAnalysis extends IaiLitBase {
@@ -30,6 +31,8 @@ export default class ThemeAnalysis extends IaiLitBase {
 
         demoFilters: { type: Object },
         setDemoFilters: { type: Function },
+
+        _totalMentions: { type: Number },
     }
 
     static styles = [
@@ -181,6 +184,12 @@ export default class ThemeAnalysis extends IaiLitBase {
 
         this.applyStaticStyles("iai-theme-analysis", ThemeAnalysis.styles);
     }
+
+    updated(changedProps) {
+        if (changedProps.has("themes")) {
+            this._totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
+        }
+    }
     
     render() {
         return html`
@@ -192,6 +201,20 @@ export default class ThemeAnalysis extends IaiLitBase {
                             .variant=${"secondary"}
                             .icon=${"lan"}
                             .aside=${html`
+                                <iai-csv-download
+                                    fileName="theme_mentions.csv"
+                                    .variant=${"silver"}
+                                    .data=${
+                                        this.themes.map(theme => ({
+                                            "Theme Name": theme.title,
+                                            "Theme Description": theme.description,
+                                            "Mentions": theme.mentions,
+                                            "Percentage": this.getPercentage(theme.mentions, this._totalMentions),
+                                        }))
+                                    }
+                                >
+                                </iai-csv-download>
+
                                 <iai-silver-button
                                     class="export-button"
                                     .text=${html`
@@ -319,6 +342,7 @@ export default class ThemeAnalysis extends IaiLitBase {
                         .themes=${this.themes}
                         .themeFilters=${this.themeFilters}
                         .setThemeFilters=${this.updateThemeFilters}
+                        .totalMentions=${this._totalMentions}
                     ></iai-themes-table>
                 </div>
             </iai-silver-panel>

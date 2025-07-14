@@ -16,6 +16,7 @@ export default class QuestionOverviewPage extends IaiLitBase {
         questions: { type: Array },
         consultationName: { type: String },
         _searchValue: { type: String },
+        _favouritedQuestions: { type: Array },
     }
 
     static styles = [
@@ -23,6 +24,9 @@ export default class QuestionOverviewPage extends IaiLitBase {
         css`
             iai-question-overview-page {
                 color: var(--iai-silver-color-text);
+            }
+            iai-question-overview-page section {
+                margin-bottom: 2em;
             }
             iai-question-overview-page ul {
                 padding-left: 0;
@@ -52,31 +56,19 @@ export default class QuestionOverviewPage extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-        this._STORAGE_KEY = "favouriteQuestions";
 
         // Prop defaults
         this.consultationName = "";
         this.questions = [];
 
         this._searchValue = "";
+        this._favouritedQuestions = [];
 
         this.applyStaticStyles("iai-question-overview-page", QuestionOverviewPage.styles);
     }
 
-    getStoredIds = () => {
-        const storedValue = localStorage.getItem(this._STORAGE_KEY);
-        return storedValue ? JSON.parse(storedValue) : [];
-    }
-
-    toggleStorage = (newQuestionId) => {
-        let questionIds = this.getStoredIds();
-
-        if (questionIds.includes(newQuestionId)) {
-            questionIds = questionIds.filter(questionId => questionId != newQuestionId);
-        } else {
-            questionIds.push(newQuestionId);
-        }
-        localStorage.setItem(this._STORAGE_KEY, JSON.stringify(questionIds));
+    firstUpdated() {
+        this._favouritedQuestions = this.getStoredValues(this._STORAGE_KEYS.FAVOURITE_QUESTIONS);
     }
 
     render() {
@@ -119,14 +111,15 @@ export default class QuestionOverviewPage extends IaiLitBase {
                                                 title="Favourite this question"
                                                 @click=${(e) => {
                                                     e.stopPropagation();
-                                                    this.toggleStorage(question.id);
+                                                    this.toggleStorage(question.id, this._STORAGE_KEYS.FAVOURITE_QUESTIONS);
+                                                    this._favouritedQuestions = this.getStoredValues(this._STORAGE_KEYS.FAVOURITE_QUESTIONS);
                                                 }}
                                             >
                                                 <iai-icon
                                                     slot="icon"
                                                     name="star"
                                                     .color=${"var(--iai-silver-color-text)"}
-                                                    .fill=${0}
+                                                    .fill=${this._favouritedQuestions.includes(question.id) ? 1 : 0}
                                                 ></iai-icon>
                                             </iai-icon-button>
                                         `}
@@ -146,6 +139,61 @@ export default class QuestionOverviewPage extends IaiLitBase {
                             `)}
                         </ul>
 
+                    </div>
+                </iai-silver-panel>
+            </section>
+
+            <section>
+                <iai-silver-title
+                    .level=${2}
+                    .text=${"Favourited Questions"}
+                    .icon=${"star"}
+                ></iai-silver-title>
+
+                <iai-silver-panel>
+                    <div slot="content">
+                        <ul>
+                            ${this.questions
+                                .filter(question => this._favouritedQuestions.includes(question.id))
+                                .map((question, index) => html`
+                                <li>
+                                    <iai-silver-cross-search-card
+                                        @click=${() => window.location.href = question.url}
+                                        .type=${"question"}
+                                        .title=${`Q${index+1}: ${question.title}`}
+                                        .aside=${html`
+                                            <iai-icon-button
+                                                class="favourite-button"
+                                                title="Favourite this question"
+                                                @click=${(e) => {
+                                                    e.stopPropagation();
+                                                    this.toggleStorage(question.id, this._STORAGE_KEYS.FAVOURITE_QUESTIONS);
+                                                    this._favouritedQuestions = this.getStoredValues(this._STORAGE_KEYS.FAVOURITE_QUESTIONS);
+                                                }}
+                                            >
+                                                <iai-icon
+                                                    slot="icon"
+                                                    name="star"
+                                                    .color=${"var(--iai-silver-color-text)"}
+                                                    .fill=${this._favouritedQuestions.includes(question.id) ? 1 : 0}
+                                                ></iai-icon>
+                                            </iai-icon-button>
+                                        `}
+                                        .footer=${html`
+                                            <small class="response-total">
+                                                ${question.numResponses.toLocaleString()} responses
+                                            </small>
+                                            <iai-silver-tag
+                                                .status=${question.status}
+                                                .text=${question.status}
+                                                .icon=${"chat_bubble"}
+                                            ></iai-silver-tag>
+                                        `}
+                                        .highlightText=${this._searchValue}
+                                    ></iai-silver-cross-search-card>
+                                </li>
+                            `)}
+                        </ul>
                     </div>
                 </iai-silver-panel>
             </section>

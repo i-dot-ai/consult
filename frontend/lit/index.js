@@ -77,6 +77,9 @@ class IaiLitBase extends i$1 {
             completed: "Completed",
             closed: "Closed",
         };
+        this._STORAGE_KEYS = {
+            FAVOURITE_QUESTIONS: "favouriteQuestions",
+        };
     }
     
     createRenderRoot() {
@@ -151,6 +154,22 @@ class IaiLitBase extends i$1 {
         return text.length > maxChars
             ? text.substring(0, maxChars) + "..."
             : text
+    }
+
+    toggleStorage = (newValue, storageKey) => {
+        let existingValues = this.getStoredValues(storageKey);
+
+        if (existingValues.includes(newValue)) {
+            existingValues = existingValues.filter(value => value !== newValue);
+        } else {
+            existingValues.push(newValue);
+        }
+        localStorage.setItem(storageKey, JSON.stringify(existingValues));
+    }
+
+    getStoredValues = (storageKey) => {
+        const storedValue = localStorage.getItem(storageKey);
+        return storedValue ? JSON.parse(storedValue) : [];
     }
 }
 
@@ -703,14 +722,71 @@ class IaiDataTable extends IaiLitBase {
 }
 customElements.define("iai-data-table", IaiDataTable);
 
+class Button extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        text: { type: String },
+        handleClick: { type: Function },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-silver-button button {
+                background: white;
+                outline: none;
+                border: 1px solid var(--iai-silver-color-mid-light);
+                padding: 0.5em 1em;
+                border-radius: 0.5em;
+                cursor: pointer;
+                transition: background 0.3s ease-in-out;
+            }
+            iai-silver-button button:hover {
+                background: var(--iai-silver-color-light);
+            }
+            iai-silver-button button:focus-visible {
+                outline: 3px solid #fd0;
+                outline-offset: 0;
+                box-shadow: inset 0 0 0 2px;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.text = "white";
+        this.handleClick = () => {};
+
+        this.applyStaticStyles("iai-silver-button", Button.styles);
+    }
+
+    render() {
+        return x`
+            <button @click=${this.handleClick}>
+                ${this.text}
+            </button>
+        `
+    }
+}
+customElements.define("iai-silver-button", Button);
+
 class IaiCsvDownload extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         i$4`
+            iai-csv-download a {
+                text-decoration: none;
+            }
             iai-csv-download a.govuk-button {
                 min-height: auto;
                 min-width: 13em;
                 justify-content: center;
+            }
+            iai-csv-download iai-silver-button button {
+                padding-block: 0.25em;
             }
         `
     ]
@@ -719,6 +795,7 @@ class IaiCsvDownload extends IaiLitBase {
         ...IaiLitBase.properties,
         data: {type: Array},
         fileName: { type: String },
+        variant: { type: String }, // "" | "silver"
     }
 
     constructor() {
@@ -726,6 +803,7 @@ class IaiCsvDownload extends IaiLitBase {
 
         this.data = [];
         this.fileName = "data.csv";
+        this.variant = "";
 
         this.applyStaticStyles("iai-csv-download", IaiCsvDownload.styles);
     }
@@ -752,16 +830,32 @@ class IaiCsvDownload extends IaiLitBase {
     render() {
         return x`
             <a
-                class="govuk-button"
+                class=${!this.variant ? "govuk-button" : ""}
                 aria-label="Download themes as CSV"
                 title="Download themes as CSV"
                 href=${this.getDownloadUrl(this.buildCsv(this.props.data || this.data))}
                 download=${this.fileName}
             >
-                Download CSV
-                <iai-icon
-                    name="download"
-                ></iai-icon>
+                ${this.variant === "silver"
+                    ? x`
+                        <iai-silver-button
+                            .icon=${"download"}
+                            .text=${x`
+                                <iai-icon
+                                    name="download"
+                                ></iai-icon>
+                                <span>
+                                    Export
+                                </span>
+                            `}
+                        ></iai-silver-button>
+                    `
+                    : x`
+                        Download CSV
+                        <iai-icon
+                            name="download"
+                        ></iai-icon>
+                    `}
             </a>
         `
     }
@@ -5190,57 +5284,6 @@ class Card extends IaiLitBase {
 }
 customElements.define("iai-silver-card", Card);
 
-class Button extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        text: { type: String },
-        handleClick: { type: Function },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-silver-button button {
-                background: white;
-                outline: none;
-                border: 1px solid var(--iai-silver-color-mid-light);
-                padding: 0.5em 1em;
-                border-radius: 0.5em;
-                cursor: pointer;
-                transition: background 0.3s ease-in-out;
-            }
-            iai-silver-button button:hover {
-                background: var(--iai-silver-color-light);
-            }
-            iai-silver-button button:focus-visible {
-                outline: 3px solid #fd0;
-                outline-offset: 0;
-                box-shadow: inset 0 0 0 2px;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.text = "white";
-        this.handleClick = () => {};
-
-        this.applyStaticStyles("iai-silver-button", Button.styles);
-    }
-
-    render() {
-        return x`
-            <button @click=${this.handleClick}>
-                ${this.text}
-            </button>
-        `
-    }
-}
-customElements.define("iai-silver-button", Button);
-
 class Consultation extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -5668,6 +5711,7 @@ class QuestionOverviewPage extends IaiLitBase {
         questions: { type: Array },
         consultationName: { type: String },
         _searchValue: { type: String },
+        _favouritedQuestions: { type: Array },
     }
 
     static styles = [
@@ -5675,6 +5719,9 @@ class QuestionOverviewPage extends IaiLitBase {
         i$4`
             iai-question-overview-page {
                 color: var(--iai-silver-color-text);
+            }
+            iai-question-overview-page section {
+                margin-bottom: 2em;
             }
             iai-question-overview-page ul {
                 padding-left: 0;
@@ -5704,31 +5751,19 @@ class QuestionOverviewPage extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-        this._STORAGE_KEY = "favouriteQuestions";
 
         // Prop defaults
         this.consultationName = "";
         this.questions = [];
 
         this._searchValue = "";
+        this._favouritedQuestions = [];
 
         this.applyStaticStyles("iai-question-overview-page", QuestionOverviewPage.styles);
     }
 
-    getStoredIds = () => {
-        const storedValue = localStorage.getItem(this._STORAGE_KEY);
-        return storedValue ? JSON.parse(storedValue) : [];
-    }
-
-    toggleStorage = (newQuestionId) => {
-        let questionIds = this.getStoredIds();
-
-        if (questionIds.includes(newQuestionId)) {
-            questionIds = questionIds.filter(questionId => questionId != newQuestionId);
-        } else {
-            questionIds.push(newQuestionId);
-        }
-        localStorage.setItem(this._STORAGE_KEY, JSON.stringify(questionIds));
+    firstUpdated() {
+        this._favouritedQuestions = this.getStoredValues(this._STORAGE_KEYS.FAVOURITE_QUESTIONS);
     }
 
     render() {
@@ -5771,14 +5806,15 @@ class QuestionOverviewPage extends IaiLitBase {
                                                 title="Favourite this question"
                                                 @click=${(e) => {
                                                     e.stopPropagation();
-                                                    this.toggleStorage(question.id);
+                                                    this.toggleStorage(question.id, this._STORAGE_KEYS.FAVOURITE_QUESTIONS);
+                                                    this._favouritedQuestions = this.getStoredValues(this._STORAGE_KEYS.FAVOURITE_QUESTIONS);
                                                 }}
                                             >
                                                 <iai-icon
                                                     slot="icon"
                                                     name="star"
                                                     .color=${"var(--iai-silver-color-text)"}
-                                                    .fill=${0}
+                                                    .fill=${this._favouritedQuestions.includes(question.id) ? 1 : 0}
                                                 ></iai-icon>
                                             </iai-icon-button>
                                         `}
@@ -5798,6 +5834,61 @@ class QuestionOverviewPage extends IaiLitBase {
                             `)}
                         </ul>
 
+                    </div>
+                </iai-silver-panel>
+            </section>
+
+            <section>
+                <iai-silver-title
+                    .level=${2}
+                    .text=${"Favourited Questions"}
+                    .icon=${"star"}
+                ></iai-silver-title>
+
+                <iai-silver-panel>
+                    <div slot="content">
+                        <ul>
+                            ${this.questions
+                                .filter(question => this._favouritedQuestions.includes(question.id))
+                                .map((question, index) => x`
+                                <li>
+                                    <iai-silver-cross-search-card
+                                        @click=${() => window.location.href = question.url}
+                                        .type=${"question"}
+                                        .title=${`Q${index+1}: ${question.title}`}
+                                        .aside=${x`
+                                            <iai-icon-button
+                                                class="favourite-button"
+                                                title="Favourite this question"
+                                                @click=${(e) => {
+                                                    e.stopPropagation();
+                                                    this.toggleStorage(question.id, this._STORAGE_KEYS.FAVOURITE_QUESTIONS);
+                                                    this._favouritedQuestions = this.getStoredValues(this._STORAGE_KEYS.FAVOURITE_QUESTIONS);
+                                                }}
+                                            >
+                                                <iai-icon
+                                                    slot="icon"
+                                                    name="star"
+                                                    .color=${"var(--iai-silver-color-text)"}
+                                                    .fill=${this._favouritedQuestions.includes(question.id) ? 1 : 0}
+                                                ></iai-icon>
+                                            </iai-icon-button>
+                                        `}
+                                        .footer=${x`
+                                            <small class="response-total">
+                                                ${question.numResponses.toLocaleString()} responses
+                                            </small>
+                                            <iai-silver-tag
+                                                .status=${question.status}
+                                                .text=${question.status}
+                                                .icon=${"chat_bubble"}
+                                            ></iai-silver-tag>
+                                        `}
+                                        .highlightText=${this._searchValue}
+                                    ></iai-silver-cross-search-card>
+                                </li>
+                            `)}
+                        </ul>
                     </div>
                 </iai-silver-panel>
             </section>
@@ -5914,6 +6005,7 @@ class ThemesTable extends IaiLitBase {
         themes: { type: Array },
         themeFilters: { type: Array },
         setThemeFilters: { type: Function },
+        totalMentions: { type: Number },
     }
 
     static styles = [
@@ -5987,13 +6079,12 @@ class ThemesTable extends IaiLitBase {
         this.themes = [];
         this.themeFilters = [];
         this.setThemeFilters = () => {};
+        this.totalMentions = 0;
 
         this.applyStaticStyles("iai-themes-table", ThemesTable.styles);
     }
 
     render() {
-        const totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
-
         return x`
             <iai-data-table
                 .sortable=${false}
@@ -6043,14 +6134,14 @@ class ThemesTable extends IaiLitBase {
                                 <div class="percentage-cell">
                                     <div>
                                         <iai-animated-number
-                                            .number=${this.getPercentage(theme.mentions, totalMentions)}
+                                            .number=${this.getPercentage(theme.mentions, this.totalMentions)}
                                             .duration=${this._NUMBER_ANIMATION_DURATION}
                                         ></iai-animated-number>
                                         %
                                     </div>
 
                                     <iai-progress-bar
-                                        .value=${this.getPercentage(theme.mentions, totalMentions)}
+                                        .value=${this.getPercentage(theme.mentions, this.totalMentions)}
                                         .label=${""}
                                     ></iai-progress-bar>
                                 </div>
@@ -6092,6 +6183,8 @@ class ThemeAnalysis extends IaiLitBase {
 
         demoFilters: { type: Object },
         setDemoFilters: { type: Function },
+
+        _totalMentions: { type: Number },
     }
 
     static styles = [
@@ -6243,6 +6336,12 @@ class ThemeAnalysis extends IaiLitBase {
 
         this.applyStaticStyles("iai-theme-analysis", ThemeAnalysis.styles);
     }
+
+    updated(changedProps) {
+        if (changedProps.has("themes")) {
+            this._totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
+        }
+    }
     
     render() {
         return x`
@@ -6254,6 +6353,20 @@ class ThemeAnalysis extends IaiLitBase {
                             .variant=${"secondary"}
                             .icon=${"lan"}
                             .aside=${x`
+                                <iai-csv-download
+                                    fileName="theme_mentions.csv"
+                                    .variant=${"silver"}
+                                    .data=${
+                                        this.themes.map(theme => ({
+                                            "Theme Name": theme.title,
+                                            "Theme Description": theme.description,
+                                            "Mentions": theme.mentions,
+                                            "Percentage": this.getPercentage(theme.mentions, this._totalMentions),
+                                        }))
+                                    }
+                                >
+                                </iai-csv-download>
+
                                 <iai-silver-button
                                     class="export-button"
                                     .text=${x`
@@ -6381,6 +6494,7 @@ class ThemeAnalysis extends IaiLitBase {
                         .themes=${this.themes}
                         .themeFilters=${this.themeFilters}
                         .setThemeFilters=${this.updateThemeFilters}
+                        .totalMentions=${this._totalMentions}
                     ></iai-themes-table>
                 </div>
             </iai-silver-panel>
@@ -7654,6 +7768,7 @@ class QuestionDetailPage extends IaiLitBase {
         _hasMorePages: { type: Boolean},
         _errorOccured: { type: Boolean},
         fetchData: { type: Function },
+        _isFavourited: { type: Boolean},
 
         consultationSlug: { type: String },
         questionSlug: { type: String },
@@ -7744,6 +7859,7 @@ class QuestionDetailPage extends IaiLitBase {
         this._hasMorePages = true;
         this._errorOccured = false;
         this.fetchData = window.fetch.bind(window);
+        this._isFavourited = false;
 
         this.consultationSlug = "";
         this.questionSlug = "";
@@ -7906,6 +8022,10 @@ class QuestionDetailPage extends IaiLitBase {
         this._isLoading = true;
     }
 
+    firstUpdated() {
+        this._isFavourited = this.isFavourited();
+    }
+
     updated(changedProps) {
         if (
             changedProps.has("_searchValue")        ||
@@ -7919,6 +8039,10 @@ class QuestionDetailPage extends IaiLitBase {
             this.resetResponses();
             this.fetchResponses();
         }
+    }
+
+    isFavourited() {
+        return this.getStoredValues(this._STORAGE_KEYS.FAVOURITE_QUESTIONS).includes(this.questionId);
     }
 
     renderThemeAnalysisSection = () => {
@@ -8064,14 +8188,18 @@ class QuestionDetailPage extends IaiLitBase {
                             title="Favourite this question"
                             @click=${(e) => {
                                 e.stopPropagation();
-                                console.log(this.questionId);
+                                this.toggleStorage(
+                                    this.questionId,
+                                    this._STORAGE_KEYS.FAVOURITE_QUESTIONS
+                                );
+                                this._isFavourited = this.isFavourited();
                             }}
                         >
                             <iai-icon
                                 slot="icon"
                                 name="star"
                                 .color=${"var(--iai-silver-color-text)"}
-                                .fill=${0}
+                                .fill=${this._isFavourited ? 1 : 0}
                             ></iai-icon>
                         </iai-icon-button>
                     `}

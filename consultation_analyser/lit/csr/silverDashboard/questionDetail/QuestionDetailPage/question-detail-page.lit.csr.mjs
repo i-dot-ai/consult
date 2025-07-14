@@ -28,6 +28,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         _hasMorePages: { type: Boolean},
         _errorOccured: { type: Boolean},
         fetchData: { type: Function },
+        _isFavourited: { type: Boolean},
 
         consultationSlug: { type: String },
         questionSlug: { type: String },
@@ -118,6 +119,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         this._hasMorePages = true;
         this._errorOccured = false;
         this.fetchData = window.fetch.bind(window);
+        this._isFavourited = false;
 
         this.consultationSlug = "";
         this.questionSlug = "";
@@ -280,6 +282,10 @@ export default class QuestionDetailPage extends IaiLitBase {
         this._isLoading = true;
     }
 
+    firstUpdated() {
+        this._isFavourited = this.isFavourited();
+    }
+
     updated(changedProps) {
         if (
             changedProps.has("_searchValue")        ||
@@ -293,6 +299,10 @@ export default class QuestionDetailPage extends IaiLitBase {
             this.resetResponses();
             this.fetchResponses();
         }
+    }
+
+    isFavourited() {
+        return this.getStoredValues(this._STORAGE_KEYS.FAVOURITE_QUESTIONS).includes(this.questionId);
     }
 
     renderThemeAnalysisSection = () => {
@@ -438,14 +448,18 @@ export default class QuestionDetailPage extends IaiLitBase {
                             title="Favourite this question"
                             @click=${(e) => {
                                 e.stopPropagation();
-                                console.log(this.questionId)
+                                this.toggleStorage(
+                                    this.questionId,
+                                    this._STORAGE_KEYS.FAVOURITE_QUESTIONS
+                                );
+                                this._isFavourited = this.isFavourited();
                             }}
                         >
                             <iai-icon
                                 slot="icon"
                                 name="star"
                                 .color=${"var(--iai-silver-color-text)"}
-                                .fill=${0}
+                                .fill=${this._isFavourited ? 1 : 0}
                             ></iai-icon>
                         </iai-icon-button>
                     `}
