@@ -615,9 +615,9 @@ def test_semantic_search(fake_embed_text, consultation, question):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("search_mode", ["semantic", None])
+@pytest.mark.parametrize("search_mode", ["keyword", None])
 def test_lexical_search(search_mode, consultation, question):
-    filters = {"search_value": "mary lambs"}
+    filters = {"search_value": "mary lambs", "search_mode": search_mode}
 
     texts = [
         "Mary had a little lamb, His fleece was white as snow, And everywhere that Mary went, The lamb was sure to go",
