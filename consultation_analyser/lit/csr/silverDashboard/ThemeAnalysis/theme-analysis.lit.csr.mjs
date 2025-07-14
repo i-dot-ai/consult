@@ -17,6 +17,7 @@ import IaiCsvDownload from '../../IaiCsvDownload/iai-csv-download.lit.csr.mjs';
 export default class ThemeAnalysis extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
+        consultationSlug: { type: String },
         themes: { type: Array },
         demoData: { type: Object },
         demoOptions: { type: Object },
@@ -205,7 +206,7 @@ export default class ThemeAnalysis extends IaiLitBase {
                             .icon=${"lan"}
                             .aside=${html`
                                 <iai-csv-download
-                                    fileName="theme_mentions.csv"
+                                    .fileName=${`theme_mentions_for_${this.consultationSlug}.csv`}
                                     .variant=${"silver"}
                                     .data=${
                                         this.themes.map(theme => ({

@@ -6139,6 +6139,7 @@ customElements.define("iai-themes-table", ThemesTable);
 class ThemeAnalysis extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
+        consultationSlug: { type: String },
         themes: { type: Array },
         demoData: { type: Object },
         demoOptions: { type: Object },
@@ -6327,7 +6328,7 @@ class ThemeAnalysis extends IaiLitBase {
                             .icon=${"lan"}
                             .aside=${x`
                                 <iai-csv-download
-                                    fileName="theme_mentions.csv"
+                                    .fileName=${`theme_mentions_for_${this.consultationSlug}.csv`}
                                     .variant=${"silver"}
                                     .data=${
                                         this.themes.map(theme => ({
@@ -8027,10 +8028,11 @@ class QuestionDetailPage extends IaiLitBase {
         return x`
             <section class="theme-analysis">
                 <iai-theme-analysis
+                    .consultationSlug=${this.consultationSlug}
                     .themes=${this._themes}
                     .demoData=${this._demoData}
                     .demoOptions=${this._demoOptions}
-                    .totalResponses=${this._responsesTotal}
+                    .totalResponses=${this._filteredTotal}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}

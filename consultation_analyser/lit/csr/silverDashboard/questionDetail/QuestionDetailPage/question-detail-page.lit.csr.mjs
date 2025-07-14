@@ -312,10 +312,11 @@ export default class QuestionDetailPage extends IaiLitBase {
         return html`
             <section class="theme-analysis">
                 <iai-theme-analysis
+                    .consultationSlug=${this.consultationSlug}
                     .themes=${this._themes}
                     .demoData=${this._demoData}
                     .demoOptions=${this._demoOptions}
-                    .totalResponses=${this._responsesTotal}
+                    .totalResponses=${this._filteredTotal}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
