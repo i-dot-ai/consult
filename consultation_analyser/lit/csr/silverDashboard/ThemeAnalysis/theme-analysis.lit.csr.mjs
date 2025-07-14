@@ -142,6 +142,7 @@ export default class ThemeAnalysis extends IaiLitBase {
                 display: flex;
                 gap: 0.5em;
                 align-items: center;
+                flex-wrap: wrap;
             }
             iai-theme-analysis .theme-filters-warning .theme-tag {
                 display: flex;
