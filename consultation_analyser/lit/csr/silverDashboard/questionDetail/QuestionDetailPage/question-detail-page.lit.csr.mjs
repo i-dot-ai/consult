@@ -322,9 +322,15 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .setSortDirection=${newSortDirection => this._themesSortDirection = newSortDirection}
 
                     .demoFilters=${this._demoFilters}
-                    .setDemoFilters=${(newFilterKey, newFilterValue) => this._demoFilters = {
-                        ...this._demoFilters,
-                        [newFilterKey]: newFilterValue
+                    .setDemoFilters=${(newFilterKey, newFilterValue) => {
+                        if (!newFilterKey || !newFilterValue) {
+                            // Clear filters if nothing is passed
+                            this._demoFilters = {};
+                        }
+                        this._demoFilters = {
+                            ...this._demoFilters,
+                            [newFilterKey]: newFilterValue
+                        }
                     }}
                 ></iai-theme-analysis>
             </section>

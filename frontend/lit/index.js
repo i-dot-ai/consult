@@ -6315,6 +6315,13 @@ class ThemeAnalysis extends IaiLitBase {
             this._totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
         }
     }
+
+    filtersApplied() {
+        return (
+            this.themeFilters.length > 0 ||
+            Object.values(this.demoFilters).filter(Boolean).length > 0
+        )
+    }
     
     render() {
         return x`
@@ -6371,6 +6378,16 @@ class ThemeAnalysis extends IaiLitBase {
                                         }
                                     ></iai-icon>
                                 </iai-icon-button>
+
+                                ${this.filtersApplied() ? x`
+                                    <iai-silver-button
+                                        .text=${"Clear filters"}
+                                        .handleClick=${() => {
+                                            this.updateThemeFilters();
+                                            this.setDemoFilters({});
+                                        }}
+                                    ></iai-silver-button>
+                                ` : ""}
                             </div>
 
                             <div class="filters">
@@ -8024,9 +8041,15 @@ class QuestionDetailPage extends IaiLitBase {
                     .setSortDirection=${newSortDirection => this._themesSortDirection = newSortDirection}
 
                     .demoFilters=${this._demoFilters}
-                    .setDemoFilters=${(newFilterKey, newFilterValue) => this._demoFilters = {
-                        ...this._demoFilters,
-                        [newFilterKey]: newFilterValue
+                    .setDemoFilters=${(newFilterKey, newFilterValue) => {
+                        if (!newFilterKey || !newFilterValue) {
+                            // Clear filters if nothing is passed
+                            this._demoFilters = {};
+                        }
+                        this._demoFilters = {
+                            ...this._demoFilters,
+                            [newFilterKey]: newFilterValue
+                        };
                     }}
                 ></iai-theme-analysis>
             </section>

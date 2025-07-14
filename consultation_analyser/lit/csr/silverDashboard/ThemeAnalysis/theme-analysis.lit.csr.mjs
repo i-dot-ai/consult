@@ -190,6 +190,13 @@ export default class ThemeAnalysis extends IaiLitBase {
             this._totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
         }
     }
+
+    filtersApplied() {
+        return (
+            this.themeFilters.length > 0 ||
+            Object.values(this.demoFilters).filter(Boolean).length > 0
+        )
+    }
     
     render() {
         return html`
@@ -246,6 +253,16 @@ export default class ThemeAnalysis extends IaiLitBase {
                                         }
                                     ></iai-icon>
                                 </iai-icon-button>
+
+                                ${this.filtersApplied() ? html`
+                                    <iai-silver-button
+                                        .text=${"Clear filters"}
+                                        .handleClick=${() => {
+                                            this.updateThemeFilters();
+                                            this.setDemoFilters({});
+                                        }}
+                                    ></iai-silver-button>
+                                ` : ""}
                             </div>
 
                             <div class="filters">
