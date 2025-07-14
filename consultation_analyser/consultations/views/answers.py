@@ -5,12 +5,12 @@ from typing import Literal, TypedDict
 from uuid import UUID
 
 from django.contrib.postgres.search import SearchQuery, SearchRank
+from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
 from django.db.models import Count, Exists, OuterRef, Q
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from pgvector.django import CosineDistance
-from rest_framework.exceptions import ValidationError
 
 from ...embeddings import embed_text
 from .. import models
