@@ -6140,7 +6140,8 @@ class ThemeAnalysis extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         themes: { type: Array },
-        demoData: { type: Array },
+        demoData: { type: Object },
+        demoOptions: { type: Object },
 
         themeFilters: { type: Array },
         updateThemeFilters: { type: Function },
@@ -6290,7 +6291,8 @@ class ThemeAnalysis extends IaiLitBase {
         this._NUMBER_ANIMATION_DURATION = 1000;
 
         this.themes = [];
-        this.demoData = [];
+        this.demoData = {};
+        this.demoOptions = {};
 
         this.themeFilters = [];
         this.updateThemeFilters = () => {};
@@ -6394,7 +6396,7 @@ class ThemeAnalysis extends IaiLitBase {
                                     .level=${3}
                                 ></iai-silver-title>
 
-                                ${Object.keys(this.demoData).map(category => {
+                                ${Object.keys(this.demoOptions).map(category => {
                                     const getSlug = (string) => string.toLowerCase().replace(" ", "-");
 
                                     return x`
@@ -6405,9 +6407,9 @@ class ThemeAnalysis extends IaiLitBase {
                                             .hideLabel=${true}
                                             .value=${this.demoFilters[category] || ""}
                                             .placeholder=${this.toTitleCase(category)}
-                                            .options=${(Object.keys(this.demoData[category])).map(key => ({
-                                                value: key,
-                                                text: key
+                                            .options=${this.demoOptions[category].map(option => ({
+                                                value: option,
+                                                text: option
                                             }))}
                                             .handleChange=${(e) => {
                                                 this.setDemoFilters(category, e.target.value);
@@ -7244,6 +7246,7 @@ class ResponseRefinement extends IaiLitBase {
         responses: { type: Array },
         highlightMatches: { type: Boolean },
         demoData: { type: Object },
+        demoOptions: { type: Object },
         themes: { type: Array },
         
         searchValue: { type: String },
@@ -7375,6 +7378,7 @@ class ResponseRefinement extends IaiLitBase {
 
         // Prop defaults
         this.demoData = {};
+        this.demoOptions = {};
         this.themes = [];
 
         this.searchValue = "";
@@ -7499,7 +7503,7 @@ class ResponseRefinement extends IaiLitBase {
                         </div>
                         
                         <div class="dropdown-filters">
-                            ${Object.keys(this.demoData).map(key => x`
+                            ${Object.keys(this.demoOptions).map(key => x`
                                 <iai-silver-select-input
                                     .inputId=${`demo-filter-${key}`}
                                     .name=${"demo-filter"}
@@ -7508,8 +7512,9 @@ class ResponseRefinement extends IaiLitBase {
                                     .value=${this.demoFilters[key] || ""}
                                     .placeholder=${this.toTitleCase(key)}
                                     .options=${
-                                        Object.keys(this.demoData[key]).map(demoDataOption => ({
-                                            value: demoDataOption, text: this.toTitleCase(demoDataOption)
+                                        this.demoOptions[key].map(option => ({
+                                            value: option,
+                                            text: option
                                         }))
                                     }
                                     .handleChange=${(e) => {
@@ -7757,6 +7762,7 @@ class QuestionDetailPage extends IaiLitBase {
         _filteredTotal: { type: Number },
         _themes: { type: Array },
         _demoData: { type: Object },
+        _demoOptions: { type: Object },
 
         _searchValue: { type: String },
         _searchMode: { type: String },
@@ -7848,6 +7854,7 @@ class QuestionDetailPage extends IaiLitBase {
         this._filteredTotal = 0;
         this._themes = [];
         this._demoData = {};
+        this._demoOptions = {};
         
         this._searchValue = "";
         this._searchMode = "keyword";
@@ -7979,6 +7986,7 @@ class QuestionDetailPage extends IaiLitBase {
             }));
 
             this._demoData = responsesData.demographic_aggregations || {};
+            this._demoOptions =  responsesData.demographic_options || {};
 
             // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
             if (this._currentPage === 1 && responsesData.theme_mappings) {
@@ -8025,8 +8033,9 @@ class QuestionDetailPage extends IaiLitBase {
         return x`
             <section class="theme-analysis">
                 <iai-theme-analysis
-                    .demoData=${this._demoData}
                     .themes=${this._themes}
+                    .demoData=${this._demoData}
+                    .demoOptions=${this._demoOptions}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
@@ -8058,6 +8067,7 @@ class QuestionDetailPage extends IaiLitBase {
             <section>
                 <iai-response-refinement
                     .demoData=${this._demoData}
+                    .demoOptions=${this._demoOptions}
                     .themes=${this._themes}
 
                     .searchValue=${this._searchValue}

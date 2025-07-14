@@ -15,6 +15,7 @@ export default class ResponseRefinement extends IaiLitBase {
         responses: { type: Array },
         highlightMatches: { type: Boolean },
         demoData: { type: Object },
+        demoOptions: { type: Object },
         themes: { type: Array },
         
         searchValue: { type: String },
@@ -146,6 +147,7 @@ export default class ResponseRefinement extends IaiLitBase {
 
         // Prop defaults
         this.demoData = {};
+        this.demoOptions = {};
         this.themes = [];
 
         this.searchValue = "";
@@ -270,7 +272,7 @@ export default class ResponseRefinement extends IaiLitBase {
                         </div>
                         
                         <div class="dropdown-filters">
-                            ${Object.keys(this.demoData).map(key => html`
+                            ${Object.keys(this.demoOptions).map(key => html`
                                 <iai-silver-select-input
                                     .inputId=${`demo-filter-${key}`}
                                     .name=${"demo-filter"}
@@ -279,8 +281,9 @@ export default class ResponseRefinement extends IaiLitBase {
                                     .value=${this.demoFilters[key] || ""}
                                     .placeholder=${this.toTitleCase(key)}
                                     .options=${
-                                        Object.keys(this.demoData[key]).map(demoDataOption => ({
-                                            value: demoDataOption, text: this.toTitleCase(demoDataOption)
+                                        this.demoOptions[key].map(option => ({
+                                            value: option,
+                                            text: option
                                         }))
                                     }
                                     .handleChange=${(e) => {

@@ -18,7 +18,8 @@ export default class ThemeAnalysis extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         themes: { type: Array },
-        demoData: { type: Array },
+        demoData: { type: Object },
+        demoOptions: { type: Object },
 
         themeFilters: { type: Array },
         updateThemeFilters: { type: Function },
@@ -168,7 +169,8 @@ export default class ThemeAnalysis extends IaiLitBase {
         this._NUMBER_ANIMATION_DURATION = 1000;
 
         this.themes = [];
-        this.demoData = [];
+        this.demoData = {};
+        this.demoOptions = {};
 
         this.themeFilters = [];
         this.updateThemeFilters = () => {};
@@ -272,7 +274,7 @@ export default class ThemeAnalysis extends IaiLitBase {
                                     .level=${3}
                                 ></iai-silver-title>
 
-                                ${Object.keys(this.demoData).map(category => {
+                                ${Object.keys(this.demoOptions).map(category => {
                                     const getSlug = (string) => string.toLowerCase().replace(" ", "-");
 
                                     return html`
@@ -283,9 +285,9 @@ export default class ThemeAnalysis extends IaiLitBase {
                                             .hideLabel=${true}
                                             .value=${this.demoFilters[category] || ""}
                                             .placeholder=${this.toTitleCase(category)}
-                                            .options=${(Object.keys(this.demoData[category])).map(key => ({
-                                                value: key,
-                                                text: key
+                                            .options=${this.demoOptions[category].map(option => ({
+                                                value: option,
+                                                text: option
                                             }))}
                                             .handleChange=${(e) => {
                                                 this.setDemoFilters(category, e.target.value);

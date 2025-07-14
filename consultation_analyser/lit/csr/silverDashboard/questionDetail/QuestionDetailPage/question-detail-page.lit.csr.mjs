@@ -41,6 +41,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         _filteredTotal: { type: Number },
         _themes: { type: Array },
         _demoData: { type: Object },
+        _demoOptions: { type: Object },
 
         _searchValue: { type: String },
         _searchMode: { type: String },
@@ -132,6 +133,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         this._filteredTotal = 0;
         this._themes = [];
         this._demoData = {};
+        this._demoOptions = {};
         
         this._searchValue = "";
         this._searchMode = "keyword";
@@ -263,6 +265,7 @@ export default class QuestionDetailPage extends IaiLitBase {
             }));
 
             this._demoData = responsesData.demographic_aggregations || {};
+            this._demoOptions =  responsesData.demographic_options || {};
 
             // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
             if (this._currentPage === 1 && responsesData.theme_mappings) {
@@ -309,8 +312,9 @@ export default class QuestionDetailPage extends IaiLitBase {
         return html`
             <section class="theme-analysis">
                 <iai-theme-analysis
-                    .demoData=${this._demoData}
                     .themes=${this._themes}
+                    .demoData=${this._demoData}
+                    .demoOptions=${this._demoOptions}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
@@ -342,6 +346,7 @@ export default class QuestionDetailPage extends IaiLitBase {
             <section>
                 <iai-response-refinement
                     .demoData=${this._demoData}
+                    .demoOptions=${this._demoOptions}
                     .themes=${this._themes}
 
                     .searchValue=${this._searchValue}
