@@ -22,9 +22,8 @@ export default class ThemesTable extends IaiLitBase {
         IaiLitBase.styles,
         css`
             iai-themes-table iai-data-table {
-                max-height: 40em;
-                overflow: auto;
                 display: block;
+                overflow-x: auto;
             }
             iai-themes-table .theme-title {
                 font-weight: bold;

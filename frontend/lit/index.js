@@ -5985,9 +5985,8 @@ class ThemesTable extends IaiLitBase {
         IaiLitBase.styles,
         i$4`
             iai-themes-table iai-data-table {
-                max-height: 40em;
-                overflow: auto;
                 display: block;
+                overflow-x: auto;
             }
             iai-themes-table .theme-title {
                 font-weight: bold;
