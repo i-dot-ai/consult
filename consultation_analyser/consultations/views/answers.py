@@ -90,7 +90,7 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
     if demographic_filters:
         filters["demographic_filters"] = demographic_filters
 
-    # Expected format - `demoFilters=age:18&country:england`
+    # Expected format - `demoFilters=age:18&demoFilters=country:england`
     demo_filters = request.GET.getlist("demoFilters")
     if demo_filters:
         filters_dict = dict(demo.split(":") for demo in demo_filters)
