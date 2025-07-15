@@ -497,10 +497,10 @@ def import_questions(
                 multiple_choice_options=multiple_choice_options,
             )
 
-            responses_file_key = f"{question_folder}responses.jsonl"
-            responses = queue.enqueue(import_responses, question, responses_file_key)
-
             if question.has_free_text:
+                responses_file_key = f"{question_folder}responses.jsonl"
+                responses = queue.enqueue(import_responses, question, responses_file_key)
+
                 output_folder = f"{outputs_path}question_part_{question_num_str}/"
                 themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
                 response_annotations = queue.enqueue(
@@ -512,6 +512,11 @@ def import_questions(
                     output_folder,
                     depends_on=response_annotations,
                 )
+
+            if question.has_multiple_choice:
+                multichoice_file_key = f"{question_folder}multi_choice.jsonl"
+                queue.enqueue(import_multiple_choice_responses, question, multichoice_file_key)
+
 
     except Exception as e:
         logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
