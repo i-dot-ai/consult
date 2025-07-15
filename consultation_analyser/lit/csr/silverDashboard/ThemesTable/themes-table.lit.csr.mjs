@@ -32,8 +32,8 @@ export default class ThemesTable extends IaiLitBase {
             }
             iai-themes-table .theme-description {
                 display: block;
-                max-width: 30em;
                 font-size: 0.9em;
+                min-width: 20em;
             }
             iai-themes-table .percentage-cell {
                 gap: 0.5em;

@@ -310,6 +310,15 @@ export default class QuestionDetailPage extends IaiLitBase {
 
     renderThemeAnalysisSection = () => {
         return html`
+            <section>
+                <iai-demographics-section
+                    .data=${this._demoData}
+                    .themeFilters=${this._themeFilters}
+                    .demoFilters=${this._demoFilters}
+                    .total=${this._filteredTotal}
+                ></iai-demographics-section>
+            </section>
+            
             <section class="theme-analysis">
                 <iai-theme-analysis
                     .consultationSlug=${this.consultationSlug}
@@ -487,15 +496,6 @@ export default class QuestionDetailPage extends IaiLitBase {
                         ></iai-silver-tag>
                     `}
                 ></iai-silver-cross-search-card>
-            </section>
-
-            <section>
-                <iai-demographics-section
-                    .data=${this._demoData}
-                    .themeFilters=${this._themeFilters}
-                    .demoFilters=${this._demoFilters}
-                    .total=${this._filteredTotal}
-                ></iai-demographics-section>
             </section>
 
             <iai-tab-view
