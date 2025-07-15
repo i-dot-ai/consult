@@ -6733,31 +6733,38 @@ class TabView extends IaiLitBase {
         i$4`
             iai-tab-view nav {
                 display: flex;
-                background: var(--iai-silver-color-light);
+                width: max-content;
+                margin: auto;
                 margin-bottom: 1em;
+                border-radius: 10em;
                 font-size: 0.9em;
+                background: var(--iai-silver-color-mid-light);
             }
             iai-tab-view .tab-button {
-                display: flex;
+                display: flex;    
                 justify-content: center;
                 align-items: center;
                 gap: 0.5em;
-                flex-grow: 1;
+                width: max-content;
+                margin: 0.3em;
                 padding: 0.5em;
+                border-radius: 10em;
                 list-style: none;
                 text-align: center;
+                font-size: 0.9em;
                 color: var(--iai-silver-color-dark);
-                background: var(--iai-silver-color-light);
-                border-radius: 0.5em;
                 transition: 0.3s ease-in-out;
                 cursor: pointer;
             }
             iai-tab-view .tab-button:hover {
-                background: var(--iai-silver-color-mid-light);
+                background: var(--iai-silver-color-light);
             }
-            iai-tab-view .tab-button.active {
-                color: white;    
-                background: var(--iai-silver-color-dark);
+            iai-tab-view .tab-button.active {  
+                color: var(--iai-silver-color-dark);
+                background: white;
+            }
+            iai-tab-view .tab-button .material-symbols-outlined {
+                font-size: 1.3em;
             }
         `
     ]
