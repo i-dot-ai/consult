@@ -83,15 +83,7 @@ def test_parse_filters_from_request_all_filters(request_factory):
             "themeFilters": "1,2,3",
             "evidenceRich": "true",
             "searchValue": "test search",
-<<<<<<< HEAD
             "demoFilters": ["individual:true", "UK region:south", "Do+you+live+in::England"],
-=======
-<<<<<<< HEAD
-            "demoFilters": ["individual:true", "UK region:south"],
-=======
-            "demoFilters": "individual:true,region:south",
->>>>>>> 799d6e5c (remove legacy parameters now we have moved to new version of the dashboard)
->>>>>>> 9deaaf32 (remove legacy parameters now we have moved to new version of the dashboard)
             "themesSortDirection": "ascending",
             "themesSortType": "frequency",
         },
