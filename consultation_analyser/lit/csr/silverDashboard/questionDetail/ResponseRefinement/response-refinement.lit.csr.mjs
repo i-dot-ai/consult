@@ -77,33 +77,6 @@ export default class ResponseRefinement extends IaiLitBase {
             iai-response-refinement iai-silver-tag .material-symbols-outlined {
                 font-size: 2em;
             }
-            iai-response-refinement .popup-button {
-                position: relative;
-            }
-            iai-response-refinement .popup-button .popup-panel {
-                position: absolute;
-                top: 2em;
-                width: max-content;
-                right: 0;
-                background: white;
-                padding: 1em;
-                margin: 0;
-                z-index: 2;
-                border: 1px solid var(--iai-silver-color-mid);
-                border-radius: 0.5em;
-                opacity: 1;
-                transition: opacity 0.3s ease-in-out;
-                box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
-            }
-            iai-response-refinement .popup-button .popup-panel.themes-panel {
-                right: unset;
-                left: 0;
-            }
-            iai-response-refinement .popup-panel .content {
-                display: flex;
-                align-items: center;
-                gap: 1em;
-            }
             iai-response-refinement .tag {
                 width: 100%;
             }
@@ -138,6 +111,46 @@ export default class ResponseRefinement extends IaiLitBase {
             }
             iai-response-refinement iai-theme-filters-warning {
                 width: 100%;
+            }
+            iai-response-refinement .popup-button .popup-panel {
+                position: absolute;
+                top: 2em;
+                width: max-content;
+                right: 0;
+                background: white;
+                padding: 1em;
+                margin: 0;
+                z-index: 2;
+                border: 1px solid var(--iai-silver-color-mid);
+                border-radius: 0.5em;
+                opacity: 1;
+                transition: opacity 0.3s ease-in-out;
+                box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
+            }
+            iai-response-refinement .popup-button .popup-panel.themes-panel {
+                right: unset;
+                left: 0;
+            }
+            iai-response-refinement .popup-panel .content {
+                display: flex;
+                align-items: center;
+                gap: 1em;
+            }
+            iai-response-refinement .popup-button .icon-container {
+                margin-bottom: 0.5em;
+            }
+            iai-response-refinement .popup-button iai-silver-title {
+                color: var(--iai-silver-color-dark);
+                cursor: pointer;
+            }
+            iai-response-refinement .popup-button .popup-button__body {
+                position: relative;
+            }
+            iai-response-refinement .popup-button .popup-button__body button {
+                line-height: 2em;
+                background: var(--iai-silver-color-light);
+                border: none;
+                border-radius: 0.3em;
             }
         `
     ]
@@ -297,41 +310,48 @@ export default class ResponseRefinement extends IaiLitBase {
 
                         <div class="filters-row">
                             <div class="popup-button">
-                                <iai-silver-button
-                                    .text=${`Themes (${this.themeFilters.length})`}
-                                    .handleClick=${() => this._themeFiltersVisible = !this._themeFiltersVisible}
-                                ></iai-silver-button>
+                                <iai-silver-title
+                                    .level=${3}
+                                    .text=${"Themes"}
+                                    @click=${() => this._themeFiltersVisible = !this._themeFiltersVisible}
+                                ></iai-silver-title>
 
-                                ${this.themes.length > 0 ? html`
-                                    <div class="popup-panel themes-panel" style=${`
-                                        opacity: ${this._themeFiltersVisible ? 1 : 0};
-                                        pointer-events: ${this._themeFiltersVisible ? "auto" : "none"};
-                                    `}>
-                                        <div class="content">
-                                            <ul class="theme-filter-list">
-                                                ${this.themes.map(theme => html`
-                                                    <li>
-                                                        <input
-                                                            type="checkbox"
-                                                            class="theme-checkbox"
-                                                            id=${"responses-theme-filters" + theme.id}
-                                                            name="theme-filters"
-                                                            .value=${theme.id}
-                                                            .checked=${this.themeFilters.includes(theme.id)}
-                                                            @click=${(e) => {
-                                                                this.updateThemeFilters(theme.id);
-                                                            }}
-                                                        />
-                                                        <label for=${"responses-theme-filters" + theme.id}>
-                                                            ${theme.title}
-                                                        </label>
-                                                    </li>
-                                                `)}
-                                            </ul>
+                                <div class="popup-button__body">
+                                    <iai-silver-button
+                                        .text=${`${this.themeFilters.length} themes selected`}
+                                        .handleClick=${() => this._themeFiltersVisible = !this._themeFiltersVisible}
+                                    ></iai-silver-button>
+
+                                    ${this.themes.length > 0 ? html`
+                                        <div class="popup-panel themes-panel" style=${`
+                                            opacity: ${this._themeFiltersVisible ? 1 : 0};
+                                            pointer-events: ${this._themeFiltersVisible ? "auto" : "none"};
+                                        `}>
+                                            <div class="content">
+                                                <ul class="theme-filter-list">
+                                                    ${this.themes.map(theme => html`
+                                                        <li>
+                                                            <input
+                                                                type="checkbox"
+                                                                class="theme-checkbox"
+                                                                id=${"responses-theme-filters" + theme.id}
+                                                                name="theme-filters"
+                                                                .value=${theme.id}
+                                                                .checked=${this.themeFilters.includes(theme.id)}
+                                                                @click=${(e) => {
+                                                                    this.updateThemeFilters(theme.id);
+                                                                }}
+                                                            />
+                                                            <label for=${"responses-theme-filters" + theme.id}>
+                                                                ${theme.title}
+                                                            </label>
+                                                        </li>
+                                                    `)}
+                                                </ul>
+                                            </div>
                                         </div>
-                                    </div>
-                                ` : ""}
-                                
+                                    ` : ""}
+                                </div>
                             </div>
                         </div>
 
