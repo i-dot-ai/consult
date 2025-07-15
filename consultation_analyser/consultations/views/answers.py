@@ -100,8 +100,8 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
     # Expected format - `demoFilters=age:18&demoFilters=country:england`
     demo_filters = request.GET.getlist("demoFilters")
     if demo_filters:
-        filters_dict = dict(demo.split(":") for demo in demo_filters)
-        filters["demo_filters"] = filters_dict
+        filters_dict = dict(demo.split(":", 1) for demo in demo_filters)
+        filters["demo_filters"] = {k: v.lstrip(":") for k, v in filters_dict.items()}
     return filters
 
 
