@@ -127,6 +127,9 @@ export default class ResponseRefinement extends IaiLitBase {
                 transition: opacity 0.3s ease-in-out;
                 box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
             }
+            iai-response-refinement .popup-button {
+                position: relative;
+            }
             iai-response-refinement .popup-button .popup-panel.themes-panel {
                 right: unset;
                 left: 0;
