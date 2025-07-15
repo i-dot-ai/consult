@@ -39,12 +39,25 @@ export default class DemographicsCard extends IaiLitBase {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
+                flex-direction: column;
                 list-style: none;
                 line-height: 1.5em;
+                gap: 0.5em;
             }
             iai-demographics-card li>* {
-                width: 50%;
+                width: 100%;
                 word-wrap: break-word;
+            }
+            iai-demographics-card li .percentage {
+                font-size: 0.8em;
+                color: rgba(0, 0, 0, 0.5);
+            }
+            iai-demographics-card li .count {
+                font-size: 1.2em;
+            }
+            iai-demographics-card li {
+                font-size: 0.9em;
+                color: rgba(0, 0, 0, 0.6);
             }
             iai-demographics-card .counts {
                 display: flex;
@@ -56,7 +69,7 @@ export default class DemographicsCard extends IaiLitBase {
             
             iai-demographics-card iai-silver-progress-bar .container,
             iai-demographics-card iai-silver-progress-bar .container .bar {
-                height: 0.5em;
+                height: 0.6em;
             }
         `
     ]
@@ -90,20 +103,22 @@ export default class DemographicsCard extends IaiLitBase {
                     ${Object.keys(this.data).map(key => {
                         const label = key;
                         const count = this.data[key];
+                        const percentage = this.getPercentage(count, this._totalCount);
 
                         return html`
                             <li>
-                                <div>
-                                    <span>${label}</span>
-                                </div>
-                                <div class="counts">
-                                    <iai-silver-progress-bar
-                                        .value=${this.getPercentage(count, this._totalCount)}
-                                    ></iai-silver-progress-bar>
-                                    <span>
-                                        ${count.toLocaleString()}
-                                    </span>
-                                </div>
+                                <span class="count">
+                                    ${count.toLocaleString()}
+                                </span>
+                                <span class="label">
+                                    ${label}
+                                </span>
+                                <iai-silver-progress-bar
+                                    .value=${percentage}
+                                ></iai-silver-progress-bar>
+                                <span class="percentage">
+                                    ${percentage}%
+                                </span>
                             </li>
                         `
                     })}
