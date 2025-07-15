@@ -108,7 +108,7 @@ def test_parse_filters_from_request_all_filters(request_factory):
             "themeFilters": "1,2,3",
             "evidenceRich": "true",
             "searchValue": "test search",
-            "demoFilters": ["individual:true", "UK region:south"],
+            "demoFilters": ["individual:true", "UK region:south", "Do+you+live+in::England"],
             "themesSortDirection": "ascending",
             "themesSortType": "frequency",
         },
@@ -121,6 +121,7 @@ def test_parse_filters_from_request_all_filters(request_factory):
     assert filters["search_value"] == "test search"
     assert filters["demo_filters"]["individual"] == "true"
     assert filters["demo_filters"]["UK region"] == "south"
+    assert filters["demo_filters"]["Do+you+live+in"] == "England"
     assert filters["themes_sort_direction"] == "ascending"
     assert filters["themes_sort_type"] == "frequency"
 

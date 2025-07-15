@@ -99,8 +99,14 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
 
     # Expected format - `demoFilters=age:18&demoFilters=country:england`
     demo_filters = request.GET.getlist("demoFilters")
+
+    def split(txt):
+        # ignores consecutive colons
+        # TODO: remove this in favour of DRF
+        return tuple(filter(None, txt.split(":")))
+
     if demo_filters:
-        filters_dict = dict(demo.split(":") for demo in demo_filters)
+        filters_dict = dict(map(split, demo_filters))
         filters["demo_filters"] = filters_dict
     return filters
 
