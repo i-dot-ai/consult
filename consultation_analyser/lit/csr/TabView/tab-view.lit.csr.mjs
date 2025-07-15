@@ -18,7 +18,7 @@ export default class TabView extends IaiLitBase {
         css`
             iai-tab-view nav {
                 display: flex;
-                width: max-content;
+                max-width: max-content;
                 margin: auto;
                 margin-bottom: 1em;
                 border-radius: 10em;
@@ -30,7 +30,6 @@ export default class TabView extends IaiLitBase {
                 justify-content: center;
                 align-items: center;
                 gap: 0.5em;
-                width: max-content;
                 margin: 0.3em;
                 padding: 0.5em;
                 border-radius: 10em;
