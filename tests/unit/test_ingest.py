@@ -14,6 +14,7 @@ from consultation_analyser.support_console.ingest import (
     create_consultation,
     get_consultation_codes,
     get_question_folders,
+    import_multiple_choice_responses,
     import_questions,
     import_respondents,
     import_response_annotations,
@@ -24,13 +25,16 @@ from consultation_analyser.support_console.ingest import (
 
 def get_object_side_effect(Bucket, Key):
     # Mock respondents file
-    respondents_data = b'{"themefinder_id": 1, "demographic_data": {"location": "Wales"}}\n{"themefinder_id": 2, "demographic_data": {"location": "Scotland"}}'
+    respondents_data = b'{"themefinder_id": 1, "demographic_data": {"location": "Wales"}}\n{"themefinder_id": 2, "demographic_data": {"location": "Scotland"}}\n{"themefinder_id": 3, "demographic_data": {"location": "Scotland"}}\n{"themefinder_id": 4, "demographic_data": {"location": "Scotland"}}'
 
     # Mock question file
     question_data = b'{"question_text": "What do you think?", "has_free_text": true, "options": ["a", "b", "c"]}'
 
-    # Mock responses file
-    responses_data = b'{"themefinder_id": 1, "text": "Good idea", "chosen_options": ["a"]}\n{"themefinder_id": 2, "text": "Bad idea", "chosen_options": ["b", "c"]}'
+    # Mock responses files
+    responses_data = (
+        b'{"themefinder_id": 1, "text": "Good idea"}\n{"themefinder_id": 2, "text": "Bad idea"}'
+    )
+    multi_choice_data = b'{"themefinder_id": 1, "chosen_options": ["a"]}\n{"themefinder_id": 3, "chosen_options": ["b", "c"]}\n{"themefinder_id": 4}'
 
     # Mock themes file
     themes_data = (
@@ -54,6 +58,8 @@ def get_object_side_effect(Bucket, Key):
         return {"Body": Mock(read=Mock(return_value=question_data))}
     elif "responses.jsonl" in Key:
         return {"Body": Mock(iter_lines=Mock(return_value=responses_data.split(b"\n")))}
+    elif "multi_choice.jsonl" in Key:
+        return {"Body": Mock(iter_lines=Mock(return_value=multi_choice_data.split(b"\n")))}
     elif "themes.json" in Key:
         return {"Body": Mock(read=Mock(return_value=themes_data))}
     elif "mapping.jsonl" in Key:
@@ -239,14 +245,14 @@ class TestImportConsultationFullFlow:
         assert consultation.users.filter(id=user.id).exists()
 
         respondents = Respondent.objects.filter(consultation=consultation)
-        assert respondents.count() == 2
+        assert respondents.count() == 4
 
         questions = Question.objects.filter(consultation=consultation)
         assert questions.count() == 1
         assert questions.first().text == "What do you think?"
 
         responses = Response.objects.filter(question__consultation=consultation)
-        assert responses.count() == 2
+        assert responses.count() == 4
 
         themes = Theme.objects.filter(question__consultation=consultation)
         assert themes.count() == 1
@@ -278,7 +284,7 @@ class TestRespondentsImport:
 
         # Verify results
         respondents = Respondent.objects.filter(consultation=consultation)
-        assert respondents.count() == 2
+        assert respondents.count() == 4
 
         assert respondents.first().demographics["location"] == "Wales"
         assert respondents.last().demographics["location"] == "Scotland"
@@ -398,16 +404,32 @@ class TestResponsesImport:
         consultation = Consultation.objects.create(title="Test Consultation")
         question = Question.objects.create(consultation=consultation, number=1)
         question_folder = "app_data/consultations/test/outputs/2024-01-01/question_part_1/"
-        Respondent.objects.create(consultation=consultation, themefinder_id=1)
-        Respondent.objects.create(consultation=consultation, themefinder_id=2)
+        for i in range(0, 4):
+            Respondent.objects.create(consultation=consultation, themefinder_id=i + 1)
 
         # Run the import
         responses_file_key = f"{question_folder}responses.jsonl"
+        multi_choice_file_key = f"{question_folder}multi_choice.jsonl"
         import_responses(question, responses_file_key)
+        import_multiple_choice_responses(question, multi_choice_file_key)
 
         # Verify results
         responses = Response.objects.filter(question=question)
-        assert responses.count() == 2
+        assert responses.count() == 4
+
+        response_1 = responses.get(respondent__themefinder_id=1)
+        response_2 = responses.get(respondent__themefinder_id=2)
+        response_3 = responses.get(respondent__themefinder_id=3)
+        response_4 = responses.get(respondent__themefinder_id=4)
+        assert response_1.question == question
+        assert response_1.free_text == "Good idea"
+        assert response_1.chosen_options == ["a"]
+        assert response_2.free_text == "Bad idea"
+        assert not response_2.chosen_options
+        assert not response_3.free_text
+        assert response_3.chosen_options == ["b", "c"]
+        assert response_4.chosen_options == []
+        assert response_4.question == question
 
 
 @pytest.mark.django_db

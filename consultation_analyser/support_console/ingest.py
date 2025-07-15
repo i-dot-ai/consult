@@ -380,7 +380,9 @@ def import_responses(question: Question, responses_file_key: str):
 
 def import_multiple_choice_responses(question: Question, multichoice_file_key: str):
     s3_client = boto3.client("s3")
-    multichoice_data = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=multichoice_file_key)
+    multichoice_data = s3_client.get_object(
+        Bucket=settings.AWS_BUCKET_NAME, Key=multichoice_file_key
+    )
 
     try:
         # Get respondents
@@ -392,7 +394,15 @@ def import_multiple_choice_responses(question: Question, multichoice_file_key: s
             themefinder_id = response_data["themefinder_id"]
             chosen_options = response_data.get("chosen_options", [])
             respondent = respondents.get(themefinder_id=themefinder_id)
-            Response.objects.update_or_create(respondent=respondent, create_defaults={"respondent": respondent, "chosen_options": chosen_options})
+            Response.objects.update_or_create(
+                respondent=respondent,
+                question=question,
+                defaults={
+                    "respondent": respondent,
+                    "question": question,
+                    "chosen_options": chosen_options,
+                },
+            )
             # How can we do this with bulk update/create?
 
     except Exception as e:
@@ -493,7 +503,6 @@ def import_questions(
             if question.has_multiple_choice:
                 multichoice_file_key = f"{question_folder}multi_choice.jsonl"
                 queue.enqueue(import_multiple_choice_responses, question, multichoice_file_key)
-
 
     except Exception as e:
         logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
