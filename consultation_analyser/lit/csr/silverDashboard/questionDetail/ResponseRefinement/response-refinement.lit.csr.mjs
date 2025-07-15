@@ -152,6 +152,12 @@ export default class ResponseRefinement extends IaiLitBase {
                 border: none;
                 border-radius: 0.3em;
             }
+            iai-response-refinement .popup-button .popup-button__text {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 0.5em;
+            }
         `
     ]
 
@@ -336,7 +342,12 @@ export default class ResponseRefinement extends IaiLitBase {
 
                                 <div class="popup-button__body">
                                     <iai-silver-button
-                                        .text=${`${this.themeFilters.length} themes selected`}
+                                        .text=${html`
+                                            <div class="popup-button__text">
+                                                <span>${this.themeFilters.length} themes selected</span>
+                                                <iai-icon .name=${"keyboard_arrow_down"}></iai-icon>
+                                            </div>
+                                        `}
                                         .handleClick=${() => this._themeFiltersVisible = !this._themeFiltersVisible}
                                     ></iai-silver-button>
 
