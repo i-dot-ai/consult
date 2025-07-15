@@ -401,6 +401,30 @@ def import_responses(question: Question, responses_file_key: str):
         raise
 
 
+def import_multiple_choice_responses(question: Question, multichoice_file_key: str):
+    s3_client = boto3.client("s3")
+    multichoice_data = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=multichoice_file_key)
+
+    try:
+        # Get respondents
+        respondents = Respondent.objects.filter(consultation=question.consultation)
+
+        # Second pass: create responses
+        for i, line in enumerate(multichoice_data["Body"].iter_lines()):
+            response_data = json.loads(line.decode("utf-8"))
+            themefinder_id = response_data["themefinder_id"]
+            chosen_options = response_data.get("chosen_options", [])
+            respondent = respondents.get(themefinder_id=themefinder_id)
+            Response.objects.update_or_create(respondent=respondent, create_defaults={"respondent": respondent, "chosen_options": chosen_options})
+            # How can we do this with bulk update/create?
+
+    except Exception as e:
+        logger.error(
+            f"Error importing responses for consultation {question.consultation.title}, question {question.number}: {str(e)}"
+        )
+        raise
+
+
 def import_themes(question: Question, output_folder: str):
     s3_client = boto3.client("s3")
     themes_file_key = f"{output_folder}themes.json"
