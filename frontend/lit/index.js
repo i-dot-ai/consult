@@ -7365,9 +7365,6 @@ class ResponseRefinement extends IaiLitBase {
         evidenceRich: { type: Boolean },
         setEvidenceRich: { type: Function },
 
-        demoFilters: { type: Array },
-        setDemoFilters: { type: Function },
-
         highlightMatches: { type: Boolean },
         setHighlightMatches: { type: Function },
 
@@ -7528,15 +7525,33 @@ class ResponseRefinement extends IaiLitBase {
         this.applyStaticStyles("iai-response-refinement", ResponseRefinement.styles);
     }
 
+    filtersApplied() {
+        return (
+            this.themeFilters.length > 0 ||
+            Object.values(this.demoFilters).filter(Boolean).length > 0
+        )
+    }
+
     render() {
         return x`
             <iai-silver-panel>
                 <div slot="content">
                     <iai-silver-title
-                        .icon=${"filter_alt"}
+                        .level=${2}
                         .text=${`Response refinement`}
                         .subtext=${"Filter and search through individual responses to this question."}
-                        .level=${2}
+                        .icon=${"filter_alt"}
+                        .aside=${x`
+                            ${this.filtersApplied() ? x`
+                                <iai-silver-button
+                                    .text=${"Clear filters"}
+                                    .handleClick=${() => {
+                                        this.updateThemeFilters();
+                                        this.setDemoFilters();
+                                    }}
+                                ></iai-silver-button>
+                            ` : ""}
+                        `}
                     ></iai-silver-title>
 
                     <div class="filters">
@@ -8128,7 +8143,21 @@ class QuestionDetailPage extends IaiLitBase {
             }));
 
             this._demoData = responsesData.demographic_aggregations || {};
-            this._demoOptions = responsesData.demographic_options || {};
+            this._demoOptions =  { //responsesData.demographic_options
+                "Do you consider yourself to have a health condition or a disability?": [
+                    "No",
+                    "Prefer not to say",
+                    "Yes"
+                ],
+                "Do you live in:": [
+                    "England",
+                    "Northern Ireland",
+                    "Prefer not to say",
+                    "Scotland",
+                    "Wales"
+                ],
+            };
+//responsesData.demographic_options || {};
 
             // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
             if (this._currentPage === 1 && responsesData.theme_mappings) {
@@ -8146,6 +8175,17 @@ class QuestionDetailPage extends IaiLitBase {
         this._currentPage = 1;
         this._hasMorePages = true;
         this._isLoading = true;
+    }
+
+    setDemoFilters = (newFilterKey, newFilterValue) => {
+        if (!newFilterKey || !newFilterValue) {
+            // Clear filters if nothing is passed
+            this._demoFilters = {};
+        }
+        this._demoFilters = {
+            ...this._demoFilters,
+            [newFilterKey]: newFilterValue
+        };
     }
 
     firstUpdated() {
@@ -8200,16 +8240,7 @@ class QuestionDetailPage extends IaiLitBase {
                     .setSortDirection=${newSortDirection => this._themesSortDirection = newSortDirection}
 
                     .demoFilters=${this._demoFilters}
-                    .setDemoFilters=${(newFilterKey, newFilterValue) => {
-                        if (!newFilterKey || !newFilterValue) {
-                            // Clear filters if nothing is passed
-                            this._demoFilters = {};
-                        }
-                        this._demoFilters = {
-                            ...this._demoFilters,
-                            [newFilterKey]: newFilterValue
-                        };
-                    }}
+                    .setDemoFilters=${this.setDemoFilters}
                 ></iai-theme-analysis>
             </section>
         `
@@ -8236,10 +8267,7 @@ class QuestionDetailPage extends IaiLitBase {
                     .setHighlightMatches=${newHighlightMatches => this._highlightMatches = newHighlightMatches}
 
                     .demoFilters=${this._demoFilters}
-                    .setDemoFilters=${(newFilterKey, newFilterValue) => this._demoFilters = {
-                        ...this._demoFilters,
-                        [newFilterKey]: newFilterValue
-                    }}
+                    .setDemoFilters=${this.setDemoFilters}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}

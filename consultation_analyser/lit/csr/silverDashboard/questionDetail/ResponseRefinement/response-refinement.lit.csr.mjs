@@ -28,9 +28,6 @@ export default class ResponseRefinement extends IaiLitBase {
         evidenceRich: { type: Boolean },
         setEvidenceRich: { type: Function },
 
-        demoFilters: { type: Array },
-        setDemoFilters: { type: Function },
-
         highlightMatches: { type: Boolean },
         setHighlightMatches: { type: Function },
 
@@ -191,15 +188,33 @@ export default class ResponseRefinement extends IaiLitBase {
         this.applyStaticStyles("iai-response-refinement", ResponseRefinement.styles);
     }
 
+    filtersApplied() {
+        return (
+            this.themeFilters.length > 0 ||
+            Object.values(this.demoFilters).filter(Boolean).length > 0
+        )
+    }
+
     render() {
         return html`
             <iai-silver-panel>
                 <div slot="content">
                     <iai-silver-title
-                        .icon=${"filter_alt"}
+                        .level=${2}
                         .text=${`Response refinement`}
                         .subtext=${"Filter and search through individual responses to this question."}
-                        .level=${2}
+                        .icon=${"filter_alt"}
+                        .aside=${html`
+                            ${this.filtersApplied() ? html`
+                                <iai-silver-button
+                                    .text=${"Clear filters"}
+                                    .handleClick=${() => {
+                                        this.updateThemeFilters();
+                                        this.setDemoFilters();
+                                    }}
+                                ></iai-silver-button>
+                            ` : ""}
+                        `}
                     ></iai-silver-title>
 
                     <div class="filters">

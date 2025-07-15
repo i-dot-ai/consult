@@ -285,6 +285,17 @@ export default class QuestionDetailPage extends IaiLitBase {
         this._isLoading = true;
     }
 
+    setDemoFilters = (newFilterKey, newFilterValue) => {
+        if (!newFilterKey || !newFilterValue) {
+            // Clear filters if nothing is passed
+            this._demoFilters = {};
+        }
+        this._demoFilters = {
+            ...this._demoFilters,
+            [newFilterKey]: newFilterValue
+        }
+    }
+
     firstUpdated() {
         this._isFavourited = this.isFavourited();
     }
@@ -337,16 +348,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .setSortDirection=${newSortDirection => this._themesSortDirection = newSortDirection}
 
                     .demoFilters=${this._demoFilters}
-                    .setDemoFilters=${(newFilterKey, newFilterValue) => {
-                        if (!newFilterKey || !newFilterValue) {
-                            // Clear filters if nothing is passed
-                            this._demoFilters = {};
-                        }
-                        this._demoFilters = {
-                            ...this._demoFilters,
-                            [newFilterKey]: newFilterValue
-                        }
-                    }}
+                    .setDemoFilters=${this.setDemoFilters}
                 ></iai-theme-analysis>
             </section>
         `
@@ -373,10 +375,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .setHighlightMatches=${newHighlightMatches => this._highlightMatches = newHighlightMatches}
 
                     .demoFilters=${this._demoFilters}
-                    .setDemoFilters=${(newFilterKey, newFilterValue) => this._demoFilters = {
-                        ...this._demoFilters,
-                        [newFilterKey]: newFilterValue
-                    }}
+                    .setDemoFilters=${this.setDemoFilters}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
