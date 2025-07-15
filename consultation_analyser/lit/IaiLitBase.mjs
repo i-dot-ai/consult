@@ -24,6 +24,9 @@ export default class IaiLitBase extends LitElement {
             --iai-silver-color-amber: #ba4d00;
             --iai-silver-color-amber-mid: #ffe020;
             --iai-silver-color-amber-light: #fffbea;
+            --iai-silver-color-pink: rgb(131, 24, 67);
+            --iai-silver-color-pink-mid: rgb(197, 8, 120);
+            --iai-silver-color-pink-light: rgb(253, 242, 248);
         }
 
         .visually-hidden {
@@ -54,6 +57,9 @@ export default class IaiLitBase extends LitElement {
             completed: "Completed",
             closed: "Closed",
         }
+        this._STORAGE_KEYS = {
+            FAVOURITE_QUESTIONS: "favouriteQuestions",
+        };
     }
     
     createRenderRoot() {
@@ -128,5 +134,21 @@ export default class IaiLitBase extends LitElement {
         return text.length > maxChars
             ? text.substring(0, maxChars) + "..."
             : text
+    }
+
+    toggleStorage = (newValue, storageKey) => {
+        let existingValues = this.getStoredValues(storageKey);
+
+        if (existingValues.includes(newValue)) {
+            existingValues = existingValues.filter(value => value !== newValue);
+        } else {
+            existingValues.push(newValue);
+        }
+        localStorage.setItem(storageKey, JSON.stringify(existingValues));
+    }
+
+    getStoredValues = (storageKey) => {
+        const storedValue = localStorage.getItem(storageKey);
+        return storedValue ? JSON.parse(storedValue) : [];
     }
 }

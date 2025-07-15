@@ -28,6 +28,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         _hasMorePages: { type: Boolean},
         _errorOccured: { type: Boolean},
         fetchData: { type: Function },
+        _isFavourited: { type: Boolean},
 
         consultationSlug: { type: String },
         questionSlug: { type: String },
@@ -40,6 +41,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         _filteredTotal: { type: Number },
         _themes: { type: Array },
         _demoData: { type: Object },
+        _demoOptions: { type: Object },
 
         _searchValue: { type: String },
         _searchMode: { type: String },
@@ -102,7 +104,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         super();
         this.contentId = this.generateId();
         
-        this._MAX_THEME_FILTERS = 3;
+        this._MAX_THEME_FILTERS = Infinity;
         this._PAGE_SIZE = 50;
         this._DEBOUNCE_DELAY = 500;
         this._TAB_INDECES = {
@@ -118,6 +120,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         this._hasMorePages = true;
         this._errorOccured = false;
         this.fetchData = window.fetch.bind(window);
+        this._isFavourited = false;
 
         this.consultationSlug = "";
         this.questionSlug = "";
@@ -130,6 +133,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         this._filteredTotal = 0;
         this._themes = [];
         this._demoData = {};
+        this._demoOptions = {};
         
         this._searchValue = "";
         this._searchMode = "keyword";
@@ -176,13 +180,6 @@ export default class QuestionDetailPage extends IaiLitBase {
             ...(this._evidenceRichFilter && {
                 evidenceRich: this._evidenceRichFilter
             }),
-            // Add demofilters as string formatted as "foo:1,bar:2"
-            ...(Object.values(this._demoFilters).filter(Boolean).length > 0 && {
-                demoFilters: Object.keys(this._demoFilters)
-                    .filter(Boolean)
-                    .map(key => `${key}:${this._demoFilters[key]}`)
-                    .join(",")
-            }),
             ...(this._themesSortType && {
                 themesSortType: this._themesSortType
             }),
@@ -192,6 +189,13 @@ export default class QuestionDetailPage extends IaiLitBase {
             page: this._currentPage,
             page_size: this._PAGE_SIZE.toString(),
         })
+
+        // Filter out demo filter keys with no value
+        const validDemoFilterKeys = Object.keys(this._demoFilters).filter(key => Boolean(this._demoFilters[key]));
+        // Add each demo filter as a duplicate demoFilter param
+        for (const key of validDemoFilterKeys) {
+            params.append("demoFilters", `${key}:${this._demoFilters[key]}`);
+        }
 
         return params.toString();
     }
@@ -261,6 +265,7 @@ export default class QuestionDetailPage extends IaiLitBase {
             }));
 
             this._demoData = responsesData.demographic_aggregations || {};
+            this._demoOptions = responsesData.demographic_options || {};
 
             // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
             if (this._currentPage === 1 && responsesData.theme_mappings) {
@@ -280,6 +285,21 @@ export default class QuestionDetailPage extends IaiLitBase {
         this._isLoading = true;
     }
 
+    setDemoFilters = (newFilterKey, newFilterValue) => {
+        if (!newFilterKey || !newFilterValue) {
+            // Clear filters if nothing is passed
+            this._demoFilters = {};
+        }
+        this._demoFilters = {
+            ...this._demoFilters,
+            [newFilterKey]: newFilterValue
+        }
+    }
+
+    firstUpdated() {
+        this._isFavourited = this.isFavourited();
+    }
+
     updated(changedProps) {
         if (
             changedProps.has("_searchValue")        ||
@@ -295,12 +315,28 @@ export default class QuestionDetailPage extends IaiLitBase {
         }
     }
 
+    isFavourited() {
+        return this.getStoredValues(this._STORAGE_KEYS.FAVOURITE_QUESTIONS).includes(this.questionId);
+    }
+
     renderThemeAnalysisSection = () => {
         return html`
+            <section>
+                <iai-demographics-section
+                    .data=${this._demoData}
+                    .themeFilters=${this._themeFilters}
+                    .demoFilters=${this._demoFilters}
+                    .total=${this._filteredTotal}
+                ></iai-demographics-section>
+            </section>
+            
             <section class="theme-analysis">
                 <iai-theme-analysis
-                    .demoData=${this._demoData}
+                    .consultationSlug=${this.consultationSlug}
                     .themes=${this._themes}
+                    .demoData=${this._demoData}
+                    .demoOptions=${this._demoOptions}
+                    .totalResponses=${this._filteredTotal}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
@@ -312,10 +348,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .setSortDirection=${newSortDirection => this._themesSortDirection = newSortDirection}
 
                     .demoFilters=${this._demoFilters}
-                    .setDemoFilters=${(newFilterKey, newFilterValue) => this._demoFilters = {
-                        ...this._demoFilters,
-                        [newFilterKey]: newFilterValue
-                    }}
+                    .setDemoFilters=${this.setDemoFilters}
                 ></iai-theme-analysis>
             </section>
         `
@@ -326,6 +359,7 @@ export default class QuestionDetailPage extends IaiLitBase {
             <section>
                 <iai-response-refinement
                     .demoData=${this._demoData}
+                    .demoOptions=${this._demoOptions}
                     .themes=${this._themes}
 
                     .searchValue=${this._searchValue}
@@ -341,10 +375,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .setHighlightMatches=${newHighlightMatches => this._highlightMatches = newHighlightMatches}
 
                     .demoFilters=${this._demoFilters}
-                    .setDemoFilters=${(newFilterKey, newFilterValue) => this._demoFilters = {
-                        ...this._demoFilters,
-                        [newFilterKey]: newFilterValue
-                    }}
+                    .setDemoFilters=${this.setDemoFilters}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
@@ -358,7 +389,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                             text: response.free_text_answer_text,
                             themes: response.themes.map(theme => ({
                                 id: theme.id,
-                                text: theme.description,
+                                text: theme.name,
                             })),
                             evidenceRich: response.evidenceRich,
                             multiAnswers: response.multiple_choice_answer || [],
@@ -438,14 +469,18 @@ export default class QuestionDetailPage extends IaiLitBase {
                             title="Favourite this question"
                             @click=${(e) => {
                                 e.stopPropagation();
-                                console.log(this.questionId)
+                                this.toggleStorage(
+                                    this.questionId,
+                                    this._STORAGE_KEYS.FAVOURITE_QUESTIONS
+                                );
+                                this._isFavourited = this.isFavourited();
                             }}
                         >
                             <iai-icon
                                 slot="icon"
                                 name="star"
                                 .color=${"var(--iai-silver-color-text)"}
-                                .fill=${0}
+                                .fill=${this._isFavourited ? 1 : 0}
                             ></iai-icon>
                         </iai-icon-button>
                     `}
@@ -460,14 +495,6 @@ export default class QuestionDetailPage extends IaiLitBase {
                         ></iai-silver-tag>
                     `}
                 ></iai-silver-cross-search-card>
-            </section>
-
-            <section>
-                <iai-demographics-section
-                    .data=${this._demoData}
-                    .themeFilters=${this._themeFilters}
-                    .total=${this._filteredTotal}
-                ></iai-demographics-section>
             </section>
 
             <iai-tab-view

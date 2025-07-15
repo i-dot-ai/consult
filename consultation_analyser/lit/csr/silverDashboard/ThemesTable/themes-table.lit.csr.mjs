@@ -15,15 +15,15 @@ export default class ThemesTable extends IaiLitBase {
         themes: { type: Array },
         themeFilters: { type: Array },
         setThemeFilters: { type: Function },
+        totalResponses: { type: Number },
     }
 
     static styles = [
         IaiLitBase.styles,
         css`
             iai-themes-table iai-data-table {
-                max-height: 40em;
-                overflow: auto;
                 display: block;
+                overflow-x: auto;
             }
             iai-themes-table .theme-title {
                 font-weight: bold;
@@ -31,12 +31,9 @@ export default class ThemesTable extends IaiLitBase {
                 color: var(--iai-silver-color-text);
             }
             iai-themes-table .theme-description {
-                white-space: nowrap;
-                font-size: 0.9em;
-                overflow: hidden;
-                max-width: 30em;
                 display: block;
-                text-overflow: ellipsis;
+                font-size: 0.9em;
+                min-width: 20em;
             }
             iai-themes-table .percentage-cell {
                 gap: 0.5em;
@@ -88,13 +85,12 @@ export default class ThemesTable extends IaiLitBase {
         this.themes = [];
         this.themeFilters = [];
         this.setThemeFilters = () => {};
+        this.totalResponses = 0;
 
         this.applyStaticStyles("iai-themes-table", ThemesTable.styles);
     }
 
     render() {
-        const totalMentions = this.themes.reduce((acc, curr) => acc + curr.mentions, 0);
-
         return html`
             <iai-data-table
                 .sortable=${false}
@@ -109,6 +105,7 @@ export default class ThemesTable extends IaiLitBase {
                                 "Percentage": parseInt(theme.percentage),
                                 "Theme": theme.title,
                             },
+                            "_handleClick": () => this.setThemeFilters(theme.id),
                             "Theme": html`
                                 <div class="title-container">
                                     <div>
@@ -120,6 +117,7 @@ export default class ThemesTable extends IaiLitBase {
                                             .value=${theme.id}
                                             .checked=${this.themeFilters.includes(theme.id)}
                                             @click=${(e) => {
+                                                e.stopPropagation();
                                                 this.setThemeFilters(e.target.value);
                                             }}
                                         />
@@ -144,14 +142,14 @@ export default class ThemesTable extends IaiLitBase {
                                 <div class="percentage-cell">
                                     <div>
                                         <iai-animated-number
-                                            .number=${this.getPercentage(theme.mentions, totalMentions)}
+                                            .number=${this.getPercentage(theme.mentions, this.totalResponses)}
                                             .duration=${this._NUMBER_ANIMATION_DURATION}
                                         ></iai-animated-number>
                                         %
                                     </div>
 
                                     <iai-progress-bar
-                                        .value=${this.getPercentage(theme.mentions, totalMentions)}
+                                        .value=${this.getPercentage(theme.mentions, this.totalResponses)}
                                         .label=${""}
                                     ></iai-progress-bar>
                                 </div>
@@ -164,7 +162,10 @@ export default class ThemesTable extends IaiLitBase {
                                         ></iai-icon>
                                         <span>View responses</span>
                                     `}
-                                    .handleClick=${theme.handleClick}
+                                    .handleClick=${(e) => {
+                                        e.stopPropagation();
+                                        theme.handleClick();
+                                    }}
                                 ></iai-silver-button>
                             `
                         }

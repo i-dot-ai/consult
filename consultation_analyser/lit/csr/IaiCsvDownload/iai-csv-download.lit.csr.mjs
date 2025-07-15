@@ -2,16 +2,23 @@ import { html, css } from "lit";
 
 import IaiLitBase from "../../IaiLitBase.mjs";
 import IaiIcon from "../IaiIcon/iai-icon.mjs";
+import Button from "../silverDashboard/Button/button.lit.csr.mjs";
 
 
 export default class IaiCsvDownload extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         css`
+            iai-csv-download a {
+                text-decoration: none;
+            }
             iai-csv-download a.govuk-button {
                 min-height: auto;
                 min-width: 13em;
                 justify-content: center;
+            }
+            iai-csv-download iai-silver-button button {
+                padding-block: 0.25em;
             }
         `
     ]
@@ -20,6 +27,7 @@ export default class IaiCsvDownload extends IaiLitBase {
         ...IaiLitBase.properties,
         data: {type: Array},
         fileName: { type: String },
+        variant: { type: String }, // "" | "silver"
     }
 
     constructor() {
@@ -27,6 +35,7 @@ export default class IaiCsvDownload extends IaiLitBase {
 
         this.data = [];
         this.fileName = "data.csv";
+        this.variant = "";
 
         this.applyStaticStyles("iai-csv-download", IaiCsvDownload.styles);
     }
@@ -53,16 +62,32 @@ export default class IaiCsvDownload extends IaiLitBase {
     render() {
         return html`
             <a
-                class="govuk-button"
+                class=${!this.variant ? "govuk-button" : ""}
                 aria-label="Download themes as CSV"
                 title="Download themes as CSV"
                 href=${this.getDownloadUrl(this.buildCsv(this.props.data || this.data))}
                 download=${this.fileName}
             >
-                Download CSV
-                <iai-icon
-                    name="download"
-                ></iai-icon>
+                ${this.variant === "silver"
+                    ? html`
+                        <iai-silver-button
+                            .icon=${"download"}
+                            .text=${html`
+                                <iai-icon
+                                    name="download"
+                                ></iai-icon>
+                                <span>
+                                    Export
+                                </span>
+                            `}
+                        ></iai-silver-button>
+                    `
+                    : html`
+                        Download CSV
+                        <iai-icon
+                            name="download"
+                        ></iai-icon>
+                    `}
             </a>
         `
     }
