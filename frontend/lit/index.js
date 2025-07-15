@@ -8143,21 +8143,7 @@ class QuestionDetailPage extends IaiLitBase {
             }));
 
             this._demoData = responsesData.demographic_aggregations || {};
-            this._demoOptions =  { //responsesData.demographic_options
-                "Do you consider yourself to have a health condition or a disability?": [
-                    "No",
-                    "Prefer not to say",
-                    "Yes"
-                ],
-                "Do you live in:": [
-                    "England",
-                    "Northern Ireland",
-                    "Prefer not to say",
-                    "Scotland",
-                    "Wales"
-                ],
-            };
-//responsesData.demographic_options || {};
+            this._demoOptions = responsesData.demographic_options || {};
 
             // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
             if (this._currentPage === 1 && responsesData.theme_mappings) {
