@@ -85,7 +85,7 @@ export default class DemographicsSection extends IaiLitBase {
                                     .text=${"Active theme analysis filters"}
                                     .subtext=${`Showing data for ${this.total.toLocaleString()} responses (filtered by: ${this.getFilterWarningText()})`}
                                     .icon=${"report"}
-                                    .status=${"Closed"}
+                                    .status=${"Analysing"}
                                 ></iai-silver-tag>
                             `
                             : ""

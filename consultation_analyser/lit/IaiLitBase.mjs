@@ -24,6 +24,9 @@ export default class IaiLitBase extends LitElement {
             --iai-silver-color-amber: #ba4d00;
             --iai-silver-color-amber-mid: #ffe020;
             --iai-silver-color-amber-light: #fffbea;
+            --iai-silver-color-pink: rgb(131, 24, 67);
+            --iai-silver-color-pink-mid: rgb(197, 8, 120);
+            --iai-silver-color-pink-light: rgb(253, 242, 248);
         }
 
         .visually-hidden {

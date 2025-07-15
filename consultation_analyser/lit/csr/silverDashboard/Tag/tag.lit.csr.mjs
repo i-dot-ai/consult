@@ -64,9 +64,9 @@ export default class Tag extends IaiLitBase {
                 };
             case this.CONSULTATION_STATUSES.analysing:
                 return {
-                    primary: "var(--iai-silver-color-teal)",
-                    secondary: "var(--iai-silver-color-teal-light)",
-                    ternary: "var(--iai-silver-color-teal-mid)",
+                    primary: "var(--iai-silver-color-pink)",
+                    secondary: "var(--iai-silver-color-pink-light)",
+                    ternary: "var(--iai-silver-color-pink-mid)",
                 };
             case this.CONSULTATION_STATUSES.completed:
                 return {

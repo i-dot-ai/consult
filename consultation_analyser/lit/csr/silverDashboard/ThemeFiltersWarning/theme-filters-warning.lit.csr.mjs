@@ -84,7 +84,7 @@ export default class ThemeFiltersWarning extends IaiLitBase {
     render() {
         return html`
             <iai-silver-tag
-                .status=${"Closed"}
+                .status=${"Analysing"}
                 .icon=${"report"}
                 .text=${`Selected themes (${this.themeFilters.length})`}
                 .subtext=${html`

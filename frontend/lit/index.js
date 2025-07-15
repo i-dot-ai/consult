@@ -47,6 +47,9 @@ class IaiLitBase extends i$1 {
             --iai-silver-color-amber: #ba4d00;
             --iai-silver-color-amber-mid: #ffe020;
             --iai-silver-color-amber-light: #fffbea;
+            --iai-silver-color-pink: rgb(131, 24, 67);
+            --iai-silver-color-pink-mid: rgb(197, 8, 120);
+            --iai-silver-color-pink-light: rgb(253, 242, 248);
         }
 
         .visually-hidden {
@@ -5652,9 +5655,9 @@ class Tag extends IaiLitBase {
                 };
             case this.CONSULTATION_STATUSES.analysing:
                 return {
-                    primary: "var(--iai-silver-color-teal)",
-                    secondary: "var(--iai-silver-color-teal-light)",
-                    ternary: "var(--iai-silver-color-teal-mid)",
+                    primary: "var(--iai-silver-color-pink)",
+                    secondary: "var(--iai-silver-color-pink-light)",
+                    ternary: "var(--iai-silver-color-pink-mid)",
                 };
             case this.CONSULTATION_STATUSES.completed:
                 return {
@@ -6226,7 +6229,7 @@ class ThemeFiltersWarning extends IaiLitBase {
     render() {
         return x`
             <iai-silver-tag
-                .status=${"Closed"}
+                .status=${"Analysing"}
                 .icon=${"report"}
                 .text=${`Selected themes (${this.themeFilters.length})`}
                 .subtext=${x`
@@ -7323,7 +7326,7 @@ class DemographicsSection extends IaiLitBase {
                                     .text=${"Active theme analysis filters"}
                                     .subtext=${`Showing data for ${this.total.toLocaleString()} responses (filtered by: ${this.getFilterWarningText()})`}
                                     .icon=${"report"}
-                                    .status=${"Closed"}
+                                    .status=${"Analysing"}
                                 ></iai-silver-tag>
                             `
                             : ""
