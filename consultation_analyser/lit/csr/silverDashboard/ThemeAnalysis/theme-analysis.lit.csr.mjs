@@ -285,12 +285,12 @@ export default class ThemeAnalysis extends IaiLitBase {
                         
                         <div class="info-container">
                             <small>
-                                Click on themes to select for detailed analysis.
+                                Total Themes
+                                <span>${this.themes.length}<span>
                             </small>
 
                             <small>
-                                Total Themes
-                                <span>${this.themes.length}<span>
+                                <!-- optional microcopy -->
                             </small>
                         </div>
                     </div>
