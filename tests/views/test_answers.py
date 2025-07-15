@@ -591,7 +591,7 @@ def test_theme_filtering_and_logic(question):
 @pytest.mark.django_db
 @patch("consultation_analyser.consultations.views.answers.embed_text")
 def test_semantic_search(fake_embed_text, consultation, question):
-    filters = {"search_value": "i am a question"}
+    filters = {"search_value": "i am a question", "search_mode": "semantic"}
 
     v1 = list(0 for _ in range(settings.EMBEDDING_DIMENSION))
     v1[0] = 1
@@ -610,24 +610,13 @@ def test_semantic_search(fake_embed_text, consultation, question):
 
     responses = get_filtered_responses_with_themes(question, filters)
     assert [x.free_text for x in responses] == ["exact match", "orthogonal", "opposite"]
-    assert [x.distance for x in responses] == [
-        0 * settings.SEMANTIC_WEIGHT,
-        1 * settings.SEMANTIC_WEIGHT,
-        2 * settings.SEMANTIC_WEIGHT,
-    ]
+    assert [x.distance for x in responses] == [0, 1, 2]
 
 
 @pytest.mark.django_db
-@patch("consultation_analyser.consultations.views.answers.embed_text")
-def test_lexical_search(fake_embed_text, consultation, question):
-    filters = {"search_value": "mary lambs"}
-
-    # we use two orthogonal vectors to ensure that the semantic search has no effect
-    baseline = list(0 for _ in range(settings.EMBEDDING_DIMENSION))
-    baseline[0] = 1
-
-    orthogonal = list(0 for _ in range(settings.EMBEDDING_DIMENSION))
-    orthogonal[1] = 1
+@pytest.mark.parametrize("search_mode", ["keyword", None])
+def test_lexical_search(search_mode, consultation, question):
+    filters = {"search_value": "mary lambs", "search_mode": search_mode}
 
     texts = [
         "Mary had a little lamb, His fleece was white as snow, And everywhere that Mary went, The lamb was sure to go",
@@ -636,16 +625,14 @@ def test_lexical_search(fake_embed_text, consultation, question):
         "What makes the lamb love Mary so? The eager children cry; Why, Mary loves the lamb, you know, The teacher did reply.",
     ]
 
-    ResponseFactory(question=question, free_text=texts[0], embedding=baseline)
-    ResponseFactory(question=question, free_text=texts[1], embedding=baseline)
-    ResponseFactory(question=question, free_text=texts[2], embedding=baseline)
-    ResponseFactory(question=question, free_text=texts[3], embedding=baseline)
-
-    fake_embed_text.return_value = orthogonal
+    ResponseFactory(question=question, free_text=texts[0])
+    ResponseFactory(question=question, free_text=texts[1])
+    ResponseFactory(question=question, free_text=texts[2])
+    ResponseFactory(question=question, free_text=texts[3])
 
     responses = get_filtered_responses_with_themes(question, filters)
-    assert [texts.index(x.free_text) for x in responses] == [0, 3, 1, 2]
-    assert [x.distance for x in responses] == [0.6939324369654059, 0.6957822073251009, 0.7, 0.7]
+    assert [texts.index(x.free_text) for x in responses] == [0, 3]
+    assert [x.distance for x in responses] == [0.02022521, 0.014059309]
 
 
 @pytest.mark.django_db

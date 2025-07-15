@@ -280,4 +280,3 @@ if DEBUG:
 
 # changing this will require a database migration
 EMBEDDING_DIMENSION = 1024
-SEMANTIC_WEIGHT = env.float("SEMANTIC_WEIGHT", 0.7)

@@ -20,7 +20,6 @@ locals {
     "AZURE_OPENAI_API_KEY"                 = local.secret_env_vars.AZURE_OPENAI_API_KEY,
     "OPENAI_API_VERSION"                   = local.secret_env_vars.OPENAI_API_VERSION,
     "AZURE_OPENAI_ENDPOINT"                = local.secret_env_vars.AZURE_OPENAI_ENDPOINT,
-    "SEMANTIC_WEIGHT"                      = local.secret_env_vars.SEMANTIC_WEIGHT,
   }
 
   batch_env_vars = merge(local.base_env_vars, {
