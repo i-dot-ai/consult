@@ -6090,6 +6090,7 @@ class ThemesTable extends IaiLitBase {
                                             .value=${theme.id}
                                             .checked=${this.themeFilters.includes(theme.id)}
                                             @click=${(e) => {
+                                                e.stopPropagation();
                                                 this.setThemeFilters(e.target.value);
                                             }}
                                         />
