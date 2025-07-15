@@ -43,7 +43,8 @@ export default class IaiAnimatedNumber extends IaiLitBase {
             const time = Math.min(elapsedTime / duration, 1);
             const currValue = start * (1 - time) + end * time;
 
-            setDisplayNumber(Math.round(currValue));
+            // round to 1 decimal point
+            setDisplayNumber(Math.round(currValue * 10) / 10);
 
             if (time < 1) {
                 requestAnimationFrame(update_number);
