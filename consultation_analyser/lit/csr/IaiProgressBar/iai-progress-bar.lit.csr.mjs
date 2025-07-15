@@ -56,7 +56,7 @@ export default class IaiProgressBar extends IaiLitBase {
     render() {
         return html`
             <div class=${"container" + (this.value < 30 ? " low-value" : "")}>
-                <div class="bar" style=${`width: ${this.value}%;`}>
+                <div class=${"bar" + (this.value >= 100 ? " full" : "")} style=${`width: ${this.value}%;`}>
                     ${this.label
                         ? html`
                             <span class="label">

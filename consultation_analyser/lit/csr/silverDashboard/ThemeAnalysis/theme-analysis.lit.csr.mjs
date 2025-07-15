@@ -65,8 +65,12 @@ export default class ThemeAnalysis extends IaiLitBase {
             }
             iai-theme-analysis .percentage-cell iai-progress-bar .bar {
                 height: 0.5em;
-                border-radius: 0.5em;
+                border-top-left-radius: 0.5em;
+                border-bottom-left-radius: 0.5em;
                 background: var(--iai-silver-color-dark);
+            }
+            iai-theme-analysis .percentage-cell iai-progress-bar .bar.full {
+                border-radius: 0.5em;
             }
             iai-theme-analysis iai-silver-button button {
                 width: max-content;

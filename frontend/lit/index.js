@@ -1995,7 +1995,7 @@ class IaiProgressBar extends IaiLitBase {
     render() {
         return x`
             <div class=${"container" + (this.value < 30 ? " low-value" : "")}>
-                <div class="bar" style=${`width: ${this.value}%;`}>
+                <div class=${"bar" + (this.value >= 100 ? " full" : "")} style=${`width: ${this.value}%;`}>
                     ${this.label
                         ? x`
                             <span class="label">
@@ -6315,8 +6315,12 @@ class ThemeAnalysis extends IaiLitBase {
             }
             iai-theme-analysis .percentage-cell iai-progress-bar .bar {
                 height: 0.5em;
-                border-radius: 0.5em;
+                border-top-left-radius: 0.5em;
+                border-bottom-left-radius: 0.5em;
                 background: var(--iai-silver-color-dark);
+            }
+            iai-theme-analysis .percentage-cell iai-progress-bar .bar.full {
+                border-radius: 0.5em;
             }
             iai-theme-analysis iai-silver-button button {
                 width: max-content;
