@@ -6531,7 +6531,7 @@ class ThemeAnalysis extends IaiLitBase {
                         
                         <div class="info-container">
                             <small>
-                                Click themes to select up to 3 for detailed analysis.
+                                Click on themes to select for detailed analysis.
                             </small>
 
                             <small>
