@@ -105,6 +105,7 @@ export default class ThemesTable extends IaiLitBase {
                                 "Percentage": parseInt(theme.percentage),
                                 "Theme": theme.title,
                             },
+                            "_handleClick": () => this.setThemeFilters(theme.id),
                             "Theme": html`
                                 <div class="title-container">
                                     <div>
@@ -160,7 +161,10 @@ export default class ThemesTable extends IaiLitBase {
                                         ></iai-icon>
                                         <span>View responses</span>
                                     `}
-                                    .handleClick=${theme.handleClick}
+                                    .handleClick=${(e) => {
+                                        e.stopPropagation();
+                                        theme.handleClick();
+                                    }}
                                 ></iai-silver-button>
                             `
                         }

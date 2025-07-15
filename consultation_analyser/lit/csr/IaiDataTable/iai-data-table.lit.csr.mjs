@@ -64,6 +64,13 @@ export default class IaiDataTable extends IaiLitBase {
             iai-data-table thead .header-button.ascending iai-icon {
                 transform: rotateX(180deg);
             }
+            iai-data-table tr.clickable-row {
+                cursor: pointer;
+                transition: background 0.3s ease-in-out;
+            }
+            iai-data-table tr.clickable-row:hover {
+                background: rgba(0, 0, 0, 0.05);
+            }
         `
     ]
 
@@ -73,7 +80,7 @@ export default class IaiDataTable extends IaiLitBase {
 
         // These will not appear as column
         // as they merely act as flags for the row
-        this._RESERVED_KEYS = ["_bottomRow", "_sortValues"];
+        this._RESERVED_KEYS = ["_bottomRow", "_sortValues", "_handleClick"];
 
         // Prop defaults
         this.data = [];
@@ -252,10 +259,13 @@ export default class IaiDataTable extends IaiLitBase {
           
                 <tbody class="govuk-table__body">
                     ${data.map(row => html`
-                        <tr class=${
-                            "govuk-table__row" +
-                            (row._bottomRow ? " bottom-row" : "")
-                        }>
+                        <tr
+                            class=${"govuk-table__row"
+                                + (row._bottomRow ? " bottom-row" : "")
+                                + (row._handleClick ? " clickable-row" : "")
+                            }
+                            @click=${row._handleClick || undefined}
+                        >
                             ${this.getHeaders().map(header => html`
                                 <td class="govuk-table__cell">
                                     ${row[header]}
