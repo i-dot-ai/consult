@@ -110,7 +110,10 @@ export default class IaiLitBase extends LitElement {
         if (totalValue === 0) {
             return 0;
         }
-        return Math.round(((partialValue / totalValue) * 100));
+        const percentage = (partialValue / totalValue) * 100;
+
+        // Round to 1 decimal point
+        return Math.round(percentage * 10) / 10;
     }
 
     toTitleCase = (text) => {
