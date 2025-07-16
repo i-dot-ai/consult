@@ -56,6 +56,7 @@ django-test-migrations = "^1.5.0"
 pytest-lazy-fixtures = "^1.2.0"
 pgvector = "^0.4.1"
 openai = "^1.95.1"
+tiktoken = "^0.9.0"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.12.3"

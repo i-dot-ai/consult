@@ -3,6 +3,7 @@ import logging
 from uuid import UUID
 
 import boto3
+import tiktoken
 from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django_rq import get_queue
@@ -19,6 +20,7 @@ from consultation_analyser.consultations.models import (
 )
 from consultation_analyser.embeddings import embed_text
 
+encoding = tiktoken.encoding_for_model("text-embedding-3-small")
 logger = logging.getLogger("import")
 DEFAULT_BATCH_SIZE = 10_000
 DEFAULT_TIMEOUT_SECONDS = 3_600
@@ -318,7 +320,12 @@ def import_responses(question: Question, responses_file_key: str):
         respondent_dict = {r.themefinder_id: r for r in respondents}
 
         # Second pass: create responses
-        responses_to_save = []
+        # type: ignore
+        responses_to_save: list = []  # type: ignore
+        max_total_tokens = 100_000
+        max_batch_size = 2048
+        total_tokens = 0
+
         for i, line in enumerate(responses_data["Body"].iter_lines()):
             response_data = json.loads(line.decode("utf-8"))
             themefinder_id = response_data["themefinder_id"]
@@ -327,23 +334,42 @@ def import_responses(question: Question, responses_file_key: str):
                 logger.warning(f"No respondent found for themefinder_id: {themefinder_id}")
                 continue
 
+            free_text = response_data.get("text", "")
+            if not free_text:
+                logger.warning(f"Empty text for themefinder_id: {themefinder_id}")
+                continue
+
+            token_count = len(encoding.encode(free_text))
+            if token_count > 8192:
+                logger.warning(f"Truncated text for themefinder_id: {themefinder_id}")
+                free_text = free_text[:1000]
+                token_count = len(encoding.encode(free_text))
+
+            if total_tokens + token_count > max_total_tokens or len(responses_to_save) >= max_batch_size:
+                embedded_responses_to_save = _embed_responses(responses_to_save)
+                Response.objects.bulk_create(embedded_responses_to_save)
+                responses_to_save = []
+                total_tokens = 0
+                logger.info("saved %s Responses for question %s", i + 1, question.number)
+
             responses_to_save.append(
                 dict(
                     respondent=respondent_dict[themefinder_id],
                     question=question,
-                    free_text=response_data.get("text", ""),
+                    free_text=free_text,
                     chosen_options=response_data.get("chosen_options", []),
                 )
             )
+            total_tokens += token_count
 
-            if len(responses_to_save) >= DEFAULT_BATCH_SIZE:
-                embedded_responses_to_save = _embed_responses(responses_to_save)
-                Response.objects.bulk_create(embedded_responses_to_save)
-                responses_to_save = []
-                logger.info("saved %s Responses for question %s", i + 1, question.number)
-
+        # last batch
         embedded_responses_to_save = _embed_responses(responses_to_save)
         Response.objects.bulk_create(embedded_responses_to_save)
+
+        # re-save the responses to ensure that every response has search_vector
+        # i.e the lexical bit
+        for response in Response.objects.filter(question=question):
+            response.save()
 
     except Exception as e:
         logger.error(
