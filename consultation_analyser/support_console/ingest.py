@@ -235,13 +235,13 @@ def import_response_annotation_themes(question: Question, output_folder: str):
                 )
             )
             if len(objects_to_save) >= DEFAULT_BATCH_SIZE:
-                ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
+                ResponseAnnotationTheme.objects.bulk_create(objects_to_save, ignore_conflicts=True)
                 objects_to_save = []
                 logger.info(
                     "saved %s ResponseAnnotationTheme for question %s", i + 1, question.number
                 )
 
-    ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
+    ResponseAnnotationTheme.objects.bulk_create(objects_to_save, ignore_conflicts=True)
 
 
 def import_response_annotations(question: Question, output_folder: str):
@@ -347,7 +347,7 @@ def import_responses(question: Question, responses_file_key: str):
 
             if total_tokens + token_count > max_total_tokens or len(responses_to_save) >= max_batch_size:
                 embedded_responses_to_save = _embed_responses(responses_to_save)
-                Response.objects.bulk_create(embedded_responses_to_save)
+                Response.objects.bulk_create(embedded_responses_to_save, ignore_conflicts=True)
                 responses_to_save = []
                 total_tokens = 0
                 logger.info("saved %s Responses for question %s", i + 1, question.number)
@@ -364,7 +364,7 @@ def import_responses(question: Question, responses_file_key: str):
 
         # last batch
         embedded_responses_to_save = _embed_responses(responses_to_save)
-        Response.objects.bulk_create(embedded_responses_to_save)
+        Response.objects.bulk_create(embedded_responses_to_save, ignore_conflicts=True)
 
         # re-save the responses to ensure that every response has search_vector
         # i.e the lexical bit
