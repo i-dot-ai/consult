@@ -5798,7 +5798,7 @@ class QuestionOverviewPage extends IaiLitBase {
             <iai-silver-cross-search-card
                 @click=${() => window.location.href = question.url}
                 .type=${"question"}
-                .title=${`Q${index+1}: ${question.title}`}
+                .title=${question.title}
                 .aside=${x`
                     <iai-icon-button
                         class="favourite-button"
@@ -5837,6 +5837,28 @@ class QuestionOverviewPage extends IaiLitBase {
             <section>
                 <iai-silver-title
                     .level=${2}
+                    .text=${"Favourited Questions"}
+                    .icon=${"star"}
+                ></iai-silver-title>
+
+                <iai-silver-panel>
+                    <div slot="content">
+                        <ul>
+                            ${this.questions
+                                .filter(question => this._favouritedQuestions.includes(question.id))
+                                .map((question, index) => x`
+                                <li>
+                                    ${this.renderSearchCard(question, index)}
+                                </li>
+                            `)}
+                        </ul>
+                    </div>
+                </iai-silver-panel>
+            </section>
+
+            <section>
+                <iai-silver-title
+                    .level=${2}
                     .text=${"All consultation questions"}
                     .subtext=${"Browse or search through all questions in this consultation."}
                     .aside=${x`<small>${this.questions.length} questions</small>`}
@@ -5867,28 +5889,6 @@ class QuestionOverviewPage extends IaiLitBase {
                             `)}
                         </ul>
 
-                    </div>
-                </iai-silver-panel>
-            </section>
-
-            <section>
-                <iai-silver-title
-                    .level=${2}
-                    .text=${"Favourited Questions"}
-                    .icon=${"star"}
-                ></iai-silver-title>
-
-                <iai-silver-panel>
-                    <div slot="content">
-                        <ul>
-                            ${this.questions
-                                .filter(question => this._favouritedQuestions.includes(question.id))
-                                .map((question, index) => x`
-                                <li>
-                                    ${this.renderSearchCard(question, index)}
-                                </li>
-                            `)}
-                        </ul>
                     </div>
                 </iai-silver-panel>
             </section>
