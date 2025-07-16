@@ -337,10 +337,15 @@ def import_responses(question: Question, responses_file_key: str):
                 continue
 
             free_text = response_data.get("text", "")
-            token_count = len(encoding.encode(free_text))
             if not free_text:
                 logger.warning(f"Empty text for themefinder_id: {themefinder_id}")
                 continue
+
+            token_count = len(encoding.encode(free_text))
+            if not token_count > 8192:
+                logger.warning(f"Truncated text for themefinder_id: {themefinder_id}")
+                free_text = free_text[:1000]
+                token_count = len(encoding.encode(free_text))
 
             if total_tokens + token_count > max_total_tokens or len(responses_to_save) >= max_batch_size:
                 embedded_responses_to_save = _embed_responses(responses_to_save)
@@ -362,6 +367,11 @@ def import_responses(question: Question, responses_file_key: str):
         # last batch
         embedded_responses_to_save = _embed_responses(responses_to_save)
         Response.objects.bulk_create(embedded_responses_to_save)
+
+        # re-save the responses to ensure that every response has search_vector
+        # i.e the lexical bit
+        for response in Response.objects.filter(question=question):
+            response.save()
 
     except Exception as e:
         logger.error(
