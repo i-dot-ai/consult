@@ -134,6 +134,8 @@ class IaiLitBase extends i$1 {
             return 0;
         }
         const percentage = (partialValue / totalValue) * 100;
+
+        // Round to 1 decimal point
         return Math.round(percentage * 10) / 10;
     }
 

@@ -111,6 +111,8 @@ export default class IaiLitBase extends LitElement {
             return 0;
         }
         const percentage = (partialValue / totalValue) * 100;
+
+        // Round to 1 decimal point
         return Math.round(percentage * 10) / 10;
     }
 
