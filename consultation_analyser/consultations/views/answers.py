@@ -33,12 +33,9 @@ class FilterParams(TypedDict, total=False):
     sentiment_list: list[str]
     theme_list: list[str]
     evidence_rich: bool
-    search_value: str  # TODO - remove when v1 dash deleted
     search_mode: Literal["semantic", "keyword"]
-    demographic_filters: dict[  # TODO - remove when v1 dash deleted
-        str, list[str]
-    ]  # e.g. {"individual": ["true"], "region": ["north", "south"]}
     demo_filters: dict[str, str]
+    search_value: str
     themes_sort_type: str  # "frequency" or "alphabetical"
     themes_sort_direction: str  # "ascending" or "descending"
 
@@ -63,16 +60,10 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
     if themes_sort_type in ["frequency", "alphabetical"]:
         filters["themes_sort_type"] = themes_sort_type
 
-    # TODO - remove once v1 of the dashboard is removed
-    evidence_rich_filter = request.GET.get("evidenceRichFilter")
-    if evidence_rich_filter == "evidence-rich":
-        filters["evidence_rich"] = True
-
     evidence_rich_filter = request.GET.get("evidenceRich")
     if evidence_rich_filter:
         filters["evidence_rich"] = True
 
-    # TODO - remove this when v1 of dashboard is removed
     search_value = request.GET.get("searchValue")
     if search_value:
         filters["search_value"] = search_value
@@ -82,20 +73,6 @@ def parse_filters_from_request(request: HttpRequest) -> FilterParams:
         if search_mode not in ("semantic", "keyword"):
             raise ValidationError("search mode must be one of semantic, keyword")
         filters["search_mode"] = search_mode
-
-    # TODO - remove when v1 of dashboard removed - just use demoFilters
-    # Parse demographic filters
-    # Expected format: demographicFilters[field]=value1,value2
-    demographic_filters = {}
-    for key in request.GET:
-        if key.startswith("demographicFilters[") and key.endswith("]"):
-            field_name = key[19:-1]  # Extract field name from demographicFilters[fieldname]
-            values = request.GET.get(key, "").split(",")
-            if values and values[0]:  # Only add if there are actual values
-                demographic_filters[field_name] = values
-
-    if demographic_filters:
-        filters["demographic_filters"] = demographic_filters
 
     # Expected format - `demoFilters=age:18&demoFilters=country:england`
     demo_filters = request.GET.getlist("demoFilters")
@@ -121,22 +98,7 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
     if filters.get("evidence_rich"):
         query &= Q(annotation__evidence_rich=models.ResponseAnnotation.EvidenceRich.YES)
 
-    # TODO - delete after v1 of dashboard deleted - use demo_filters
     # Handle demographic filters
-    if filters.get("demographic_filters"):
-        for field, values in filters["demographic_filters"].items():
-            # Create a Q object that matches any of the values for this field
-            field_query = Q()
-            for value in values:
-                # Handle boolean values
-                if value.lower() in ["true", "false"]:
-                    bool_value = value.lower() == "true"
-                    field_query |= Q(**{f"respondent__demographics__{field}": bool_value})
-                else:
-                    # Handle string values
-                    field_query |= Q(**{f"respondent__demographics__{field}": value})
-            query &= field_query
-
     demo_filters = filters.get("demo_filters")
     if demo_filters := filters.get("demo_filters"):
         for field, value in demo_filters.items():
