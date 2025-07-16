@@ -417,12 +417,7 @@ def import_multiple_choice_responses(question: Question, multichoice_file_key: s
             themefinder_id = response_data["themefinder_id"]
             chosen_options = response_data.get("chosen_options", [])
 
-            responses_to_save.append(
-                dict(
-                    respondent=respondent_dict[themefinder_id],
-                    question=question,
-                    chosen_options = chosen_options
-                ))
+            responses_to_save.append(Response(respondent=respondent_dict[themefinder_id], question=question, chosen_options=chosen_options))
 
             if len(responses_to_save) >= DEFAULT_BATCH_SIZE:
                 Response.objects.bulk_create(responses_to_save, update_conflicts=True, update_fields=["chosen_options", "question"], unique_fields=["id"])
