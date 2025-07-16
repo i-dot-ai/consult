@@ -325,6 +325,7 @@ def import_responses(question: Question, responses_file_key: str):
         # type: ignore
         responses_to_save: list = []  # type: ignore
         max_total_tokens = 100_000
+        max_batch_size = 2048
         total_tokens = 0
 
         for i, line in enumerate(responses_data["Body"].iter_lines()):
@@ -337,7 +338,11 @@ def import_responses(question: Question, responses_file_key: str):
 
             free_text = response_data.get("text", "")
             token_count = len(encoding.encode(free_text))
-            if total_tokens + token_count > max_total_tokens:
+            if not free_text:
+                logger.warning(f"Empty text for themefinder_id: {themefinder_id}")
+                continue
+
+            if total_tokens + token_count > max_total_tokens or len(responses_to_save) >= max_batch_size:
                 embedded_responses_to_save = _embed_responses(responses_to_save)
                 Response.objects.bulk_create(embedded_responses_to_save)
                 responses_to_save = []
