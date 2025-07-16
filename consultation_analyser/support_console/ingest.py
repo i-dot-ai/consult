@@ -408,25 +408,28 @@ def import_multiple_choice_responses(question: Question, multichoice_file_key: s
     )
 
     try:
-        # Get respondents
         respondents = Respondent.objects.filter(consultation=question.consultation)
+        respondent_dict = {r.themefinder_id: r for r in respondents}
 
-        # Second pass: create responses
+        responses_to_save = []
         for i, line in enumerate(multichoice_data["Body"].iter_lines()):
             response_data = json.loads(line.decode("utf-8"))
             themefinder_id = response_data["themefinder_id"]
             chosen_options = response_data.get("chosen_options", [])
-            respondent = respondents.get(themefinder_id=themefinder_id)
-            Response.objects.update_or_create(
-                respondent=respondent,
-                question=question,
-                defaults={
-                    "respondent": respondent,
-                    "question": question,
-                    "chosen_options": chosen_options,
-                },
-            )
-            # How can we do this with bulk update/create?
+
+            responses_to_save.append(
+                dict(
+                    respondent=respondent_dict[themefinder_id],
+                    question=question,
+                    chosen_options = chosen_options
+                ))
+
+            if len(responses_to_save) >= DEFAULT_BATCH_SIZE:
+                Response.objects.bulk_create(responses_to_save, update_conflicts=True, update_fields=["chosen_options", "question"], unique_fields=["id"])
+                responses_to_save = []
+                logger.info("saved %s Responses for question %s", i + 1, question.number)
+
+        Response.objects.bulk_create(responses_to_save, update_conflicts=True, update_fields=["chosen_options", "question"], unique_fields=["id"])
 
     except Exception as e:
         logger.error(
