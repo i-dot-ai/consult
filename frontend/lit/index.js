@@ -1995,10 +1995,20 @@ class IaiProgressBar extends IaiLitBase {
         this.applyStaticStyles("iai-progress-bar", IaiProgressBar.styles);
     }
 
+    getWidth() {
+        if (this.value > 100) {
+            return 100;
+        }
+        if (this.value < 0) {
+            return 0;
+        }
+        return this.value;
+    }
+
     render() {
         return x`
             <div class=${"container" + (this.value < 30 ? " low-value" : "")}>
-                <div class=${"bar" + (this.value >= 100 ? " full" : "")} style=${`width: ${this.value}%;`}>
+                <div class=${"bar" + (this.value >= 100 ? " full" : "")} style=${`width: ${this.getWidth()}%;`}>
                     ${this.label
                         ? x`
                             <span class="label">
@@ -7149,7 +7159,7 @@ class DemographicsCard extends IaiLitBase {
         i$4`
             iai-demographics-card article {
                 height: 100%;
-                max-height: 15em;
+                max-height: 40em;
                 overflow: auto;
                 padding: 1em;
                 font-size: 1em;
