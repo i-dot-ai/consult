@@ -409,22 +409,36 @@ def import_multiple_choice_responses(question: Question, multichoice_file_key: s
 
     try:
         respondents = Respondent.objects.filter(consultation=question.consultation)
+        themefinder_ids_for_existing_responses = Response.objects.filter(
+            question=question
+        ).values_list("respondent__themefinder_id", flat=True)
         respondent_dict = {r.themefinder_id: r for r in respondents}
 
-        responses_to_save = []
+        responses_to_update = []
+        responses_to_create = []
         for i, line in enumerate(multichoice_data["Body"].iter_lines()):
             response_data = json.loads(line.decode("utf-8"))
             themefinder_id = response_data["themefinder_id"]
             chosen_options = response_data.get("chosen_options", [])
 
-            responses_to_save.append(Response(respondent=respondent_dict[themefinder_id], question=question, chosen_options=chosen_options))
+            if themefinder_id in themefinder_ids_for_existing_responses:
+                response = Response.objects.get(
+                    respondent=respondent_dict[themefinder_id], question=question
+                )
+                response.chosen_options = chosen_options
+                responses_to_update.append(response)
+            else:
+                responses_to_create.append(
+                    Response(
+                        respondent=respondent_dict[themefinder_id],
+                        question=question,
+                        chosen_options=chosen_options,
+                    )
+                )
 
-            if len(responses_to_save) >= DEFAULT_BATCH_SIZE:
-                Response.objects.bulk_create(responses_to_save, update_conflicts=True, update_fields=["chosen_options", "question"], unique_fields=["id"])
-                responses_to_save = []
-                logger.info("saved %s Responses for question %s", i + 1, question.number)
-
-        Response.objects.bulk_create(responses_to_save, update_conflicts=True, update_fields=["chosen_options", "question"], unique_fields=["id"])
+        # TODO - batch bulk updates/creates
+        Response.objects.bulk_create(responses_to_create)
+        Response.objects.bulk_update(responses_to_update, fields=["chosen_options"])
 
     except Exception as e:
         logger.error(
