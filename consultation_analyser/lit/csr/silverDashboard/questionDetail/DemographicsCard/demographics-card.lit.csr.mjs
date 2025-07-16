@@ -18,7 +18,7 @@ export default class DemographicsCard extends IaiLitBase {
         css`
             iai-demographics-card article {
                 height: 100%;
-                max-height: 15em;
+                max-height: 40em;
                 overflow: auto;
                 padding: 1em;
                 font-size: 1em;
