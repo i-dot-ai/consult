@@ -1,11 +1,13 @@
 import json
 import logging
+from time import sleep
 from uuid import UUID
 
 import boto3
 from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django_rq import get_queue
+from openai import RateLimitError, BadRequestError
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -294,13 +296,12 @@ def import_response_annotations(question: Question, output_folder: str):
 
 
 def _embed_responses(responses: list[dict]) -> list[Response]:
-    free_texts = [r["free_text"] for r in responses]
     try:
+        free_texts = [r["free_text"] for r in responses]
         embeddings = embed_text(free_texts)
-    except Exception as e:
-        shortest_free_text = min(len(x) for x in free_texts)
-        msg = f"shortest_free_text={shortest_free_text}, len(free_texts)={len(free_texts)}, first_free_text={free_texts[0]}, error={e}"
-        raise ValueError(msg)
+    except RateLimitError:
+        logger.error("rate limit exceeded")
+        raise
     return [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
 
 
@@ -340,7 +341,7 @@ def import_responses(question: Question, responses_file_key: str):
                 )
             )
 
-            if len(responses_to_save) >= DEFAULT_BATCH_SIZE:
+            if len(responses_to_save) >= 1_000:
                 embedded_responses_to_save = _embed_responses(responses_to_save)
                 Response.objects.bulk_create(embedded_responses_to_save)
                 responses_to_save = []
