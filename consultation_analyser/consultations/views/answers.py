@@ -7,7 +7,7 @@ from uuid import UUID
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db.models import Count, Exists, OuterRef, Q
+from django.db.models import Count, Exists, OuterRef, Q, QuerySet
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from pgvector.django import CosineDistance
@@ -158,29 +158,23 @@ def get_filtered_responses_with_themes(
 
 
 def get_theme_summary_optimized(
-    question: models.Question, filters: FilterParams | None = None
+    question: models.Question,
+    filtered_responses: QuerySet | None = None,
+    themes_sort_type: str | None = None,
+    themes_sort_direction: str | None = None,
 ) -> list[dict]:
     """Database-optimized theme aggregation - shows all themes in filtered responses"""
-    # Get the filtered responses using the same logic as get_filtered_responses_with_themes
-    response_filter = build_response_filter_query(filters or {}, question)
-    filtered_responses = models.Response.objects.filter(response_filter)
+    # Empty queryset would be valid, explicitly check for None
+    if filtered_responses is None:
+        filtered_responses = models.Response.objects.filter(question=question)
 
     # Ordering of responses - default to order by frequency, descengind
     order_by_field_name = "response_count"
     direction = "-"
-
-    if filters:
-        # Apply theme filtering with AND logic if needed
-        for theme_id in filters.get("theme_list", []):
-            theme_exists = models.ResponseAnnotationTheme.objects.filter(
-                response_annotation__response=OuterRef("pk"), theme_id=theme_id
-            )
-            filtered_responses = filtered_responses.filter(Exists(theme_exists))
-
-        if filters.get("themes_sort_type", "") == "alphabetical":
-            order_by_field_name = "name"
-        if filters.get("themes_sort_direction", "") == "ascending":
-            direction = ""
+    if themes_sort_type == "alphabetical":
+        order_by_field_name = "name"
+    if themes_sort_direction == "ascending":
+        direction = ""
 
     # Now get all themes that appear in those filtered responses
     # This shows ALL themes that appear in responses matching the filter criteria
@@ -327,9 +321,16 @@ def question_responses_json(
 
     # Generate theme mappings
     theme_mappings = []
+    themes_sort_type = filters.get("themes_sort_type")
+    themes_sort_direction = filters.get("themes_sort_direction")
     if question.has_free_text:
         # Generate theme mappings using optimized database query
-        theme_data = get_theme_summary_optimized(question, filters)
+        theme_data = get_theme_summary_optimized(
+            question=question,
+            filtered_responses=filtered_responses,
+            themes_sort_type=themes_sort_type,
+            themes_sort_direction=themes_sort_direction,
+        )
         theme_mappings = [
             {
                 "inputId": f"themesfilter-{i}",

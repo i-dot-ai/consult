@@ -8,7 +8,6 @@ from django.test import RequestFactory
 from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.models import DemographicOption
 from consultation_analyser.consultations.views.answers import (
-    FilterParams,
     build_respondent_data,
     build_response_filter_query,
     get_demographic_aggregations_from_responses,
@@ -228,20 +227,19 @@ def test_get_theme_summary_optimized_with_responses(question, theme, theme2):
     assert our_theme["count"] == 2
 
     # Now test with filters - Theme B assigned to 1 response, Theme A assigned to 2 responses
-    filters = FilterParams(themes_sort_type="frequency", themes_sort_direction="ascending")
-    theme_summary = get_theme_summary_optimized(question=question, filters=filters)
+    theme_summary = get_theme_summary_optimized(
+        question=question, themes_sort_type="frequency", themes_sort_direction="ascending"
+    )
     theme_summary[0]["theme__name"] = theme2.name
-
-    filters = FilterParams(themes_sort_type="frequency")
-    theme_summary = get_theme_summary_optimized(question=question, filters=filters)
+    theme_summary = get_theme_summary_optimized(question=question, themes_sort_type="frequency")
     theme_summary[0]["theme__name"] = theme.name
-
-    filters = FilterParams(themes_sort_type="alphabetical", themes_sort_direction="ascending")
-    theme_summary = get_theme_summary_optimized(question=question, filters=filters)
+    theme_summary = get_theme_summary_optimized(
+        question=question, themes_sort_type="alphabetical", themes_sort_direction="ascending"
+    )
     theme_summary[1]["theme__name"] = theme2.name
-
-    filters = FilterParams(themes_sort_type="alphabetical", themes_sort_direction="descending")
-    theme_summary = get_theme_summary_optimized(question=question, filters=filters)
+    theme_summary = get_theme_summary_optimized(
+        question=question, themes_sort_type="alphabetical", themes_sort_direction="descending"
+    )
     theme_summary[0]["theme__name"] = theme2.name
 
 
@@ -550,7 +548,11 @@ def test_theme_filtering_and_logic(question):
     # When filtering by theme1 AND theme2, the theme summary should show counts
     # only for themes appearing in responses that have BOTH theme1 AND theme2
     filters = {"theme_list": [str(theme1.id), str(theme2.id)]}
-    theme_summary = get_theme_summary_optimized(question, filters)
+    # TODO - get responses
+    filtered_responses = get_filtered_responses_with_themes(question=question, filters=filters)
+    theme_summary = get_theme_summary_optimized(
+        question=question, filtered_responses=filtered_responses
+    )
 
     # Convert to dict for easier testing
     theme_counts = {t["theme__id"]: t["count"] for t in theme_summary}
