@@ -306,22 +306,6 @@ def question_responses_json(
     # Parse filters from request
     filters = parse_filters_from_request(request)
 
-    # Generate theme mappings
-    theme_mappings = []
-    if question.has_free_text:
-        # Generate theme mappings using optimized database query
-        theme_data = get_theme_summary_optimized(question, filters)
-        theme_mappings = [
-            {
-                "inputId": f"themesfilter-{i}",
-                "value": str(theme.get("theme__id", "")),
-                "label": theme.get("theme__name", ""),
-                "description": theme.get("theme__description", ""),
-                "count": str(theme.get("count", 0)),
-            }
-            for i, theme in enumerate(theme_data)
-        ]
-
     # Get respondents with their filtered responses using the same logic as theme filtering
     # First get the filtered responses using AND logic for themes
     filtered_responses = get_filtered_responses_with_themes(question, filters)
@@ -340,6 +324,22 @@ def question_responses_json(
 
     # Get demographic aggregations for filtered responses
     demographic_aggregations = get_demographic_aggregations_from_responses(filtered_responses)
+
+    # Generate theme mappings
+    theme_mappings = []
+    if question.has_free_text:
+        # Generate theme mappings using optimized database query
+        theme_data = get_theme_summary_optimized(question, filters)
+        theme_mappings = [
+            {
+                "inputId": f"themesfilter-{i}",
+                "value": str(theme.get("theme__id", "")),
+                "label": theme.get("theme__name", ""),
+                "description": theme.get("theme__description", ""),
+                "count": str(theme.get("count", 0)),
+            }
+            for i, theme in enumerate(theme_data)
+        ]
 
     data: DataDict = {
         "all_respondents": [],
