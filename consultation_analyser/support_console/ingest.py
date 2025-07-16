@@ -1,13 +1,12 @@
 import json
 import logging
-from time import sleep
 from uuid import UUID
 
 import boto3
+import tiktoken
 from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django_rq import get_queue
-from openai import RateLimitError, BadRequestError
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -21,6 +20,7 @@ from consultation_analyser.consultations.models import (
 )
 from consultation_analyser.embeddings import embed_text
 
+encoding = tiktoken.encoding_for_model("text-embedding-3-small")
 logger = logging.getLogger("import")
 DEFAULT_BATCH_SIZE = 10_000
 DEFAULT_TIMEOUT_SECONDS = 3_600
@@ -296,12 +296,7 @@ def import_response_annotations(question: Question, output_folder: str):
 
 
 def _embed_responses(responses: list[dict]) -> list[Response]:
-    try:
-        free_texts = [r["free_text"] for r in responses]
-        embeddings = embed_text(free_texts)
-    except RateLimitError:
-        logger.error("rate limit exceeded")
-        raise
+    embeddings = embed_text([r["free_text"] for r in responses])
     return [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
 
 
@@ -323,7 +318,11 @@ def import_responses(question: Question, responses_file_key: str):
         respondent_dict = {r.themefinder_id: r for r in respondents}
 
         # Second pass: create responses
-        responses_to_save = []
+        # type: ignore
+        responses_to_save: list = []  # type: ignore
+        max_total_tokens = 300_000
+        total_tokens = 0
+
         for i, line in enumerate(responses_data["Body"].iter_lines()):
             response_data = json.loads(line.decode("utf-8"))
             themefinder_id = response_data["themefinder_id"]
@@ -332,21 +331,26 @@ def import_responses(question: Question, responses_file_key: str):
                 logger.warning(f"No respondent found for themefinder_id: {themefinder_id}")
                 continue
 
+            free_text = response_data.get("text", "")
+            token_count = len(encoding.encode(free_text))
+            if total_tokens + token_count > max_total_tokens:
+                embedded_responses_to_save = _embed_responses(responses_to_save)
+                Response.objects.bulk_create(embedded_responses_to_save)
+                responses_to_save = []
+                total_tokens = 0
+                logger.info("saved %s Responses for question %s", i + 1, question.number)
+
             responses_to_save.append(
                 dict(
                     respondent=respondent_dict[themefinder_id],
                     question=question,
-                    free_text=response_data.get("text", ""),
+                    free_text=free_text,
                     chosen_options=response_data.get("chosen_options", []),
                 )
             )
+            total_tokens += token_count
 
-            if len(responses_to_save) >= 1_000:
-                embedded_responses_to_save = _embed_responses(responses_to_save)
-                Response.objects.bulk_create(embedded_responses_to_save)
-                responses_to_save = []
-                logger.info("saved %s Responses for question %s", i + 1, question.number)
-
+        # last batch
         embedded_responses_to_save = _embed_responses(responses_to_save)
         Response.objects.bulk_create(embedded_responses_to_save)
 
