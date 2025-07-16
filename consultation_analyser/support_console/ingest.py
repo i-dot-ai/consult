@@ -294,7 +294,13 @@ def import_response_annotations(question: Question, output_folder: str):
 
 
 def _embed_responses(responses: list[dict]) -> list[Response]:
-    embeddings = embed_text([r["free_text"] for r in responses])
+    free_texts = [r["free_text"] for r in responses]
+    try:
+        embeddings = embed_text(free_texts)
+    except Exception as e:
+        shortest_free_text = min(len(x) for x in free_texts)
+        msg = f"shortest_free_text={shortest_free_text}, len(free_texts)={len(free_texts)}, first_free_text={free_texts[0]}, error={e}"
+        raise ValueError(msg)
     return [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
 
 
