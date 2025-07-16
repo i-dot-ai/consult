@@ -41,7 +41,7 @@ export default class IaiCsvDownload extends IaiLitBase {
     }
 
     buildCsv(data) {
-        if (!data) {
+        if (!data || !Object.keys(data).length > 0) {
             return "";
         }
 

@@ -825,7 +825,7 @@ class IaiCsvDownload extends IaiLitBase {
     }
 
     buildCsv(data) {
-        if (!data) {
+        if (!data || !Object.keys(data).length > 0) {
             return "";
         }
 
@@ -7499,7 +7499,7 @@ class ResponseRefinement extends IaiLitBase {
             iai-response-refinement .popup-button .popup-button__body {
                 position: relative;
             }
-            iai-response-refinement .popup-button .popup-button__body button {
+            iai-response-refinement .popup-button .popup-button__body iai-silver-button button {
                 line-height: 2em;
                 background: var(--iai-silver-color-light);
                 border: none;
@@ -7545,6 +7545,35 @@ class ResponseRefinement extends IaiLitBase {
         this._themeFiltersVisible = false;
         
         this.applyStaticStyles("iai-response-refinement", ResponseRefinement.styles);
+    }
+
+    handleThemeFiltersBlur = (e) => {
+        if (!document.getElementById("theme-filters-panel").contains(e.target)) {
+            this._themeFiltersVisible = false;
+        }
+    }
+
+    handleSettingsBlur = (e) => {
+        if (!document.getElementById("settings-panel").contains(e.target)) {
+            this._settingsVisible = false;
+        }
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.setupPanelListeners(window.addEventListener);    }
+
+    disconnectedCallback() {
+        this.setupPanelListeners(window.removeEventListener);
+        super.disconnectedCallback();
+    }
+
+    setupPanelListeners = (func) => {
+        [this.handleSettingsBlur, this.handleThemeFiltersBlur].forEach(eventHandler => {
+            ["click", "touchstart"].forEach(eventName => {
+                func(eventName, eventHandler);
+            });
+        });
     }
 
     filtersApplied() {
@@ -7612,38 +7641,40 @@ class ResponseRefinement extends IaiLitBase {
                                 .handleInput=${(e) => this.setSearchValue(e.target.value.trim())}
                             ></iai-silver-search-box>
 
-                            <div class="popup-button">
-                                <iai-icon-button
-                                    title="Search settings"
-                                    @click=${() => this._settingsVisible = !this._settingsVisible}
-                                >
-                                    <iai-icon
-                                        slot="icon"
-                                        name="settings"
-                                        .color=${this._settingsVisible ? "var(--iai-silver-color-dark)" : "var(--iai-silver-color-text)"}
-                                        .fill=${1}
-                                    ></iai-icon>
-                                </iai-icon-button>
+                            <div id="settings-panel" class="popup-button">
+                                <div class="popup-button__body">
+                                    <iai-icon-button
+                                        title="Search settings"
+                                        @click=${() => this._settingsVisible = !this._settingsVisible}
+                                    >
+                                        <iai-icon
+                                            slot="icon"
+                                            name="settings"
+                                            .color=${this._settingsVisible ? "var(--iai-silver-color-dark)" : "var(--iai-silver-color-text)"}
+                                            .fill=${1}
+                                        ></iai-icon>
+                                    </iai-icon-button>
 
-                                <div class="popup-panel" style=${`
-                                    opacity: ${this._settingsVisible ? 1 : 0};
-                                    pointer-events: ${this._settingsVisible ? "auto" : "none"};
-                                `}>
-                                    <iai-silver-title
-                                        .text=${"Search Settings"}
-                                        .variant=${"secondary"}
-                                    ></iai-silver-title>
-                                    <div class="content">
-                                        <iai-toggle-input
-                                            name=${"highligh-matches"}
-                                            .handleChange=${(e) => {
-                                                this.setHighlightMatches(!this.highlightMatches);
-                                            }}
-                                            inputId=${"highligh-matches-toggle"}
-                                            label=${"Highlight Matches"}
-                                            value=${this.highlightMatches}
-                                            .checked=${this.highlightMatches}
-                                        ></iai-toggle-input>
+                                    <div class="popup-panel" style=${`
+                                        opacity: ${this._settingsVisible ? 1 : 0};
+                                        pointer-events: ${this._settingsVisible ? "auto" : "none"};
+                                    `}>
+                                        <iai-silver-title
+                                            .text=${"Search Settings"}
+                                            .variant=${"secondary"}
+                                        ></iai-silver-title>
+                                        <div class="content">
+                                            <iai-toggle-input
+                                                name=${"highligh-matches"}
+                                                .handleChange=${(e) => {
+                                                    this.setHighlightMatches(!this.highlightMatches);
+                                                }}
+                                                inputId=${"highligh-matches-toggle"}
+                                                label=${"Highlight Matches"}
+                                                value=${this.highlightMatches}
+                                                .checked=${this.highlightMatches}
+                                            ></iai-toggle-input>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -7686,7 +7717,7 @@ class ResponseRefinement extends IaiLitBase {
                         </div>
 
                         <div class="filters-row">
-                            <div class="popup-button">
+                            <div id="theme-filters-panel" class="popup-button">
                                 <iai-silver-title
                                     .level=${3}
                                     .text=${"Themes"}
