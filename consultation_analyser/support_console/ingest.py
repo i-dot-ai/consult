@@ -296,12 +296,8 @@ def import_response_annotations(question: Question, output_folder: str):
 
 
 def _embed_responses(responses: list[dict]) -> list[Response]:
-    try:
-        embeddings = embed_text([r["free_text"] for r in responses])
-        return [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
-    except Exception as e:
-        logger.warning(e)
-    return [Response(**r) for r in responses]
+    embeddings = embed_text([r["free_text"] for r in responses])
+    return [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
 
 
 def import_responses(question: Question, responses_file_key: str):
