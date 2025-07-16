@@ -130,10 +130,10 @@ def validate_consultation_structure(
                 has_free_text = question_data.get("has_free_text", True)
             except s3.exceptions.NoSuchKey:
                 errors.append(f"Missing {question_file}")
-                has_free_text = None
+                has_free_text = True
             except Exception as e:
                 errors.append(f"Error checking {question_file}: {str(e)}")
-                has_free_text = None
+                has_free_text = True
 
             try:
                 s3.head_object(Bucket=bucket_name, Key=responses_file)
