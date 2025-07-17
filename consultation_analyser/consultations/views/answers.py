@@ -341,10 +341,17 @@ def question_responses_json(
     page_size = request.GET.get("page_size", DEFAULT_PAGE_SIZE)
     page_num = request.GET.get("page", DEFAULT_PAGE)
 
+    # Use Django's lazy pagination - avoids counting all results
     paginator = Paginator(full_qs, page_size, allow_empty_first_page=True)
-    paginator._count = filtered_total
     page_obj = paginator.page(page_num)
     page_qs = page_obj.object_list
+    
+    # Only count when necessary (first page or when specifically needed)
+    if page_num == DEFAULT_PAGE:
+        filtered_total = respondent_qs.count()
+    else:
+        # For other pages, use paginator's optimized count
+        filtered_total = paginator.count
 
     data: DataDict = {
         "all_respondents": [build_respondent_data(r) for r in page_qs],
