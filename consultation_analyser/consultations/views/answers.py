@@ -287,9 +287,6 @@ def question_responses_json(
     consultation_slug: str,
     question_slug: str,
 ):
-    page_size = request.GET.get("page_size")
-    page = request.GET.get("page", 1)
-
     # Get the question object with consultation in one query
     question = get_object_or_404(
         models.Question.objects.select_related("consultation"),
@@ -350,16 +347,18 @@ def question_responses_json(
     }
 
     # Pagination
-    if page_size:
-        pagination = Paginator(full_qs, page_size)
-        current_page = pagination.page(page)
-        annotated_responses = current_page.object_list
-        data["has_more_pages"] = current_page.has_next()
-    else:
-        annotated_responses = full_qs
+    DEFAULT_PAGE_SIZE = 50
+    DEFAULT_PAGE = 1
+    page_size = request.GET.get("page_size", DEFAULT_PAGE_SIZE)
+    page_num = request.GET.get("page", DEFAULT_PAGE)
 
-    # Build response data efficiently using prefetched data
-    data["all_respondents"] = list(map(build_respondent_data, annotated_responses))
+    paginator = Paginator(full_qs, page_size, allow_empty_first_page=True)
+    paginator._count = filtered_total
+    page_obj = paginator.page(page_num)
+    page_qs = page_obj.object_list
+
+    data["has_more_pages"] = page_obj.has_next()
+    data["all_respondents"] = [build_respondent_data(r) for r in page_qs]
 
     return JsonResponse(data)
 
