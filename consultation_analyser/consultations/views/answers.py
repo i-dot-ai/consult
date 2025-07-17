@@ -543,6 +543,29 @@ def filtered_responses(
 
 @user_can_see_dashboards
 @user_can_see_consultation
+def question_information(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    """Standalone endpoint for getting basic question information"""
+    # Get the question object with consultation in one query
+    question = get_object_or_404(
+        models.Question.objects.select_related("consultation"),
+        slug=question_slug,
+        consultation__slug=consultation_slug,
+    )
+
+    data = {
+        "question_text": question.text,
+        "total_responses": question.total_responses,
+    }
+
+    return JsonResponse(data)
+
+
+@user_can_see_dashboards
+@user_can_see_consultation
 def index(
     request: HttpRequest,
     consultation_slug: str,
