@@ -267,7 +267,7 @@ def import_response_annotations(question: Question, output_folder: str):
     evidence_dict = {}
     for line in evidence_response["Body"].iter_lines():
         evidence = json.loads(line.decode("utf-8"))
-        evidence_value = evidence.get("evidence_rich", "NO").upper()
+        evidence_value = (evidence.get("evidence_rich") or "NO").upper()
         evidence_dict[evidence["themefinder_id"]] = (
             ResponseAnnotation.EvidenceRich.YES
             if evidence_value == "YES"
