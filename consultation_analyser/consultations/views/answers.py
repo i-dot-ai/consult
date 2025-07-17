@@ -125,6 +125,7 @@ def get_filtered_responses_with_themes(
         models.Response.objects.filter(response_filter)
         .select_related("respondent", "annotation")
         .prefetch_related("annotation__themes")
+        .defer("embedding", "search_vector")
     )
 
     # Handle theme filtering with AND logic
