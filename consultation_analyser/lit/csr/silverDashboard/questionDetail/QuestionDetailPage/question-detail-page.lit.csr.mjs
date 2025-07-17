@@ -226,11 +226,68 @@ export default class QuestionDetailPage extends IaiLitBase {
             this._errorOccured = false;
             this._isLoading = true;
 
-            const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
-
-            let response;
+            // Use multiple modular endpoints instead of single question_responses_json
             try {
-                response = await this.fetchData(url, { signal });
+                const [filteredResponsesData, themeAggregationsData, themeInformationData, demographicOptionsData, demographicAggregationsData] = await Promise.all([
+                    // Get paginated response data
+                    this.fetchData(`/consultations/${this.consultationSlug}/responses/${this.questionSlug}/filtered_responses?` + this.buildQuery(), { signal }).then(r => r.json()),
+                    // Get theme aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/consultations/${this.consultationSlug}/responses/${this.questionSlug}/theme_aggregations?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    // Get theme information (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/consultations/${this.consultationSlug}/responses/${this.questionSlug}/theme_information`, { signal }).then(r => r.json()) : null,
+                    // Get demographic options (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/consultations/${this.consultationSlug}/responses/${this.questionSlug}/demographic_options`, { signal }).then(r => r.json()) : null,
+                    // Get demographic aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/consultations/${this.consultationSlug}/responses/${this.questionSlug}/demographic_aggregations?` + this.buildQuery(), { signal }).then(r => r.json()) : null
+                ]);
+
+                this.responses = this.responses.concat(filteredResponsesData.all_respondents);
+
+                this._responsesTotal = filteredResponsesData.respondents_total;
+                this._filteredTotal = filteredResponsesData.filtered_total;
+                this._hasMorePages = filteredResponsesData.has_more_pages;
+
+                // Update theme data only on first page to reflect current filters
+                if (this._currentPage === 1 && themeAggregationsData && themeInformationData) {
+                    // Create theme info lookup map
+                    const themeInfoMap = themeInformationData.themes.reduce((map, theme) => {
+                        map[theme.id] = theme;
+                        return map;
+                    }, {});
+                    
+                    // Convert theme_aggregations format to theme_mappings format
+                    const themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
+                        const themeInfo = themeInfoMap[id] || {};
+                        return {
+                            value: id,
+                            label: themeInfo.name || "",
+                            description: themeInfo.description || "",
+                            count: count.toString()
+                        };
+                    });
+
+                    this._themes = themeMappings.map(mapping => ({
+                        id: mapping.value,
+                        title: mapping.label,
+                        description: mapping.description,
+                        mentions: parseInt(mapping.count),
+                        handleClick: () => {
+                            this._themeFilters = [mapping.value];
+                            this._activeTab = this._TAB_INDECES["Response Analysis"];
+                        }
+                    }));
+
+                    this.themeMappings = themeMappings;
+                }
+
+                // Update demographic data if available
+                if (demographicAggregationsData) {
+                    this._demoData = demographicAggregationsData.demographic_aggregations || {};
+                }
+                if (demographicOptionsData) {
+                    this._demoOptions = demographicOptionsData.demographic_options || {};
+                }
+
             } catch (err) {
                 if (err.name == "AbortError") {
                     console.log("stale request aborted");
@@ -246,39 +303,6 @@ export default class QuestionDetailPage extends IaiLitBase {
                 }
                 this._isLoading = false;
             }
-
-            if (!response.ok) {
-                this._errorOccured = true;
-                throw new Error(`Response status: ${response.status}`);
-            }
-
-            const responsesData = await response.json();
-
-            this.responses = this.responses.concat(responsesData.all_respondents);
-
-            this._responsesTotal = responsesData.respondents_total;
-            this._filteredTotal = responsesData.filtered_total;
-
-            this._themes = responsesData.theme_mappings.map(mapping => ({
-                id: mapping.value,
-                title: mapping.label,
-                description: mapping.description,
-                mentions: parseInt(mapping.count),
-                handleClick: () => {
-                    this._themeFilters = [mapping.value];
-                    this._activeTab = this._TAB_INDECES["Response Analysis"];
-                }
-            }));
-
-            this._demoData = responsesData.demographic_aggregations || {};
-            this._demoOptions = responsesData.demographic_options || {};
-
-            // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
-            if (this._currentPage === 1 && responsesData.theme_mappings) {
-                this.themeMappings = responsesData.theme_mappings;
-            }
-
-            this._hasMorePages = responsesData.has_more_pages;
 
             this._currentPage = this._currentPage + 1;
         }, this._DEBOUNCE_DELAY);
