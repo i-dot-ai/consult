@@ -500,6 +500,49 @@ def theme_aggregations(
 
 @user_can_see_dashboards
 @user_can_see_consultation
+def filtered_responses(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    """Standalone endpoint for getting paginated filtered responses"""
+    # Get the question object with consultation in one query
+    question = get_object_or_404(
+        models.Question.objects.select_related("consultation"),
+        slug=question_slug,
+        consultation__slug=consultation_slug,
+    )
+
+    # Parse filters from request
+    filters = parse_filters_from_request(request)
+
+    # Get filtered responses with themes (optimized with prefetching)
+    filtered_qs = get_filtered_responses_with_themes(question, filters)
+
+    # Pagination parameters
+    DEFAULT_PAGE_SIZE = 50
+    page_size = int(request.GET.get("page_size", DEFAULT_PAGE_SIZE))
+    page_num = int(request.GET.get("page", 1))
+
+    # Use Django's lazy pagination
+    paginator = Paginator(filtered_qs, page_size, allow_empty_first_page=True)
+    page_obj = paginator.page(page_num)
+
+    # Get total respondents count for this question (single query)
+    all_respondents_count = models.Response.objects.filter(question=question).count()
+
+    data = {
+        "all_respondents": [build_respondent_data(r) for r in page_obj.object_list],
+        "has_more_pages": page_obj.has_next(),
+        "respondents_total": all_respondents_count,
+        "filtered_total": paginator.count,
+    }
+
+    return JsonResponse(data)
+
+
+@user_can_see_dashboards
+@user_can_see_consultation
 def index(
     request: HttpRequest,
     consultation_slug: str,
