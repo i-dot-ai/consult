@@ -304,9 +304,6 @@ def question_responses_json(
     full_qs = get_filtered_responses_with_themes(question, filters)
     respondent_qs = full_qs.only("id", "respondent_id")
 
-    # Then get respondents who have these filtered responses
-    filtered_annotated_responses = filtered_responses.prefetch_related("annotation__themes")
-
     # Efficient counting using database aggregation
     filtered_total = respondent_qs.count()
     all_respondents_count = models.Response.objects.filter(question=question).aggregate(
