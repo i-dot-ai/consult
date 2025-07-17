@@ -22,6 +22,37 @@ urlpatterns = [
         answers.question_responses_json,
         name="question_responses_json",
     ),
+    # New modular endpoints
+    path(
+        "consultations/<str:consultation_slug>/responses/<str:question_slug>/demographic_options/",
+        answers.demographic_options,
+        name="demographic_options",
+    ),
+    path(
+        "consultations/<str:consultation_slug>/responses/<str:question_slug>/demographic_aggregations/",
+        answers.demographic_aggregations,
+        name="demographic_aggregations",
+    ),
+    path(
+        "consultations/<str:consultation_slug>/responses/<str:question_slug>/theme_information/",
+        answers.theme_information,
+        name="theme_information",
+    ),
+    path(
+        "consultations/<str:consultation_slug>/responses/<str:question_slug>/theme_aggregations/",
+        answers.theme_aggregations,
+        name="theme_aggregations",
+    ),
+    path(
+        "consultations/<str:consultation_slug>/responses/<str:question_slug>/filtered_responses/",
+        answers.filtered_responses,
+        name="filtered_responses",
+    ),
+    path(
+        "consultations/<str:consultation_slug>/responses/<str:question_slug>/question_information/",
+        answers.question_information,
+        name="question_information",
+    ),
     path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/show-next/",
         answers.show_next,
