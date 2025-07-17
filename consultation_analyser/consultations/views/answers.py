@@ -378,6 +378,30 @@ def question_responses_json(
 
 @user_can_see_dashboards
 @user_can_see_consultation
+def demographic_options(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    """Standalone endpoint for getting all static demographic options for a consultation"""
+    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+
+    # Get all demographic fields and their possible values from normalized storage
+    options = (
+        models.DemographicOption.objects.filter(consultation=consultation)
+        .values_list("field_name", "field_value")
+        .order_by("field_name", "field_value")
+    )
+
+    result = defaultdict(list)
+    for field_name, field_value in options:
+        result[field_name].append(field_value)
+
+    return JsonResponse({"demographic_options": result})
+
+
+@user_can_see_dashboards
+@user_can_see_consultation
 def index(
     request: HttpRequest,
     consultation_slug: str,
