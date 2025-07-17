@@ -336,16 +336,6 @@ def question_responses_json(
             for i, theme in enumerate(theme_data)
         ]
 
-    data: DataDict = {
-        "all_respondents": [],
-        "has_more_pages": False,
-        "respondents_total": all_respondents_count,
-        "filtered_total": filtered_total,
-        "theme_mappings": theme_mappings,
-        "demographic_options": demographic_options,
-        "demographic_aggregations": demographic_aggregations,
-    }
-
     # Pagination
     DEFAULT_PAGE_SIZE = 50
     DEFAULT_PAGE = 1
@@ -357,8 +347,15 @@ def question_responses_json(
     page_obj = paginator.page(page_num)
     page_qs = page_obj.object_list
 
-    data["has_more_pages"] = page_obj.has_next()
-    data["all_respondents"] = [build_respondent_data(r) for r in page_qs]
+    data: DataDict = {
+        "all_respondents": [build_respondent_data(r) for r in page_qs],
+        "has_more_pages": page_obj.has_next(),
+        "respondents_total": all_respondents_count,
+        "filtered_total": filtered_total,
+        "theme_mappings": theme_mappings,
+        "demographic_options": demographic_options,
+        "demographic_aggregations": demographic_aggregations,
+    }
 
     return JsonResponse(data)
 
