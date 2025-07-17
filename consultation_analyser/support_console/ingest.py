@@ -133,7 +133,7 @@ def validate_consultation_structure(
                 question_data = json.loads(response["Body"].read())
                 has_free_text = question_data.get("has_free_text", True)
                 multiple_choice_options = question_data.get("options", [])
-                has_multiple_choice = (True if multiple_choice_options else False)
+                has_multiple_choice = True if multiple_choice_options else False
             except s3.exceptions.NoSuchKey:
                 errors.append(f"Missing {question_file}")
                 has_free_text = True
@@ -447,9 +447,19 @@ def import_multiple_choice_responses(question: Question, multichoice_file_key: s
                     )
                 )
 
-        # TODO - batch bulk updates/creates
-        Response.objects.bulk_create(responses_to_create)
-        Response.objects.bulk_update(responses_to_update, fields=["chosen_options"])
+            if (
+                len(responses_to_create) >= DEFAULT_BATCH_SIZE
+                or len(responses_to_update) >= DEFAULT_BATCH_SIZE
+            ):
+                Response.objects.bulk_create(responses_to_create)
+                Response.objects.bulk_update(responses_to_update, fields=["chosen_options"])
+                responses_to_create = []
+                responses_to_update = []
+
+        # Handle any remaining responses
+        if responses_to_create or responses_to_update:
+            Response.objects.bulk_create(responses_to_create)
+            Response.objects.bulk_update(responses_to_update, fields=["chosen_options"])
 
     except Exception as e:
         logger.error(
