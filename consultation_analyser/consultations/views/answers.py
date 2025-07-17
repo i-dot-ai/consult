@@ -439,6 +439,27 @@ def demographic_aggregations(
 
 @user_can_see_dashboards
 @user_can_see_consultation
+def theme_information(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    """Standalone endpoint for getting all theme information for a question"""
+    # Get the question object with consultation in one query
+    question = get_object_or_404(
+        models.Question.objects.select_related("consultation"),
+        slug=question_slug,
+        consultation__slug=consultation_slug,
+    )
+
+    # Get all themes for this question
+    themes = models.Theme.objects.filter(question=question).values("id", "name", "description")
+    
+    return JsonResponse({"themes": list(themes)})
+
+
+@user_can_see_dashboards
+@user_can_see_consultation
 def index(
     request: HttpRequest,
     consultation_slug: str,
