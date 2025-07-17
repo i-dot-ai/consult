@@ -402,6 +402,43 @@ def demographic_options(
 
 @user_can_see_dashboards
 @user_can_see_consultation
+def demographic_aggregations(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    """Standalone endpoint for getting demographic aggregations for filtered responses"""
+    # Get the question object with consultation in one query
+    question = get_object_or_404(
+        models.Question.objects.select_related("consultation"),
+        slug=question_slug,
+        consultation__slug=consultation_slug,
+    )
+
+    # Parse filters from request
+    filters = parse_filters_from_request(request)
+
+    # Single query that joins responses -> respondents and gets demographics directly
+    response_filter = build_response_filter_query(filters, question)
+    respondents_data = models.Respondent.objects.filter(
+        response__in=models.Response.objects.filter(response_filter)
+    ).values_list("demographics", flat=True)
+
+    # Aggregate in memory (much faster than nested loops)
+    aggregations: defaultdict[str, defaultdict[str, int]] = defaultdict(lambda: defaultdict(int))
+    for demographics in respondents_data:
+        if demographics:
+            for field_name, field_value in demographics.items():
+                value_str = str(field_value)
+                aggregations[field_name][value_str] += 1
+
+    result = {field: dict(counts) for field, counts in aggregations.items()}
+
+    return JsonResponse({"demographic_aggregations": result})
+
+
+@user_can_see_dashboards
+@user_can_see_consultation
 def index(
     request: HttpRequest,
     consultation_slug: str,
