@@ -826,13 +826,11 @@ def test_build_respondent_data():
 
     actual = build_respondent_data(response=response)
     expected = {
-        "id": "response-5",
-        "identifier": "5",
-        "sentiment_position": "AGREEMENT",
+        "identifier": str(respondent.identifier),
         "free_text_answer_text": "Response 1",
         "demographic_data": respondent.demographics or {},
         "themes": [
-            {"id": theme.id, "stance": None, "name": "Theme A", "description": theme.description}
+            {"id": theme.id, "name": "Theme A", "description": theme.description}
         ],
         "multiple_choice_answer": [],
         "evidenceRich": True,

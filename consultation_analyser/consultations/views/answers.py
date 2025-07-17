@@ -7,7 +7,7 @@ from uuid import UUID
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db.models import Count, Exists, OuterRef, Q, QuerySet
+from django.db.models import Count, Q, QuerySet
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from pgvector.django import CosineDistance
@@ -125,17 +125,34 @@ def get_filtered_responses_with_themes(
         models.Response.objects.filter(response_filter)
         .select_related("respondent", "annotation")
         .prefetch_related("annotation__themes")
+        .only(
+            # Response fields
+            "id",
+            "respondent_id",
+            "question_id",
+            "free_text",
+            "chosen_options",
+            "created_at",
+            # Respondent fields
+            "respondent__id",
+            "respondent__themefinder_id",
+            "respondent__demographics",
+            # Annotation fields
+            "annotation__id",
+            "annotation__sentiment",
+            "annotation__evidence_rich",
+        )
         .defer("embedding", "search_vector")
     )
 
-    # Handle theme filtering with AND logic
     if filters and filters.get("theme_list"):
-        # Create subqueries for each theme
-        for theme_id in filters["theme_list"]:
-            theme_exists = models.ResponseAnnotationTheme.objects.filter(
-                response_annotation__response=OuterRef("pk"), theme_id=theme_id
-            )
-            queryset = queryset.filter(Exists(theme_exists))
+        theme_ids = filters["theme_list"]
+        # Use single JOIN with HAVING clause for AND logic
+        queryset = (
+            queryset.filter(annotation__themes__id__in=theme_ids)
+            .annotate(matched_theme_count=Count("annotation__themes", distinct=True))
+            .filter(matched_theme_count=len(theme_ids))
+        )
 
     if filters and filters.get("search_value"):
         search_query = SearchQuery(filters["search_value"])
@@ -155,7 +172,7 @@ def get_filtered_responses_with_themes(
                 .order_by("-distance")
             )
 
-    return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination
+    return queryset.order_by("created_at")  # Consistent ordering for pagination
 
 
 def get_theme_summary_optimized(
@@ -181,7 +198,7 @@ def get_theme_summary_optimized(
     # This shows ALL themes that appear in responses matching the filter criteria
     theme_data = (
         models.Theme.objects.filter(responseannotation__response__in=filtered_responses)
-        .annotate(response_count=Count("responseannotation__response", distinct=True))
+        .annotate(response_count=Count("responseannotation__response"))
         .values("id", "name", "description", "response_count")
         .order_by(f"{direction}{order_by_field_name}")
     )
@@ -200,9 +217,7 @@ def get_theme_summary_optimized(
 def build_respondent_data(response: models.Response) -> dict:
     """Extract respondent data building to separate function"""
     data = {
-        "id": f"response-{response.respondent.identifier}",
         "identifier": str(response.respondent.identifier),
-        "sentiment_position": "",
         "free_text_answer_text": response.free_text or "",
         "demographic_data": response.respondent.demographics or {},
         "themes": [],
@@ -213,9 +228,6 @@ def build_respondent_data(response: models.Response) -> dict:
     if hasattr(response, "annotation") and response.annotation:
         annotation = response.annotation
 
-        if annotation.sentiment:
-            data["sentiment_position"] = annotation.sentiment
-
         if annotation.evidence_rich == models.ResponseAnnotation.EvidenceRich.YES:
             data["evidenceRich"] = True
 
@@ -223,7 +235,6 @@ def build_respondent_data(response: models.Response) -> dict:
         data["themes"] = [
             {
                 "id": theme.id,
-                "stance": None,  # Stance is no longer stored in new models
                 "name": theme.name,
                 "description": theme.description,
             }
@@ -304,9 +315,7 @@ def question_responses_json(
 
     # Efficient counting using database aggregation
     filtered_total = respondent_qs.count()
-    all_respondents_count = models.Response.objects.filter(question=question).aggregate(
-        count=Count("respondent_id", distinct=True)
-    )["count"]
+    all_respondents_count = models.Response.objects.filter(question=question).count()
 
     # Get demographic options for this consultation
     demographic_options = get_demographic_options(question.consultation)
@@ -328,7 +337,6 @@ def question_responses_json(
         )
         theme_mappings = [
             {
-                "inputId": f"themesfilter-{i}",
                 "value": str(theme.get("theme__id", "")),
                 "label": theme.get("theme__name", ""),
                 "description": theme.get("theme__description", ""),
@@ -343,10 +351,17 @@ def question_responses_json(
     page_size = request.GET.get("page_size", DEFAULT_PAGE_SIZE)
     page_num = request.GET.get("page", DEFAULT_PAGE)
 
+    # Use Django's lazy pagination - avoids counting all results
     paginator = Paginator(full_qs, page_size, allow_empty_first_page=True)
-    paginator._count = filtered_total
     page_obj = paginator.page(page_num)
     page_qs = page_obj.object_list
+
+    # Only count when necessary (first page or when specifically needed)
+    if page_num == DEFAULT_PAGE:
+        filtered_total = respondent_qs.count()
+    else:
+        # For other pages, use paginator's optimized count
+        filtered_total = paginator.count
 
     data: DataDict = {
         "all_respondents": [build_respondent_data(r) for r in page_qs],
