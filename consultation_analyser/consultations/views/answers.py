@@ -7,7 +7,7 @@ from uuid import UUID
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.core.exceptions import ValidationError
 from django.core.paginator import Paginator
-from django.db.models import Count, Exists, OuterRef, Q, QuerySet
+from django.db.models import Count, Q, QuerySet
 from django.http import HttpRequest, JsonResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from pgvector.django import CosineDistance
@@ -145,14 +145,14 @@ def get_filtered_responses_with_themes(
         .defer("embedding", "search_vector")
     )
 
-    # Handle theme filtering with AND logic
     if filters and filters.get("theme_list"):
-        # Create subqueries for each theme
-        for theme_id in filters["theme_list"]:
-            theme_exists = models.ResponseAnnotationTheme.objects.filter(
-                response_annotation__response=OuterRef("pk"), theme_id=theme_id
-            )
-            queryset = queryset.filter(Exists(theme_exists))
+        theme_ids = filters["theme_list"]
+        # Use single JOIN with HAVING clause for AND logic
+        queryset = (
+            queryset.filter(annotation__themes__id__in=theme_ids)
+            .annotate(matched_theme_count=Count("annotation__themes", distinct=True))
+            .filter(matched_theme_count=len(theme_ids))
+        )
 
     if filters and filters.get("search_value"):
         search_query = SearchQuery(filters["search_value"])
