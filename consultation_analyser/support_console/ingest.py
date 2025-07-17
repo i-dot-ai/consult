@@ -371,6 +371,10 @@ def import_responses(question: Question, responses_file_key: str):
         for response in Response.objects.filter(question=question):
             response.save()
 
+        # Update total_responses count for the question
+        question.update_total_responses()
+        logger.info(f"Updated total_responses count for question {question.number}: {question.total_responses}")
+
     except Exception as e:
         logger.error(
             f"Error importing responses for consultation {question.consultation.title}, question {question.number}: {str(e)}"
