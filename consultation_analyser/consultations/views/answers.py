@@ -127,11 +127,20 @@ def get_filtered_responses_with_themes(
         .prefetch_related("annotation__themes")
         .only(
             # Response fields
-            "id", "respondent_id", "question_id", "free_text", "chosen_options", "created_at",
-            # Respondent fields  
-            "respondent__id", "respondent__themefinder_id", "respondent__demographics",
+            "id",
+            "respondent_id",
+            "question_id",
+            "free_text",
+            "chosen_options",
+            "created_at",
+            # Respondent fields
+            "respondent__id",
+            "respondent__themefinder_id",
+            "respondent__demographics",
             # Annotation fields
-            "annotation__id", "annotation__sentiment", "annotation__evidence_rich"
+            "annotation__id",
+            "annotation__sentiment",
+            "annotation__evidence_rich",
         )
         .defer("embedding", "search_vector")
     )
@@ -208,9 +217,7 @@ def get_theme_summary_optimized(
 def build_respondent_data(response: models.Response) -> dict:
     """Extract respondent data building to separate function"""
     data = {
-        "id": f"response-{response.respondent.identifier}",
         "identifier": str(response.respondent.identifier),
-        "sentiment_position": "",
         "free_text_answer_text": response.free_text or "",
         "demographic_data": response.respondent.demographics or {},
         "themes": [],
@@ -221,9 +228,6 @@ def build_respondent_data(response: models.Response) -> dict:
     if hasattr(response, "annotation") and response.annotation:
         annotation = response.annotation
 
-        if annotation.sentiment:
-            data["sentiment_position"] = annotation.sentiment
-
         if annotation.evidence_rich == models.ResponseAnnotation.EvidenceRich.YES:
             data["evidenceRich"] = True
 
@@ -231,7 +235,6 @@ def build_respondent_data(response: models.Response) -> dict:
         data["themes"] = [
             {
                 "id": theme.id,
-                "stance": None,  # Stance is no longer stored in new models
                 "name": theme.name,
                 "description": theme.description,
             }
@@ -334,7 +337,6 @@ def question_responses_json(
         )
         theme_mappings = [
             {
-                "inputId": f"themesfilter-{i}",
                 "value": str(theme.get("theme__id", "")),
                 "label": theme.get("theme__name", ""),
                 "description": theme.get("theme__description", ""),
@@ -353,7 +355,7 @@ def question_responses_json(
     paginator = Paginator(full_qs, page_size, allow_empty_first_page=True)
     page_obj = paginator.page(page_num)
     page_qs = page_obj.object_list
-    
+
     # Only count when necessary (first page or when specifically needed)
     if page_num == DEFAULT_PAGE:
         filtered_total = respondent_qs.count()
