@@ -125,11 +125,14 @@ def validate_consultation_structure(
             # Check input files
             question_file = f"{folder}question.json"
             responses_file = f"{folder}responses.jsonl"
+            multiple_choice_file = f"{folder}multi_choice.jsonl"
 
             try:
                 response = s3.get_object(Bucket=bucket_name, Key=question_file)
                 question_data = json.loads(response["Body"].read())
                 has_free_text = question_data.get("has_free_text", True)
+                multiple_choice_options = question_data.get("options", [])
+                has_multiple_choice = True if multiple_choice_options else False
             except s3.exceptions.NoSuchKey:
                 errors.append(f"Missing {question_file}")
                 has_free_text = True
@@ -143,6 +146,14 @@ def validate_consultation_structure(
                 errors.append(f"Missing {responses_file}")
             except Exception as e:
                 errors.append(f"Error checking {responses_file}: {str(e)}")
+
+            if has_multiple_choice:
+                try:
+                    s3.head_object(Bucket=bucket_name, Key=multiple_choice_file)
+                except s3.exceptions.NoSuchKey:
+                    errors.append(f"Missing {multiple_choice_file}")
+                except Exception as e:
+                    errors.append(f"Error checking {multiple_choice_file}: {str(e)}")
 
             # Check output files for this question part, if it is a free-text question
             if has_free_text:
@@ -345,7 +356,10 @@ def import_responses(question: Question, responses_file_key: str):
                 free_text = free_text[:1000]
                 token_count = len(encoding.encode(free_text))
 
-            if total_tokens + token_count > max_total_tokens or len(responses_to_save) >= max_batch_size:
+            if (
+                total_tokens + token_count > max_total_tokens
+                or len(responses_to_save) >= max_batch_size
+            ):
                 embedded_responses_to_save = _embed_responses(responses_to_save)
                 Response.objects.bulk_create(embedded_responses_to_save)
                 responses_to_save = []
@@ -370,6 +384,62 @@ def import_responses(question: Question, responses_file_key: str):
         # i.e the lexical bit
         for response in Response.objects.filter(question=question):
             response.save()
+
+    except Exception as e:
+        logger.error(
+            f"Error importing responses for consultation {question.consultation.title}, question {question.number}: {str(e)}"
+        )
+        raise
+
+
+def import_multiple_choice_responses(question: Question, multichoice_file_key: str):
+    s3_client = boto3.client("s3")
+    multichoice_data = s3_client.get_object(
+        Bucket=settings.AWS_BUCKET_NAME, Key=multichoice_file_key
+    )
+
+    try:
+        respondents = Respondent.objects.filter(consultation=question.consultation)
+        themefinder_ids_for_existing_responses = Response.objects.filter(
+            question=question
+        ).values_list("respondent__themefinder_id", flat=True)
+        respondent_dict = {r.themefinder_id: r for r in respondents}
+
+        responses_to_update = []
+        responses_to_create = []
+        for i, line in enumerate(multichoice_data["Body"].iter_lines()):
+            response_data = json.loads(line.decode("utf-8"))
+            themefinder_id = response_data["themefinder_id"]
+            chosen_options = response_data.get("chosen_options", [])
+
+            if themefinder_id in themefinder_ids_for_existing_responses:
+                response = Response.objects.get(
+                    respondent=respondent_dict[themefinder_id], question=question
+                )
+                response.chosen_options = chosen_options
+                responses_to_update.append(response)
+            else:
+                responses_to_create.append(
+                    Response(
+                        respondent=respondent_dict[themefinder_id],
+                        question=question,
+                        chosen_options=chosen_options,
+                    )
+                )
+
+            if (
+                len(responses_to_create) >= DEFAULT_BATCH_SIZE
+                or len(responses_to_update) >= DEFAULT_BATCH_SIZE
+            ):
+                Response.objects.bulk_create(responses_to_create)
+                Response.objects.bulk_update(responses_to_update, fields=["chosen_options"])
+                responses_to_create = []
+                responses_to_update = []
+
+        # Handle any remaining responses
+        if responses_to_create or responses_to_update:
+            Response.objects.bulk_create(responses_to_create)
+            Response.objects.bulk_update(responses_to_update, fields=["chosen_options"])
 
     except Exception as e:
         logger.error(
@@ -450,10 +520,10 @@ def import_questions(
                 multiple_choice_options=multiple_choice_options,
             )
 
-            responses_file_key = f"{question_folder}responses.jsonl"
-            responses = queue.enqueue(import_responses, question, responses_file_key)
-
             if question.has_free_text:
+                responses_file_key = f"{question_folder}responses.jsonl"
+                responses = queue.enqueue(import_responses, question, responses_file_key)
+
                 output_folder = f"{outputs_path}question_part_{question_num_str}/"
                 themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
                 response_annotations = queue.enqueue(
@@ -465,6 +535,10 @@ def import_questions(
                     output_folder,
                     depends_on=response_annotations,
                 )
+
+            if question.has_multiple_choice:
+                multichoice_file_key = f"{question_folder}multi_choice.jsonl"
+                queue.enqueue(import_multiple_choice_responses, question, multichoice_file_key)
 
     except Exception as e:
         logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
