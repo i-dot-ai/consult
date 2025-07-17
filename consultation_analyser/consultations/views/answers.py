@@ -155,7 +155,7 @@ def get_filtered_responses_with_themes(
                 .order_by("-distance")
             )
 
-    return queryset.distinct().order_by("created_at")  # Consistent ordering for pagination
+    return queryset.order_by("created_at")  # Consistent ordering for pagination
 
 
 def get_theme_summary_optimized(
@@ -181,7 +181,7 @@ def get_theme_summary_optimized(
     # This shows ALL themes that appear in responses matching the filter criteria
     theme_data = (
         models.Theme.objects.filter(responseannotation__response__in=filtered_responses)
-        .annotate(response_count=Count("responseannotation__response", distinct=True))
+        .annotate(response_count=Count("responseannotation__response"))
         .values("id", "name", "description", "response_count")
         .order_by(f"{direction}{order_by_field_name}")
     )
@@ -304,9 +304,7 @@ def question_responses_json(
 
     # Efficient counting using database aggregation
     filtered_total = respondent_qs.count()
-    all_respondents_count = models.Response.objects.filter(question=question).aggregate(
-        count=Count("respondent_id", distinct=True)
-    )["count"]
+    all_respondents_count = models.Response.objects.filter(question=question).count()
 
     # Get demographic options for this consultation
     demographic_options = get_demographic_options(question.consultation)
