@@ -125,11 +125,14 @@ def validate_consultation_structure(
             # Check input files
             question_file = f"{folder}question.json"
             responses_file = f"{folder}responses.jsonl"
+            multiple_choice_file = f"{folder}multi_choice.jsonl"
 
             try:
                 response = s3.get_object(Bucket=bucket_name, Key=question_file)
                 question_data = json.loads(response["Body"].read())
                 has_free_text = question_data.get("has_free_text", True)
+                multiple_choice_options = question_data.get("options", [])
+                has_multiple_choice = (True if multiple_choice_options else False)
             except s3.exceptions.NoSuchKey:
                 errors.append(f"Missing {question_file}")
                 has_free_text = True
@@ -143,6 +146,14 @@ def validate_consultation_structure(
                 errors.append(f"Missing {responses_file}")
             except Exception as e:
                 errors.append(f"Error checking {responses_file}: {str(e)}")
+
+            if has_multiple_choice:
+                try:
+                    s3.head_object(Bucket=bucket_name, Key=multiple_choice_file)
+                except s3.exceptions.NoSuchKey:
+                    errors.append(f"Missing {multiple_choice_file}")
+                except Exception as e:
+                    errors.append(f"Error checking {multiple_choice_file}: {str(e)}")
 
             # Check output files for this question part, if it is a free-text question
             if has_free_text:
