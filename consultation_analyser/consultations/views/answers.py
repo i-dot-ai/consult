@@ -125,6 +125,14 @@ def get_filtered_responses_with_themes(
         models.Response.objects.filter(response_filter)
         .select_related("respondent", "annotation")
         .prefetch_related("annotation__themes")
+        .only(
+            # Response fields
+            "id", "respondent_id", "question_id", "free_text", "chosen_options", "created_at",
+            # Respondent fields  
+            "respondent__id", "respondent__themefinder_id", "respondent__demographics",
+            # Annotation fields
+            "annotation__id", "annotation__sentiment", "annotation__evidence_rich"
+        )
         .defer("embedding", "search_vector")
     )
 
