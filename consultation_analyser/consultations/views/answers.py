@@ -260,9 +260,9 @@ def derive_option_summary_from_responses(responses) -> list[dict]:
     return [option_counts] if option_counts else []
 
 
-def get_demographic_aggregations_from_responses(filtered_responses) -> dict[str, dict[str, int]]:
+def get_demographic_aggregations_from_responses(filtered_respondents) -> dict[str, dict[str, int]]:
     """Aggregate demographic data for filtered responses using efficient database queries"""
-    respondent_ids = filtered_responses.values_list("respondent_id", flat=True).distinct()
+    respondent_ids = filtered_respondents.values_list("respondent_id", flat=True).distinct()
 
     # Fetch all demographic data for these respondents in one query
     respondents_data = models.Respondent.objects.filter(id__in=respondent_ids).values_list(
@@ -300,15 +300,15 @@ def question_responses_json(
     # Parse filters from request
     filters = parse_filters_from_request(request)
 
-    # Get respondents with their filtered responses using the same logic as theme filtering
-    # First get the filtered responses using AND logic for themes
-    filtered_responses = get_filtered_responses_with_themes(question, filters)
+    # Get respondents with their filtered responses and produce a lightweight respondent queryset
+    full_qs = get_filtered_responses_with_themes(question, filters)
+    respondent_qs = full_qs.only("id", "respondent_id")
 
     # Then get respondents who have these filtered responses
     filtered_annotated_responses = filtered_responses.prefetch_related("annotation__themes")
 
     # Efficient counting using database aggregation
-    filtered_total = filtered_annotated_responses.count()
+    filtered_total = respondent_qs.count()
     all_respondents_count = models.Response.objects.filter(question=question).aggregate(
         count=Count("respondent_id", distinct=True)
     )["count"]
@@ -317,7 +317,7 @@ def question_responses_json(
     demographic_options = get_demographic_options(question.consultation)
 
     # Get demographic aggregations for filtered responses
-    demographic_aggregations = get_demographic_aggregations_from_responses(filtered_responses)
+    demographic_aggregations = get_demographic_aggregations_from_responses(respondent_qs)
 
     # Generate theme mappings
     theme_mappings = []
@@ -327,7 +327,7 @@ def question_responses_json(
         # Generate theme mappings using optimized database query
         theme_data = get_theme_summary_optimized(
             question=question,
-            filtered_responses=filtered_responses,
+            filtered_responses=respondent_qs,
             themes_sort_type=themes_sort_type,
             themes_sort_direction=themes_sort_direction,
         )
@@ -354,12 +354,12 @@ def question_responses_json(
 
     # Pagination
     if page_size:
-        pagination = Paginator(filtered_annotated_responses, page_size)
+        pagination = Paginator(full_qs, page_size)
         current_page = pagination.page(page)
         annotated_responses = current_page.object_list
         data["has_more_pages"] = current_page.has_next()
     else:
-        annotated_responses = filtered_annotated_responses
+        annotated_responses = full_qs
 
     # Build response data efficiently using prefetched data
     data["all_respondents"] = list(map(build_respondent_data, annotated_responses))
