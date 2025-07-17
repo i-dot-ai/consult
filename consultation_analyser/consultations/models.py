@@ -83,6 +83,9 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     multiple_choice_options = ArrayField(
         models.TextField(), null=True, default=None, blank=True
     )  # List of options when has_multiple_choice=True
+    total_responses = models.IntegerField(
+        default=0, help_text="Number of free text responses for this question"
+    )
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -110,6 +113,16 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         ).count()
 
         return reviewed_responses / total_responses
+
+    def update_total_responses(self):
+        """Update the total_responses count based on current free text responses"""
+        if self.has_free_text:
+            count = self.response_set.filter(free_text__isnull=False, free_text__gt="").count()
+            self.total_responses = count
+            self.save(update_fields=["total_responses"])
+        else:
+            self.total_responses = 0
+            self.save(update_fields=["total_responses"])
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [

@@ -378,6 +378,194 @@ def question_responses_json(
 
 @user_can_see_dashboards
 @user_can_see_consultation
+def demographic_options(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    """Standalone endpoint for getting all static demographic options for a consultation"""
+    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+
+    # Get all demographic fields and their possible values from normalized storage
+    options = (
+        models.DemographicOption.objects.filter(consultation=consultation)
+        .values_list("field_name", "field_value")
+        .order_by("field_name", "field_value")
+    )
+
+    result = defaultdict(list)
+    for field_name, field_value in options:
+        result[field_name].append(field_value)
+
+    return JsonResponse({"demographic_options": result})
+
+
+@user_can_see_dashboards
+@user_can_see_consultation
+def demographic_aggregations(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    """Standalone endpoint for getting demographic aggregations for filtered responses"""
+    # Get the question object with consultation in one query
+    question = get_object_or_404(
+        models.Question.objects.select_related("consultation"),
+        slug=question_slug,
+        consultation__slug=consultation_slug,
+    )
+
+    # Parse filters from request
+    filters = parse_filters_from_request(request)
+
+    # Single query that joins responses -> respondents and gets demographics directly
+    response_filter = build_response_filter_query(filters, question)
+    respondents_data = models.Respondent.objects.filter(
+        response__in=models.Response.objects.filter(response_filter)
+    ).values_list("demographics", flat=True)
+
+    # Aggregate in memory (much faster than nested loops)
+    aggregations: defaultdict[str, defaultdict[str, int]] = defaultdict(lambda: defaultdict(int))
+    for demographics in respondents_data:
+        if demographics:
+            for field_name, field_value in demographics.items():
+                value_str = str(field_value)
+                aggregations[field_name][value_str] += 1
+
+    result = {field: dict(counts) for field, counts in aggregations.items()}
+
+    return JsonResponse({"demographic_aggregations": result})
+
+
+@user_can_see_dashboards
+@user_can_see_consultation
+def theme_information(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    """Standalone endpoint for getting all theme information for a question"""
+    # Get the question object with consultation in one query
+    question = get_object_or_404(
+        models.Question.objects.select_related("consultation"),
+        slug=question_slug,
+        consultation__slug=consultation_slug,
+    )
+
+    # Get all themes for this question
+    themes = models.Theme.objects.filter(question=question).values("id", "name", "description")
+
+    return JsonResponse({"themes": list(themes)})
+
+
+@user_can_see_dashboards
+@user_can_see_consultation
+def theme_aggregations(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    """Standalone endpoint for getting theme aggregations for filtered responses"""
+    # Get the question object with consultation in one query
+    question = get_object_or_404(
+        models.Question.objects.select_related("consultation"),
+        slug=question_slug,
+        consultation__slug=consultation_slug,
+    )
+
+    # Parse filters from request
+    filters = parse_filters_from_request(request)
+
+    # Database-level aggregation using Django ORM hybrid approach
+    theme_aggregations = {}
+
+    if question.has_free_text:
+        # Build base query with all filters applied
+        response_filter = build_response_filter_query(filters, question)
+
+        # Get theme counts directly from database with JOIN
+        theme_counts = (
+            models.Theme.objects.filter(
+                responseannotation__response__in=models.Response.objects.filter(response_filter)
+            )
+            .values("id")
+            .annotate(count=Count("responseannotation__response"))
+            .order_by("id")
+        )
+
+        theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
+
+    return JsonResponse({"theme_aggregations": theme_aggregations})
+
+
+@user_can_see_dashboards
+@user_can_see_consultation
+def filtered_responses(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    """Standalone endpoint for getting paginated filtered responses"""
+    # Get the question object with consultation in one query
+    question = get_object_or_404(
+        models.Question.objects.select_related("consultation"),
+        slug=question_slug,
+        consultation__slug=consultation_slug,
+    )
+
+    # Parse filters from request
+    filters = parse_filters_from_request(request)
+
+    # Get filtered responses with themes (optimized with prefetching)
+    filtered_qs = get_filtered_responses_with_themes(question, filters)
+
+    # Pagination parameters
+    DEFAULT_PAGE_SIZE = 50
+    page_size = int(request.GET.get("page_size", DEFAULT_PAGE_SIZE))
+    page_num = int(request.GET.get("page", 1))
+
+    # Use Django's lazy pagination
+    paginator = Paginator(filtered_qs, page_size, allow_empty_first_page=True)
+    page_obj = paginator.page(page_num)
+
+    # Get total respondents count for this question (single query)
+    all_respondents_count = models.Response.objects.filter(question=question).count()
+
+    data = {
+        "all_respondents": [build_respondent_data(r) for r in page_obj.object_list],
+        "has_more_pages": page_obj.has_next(),
+        "respondents_total": all_respondents_count,
+        "filtered_total": paginator.count,
+    }
+
+    return JsonResponse(data)
+
+
+@user_can_see_dashboards
+@user_can_see_consultation
+def question_information(
+    request: HttpRequest,
+    consultation_slug: str,
+    question_slug: str,
+):
+    """Standalone endpoint for getting basic question information"""
+    # Get the question object with consultation in one query
+    question = get_object_or_404(
+        models.Question.objects.select_related("consultation"),
+        slug=question_slug,
+        consultation__slug=consultation_slug,
+    )
+
+    data = {
+        "question_text": question.text,
+        "total_responses": question.total_responses,
+    }
+
+    return JsonResponse(data)
+
+
+@user_can_see_dashboards
+@user_can_see_consultation
 def index(
     request: HttpRequest,
     consultation_slug: str,
