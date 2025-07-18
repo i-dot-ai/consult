@@ -8,6 +8,7 @@ import ToggleInput from '../../../inputs/ToggleInput/iai-toggle-input.lit.csr.mj
 import SelectInput from '../../inputs/SelectInput/select-input.lit.csr.mjs';
 import Button from '../../Button/button.lit.csr.mjs';
 import ThemeFiltersWarning from '../../ThemeFiltersWarning/theme-filters-warning.lit.csr.mjs';
+import MultiDropdown from '../../inputs/MultiDropdown/multi-dropdown.lit.csr.mjs';
 
 
 export default class ResponseRefinement extends IaiLitBase {
@@ -18,7 +19,10 @@ export default class ResponseRefinement extends IaiLitBase {
         demoData: { type: Object },
         demoOptions: { type: Object },
         themes: { type: Array },
-        
+
+        demoFiltersApplied: { type: Function },
+        themeFiltersApplied: { type: Function },
+
         searchValue: { type: String },
         setSearchValue: { type: Function },
 
@@ -170,6 +174,9 @@ export default class ResponseRefinement extends IaiLitBase {
         this.demoOptions = {};
         this.themes = [];
 
+        this.demoFiltersApplied = () => {};
+        this.themeFiltersApplied = () => {};
+
         this.searchValue = "";
         this.setSearchValue = () => {};
 
@@ -217,18 +224,11 @@ export default class ResponseRefinement extends IaiLitBase {
     }
 
     setupPanelListeners = (func) => {
-        [this.handleSettingsBlur, this.handleThemeFiltersBlur].forEach(eventHandler => {
+        [this.handleSettingsBlur].forEach(eventHandler => {
             ["click", "touchstart"].forEach(eventName => {
                 func(eventName, eventHandler)
             })
         })
-    }
-
-    filtersApplied() {
-        return (
-            this.themeFilters.length > 0 ||
-            Object.values(this.demoFilters).filter(Boolean).length > 0
-        )
     }
 
     render() {
@@ -241,7 +241,7 @@ export default class ResponseRefinement extends IaiLitBase {
                         .subtext=${"Filter and search through individual responses to this question."}
                         .icon=${"filter_alt"}
                         .aside=${html`
-                            ${this.filtersApplied() ? html`
+                            ${this.demoFiltersApplied() || this.themeFiltersApplied() ? html`
                                 <iai-silver-button
                                     .text=${"Clear filters"}
                                     .handleClick=${() => {
@@ -343,77 +343,34 @@ export default class ResponseRefinement extends IaiLitBase {
                         
                         <div class="filters-row">
                             ${Object.keys(this.demoOptions).map(key => html`
-                                <iai-silver-select-input
-                                    .inputId=${`demo-filter-${key}`}
-                                    .name=${"demo-filter"}
-                                    .label=${this.toTitleCase(key)}
-                                    .hideLabel=${false}
-                                    .value=${this.demoFilters[key] || ""}
-                                    .placeholder=${this.toTitleCase(key)}
-                                    .options=${
-                                        this.demoOptions[key].map(option => ({
-                                            value: option,
-                                            text: option
-                                        }))
-                                    }
-                                    .handleChange=${(e) => {
-                                        this.setDemoFilters(key, e.target.value);
-                                    }}
-                                    .horizontal=${false}
-                                ></iai-silver-select-input>
+                                <iai-multi-dropdown
+                                    .title=${this.toTitleCase(key)}
+                                    .text=${`${this.demoFilters[key]?.length || 0} filters selected`}
+                                    .options=${this.demoOptions[key].map(option => ({
+                                        id: option,
+                                        checked: Boolean(this.demoFilters[key]?.includes(option)),
+                                        title: option,
+                                        handleClick: (e) => {
+                                            this.setDemoFilters(key, e.target.value);
+                                        },
+                                    }))}
+                                ></iai-multi-dropdown>
                             `)}
                         </div>
 
                         <div class="filters-row">
-                            <div id="theme-filters-panel" class="popup-button">
-                                <iai-silver-title
-                                    .level=${3}
-                                    .text=${"Themes"}
-                                    @click=${() => this._themeFiltersVisible = !this._themeFiltersVisible}
-                                ></iai-silver-title>
-
-                                <div class="popup-button__body">
-                                    <iai-silver-button
-                                        .text=${html`
-                                            <div class="popup-button__text">
-                                                <span>${this.themeFilters.length} themes selected</span>
-                                                <iai-icon .name=${"keyboard_arrow_down"}></iai-icon>
-                                            </div>
-                                        `}
-                                        .handleClick=${() => this._themeFiltersVisible = !this._themeFiltersVisible}
-                                    ></iai-silver-button>
-
-                                    ${this.themes.length > 0 ? html`
-                                        <div class="popup-panel themes-panel" style=${`
-                                            opacity: ${this._themeFiltersVisible ? 1 : 0};
-                                            pointer-events: ${this._themeFiltersVisible ? "auto" : "none"};
-                                        `}>
-                                            <div class="content">
-                                                <ul class="theme-filter-list">
-                                                    ${this.themes.map(theme => html`
-                                                        <li>
-                                                            <input
-                                                                type="checkbox"
-                                                                class="theme-checkbox"
-                                                                id=${"responses-theme-filters" + theme.id}
-                                                                name="theme-filters"
-                                                                .value=${theme.id}
-                                                                .checked=${this.themeFilters.includes(theme.id)}
-                                                                @click=${(e) => {
-                                                                    this.updateThemeFilters(theme.id);
-                                                                }}
-                                                            />
-                                                            <label for=${"responses-theme-filters" + theme.id}>
-                                                                ${theme.title}
-                                                            </label>
-                                                        </li>
-                                                    `)}
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    ` : ""}
-                                </div>
-                            </div>
+                            <iai-multi-dropdown
+                                .title=${"Themes"}
+                                .text=${`${this.themeFilters.length} themes selected`}
+                                .options=${this.themes.map(theme => ({
+                                    id: theme.id,
+                                    checked: this.themeFilters.includes(theme.id),
+                                    title: theme.title,
+                                    handleClick: (e) => {
+                                        this.updateThemeFilters(theme.id);
+                                    },
+                                }))}
+                            ></iai-multi-dropdown>
                         </div>
 
                         <div class="filters-row">

@@ -194,7 +194,13 @@ export default class QuestionDetailPage extends IaiLitBase {
         const validDemoFilterKeys = Object.keys(this._demoFilters).filter(key => Boolean(this._demoFilters[key]));
         // Add each demo filter as a duplicate demoFilter param
         for (const key of validDemoFilterKeys) {
-            params.append("demoFilters", `${key}:${this._demoFilters[key]}`);
+            const filterArr = this._demoFilters[key];
+            if (filterArr && filterArr.length > 0) {
+                // TODO: Replace below with the commented out code after the back end is implemented.
+                // Only processing the first filter for now to avoid breaking back end responses.
+                // params.append("demoFilters", `${key}:${filterArr.join(",")}`);
+                params.append("demoFilters", `${key}:${filterArr[0]}`);
+            }
         }
 
         return params.toString();
@@ -285,14 +291,43 @@ export default class QuestionDetailPage extends IaiLitBase {
         this._isLoading = true;
     }
 
+    demoFiltersApplied = () => {
+        for (const key of Object.keys(this._demoFilters)) {
+            const filterArr = this._demoFilters[key];
+
+            // filterArr can be undefined or empty array
+            if (filterArr && filterArr.filter(Boolean).length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    themeFiltersApplied = () => {
+        return this._themeFilters.length > 0;
+    }
+
     setDemoFilters = (newFilterKey, newFilterValue) => {
         if (!newFilterKey || !newFilterValue) {
             // Clear filters if nothing is passed
             this._demoFilters = {};
+            return;
         }
+
+        const existingFilters = this._demoFilters[newFilterKey] || [];
+
+        let resultFilters;
+        if (existingFilters.includes(newFilterValue)) {
+            // Remove filter if already added
+            resultFilters = existingFilters.filter(filter => newFilterValue !== filter);
+        } else {
+            // Avoid duplicates when adding filters
+            resultFilters = [...new Set([...existingFilters, newFilterValue])];
+        }
+
         this._demoFilters = {
             ...this._demoFilters,
-            [newFilterKey]: newFilterValue
+            [newFilterKey]: resultFilters,
         }
     }
 
@@ -326,6 +361,8 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .data=${this._demoData}
                     .themeFilters=${this._themeFilters}
                     .demoFilters=${this._demoFilters}
+                    .demoFiltersApplied=${this.demoFiltersApplied}
+                    .themeFiltersApplied=${this.themeFiltersApplied}
                     .total=${this._filteredTotal}
                 ></iai-demographics-section>
             </section>
@@ -337,6 +374,9 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .demoData=${this._demoData}
                     .demoOptions=${this._demoOptions}
                     .totalResponses=${this._filteredTotal}
+
+                    .demoFiltersApplied=${this.demoFiltersApplied}
+                    .themeFiltersApplied=${this.themeFiltersApplied}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
@@ -361,6 +401,9 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .demoData=${this._demoData}
                     .demoOptions=${this._demoOptions}
                     .themes=${this._themes}
+
+                    .demoFiltersApplied=${this.demoFiltersApplied}
+                    .themeFiltersApplied=${this.themeFiltersApplied}
 
                     .searchValue=${this._searchValue}
                     .setSearchValue=${newSearchValue => this._searchValue = newSearchValue}
