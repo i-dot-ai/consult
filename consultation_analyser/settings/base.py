@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django_rq",
     "simple_history",
+    "rest_framework",
 ]
 
 
