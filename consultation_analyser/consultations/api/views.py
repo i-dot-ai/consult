@@ -5,13 +5,13 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .. import models
-from ..views.decorators import user_can_see_consultation, user_can_see_dashboards
+from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import DemographicOptionsSerializer
 
 
 class DemographicOptionsAPIView(APIView):
-    @user_can_see_dashboards
-    @user_can_see_consultation
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    
     def get(self, request, consultation_slug, question_slug):
         """Get all demographic options for a consultation"""
         consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
