@@ -10,6 +10,7 @@ from .serializers import (
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     FilterSerializer,
+    ThemeInformationSerializer,
 )
 from .utils import build_response_filter_query, parse_filters_from_serializer
 
@@ -77,6 +78,29 @@ class DemographicAggregationsAPIView(APIView):
         
         serializer = DemographicAggregationsSerializer(
             data={"demographic_aggregations": result}
+        )
+        serializer.is_valid()
+        
+        return Response(serializer.data)
+
+
+class ThemeInformationAPIView(APIView):
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    
+    def get(self, request, consultation_slug, question_slug):
+        """Get all theme information for a question"""
+        # Get the question object with consultation in one query
+        question = get_object_or_404(
+            models.Question.objects.select_related("consultation"),
+            slug=question_slug,
+            consultation__slug=consultation_slug,
+        )
+        
+        # Get all themes for this question
+        themes = models.Theme.objects.filter(question=question).values("id", "name", "description")
+        
+        serializer = ThemeInformationSerializer(
+            data={"themes": list(themes)}
         )
         serializer.is_valid()
         

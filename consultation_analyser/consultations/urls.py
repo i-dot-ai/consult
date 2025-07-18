@@ -1,6 +1,10 @@
 from django.urls import path
 
-from .api.views import DemographicAggregationsAPIView, DemographicOptionsAPIView
+from .api.views import (
+    DemographicAggregationsAPIView,
+    DemographicOptionsAPIView,
+    ThemeInformationAPIView,
+)
 from .views import answers, consultations, pages, questions, root, sessions
 
 urlpatterns = [
@@ -36,9 +40,9 @@ urlpatterns = [
         name="api_demographic_aggregations",
     ),
     path(
-        "consultations/<str:consultation_slug>/responses/<str:question_slug>/theme_information/",
-        answers.theme_information,
-        name="theme_information",
+        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/theme-information/",
+        ThemeInformationAPIView.as_view(),
+        name="api_theme_information",
     ),
     path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/theme_aggregations/",
