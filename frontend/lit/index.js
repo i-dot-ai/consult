@@ -8310,7 +8310,10 @@ class QuestionDetailPage extends IaiLitBase {
         for (const key of validDemoFilterKeys) {
             const filterArr = this._demoFilters[key];
             if (filterArr && filterArr.length > 0) {
-                params.append("demoFilters", `${key}:${filterArr.join(",")}`);
+                // TODO: Replace below with the commented out code after the back end is implemented.
+                // Only processing the first filter for now to avoid breaking back end responses.
+                // params.append("demoFilters", `${key}:${filterArr.join(",")}`);
+                params.append("demoFilters", `${key}:${filterArr[0]}`);
             }
         }
 
