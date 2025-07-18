@@ -13,6 +13,16 @@ class DemographicAggregationsSerializer(serializers.Serializer):
     )
 
 
+class ThemeSerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    name = serializers.CharField()
+    description = serializers.CharField()
+
+
+class ThemeInformationSerializer(serializers.Serializer):
+    themes = serializers.ListField(child=ThemeSerializer())
+
+
 class FilterSerializer(serializers.Serializer):
     """Serializer for query parameter filters"""
     sentimentFilters = serializers.CharField(required=False, allow_blank=True)
