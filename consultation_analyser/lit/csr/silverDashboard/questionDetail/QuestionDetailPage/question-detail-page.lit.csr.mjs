@@ -238,7 +238,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                     // Get demographic options (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-options/`, { signal }).then(r => r.json()) : null,
                     // Get demographic aggregations (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/consultations/${this.consultationSlug}/responses/${this.questionSlug}/demographic_aggregations?` + this.buildQuery(), { signal }).then(r => r.json()) : null
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null
                 ]);
 
                 this.responses = this.responses.concat(filteredResponsesData.all_respondents);
