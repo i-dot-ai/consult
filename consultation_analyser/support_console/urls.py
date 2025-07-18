@@ -66,7 +66,7 @@ urlpatterns = [
     path("django-rq/", include("django_rq.urls")),
 ]
 
-if settings.DEBUG and ('pytest' not in sys.modules and 'test' not in sys.argv):
+if settings.DEBUG and ("pytest" not in sys.modules and "test" not in sys.argv):
     urlpatterns += [
         path("silk/", include("silk.urls", namespace="silk")),
     ]
