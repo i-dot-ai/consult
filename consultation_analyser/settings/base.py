@@ -273,7 +273,7 @@ RQ_QUEUES = {
 
 # Django debug toolbar
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configure-internal-ips
-if DEBUG:
+if DEBUG and ('pytest' not in sys.modules and 'test' not in sys.argv):
     MIDDLEWARE += [
         "debug_toolbar.middleware.DebugToolbarMiddleware",
         "silk.middleware.SilkyMiddleware",

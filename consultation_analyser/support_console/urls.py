@@ -1,3 +1,6 @@
+import sys
+
+from django.conf import settings
 from django.contrib import admin
 from django.shortcuts import redirect
 from django.urls import include, path
@@ -61,5 +64,9 @@ urlpatterns = [
     ),
     path("admin/", admin.site.urls),
     path("django-rq/", include("django_rq.urls")),
-    path("silk/", include("silk.urls", namespace="silk")),
 ]
+
+if settings.DEBUG and ('pytest' not in sys.modules and 'test' not in sys.argv):
+    urlpatterns += [
+        path("silk/", include("silk.urls", namespace="silk")),
+    ]
