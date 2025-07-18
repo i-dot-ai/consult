@@ -1,5 +1,6 @@
 from django.urls import path
 
+from .api.views import DemographicOptionsAPIView
 from .views import answers, consultations, pages, questions, root, sessions
 
 urlpatterns = [
@@ -23,10 +24,11 @@ urlpatterns = [
         name="question_responses_json",
     ),
     # New modular endpoints
+    # API endpoints
     path(
-        "consultations/<str:consultation_slug>/responses/<str:question_slug>/demographic_options/",
-        answers.demographic_options,
-        name="demographic_options",
+        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/demographic-options/",
+        DemographicOptionsAPIView.as_view(),
+        name="api_demographic_options",
     ),
     path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/demographic_aggregations/",

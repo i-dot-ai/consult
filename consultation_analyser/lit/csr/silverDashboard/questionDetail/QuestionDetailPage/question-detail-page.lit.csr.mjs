@@ -236,7 +236,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                     // Get theme information (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/consultations/${this.consultationSlug}/responses/${this.questionSlug}/theme_information`, { signal }).then(r => r.json()) : null,
                     // Get demographic options (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/consultations/${this.consultationSlug}/responses/${this.questionSlug}/demographic_options`, { signal }).then(r => r.json()) : null,
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-options/`, { signal }).then(r => r.json()) : null,
                     // Get demographic aggregations (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/consultations/${this.consultationSlug}/responses/${this.questionSlug}/demographic_aggregations?` + this.buildQuery(), { signal }).then(r => r.json()) : null
                 ]);
