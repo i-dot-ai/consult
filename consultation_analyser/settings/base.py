@@ -274,8 +274,11 @@ RQ_QUEUES = {
 # Django debug toolbar
 # https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configure-internal-ips
 if DEBUG:
-    MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
-    INSTALLED_APPS += ["debug_toolbar"]
+    MIDDLEWARE += [
+        "debug_toolbar.middleware.DebugToolbarMiddleware",
+        "silk.middleware.SilkyMiddleware",
+    ]
+    INSTALLED_APPS += ["debug_toolbar", "silk"]
     INTERNAL_IPS = ["127.0.0.1"]
 
 # changing this will require a database migration

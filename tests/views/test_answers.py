@@ -829,9 +829,7 @@ def test_build_respondent_data():
         "identifier": str(respondent.identifier),
         "free_text_answer_text": "Response 1",
         "demographic_data": respondent.demographics or {},
-        "themes": [
-            {"id": theme.id, "name": "Theme A", "description": theme.description}
-        ],
+        "themes": [{"id": theme.id, "name": "Theme A", "description": theme.description}],
         "multiple_choice_answer": [],
         "evidenceRich": True,
     }

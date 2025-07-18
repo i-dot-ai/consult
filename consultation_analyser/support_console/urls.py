@@ -61,4 +61,5 @@ urlpatterns = [
     ),
     path("admin/", admin.site.urls),
     path("django-rq/", include("django_rq.urls")),
+    path("silk/", include("silk.urls", namespace="silk")),
 ]

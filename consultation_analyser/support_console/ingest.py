@@ -345,7 +345,10 @@ def import_responses(question: Question, responses_file_key: str):
                 free_text = free_text[:1000]
                 token_count = len(encoding.encode(free_text))
 
-            if total_tokens + token_count > max_total_tokens or len(responses_to_save) >= max_batch_size:
+            if (
+                total_tokens + token_count > max_total_tokens
+                or len(responses_to_save) >= max_batch_size
+            ):
                 embedded_responses_to_save = _embed_responses(responses_to_save)
                 Response.objects.bulk_create(embedded_responses_to_save)
                 responses_to_save = []
