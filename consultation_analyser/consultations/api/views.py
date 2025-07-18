@@ -6,7 +6,12 @@ from rest_framework.views import APIView
 
 from .. import models
 from .permissions import CanSeeConsultation, HasDashboardAccess
-from .serializers import DemographicOptionsSerializer
+from .serializers import (
+    DemographicAggregationsSerializer,
+    DemographicOptionsSerializer,
+    FilterSerializer,
+)
+from .utils import build_response_filter_query, parse_filters_from_serializer
 
 
 class DemographicOptionsAPIView(APIView):
@@ -29,6 +34,49 @@ class DemographicOptionsAPIView(APIView):
         
         serializer = DemographicOptionsSerializer(
             data={"demographic_options": dict(result)}
+        )
+        serializer.is_valid()
+        
+        return Response(serializer.data)
+
+
+class DemographicAggregationsAPIView(APIView):
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    
+    def get(self, request, consultation_slug, question_slug):
+        """Get demographic aggregations for filtered responses"""
+        # Get the question object with consultation in one query
+        question = get_object_or_404(
+            models.Question.objects.select_related("consultation"),
+            slug=question_slug,
+            consultation__slug=consultation_slug,
+        )
+        
+        # Validate query parameters
+        filter_serializer = FilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+        
+        # Parse filters
+        filters = parse_filters_from_serializer(filter_serializer.validated_data)
+        
+        # Single query that joins responses -> respondents and gets demographics directly
+        response_filter = build_response_filter_query(filters, question)
+        respondents_data = models.Respondent.objects.filter(
+            response__in=models.Response.objects.filter(response_filter)
+        ).values_list("demographics", flat=True)
+        
+        # Aggregate in memory (much faster than nested loops)
+        aggregations = defaultdict(lambda: defaultdict(int))
+        for demographics in respondents_data:
+            if demographics:
+                for field_name, field_value in demographics.items():
+                    value_str = str(field_value)
+                    aggregations[field_name][value_str] += 1
+        
+        result = {field: dict(counts) for field, counts in aggregations.items()}
+        
+        serializer = DemographicAggregationsSerializer(
+            data={"demographic_aggregations": result}
         )
         serializer.is_valid()
         
