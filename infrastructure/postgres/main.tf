@@ -11,7 +11,8 @@ module "postgres" {
   db_instance_address = data.terraform_remote_state.consultations.outputs.db_instance_address
   db_master_username  = data.terraform_remote_state.consultations.outputs.db_master_username
   db_master_password  = data.terraform_remote_state.consultations.outputs.db_master_password
-
+  aurora_min_scaling = 2
+  aurora_max_scaling = 4
 }
 
 
