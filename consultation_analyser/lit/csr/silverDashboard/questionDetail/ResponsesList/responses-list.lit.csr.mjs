@@ -54,6 +54,7 @@ export default class ResponsesList extends IaiLitBase {
             iai-silver-responses-list article header,
             iai-silver-responses-list article footer {
                 display: flex;
+                align-items: center;
                 gap: 0.5em;
                 font-size: 0.9em;
                 flex-wrap: wrap;
@@ -169,6 +170,9 @@ export default class ResponsesList extends IaiLitBase {
                                 
                                 ${response.themes.length > 0 ? html`
                                     <footer>
+                                        <small>
+                                            Themes:
+                                        </small>
                                         ${response.themes.map((theme) => html`
                                             <iai-silver-button
                                                 class="theme-tag"
