@@ -1,7 +1,10 @@
 from typing import TypedDict
 
-from django.db.models import Q
+from django.contrib.postgres.search import SearchQuery, SearchRank
+from django.db.models import Count, Q
+from pgvector.django import CosineDistance
 
+from ...embeddings import embed_text
 from .. import models
 
 
@@ -82,3 +85,94 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
             query &= field_query
     
     return query
+
+
+def get_filtered_responses_with_themes(
+    question: models.Question,
+    filters: FilterParams | None = None,
+):
+    """Single optimized query to get all filtered responses with their themes"""
+    response_filter = build_response_filter_query(filters or {}, question)
+    queryset = (
+        models.Response.objects.filter(response_filter)
+        .select_related("respondent", "annotation")
+        .prefetch_related("annotation__themes")
+        .only(
+            # Response fields
+            "id",
+            "respondent_id",
+            "question_id",
+            "free_text",
+            "chosen_options",
+            "created_at",
+            # Respondent fields
+            "respondent__id",
+            "respondent__identifier",
+            "respondent__themefinder_id",
+            "respondent__demographics",
+            # Annotation fields
+            "annotation__id",
+            "annotation__sentiment",
+            "annotation__evidence_rich",
+        )
+        .defer("embedding", "search_vector")
+    )
+
+    if filters and filters.get("theme_list"):
+        theme_ids = filters["theme_list"]
+        # Use single JOIN with HAVING clause for AND logic
+        queryset = (
+            queryset.filter(annotation__themes__id__in=theme_ids)
+            .annotate(matched_theme_count=Count("annotation__themes", distinct=True))
+            .filter(matched_theme_count=len(theme_ids))
+        )
+
+    if filters and filters.get("search_value"):
+        search_query = SearchQuery(filters["search_value"])
+
+        if filters.get("search_mode") == "semantic":
+            # semantic_distance: exact match = 0, exact opposite = 2
+            embedded_query = embed_text(filters["search_value"])
+            distance = CosineDistance("embedding", embedded_query)
+            return queryset.annotate(distance=distance).order_by("distance")
+        else:
+            # term_frequency: exact match = 1+, no match = 0
+            # normalization = 1: divides the rank by 1 + the logarithm of the document length
+            distance = SearchRank("search_vector", search_query, normalization=1)
+            return (
+                queryset.filter(search_vector=search_query)
+                .annotate(distance=distance)
+                .order_by("-distance")
+            )
+
+    return queryset.order_by("created_at")  # Consistent ordering for pagination
+
+
+def build_respondent_data(response: models.Response) -> dict:
+    """Extract respondent data building to separate function"""
+    data = {
+        "identifier": str(response.respondent.identifier),
+        "free_text_answer_text": response.free_text or "",
+        "demographic_data": response.respondent.demographics or {},
+        "themes": [],
+        "multiple_choice_answer": response.chosen_options or [],
+        "evidenceRich": False,
+    }
+
+    if hasattr(response, "annotation") and response.annotation:
+        annotation = response.annotation
+
+        if annotation.evidence_rich == models.ResponseAnnotation.EvidenceRich.YES:
+            data["evidenceRich"] = True
+
+        # Add themes (already prefetched)
+        data["themes"] = [
+            {
+                "id": theme.id,
+                "name": theme.name,
+                "description": theme.description,
+            }
+            for theme in annotation.themes.all()
+        ]
+
+    return data
