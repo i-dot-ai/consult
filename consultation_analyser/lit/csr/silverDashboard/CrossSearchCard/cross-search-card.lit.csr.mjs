@@ -4,10 +4,7 @@ import SearchBox from '../inputs/SearchBox/search-box.lit.csr.mjs';
 import SelectInput from '../inputs/SelectInput/select-input.lit.csr.mjs';
 import Title from '../Title/title.lit.csr.mjs';
 import Panel from '../Panel/panel.lit.csr.mjs';
-import Card from '../Card/card.lit.csr.mjs';
 import IaiIcon from '../../IaiIcon/iai-icon.mjs';
-import IaiIconButton from '../../questionsArchive/IaiIconButton/iai-icon-button.lit.csr.mjs';
-import Consultation from '../Consultation/consultation.lit.csr.mjs';
 
 import IaiLitBase from '../../../IaiLitBase.mjs';
 import { unsafeHTML } from 'lit/directives/unsafe-html.js';
