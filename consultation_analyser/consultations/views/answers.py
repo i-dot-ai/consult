@@ -378,44 +378,6 @@ def question_responses_json(
 
 
 
-@user_can_see_dashboards
-@user_can_see_consultation
-def theme_aggregations(
-    request: HttpRequest,
-    consultation_slug: str,
-    question_slug: str,
-):
-    """Standalone endpoint for getting theme aggregations for filtered responses"""
-    # Get the question object with consultation in one query
-    question = get_object_or_404(
-        models.Question.objects.select_related("consultation"),
-        slug=question_slug,
-        consultation__slug=consultation_slug,
-    )
-
-    # Parse filters from request
-    filters = parse_filters_from_request(request)
-
-    # Database-level aggregation using Django ORM hybrid approach
-    theme_aggregations = {}
-
-    if question.has_free_text:
-        # Build base query with all filters applied
-        response_filter = build_response_filter_query(filters, question)
-
-        # Get theme counts directly from database with JOIN
-        theme_counts = (
-            models.Theme.objects.filter(
-                responseannotation__response__in=models.Response.objects.filter(response_filter)
-            )
-            .values("id")
-            .annotate(count=Count("responseannotation__response"))
-            .order_by("id")
-        )
-
-        theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
-
-    return JsonResponse({"theme_aggregations": theme_aggregations})
 
 
 @user_can_see_dashboards
