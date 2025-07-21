@@ -3,15 +3,12 @@ import { html, css } from 'lit';
 import IaiLitBase from '../../../../IaiLitBase.mjs';
 import Title from '../../Title/title.lit.csr.mjs';
 import Panel from '../../Panel/panel.lit.csr.mjs';
-import Card from '../../Card/card.lit.csr.mjs';
 import Button from '../../Button/button.lit.csr.mjs';
 import IaiIcon from '../../../IaiIcon/iai-icon.mjs';
-
 
 import ThemeAnalysis from '../../ThemeAnalysis/theme-analysis.lit.csr.mjs';
 import QuestionTitle from '../QuestionTitle/question-title.lit.csr.mjs';
 import TabView from '../../../TabView/tab-view.lit.csr.mjs';
-import CrossSearch from '../../CrossSearch/cross-search.lit.csr.mjs';
 import DemographicsSection from '../DemographicsSection/demographics-section.lit.csr.mjs';
 import Tag from '../../Tag/tag.lit.csr.mjs';
 import ResponseRefinement from '../ResponseRefinement/response-refinement.lit.csr.mjs';

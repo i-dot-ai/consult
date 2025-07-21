@@ -1,6 +1,7 @@
 import { html, css } from 'lit';
 
 import IaiLitBase from '../../IaiLitBase.mjs';
+import { fetchStreamingJSON } from '../utils/streaming-json-parser.mjs';
 import IaiResponseFilters from '../IaiResponseFilters/iai-response-filters.lit.csr.mjs';
 import IaiTextInput from '../inputs/IaiTextInput/iai-text-input.lit.csr.mjs';
 import IaiCheckboxInput from '../inputs/IaiCheckboxInput/iai-checkbox-input.lit.csr.mjs';
@@ -276,11 +277,10 @@ export default class IaiResponseDashboard extends IaiLitBase {
             this._errorOccured = false;
             this._isLoading = true;
 
-            // Use multiple modular endpoints instead of single question_responses_json
+            // Use streaming for responses and regular fetch for metadata endpoints
             try {
-                const [filteredResponsesData, themeAggregationsData, themeInformationData, demographicOptionsData] = await Promise.all([
-                    // Get paginated response data
-                    this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(), { signal }).then(r => r.json()),
+                // Fetch non-streaming endpoints first (only on first page)
+                const [themeAggregationsData, themeInformationData, demographicOptionsData] = await Promise.all([
                     // Get theme aggregations (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                     // Get theme information (only on first page)
@@ -288,16 +288,6 @@ export default class IaiResponseDashboard extends IaiLitBase {
                     // Get demographic options (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-options/`, { signal }).then(r => r.json()) : null
                 ]);
-
-                this.responses = this.responses.concat(
-                    filteredResponsesData.all_respondents.map(response => ({
-                        ...response,
-                        visible: true,
-                    }))
-                );
-                this.responsesTotal = filteredResponsesData.respondents_total;
-                this._responsesFilteredTotal = filteredResponsesData.filtered_total;
-                this._hasMorePages = filteredResponsesData.has_more_pages;
 
                 // Update theme mappings only on first page to reflect current filters
                 if (this._currentPage === 1 && themeAggregationsData && themeInformationData) {
@@ -323,6 +313,31 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 if (demographicOptionsData) {
                     this.demographicOptions = demographicOptionsData.demographic_options;
                 }
+
+                // Now fetch responses with streaming
+                await fetchStreamingJSON(
+                    `/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(),
+                    { signal },
+                    {
+                        onResponse: (response) => {
+                            // Add each response as it arrives
+                            this.responses = this.responses.concat([{
+                                ...response,
+                                visible: true,
+                            }]);
+                        },
+                        onMetadata: (metadata) => {
+                            // Update metadata when it arrives
+                            this.responsesTotal = metadata.respondents_total;
+                            this._responsesFilteredTotal = metadata.filtered_total;
+                            this._hasMorePages = metadata.has_more_pages;
+                        },
+                        onError: (error) => {
+                            console.error('Streaming error:', error);
+                            this._errorOccured = true;
+                        }
+                    }
+                );
 
             } catch (err) {
                 if (err.name == "AbortError") {
