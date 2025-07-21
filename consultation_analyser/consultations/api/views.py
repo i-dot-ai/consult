@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 import orjson
-from django.http import HttpResponse, StreamingHttpResponse
+from django.http import StreamingHttpResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -130,13 +130,14 @@ class ThemeAggregationsAPIView(APIView):
         theme_aggregations = {}
         
         if question.has_free_text:
-            # Build base query with all filters applied
-            response_filter = build_response_filter_query(filters, question)
+            # Use the same filtering logic as FilteredResponsesAPIView
+            # This ensures theme filtering uses AND logic consistently
+            filtered_responses = get_filtered_responses_with_themes(question, filters)
             
-            # Get theme counts directly from database with JOIN
+            # Get theme counts from the filtered responses
             theme_counts = (
                 models.Theme.objects.filter(
-                    responseannotation__response__in=models.Response.objects.filter(response_filter)
+                    responseannotation__response__in=filtered_responses
                 )
                 .values("id")
                 .annotate(count=Count("responseannotation__response"))

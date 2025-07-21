@@ -131,7 +131,6 @@ def get_filtered_responses_with_themes(
             "created_at",
             # Respondent fields
             "respondent__id",
-            "respondent__identifier",
             "respondent__themefinder_id",
             "respondent__demographics",
             # Annotation fields
