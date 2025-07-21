@@ -10,6 +10,7 @@ from .serializers import (
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     FilterSerializer,
+    ThemeAggregationsSerializer,
     ThemeInformationSerializer,
 )
 from .utils import build_response_filter_query, parse_filters_from_serializer
@@ -101,6 +102,54 @@ class ThemeInformationAPIView(APIView):
         
         serializer = ThemeInformationSerializer(
             data={"themes": list(themes)}
+        )
+        serializer.is_valid()
+        
+        return Response(serializer.data)
+
+
+class ThemeAggregationsAPIView(APIView):
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    
+    def get(self, request, consultation_slug, question_slug):
+        """Get theme aggregations for filtered responses"""
+        from django.db.models import Count
+        
+        # Get the question object with consultation in one query
+        question = get_object_or_404(
+            models.Question.objects.select_related("consultation"),
+            slug=question_slug,
+            consultation__slug=consultation_slug,
+        )
+        
+        # Validate query parameters
+        filter_serializer = FilterSerializer(data=request.query_params)
+        filter_serializer.is_valid(raise_exception=True)
+        
+        # Parse filters
+        filters = parse_filters_from_serializer(filter_serializer.validated_data)
+        
+        # Database-level aggregation using Django ORM hybrid approach
+        theme_aggregations = {}
+        
+        if question.has_free_text:
+            # Build base query with all filters applied
+            response_filter = build_response_filter_query(filters, question)
+            
+            # Get theme counts directly from database with JOIN
+            theme_counts = (
+                models.Theme.objects.filter(
+                    responseannotation__response__in=models.Response.objects.filter(response_filter)
+                )
+                .values("id")
+                .annotate(count=Count("responseannotation__response"))
+                .order_by("id")
+            )
+            
+            theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
+        
+        serializer = ThemeAggregationsSerializer(
+            data={"theme_aggregations": theme_aggregations}
         )
         serializer.is_valid()
         
