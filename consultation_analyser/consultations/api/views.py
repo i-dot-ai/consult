@@ -1,5 +1,7 @@
 from collections import defaultdict
 
+import orjson
+from django.http import HttpResponse
 from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -9,14 +11,13 @@ from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
-    FilteredResponsesSerializer,
     FilterSerializer,
     QuestionInformationSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
 )
 from .utils import (
-    build_respondent_data,
+    build_respondent_data_fast,
     build_response_filter_query,
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
@@ -167,7 +168,7 @@ class FilteredResponsesAPIView(APIView):
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
     
     def get(self, request, consultation_slug, question_slug):
-        """Get paginated filtered responses"""
+        """Get paginated filtered responses with orjson optimization"""
         from django.core.paginator import Paginator
         
         # Get the question object with consultation in one query
@@ -198,17 +199,19 @@ class FilteredResponsesAPIView(APIView):
         # Get total respondents count for this question (single query)
         all_respondents_count = models.Response.objects.filter(question=question).count()
         
+        # Use orjson for faster serialization of large response sets
         data = {
-            "all_respondents": [build_respondent_data(r) for r in page_obj.object_list],
+            "all_respondents": [build_respondent_data_fast(r) for r in page_obj.object_list],
             "has_more_pages": page_obj.has_next(),
             "respondents_total": all_respondents_count,
             "filtered_total": paginator.count,
         }
         
-        serializer = FilteredResponsesSerializer(data=data)
-        serializer.is_valid()
-        
-        return Response(serializer.data)
+        # Return orjson-optimized HttpResponse
+        return HttpResponse(
+            orjson.dumps(data),
+            content_type="application/json"
+        )
 
 
 class QuestionInformationAPIView(APIView):
