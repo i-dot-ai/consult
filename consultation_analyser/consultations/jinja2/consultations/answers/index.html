@@ -34,7 +34,7 @@
 <iai-question-detail-page
   consultationSlug="{{ consultation_slug }}"
   questionSlug="{{ question_slug }}"
-  questionText="{{ question.text }}"
+  questionText="Q{{ question.number }}: {{ question.text }}"
   questionId="{{ question.id }}"
   consultationTitle="{{ question.consultation_name }}"
 ></iai-question-detail-page>

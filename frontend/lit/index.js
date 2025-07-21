@@ -6299,7 +6299,8 @@ class MultiDropdown extends IaiLitBase {
             }
             iai-multi-dropdown label {
                 cursor: pointer;
-                white-space: nowrap;
+                word-break: break-word;
+                line-height: 1.5em;
             }
             iai-multi-dropdown .filters {
                 display: flex;
@@ -6329,6 +6330,9 @@ class MultiDropdown extends IaiLitBase {
                 position: absolute;
                 top: 2em;
                 width: max-content;
+                max-width: 80vw;
+                max-height: 20em;
+                overflow: auto;
                 right: 0;
                 background: white;
                 padding: 1em;
@@ -7378,7 +7382,7 @@ class DemographicsCard extends IaiLitBase {
             iai-demographics-card ul {
                 display: flex;
                 flex-direction: column;
-                gap: 1em;
+                gap: 1.5em;
                 margin: 0;
                 padding-left: 0;
                 font-weight: bold;
@@ -7407,6 +7411,13 @@ class DemographicsCard extends IaiLitBase {
             iai-demographics-card li {
                 font-size: 0.9em;
                 color: rgba(0, 0, 0, 0.6);
+            }
+            iai-demographics-card .info {
+                display: flex;
+                gap: 0.5em;
+            }
+            iai-demographics-card .label {
+                font-size: 0.9em;
             }
             iai-demographics-card .counts {
                 display: flex;
@@ -7456,18 +7467,23 @@ class DemographicsCard extends IaiLitBase {
 
                         return x`
                             <li>
-                                <span class="count">
-                                    ${count.toLocaleString()}
-                                </span>
-                                <span class="label">
-                                    ${label}
-                                </span>
-                                <iai-silver-progress-bar
-                                    .value=${percentage}
-                                ></iai-silver-progress-bar>
-                                <span class="percentage">
-                                    ${percentage}%
-                                </span>
+                                <div class="info">
+                                    <span class="label">
+                                        ${label}
+                                    </span>
+                                    <span class="count">
+                                        ${count.toLocaleString()}
+                                    </span>
+                                    <span class="percentage">
+                                        ${percentage}%
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <iai-silver-progress-bar
+                                        .value=${percentage}
+                                    ></iai-silver-progress-bar>
+                                </div>
                             </li>
                         `
                     })}
@@ -8007,9 +8023,19 @@ class ResponsesList extends IaiLitBase {
             iai-silver-responses-list article header,
             iai-silver-responses-list article footer {
                 display: flex;
+                align-items: center;
                 gap: 0.5em;
                 font-size: 0.9em;
                 flex-wrap: wrap;
+            }
+            iai-silver-responses-list article header {
+                justify-content: space-between;
+            }
+            iai-silver-responses-list article header .header-group {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.5em;
             }
             iai-silver-responses-list article footer iai-silver-tag .tag {
                 background: var(--iai-silver-color-mid-light);
@@ -8062,29 +8088,35 @@ class ResponsesList extends IaiLitBase {
                                 ? "last-item"
                                 : ""
                             }>
-                                ${response.demoData.length > 0 || response.evidenceRich ? x`
-                                    <header>
-                                        ${response.demoData
-                                            ? response.demoData.map(data => x`
-                                                <iai-silver-tag
-                                                    class="demo-tag"
-                                                    .text=${data}
-                                                ></iai-silver-tag>
-                                            `)
-                                            : ""
-                                        }
-                                        ${response.evidenceRich
-                                            ? x`
-                                                <iai-silver-tag
-                                                    .icon=${"diamond"}
-                                                    .text=${"Evidence rich"}
-                                                    .status=${"Closed"}
-                                                ></iai-silver-tag>
-                                            `
-                                            : ""
-                                        }
-                                    </header>
-                                ` : ""}
+                                <header>
+                                    ${response.demoData.length > 0 || response.evidenceRich ? x`
+                                        <div class="header-group">
+                                            ${response.demoData
+                                                ? response.demoData.map(data => x`
+                                                    <iai-silver-tag
+                                                        class="demo-tag"
+                                                        .text=${data}
+                                                    ></iai-silver-tag>
+                                                `)
+                                                : ""
+                                            }
+                                            ${response.evidenceRich
+                                                ? x`
+                                                    <iai-silver-tag
+                                                        .icon=${"diamond"}
+                                                        .text=${"Evidence rich"}
+                                                        .status=${"Closed"}
+                                                    ></iai-silver-tag>
+                                                `
+                                                : ""
+                                            }
+                                        </div>
+                                    ` : ""}
+
+                                    <small>
+                                        ID: ${response.id || "Not Available"}
+                                    </small>
+                                </header>
                                 
                                 ${response.text ? x`
                                     <p>
@@ -8107,6 +8139,9 @@ class ResponsesList extends IaiLitBase {
                                 
                                 ${response.themes.length > 0 ? x`
                                     <footer>
+                                        <small>
+                                            Themes:
+                                        </small>
                                         ${response.themes.map((theme) => x`
                                             <iai-silver-button
                                                 class="theme-tag"
@@ -8543,6 +8578,7 @@ class QuestionDetailPage extends IaiLitBase {
                 <iai-silver-responses-list
                     .responses=${
                         this.responses.map(response => ({
+                            id: response.identifier,
                             text: response.free_text_answer_text,
                             themes: response.themes.map(theme => ({
                                 id: theme.id,

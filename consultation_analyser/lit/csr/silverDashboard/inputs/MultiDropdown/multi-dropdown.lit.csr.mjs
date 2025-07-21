@@ -24,7 +24,8 @@ export default class MultiDropdown extends IaiLitBase {
             }
             iai-multi-dropdown label {
                 cursor: pointer;
-                white-space: nowrap;
+                word-break: break-word;
+                line-height: 1.5em;
             }
             iai-multi-dropdown .filters {
                 display: flex;
@@ -54,6 +55,9 @@ export default class MultiDropdown extends IaiLitBase {
                 position: absolute;
                 top: 2em;
                 width: max-content;
+                max-width: 80vw;
+                max-height: 20em;
+                overflow: auto;
                 right: 0;
                 background: white;
                 padding: 1em;
