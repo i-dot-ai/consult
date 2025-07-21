@@ -13,6 +13,9 @@ export default class DemographicsSection extends IaiLitBase {
         themeFilters: { type: Array },
         demoFilters: { type: Object},
         total: { type: Number },
+
+        demoFiltersApplied: { type: Function },
+        themeFiltersApplied: { type: Function },
     }
 
     static styles = [
@@ -46,24 +49,25 @@ export default class DemographicsSection extends IaiLitBase {
         this.themeFilters = [];
         this.demoFilters = {};
         this.total = 0;
+
+        this.demoFiltersApplied = () => {};
+        this.themeFiltersApplied = () => {};
         
         this.applyStaticStyles("iai-demographics-section", DemographicsSection.styles);
     }
 
     getFilterWarningText() {
-        const demoFiltersText = Object.values(this.demoFilters).filter(Boolean).join(", ");
+        const demoFiltersText = Object
+            .values(this.demoFilters)
+            .flat(1)
+            .filter(Boolean)
+            .join(", ");
+
         const themeFiltersText = this.themeFilters.length
             ? `${this.themeFilters.length} themes`
             : "";
+
         return [demoFiltersText, themeFiltersText].filter(Boolean).join(", ");
-    }
-
-    demoFiltersApplied() {
-        return Object.values(this.demoFilters).filter(Boolean).length > 0;
-    }
-
-    themeFiltersApplied() {
-        return this.themeFilters.length > 0;
     }
 
     render() {
