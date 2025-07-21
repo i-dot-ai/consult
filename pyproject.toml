@@ -57,6 +57,7 @@ pytest-lazy-fixtures = "^1.3.2"
 pgvector = "^0.4.1"
 openai = "^1.97.0"
 tiktoken = "^0.9.0"
+django-silk = "^5.4.0"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.12.4"

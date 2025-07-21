@@ -278,5 +278,9 @@ if DEBUG:
     INSTALLED_APPS += ["debug_toolbar"]
     INTERNAL_IPS = ["127.0.0.1"]
 
+if DEBUG and ("pytest" not in sys.modules and "test" not in sys.argv):
+    MIDDLEWARE += ["silk.middleware.SilkyMiddleware"]
+    INSTALLED_APPS += ["silk"]
+
 # changing this will require a database migration
 EMBEDDING_DIMENSION = 1024
