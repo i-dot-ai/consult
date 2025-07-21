@@ -26,12 +26,23 @@ REDIRECTING_URL_NAMES = ["show_next_response"]
 
 JSON_SCHEMA_URL_NAMES = ["raw_schema"]
 
+# API endpoints return 403 instead of 404 for unauthenticated users
+API_URL_NAMES = [
+    "api_demographic_options",
+    "api_demographic_aggregations", 
+    "api_theme_information",
+    "api_theme_aggregations",
+    "api_filtered_responses",
+    "api_question_information"
+]
+
 URL_NAMES_TO_EXCLUDE = (
     PUBLIC_URL_NAMES
     + GENERIC_CONSULTATION_URL_NAMES
     + AUTHENTICATION_URL_NAMES
     + REDIRECTING_URL_NAMES
     + JSON_SCHEMA_URL_NAMES
+    + API_URL_NAMES
 )
 
 
@@ -140,6 +151,56 @@ def test_consultations_urls_login_required(client):
         check_expected_status_code(client, url, 404)
         client.logout()
 
+
+@pytest.mark.django_db
+def test_api_urls_permission_required(client):
+    """
+    Test API endpoints return 403 for authentication/permission failures.
+    
+    API endpoints use DRF permissions which return 403 (Forbidden) rather than
+    404 (Not Found) for unauthorized access.
+    """
+    user = factories.UserFactory()
+    non_consultation_user = factories.UserFactory()
+    possible_args = set_up_consultation(user)
+
+    dashboard_access = Group.objects.get(name=DASHBOARD_ACCESS)
+    user.groups.add(dashboard_access)
+    user.save()
+
+    # Get API URL patterns
+    api_url_patterns = [
+        url_pattern
+        for url_pattern in urlpatterns
+        if url_pattern.name in API_URL_NAMES
+    ]
+
+    for url_pattern in api_url_patterns:
+        url = get_url_for_pattern(url_pattern, possible_args)
+
+        # Not logged in - should return 403 (DRF permission denied)
+        check_expected_status_code(client, url, expected_status_code=403)
+
+        # Logged in with a user for this consultation - 200
+        client.force_login(user)
+        check_expected_status_code(client, url, 200)
+        client.logout()
+
+        # Logged in with a different user (no consultation access) - 403
+        client.force_login(non_consultation_user)
+        check_expected_status_code(client, url, 403)
+        client.logout()
+
+        # Logged in with user without dashboard access - 403
+        user_no_dashboard = factories.UserFactory()
+        # Need to get the consultation from the database to add the user
+        from consultation_analyser.consultations.models import Consultation
+        consultation = Consultation.objects.get(slug=possible_args['consultation_slug'])
+        consultation.users.add(user_no_dashboard)
+        client.force_login(user_no_dashboard)
+        check_expected_status_code(client, url, 403)
+        client.logout()
+
     # Testing links that redirect
     url_patterns_to_test = [
         url_pattern
@@ -161,4 +222,54 @@ def test_consultations_urls_login_required(client):
         # Logged in with a different user - 404
         client.force_login(non_consultation_user)
         check_expected_status_code(client, url, 404)
+        client.logout()
+
+
+@pytest.mark.django_db
+def test_api_urls_permission_required(client):
+    """
+    Test API endpoints return 403 for authentication/permission failures.
+    
+    API endpoints use DRF permissions which return 403 (Forbidden) rather than
+    404 (Not Found) for unauthorized access.
+    """
+    user = factories.UserFactory()
+    non_consultation_user = factories.UserFactory()
+    possible_args = set_up_consultation(user)
+
+    dashboard_access = Group.objects.get(name=DASHBOARD_ACCESS)
+    user.groups.add(dashboard_access)
+    user.save()
+
+    # Get API URL patterns
+    api_url_patterns = [
+        url_pattern
+        for url_pattern in urlpatterns
+        if url_pattern.name in API_URL_NAMES
+    ]
+
+    for url_pattern in api_url_patterns:
+        url = get_url_for_pattern(url_pattern, possible_args)
+
+        # Not logged in - should return 403 (DRF permission denied)
+        check_expected_status_code(client, url, expected_status_code=403)
+
+        # Logged in with a user for this consultation - 200
+        client.force_login(user)
+        check_expected_status_code(client, url, 200)
+        client.logout()
+
+        # Logged in with a different user (no consultation access) - 403
+        client.force_login(non_consultation_user)
+        check_expected_status_code(client, url, 403)
+        client.logout()
+
+        # Logged in with user without dashboard access - 403
+        user_no_dashboard = factories.UserFactory()
+        # Need to get the consultation from the database to add the user
+        from consultation_analyser.consultations.models import Consultation
+        consultation = Consultation.objects.get(slug=possible_args['consultation_slug'])
+        consultation.users.add(user_no_dashboard)
+        client.force_login(user_no_dashboard)
+        check_expected_status_code(client, url, 403)
         client.logout()
