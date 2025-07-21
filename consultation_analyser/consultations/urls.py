@@ -25,11 +25,6 @@ urlpatterns = [
         answers.index,
         name="question_responses",
     ),
-    path(
-        "consultations/<str:consultation_slug>/responses/<str:question_slug>/json/",
-        answers.question_responses_json,
-        name="question_responses_json",
-    ),
     # New modular endpoints
     # API endpoints
     path(
