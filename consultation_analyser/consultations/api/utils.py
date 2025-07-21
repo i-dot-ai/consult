@@ -148,8 +148,14 @@ def get_filtered_responses_with_themes(
     return queryset.order_by("created_at")  # Consistent ordering for pagination
 
 
-def build_respondent_data(response: models.Response) -> dict:
-    """Extract respondent data building to separate function"""
+
+def build_respondent_data_fast(response: models.Response) -> dict:
+    """Optimized respondent data builder for orjson serialization.
+    
+    This version minimizes Python object creation and is optimized for speed.
+    Use this when you need maximum performance for large datasets.
+    """
+    # Pre-allocate the dictionary with all keys to avoid rehashing
     data = {
         "identifier": str(response.respondent.identifier),
         "free_text_answer_text": response.free_text or "",
@@ -159,20 +165,28 @@ def build_respondent_data(response: models.Response) -> dict:
         "evidenceRich": False,
     }
 
-    if hasattr(response, "annotation") and response.annotation:
-        annotation = response.annotation
+    # Early return if no annotation (common case optimization)
+    if not (hasattr(response, "annotation") and response.annotation):
+        return data
 
-        if annotation.evidence_rich == models.ResponseAnnotation.EvidenceRich.YES:
-            data["evidenceRich"] = True
+    annotation = response.annotation
+    
+    # Direct boolean assignment (faster than conditional)
+    data["evidenceRich"] = (
+        annotation.evidence_rich == models.ResponseAnnotation.EvidenceRich.YES
+    )
 
-        # Add themes (already prefetched)
+    # Optimize theme building - use prefetched data efficiently
+    themes = annotation.themes.all()
+    if themes:
+        # List comprehension is faster than append() in loop
         data["themes"] = [
             {
                 "id": theme.id,
                 "name": theme.name,
                 "description": theme.description,
             }
-            for theme in annotation.themes.all()
+            for theme in themes
         ]
 
     return data
