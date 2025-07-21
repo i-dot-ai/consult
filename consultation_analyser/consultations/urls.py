@@ -3,6 +3,8 @@ from django.urls import path
 from .api.views import (
     DemographicAggregationsAPIView,
     DemographicOptionsAPIView,
+    FilteredResponsesAPIView,
+    QuestionInformationAPIView,
     ThemeAggregationsAPIView,
     ThemeInformationAPIView,
 )
@@ -51,14 +53,14 @@ urlpatterns = [
         name="api_theme_aggregations",
     ),
     path(
-        "consultations/<str:consultation_slug>/responses/<str:question_slug>/filtered_responses/",
-        answers.filtered_responses,
-        name="filtered_responses",
+        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/filtered-responses/",
+        FilteredResponsesAPIView.as_view(),
+        name="api_filtered_responses",
     ),
     path(
-        "consultations/<str:consultation_slug>/responses/<str:question_slug>/question_information/",
-        answers.question_information,
-        name="question_information",
+        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/question-information/",
+        QuestionInformationAPIView.as_view(),
+        name="api_question_information",
     ),
     path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/show-next/",

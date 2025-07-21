@@ -280,7 +280,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
             try {
                 const [filteredResponsesData, themeAggregationsData, themeInformationData, demographicOptionsData] = await Promise.all([
                     // Get paginated response data
-                    this.fetchData(`/consultations/${this.consultationSlug}/responses/${this.questionSlug}/filtered_responses?` + this.buildQuery(), { signal }).then(r => r.json()),
+                    this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(), { signal }).then(r => r.json()),
                     // Get theme aggregations (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                     // Get theme information (only on first page)
