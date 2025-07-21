@@ -128,11 +128,9 @@ DATABASES = {
             "RECYCLE": env.int("DB_POOL_RECYCLE", default=3600),  # 1 hour
             "PRE_PING": env.bool("DB_POOL_PRE_PING", default=True),
         },
-        # Keep existing options and add pool-specific ones
+        # Keep existing options 
         "OPTIONS": {
             **_db_config.get("OPTIONS", {}),
-            # Health checks for better reliability
-            "CONN_HEALTH_CHECKS": True,
         },
     }
 }

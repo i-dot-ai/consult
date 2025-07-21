@@ -1,7 +1,7 @@
 from collections import defaultdict
 
 import orjson
-from django.http import HttpResponse
+from django.http import HttpResponse, StreamingHttpResponse
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -184,17 +184,29 @@ class FilteredResponsesAPIView(APIView):
         # Get total respondents count for this question (single query)
         all_respondents_count = models.Response.objects.filter(question=question).count()
         
-        # Use orjson for faster serialization of large response sets
-        data = {
-            "all_respondents": [build_respondent_data_fast(r) for r in page_obj.object_list],
-            "has_more_pages": page_obj.has_next(),
-            "respondents_total": all_respondents_count,
-            "filtered_total": paginator.count,
-        }
+        # Streaming response generator that maintains the same JSON structure
+        def stream_filtered_responses():
+            # Start JSON object and all_respondents array
+            yield b'{"all_respondents":['
+            
+            # Stream individual respondent objects using iterator for memory efficiency
+            first_item = True
+            for response in page_obj.object_list.iterator(chunk_size=10):
+                if not first_item:
+                    yield b','
+                # Use orjson for fast serialization of each object (orjson returns bytes)
+                respondent_data = build_respondent_data_fast(response)
+                yield orjson.dumps(respondent_data)
+                first_item = False
+            
+            # Complete the JSON with metadata (same structure as before)
+            yield f'],"has_more_pages":{str(page_obj.has_next()).lower()},'.encode('utf-8')
+            yield f'"respondents_total":{all_respondents_count},'.encode('utf-8')
+            yield f'"filtered_total":{paginator.count}}}'.encode('utf-8')
         
-        # Return orjson-optimized HttpResponse
-        return HttpResponse(
-            orjson.dumps(data),
+        # Return streaming response with identical JSON structure to before
+        return StreamingHttpResponse(
+            stream_filtered_responses(),
             content_type="application/json"
         )
 
