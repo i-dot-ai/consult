@@ -429,6 +429,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                 <iai-silver-responses-list
                     .responses=${
                         this.responses.map(response => ({
+                            id: response.identifier,
                             text: response.free_text_answer_text,
                             themes: response.themes.map(theme => ({
                                 id: theme.id,

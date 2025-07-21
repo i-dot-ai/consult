@@ -8015,6 +8015,15 @@ class ResponsesList extends IaiLitBase {
                 font-size: 0.9em;
                 flex-wrap: wrap;
             }
+            iai-silver-responses-list article header {
+                justify-content: space-between;
+            }
+            iai-silver-responses-list article header .header-group {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.5em;
+            }
             iai-silver-responses-list article footer iai-silver-tag .tag {
                 background: var(--iai-silver-color-mid-light);
                 border: none;
@@ -8066,29 +8075,35 @@ class ResponsesList extends IaiLitBase {
                                 ? "last-item"
                                 : ""
                             }>
-                                ${response.demoData.length > 0 || response.evidenceRich ? x`
-                                    <header>
-                                        ${response.demoData
-                                            ? response.demoData.map(data => x`
-                                                <iai-silver-tag
-                                                    class="demo-tag"
-                                                    .text=${data}
-                                                ></iai-silver-tag>
-                                            `)
-                                            : ""
-                                        }
-                                        ${response.evidenceRich
-                                            ? x`
-                                                <iai-silver-tag
-                                                    .icon=${"diamond"}
-                                                    .text=${"Evidence rich"}
-                                                    .status=${"Closed"}
-                                                ></iai-silver-tag>
-                                            `
-                                            : ""
-                                        }
-                                    </header>
-                                ` : ""}
+                                <header>
+                                    ${response.demoData.length > 0 || response.evidenceRich ? x`
+                                        <div class="header-group">
+                                            ${response.demoData
+                                                ? response.demoData.map(data => x`
+                                                    <iai-silver-tag
+                                                        class="demo-tag"
+                                                        .text=${data}
+                                                    ></iai-silver-tag>
+                                                `)
+                                                : ""
+                                            }
+                                            ${response.evidenceRich
+                                                ? x`
+                                                    <iai-silver-tag
+                                                        .icon=${"diamond"}
+                                                        .text=${"Evidence rich"}
+                                                        .status=${"Closed"}
+                                                    ></iai-silver-tag>
+                                                `
+                                                : ""
+                                            }
+                                        </div>
+                                    ` : ""}
+
+                                    <small>
+                                        ID: ${response.id || "Not Available"}
+                                    </small>
+                                </header>
                                 
                                 ${response.text ? x`
                                     <p>
@@ -8547,6 +8562,7 @@ class QuestionDetailPage extends IaiLitBase {
                 <iai-silver-responses-list
                     .responses=${
                         this.responses.map(response => ({
+                            id: response.identifier,
                             text: response.free_text_answer_text,
                             themes: response.themes.map(theme => ({
                                 id: theme.id,
