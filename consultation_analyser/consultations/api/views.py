@@ -2,7 +2,6 @@ from collections import defaultdict
 
 import orjson
 from django.http import HttpResponse
-from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -19,6 +18,7 @@ from .serializers import (
 from .utils import (
     build_respondent_data_fast,
     build_response_filter_query,
+    get_consultation_and_question,
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
 )
@@ -29,7 +29,8 @@ class DemographicOptionsAPIView(APIView):
     
     def get(self, request, consultation_slug, question_slug):
         """Get all demographic options for a consultation"""
-        consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+        question = get_consultation_and_question(consultation_slug, question_slug)
+        consultation = question.consultation
         
         # Get all demographic fields and their possible values from normalized storage
         options = (
@@ -56,11 +57,7 @@ class DemographicAggregationsAPIView(APIView):
     def get(self, request, consultation_slug, question_slug):
         """Get demographic aggregations for filtered responses"""
         # Get the question object with consultation in one query
-        question = get_object_or_404(
-            models.Question.objects.select_related("consultation"),
-            slug=question_slug,
-            consultation__slug=consultation_slug,
-        )
+        question = get_consultation_and_question(consultation_slug, question_slug)
         
         # Validate query parameters
         filter_serializer = FilterSerializer(data=request.query_params)
@@ -99,11 +96,7 @@ class ThemeInformationAPIView(APIView):
     def get(self, request, consultation_slug, question_slug):
         """Get all theme information for a question"""
         # Get the question object with consultation in one query
-        question = get_object_or_404(
-            models.Question.objects.select_related("consultation"),
-            slug=question_slug,
-            consultation__slug=consultation_slug,
-        )
+        question = get_consultation_and_question(consultation_slug, question_slug)
         
         # Get all themes for this question
         themes = models.Theme.objects.filter(question=question).values("id", "name", "description")
@@ -124,11 +117,7 @@ class ThemeAggregationsAPIView(APIView):
         from django.db.models import Count
         
         # Get the question object with consultation in one query
-        question = get_object_or_404(
-            models.Question.objects.select_related("consultation"),
-            slug=question_slug,
-            consultation__slug=consultation_slug,
-        )
+        question = get_consultation_and_question(consultation_slug, question_slug)
         
         # Validate query parameters
         filter_serializer = FilterSerializer(data=request.query_params)
@@ -172,11 +161,7 @@ class FilteredResponsesAPIView(APIView):
         from django.core.paginator import Paginator
         
         # Get the question object with consultation in one query
-        question = get_object_or_404(
-            models.Question.objects.select_related("consultation"),
-            slug=question_slug,
-            consultation__slug=consultation_slug,
-        )
+        question = get_consultation_and_question(consultation_slug, question_slug)
         
         # Validate query parameters
         filter_serializer = FilterSerializer(data=request.query_params)
@@ -220,11 +205,7 @@ class QuestionInformationAPIView(APIView):
     def get(self, request, consultation_slug, question_slug):
         """Get basic question information"""
         # Get the question object with consultation in one query
-        question = get_object_or_404(
-            models.Question.objects.select_related("consultation"),
-            slug=question_slug,
-            consultation__slug=consultation_slug,
-        )
+        question = get_consultation_and_question(consultation_slug, question_slug)
         
         data = {
             "question_text": question.text,
