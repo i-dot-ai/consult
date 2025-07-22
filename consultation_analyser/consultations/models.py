@@ -84,7 +84,10 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         models.TextField(), null=True, default=None, blank=True
     )  # List of options when has_multiple_choice=True
     total_responses = models.IntegerField(
-        default=0, help_text="Number of free text responses for this question"
+        default=0,
+        help_text="Number of free text responses for this question",
+        null=True,
+        blank=True,
     )
 
     def save(self, *args, **kwargs):
