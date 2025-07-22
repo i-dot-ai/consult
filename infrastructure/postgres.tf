@@ -15,8 +15,8 @@ module "rds" {
   engine_version         = "16.6"
   family                 = null
   engine_mode            = "provisioned"
-  aurora_min_scaling     = 0.5
-  aurora_max_scaling     = 1
+  aurora_min_scaling     = 2
+  aurora_max_scaling     = 8
   aurora_instance_count  = 1
   deletion_protection    = var.env == "dev" ? false : true
 }
