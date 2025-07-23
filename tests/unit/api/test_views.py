@@ -374,9 +374,8 @@ class TestFilteredResponsesAPIView:
 
         assert response.status_code == 200
         
-        # Parse the streaming response
-        content = b''.join(response.streaming_content)
-        data = orjson.loads(content)
+        # Parse the response
+        data = orjson.loads(response.content)
 
         assert "all_respondents" in data
         assert "respondents_total" in data
@@ -407,8 +406,7 @@ class TestFilteredResponsesAPIView:
 
         assert response.status_code == 200
         
-        content = b''.join(response.streaming_content)
-        data = orjson.loads(content)
+        data = orjson.loads(response.content)
 
         assert len(data["all_respondents"]) == 2
         assert data["has_more_pages"] is True
@@ -440,8 +438,7 @@ class TestFilteredResponsesAPIView:
 
         assert response.status_code == 200
         
-        content = b''.join(response.streaming_content)
-        data = orjson.loads(content)
+        data = orjson.loads(response.content)
 
         assert data["respondents_total"] == 2  # Total respondents
         assert data["filtered_total"] == 1  # Filtered to individuals only
@@ -482,8 +479,7 @@ class TestFilteredResponsesAPIView:
 
         assert response.status_code == 200
         
-        content = b''.join(response.streaming_content)
-        data = orjson.loads(content)
+        data = orjson.loads(response.content)
 
         assert data["respondents_total"] == 3  # Total respondents
         assert data["filtered_total"] == 1  # Only response1 has both themes
