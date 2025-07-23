@@ -74,7 +74,7 @@ class DemographicAggregationsAPIView(APIView):
         ).values_list("demographics", flat=True)
 
         # Aggregate in memory (much faster than nested loops)
-        aggregations = defaultdict(lambda: defaultdict(int))
+        aggregations = defaultdict(lambda: defaultdict(int))  # type:ignore
         for demographics in respondents_data:
             if demographics:
                 for field_name, field_value in demographics.items():
