@@ -28,32 +28,32 @@ urlpatterns = [
     # New modular endpoints
     # API endpoints
     path(
-        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/demographic-options/",
+        "api/consultations/<uuid:consultation_id>/questions/<uuid:question_id>/demographic-options/",
         DemographicOptionsAPIView.as_view(),
         name="api_demographic_options",
     ),
     path(
-        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/demographic-aggregations/",
+        "api/consultations/<uuid:consultation_id>/questions/<uuid:question_id>/demographic-aggregations/",
         DemographicAggregationsAPIView.as_view(),
         name="api_demographic_aggregations",
     ),
     path(
-        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/theme-information/",
+        "api/consultations/<uuid:consultation_id>/questions/<uuid:question_id>/theme-information/",
         ThemeInformationAPIView.as_view(),
         name="api_theme_information",
     ),
     path(
-        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/theme-aggregations/",
+        "api/consultations/<uuid:consultation_id>/questions/<uuid:question_id>/theme-aggregations/",
         ThemeAggregationsAPIView.as_view(),
         name="api_theme_aggregations",
     ),
     path(
-        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/filtered-responses/",
+        "api/consultations/<uuid:consultation_id>/questions/<uuid:question_id>/filtered-responses/",
         FilteredResponsesAPIView.as_view(),
         name="api_filtered_responses",
     ),
     path(
-        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/question-information/",
+        "api/consultations/<uuid:consultation_id>/questions/<uuid:question_id>/question-information/",
         QuestionInformationAPIView.as_view(),
         name="api_question_information",
     ),

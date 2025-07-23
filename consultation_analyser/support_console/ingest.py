@@ -345,7 +345,10 @@ def import_responses(question: Question, responses_file_key: str):
                 free_text = free_text[:1000]
                 token_count = len(encoding.encode(free_text))
 
-            if total_tokens + token_count > max_total_tokens or len(responses_to_save) >= max_batch_size:
+            if (
+                total_tokens + token_count > max_total_tokens
+                or len(responses_to_save) >= max_batch_size
+            ):
                 embedded_responses_to_save = _embed_responses(responses_to_save)
                 Response.objects.bulk_create(embedded_responses_to_save)
                 responses_to_save = []
@@ -373,7 +376,9 @@ def import_responses(question: Question, responses_file_key: str):
 
         # Update total_responses count for the question
         question.update_total_responses()
-        logger.info(f"Updated total_responses count for question {question.number}: {question.total_responses}")
+        logger.info(
+            f"Updated total_responses count for question {question.number}: {question.total_responses}"
+        )
 
     except Exception as e:
         logger.error(

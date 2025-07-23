@@ -6,14 +6,18 @@ from consultation_analyser.settings.base import *  # noqa
 CSRF_TRUSTED_ORIGINS = ["https://" + env("DOMAIN_NAME")]  # noqa: F405
 
 # Production Database Connection Pooling - Higher limits for scale
-DATABASES["default"]["POOL_OPTIONS"].update({  # noqa: F405
-    "INITIAL_CONNS": env.int("DB_POOL_INITIAL_CONNS", default=10),  # noqa: F405
-    "MAX_CONNS": env.int("DB_POOL_MAX_CONNS", default=50),  # noqa: F405
-    "MIN_CONNS": env.int("DB_POOL_MIN_CONNS", default=10),  # noqa: F405
-    "MAX_SHARED_CONNS": env.int("DB_POOL_MAX_SHARED_CONNS", default=25),  # noqa: F405
-    "MAX_OVERFLOW": env.int("DB_POOL_MAX_OVERFLOW", default=25),  # noqa: F405
-    "RECYCLE": env.int("DB_POOL_RECYCLE", default=1800),  # 30 minutes in production  # noqa: F405
-})
+DATABASES["default"]["POOL_OPTIONS"].update(
+    {  # noqa: F405
+        "INITIAL_CONNS": env.int("DB_POOL_INITIAL_CONNS", default=10),  # noqa: F405
+        "MAX_CONNS": env.int("DB_POOL_MAX_CONNS", default=50),  # noqa: F405
+        "MIN_CONNS": env.int("DB_POOL_MIN_CONNS", default=10),  # noqa: F405
+        "MAX_SHARED_CONNS": env.int("DB_POOL_MAX_SHARED_CONNS", default=25),  # noqa: F405
+        "MAX_OVERFLOW": env.int("DB_POOL_MAX_OVERFLOW", default=25),  # noqa: F405
+        "RECYCLE": env.int(
+            "DB_POOL_RECYCLE", default=1800
+        ),  # 30 minutes in production  # noqa: F405
+    }
+)
 
 SENTRY_DSN = env("SENTRY_DSN")  # noqa: F405
 EXECUTION_CONTEXT = env("EXECUTION_CONTEXT")  # noqa: F405

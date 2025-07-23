@@ -4,6 +4,7 @@ from django.urls import reverse
 
 from consultation_analyser import factories
 from consultation_analyser.constants import DASHBOARD_ACCESS
+from consultation_analyser.consultations.models import Consultation
 from consultation_analyser.consultations.urls import urlpatterns
 
 PUBLIC_URL_NAMES = [
@@ -29,11 +30,11 @@ JSON_SCHEMA_URL_NAMES = ["raw_schema"]
 # API endpoints return 403 instead of 404 for unauthenticated users
 API_URL_NAMES = [
     "api_demographic_options",
-    "api_demographic_aggregations", 
+    "api_demographic_aggregations",
     "api_theme_information",
     "api_theme_aggregations",
     "api_filtered_responses",
-    "api_question_information"
+    "api_question_information",
 ]
 
 URL_NAMES_TO_EXCLUDE = (
@@ -80,6 +81,22 @@ def set_up_consultation(user):
     possible_args = {
         "consultation_slug": consultation.slug,
         "question_slug": question.slug,
+        "response_id": response.id,
+    }
+    return possible_args
+
+
+def set_up_consultation_api(user):
+    question = factories.QuestionFactory()
+    consultation = question.consultation
+    consultation.users.add(user)
+    consultation.save()
+
+    response = factories.ResponseFactory(question=question)
+    factories.ResponseAnnotationFactory(response=response)
+    possible_args = {
+        "consultation_id": consultation.id,
+        "question_id": question.id,
         "response_id": response.id,
     }
     return possible_args
@@ -152,13 +169,67 @@ def test_consultations_urls_login_required(client):
         client.logout()
 
 
+# Get API URL patterns
+API_URL_PATTERNS = [url_pattern for url_pattern in urlpatterns if url_pattern.name in API_URL_NAMES]
+
+
 @pytest.mark.django_db
-def test_api_urls_permission_required(client):
+@pytest.mark.parametrize("url_pattern", API_URL_PATTERNS)
+def test_api_urls_permission_required(client, url_pattern):
     """
     Test API endpoints return 403 for authentication/permission failures.
-    
+
     API endpoints use DRF permissions which return 403 (Forbidden) rather than
     404 (Not Found) for unauthorized access.
+    """
+    user = factories.UserFactory()
+    non_consultation_user = factories.UserFactory()
+    possible_args = set_up_consultation_api(user)
+
+    dashboard_access = Group.objects.get(name=DASHBOARD_ACCESS)
+    user.groups.add(dashboard_access)
+    user.save()
+
+    url = get_url_for_pattern(url_pattern, possible_args)
+
+    # Not logged in - should return 403 (DRF permission denied)
+    check_expected_status_code(client, url, expected_status_code=403)
+
+    # Logged in with a user for this consultation - 200
+    client.force_login(user)
+    check_expected_status_code(client, url, 200)
+    client.logout()
+
+    # Logged in with a different user (no consultation access) - 403
+    client.force_login(non_consultation_user)
+    check_expected_status_code(client, url, 403)
+    client.logout()
+
+    # Logged in with user without dashboard access - 403
+    user_no_dashboard = factories.UserFactory()
+    # Need to get the consultation from the database to add the user
+    consultation = Consultation.objects.get(id=possible_args["consultation_id"])
+    consultation.users.add(user_no_dashboard)
+    client.force_login(user_no_dashboard)
+    check_expected_status_code(client, url, 403)
+    client.logout()
+
+
+# Get all URLs that haven't explicitly been excluded.
+# Exclude magic links in separate step as potentially more than one.
+URL_EXCLUDING_MAGIC_LINK = [
+    url_pattern
+    for url_pattern in urlpatterns
+    if str(url_pattern) in REDIRECTING_URL_NAMES
+    if not str(url_pattern.pattern).startswith("magic-link")
+]
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("url_pattern", URL_EXCLUDING_MAGIC_LINK)
+def test_urls_permission_required(client, url_pattern):
+    """
+    Test API endpoints return 403 for authentication/permission failures.
     """
     user = factories.UserFactory()
     non_consultation_user = factories.UserFactory()
@@ -168,66 +239,17 @@ def test_api_urls_permission_required(client):
     user.groups.add(dashboard_access)
     user.save()
 
-    # Get API URL patterns
-    api_url_patterns = [
-        url_pattern
-        for url_pattern in urlpatterns
-        if url_pattern.name in API_URL_NAMES
-    ]
+    url = get_url_for_pattern(url_pattern, possible_args)
 
-    for url_pattern in api_url_patterns:
-        url = get_url_for_pattern(url_pattern, possible_args)
+    # Not logged in - should 404
+    check_expected_status_code(client, url, expected_status_code=404)
 
-        # Not logged in - should return 403 (DRF permission denied)
-        check_expected_status_code(client, url, expected_status_code=403)
+    # Logged in with a user for this consultation - 302
+    client.force_login(user)
+    check_expected_status_code(client, url, 302)
+    client.logout()
 
-        # Logged in with a user for this consultation - 200
-        client.force_login(user)
-        check_expected_status_code(client, url, 200)
-        client.logout()
-
-        # Logged in with a different user (no consultation access) - 403
-        client.force_login(non_consultation_user)
-        check_expected_status_code(client, url, 403)
-        client.logout()
-
-        # Logged in with user without dashboard access - 403
-        user_no_dashboard = factories.UserFactory()
-        # Need to get the consultation from the database to add the user
-        from consultation_analyser.consultations.models import Consultation
-        consultation = Consultation.objects.get(slug=possible_args['consultation_slug'])
-        consultation.users.add(user_no_dashboard)
-        client.force_login(user_no_dashboard)
-        check_expected_status_code(client, url, 403)
-        client.logout()
-
-    # Get all URLs that haven't explicitly been excluded.
-    # Exclude magic links in separate step as potentially more than one.
-    url_patterns_excluding_magic_link = [
-        url_pattern
-        for url_pattern in urlpatterns
-        if not str(url_pattern.pattern).startswith("magic-link")
-    ]
-
-    # Testing links that redirect
-    url_patterns_to_test = [
-        url_pattern
-        for url_pattern in url_patterns_excluding_magic_link
-        if url_pattern.name in REDIRECTING_URL_NAMES
-    ]
-
-    for url_pattern in url_patterns_to_test:
-        url = get_url_for_pattern(url_pattern, possible_args)
-
-        # Not logged in - should 404
-        check_expected_status_code(client, url, expected_status_code=404)
-
-        # Logged in with a user for this consultation - 302
-        client.force_login(user)
-        check_expected_status_code(client, url, 302)
-        client.logout()
-
-        # Logged in with a different user - 404
-        client.force_login(non_consultation_user)
-        check_expected_status_code(client, url, 404)
-        client.logout()
+    # Logged in with a different user - 404
+    client.force_login(non_consultation_user)
+    check_expected_status_code(client, url, 404)
+    client.logout()
