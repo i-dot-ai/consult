@@ -21,19 +21,19 @@
         {% for error in validation_errors %}
         <li>
           {% if error.type == 'missing_file' %}
-            <strong>Missing file:</strong> {{ error.message }}
+          <strong>Missing file:</strong> {{ error.message }}
           {% elif error.type == 'missing_output' %}
-            <strong>Missing AI output:</strong> {{ error.message }}
+          <strong>Missing AI output:</strong> {{ error.message }}
           {% elif error.type in ['invalid_format', 'empty_file'] %}
-            <strong>File format issue:</strong> {{ error.message }}
+          <strong>File format issue:</strong> {{ error.message }}
           {% elif error.type == 'no_questions' %}
-            <strong>Structure issue:</strong> {{ error.message }}
+          <strong>Structure issue:</strong> {{ error.message }}
           {% elif error.type == 'file_not_found' %}
-            <strong>File not found:</strong> {{ error.message }}
+          <strong>File not found:</strong> {{ error.message }}
           {% elif error.type == 'system_error' %}
-            <strong>System error:</strong> {{ error.message }}
+          <strong>System error:</strong> {{ error.message }}
           {% else %}
-            {{ error.message }}
+          {{ error.message }}
           {% endif %}
         </li>
         {% endfor %}
@@ -84,7 +84,8 @@
 <p class="govuk-body">This will import both the consultation data (questions, respondents, responses) and AI analysis
   results (themes, sentiment, evidence) sequentially.</p>
 
-<p class="govuk-body">Data should be saved in: <code>{{ bucket_name }}/app_data/consultations/[CONSULTATION FOLDER]</code></p>
+<p class="govuk-body">Data should be saved in:
+  <code>{{ bucket_name }}/app_data/consultations/[CONSULTATION FOLDER]</code></p>
 
 {{ govukDetails({
 'summaryText': 'Expected S3 Structure',
@@ -103,12 +104,12 @@
         └── &lt;timestamp&gt;/
             ├── question_part_1/
             │   ├── themes.json
-            │   ├── sentiment.jsonl
+            │   ├── sentiment.jsonl [optional]
             │   ├── detail_detection.jsonl
             │   └── mapping.jsonl
             └── question_part_2/
                 ├── themes.json
-                ├── sentiment.jsonl
+                ├── sentiment.jsonl [optional]
                 ├── detail_detection.jsonl
                 └── mapping.jsonl</code></pre>
 '
