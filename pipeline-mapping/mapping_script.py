@@ -142,7 +142,6 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
                     responses_df,
                     llm,
                     question=question,
-                    concurrency=1,
                 )
                 detail_df = detail_df[["response_id", "evidence_rich"]]
                 detail_df = detail_df.rename(columns={"response_id": "themefinder_id"})
@@ -155,7 +154,6 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
                     llm,
                     refined_themes_df=themes_df[["topic_id", "topic"]],
                     question=question,
-                    concurrency=1,
                 )
                 mapped_df = mapped_df[["response_id", "labels", "stances"]]
                 mapped_df = mapped_df.rename(
