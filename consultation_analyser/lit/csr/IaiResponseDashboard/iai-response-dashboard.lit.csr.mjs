@@ -1,7 +1,6 @@
 import { html, css } from 'lit';
 
 import IaiLitBase from '../../IaiLitBase.mjs';
-import { fetchStreamingJSON } from '../utils/streaming-json-parser.mjs';
 import IaiResponseFilters from '../IaiResponseFilters/iai-response-filters.lit.csr.mjs';
 import IaiTextInput from '../inputs/IaiTextInput/iai-text-input.lit.csr.mjs';
 import IaiCheckboxInput from '../inputs/IaiCheckboxInput/iai-checkbox-input.lit.csr.mjs';
@@ -314,30 +313,30 @@ export default class IaiResponseDashboard extends IaiLitBase {
                     this.demographicOptions = demographicOptionsData.demographic_options;
                 }
 
-                // Now fetch responses with streaming
-                await fetchStreamingJSON(
+                // Now fetch responses
+                const responsesResponse = await fetch(
                     `/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(),
-                    { signal },
-                    {
-                        onResponse: (response) => {
-                            // Add each response as it arrives
-                            this.responses = this.responses.concat([{
-                                ...response,
-                                visible: true,
-                            }]);
-                        },
-                        onMetadata: (metadata) => {
-                            // Update metadata when it arrives
-                            this.responsesTotal = metadata.respondents_total;
-                            this._responsesFilteredTotal = metadata.filtered_total;
-                            this._hasMorePages = metadata.has_more_pages;
-                        },
-                        onError: (error) => {
-                            console.error('Streaming error:', error);
-                            this._errorOccured = true;
-                        }
-                    }
+                    { signal }
                 );
+                
+                if (!responsesResponse.ok) {
+                    throw new Error(`HTTP error! status: ${responsesResponse.status}`);
+                }
+                
+                const responsesData = await responsesResponse.json();
+                
+                // Add all responses
+                this.responses = this.responses.concat(
+                    responsesData.all_respondents.map(response => ({
+                        ...response,
+                        visible: true,
+                    }))
+                );
+                
+                // Update metadata
+                this.responsesTotal = responsesData.respondents_total;
+                this._responsesFilteredTotal = responsesData.filtered_total;
+                this._hasMorePages = responsesData.has_more_pages;
 
             } catch (err) {
                 if (err.name == "AbortError") {
