@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Section from '../components/Section.svelte';
+import Title from '../components/Title.svelte';
+
+import { getToken } from "../global/auth";
+
+// // TODO: Implement auth
+// import { getUserConsultations } from "...";
+// const { request } = Astro;
+// const cookie = request.headers.get("cookie") || "";
+// const token = getToken(cookie);
+// console.log("Session Token:", token);
+// const consultationsData = await getUserConsultations(token);
+---
+<Layout>
+	<Section>
+		<Title level={1} text="Your consultations" />
+
+		<p>Click to review themes for your consultations</p>
+	</Section>
+</Layout>
