@@ -8,6 +8,13 @@
     "text": {
       "type": "string",
       "description": "Free text response"
+    },
+    "options": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Options that have been chosen for a closed question."
     }
   },
   "required": ["themefinder_id"],

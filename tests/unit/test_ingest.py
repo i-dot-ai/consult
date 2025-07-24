@@ -28,13 +28,13 @@ def get_object_side_effect(Bucket, Key):
     respondents_data = b'{"themefinder_id": 1, "demographic_data": {"location": "Wales"}}\n{"themefinder_id": 2, "demographic_data": {"location": "Scotland"}}\n{"themefinder_id": 3, "demographic_data": {"location": "Scotland"}}\n{"themefinder_id": 4, "demographic_data": {"location": "Scotland"}}'
 
     # Mock question file
-    question_data = b'{"question_text": "What do you think?", "has_free_text": true, "options": ["a", "b", "c"]}'
+    question_data = b'{"question_text": "What do you think?", "has_free_text": true, "multi_choice_options": ["a", "b", "c"]}'
 
     # Mock responses files
     responses_data = (
         b'{"themefinder_id": 1, "text": "Good idea"}\n{"themefinder_id": 2, "text": "Bad idea"}'
     )
-    multi_choice_data = b'{"themefinder_id": 1, "chosen_options": ["a"]}\n{"themefinder_id": 3, "chosen_options": ["b", "c"]}\n{"themefinder_id": 4}'
+    multi_choice_data = b'{"themefinder_id": 1, "options": ["a"]}\n{"themefinder_id": 3, "options": ["b", "c"]}\n{"themefinder_id": 4}'
 
     # Mock themes file
     themes_data = (
@@ -404,7 +404,7 @@ class TestResponsesImport:
         consultation = Consultation.objects.create(title="Test Consultation")
         question = Question.objects.create(consultation=consultation, number=1)
         question_folder = "app_data/consultations/test/outputs/2024-01-01/question_part_1/"
-        for i in range(0, 4):
+        for i in range(4):
             Respondent.objects.create(consultation=consultation, themefinder_id=i + 1)
 
         # Run the import

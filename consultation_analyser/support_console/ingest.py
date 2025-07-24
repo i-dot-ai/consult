@@ -260,7 +260,7 @@ def import_response_annotations(question: Question, output_folder: str):
     sentiment_file_key = f"{output_folder}sentiment.jsonl"
     evidence_file_key = f"{output_folder}detail_detection.jsonl"
     s3_client = boto3.client("s3")
-    
+
     # Check if sentiment file exists and process it
     sentiment_dict = {}
     try:
@@ -381,7 +381,7 @@ def import_responses(question: Question, responses_file_key: str):
                     respondent=respondent_dict[themefinder_id],
                     question=question,
                     free_text=free_text,
-                    chosen_options=response_data.get("chosen_options", []),
+                    chosen_options=response_data.get("options", []),
                 )
             )
             total_tokens += token_count
@@ -520,7 +520,7 @@ def import_questions(
             question_data = json.loads(response["Body"].read())
 
             question_text = question_data.get("question_text", "")
-            multiple_choice_options = question_data.get("options", [])
+            multi_choice_options = question_data.get("multi_choice_options", [])
             if not question_text:
                 raise ValueError(f"Question text is required for question {question_number}")
 
@@ -530,8 +530,8 @@ def import_questions(
                 slug=f"question-{question_number}",
                 number=question_number,
                 has_free_text=question_data.get("has_free_text", True),
-                has_multiple_choice=bool(multiple_choice_options),
-                multiple_choice_options=multiple_choice_options,
+                has_multiple_choice=bool(multi_choice_options),
+                multiple_choice_options=multi_choice_options,
             )
 
             if question.has_free_text:
