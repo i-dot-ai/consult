@@ -131,11 +131,11 @@ docker_build: ## Build the docker container for the specified service when runni
 ifeq ($(service),consult)
 	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
 	--cache-to type=local,dest=$(cache) \
-	--cache-from type=local,src=$(cache) .
+	--cache-from type=local,src=$(cache) consultation_analyser
 else
 	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
 	--cache-to type=local,dest=$(cache) \
-	--cache-from type=local,src=$(cache) -f $(service)/Dockerfile .
+	--cache-from type=local,src=$(cache) -f $(service)/Dockerfile consultation_analyser
 endif
 
 .PHONY: docker_build_local
