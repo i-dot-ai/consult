@@ -430,7 +430,7 @@ def import_multiple_choice_responses(question: Question, multichoice_file_key: s
         for i, line in enumerate(multichoice_data["Body"].iter_lines()):
             response_data = json.loads(line.decode("utf-8"))
             themefinder_id = response_data["themefinder_id"]
-            chosen_options = response_data.get("chosen_options", [])
+            chosen_options = response_data.get("options", [])
 
             if themefinder_id in themefinder_ids_for_existing_responses:
                 response = Response.objects.get(
