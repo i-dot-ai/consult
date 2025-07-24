@@ -1,13 +1,18 @@
 from rest_framework import serializers
+from rest_framework.reverse import reverse
 
 from consultation_analyser.consultations.models import Consultation, Question
 
 
+class NestedHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
+    def get_url(self, obj, view_name, request, format):
+        kwargs = {"consultation_pk": obj.consultation.pk, "pk": obj.pk}
+        return reverse(view_name, kwargs=kwargs, request=request, format=format)
+
+
 class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
-    questions = serializers.PrimaryKeyRelatedField(
-        source="question_set",
-        many=True,
-        read_only=True,
+    questions = NestedHyperlinkedRelatedField(
+        source="question_set", many=True, read_only=True, view_name="question-detail"
     )
 
     class Meta:
