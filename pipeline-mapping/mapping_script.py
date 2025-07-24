@@ -9,7 +9,7 @@ from pathlib import Path
 import boto3
 import pandas as pd
 from langchain_openai import AzureChatOpenAI
-from themefinder import detail_detection, sentiment_analysis, theme_mapping
+from themefinder import detail_detection, theme_mapping
 
 # Configure logging
 logging.basicConfig(
@@ -137,25 +137,11 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
                     logger.info("Created outputs directory at: %s", question_output_dir)
 
                 question, responses_df, themes_df = load_question(consultation_dir, question_dir)
-                sentiment_df, _ = await sentiment_analysis(
-                    responses_df,
-                    llm,
-                    question=question,
-                    concurrency=1,
-                )
-                sentiment_df = sentiment_df[["response_id", "position"]]
-                sentiment_df = sentiment_df.rename(
-                    columns={"response_id": "themefinder_id", "position": "sentiment"}
-                )
-                sentiment_df.to_json(
-                    question_output_dir / "sentiment.jsonl", orient="records", lines=True
-                )
 
                 detail_df, _ = await detail_detection(
                     responses_df,
                     llm,
                     question=question,
-                    concurrency=1,
                 )
                 detail_df = detail_df[["response_id", "evidence_rich"]]
                 detail_df = detail_df.rename(columns={"response_id": "themefinder_id"})
@@ -168,7 +154,6 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
                     llm,
                     refined_themes_df=themes_df[["topic_id", "topic"]],
                     question=question,
-                    concurrency=1,
                 )
                 mapped_df = mapped_df[["response_id", "labels", "stances"]]
                 mapped_df = mapped_df.rename(

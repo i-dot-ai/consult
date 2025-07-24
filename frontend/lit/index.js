@@ -2541,217 +2541,6 @@ class IaiChip extends IaiLitBase {
 }
 customElements.define("iai-chip", IaiChip);
 
-/**
- * Streaming JSON Parser for progressive response loading
- * Handles streaming JSON responses from the FilteredResponsesAPIView
- * 
- * Expected format:
- * {"all_respondents":[{...},{...}],"has_more_pages":true,"respondents_total":123,"filtered_total":456}
- */
-class StreamingJSONParser {
-    constructor() {
-        this.onResponse = null;
-        this.onMetadata = null;
-        this.onComplete = null;
-        this.onError = null;
-        
-        this.buffer = '';
-        this.inResponsesArray = false;
-        this.currentObjectDepth = 0;
-        this.currentObjectStart = -1;
-        this.expectingComma = false;
-    }
-
-    /**
-     * Parse a streaming JSON response progressively
-     * @param {Response} response - Fetch response object
-     * @param {Object} callbacks - Event handlers
-     * @param {Function} callbacks.onResponse - Called for each response item
-     * @param {Function} callbacks.onMetadata - Called when metadata arrives
-     * @param {Function} callbacks.onComplete - Called when stream completes
-     * @param {Function} callbacks.onError - Called on errors
-     */
-    async parseStream(response, { onResponse, onMetadata, onComplete, onError }) {
-        this.onResponse = onResponse;
-        this.onMetadata = onMetadata;
-        this.onComplete = onComplete;
-        this.onError = onError;
-
-        try {
-            const reader = response.body.getReader();
-            const decoder = new TextDecoder();
-
-            while (true) {
-                const { done, value } = await reader.read();
-                if (done) break;
-
-                this.buffer += decoder.decode(value, { stream: true });
-                await this.processBuffer();
-            }
-
-            // Process any remaining data
-            if (this.buffer.trim()) {
-                await this.processBuffer();
-            }
-
-            // Parse final metadata from the completed JSON
-            await this.extractMetadata();
-
-            if (this.onComplete) {
-                this.onComplete();
-            }
-
-        } catch (error) {
-            console.error('Streaming JSON parsing error:', error);
-            if (this.onError) {
-                this.onError(error);
-            }
-        }
-    }
-
-    async processBuffer() {
-        // Look for the start of the responses array if we haven't found it yet
-        if (!this.inResponsesArray) {
-            const arrayStart = this.buffer.indexOf('{"all_respondents":[');
-            if (arrayStart >= 0) {
-                this.inResponsesArray = true;
-                this.buffer = this.buffer.substring(arrayStart + 20); // Remove up to and including the opening
-            } else {
-                return; // Not enough data yet
-            }
-        }
-
-        // Process response objects while we're in the array
-        while (this.inResponsesArray) {
-            // Find the end of the responses array
-            const arrayEnd = this.buffer.indexOf('],"has_more_pages"');
-            if (arrayEnd >= 0) {
-                // Process all remaining objects before the array end
-                const responsesContent = this.buffer.substring(0, arrayEnd);
-                await this.parseResponseObjects(responsesContent);
-                
-                // Mark that we're done with the responses array
-                this.inResponsesArray = false;
-                // Keep the buffer from the array end onwards (including the ]) for metadata extraction
-                this.buffer = this.buffer.substring(arrayEnd + 1); // Skip just the ']' character
-                return;
-            }
-
-            // Try to parse complete objects from the current buffer
-            const parsed = await this.parseResponseObjects(this.buffer);
-            if (!parsed) {
-                // No complete objects found, wait for more data
-                return;
-            }
-        }
-    }
-
-    async parseResponseObjects(content) {
-        if (!content.trim()) return false;
-
-        let depth = 0;
-        let objectStart = -1;
-        let i = 0;
-        let foundCompleteObject = false;
-
-        while (i < content.length) {
-            const char = content[i];
-
-            if (char === '{') {
-                if (depth === 0) {
-                    objectStart = i;
-                }
-                depth++;
-            } else if (char === '}') {
-                depth--;
-                
-                if (depth === 0 && objectStart >= 0) {
-                    // Found a complete object
-                    const objectStr = content.substring(objectStart, i + 1);
-                    try {
-                        const responseObj = JSON.parse(objectStr);
-                        if (this.onResponse) {
-                            this.onResponse(responseObj);
-                        }
-                        foundCompleteObject = true;
-
-                        // Remove the processed object and any following comma
-                        let nextStart = i + 1;
-                        if (content[nextStart] === ',') {
-                            nextStart++;
-                        }
-                        
-                        // Update buffer to remove processed content
-                        if (this.inResponsesArray) {
-                            this.buffer = this.buffer.substring(nextStart);
-                        }
-                        
-                        // Continue parsing from the new position
-                        content = content.substring(nextStart);
-                        i = 0;
-                        objectStart = -1;
-                        continue;
-                        
-                    } catch (error) {
-                        console.error('Error parsing response object:', error);
-                    }
-                }
-            }
-            
-            i++;
-        }
-
-        return foundCompleteObject;
-    }
-
-    async extractMetadata() {
-        // At this point, buffer should contain something like: ],"has_more_pages":true,"respondents_total":123,"filtered_total":456}
-        // Use regex to extract the metadata values directly from the remaining buffer
-        
-        console.log('DEBUG: extractMetadata called with buffer:', JSON.stringify(this.buffer));
-        
-        const hasMorePagesMatch = this.buffer.match(/"has_more_pages":(true|false)/);
-        const respondentsTotalMatch = this.buffer.match(/"respondents_total":(\d+)/);
-        const filteredTotalMatch = this.buffer.match(/"filtered_total":(\d+)/);
-        
-        console.log('DEBUG: matches:', { hasMorePagesMatch, respondentsTotalMatch, filteredTotalMatch });
-        
-        if (hasMorePagesMatch && respondentsTotalMatch && filteredTotalMatch) {
-            const metadata = {
-                has_more_pages: hasMorePagesMatch[1] === 'true',
-                respondents_total: parseInt(respondentsTotalMatch[1]),
-                filtered_total: parseInt(filteredTotalMatch[1])
-            };
-            
-            console.log('DEBUG: extracted metadata:', metadata);
-            
-            if (this.onMetadata) {
-                this.onMetadata(metadata);
-            }
-        } else {
-            console.log('DEBUG: metadata extraction failed - not all patterns matched');
-        }
-    }
-}
-
-/**
- * Helper function to fetch streaming JSON responses with progressive handling
- * @param {string} url - API endpoint URL
- * @param {Object} options - Fetch options (includes signal for AbortController)
- * @param {Object} callbacks - Event handlers for streaming
- * @returns {Promise} Promise that resolves when stream is complete
- */
-async function fetchStreamingJSON(url, options = {}, callbacks = {}) {
-    const response = await fetch(url, options);
-    
-    if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-    }
-
-    const parser = new StreamingJSONParser();
-    return parser.parseStream(response, callbacks);
-}
-
 class IaiAnimatedNumber extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -4400,30 +4189,30 @@ class IaiResponseDashboard extends IaiLitBase {
                     this.demographicOptions = demographicOptionsData.demographic_options;
                 }
 
-                // Now fetch responses with streaming
-                await fetchStreamingJSON(
+                // Now fetch responses
+                const responsesResponse = await fetch(
                     `/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(),
-                    { signal },
-                    {
-                        onResponse: (response) => {
-                            // Add each response as it arrives
-                            this.responses = this.responses.concat([{
-                                ...response,
-                                visible: true,
-                            }]);
-                        },
-                        onMetadata: (metadata) => {
-                            // Update metadata when it arrives
-                            this.responsesTotal = metadata.respondents_total;
-                            this._responsesFilteredTotal = metadata.filtered_total;
-                            this._hasMorePages = metadata.has_more_pages;
-                        },
-                        onError: (error) => {
-                            console.error('Streaming error:', error);
-                            this._errorOccured = true;
-                        }
-                    }
+                    { signal }
                 );
+                
+                if (!responsesResponse.ok) {
+                    throw new Error(`HTTP error! status: ${responsesResponse.status}`);
+                }
+                
+                const responsesData = await responsesResponse.json();
+                
+                // Add all responses
+                this.responses = this.responses.concat(
+                    responsesData.all_respondents.map(response => ({
+                        ...response,
+                        visible: true,
+                    }))
+                );
+                
+                // Update metadata
+                this.responsesTotal = responsesData.respondents_total;
+                this._responsesFilteredTotal = responsesData.filtered_total;
+                this._hasMorePages = responsesData.has_more_pages;
 
             } catch (err) {
                 if (err.name == "AbortError") {
@@ -8050,12 +7839,6 @@ class QuestionDetailPage extends IaiLitBase {
             ...(this._evidenceRichFilter && {
                 evidenceRich: this._evidenceRichFilter
             }),
-            ...(this._themesSortType && {
-                themesSortType: this._themesSortType
-            }),
-            ...(this._themesSortDirection && {
-                themesSortDirection: this._themesSortDirection
-            }),
             page: this._currentPage,
             page_size: this._PAGE_SIZE.toString(),
         });
@@ -8235,9 +8018,7 @@ class QuestionDetailPage extends IaiLitBase {
             changedProps.has("_searchMode")         ||
             changedProps.has("_evidenceRichFilter") ||
             changedProps.has("_themeFilters")       ||
-            changedProps.has("_demoFilters")        ||
-            changedProps.has("_themesSortType")     ||
-            changedProps.has("_themesSortDirection")
+            changedProps.has("_demoFilters")
         ) {
             this.resetResponses();
             this.fetchResponses();
@@ -8264,7 +8045,28 @@ class QuestionDetailPage extends IaiLitBase {
             <section class="theme-analysis">
                 <iai-theme-analysis
                     .consultationSlug=${this.consultationSlug}
-                    .themes=${this._themes}
+                    .themes=${this._themes.toSorted((a, b) => {
+                        let valA, valB;
+            
+                        if (this._themesSortType === "frequency") {
+                            valA = a.mentions;
+                            valB = b.mentions;
+                        } else {
+                            valA = a.title;
+                            valB = b.title;
+                        }
+
+                        const directionOffset = this._themesSortDirection === "ascending"
+                            ? 1
+                            : -1;
+            
+                        if (valA < valB) {
+                            return -1 * directionOffset;
+                        } else if (valB < valA) {
+                            return 1 * directionOffset;
+                        }
+                        return 0;
+                    })}
                     .demoData=${this._demoData}
                     .demoOptions=${this._demoOptions}
                     .totalResponses=${this._filteredTotal}

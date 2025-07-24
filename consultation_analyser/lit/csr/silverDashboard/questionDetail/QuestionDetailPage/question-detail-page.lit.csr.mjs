@@ -177,12 +177,6 @@ export default class QuestionDetailPage extends IaiLitBase {
             ...(this._evidenceRichFilter && {
                 evidenceRich: this._evidenceRichFilter
             }),
-            ...(this._themesSortType && {
-                themesSortType: this._themesSortType
-            }),
-            ...(this._themesSortDirection && {
-                themesSortDirection: this._themesSortDirection
-            }),
             page: this._currentPage,
             page_size: this._PAGE_SIZE.toString(),
         })
@@ -362,9 +356,7 @@ export default class QuestionDetailPage extends IaiLitBase {
             changedProps.has("_searchMode")         ||
             changedProps.has("_evidenceRichFilter") ||
             changedProps.has("_themeFilters")       ||
-            changedProps.has("_demoFilters")        ||
-            changedProps.has("_themesSortType")     ||
-            changedProps.has("_themesSortDirection")
+            changedProps.has("_demoFilters")
         ) {
             this.resetResponses();
             this.fetchResponses();
@@ -391,7 +383,28 @@ export default class QuestionDetailPage extends IaiLitBase {
             <section class="theme-analysis">
                 <iai-theme-analysis
                     .consultationSlug=${this.consultationSlug}
-                    .themes=${this._themes}
+                    .themes=${this._themes.toSorted((a, b) => {
+                        let valA, valB;
+            
+                        if (this._themesSortType === "frequency") {
+                            valA = a.mentions;
+                            valB = b.mentions;
+                        } else {
+                            valA = a.title;
+                            valB = b.title;
+                        }
+
+                        const directionOffset = this._themesSortDirection === "ascending"
+                            ? 1
+                            : -1;
+            
+                        if (valA < valB) {
+                            return -1 * directionOffset;
+                        } else if (valB < valA) {
+                            return 1 * directionOffset;
+                        }
+                        return 0;
+                    })}
                     .demoData=${this._demoData}
                     .demoOptions=${this._demoOptions}
                     .totalResponses=${this._filteredTotal}

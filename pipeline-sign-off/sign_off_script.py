@@ -11,7 +11,6 @@ import boto3
 import pandas as pd
 from langchain_openai import AzureChatOpenAI
 from themefinder import (
-    sentiment_analysis,
     theme_condensation,
     theme_generation,
     theme_mapping,
@@ -118,17 +117,7 @@ async def generate_themes(question: str, responses_df: pd.DataFrame) -> pd.DataF
     Returns:
         pd.DataFrame: DataFrame containing refined themes
     """
-    sentiment_df, _ = await sentiment_analysis(
-        responses_df,
-        llm,
-        question=question,
-    )
-
-    theme_df, _ = await theme_generation(
-        sentiment_df,
-        llm,
-        question=question,
-    )
+    theme_df, _ = await theme_generation(responses_df, llm, question=question, partition_key=None)
 
     condensed_theme_df, _ = await theme_condensation(
         theme_df,
