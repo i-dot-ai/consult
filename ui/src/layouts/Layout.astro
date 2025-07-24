@@ -1,0 +1,28 @@
+---
+import "../styles/global.css";
+import Header from "../components/Header.svelte";
+import Footer from "../components/Footer.svelte";
+---
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+		<title>Consult</title>
+	</head>
+	<body>
+		<Header />
+			<slot />
+		<Footer />
+	</body>
+</html>
+
+<style>
+	html,
+	body {
+		margin: 0;
+		width: 100%;
+		height: 100%;
+	}
+</style>
