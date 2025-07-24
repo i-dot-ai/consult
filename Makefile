@@ -69,9 +69,8 @@ format-python-code: ## Format Python code including sorting imports
 	poetry run ruff format .
 
 .PHONY: govuk_frontend
-govuk_frontend: ## Pull govuk-frontend
-	npm install
-	poetry run python manage.py collectstatic --noinput
+govuk_frontend: ## Pull govuk-frontend - just install npm packages
+	cd frontend && npm install
 
 .PHONY: build-frontend
 build-frontend: ## Build CSR and SSR Lit components

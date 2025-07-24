@@ -1,6 +1,6 @@
 from django.conf.global_settings import STORAGES
 
-from consultation_analyser.settings.base import *  # noqa
+from .base import *  # noqa
 
 INSTALLED_APPS.append("django_extensions")  # noqa F405
 INSTALLED_APPS.append("pyflame")  # noqa F405
