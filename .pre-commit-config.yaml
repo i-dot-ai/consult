@@ -40,7 +40,7 @@ repos:
     -   id: mypy
         args: ["--ignore-missing-imports"]
         additional_dependencies: [ "types-PyYAML" ]
-        exclude: .*migrations
+        exclude: .*migrations|backend/settings/test\.py|backend/settings/production\.py|backend/jinja2\.py
   - repo: https://github.com/kynan/nbstripout
     rev: 0.7.1
     hooks:

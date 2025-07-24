@@ -3,7 +3,7 @@ line-length = 100
 target-version = 'py312'
 
 [tool.poetry]
-name = "consultation-analyser"
+name = "backend"
 version = "0.1.0"
 description = ""
 authors = ["i.AI <i-dot-ai-enquiries@cabinetoffice.gov.uk>"]
