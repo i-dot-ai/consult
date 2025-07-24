@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install --yes nodejs npm > /dev/null
 
 WORKDIR /src
 
-COPY package.json .
+COPY backend/package.json .
 RUN npm install
 
 
@@ -19,8 +19,8 @@ RUN pip install poetry poetry-plugin-bundle
 
 WORKDIR /src
 
-COPY pyproject.toml .
-COPY poetry.lock .
+COPY backend/pyproject.toml .
+COPY backend/poetry.lock .
 
 # do this so that poetry bundle can run without the project - can't pass --no-root to bundle
 RUN touch README.md
@@ -38,7 +38,7 @@ WORKDIR /usr/src/app
 COPY --from=npm-packages /src/node_modules ./node_modules
 COPY --from=poetry-packages /src/venv ./venv
 
-COPY . .
+COPY backend/ .
 
 ENV DJANGO_SETTINGS_MODULE='settings.production'
 ENV PYTHONPATH "${PYTHONPATH}:/."
