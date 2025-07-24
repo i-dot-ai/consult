@@ -6,7 +6,7 @@ RUN apt-get update && apt-get install --yes nodejs npm > /dev/null
 
 WORKDIR /src
 
-COPY backend/package.json .
+COPY frontend/package.json .
 RUN npm install
 
 
@@ -38,6 +38,7 @@ WORKDIR /usr/src/app
 COPY --from=npm-packages /src/node_modules ./node_modules
 COPY --from=poetry-packages /src/venv ./venv
 
+COPY frontend/ .
 COPY backend/ .
 
 ENV DJANGO_SETTINGS_MODULE='settings.production'
