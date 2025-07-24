@@ -40,7 +40,7 @@ COPY --from=poetry-packages /src/venv ./venv
 
 COPY . .
 
-ENV DJANGO_SETTINGS_MODULE='consultation_analyser.settings.production'
+ENV DJANGO_SETTINGS_MODULE='settings.production'
 ENV PYTHONPATH "${PYTHONPATH}:/."
 
 EXPOSE 8000
