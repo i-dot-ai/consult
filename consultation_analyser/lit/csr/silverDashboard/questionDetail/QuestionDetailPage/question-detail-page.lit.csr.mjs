@@ -3,15 +3,12 @@ import { html, css } from 'lit';
 import IaiLitBase from '../../../../IaiLitBase.mjs';
 import Title from '../../Title/title.lit.csr.mjs';
 import Panel from '../../Panel/panel.lit.csr.mjs';
-import Card from '../../Card/card.lit.csr.mjs';
 import Button from '../../Button/button.lit.csr.mjs';
 import IaiIcon from '../../../IaiIcon/iai-icon.mjs';
-
 
 import ThemeAnalysis from '../../ThemeAnalysis/theme-analysis.lit.csr.mjs';
 import QuestionTitle from '../QuestionTitle/question-title.lit.csr.mjs';
 import TabView from '../../../TabView/tab-view.lit.csr.mjs';
-import CrossSearch from '../../CrossSearch/cross-search.lit.csr.mjs';
 import DemographicsSection from '../DemographicsSection/demographics-section.lit.csr.mjs';
 import Tag from '../../Tag/tag.lit.csr.mjs';
 import ResponseRefinement from '../ResponseRefinement/response-refinement.lit.csr.mjs';
@@ -180,12 +177,6 @@ export default class QuestionDetailPage extends IaiLitBase {
             ...(this._evidenceRichFilter && {
                 evidenceRich: this._evidenceRichFilter
             }),
-            ...(this._themesSortType && {
-                themesSortType: this._themesSortType
-            }),
-            ...(this._themesSortDirection && {
-                themesSortDirection: this._themesSortDirection
-            }),
             page: this._currentPage,
             page_size: this._PAGE_SIZE.toString(),
         })
@@ -226,11 +217,68 @@ export default class QuestionDetailPage extends IaiLitBase {
             this._errorOccured = false;
             this._isLoading = true;
 
-            const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
-
-            let response;
+            // Use multiple modular endpoints instead of single question_responses_json
             try {
-                response = await this.fetchData(url, { signal });
+                const [filteredResponsesData, themeAggregationsData, themeInformationData, demographicOptionsData, demographicAggregationsData] = await Promise.all([
+                    // Get paginated response data
+                    this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(), { signal }).then(r => r.json()),
+                    // Get theme aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    // Get theme information (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-information/`, { signal }).then(r => r.json()) : null,
+                    // Get demographic options (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-options/`, { signal }).then(r => r.json()) : null,
+                    // Get demographic aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null
+                ]);
+
+                this.responses = this.responses.concat(filteredResponsesData.all_respondents);
+
+                this._responsesTotal = filteredResponsesData.respondents_total;
+                this._filteredTotal = filteredResponsesData.filtered_total;
+                this._hasMorePages = filteredResponsesData.has_more_pages;
+
+                // Update theme data only on first page to reflect current filters
+                if (this._currentPage === 1 && themeAggregationsData && themeInformationData) {
+                    // Create theme info lookup map
+                    const themeInfoMap = themeInformationData.themes.reduce((map, theme) => {
+                        map[theme.id] = theme;
+                        return map;
+                    }, {});
+                    
+                    // Convert theme_aggregations format to theme_mappings format
+                    const themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
+                        const themeInfo = themeInfoMap[id] || {};
+                        return {
+                            value: id,
+                            label: themeInfo.name || "",
+                            description: themeInfo.description || "",
+                            count: count.toString()
+                        };
+                    });
+
+                    this._themes = themeMappings.map(mapping => ({
+                        id: mapping.value,
+                        title: mapping.label,
+                        description: mapping.description,
+                        mentions: parseInt(mapping.count),
+                        handleClick: () => {
+                            this._themeFilters = [mapping.value];
+                            this._activeTab = this._TAB_INDECES["Response Analysis"];
+                        }
+                    }));
+
+                    this.themeMappings = themeMappings;
+                }
+
+                // Update demographic data if available
+                if (demographicAggregationsData) {
+                    this._demoData = demographicAggregationsData.demographic_aggregations || {};
+                }
+                if (demographicOptionsData) {
+                    this._demoOptions = demographicOptionsData.demographic_options || {};
+                }
+
             } catch (err) {
                 if (err.name == "AbortError") {
                     console.log("stale request aborted");
@@ -246,39 +294,6 @@ export default class QuestionDetailPage extends IaiLitBase {
                 }
                 this._isLoading = false;
             }
-
-            if (!response.ok) {
-                this._errorOccured = true;
-                throw new Error(`Response status: ${response.status}`);
-            }
-
-            const responsesData = await response.json();
-
-            this.responses = this.responses.concat(responsesData.all_respondents);
-
-            this._responsesTotal = responsesData.respondents_total;
-            this._filteredTotal = responsesData.filtered_total;
-
-            this._themes = responsesData.theme_mappings.map(mapping => ({
-                id: mapping.value,
-                title: mapping.label,
-                description: mapping.description,
-                mentions: parseInt(mapping.count),
-                handleClick: () => {
-                    this._themeFilters = [mapping.value];
-                    this._activeTab = this._TAB_INDECES["Response Analysis"];
-                }
-            }));
-
-            this._demoData = responsesData.demographic_aggregations || {};
-            this._demoOptions = responsesData.demographic_options || {};
-
-            // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
-            if (this._currentPage === 1 && responsesData.theme_mappings) {
-                this.themeMappings = responsesData.theme_mappings;
-            }
-
-            this._hasMorePages = responsesData.has_more_pages;
 
             this._currentPage = this._currentPage + 1;
         }, this._DEBOUNCE_DELAY);
@@ -341,9 +356,7 @@ export default class QuestionDetailPage extends IaiLitBase {
             changedProps.has("_searchMode")         ||
             changedProps.has("_evidenceRichFilter") ||
             changedProps.has("_themeFilters")       ||
-            changedProps.has("_demoFilters")        ||
-            changedProps.has("_themesSortType")     ||
-            changedProps.has("_themesSortDirection")
+            changedProps.has("_demoFilters")
         ) {
             this.resetResponses();
             this.fetchResponses();
@@ -370,7 +383,28 @@ export default class QuestionDetailPage extends IaiLitBase {
             <section class="theme-analysis">
                 <iai-theme-analysis
                     .consultationSlug=${this.consultationSlug}
-                    .themes=${this._themes}
+                    .themes=${this._themes.toSorted((a, b) => {
+                        let valA, valB;
+            
+                        if (this._themesSortType === "frequency") {
+                            valA = a.mentions;
+                            valB = b.mentions;
+                        } else {
+                            valA = a.title;
+                            valB = b.title;
+                        }
+
+                        const directionOffset = this._themesSortDirection === "ascending"
+                            ? 1
+                            : -1;
+            
+                        if (valA < valB) {
+                            return -1 * directionOffset;
+                        } else if (valB < valA) {
+                            return 1 * directionOffset;
+                        }
+                        return 0;
+                    })}
                     .demoData=${this._demoData}
                     .demoOptions=${this._demoOptions}
                     .totalResponses=${this._filteredTotal}

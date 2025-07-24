@@ -4152,11 +4152,68 @@ class IaiResponseDashboard extends IaiLitBase {
             this._errorOccured = false;
             this._isLoading = true;
 
-            const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
-
-            let response;
+            // Use streaming for responses and regular fetch for metadata endpoints
             try {
-                response = await this.fetchData(url, { signal });
+                // Fetch non-streaming endpoints first (only on first page)
+                const [themeAggregationsData, themeInformationData, demographicOptionsData] = await Promise.all([
+                    // Get theme aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    // Get theme information (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-information/`, { signal }).then(r => r.json()) : null,
+                    // Get demographic options (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-options/`, { signal }).then(r => r.json()) : null
+                ]);
+
+                // Update theme mappings only on first page to reflect current filters
+                if (this._currentPage === 1 && themeAggregationsData && themeInformationData) {
+                    // Create theme info lookup map
+                    const themeInfoMap = themeInformationData.themes.reduce((map, theme) => {
+                        map[theme.id] = theme;
+                        return map;
+                    }, {});
+                    
+                    // Convert theme_aggregations format to theme_mappings format
+                    this.themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
+                        const themeInfo = themeInfoMap[id] || {};
+                        return {
+                            value: id,
+                            label: themeInfo.name || "",
+                            description: themeInfo.description || "",
+                            count: count.toString()
+                        };
+                    });
+                }
+
+                // Update demographic options if available
+                if (demographicOptionsData) {
+                    this.demographicOptions = demographicOptionsData.demographic_options;
+                }
+
+                // Now fetch responses
+                const responsesResponse = await fetch(
+                    `/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(),
+                    { signal }
+                );
+                
+                if (!responsesResponse.ok) {
+                    throw new Error(`HTTP error! status: ${responsesResponse.status}`);
+                }
+                
+                const responsesData = await responsesResponse.json();
+                
+                // Add all responses
+                this.responses = this.responses.concat(
+                    responsesData.all_respondents.map(response => ({
+                        ...response,
+                        visible: true,
+                    }))
+                );
+                
+                // Update metadata
+                this.responsesTotal = responsesData.respondents_total;
+                this._responsesFilteredTotal = responsesData.filtered_total;
+                this._hasMorePages = responsesData.has_more_pages;
+
             } catch (err) {
                 if (err.name == "AbortError") {
                     console.log("stale request aborted");
@@ -4172,34 +4229,6 @@ class IaiResponseDashboard extends IaiLitBase {
                 }
                 this._isLoading = false;
             }
-
-            if (!response.ok) {
-                this._errorOccured = true;
-                throw new Error(`Response status: ${response.status}`);
-            }
-
-            const responsesData = await response.json();
-
-            this.responses = this.responses.concat(
-                responsesData.all_respondents.map(response => ({
-                    ...response,
-                    visible: true,
-                }))
-            );
-            this.responsesTotal = responsesData.respondents_total;
-            this._responsesFilteredTotal = responsesData.filtered_total;
-
-            // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
-            if (this._currentPage === 1 && responsesData.theme_mappings) {
-                this.themeMappings = responsesData.theme_mappings;
-            }
-
-            // Update demographic options if available
-            if (responsesData.demographic_options) {
-                this.demographicOptions = responsesData.demographic_options;
-            }
-
-            this._hasMorePages = responsesData.has_more_pages;
 
             this._currentPage = this._currentPage + 1;
         }, this._DEBOUNCE_DELAY);
@@ -5241,255 +5270,6 @@ class SelectInput extends IaiLitBase {
     }
 }
 customElements.define("iai-silver-select-input", SelectInput);
-
-class Card extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        color: { type: String },
-        backgroundColor: { type: String },
-        text: { type: String },
-        number: { type: Number },
-        icon: { type: String },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-silver-card {
-                display: block;    
-                width: max-content;
-            }
-            iai-silver-card p {
-                margin: 0;
-            }
-            iai-silver-card .number {
-                font-size: 1.3em;
-            }
-            iai-silver-card .text {
-                font-size: 0.8em;
-            }
-            iai-silver-card div[slot="content"] {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 1em;
-                padding: 1em;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.color = "white";
-        this.backgroundColor = "black";
-        this.text = "";
-        this.number = 0;
-        this.icon = "";
-
-        this.applyStaticStyles("iai-silver-card", Card.styles);
-    }
-
-    render() {
-        return x`
-            <iai-silver-panel .borderColor=${this.color}>
-                <div slot="content">
-                    <iai-silver-icon-tile
-                        .color=${this.color}
-                        .backgroundColor=${this.backgroundColor}
-                        .name=${this.name}
-                    ></iai-silver-icon-tile>
-                    <div>
-                        <p class="text">${this.text}</p>
-                        <p class="number">${this.number}</p>
-                    </div>
-                </div>
-            </iai-silver-panel>
-        `
-    }
-}
-customElements.define("iai-silver-card", Card);
-
-class Consultation extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        status: { type: String },
-        title: { type: String },
-        description: { type: String },
-        department: { type: String },
-        numResponses: { type: Number },
-        numQuestions: { type: Number },
-        numThemes: { type: Number },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-silver-consultation .topbar {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 1em;
-            }
-            iai-silver-consultation .topbar .tags {
-                display: flex;    
-                align-items: center;
-                gap: 0.5em;
-            }
-
-            iai-silver-consultation .tag {
-                padding: 0.3em 0.5em;
-            }
-
-            iai-silver-consultation .status {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-size: 0.8em;
-                color: white;
-                background: #85d07e;                
-                border-radius: 0.5em;
-            }
-            iai-silver-consultation .department {
-                font-size: 0.8em;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.status = "";
-        this.title = "";
-        this.description = "";
-        this.department = "";
-        this.numResponses = 0;
-        this.numQuestions = 0;
-        this.numThemes = 0;
-
-        this.applyStaticStyles("iai-silver-consultation", Consultation.styles);
-    }
-
-    getIconColor = (status) => {
-        switch (status) {
-            case this.CONSULTATION_STATUSES.open:
-                return "#85d07e";
-            case this.CONSULTATION_STATUSES.analysing:
-                return "#efdb5d";
-            case this.CONSULTATION_STATUSES.completed:
-                return "#0b8478";
-            case this.CONSULTATION_STATUSES.closed:
-                return "var(--iai-silver-color-text)";
-            default:
-                return "#85d07e";
-        }
-    }
-
-    getTagColor = (status) => {
-        switch (status) {
-            case this.CONSULTATION_STATUSES.open:
-                return "#85d07e";
-            case this.CONSULTATION_STATUSES.analysing:
-                return "#efdb5d";
-            case this.CONSULTATION_STATUSES.completed:
-                return "#0b8478";
-            case this.CONSULTATION_STATUSES.closed:
-                return "#f8f9fa";
-            default:
-                return "#85d07e";
-        }
-    }
-
-    render() {
-        return x`
-            <iai-silver-panel>
-                <div slot="content">
-                    <div class="topbar">
-                        <div class="tags">
-                            <iai-icon
-                                name="schedule"
-                                .color=${this.getIconColor(this.status)}
-                            ></iai-icon>
-
-                            <span class="tag status" style=${`background: ${this.getTagColor(this.status)}; color: ${this.status == this.CONSULTATION_STATUSES.closed ? "black" : "white"}`}>
-                                ${this.status}
-                            </span>
-
-                            <span class="tag" style="border-radius: 0.5em; background: white; border: 1px solid var(--iai-silver-color-mid); padding-inline: 0.5em; font-size: 0.8em; display: flex; justify-content: center; align-items: center;">
-                                Transport
-                            </span>
-                        </div>
-                        <div>
-                            <iai-silver-button
-                                .text=${"View analysis"}
-                                .handleClick=${() => console.log("button clicked")}
-                            ></iai-silver-button>
-                        </div>
-                    </div>
-
-                    <iai-silver-title
-                        .text=${this.title}
-                        .variant=${"secondary"}
-                    ></iai-silver-title>
-
-                    <p>
-                        ${this.description}
-                    </p>
-                    
-                    <div style="display: flex; gap: 1em;">
-                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
-                            <iai-icon
-                                name="calendar_month"
-                                color="var(--iai-silver-color-text)"
-                            ></iai-icon>
-                            <small>
-                                4 May 2024 - 8 Aug 2024
-                            </small>
-                        </div>
-
-                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
-                            <iai-icon
-                                name="group"
-                                color="var(--iai-silver-color-text)"
-                            ></iai-icon>
-                            <small>
-                                ${this.numResponses.toLocaleString()} responses
-                            </small>
-                        </div>
-
-                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
-                            <iai-icon
-                                name="description"
-                                color="var(--iai-silver-color-text)"
-                            ></iai-icon>
-                            <small>
-                                ${this.numQuestions} questions
-                            </small>
-                        </div>
-
-                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
-                            <iai-icon
-                                name="monitoring"
-                                color="var(--iai-silver-color-text)"
-                            ></iai-icon>
-                            <small>
-                                ${this.numThemes} themes
-                            </small>
-                        </div>
-                    </div>
-
-                    <small class="department">
-                        ${this.department}
-                    </small>
-                </div>
-            </iai-silver-panel>
-        `
-    }
-}
-customElements.define("iai-silver-consultation", Consultation);
 
 class CrossSearchCard extends IaiLitBase {
     static properties = {
@@ -7032,276 +6812,6 @@ class TabView extends IaiLitBase {
 }
 customElements.define("iai-tab-view", TabView);
 
-class CrossSearch extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        searchValue: { type: String },
-        searchMode: { type: String },
-        searchType: { type: String },
-        searchHighlight: { type: Boolean },
-        _settingsVisible: { type: Boolean },
-
-        results: { type: Array },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-silver-cross-search {
-                color: var(--iai-silver-color-text);
-            }
-            iai-silver-cross-search section {
-                margin-block: 2em;
-            }
-            iai-silver-cross-search .govuk-form-group {
-                margin: 0;
-            }
-
-            iai-silver-cross-search .cards {
-                display: flex;
-                gap: 1em;
-                justify-content: space-between;
-                margin-block: 2em;
-            }
-            iai-silver-cross-search .cards iai-silver-card {
-                width: 23%;
-            }
-
-
-            iai-silver-cross-search div[slot="content"] {
-                padding: 1em;
-            }
-            iai-silver-cross-search .inputs {
-                display: flex;
-                justify-content: space-between;
-                gap: 1em;
-                margin-block: 0.5em;
-                flex-wrap: wrap;
-            }
-            iai-silver-cross-search div[slot="content"] .info {
-                display: flex;
-                gap: 0.5em;
-                margin-top: 0.5em;
-            }
-            iai-silver-cross-search small {
-                display: flex;
-                align-items: center;
-                font-size: 0.8em;
-            }
-            iai-silver-cross-search .inputs .group {
-                display: flex;
-                gap: 1em;
-                flex-wrap: wrap;
-                position: relative;
-            }
-            iai-silver-cross-search .inputs .popup {
-                position: absolute;
-                top: 2em;
-                width: max-content;
-                right: 0;
-                background: white;
-                padding: 1em;
-                margin: 0;
-                z-index: 2;
-                border: 1px solid var(--iai-silver-color-mid);
-                border-radius: 0.5em;
-                opacity: 1;
-                transition: opacity 0.3s ease-in-out;
-                box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
-            }
-            iai-silver-cross-search .inputs iai-icon-button button:hover {
-                background-color: var(--iai-silver-color-light);
-            }
-           
-            iai-silver-cross-search iai-silver-search-box {
-                flex-grow: 1;
-            }
-            
-            iai-silver-cross-search ul.results-list {
-                display: flex;
-                flex-direction: column;
-                gap: 1.5em;
-                list-style: none;
-                padding-left: 0;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.searchValue = "";
-        this.searchMode = "keyword";
-        this.searchType = "all";
-        this.searchHighlight = true;
-        this._settingsVisible = false;
-
-        this.results = [
-            {
-                title: "DGSF air quality consultation",
-                description: "Public consultation on air quality improvement measures and policy recommendations for local communities.",
-                type: "question",
-            },
-            {
-            
-                title: "Future of Transport Strategy",
-                description: "Consultation on sustainable transport infrastructure and policies for the next decade.",
-                type: "response",
-            },
-            {
-                title: "Digital Services Accessibility Standards",
-                description: "Review of accessibility requirements for government digital services and public websites.",
-                type: "question",
-            },
-            {
-                title: "Social Housing Policy Review",
-                description: "Comprehensive review of social housing policies and affordable housing provision.",
-                type: "response",
-            },
-        ];
-
-        this.applyStaticStyles("iai-silver-cross-search", CrossSearch.styles);
-    }
-
-    shouldDisplay = (result) => {
-        if (this.searchValue && (
-            !result.title.toLocaleLowerCase().includes(this.searchValue.toLocaleLowerCase()) &&
-            !result.description.toLocaleLowerCase().includes(this.searchValue.toLocaleLowerCase())
-        )) {
-            return false;
-        }
-
-        if (this.searchType !== "all" && (
-            this.searchType !== result.type
-        )) {
-            return false;
-        }
-        return true;
-    }
-
-    render() {
-        return x`
-            <section>
-                <iai-silver-panel>
-                    <div slot="content">
-                        <div class="inputs">
-                            <div class="group">
-                                <iai-silver-select-input
-                                    .inputId=${"search-mode"}
-                                    .name=${"search-mode"}
-                                    .label=${"Search:"}
-                                    .hideLabel=${false}
-                                    .value=${this.searchMode}
-                                    .options=${[
-                                        { value: "keyword", text: "Keyword" },
-                                        { value: "semantic", text: "Semantic" },
-                                    ]}
-                                    .handleChange=${(e) => this.searchMode = e.target.value}
-                                    .horizontal=${true}
-                                ></iai-silver-select-input>
-
-                                <iai-silver-select-input
-                                    .inputId=${"search-type"}
-                                    .name=${"search-type"}
-                                    .label=${"Show:"}
-                                    .hideLabel=${false}
-                                    .value=${this.searchType}
-                                    .options=${[
-                                        { value: "all", text: "All Types" },
-                                        { value: "question", text: "Questions" },
-                                        { value: "response", text: "Responses" },
-                                    ]}
-                                    .handleChange=${(e) => this.searchType = e.target.value}
-                                    .horizontal=${true}
-                                ></iai-silver-select-input>
-                            </div>
-
-                            <div class="group">
-                                <iai-icon-button
-                                    title="Search settings"
-                                    @click=${() => this._settingsVisible = !this._settingsVisible}
-                                >
-                                    <iai-icon
-                                        slot="icon"
-                                        name="settings"
-                                        .color=${this._settingsVisible ? "var(--iai-silver-color-dark)" : "var(--iai-silver-color-text)"}
-                                        .fill=${1}
-                                    ></iai-icon>
-                                </iai-icon-button>
-
-                                <div class="popup" style=${`opacity: ${this._settingsVisible ? 1 : 0}; pointer-events: ${this._settingsVisible ? "auto" : "none"};`}>
-                                    <iai-silver-title
-                                        .text=${"Search Settings"}
-                                        .variant=${"secondary"}
-                                    ></iai-silver-title>
-                                    <div style="display: flex; align-items: center; gap: 1em;">
-                                        <iai-toggle-input
-                                            style="margin-top: 1em;"
-                                            name=${"highligh-matches"}
-                                            .handleChange=${(e) => {
-                                                console.log(e.target.value);
-                                                this.searchHighlight = !this.searchHighlight;
-                                            }}
-                                            inputId=${"highligh-matches-toggle"}
-                                            label=${"Highlight Matches"}
-                                            value=${this.searchHighlight}
-                                            .checked=${this.searchHighlight}
-                                        ></iai-toggle-input>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <iai-silver-search-box
-                            .inputId=${"default-search"}
-                            .name=${"default-search"}
-                            .label=${"Search"}
-                            .placeholder=${this.searchMode == "keyword"
-                                ? "Search by keywords in questions, themes or descriptions..."
-                                : "Search by concepts like 'pollution sources', 'health effects', 'solutions'..."
-                            }
-                            .value=${this.searchValue}
-                            .handleInput=${(e) => this.searchValue = e.target.value.trim()}
-                        ></iai-silver-search-box>
-
-                        ${this.searchMode === "semantic"
-                            ? x`
-                                <div class="info">
-                                    <iai-icon
-                                        .name=${"wand_stars"}
-                                    ></iai-icon>
-                                    <small>AI understands the meaning of your search</small>
-                                </div>
-                            `
-                            : ""
-                        }
-
-                        <ul class="results-list">
-                            ${this.results
-                                .filter(result => this.shouldDisplay(result))
-                                .map(result => x`
-                                    <li>
-                                        <iai-silver-cross-search-card
-                                            .type=${result.type}
-                                            .title=${result.title}
-                                            .description=${result.description}
-                                            .tags=${["test tag 1", "test tag 2","test tag 1 test tag 1 test tag 1", "test tag 2","test tag 1", "test tag 2","test tag 1", "test tag 2","test tag 1", "test tag 2","test tag 1 test tag 1", "test tag 2","test tag 1", "test tag 2"]}
-                                            .highlightText=${this.searchHighlight ? this.searchValue : ""}
-                                        ></iai-silver-cross-search-card>
-                                    </li>
-                                `)
-                            }
-                        </ul>
-                    </div>
-                </iai-silver-panel>
-            </section>
-        `
-    }
-}
-customElements.define("iai-silver-cross-search", CrossSearch);
-
 class ProgressBar extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -8329,12 +7839,6 @@ class QuestionDetailPage extends IaiLitBase {
             ...(this._evidenceRichFilter && {
                 evidenceRich: this._evidenceRichFilter
             }),
-            ...(this._themesSortType && {
-                themesSortType: this._themesSortType
-            }),
-            ...(this._themesSortDirection && {
-                themesSortDirection: this._themesSortDirection
-            }),
             page: this._currentPage,
             page_size: this._PAGE_SIZE.toString(),
         });
@@ -8375,11 +7879,68 @@ class QuestionDetailPage extends IaiLitBase {
             this._errorOccured = false;
             this._isLoading = true;
 
-            const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
-
-            let response;
+            // Use multiple modular endpoints instead of single question_responses_json
             try {
-                response = await this.fetchData(url, { signal });
+                const [filteredResponsesData, themeAggregationsData, themeInformationData, demographicOptionsData, demographicAggregationsData] = await Promise.all([
+                    // Get paginated response data
+                    this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(), { signal }).then(r => r.json()),
+                    // Get theme aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    // Get theme information (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-information/`, { signal }).then(r => r.json()) : null,
+                    // Get demographic options (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-options/`, { signal }).then(r => r.json()) : null,
+                    // Get demographic aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null
+                ]);
+
+                this.responses = this.responses.concat(filteredResponsesData.all_respondents);
+
+                this._responsesTotal = filteredResponsesData.respondents_total;
+                this._filteredTotal = filteredResponsesData.filtered_total;
+                this._hasMorePages = filteredResponsesData.has_more_pages;
+
+                // Update theme data only on first page to reflect current filters
+                if (this._currentPage === 1 && themeAggregationsData && themeInformationData) {
+                    // Create theme info lookup map
+                    const themeInfoMap = themeInformationData.themes.reduce((map, theme) => {
+                        map[theme.id] = theme;
+                        return map;
+                    }, {});
+                    
+                    // Convert theme_aggregations format to theme_mappings format
+                    const themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
+                        const themeInfo = themeInfoMap[id] || {};
+                        return {
+                            value: id,
+                            label: themeInfo.name || "",
+                            description: themeInfo.description || "",
+                            count: count.toString()
+                        };
+                    });
+
+                    this._themes = themeMappings.map(mapping => ({
+                        id: mapping.value,
+                        title: mapping.label,
+                        description: mapping.description,
+                        mentions: parseInt(mapping.count),
+                        handleClick: () => {
+                            this._themeFilters = [mapping.value];
+                            this._activeTab = this._TAB_INDECES["Response Analysis"];
+                        }
+                    }));
+
+                    this.themeMappings = themeMappings;
+                }
+
+                // Update demographic data if available
+                if (demographicAggregationsData) {
+                    this._demoData = demographicAggregationsData.demographic_aggregations || {};
+                }
+                if (demographicOptionsData) {
+                    this._demoOptions = demographicOptionsData.demographic_options || {};
+                }
+
             } catch (err) {
                 if (err.name == "AbortError") {
                     console.log("stale request aborted");
@@ -8395,39 +7956,6 @@ class QuestionDetailPage extends IaiLitBase {
                 }
                 this._isLoading = false;
             }
-
-            if (!response.ok) {
-                this._errorOccured = true;
-                throw new Error(`Response status: ${response.status}`);
-            }
-
-            const responsesData = await response.json();
-
-            this.responses = this.responses.concat(responsesData.all_respondents);
-
-            this._responsesTotal = responsesData.respondents_total;
-            this._filteredTotal = responsesData.filtered_total;
-
-            this._themes = responsesData.theme_mappings.map(mapping => ({
-                id: mapping.value,
-                title: mapping.label,
-                description: mapping.description,
-                mentions: parseInt(mapping.count),
-                handleClick: () => {
-                    this._themeFilters = [mapping.value];
-                    this._activeTab = this._TAB_INDECES["Response Analysis"];
-                }
-            }));
-
-            this._demoData = responsesData.demographic_aggregations || {};
-            this._demoOptions = responsesData.demographic_options || {};
-
-            // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
-            if (this._currentPage === 1 && responsesData.theme_mappings) {
-                this.themeMappings = responsesData.theme_mappings;
-            }
-
-            this._hasMorePages = responsesData.has_more_pages;
 
             this._currentPage = this._currentPage + 1;
         }, this._DEBOUNCE_DELAY);
@@ -8490,9 +8018,7 @@ class QuestionDetailPage extends IaiLitBase {
             changedProps.has("_searchMode")         ||
             changedProps.has("_evidenceRichFilter") ||
             changedProps.has("_themeFilters")       ||
-            changedProps.has("_demoFilters")        ||
-            changedProps.has("_themesSortType")     ||
-            changedProps.has("_themesSortDirection")
+            changedProps.has("_demoFilters")
         ) {
             this.resetResponses();
             this.fetchResponses();
@@ -8519,7 +8045,28 @@ class QuestionDetailPage extends IaiLitBase {
             <section class="theme-analysis">
                 <iai-theme-analysis
                     .consultationSlug=${this.consultationSlug}
-                    .themes=${this._themes}
+                    .themes=${this._themes.toSorted((a, b) => {
+                        let valA, valB;
+            
+                        if (this._themesSortType === "frequency") {
+                            valA = a.mentions;
+                            valB = b.mentions;
+                        } else {
+                            valA = a.title;
+                            valB = b.title;
+                        }
+
+                        const directionOffset = this._themesSortDirection === "ascending"
+                            ? 1
+                            : -1;
+            
+                        if (valA < valB) {
+                            return -1 * directionOffset;
+                        } else if (valB < valA) {
+                            return 1 * directionOffset;
+                        }
+                        return 0;
+                    })}
                     .demoData=${this._demoData}
                     .demoOptions=${this._demoOptions}
                     .totalResponses=${this._filteredTotal}

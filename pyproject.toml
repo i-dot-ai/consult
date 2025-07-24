@@ -58,6 +58,9 @@ pgvector = "^0.4.1"
 openai = "^1.97.0"
 tiktoken = "^0.9.0"
 django-silk = "^5.4.0"
+djangorestframework = "^3.16.0"
+orjson = "^3.11.0"
+django-db-connection-pool = "^1.2.6"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.12.4"
