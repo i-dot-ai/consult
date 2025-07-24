@@ -20,7 +20,7 @@ jobs:
         run: |
           cd backend
           python -m pip install --upgrade poetry
-          poetry install --with development
+          poetry install --with development --no-root
 
       - name: Run Python code checks
         run: |
