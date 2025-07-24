@@ -61,7 +61,7 @@ class TestDemographicOptionsAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_demographic_options",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
 
@@ -92,7 +92,7 @@ class TestDemographicOptionsAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_demographic_options",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
 
@@ -109,7 +109,7 @@ class TestDemographicOptionsAPIView:
         """Test API endpoint requires proper permissions"""
         url = reverse(
             "api_demographic_options",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
         assert response.status_code == 403
@@ -118,7 +118,7 @@ class TestDemographicOptionsAPIView:
         """Test API endpoint with invalid consultation slug"""
         client.force_login(consultation_user)
         url = reverse(
-            "api_demographic_options", kwargs={"consultation_id": uuid4(), "question_id": uuid4()}
+            "api_demographic_options", kwargs={"consultation_pk": uuid4(), "question_pk": uuid4()}
         )
         response = client.get(url)
         assert response.status_code == 403  # DRF returns 403 for permission denied
@@ -131,7 +131,7 @@ class TestDemographicAggregationsAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_demographic_aggregations",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
 
@@ -164,7 +164,7 @@ class TestDemographicAggregationsAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_demographic_aggregations",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
 
@@ -197,7 +197,7 @@ class TestDemographicAggregationsAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_demographic_aggregations",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
 
         # Filter by individual=true
@@ -219,7 +219,7 @@ class TestDemographicAggregationsAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_demographic_aggregations",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
 
         # Test invalid search mode
@@ -234,7 +234,7 @@ class TestThemeInformationAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_theme_information",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
 
@@ -250,7 +250,7 @@ class TestThemeInformationAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_theme_information",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
 
@@ -277,7 +277,7 @@ class TestThemeAggregationsAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_theme_aggregations",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
 
@@ -307,7 +307,7 @@ class TestThemeAggregationsAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_theme_aggregations",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
 
@@ -341,7 +341,7 @@ class TestThemeAggregationsAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_theme_aggregations",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
 
         # Filter by theme1 AND theme2 - should only return response1
@@ -369,7 +369,7 @@ class TestFilteredResponsesAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_filtered_responses",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
 
@@ -401,7 +401,7 @@ class TestFilteredResponsesAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_filtered_responses",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url + "?page_size=2&page=1")
 
@@ -432,7 +432,7 @@ class TestFilteredResponsesAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_filtered_responses",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
 
         # Filter by individual=true
@@ -481,7 +481,7 @@ class TestFilteredResponsesAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_filtered_responses",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
 
         # Filter by theme AND theme2 - should only return response1
@@ -501,7 +501,7 @@ class TestFilteredResponsesAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_filtered_responses",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
 
         # Test invalid page_size (too large)
@@ -528,7 +528,7 @@ class TestQuestionInformationAPIView:
         client.force_login(consultation_user)
         url = reverse(
             "api_question_information",
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
 
@@ -574,7 +574,7 @@ class TestAPIViewPermissions:
         """Test that unauthenticated users cannot access any API endpoint"""
         url = reverse(
             endpoint_name,
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
         assert response.status_code == 403
@@ -597,7 +597,7 @@ class TestAPIViewPermissions:
         client.force_login(user_without_dashboard_access)
         url = reverse(
             endpoint_name,
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
         assert response.status_code == 403
@@ -620,7 +620,7 @@ class TestAPIViewPermissions:
         client.force_login(user_without_consultation_access)
         url = reverse(
             endpoint_name,
-            kwargs={"consultation_id": question.consultation.id, "question_id": question.id},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": question.id},
         )
         response = client.get(url)
         assert response.status_code == 403
@@ -634,7 +634,7 @@ class TestAPIViewErrorHandling:
         """Test API endpoints with non-existent consultation"""
         client.force_login(consultation_user)
         url = reverse(
-            "api_demographic_options", kwargs={"consultation_id": uuid4(), "question_id": uuid4()}
+            "api_demographic_options", kwargs={"consultation_pk": uuid4(), "question_pk": uuid4()}
         )
         response = client.get(url)
         assert response.status_code == 403  # DRF returns 403 for permission denied
@@ -644,7 +644,7 @@ class TestAPIViewErrorHandling:
         client.force_login(consultation_user)
         url = reverse(
             "api_demographic_options",
-            kwargs={"consultation_id": question.consultation.id, "question_id": uuid4()},
+            kwargs={"consultation_pk": question.consultation.id, "question_pk": uuid4()},
         )
         response = client.get(url)
         assert response.status_code == 404

@@ -95,8 +95,8 @@ def set_up_consultation_api(user):
     response = factories.ResponseFactory(question=question)
     factories.ResponseAnnotationFactory(response=response)
     possible_args = {
-        "consultation_id": consultation.id,
-        "question_id": question.id,
+        "consultation_pk": consultation.id,
+        "question_pk": question.id,
         "response_id": response.id,
     }
     return possible_args
@@ -208,7 +208,7 @@ def test_api_urls_permission_required(client, url_pattern):
     # Logged in with user without dashboard access - 403
     user_no_dashboard = factories.UserFactory()
     # Need to get the consultation from the database to add the user
-    consultation = Consultation.objects.get(id=possible_args["consultation_id"])
+    consultation = Consultation.objects.get(id=possible_args["consultation_pk"])
     consultation.users.add(user_no_dashboard)
     client.force_login(user_no_dashboard)
     check_expected_status_code(client, url, 403)

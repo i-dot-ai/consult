@@ -23,12 +23,12 @@ class CanSeeConsultation(permissions.BasePermission):
         if not request.user.is_authenticated:
             return False
 
-        consultation_id = view.kwargs.get("consultation_id")
-        if not consultation_id:
+        consultation_pk = view.kwargs.get("consultation_pk")
+        if not consultation_pk:
             return False
 
         # Check if user has access to this consultation
         # Using exists() is more efficient than get_object_or_404 for permission checks
         return models.Consultation.objects.filter(
-            id=consultation_id, users__in=[request.user]
+            id=consultation_pk, users__in=[request.user]
         ).exists()

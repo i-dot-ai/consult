@@ -89,7 +89,7 @@ class TestCanSeeConsultation:
 
         # Mock view with consultation_slug in kwargs
         view = Mock()
-        view.kwargs = {"consultation_id": consultation.id}
+        view.kwargs = {"consultation_pk": consultation.id}
 
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is True
@@ -168,7 +168,7 @@ class TestCanSeeConsultation:
         request.user = user1
 
         view = Mock()
-        view.kwargs = {"consultation_id": consultation.id}
+        view.kwargs = {"consultation_pk": consultation.id}
 
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is True
@@ -188,7 +188,7 @@ class TestCanSeeConsultation:
         request.user = user_with_dashboard_access
 
         view = Mock()
-        view.kwargs = {"consultation_id": consultation.id}
+        view.kwargs = {"consultation_pk": consultation.id}
 
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is True
@@ -222,7 +222,7 @@ class TestPermissionsCombined:
         consultation.users.add(user_with_both)
 
         view = Mock()
-        view.kwargs = {"consultation_id": consultation.id}
+        view.kwargs = {"consultation_pk": consultation.id}
 
         dashboard_permission = HasDashboardAccess()
         consultation_permission = CanSeeConsultation()

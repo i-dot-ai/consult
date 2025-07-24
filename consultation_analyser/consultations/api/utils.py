@@ -63,7 +63,7 @@ def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
     return filters
 
 
-def get_consultation_and_question(consultation_id: UUID, question_id: UUID) -> models.Question:
+def get_consultation_and_question(consultation_pk: UUID, question_pk: UUID) -> models.Question:
     # TODO: remove this - its doesnt do anything that get_object_or_404(Question, id) doesnt
     """Get question object with consultation prefetched in a single query.
 
@@ -71,8 +71,8 @@ def get_consultation_and_question(consultation_id: UUID, question_id: UUID) -> m
     by combining the consultation and question lookups with select_related.
 
     Args:
-        consultation_slug: The consultation slug from URL
-        question_id: The question slug from URL
+        consultation_pk: The consultation slug from URL
+        question_pk: The question slug from URL
 
     Returns:
         Question object with consultation prefetched
@@ -82,8 +82,8 @@ def get_consultation_and_question(consultation_id: UUID, question_id: UUID) -> m
     """
     return get_object_or_404(
         models.Question.objects.select_related("consultation"),
-        id=question_id,
-        consultation__id=consultation_id,
+        id=question_pk,
+        consultation__id=consultation_pk,
     )
 
 

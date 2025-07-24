@@ -30,9 +30,9 @@ from .utils import (
 class DemographicOptionsAPIView(APIView):
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
 
-    def get(self, request, consultation_id: UUID, question_id: UUID):
+    def get(self, request, consultation_pk: UUID, question_pk: UUID):
         """Get all demographic options for a consultation"""
-        question = get_consultation_and_question(consultation_id, question_id)
+        question = get_consultation_and_question(consultation_pk, question_pk)
         consultation = question.consultation
 
         # Get all demographic fields and their possible values from normalized storage
@@ -55,10 +55,10 @@ class DemographicOptionsAPIView(APIView):
 class DemographicAggregationsAPIView(APIView):
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
 
-    def get(self, request, consultation_id: UUID, question_id: UUID):
+    def get(self, request, consultation_pk: UUID, question_pk: UUID):
         """Get demographic aggregations for filtered responses"""
         # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_id, question_id)
+        question = get_consultation_and_question(consultation_pk, question_pk)
 
         # Validate query parameters
         filter_serializer = FilterSerializer(data=request.query_params)
@@ -92,10 +92,10 @@ class DemographicAggregationsAPIView(APIView):
 class ThemeInformationAPIView(APIView):
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
 
-    def get(self, request, consultation_id: UUID, question_id: UUID):
+    def get(self, request, consultation_pk: UUID, question_pk: UUID):
         """Get all theme information for a question"""
         # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_id, question_id)
+        question = get_consultation_and_question(consultation_pk, question_pk)
 
         # Get all themes for this question
         themes = models.Theme.objects.filter(question=question).values("id", "name", "description")
@@ -109,11 +109,11 @@ class ThemeInformationAPIView(APIView):
 class ThemeAggregationsAPIView(APIView):
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
 
-    def get(self, request, consultation_id: UUID, question_id: UUID):
+    def get(self, request, consultation_pk: UUID, question_pk: UUID):
         """Get theme aggregations for filtered responses"""
 
         # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_id, question_id)
+        question = get_consultation_and_question(consultation_pk, question_pk)
 
         # Validate query parameters
         filter_serializer = FilterSerializer(data=request.query_params)
@@ -149,11 +149,11 @@ class ThemeAggregationsAPIView(APIView):
 class FilteredResponsesAPIView(APIView):
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
 
-    def get(self, request, consultation_id, question_id: UUID):
+    def get(self, request, consultation_pk, question_pk: UUID):
         """Get paginated filtered responses with orjson optimization"""
 
         # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_id, question_id)
+        question = get_consultation_and_question(consultation_pk, question_pk)
 
         # Validate query parameters
         filter_serializer = FilterSerializer(data=request.query_params)
@@ -191,10 +191,10 @@ class FilteredResponsesAPIView(APIView):
 class QuestionInformationAPIView(APIView):
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
 
-    def get(self, request, consultation_id: UUID, question_id: UUID):
+    def get(self, request, consultation_pk: UUID, question_pk: UUID):
         """Get basic question information"""
         # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_id, question_id)
+        question = get_consultation_and_question(consultation_pk, question_pk)
 
         data = {
             "question_text": question.text,
