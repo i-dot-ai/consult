@@ -43,7 +43,7 @@ jobs:
         run: |
           cd backend
           python -m pip install --upgrade poetry
-          poetry install --with development
+          poetry install --with development --no-root
           cd ..
 
       - name: Set up Node.js
