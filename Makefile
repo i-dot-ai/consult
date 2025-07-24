@@ -57,16 +57,17 @@ test-migrations: ## Run the migration tests separately
 
 .PHONY: check-python-code
 check-python-code: ## Check Python code - linting and mypy
-	poetry run ruff check --select I .
-	poetry run ruff check .
+	cd backend && poetry run ruff check --select I .
+	cd backend && poetry run ruff check .
 	# Re-add mypy here and remove from pre-commit once errors fixed
 	# poetry run mypy . --ignore-missing-imports
 
+
 .PHONY: format-python-code
 format-python-code: ## Format Python code including sorting imports
-	poetry run ruff check --select I . --fix
-	poetry run ruff check . --fix
-	poetry run ruff format .
+	cd backend && poetry run ruff check --select I . --fix
+	cd backend && poetry run ruff check . --fix
+	cd backend && poetry run ruff format .
 
 .PHONY: govuk_frontend
 govuk_frontend: ## Pull govuk-frontend - just install npm packages

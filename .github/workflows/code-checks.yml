@@ -18,6 +18,7 @@ jobs:
 
       - name: Install Poetry
         run: |
+          cd backend
           python -m pip install --upgrade poetry
           poetry install --with development
 
