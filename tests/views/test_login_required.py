@@ -29,12 +29,12 @@ JSON_SCHEMA_URL_NAMES = ["raw_schema"]
 
 # API endpoints return 403 instead of 404 for unauthenticated users
 API_URL_NAMES = [
-    "api_demographic_options",
-    "api_demographic_aggregations",
-    "api_theme_information",
-    "api_theme_aggregations",
-    "api_filtered_responses",
-    "api_question_information",
+    "question-demographics",
+    "question-demographic_aggregations",
+    "question-themes",
+    "question-theme_aggregations",
+    "question-filtered_responses",
+    "question-question_information",
 ]
 
 URL_NAMES_TO_EXCLUDE = (
@@ -114,7 +114,10 @@ def get_url_for_pattern(url_pattern, possible_args):
     for key in possible_args:
         if key in url_str:
             kwargs[key] = possible_args[key]
-    url = reverse(url_pattern.name, kwargs=kwargs)
+    try:
+        url = reverse(url_pattern.name, kwargs=kwargs)
+    except Exception:
+        raise
     return url
 
 
@@ -149,7 +152,7 @@ def test_consultations_urls_login_required(client):
     url_patterns_to_test = [
         url_pattern
         for url_pattern in url_patterns_excluding_magic_link
-        if url_pattern.name not in URL_NAMES_TO_EXCLUDE
+        if getattr(url_pattern, "name", None) not in URL_NAMES_TO_EXCLUDE
     ]
 
     for url_pattern in url_patterns_to_test:
@@ -170,7 +173,11 @@ def test_consultations_urls_login_required(client):
 
 
 # Get API URL patterns
-API_URL_PATTERNS = [url_pattern for url_pattern in urlpatterns if url_pattern.name in API_URL_NAMES]
+API_URL_PATTERNS = [
+    url_pattern
+    for url_pattern in urlpatterns
+    if getattr(url_pattern, "name", None) in API_URL_NAMES
+]
 
 
 @pytest.mark.django_db

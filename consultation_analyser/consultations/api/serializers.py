@@ -1,5 +1,33 @@
 from rest_framework import serializers
 
+from consultation_analyser.consultations.models import Consultation, Question
+
+
+class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
+    questions = serializers.PrimaryKeyRelatedField(
+        source="question_set",
+        many=True,
+        read_only=True,
+    )
+
+    class Meta:
+        model = Consultation
+        fields = ["id", "title", "slug", "questions"]
+
+
+class QuestionSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = Question
+        fields = [
+            "id",
+            "text",
+            "slug",
+            "number",
+            "has_free_text",
+            "has_multiple_choice",
+            "multiple_choice_options",
+        ]
+
 
 class DemographicOptionsSerializer(serializers.Serializer):
     demographic_options = serializers.DictField(
