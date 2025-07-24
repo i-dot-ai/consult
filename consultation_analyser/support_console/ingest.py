@@ -4,6 +4,7 @@ from uuid import UUID
 
 import boto3
 import tiktoken
+from botocore.exceptions import ClientError
 from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django_rq import get_queue
@@ -101,7 +102,7 @@ def validate_consultation_structure(
         "respondents": f"{inputs_path}respondents.jsonl",
     }
 
-    required_outputs = ["themes.json", "mapping.jsonl", "sentiment.jsonl", "detail_detection.jsonl"]
+    required_outputs = ["themes.json", "mapping.jsonl", "detail_detection.jsonl"]
 
     try:
         # Check if respondents file exists
@@ -259,26 +260,35 @@ def import_response_annotations(question: Question, output_folder: str):
     sentiment_file_key = f"{output_folder}sentiment.jsonl"
     evidence_file_key = f"{output_folder}detail_detection.jsonl"
     s3_client = boto3.client("s3")
-    sentiment_response = s3_client.get_object(
-        Bucket=settings.AWS_BUCKET_NAME, Key=sentiment_file_key
-    )
+    
+    # Check if sentiment file exists and process it
     sentiment_dict = {}
-    for line in sentiment_response["Body"].iter_lines():
-        sentiment = json.loads(line.decode("utf-8"))
-        sentiment_value = sentiment.get("sentiment", "UNCLEAR").upper()
+    try:
+        s3_client.head_object(Bucket=settings.AWS_BUCKET_NAME, Key=sentiment_file_key)
+        sentiment_response = s3_client.get_object(
+            Bucket=settings.AWS_BUCKET_NAME, Key=sentiment_file_key
+        )
+        for line in sentiment_response["Body"].iter_lines():
+            sentiment = json.loads(line.decode("utf-8"))
+            sentiment_value = sentiment.get("sentiment", "UNCLEAR").upper()
 
-        if sentiment_value == "AGREEMENT":
-            sentiment_dict[sentiment["themefinder_id"]] = ResponseAnnotation.Sentiment.AGREEMENT
-        elif sentiment_value == "DISAGREEMENT":
-            sentiment_dict[sentiment["themefinder_id"]] = ResponseAnnotation.Sentiment.DISAGREEMENT
+            if sentiment_value == "AGREEMENT":
+                sentiment_dict[sentiment["themefinder_id"]] = ResponseAnnotation.Sentiment.AGREEMENT
+            elif sentiment_value == "DISAGREEMENT":
+                sentiment_dict[sentiment["themefinder_id"]] = ResponseAnnotation.Sentiment.DISAGREEMENT
+            else:
+                sentiment_dict[sentiment["themefinder_id"]] = ResponseAnnotation.Sentiment.UNCLEAR
+    except ClientError as e:
+        if e.response['Error']['Code'] == '404':
+            logger.info(f"Sentiment file not found: {sentiment_file_key}, using default UNCLEAR sentiment")
         else:
-            sentiment_dict[sentiment["themefinder_id"]] = ResponseAnnotation.Sentiment.UNCLEAR
+            raise
 
     evidence_response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=evidence_file_key)
     evidence_dict = {}
     for line in evidence_response["Body"].iter_lines():
         evidence = json.loads(line.decode("utf-8"))
-        evidence_value = evidence.get("evidence_rich", "NO").upper()
+        evidence_value = (evidence.get("evidence_rich") or "NO").upper()
         evidence_dict[evidence["themefinder_id"]] = (
             ResponseAnnotation.EvidenceRich.YES
             if evidence_value == "YES"
@@ -384,6 +394,10 @@ def import_responses(question: Question, responses_file_key: str):
         # i.e the lexical bit
         for response in Response.objects.filter(question=question):
             response.save()
+
+        # Update total_responses count for the question
+        question.update_total_responses()
+        logger.info(f"Updated total_responses count for question {question.number}: {question.total_responses}")
 
     except Exception as e:
         logger.error(

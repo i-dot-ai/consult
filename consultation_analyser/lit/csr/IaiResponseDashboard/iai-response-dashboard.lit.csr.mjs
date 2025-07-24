@@ -276,11 +276,68 @@ export default class IaiResponseDashboard extends IaiLitBase {
             this._errorOccured = false;
             this._isLoading = true;
 
-            const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
-
-            let response;
+            // Use streaming for responses and regular fetch for metadata endpoints
             try {
-                response = await this.fetchData(url, { signal });
+                // Fetch non-streaming endpoints first (only on first page)
+                const [themeAggregationsData, themeInformationData, demographicOptionsData] = await Promise.all([
+                    // Get theme aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    // Get theme information (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-information/`, { signal }).then(r => r.json()) : null,
+                    // Get demographic options (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-options/`, { signal }).then(r => r.json()) : null
+                ]);
+
+                // Update theme mappings only on first page to reflect current filters
+                if (this._currentPage === 1 && themeAggregationsData && themeInformationData) {
+                    // Create theme info lookup map
+                    const themeInfoMap = themeInformationData.themes.reduce((map, theme) => {
+                        map[theme.id] = theme;
+                        return map;
+                    }, {});
+                    
+                    // Convert theme_aggregations format to theme_mappings format
+                    this.themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
+                        const themeInfo = themeInfoMap[id] || {};
+                        return {
+                            value: id,
+                            label: themeInfo.name || "",
+                            description: themeInfo.description || "",
+                            count: count.toString()
+                        };
+                    });
+                }
+
+                // Update demographic options if available
+                if (demographicOptionsData) {
+                    this.demographicOptions = demographicOptionsData.demographic_options;
+                }
+
+                // Now fetch responses
+                const responsesResponse = await fetch(
+                    `/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(),
+                    { signal }
+                );
+                
+                if (!responsesResponse.ok) {
+                    throw new Error(`HTTP error! status: ${responsesResponse.status}`);
+                }
+                
+                const responsesData = await responsesResponse.json();
+                
+                // Add all responses
+                this.responses = this.responses.concat(
+                    responsesData.all_respondents.map(response => ({
+                        ...response,
+                        visible: true,
+                    }))
+                );
+                
+                // Update metadata
+                this.responsesTotal = responsesData.respondents_total;
+                this._responsesFilteredTotal = responsesData.filtered_total;
+                this._hasMorePages = responsesData.has_more_pages;
+
             } catch (err) {
                 if (err.name == "AbortError") {
                     console.log("stale request aborted");
@@ -296,34 +353,6 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 }
                 this._isLoading = false;
             }
-
-            if (!response.ok) {
-                this._errorOccured = true;
-                throw new Error(`Response status: ${response.status}`);
-            }
-
-            const responsesData = await response.json();
-
-            this.responses = this.responses.concat(
-                responsesData.all_respondents.map(response => ({
-                    ...response,
-                    visible: true,
-                }))
-            );
-            this.responsesTotal = responsesData.respondents_total;
-            this._responsesFilteredTotal = responsesData.filtered_total;
-
-            // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
-            if (this._currentPage === 1 && responsesData.theme_mappings) {
-                this.themeMappings = responsesData.theme_mappings;
-            }
-
-            // Update demographic options if available
-            if (responsesData.demographic_options) {
-                this.demographicOptions = responsesData.demographic_options;
-            }
-
-            this._hasMorePages = responsesData.has_more_pages;
 
             this._currentPage = this._currentPage + 1;
         }, this._DEBOUNCE_DELAY);

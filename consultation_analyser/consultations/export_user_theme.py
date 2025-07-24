@@ -99,6 +99,7 @@ def get_theme_mapping_rows(question: Question) -> list[dict]:
         Response.objects.filter(question=question, free_text__isnull=False, free_text__gt="")
         .select_related("respondent", "annotation", "annotation__reviewed_by")
         .prefetch_related("annotation__themes", "annotation__responseannotationtheme_set__theme")
+        .order_by("respondent__themefinder_id")
     )
 
     for response in response_qs:

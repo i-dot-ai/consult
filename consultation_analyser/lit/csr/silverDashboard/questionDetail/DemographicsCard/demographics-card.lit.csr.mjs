@@ -29,7 +29,7 @@ export default class DemographicsCard extends IaiLitBase {
             iai-demographics-card ul {
                 display: flex;
                 flex-direction: column;
-                gap: 1em;
+                gap: 1.5em;
                 margin: 0;
                 padding-left: 0;
                 font-weight: bold;
@@ -58,6 +58,13 @@ export default class DemographicsCard extends IaiLitBase {
             iai-demographics-card li {
                 font-size: 0.9em;
                 color: rgba(0, 0, 0, 0.6);
+            }
+            iai-demographics-card .info {
+                display: flex;
+                gap: 0.5em;
+            }
+            iai-demographics-card .label {
+                font-size: 0.9em;
             }
             iai-demographics-card .counts {
                 display: flex;
@@ -107,18 +114,23 @@ export default class DemographicsCard extends IaiLitBase {
 
                         return html`
                             <li>
-                                <span class="count">
-                                    ${count.toLocaleString()}
-                                </span>
-                                <span class="label">
-                                    ${label}
-                                </span>
-                                <iai-silver-progress-bar
-                                    .value=${percentage}
-                                ></iai-silver-progress-bar>
-                                <span class="percentage">
-                                    ${percentage}%
-                                </span>
+                                <div class="info">
+                                    <span class="label">
+                                        ${label}
+                                    </span>
+                                    <span class="count">
+                                        ${count.toLocaleString()}
+                                    </span>
+                                    <span class="percentage">
+                                        ${percentage}%
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <iai-silver-progress-bar
+                                        .value=${percentage}
+                                    ></iai-silver-progress-bar>
+                                </div>
                             </li>
                         `
                     })}

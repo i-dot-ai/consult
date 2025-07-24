@@ -13,6 +13,8 @@ import IconTile from '../IconTile/icon-tile.lit.csr.mjs';
 import IaiIconButton from '../../questionsArchive/IaiIconButton/iai-icon-button.lit.csr.mjs';
 import IaiCsvDownload from '../../IaiCsvDownload/iai-csv-download.lit.csr.mjs';
 import ThemeFiltersWarning from '../ThemeFiltersWarning/theme-filters-warning.lit.csr.mjs';
+import MultiDropdown from '../inputs/MultiDropdown/multi-dropdown.lit.csr.mjs';
+
 
 export default class ThemeAnalysis extends IaiLitBase {
     static properties = {
@@ -22,6 +24,9 @@ export default class ThemeAnalysis extends IaiLitBase {
         demoData: { type: Object },
         demoOptions: { type: Object },
         totalResponses: { type: Number },
+
+        demoFiltersApplied: { type: Function },
+        themeFiltersApplied: { type: Function },
 
         themeFilters: { type: Array },
         updateThemeFilters: { type: Function },
@@ -108,8 +113,7 @@ export default class ThemeAnalysis extends IaiLitBase {
             iai-theme-analysis .filters {
                 display: flex;
                 flex-wrap: wrap;
-                column-gap: 0.5em;
-                row-gap: 1em;
+                gap: 1em;
                 align-items: center;
             }
             iai-theme-analysis .filters iai-silver-select-input{
@@ -120,7 +124,10 @@ export default class ThemeAnalysis extends IaiLitBase {
             }
             iai-theme-analysis .filters select.govuk-select {
                 font-size: 0.9em;
-                background: #f3f3f5;
+                background: var(--iai-silver-color-light-darker);
+            }
+            iai-theme-analysis iai-multi-dropdown button {
+                background: var(--iai-silver-color-light-darker) !important;
             }
             iai-theme-analysis .export-button button {
                 padding-block: 0.2em;
@@ -154,6 +161,9 @@ export default class ThemeAnalysis extends IaiLitBase {
         this.demoOptions = {};
         this.totalResponses = 0;
 
+        this.demoFiltersApplied = () => {};
+        this.themeFiltersApplied = () => {};
+
         this.themeFilters = [];
         this.updateThemeFilters = () => {};
 
@@ -169,13 +179,6 @@ export default class ThemeAnalysis extends IaiLitBase {
         this.applyStaticStyles("iai-theme-analysis", ThemeAnalysis.styles);
     }
 
-    filtersApplied() {
-        return (
-            this.themeFilters.length > 0 ||
-            Object.values(this.demoFilters).filter(Boolean).length > 0
-        )
-    }
-    
     render() {
         return html`
             <iai-silver-panel>
@@ -234,48 +237,33 @@ export default class ThemeAnalysis extends IaiLitBase {
                             </div>
 
                             <div class="filters">
-                                ${Object.keys(this.demoOptions).length > 0
-                                    ? html`
-                                        <iai-silver-title
-                                            class="demographics-title"
-                                            .text=${"Demographics"}
-                                            .level=${3}
-                                        ></iai-silver-title>`
-                                    : ""}
-
                                 ${Object.keys(this.demoOptions).map(category => {
-                                    const getSlug = (string) => string.toLowerCase().replace(" ", "-");
-
                                     return html`
-                                        <iai-silver-select-input
-                                            .inputId=${getSlug(category)}
-                                            .name=${getSlug(category)}
-                                            .label=${category}
-                                            .hideLabel=${true}
-                                            .value=${this.demoFilters[category] || ""}
-                                            .placeholder=${this.toTitleCase(category)}
+                                        <iai-multi-dropdown
+                                            .title=${category}
+                                            .text=${`${this.demoFilters[category]?.length || 0} filters selected`}
                                             .options=${this.demoOptions[category].map(option => ({
-                                                value: option,
-                                                text: option
+                                                id: option,
+                                                checked: Boolean(this.demoFilters[category]?.includes(option)),
+                                                title: option,
+                                                handleClick: (e) => {
+                                                    this.setDemoFilters(category, option);
+                                                },
                                             }))}
-                                            .handleChange=${(e) => {
-                                                this.setDemoFilters(category, e.target.value);
-                                            }}
-                                            .horizontal=${true}
-                                        ></iai-silver-select-input>
+                                        ></iai-multi-dropdown>
                                     `
                                 })}
-
-                                ${this.filtersApplied() ? html`
-                                    <iai-silver-button
-                                        .text=${"Clear filters"}
-                                        .handleClick=${() => {
-                                            this.updateThemeFilters();
-                                            this.setDemoFilters({});
-                                        }}
-                                    ></iai-silver-button>
-                                ` : ""}
                             </div>
+
+                            ${this.themeFiltersApplied() || this.demoFiltersApplied() ? html`
+                                <iai-silver-button
+                                    .text=${"Clear filters"}
+                                    .handleClick=${() => {
+                                        this.updateThemeFilters();
+                                        this.setDemoFilters();
+                                    }}
+                                ></iai-silver-button>
+                            ` : ""}
                         </div>
 
                         ${this.themeFilters.length > 0 ? html`

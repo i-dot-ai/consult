@@ -54,6 +54,7 @@ INSTALLED_APPS = [
     "django.contrib.humanize",
     "django_rq",
     "simple_history",
+    "rest_framework",
 ]
 
 
@@ -108,10 +109,31 @@ WSGI_APPLICATION = "consultation_analyser.wsgi.application"
 
 AUTH_USER_MODEL = "authentication.User"
 
-# Database
+# Database with Connection Pooling
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
-DATABASES = {"default": env.db()}
+_db_config = env.db()
+DATABASES = {
+    "default": {
+        **_db_config,
+        # Use django-db-connection-pool backend for PostgreSQL
+        "ENGINE": "dj_db_conn_pool.backends.postgresql",
+        # Connection pooling settings
+        "POOL_OPTIONS": {
+            "INITIAL_CONNS": env.int("DB_POOL_INITIAL_CONNS", default=5),
+            "MAX_CONNS": env.int("DB_POOL_MAX_CONNS", default=20),
+            "MIN_CONNS": env.int("DB_POOL_MIN_CONNS", default=5),
+            "MAX_SHARED_CONNS": env.int("DB_POOL_MAX_SHARED_CONNS", default=10),
+            "MAX_OVERFLOW": env.int("DB_POOL_MAX_OVERFLOW", default=10),
+            "RECYCLE": env.int("DB_POOL_RECYCLE", default=3600),  # 1 hour
+            "PRE_PING": env.bool("DB_POOL_PRE_PING", default=True),
+        },
+        # Keep existing options 
+        "OPTIONS": {
+            **_db_config.get("OPTIONS", {}),
+        },
+    }
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/5.0/ref/settings/#auth-password-validators
@@ -277,6 +299,10 @@ if DEBUG:
     MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
     INSTALLED_APPS += ["debug_toolbar"]
     INTERNAL_IPS = ["127.0.0.1"]
+
+if DEBUG and ("pytest" not in sys.modules and "test" not in sys.argv):
+    MIDDLEWARE += ["silk.middleware.SilkyMiddleware"]
+    INSTALLED_APPS += ["silk"]
 
 # changing this will require a database migration
 EMBEDDING_DIMENSION = 1024

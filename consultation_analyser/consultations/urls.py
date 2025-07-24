@@ -1,5 +1,13 @@
 from django.urls import path
 
+from .api.views import (
+    DemographicAggregationsAPIView,
+    DemographicOptionsAPIView,
+    FilteredResponsesAPIView,
+    QuestionInformationAPIView,
+    ThemeAggregationsAPIView,
+    ThemeInformationAPIView,
+)
 from .views import answers, consultations, pages, questions, root, sessions
 
 urlpatterns = [
@@ -17,10 +25,37 @@ urlpatterns = [
         answers.index,
         name="question_responses",
     ),
+    # New modular endpoints
+    # API endpoints
     path(
-        "consultations/<str:consultation_slug>/responses/<str:question_slug>/json/",
-        answers.question_responses_json,
-        name="question_responses_json",
+        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/demographic-options/",
+        DemographicOptionsAPIView.as_view(),
+        name="api_demographic_options",
+    ),
+    path(
+        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/demographic-aggregations/",
+        DemographicAggregationsAPIView.as_view(),
+        name="api_demographic_aggregations",
+    ),
+    path(
+        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/theme-information/",
+        ThemeInformationAPIView.as_view(),
+        name="api_theme_information",
+    ),
+    path(
+        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/theme-aggregations/",
+        ThemeAggregationsAPIView.as_view(),
+        name="api_theme_aggregations",
+    ),
+    path(
+        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/filtered-responses/",
+        FilteredResponsesAPIView.as_view(),
+        name="api_filtered_responses",
+    ),
+    path(
+        "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/question-information/",
+        QuestionInformationAPIView.as_view(),
+        name="api_question_information",
     ),
     path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/show-next/",

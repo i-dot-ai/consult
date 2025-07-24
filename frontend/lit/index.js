@@ -35,6 +35,7 @@ class IaiLitBase extends i$1 {
             --iai-colour-pink-transparent-mid: #F0B5D8;
 
             --iai-silver-color-light: #f8f9fa;
+            --iai-silver-color-light-darker: #f3f3f5;
             --iai-silver-color-mid-light: #e5e5e5;
             --iai-silver-color-mid: rgba(0, 0, 0, 0.3);
             --iai-silver-color-dark: #030213;
@@ -4151,11 +4152,68 @@ class IaiResponseDashboard extends IaiLitBase {
             this._errorOccured = false;
             this._isLoading = true;
 
-            const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
-
-            let response;
+            // Use streaming for responses and regular fetch for metadata endpoints
             try {
-                response = await this.fetchData(url, { signal });
+                // Fetch non-streaming endpoints first (only on first page)
+                const [themeAggregationsData, themeInformationData, demographicOptionsData] = await Promise.all([
+                    // Get theme aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    // Get theme information (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-information/`, { signal }).then(r => r.json()) : null,
+                    // Get demographic options (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-options/`, { signal }).then(r => r.json()) : null
+                ]);
+
+                // Update theme mappings only on first page to reflect current filters
+                if (this._currentPage === 1 && themeAggregationsData && themeInformationData) {
+                    // Create theme info lookup map
+                    const themeInfoMap = themeInformationData.themes.reduce((map, theme) => {
+                        map[theme.id] = theme;
+                        return map;
+                    }, {});
+                    
+                    // Convert theme_aggregations format to theme_mappings format
+                    this.themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
+                        const themeInfo = themeInfoMap[id] || {};
+                        return {
+                            value: id,
+                            label: themeInfo.name || "",
+                            description: themeInfo.description || "",
+                            count: count.toString()
+                        };
+                    });
+                }
+
+                // Update demographic options if available
+                if (demographicOptionsData) {
+                    this.demographicOptions = demographicOptionsData.demographic_options;
+                }
+
+                // Now fetch responses
+                const responsesResponse = await fetch(
+                    `/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(),
+                    { signal }
+                );
+                
+                if (!responsesResponse.ok) {
+                    throw new Error(`HTTP error! status: ${responsesResponse.status}`);
+                }
+                
+                const responsesData = await responsesResponse.json();
+                
+                // Add all responses
+                this.responses = this.responses.concat(
+                    responsesData.all_respondents.map(response => ({
+                        ...response,
+                        visible: true,
+                    }))
+                );
+                
+                // Update metadata
+                this.responsesTotal = responsesData.respondents_total;
+                this._responsesFilteredTotal = responsesData.filtered_total;
+                this._hasMorePages = responsesData.has_more_pages;
+
             } catch (err) {
                 if (err.name == "AbortError") {
                     console.log("stale request aborted");
@@ -4171,34 +4229,6 @@ class IaiResponseDashboard extends IaiLitBase {
                 }
                 this._isLoading = false;
             }
-
-            if (!response.ok) {
-                this._errorOccured = true;
-                throw new Error(`Response status: ${response.status}`);
-            }
-
-            const responsesData = await response.json();
-
-            this.responses = this.responses.concat(
-                responsesData.all_respondents.map(response => ({
-                    ...response,
-                    visible: true,
-                }))
-            );
-            this.responsesTotal = responsesData.respondents_total;
-            this._responsesFilteredTotal = responsesData.filtered_total;
-
-            // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
-            if (this._currentPage === 1 && responsesData.theme_mappings) {
-                this.themeMappings = responsesData.theme_mappings;
-            }
-
-            // Update demographic options if available
-            if (responsesData.demographic_options) {
-                this.demographicOptions = responsesData.demographic_options;
-            }
-
-            this._hasMorePages = responsesData.has_more_pages;
 
             this._currentPage = this._currentPage + 1;
         }, this._DEBOUNCE_DELAY);
@@ -5241,255 +5271,6 @@ class SelectInput extends IaiLitBase {
 }
 customElements.define("iai-silver-select-input", SelectInput);
 
-class Card extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        color: { type: String },
-        backgroundColor: { type: String },
-        text: { type: String },
-        number: { type: Number },
-        icon: { type: String },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-silver-card {
-                display: block;    
-                width: max-content;
-            }
-            iai-silver-card p {
-                margin: 0;
-            }
-            iai-silver-card .number {
-                font-size: 1.3em;
-            }
-            iai-silver-card .text {
-                font-size: 0.8em;
-            }
-            iai-silver-card div[slot="content"] {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 1em;
-                padding: 1em;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.color = "white";
-        this.backgroundColor = "black";
-        this.text = "";
-        this.number = 0;
-        this.icon = "";
-
-        this.applyStaticStyles("iai-silver-card", Card.styles);
-    }
-
-    render() {
-        return x`
-            <iai-silver-panel .borderColor=${this.color}>
-                <div slot="content">
-                    <iai-silver-icon-tile
-                        .color=${this.color}
-                        .backgroundColor=${this.backgroundColor}
-                        .name=${this.name}
-                    ></iai-silver-icon-tile>
-                    <div>
-                        <p class="text">${this.text}</p>
-                        <p class="number">${this.number}</p>
-                    </div>
-                </div>
-            </iai-silver-panel>
-        `
-    }
-}
-customElements.define("iai-silver-card", Card);
-
-class Consultation extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        status: { type: String },
-        title: { type: String },
-        description: { type: String },
-        department: { type: String },
-        numResponses: { type: Number },
-        numQuestions: { type: Number },
-        numThemes: { type: Number },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-silver-consultation .topbar {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 1em;
-            }
-            iai-silver-consultation .topbar .tags {
-                display: flex;    
-                align-items: center;
-                gap: 0.5em;
-            }
-
-            iai-silver-consultation .tag {
-                padding: 0.3em 0.5em;
-            }
-
-            iai-silver-consultation .status {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-size: 0.8em;
-                color: white;
-                background: #85d07e;                
-                border-radius: 0.5em;
-            }
-            iai-silver-consultation .department {
-                font-size: 0.8em;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.status = "";
-        this.title = "";
-        this.description = "";
-        this.department = "";
-        this.numResponses = 0;
-        this.numQuestions = 0;
-        this.numThemes = 0;
-
-        this.applyStaticStyles("iai-silver-consultation", Consultation.styles);
-    }
-
-    getIconColor = (status) => {
-        switch (status) {
-            case this.CONSULTATION_STATUSES.open:
-                return "#85d07e";
-            case this.CONSULTATION_STATUSES.analysing:
-                return "#efdb5d";
-            case this.CONSULTATION_STATUSES.completed:
-                return "#0b8478";
-            case this.CONSULTATION_STATUSES.closed:
-                return "var(--iai-silver-color-text)";
-            default:
-                return "#85d07e";
-        }
-    }
-
-    getTagColor = (status) => {
-        switch (status) {
-            case this.CONSULTATION_STATUSES.open:
-                return "#85d07e";
-            case this.CONSULTATION_STATUSES.analysing:
-                return "#efdb5d";
-            case this.CONSULTATION_STATUSES.completed:
-                return "#0b8478";
-            case this.CONSULTATION_STATUSES.closed:
-                return "#f8f9fa";
-            default:
-                return "#85d07e";
-        }
-    }
-
-    render() {
-        return x`
-            <iai-silver-panel>
-                <div slot="content">
-                    <div class="topbar">
-                        <div class="tags">
-                            <iai-icon
-                                name="schedule"
-                                .color=${this.getIconColor(this.status)}
-                            ></iai-icon>
-
-                            <span class="tag status" style=${`background: ${this.getTagColor(this.status)}; color: ${this.status == this.CONSULTATION_STATUSES.closed ? "black" : "white"}`}>
-                                ${this.status}
-                            </span>
-
-                            <span class="tag" style="border-radius: 0.5em; background: white; border: 1px solid var(--iai-silver-color-mid); padding-inline: 0.5em; font-size: 0.8em; display: flex; justify-content: center; align-items: center;">
-                                Transport
-                            </span>
-                        </div>
-                        <div>
-                            <iai-silver-button
-                                .text=${"View analysis"}
-                                .handleClick=${() => console.log("button clicked")}
-                            ></iai-silver-button>
-                        </div>
-                    </div>
-
-                    <iai-silver-title
-                        .text=${this.title}
-                        .variant=${"secondary"}
-                    ></iai-silver-title>
-
-                    <p>
-                        ${this.description}
-                    </p>
-                    
-                    <div style="display: flex; gap: 1em;">
-                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
-                            <iai-icon
-                                name="calendar_month"
-                                color="var(--iai-silver-color-text)"
-                            ></iai-icon>
-                            <small>
-                                4 May 2024 - 8 Aug 2024
-                            </small>
-                        </div>
-
-                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
-                            <iai-icon
-                                name="group"
-                                color="var(--iai-silver-color-text)"
-                            ></iai-icon>
-                            <small>
-                                ${this.numResponses.toLocaleString()} responses
-                            </small>
-                        </div>
-
-                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
-                            <iai-icon
-                                name="description"
-                                color="var(--iai-silver-color-text)"
-                            ></iai-icon>
-                            <small>
-                                ${this.numQuestions} questions
-                            </small>
-                        </div>
-
-                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
-                            <iai-icon
-                                name="monitoring"
-                                color="var(--iai-silver-color-text)"
-                            ></iai-icon>
-                            <small>
-                                ${this.numThemes} themes
-                            </small>
-                        </div>
-                    </div>
-
-                    <small class="department">
-                        ${this.department}
-                    </small>
-                </div>
-            </iai-silver-panel>
-        `
-    }
-}
-customElements.define("iai-silver-consultation", Consultation);
-
 class CrossSearchCard extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -6278,6 +6059,231 @@ class ThemeFiltersWarning extends IaiLitBase {
 }
 customElements.define("iai-theme-filters-warning", ThemeFiltersWarning);
 
+class MultiDropdown extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        title: { type: String },
+        text: { type: String },
+        options: { type: Array }, //  { id, checked, title, handleClick }
+
+        _panelVisible: { type: Boolean },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-multi-dropdown label,
+            iai-multi-dropdown select,
+            iai-multi-dropdown input {
+                //font-size: 0.9em !important;
+            }
+            iai-multi-dropdown label {
+                cursor: pointer;
+                word-break: break-word;
+                line-height: 1.5em;
+            }
+            iai-multi-dropdown .filters {
+                display: flex;
+                gap: 1em;
+                width: 100%;
+                flex-direction: column;
+            }
+            iai-multi-dropdown input[type="checkbox"] {
+                width: auto;
+                filter: grayscale(0.5) hue-rotate(75deg);
+                cursor: pointer;
+            }
+
+            iai-multi-dropdown ul {
+                list-style: none;
+                padding-left: 0;
+                margin: 0;
+            }
+            iai-multi-dropdown ul li {
+                display: flex;
+                gap: 0.5em;
+                justify-content: flex-start;
+                margin-bottom: 0.5em;
+            }
+            
+            iai-multi-dropdown .popup-button .popup-panel {
+                position: absolute;
+                top: 2em;
+                width: max-content;
+                max-width: 80vw;
+                max-height: 20em;
+                overflow: auto;
+                right: 0;
+                background: white;
+                padding: 1em;
+                margin: 0;
+                z-index: 2;
+                border: 1px solid var(--iai-silver-color-mid);
+                border-radius: 0.5em;
+                opacity: 1;
+                transition: opacity 0.3s ease-in-out;
+                box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
+            }
+            iai-multi-dropdown .popup-button {
+                position: relative;
+            }
+            iai-multi-dropdown .popup-button .popup-panel.left-placement {
+                right: unset;
+                left: 0;
+            }
+            iai-multi-dropdown .popup-panel .content {
+                display: flex;
+                align-items: center;
+                gap: 1em;
+            }
+            iai-multi-dropdown .popup-button .icon-container {
+                margin-bottom: 0.5em;
+            }
+            iai-multi-dropdown .popup-button iai-silver-title {
+                color: var(--iai-silver-color-dark);
+                cursor: pointer;
+            }
+            iai-multi-dropdown .popup-button .popup-button__body {
+                position: relative;
+            }
+            iai-multi-dropdown .popup-button .popup-button__body iai-silver-button button {
+                width: 100%;    
+                line-height: 2em;
+                background: var(--iai-silver-color-light);
+                border: none;
+                border-radius: 0.3em;
+            }
+            iai-multi-dropdown .popup-button .popup-button__text {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 0.5em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.title = "";
+        this.text = "";
+        this.options = [];
+
+        this._panelVisible = false;
+        this._leftPlacement = false;
+        
+        this.applyStaticStyles("iai-multi-dropdown", MultiDropdown.styles);
+    }
+
+    handleOutsideClick = (e) => {
+        if (!this.contains(e.target)) {
+            this._panelVisible = false;
+        }
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.setupPanelListeners(window.addEventListener);    }
+
+    disconnectedCallback() {
+        this.setupPanelListeners(window.removeEventListener);
+        super.disconnectedCallback();
+    }
+
+    setupPanelListeners = (func) => {
+        ["click", "touchstart"].forEach(eventName => {
+            func(eventName, this.handleOutsideClick);
+        });
+    }
+
+    isLeftPlaced = () => {
+        const buttonEl = this.querySelector("iai-silver-button");
+        if (!buttonEl) {
+            return;
+        }
+
+        const rect = buttonEl.getBoundingClientRect();
+
+        const elementCenter = rect.left + rect.width / 2;
+        const screenCenter = window.innerWidth / 2;
+
+        return elementCenter < screenCenter;
+    }
+
+    willUpdate(changedProps) {
+        if (changedProps.has("_panelVisible")) {
+            this._leftPlacement = this.isLeftPlaced();
+        }
+    }
+
+    render() {
+        return x`
+            <div class="popup-button">
+                <iai-silver-title
+                    .level=${3}
+                    .text=${this.title}
+                    @click=${() => this._panelVisible = !this._panelVisible}
+                ></iai-silver-title>
+
+                <div class="popup-button__body">
+                    <iai-silver-button
+                        .text=${x`
+                            <div class="popup-button__text">
+                                <span>
+                                    ${this.text}
+                                </span>
+                                <iai-icon
+                                    .name=${"keyboard_arrow_down"}
+                                ></iai-icon>
+                            </div>
+                        `}
+                        .handleClick=${() => this._panelVisible = !this._panelVisible}
+                    ></iai-silver-button>
+
+                    ${this.options.length > 0 ? x`
+                        <div
+                            class=${"popup-panel" + (this._leftPlacement ? " left-placement" : "")}
+                            style=${`
+                                opacity: ${this._panelVisible ? 1 : 0};
+                                pointer-events: ${this._panelVisible ? "auto" : "none"};
+                            `}
+                        >
+                            <div class="content">
+                                <ul>
+                                    ${this.options.map(option => {
+                                        const optionId = `${this.contentId}-${option.id.replace(" ", "-")}`;
+
+                                        return x`
+                                            <li>
+                                                <input
+                                                    type="checkbox"
+                                                    class="theme-checkbox"
+                                                    id=${optionId}
+                                                    name=${`multi-dropdown-${this.contentId}`}
+                                                    .value=${option.id}
+                                                    .checked=${option.checked}
+                                                    @click=${option.handleClick}
+                                                />
+                                                <label for=${optionId}>
+                                                    ${option.title}
+                                                </label>
+                                            </li>
+                                        `}
+                                    )}
+                                </ul>
+                            </div>
+                        </div>
+                    ` : ""}
+                </div>
+                
+            </div>
+        `
+    }
+}
+customElements.define("iai-multi-dropdown", MultiDropdown);
+
 class ThemeAnalysis extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -6286,6 +6292,9 @@ class ThemeAnalysis extends IaiLitBase {
         demoData: { type: Object },
         demoOptions: { type: Object },
         totalResponses: { type: Number },
+
+        demoFiltersApplied: { type: Function },
+        themeFiltersApplied: { type: Function },
 
         themeFilters: { type: Array },
         updateThemeFilters: { type: Function },
@@ -6372,8 +6381,7 @@ class ThemeAnalysis extends IaiLitBase {
             iai-theme-analysis .filters {
                 display: flex;
                 flex-wrap: wrap;
-                column-gap: 0.5em;
-                row-gap: 1em;
+                gap: 1em;
                 align-items: center;
             }
             iai-theme-analysis .filters iai-silver-select-input{
@@ -6384,7 +6392,10 @@ class ThemeAnalysis extends IaiLitBase {
             }
             iai-theme-analysis .filters select.govuk-select {
                 font-size: 0.9em;
-                background: #f3f3f5;
+                background: var(--iai-silver-color-light-darker);
+            }
+            iai-theme-analysis iai-multi-dropdown button {
+                background: var(--iai-silver-color-light-darker) !important;
             }
             iai-theme-analysis .export-button button {
                 padding-block: 0.2em;
@@ -6418,6 +6429,9 @@ class ThemeAnalysis extends IaiLitBase {
         this.demoOptions = {};
         this.totalResponses = 0;
 
+        this.demoFiltersApplied = () => {};
+        this.themeFiltersApplied = () => {};
+
         this.themeFilters = [];
         this.updateThemeFilters = () => {};
 
@@ -6433,13 +6447,6 @@ class ThemeAnalysis extends IaiLitBase {
         this.applyStaticStyles("iai-theme-analysis", ThemeAnalysis.styles);
     }
 
-    filtersApplied() {
-        return (
-            this.themeFilters.length > 0 ||
-            Object.values(this.demoFilters).filter(Boolean).length > 0
-        )
-    }
-    
     render() {
         return x`
             <iai-silver-panel>
@@ -6498,48 +6505,33 @@ class ThemeAnalysis extends IaiLitBase {
                             </div>
 
                             <div class="filters">
-                                ${Object.keys(this.demoOptions).length > 0
-                                    ? x`
-                                        <iai-silver-title
-                                            class="demographics-title"
-                                            .text=${"Demographics"}
-                                            .level=${3}
-                                        ></iai-silver-title>`
-                                    : ""}
-
                                 ${Object.keys(this.demoOptions).map(category => {
-                                    const getSlug = (string) => string.toLowerCase().replace(" ", "-");
-
                                     return x`
-                                        <iai-silver-select-input
-                                            .inputId=${getSlug(category)}
-                                            .name=${getSlug(category)}
-                                            .label=${category}
-                                            .hideLabel=${true}
-                                            .value=${this.demoFilters[category] || ""}
-                                            .placeholder=${this.toTitleCase(category)}
+                                        <iai-multi-dropdown
+                                            .title=${category}
+                                            .text=${`${this.demoFilters[category]?.length || 0} filters selected`}
                                             .options=${this.demoOptions[category].map(option => ({
-                                                value: option,
-                                                text: option
+                                                id: option,
+                                                checked: Boolean(this.demoFilters[category]?.includes(option)),
+                                                title: option,
+                                                handleClick: (e) => {
+                                                    this.setDemoFilters(category, option);
+                                                },
                                             }))}
-                                            .handleChange=${(e) => {
-                                                this.setDemoFilters(category, e.target.value);
-                                            }}
-                                            .horizontal=${true}
-                                        ></iai-silver-select-input>
+                                        ></iai-multi-dropdown>
                                     `
                                 })}
-
-                                ${this.filtersApplied() ? x`
-                                    <iai-silver-button
-                                        .text=${"Clear filters"}
-                                        .handleClick=${() => {
-                                            this.updateThemeFilters();
-                                            this.setDemoFilters({});
-                                        }}
-                                    ></iai-silver-button>
-                                ` : ""}
                             </div>
+
+                            ${this.themeFiltersApplied() || this.demoFiltersApplied() ? x`
+                                <iai-silver-button
+                                    .text=${"Clear filters"}
+                                    .handleClick=${() => {
+                                        this.updateThemeFilters();
+                                        this.setDemoFilters();
+                                    }}
+                                ></iai-silver-button>
+                            ` : ""}
                         </div>
 
                         ${this.themeFilters.length > 0 ? x`
@@ -6820,276 +6812,6 @@ class TabView extends IaiLitBase {
 }
 customElements.define("iai-tab-view", TabView);
 
-class CrossSearch extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        searchValue: { type: String },
-        searchMode: { type: String },
-        searchType: { type: String },
-        searchHighlight: { type: Boolean },
-        _settingsVisible: { type: Boolean },
-
-        results: { type: Array },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-silver-cross-search {
-                color: var(--iai-silver-color-text);
-            }
-            iai-silver-cross-search section {
-                margin-block: 2em;
-            }
-            iai-silver-cross-search .govuk-form-group {
-                margin: 0;
-            }
-
-            iai-silver-cross-search .cards {
-                display: flex;
-                gap: 1em;
-                justify-content: space-between;
-                margin-block: 2em;
-            }
-            iai-silver-cross-search .cards iai-silver-card {
-                width: 23%;
-            }
-
-
-            iai-silver-cross-search div[slot="content"] {
-                padding: 1em;
-            }
-            iai-silver-cross-search .inputs {
-                display: flex;
-                justify-content: space-between;
-                gap: 1em;
-                margin-block: 0.5em;
-                flex-wrap: wrap;
-            }
-            iai-silver-cross-search div[slot="content"] .info {
-                display: flex;
-                gap: 0.5em;
-                margin-top: 0.5em;
-            }
-            iai-silver-cross-search small {
-                display: flex;
-                align-items: center;
-                font-size: 0.8em;
-            }
-            iai-silver-cross-search .inputs .group {
-                display: flex;
-                gap: 1em;
-                flex-wrap: wrap;
-                position: relative;
-            }
-            iai-silver-cross-search .inputs .popup {
-                position: absolute;
-                top: 2em;
-                width: max-content;
-                right: 0;
-                background: white;
-                padding: 1em;
-                margin: 0;
-                z-index: 2;
-                border: 1px solid var(--iai-silver-color-mid);
-                border-radius: 0.5em;
-                opacity: 1;
-                transition: opacity 0.3s ease-in-out;
-                box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
-            }
-            iai-silver-cross-search .inputs iai-icon-button button:hover {
-                background-color: var(--iai-silver-color-light);
-            }
-           
-            iai-silver-cross-search iai-silver-search-box {
-                flex-grow: 1;
-            }
-            
-            iai-silver-cross-search ul.results-list {
-                display: flex;
-                flex-direction: column;
-                gap: 1.5em;
-                list-style: none;
-                padding-left: 0;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.searchValue = "";
-        this.searchMode = "keyword";
-        this.searchType = "all";
-        this.searchHighlight = true;
-        this._settingsVisible = false;
-
-        this.results = [
-            {
-                title: "DGSF air quality consultation",
-                description: "Public consultation on air quality improvement measures and policy recommendations for local communities.",
-                type: "question",
-            },
-            {
-            
-                title: "Future of Transport Strategy",
-                description: "Consultation on sustainable transport infrastructure and policies for the next decade.",
-                type: "response",
-            },
-            {
-                title: "Digital Services Accessibility Standards",
-                description: "Review of accessibility requirements for government digital services and public websites.",
-                type: "question",
-            },
-            {
-                title: "Social Housing Policy Review",
-                description: "Comprehensive review of social housing policies and affordable housing provision.",
-                type: "response",
-            },
-        ];
-
-        this.applyStaticStyles("iai-silver-cross-search", CrossSearch.styles);
-    }
-
-    shouldDisplay = (result) => {
-        if (this.searchValue && (
-            !result.title.toLocaleLowerCase().includes(this.searchValue.toLocaleLowerCase()) &&
-            !result.description.toLocaleLowerCase().includes(this.searchValue.toLocaleLowerCase())
-        )) {
-            return false;
-        }
-
-        if (this.searchType !== "all" && (
-            this.searchType !== result.type
-        )) {
-            return false;
-        }
-        return true;
-    }
-
-    render() {
-        return x`
-            <section>
-                <iai-silver-panel>
-                    <div slot="content">
-                        <div class="inputs">
-                            <div class="group">
-                                <iai-silver-select-input
-                                    .inputId=${"search-mode"}
-                                    .name=${"search-mode"}
-                                    .label=${"Search:"}
-                                    .hideLabel=${false}
-                                    .value=${this.searchMode}
-                                    .options=${[
-                                        { value: "keyword", text: "Keyword" },
-                                        { value: "semantic", text: "Semantic" },
-                                    ]}
-                                    .handleChange=${(e) => this.searchMode = e.target.value}
-                                    .horizontal=${true}
-                                ></iai-silver-select-input>
-
-                                <iai-silver-select-input
-                                    .inputId=${"search-type"}
-                                    .name=${"search-type"}
-                                    .label=${"Show:"}
-                                    .hideLabel=${false}
-                                    .value=${this.searchType}
-                                    .options=${[
-                                        { value: "all", text: "All Types" },
-                                        { value: "question", text: "Questions" },
-                                        { value: "response", text: "Responses" },
-                                    ]}
-                                    .handleChange=${(e) => this.searchType = e.target.value}
-                                    .horizontal=${true}
-                                ></iai-silver-select-input>
-                            </div>
-
-                            <div class="group">
-                                <iai-icon-button
-                                    title="Search settings"
-                                    @click=${() => this._settingsVisible = !this._settingsVisible}
-                                >
-                                    <iai-icon
-                                        slot="icon"
-                                        name="settings"
-                                        .color=${this._settingsVisible ? "var(--iai-silver-color-dark)" : "var(--iai-silver-color-text)"}
-                                        .fill=${1}
-                                    ></iai-icon>
-                                </iai-icon-button>
-
-                                <div class="popup" style=${`opacity: ${this._settingsVisible ? 1 : 0}; pointer-events: ${this._settingsVisible ? "auto" : "none"};`}>
-                                    <iai-silver-title
-                                        .text=${"Search Settings"}
-                                        .variant=${"secondary"}
-                                    ></iai-silver-title>
-                                    <div style="display: flex; align-items: center; gap: 1em;">
-                                        <iai-toggle-input
-                                            style="margin-top: 1em;"
-                                            name=${"highligh-matches"}
-                                            .handleChange=${(e) => {
-                                                console.log(e.target.value);
-                                                this.searchHighlight = !this.searchHighlight;
-                                            }}
-                                            inputId=${"highligh-matches-toggle"}
-                                            label=${"Highlight Matches"}
-                                            value=${this.searchHighlight}
-                                            .checked=${this.searchHighlight}
-                                        ></iai-toggle-input>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <iai-silver-search-box
-                            .inputId=${"default-search"}
-                            .name=${"default-search"}
-                            .label=${"Search"}
-                            .placeholder=${this.searchMode == "keyword"
-                                ? "Search by keywords in questions, themes or descriptions..."
-                                : "Search by concepts like 'pollution sources', 'health effects', 'solutions'..."
-                            }
-                            .value=${this.searchValue}
-                            .handleInput=${(e) => this.searchValue = e.target.value.trim()}
-                        ></iai-silver-search-box>
-
-                        ${this.searchMode === "semantic"
-                            ? x`
-                                <div class="info">
-                                    <iai-icon
-                                        .name=${"wand_stars"}
-                                    ></iai-icon>
-                                    <small>AI understands the meaning of your search</small>
-                                </div>
-                            `
-                            : ""
-                        }
-
-                        <ul class="results-list">
-                            ${this.results
-                                .filter(result => this.shouldDisplay(result))
-                                .map(result => x`
-                                    <li>
-                                        <iai-silver-cross-search-card
-                                            .type=${result.type}
-                                            .title=${result.title}
-                                            .description=${result.description}
-                                            .tags=${["test tag 1", "test tag 2","test tag 1 test tag 1 test tag 1", "test tag 2","test tag 1", "test tag 2","test tag 1", "test tag 2","test tag 1", "test tag 2","test tag 1 test tag 1", "test tag 2","test tag 1", "test tag 2"]}
-                                            .highlightText=${this.searchHighlight ? this.searchValue : ""}
-                                        ></iai-silver-cross-search-card>
-                                    </li>
-                                `)
-                            }
-                        </ul>
-                    </div>
-                </iai-silver-panel>
-            </section>
-        `
-    }
-}
-customElements.define("iai-silver-cross-search", CrossSearch);
-
 class ProgressBar extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -7170,7 +6892,7 @@ class DemographicsCard extends IaiLitBase {
             iai-demographics-card ul {
                 display: flex;
                 flex-direction: column;
-                gap: 1em;
+                gap: 1.5em;
                 margin: 0;
                 padding-left: 0;
                 font-weight: bold;
@@ -7199,6 +6921,13 @@ class DemographicsCard extends IaiLitBase {
             iai-demographics-card li {
                 font-size: 0.9em;
                 color: rgba(0, 0, 0, 0.6);
+            }
+            iai-demographics-card .info {
+                display: flex;
+                gap: 0.5em;
+            }
+            iai-demographics-card .label {
+                font-size: 0.9em;
             }
             iai-demographics-card .counts {
                 display: flex;
@@ -7248,18 +6977,23 @@ class DemographicsCard extends IaiLitBase {
 
                         return x`
                             <li>
-                                <span class="count">
-                                    ${count.toLocaleString()}
-                                </span>
-                                <span class="label">
-                                    ${label}
-                                </span>
-                                <iai-silver-progress-bar
-                                    .value=${percentage}
-                                ></iai-silver-progress-bar>
-                                <span class="percentage">
-                                    ${percentage}%
-                                </span>
+                                <div class="info">
+                                    <span class="label">
+                                        ${label}
+                                    </span>
+                                    <span class="count">
+                                        ${count.toLocaleString()}
+                                    </span>
+                                    <span class="percentage">
+                                        ${percentage}%
+                                    </span>
+                                </div>
+
+                                <div>
+                                    <iai-silver-progress-bar
+                                        .value=${percentage}
+                                    ></iai-silver-progress-bar>
+                                </div>
                             </li>
                         `
                     })}
@@ -7277,6 +7011,9 @@ class DemographicsSection extends IaiLitBase {
         themeFilters: { type: Array },
         demoFilters: { type: Object},
         total: { type: Number },
+
+        demoFiltersApplied: { type: Function },
+        themeFiltersApplied: { type: Function },
     }
 
     static styles = [
@@ -7310,24 +7047,25 @@ class DemographicsSection extends IaiLitBase {
         this.themeFilters = [];
         this.demoFilters = {};
         this.total = 0;
+
+        this.demoFiltersApplied = () => {};
+        this.themeFiltersApplied = () => {};
         
         this.applyStaticStyles("iai-demographics-section", DemographicsSection.styles);
     }
 
     getFilterWarningText() {
-        const demoFiltersText = Object.values(this.demoFilters).filter(Boolean).join(", ");
+        const demoFiltersText = Object
+            .values(this.demoFilters)
+            .flat(1)
+            .filter(Boolean)
+            .join(", ");
+
         const themeFiltersText = this.themeFilters.length
             ? `${this.themeFilters.length} themes`
             : "";
+
         return [demoFiltersText, themeFiltersText].filter(Boolean).join(", ");
-    }
-
-    demoFiltersApplied() {
-        return Object.values(this.demoFilters).filter(Boolean).length > 0;
-    }
-
-    themeFiltersApplied() {
-        return this.themeFilters.length > 0;
     }
 
     render() {
@@ -7381,7 +7119,10 @@ class ResponseRefinement extends IaiLitBase {
         demoData: { type: Object },
         demoOptions: { type: Object },
         themes: { type: Array },
-        
+
+        demoFiltersApplied: { type: Function },
+        themeFiltersApplied: { type: Function },
+
         searchValue: { type: String },
         setSearchValue: { type: Function },
 
@@ -7533,6 +7274,9 @@ class ResponseRefinement extends IaiLitBase {
         this.demoOptions = {};
         this.themes = [];
 
+        this.demoFiltersApplied = () => {};
+        this.themeFiltersApplied = () => {};
+
         this.searchValue = "";
         this.setSearchValue = () => {};
 
@@ -7579,18 +7323,11 @@ class ResponseRefinement extends IaiLitBase {
     }
 
     setupPanelListeners = (func) => {
-        [this.handleSettingsBlur, this.handleThemeFiltersBlur].forEach(eventHandler => {
+        [this.handleSettingsBlur].forEach(eventHandler => {
             ["click", "touchstart"].forEach(eventName => {
                 func(eventName, eventHandler);
             });
         });
-    }
-
-    filtersApplied() {
-        return (
-            this.themeFilters.length > 0 ||
-            Object.values(this.demoFilters).filter(Boolean).length > 0
-        )
     }
 
     render() {
@@ -7603,7 +7340,7 @@ class ResponseRefinement extends IaiLitBase {
                         .subtext=${"Filter and search through individual responses to this question."}
                         .icon=${"filter_alt"}
                         .aside=${x`
-                            ${this.filtersApplied() ? x`
+                            ${this.demoFiltersApplied() || this.themeFiltersApplied() ? x`
                                 <iai-silver-button
                                     .text=${"Clear filters"}
                                     .handleClick=${() => {
@@ -7705,77 +7442,34 @@ class ResponseRefinement extends IaiLitBase {
                         
                         <div class="filters-row">
                             ${Object.keys(this.demoOptions).map(key => x`
-                                <iai-silver-select-input
-                                    .inputId=${`demo-filter-${key}`}
-                                    .name=${"demo-filter"}
-                                    .label=${this.toTitleCase(key)}
-                                    .hideLabel=${false}
-                                    .value=${this.demoFilters[key] || ""}
-                                    .placeholder=${this.toTitleCase(key)}
-                                    .options=${
-                                        this.demoOptions[key].map(option => ({
-                                            value: option,
-                                            text: option
-                                        }))
-                                    }
-                                    .handleChange=${(e) => {
-                                        this.setDemoFilters(key, e.target.value);
-                                    }}
-                                    .horizontal=${false}
-                                ></iai-silver-select-input>
+                                <iai-multi-dropdown
+                                    .title=${this.toTitleCase(key)}
+                                    .text=${`${this.demoFilters[key]?.length || 0} filters selected`}
+                                    .options=${this.demoOptions[key].map(option => ({
+                                        id: option,
+                                        checked: Boolean(this.demoFilters[key]?.includes(option)),
+                                        title: option,
+                                        handleClick: (e) => {
+                                            this.setDemoFilters(key, e.target.value);
+                                        },
+                                    }))}
+                                ></iai-multi-dropdown>
                             `)}
                         </div>
 
                         <div class="filters-row">
-                            <div id="theme-filters-panel" class="popup-button">
-                                <iai-silver-title
-                                    .level=${3}
-                                    .text=${"Themes"}
-                                    @click=${() => this._themeFiltersVisible = !this._themeFiltersVisible}
-                                ></iai-silver-title>
-
-                                <div class="popup-button__body">
-                                    <iai-silver-button
-                                        .text=${x`
-                                            <div class="popup-button__text">
-                                                <span>${this.themeFilters.length} themes selected</span>
-                                                <iai-icon .name=${"keyboard_arrow_down"}></iai-icon>
-                                            </div>
-                                        `}
-                                        .handleClick=${() => this._themeFiltersVisible = !this._themeFiltersVisible}
-                                    ></iai-silver-button>
-
-                                    ${this.themes.length > 0 ? x`
-                                        <div class="popup-panel themes-panel" style=${`
-                                            opacity: ${this._themeFiltersVisible ? 1 : 0};
-                                            pointer-events: ${this._themeFiltersVisible ? "auto" : "none"};
-                                        `}>
-                                            <div class="content">
-                                                <ul class="theme-filter-list">
-                                                    ${this.themes.map(theme => x`
-                                                        <li>
-                                                            <input
-                                                                type="checkbox"
-                                                                class="theme-checkbox"
-                                                                id=${"responses-theme-filters" + theme.id}
-                                                                name="theme-filters"
-                                                                .value=${theme.id}
-                                                                .checked=${this.themeFilters.includes(theme.id)}
-                                                                @click=${(e) => {
-                                                                    this.updateThemeFilters(theme.id);
-                                                                }}
-                                                            />
-                                                            <label for=${"responses-theme-filters" + theme.id}>
-                                                                ${theme.title}
-                                                            </label>
-                                                        </li>
-                                                    `)}
-                                                </ul>
-                                            </div>
-                                        </div>
-                                    ` : ""}
-                                </div>
-                            </div>
+                            <iai-multi-dropdown
+                                .title=${"Themes"}
+                                .text=${`${this.themeFilters.length} themes selected`}
+                                .options=${this.themes.map(theme => ({
+                                    id: theme.id,
+                                    checked: this.themeFilters.includes(theme.id),
+                                    title: theme.title,
+                                    handleClick: (e) => {
+                                        this.updateThemeFilters(theme.id);
+                                    },
+                                }))}
+                            ></iai-multi-dropdown>
                         </div>
 
                         <div class="filters-row">
@@ -7839,9 +7533,19 @@ class ResponsesList extends IaiLitBase {
             iai-silver-responses-list article header,
             iai-silver-responses-list article footer {
                 display: flex;
+                align-items: center;
                 gap: 0.5em;
                 font-size: 0.9em;
                 flex-wrap: wrap;
+            }
+            iai-silver-responses-list article header {
+                justify-content: space-between;
+            }
+            iai-silver-responses-list article header .header-group {
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                gap: 0.5em;
             }
             iai-silver-responses-list article footer iai-silver-tag .tag {
                 background: var(--iai-silver-color-mid-light);
@@ -7894,29 +7598,35 @@ class ResponsesList extends IaiLitBase {
                                 ? "last-item"
                                 : ""
                             }>
-                                ${response.demoData.length > 0 || response.evidenceRich ? x`
-                                    <header>
-                                        ${response.demoData
-                                            ? response.demoData.map(data => x`
-                                                <iai-silver-tag
-                                                    class="demo-tag"
-                                                    .text=${data}
-                                                ></iai-silver-tag>
-                                            `)
-                                            : ""
-                                        }
-                                        ${response.evidenceRich
-                                            ? x`
-                                                <iai-silver-tag
-                                                    .icon=${"diamond"}
-                                                    .text=${"Evidence rich"}
-                                                    .status=${"Closed"}
-                                                ></iai-silver-tag>
-                                            `
-                                            : ""
-                                        }
-                                    </header>
-                                ` : ""}
+                                <header>
+                                    ${response.demoData.length > 0 || response.evidenceRich ? x`
+                                        <div class="header-group">
+                                            ${response.demoData
+                                                ? response.demoData.map(data => x`
+                                                    <iai-silver-tag
+                                                        class="demo-tag"
+                                                        .text=${data}
+                                                    ></iai-silver-tag>
+                                                `)
+                                                : ""
+                                            }
+                                            ${response.evidenceRich
+                                                ? x`
+                                                    <iai-silver-tag
+                                                        .icon=${"diamond"}
+                                                        .text=${"Evidence rich"}
+                                                        .status=${"Closed"}
+                                                    ></iai-silver-tag>
+                                                `
+                                                : ""
+                                            }
+                                        </div>
+                                    ` : ""}
+
+                                    <small>
+                                        ID: ${response.id || "Not Available"}
+                                    </small>
+                                </header>
                                 
                                 ${response.text ? x`
                                     <p>
@@ -7939,6 +7649,9 @@ class ResponsesList extends IaiLitBase {
                                 
                                 ${response.themes.length > 0 ? x`
                                     <footer>
+                                        <small>
+                                            Themes:
+                                        </small>
                                         ${response.themes.map((theme) => x`
                                             <iai-silver-button
                                                 class="theme-tag"
@@ -8126,12 +7839,6 @@ class QuestionDetailPage extends IaiLitBase {
             ...(this._evidenceRichFilter && {
                 evidenceRich: this._evidenceRichFilter
             }),
-            ...(this._themesSortType && {
-                themesSortType: this._themesSortType
-            }),
-            ...(this._themesSortDirection && {
-                themesSortDirection: this._themesSortDirection
-            }),
             page: this._currentPage,
             page_size: this._PAGE_SIZE.toString(),
         });
@@ -8140,7 +7847,13 @@ class QuestionDetailPage extends IaiLitBase {
         const validDemoFilterKeys = Object.keys(this._demoFilters).filter(key => Boolean(this._demoFilters[key]));
         // Add each demo filter as a duplicate demoFilter param
         for (const key of validDemoFilterKeys) {
-            params.append("demoFilters", `${key}:${this._demoFilters[key]}`);
+            const filterArr = this._demoFilters[key];
+            if (filterArr && filterArr.length > 0) {
+                // TODO: Replace below with the commented out code after the back end is implemented.
+                // Only processing the first filter for now to avoid breaking back end responses.
+                // params.append("demoFilters", `${key}:${filterArr.join(",")}`);
+                params.append("demoFilters", `${key}:${filterArr[0]}`);
+            }
         }
 
         return params.toString();
@@ -8166,11 +7879,68 @@ class QuestionDetailPage extends IaiLitBase {
             this._errorOccured = false;
             this._isLoading = true;
 
-            const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
-
-            let response;
+            // Use multiple modular endpoints instead of single question_responses_json
             try {
-                response = await this.fetchData(url, { signal });
+                const [filteredResponsesData, themeAggregationsData, themeInformationData, demographicOptionsData, demographicAggregationsData] = await Promise.all([
+                    // Get paginated response data
+                    this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(), { signal }).then(r => r.json()),
+                    // Get theme aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    // Get theme information (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-information/`, { signal }).then(r => r.json()) : null,
+                    // Get demographic options (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-options/`, { signal }).then(r => r.json()) : null,
+                    // Get demographic aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null
+                ]);
+
+                this.responses = this.responses.concat(filteredResponsesData.all_respondents);
+
+                this._responsesTotal = filteredResponsesData.respondents_total;
+                this._filteredTotal = filteredResponsesData.filtered_total;
+                this._hasMorePages = filteredResponsesData.has_more_pages;
+
+                // Update theme data only on first page to reflect current filters
+                if (this._currentPage === 1 && themeAggregationsData && themeInformationData) {
+                    // Create theme info lookup map
+                    const themeInfoMap = themeInformationData.themes.reduce((map, theme) => {
+                        map[theme.id] = theme;
+                        return map;
+                    }, {});
+                    
+                    // Convert theme_aggregations format to theme_mappings format
+                    const themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
+                        const themeInfo = themeInfoMap[id] || {};
+                        return {
+                            value: id,
+                            label: themeInfo.name || "",
+                            description: themeInfo.description || "",
+                            count: count.toString()
+                        };
+                    });
+
+                    this._themes = themeMappings.map(mapping => ({
+                        id: mapping.value,
+                        title: mapping.label,
+                        description: mapping.description,
+                        mentions: parseInt(mapping.count),
+                        handleClick: () => {
+                            this._themeFilters = [mapping.value];
+                            this._activeTab = this._TAB_INDECES["Response Analysis"];
+                        }
+                    }));
+
+                    this.themeMappings = themeMappings;
+                }
+
+                // Update demographic data if available
+                if (demographicAggregationsData) {
+                    this._demoData = demographicAggregationsData.demographic_aggregations || {};
+                }
+                if (demographicOptionsData) {
+                    this._demoOptions = demographicOptionsData.demographic_options || {};
+                }
+
             } catch (err) {
                 if (err.name == "AbortError") {
                     console.log("stale request aborted");
@@ -8187,39 +7957,6 @@ class QuestionDetailPage extends IaiLitBase {
                 this._isLoading = false;
             }
 
-            if (!response.ok) {
-                this._errorOccured = true;
-                throw new Error(`Response status: ${response.status}`);
-            }
-
-            const responsesData = await response.json();
-
-            this.responses = this.responses.concat(responsesData.all_respondents);
-
-            this._responsesTotal = responsesData.respondents_total;
-            this._filteredTotal = responsesData.filtered_total;
-
-            this._themes = responsesData.theme_mappings.map(mapping => ({
-                id: mapping.value,
-                title: mapping.label,
-                description: mapping.description,
-                mentions: parseInt(mapping.count),
-                handleClick: () => {
-                    this._themeFilters = [mapping.value];
-                    this._activeTab = this._TAB_INDECES["Response Analysis"];
-                }
-            }));
-
-            this._demoData = responsesData.demographic_aggregations || {};
-            this._demoOptions = responsesData.demographic_options || {};
-
-            // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
-            if (this._currentPage === 1 && responsesData.theme_mappings) {
-                this.themeMappings = responsesData.theme_mappings;
-            }
-
-            this._hasMorePages = responsesData.has_more_pages;
-
             this._currentPage = this._currentPage + 1;
         }, this._DEBOUNCE_DELAY);
     }
@@ -8231,14 +7968,43 @@ class QuestionDetailPage extends IaiLitBase {
         this._isLoading = true;
     }
 
+    demoFiltersApplied = () => {
+        for (const key of Object.keys(this._demoFilters)) {
+            const filterArr = this._demoFilters[key];
+
+            // filterArr can be undefined or empty array
+            if (filterArr && filterArr.filter(Boolean).length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    themeFiltersApplied = () => {
+        return this._themeFilters.length > 0;
+    }
+
     setDemoFilters = (newFilterKey, newFilterValue) => {
         if (!newFilterKey || !newFilterValue) {
             // Clear filters if nothing is passed
             this._demoFilters = {};
+            return;
         }
+
+        const existingFilters = this._demoFilters[newFilterKey] || [];
+
+        let resultFilters;
+        if (existingFilters.includes(newFilterValue)) {
+            // Remove filter if already added
+            resultFilters = existingFilters.filter(filter => newFilterValue !== filter);
+        } else {
+            // Avoid duplicates when adding filters
+            resultFilters = [...new Set([...existingFilters, newFilterValue])];
+        }
+
         this._demoFilters = {
             ...this._demoFilters,
-            [newFilterKey]: newFilterValue
+            [newFilterKey]: resultFilters,
         };
     }
 
@@ -8252,9 +8018,7 @@ class QuestionDetailPage extends IaiLitBase {
             changedProps.has("_searchMode")         ||
             changedProps.has("_evidenceRichFilter") ||
             changedProps.has("_themeFilters")       ||
-            changedProps.has("_demoFilters")        ||
-            changedProps.has("_themesSortType")     ||
-            changedProps.has("_themesSortDirection")
+            changedProps.has("_demoFilters")
         ) {
             this.resetResponses();
             this.fetchResponses();
@@ -8272,6 +8036,8 @@ class QuestionDetailPage extends IaiLitBase {
                     .data=${this._demoData}
                     .themeFilters=${this._themeFilters}
                     .demoFilters=${this._demoFilters}
+                    .demoFiltersApplied=${this.demoFiltersApplied}
+                    .themeFiltersApplied=${this.themeFiltersApplied}
                     .total=${this._filteredTotal}
                 ></iai-demographics-section>
             </section>
@@ -8279,10 +8045,34 @@ class QuestionDetailPage extends IaiLitBase {
             <section class="theme-analysis">
                 <iai-theme-analysis
                     .consultationSlug=${this.consultationSlug}
-                    .themes=${this._themes}
+                    .themes=${this._themes.toSorted((a, b) => {
+                        let valA, valB;
+            
+                        if (this._themesSortType === "frequency") {
+                            valA = a.mentions;
+                            valB = b.mentions;
+                        } else {
+                            valA = a.title;
+                            valB = b.title;
+                        }
+
+                        const directionOffset = this._themesSortDirection === "ascending"
+                            ? 1
+                            : -1;
+            
+                        if (valA < valB) {
+                            return -1 * directionOffset;
+                        } else if (valB < valA) {
+                            return 1 * directionOffset;
+                        }
+                        return 0;
+                    })}
                     .demoData=${this._demoData}
                     .demoOptions=${this._demoOptions}
                     .totalResponses=${this._filteredTotal}
+
+                    .demoFiltersApplied=${this.demoFiltersApplied}
+                    .themeFiltersApplied=${this.themeFiltersApplied}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
@@ -8308,6 +8098,9 @@ class QuestionDetailPage extends IaiLitBase {
                     .demoOptions=${this._demoOptions}
                     .themes=${this._themes}
 
+                    .demoFiltersApplied=${this.demoFiltersApplied}
+                    .themeFiltersApplied=${this.themeFiltersApplied}
+
                     .searchValue=${this._searchValue}
                     .setSearchValue=${newSearchValue => this._searchValue = newSearchValue}
 
@@ -8332,6 +8125,7 @@ class QuestionDetailPage extends IaiLitBase {
                 <iai-silver-responses-list
                     .responses=${
                         this.responses.map(response => ({
+                            id: response.identifier,
                             text: response.free_text_answer_text,
                             themes: response.themes.map(theme => ({
                                 id: theme.id,
