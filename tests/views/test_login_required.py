@@ -34,7 +34,7 @@ API_URL_NAMES = [
     "question-themes",
     "question-theme_aggregations",
     "question-filtered_responses",
-    "question-question_information",
+    "question-information",
 ]
 
 URL_NAMES_TO_EXCLUDE = (
@@ -96,8 +96,7 @@ def set_up_consultation_api(user):
     factories.ResponseAnnotationFactory(response=response)
     possible_args = {
         "consultation_pk": consultation.id,
-        "question_pk": question.id,
-        "response_id": response.id,
+        "pk": question.id,
     }
     return possible_args
 
@@ -171,24 +170,9 @@ def test_consultations_urls_login_required(client, url_pattern):
     client.logout()
 
 
-# Get API URL patterns
-API_URL_PATTERNS = [
-    url_pattern
-    for url_pattern in urlpatterns
-    if getattr(url_pattern, "name", None) in API_URL_NAMES
-]
-
-
-# Get API URL patterns
-API_URL_PATTERNS = [
-    url_pattern
-    for url_pattern in urlpatterns
-    if getattr(url_pattern, "name", None) in API_URL_NAMES
-]
-
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("url_pattern", API_URL_PATTERNS)
+@pytest.mark.parametrize("url_pattern", API_URL_NAMES)
 def test_api_urls_permission_required(client, url_pattern):
     """
     Test API endpoints return 403 for authentication/permission failures.
@@ -204,7 +188,7 @@ def test_api_urls_permission_required(client, url_pattern):
     user.groups.add(dashboard_access)
     user.save()
 
-    url = get_url_for_pattern(url_pattern, possible_args)
+    url = reverse(viewname=url_pattern, kwargs=possible_args)
 
     # Not logged in - should return 403 (DRF permission denied)
     check_expected_status_code(client, url, expected_status_code=403)
