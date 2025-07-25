@@ -34,7 +34,7 @@ API_URL_NAMES = [
     "question-themes",
     "question-theme_aggregations",
     "question-filtered_responses",
-    "question-information",
+    "question-detail",
 ]
 
 URL_NAMES_TO_EXCLUDE = (

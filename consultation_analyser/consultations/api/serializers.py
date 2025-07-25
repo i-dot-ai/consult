@@ -24,11 +24,15 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
+    question_text = serializers.CharField(source="text")
+
     class Meta:
         model = Question
         fields = [
             "id",
-            "text",
+            "number",
+            "total_responses",
+            "question_text",
             "slug",
             "number",
             "has_free_text",
@@ -61,11 +65,6 @@ class ThemeInformationSerializer(serializers.Serializer):
 
 class ThemeAggregationsSerializer(serializers.Serializer):
     theme_aggregations = serializers.DictField(child=serializers.IntegerField())
-
-
-class QuestionInformationSerializer(serializers.Serializer):
-    question_text = serializers.CharField()
-    total_responses = serializers.IntegerField()
 
 
 class FilterSerializer(serializers.Serializer):

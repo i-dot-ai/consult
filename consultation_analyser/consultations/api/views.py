@@ -15,7 +15,6 @@ from .serializers import (
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     FilterSerializer,
-    QuestionInformationSerializer,
     QuestionSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
@@ -189,18 +188,3 @@ class QuestionViewSet(ReadOnlyModelViewSet):
 
         # Return orjson-optimized HttpResponse
         return HttpResponse(orjson.dumps(data), content_type="application/json")
-
-    @action(detail=True, methods=["get"], url_name="information")
-    def information(self, request, pk=None, consultation_pk=None):
-        """Get basic question information"""
-        question = self.get_object()
-
-        data = {
-            "question_text": question.text,
-            "total_responses": question.total_responses,
-        }
-
-        serializer = QuestionInformationSerializer(data=data)
-        serializer.is_valid()
-
-        return Response(serializer.data)

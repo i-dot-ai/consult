@@ -525,7 +525,7 @@ class TestQuestionInformationAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-information",
+            "question-detail",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -565,7 +565,7 @@ class TestAPIViewPermissions:
             "question-themes",
             "question-theme_aggregations",
             "question-filtered_responses",
-            "question-information",
+            "question-detail",
         ],
     )
     def test_unauthenticated_access_denied(self, client, question, endpoint_name):
@@ -585,7 +585,7 @@ class TestAPIViewPermissions:
             "question-themes",
             "question-theme_aggregations",
             "question-filtered_responses",
-            "question-information",
+            "question-detail",
         ],
     )
     def test_user_without_dashboard_access_denied(
@@ -608,7 +608,7 @@ class TestAPIViewPermissions:
             "question-themes",
             "question-theme_aggregations",
             "question-filtered_responses",
-            "question-information",
+            "question-detail",
         ],
     )
     def test_user_without_consultation_access_denied(
