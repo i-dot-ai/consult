@@ -114,15 +114,28 @@ def get_url_for_pattern(url_pattern, possible_args):
     for key in possible_args:
         if key in url_str:
             kwargs[key] = possible_args[key]
-    try:
-        url = reverse(url_pattern.name, kwargs=kwargs)
-    except Exception:
-        raise
+    url = reverse(url_pattern.name, kwargs=kwargs)
     return url
 
 
+# Get all URLs that haven't explicitly been excluded.
+# Exclude magic links in separate step as potentially more than one.
+url_patterns_excluding_magic_link = [
+    url_pattern
+    for url_pattern in urlpatterns
+    if not str(url_pattern.pattern).startswith("magic-link")
+    and not str(url_pattern.pattern).startswith("api")
+]
+url_patterns_to_test = [
+    url_pattern
+    for url_pattern in url_patterns_excluding_magic_link
+    if url_pattern.name not in URL_NAMES_TO_EXCLUDE
+]
+
+
 @pytest.mark.django_db
-def test_consultations_urls_login_required(client):
+@pytest.mark.parametrize("url_pattern", url_patterns_to_test)
+def test_consultations_urls_login_required(client, url_pattern):
     """
     This tests all URLs by default unless deliberately excluded (special cases).
 
@@ -142,34 +155,28 @@ def test_consultations_urls_login_required(client):
     user.groups.add(dashboard_access)
     user.save()
 
-    # Get all URLs that haven't explicitly been excluded.
-    # Exclude magic links in separate step as potentially more than one.
-    url_patterns_excluding_magic_link = [
-        url_pattern
-        for url_pattern in urlpatterns
-        if not str(url_pattern.pattern).startswith("magic-link")
-    ]
-    url_patterns_to_test = [
-        url_pattern
-        for url_pattern in url_patterns_excluding_magic_link
-        if getattr(url_pattern, "name", None) not in URL_NAMES_TO_EXCLUDE
-    ]
+    url = get_url_for_pattern(url_pattern, possible_args)
 
-    for url_pattern in url_patterns_to_test:
-        url = get_url_for_pattern(url_pattern, possible_args)
+    # Not logged in - should 404
+    check_expected_status_code(client, url, expected_status_code=404)
 
-        # Not logged in - should 404
-        check_expected_status_code(client, url, expected_status_code=404)
+    # Logged in with a user for this consultation - 200
+    client.force_login(user)
+    check_expected_status_code(client, url, 200)
+    client.logout()
 
-        # Logged in with a user for this consultation - 200
-        client.force_login(user)
-        check_expected_status_code(client, url, 200)
-        client.logout()
+    # Logged in with a different user - 404
+    client.force_login(non_consultation_user)
+    check_expected_status_code(client, url, 404)
+    client.logout()
 
-        # Logged in with a different user - 404
-        client.force_login(non_consultation_user)
-        check_expected_status_code(client, url, 404)
-        client.logout()
+
+# Get API URL patterns
+API_URL_PATTERNS = [
+    url_pattern
+    for url_pattern in urlpatterns
+    if getattr(url_pattern, "name", None) in API_URL_NAMES
+]
 
 
 # Get API URL patterns
