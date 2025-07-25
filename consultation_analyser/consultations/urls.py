@@ -9,9 +9,10 @@ from .api.views import (
 from .views import answers, consultations, pages, questions, root, sessions
 
 router = routers.DefaultRouter()
-router.register(r"consultations", ConsultationViewSet, basename="consultations")
+router.register("consultations", ConsultationViewSet, basename="consultations")
+
 consultations_router = NestedDefaultRouter(router, r"consultations", lookup="consultation")
-consultations_router.register(r"questions", QuestionViewSet, basename="question")
+consultations_router.register("questions", QuestionViewSet, basename="question")
 
 questions_router = NestedDefaultRouter(consultations_router, r"questions", lookup="question")
 

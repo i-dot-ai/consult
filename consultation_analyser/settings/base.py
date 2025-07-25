@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "django_rq",
     "simple_history",
     "rest_framework",
+    "django_filters",
 ]
 
 
@@ -306,3 +307,9 @@ if DEBUG and ("pytest" not in sys.modules and "test" not in sys.argv):
 
 # changing this will require a database migration
 EMBEDDING_DIMENSION = 1024
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+}

@@ -1,7 +1,10 @@
 from rest_framework import serializers
 from rest_framework.reverse import reverse
 
-from consultation_analyser.consultations.models import Consultation, Question
+from consultation_analyser.consultations.models import (
+    Consultation,
+    Question,
+)
 
 
 class NestedHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
