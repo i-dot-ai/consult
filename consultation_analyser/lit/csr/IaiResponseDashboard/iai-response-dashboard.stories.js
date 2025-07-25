@@ -67,10 +67,10 @@ export default {
     return html`
       <iai-response-dashboard
         .consultationTitle=${args.consultationTitle}
-        .consultationSlug=${args.consultationTitle}
+        .consultationId=${args.consultationId}
         .questionTitle=${args.questionTitle}
         .questionText=${args.questionText}
-        .questionSlug=${args.questionSlug}
+        .questionId=${args.questionId}
         .stanceOptions=${args.stanceOptions}
         .themeMappings=${args.themeMappings}
         .responses=${args.responses}
@@ -89,10 +89,10 @@ export default {
 export const Default = {
   args: {
     consultationTitle: "Test Consultation",
-    consultationSlug: "test-consultation",
+    consultationId: "test-consultation",
     questionTitle: "Test Question",
     questionText: "This is a text question".repeat(15),
-    questionSlug: "test-question",
+    questionId: "test-question",
     stanceOptions: TEST_STANCE_OPTIONS,
     themeMappings: TEST_THEME_MAPPIINGS,
     responses: [],
