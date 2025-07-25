@@ -62,6 +62,7 @@ djangorestframework = "^3.16.0"
 orjson = "^3.11.0"
 django-db-connection-pool = "^1.2.6"
 django-filter = "^25.1"
+drf-nested-routers = "^0.94.2"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.12.4"
