@@ -249,7 +249,7 @@ def import_response_annotations(question: Question, output_folder: str):
     sentiment_file_key = f"{output_folder}sentiment.jsonl"
     evidence_file_key = f"{output_folder}detail_detection.jsonl"
     s3_client = boto3.client("s3")
-    
+
     # Check if sentiment file exists and process it
     sentiment_dict = {}
     try:
@@ -264,12 +264,16 @@ def import_response_annotations(question: Question, output_folder: str):
             if sentiment_value == "AGREEMENT":
                 sentiment_dict[sentiment["themefinder_id"]] = ResponseAnnotation.Sentiment.AGREEMENT
             elif sentiment_value == "DISAGREEMENT":
-                sentiment_dict[sentiment["themefinder_id"]] = ResponseAnnotation.Sentiment.DISAGREEMENT
+                sentiment_dict[sentiment["themefinder_id"]] = (
+                    ResponseAnnotation.Sentiment.DISAGREEMENT
+                )
             else:
                 sentiment_dict[sentiment["themefinder_id"]] = ResponseAnnotation.Sentiment.UNCLEAR
     except ClientError as e:
-        if e.response['Error']['Code'] == '404':
-            logger.info(f"Sentiment file not found: {sentiment_file_key}, using default UNCLEAR sentiment")
+        if e.response["Error"]["Code"] == "404":
+            logger.info(
+                f"Sentiment file not found: {sentiment_file_key}, using default UNCLEAR sentiment"
+            )
         else:
             raise
 
@@ -386,7 +390,9 @@ def import_responses(question: Question, responses_file_key: str):
 
         # Update total_responses count for the question
         question.update_total_responses()
-        logger.info(f"Updated total_responses count for question {question.number}: {question.total_responses}")
+        logger.info(
+            f"Updated total_responses count for question {question.number}: {question.total_responses}"
+        )
 
     except Exception as e:
         logger.error(
