@@ -3,11 +3,18 @@ import commonjs from "@rollup/plugin-commonjs";
 
 export default {
     input: "consultation_analyser/lit/csr/index.mjs",
-    output: {
-        dir: "frontend/lit/",
-        format: "es",
-        sourcemap: true,
-    },
+    output: [
+        {
+            dir: "frontend/lit/",
+            format: "es",
+            sourcemap: true,
+        },
+        {
+            dir: "ui/public/lit/",
+            format: "es",
+            sourcemap: true,
+        }
+    ],
     plugins: [
         resolve({
             browser: true,
