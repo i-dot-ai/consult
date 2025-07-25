@@ -170,7 +170,6 @@ def test_consultations_urls_login_required(client, url_pattern):
     client.logout()
 
 
-
 @pytest.mark.django_db
 @pytest.mark.parametrize("url_pattern", API_URL_NAMES)
 def test_api_urls_permission_required(client, url_pattern):
@@ -213,18 +212,16 @@ def test_api_urls_permission_required(client, url_pattern):
     client.logout()
 
 
-# Get all URLs that haven't explicitly been excluded.
-# Exclude magic links in separate step as potentially more than one.
-URL_EXCLUDING_MAGIC_LINK = [
+# Testing links that redirect
+url_patterns_to_test = [
     url_pattern
-    for url_pattern in urlpatterns
-    if str(url_pattern) in REDIRECTING_URL_NAMES
-    if not str(url_pattern.pattern).startswith("magic-link")
+    for url_pattern in url_patterns_excluding_magic_link
+    if url_pattern.name in REDIRECTING_URL_NAMES
 ]
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("url_pattern", URL_EXCLUDING_MAGIC_LINK)
+@pytest.mark.parametrize("url_pattern", url_patterns_to_test)
 def test_urls_permission_required(client, url_pattern):
     """
     Test API endpoints return 403 for authentication/permission failures.
