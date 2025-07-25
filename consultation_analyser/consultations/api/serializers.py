@@ -1,26 +1,9 @@
 from rest_framework import serializers
-from rest_framework.reverse import reverse
 
 from consultation_analyser.consultations.models import (
     Consultation,
     Question,
 )
-
-
-class NestedHyperlinkedRelatedField(serializers.HyperlinkedRelatedField):
-    def get_url(self, obj, view_name, request, format):
-        kwargs = {"consultation_pk": obj.consultation.pk, "pk": obj.pk}
-        return reverse(view_name, kwargs=kwargs, request=request, format=format)
-
-
-class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
-    questions = NestedHyperlinkedRelatedField(
-        source="question_set", many=True, read_only=True, view_name="question-detail"
-    )
-
-    class Meta:
-        model = Consultation
-        fields = ["id", "title", "slug", "questions"]
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
@@ -39,6 +22,18 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
             "has_multiple_choice",
             "multiple_choice_options",
         ]
+
+
+class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
+    questions = QuestionSerializer(
+        source="question_set",
+        many=True,
+        read_only=True,
+    )
+
+    class Meta:
+        model = Consultation
+        fields = ["id", "title", "slug", "questions"]
 
 
 class DemographicOptionsSerializer(serializers.Serializer):
