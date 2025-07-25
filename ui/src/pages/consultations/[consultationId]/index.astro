@@ -1,0 +1,21 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import Section from "../../../components/Section.svelte";
+
+import { getConsultationById } from "../../../global/api";
+
+const { consultationId } = Astro.params;
+
+const consultation = getConsultationById(consultationId || "");
+---
+<Layout>
+    <Section>
+        <iai-question-overview-page></iai-question-overview-page>
+
+        <script define:vars={{ consultation }}>
+            const el = document.getElementsByTagName("iai-question-overview-page")[0];
+            el.title = consultation.title;
+            el.questions = consultation.questions;
+        </script>
+    </Section>
+</Layout>
