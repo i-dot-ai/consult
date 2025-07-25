@@ -1,4 +1,6 @@
 <script lang="ts">
+    import clsx from "clsx";
+
     export let level: 1 | 2 | 3 | 4 | 5 | 6 = 1;
     export let text: string = "";
 
@@ -14,6 +16,9 @@
     const tag = tagMap[level];
 </script>
 
-<svelte:element this={tag} class="font-bold text-2xl">
+<svelte:element this={tag} class={clsx([
+    "font-bold",
+    level === 1 ? "text-2xl" : "text-xl",
+])} >
     {text}
 </svelte:element>
