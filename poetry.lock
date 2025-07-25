@@ -951,6 +951,23 @@ Django = ">=4.2"
 djangorestframework = ">=3.15.0"
 
 [[package]]
+name = "drf-orjson-renderer"
+version = "1.7.3"
+description = "Django RestFramework JSON Renderer Backed by orjson"
+optional = false
+python-versions = ">=3.6.0"
+groups = ["main"]
+files = [
+    {file = "drf_orjson_renderer-1.7.3-py3-none-any.whl", hash = "sha256:9c3fe521b0e8c641b334c40bb81ecadb14519a27599a495d360385abe193a4b4"},
+    {file = "drf_orjson_renderer-1.7.3.tar.gz", hash = "sha256:0c49760fc415df8096c1ef05f029802f2e5862d4e15fe96066289b8c526835f1"},
+]
+
+[package.dependencies]
+django = ">=3.2"
+djangorestframework = "*"
+orjson = ">=3.3.0"
+
+[[package]]
 name = "et-xmlfile"
 version = "2.0.0"
 description = "An implementation of lxml.xmlfile for the standard library"
@@ -3331,4 +3348,4 @@ files = [
 [metadata]
 lock-version = "2.1"
 python-versions = ">=3.12,<3.13"
-content-hash = "109a02728871d84cd26adb7a9266278f930d40652c9bdf3e0a23917f3470695e"
+content-hash = "b67bed4e3f5a81bb4ce26060cfd186a0497b051af3360f18991ceb71e1ebbbfd"
