@@ -1,5 +1,6 @@
 <script>
     import GovIcon from "./svg/GovIcon.svelte";
+    import MenuIcon from "./svg/material/MenuIcon.svelte";
 </script>
 
 <header class="mb-0 bg-black text-white">
@@ -18,7 +19,9 @@
                 </div>
             </div>
             <hamburger-button role="button" tabindex="0" aria-expanded="false">
-                <span>Menu</span>
+                <span>
+                    <MenuIcon />
+                </span>
             </hamburger-button>
         </div>
     </div>
