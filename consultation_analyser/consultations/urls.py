@@ -1,14 +1,21 @@
-from django.urls import path
+from django.urls import include, path
+from rest_framework import routers
+from rest_framework_nested.routers import NestedDefaultRouter
 
 from .api.views import (
-    DemographicAggregationsAPIView,
-    DemographicOptionsAPIView,
-    FilteredResponsesAPIView,
-    QuestionInformationAPIView,
-    ThemeAggregationsAPIView,
-    ThemeInformationAPIView,
+    ConsultationViewSet,
+    QuestionViewSet,
 )
 from .views import answers, consultations, pages, questions, root, sessions
+
+router = routers.DefaultRouter()
+router.register("consultations", ConsultationViewSet, basename="consultations")
+
+consultations_router = NestedDefaultRouter(router, r"consultations", lookup="consultation")
+consultations_router.register("questions", QuestionViewSet, basename="question")
+
+questions_router = NestedDefaultRouter(consultations_router, r"questions", lookup="question")
+
 
 urlpatterns = [
     # public urls
@@ -27,36 +34,9 @@ urlpatterns = [
     ),
     # New modular endpoints
     # API endpoints
-    path(
-        "api/consultations/<uuid:consultation_pk>/questions/<uuid:question_pk>/demographic-options/",
-        DemographicOptionsAPIView.as_view(),
-        name="api_demographic_options",
-    ),
-    path(
-        "api/consultations/<uuid:consultation_pk>/questions/<uuid:question_pk>/demographic-aggregations/",
-        DemographicAggregationsAPIView.as_view(),
-        name="api_demographic_aggregations",
-    ),
-    path(
-        "api/consultations/<uuid:consultation_pk>/questions/<uuid:question_pk>/theme-information/",
-        ThemeInformationAPIView.as_view(),
-        name="api_theme_information",
-    ),
-    path(
-        "api/consultations/<uuid:consultation_pk>/questions/<uuid:question_pk>/theme-aggregations/",
-        ThemeAggregationsAPIView.as_view(),
-        name="api_theme_aggregations",
-    ),
-    path(
-        "api/consultations/<uuid:consultation_pk>/questions/<uuid:question_pk>/filtered-responses/",
-        FilteredResponsesAPIView.as_view(),
-        name="api_filtered_responses",
-    ),
-    path(
-        "api/consultations/<uuid:consultation_pk>/questions/<uuid:question_pk>/question-information/",
-        QuestionInformationAPIView.as_view(),
-        name="api_question_information",
-    ),
+    path("api/", include(router.urls)),
+    path("api/", include(consultations_router.urls)),
+    path("api/", include(questions_router.urls)),
     path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/show-next/",
         answers.show_next,

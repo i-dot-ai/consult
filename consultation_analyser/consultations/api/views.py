@@ -1,38 +1,54 @@
 from collections import defaultdict
-from uuid import UUID
 
 import orjson
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import HttpResponse
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from .. import models
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
+    ConsultationSerializer,
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     FilterSerializer,
-    QuestionInformationSerializer,
+    QuestionSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
 )
 from .utils import (
     build_respondent_data_fast,
     build_response_filter_query,
-    get_consultation_and_question,
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
 )
 
 
-class DemographicOptionsAPIView(APIView):
+class ConsultationViewSet(ReadOnlyModelViewSet):
+    serializer_class = ConsultationSerializer
+    permission_classes = [HasDashboardAccess]
+
+    def get_queryset(self):
+        return models.Consultation.objects.filter(users=self.request.user).order_by("-created_at")
+
+
+class QuestionViewSet(ReadOnlyModelViewSet):
+    serializer_class = QuestionSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
 
-    def get(self, request, consultation_pk: UUID, question_pk: UUID):
+    def get_queryset(self):
+        consultation_uuid = self.kwargs["consultation_pk"]
+        return models.Question.objects.filter(
+            consultation__id=consultation_uuid, consultation__users=self.request.user
+        ).order_by("-created_at")
+
+    @action(detail=True, methods=["get"])
+    def demographics(self, request, pk=None, consultation_pk=None):
         """Get all demographic options for a consultation"""
-        question = get_consultation_and_question(consultation_pk, question_pk)
+        question = self.get_object()
         consultation = question.consultation
 
         # Get all demographic fields and their possible values from normalized storage
@@ -51,14 +67,11 @@ class DemographicOptionsAPIView(APIView):
 
         return Response(serializer.data)
 
-
-class DemographicAggregationsAPIView(APIView):
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
-
-    def get(self, request, consultation_pk: UUID, question_pk: UUID):
+    @action(detail=True, methods=["get"], url_name="demographic_aggregations")
+    def demographic_aggregations(self, request, pk=None, consultation_pk=None):
         """Get demographic aggregations for filtered responses"""
         # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_pk, question_pk)
+        question = self.get_object()
 
         # Validate query parameters
         filter_serializer = FilterSerializer(data=request.query_params)
@@ -88,14 +101,11 @@ class DemographicAggregationsAPIView(APIView):
 
         return Response(serializer.data)
 
-
-class ThemeInformationAPIView(APIView):
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
-
-    def get(self, request, consultation_pk: UUID, question_pk: UUID):
+    @action(detail=True, methods=["get"], url_name="themes")
+    def themes(self, request, pk=None, consultation_pk=None):
         """Get all theme information for a question"""
         # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_pk, question_pk)
+        question = self.get_object()
 
         # Get all themes for this question
         themes = models.Theme.objects.filter(question=question).values("id", "name", "description")
@@ -105,15 +115,12 @@ class ThemeInformationAPIView(APIView):
 
         return Response(serializer.data)
 
-
-class ThemeAggregationsAPIView(APIView):
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
-
-    def get(self, request, consultation_pk: UUID, question_pk: UUID):
+    @action(detail=True, methods=["get"], url_name="theme_aggregations")
+    def theme_aggregations(self, request, pk=None, consultation_pk=None):
         """Get theme aggregations for filtered responses"""
 
         # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_pk, question_pk)
+        question = self.get_object()
 
         # Validate query parameters
         filter_serializer = FilterSerializer(data=request.query_params)
@@ -145,15 +152,10 @@ class ThemeAggregationsAPIView(APIView):
 
         return Response(serializer.data)
 
-
-class FilteredResponsesAPIView(APIView):
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
-
-    def get(self, request, consultation_pk, question_pk: UUID):
+    @action(detail=True, methods=["get"], url_name="filtered_responses")
+    def filtered_responses(self, request, pk=None, consultation_pk=None):
         """Get paginated filtered responses with orjson optimization"""
-
-        # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_pk, question_pk)
+        question = self.get_object()
 
         # Validate query parameters
         filter_serializer = FilterSerializer(data=request.query_params)
@@ -186,22 +188,3 @@ class FilteredResponsesAPIView(APIView):
 
         # Return orjson-optimized HttpResponse
         return HttpResponse(orjson.dumps(data), content_type="application/json")
-
-
-class QuestionInformationAPIView(APIView):
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
-
-    def get(self, request, consultation_pk: UUID, question_pk: UUID):
-        """Get basic question information"""
-        # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_pk, question_pk)
-
-        data = {
-            "question_text": question.text,
-            "total_responses": question.total_responses,
-        }
-
-        serializer = QuestionInformationSerializer(data=data)
-        serializer.is_valid()
-
-        return Response(serializer.data)

@@ -1,9 +1,7 @@
 from typing import TypedDict
-from uuid import UUID
 
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Count, Q
-from django.shortcuts import get_object_or_404
 from pgvector.django import CosineDistance
 
 from ...embeddings import embed_text
@@ -61,30 +59,6 @@ def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
             filters["demo_filters"] = filters_dict
 
     return filters
-
-
-def get_consultation_and_question(consultation_pk: UUID, question_pk: UUID) -> models.Question:
-    # TODO: remove this - its doesnt do anything that get_object_or_404(Question, id) doesnt
-    """Get question object with consultation prefetched in a single query.
-
-    This utility eliminates duplicate database queries across API views
-    by combining the consultation and question lookups with select_related.
-
-    Args:
-        consultation_pk: The consultation slug from URL
-        question_pk: The question slug from URL
-
-    Returns:
-        Question object with consultation prefetched
-
-    Raises:
-        Http404: If consultation or question doesn't exist
-    """
-    return get_object_or_404(
-        models.Question.objects.select_related("consultation"),
-        id=question_pk,
-        consultation__id=consultation_pk,
-    )
 
 
 def build_response_filter_query(filters: FilterParams, question: models.Question) -> Q:

@@ -2,7 +2,7 @@ from consultation_analyser.consultations.api.serializers import (
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     FilterSerializer,
-    QuestionInformationSerializer,
+    QuestionSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
     ThemeSerializer,
@@ -142,20 +142,36 @@ class TestThemeAggregationsSerializer:
         assert not serializer.is_valid()
 
 
-class TestQuestionInformationSerializer:
+class TestQuestionSerializer:
     def test_valid_data(self):
         """Test question information serializer with valid data"""
-        data = {"question_text": "What do you think about this topic?", "total_responses": 150}
-        serializer = QuestionInformationSerializer(data=data)
+        data = {
+            "question_text": "What do you think about this topic?",
+            "total_responses": 150,
+            "number": 1,
+            "slug": "topic",
+        }
+        serializer = QuestionSerializer(data=data)
         assert serializer.is_valid()
-        assert serializer.validated_data == data
+        expected = {
+            "text": "What do you think about this topic?",
+            "total_responses": 150,
+            "number": 1,
+            "slug": "topic",
+        }
+
+        assert serializer.validated_data == expected
 
     def test_missing_fields(self):
         """Test question information serializer with missing fields"""
-        data = {"question_text": "What do you think about this topic?"}
-        serializer = QuestionInformationSerializer(data=data)
+        data = {
+            "question_text": "What do you think about this topic?",
+            "total_responses": 150,
+            "slug": "topic",
+        }
+        serializer = QuestionSerializer(data=data)
         assert not serializer.is_valid()
-        assert "total_responses" in serializer.errors
+        assert "number" in serializer.errors
 
     def test_invalid_response_count(self):
         """Test question information serializer with invalid response count"""
@@ -163,7 +179,7 @@ class TestQuestionInformationSerializer:
             "question_text": "What do you think about this topic?",
             "total_responses": "invalid",
         }
-        serializer = QuestionInformationSerializer(data=data)
+        serializer = QuestionSerializer(data=data)
         assert not serializer.is_valid()
         assert "total_responses" in serializer.errors
 

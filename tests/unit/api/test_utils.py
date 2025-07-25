@@ -1,14 +1,11 @@
 from unittest.mock import patch
-from uuid import uuid4
 
 import pytest
 from django.conf import settings
-from django.shortcuts import Http404
 
 from consultation_analyser.consultations.api.utils import (
     build_respondent_data_fast,
     build_response_filter_query,
-    get_consultation_and_question,
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
 )
@@ -123,35 +120,6 @@ class TestParseFiltersFromSerializer:
         validated_data = {"evidenceRich": False}
         filters = parse_filters_from_serializer(validated_data)
         assert "evidence_rich" not in filters
-
-
-@pytest.mark.django_db
-class TestGetConsultationAndQuestion:
-    def test_valid_consultation_and_question(self, consultation, question):
-        """Test successful retrieval of consultation and question"""
-        result = get_consultation_and_question(consultation.id, question.id)
-
-        assert result == question
-        assert result.consultation == consultation
-        # The consultation should be accessible through the relationship
-        assert result.consultation.id == consultation.id
-
-    def test_invalid_consultation_slug(self, question):
-        """Test that invalid consultation slug raises 404"""
-        with pytest.raises(Http404):
-            get_consultation_and_question(uuid4(), question.id)
-
-    def test_invalid_question_slug(self, consultation):
-        """Test that invalid question slug raises 404"""
-        with pytest.raises(Http404):
-            get_consultation_and_question(consultation.id, uuid4())
-
-    def test_question_belongs_to_different_consultation(self, question):
-        """Test that question from different consultation raises 404"""
-        other_consultation = ConsultationFactory()
-
-        with pytest.raises(Http404):
-            get_consultation_and_question(other_consultation.id, question.id)
 
 
 @pytest.mark.django_db
