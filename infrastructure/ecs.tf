@@ -96,8 +96,8 @@ module "backend" {
   certificate_arn = data.terraform_remote_state.universal.outputs.certificate_arn
 
   service_discovery_service_arn = aws_service_discovery_service.service_discovery_service.arn
-  create_networking = true
   create_listener   = false
+  create_networking = false
 
   additional_security_group_ingress = [
     {
