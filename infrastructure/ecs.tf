@@ -98,7 +98,7 @@ module "backend" {
   certificate_arn = data.terraform_remote_state.universal.outputs.certificate_arn
 
   service_discovery_service_arn = aws_service_discovery_service.service_discovery_service.arn
-  create_networking = false
+  create_networking = true
   create_listener   = false
 
   additional_security_group_ingress = [
@@ -144,6 +144,7 @@ module "frontend" {
   host                         = local.host
   create_listener              = true
   task_additional_iam_policies = local.additional_policy_arns
+  entrypoint = ["sh", "-c", "pwd && ls -la && cat package.json && sleep 3600"]
   certificate_arn = data.terraform_remote_state.universal.outputs.certificate_arn
 }
 
