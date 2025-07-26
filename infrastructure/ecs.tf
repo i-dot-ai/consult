@@ -81,6 +81,40 @@ module "ecs" {
   certificate_arn = data.terraform_remote_state.universal.outputs.certificate_arn
 }
 
+module "frontend" {
+  # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
+  #source            = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
+  source             = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.3.0-ecs"
+  name               = local.name
+  image_tag          = var.image_tag
+  ecr_repository_uri = var.frontend_repository_uri
+  ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
+  ecs_cluster_name   = data.terraform_remote_state.platform.outputs.ecs_cluster_name
+  memory             = local.ecs_memory
+  cpu                = local.ecs_cpus
+  health_check = {
+    healthy_threshold   = 3
+    unhealthy_threshold = 3
+    accepted_response   = "200"
+    path                = "/health"
+    timeout             = 6
+    port                = 3000
+  }
+  environment_variables = local.ecs_env_vars
+
+
+  vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
+  private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
+  container_port               = "3000"
+  load_balancer_security_group = module.load_balancer.load_balancer_security_group_id
+  aws_lb_arn                   = module.load_balancer.alb_arn
+  host                         = local.host
+  create_listener              = true
+  task_additional_iam_policies = local.additional_policy_arns
+  entrypoint = ["node", "server.js"]
+  certificate_arn = data.terraform_remote_state.universal.outputs.certificate_arn
+}
+
 module "worker" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source            = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
