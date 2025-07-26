@@ -32,3 +32,15 @@ resource "aws_route53_record" "type_a_record" {
     evaluate_target_health = true
   }
 }
+
+resource "aws_route53_record" "type_a_record_backend" {
+  zone_id = data.terraform_remote_state.account.outputs.hosted_zone_id
+  name    = local.host_backend
+  type    = "A"
+
+  alias {
+    name                   = module.load_balancer.load_balancer_dns_name
+    zone_id                = module.load_balancer.load_balancer_zone_id
+    evaluate_target_health = true
+  }
+}
