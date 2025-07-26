@@ -88,8 +88,6 @@ module "backend" {
   container_port               = "8000"
   load_balancer_security_group = module.load_balancer.load_balancer_security_group_id
   aws_lb_arn                   = module.load_balancer.alb_arn
-  host                         = local.host_backend
-  # create_listener              = true
   task_additional_iam_policies = local.additional_policy_arns
   additional_execution_role_tags = {
     "RolePassableByRunner" = "True"
@@ -98,7 +96,7 @@ module "backend" {
   certificate_arn = data.terraform_remote_state.universal.outputs.certificate_arn
 
   service_discovery_service_arn = aws_service_discovery_service.service_discovery_service.arn
-  create_networking = true
+  create_networking = false
   create_listener   = false
 
   additional_security_group_ingress = [
