@@ -4,12 +4,12 @@ const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
-const TARGET_URL = process.env.TARGET_URL;
+const BACKEND_URL = process.env.BACKEND_URL;
 
 // Validate required environment variable
-if (!TARGET_URL) {
-  console.error('ERROR: TARGET_URL environment variable is required');
-  console.error('Please set TARGET_URL to the backend service URL (e.g., http://backend:8000)');
+if (!BACKEND_URL) {
+  console.error('ERROR: BACKEND_URL environment variable is required');
+  console.error('Please set BACKEND_URL to the backend service URL (e.g., http://backend:8000)');
   process.exit(1);
 }
 
