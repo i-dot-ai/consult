@@ -7,22 +7,25 @@ WORKDIR /app
 # Copy package files
 COPY package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
-
 # Copy application code
 COPY . .
 
+# Remove existing node_modules and package-lock.json to fix rollup native module issue
+RUN rm -rf node_modules package-lock.json
+
+# Install dependencies fresh
+RUN npm install
+
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+RUN adduser -S astro -u 1001
 
 # Change ownership of app directory
-RUN chown -R nextjs:nodejs /app
-USER nextjs
+RUN chown -R astro:nodejs /app
+USER astro
 
-# Expose port
-EXPOSE 3000
+# Expose port (dev server port)
+EXPOSE 4321
 
-# Start the application
-CMD ["npm", "start"]
+# Start the development server
+CMD ["npm", "run", "dev", "--", "--host", "0.0.0.0"]
