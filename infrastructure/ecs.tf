@@ -50,14 +50,6 @@ locals {
 }
 
 
-
-#   load_balancer_security_group = module.load_balancer.load_balancer_security_group_id
-#  aws_lb_arn                   = module.load_balancer.alb_arn
-#  https_listener_arn           = data.aws_lb_listener.lb_listener_443.arn
-#  task_additional_iam_policies = local.additional_policy_arns
-#  certificate_arn              = data.terraform_remote_state.universal.outputs.certificate_arn
-#  target_group_name_override   =  "caddy-mo-${var.env}-tg"
-
 module "backend" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source            = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
