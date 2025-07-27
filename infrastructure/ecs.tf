@@ -115,6 +115,23 @@ module "backend" {
   depends_on = [module.frontend]
 }
 
+# Add missing egress rule for backend security group
+resource "aws_security_group_rule" "backend_ecs_egress" {
+  type              = "egress"
+  from_port         = 0
+  to_port           = 0
+  protocol          = "-1"
+  cidr_blocks       = ["0.0.0.0/0"]
+  security_group_id = module.backend.ecs_sg_id
+  description       = "Allow all egress traffic for ECR access"
+}
+
+# Add missing ECS task execution role policy for backend
+resource "aws_iam_role_policy_attachment" "backend_ecs_task_execution_role_policy" {
+  role       = "i-dot-ai-dev-consult-backend-ecs-execution-task-role"
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
 module "frontend" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source            = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
