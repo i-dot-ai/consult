@@ -35,20 +35,6 @@ The proxy server handles requests in this order:
    });
    ```
 
-### Example Migration Process
-
-1. **Phase 1**: Start with API endpoints
-   - Migrate `/api/v2/*` endpoints to frontend
-   - Keep existing `/api/*` routes in Django
-
-2. **Phase 2**: Migrate UI components
-   - Add new React/Vue components under `/components/*`
-   - Gradually replace Django templates
-
-3. **Phase 3**: Migrate full pages
-   - Move complete pages like `/new-dashboard`
-   - Update internal links to use new routes
-
 ### Environment Variables
 
 - `BACKEND_URL` (required): Backend Django service URL
