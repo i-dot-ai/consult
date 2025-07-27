@@ -115,33 +115,6 @@ module "backend" {
   depends_on = [module.frontend]
 }
 
-# Add missing egress rule for backend security group
-resource "aws_security_group_rule" "backend_ecs_egress" {
-  type              = "egress"
-  from_port         = 0
-  to_port           = 0
-  protocol          = "-1"
-  cidr_blocks       = ["0.0.0.0/0"]
-  security_group_id = module.backend.ecs_sg_id
-  description       = "Allow all egress traffic for ECR access"
-}
-
-# Add backend security group access to RDS
-resource "aws_security_group_rule" "backend_to_rds" {
-  type                     = "ingress"
-  from_port                = 5432
-  to_port                  = 5432
-  protocol                 = "tcp"
-  source_security_group_id = module.backend.ecs_sg_id
-  security_group_id        = module.rds.postgres_sg_id
-  description              = "Allow backend ECS service to access RDS"
-}
-
-# Add missing ECS task execution role policy for backend
-resource "aws_iam_role_policy_attachment" "backend_ecs_task_execution_role_policy" {
-  role       = "i-dot-ai-dev-consult-backend-ecs-execution-task-role"
-  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
-}
 
 
 module "frontend" {
