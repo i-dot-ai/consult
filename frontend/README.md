@@ -51,7 +51,7 @@ The proxy server handles requests in this order:
 
 ### Environment Variables
 
-- `TARGET_URL` (required): Backend Django service URL
+- `BACKEND_URL` (required): Backend Django service URL
 - `PORT` (optional): Frontend proxy port (default: 3000)
 
 ### Development
@@ -61,7 +61,7 @@ The proxy server handles requests in this order:
 npm install
 
 # Start development server
-TARGET_URL=http://localhost:8000 npm start
+BACKEND_URL=http://localhost:8000 npm start
 
 # Production
 npm start
@@ -69,7 +69,7 @@ npm start
 
 ### Deployment
 
-The server is configured for ECS Fargate deployment. Set the `TARGET_URL` environment variable to your backend service URL.
+The server is configured for ECS Fargate deployment. Set the `BACKEND_URL` environment variable to your backend service URL.
 
 ### Logging
 

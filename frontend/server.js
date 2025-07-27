@@ -28,14 +28,14 @@ app.get('/health', (req, res) => {
     status: 'healthy',
     service: 'frontend-proxy',
     timestamp: new Date().toISOString(),
-    backend_target: TARGET_URL,
+    backend_target: BACKEND_URL,
     frontend_routes: FRONTEND_ROUTES
   });
 });
 
 // Create proxy middleware for backend routes
 const backendProxy = createProxyMiddleware({
-  target: TARGET_URL,
+  target: BACKEND_URL,
   changeOrigin: true,
   ws: true,
   logLevel: 'info',
@@ -44,7 +44,7 @@ const backendProxy = createProxyMiddleware({
     res.status(500).send('Backend proxy error');
   },
   onProxyReq: (proxyReq, req, res) => {
-    console.log(`Proxying ${req.method} ${req.url} to backend: ${TARGET_URL}${req.url}`);
+    console.log(`Proxying ${req.method} ${req.url} to backend: ${BACKEND_URL}${req.url}`);
   }
 });
 
@@ -53,6 +53,6 @@ app.use('/', backendProxy);
 
 app.listen(PORT, () => {
   console.log(`Frontend proxy server running on port ${PORT}`);
-  console.log(`Proxying requests to backend: ${TARGET_URL}`);
+  console.log(`Proxying requests to backend: ${BACKEND_URL}`);
   console.log(`Frontend routes: ${FRONTEND_ROUTES.length > 0 ? FRONTEND_ROUTES.join(', ') : 'none yet'}`);
 });
