@@ -3,6 +3,7 @@ import Layout from "../../../layouts/Layout.astro";
 
 import QuestionOverview from "../../../components/dashboard/QuestionsOverview.svelte";
 import Section from "../../../components/Section.svelte";
+import CrossCuttingThemes from "../../../components/CrossCuttingThemes.svelte";
 
 import { getConsultationById } from "../../../global/api";
 
@@ -21,5 +22,7 @@ const consultation = getConsultationById(consultationId || "");
             el.title = consultation.title;
             el.questions = consultation.questions;
         </script>
+
+        <CrossCuttingThemes client:load />
     </Section>
 </Layout>
