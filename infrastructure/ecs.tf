@@ -62,7 +62,7 @@ module "backend" {
   source             = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.3.0-ecs"
   name               = "${local.name}-backend"
   image_tag          = var.image_tag
-  ecr_repository_uri = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/${local.name}-backend"
+  ecr_repository_uri = var.ecr_repository_uri
   vpc_id             = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets    = data.terraform_remote_state.vpc.outputs.private_subnets
   host               = local.host_backend
@@ -74,7 +74,7 @@ module "backend" {
   task_additional_iam_policies = local.additional_policy_arns
   certificate_arn              = data.terraform_remote_state.universal.outputs.certificate_arn
   target_group_name_override   =  "consult-backend-${var.env}-tg"
-  permissions_boundary_name    = "infra/i-dot-ai-${var.env}-caddy-perms-boundary-app"
+  permissions_boundary_name    = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
 
   service_discovery_service_arn = aws_service_discovery_service.service_discovery_service.arn
   create_networking = true
@@ -126,11 +126,23 @@ resource "aws_security_group_rule" "backend_ecs_egress" {
   description       = "Allow all egress traffic for ECR access"
 }
 
+# Add backend security group access to RDS
+resource "aws_security_group_rule" "backend_to_rds" {
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  source_security_group_id = module.backend.ecs_sg_id
+  security_group_id        = module.rds.postgres_sg_id
+  description              = "Allow backend ECS service to access RDS"
+}
+
 # Add missing ECS task execution role policy for backend
 resource "aws_iam_role_policy_attachment" "backend_ecs_task_execution_role_policy" {
   role       = "i-dot-ai-dev-consult-backend-ecs-execution-task-role"
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
+
 
 module "frontend" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
