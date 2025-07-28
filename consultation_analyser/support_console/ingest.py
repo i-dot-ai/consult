@@ -366,7 +366,7 @@ def read_multi_choice_response_file(responses_file_key: str) -> dict[str, list[s
 
 def merge_free_text_and_multi_choice(
     free_text: dict[str, str], multi_choice: dict[str, list[str]]
-) -> list[tuple[str, str | None, list[str] | None]]:
+) -> list[tuple[str, str, list[str]]]:
     keys = set(free_text).union(multi_choice)
     return [(key, free_text.get(key, ""), multi_choice.get(key, [])) for key in keys]
 
