@@ -58,3 +58,33 @@ class FilterSerializer(serializers.Serializer):
     # Pagination parameters
     page = serializers.IntegerField(required=False, default=1, min_value=1)
     page_size = serializers.IntegerField(required=False, default=50, min_value=1, max_value=100)
+
+
+class ThemeDetailSerializer(serializers.Serializer):
+    """Serializer for individual theme details within cross-cutting themes"""
+    theme_id = serializers.CharField()
+    theme_name = serializers.CharField()
+    theme_key = serializers.CharField()
+    theme_description = serializers.CharField()
+    question_number = serializers.IntegerField()
+    mention_count = serializers.IntegerField()
+
+
+class CrossCuttingThemeSerializer(serializers.Serializer):
+    """Serializer for individual cross-cutting theme"""
+    id = serializers.CharField()
+    name = serializers.CharField()
+    description = serializers.CharField()
+    unique_respondents_count = serializers.IntegerField()
+    unique_respondents_percentage = serializers.FloatField()
+    questions = serializers.ListField(child=serializers.IntegerField())
+    total_mentions = serializers.IntegerField()
+    themes = serializers.ListField(child=ThemeDetailSerializer())
+
+
+class CrossCuttingThemesResponseSerializer(serializers.Serializer):
+    """Serializer for cross-cutting themes API response"""
+    consultation_id = serializers.CharField()
+    consultation_title = serializers.CharField()
+    total_respondents = serializers.IntegerField()
+    cross_cutting_themes = serializers.ListField(child=CrossCuttingThemeSerializer())

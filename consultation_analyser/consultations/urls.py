@@ -1,6 +1,7 @@
 from django.urls import path
 
 from .api.views import (
+    CrossCuttingThemesAPIView,
     DemographicAggregationsAPIView,
     DemographicOptionsAPIView,
     FilteredResponsesAPIView,
@@ -56,6 +57,11 @@ urlpatterns = [
         "api/consultations/<str:consultation_slug>/questions/<str:question_slug>/question-information/",
         QuestionInformationAPIView.as_view(),
         name="api_question_information",
+    ),
+    path(
+        "api/consultations/<str:consultation_slug>/cross-cutting-themes/",
+        CrossCuttingThemesAPIView.as_view(),
+        name="api_cross_cutting_themes",
     ),
     path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/show-next/",

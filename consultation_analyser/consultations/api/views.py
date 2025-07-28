@@ -8,6 +8,7 @@ from rest_framework.views import APIView
 from .. import models
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
+    CrossCuttingThemesResponseSerializer,
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     FilterSerializer,
@@ -215,5 +216,86 @@ class QuestionInformationAPIView(APIView):
         
         serializer = QuestionInformationSerializer(data=data)
         serializer.is_valid()
+        
+        return Response(serializer.data)
+
+
+class CrossCuttingThemesAPIView(APIView):
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    
+    def get(self, request, consultation_slug):
+        """Get cross-cutting themes for a consultation with unique respondents calculation"""
+        from django.shortcuts import get_object_or_404
+        
+        consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+        
+        total_respondents = models.Respondent.objects.filter(consultation=consultation).count()
+        
+        cross_cutting_themes = models.CrossCuttingTheme.objects.filter(
+            consultation=consultation
+        ).prefetch_related('theme_assignments__theme__question')
+        
+        cross_cutting_themes_data = []
+        
+        for cct in cross_cutting_themes:
+            assigned_themes = [assignment.theme for assignment in cct.theme_assignments.all()]
+            theme_ids = [theme.id for theme in assigned_themes]
+            
+            unique_respondents_count = 0
+            unique_respondents_percentage = 0.0
+            
+            if theme_ids:
+                unique_respondents = models.Respondent.objects.filter(
+                    response__annotation__themes__id__in=theme_ids,
+                    consultation=consultation
+                ).distinct()
+                
+                unique_respondents_count = unique_respondents.count()
+                if total_respondents > 0:
+                    unique_respondents_percentage = (unique_respondents_count / total_respondents) * 100
+            
+            questions_involved = set()
+            themes_details = []
+            for assignment in cct.theme_assignments.all():
+                theme = assignment.theme
+                questions_involved.add(theme.question.number)
+                
+                mention_count = models.Response.objects.filter(
+                    annotation__themes__id=theme.id
+                ).distinct().count()
+                
+                themes_details.append({
+                    "theme_id": str(theme.id),
+                    "theme_name": theme.name,
+                    "theme_key": theme.key,
+                    "theme_description": theme.description,
+                    "question_number": theme.question.number,
+                    "mention_count": mention_count
+                })
+            
+            total_mentions = sum(theme["mention_count"] for theme in themes_details)
+            
+            theme_data = {
+                "id": str(cct.id),
+                "name": cct.name,
+                "description": cct.description,
+                "unique_respondents_count": unique_respondents_count,
+                "unique_respondents_percentage": round(unique_respondents_percentage, 1),
+                "questions": sorted(list(questions_involved)),
+                "total_mentions": total_mentions,
+                "themes": themes_details
+            }
+            
+            cross_cutting_themes_data.append(theme_data)
+        
+        response_data = {
+            "consultation_id": str(consultation.id),
+            "consultation_title": consultation.title,
+            "total_respondents": total_respondents,
+            "cross_cutting_themes": cross_cutting_themes_data
+        }
+        
+        serializer = CrossCuttingThemesResponseSerializer(data=response_data)
+        serializer.is_valid(raise_exception=True)
         
         return Response(serializer.data)
