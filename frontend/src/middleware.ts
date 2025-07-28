@@ -35,9 +35,10 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     const fullBackendUrl = backendUrl + url.pathname + url.search;
 
     // TODO: add logic to skip as new pages are moved to astro
-    // if (context.url.pathname === "url/to/skip") {
-    //     return next();
-    // }
+    const toSkip = ["/"];
+    if (toSkip.includes(context.url.pathname)) {
+        return next();
+    }
 
     const hasBody = !["GET", "HEAD"].includes(context.request.method);
 
