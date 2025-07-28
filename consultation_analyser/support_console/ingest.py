@@ -137,9 +137,11 @@ def validate_consultation_structure(
             except s3.exceptions.NoSuchKey:
                 errors.append(f"Missing {question_file}")
                 has_free_text = True
+                has_multiple_choice = False
             except Exception as e:
                 errors.append(f"Error checking {question_file}: {str(e)}")
                 has_free_text = True
+                has_multiple_choice = False
 
             try:
                 s3.head_object(Bucket=bucket_name, Key=responses_file)
@@ -327,7 +329,49 @@ def _embed_responses(responses: list[dict]) -> list[Response]:
     return [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
 
 
-def import_responses(question: Question, responses_file_key: str):
+def read_response_file(responses_file_key: str) -> dict[str, str]:
+    s3_client = boto3.client("s3")
+
+    responses_data = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key)
+    text_response_dict = {}
+    for line in responses_data["Body"].iter_lines():
+        response_data = json.loads(line.decode("utf-8"))
+        themefinder_id = response_data["themefinder_id"]
+        free_text = response_data.get("text", "")
+        assert isinstance(free_text, str)
+        if free_text:
+            text_response_dict[themefinder_id] = free_text
+    return text_response_dict
+
+
+def read_multi_choice_response_file(responses_file_key: str) -> dict[str, list[str]]:
+    s3_client = boto3.client("s3")
+
+    try:
+        responses_data = s3_client.get_object(
+            Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key
+        )
+    except s3_client.exceptions.NoSuchKey:
+        return {}
+
+    multi_choice_response_dict = {}
+    for line in responses_data["Body"].iter_lines():
+        response_data = json.loads(line.decode("utf-8"))
+        themefinder_id = response_data["themefinder_id"]
+        chosen_options = response_data.get("options", [])
+        assert isinstance(chosen_options, list)
+        multi_choice_response_dict[themefinder_id] = chosen_options
+    return multi_choice_response_dict
+
+
+def merge_free_text_and_multi_choice(
+    free_text: dict[str, str], multi_choice: dict[str, list[str]]
+) -> list[tuple[str, str | None, list[str] | None]]:
+    keys = set(free_text).union(multi_choice)
+    return [(key, free_text.get(key, ""), multi_choice.get(key, [])) for key in keys]
+
+
+def import_responses(question: Question, responses_file_key: str, multichoice_file_key: str):
     """
     Import response data for a Consultation Question.
 
@@ -335,9 +379,11 @@ def import_responses(question: Question, responses_file_key: str):
         question: Question object for response
         responses_file_key: s3key
     """
-    s3_client = boto3.client("s3")
 
-    responses_data = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key)
+    plain_response_dict = read_response_file(responses_file_key)
+
+    multichoice_data = read_multi_choice_response_file(multichoice_file_key)
+    responses = merge_free_text_and_multi_choice(plain_response_dict, multichoice_data)
 
     try:
         # Get respondents
@@ -351,23 +397,16 @@ def import_responses(question: Question, responses_file_key: str):
         max_batch_size = 2048
         total_tokens = 0
 
-        for i, line in enumerate(responses_data["Body"].iter_lines()):
-            response_data = json.loads(line.decode("utf-8"))
-            themefinder_id = response_data["themefinder_id"]
-
+        for i, (themefinder_id, free_text, chosen_options) in enumerate(responses):
             if themefinder_id not in respondent_dict:
                 logger.warning(f"No respondent found for themefinder_id: {themefinder_id}")
-                continue
-
-            free_text = response_data.get("text", "")
-            if not free_text:
-                logger.warning(f"Empty text for themefinder_id: {themefinder_id}")
                 continue
 
             token_count = len(encoding.encode(free_text))
             if token_count > 8192:
                 logger.warning(f"Truncated text for themefinder_id: {themefinder_id}")
-                free_text = free_text[:1000]
+                if free_text:  # type:ignore
+                    free_text = free_text[:1000]
                 token_count = len(encoding.encode(free_text))
 
             if (
@@ -385,7 +424,7 @@ def import_responses(question: Question, responses_file_key: str):
                     respondent=respondent_dict[themefinder_id],
                     question=question,
                     free_text=free_text,
-                    chosen_options=response_data.get("options", []),
+                    chosen_options=chosen_options,
                 )
             )
             total_tokens += token_count
@@ -404,62 +443,6 @@ def import_responses(question: Question, responses_file_key: str):
         logger.info(
             f"Updated total_responses count for question {question.number}: {question.total_responses}"
         )
-
-    except Exception as e:
-        logger.error(
-            f"Error importing responses for consultation {question.consultation.title}, question {question.number}: {str(e)}"
-        )
-        raise
-
-
-def import_multiple_choice_responses(question: Question, multichoice_file_key: str):
-    s3_client = boto3.client("s3")
-    multichoice_data = s3_client.get_object(
-        Bucket=settings.AWS_BUCKET_NAME, Key=multichoice_file_key
-    )
-
-    try:
-        respondents = Respondent.objects.filter(consultation=question.consultation)
-        themefinder_ids_for_existing_responses = Response.objects.filter(
-            question=question
-        ).values_list("respondent__themefinder_id", flat=True)
-        respondent_dict = {r.themefinder_id: r for r in respondents}
-
-        responses_to_update = []
-        responses_to_create = []
-        for i, line in enumerate(multichoice_data["Body"].iter_lines()):
-            response_data = json.loads(line.decode("utf-8"))
-            themefinder_id = response_data["themefinder_id"]
-            chosen_options = response_data.get("options", [])
-
-            if themefinder_id in themefinder_ids_for_existing_responses:
-                response = Response.objects.get(
-                    respondent=respondent_dict[themefinder_id], question=question
-                )
-                response.chosen_options = chosen_options
-                responses_to_update.append(response)
-            else:
-                responses_to_create.append(
-                    Response(
-                        respondent=respondent_dict[themefinder_id],
-                        question=question,
-                        chosen_options=chosen_options,
-                    )
-                )
-
-            if (
-                len(responses_to_create) >= DEFAULT_BATCH_SIZE
-                or len(responses_to_update) >= DEFAULT_BATCH_SIZE
-            ):
-                Response.objects.bulk_create(responses_to_create)
-                Response.objects.bulk_update(responses_to_update, fields=["chosen_options"])
-                responses_to_create = []
-                responses_to_update = []
-
-        # Handle any remaining responses
-        if responses_to_create or responses_to_update:
-            Response.objects.bulk_create(responses_to_create)
-            Response.objects.bulk_update(responses_to_update, fields=["chosen_options"])
 
     except Exception as e:
         logger.error(
@@ -540,25 +523,23 @@ def import_questions(
                 multiple_choice_options=multi_choice_options,
             )
 
-            if question.has_free_text:
-                responses_file_key = f"{question_folder}responses.jsonl"
-                responses = queue.enqueue(import_responses, question, responses_file_key)
+            responses_file_key = f"{question_folder}responses.jsonl"
+            multiple_choice_file = f"{question_folder}multi_choice.jsonl"
+            responses = queue.enqueue(
+                import_responses, question, responses_file_key, multiple_choice_file
+            )
 
-                output_folder = f"{outputs_path}question_part_{question_num_str}/"
-                themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
-                response_annotations = queue.enqueue(
-                    import_response_annotations, question, output_folder, depends_on=themes
-                )
-                queue.enqueue(
-                    import_response_annotation_themes,
-                    question,
-                    output_folder,
-                    depends_on=response_annotations,
-                )
-
-            if question.has_multiple_choice:
-                multichoice_file_key = f"{question_folder}multi_choice.jsonl"
-                queue.enqueue(import_multiple_choice_responses, question, multichoice_file_key)
+            output_folder = f"{outputs_path}question_part_{question_num_str}/"
+            themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
+            response_annotations = queue.enqueue(
+                import_response_annotations, question, output_folder, depends_on=themes
+            )
+            queue.enqueue(
+                import_response_annotation_themes,
+                question,
+                output_folder,
+                depends_on=response_annotations,
+            )
 
     except Exception as e:
         logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
