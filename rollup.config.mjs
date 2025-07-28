@@ -5,12 +5,12 @@ export default {
     input: "consultation_analyser/lit/csr/index.mjs",
     output: [
         {
-            dir: "frontend/lit/",
+            dir: "frontend/public/lit/",
             format: "es",
             sourcemap: true,
         },
         {
-            dir: "ui/public/lit/",
+            dir: "legacy-frontend/lit",
             format: "es",
             sourcemap: true,
         }
