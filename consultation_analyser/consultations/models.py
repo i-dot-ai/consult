@@ -214,6 +214,9 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
             models.Index(fields=["consultation", "field_name"]),
         ]
 
+    def __str__(self):
+        return f"{self.field_name}={self.field_value}"
+
     @classmethod
     def rebuild_for_consultation(cls, consultation: "Consultation") -> int:
         """Rebuild demographic options for a consultation from respondent data"""

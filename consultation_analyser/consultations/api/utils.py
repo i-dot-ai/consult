@@ -2,7 +2,6 @@ from typing import TypedDict
 
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Count, Q
-from django.shortcuts import get_object_or_404
 from pgvector.django import CosineDistance
 
 from ...embeddings import embed_text
@@ -23,30 +22,30 @@ class FilterParams(TypedDict, total=False):
 def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
     """Parse filter parameters from serializer validated data"""
     filters = FilterParams()
-    
+
     sentiment_filters = validated_data.get("sentimentFilters", "")
     if sentiment_filters:
         filters["sentiment_list"] = sentiment_filters.split(",")
-    
+
     theme_filters = validated_data.get("themeFilters", "")
     if theme_filters:
         filters["theme_list"] = theme_filters.split(",")
-    
+
     if "themesSortDirection" in validated_data:
         filters["themes_sort_direction"] = validated_data["themesSortDirection"]
-    
+
     if "themesSortType" in validated_data:
         filters["themes_sort_type"] = validated_data["themesSortType"]
-    
+
     if validated_data.get("evidenceRich"):
         filters["evidence_rich"] = True
-    
+
     if "searchValue" in validated_data:
         filters["search_value"] = validated_data["searchValue"]
-    
+
     if "searchMode" in validated_data:
         filters["search_mode"] = validated_data["searchMode"]
-    
+
     # Parse demographic filters
     demo_filters = validated_data.get("demoFilters", [])
     if demo_filters:
@@ -58,43 +57,20 @@ def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
                     filters_dict[key] = value
         if filters_dict:
             filters["demo_filters"] = filters_dict
-    
+
     return filters
-
-
-def get_consultation_and_question(consultation_slug: str, question_slug: str) -> models.Question:
-    """Get question object with consultation prefetched in a single query.
-    
-    This utility eliminates duplicate database queries across API views
-    by combining the consultation and question lookups with select_related.
-    
-    Args:
-        consultation_slug: The consultation slug from URL
-        question_slug: The question slug from URL
-        
-    Returns:
-        Question object with consultation prefetched
-        
-    Raises:
-        Http404: If consultation or question doesn't exist
-    """
-    return get_object_or_404(
-        models.Question.objects.select_related("consultation"),
-        slug=question_slug,
-        consultation__slug=consultation_slug,
-    )
 
 
 def build_response_filter_query(filters: FilterParams, question: models.Question) -> Q:
     """Build a Q object for filtering responses based on filter params"""
     query = Q(question=question)
-    
+
     if filters.get("sentiment_list"):
         query &= Q(annotation__sentiment__in=filters["sentiment_list"])
-    
+
     if filters.get("evidence_rich"):
         query &= Q(annotation__evidence_rich=models.ResponseAnnotation.EvidenceRich.YES)
-    
+
     # Handle demographic filters
     if demo_filters := filters.get("demo_filters"):
         for field, value in demo_filters.items():
@@ -107,7 +83,7 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
                 # Handle string values
                 field_query |= Q(**{f"respondent__demographics__{field}": value})
             query &= field_query
-    
+
     return query
 
 
@@ -171,10 +147,9 @@ def get_filtered_responses_with_themes(
     return queryset.order_by("created_at")  # Consistent ordering for pagination
 
 
-
 def build_respondent_data_fast(response: models.Response) -> dict:
     """Optimized respondent data builder for orjson serialization.
-    
+
     This version minimizes Python object creation and is optimized for speed.
     Use this when you need maximum performance for large datasets.
     """
@@ -193,11 +168,9 @@ def build_respondent_data_fast(response: models.Response) -> dict:
         return data
 
     annotation = response.annotation
-    
+
     # Direct boolean assignment (faster than conditional)
-    data["evidenceRich"] = (
-        annotation.evidence_rich == models.ResponseAnnotation.EvidenceRich.YES
-    )
+    data["evidenceRich"] = annotation.evidence_rich == models.ResponseAnnotation.EvidenceRich.YES
 
     # Optimize theme building - use prefetched data efficiently
     themes = annotation.themes.all()

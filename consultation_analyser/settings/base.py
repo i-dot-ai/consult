@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     "django_rq",
     "simple_history",
     "rest_framework",
+    "django_filters",
 ]
 
 
@@ -128,7 +129,7 @@ DATABASES = {
             "RECYCLE": env.int("DB_POOL_RECYCLE", default=3600),  # 1 hour
             "PRE_PING": env.bool("DB_POOL_PRE_PING", default=True),
         },
-        # Keep existing options 
+        # Keep existing options
         "OPTIONS": {
             **_db_config.get("OPTIONS", {}),
         },
@@ -172,7 +173,7 @@ USE_TZ = True
 COMPRESS_PRECOMPILERS = (("text/x-scss", "django_libsass.SassCompiler"),)
 
 STATIC_URL = "static/"
-STATIC_ROOT = "frontend/"
+STATIC_ROOT = "legacy-frontend/"
 STATICFILES_DIRS = [
     ("govuk-assets", BASE_DIR / "node_modules/govuk-frontend/dist/govuk/assets"),
     ("iai-assets", BASE_DIR / "node_modules/i.ai-design-system/dist/"),
@@ -306,3 +307,13 @@ if DEBUG and ("pytest" not in sys.modules and "test" not in sys.argv):
 
 # changing this will require a database migration
 EMBEDDING_DIMENSION = 1024
+
+REST_FRAMEWORK = {
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 10,
+    "DEFAULT_FILTER_BACKENDS": ["django_filters.rest_framework.DjangoFilterBackend"],
+    "DEFAULT_RENDERER_CLASSES": (
+        "drf_orjson_renderer.renderers.ORJSONRenderer",
+        "rest_framework.renderers.BrowsableAPIRenderer",
+    ),
+}

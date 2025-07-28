@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 import orjson
 import pytest
 from django.contrib.auth.models import Group
@@ -58,8 +60,8 @@ class TestDemographicOptionsAPIView:
         """Test API endpoint returns empty options when no demographic data exists"""
         client.force_login(consultation_user)
         url = reverse(
-            "api_demographic_options",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-demographics",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
 
@@ -72,16 +74,16 @@ class TestDemographicOptionsAPIView:
         """Test API endpoint returns demographic options correctly"""
         # Create respondents with different demographic data
         RespondentFactory(
-            consultation=question.consultation, 
-            demographics={"individual": True, "region": "north", "age": 25}
+            consultation=question.consultation,
+            demographics={"individual": True, "region": "north", "age": 25},
         )
         RespondentFactory(
-            consultation=question.consultation, 
-            demographics={"individual": False, "region": "south", "age": 35}
+            consultation=question.consultation,
+            demographics={"individual": False, "region": "south", "age": 35},
         )
         RespondentFactory(
-            consultation=question.consultation, 
-            demographics={"individual": True, "region": "north", "age": 45}
+            consultation=question.consultation,
+            demographics={"individual": True, "region": "north", "age": 45},
         )
 
         # Rebuild demographic options from respondent data
@@ -89,8 +91,8 @@ class TestDemographicOptionsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "api_demographic_options",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-demographics",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
 
@@ -98,7 +100,7 @@ class TestDemographicOptionsAPIView:
         data = response.json()
         assert "demographic_options" in data
         options = data["demographic_options"]
-        
+
         assert set(options["individual"]) == {"False", "True"}
         assert set(options["region"]) == {"north", "south"}
         assert set(options["age"]) == {"25", "35", "45"}
@@ -106,8 +108,8 @@ class TestDemographicOptionsAPIView:
     def test_permission_required(self, client, question):
         """Test API endpoint requires proper permissions"""
         url = reverse(
-            "api_demographic_options",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-demographics",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
         assert response.status_code == 403
@@ -115,10 +117,7 @@ class TestDemographicOptionsAPIView:
     def test_invalid_consultation_slug(self, client, consultation_user):
         """Test API endpoint with invalid consultation slug"""
         client.force_login(consultation_user)
-        url = reverse(
-            "api_demographic_options",
-            kwargs={"consultation_slug": "invalid", "question_slug": "invalid"}
-        )
+        url = reverse("question-demographics", kwargs={"consultation_pk": uuid4(), "pk": uuid4()})
         response = client.get(url)
         assert response.status_code == 403  # DRF returns 403 for permission denied
 
@@ -129,8 +128,8 @@ class TestDemographicAggregationsAPIView:
         """Test API endpoint returns empty aggregations when no data exists"""
         client.force_login(consultation_user)
         url = reverse(
-            "api_demographic_aggregations",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-demographic_aggregations",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
 
@@ -162,15 +161,15 @@ class TestDemographicAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "api_demographic_aggregations",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-demographic_aggregations",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
 
         assert response.status_code == 200
         data = response.json()
         assert "demographic_aggregations" in data
-        
+
         aggregations = data["demographic_aggregations"]
         assert aggregations["gender"]["male"] == 2
         assert aggregations["gender"]["female"] == 1
@@ -183,12 +182,11 @@ class TestDemographicAggregationsAPIView:
         """Test API endpoint applies demographic filters correctly"""
         # Create respondents with different demographics
         respondent1 = RespondentFactory(
-            consultation=question.consultation, 
-            demographics={"individual": True, "region": "north"}
+            consultation=question.consultation, demographics={"individual": True, "region": "north"}
         )
         respondent2 = RespondentFactory(
-            consultation=question.consultation, 
-            demographics={"individual": False, "region": "south"}
+            consultation=question.consultation,
+            demographics={"individual": False, "region": "south"},
         )
 
         ResponseFactory(question=question, respondent=respondent1)
@@ -196,16 +194,16 @@ class TestDemographicAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "api_demographic_aggregations",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-demographic_aggregations",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
-        
+
         # Filter by individual=true
         response = client.get(url + "?demoFilters=individual:true")
 
         assert response.status_code == 200
         data = response.json()
-        
+
         # Should only include data from individual=True respondent
         aggregations = data["demographic_aggregations"]
         assert aggregations["individual"]["True"] == 1
@@ -218,10 +216,10 @@ class TestDemographicAggregationsAPIView:
         """Test API endpoint handles invalid filter parameters"""
         client.force_login(consultation_user)
         url = reverse(
-            "api_demographic_aggregations",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-demographic_aggregations",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
-        
+
         # Test invalid search mode
         response = client.get(url + "?searchMode=invalid")
         assert response.status_code == 400
@@ -233,8 +231,8 @@ class TestThemeInformationAPIView:
         """Test API endpoint returns empty themes list when no themes exist"""
         client.force_login(consultation_user)
         url = reverse(
-            "api_theme_information",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-themes",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
 
@@ -243,12 +241,14 @@ class TestThemeInformationAPIView:
         assert "themes" in data
         assert data["themes"] == []
 
-    def test_get_theme_information_with_themes(self, client, consultation_user, question, theme, theme2):
+    def test_get_theme_information_with_themes(
+        self, client, consultation_user, question, theme, theme2
+    ):
         """Test API endpoint returns theme information correctly"""
         client.force_login(consultation_user)
         url = reverse(
-            "api_theme_information",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-themes",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
 
@@ -256,11 +256,11 @@ class TestThemeInformationAPIView:
         data = response.json()
         assert "themes" in data
         themes = data["themes"]
-        
+
         assert len(themes) == 2
         theme_names = {t["name"] for t in themes}
         assert theme_names == {"Theme A", "Theme B"}
-        
+
         # Verify theme structure
         for theme_data in themes:
             assert "id" in theme_data
@@ -274,8 +274,8 @@ class TestThemeAggregationsAPIView:
         """Test API endpoint returns empty aggregations when no responses exist"""
         client.force_login(consultation_user)
         url = reverse(
-            "api_theme_aggregations",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-theme_aggregations",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
 
@@ -284,7 +284,9 @@ class TestThemeAggregationsAPIView:
         assert "theme_aggregations" in data
         assert data["theme_aggregations"] == {}
 
-    def test_get_theme_aggregations_with_responses(self, client, consultation_user, question, theme, theme2):
+    def test_get_theme_aggregations_with_responses(
+        self, client, consultation_user, question, theme, theme2
+    ):
         """Test API endpoint returns theme aggregations correctly"""
         # Create respondents and responses
         respondent1 = RespondentFactory(consultation=question.consultation)
@@ -302,20 +304,22 @@ class TestThemeAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "api_theme_aggregations",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-theme_aggregations",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
 
         assert response.status_code == 200
         data = response.json()
         assert "theme_aggregations" in data
-        
+
         aggregations = data["theme_aggregations"]
         assert aggregations[str(theme.id)] == 2  # Theme A appears in 2 responses
         assert aggregations[str(theme2.id)] == 1  # Theme B appears in 1 response
 
-    def test_get_theme_aggregations_with_filters(self, client, consultation_user, question, theme, theme2):
+    def test_get_theme_aggregations_with_filters(
+        self, client, consultation_user, question, theme, theme2
+    ):
         """Test API endpoint applies theme filtering correctly"""
         # Create responses with different theme combinations
         respondent1 = RespondentFactory(consultation=question.consultation)
@@ -334,16 +338,16 @@ class TestThemeAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "api_theme_aggregations",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-theme_aggregations",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
-        
+
         # Filter by theme1 AND theme2 - should only return response1
         response = client.get(url + f"?themeFilters={theme.id},{theme2.id}")
 
         assert response.status_code == 200
         data = response.json()
-        
+
         # Should only show counts from responses that have BOTH themes
         aggregations = data["theme_aggregations"]
         assert aggregations[str(theme.id)] == 1  # Only response1 has both themes
@@ -356,24 +360,19 @@ class TestFilteredResponsesAPIView:
         """Test API endpoint returns filtered responses correctly"""
         # Create test data
         respondent = RespondentFactory(
-            consultation=question.consultation, 
-            demographics={"individual": True}
+            consultation=question.consultation, demographics={"individual": True}
         )
-        ResponseFactory(
-            question=question, 
-            respondent=respondent, 
-            free_text="Test response"
-        )
+        ResponseFactory(question=question, respondent=respondent, free_text="Test response")
 
         client.force_login(consultation_user)
         url = reverse(
-            "api_filtered_responses",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-filtered_responses",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
 
         assert response.status_code == 200
-        
+
         # Parse the response
         data = orjson.loads(response.content)
 
@@ -399,29 +398,30 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "api_filtered_responses",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-filtered_responses",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url + "?page_size=2&page=1")
 
         assert response.status_code == 200
-        
+
         data = orjson.loads(response.content)
 
         assert len(data["all_respondents"]) == 2
         assert data["has_more_pages"] is True
         assert data["respondents_total"] == 5
 
-    def test_get_filtered_responses_with_demographic_filters(self, client, consultation_user, question):
+    def test_get_filtered_responses_with_demographic_filters(
+        self, client, consultation_user, question
+    ):
         """Test API endpoint with demographic filtering"""
         # Create respondents with different demographics
         respondent1 = RespondentFactory(
-            consultation=question.consultation, 
-            demographics={"individual": True, "region": "north"}
+            consultation=question.consultation, demographics={"individual": True, "region": "north"}
         )
         respondent2 = RespondentFactory(
-            consultation=question.consultation, 
-            demographics={"individual": False, "region": "south"}
+            consultation=question.consultation,
+            demographics={"individual": False, "region": "south"},
         )
 
         ResponseFactory(question=question, respondent=respondent1)
@@ -429,15 +429,15 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "api_filtered_responses",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-filtered_responses",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
-        
+
         # Filter by individual=true
         response = client.get(url + "?demoFilters=individual:true")
 
         assert response.status_code == 200
-        
+
         data = orjson.loads(response.content)
 
         assert data["respondents_total"] == 2  # Total respondents
@@ -445,16 +445,24 @@ class TestFilteredResponsesAPIView:
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
-    def test_get_filtered_responses_with_theme_filters(self, client, consultation_user, question, theme, theme2):
+    def test_get_filtered_responses_with_theme_filters(
+        self, client, consultation_user, question, theme, theme2
+    ):
         """Test API endpoint with theme filtering using AND logic"""
         # Create responses with different theme combinations
         respondent1 = RespondentFactory(consultation=question.consultation)
         respondent2 = RespondentFactory(consultation=question.consultation)
         respondent3 = RespondentFactory(consultation=question.consultation)
 
-        response1 = ResponseFactory(question=question, respondent=respondent1, free_text="Response 1")
-        response2 = ResponseFactory(question=question, respondent=respondent2, free_text="Response 2")
-        response3 = ResponseFactory(question=question, respondent=respondent3, free_text="Response 3")
+        response1 = ResponseFactory(
+            question=question, respondent=respondent1, free_text="Response 1"
+        )
+        response2 = ResponseFactory(
+            question=question, respondent=respondent2, free_text="Response 2"
+        )
+        response3 = ResponseFactory(
+            question=question, respondent=respondent3, free_text="Response 3"
+        )
 
         # Response 1: has theme and theme2
         annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
@@ -470,15 +478,15 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "api_filtered_responses",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-filtered_responses",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
-        
+
         # Filter by theme AND theme2 - should only return response1
         response = client.get(url + f"?themeFilters={theme.id},{theme2.id}")
 
         assert response.status_code == 200
-        
+
         data = orjson.loads(response.content)
 
         assert data["respondents_total"] == 3  # Total respondents
@@ -490,10 +498,10 @@ class TestFilteredResponsesAPIView:
         """Test API endpoint handles invalid parameters"""
         client.force_login(consultation_user)
         url = reverse(
-            "api_filtered_responses",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-filtered_responses",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
-        
+
         # Test invalid page_size (too large)
         response = client.get(url + "?page_size=200")
         assert response.status_code == 400
@@ -511,20 +519,20 @@ class TestQuestionInformationAPIView:
         for i in range(3):
             respondent = RespondentFactory(consultation=question.consultation)
             ResponseFactory(question=question, respondent=respondent, free_text=f"Response {i}")
-        
+
         # Update the total_responses count
         question.update_total_responses()
 
         client.force_login(consultation_user)
         url = reverse(
-            "api_question_information",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            "question-detail",
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
 
         assert response.status_code == 200
         data = response.json()
-        
+
         assert "question_text" in data
         assert "total_responses" in data
         assert data["question_text"] == question.text
@@ -534,12 +542,12 @@ class TestQuestionInformationAPIView:
 @pytest.mark.django_db
 class TestAPIViewPermissions:
     """Test permissions across all API views"""
-    
+
     @pytest.fixture()
     def user_without_dashboard_access(self):
         """User without dashboard access"""
         return UserFactory()
-    
+
     @pytest.fixture()
     def user_without_consultation_access(self):
         """User with dashboard access but not consultation access"""
@@ -549,55 +557,68 @@ class TestAPIViewPermissions:
         user.save()
         return user
 
-    @pytest.mark.parametrize("endpoint_name", [
-        "api_demographic_options",
-        "api_demographic_aggregations", 
-        "api_theme_information",
-        "api_theme_aggregations",
-        "api_filtered_responses",
-        "api_question_information"
-    ])
+    @pytest.mark.parametrize(
+        "endpoint_name",
+        [
+            "question-demographics",
+            "question-demographic_aggregations",
+            "question-themes",
+            "question-theme_aggregations",
+            "question-filtered_responses",
+            "question-detail",
+        ],
+    )
     def test_unauthenticated_access_denied(self, client, question, endpoint_name):
         """Test that unauthenticated users cannot access any API endpoint"""
         url = reverse(
             endpoint_name,
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
         assert response.status_code == 403
 
-    @pytest.mark.parametrize("endpoint_name", [
-        "api_demographic_options",
-        "api_demographic_aggregations", 
-        "api_theme_information",
-        "api_theme_aggregations",
-        "api_filtered_responses",
-        "api_question_information"
-    ])
-    def test_user_without_dashboard_access_denied(self, client, question, user_without_dashboard_access, endpoint_name):
+    @pytest.mark.parametrize(
+        "endpoint_name",
+        [
+            "question-demographics",
+            "question-demographic_aggregations",
+            "question-themes",
+            "question-theme_aggregations",
+            "question-filtered_responses",
+            "question-detail",
+        ],
+    )
+    def test_user_without_dashboard_access_denied(
+        self, client, question, user_without_dashboard_access, endpoint_name
+    ):
         """Test that users without dashboard access cannot access any API endpoint"""
         client.force_login(user_without_dashboard_access)
         url = reverse(
             endpoint_name,
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
         assert response.status_code == 403
 
-    @pytest.mark.parametrize("endpoint_name", [
-        "api_demographic_options",
-        "api_demographic_aggregations", 
-        "api_theme_information",
-        "api_theme_aggregations",
-        "api_filtered_responses",
-        "api_question_information"
-    ])
-    def test_user_without_consultation_access_denied(self, client, question, user_without_consultation_access, endpoint_name):
+    @pytest.mark.parametrize(
+        "endpoint_name",
+        [
+            "question-demographics",
+            "question-demographic_aggregations",
+            "question-themes",
+            "question-theme_aggregations",
+            "question-filtered_responses",
+            "question-detail",
+        ],
+    )
+    def test_user_without_consultation_access_denied(
+        self, client, question, user_without_consultation_access, endpoint_name
+    ):
         """Test that users without consultation access cannot access any API endpoint"""
         client.force_login(user_without_consultation_access)
         url = reverse(
             endpoint_name,
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": question.slug}
+            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
         assert response.status_code == 403
@@ -606,14 +627,11 @@ class TestAPIViewPermissions:
 @pytest.mark.django_db
 class TestAPIViewErrorHandling:
     """Test error handling across API views"""
-    
+
     def test_nonexistent_consultation(self, client, consultation_user):
         """Test API endpoints with non-existent consultation"""
         client.force_login(consultation_user)
-        url = reverse(
-            "api_demographic_options",
-            kwargs={"consultation_slug": "nonexistent", "question_slug": "also-nonexistent"}
-        )
+        url = reverse("question-demographics", kwargs={"consultation_pk": uuid4(), "pk": uuid4()})
         response = client.get(url)
         assert response.status_code == 403  # DRF returns 403 for permission denied
 
@@ -621,8 +639,8 @@ class TestAPIViewErrorHandling:
         """Test API endpoints with non-existent question"""
         client.force_login(consultation_user)
         url = reverse(
-            "api_demographic_options",
-            kwargs={"consultation_slug": question.consultation.slug, "question_slug": "nonexistent"}
+            "question-demographics",
+            kwargs={"consultation_pk": question.consultation.id, "pk": uuid4()},
         )
         response = client.get(url)
         assert response.status_code == 404

@@ -1,9 +1,8 @@
-
 from consultation_analyser.consultations.api.serializers import (
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     FilterSerializer,
-    QuestionInformationSerializer,
+    QuestionSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
     ThemeSerializer,
@@ -17,7 +16,7 @@ class TestDemographicOptionsSerializer:
             "demographic_options": {
                 "gender": ["male", "female"],
                 "age_group": ["18-25", "26-35"],
-                "region": ["north", "south"]
+                "region": ["north", "south"],
             }
         }
         serializer = DemographicOptionsSerializer(data=data)
@@ -44,7 +43,7 @@ class TestDemographicAggregationsSerializer:
         data = {
             "demographic_aggregations": {
                 "gender": {"male": 10, "female": 15},
-                "age_group": {"18-25": 12, "26-35": 13}
+                "age_group": {"18-25": 12, "26-35": 13},
             }
         }
         serializer = DemographicAggregationsSerializer(data=data)
@@ -60,11 +59,7 @@ class TestDemographicAggregationsSerializer:
 
     def test_invalid_counts(self):
         """Test serializer with invalid count values"""
-        data = {
-            "demographic_aggregations": {
-                "gender": {"male": "invalid", "female": 15}
-            }
-        }
+        data = {"demographic_aggregations": {"gender": {"male": "invalid", "female": 15}}}
         serializer = DemographicAggregationsSerializer(data=data)
         assert not serializer.is_valid()
 
@@ -72,11 +67,7 @@ class TestDemographicAggregationsSerializer:
 class TestThemeSerializer:
     def test_valid_data(self):
         """Test theme serializer with valid data"""
-        data = {
-            "id": 1,
-            "name": "Test Theme",
-            "description": "A test theme description"
-        }
+        data = {"id": 1, "name": "Test Theme", "description": "A test theme description"}
         serializer = ThemeSerializer(data=data)
         assert serializer.is_valid()
         assert serializer.validated_data == data
@@ -91,11 +82,7 @@ class TestThemeSerializer:
 
     def test_invalid_id_type(self):
         """Test theme serializer with invalid ID type"""
-        data = {
-            "id": "invalid",
-            "name": "Test Theme",
-            "description": "A test theme description"
-        }
+        data = {"id": "invalid", "name": "Test Theme", "description": "A test theme description"}
         serializer = ThemeSerializer(data=data)
         assert not serializer.is_valid()
         assert "id" in serializer.errors
@@ -107,7 +94,7 @@ class TestThemeInformationSerializer:
         data = {
             "themes": [
                 {"id": 1, "name": "Theme A", "description": "Description A"},
-                {"id": 2, "name": "Theme B", "description": "Description B"}
+                {"id": 2, "name": "Theme B", "description": "Description B"},
             ]
         }
         serializer = ThemeInformationSerializer(data=data)
@@ -126,7 +113,7 @@ class TestThemeInformationSerializer:
         data = {
             "themes": [
                 {"id": 1, "name": "Theme A"},  # Missing description
-                {"id": "invalid", "name": "Theme B", "description": "Description B"}  # Invalid ID
+                {"id": "invalid", "name": "Theme B", "description": "Description B"},  # Invalid ID
             ]
         }
         serializer = ThemeInformationSerializer(data=data)
@@ -136,13 +123,7 @@ class TestThemeInformationSerializer:
 class TestThemeAggregationsSerializer:
     def test_valid_data(self):
         """Test theme aggregations serializer with valid data"""
-        data = {
-            "theme_aggregations": {
-                "1": 10,
-                "2": 5,
-                "3": 20
-            }
-        }
+        data = {"theme_aggregations": {"1": 10, "2": 5, "3": 20}}
         serializer = ThemeAggregationsSerializer(data=data)
         assert serializer.is_valid()
         assert serializer.validated_data == data
@@ -156,41 +137,49 @@ class TestThemeAggregationsSerializer:
 
     def test_invalid_count_values(self):
         """Test theme aggregations serializer with invalid count values"""
-        data = {
-            "theme_aggregations": {
-                "1": "invalid",
-                "2": 5
-            }
-        }
+        data = {"theme_aggregations": {"1": "invalid", "2": 5}}
         serializer = ThemeAggregationsSerializer(data=data)
         assert not serializer.is_valid()
 
 
-class TestQuestionInformationSerializer:
+class TestQuestionSerializer:
     def test_valid_data(self):
         """Test question information serializer with valid data"""
         data = {
             "question_text": "What do you think about this topic?",
-            "total_responses": 150
+            "total_responses": 150,
+            "number": 1,
+            "slug": "topic",
         }
-        serializer = QuestionInformationSerializer(data=data)
+        serializer = QuestionSerializer(data=data)
         assert serializer.is_valid()
-        assert serializer.validated_data == data
+        expected = {
+            "text": "What do you think about this topic?",
+            "total_responses": 150,
+            "number": 1,
+            "slug": "topic",
+        }
+
+        assert serializer.validated_data == expected
 
     def test_missing_fields(self):
         """Test question information serializer with missing fields"""
-        data = {"question_text": "What do you think about this topic?"}
-        serializer = QuestionInformationSerializer(data=data)
+        data = {
+            "question_text": "What do you think about this topic?",
+            "total_responses": 150,
+            "slug": "topic",
+        }
+        serializer = QuestionSerializer(data=data)
         assert not serializer.is_valid()
-        assert "total_responses" in serializer.errors
+        assert "number" in serializer.errors
 
     def test_invalid_response_count(self):
         """Test question information serializer with invalid response count"""
         data = {
             "question_text": "What do you think about this topic?",
-            "total_responses": "invalid"
+            "total_responses": "invalid",
         }
-        serializer = QuestionInformationSerializer(data=data)
+        serializer = QuestionSerializer(data=data)
         assert not serializer.is_valid()
         assert "total_responses" in serializer.errors
 
@@ -215,11 +204,11 @@ class TestFilterSerializer:
             "searchMode": "semantic",
             "demoFilters": ["individual:true", "region:north"],
             "page": 2,
-            "page_size": 25
+            "page_size": 25,
         }
         serializer = FilterSerializer(data=data)
         assert serializer.is_valid()
-        
+
         validated = serializer.validated_data
         assert validated["sentimentFilters"] == "AGREEMENT,DISAGREEMENT"
         assert validated["themeFilters"] == "1,2,3"
@@ -298,7 +287,11 @@ class TestFilterSerializer:
         data = {"demoFilters": ["key1:value1", "key2:value2", "key3:value3"]}
         serializer = FilterSerializer(data=data)
         assert serializer.is_valid()
-        assert serializer.validated_data["demoFilters"] == ["key1:value1", "key2:value2", "key3:value3"]
+        assert serializer.validated_data["demoFilters"] == [
+            "key1:value1",
+            "key2:value2",
+            "key3:value3",
+        ]
 
         # Test invalid - not a list
         data = {"demoFilters": "key1:value1"}
@@ -314,10 +307,7 @@ class TestFilterSerializer:
 
     def test_blank_string_handling(self):
         """Test that blank strings are allowed for string fields that allow them"""
-        data = {
-            "sentimentFilters": "",
-            "themeFilters": ""
-        }
+        data = {"sentimentFilters": "", "themeFilters": ""}
         serializer = FilterSerializer(data=data)
         assert serializer.is_valid()
         assert serializer.validated_data["sentimentFilters"] == ""

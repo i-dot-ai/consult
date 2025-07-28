@@ -1,190 +1,183 @@
 from collections import defaultdict
 
 import orjson
+from django.core.paginator import Paginator
+from django.db.models import Count
 from django.http import HttpResponse
+from rest_framework.decorators import action
 from rest_framework.response import Response
-from rest_framework.views import APIView
+from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from .. import models
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
+    ConsultationSerializer,
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     FilterSerializer,
-    QuestionInformationSerializer,
+    QuestionSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
 )
 from .utils import (
     build_respondent_data_fast,
     build_response_filter_query,
-    get_consultation_and_question,
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
 )
 
 
-class DemographicOptionsAPIView(APIView):
+class ConsultationViewSet(ReadOnlyModelViewSet):
+    serializer_class = ConsultationSerializer
+    permission_classes = [HasDashboardAccess]
+
+    def get_queryset(self):
+        return models.Consultation.objects.filter(users=self.request.user).order_by("-created_at")
+
+
+class QuestionViewSet(ReadOnlyModelViewSet):
+    serializer_class = QuestionSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
-    
-    def get(self, request, consultation_slug, question_slug):
+
+    def get_queryset(self):
+        consultation_uuid = self.kwargs["consultation_pk"]
+        return models.Question.objects.filter(
+            consultation__id=consultation_uuid, consultation__users=self.request.user
+        ).order_by("-created_at")
+
+    @action(detail=True, methods=["get"])
+    def demographics(self, request, pk=None, consultation_pk=None):
         """Get all demographic options for a consultation"""
-        question = get_consultation_and_question(consultation_slug, question_slug)
+        question = self.get_object()
         consultation = question.consultation
-        
+
         # Get all demographic fields and their possible values from normalized storage
         options = (
             models.DemographicOption.objects.filter(consultation=consultation)
             .values_list("field_name", "field_value")
             .order_by("field_name", "field_value")
         )
-        
+
         result = defaultdict(list)
         for field_name, field_value in options:
             result[field_name].append(field_value)
-        
-        serializer = DemographicOptionsSerializer(
-            data={"demographic_options": dict(result)}
-        )
+
+        serializer = DemographicOptionsSerializer(data={"demographic_options": dict(result)})
         serializer.is_valid()
-        
+
         return Response(serializer.data)
 
-
-class DemographicAggregationsAPIView(APIView):
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
-    
-    def get(self, request, consultation_slug, question_slug):
+    @action(detail=True, methods=["get"], url_name="demographic_aggregations")
+    def demographic_aggregations(self, request, pk=None, consultation_pk=None):
         """Get demographic aggregations for filtered responses"""
         # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_slug, question_slug)
-        
+        question = self.get_object()
+
         # Validate query parameters
         filter_serializer = FilterSerializer(data=request.query_params)
         filter_serializer.is_valid(raise_exception=True)
-        
+
         # Parse filters
         filters = parse_filters_from_serializer(filter_serializer.validated_data)
-        
+
         # Single query that joins responses -> respondents and gets demographics directly
         response_filter = build_response_filter_query(filters, question)
         respondents_data = models.Respondent.objects.filter(
             response__in=models.Response.objects.filter(response_filter)
         ).values_list("demographics", flat=True)
-        
+
         # Aggregate in memory (much faster than nested loops)
-        aggregations = defaultdict(lambda: defaultdict(int))
+        aggregations = defaultdict(lambda: defaultdict(int))  # type:ignore
         for demographics in respondents_data:
             if demographics:
                 for field_name, field_value in demographics.items():
                     value_str = str(field_value)
                     aggregations[field_name][value_str] += 1
-        
+
         result = {field: dict(counts) for field, counts in aggregations.items()}
-        
-        serializer = DemographicAggregationsSerializer(
-            data={"demographic_aggregations": result}
-        )
+
+        serializer = DemographicAggregationsSerializer(data={"demographic_aggregations": result})
         serializer.is_valid()
-        
+
         return Response(serializer.data)
 
-
-class ThemeInformationAPIView(APIView):
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
-    
-    def get(self, request, consultation_slug, question_slug):
+    @action(detail=True, methods=["get"], url_name="themes")
+    def themes(self, request, pk=None, consultation_pk=None):
         """Get all theme information for a question"""
         # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_slug, question_slug)
-        
+        question = self.get_object()
+
         # Get all themes for this question
         themes = models.Theme.objects.filter(question=question).values("id", "name", "description")
-        
-        serializer = ThemeInformationSerializer(
-            data={"themes": list(themes)}
-        )
+
+        serializer = ThemeInformationSerializer(data={"themes": list(themes)})
         serializer.is_valid()
-        
+
         return Response(serializer.data)
 
-
-class ThemeAggregationsAPIView(APIView):
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
-    
-    def get(self, request, consultation_slug, question_slug):
+    @action(detail=True, methods=["get"], url_name="theme_aggregations")
+    def theme_aggregations(self, request, pk=None, consultation_pk=None):
         """Get theme aggregations for filtered responses"""
-        from django.db.models import Count
-        
+
         # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_slug, question_slug)
-        
+        question = self.get_object()
+
         # Validate query parameters
         filter_serializer = FilterSerializer(data=request.query_params)
         filter_serializer.is_valid(raise_exception=True)
-        
+
         # Parse filters
         filters = parse_filters_from_serializer(filter_serializer.validated_data)
-        
+
         # Database-level aggregation using Django ORM hybrid approach
         theme_aggregations = {}
-        
+
         if question.has_free_text:
             # Use the same filtering logic as FilteredResponsesAPIView
             # This ensures theme filtering uses AND logic consistently
             filtered_responses = get_filtered_responses_with_themes(question, filters)
-            
+
             # Get theme counts from the filtered responses
             theme_counts = (
-                models.Theme.objects.filter(
-                    responseannotation__response__in=filtered_responses
-                )
+                models.Theme.objects.filter(responseannotation__response__in=filtered_responses)
                 .values("id")
                 .annotate(count=Count("responseannotation__response"))
                 .order_by("id")
             )
-            
+
             theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
-        
-        serializer = ThemeAggregationsSerializer(
-            data={"theme_aggregations": theme_aggregations}
-        )
+
+        serializer = ThemeAggregationsSerializer(data={"theme_aggregations": theme_aggregations})
         serializer.is_valid()
-        
+
         return Response(serializer.data)
 
-
-class FilteredResponsesAPIView(APIView):
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
-    
-    def get(self, request, consultation_slug, question_slug):
+    @action(detail=True, methods=["get"], url_name="filtered_responses")
+    def filtered_responses(self, request, pk=None, consultation_pk=None):
         """Get paginated filtered responses with orjson optimization"""
-        from django.core.paginator import Paginator
-        
-        # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_slug, question_slug)
-        
+        question = self.get_object()
+
         # Validate query parameters
         filter_serializer = FilterSerializer(data=request.query_params)
         filter_serializer.is_valid(raise_exception=True)
-        
+
         # Parse filters
         filters = parse_filters_from_serializer(filter_serializer.validated_data)
-        
+
         # Get pagination parameters from validated data
         page_num = filter_serializer.validated_data.get("page", 1)
         page_size = filter_serializer.validated_data.get("page_size", 50)
-        
+
         # Get filtered responses with themes (optimized with prefetching)
         filtered_qs = get_filtered_responses_with_themes(question, filters)
-        
+
         # Use Django's lazy pagination
         paginator = Paginator(filtered_qs, page_size, allow_empty_first_page=True)
         page_obj = paginator.page(page_num)
-        
+
         # Get total respondents count for this question (single query)
         all_respondents_count = models.Response.objects.filter(question=question).count()
-        
+
         # Use orjson for faster serialization of large response sets
         data = {
             "all_respondents": [build_respondent_data_fast(r) for r in page_obj.object_list],
@@ -194,26 +187,4 @@ class FilteredResponsesAPIView(APIView):
         }
 
         # Return orjson-optimized HttpResponse
-        return HttpResponse(
-            orjson.dumps(data),
-            content_type="application/json"
-        )
-
-
-class QuestionInformationAPIView(APIView):
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
-    
-    def get(self, request, consultation_slug, question_slug):
-        """Get basic question information"""
-        # Get the question object with consultation in one query
-        question = get_consultation_and_question(consultation_slug, question_slug)
-        
-        data = {
-            "question_text": question.text,
-            "total_responses": question.total_responses,
-        }
-        
-        serializer = QuestionInformationSerializer(data=data)
-        serializer.is_valid()
-        
-        return Response(serializer.data)
+        return HttpResponse(orjson.dumps(data), content_type="application/json")
