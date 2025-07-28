@@ -2,6 +2,7 @@ from unittest.mock import patch
 
 import pytest
 from django.conf import settings
+from django.core.exceptions import ValidationError
 
 from consultation_analyser.consultations.api.utils import (
     build_respondent_data_fast,
@@ -374,18 +375,14 @@ class TestBuildRespondentDataFast:
     def test_empty_fields_handling(self, question):
         """Test handling of empty/None fields"""
         respondent = RespondentFactory(consultation=question.consultation, demographics={})
-        response = ResponseFactory(
-            question=question,
-            respondent=respondent,
-            free_text="",  # Use empty string instead of None to avoid embedding issues
-            chosen_options=None,
-        )
-
-        data = build_respondent_data_fast(response)
-
-        assert data["free_text_answer_text"] == ""
-        assert data["demographic_data"] == {}
-        assert data["multiple_choice_answer"] == []
+        with pytest.raises(ValidationError) as e:
+            ResponseFactory(
+                question=question,
+                respondent=respondent,
+                free_text="",
+                chosen_options=None,
+            )
+        assert e.value.args[0] == "either free_text or chosen_options should be populated"
 
     def test_no_annotation(self, question):
         """Test respondent data when no annotation exists"""

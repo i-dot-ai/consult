@@ -81,7 +81,9 @@ def create_dummy_consultation_from_yaml(
         # For each respondent add random response and themes
         for respondent in respondents:
             logger.info("Add responses")
-            response = ResponseFactory(question=question, free_text="", respondent=respondent)
+            response = ResponseFactory(
+                question=question, free_text="i am a answer", respondent=respondent
+            )
 
             if has_free_text:
                 response.free_text = random.choice(question_data.get("free_text_answers", [""]))

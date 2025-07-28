@@ -251,7 +251,7 @@ class TestImportConsultationFullFlow:
         assert questions.first().text == "What do you think?"
 
         responses = Response.objects.filter(question__consultation=consultation)
-        assert responses.count() == 4
+        assert responses.count() == 3
 
         themes = Theme.objects.filter(question__consultation=consultation)
         assert themes.count() == 1
@@ -260,7 +260,7 @@ class TestImportConsultationFullFlow:
         annotations = ResponseAnnotation.objects.filter(
             response__question__consultation=consultation
         )
-        assert annotations.count() == 4
+        assert annotations.count() == 3
 
 
 @pytest.mark.django_db
@@ -413,12 +413,12 @@ class TestResponsesImport:
 
         # Verify results
         responses = Response.objects.filter(question=question)
-        assert responses.count() == 4
+        assert responses.count() == 3
 
         response_1 = responses.get(respondent__themefinder_id=1)
         response_2 = responses.get(respondent__themefinder_id=2)
         response_3 = responses.get(respondent__themefinder_id=3)
-        response_4 = responses.get(respondent__themefinder_id=4)
+        assert not responses.filter(respondent__themefinder_id=4).exists()
         assert response_1.question == question
         assert response_1.free_text == "Good idea"
         assert response_1.chosen_options == ["a"]
@@ -426,8 +426,6 @@ class TestResponsesImport:
         assert not response_2.chosen_options
         assert not response_3.free_text
         assert response_3.chosen_options == ["b", "c"]
-        assert response_4.chosen_options == []
-        assert response_4.question == question
 
 
 @pytest.mark.django_db
@@ -448,8 +446,8 @@ class TestMappingImport:
         Theme.objects.create(question=question, name="name", description="", key="A")
         respondent_1 = Respondent.objects.create(consultation=consultation, themefinder_id=1)
         respondent_2 = Respondent.objects.create(consultation=consultation, themefinder_id=2)
-        Response.objects.create(respondent=respondent_1, question=question)
-        Response.objects.create(respondent=respondent_2, question=question)
+        Response.objects.create(respondent=respondent_1, question=question, free_text="yes")
+        Response.objects.create(respondent=respondent_2, question=question, free_text="no")
 
         # Run the import
         import_response_annotations(question, output_folder)
