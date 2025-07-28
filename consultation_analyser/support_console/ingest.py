@@ -405,8 +405,7 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
             token_count = len(encoding.encode(free_text))
             if token_count > 8192:
                 logger.warning(f"Truncated text for themefinder_id: {themefinder_id}")
-                if free_text:  # type:ignore
-                    free_text = free_text[:1000]
+                free_text = free_text[:1000]
                 token_count = len(encoding.encode(free_text))
 
             if (
