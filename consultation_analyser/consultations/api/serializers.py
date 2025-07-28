@@ -1,5 +1,40 @@
 from rest_framework import serializers
 
+from consultation_analyser.consultations.models import (
+    Consultation,
+    Question,
+)
+
+
+class QuestionSerializer(serializers.HyperlinkedModelSerializer):
+    question_text = serializers.CharField(source="text")
+
+    class Meta:
+        model = Question
+        fields = [
+            "id",
+            "number",
+            "total_responses",
+            "question_text",
+            "slug",
+            "number",
+            "has_free_text",
+            "has_multiple_choice",
+            "multiple_choice_options",
+        ]
+
+
+class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
+    questions = QuestionSerializer(
+        source="question_set",
+        many=True,
+        read_only=True,
+    )
+
+    class Meta:
+        model = Consultation
+        fields = ["id", "title", "slug", "questions"]
+
 
 class DemographicOptionsSerializer(serializers.Serializer):
     demographic_options = serializers.DictField(
@@ -25,11 +60,6 @@ class ThemeInformationSerializer(serializers.Serializer):
 
 class ThemeAggregationsSerializer(serializers.Serializer):
     theme_aggregations = serializers.DictField(child=serializers.IntegerField())
-
-
-class QuestionInformationSerializer(serializers.Serializer):
-    question_text = serializers.CharField()
-    total_responses = serializers.IntegerField()
 
 
 class FilterSerializer(serializers.Serializer):
