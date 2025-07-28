@@ -1,8 +1,10 @@
 <script>
     import clsx from "clsx";
 
+    import { Routes } from "../global/enums";
+
     import GovIcon from "./svg/GovIcon.svelte";
-    import MenuIcon from "./svg/material/MenuIcon.svelte";
+    import MobileMenu from "./MobileMenu.svelte";
 </script>
 
 <header class={clsx([
@@ -22,6 +24,7 @@
         ])}>
             <div class="flex items-center">
                 <GovIcon />
+
                 <div class={clsx([
                     "before:block",
                     "before:absolute",
@@ -63,11 +66,14 @@
                     Alpha
                 </div>
             </div>
-            <hamburger-button role="button" tabindex="0" aria-expanded="false">
-                <span>
-                    <MenuIcon />
-                </span>
-            </hamburger-button>
+
+            <MobileMenu
+                items={[
+                    {text: "Support", url: Routes.Support},
+                    {text: "Your consultations", url: Routes.Consultations},
+                    {text: "Sign out", url: Routes.SignOut},
+                ]}
+            />
         </div>
     </div>
 </header>
