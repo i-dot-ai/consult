@@ -39,12 +39,15 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     //     return next();
     // }
 
+    const hasBody = !["GET", "HEAD"].includes(context.request.method);
+
     const response = await fetch(fullBackendUrl, {
         method: context.request.method,
         headers: context.request.headers,
-        body: ["GET", "HEAD"].includes(context.request.method)
-            ? undefined
-            : context.request.body,
+        duplex: "half",
+        body: hasBody
+            ? context.request.body
+            : undefined,
     });
 
     const body = await response.arrayBuffer();
