@@ -14,7 +14,6 @@ from consultation_analyser.support_console.ingest import (
     create_consultation,
     get_consultation_codes,
     get_question_folders,
-    import_multiple_choice_responses,
     import_questions,
     import_respondents,
     import_response_annotations,
@@ -261,7 +260,7 @@ class TestImportConsultationFullFlow:
         annotations = ResponseAnnotation.objects.filter(
             response__question__consultation=consultation
         )
-        assert annotations.count() == 2
+        assert annotations.count() == 4
 
 
 @pytest.mark.django_db
@@ -410,8 +409,7 @@ class TestResponsesImport:
         # Run the import
         responses_file_key = f"{question_folder}responses.jsonl"
         multi_choice_file_key = f"{question_folder}multi_choice.jsonl"
-        import_responses(question, responses_file_key)
-        import_multiple_choice_responses(question, multi_choice_file_key)
+        import_responses(question, responses_file_key, multi_choice_file_key)
 
         # Verify results
         responses = Response.objects.filter(question=question)
