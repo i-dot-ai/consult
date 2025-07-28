@@ -49,11 +49,6 @@ locals {
 
 }
 
-data "aws_lb_listener" "lb_listener_443" {
-  load_balancer_arn = module.load_balancer.alb_arn
-  port              = 443
-  depends_on        = [module.frontend]
-}
 
 module "backend" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
@@ -69,7 +64,7 @@ module "backend" {
   aws_lb_arn         = module.load_balancer.alb_arn
   ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
   ecs_cluster_name   = data.terraform_remote_state.platform.outputs.ecs_cluster_name
-  https_listener_arn = data.aws_lb_listener.lb_listener_443.arn
+  https_listener_arn = module.frontend.https_listener_arn
   task_additional_iam_policies = local.additional_policy_arns
   certificate_arn              = data.terraform_remote_state.universal.outputs.certificate_arn
   target_group_name_override   =  "consult-backend-${var.env}-tg"
