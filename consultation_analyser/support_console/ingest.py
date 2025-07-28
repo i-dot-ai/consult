@@ -337,9 +337,8 @@ def read_response_file(responses_file_key: str) -> dict[str, str]:
     for line in responses_data["Body"].iter_lines():
         response_data = json.loads(line.decode("utf-8"))
         themefinder_id = response_data["themefinder_id"]
-        free_text = response_data.get("text", "")
-        assert isinstance(free_text, str)
-        if free_text:
+        if free_text := response_data.get("text"):
+            assert isinstance(free_text, str)
             text_response_dict[themefinder_id] = free_text
     return text_response_dict
 
@@ -358,17 +357,17 @@ def read_multi_choice_response_file(responses_file_key: str) -> dict[str, list[s
     for line in responses_data["Body"].iter_lines():
         response_data = json.loads(line.decode("utf-8"))
         themefinder_id = response_data["themefinder_id"]
-        chosen_options = response_data.get("options", [])
-        assert isinstance(chosen_options, list)
-        multi_choice_response_dict[themefinder_id] = chosen_options
+        if chosen_options := response_data.get("options"):
+            assert isinstance(chosen_options, list)
+            multi_choice_response_dict[themefinder_id] = chosen_options
     return multi_choice_response_dict
 
 
 def merge_free_text_and_multi_choice(
     free_text: dict[str, str], multi_choice: dict[str, list[str]]
-) -> list[tuple[str, str, list[str]]]:
+) -> list[tuple[str, str | None, list[str] | None]]:
     keys = set(free_text).union(multi_choice)
-    return [(key, free_text.get(key, ""), multi_choice.get(key, [])) for key in keys]
+    return [(key, free_text.get(key), multi_choice.get(key)) for key in keys]
 
 
 def import_responses(question: Question, responses_file_key: str, multichoice_file_key: str):
@@ -402,11 +401,14 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
                 logger.warning(f"No respondent found for themefinder_id: {themefinder_id}")
                 continue
 
-            token_count = len(encoding.encode(free_text))
-            if token_count > 8192:
-                logger.warning(f"Truncated text for themefinder_id: {themefinder_id}")
-                free_text = free_text[:1000]
+            if free_text:
                 token_count = len(encoding.encode(free_text))
+                if token_count > 8192:
+                    logger.warning(f"Truncated text for themefinder_id: {themefinder_id}")
+                    free_text = free_text[:1000]
+                    token_count = len(encoding.encode(free_text))
+            else:
+                token_count = 0
 
             if (
                 total_tokens + token_count > max_total_tokens
