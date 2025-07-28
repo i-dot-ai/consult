@@ -4,7 +4,8 @@ import orjson
 from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import HttpResponse
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 
@@ -18,6 +19,7 @@ from .serializers import (
     QuestionSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
+    UserSerializer,
 )
 from .utils import (
     build_respondent_data_fast,
@@ -34,22 +36,10 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         return models.Consultation.objects.filter(users=self.request.user).order_by("-created_at")
 
-
-class QuestionViewSet(ReadOnlyModelViewSet):
-    serializer_class = QuestionSerializer
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
-
-    def get_queryset(self):
-        consultation_uuid = self.kwargs["consultation_pk"]
-        return models.Question.objects.filter(
-            consultation__id=consultation_uuid, consultation__users=self.request.user
-        ).order_by("-created_at")
-
     @action(detail=True, methods=["get"])
-    def demographics(self, request, pk=None, consultation_pk=None):
+    def demographics(self, request, pk=None):
         """Get all demographic options for a consultation"""
-        question = self.get_object()
-        consultation = question.consultation
+        consultation = self.get_object()
 
         # Get all demographic fields and their possible values from normalized storage
         options = (
@@ -66,6 +56,17 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         serializer.is_valid()
 
         return Response(serializer.data)
+
+
+class QuestionViewSet(ReadOnlyModelViewSet):
+    serializer_class = QuestionSerializer
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+
+    def get_queryset(self):
+        consultation_uuid = self.kwargs["consultation_pk"]
+        return models.Question.objects.filter(
+            consultation__id=consultation_uuid, consultation__users=self.request.user
+        ).order_by("-created_at")
 
     @action(detail=True, methods=["get"], url_name="demographic_aggregations")
     def demographic_aggregations(self, request, pk=None, consultation_pk=None):
@@ -188,3 +189,11 @@ class QuestionViewSet(ReadOnlyModelViewSet):
 
         # Return orjson-optimized HttpResponse
         return HttpResponse(orjson.dumps(data), content_type="application/json")
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def current_user(request):
+    """Get current authenticated user information"""
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)

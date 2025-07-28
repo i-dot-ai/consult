@@ -1,10 +1,14 @@
 const express = require('express');
 const { createProxyMiddleware } = require('http-proxy-middleware');
 const path = require('path');
+const AuthMiddleware = require('./middleware/auth');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 const BACKEND_URL = process.env.BACKEND_URL;
+
+// Initialize auth middleware
+const authMiddleware = new AuthMiddleware(BACKEND_URL);
 
 // Validate required environment variable
 if (!BACKEND_URL) {
@@ -15,11 +19,15 @@ if (!BACKEND_URL) {
 
 // Routes handled by frontend (add routes here as you migrate them)
 const FRONTEND_ROUTES = [
-  '/health'
+  '/health',
+  '/api/frontend/user'
 ];
 
 // Static file serving for frontend assets
 app.use('/frontend-static', express.static(path.join(__dirname, 'public')));
+
+// Apply auth middleware to validate sessions
+app.use(authMiddleware.validateSession());
 
 // Frontend health check endpoint
 app.get('/health', (req, res) => {
@@ -33,17 +41,27 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Sample authenticated API endpoint
+app.get('/api/frontend/user', authMiddleware.requireAuth(), (req, res) => {
+  res.json({
+    message: 'This is a frontend-handled authenticated route',
+    user: authMiddleware.getUser(req),
+    timestamp: new Date().toISOString()
+  });
+});
+
+
 // Create proxy middleware for backend routes
 const backendProxy = createProxyMiddleware({
   target: BACKEND_URL,
   changeOrigin: true,
   ws: true,
   logLevel: 'info',
-  onError: (err, req, res) => {
+  onError: (err, _req, res) => {
     console.error('Backend proxy error:', err.message);
     res.status(500).send('Backend proxy error');
   },
-  onProxyReq: (proxyReq, req, res) => {
+  onProxyReq: (_proxyReq, req, _res) => {
     console.log(`Proxying ${req.method} ${req.url} to backend: ${BACKEND_URL}${req.url}`);
   }
 });

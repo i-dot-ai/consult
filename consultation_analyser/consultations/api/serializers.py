@@ -1,9 +1,18 @@
 from rest_framework import serializers
 
+from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
     Consultation,
     Question,
 )
+
+
+class UserSerializer(serializers.ModelSerializer):
+    has_dashboard_access = serializers.ReadOnlyField()
+
+    class Meta:
+        model = User
+        fields = ["id", "email", "is_staff", "has_dashboard_access"]
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):

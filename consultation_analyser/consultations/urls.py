@@ -5,6 +5,7 @@ from rest_framework_nested.routers import NestedDefaultRouter
 from .api.views import (
     ConsultationViewSet,
     QuestionViewSet,
+    current_user,
 )
 from .views import answers, consultations, pages, questions, root, sessions
 
@@ -34,6 +35,7 @@ urlpatterns = [
     ),
     # New modular endpoints
     # API endpoints
+    path("api/user/me/", current_user, name="current_user"),
     path("api/", include(router.urls)),
     path("api/", include(consultations_router.urls)),
     path("api/", include(questions_router.urls)),

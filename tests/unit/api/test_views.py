@@ -60,8 +60,8 @@ class TestDemographicOptionsAPIView:
         """Test API endpoint returns empty options when no demographic data exists"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographics",
-            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
+            "consultations-demographics",
+            kwargs={"pk": question.consultation.id},
         )
         response = client.get(url)
 
@@ -91,8 +91,8 @@ class TestDemographicOptionsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographics",
-            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
+            "consultations-demographics",
+            kwargs={"pk": question.consultation.id},
         )
         response = client.get(url)
 
@@ -108,8 +108,8 @@ class TestDemographicOptionsAPIView:
     def test_permission_required(self, client, question):
         """Test API endpoint requires proper permissions"""
         url = reverse(
-            "question-demographics",
-            kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
+            "consultations-demographics",
+            kwargs={"pk": question.consultation.id},
         )
         response = client.get(url)
         assert response.status_code == 403
@@ -117,7 +117,9 @@ class TestDemographicOptionsAPIView:
     def test_invalid_consultation_slug(self, client, consultation_user):
         """Test API endpoint with invalid consultation slug"""
         client.force_login(consultation_user)
-        url = reverse("question-demographics", kwargs={"consultation_pk": uuid4(), "pk": uuid4()})
+        url = reverse(
+            "consultations-demographics", kwargs={"consultation_pk": uuid4(), "pk": uuid4()}
+        )
         response = client.get(url)
         assert response.status_code == 403  # DRF returns 403 for permission denied
 
