@@ -2,57 +2,19 @@
     import clsx from "clsx";
     import CrossCuttingThemeCard from "./CrossCuttingThemeCard.svelte";
 
-    // Sample data with varying numbers of cards and questions to test layout flexibility
-    const sampleThemes = [
-        {
-            title: "Healthcare AI Regulatory Standards",
-            mentions: 1240,
-            uniqueRespondents: 68.3,
-            questions: ["Q1", "Q4", "Q11", "Q16"]
-        },
-        {
-            title: "Financial Services Risk Management", 
-            mentions: 1187,
-            uniqueRespondents: 65.8,
-            questions: ["Q1", "Q3", "Q5", "Q7", "Q9", "Q12", "Q15", "Q18", "Q21", "Q23"]
-        },
-        {
-            title: "Data Security Architecture Standards",
-            mentions: 1167,
-            uniqueRespondents: 71.2,
-            questions: ["Q1", "Q2", "Q3", "Q4", "Q5", "Q6", "Q7", "Q8", "Q9", "Q10", "Q11", "Q12", "Q13", "Q14", "Q15", "Q16", "Q17", "Q18", "Q19", "Q20"]
-        },
-        {
-            title: "Access Control Implementation Guidelines",
-            mentions: 1089,
-            uniqueRespondents: 63.4,
-            questions: ["Q4", "Q12", "Q20", "Q25"]
-        },
-        {
-            title: "Transportation Safety Protocols",
-            mentions: 1045,
-            uniqueRespondents: 59.7,
-            questions: ["Q1", "Q16", "Q19", "Q21"]
-        },
-        {
-            title: "Data Anonymisation Techniques",
-            mentions: 1012,
-            uniqueRespondents: 66.1,
-            questions: ["Q2", "Q4", "Q8", "Q17"]
-        },
-        {
-            title: "Privacy Framework Implementation",
-            mentions: 890,
-            uniqueRespondents: 72.1,
-            questions: ["Q3", "Q9", "Q14"]
-        },
-        {
-            title: "Compliance Monitoring Systems",
-            mentions: 756,
-            uniqueRespondents: 58.9,
-            questions: ["Q5", "Q11", "Q18", "Q22"]
-        }
-    ];
+    // TypeScript interfaces
+    export interface CrossCuttingTheme {
+        id: string;
+        name: string;
+        description: string;
+        mentions: number;
+        uniqueRespondents: number;
+        questions: string[];
+    }
+
+    // Props
+    export let themes: CrossCuttingTheme[] = [];
+    export let loading: boolean = false;
 </script>
 
 <div class={clsx([
@@ -75,7 +37,7 @@
             "items-center",
             "gap-3",
         ])}>
-            <!-- Cross-cutting themes icon (network/interconnected graph) -->
+            <!-- Network icon -->
             <div class={clsx([
                 "w-8",
                 "h-8",
@@ -93,28 +55,19 @@
                     xmlns="http://www.w3.org/2000/svg"
                     class="text-white"
                 >
-                    <!-- Central node -->
                     <circle cx="12" cy="12" r="2" fill="currentColor"/>
-                    
-                    <!-- Corner nodes -->
                     <circle cx="6" cy="6" r="1.5" fill="currentColor"/>
                     <circle cx="18" cy="6" r="1.5" fill="currentColor"/>
                     <circle cx="6" cy="18" r="1.5" fill="currentColor"/>
                     <circle cx="18" cy="18" r="1.5" fill="currentColor"/>
-                    
-                    <!-- Edge nodes -->
                     <circle cx="12" cy="4" r="1.5" fill="currentColor"/>
                     <circle cx="20" cy="12" r="1.5" fill="currentColor"/>
                     <circle cx="12" cy="20" r="1.5" fill="currentColor"/>
                     <circle cx="4" cy="12" r="1.5" fill="currentColor"/>
-                    
-                    <!-- Connection lines -->
                     <line x1="12" y1="10" x2="12" y2="4" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
                     <line x1="14" y1="12" x2="20" y2="12" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
                     <line x1="12" y1="14" x2="12" y2="20" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
                     <line x1="10" y1="12" x2="4" y2="12" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
-                    
-                    <!-- Diagonal connections -->
                     <line x1="10.5" y1="10.5" x2="6" y2="6" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
                     <line x1="13.5" y1="10.5" x2="18" y2="6" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
                     <line x1="10.5" y1="13.5" x2="6" y2="18" stroke="currentColor" stroke-width="1.5" opacity="0.7"/>
@@ -182,13 +135,34 @@
         "lg:grid-cols-3",
         "gap-4",
     ])}>
-        {#each sampleThemes as theme}
-            <CrossCuttingThemeCard
-                title={theme.title}
-                mentions={theme.mentions}
-                uniqueRespondents={theme.uniqueRespondents}
-                questions={theme.questions}
-            />
-        {/each}
+        {#if loading}
+            <div class="col-span-full flex items-center justify-center py-12">
+                <div class="text-center">
+                    <div class="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto mb-2"></div>
+                    <p class="text-gray-600">Loading cross-cutting themes...</p>
+                </div>
+            </div>
+        {:else if themes.length === 0}
+            <div class="col-span-full">
+                <div class="text-center py-12">
+                    <div class="text-gray-400 mb-2">
+                        <svg class="w-12 h-12 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                        </svg>
+                    </div>
+                    <p class="text-gray-600 font-medium">No cross-cutting themes found</p>
+                    <p class="text-gray-500 text-sm mt-1">Cross-cutting themes will appear here once they are created for this consultation.</p>
+                </div>
+            </div>
+        {:else}
+            {#each themes as theme}
+                <CrossCuttingThemeCard
+                    title={theme.name}
+                    mentions={theme.mentions}
+                    uniqueRespondents={theme.uniqueRespondents}
+                    questions={theme.questions}
+                />
+            {/each}
+        {/if}
     </div>
 </div>
