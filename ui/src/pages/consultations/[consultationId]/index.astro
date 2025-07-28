@@ -1,5 +1,7 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
+
+import QuestionOverview from "../../../components/dashboard/QuestionsOverview.svelte";
 import Section from "../../../components/Section.svelte";
 
 import { getConsultationById } from "../../../global/api";
@@ -10,6 +12,8 @@ const consultation = getConsultationById(consultationId || "");
 ---
 <Layout>
     <Section>
+        <QuestionOverview consultation={consultation} />
+
         <iai-question-overview-page></iai-question-overview-page>
 
         <script define:vars={{ consultation }}>
