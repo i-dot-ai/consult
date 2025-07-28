@@ -52,9 +52,8 @@ locals {
 data "aws_lb_listener" "lb_listener_443" {
   load_balancer_arn = module.load_balancer.alb_arn
   port              = 443
+  depends_on        = [module.frontend]
 }
-
-
 
 module "backend" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
@@ -110,9 +109,6 @@ module "backend" {
   }
   entrypoint = ["./start.sh"]
 
-
-
-  depends_on = [module.frontend]
 }
 
 
