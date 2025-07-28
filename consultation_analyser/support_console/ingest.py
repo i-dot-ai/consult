@@ -332,7 +332,11 @@ def _embed_responses(responses: list[dict]) -> list[Response]:
 def read_response_file(responses_file_key: str) -> dict[str, str]:
     s3_client = boto3.client("s3")
 
-    responses_data = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key)
+    try:
+        responses_data = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key)
+    except s3_client.exceptions.NoSuchKey:
+        return {}
+
     text_response_dict = {}
     for line in responses_data["Body"].iter_lines():
         response_data = json.loads(line.decode("utf-8"))
