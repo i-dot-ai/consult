@@ -4,7 +4,7 @@ import orjson
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Count
-from django.http import HttpRequest, HttpResponse, JsonResponse
+from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
@@ -208,7 +208,6 @@ def generate_magic_link(request):
     send_magic_link_if_email_exists(request, email)
 
     return Response({"message": "Magic link sent"})
-
 
 
 @api_view(["GET"])

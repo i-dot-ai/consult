@@ -6,8 +6,8 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .api.views import (
     ConsultationViewSet,
     QuestionViewSet,
-    verify_magic_link,
     generate_magic_link,
+    verify_magic_link,
 )
 from .views import answers, consultations, pages, questions, root, sessions
 
