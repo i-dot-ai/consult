@@ -117,7 +117,9 @@ class TestDemographicOptionsAPIView:
     def test_invalid_consultation_slug(self, client, consultation_user):
         """Test API endpoint with invalid consultation slug"""
         client.force_login(consultation_user)
-        url = reverse("question-demographic-options", kwargs={"consultation_pk": uuid4(), "pk": uuid4()})
+        url = reverse(
+            "question-demographic-options", kwargs={"consultation_pk": uuid4(), "pk": uuid4()}
+        )
         response = client.get(url)
         assert response.status_code == 403  # DRF returns 403 for permission denied
 
@@ -631,7 +633,9 @@ class TestAPIViewErrorHandling:
     def test_nonexistent_consultation(self, client, consultation_user):
         """Test API endpoints with non-existent consultation"""
         client.force_login(consultation_user)
-        url = reverse("question-demographic-options", kwargs={"consultation_pk": uuid4(), "pk": uuid4()})
+        url = reverse(
+            "question-demographic-options", kwargs={"consultation_pk": uuid4(), "pk": uuid4()}
+        )
         response = client.get(url)
         assert response.status_code == 403  # DRF returns 403 for permission denied
 

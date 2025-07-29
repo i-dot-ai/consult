@@ -6,6 +6,7 @@ from django.conf import settings
 from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVector, SearchVectorField
+from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.db import models
 from django.db.models.signals import post_save
@@ -165,7 +166,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
     # Response content
-    free_text = models.TextField(blank=True)  # Free text response
+    free_text = models.TextField(null=True, blank=True)  # Free text response
     chosen_options = ArrayField(
         models.TextField(), null=True, default=None, blank=True
     )  # Multiple choice selections
@@ -183,7 +184,14 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
     def __str__(self):
-        return shorten(self.free_text, width=64, placeholder="...")
+        if self.free_text:
+            return shorten(self.free_text, width=64, placeholder="...")
+        return ", ".join(self.chosen_options)
+
+    def save(self, **kwargs):
+        if not self.free_text and not self.chosen_options:
+            raise ValidationError("either free_text or chosen_options should be populated")
+        return super().save(**kwargs)
 
 
 @receiver(post_save, sender=Response)

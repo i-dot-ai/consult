@@ -5,18 +5,13 @@
       "type": "integer",
       "description": "This is the ID for the respondent, provided by ThemeFinder."
     },
-    "text": {
-      "type": "string",
-      "description": "Free text response"
-    },
-    "options": {
+    "multi_choice_options": {
       "type": "array",
       "items": {
         "type": "string"
       },
-      "description": "Options that have been chosen for a closed question."
+      "description": "Options that can be chosen for a closed question."
     }
   },
-  "required": ["themefinder_id"],
-  "additionalProperties": true
+  "required": ["themefinder_id", "multi_choice_options"]
 }
