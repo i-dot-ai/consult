@@ -173,6 +173,10 @@ frontend/django_extensions
 .DS_Store
 .vscode
 
+# Local development files
+TODO.md
+prototype_cross_cutting_api.py
+
 # Local .terraform directories
 **/.terraform/*
 **/.terraform.lock.hcl
