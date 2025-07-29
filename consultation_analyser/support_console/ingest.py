@@ -28,12 +28,12 @@ DEFAULT_TIMEOUT_SECONDS = 3_600
 
 
 def s3_key_exists(key: str) -> bool:
-    s3_client = boto3.client('s3')
+    s3_client = boto3.client("s3")
     try:
         s3_client.head_object(Bucket=settings.AWS_BUCKET_NAME, Key=key)
         return True
     except ClientError as e:
-        if e.response['Error']['Code'] == '404':
+        if e.response["Error"]["Code"] == "404":
             return False
         else:
             raise  # Re-raise if it's a different error
@@ -336,16 +336,13 @@ def import_response_annotations(question: Question, output_folder: str):
     ResponseAnnotation.objects.bulk_create(annotations_to_save)
 
 
-def _embed_responses(responses: list[dict]) -> list[Response]:
-    embeddings = embed_text([r["free_text"] for r in responses])
-    return [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
-
-
 def read_response_file(responses_file_key: str) -> dict[str, str]:
     s3_client = boto3.client("s3")
 
     try:
-        responses_data = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key)
+        responses_data = s3_client.get_object(
+            Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key
+        )
     except s3_client.exceptions.NoSuchKey:
         return {}
 
@@ -430,14 +427,14 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
                 total_tokens + token_count > max_total_tokens
                 or len(responses_to_save) >= max_batch_size
             ):
-                embedded_responses_to_save = _embed_responses(responses_to_save)
-                Response.objects.bulk_create(embedded_responses_to_save)
+                Response.objects.bulk_create(responses_to_save)
+
                 responses_to_save = []
                 total_tokens = 0
                 logger.info("saved %s Responses for question %s", i + 1, question.number)
 
             responses_to_save.append(
-                dict(
+                Response(
                     respondent=respondent_dict[themefinder_id],
                     question=question,
                     free_text=free_text,
@@ -447,8 +444,7 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
             total_tokens += token_count
 
         # last batch
-        embedded_responses_to_save = _embed_responses(responses_to_save)
-        Response.objects.bulk_create(embedded_responses_to_save)
+        Response.objects.bulk_create(responses_to_save)
 
         # re-save the responses to ensure that every response has search_vector
         # i.e the lexical bit
@@ -545,6 +541,7 @@ def import_questions(
             responses = queue.enqueue(
                 import_responses, question, responses_file_key, multiple_choice_file
             )
+            queue.enqueue(create_embeddings, question.consultation.id, depends_on=responses)
 
             if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
                 logger.info("not importing output-mappings")
