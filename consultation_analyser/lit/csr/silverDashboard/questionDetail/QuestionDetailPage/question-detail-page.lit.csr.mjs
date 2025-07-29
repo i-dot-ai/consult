@@ -40,6 +40,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         _themes: { type: Array },
         _demoData: { type: Object },
         _demoOptions: { type: Object },
+        _multiChoice: { type: Object },
 
         _searchValue: { type: String },
         _searchMode: { type: String },
@@ -133,6 +134,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         this._themes = [];
         this._demoData = {};
         this._demoOptions = {};
+        this._multiChoice = {};
         
         this._searchValue = "";
         this._searchMode = "keyword";
@@ -381,6 +383,22 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .total=${this._filteredTotal}
                 ></iai-demographics-section>
             </section>
+
+            <!-- TODO: Add multi choice to this -->
+            ${Object.keys(this._multiChoice).length > 0 ?
+                html`
+                    <section>
+                        <iai-demographics-section
+                            .data=${this._multiChoice}
+                            .themeFilters=${this._themeFilters}
+                            .demoFilters=${this._demoFilters}
+                            .demoFiltersApplied=${this.demoFiltersApplied}
+                            .themeFiltersApplied=${this.themeFiltersApplied}
+                            .total=${this._filteredTotal}
+                        ></iai-demographics-section>
+                    </section>
+                `
+            : ""}
             
             <section class="theme-analysis">
                 <iai-theme-analysis
