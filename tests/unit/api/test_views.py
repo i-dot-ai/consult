@@ -112,12 +112,14 @@ class TestDemographicOptionsAPIView:
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     def test_invalid_consultation_slug(self, client, consultation_user):
         """Test API endpoint with invalid consultation slug"""
         client.force_login(consultation_user)
-        url = reverse("question-demographic-options", kwargs={"consultation_pk": uuid4(), "pk": uuid4()})
+        url = reverse(
+            "question-demographic-options", kwargs={"consultation_pk": uuid4(), "pk": uuid4()}
+        )
         response = client.get(url)
         assert response.status_code == 403  # DRF returns 403 for permission denied
 
@@ -575,7 +577,7 @@ class TestAPIViewPermissions:
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     @pytest.mark.parametrize(
         "endpoint_name",
@@ -631,7 +633,9 @@ class TestAPIViewErrorHandling:
     def test_nonexistent_consultation(self, client, consultation_user):
         """Test API endpoints with non-existent consultation"""
         client.force_login(consultation_user)
-        url = reverse("question-demographic-options", kwargs={"consultation_pk": uuid4(), "pk": uuid4()})
+        url = reverse(
+            "question-demographic-options", kwargs={"consultation_pk": uuid4(), "pk": uuid4()}
+        )
         response = client.get(url)
         assert response.status_code == 403  # DRF returns 403 for permission denied
 
