@@ -4,6 +4,8 @@ import boto3
 import pytest
 from moto import mock_aws
 
+from consultation_analyser.factories import UserFactory
+
 
 @pytest.fixture
 def mock_s3_bucket():
@@ -162,3 +164,8 @@ def mock_consultation_input_objects(mock_s3_bucket):
         mock_s3_bucket,
         "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/detail_detection.jsonl",
     ).put(Body=evidence_rich_mappings_2_jsonl)
+
+
+@pytest.fixture
+def user():
+    return UserFactory()
