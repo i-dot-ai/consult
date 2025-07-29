@@ -128,7 +128,7 @@ class TestDemographicAggregationsAPIView:
         """Test API endpoint returns empty aggregations when no data exists"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic_aggregations",
+            "question-demographic-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -161,7 +161,7 @@ class TestDemographicAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic_aggregations",
+            "question-demographic-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -194,7 +194,7 @@ class TestDemographicAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic_aggregations",
+            "question-demographic-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
 
@@ -216,7 +216,7 @@ class TestDemographicAggregationsAPIView:
         """Test API endpoint handles invalid filter parameters"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic_aggregations",
+            "question-demographic-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
 
@@ -274,7 +274,7 @@ class TestThemeAggregationsAPIView:
         """Test API endpoint returns empty aggregations when no responses exist"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-theme_aggregations",
+            "question-theme-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -304,7 +304,7 @@ class TestThemeAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-theme_aggregations",
+            "question-theme-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -338,7 +338,7 @@ class TestThemeAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-theme_aggregations",
+            "question-theme-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
 
@@ -366,7 +366,7 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered_responses",
+            "question-filtered-responses",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -398,7 +398,7 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered_responses",
+            "question-filtered-responses",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url + "?page_size=2&page=1")
@@ -429,7 +429,7 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered_responses",
+            "question-filtered-responses",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
 
@@ -478,7 +478,7 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered_responses",
+            "question-filtered-responses",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
 
@@ -498,7 +498,7 @@ class TestFilteredResponsesAPIView:
         """Test API endpoint handles invalid parameters"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered_responses",
+            "question-filtered-responses",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
 
@@ -561,10 +561,10 @@ class TestAPIViewPermissions:
         "endpoint_name",
         [
             "question-demographics",
-            "question-demographic_aggregations",
+            "question-demographic-aggregations",
             "question-themes",
-            "question-theme_aggregations",
-            "question-filtered_responses",
+            "question-theme-aggregations",
+            "question-filtered-responses",
             "question-detail",
         ],
     )
@@ -581,10 +581,10 @@ class TestAPIViewPermissions:
         "endpoint_name",
         [
             "question-demographics",
-            "question-demographic_aggregations",
+            "question-demographic-aggregations",
             "question-themes",
-            "question-theme_aggregations",
-            "question-filtered_responses",
+            "question-theme-aggregations",
+            "question-filtered-responses",
             "question-detail",
         ],
     )
@@ -604,10 +604,10 @@ class TestAPIViewPermissions:
         "endpoint_name",
         [
             "question-demographics",
-            "question-demographic_aggregations",
+            "question-demographic-aggregations",
             "question-themes",
-            "question-theme_aggregations",
-            "question-filtered_responses",
+            "question-theme-aggregations",
+            "question-filtered-responses",
             "question-detail",
         ],
     )
