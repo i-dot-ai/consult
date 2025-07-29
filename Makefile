@@ -104,12 +104,9 @@ endif
 DOCKER_BUILDER_CONTAINER=$(APP_NAME)
 IMAGE_TAG=$$(git rev-parse HEAD)
 
-AUTO_APPLY_RESOURCES = module.backend.aws_ecs_task_definition.aws-ecs-task \
-                       module.backend.aws_ecs_service.aws-ecs-service \
-                       module.backend.data.aws_ecs_task_definition.main \
-                       module.frontend.aws_ecs_task_definition.aws-ecs-task \
-                       module.frontend.aws_ecs_service.aws-ecs-service \
-                       module.frontend.data.aws_ecs_task_definition.main \
+AUTO_APPLY_RESOURCES = module.ecs.aws_ecs_task_definition.aws-ecs-task \
+                       module.ecs.aws_ecs_service.aws-ecs-service \
+                       module.ecs.data.aws_ecs_task_definition.main \
                        module.worker.aws_ecs_task_definition.aws-ecs-task \
                        module.worker.aws_ecs_service.aws-ecs-service \
                        module.worker.data.aws_ecs_task_definition.main \
