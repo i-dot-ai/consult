@@ -1,7 +1,10 @@
 from collections import defaultdict
 
 import orjson
+from django.core.paginator import Paginator
+from django.db.models import Count
 from django.http import HttpResponse
+from django.shortcuts import get_object_or_404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -115,7 +118,6 @@ class ThemeAggregationsAPIView(APIView):
     
     def get(self, request, consultation_slug, question_slug):
         """Get theme aggregations for filtered responses"""
-        from django.db.models import Count
         
         # Get the question object with consultation in one query
         question = get_consultation_and_question(consultation_slug, question_slug)
@@ -160,7 +162,6 @@ class FilteredResponsesAPIView(APIView):
     
     def get(self, request, consultation_slug, question_slug):
         """Get paginated filtered responses with orjson optimization"""
-        from django.core.paginator import Paginator
         
         # Get the question object with consultation in one query
         question = get_consultation_and_question(consultation_slug, question_slug)
@@ -225,7 +226,6 @@ class CrossCuttingThemesAPIView(APIView):
     
     def get(self, request, consultation_slug):
         """Get cross-cutting themes for a consultation with unique respondents calculation"""
-        from django.shortcuts import get_object_or_404
         
         consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
         
