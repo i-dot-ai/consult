@@ -61,6 +61,6 @@ urlpatterns = [
     path("magic-link/<uuid:token>/", sessions.MagicLinkView.as_view(), name="magic_link"),
     # JWT
     path("api/magic-link/", generate_magic_link, name="token-magic-link"),
-    path("api/token/", verify_magic_link, name="create-token"),
+    path("api/token/<str:token>/", verify_magic_link, name="create-token"),
     path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh-token"),
 ]

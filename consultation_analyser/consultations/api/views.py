@@ -211,8 +211,8 @@ def generate_magic_link(request):
 
 
 
-@api_view(["POST"])
-def verify_magic_link(request: HttpRequest, token: str) -> HttpResponse:
+@api_view(["GET"])
+def verify_magic_link(request, token: str) -> HttpResponse:
     """
     get access/refresh tokens.
 
