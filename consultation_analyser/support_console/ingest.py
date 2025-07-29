@@ -27,6 +27,18 @@ DEFAULT_BATCH_SIZE = 10_000
 DEFAULT_TIMEOUT_SECONDS = 3_600
 
 
+def s3_key_exists(key: str) -> bool:
+    s3_client = boto3.client('s3')
+    try:
+        s3_client.head_object(Bucket=settings.AWS_BUCKET_NAME, Key=key)
+        return True
+    except ClientError as e:
+        if e.response['Error']['Code'] == '404':
+            return False
+        else:
+            raise  # Re-raise if it's a different error
+
+
 def get_question_folders(inputs_path: str, bucket_name: str) -> list[str]:
     """
     Get all question_part_N folders from the inputs path.
@@ -534,17 +546,20 @@ def import_questions(
                 import_responses, question, responses_file_key, multiple_choice_file
             )
 
-            output_folder = f"{outputs_path}question_part_{question_num_str}/"
-            themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
-            response_annotations = queue.enqueue(
-                import_response_annotations, question, output_folder, depends_on=themes
-            )
-            queue.enqueue(
-                import_response_annotation_themes,
-                question,
-                output_folder,
-                depends_on=response_annotations,
-            )
+            if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
+                logger.info("not importing output-mappings")
+            else:
+                output_folder = f"{outputs_path}question_part_{question_num_str}/"
+                themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
+                response_annotations = queue.enqueue(
+                    import_response_annotations, question, output_folder, depends_on=themes
+                )
+                queue.enqueue(
+                    import_response_annotation_themes,
+                    question,
+                    output_folder,
+                    depends_on=response_annotations,
+                )
 
     except Exception as e:
         logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
