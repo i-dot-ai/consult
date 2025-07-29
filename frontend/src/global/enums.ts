@@ -6,9 +6,9 @@ export enum Routes {
 }
 
 export const getConsultationDetailUrl = (consultationId: string) => {
-    return `/${Routes.Consultations}/${consultationId}`;
+    return `${Routes.Consultations}/${consultationId}`;
 };
 
 export const getResponseDetailUrl = (consultationId: string, responseId: string) => {
-    return `/${Routes.Consultations}/${consultationId}/responses/${responseId}`;
+    return `${Routes.Consultations}/${consultationId}/responses/${responseId}`;
 };

@@ -3,6 +3,7 @@
 
     export let level: 1 | 2 | 3 | 4 | 5 | 6 = 1;
     export let text: string = "";
+    export let weight: "bold" | "light" = "bold";
 
     const tagMap = {
         1: "h1",
@@ -17,8 +18,8 @@
 </script>
 
 <svelte:element this={tag} class={clsx([
-    "font-bold",
+    weight === "bold" ? "font-bold" : "font-light",
     level === 1 ? "text-2xl" : "text-xl",
 ])} >
-    {text}
+    {@html text}
 </svelte:element>

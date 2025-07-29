@@ -1,0 +1,17 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section.svelte";
+
+import QuestionDetail from "../../../../components/dashboard/QuestionDetail.svelte";
+
+const { consultationId, responseId } = Astro.params;
+---
+<Layout>
+    <Section>
+        <QuestionDetail
+            client:only
+            consultationId={consultationId}
+            questionTitle={responseId}
+        />
+    </Section>
+</Layout>
