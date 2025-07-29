@@ -9,7 +9,7 @@ const { consultationId, responseId } = Astro.params;
 <Layout>
     <Section>
         <QuestionDetail
-            client:only
+            client:load
             consultationId={consultationId}
             questionTitle={responseId}
         />
