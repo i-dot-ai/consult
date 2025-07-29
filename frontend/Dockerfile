@@ -5,13 +5,13 @@ FROM node:20-alpine
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY frontend/package*.json ./
 
 # Install dependencies
 RUN npm ci --only=production
 
 # Copy application code
-COPY . .
+COPY frontend/ .
 
 # Create non-root user for security
 RUN addgroup -g 1001 -S nodejs
