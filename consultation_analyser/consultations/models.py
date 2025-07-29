@@ -184,7 +184,9 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
     def __str__(self):
-        return shorten(self.free_text, width=64, placeholder="...")
+        if self.free_text:
+            return shorten(self.free_text, width=64, placeholder="...")
+        return ", ".join(self.chosen_options)
 
     def save(self, **kwargs):
         if not self.free_text and not self.chosen_options:
