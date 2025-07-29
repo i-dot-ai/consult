@@ -67,7 +67,7 @@ class QuestionViewSet(ReadOnlyModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"], url_name="demographic_aggregations")
+    @action(detail=True, methods=["get"], url_path="demographic-aggregations")
     def demographic_aggregations(self, request, pk=None, consultation_pk=None):
         """Get demographic aggregations for filtered responses"""
         # Get the question object with consultation in one query
@@ -101,7 +101,7 @@ class QuestionViewSet(ReadOnlyModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"], url_name="themes")
+    @action(detail=True, methods=["get"])
     def themes(self, request, pk=None, consultation_pk=None):
         """Get all theme information for a question"""
         # Get the question object with consultation in one query
@@ -115,7 +115,7 @@ class QuestionViewSet(ReadOnlyModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"], url_name="theme_aggregations")
+    @action(detail=True, methods=["get"], url_path="theme-aggregations")
     def theme_aggregations(self, request, pk=None, consultation_pk=None):
         """Get theme aggregations for filtered responses"""
 
@@ -152,7 +152,7 @@ class QuestionViewSet(ReadOnlyModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"], url_name="filtered_responses")
+    @action(detail=True, methods=["get"], url_path="filtered-responses")
     def filtered_responses(self, request, pk=None, consultation_pk=None):
         """Get paginated filtered responses with orjson optimization"""
         question = self.get_object()
