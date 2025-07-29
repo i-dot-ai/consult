@@ -67,6 +67,7 @@ class ThemeDetailSerializer(serializers.Serializer):
     theme_key = serializers.CharField()
     theme_description = serializers.CharField()
     question_number = serializers.IntegerField()
+    question_total_responses = serializers.IntegerField()
     mention_count = serializers.IntegerField()
 
 

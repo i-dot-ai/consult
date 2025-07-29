@@ -270,6 +270,7 @@ class CrossCuttingThemesAPIView(APIView):
                     "theme_key": theme.key,
                     "theme_description": theme.description,
                     "question_number": theme.question.number,
+                    "question_total_responses": theme.question.total_responses or 0,
                     "mention_count": mention_count
                 })
             
