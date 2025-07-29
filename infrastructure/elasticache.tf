@@ -8,7 +8,7 @@ module "elasticache" {
   security_group_ids = tomap(
     {
       "worker" = module.worker.ecs_sg_id
-      "ecs"    = module.backend.ecs_sg_id
+      "ecs"    = module.ecs.ecs_sg_id
     }
   )
 }
