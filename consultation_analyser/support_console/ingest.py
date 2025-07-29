@@ -11,6 +11,8 @@ from django_rq import get_queue
 
 from consultation_analyser.consultations.models import (
     Consultation,
+    CrossCuttingTheme,
+    CrossCuttingThemeAssignment,
     DemographicOption,
     MultiChoiceAnswer,
     Question,
@@ -570,6 +572,71 @@ def import_questions(
     except Exception as e:
         logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
         raise
+
+
+def import_cross_cutting_themes(consultation: Consultation, consultation_code: str, timestamp: str):
+    """
+    Import cross-cutting themes that span across multiple questions.
+    Must run after all themes have been imported.
+    """
+    logger.info(f"Starting cross-cutting themes import for consultation {consultation.title}")
+    
+    s3_client = boto3.client("s3")
+    cct_file_key = f"app_data/consultations/{consultation_code}/outputs/mapping/{timestamp}/cross_cutting_themes.json"
+    
+    try:
+        # Check if file exists
+        response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=cct_file_key)
+        cct_data = json.loads(response["Body"].read())
+    except s3_client.exceptions.NoSuchKey:
+        logger.info("No cross_cutting_themes.json found, skipping cross-cutting themes import")
+        return
+    except Exception as e:
+        logger.error(f"Error reading cross-cutting themes file: {str(e)}")
+        raise
+    
+    # Get all questions for this consultation for lookup
+    questions_dict = {q.number: q for q in Question.objects.filter(consultation=consultation)}
+    
+    for cct_entry in cct_data:
+        # Create the cross-cutting theme
+        cross_cutting_theme = CrossCuttingTheme.objects.create(
+            consultation=consultation,
+            name=cct_entry["name"],
+            description=cct_entry["description"]
+        )
+        logger.info(f"Created cross-cutting theme: {cross_cutting_theme.name}")
+        
+        # Create assignments for each theme
+        assignments_to_create = []
+        for theme_ref in cct_entry["themes"]:
+            question_number = theme_ref["question_number"]
+            theme_key = theme_ref["theme_key"]
+            
+            # Find the question
+            question = questions_dict.get(question_number)
+            if not question:
+                logger.warning(f"Question {question_number} not found, skipping theme {theme_key}")
+                continue
+            
+            # Find the theme
+            try:
+                theme = Theme.objects.get(question=question, key=theme_key)
+                assignments_to_create.append(
+                    CrossCuttingThemeAssignment(
+                        cross_cutting_theme=cross_cutting_theme,
+                        theme=theme
+                    )
+                )
+            except Theme.DoesNotExist:
+                logger.warning(f"Theme {theme_key} not found for question {question_number}")
+            except Theme.MultipleObjectsReturned:
+                logger.error(f"Multiple themes with key {theme_key} for question {question_number}")
+        
+        # Bulk create assignments
+        if assignments_to_create:
+            CrossCuttingThemeAssignment.objects.bulk_create(assignments_to_create)
+            logger.info(f"Created {len(assignments_to_create)} theme assignments for {cross_cutting_theme.name}")
 
 
 def import_respondents(consultation: Consultation, consultation_code: str):

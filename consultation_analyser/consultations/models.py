@@ -271,6 +271,48 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.name
 
 
+class CrossCuttingTheme(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Cross-cutting themes that encompass multiple regular themes across a consultation"""
+
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, related_name="cross_cutting_themes")
+    name = models.CharField(max_length=256)
+    description = models.TextField()
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                fields=["consultation", "name"],
+                name="unique_cross_cutting_theme",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["consultation"]),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class CrossCuttingThemeAssignment(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Assignment of themes to cross-cutting themes - ensures each theme belongs to at most one cross-cutting theme"""
+
+    cross_cutting_theme = models.ForeignKey(
+        CrossCuttingTheme, on_delete=models.CASCADE, related_name="theme_assignments"
+    )
+    theme = models.OneToOneField(Theme, on_delete=models.CASCADE)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(fields=["theme"], name="unique_theme_to_cct_assignment"),
+        ]
+        indexes = [
+            models.Index(fields=["cross_cutting_theme"]),
+        ]
+
+    def __str__(self):
+        return f"{self.theme.name} -> {self.cross_cutting_theme.name}"
+
+
 class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     """Through model to track original AI vs human-reviewed theme assignments"""
 
