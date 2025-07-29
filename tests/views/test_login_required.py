@@ -29,11 +29,11 @@ JSON_SCHEMA_URL_NAMES = ["raw_schema"]
 
 # API endpoints return 403 instead of 404 for unauthenticated users
 API_URL_NAMES = [
-    "question-demographics",
-    "question-demographic_aggregations",
-    "question-themes",
-    "question-theme_aggregations",
-    "question-filtered_responses",
+    "question-demographic-options",
+    "question-demographic-aggregations",
+    "question-theme-information",
+    "question-theme-aggregations",
+    "question-filtered-responses",
     "question-detail",
 ]
 
