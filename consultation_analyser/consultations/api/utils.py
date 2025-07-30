@@ -154,12 +154,16 @@ def build_respondent_data_fast(response: models.Response) -> dict:
     Use this when you need maximum performance for large datasets.
     """
     # Pre-allocate the dictionary with all keys to avoid rehashing
+    multiple_choice_answers = [
+        x["answer__text"] for x in
+       response.multichoiceresponse_set.all().values("answer__text")
+    ]
     data = {
         "identifier": str(response.respondent.identifier),
         "free_text_answer_text": response.free_text or "",
         "demographic_data": response.respondent.demographics or {},
         "themes": [],
-        "multiple_choice_answer": response.chosen_options or [],
+        "multiple_choice_answer": multiple_choice_answers,
         "evidenceRich": False,
     }
 
