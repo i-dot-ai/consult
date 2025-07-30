@@ -8191,7 +8191,7 @@ class QuestionDetailPage extends IaiLitBase {
                         ></iai-icon>
                         <span>Back to all questions</span>
                     `}
-                    .handleClick=${() => window.location.href = `/consultations/${this.consultationId}/`}
+                    .handleClick=${() => window.location.href = `/consultations/${this.consultationSlug}/`}
                 ></iai-silver-button>
 
                 <small>
