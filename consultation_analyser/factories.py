@@ -106,11 +106,11 @@ class ResponseWithMultipleChoiceFactory(ResponseFactory):
             return
 
         options = list(self.question.multiple_choice_options)
-        for option in random.sample(
+        chosen_options = random.sample(
             options,
             k=random.randint(1, len(options)),
-        ):
-            self.chosen_options.add(option)
+        )
+        self.chosen_options.set(chosen_options)
         self.save()
 
 
@@ -123,11 +123,11 @@ class ResponseWithBothFactory(ResponseFactory):
         if not create:
             return
         options = list(self.question.multiple_choice_options)
-        for option in random.sample(
+        chosen_options = random.sample(
             options,
             k=random.randint(1, len(options)),
-        ):
-            self.chosen_options.add(option)
+        )
+        self.chosen_options.set(chosen_options)
         self.save()
 
 
