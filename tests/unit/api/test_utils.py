@@ -327,7 +327,7 @@ class TestBuildRespondentDataFast:
         assert data["identifier"] == str(respondent.identifier)
         assert data["free_text_answer_text"] == "Test response"
         assert data["demographic_data"] == {"individual": True, "region": "north"}
-        assert data["multiple_choice_answer"] == ["option1", "option2"]
+        assert sorted(data["multiple_choice_answer"]) == ["option1", "option2"]
         assert data["evidenceRich"] is False  # No annotation
         assert data["themes"] == []
 

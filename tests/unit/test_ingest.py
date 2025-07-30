@@ -430,7 +430,7 @@ class TestResponsesImport:
         assert response_2.free_text == "Bad idea"
         assert not response_2.chosen_options.exists()
         assert not response_3.free_text
-        assert [x.text for x in response_3.chosen_options.all()] == ["b", "c"]
+        assert sorted(x.text for x in response_3.chosen_options.all()) == ["b", "c"]
 
 
 @pytest.mark.django_db
