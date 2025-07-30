@@ -8,7 +8,7 @@ from faker import Faker
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import models
-from consultation_analyser.consultations.models import MultiChoiceAnswer, MultiChoiceResponse
+from consultation_analyser.consultations.models import MultiChoiceAnswer
 from consultation_analyser.embeddings import embed_text
 
 fake = Faker()
@@ -96,14 +96,6 @@ class ResponseFactory(DjangoModelFactory):
     embedding = factory.LazyAttribute(lambda o: embed_text(o.free_text))
 
 
-class MultiChoiceResponseFactory(DjangoModelFactory):
-    class Meta:
-        model = MultiChoiceResponse
-
-    response = factory.SubFactory(ResponseFactory)
-    answer = factory.SubFactory(MultiChoiceAnswerFactory)
-
-
 class ResponseWithMultipleChoiceFactory(ResponseFactory):
     question = factory.SubFactory(QuestionWithMultipleChoiceFactory)
     free_text = ""
@@ -118,7 +110,8 @@ class ResponseWithMultipleChoiceFactory(ResponseFactory):
             options,
             k=random.randint(1, len(options)),
         ):
-            MultiChoiceResponseFactory.create(response=self, answer=option)
+            self.chosen_options.add(option)
+        self.save()
 
 
 class ResponseWithBothFactory(ResponseFactory):
@@ -134,7 +127,8 @@ class ResponseWithBothFactory(ResponseFactory):
             options,
             k=random.randint(1, len(options)),
         ):
-            MultiChoiceResponse.objects.create(response=self, answer=option)
+            self.chosen_options.add(option)
+        self.save()
 
 
 class ThemeFactory(DjangoModelFactory):

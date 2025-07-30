@@ -426,11 +426,11 @@ class TestResponsesImport:
         assert not responses.filter(respondent__themefinder_id=4).exists()
         assert response_1.question == question
         assert response_1.free_text == "Good idea"
-        assert [x.answer.text for x in response_1.chosen_options] == ["a"]
+        assert [x.text for x in response_1.chosen_options.all()] == ["a"]
         assert response_2.free_text == "Bad idea"
-        assert not response_2.chosen_options
+        assert not response_2.chosen_options.exists()
         assert not response_3.free_text
-        assert [x.answer.text for x in response_3.chosen_options] == ["b", "c"]
+        assert [x.text for x in response_3.chosen_options.all()] == ["b", "c"]
 
 
 @pytest.mark.django_db

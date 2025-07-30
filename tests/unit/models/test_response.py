@@ -11,7 +11,7 @@ class TestResponse:
         response = factories.ResponseFactory()
         assert isinstance(response, models.Response)
         assert response.free_text
-        assert response.chosen_options == []
+        assert response.chosen_options.count() == 0
         assert response.respondent
         assert response.question
 
@@ -19,17 +19,17 @@ class TestResponse:
         """Test response with multiple choice selections"""
         response = factories.ResponseWithMultipleChoiceFactory()
         assert response.free_text == ""
-        assert len(response.chosen_options) >= 1
+        assert response.chosen_options.count() >= 1
         assert all(
-            opt.answer in response.question.multiple_choice_options
-            for opt in response.chosen_options
+            opt in response.question.multiple_choice_options
+            for opt in response.chosen_options.all()
         )
 
     def test_response_with_both(self):
         """Test response with both free text and multiple choice"""
         response = factories.ResponseWithBothFactory()
         assert response.free_text
-        assert len(response.chosen_options) >= 1
+        assert response.chosen_options.count() >= 1
 
     def test_unique_constraint(self):
         """Test that only one response per respondent per question is allowed"""

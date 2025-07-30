@@ -62,15 +62,15 @@ def test_response_factories():
     response = factories.ResponseFactory()
     assert models.Response.objects.filter(id=response.id).exists()
     assert response.free_text
-    assert response.chosen_options == []
+    assert response.chosen_options.count() == 0
 
     # Test response with multiple choice
     mc_response = factories.ResponseWithMultipleChoiceFactory()
     assert mc_response.free_text == ""
     assert mc_response.chosen_options
     assert all(
-        opt.answer in mc_response.question.multiple_choice_options
-        for opt in mc_response.chosen_options
+        opt in mc_response.question.multiple_choice_options
+        for opt in mc_response.chosen_options.all()
     )
 
     # Test response with both

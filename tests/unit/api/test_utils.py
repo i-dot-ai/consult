@@ -11,7 +11,6 @@ from consultation_analyser.consultations.api.utils import (
 )
 from consultation_analyser.consultations.models import (
     MultiChoiceAnswer,
-    MultiChoiceResponse,
     ResponseAnnotation,
 )
 from consultation_analyser.factories import (
@@ -320,7 +319,8 @@ class TestBuildRespondentDataFast:
         )
         for option in ["option1", "option2"]:
             answer = MultiChoiceAnswer.objects.create(question=response.question, text=option)
-            MultiChoiceResponse(response=response, answer=answer).save()
+            response.chosen_options.add(answer)
+        response.save()
 
         data = build_respondent_data_fast(response)
 

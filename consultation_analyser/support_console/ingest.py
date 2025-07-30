@@ -13,7 +13,6 @@ from consultation_analyser.consultations.models import (
     Consultation,
     DemographicOption,
     MultiChoiceAnswer,
-    MultiChoiceResponse,
     Question,
     Respondent,
     Response,
@@ -441,10 +440,6 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
                 total_tokens = 0
                 logger.info("saved %s Responses for question %s", i + 1, question.number)
 
-            if len(multi_choice_response_to_save) > 1000:
-                MultiChoiceResponse.objects.bulk_create(multi_choice_response_to_save)
-                multi_choice_response_to_save = []
-
             response = Response(
                 respondent=respondent_dict[themefinder_id],
                 question=question,
@@ -453,7 +448,7 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
 
             for answer in chosen_options or []:
                 multi_choice_response_to_save.append(
-                    MultiChoiceResponse(
+                    dict(
                         response=response,
                         answer_id=multichoice_answers[answer],
                     )
@@ -464,7 +459,9 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
 
         # last batch
         Response.objects.bulk_create(responses_to_save)
-        MultiChoiceResponse.objects.bulk_create(multi_choice_response_to_save)
+        for x in multi_choice_response_to_save:
+            x["response"].chosen_options.add(x["answer_id"])
+            x["response"].save()
 
         # re-save the responses to ensure that every response has search_vector
         # i.e the lexical bit

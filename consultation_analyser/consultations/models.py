@@ -167,6 +167,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
 
     # Response content
     free_text = models.TextField(null=True, blank=True)  # Free text response
+    chosen_options = models.ManyToManyField("MultiChoiceAnswer", blank=True)
     embedding = VectorField(dimensions=settings.EMBEDDING_DIMENSION, null=True, blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
 
@@ -184,11 +185,6 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
         if self.free_text:
             return shorten(self.free_text, width=64, placeholder="...")
         return "multi-choice response"
-
-    @property
-    def chosen_options(self):
-        """Multiple choice selections"""
-        return list(self.multichoiceresponse_set.all())
 
 
 @receiver(post_save, sender=Response)
@@ -394,8 +390,3 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
 
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     text = models.TextField()
-
-
-class MultiChoiceResponse(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]
-    response = models.ForeignKey(Response, on_delete=models.CASCADE)
-    answer = models.ForeignKey(MultiChoiceAnswer, on_delete=models.CASCADE)
