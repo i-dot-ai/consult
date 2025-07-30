@@ -28,6 +28,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         _isFavourited: { type: Boolean},
 
         consultationSlug: { type: String },
+        consultationId: { type: String },
         questionSlug: { type: String },
         consultationTitle: { type: String},
         questionText: { type: String},
@@ -120,6 +121,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         this._isFavourited = false;
 
         this.consultationSlug = "";
+        this.consultationId = "";
         this.questionSlug = "";
         this.consultationTitle = "";
         this.questionText = "";
@@ -221,15 +223,15 @@ export default class QuestionDetailPage extends IaiLitBase {
             try {
                 const [filteredResponsesData, themeAggregationsData, themeInformationData, demographicOptionsData, demographicAggregationsData] = await Promise.all([
                     // Get paginated response data
-                    this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(), { signal }).then(r => r.json()),
+                    this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/filtered-responses/?` + this.buildQuery(), { signal }).then(r => r.json()),
                     // Get theme aggregations (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                     // Get theme information (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-information/`, { signal }).then(r => r.json()) : null,
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-information/`, { signal }).then(r => r.json()) : null,
                     // Get demographic options (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-options/`, { signal }).then(r => r.json()) : null,
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-options/`, { signal }).then(r => r.json()) : null,
                     // Get demographic aggregations (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null
                 ]);
 
                 this.responses = this.responses.concat(filteredResponsesData.all_respondents);
