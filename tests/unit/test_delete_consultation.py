@@ -44,10 +44,10 @@ def test_delete_consultation_cascading():
 
     # Create responses
     response1 = Response.objects.create(
-        respondent=respondent1, question=question, free_text="I think it's great", chosen_options=[]
+        respondent=respondent1, question=question, free_text="I think it's great"
     )
     response2 = Response.objects.create(
-        respondent=respondent2, question=question, free_text="I disagree", chosen_options=[]
+        respondent=respondent2, question=question, free_text="I disagree"
     )
 
     # Create themes

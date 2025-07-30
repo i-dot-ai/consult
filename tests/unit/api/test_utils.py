@@ -2,7 +2,6 @@ from unittest.mock import patch
 
 import pytest
 from django.conf import settings
-from django.core.exceptions import ValidationError
 
 from consultation_analyser.consultations.api.utils import (
     build_respondent_data_fast,
@@ -10,7 +9,11 @@ from consultation_analyser.consultations.api.utils import (
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
 )
-from consultation_analyser.consultations.models import ResponseAnnotation
+from consultation_analyser.consultations.models import (
+    MultiChoiceAnswer,
+    MultiChoiceResponse,
+    ResponseAnnotation,
+)
 from consultation_analyser.factories import (
     ConsultationFactory,
     QuestionFactory,
@@ -314,15 +317,17 @@ class TestBuildRespondentDataFast:
             question=question,
             respondent=respondent,
             free_text="Test response",
-            chosen_options=["option1", "option2"],
         )
+        for option in ["option1", "option2"]:
+            answer = MultiChoiceAnswer.objects.create(question=response.question, text=option)
+            MultiChoiceResponse(response=response, answer=answer).save()
 
         data = build_respondent_data_fast(response)
 
         assert data["identifier"] == str(respondent.identifier)
         assert data["free_text_answer_text"] == "Test response"
         assert data["demographic_data"] == {"individual": True, "region": "north"}
-        assert data["multiple_choice_answer"] == ["option1", "option2"]
+        assert [x.answer.text for x in data["multiple_choice_answer"]] == ["option1", "option2"]
         assert data["evidenceRich"] is False  # No annotation
         assert data["themes"] == []
 
@@ -371,18 +376,6 @@ class TestBuildRespondentDataFast:
             assert "id" in theme_data
             assert "name" in theme_data
             assert "description" in theme_data
-
-    def test_empty_fields_handling(self, question):
-        """Test handling of empty/None fields"""
-        respondent = RespondentFactory(consultation=question.consultation, demographics={})
-        with pytest.raises(ValidationError) as e:
-            ResponseFactory(
-                question=question,
-                respondent=respondent,
-                free_text="",
-                chosen_options=None,
-            )
-        assert e.value.args[0] == "either free_text or chosen_options should be populated"
 
     def test_no_annotation(self, question):
         """Test respondent data when no annotation exists"""

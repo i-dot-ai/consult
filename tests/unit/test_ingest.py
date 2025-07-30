@@ -4,6 +4,7 @@ import pytest
 
 from consultation_analyser.consultations.models import (
     Consultation,
+    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -338,7 +339,8 @@ class TestQuestionsImport:
         assert questions.first().text == "What do you think?"
         assert questions.first().has_free_text
         assert questions.first().has_multiple_choice
-        assert questions.first().multiple_choice_options == ["a", "b", "c"]
+
+        assert [x.text for x in questions.first().multichoiceanswer_set.all()] == ["a", "b", "c"]
 
         themes = Theme.objects.filter(question__consultation=consultation)
         assert themes.count() == 1
@@ -406,6 +408,9 @@ class TestResponsesImport:
         for i in range(4):
             Respondent.objects.create(consultation=consultation, themefinder_id=i + 1)
 
+        for answer in ["a", "b", "c"]:
+            MultiChoiceAnswer(text=answer, question=question).save()
+
         # Run the import
         responses_file_key = f"{question_folder}responses.jsonl"
         multi_choice_file_key = f"{question_folder}multi_choice.jsonl"
@@ -421,11 +426,11 @@ class TestResponsesImport:
         assert not responses.filter(respondent__themefinder_id=4).exists()
         assert response_1.question == question
         assert response_1.free_text == "Good idea"
-        assert response_1.chosen_options == ["a"]
+        assert [x.answer.text for x in response_1.chosen_options] == ["a"]
         assert response_2.free_text == "Bad idea"
         assert not response_2.chosen_options
         assert not response_3.free_text
-        assert response_3.chosen_options == ["b", "c"]
+        assert [x.answer.text for x in response_3.chosen_options] == ["b", "c"]
 
 
 @pytest.mark.django_db

@@ -8,6 +8,7 @@ from faker import Faker
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import models
+from consultation_analyser.consultations.models import MultiChoiceAnswer, MultiChoiceResponse
 from consultation_analyser.embeddings import embed_text
 
 fake = Faker()
@@ -38,23 +39,37 @@ class QuestionFactory(DjangoModelFactory):
     number = factory.Sequence(lambda n: n + 1)
     has_free_text = True
     has_multiple_choice = False
-    multiple_choice_options = None
+
+
+class MultiChoiceAnswerFactory(DjangoModelFactory):
+    text = factory.Faker("word")
+    question = factory.SubFactory(QuestionFactory)
+
+    class Meta:
+        model = MultiChoiceAnswer
 
 
 class QuestionWithMultipleChoiceFactory(QuestionFactory):
     has_free_text = False
     has_multiple_choice = True
-    multiple_choice_options = factory.LazyAttribute(
-        lambda o: [fake.word() for _ in range(random.randint(2, 5))]
-    )
+
+    @factory.post_generation
+    def create_multiple_choice_responses(self, create, extracted, **kwargs):
+        if not create:
+            return
+        MultiChoiceAnswerFactory.create_batch(random.randint(2, 5), question=self)
 
 
 class QuestionWithBothFactory(QuestionFactory):
     has_free_text = True
     has_multiple_choice = True
-    multiple_choice_options = factory.LazyAttribute(
-        lambda o: [fake.word() for _ in range(random.randint(2, 5))]
-    )
+
+    @factory.post_generation
+    def create_multiple_choice_responses(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        MultiChoiceAnswerFactory.create_batch(random.randint(2, 5), question=self)
 
 
 class RespondentFactory(DjangoModelFactory):
@@ -78,30 +93,48 @@ class ResponseFactory(DjangoModelFactory):
     respondent = factory.SubFactory(RespondentFactory)
     question = factory.SubFactory(QuestionFactory)
     free_text = factory.LazyAttribute(lambda o: fake.paragraph())
-    chosen_options = factory.LazyFunction(list)  # Empty list
     embedding = factory.LazyAttribute(lambda o: embed_text(o.free_text))
+
+
+class MultiChoiceResponseFactory(DjangoModelFactory):
+    class Meta:
+        model = MultiChoiceResponse
+
+    response = factory.SubFactory(ResponseFactory)
+    answer = factory.SubFactory(MultiChoiceAnswerFactory)
 
 
 class ResponseWithMultipleChoiceFactory(ResponseFactory):
     question = factory.SubFactory(QuestionWithMultipleChoiceFactory)
     free_text = ""
-    chosen_options = factory.LazyAttribute(
-        lambda o: random.sample(
-            o.question.multiple_choice_options,
-            k=random.randint(1, len(o.question.multiple_choice_options)),
-        )
-    )
+
+    @factory.post_generation
+    def create_multiple_choice_responses(self, create, extracted, **kwargs):
+        if not create:
+            return
+
+        options = list(self.question.multiple_choice_options)
+        for option in random.sample(
+            options,
+            k=random.randint(1, len(options)),
+        ):
+            MultiChoiceResponseFactory.create(response=self, answer=option)
 
 
 class ResponseWithBothFactory(ResponseFactory):
     question = factory.SubFactory(QuestionWithBothFactory)
     free_text = factory.LazyAttribute(lambda o: fake.paragraph())
-    chosen_options = factory.LazyAttribute(
-        lambda o: random.sample(
-            o.question.multiple_choice_options,
-            k=random.randint(1, len(o.question.multiple_choice_options)),
-        )
-    )
+
+    @factory.post_generation
+    def create_multiple_choice_responses(self, create, extracted, **kwargs):
+        if not create:
+            return
+        options = list(self.question.multiple_choice_options)
+        for option in random.sample(
+            options,
+            k=random.randint(1, len(options)),
+        ):
+            MultiChoiceResponse.objects.create(response=self, answer=option)
 
 
 class ThemeFactory(DjangoModelFactory):

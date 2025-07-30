@@ -1,6 +1,7 @@
 import logging
 
 from django.core.paginator import Paginator
+from django.db.models import Count
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
@@ -39,7 +40,7 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
         non_null_responses_count = (
             models.Response.objects.filter(question=question)
             .exclude(free_text__isnull=True)
-            .exclude(chosen_options__isnull=True)
+            # .exclude(chosen_options__isnull=True)
             .count()
         )
         question_dict["number_responses"] = non_null_responses_count
@@ -49,12 +50,14 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
             question_dict["multiple_option_question_part"] = question
 
             # Get option counts
-            responses = models.Response.objects.filter(question=question).values("chosen_options")
-            option_counts: dict[str, int] = {}
-            for response in responses:
-                if options := response.get("chosen_options"):
-                    for option in options:
-                        option_counts[option] = option_counts.get(option, 0) + 1
+            responses = (
+                models.MultiChoiceResponse.objects.filter(response__question=question)
+                .values("answer__text")
+                .annotate(response_count=Count("response"))
+            )
+            option_counts = {
+                response["answer__text"]: response["response_count"] for response in responses
+            }
 
             question_dict["multiple_option_counts"] = option_counts
 

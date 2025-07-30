@@ -21,7 +21,8 @@ class TestResponse:
         assert response.free_text == ""
         assert len(response.chosen_options) >= 1
         assert all(
-            opt in response.question.multiple_choice_options for opt in response.chosen_options
+            opt.answer in response.question.multiple_choice_options
+            for opt in response.chosen_options
         )
 
     def test_response_with_both(self):

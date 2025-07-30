@@ -12,6 +12,8 @@ from django_rq import get_queue
 from consultation_analyser.consultations.models import (
     Consultation,
     DemographicOption,
+    MultiChoiceAnswer,
+    MultiChoiceResponse,
     Question,
     Respondent,
     Response,
@@ -397,6 +399,11 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
     multichoice_data = read_multi_choice_response_file(multichoice_file_key)
     responses = merge_free_text_and_multi_choice(plain_response_dict, multichoice_data)
 
+    multichoice_answers = {
+        answer["text"]: answer["id"]
+        for answer in MultiChoiceAnswer.objects.filter(question=question).values("id", "text")
+    }
+
     try:
         # Get respondents
         respondents = Respondent.objects.filter(consultation=question.consultation)
@@ -405,6 +412,7 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
         # Second pass: create responses
         # type: ignore
         responses_to_save: list = []  # type: ignore
+        multi_choice_response_to_save = []  # type: ignore
         max_total_tokens = 100_000
         max_batch_size = 2048
         total_tokens = 0
@@ -433,18 +441,30 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
                 total_tokens = 0
                 logger.info("saved %s Responses for question %s", i + 1, question.number)
 
-            responses_to_save.append(
-                Response(
-                    respondent=respondent_dict[themefinder_id],
-                    question=question,
-                    free_text=free_text,
-                    chosen_options=chosen_options,
-                )
+            if len(multi_choice_response_to_save) > 1000:
+                MultiChoiceResponse.objects.bulk_create(multi_choice_response_to_save)
+                multi_choice_response_to_save = []
+
+            response = Response(
+                respondent=respondent_dict[themefinder_id],
+                question=question,
+                free_text=free_text,
             )
+
+            for answer in chosen_options or []:
+                multi_choice_response_to_save.append(
+                    MultiChoiceResponse(
+                        response=response,
+                        answer_id=multichoice_answers[answer],
+                    )
+                )
+
+            responses_to_save.append(response)
             total_tokens += token_count
 
         # last batch
         Response.objects.bulk_create(responses_to_save)
+        MultiChoiceResponse.objects.bulk_create(multi_choice_response_to_save)
 
         # re-save the responses to ensure that every response has search_vector
         # i.e the lexical bit
@@ -533,8 +553,9 @@ def import_questions(
                 number=question_number,
                 has_free_text=question_data.get("has_free_text", True),
                 has_multiple_choice=bool(multi_choice_options),
-                multiple_choice_options=multi_choice_options,
             )
+            for answer in multi_choice_options:
+                MultiChoiceAnswer.objects.create(question=question, text=answer)
 
             responses_file_key = f"{question_folder}responses.jsonl"
             multiple_choice_file = f"{question_folder}multi_choice.jsonl"

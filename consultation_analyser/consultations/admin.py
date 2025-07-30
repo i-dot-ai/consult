@@ -50,7 +50,6 @@ class QuestionAdmin(admin.ModelAdmin):
         "number",
         "has_free_text",
         "has_multiple_choice",
-        "multiple_choice_options",
     ]
 
 

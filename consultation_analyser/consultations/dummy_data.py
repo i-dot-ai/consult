@@ -7,6 +7,7 @@ import yaml
 from django_rq import job
 
 from consultation_analyser.consultations import models
+from consultation_analyser.consultations.models import MultiChoiceAnswer, MultiChoiceResponse
 from consultation_analyser.factories import (
     ConsultationFactory,
     QuestionFactory,
@@ -62,8 +63,9 @@ def create_dummy_consultation_from_yaml(
             consultation=consultation,
             has_free_text=has_free_text,
             has_multiple_choice=has_multiple_choice,
-            multiple_choice_options=options,
         )
+        for option in options or []:
+            MultiChoiceAnswer(question=question, text=option).save()
 
         if has_free_text:
             logger.info("Free text question - create themes")
@@ -111,8 +113,9 @@ def create_dummy_consultation_from_yaml(
                     question_data["multiple_choice_options"],
                     k=random.randint(1, len(question_data["multiple_choice_options"])),
                 )
-                response.chosen_options = chosen_options
                 response.save()
+                for answer in MultiChoiceAnswer.objects.filter(text__in=chosen_options):
+                    MultiChoiceResponse(response=response, answer=answer).save()
         logger.info(f"Finished adding question and responses for question {question.number}")
         models.DemographicOption.rebuild_for_consultation(consultation=consultation)
         logger.info(f"Finished adding dummy data for consultation {consultation.slug}")
