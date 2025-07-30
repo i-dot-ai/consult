@@ -210,8 +210,8 @@ def generate_magic_link(request):
     return Response({"message": "Magic link sent"})
 
 
-@api_view(["GET"])
-def verify_magic_link(request, token: str) -> HttpResponse:
+@api_view(["POST"])
+def verify_magic_link(request) -> HttpResponse:
     """
     get access/refresh tokens.
 
@@ -219,6 +219,9 @@ def verify_magic_link(request, token: str) -> HttpResponse:
     view will raise a PermissionDenied, which will render the 403 template.
 
     """
+    token = request.data.get("token")
+    if not token:
+        return Response({"detail": "token required"}, status=400)
     link = get_object_or_404(MagicLink, token=token)
     try:
         link.validate()

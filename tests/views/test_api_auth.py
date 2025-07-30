@@ -3,6 +3,7 @@ from uuid import uuid4
 import pytest
 from django.urls import reverse
 from magic_link.models import MagicLink
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 @pytest.mark.django_db
@@ -24,8 +25,8 @@ def test_token_magic_link_fail(client, dashboard_user):
 @pytest.mark.django_db
 def test_create_token(client, dashboard_user):
     link = MagicLink.objects.create(user=dashboard_user)
-    url = reverse("create-token", kwargs={"token": link.token})
-    response = client.get(url)
+    url = reverse("create-token")
+    response = client.post(url, data={"token": link.token})
     assert response.status_code == 200
     assert "access" in response.json()
     assert "refresh" in response.json()
@@ -34,8 +35,8 @@ def test_create_token(client, dashboard_user):
 @pytest.mark.django_db
 def test_create_token_fail(client):
     token = uuid4()
-    url = reverse("create-token", kwargs={"token": token})
-    response = client.get(url)
+    url = reverse("create-token")
+    response = client.post(url, data={"token": token})
     assert response.status_code == 404
     assert response.json() == {"detail": "No MagicLink matches the given query."}
 
@@ -86,3 +87,15 @@ def test_api_urls_permission_required(
     # Logged in with user without dashboard access - 403
     response = client.get(url, headers={"Authorization": f"Bearer {non_dashboard_user_token}"})
     assert response.status_code == 403
+
+
+@pytest.mark.django_db
+def test_refresh(client, dashboard_user):
+    refresh = RefreshToken.for_user(dashboard_user)
+    url = reverse("refresh-token")
+
+    response = client.post(url, data={"refresh": str(refresh)})
+    assert response.status_code == 200, response.content
+    assert set(response.json()) == {"access"}
+
+    assert response.json()["access"] != str(refresh.token)
