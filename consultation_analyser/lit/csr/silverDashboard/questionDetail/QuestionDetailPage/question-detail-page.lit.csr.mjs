@@ -33,6 +33,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         consultationTitle: { type: String},
         questionText: { type: String},
         questionId: { type: String },
+        hasFreeText: { type: Boolean },
 
         responses: { type: Array },
         _responsesTotal: { type: Number },
@@ -127,6 +128,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         this.consultationTitle = "";
         this.questionText = "";
         this.questionId = "";
+        this.hasFreeText = false;
 
         this.responses = [];
         this._responsesTotal = 0;
@@ -400,51 +402,54 @@ export default class QuestionDetailPage extends IaiLitBase {
                 `
             : ""}
             
-            <section class="theme-analysis">
-                <iai-theme-analysis
-                    .consultationSlug=${this.consultationSlug}
-                    .themes=${this._themes.toSorted((a, b) => {
-                        let valA, valB;
-            
-                        if (this._themesSortType === "frequency") {
-                            valA = a.mentions;
-                            valB = b.mentions;
-                        } else {
-                            valA = a.title;
-                            valB = b.title;
-                        }
+            ${this.hasFreeText ? html`
+                <section class="theme-analysis">
+                    <iai-theme-analysis
+                        .consultationSlug=${this.consultationSlug}
+                        .themes=${this._themes.toSorted((a, b) => {
+                            let valA, valB;
 
-                        const directionOffset = this._themesSortDirection === "ascending"
-                            ? 1
-                            : -1;
-            
-                        if (valA < valB) {
-                            return -1 * directionOffset;
-                        } else if (valB < valA) {
-                            return 1 * directionOffset;
-                        }
-                        return 0;
-                    })}
-                    .demoData=${this._demoData}
-                    .demoOptions=${this._demoOptions}
-                    .totalResponses=${this._filteredTotal}
+                            if (this._themesSortType === "frequency") {
+                                valA = a.mentions;
+                                valB = b.mentions;
+                            } else {
+                                valA = a.title;
+                                valB = b.title;
+                            }
 
-                    .demoFiltersApplied=${this.demoFiltersApplied}
-                    .themeFiltersApplied=${this.themeFiltersApplied}
+                            const directionOffset = this._themesSortDirection === "ascending"
+                                ? 1
+                                : -1;
 
-                    .themeFilters=${this._themeFilters}
-                    .updateThemeFilters=${this.updateThemeFilters}
-                    
-                    .sortType=${this._themesSortType}
-                    .setSortType=${newSortType => this._themesSortType = newSortType}
+                            if (valA < valB) {
+                                return -1 * directionOffset;
+                            } else if (valB < valA) {
+                                return 1 * directionOffset;
+                            }
+                            return 0;
+                        })}
+                        .demoData=${this._demoData}
+                        .demoOptions=${this._demoOptions}
+                        .totalResponses=${this._filteredTotal}
 
-                    .sortDirection=${this._themesSortDirection}
-                    .setSortDirection=${newSortDirection => this._themesSortDirection = newSortDirection}
+                        .demoFiltersApplied=${this.demoFiltersApplied}
+                        .themeFiltersApplied=${this.themeFiltersApplied}
 
-                    .demoFilters=${this._demoFilters}
-                    .setDemoFilters=${this.setDemoFilters}
-                ></iai-theme-analysis>
-            </section>
+                        .themeFilters=${this._themeFilters}
+                        .updateThemeFilters=${this.updateThemeFilters}
+
+                        .sortType=${this._themesSortType}
+                        .setSortType=${newSortType => this._themesSortType = newSortType}
+
+                        .sortDirection=${this._themesSortDirection}
+                        .setSortDirection=${newSortDirection => this._themesSortDirection = newSortDirection}
+
+                        .demoFilters=${this._demoFilters}
+                        .setDemoFilters=${this.setDemoFilters}
+                    ></iai-theme-analysis>
+                </section>
+            `: ""}
+
         `
     }
 
