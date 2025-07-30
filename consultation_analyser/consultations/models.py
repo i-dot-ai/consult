@@ -389,13 +389,13 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
         super().save(*args, **kwargs)
 
 
-class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):
+class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]
     """a possible answer to a multi choice question"""
 
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     text = models.TextField()
 
 
-class MultiChoiceResponse(UUIDPrimaryKeyModel, TimeStampedModel):
+class MultiChoiceResponse(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]
     response = models.ForeignKey(Response, on_delete=models.CASCADE)
     answer = models.ForeignKey(MultiChoiceAnswer, on_delete=models.CASCADE)
