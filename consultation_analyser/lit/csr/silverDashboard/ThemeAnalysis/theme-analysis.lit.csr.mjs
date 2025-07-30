@@ -21,24 +21,9 @@ export default class ThemeAnalysis extends IaiLitBase {
         ...IaiLitBase.properties,
         consultationSlug: { type: String },
         themes: { type: Array },
-        demoData: { type: Object },
-        demoOptions: { type: Object },
         totalResponses: { type: Number },
-
-        demoFiltersApplied: { type: Function },
-        themeFiltersApplied: { type: Function },
-
         themeFilters: { type: Array },
         updateThemeFilters: { type: Function },
-
-        sortType: { type: String },
-        setSortType: { type: Function },
-
-        sortDirection: { type: String },
-        setSortDirection: { type: Function },
-
-        demoFilters: { type: Object },
-        setDemoFilters: { type: Function },
     }
 
     static styles = [
@@ -156,25 +141,11 @@ export default class ThemeAnalysis extends IaiLitBase {
         this.contentId = this.generateId();
         this._NUMBER_ANIMATION_DURATION = 1000;
 
+        this.consultationSlug = "";
         this.themes = [];
-        this.demoData = {};
-        this.demoOptions = {};
         this.totalResponses = 0;
-
-        this.demoFiltersApplied = () => {};
-        this.themeFiltersApplied = () => {};
-
         this.themeFilters = [];
         this.updateThemeFilters = () => {};
-
-        this.demoFilters = {};
-        this.setDemoFilters = () => {};
-        
-        this.sortType = "";
-        this.setSortType = () => {};
-
-        this.sortDirection = "";
-        this.setSortDirection = () => {};
 
         this.applyStaticStyles("iai-theme-analysis", ThemeAnalysis.styles);
     }
@@ -205,75 +176,6 @@ export default class ThemeAnalysis extends IaiLitBase {
                             `}
                         ></iai-silver-title>
 
-                        <div class="filters-row">
-                            <div class="filters">
-                                <iai-silver-select-input
-                                    .inputId=${"sort-value"}
-                                    .name=${"sort-value"}
-                                    .label=${"Sort by:"}
-                                    .hideLabel=${false}
-                                    .value=${this.sortType}
-                                    .options=${[
-                                        { value: "frequency", text: "Frequency" },
-                                        { value: "alphabetical", text: "A-Z" },
-                                    ]}
-                                    .handleChange=${(e) => this.setSortType(e.target.value)}
-                                    .horizontal=${true}
-                                ></iai-silver-select-input>
-
-                                <iai-icon-button .handleClick=${
-                                    () => this.setSortDirection(this.sortDirection === "ascending"
-                                        ? "descending"
-                                        : "ascending"
-                                )}>
-                                    <iai-icon
-                                        slot="icon"
-                                        .name=${this.sortDirection === "ascending"
-                                            ? "arrow_downward"
-                                            : "arrow_upward"
-                                        }
-                                    ></iai-icon>
-                                </iai-icon-button>
-                            </div>
-
-                            <div class="filters">
-                                ${Object.keys(this.demoOptions).map(category => {
-                                    return html`
-                                        <iai-multi-dropdown
-                                            .title=${category}
-                                            .text=${`${this.demoFilters[category]?.length || 0} filters selected`}
-                                            .options=${this.demoOptions[category].map(option => ({
-                                                id: option,
-                                                checked: Boolean(this.demoFilters[category]?.includes(option)),
-                                                title: option,
-                                                handleClick: (e) => {
-                                                    this.setDemoFilters(category, option);
-                                                },
-                                            }))}
-                                        ></iai-multi-dropdown>
-                                    `
-                                })}
-                            </div>
-
-                            ${this.themeFiltersApplied() || this.demoFiltersApplied() ? html`
-                                <iai-silver-button
-                                    .text=${"Clear filters"}
-                                    .handleClick=${() => {
-                                        this.updateThemeFilters();
-                                        this.setDemoFilters();
-                                    }}
-                                ></iai-silver-button>
-                            ` : ""}
-                        </div>
-
-                        ${this.themeFilters.length > 0 ? html`
-                            <iai-theme-filters-warning
-                                .themes=${this.themes}
-                                .themeFilters=${this.themeFilters}
-                                .updateThemeFilters=${this.updateThemeFilters}
-                            ></iai-theme-filters-warning>
-                        ` : ""}
-                        
                         <div class="info-container">
                             <small>
                                 Total Themes

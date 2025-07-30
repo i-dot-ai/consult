@@ -6,6 +6,7 @@ import Panel from '../../Panel/panel.lit.csr.mjs';
 import Button from '../../Button/button.lit.csr.mjs';
 import IaiIcon from '../../../IaiIcon/iai-icon.mjs';
 
+import Filters from '../../Filters/filters.lit.csr.mjs';
 import ThemeAnalysis from '../../ThemeAnalysis/theme-analysis.lit.csr.mjs';
 import QuestionTitle from '../QuestionTitle/question-title.lit.csr.mjs';
 import TabView from '../../../TabView/tab-view.lit.csr.mjs';
@@ -32,6 +33,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         consultationTitle: { type: String},
         questionText: { type: String},
         questionId: { type: String },
+        hasFreeText: { type: Boolean },
 
         responses: { type: Array },
         _responsesTotal: { type: Number },
@@ -39,6 +41,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         _themes: { type: Array },
         _demoData: { type: Object },
         _demoOptions: { type: Object },
+        _multiChoice: { type: Object },
 
         _searchValue: { type: String },
         _searchMode: { type: String },
@@ -124,6 +127,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         this.consultationTitle = "";
         this.questionText = "";
         this.questionId = "";
+        this.hasFreeText = false;
 
         this.responses = [];
         this._responsesTotal = 0;
@@ -131,6 +135,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         this._themes = [];
         this._demoData = {};
         this._demoOptions = {};
+        this._multiChoice = {};
         
         this._searchValue = "";
         this._searchMode = "keyword";
@@ -379,13 +384,29 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .total=${this._filteredTotal}
                 ></iai-demographics-section>
             </section>
-            
-            <section class="theme-analysis">
-                <iai-theme-analysis
+
+            <!-- TODO: Add multi choice to this -->
+            ${Object.keys(this._multiChoice).length > 0 ?
+                html`
+                    <section>
+                        <iai-demographics-section
+                            .data=${this._multiChoice}
+                            .themeFilters=${this._themeFilters}
+                            .demoFilters=${this._demoFilters}
+                            .demoFiltersApplied=${this.demoFiltersApplied}
+                            .themeFiltersApplied=${this.themeFiltersApplied}
+                            .total=${this._filteredTotal}
+                        ></iai-demographics-section>
+                    </section>
+                `
+            : ""}
+
+            <section class="filters">
+                <iai-filters
                     .consultationSlug=${this.consultationSlug}
                     .themes=${this._themes.toSorted((a, b) => {
                         let valA, valB;
-            
+
                         if (this._themesSortType === "frequency") {
                             valA = a.mentions;
                             valB = b.mentions;
@@ -397,7 +418,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                         const directionOffset = this._themesSortDirection === "ascending"
                             ? 1
                             : -1;
-            
+
                         if (valA < valB) {
                             return -1 * directionOffset;
                         } else if (valB < valA) {
@@ -405,16 +426,14 @@ export default class QuestionDetailPage extends IaiLitBase {
                         }
                         return 0;
                     })}
-                    .demoData=${this._demoData}
                     .demoOptions=${this._demoOptions}
-                    .totalResponses=${this._filteredTotal}
 
                     .demoFiltersApplied=${this.demoFiltersApplied}
                     .themeFiltersApplied=${this.themeFiltersApplied}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
-                    
+
                     .sortType=${this._themesSortType}
                     .setSortType=${newSortType => this._themesSortType = newSortType}
 
@@ -423,8 +442,42 @@ export default class QuestionDetailPage extends IaiLitBase {
 
                     .demoFilters=${this._demoFilters}
                     .setDemoFilters=${this.setDemoFilters}
-                ></iai-theme-analysis>
+                ></iai-filters>
             </section>
+            
+            ${this.hasFreeText ? html`
+                <section class="theme-analysis">
+                    <iai-theme-analysis
+                        .consultationSlug=${this.consultationSlug}
+                        .totalResponses=${this._filteredTotal}
+                        .themes=${this._themes.toSorted((a, b) => {
+                            let valA, valB;
+
+                            if (this._themesSortType === "frequency") {
+                                valA = a.mentions;
+                                valB = b.mentions;
+                            } else {
+                                valA = a.title;
+                                valB = b.title;
+                            }
+
+                            const directionOffset = this._themesSortDirection === "ascending"
+                                ? 1
+                                : -1;
+
+                            if (valA < valB) {
+                                return -1 * directionOffset;
+                            } else if (valB < valA) {
+                                return 1 * directionOffset;
+                            }
+                            return 0;
+                        })}
+                        .themeFilters=${this._themeFilters}
+                        .updateThemeFilters=${this.updateThemeFilters}
+                    ></iai-theme-analysis>
+                </section>
+            `: ""}
+
         `
     }
 
@@ -583,10 +636,15 @@ export default class QuestionDetailPage extends IaiLitBase {
                         title: this.renderTabButton("Question summary", "lan"),
                         content: this.renderThemeAnalysisSection()
                     },
-                    {
-                        title: this.renderTabButton("Response analysis", "finance"),
-                        content: this.renderResponsesSection()
-                    },
+                    ...(this.hasFreeText
+                        ? [
+                            {
+                                title: this.renderTabButton("Response analysis", "finance"),
+                                content: this.renderResponsesSection()
+                            }
+                        ]
+                        : []
+                    )
                 ]}
             ></iai-tab-view>
         `

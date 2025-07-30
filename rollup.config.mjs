@@ -4,7 +4,7 @@ import commonjs from "@rollup/plugin-commonjs";
 export default {
     input: "consultation_analyser/lit/csr/index.mjs",
     output: {
-        dir: "frontend/lit/",
+        dir: "legacy-frontend/lit/",
         format: "es",
         sourcemap: true,
     },
