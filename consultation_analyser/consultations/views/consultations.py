@@ -40,8 +40,9 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
 
         non_null_responses_count = (
             models.Response.objects.filter(question=question)
+            .annotate(chosen_count=Count("chosen_options"))
             .exclude(free_text__isnull=True)
-            # .exclude(chosen_options__isnull=True)
+            .exclude(chosen_count=0)
             .count()
         )
         question_dict["number_responses"] = non_null_responses_count

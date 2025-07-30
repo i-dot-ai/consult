@@ -398,11 +398,6 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
     multichoice_data = read_multi_choice_response_file(multichoice_file_key)
     responses = merge_free_text_and_multi_choice(plain_response_dict, multichoice_data)
 
-    multichoice_answers = {
-        answer["text"]: answer["id"]
-        for answer in MultiChoiceAnswer.objects.filter(question=question).values("id", "text")
-    }
-
     try:
         # Get respondents
         respondents = Respondent.objects.filter(consultation=question.consultation)
@@ -411,7 +406,7 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
         # Second pass: create responses
         # type: ignore
         responses_to_save: list = []  # type: ignore
-        multi_choice_response_to_save = []  # type: ignore
+        multi_choice_response_to_save: list[tuple[Response, list[str]]] = []  # type: ignore
         max_total_tokens = 100_000
         max_batch_size = 2048
         total_tokens = 0
@@ -446,22 +441,18 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
                 free_text=free_text,
             )
 
-            for answer in chosen_options or []:
-                multi_choice_response_to_save.append(
-                    dict(
-                        response=response,
-                        answer_id=multichoice_answers[answer],
-                    )
-                )
+            if chosen_options:
+                multi_choice_response_to_save.append((response, chosen_options))
 
             responses_to_save.append(response)
             total_tokens += token_count
 
         # last batch
         Response.objects.bulk_create(responses_to_save)
-        for x in multi_choice_response_to_save:
-            x["response"].chosen_options.add(x["answer_id"])
-            x["response"].save()
+        for response, answers in multi_choice_response_to_save:
+            chosen_options = MultiChoiceAnswer.objects.filter(question=question, text__in=answers)
+            response.chosen_options.set(chosen_options)
+            response.save()
 
         # re-save the responses to ensure that every response has search_vector
         # i.e the lexical bit

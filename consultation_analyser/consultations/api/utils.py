@@ -103,7 +103,6 @@ def get_filtered_responses_with_themes(
             "respondent_id",
             "question_id",
             "free_text",
-            # "chosen_options",
             "created_at",
             # Respondent fields
             "respondent__id",
