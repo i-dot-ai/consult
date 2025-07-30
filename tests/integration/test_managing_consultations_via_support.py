@@ -1,7 +1,8 @@
 import pytest
 
 from consultation_analyser.consultations.models import (
-    Consultation, MultiChoiceAnswer,
+    Consultation,
+    MultiChoiceAnswer,
 )
 from consultation_analyser.factories import (
     UserFactory,

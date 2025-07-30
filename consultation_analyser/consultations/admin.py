@@ -4,6 +4,7 @@ from django_rq import get_queue
 from consultation_analyser.consultations.models import (
     Consultation,
     DemographicOption,
+    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -22,6 +23,11 @@ def update_embeddings_admin(modeladmin, request, queryset):
     modeladmin.message_user(request, f"Processing {queryset.count()} consultations")
 
 
+class MultiChoiceResponseInline(admin.StackedInline):
+    model = Response.chosen_options.through
+    extra = 0
+
+
 class ResponseAdmin(admin.ModelAdmin):
     list_filter = ["question", "question__consultation"]
     list_display = ["free_text", "question"]
@@ -32,11 +38,17 @@ class ResponseAdmin(admin.ModelAdmin):
         "free_text",
         "search_vector",
     ]
+    inlines = [MultiChoiceResponseInline]
 
 
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [update_embeddings_admin]
     readonly_fields = ["title", "slug", "users"]
+
+
+class MultiChoiceAnswerInline(admin.StackedInline):
+    model = MultiChoiceAnswer
+    extra = 0
 
 
 class QuestionAdmin(admin.ModelAdmin):
@@ -51,6 +63,7 @@ class QuestionAdmin(admin.ModelAdmin):
         "has_free_text",
         "has_multiple_choice",
     ]
+    inlines = [MultiChoiceAnswerInline]
 
 
 class ResponseAnnotationAdmin(admin.ModelAdmin):
