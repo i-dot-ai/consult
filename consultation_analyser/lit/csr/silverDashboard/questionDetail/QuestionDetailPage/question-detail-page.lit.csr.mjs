@@ -608,10 +608,15 @@ export default class QuestionDetailPage extends IaiLitBase {
                         title: this.renderTabButton("Question summary", "lan"),
                         content: this.renderThemeAnalysisSection()
                     },
-                    {
-                        title: this.renderTabButton("Response analysis", "finance"),
-                        content: this.renderResponsesSection()
-                    },
+                    ...(this.hasFreeText
+                        ? [
+                            {
+                                title: this.renderTabButton("Response analysis", "finance"),
+                                content: this.renderResponsesSection()
+                            }
+                        ]
+                        : []
+                    )
                 ]}
             ></iai-tab-view>
         `
