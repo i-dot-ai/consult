@@ -23,11 +23,6 @@ def update_embeddings_admin(modeladmin, request, queryset):
     modeladmin.message_user(request, f"Processing {queryset.count()} consultations")
 
 
-class MultiChoiceResponseInline(admin.StackedInline):
-    model = Response.chosen_options.through
-    extra = 0
-
-
 class ResponseAdmin(admin.ModelAdmin):
     list_filter = ["question", "question__consultation"]
     list_display = ["free_text", "question"]
@@ -38,7 +33,6 @@ class ResponseAdmin(admin.ModelAdmin):
         "free_text",
         "search_vector",
     ]
-    inlines = [MultiChoiceResponseInline]
 
 
 class ConsultationAdmin(admin.ModelAdmin):

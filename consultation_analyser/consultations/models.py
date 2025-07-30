@@ -392,4 +392,4 @@ class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[
     text = models.TextField()
 
     def __str__(self):
-        return f"{self.question.text} = {self.text}"
+        return f"{self.question.number} = {self.text}"
