@@ -6,6 +6,7 @@ import Panel from '../../Panel/panel.lit.csr.mjs';
 import Button from '../../Button/button.lit.csr.mjs';
 import IaiIcon from '../../../IaiIcon/iai-icon.mjs';
 
+import Filters from '../../Filters/filters.lit.csr.mjs';
 import ThemeAnalysis from '../../ThemeAnalysis/theme-analysis.lit.csr.mjs';
 import QuestionTitle from '../QuestionTitle/question-title.lit.csr.mjs';
 import TabView from '../../../TabView/tab-view.lit.csr.mjs';
@@ -401,11 +402,56 @@ export default class QuestionDetailPage extends IaiLitBase {
                     </section>
                 `
             : ""}
+
+            <section class="filters">
+                <iai-filters
+                    .consultationSlug=${this.consultationSlug}
+                    .themes=${this._themes.toSorted((a, b) => {
+                        let valA, valB;
+
+                        if (this._themesSortType === "frequency") {
+                            valA = a.mentions;
+                            valB = b.mentions;
+                        } else {
+                            valA = a.title;
+                            valB = b.title;
+                        }
+
+                        const directionOffset = this._themesSortDirection === "ascending"
+                            ? 1
+                            : -1;
+
+                        if (valA < valB) {
+                            return -1 * directionOffset;
+                        } else if (valB < valA) {
+                            return 1 * directionOffset;
+                        }
+                        return 0;
+                    })}
+                    .demoOptions=${this._demoOptions}
+
+                    .demoFiltersApplied=${this.demoFiltersApplied}
+                    .themeFiltersApplied=${this.themeFiltersApplied}
+
+                    .themeFilters=${this._themeFilters}
+                    .updateThemeFilters=${this.updateThemeFilters}
+
+                    .sortType=${this._themesSortType}
+                    .setSortType=${newSortType => this._themesSortType = newSortType}
+
+                    .sortDirection=${this._themesSortDirection}
+                    .setSortDirection=${newSortDirection => this._themesSortDirection = newSortDirection}
+
+                    .demoFilters=${this._demoFilters}
+                    .setDemoFilters=${this.setDemoFilters}
+                ></iai-filters>
+            </section>
             
             ${this.hasFreeText ? html`
                 <section class="theme-analysis">
                     <iai-theme-analysis
                         .consultationSlug=${this.consultationSlug}
+                        .totalResponses=${this._filteredTotal}
                         .themes=${this._themes.toSorted((a, b) => {
                             let valA, valB;
 
@@ -428,24 +474,8 @@ export default class QuestionDetailPage extends IaiLitBase {
                             }
                             return 0;
                         })}
-                        .demoData=${this._demoData}
-                        .demoOptions=${this._demoOptions}
-                        .totalResponses=${this._filteredTotal}
-
-                        .demoFiltersApplied=${this.demoFiltersApplied}
-                        .themeFiltersApplied=${this.themeFiltersApplied}
-
                         .themeFilters=${this._themeFilters}
                         .updateThemeFilters=${this.updateThemeFilters}
-
-                        .sortType=${this._themesSortType}
-                        .setSortType=${newSortType => this._themesSortType = newSortType}
-
-                        .sortDirection=${this._themesSortDirection}
-                        .setSortDirection=${newSortDirection => this._themesSortDirection = newSortDirection}
-
-                        .demoFilters=${this._demoFilters}
-                        .setDemoFilters=${this.setDemoFilters}
                     ></iai-theme-analysis>
                 </section>
             `: ""}
