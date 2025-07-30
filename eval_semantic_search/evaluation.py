@@ -3,14 +3,16 @@ Semantic search precision evaluation.
 """
 
 import logging
-from typing import List, Dict, Any
 from dataclasses import dataclass
+from typing import Any, Dict, List
 
-from django.db.models import Q
 from pgvector.django import CosineDistance
 
 from consultation_analyser.consultations.models import (
-    Consultation, Question, Response, Theme, ResponseAnnotation
+    Consultation,
+    Question,
+    Response,
+    Theme,
 )
 
 logger = logging.getLogger(__name__)

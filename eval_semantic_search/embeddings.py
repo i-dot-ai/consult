@@ -2,12 +2,12 @@
 Embedding generation for semantic search evaluation.
 """
 
+import logging
 import os
 import time
 from typing import List, Union
 
 from openai import AzureOpenAI
-import logging
 
 logger = logging.getLogger(__name__)
 

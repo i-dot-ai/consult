@@ -5,7 +5,7 @@ Local file ingestion for consultation data.
 import json
 import logging
 from pathlib import Path
-from typing import Dict, List
+from typing import Dict, List, Optional
 
 from django.contrib.postgres.search import SearchVector
 
@@ -77,7 +77,7 @@ def _import_respondents(consultation: Consultation, file_path: Path):
 
 
 def _import_questions_and_responses(
-    consultation: Consultation, inputs_path: Path, embedding_generator, output_dir_timestamp: str, use_question_prefix: bool = False, base_path: Path = None
+    consultation: Consultation, inputs_path: Path, embedding_generator, output_dir_timestamp: str, use_question_prefix: bool = False, base_path: Optional[Path] = None
 ):
     """Import questions and responses"""
 
@@ -106,16 +106,17 @@ def _import_questions_and_responses(
             _import_responses(question, folder / "responses.jsonl", embedding_generator, use_question_prefix)
 
             # Import themes if available
-            themes_path = (
-                base_path
-                / "outputs"
-                / "mapping"
-                / str(output_dir_timestamp)
-                / f"question_part_{question_num}"
-                / "themes.json"
-            )
-            if themes_path.exists():
-                _import_themes_and_annotations(question, themes_path.parent)
+            if base_path is not None:
+                themes_path = (
+                    base_path
+                    / "outputs"
+                    / "mapping"
+                    / str(output_dir_timestamp)
+                    / f"question_part_{question_num}"
+                    / "themes.json"
+                )
+                if themes_path.exists():
+                    _import_themes_and_annotations(question, themes_path.parent)
 
 
 def _import_responses(question: Question, file_path: Path, embedding_generator, use_question_prefix: bool = False):

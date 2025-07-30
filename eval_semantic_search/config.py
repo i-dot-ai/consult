@@ -2,8 +2,9 @@
 Simple configuration for semantic search evaluation.
 """
 
-import yaml
 from dataclasses import dataclass
+
+import yaml
 
 
 @dataclass

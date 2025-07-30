@@ -6,6 +6,7 @@ Semantic search evaluation script - handles single config files or directories.
 import argparse
 import json
 import logging
+import os
 import sys
 from pathlib import Path
 
@@ -13,14 +14,14 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 import django
-import os
+
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'consultation_analyser.settings.local')
 django.setup()
 
-from eval_semantic_search.config import Config
-from eval_semantic_search.embeddings import EmbeddingGenerator
-from eval_semantic_search.ingestion import import_consultation_data
-from eval_semantic_search.evaluation import evaluate_consultation
+from eval_semantic_search.config import Config  # noqa: E402
+from eval_semantic_search.embeddings import EmbeddingGenerator  # noqa: E402
+from eval_semantic_search.evaluation import evaluate_consultation  # noqa: E402
+from eval_semantic_search.ingestion import import_consultation_data  # noqa: E402
 
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 logger = logging.getLogger(__name__)
@@ -58,14 +59,15 @@ def process_config(config_file: Path, no_import_data: bool) -> dict:
     results['config_file'] = config_file.name
     results['config'] = {
         'k': config.k,
-        'use_question_prefix': config.use_question_prefix
+        'use_question_prefix': config.use_question_prefix,
+        'output_file': str(config.output_file)
     }
     
     # Save results
     with open(config.output_file, 'w') as f:
         json.dump(results, f, indent=2, default=str)
     
-    return results, config
+    return results
 
 
 def main():
@@ -84,11 +86,11 @@ def main():
         print(f"Processing single config: {config_path.name}")
         
         try:
-            results, config = process_config(config_path, args.no_import_data)
+            results = process_config(config_path, args.no_import_data)
             
             print(f"\nEvaluation complete for: {results['consultation']}")
             print(f"Overall precision: {results['overall_precision']:.3f}")
-            print(f"Results saved to: {config.output_file}")
+            print(f"Results saved to: {results['config']['output_file']}")
             
         except Exception as e:
             logger.error(f"Evaluation failed: {str(e)}", exc_info=True)
@@ -112,7 +114,7 @@ def main():
             print(f"{'='*60}")
             
             try:
-                results, config = process_config(config_file, args.no_import_data)
+                results = process_config(config_file, args.no_import_data)
                 
                 # Add to summary
                 results_summary.append({
@@ -120,13 +122,13 @@ def main():
                     'consultation': results['consultation'],
                     'overall_precision': results['overall_precision'],
                     'total_themes': results['total_themes'],
-                    'use_question_prefix': config.use_question_prefix,
-                    'output_file': config.output_file
+                    'use_question_prefix': results['config']['use_question_prefix'],
+                    'output_file': results['config']['output_file']
                 })
                 
                 print(f"✓ Completed: {config_file.name}")
                 print(f"  Overall precision: {results['overall_precision']:.3f}")
-                print(f"  Output: {config.output_file}")
+                print(f"  Output: {results['config']['output_file']}")
                 
             except Exception as e:
                 print(f"✗ Failed: {config_file.name}")
