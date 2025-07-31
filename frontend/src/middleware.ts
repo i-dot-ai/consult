@@ -39,8 +39,9 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     const toSkip = [
         /^\/$/,
         /^\/sign-in[\/]?$/,
-        /^\/magic-link\/[A-Za-z0-9]*[\/]?$/g,
+        /^\/magic-link\/[A-Za-z0-9\-]*[\/]?$/,
         /^\/api\/.*/,
+        /^\/.well-known\/.*/,
     ];
 
     for (const skipPattern of toSkip) {
