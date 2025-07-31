@@ -1,15 +1,16 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Section from '../components/Section.svelte';
+import Link from '../components/Link.svelte';
 ---
 <Layout>
 	<Section>
 		<div class="p-6 flex items-center justify-center">
 			<ul class="flex flex-col gap-4">
-				<li><a href="/consultations" class="p-1 rounded-md transition-colors duration-300 ease-in-out hover:bg-pink-700 hover:text-white">Consultations</a></li>
-				<li><a href="/how-it-works" class="p-1 rounded-md transition-colors duration-300 ease-in-out hover:bg-pink-700 hover:text-white">How it works</a></li>
-				<li><a href="/data-sharing" class="p-1 rounded-md transition-colors duration-300 ease-in-out hover:bg-pink-700 hover:text-white">Data sharing</a></li>
-				<li><a href="/sign-in" class="p-1 rounded-md transition-colors duration-300 ease-in-out hover:bg-pink-700 hover:text-white">Sign in</a></li>
+				<Link href="/consultations">Consultations</Link>
+				<Link href="/how-it-works">How it works</Link>
+				<Link href="/data-sharing">Data sharing</Link>
+				<Link href="/sign-in">Sign in</Link>
 			</ul>
 		</div>
 	</Section>
