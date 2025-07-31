@@ -3,10 +3,8 @@ from textwrap import shorten
 
 import faker as _faker
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVector, SearchVectorField
-from django.core.exceptions import ValidationError
 from django.core.validators import BaseValidator
 from django.db import models
 from django.db.models.signals import post_save
@@ -81,15 +79,17 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     # Question configuration
     has_free_text = models.BooleanField(default=True)
     has_multiple_choice = models.BooleanField(default=False)
-    multiple_choice_options = ArrayField(
-        models.TextField(), null=True, default=None, blank=True
-    )  # List of options when has_multiple_choice=True
     total_responses = models.IntegerField(
         default=0,
         help_text="Number of free text responses for this question",
         null=True,
         blank=True,
     )
+
+    @property
+    def multiple_choice_options(self) -> list:
+        """List of options when has_multiple_choice=True"""
+        return list(self.multichoiceanswer_set.all())
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -167,9 +167,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
 
     # Response content
     free_text = models.TextField(null=True, blank=True)  # Free text response
-    chosen_options = ArrayField(
-        models.TextField(), null=True, default=None, blank=True
-    )  # Multiple choice selections
+    chosen_options = models.ManyToManyField("MultiChoiceAnswer", blank=True)
     embedding = VectorField(dimensions=settings.EMBEDDING_DIMENSION, null=True, blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
 
@@ -186,12 +184,7 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     def __str__(self):
         if self.free_text:
             return shorten(self.free_text, width=64, placeholder="...")
-        return ", ".join(self.chosen_options)
-
-    def save(self, **kwargs):
-        if not self.free_text and not self.chosen_options:
-            raise ValidationError("either free_text or chosen_options should be populated")
-        return super().save(**kwargs)
+        return "multi-choice response"
 
 
 @receiver(post_save, sender=Response)
@@ -390,3 +383,13 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
             )
 
         super().save(*args, **kwargs)
+
+
+class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]
+    """a possible answer to a multi choice question"""
+
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    text = models.TextField()
+
+    def __str__(self):
+        return f"{self.question.number} = {self.text}"

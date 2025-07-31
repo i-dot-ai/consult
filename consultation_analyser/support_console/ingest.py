@@ -12,6 +12,7 @@ from django_rq import get_queue
 from consultation_analyser.consultations.models import (
     Consultation,
     DemographicOption,
+    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -405,6 +406,7 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
         # Second pass: create responses
         # type: ignore
         responses_to_save: list = []  # type: ignore
+        multi_choice_response_to_save: list[tuple[Response, list[str]]] = []  # type: ignore
         max_total_tokens = 100_000
         max_batch_size = 2048
         total_tokens = 0
@@ -433,18 +435,24 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
                 total_tokens = 0
                 logger.info("saved %s Responses for question %s", i + 1, question.number)
 
-            responses_to_save.append(
-                Response(
-                    respondent=respondent_dict[themefinder_id],
-                    question=question,
-                    free_text=free_text,
-                    chosen_options=chosen_options,
-                )
+            response = Response(
+                respondent=respondent_dict[themefinder_id],
+                question=question,
+                free_text=free_text,
             )
+
+            if chosen_options:
+                multi_choice_response_to_save.append((response, chosen_options))
+
+            responses_to_save.append(response)
             total_tokens += token_count
 
         # last batch
         Response.objects.bulk_create(responses_to_save)
+        for response, answers in multi_choice_response_to_save:
+            chosen_options = MultiChoiceAnswer.objects.filter(question=question, text__in=answers)
+            response.chosen_options.set(chosen_options)
+            response.save()
 
         # re-save the responses to ensure that every response has search_vector
         # i.e the lexical bit
@@ -533,8 +541,9 @@ def import_questions(
                 number=question_number,
                 has_free_text=question_data.get("has_free_text", True),
                 has_multiple_choice=bool(multi_choice_options),
-                multiple_choice_options=multi_choice_options,
             )
+            for answer in multi_choice_options:
+                MultiChoiceAnswer.objects.create(question=question, text=answer)
 
             responses_file_key = f"{question_folder}responses.jsonl"
             multiple_choice_file = f"{question_folder}multi_choice.jsonl"

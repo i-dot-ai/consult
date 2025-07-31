@@ -2,12 +2,22 @@ from rest_framework import serializers
 
 from consultation_analyser.consultations.models import (
     Consultation,
+    MultiChoiceAnswer,
     Question,
 )
 
 
+class MultiChoiceAnswerSerializer(serializers.HyperlinkedModelSerializer):
+    class Meta:
+        model = MultiChoiceAnswer
+        fields = ["answer"]
+
+
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     question_text = serializers.CharField(source="text")
+    multiple_choice_options = MultiChoiceAnswerSerializer(
+        many=True, source="multichoiceanswer_set", read_only=True
+    )
 
     class Meta:
         model = Question

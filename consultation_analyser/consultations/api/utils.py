@@ -103,7 +103,6 @@ def get_filtered_responses_with_themes(
             "respondent_id",
             "question_id",
             "free_text",
-            "chosen_options",
             "created_at",
             # Respondent fields
             "respondent__id",
@@ -154,12 +153,13 @@ def build_respondent_data_fast(response: models.Response) -> dict:
     Use this when you need maximum performance for large datasets.
     """
     # Pre-allocate the dictionary with all keys to avoid rehashing
+    multiple_choice_answers = [x["text"] for x in response.chosen_options.all().values("text")]
     data = {
         "identifier": str(response.respondent.identifier),
         "free_text_answer_text": response.free_text or "",
         "demographic_data": response.respondent.demographics or {},
         "themes": [],
-        "multiple_choice_answer": response.chosen_options or [],
+        "multiple_choice_answer": multiple_choice_answers,
         "evidenceRich": False,
     }
 
