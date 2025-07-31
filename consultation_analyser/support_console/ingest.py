@@ -616,8 +616,7 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
             # Find the question
             question = questions_dict.get(question_number)
             if not question:
-                logger.warning(f"Question {question_number} not found, skipping theme {theme_key}")
-                continue
+                raise ValueError(f"Question {question_number} not found for cross-cutting theme '{cct_entry['name']}'")
             
             # Find the theme
             try:
@@ -629,9 +628,9 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
                     )
                 )
             except Theme.DoesNotExist:
-                logger.warning(f"Theme {theme_key} not found for question {question_number}")
+                raise ValueError(f"Theme {theme_key} not found for question {question_number} in cross-cutting theme '{cct_entry['name']}'")
             except Theme.MultipleObjectsReturned:
-                logger.error(f"Multiple themes with key {theme_key} for question {question_number}")
+                raise ValueError(f"Multiple themes with key {theme_key} found for question {question_number} in cross-cutting theme '{cct_entry['name']}'")
         
         # Bulk create assignments
         if assignments_to_create:
