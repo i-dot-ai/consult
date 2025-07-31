@@ -110,7 +110,7 @@ class CrossCuttingThemeSerializer(serializers.Serializer):
     unique_respondents_percentage = serializers.FloatField()
     questions = serializers.ListField(child=serializers.IntegerField())
     total_mentions = serializers.IntegerField()
-    themes = serializers.ListField(child=ThemeDetailSerializer())
+    themes = ThemeDetailSerializer(many=True)
 
 
 class CrossCuttingThemesResponseSerializer(serializers.Serializer):
@@ -118,4 +118,4 @@ class CrossCuttingThemesResponseSerializer(serializers.Serializer):
     consultation_id = serializers.CharField()
     consultation_title = serializers.CharField()
     total_respondents = serializers.IntegerField()
-    cross_cutting_themes = serializers.ListField(child=CrossCuttingThemeSerializer())
+    cross_cutting_themes = CrossCuttingThemeSerializer(many=True)
