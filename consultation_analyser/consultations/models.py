@@ -285,9 +285,6 @@ class CrossCuttingTheme(UUIDPrimaryKeyModel, TimeStampedModel):
                 name="unique_cross_cutting_theme",
             ),
         ]
-        indexes = [
-            models.Index(fields=["consultation"]),
-        ]
 
     def __str__(self):
         return self.name
@@ -304,9 +301,6 @@ class CrossCuttingThemeAssignment(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(fields=["theme"], name="unique_theme_to_cct_assignment"),
-        ]
-        indexes = [
-            models.Index(fields=["cross_cutting_theme"]),
         ]
 
     def __str__(self):
