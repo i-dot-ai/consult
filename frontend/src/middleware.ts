@@ -37,10 +37,10 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
     // TODO: add logic to skip as new pages are moved to astro
     const toSkip = [
-        /\//,
-        /\/sign-in[\/]?/,
-        /\/magic-link\/[A-Za-z0-9]*/g,
-        /\/api\/.*/,
+        /^\/$/,
+        /^\/sign-in[\/]?$/,
+        /^\/magic-link\/[A-Za-z0-9]*[\/]?$/g,
+        /^\/api\/.*/,
     ];
 
     for (const skipPattern of toSkip) {
