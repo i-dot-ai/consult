@@ -2,6 +2,7 @@ import pytest
 
 from consultation_analyser.consultations.models import (
     Consultation,
+    MultiChoiceAnswer,
 )
 from consultation_analyser.factories import (
     UserFactory,
@@ -30,3 +31,6 @@ def test_managing_consultations_via_support(django_app):
     assert response.status_code == 302
     # The success message will be displayed after redirect, but we can't follow it
     # due to database connection issues with the async deletion job
+
+    # safe tear down
+    MultiChoiceAnswer.objects.all().delete()

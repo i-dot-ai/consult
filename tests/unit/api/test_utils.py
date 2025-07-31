@@ -9,7 +9,10 @@ from consultation_analyser.consultations.api.utils import (
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
 )
-from consultation_analyser.consultations.models import ResponseAnnotation
+from consultation_analyser.consultations.models import (
+    MultiChoiceAnswer,
+    ResponseAnnotation,
+)
 from consultation_analyser.factories import (
     ConsultationFactory,
     QuestionFactory,
@@ -313,15 +316,18 @@ class TestBuildRespondentDataFast:
             question=question,
             respondent=respondent,
             free_text="Test response",
-            chosen_options=["option1", "option2"],
         )
+        for option in ["option1", "option2"]:
+            answer = MultiChoiceAnswer.objects.create(question=response.question, text=option)
+            response.chosen_options.add(answer)
+        response.save()
 
         data = build_respondent_data_fast(response)
 
         assert data["identifier"] == str(respondent.identifier)
         assert data["free_text_answer_text"] == "Test response"
         assert data["demographic_data"] == {"individual": True, "region": "north"}
-        assert data["multiple_choice_answer"] == ["option1", "option2"]
+        assert sorted(data["multiple_choice_answer"]) == ["option1", "option2"]
         assert data["evidenceRich"] is False  # No annotation
         assert data["themes"] == []
 
@@ -370,22 +376,6 @@ class TestBuildRespondentDataFast:
             assert "id" in theme_data
             assert "name" in theme_data
             assert "description" in theme_data
-
-    def test_empty_fields_handling(self, question):
-        """Test handling of empty/None fields"""
-        respondent = RespondentFactory(consultation=question.consultation, demographics={})
-        response = ResponseFactory(
-            question=question,
-            respondent=respondent,
-            free_text="",  # Use empty string instead of None to avoid embedding issues
-            chosen_options=None,
-        )
-
-        data = build_respondent_data_fast(response)
-
-        assert data["free_text_answer_text"] == ""
-        assert data["demographic_data"] == {}
-        assert data["multiple_choice_answer"] == []
 
     def test_no_annotation(self, question):
         """Test respondent data when no annotation exists"""

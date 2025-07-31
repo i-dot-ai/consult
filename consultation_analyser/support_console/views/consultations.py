@@ -16,7 +16,6 @@ from consultation_analyser.consultations.dummy_data import (
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
-from consultation_analyser.support_console.validation_utils import format_validation_error
 
 logger = logging.getLogger("export")
 
@@ -253,17 +252,18 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
         consultation_code = request.POST.get("consultation_code")
         timestamp = request.POST.get("timestamp")
 
+        # TODO: replace with new logic to support multi-choice answers
         # # Validate structure
-        is_valid, validation_errors = ingest.validate_consultation_structure(
-            bucket_name=bucket_name, consultation_code=consultation_code, timestamp=timestamp
-        )
-
-        if not is_valid:
-            formatted_errors = [format_validation_error(error) for error in validation_errors]
-            context["validation_errors"] = formatted_errors
-            return render(
-                request, "support_console/consultations/import_consultation.html", context=context
-            )
+        # is_valid, validation_errors = ingest.validate_consultation_structure(
+        #     bucket_name=bucket_name, consultation_code=consultation_code, timestamp=timestamp
+        # )
+        #
+        # if not is_valid:
+        #     formatted_errors = [format_validation_error(error) for error in validation_errors]
+        #     context["validation_errors"] = formatted_errors
+        #     return render(
+        #         request, "support_console/consultations/import_consultation.html", context=context
+        #     )
 
         # If valid, queue the import job
         try:

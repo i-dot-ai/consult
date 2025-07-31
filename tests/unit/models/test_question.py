@@ -57,7 +57,7 @@ def test_question_configuration():
     question = QuestionFactory()
     assert question.has_free_text
     assert not question.has_multiple_choice
-    assert question.multiple_choice_options is None
+    assert question.multiple_choice_options == []
 
     # Test multiple choice only question
     mc_question = QuestionWithMultipleChoiceFactory()

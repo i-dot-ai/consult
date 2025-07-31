@@ -4,6 +4,7 @@ from django_rq import get_queue
 from consultation_analyser.consultations.models import (
     Consultation,
     DemographicOption,
+    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -39,6 +40,11 @@ class ConsultationAdmin(admin.ModelAdmin):
     readonly_fields = ["title", "slug", "users"]
 
 
+class MultiChoiceAnswerInline(admin.StackedInline):
+    model = MultiChoiceAnswer
+    extra = 0
+
+
 class QuestionAdmin(admin.ModelAdmin):
     list_filter = ["consultation"]
     list_display = ["slug", "consultation"]
@@ -50,8 +56,8 @@ class QuestionAdmin(admin.ModelAdmin):
         "number",
         "has_free_text",
         "has_multiple_choice",
-        "multiple_choice_options",
     ]
+    inlines = [MultiChoiceAnswerInline]
 
 
 class ResponseAnnotationAdmin(admin.ModelAdmin):

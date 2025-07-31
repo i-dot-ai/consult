@@ -85,7 +85,7 @@ class IaiLitBase extends i$1 {
             FAVOURITE_QUESTIONS: "favouriteQuestions",
         };
     }
-
+    
     createRenderRoot() {
         return this;
     }
@@ -257,7 +257,7 @@ class IaiExpandingText extends IaiLitBase {
             iai-expanding-text .iai-text-content:not(.iai-text-truncated).clickable::before {
                 transform: rotate(90deg);
             }
-
+                
             iai-expanding-text .iai-text-content.iai-text-truncated {
                 display: -webkit-box;
                 display: box;
@@ -300,7 +300,7 @@ class IaiExpandingText extends IaiLitBase {
             this.querySelector(".iai-text-content"),
             this.lines
         );
-    }
+    } 
 
     firstUpdated() {
         this.applyStaticStyles("iai-expanding-text", IaiExpandingText.styles);
@@ -377,7 +377,7 @@ class IaiTextWithFallback extends IaiLitBase {
         super();
 
         this.applyStaticStyles("iai-text-with-fallback", IaiTextWithFallback.styles);
-
+        
         // By default, render fallback if text is falsy
         this.fallbackCondition = (text) => !text;
     }
@@ -425,7 +425,7 @@ class IaiIcon extends IaiLitBase {
         this.fill = 0;
         this.opsz = 48;
         this.wght = 300;
-
+        
         this.applyStaticStyles("iai-icon", IaiIcon.styles);
     }
 
@@ -641,7 +641,7 @@ class IaiDataTable extends IaiLitBase {
             }
             return 0;
         });
-
+        
         return result;
     }
 
@@ -711,11 +711,11 @@ class IaiDataTable extends IaiLitBase {
         return x`
             <table class="govuk-table govuk-body" mentionstable="">
                 <thead class="govuk-table__head">
-                    <tr class="govuk-table__row">
+                    <tr class="govuk-table__row">    
                         ${this.getHeaders().map(header => this.renderHeader(header))}
                     </tr>
                 </thead>
-
+          
                 <tbody class="govuk-table__body">
                     ${data.map(row => x`
                         <tr
@@ -831,7 +831,7 @@ class IaiCsvDownload extends IaiLitBase {
         }
 
         const localData = Array.isArray(data) ? data : [data];
-
+        
         const keys = Object.keys(data[0]);
         const rows = [
             keys.join(","),
@@ -953,7 +953,7 @@ class IaiResponseFilters extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-
+        
         this._SLOT_NAMES = ["filters"];
 
         this.applyStaticStyles("iai-response-filters", IaiResponseFilters.styles);
@@ -1125,7 +1125,7 @@ class IaiResponsesTitle extends IaiLitBase {
 
         // Prop defaults
         this.total = 0;
-
+        
         this.applyStaticStyles("iai-responses-title", IaiResponsesTitle.styles);
     }
 
@@ -1161,7 +1161,7 @@ class IaiExpandingPill extends IaiLitBase {
             iai-expanding-pill {
                 font-size: 0.9em;
             }
-
+            
             iai-expanding-pill button {
                 display: flex;
                 justify-content: space-between;
@@ -1215,7 +1215,7 @@ class IaiExpandingPill extends IaiLitBase {
     }
 
     render() {
-        return x`
+        return x`    
             <button
                 class=${this._expanded ? "expanded" : ""}
                 @click=${_ => this._expanded = !this._expanded}
@@ -1483,12 +1483,12 @@ class IaiResponseFilterGroup extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-
+        
         this._SLOT_NAMES = ["content"];
-
+        
         // Prop defaults
         this.title = "";
-
+        
         this.applyStaticStyles("iai-response-filter-group", IaiResponseFilterGroup.styles);
     }
 
@@ -1507,7 +1507,7 @@ class IaiResponseFilterGroup extends IaiLitBase {
                     <slot name="content"></slot>
 
                 </fieldset>
-            </div>
+            </div>      
         `;
     }
 }
@@ -1552,10 +1552,10 @@ class IaiQuestionTopbar extends IaiLitBase {
 
         // Prop defaults
         this.title = "";
-
+        
         this.applyStaticStyles("iai-question-topbar", IaiQuestionTopbar.styles);
     }
-
+    
     updated() {
         this._SLOT_NAMES.forEach(slotName => this.applySlots(slotName));
     }
@@ -1601,7 +1601,7 @@ class IaiQuestionBody extends IaiLitBase {
         // Prop defaults
         this.text = "";
         this.searchValue = "";
-
+        
         this.applyStaticStyles("iai-question-body", IaiQuestionBody.styles);
     }
 
@@ -1609,7 +1609,7 @@ class IaiQuestionBody extends IaiLitBase {
         const regex = new RegExp(matchedText, "gi");
         return o$2(fullText.replace(regex, match => `<span class="matched-text">${match}</span>`));
     }
-
+    
     render() {
         return x`
             <p>${this.getHighlightedText(this.text, this.searchValue)}</p>
@@ -1659,7 +1659,7 @@ class IaiIconButton extends IaiLitBase {
         // Prop defaults
         this.title = "";
         this.handleClick = () => {};
-
+        
         this.applyStaticStyles("iai-icon-button", IaiIconButton.styles);
     }
 
@@ -1703,7 +1703,7 @@ class IaiQuestionTile extends IaiLitBase {
                 width: 31%;
             }
             iai-question-tile .question-tile {
-                height: 100%;
+                height: 100%;    
                 background: white;
                 padding: 1em;
                 border-radius: var(--iai-border-radius);
@@ -1819,7 +1819,7 @@ class IaiQuestionTile extends IaiLitBase {
                                 this.handleFavouriteClick(e);
                             }}
                             @keydown=${(e) => e.stopPropagation()}
-                        >
+                        >    
                             <iai-icon
                                 slot="icon"
                                 name="star"
@@ -1832,7 +1832,7 @@ class IaiQuestionTile extends IaiLitBase {
                         </iai-icon-button>
                     </div>
                 </iai-question-topbar>
-
+                
                 <iai-question-body
                     .text=${this.getTruncatedText(this.body, this.maxLength)}
                     .searchValue=${this.searchValue}
@@ -1876,7 +1876,7 @@ class IaiQuestionOverviewSubtitle extends IaiLitBase {
         // Prop defaults
         this.title = "";
         this.total = 0;
-
+        
         this.applyStaticStyles("iai-question-overview-subtitle", IaiQuestionOverviewSubtitle.styles);
     }
 
@@ -1970,7 +1970,7 @@ class IaiProgressBar extends IaiLitBase {
                 background: var(--iai-colour-pink);
             }
             iai-progress-bar .container .label {
-                display: block;
+                display: block;    
                 position: absolute;
                 right: 0.5em;
                 text-align: right;
@@ -1992,7 +1992,7 @@ class IaiProgressBar extends IaiLitBase {
         // Prop defaults
         this.value = 0;
         this.label = "";
-
+        
         this.applyStaticStyles("iai-progress-bar", IaiProgressBar.styles);
     }
 
@@ -2406,7 +2406,7 @@ class IaiQuestionTiles extends IaiLitBase {
                 <div class="govuk-grid-column-one-quarter-from-desktop overview-panel">
                     <div class="search-container">
                         <iai-text-input
-                            inputId="question-search"
+                            inputId="question-search"  
                             name="question-search"
                             .label=${x`
                                 <iai-icon
@@ -2423,7 +2423,7 @@ class IaiQuestionTiles extends IaiLitBase {
                             .hideLabel=${false}
                         ></iai-text-input>
                     </div>
-
+                    
                     ${this._selectedQuestion ? x`
                         <iai-question-overview
                             .title=${this._selectedQuestion.title}
@@ -2459,7 +2459,7 @@ class IaiPageTitle extends IaiLitBase {
         // Prop defaults
         this.title = "";
         this.subtitle = "";
-
+        
         this.applyStaticStyles("iai-page-title", IaiPageTitle.styles);
     }
 
@@ -2489,7 +2489,7 @@ class IaiChip extends IaiLitBase {
             iai-chip {
                 font-size: 0.9em;
             }
-
+            
             iai-chip div {
                 display: flex;
                 justify-content: space-between;
@@ -2518,7 +2518,7 @@ class IaiChip extends IaiLitBase {
     }
 
     render() {
-        return x`
+        return x`    
             <div>
                 <span>
                     ${this.label}
@@ -2562,7 +2562,7 @@ class IaiAnimatedNumber extends IaiLitBase {
         this.number = 0;
         this.duration = 1000;
         this._displayNumber = 0;
-
+        
         this.applyStaticStyles("iai-animated-number", IaiAnimatedNumber.styles);
     }
 
@@ -2640,7 +2640,7 @@ class IaiLoadingIndicator extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-
+        
         this.applyStaticStyles("iai-loading-indicator", IaiLoadingIndicator.styles);
     }
 
@@ -3859,7 +3859,7 @@ class IaiVirtualList extends IaiLitBase {
         this.handleScrollEnd = () => {};
         this.message = "";
         this._canCallCallback = true;
-
+        
         this.applyStaticStyles("iai-virtual-list", IaiVirtualList.styles);
     }
 
@@ -3898,10 +3898,10 @@ class IaiResponseDashboard extends IaiLitBase {
         ...IaiLitBase.properties,
 
         consultationTitle: { type: String },
-        consultationId: { type: String },
+        consultationSlug: { type: String },
         questionTitle: { type: String },
         questionText: { type: String },
-        questionId: { type: String },
+        questionSlug: { type: String },
         stanceOptions: { type: Array },
         themeMappings: { type: Array },
         demographicOptions: { type: Object },  // e.g. {"individual": ["true", "false"], "region": ["north", "south"]}
@@ -4112,9 +4112,9 @@ class IaiResponseDashboard extends IaiLitBase {
 
         this.questionTitle = "";
         this.questionText = "";
-        this.questionId = "";
+        this.questionSlug = "";
         this.consultationTitle = "";
-        this.consultationId = "";
+        this.consultationSlug = "";
         this.responses = [];
         this.responsesTotal = 0;
         this.themeMappings = [];
@@ -4157,11 +4157,11 @@ class IaiResponseDashboard extends IaiLitBase {
                 // Fetch non-streaming endpoints first (only on first page)
                 const [themeAggregationsData, themeInformationData, demographicOptionsData] = await Promise.all([
                     // Get theme aggregations (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                     // Get theme information (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-information/`, { signal }).then(r => r.json()) : null,
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-information/`, { signal }).then(r => r.json()) : null,
                     // Get demographic options (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-options/`, { signal }).then(r => r.json()) : null
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-options/`, { signal }).then(r => r.json()) : null
                 ]);
 
                 // Update theme mappings only on first page to reflect current filters
@@ -4171,7 +4171,7 @@ class IaiResponseDashboard extends IaiLitBase {
                         map[theme.id] = theme;
                         return map;
                     }, {});
-
+                    
                     // Convert theme_aggregations format to theme_mappings format
                     this.themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
                         const themeInfo = themeInfoMap[id] || {};
@@ -4191,16 +4191,16 @@ class IaiResponseDashboard extends IaiLitBase {
 
                 // Now fetch responses
                 const responsesResponse = await fetch(
-                    `/api/consultations/${this.consultationId}/questions/${this.questionId}/filtered-responses/?` + this.buildQuery(),
+                    `/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(),
                     { signal }
                 );
-
+                
                 if (!responsesResponse.ok) {
                     throw new Error(`HTTP error! status: ${responsesResponse.status}`);
                 }
-
+                
                 const responsesData = await responsesResponse.json();
-
+                
                 // Add all responses
                 this.responses = this.responses.concat(
                     responsesData.all_respondents.map(response => ({
@@ -4208,7 +4208,7 @@ class IaiResponseDashboard extends IaiLitBase {
                         visible: true,
                     }))
                 );
-
+                
                 // Update metadata
                 this.responsesTotal = responsesData.respondents_total;
                 this._responsesFilteredTotal = responsesData.filtered_total;
@@ -4928,11 +4928,11 @@ class IconTile extends IaiLitBase {
         IaiLitBase.styles,
         i$4`
             iai-silver-icon-tile {
-                display: block;
+                display: block;    
                 width: max-content;
             }
             iai-silver-icon-tile .icon-tile-container {
-                display: flex;
+                display: flex;    
                 justify-content: center;
                 align-items: center;
                 background: salmon;
@@ -5103,7 +5103,7 @@ class Panel extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-
+        
         // Prop defaults
         this.borderColor = "";
 
@@ -5309,7 +5309,7 @@ class CrossSearchCard extends IaiLitBase {
             iai-silver-cross-search-card .tag {
                 display: flex;
                 justify-content: center;
-                align-items: center;
+                align-items: center;    
                 padding: 0.3em 0.5em;
                 background: #e6e6e7;
                 font-size: 0.8em;
@@ -5406,7 +5406,7 @@ class Tag extends IaiLitBase {
                 display: grid;
                 width: max-content;
                 max-width: 100%;
-                gap: 0.5em;
+                gap: 0.5em; 
                 padding: 0.3em 0.5em;
                 font-size: 0.8em;
                 line-height: 1.5em;
@@ -5436,7 +5436,7 @@ class Tag extends IaiLitBase {
         this.text = "";
         this.subtext = "";
         this.matchBackground = false;
-
+        
         this.applyStaticStyles("iai-silver-tag", Tag.styles);
     }
 
@@ -5487,7 +5487,7 @@ class Tag extends IaiLitBase {
                     border: 1px solid ${this.getTagColor(this.status).ternary};
                 }
             </style>
-
+            
             <span id=${this.contentId} class="tag">
                 <span class="text-container">
                     ${this.icon
@@ -5505,7 +5505,7 @@ class Tag extends IaiLitBase {
                 ${this.subtext ? x`
                     <span>
                         ${this.subtext}
-                    </span>
+                    </span>    
                 ` : ""}
             </span>
         `
@@ -6020,7 +6020,7 @@ class ThemeFiltersWarning extends IaiLitBase {
 
         this.applyStaticStyles("iai-theme-filters-warning", ThemeFiltersWarning.styles);
     }
-
+    
     render() {
         return x`
             <iai-silver-tag
@@ -6041,7 +6041,7 @@ class ThemeFiltersWarning extends IaiLitBase {
                                             .name=${"close"}
                                         ></iai-icon>
                                     </iai-icon-button>
-
+                                    
                                 </div>`}
                         ></iai-silver-tag>
                         `)}
@@ -6105,7 +6105,7 @@ class MultiDropdown extends IaiLitBase {
                 justify-content: flex-start;
                 margin-bottom: 0.5em;
             }
-
+            
             iai-multi-dropdown .popup-button .popup-panel {
                 position: absolute;
                 top: 2em;
@@ -6147,7 +6147,7 @@ class MultiDropdown extends IaiLitBase {
                 position: relative;
             }
             iai-multi-dropdown .popup-button .popup-button__body iai-silver-button button {
-                width: 100%;
+                width: 100%;    
                 line-height: 2em;
                 background: var(--iai-silver-color-light);
                 border: none;
@@ -6173,7 +6173,7 @@ class MultiDropdown extends IaiLitBase {
 
         this._panelVisible = false;
         this._leftPlacement = false;
-
+        
         this.applyStaticStyles("iai-multi-dropdown", MultiDropdown.styles);
     }
 
@@ -6277,7 +6277,7 @@ class MultiDropdown extends IaiLitBase {
                         </div>
                     ` : ""}
                 </div>
-
+                
             </div>
         `
     }
@@ -6287,7 +6287,7 @@ customElements.define("iai-multi-dropdown", MultiDropdown);
 class ThemeAnalysis extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
-        consultationId: { type: String },
+        consultationSlug: { type: String },
         themes: { type: Array },
         demoData: { type: Object },
         demoOptions: { type: Object },
@@ -6360,7 +6360,7 @@ class ThemeAnalysis extends IaiLitBase {
             }
             iai-theme-analysis .total-themes {
                 display: flex;
-                flex-direction: column;
+                flex-direction: column;    
                 max-height: max-content;
                 padding: 1em;
                 font-size: 0.8em;
@@ -6437,7 +6437,7 @@ class ThemeAnalysis extends IaiLitBase {
 
         this.demoFilters = {};
         this.setDemoFilters = () => {};
-
+        
         this.sortType = "";
         this.setSortType = () => {};
 
@@ -6458,7 +6458,7 @@ class ThemeAnalysis extends IaiLitBase {
                             .icon=${"lan"}
                             .aside=${x`
                                 <iai-csv-download
-                                    .fileName=${`theme_mentions_for_${this.consultationId}.csv`}
+                                    .fileName=${`theme_mentions_for_${this.consultationSlug}.csv`}
                                     .variant=${"silver"}
                                     .data=${
                                         this.themes.map(theme => ({
@@ -6541,7 +6541,7 @@ class ThemeAnalysis extends IaiLitBase {
                                 .updateThemeFilters=${this.updateThemeFilters}
                             ></iai-theme-filters-warning>
                         ` : ""}
-
+                        
                         <div class="info-container">
                             <small>
                                 Total Themes
@@ -6591,7 +6591,7 @@ class QuestionTitle extends IaiLitBase {
                 margin-bottom: 1em;
             }
             iai-silver-question-title .topbar .tags {
-                display: flex;
+                display: flex;    
                 align-items: center;
                 gap: 0.5em;
             }
@@ -6606,7 +6606,7 @@ class QuestionTitle extends IaiLitBase {
                 align-items: center;
                 font-size: 0.8em;
                 color: white;
-                background: #85d07e;
+                background: #85d07e;                
                 border-radius: 0.5em;
             }
             iai-silver-question-title .responses {
@@ -6852,7 +6852,7 @@ class ProgressBar extends IaiLitBase {
 
         this.value = 0;
         this.variant = "primary";
-
+        
         this.applyStaticStyles("iai-silver-progress-bar", ProgressBar.styles);
     }
 
@@ -6936,7 +6936,7 @@ class DemographicsCard extends IaiLitBase {
                 font-weight: normal;
                 font-size: 0.8em;
             }
-
+            
             iai-demographics-card iai-silver-progress-bar .container,
             iai-demographics-card iai-silver-progress-bar .container .bar {
                 height: 0.6em;
@@ -6951,7 +6951,7 @@ class DemographicsCard extends IaiLitBase {
         // Prop defaults
         this.data = {};
         this._totalCount = 0;
-
+        
         this.applyStaticStyles("iai-demographics-card", DemographicsCard.styles);
     }
 
@@ -7018,14 +7018,14 @@ class DemographicsSection extends IaiLitBase {
 
     static styles = [
         IaiLitBase.styles,
-        i$4`
+        i$4` 
             iai-demographics-section .cards {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 1em;
                 max-width: 100%;
                 overflow: auto;
-            }
+            }    
             iai-demographics-section iai-demographics-card {
                 flex-grow: 1;
                 max-width: 100%;
@@ -7050,7 +7050,7 @@ class DemographicsSection extends IaiLitBase {
 
         this.demoFiltersApplied = () => {};
         this.themeFiltersApplied = () => {};
-
+        
         this.applyStaticStyles("iai-demographics-section", DemographicsSection.styles);
     }
 
@@ -7297,7 +7297,7 @@ class ResponseRefinement extends IaiLitBase {
 
         this._settingsVisible = false;
         this._themeFiltersVisible = false;
-
+        
         this.applyStaticStyles("iai-response-refinement", ResponseRefinement.styles);
     }
 
@@ -7439,7 +7439,7 @@ class ResponseRefinement extends IaiLitBase {
                                 .checked=${this.evidenceRich}
                             ></iai-toggle-input>
                         </div>
-
+                        
                         <div class="filters-row">
                             ${Object.keys(this.demoOptions).map(key => x`
                                 <iai-multi-dropdown
@@ -7573,7 +7573,7 @@ class ResponsesList extends IaiLitBase {
         this.isLoading = false;
         this.highlightedText = "";
         this.handleThemeTagClick = () => {};
-
+        
         this.applyStaticStyles("iai-silver-responses-list", ResponsesList.styles);
     }
 
@@ -7627,7 +7627,7 @@ class ResponsesList extends IaiLitBase {
                                         ID: ${response.id || "Not Available"}
                                     </small>
                                 </header>
-
+                                
                                 ${response.text ? x`
                                     <p>
                                         ${this.highlightedText
@@ -7646,7 +7646,7 @@ class ResponsesList extends IaiLitBase {
                                         `)}
                                     </ul>
                                 ` : ""}
-
+                                
                                 ${response.themes.length > 0 ? x`
                                     <footer>
                                         <small>
@@ -7689,8 +7689,9 @@ class QuestionDetailPage extends IaiLitBase {
         fetchData: { type: Function },
         _isFavourited: { type: Boolean},
 
+        consultationSlug: { type: String },
         consultationId: { type: String },
-        questionId: { type: String },
+        questionSlug: { type: String },
         consultationTitle: { type: String},
         questionText: { type: String},
         questionId: { type: String },
@@ -7762,7 +7763,7 @@ class QuestionDetailPage extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-
+        
         this._MAX_THEME_FILTERS = Infinity;
         this._PAGE_SIZE = 50;
         this._DEBOUNCE_DELAY = 500;
@@ -7781,8 +7782,9 @@ class QuestionDetailPage extends IaiLitBase {
         this.fetchData = window.fetch.bind(window);
         this._isFavourited = false;
 
+        this.consultationSlug = "";
         this.consultationId = "";
-        this.questionId = "";
+        this.questionSlug = "";
         this.consultationTitle = "";
         this.questionText = "";
         this.questionId = "";
@@ -7793,7 +7795,7 @@ class QuestionDetailPage extends IaiLitBase {
         this._themes = [];
         this._demoData = {};
         this._demoOptions = {};
-
+        
         this._searchValue = "";
         this._searchMode = "keyword";
         this._highlightMatches = true;
@@ -7907,7 +7909,7 @@ class QuestionDetailPage extends IaiLitBase {
                         map[theme.id] = theme;
                         return map;
                     }, {});
-
+                    
                     // Convert theme_aggregations format to theme_mappings format
                     const themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
                         const themeInfo = themeInfoMap[id] || {};
@@ -8041,13 +8043,13 @@ class QuestionDetailPage extends IaiLitBase {
                     .total=${this._filteredTotal}
                 ></iai-demographics-section>
             </section>
-
+            
             <section class="theme-analysis">
                 <iai-theme-analysis
-                    .consultationId=${this.consultationId}
+                    .consultationSlug=${this.consultationSlug}
                     .themes=${this._themes.toSorted((a, b) => {
                         let valA, valB;
-
+            
                         if (this._themesSortType === "frequency") {
                             valA = a.mentions;
                             valB = b.mentions;
@@ -8059,7 +8061,7 @@ class QuestionDetailPage extends IaiLitBase {
                         const directionOffset = this._themesSortDirection === "ascending"
                             ? 1
                             : -1;
-
+            
                         if (valA < valB) {
                             return -1 * directionOffset;
                         } else if (valB < valA) {
@@ -8076,7 +8078,7 @@ class QuestionDetailPage extends IaiLitBase {
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
-
+                    
                     .sortType=${this._themesSortType}
                     .setSortType=${newSortType => this._themesSortType = newSortType}
 
@@ -8191,7 +8193,7 @@ class QuestionDetailPage extends IaiLitBase {
                         ></iai-icon>
                         <span>Back to all questions</span>
                     `}
-                    .handleClick=${() => window.location.href = `/consultations/${this.consultationId}/`}
+                    .handleClick=${() => window.location.href = `/consultations/${this.consultationSlug}/`}
                 ></iai-silver-button>
 
                 <small>

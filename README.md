@@ -191,6 +191,7 @@ It should be stored in the following structure for a given consultation:
     ├── inputs/
     │   ├── question_part_<id>/
     │   │   ├── responses.jsonl
+    │   │   ├── multi_choice.jsonl
     │   │   └── question.json
     │   ├──  question_part_<id>/
     │   │   ├── responses.jsonl
@@ -218,12 +219,12 @@ The format for each of these files is in `consultation_analyser/consultations/im
 Format of each of the files:
 * `respondents.jsonl` - this is a JSONL file per consultation, where each entry is the format given in the `respondent.json` schema.
 * `responses.jsonl` - this is a JSONL file per question, where each entry is in the format given in the `response.json` schema.
+* `multichoice.jsonl` - this is JSONL file per question (only if the question has a multiple choice part), where each entry is in the format given in the `response.json` schema.
 * `question.json` - this is a JSON file per question, and this must satisfy the format given in the `question.json` schema.
 * `detail_detection.jsonl` - this a JSONL file per question and run of `themefinder`, each row is a line in the format of `detail_detection.json` with one row per response.
 * `mapping.jsonl` - this is a JSONL file per question and run of `themefinder`, each row is a line in the format of `mapping.json`. Each row maps a given response to its themes.
 * `sentiment.jsonl` - this a JSONL file per question part and run of `themefinder`, each row is a line in the format of `sentiment.json` with one row per response.
 * `themes.json` - this gives the themes for a given question part and run of `themefinder`, with `theme_key` as a unique identifier for a theme (for a given question). This is the format given by the `themes.json` schema.
-
 
 
 ### Data import process

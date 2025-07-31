@@ -7,6 +7,7 @@ import pytest
 from consultation_analyser import factories
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import models
+from consultation_analyser.consultations.models import MultiChoiceAnswer
 
 
 @pytest.mark.django_db
@@ -32,7 +33,7 @@ def test_question_factories():
     assert models.Question.objects.filter(id=question.id).exists()
     assert question.has_free_text
     assert not question.has_multiple_choice
-    assert question.multiple_choice_options is None
+    assert not MultiChoiceAnswer.objects.filter(question=question).exists()
 
     # Test question with multiple choice only
     mc_question = factories.QuestionWithMultipleChoiceFactory()
@@ -61,14 +62,15 @@ def test_response_factories():
     response = factories.ResponseFactory()
     assert models.Response.objects.filter(id=response.id).exists()
     assert response.free_text
-    assert response.chosen_options == []
+    assert response.chosen_options.count() == 0
 
     # Test response with multiple choice
     mc_response = factories.ResponseWithMultipleChoiceFactory()
     assert mc_response.free_text == ""
     assert mc_response.chosen_options
     assert all(
-        opt in mc_response.question.multiple_choice_options for opt in mc_response.chosen_options
+        opt in mc_response.question.multiple_choice_options
+        for opt in mc_response.chosen_options.all()
     )
 
     # Test response with both

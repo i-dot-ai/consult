@@ -60,7 +60,7 @@ class TestDemographicOptionsAPIView:
         """Test API endpoint returns empty options when no demographic data exists"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographics",
+            "question-demographic-options",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -91,7 +91,7 @@ class TestDemographicOptionsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographics",
+            "question-demographic-options",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -108,16 +108,18 @@ class TestDemographicOptionsAPIView:
     def test_permission_required(self, client, question):
         """Test API endpoint requires proper permissions"""
         url = reverse(
-            "question-demographics",
+            "question-demographic-options",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     def test_invalid_consultation_slug(self, client, consultation_user):
         """Test API endpoint with invalid consultation slug"""
         client.force_login(consultation_user)
-        url = reverse("question-demographics", kwargs={"consultation_pk": uuid4(), "pk": uuid4()})
+        url = reverse(
+            "question-demographic-options", kwargs={"consultation_pk": uuid4(), "pk": uuid4()}
+        )
         response = client.get(url)
         assert response.status_code == 403  # DRF returns 403 for permission denied
 
@@ -128,7 +130,7 @@ class TestDemographicAggregationsAPIView:
         """Test API endpoint returns empty aggregations when no data exists"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic_aggregations",
+            "question-demographic-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -161,7 +163,7 @@ class TestDemographicAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic_aggregations",
+            "question-demographic-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -194,7 +196,7 @@ class TestDemographicAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic_aggregations",
+            "question-demographic-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
 
@@ -216,7 +218,7 @@ class TestDemographicAggregationsAPIView:
         """Test API endpoint handles invalid filter parameters"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic_aggregations",
+            "question-demographic-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
 
@@ -231,7 +233,7 @@ class TestThemeInformationAPIView:
         """Test API endpoint returns empty themes list when no themes exist"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-themes",
+            "question-theme-information",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -247,7 +249,7 @@ class TestThemeInformationAPIView:
         """Test API endpoint returns theme information correctly"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-themes",
+            "question-theme-information",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -274,7 +276,7 @@ class TestThemeAggregationsAPIView:
         """Test API endpoint returns empty aggregations when no responses exist"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-theme_aggregations",
+            "question-theme-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -304,7 +306,7 @@ class TestThemeAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-theme_aggregations",
+            "question-theme-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -338,7 +340,7 @@ class TestThemeAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-theme_aggregations",
+            "question-theme-aggregations",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
 
@@ -366,7 +368,7 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered_responses",
+            "question-filtered-responses",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
@@ -398,7 +400,7 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered_responses",
+            "question-filtered-responses",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url + "?page_size=2&page=1")
@@ -429,7 +431,7 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered_responses",
+            "question-filtered-responses",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
 
@@ -478,7 +480,7 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered_responses",
+            "question-filtered-responses",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
 
@@ -498,7 +500,7 @@ class TestFilteredResponsesAPIView:
         """Test API endpoint handles invalid parameters"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered_responses",
+            "question-filtered-responses",
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
 
@@ -560,11 +562,11 @@ class TestAPIViewPermissions:
     @pytest.mark.parametrize(
         "endpoint_name",
         [
-            "question-demographics",
-            "question-demographic_aggregations",
-            "question-themes",
-            "question-theme_aggregations",
-            "question-filtered_responses",
+            "question-demographic-options",
+            "question-demographic-aggregations",
+            "question-theme-information",
+            "question-theme-aggregations",
+            "question-filtered-responses",
             "question-detail",
         ],
     )
@@ -575,16 +577,16 @@ class TestAPIViewPermissions:
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     @pytest.mark.parametrize(
         "endpoint_name",
         [
-            "question-demographics",
-            "question-demographic_aggregations",
-            "question-themes",
-            "question-theme_aggregations",
-            "question-filtered_responses",
+            "question-demographic-options",
+            "question-demographic-aggregations",
+            "question-theme-information",
+            "question-theme-aggregations",
+            "question-filtered-responses",
             "question-detail",
         ],
     )
@@ -603,11 +605,11 @@ class TestAPIViewPermissions:
     @pytest.mark.parametrize(
         "endpoint_name",
         [
-            "question-demographics",
-            "question-demographic_aggregations",
-            "question-themes",
-            "question-theme_aggregations",
-            "question-filtered_responses",
+            "question-demographic-options",
+            "question-demographic-aggregations",
+            "question-theme-information",
+            "question-theme-aggregations",
+            "question-filtered-responses",
             "question-detail",
         ],
     )
@@ -631,7 +633,9 @@ class TestAPIViewErrorHandling:
     def test_nonexistent_consultation(self, client, consultation_user):
         """Test API endpoints with non-existent consultation"""
         client.force_login(consultation_user)
-        url = reverse("question-demographics", kwargs={"consultation_pk": uuid4(), "pk": uuid4()})
+        url = reverse(
+            "question-demographic-options", kwargs={"consultation_pk": uuid4(), "pk": uuid4()}
+        )
         response = client.get(url)
         assert response.status_code == 403  # DRF returns 403 for permission denied
 
@@ -639,7 +643,7 @@ class TestAPIViewErrorHandling:
         """Test API endpoints with non-existent question"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographics",
+            "question-demographic-options",
             kwargs={"consultation_pk": question.consultation.id, "pk": uuid4()},
         )
         response = client.get(url)

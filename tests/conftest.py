@@ -2,7 +2,12 @@ import json
 
 import boto3
 import pytest
+from django.contrib.auth.models import Group
 from moto import mock_aws
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from consultation_analyser.constants import DASHBOARD_ACCESS
+from consultation_analyser.factories import ConsultationFactory, QuestionFactory, UserFactory
 
 
 @pytest.fixture
@@ -162,3 +167,68 @@ def mock_consultation_input_objects(mock_s3_bucket):
         mock_s3_bucket,
         "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/detail_detection.jsonl",
     ).put(Body=evidence_rich_mappings_2_jsonl)
+
+
+@pytest.fixture
+def dashboard_access_group():
+    group = Group.objects.get(name=DASHBOARD_ACCESS)
+    yield group
+    group.delete()
+
+
+@pytest.fixture
+def non_dashboard_user():
+    user = UserFactory()
+    yield user
+    user.delete()
+
+
+@pytest.fixture
+def dashboard_user(dashboard_access_group):
+    user = UserFactory()
+    user.groups.add(dashboard_access_group)
+    user.save()
+    yield user
+    user.delete()
+
+
+@pytest.fixture
+def non_consultation_user():
+    user = UserFactory()
+    yield user
+    user.delete()
+
+
+@pytest.fixture
+def dashboard_user_token(dashboard_user):
+    refresh = RefreshToken.for_user(dashboard_user)
+    yield str(refresh.access_token)
+
+
+@pytest.fixture
+def non_consultation_user_token(non_consultation_user):
+    refresh = RefreshToken.for_user(non_consultation_user)
+    yield str(refresh.access_token)
+
+
+@pytest.fixture
+def non_dashboard_user_token(non_dashboard_user):
+    refresh = RefreshToken.for_user(non_dashboard_user)
+    yield str(refresh.access_token)
+
+
+@pytest.fixture
+def consultation(dashboard_user, non_dashboard_user):
+    _consultation = ConsultationFactory()
+    _consultation.users.add(dashboard_user)
+    _consultation.users.add(non_dashboard_user)
+    _consultation.save()
+    yield _consultation
+    _consultation.delete()
+
+
+@pytest.fixture
+def question(consultation):
+    _question = QuestionFactory(consultation=consultation)
+    yield _question
+    _question.delete()
