@@ -112,7 +112,7 @@ class TestDemographicOptionsAPIView:
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     def test_invalid_consultation_slug(self, client, consultation_user):
         """Test API endpoint with invalid consultation slug"""
@@ -577,7 +577,7 @@ class TestAPIViewPermissions:
             kwargs={"consultation_pk": question.consultation.id, "pk": question.id},
         )
         response = client.get(url)
-        assert response.status_code == 403
+        assert response.status_code == 401
 
     @pytest.mark.parametrize(
         "endpoint_name",

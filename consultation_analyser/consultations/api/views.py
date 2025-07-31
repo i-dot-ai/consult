@@ -1,14 +1,20 @@
 from collections import defaultdict
 
 import orjson
+from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Count
-from django.http import HttpResponse
-from rest_framework.decorators import action
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import get_object_or_404
+from magic_link.exceptions import InvalidLink
+from magic_link.models import MagicLink
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .. import models
+from ..views.sessions import send_magic_link_if_email_exists
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
     ConsultationSerializer,
@@ -188,3 +194,47 @@ class QuestionViewSet(ReadOnlyModelViewSet):
 
         # Return orjson-optimized HttpResponse
         return HttpResponse(orjson.dumps(data), content_type="application/json")
+
+
+@api_view(["POST"])
+def generate_magic_link(request):
+    """
+    create and email magic link
+    """
+    email = request.data.get("email")
+    if not email:
+        return Response({"detail": "Email required"}, status=400)
+
+    send_magic_link_if_email_exists(request, email)
+
+    return Response({"message": "Magic link sent"})
+
+
+@api_view(["POST"])
+def verify_magic_link(request) -> HttpResponse:
+    """
+    get access/refresh tokens.
+
+    If the link is invalid, or the user is already logged in, then this
+    view will raise a PermissionDenied, which will render the 403 template.
+
+    """
+    token = request.data.get("token")
+    if not token:
+        return Response({"detail": "token required"}, status=400)
+    link = get_object_or_404(MagicLink, token=token)
+    try:
+        link.validate()
+        link.authorize(request.user)
+        refresh = RefreshToken.for_user(request.user)
+    except (PermissionDenied, InvalidLink) as ex:
+        link.audit(request, error=ex)
+        return JsonResponse(data={"detail": ex}, status=403)
+    else:
+        link.audit(request)
+        return JsonResponse(
+            {
+                "access": str(refresh.access_token),
+                "refresh": str(refresh),
+            }
+        )
