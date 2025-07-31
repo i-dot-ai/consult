@@ -3,10 +3,6 @@ import Layout from '../layouts/Layout.astro';
 import Section from '../components/Section.svelte';
 import Title from '../components/Title.svelte';
 import SignInForm from '../components/SignInForm.svelte';
-
-import { getBackendUrl } from '../global/utils';
-
-const backendUrl = getBackendUrl(Astro.request.url);
 ---
 <Layout>
 	<Section>
@@ -16,6 +12,6 @@ const backendUrl = getBackendUrl(Astro.request.url);
             Enter your email address to generate a link to sign in
         </p>
 
-        <SignInForm client:load backendUrl={backendUrl} />
+        <SignInForm client:load />
 	</Section>
 </Layout>

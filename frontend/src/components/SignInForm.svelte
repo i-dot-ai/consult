@@ -1,17 +1,13 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import { fade } from "svelte/transition";
-
-    import { getBackendUrl } from "../global/utils.ts";
+    import { slide } from "svelte/transition";
 
     import TextInput from "./inputs/TextInput.svelte";
     import Link from "./Link.svelte";
     import Button from "./inputs/Button.svelte";
 
     const INVALID_EMAIL_MSG = "Please enter a valid email";
-
-    export let backendUrl: string = "";
 
     let email: string = "";
     let error: string = "";
@@ -38,7 +34,7 @@
         sending = true;
 
         try {
-            const response = await fetch(`${backendUrl}/api/magic-link`, {
+            const response = await fetch(`/api/sign-in`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -78,13 +74,13 @@
     />
 
     {#if error}
-        <small class="text-sm text-red-500" transition:fade={{ duration: 300 }}>
+        <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
             {error}
         </small>
     {/if }
 
     {#if success}
-        <small class="text-sm text-gray-500" transition:fade={{ duration: 300 }}>
+        <small class="text-sm text-gray-500" transition:slide={{ duration: 300 }}>
             Link sent. If you have access to Consult check your inbox for an email.
             If you don't have access or don't receive the email please contact
                 <Link

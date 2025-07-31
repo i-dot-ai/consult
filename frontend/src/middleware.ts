@@ -30,6 +30,7 @@ import { getBackendUrl } from "./global/utils";
 // }
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
+    const accessToken = context.cookies.get("access")?.value;
     const url = context.url;
     const backendUrl = getBackendUrl(url.hostname);
     const fullBackendUrl = backendUrl + url.pathname + url.search;
@@ -38,7 +39,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     const toSkip = [
         /\//,
         /\/sign-in[\/]?/,
-        /\/magic-link\/[A-Za-z0-9]*/g
+        /\/magic-link\/[A-Za-z0-9]*/g,
+        /\/api\/.*/,
     ];
 
     for (const skipPattern of toSkip) {
@@ -51,7 +53,10 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
     const response = await fetch(fullBackendUrl, {
         method: context.request.method,
-        headers: context.request.headers,
+        headers: {
+            ...context.request.headers,
+            "Authorization": `Bearer ${accessToken}`
+        },
         duplex: "half",
         body: hasBody
             ? context.request.body

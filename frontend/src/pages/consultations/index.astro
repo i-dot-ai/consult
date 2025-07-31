@@ -3,15 +3,17 @@ import Layout from '../../layouts/Layout.astro';
 import Section from '../../components/Section.svelte';
 import Title from '../../components/Title.svelte';
 
-import { getToken } from "../../global/auth";
+import { getBackendUrl } from '../../global/utils';
 
-// // TODO: Implement auth
-// import { getUserConsultations } from "...";
-// const { request } = Astro;
-// const cookie = request.headers.get("cookie") || "";
-// const token = getToken(cookie);
-// console.log("Session Token:", token);
-// const consultationsData = await getUserConsultations(token);
+const accessToken = Astro.cookies.get("access")?.value;
+
+// TODO: Implement endpoint
+// fetch(`${getBackendUrl(Astro.request.url)}/api/consultations/`, {
+// 	headers: {
+// 		"Authorization": `Bearer ${accessToken}`,
+// 		"Content-Type": "application/json",
+// 	}
+// })
 ---
 <Layout>
 	<Section>
