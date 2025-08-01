@@ -55,10 +55,10 @@ class QuestionViewSet(ReadOnlyModelViewSet):
     @action(
         detail=True,
         methods=["get"],
-        url_path="multi-choice-answers",
+        url_path="multi-choice-response-count",
         serializer_class=MultiChoiceAnswerCount,
     )
-    def multi_choice_answers(self, request, pk=None, consultation_pk=None):
+    def multi_choice_response_count(self, request, pk=None, consultation_pk=None):
         question = self.get_object()
         answer_count = question.response_set.values("chosen_options__text").annotate(
             response_count=Count("id")
