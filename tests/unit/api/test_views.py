@@ -706,7 +706,7 @@ def test_multi_choice_answer_count(
 ):
     client.force_login(consultation_user)
     url = reverse(
-        "question-multi-choice-answers",
+        "question-multi-choice-response-count",
         kwargs={
             "consultation_pk": multi_choice_question.consultation.pk,
             "pk": multi_choice_question.pk,
