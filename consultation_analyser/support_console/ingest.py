@@ -12,7 +12,6 @@ from django_rq import get_queue
 from consultation_analyser.consultations.models import (
     Consultation,
     CrossCuttingTheme,
-    CrossCuttingThemeAssignment,
     DemographicOption,
     MultiChoiceAnswer,
     Question,
@@ -606,7 +605,6 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
         logger.info(f"Created cross-cutting theme: {cross_cutting_theme.name}")
 
         # Create assignments for each theme
-        assignments_to_create = []
         for theme_ref in cct_entry["themes"]:
             question_number = theme_ref["question_number"]
             theme_key = theme_ref["theme_key"]
@@ -621,11 +619,8 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
             # Find the theme
             try:
                 theme = Theme.objects.get(question=question, key=theme_key)
-                assignments_to_create.append(
-                    CrossCuttingThemeAssignment(
-                        cross_cutting_theme=cross_cutting_theme, theme=theme
-                    )
-                )
+                theme.parent = cross_cutting_theme
+                theme.save()
             except Theme.DoesNotExist:
                 raise ValueError(
                     f"Theme {theme_key} not found for question {question_number} in cross-cutting theme '{cct_entry['name']}'"
@@ -634,13 +629,6 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
                 raise ValueError(
                     f"Multiple themes with key {theme_key} found for question {question_number} in cross-cutting theme '{cct_entry['name']}'"
                 )
-
-        # Bulk create assignments
-        if assignments_to_create:
-            CrossCuttingThemeAssignment.objects.bulk_create(assignments_to_create)
-            logger.info(
-                f"Created {len(assignments_to_create)} theme assignments for {cross_cutting_theme.name}"
-            )
 
 
 def import_respondents(consultation: Consultation, consultation_code: str):

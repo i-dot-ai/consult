@@ -254,6 +254,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     name = models.CharField(max_length=256)
     description = models.TextField()
     key = models.CharField(max_length=128, null=True, blank=True)
+    parent = models.ForeignKey("CrossCuttingTheme", on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -290,23 +291,6 @@ class CrossCuttingTheme(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def __str__(self):
         return self.name
-
-
-class CrossCuttingThemeAssignment(UUIDPrimaryKeyModel, TimeStampedModel):
-    """Assignment of themes to cross-cutting themes - ensures each theme belongs to at most one cross-cutting theme"""
-
-    cross_cutting_theme = models.ForeignKey(
-        CrossCuttingTheme, on_delete=models.CASCADE, related_name="theme_assignments"
-    )
-    theme = models.OneToOneField(Theme, on_delete=models.CASCADE)
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        constraints = [
-            models.UniqueConstraint(fields=["theme"], name="unique_theme_to_cct_assignment"),
-        ]
-
-    def __str__(self):
-        return f"{self.theme.name} -> {self.cross_cutting_theme.name}"
 
 
 class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
