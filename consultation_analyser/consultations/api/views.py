@@ -22,11 +22,11 @@ from .serializers import (
     DemographicOptionsSerializer,
     FilterSerializer,
     QuestionSerializer,
+    ResponseSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
 )
 from .utils import (
-    build_respondent_data_fast,
     build_response_filter_query,
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
@@ -184,15 +184,15 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         # Get total respondents count for this question (single query)
         all_respondents_count = models.Response.objects.filter(question=question).count()
 
-        # Use orjson for faster serialization of large response sets
+        serializer = ResponseSerializer(instance=page_obj.object_list.all(), many=True)
         data = {
-            "all_respondents": [build_respondent_data_fast(r) for r in page_obj.object_list],
+            "all_respondents": serializer.data,
             "has_more_pages": page_obj.has_next(),
             "respondents_total": all_respondents_count,
             "filtered_total": paginator.count,
         }
 
-        # Return orjson-optimized HttpResponse
+        # Return HttpResponse
         return HttpResponse(orjson.dumps(data), content_type="application/json")
 
 
