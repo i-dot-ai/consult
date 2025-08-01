@@ -273,13 +273,13 @@ def consultation_user(consultation):
 
 
 @pytest.fixture()
-def theme(question):
-    return ThemeFactory(question=question, name="Theme A", key="A")
+def theme(free_text_question):
+    return ThemeFactory(question=free_text_question, name="Theme A", key="A")
 
 
 @pytest.fixture()
-def theme2(question):
-    return ThemeFactory(question=question, name="Theme B", key="B")
+def theme2(free_text_question):
+    return ThemeFactory(question=free_text_question, name="Theme B", key="B")
 
 
 @pytest.fixture()
