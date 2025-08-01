@@ -10,7 +10,7 @@ from consultation_analyser.consultations.models import (
 class MultiChoiceAnswerSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = MultiChoiceAnswer
-        fields = ["answer"]
+        fields = ["text"]
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
