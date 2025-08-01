@@ -690,3 +690,11 @@ class TestAPIViewErrorHandling:
         )
         response = client.get(url)
         assert response.status_code == 404
+
+
+@pytest.mark.django_db
+def test_consultations_list(client, consultation_user, multi_choice_question):
+    client.force_login(consultation_user)
+    url = reverse("consultations-list")
+    response = client.get(url)
+    assert response.status_code == 200
