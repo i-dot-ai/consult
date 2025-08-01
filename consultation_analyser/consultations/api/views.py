@@ -21,6 +21,7 @@ from .serializers import (
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     FilterSerializer,
+    MultiChoiceAnswerCount,
     QuestionSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
@@ -50,6 +51,20 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         return models.Question.objects.filter(
             consultation__id=consultation_uuid, consultation__users=self.request.user
         ).order_by("-created_at")
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="multi-choice-answers",
+        serializer_class=MultiChoiceAnswerCount,
+    )
+    def multi_choice_answers(self, request, pk=None, consultation_pk=None):
+        question = self.get_object()
+        answer_count = question.response_set.values("chosen_options__text").annotate(
+            response_count=Count("id")
+        )
+        serializer = self.get_serializer(instance=answer_count, many=True)
+        return JsonResponse(data=serializer.data, safe=False)
 
     @action(detail=True, methods=["get"], url_path="demographic-options")
     def demographic_options(self, request, pk=None, consultation_pk=None):
