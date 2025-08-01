@@ -39,7 +39,7 @@ class TestResponse:
         with pytest.raises(Exception):  # Will raise IntegrityError
             models.Response.objects.create(
                 respondent=response.respondent,
-                question=response.question,
+                question=response.free_text_question,
                 free_text="Duplicate response",
             )
 

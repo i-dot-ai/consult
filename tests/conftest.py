@@ -9,6 +9,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.factories import (
     ConsultationFactory,
+    MultiChoiceAnswerFactory,
     QuestionFactory,
     ThemeFactory,
     UserFactory,
@@ -233,22 +234,32 @@ def consultation(dashboard_user, non_dashboard_user):
 
 
 @pytest.fixture
-def question(consultation):
-    _question = QuestionFactory(
+def free_text_question(consultation):
+    question = QuestionFactory(
         consultation=consultation, has_free_text=True, has_multiple_choice=False
     )
-    yield _question
-    _question.delete()
+    yield question
+    question.delete()
+
+
+@pytest.fixture
+def multi_choice_question(consultation):
+    question = QuestionFactory(
+        consultation=consultation, has_free_text=False, has_multiple_choice=True
+    )
+    MultiChoiceAnswerFactory.create_batch(2, question=question)
+    yield question
+    question.delete()
 
 
 @pytest.fixture()
-def theme(question):
-    return ThemeFactory(question=question, name="Theme A", key="A")
+def theme(free_text_question):
+    return ThemeFactory(question=free_text_question, name="Theme A", key="A")
 
 
 @pytest.fixture()
-def theme2(question):
-    return ThemeFactory(question=question, name="Theme B", key="B")
+def theme2(free_text_question):
+    return ThemeFactory(question=free_text_question, name="Theme B", key="B")
 
 
 @pytest.fixture()
