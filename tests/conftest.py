@@ -270,3 +270,23 @@ def consultation_user(consultation):
     user.save()
     consultation.users.add(user)
     return user
+
+
+@pytest.fixture()
+def theme(question):
+    return ThemeFactory(question=question, name="Theme A", key="A")
+
+
+@pytest.fixture()
+def theme2(question):
+    return ThemeFactory(question=question, name="Theme B", key="B")
+
+
+@pytest.fixture()
+def consultation_user(consultation):
+    user = UserFactory()
+    dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
+    user.groups.add(dash_access)
+    user.save()
+    consultation.users.add(user)
+    return user
