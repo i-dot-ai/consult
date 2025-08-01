@@ -3,6 +3,7 @@ from django_rq import get_queue
 
 from consultation_analyser.consultations.models import (
     Consultation,
+    CrossCuttingTheme,
     DemographicOption,
     MultiChoiceAnswer,
     Question,
@@ -10,6 +11,7 @@ from consultation_analyser.consultations.models import (
     Response,
     ResponseAnnotation,
     ResponseAnnotationTheme,
+    Theme,
 )
 from consultation_analyser.support_console.ingest import DEFAULT_TIMEOUT_SECONDS, create_embeddings
 
@@ -89,6 +91,16 @@ class DemographicOptionAdmin(admin.ModelAdmin):
     readonly_fields = ["consultation", "field_name", "field_value"]
 
 
+class ThemeInline(admin.StackedInline):
+    model = Theme
+    extra = 0
+
+
+class CrossCuttingThemeAdmin(admin.ModelAdmin):
+    inlines = [ThemeInline]
+
+
+admin.site.register(CrossCuttingTheme, CrossCuttingThemeAdmin)
 admin.site.register(Response, ResponseAdmin)
 admin.site.register(Consultation, ConsultationAdmin)
 admin.site.register(Question, QuestionAdmin)
