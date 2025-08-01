@@ -92,6 +92,7 @@ class FilterSerializer(serializers.Serializer):
 
 class ThemeDetailSerializer(serializers.Serializer):
     """Serializer for individual theme details within cross-cutting themes"""
+
     theme_id = serializers.CharField()
     theme_name = serializers.CharField()
     theme_key = serializers.CharField()
@@ -103,6 +104,7 @@ class ThemeDetailSerializer(serializers.Serializer):
 
 class CrossCuttingThemeSerializer(serializers.Serializer):
     """Serializer for individual cross-cutting theme"""
+
     id = serializers.CharField()
     name = serializers.CharField()
     description = serializers.CharField()
@@ -115,6 +117,7 @@ class CrossCuttingThemeSerializer(serializers.Serializer):
 
 class CrossCuttingThemesResponseSerializer(serializers.Serializer):
     """Serializer for cross-cutting themes API response"""
+
     consultation_id = serializers.CharField()
     consultation_title = serializers.CharField()
     total_respondents = serializers.IntegerField()

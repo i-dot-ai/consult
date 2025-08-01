@@ -274,7 +274,9 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
 class CrossCuttingTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     """Cross-cutting themes that encompass multiple regular themes across a consultation"""
 
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, related_name="cross_cutting_themes")
+    consultation = models.ForeignKey(
+        Consultation, on_delete=models.CASCADE, related_name="cross_cutting_themes"
+    )
     name = models.CharField(max_length=256)
     description = models.TextField()
 
