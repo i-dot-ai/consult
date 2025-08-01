@@ -88,3 +88,8 @@ class FilterSerializer(serializers.Serializer):
     # Pagination parameters
     page = serializers.IntegerField(required=False, default=1, min_value=1)
     page_size = serializers.IntegerField(required=False, default=50, min_value=1, max_value=100)
+
+
+class MultiChoiceAnswerCount(serializers.Serializer):
+    answer = serializers.CharField(source="chosen_options__text")
+    response_count = serializers.IntegerField()
