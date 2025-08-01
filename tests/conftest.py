@@ -7,7 +7,12 @@ from moto import mock_aws
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
-from consultation_analyser.factories import ConsultationFactory, QuestionFactory, UserFactory
+from consultation_analyser.factories import (
+    ConsultationFactory,
+    QuestionFactory,
+    ThemeFactory,
+    UserFactory,
+)
 
 
 @pytest.fixture
@@ -229,6 +234,28 @@ def consultation(dashboard_user, non_dashboard_user):
 
 @pytest.fixture
 def question(consultation):
-    _question = QuestionFactory(consultation=consultation)
+    _question = QuestionFactory(
+        consultation=consultation, has_free_text=True, has_multiple_choice=False
+    )
     yield _question
     _question.delete()
+
+
+@pytest.fixture()
+def theme(question):
+    return ThemeFactory(question=question, name="Theme A", key="A")
+
+
+@pytest.fixture()
+def theme2(question):
+    return ThemeFactory(question=question, name="Theme B", key="B")
+
+
+@pytest.fixture()
+def consultation_user(consultation):
+    user = UserFactory()
+    dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
+    user.groups.add(dash_access)
+    user.save()
+    consultation.users.add(user)
+    return user

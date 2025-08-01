@@ -3,55 +3,16 @@ from uuid import uuid4
 import orjson
 import pytest
 from django.contrib.auth.models import Group
-from django.test import RequestFactory
 from django.urls import reverse
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.models import DemographicOption
 from consultation_analyser.factories import (
-    ConsultationFactory,
-    QuestionFactory,
     RespondentFactory,
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
-    ThemeFactory,
     UserFactory,
 )
-
-
-@pytest.fixture()
-def consultation():
-    return ConsultationFactory()
-
-
-@pytest.fixture()
-def question(consultation):
-    return QuestionFactory(consultation=consultation, has_free_text=True, has_multiple_choice=False)
-
-
-@pytest.fixture()
-def theme(question):
-    return ThemeFactory(question=question, name="Theme A", key="A")
-
-
-@pytest.fixture()
-def theme2(question):
-    return ThemeFactory(question=question, name="Theme B", key="B")
-
-
-@pytest.fixture()
-def consultation_user(consultation):
-    user = UserFactory()
-    dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
-    user.groups.add(dash_access)
-    user.save()
-    consultation.users.add(user)
-    return user
-
-
-@pytest.fixture()
-def request_factory():
-    return RequestFactory()
 
 
 @pytest.mark.django_db
