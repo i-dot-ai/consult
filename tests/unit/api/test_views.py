@@ -265,6 +265,7 @@ class TestThemeInformationAPIView:
 
         # Verify theme structure
         for theme_data in themes:
+            assert "id" in theme_data
             assert "name" in theme_data
             assert "description" in theme_data
 
