@@ -244,7 +244,7 @@ def verify_magic_link(request) -> HttpResponse:
         refresh = RefreshToken.for_user(request.user)
     except (PermissionDenied, InvalidLink) as ex:
         link.audit(request, error=ex)
-        return JsonResponse(data={"detail": ex}, status=403)
+        return JsonResponse(data={"detail": str(ex.args[0])}, status=403)
     else:
         link.audit(request)
         return JsonResponse(
