@@ -15,35 +15,87 @@
     ]
   }) }}
 
-  {%- from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs -%}
-
   <style>
     .govuk-main-wrapper {
       background: white;
     }
   </style>
 
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full">
-      <iai-question-overview-page></iai-question-overview-page>
-      <script>
-        const questionOverviewPage = document.getElementsByTagName("iai-question-overview-page")[0];
+  <div id="loading" class="govuk-body">Loading consultation...</div>
+  
+  <div id="error-message" style="display: none;" class="govuk-error-message">
+    <span class="govuk-visually-hidden">Error:</span> Failed to load consultation. Please try refreshing the page.
+  </div>
 
-        questionOverviewPage.consultationName = "{{ consultation.title }}"
-        questionOverviewPage.questions = [
-          {% for question_dict in all_questions_list %}
-            {
-              id: "{{ question_dict.question.id }}",
-              title: "Q{{ question_dict.question.number }}: {{ question_dict.question.text }}",
-              url: "{{ url('question_responses', kwargs={'consultation_slug': consultation.slug, 'question_slug': question_dict.question.slug}) }}",
-              numResponses: "{{ question_dict.number_responses }}",
-              status: "Open",
-            },
-          {% endfor %}
-        ]
-      </script>
+  <div id="consultation-content" style="display: none;">
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full">
+        <iai-question-overview-page></iai-question-overview-page>
+      </div>
     </div>
   </div>
+
+  <script>
+    // Get consultation ID from Django context
+    const consultationId = '{{ consultation_id }}';
+    
+    async function loadConsultationData() {
+      try {
+        // Get consultation directly by ID
+        const consultationResponse = await fetch(`/api/consultations/${consultationId}/`, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'same-origin'
+        });
+
+        if (!consultationResponse.ok) {
+          throw new Error(`HTTP error! status: ${consultationResponse.status}`);
+        }
+
+        const consultation = await consultationResponse.json();
+
+        // Get questions for this consultation
+        const questionsResponse = await fetch(`/api/consultations/${consultationId}/questions/`, {
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'same-origin'
+        });
+
+        if (!questionsResponse.ok) {
+          throw new Error(`HTTP error! status: ${questionsResponse.status}`);
+        }
+
+        const questionsData = await questionsResponse.json();
+        const questions = questionsData.results || questionsData;
+
+        // Populate the web component
+        const questionOverviewPage = document.getElementsByTagName("iai-question-overview-page")[0];
+        
+        questionOverviewPage.consultationName = consultation.title;
+        questionOverviewPage.questions = questions.map(question => ({
+          id: question.id,
+          title: `Q${question.number}: ${question.question_text}`,
+          url: `/consultations/${consultation.slug}/responses/${question.slug}/`,
+          numResponses: question.total_responses,
+          status: "Open",
+        }));
+
+        // Hide loading and show content
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('consultation-content').style.display = 'block';
+        
+      } catch (error) {
+        console.error('Error loading consultation data:', error);
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('error-message').style.display = 'block';
+      }
+    }
+
+    // Load consultation data when page loads
+    document.addEventListener('DOMContentLoaded', loadConsultationData);
+  </script>
 
   <noscript>
     <div class="govuk-grid-row">
