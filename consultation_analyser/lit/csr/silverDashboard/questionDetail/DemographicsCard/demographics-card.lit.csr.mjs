@@ -101,10 +101,12 @@ export default class DemographicsCard extends IaiLitBase {
     render() {
         return html`
             <article>
-                <iai-silver-title
-                    .text=${this.title}
-                    .level=${3}
-                ></iai-silver-title>
+                ${this.title ? html`
+                    <iai-silver-title
+                        .text=${this.title}
+                        .level=${3}
+                    ></iai-silver-title>
+                ` : ""}
 
                 <ul>
                     ${Object.keys(this.data).map(key => {

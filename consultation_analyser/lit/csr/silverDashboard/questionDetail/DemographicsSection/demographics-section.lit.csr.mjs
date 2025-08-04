@@ -10,6 +10,8 @@ export default class DemographicsSection extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         data: { type: Array },
+        title: { type: String },
+        subtitle: { type: String },
         themeFilters: { type: Array },
         demoFilters: { type: Object},
         total: { type: Number },
@@ -45,6 +47,8 @@ export default class DemographicsSection extends IaiLitBase {
         this._MAX_DEMO_ANSWERS = 10;
 
         // Prop defaults
+        this.title = "";
+        this.subtitle = "";
         this.data = [];
         this.themeFilters = [];
         this.demoFilters = {};
@@ -76,8 +80,8 @@ export default class DemographicsSection extends IaiLitBase {
                 <div slot="content">
                     <div class="top-panel">
                         <iai-silver-title
-                            .text=${"Demographics"}
-                            .subtext=${"Demographic breakdown for this question"}
+                            .text=${this.title}
+                            .subtext=${this.subtitle}
                             .icon=${"group"}
                             .level=${2}
                         ></iai-silver-title>

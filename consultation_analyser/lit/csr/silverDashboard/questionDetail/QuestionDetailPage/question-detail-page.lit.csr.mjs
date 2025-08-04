@@ -226,7 +226,7 @@ export default class QuestionDetailPage extends IaiLitBase {
 
             // Use multiple modular endpoints instead of single question_responses_json
             try {
-                const [filteredResponsesData, themeAggregationsData, themeInformationData, demographicOptionsData, demographicAggregationsData] = await Promise.all([
+                const [filteredResponsesData, themeAggregationsData, themeInformationData, demographicOptionsData, demographicAggregationsData, multiChoiceData] = await Promise.all([
                     // Get paginated response data
                     this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/filtered-responses/?` + this.buildQuery(), { signal }).then(r => r.json()),
                     // Get theme aggregations (only on first page)
@@ -236,7 +236,9 @@ export default class QuestionDetailPage extends IaiLitBase {
                     // Get demographic options (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-options/`, { signal }).then(r => r.json()) : null,
                     // Get demographic aggregations (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    // Get multi-choice answer aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/multi-choice-response-count/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                 ]);
 
                 this.responses = this.responses.concat(filteredResponsesData.all_respondents);
@@ -284,6 +286,18 @@ export default class QuestionDetailPage extends IaiLitBase {
                 }
                 if (demographicOptionsData) {
                     this._demoOptions = demographicOptionsData.demographic_options || {};
+                }
+
+                if (multiChoiceData) {
+                    // empty string to avoid displaying title on card
+                    const formattedMultiChoice = {"": {}};
+                    multiChoiceData.forEach(data => {
+                        if (!data.answer) {
+                            return;
+                        }
+                        formattedMultiChoice[""][data.answer] = data.response_count;
+                    })
+                    this._multiChoice = formattedMultiChoice;
                 }
 
             } catch (err) {
@@ -379,6 +393,8 @@ export default class QuestionDetailPage extends IaiLitBase {
             <section>
                 <iai-demographics-section
                     .data=${this._demoData}
+                    .title=${"Demographics"}
+                    .subtitle=${"Demographic breakdown for this question"}
                     .themeFilters=${this._themeFilters}
                     .demoFilters=${this._demoFilters}
                     .demoFiltersApplied=${this.demoFiltersApplied}
@@ -387,12 +403,12 @@ export default class QuestionDetailPage extends IaiLitBase {
                 ></iai-demographics-section>
             </section>
 
-            <!-- TODO: Add multi choice to this -->
-            ${Object.keys(this._multiChoice).length > 0 ?
+            ${this._multiChoice[""] && Object.keys(this._multiChoice[""]).length > 0 ?
                 html`
                     <section>
                         <iai-demographics-section
                             .data=${this._multiChoice}
+                            .title=${"Multiple Choice Answers"}
                             .themeFilters=${this._themeFilters}
                             .demoFilters=${this._demoFilters}
                             .demoFiltersApplied=${this.demoFiltersApplied}
