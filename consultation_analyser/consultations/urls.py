@@ -14,7 +14,6 @@ from .views import answers, consultations, pages, questions, root, sessions
 
 router = routers.DefaultRouter()
 router.register("consultations", ConsultationViewSet, basename="consultations")
-router.register("user", get_current_user, basename="user")
 
 consultations_router = NestedDefaultRouter(router, r"consultations", lookup="consultation")
 consultations_router.register("questions", QuestionViewSet, basename="question")
@@ -42,6 +41,7 @@ urlpatterns = [
     path("api/", include(router.urls)),
     path("api/", include(consultations_router.urls)),
     path("api/", include(questions_router.urls)),
+    path("api/user", get_current_user, name="user"),
     path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/show-next/",
         answers.show_next,
