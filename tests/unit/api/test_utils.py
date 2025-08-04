@@ -3,8 +3,8 @@ from unittest.mock import patch
 import pytest
 from django.conf import settings
 
+from consultation_analyser.consultations.api.serializers import ResponseSerializer
 from consultation_analyser.consultations.api.utils import (
-    build_respondent_data_fast,
     build_response_filter_query,
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
@@ -322,14 +322,14 @@ class TestBuildRespondentDataFast:
             response.chosen_options.add(answer)
         response.save()
 
-        data = build_respondent_data_fast(response)
+        serializer = ResponseSerializer(instance=response)
 
-        assert data["identifier"] == str(respondent.identifier)
-        assert data["free_text_answer_text"] == "Test response"
-        assert data["demographic_data"] == {"individual": True, "region": "north"}
-        assert sorted(data["multiple_choice_answer"]) == ["option1", "option2"]
-        assert data["evidenceRich"] is False  # No annotation
-        assert data["themes"] == []
+        assert serializer.data["identifier"] == str(respondent.identifier)
+        assert serializer.data["free_text_answer_text"] == "Test response"
+        assert serializer.data["demographic_data"] == {"individual": True, "region": "north"}
+        assert serializer.data["multiple_choice_answer"] == ["option1", "option2"]
+        assert serializer.data["evidenceRich"] is False  # No annotation
+        assert serializer.data["themes"] is None
 
     def test_with_annotation_evidence_rich(self, question):
         """Test respondent data with evidence rich annotation"""
@@ -340,9 +340,9 @@ class TestBuildRespondentDataFast:
             response=response, evidence_rich=ResponseAnnotation.EvidenceRich.YES
         )
 
-        data = build_respondent_data_fast(response)
+        serializer = ResponseSerializer(instance=response)
 
-        assert data["evidenceRich"] is True
+        assert serializer.data["evidenceRich"] is True
 
     def test_with_annotation_not_evidence_rich(self, question):
         """Test respondent data with non-evidence rich annotation"""
@@ -353,9 +353,9 @@ class TestBuildRespondentDataFast:
             response=response, evidence_rich=ResponseAnnotation.EvidenceRich.NO
         )
 
-        data = build_respondent_data_fast(response)
+        serializer = ResponseSerializer(instance=response)
 
-        assert data["evidenceRich"] is False
+        assert serializer.data["evidenceRich"] is False
 
     def test_with_themes(self, question, theme, theme2):
         """Test respondent data with themes"""
@@ -365,14 +365,14 @@ class TestBuildRespondentDataFast:
         annotation = ResponseAnnotationFactoryNoThemes(response=response)
         annotation.add_original_ai_themes([theme, theme2])
 
-        data = build_respondent_data_fast(response)
+        serializer = ResponseSerializer(instance=response)
 
-        assert len(data["themes"]) == 2
-        theme_names = {t["name"] for t in data["themes"]}
+        assert len(serializer.data["themes"]) == 2
+        theme_names = {t["name"] for t in serializer.data["themes"]}
         assert theme_names == {"Theme A", "Theme B"}
 
         # Verify theme structure
-        for theme_data in data["themes"]:
+        for theme_data in serializer.data["themes"]:
             assert "id" in theme_data
             assert "name" in theme_data
             assert "description" in theme_data
@@ -382,17 +382,17 @@ class TestBuildRespondentDataFast:
         respondent = RespondentFactory(consultation=question.consultation)
         response = ResponseFactory(question=question, respondent=respondent)
 
-        data = build_respondent_data_fast(response)
+        serializer = ResponseSerializer(instance=response)
 
-        assert data["evidenceRich"] is False
-        assert data["themes"] == []
+        assert serializer.data["evidenceRich"] is False
+        assert serializer.data["themes"] is None
 
     def test_performance_optimized_structure(self, question):
         """Test that the function returns optimized data structure"""
         respondent = RespondentFactory(consultation=question.consultation)
         response = ResponseFactory(question=question, respondent=respondent)
 
-        data = build_respondent_data_fast(response)
+        serializer = ResponseSerializer(instance=response)
 
         # Verify all expected keys are present
         expected_keys = {
@@ -403,4 +403,4 @@ class TestBuildRespondentDataFast:
             "multiple_choice_answer",
             "evidenceRich",
         }
-        assert set(data.keys()) == expected_keys
+        assert set(serializer.data.keys()) == expected_keys

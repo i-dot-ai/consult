@@ -99,9 +99,9 @@ class ResponseSerializer(serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id")
     free_text_answer_text = serializers.CharField(source="free_text")
     demographic_data = serializers.JSONField(source="respondent.demographics")
-    themes = ThemeSerializer(source="annotation.themes", many=True, read_only=True)
+    themes = ThemeSerializer(source="annotation.themes", many=True, read_only=True, default=[])
     multiple_choice_answer = serializers.SlugRelatedField(
-        slug_field="chosen_options", read_only=True
+        source="chosen_options", slug_field="text", many=True, read_only=True
     )
     evidenceRich = serializers.SerializerMethodField()
 
