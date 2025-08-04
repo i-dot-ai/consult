@@ -1,10 +1,17 @@
 from rest_framework import serializers
 
+from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
     Consultation,
     MultiChoiceAnswer,
     Question,
 )
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email", "has_dashboard_access"]
 
 
 class MultiChoiceAnswerSerializer(serializers.HyperlinkedModelSerializer):

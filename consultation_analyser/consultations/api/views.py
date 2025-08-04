@@ -8,7 +8,8 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -25,6 +26,7 @@ from .serializers import (
     QuestionSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
+    UserSerializer,
 )
 from .utils import (
     build_respondent_data_fast,
@@ -32,6 +34,16 @@ from .utils import (
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
 )
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    """
+    Returns the current logged-in user's information
+    """
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)
 
 
 class ConsultationViewSet(ReadOnlyModelViewSet):
