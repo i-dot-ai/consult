@@ -5780,174 +5780,6 @@ class ToggleInput extends IaiLitBase {
 }
 customElements.define("iai-toggle-input", ToggleInput);
 
-class ThemesTable extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        themes: { type: Array },
-        themeFilters: { type: Array },
-        setThemeFilters: { type: Function },
-        totalResponses: { type: Number },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-themes-table iai-data-table {
-                display: block;
-                overflow-x: auto;
-            }
-            iai-themes-table .theme-title {
-                font-weight: bold;
-                font-size: 0.9em;
-                color: var(--iai-silver-color-text);
-            }
-            iai-themes-table .theme-description {
-                display: block;
-                font-size: 0.9em;
-                min-width: 20em;
-            }
-            iai-themes-table .percentage-cell {
-                gap: 0.5em;
-                display: flex;
-                align-items: center;
-            }
-            iai-themes-table .title-container {
-                display: flex;
-                align-items: center;
-                gap: 1em;
-            }
-            iai-themes-table input[type="checkbox"] {
-                filter: grayscale(0.5) hue-rotate(75deg);
-            }
-
-            iai-themes-table .percentage-cell iai-progress-bar .bar {
-                background: var(--iai-silver-color-accent);
-            }
-            iai-themes-table .percentage-cell iai-progress-bar .container {
-                background: var(--iai-silver-color-mid-light);
-            }
-
-            iai-themes-table iai-silver-button button {
-                width: max-content;
-                display: flex;
-                align-items: center;
-                padding-inline: 0.5em;
-                gap: 0.5em;
-                font-weight: bold;
-                color: var(--iai-silver-color-text);
-            }
-            iai-themes-table input {
-                cursor: pointer;
-            }
-            iai-themes-table tr {
-                transition: background 0.3s ease-in-out;
-            }
-            iai-themes-table tr:has(input:checked) {
-                background: var(--iai-silver-color-teal-light);
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-        this._NUMBER_ANIMATION_DURATION = 1000;
-
-        this.themes = [];
-        this.themeFilters = [];
-        this.setThemeFilters = () => {};
-        this.totalResponses = 0;
-
-        this.applyStaticStyles("iai-themes-table", ThemesTable.styles);
-    }
-
-    render() {
-        return x`
-            <iai-data-table
-                .sortable=${false}
-                .data=${this.themes
-                    .map(theme => (
-                        {
-                            // _sortValues are the values used for sorting comparison
-                            // instead of the actual value of a cell, which can be an obj etc.
-                            // particularly useful for html elements and dates.
-                            "_sortValues": {
-                                "Mentions": parseInt(theme.mentions),
-                                "Percentage": parseInt(theme.percentage),
-                                "Theme": theme.title,
-                            },
-                            "_handleClick": () => this.setThemeFilters(theme.id),
-                            "Theme": x`
-                                <div class="title-container">
-                                    <div>
-                                        <input
-                                            type="checkbox"
-                                            class="theme-checkbox"
-                                            id=${"theme-filters" + theme.title.toLowerCase().replace(" ", "-")}
-                                            name="theme-filters"
-                                            .value=${theme.id}
-                                            .checked=${this.themeFilters.includes(theme.id)}
-                                            @click=${(e) => {
-                                                e.stopPropagation();
-                                                this.setThemeFilters(e.target.value);
-                                            }}
-                                        />
-                                    </div>
-                                    <div>
-                                        <span class="theme-title">
-                                            ${theme.title}
-                                        </span>
-                                        <span class="theme-description">
-                                            ${theme.description}
-                                        </span>
-                                    </div>
-                                </div>
-                            `,
-                            "Mentions": x`
-                                <iai-animated-number
-                                    .number=${theme.mentions}
-                                    .duration=${this._NUMBER_ANIMATION_DURATION}
-                                ></iai-animated-number>
-                            `,
-                            "Percentage": x`
-                                <div class="percentage-cell">
-                                    <div>
-                                        <iai-animated-number
-                                            .number=${this.getPercentage(theme.mentions, this.totalResponses)}
-                                            .duration=${this._NUMBER_ANIMATION_DURATION}
-                                        ></iai-animated-number>
-                                        %
-                                    </div>
-
-                                    <iai-progress-bar
-                                        .value=${this.getPercentage(theme.mentions, this.totalResponses)}
-                                        .label=${""}
-                                    ></iai-progress-bar>
-                                </div>
-                            `,
-                            "Actions": x`
-                                <iai-silver-button
-                                    .text=${x`
-                                        <iai-icon
-                                            .name=${"search"}
-                                        ></iai-icon>
-                                        <span>View responses</span>
-                                    `}
-                                    .handleClick=${(e) => {
-                                        e.stopPropagation();
-                                        theme.handleClick();
-                                    }}
-                                ></iai-silver-button>
-                            `
-                        }
-                    ))
-                }
-            ></iai-data-table>
-        `;
-    }
-}
-customElements.define("iai-themes-table", ThemesTable);
-
 class ThemeFiltersWarning extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -6284,14 +6116,12 @@ class MultiDropdown extends IaiLitBase {
 }
 customElements.define("iai-multi-dropdown", MultiDropdown);
 
-class ThemeAnalysis extends IaiLitBase {
+class Filters extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         consultationSlug: { type: String },
         themes: { type: Array },
-        demoData: { type: Object },
         demoOptions: { type: Object },
-        totalResponses: { type: Number },
 
         demoFiltersApplied: { type: Function },
         themeFiltersApplied: { type: Function },
@@ -6307,6 +6137,374 @@ class ThemeAnalysis extends IaiLitBase {
 
         demoFilters: { type: Object },
         setDemoFilters: { type: Function },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-filters div[slot="content"] {
+                padding-block: 0.5em;
+            }
+            iai-filters iai-silver-icon-tile {
+                font-size: 0.8em;
+            }
+            iai-filters .theme-title {
+                font-weight: bold;
+                color: var(--iai-silver-color-text);
+            }
+            iai-filters iai-silver-button button {
+                width: max-content;
+                display: flex;
+                align-items: center;
+                padding-inline: 0.5em;
+                gap: 0.5em;
+                font-weight: bold;
+                color: var(--iai-silver-color-text);
+            }
+            iai-filters .filters-row {
+                display: grid;
+                gap: 1em;
+            }
+            iai-filters .total-themes {
+                display: flex;
+                flex-direction: column;    
+                max-height: max-content;
+                padding: 1em;
+                font-size: 0.8em;
+                white-space: nowrap;
+                background: #fcf1f6;
+                border-radius: 0.5em;
+            }
+            iai-filters .total-themes span {
+                font-size: 1.5em;
+                font-weight: bold;
+            }
+            iai-filters .filters-row {
+                margin-bottom: 1em;
+                background: var(--iai-silver-color-light);
+                padding: 1em;
+                border-radius: 0.5em;
+            }
+            iai-filters .filters {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1em;
+                align-items: center;
+            }
+            iai-filters .filters iai-silver-select-input{
+                white-space: nowrap;
+            }
+            iai-filters .top-panel {
+                margin-bottom: 2em;
+            }
+            iai-filters .filters select.govuk-select {
+                font-size: 0.9em;
+                background: var(--iai-silver-color-light-darker);
+            }
+            iai-filters iai-multi-dropdown button {
+                background: var(--iai-silver-color-light-darker) !important;
+            }
+            iai-filters .export-button button {
+                padding-block: 0.2em;
+            }
+            iai-filters .filters .demographics-title .icon-container {
+                margin: 0;
+                color: var(--iai-silver-color-dark);
+            }
+            iai-filters .filters .govuk-form-group:has(select){
+                margin: 0;
+            }
+            iai-filters .info-container {
+                display: flex;
+                justify-content: space-between;
+            }
+            @media (min-width: 40.0625em) {
+                .govuk-form-group {
+                    margin-bottom: 0;
+                }
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+        this._NUMBER_ANIMATION_DURATION = 1000;
+
+        this.themes = [];
+        this.demoOptions = {};
+
+        this.demoFiltersApplied = () => {};
+        this.themeFiltersApplied = () => {};
+
+        this.themeFilters = [];
+        this.updateThemeFilters = () => {};
+
+        this.demoFilters = {};
+        this.setDemoFilters = () => {};
+        
+        this.sortType = "";
+        this.setSortType = () => {};
+
+        this.sortDirection = "";
+        this.setSortDirection = () => {};
+
+        this.applyStaticStyles("iai-filters", Filters.styles);
+    }
+
+    render() {
+        return x`
+            <div class="top-panel">
+                <div class="filters-row">
+                    <div class="filters">
+                        <iai-silver-select-input
+                            .inputId=${"sort-value"}
+                            .name=${"sort-value"}
+                            .label=${"Sort by:"}
+                            .hideLabel=${false}
+                            .value=${this.sortType}
+                            .options=${[
+                                { value: "frequency", text: "Frequency" },
+                                { value: "alphabetical", text: "A-Z" },
+                            ]}
+                            .handleChange=${(e) => this.setSortType(e.target.value)}
+                            .horizontal=${true}
+                        ></iai-silver-select-input>
+
+                        <iai-icon-button .handleClick=${
+                            () => this.setSortDirection(this.sortDirection === "ascending"
+                                ? "descending"
+                                : "ascending"
+                        )}>
+                            <iai-icon
+                                slot="icon"
+                                .name=${this.sortDirection === "ascending"
+                                    ? "arrow_downward"
+                                    : "arrow_upward"
+                                }
+                            ></iai-icon>
+                        </iai-icon-button>
+                    </div>
+
+                    <div class="filters">
+                        ${Object.keys(this.demoOptions).map(category => {
+                            return x`
+                                <iai-multi-dropdown
+                                    .title=${category}
+                                    .text=${`${this.demoFilters[category]?.length || 0} filters selected`}
+                                    .options=${this.demoOptions[category].map(option => ({
+                                        id: option,
+                                        checked: Boolean(this.demoFilters[category]?.includes(option)),
+                                        title: option,
+                                        handleClick: (e) => {
+                                            this.setDemoFilters(category, option);
+                                        },
+                                    }))}
+                                ></iai-multi-dropdown>
+                            `
+                        })}
+                    </div>
+
+                    ${this.themeFiltersApplied() || this.demoFiltersApplied() ? x`
+                        <iai-silver-button
+                            .text=${"Clear filters"}
+                            .handleClick=${() => {
+                                this.updateThemeFilters();
+                                this.setDemoFilters();
+                            }}
+                        ></iai-silver-button>
+                    ` : ""}
+                </div>
+
+                ${this.themeFilters.length > 0 ? x`
+                    <iai-theme-filters-warning
+                        .themes=${this.themes}
+                        .themeFilters=${this.themeFilters}
+                        .updateThemeFilters=${this.updateThemeFilters}
+                    ></iai-theme-filters-warning>
+                ` : ""}
+            </div>
+        `
+    }
+}
+customElements.define("iai-filters", Filters);
+
+class ThemesTable extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        themes: { type: Array },
+        themeFilters: { type: Array },
+        setThemeFilters: { type: Function },
+        totalResponses: { type: Number },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-themes-table iai-data-table {
+                display: block;
+                overflow-x: auto;
+            }
+            iai-themes-table .theme-title {
+                font-weight: bold;
+                font-size: 0.9em;
+                color: var(--iai-silver-color-text);
+            }
+            iai-themes-table .theme-description {
+                display: block;
+                font-size: 0.9em;
+                min-width: 20em;
+            }
+            iai-themes-table .percentage-cell {
+                gap: 0.5em;
+                display: flex;
+                align-items: center;
+            }
+            iai-themes-table .title-container {
+                display: flex;
+                align-items: center;
+                gap: 1em;
+            }
+            iai-themes-table input[type="checkbox"] {
+                filter: grayscale(0.5) hue-rotate(75deg);
+            }
+
+            iai-themes-table .percentage-cell iai-progress-bar .bar {
+                background: var(--iai-silver-color-accent);
+            }
+            iai-themes-table .percentage-cell iai-progress-bar .container {
+                background: var(--iai-silver-color-mid-light);
+            }
+
+            iai-themes-table iai-silver-button button {
+                width: max-content;
+                display: flex;
+                align-items: center;
+                padding-inline: 0.5em;
+                gap: 0.5em;
+                font-weight: bold;
+                color: var(--iai-silver-color-text);
+            }
+            iai-themes-table input {
+                cursor: pointer;
+            }
+            iai-themes-table tr {
+                transition: background 0.3s ease-in-out;
+            }
+            iai-themes-table tr:has(input:checked) {
+                background: var(--iai-silver-color-teal-light);
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+        this._NUMBER_ANIMATION_DURATION = 1000;
+
+        this.themes = [];
+        this.themeFilters = [];
+        this.setThemeFilters = () => {};
+        this.totalResponses = 0;
+
+        this.applyStaticStyles("iai-themes-table", ThemesTable.styles);
+    }
+
+    render() {
+        return x`
+            <iai-data-table
+                .sortable=${false}
+                .data=${this.themes
+                    .map(theme => (
+                        {
+                            // _sortValues are the values used for sorting comparison
+                            // instead of the actual value of a cell, which can be an obj etc.
+                            // particularly useful for html elements and dates.
+                            "_sortValues": {
+                                "Mentions": parseInt(theme.mentions),
+                                "Percentage": parseInt(theme.percentage),
+                                "Theme": theme.title,
+                            },
+                            "_handleClick": () => this.setThemeFilters(theme.id),
+                            "Theme": x`
+                                <div class="title-container">
+                                    <div>
+                                        <input
+                                            type="checkbox"
+                                            class="theme-checkbox"
+                                            id=${"theme-filters" + theme.title.toLowerCase().replace(" ", "-")}
+                                            name="theme-filters"
+                                            .value=${theme.id}
+                                            .checked=${this.themeFilters.includes(theme.id)}
+                                            @click=${(e) => {
+                                                e.stopPropagation();
+                                                this.setThemeFilters(e.target.value);
+                                            }}
+                                        />
+                                    </div>
+                                    <div>
+                                        <span class="theme-title">
+                                            ${theme.title}
+                                        </span>
+                                        <span class="theme-description">
+                                            ${theme.description}
+                                        </span>
+                                    </div>
+                                </div>
+                            `,
+                            "Mentions": x`
+                                <iai-animated-number
+                                    .number=${theme.mentions}
+                                    .duration=${this._NUMBER_ANIMATION_DURATION}
+                                ></iai-animated-number>
+                            `,
+                            "Percentage": x`
+                                <div class="percentage-cell">
+                                    <div>
+                                        <iai-animated-number
+                                            .number=${this.getPercentage(theme.mentions, this.totalResponses)}
+                                            .duration=${this._NUMBER_ANIMATION_DURATION}
+                                        ></iai-animated-number>
+                                        %
+                                    </div>
+
+                                    <iai-progress-bar
+                                        .value=${this.getPercentage(theme.mentions, this.totalResponses)}
+                                        .label=${""}
+                                    ></iai-progress-bar>
+                                </div>
+                            `,
+                            "Actions": x`
+                                <iai-silver-button
+                                    .text=${x`
+                                        <iai-icon
+                                            .name=${"search"}
+                                        ></iai-icon>
+                                        <span>View responses</span>
+                                    `}
+                                    .handleClick=${(e) => {
+                                        e.stopPropagation();
+                                        theme.handleClick();
+                                    }}
+                                ></iai-silver-button>
+                            `
+                        }
+                    ))
+                }
+            ></iai-data-table>
+        `;
+    }
+}
+customElements.define("iai-themes-table", ThemesTable);
+
+class ThemeAnalysis extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        consultationSlug: { type: String },
+        themes: { type: Array },
+        totalResponses: { type: Number },
+        themeFilters: { type: Array },
+        updateThemeFilters: { type: Function },
     }
 
     static styles = [
@@ -6424,25 +6622,11 @@ class ThemeAnalysis extends IaiLitBase {
         this.contentId = this.generateId();
         this._NUMBER_ANIMATION_DURATION = 1000;
 
+        this.consultationSlug = "";
         this.themes = [];
-        this.demoData = {};
-        this.demoOptions = {};
         this.totalResponses = 0;
-
-        this.demoFiltersApplied = () => {};
-        this.themeFiltersApplied = () => {};
-
         this.themeFilters = [];
         this.updateThemeFilters = () => {};
-
-        this.demoFilters = {};
-        this.setDemoFilters = () => {};
-        
-        this.sortType = "";
-        this.setSortType = () => {};
-
-        this.sortDirection = "";
-        this.setSortDirection = () => {};
 
         this.applyStaticStyles("iai-theme-analysis", ThemeAnalysis.styles);
     }
@@ -6473,75 +6657,6 @@ class ThemeAnalysis extends IaiLitBase {
                             `}
                         ></iai-silver-title>
 
-                        <div class="filters-row">
-                            <div class="filters">
-                                <iai-silver-select-input
-                                    .inputId=${"sort-value"}
-                                    .name=${"sort-value"}
-                                    .label=${"Sort by:"}
-                                    .hideLabel=${false}
-                                    .value=${this.sortType}
-                                    .options=${[
-                                        { value: "frequency", text: "Frequency" },
-                                        { value: "alphabetical", text: "A-Z" },
-                                    ]}
-                                    .handleChange=${(e) => this.setSortType(e.target.value)}
-                                    .horizontal=${true}
-                                ></iai-silver-select-input>
-
-                                <iai-icon-button .handleClick=${
-                                    () => this.setSortDirection(this.sortDirection === "ascending"
-                                        ? "descending"
-                                        : "ascending"
-                                )}>
-                                    <iai-icon
-                                        slot="icon"
-                                        .name=${this.sortDirection === "ascending"
-                                            ? "arrow_downward"
-                                            : "arrow_upward"
-                                        }
-                                    ></iai-icon>
-                                </iai-icon-button>
-                            </div>
-
-                            <div class="filters">
-                                ${Object.keys(this.demoOptions).map(category => {
-                                    return x`
-                                        <iai-multi-dropdown
-                                            .title=${category}
-                                            .text=${`${this.demoFilters[category]?.length || 0} filters selected`}
-                                            .options=${this.demoOptions[category].map(option => ({
-                                                id: option,
-                                                checked: Boolean(this.demoFilters[category]?.includes(option)),
-                                                title: option,
-                                                handleClick: (e) => {
-                                                    this.setDemoFilters(category, option);
-                                                },
-                                            }))}
-                                        ></iai-multi-dropdown>
-                                    `
-                                })}
-                            </div>
-
-                            ${this.themeFiltersApplied() || this.demoFiltersApplied() ? x`
-                                <iai-silver-button
-                                    .text=${"Clear filters"}
-                                    .handleClick=${() => {
-                                        this.updateThemeFilters();
-                                        this.setDemoFilters();
-                                    }}
-                                ></iai-silver-button>
-                            ` : ""}
-                        </div>
-
-                        ${this.themeFilters.length > 0 ? x`
-                            <iai-theme-filters-warning
-                                .themes=${this.themes}
-                                .themeFilters=${this.themeFilters}
-                                .updateThemeFilters=${this.updateThemeFilters}
-                            ></iai-theme-filters-warning>
-                        ` : ""}
-                        
                         <div class="info-container">
                             <small>
                                 Total Themes
@@ -6868,7 +6983,7 @@ class ProgressBar extends IaiLitBase {
 }
 customElements.define("iai-silver-progress-bar", ProgressBar);
 
-class DemographicsCard extends IaiLitBase {
+class ProgressCard extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         title: { type: String },
@@ -6879,7 +6994,7 @@ class DemographicsCard extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         i$4`
-            iai-demographics-card article {
+            iai-progress-card article {
                 height: 100%;
                 max-height: 40em;
                 overflow: auto;
@@ -6889,7 +7004,7 @@ class DemographicsCard extends IaiLitBase {
                 background: var(--iai-silver-color-light);
                 border-radius: 0.5em;
             }
-            iai-demographics-card ul {
+            iai-progress-card ul {
                 display: flex;
                 flex-direction: column;
                 gap: 1.5em;
@@ -6898,7 +7013,7 @@ class DemographicsCard extends IaiLitBase {
                 font-weight: bold;
                 font-size: 0.9em;
             }
-            iai-demographics-card li {
+            iai-progress-card li {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -6907,29 +7022,29 @@ class DemographicsCard extends IaiLitBase {
                 line-height: 1.5em;
                 gap: 0.5em;
             }
-            iai-demographics-card li>* {
+            iai-progress-card li>* {
                 width: 100%;
                 word-wrap: break-word;
             }
-            iai-demographics-card li .percentage {
+            iai-progress-card li .percentage {
                 font-size: 0.8em;
                 color: rgba(0, 0, 0, 0.5);
             }
-            iai-demographics-card li .count {
+            iai-progress-card li .count {
                 font-size: 1.2em;
             }
-            iai-demographics-card li {
+            iai-progress-card li {
                 font-size: 0.9em;
                 color: rgba(0, 0, 0, 0.6);
             }
-            iai-demographics-card .info {
+            iai-progress-card .info {
                 display: flex;
                 gap: 0.5em;
             }
-            iai-demographics-card .label {
+            iai-progress-card .label {
                 font-size: 0.9em;
             }
-            iai-demographics-card .counts {
+            iai-progress-card .counts {
                 display: flex;
                 align-items: center;
                 gap: 1em;
@@ -6937,8 +7052,8 @@ class DemographicsCard extends IaiLitBase {
                 font-size: 0.8em;
             }
             
-            iai-demographics-card iai-silver-progress-bar .container,
-            iai-demographics-card iai-silver-progress-bar .container .bar {
+            iai-progress-card iai-silver-progress-bar .container,
+            iai-progress-card iai-silver-progress-bar .container .bar {
                 height: 0.6em;
             }
         `
@@ -6952,7 +7067,7 @@ class DemographicsCard extends IaiLitBase {
         this.data = {};
         this._totalCount = 0;
         
-        this.applyStaticStyles("iai-demographics-card", DemographicsCard.styles);
+        this.applyStaticStyles("iai-progress-card", ProgressCard.styles);
     }
 
     updated(changedProps) {
@@ -6964,10 +7079,12 @@ class DemographicsCard extends IaiLitBase {
     render() {
         return x`
             <article>
-                <iai-silver-title
-                    .text=${this.title}
-                    .level=${3}
-                ></iai-silver-title>
+                ${this.title ? x`
+                    <iai-silver-title
+                        .text=${this.title}
+                        .level=${3}
+                    ></iai-silver-title>
+                ` : ""}
 
                 <ul>
                     ${Object.keys(this.data).map(key => {
@@ -7002,12 +7119,14 @@ class DemographicsCard extends IaiLitBase {
         `
     }
 }
-customElements.define("iai-demographics-card", DemographicsCard);
+customElements.define("iai-progress-card", ProgressCard);
 
-class DemographicsSection extends IaiLitBase {
+class ProgressCards extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         data: { type: Array },
+        title: { type: String },
+        subtitle: { type: String },
         themeFilters: { type: Array },
         demoFilters: { type: Object},
         total: { type: Number },
@@ -7019,14 +7138,14 @@ class DemographicsSection extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         i$4` 
-            iai-demographics-section .cards {
+            iai-progress-cards .cards {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 1em;
                 max-width: 100%;
                 overflow: auto;
             }    
-            iai-demographics-section iai-demographics-card {
+            iai-progress-cards iai-progress-card {
                 flex-grow: 1;
                 max-width: 100%;
             }
@@ -7043,6 +7162,8 @@ class DemographicsSection extends IaiLitBase {
         this._MAX_DEMO_ANSWERS = 10;
 
         // Prop defaults
+        this.title = "";
+        this.subtitle = "";
         this.data = [];
         this.themeFilters = [];
         this.demoFilters = {};
@@ -7051,7 +7172,7 @@ class DemographicsSection extends IaiLitBase {
         this.demoFiltersApplied = () => {};
         this.themeFiltersApplied = () => {};
         
-        this.applyStaticStyles("iai-demographics-section", DemographicsSection.styles);
+        this.applyStaticStyles("iai-progress-cards", ProgressCards.styles);
     }
 
     getFilterWarningText() {
@@ -7074,8 +7195,8 @@ class DemographicsSection extends IaiLitBase {
                 <div slot="content">
                     <div class="top-panel">
                         <iai-silver-title
-                            .text=${"Demographics"}
-                            .subtext=${"Demographic breakdown for this question"}
+                            .text=${this.title}
+                            .subtext=${this.subtitle}
                             .icon=${"group"}
                             .level=${2}
                         ></iai-silver-title>
@@ -7097,10 +7218,10 @@ class DemographicsSection extends IaiLitBase {
                             ${Object.keys(this.data).map(category => {
                                 return Object.values(this.data[category]).length <= this._MAX_DEMO_ANSWERS
                                     ? x`
-                                        <iai-demographics-card
+                                        <iai-progress-card
                                             .title=${this.toTitleCase(category)}
                                             .data=${this.data[category]}
-                                        ></iai-demographics-card>
+                                        ></iai-progress-card>
                                     ` : ""})}
                         </div>
                     </div>
@@ -7109,7 +7230,7 @@ class DemographicsSection extends IaiLitBase {
         `
     }
 }
-customElements.define("iai-demographics-section", DemographicsSection);
+customElements.define("iai-progress-cards", ProgressCards);
 
 class ResponseRefinement extends IaiLitBase {
     static properties = {
@@ -7695,6 +7816,7 @@ class QuestionDetailPage extends IaiLitBase {
         consultationTitle: { type: String},
         questionText: { type: String},
         questionId: { type: String },
+        hasFreeText: { type: Boolean },
 
         responses: { type: Array },
         _responsesTotal: { type: Number },
@@ -7702,6 +7824,7 @@ class QuestionDetailPage extends IaiLitBase {
         _themes: { type: Array },
         _demoData: { type: Object },
         _demoOptions: { type: Object },
+        _multiChoice: { type: Object },
 
         _searchValue: { type: String },
         _searchMode: { type: String },
@@ -7788,6 +7911,7 @@ class QuestionDetailPage extends IaiLitBase {
         this.consultationTitle = "";
         this.questionText = "";
         this.questionId = "";
+        this.hasFreeText = false;
 
         this.responses = [];
         this._responsesTotal = 0;
@@ -7795,6 +7919,7 @@ class QuestionDetailPage extends IaiLitBase {
         this._themes = [];
         this._demoData = {};
         this._demoOptions = {};
+        this._multiChoice = {};
         
         this._searchValue = "";
         this._searchMode = "keyword";
@@ -7883,7 +8008,7 @@ class QuestionDetailPage extends IaiLitBase {
 
             // Use multiple modular endpoints instead of single question_responses_json
             try {
-                const [filteredResponsesData, themeAggregationsData, themeInformationData, demographicOptionsData, demographicAggregationsData] = await Promise.all([
+                const [filteredResponsesData, themeAggregationsData, themeInformationData, demographicOptionsData, demographicAggregationsData, multiChoiceData] = await Promise.all([
                     // Get paginated response data
                     this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/filtered-responses/?` + this.buildQuery(), { signal }).then(r => r.json()),
                     // Get theme aggregations (only on first page)
@@ -7893,7 +8018,9 @@ class QuestionDetailPage extends IaiLitBase {
                     // Get demographic options (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-options/`, { signal }).then(r => r.json()) : null,
                     // Get demographic aggregations (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    // Get multi-choice answer aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/multi-choice-response-count/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                 ]);
 
                 this.responses = this.responses.concat(filteredResponsesData.all_respondents);
@@ -7941,6 +8068,18 @@ class QuestionDetailPage extends IaiLitBase {
                 }
                 if (demographicOptionsData) {
                     this._demoOptions = demographicOptionsData.demographic_options || {};
+                }
+
+                if (multiChoiceData) {
+                    // empty string to avoid displaying title on card
+                    const formattedMultiChoice = {"": {}};
+                    multiChoiceData.forEach(data => {
+                        if (!data.answer) {
+                            return;
+                        }
+                        formattedMultiChoice[""][data.answer] = data.response_count;
+                    });
+                    this._multiChoice = formattedMultiChoice;
                 }
 
             } catch (err) {
@@ -8033,23 +8172,12 @@ class QuestionDetailPage extends IaiLitBase {
 
     renderThemeAnalysisSection = () => {
         return x`
-            <section>
-                <iai-demographics-section
-                    .data=${this._demoData}
-                    .themeFilters=${this._themeFilters}
-                    .demoFilters=${this._demoFilters}
-                    .demoFiltersApplied=${this.demoFiltersApplied}
-                    .themeFiltersApplied=${this.themeFiltersApplied}
-                    .total=${this._filteredTotal}
-                ></iai-demographics-section>
-            </section>
-            
-            <section class="theme-analysis">
-                <iai-theme-analysis
+            <section class="filters">
+                <iai-filters
                     .consultationSlug=${this.consultationSlug}
                     .themes=${this._themes.toSorted((a, b) => {
                         let valA, valB;
-            
+
                         if (this._themesSortType === "frequency") {
                             valA = a.mentions;
                             valB = b.mentions;
@@ -8061,7 +8189,7 @@ class QuestionDetailPage extends IaiLitBase {
                         const directionOffset = this._themesSortDirection === "ascending"
                             ? 1
                             : -1;
-            
+
                         if (valA < valB) {
                             return -1 * directionOffset;
                         } else if (valB < valA) {
@@ -8069,16 +8197,14 @@ class QuestionDetailPage extends IaiLitBase {
                         }
                         return 0;
                     })}
-                    .demoData=${this._demoData}
                     .demoOptions=${this._demoOptions}
-                    .totalResponses=${this._filteredTotal}
 
                     .demoFiltersApplied=${this.demoFiltersApplied}
                     .themeFiltersApplied=${this.themeFiltersApplied}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
-                    
+
                     .sortType=${this._themesSortType}
                     .setSortType=${newSortType => this._themesSortType = newSortType}
 
@@ -8087,8 +8213,71 @@ class QuestionDetailPage extends IaiLitBase {
 
                     .demoFilters=${this._demoFilters}
                     .setDemoFilters=${this.setDemoFilters}
-                ></iai-theme-analysis>
+                ></iai-filters>
             </section>
+
+            <section>
+                <iai-progress-cards
+                    .data=${this._demoData}
+                    .title=${"Demographics"}
+                    .subtitle=${"Demographic breakdown for this question"}
+                    .themeFilters=${this._themeFilters}
+                    .demoFilters=${this._demoFilters}
+                    .demoFiltersApplied=${this.demoFiltersApplied}
+                    .themeFiltersApplied=${this.themeFiltersApplied}
+                    .total=${this._filteredTotal}
+                ></iai-progress-cards>
+            </section>
+
+            ${this._multiChoice[""] && Object.keys(this._multiChoice[""]).length > 0 ?
+                x`
+                    <section>
+                        <iai-progress-cards
+                            .data=${this._multiChoice}
+                            .title=${"Multiple Choice Answers"}
+                            .themeFilters=${this._themeFilters}
+                            .demoFilters=${this._demoFilters}
+                            .demoFiltersApplied=${this.demoFiltersApplied}
+                            .themeFiltersApplied=${this.themeFiltersApplied}
+                            .total=${this._filteredTotal}
+                        ></iai-progress-cards>
+                    </section>
+                `
+            : ""}
+
+            ${this.hasFreeText ? x`
+                <section class="theme-analysis">
+                    <iai-theme-analysis
+                        .consultationSlug=${this.consultationSlug}
+                        .totalResponses=${this._filteredTotal}
+                        .themes=${this._themes.toSorted((a, b) => {
+                            let valA, valB;
+
+                            if (this._themesSortType === "frequency") {
+                                valA = a.mentions;
+                                valB = b.mentions;
+                            } else {
+                                valA = a.title;
+                                valB = b.title;
+                            }
+
+                            const directionOffset = this._themesSortDirection === "ascending"
+                                ? 1
+                                : -1;
+
+                            if (valA < valB) {
+                                return -1 * directionOffset;
+                            } else if (valB < valA) {
+                                return 1 * directionOffset;
+                            }
+                            return 0;
+                        })}
+                        .themeFilters=${this._themeFilters}
+                        .updateThemeFilters=${this.updateThemeFilters}
+                    ></iai-theme-analysis>
+                </section>
+            `: ""}
+
         `
     }
 
@@ -8247,10 +8436,15 @@ class QuestionDetailPage extends IaiLitBase {
                         title: this.renderTabButton("Question summary", "lan"),
                         content: this.renderThemeAnalysisSection()
                     },
-                    {
-                        title: this.renderTabButton("Response analysis", "finance"),
-                        content: this.renderResponsesSection()
-                    },
+                    ...(this.hasFreeText
+                        ? [
+                            {
+                                title: this.renderTabButton("Response analysis", "finance"),
+                                content: this.renderResponsesSection()
+                            }
+                        ]
+                        : []
+                    )
                 ]}
             ></iai-tab-view>
         `

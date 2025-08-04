@@ -39,5 +39,9 @@
   questionSlug="{{ question_slug }}"
   questionText="Q{{ question.number }}: {{ question.text }}"
 ></iai-question-detail-page>
+<script>
+  const questionDetailPageEl = document.getElementsByTagName("iai-question-detail-page")[0];
+  questionDetailPageEl.hasFreeText = {% if question.has_free_text %}true{% else %}false{% endif %};
+</script>
 
 {% endblock %}

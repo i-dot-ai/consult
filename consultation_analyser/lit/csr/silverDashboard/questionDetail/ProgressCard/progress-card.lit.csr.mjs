@@ -5,7 +5,7 @@ import Title from '../../Title/title.lit.csr.mjs';
 import ProgressBar from '../../ProgressBar/progress-bar.lit.csr.mjs';
 
 
-export default class DemographicsCard extends IaiLitBase {
+export default class ProgressCard extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         title: { type: String },
@@ -16,7 +16,7 @@ export default class DemographicsCard extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         css`
-            iai-demographics-card article {
+            iai-progress-card article {
                 height: 100%;
                 max-height: 40em;
                 overflow: auto;
@@ -26,7 +26,7 @@ export default class DemographicsCard extends IaiLitBase {
                 background: var(--iai-silver-color-light);
                 border-radius: 0.5em;
             }
-            iai-demographics-card ul {
+            iai-progress-card ul {
                 display: flex;
                 flex-direction: column;
                 gap: 1.5em;
@@ -35,7 +35,7 @@ export default class DemographicsCard extends IaiLitBase {
                 font-weight: bold;
                 font-size: 0.9em;
             }
-            iai-demographics-card li {
+            iai-progress-card li {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -44,29 +44,29 @@ export default class DemographicsCard extends IaiLitBase {
                 line-height: 1.5em;
                 gap: 0.5em;
             }
-            iai-demographics-card li>* {
+            iai-progress-card li>* {
                 width: 100%;
                 word-wrap: break-word;
             }
-            iai-demographics-card li .percentage {
+            iai-progress-card li .percentage {
                 font-size: 0.8em;
                 color: rgba(0, 0, 0, 0.5);
             }
-            iai-demographics-card li .count {
+            iai-progress-card li .count {
                 font-size: 1.2em;
             }
-            iai-demographics-card li {
+            iai-progress-card li {
                 font-size: 0.9em;
                 color: rgba(0, 0, 0, 0.6);
             }
-            iai-demographics-card .info {
+            iai-progress-card .info {
                 display: flex;
                 gap: 0.5em;
             }
-            iai-demographics-card .label {
+            iai-progress-card .label {
                 font-size: 0.9em;
             }
-            iai-demographics-card .counts {
+            iai-progress-card .counts {
                 display: flex;
                 align-items: center;
                 gap: 1em;
@@ -74,8 +74,8 @@ export default class DemographicsCard extends IaiLitBase {
                 font-size: 0.8em;
             }
             
-            iai-demographics-card iai-silver-progress-bar .container,
-            iai-demographics-card iai-silver-progress-bar .container .bar {
+            iai-progress-card iai-silver-progress-bar .container,
+            iai-progress-card iai-silver-progress-bar .container .bar {
                 height: 0.6em;
             }
         `
@@ -89,7 +89,7 @@ export default class DemographicsCard extends IaiLitBase {
         this.data = {};
         this._totalCount = 0;
         
-        this.applyStaticStyles("iai-demographics-card", DemographicsCard.styles);
+        this.applyStaticStyles("iai-progress-card", ProgressCard.styles);
     }
 
     updated(changedProps) {
@@ -101,10 +101,12 @@ export default class DemographicsCard extends IaiLitBase {
     render() {
         return html`
             <article>
-                <iai-silver-title
-                    .text=${this.title}
-                    .level=${3}
-                ></iai-silver-title>
+                ${this.title ? html`
+                    <iai-silver-title
+                        .text=${this.title}
+                        .level=${3}
+                    ></iai-silver-title>
+                ` : ""}
 
                 <ul>
                     ${Object.keys(this.data).map(key => {
@@ -139,4 +141,4 @@ export default class DemographicsCard extends IaiLitBase {
         `
     }
 }
-customElements.define("iai-demographics-card", DemographicsCard);
+customElements.define("iai-progress-card", ProgressCard);
