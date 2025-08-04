@@ -698,3 +698,25 @@ def test_consultations_list(client, consultation_user, multi_choice_question):
     url = reverse("consultations-list")
     response = client.get(url)
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_multi_choice_answer_count(
+    client, consultation_user, multi_choice_question, multi_choice_responses
+):
+    client.force_login(consultation_user)
+    url = reverse(
+        "question-multi-choice-response-count",
+        kwargs={
+            "consultation_pk": multi_choice_question.consultation.pk,
+            "pk": multi_choice_question.pk,
+        },
+    )
+    response = client.get(url)
+    assert response.status_code == 200
+
+    def sort_by_answer(payload):
+        return sorted(payload, key=lambda x: x["answer"])
+
+    expected = [{"answer": "blue", "response_count": 1}, {"answer": "red", "response_count": 2}]
+    assert sort_by_answer(response.json()) == sort_by_answer(expected)

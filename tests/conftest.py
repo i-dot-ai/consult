@@ -7,10 +7,12 @@ from moto import mock_aws
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
+from consultation_analyser.consultations.models import Response
 from consultation_analyser.factories import (
     ConsultationFactory,
     MultiChoiceAnswerFactory,
     QuestionFactory,
+    RespondentFactory,
     ThemeFactory,
     UserFactory,
 )
@@ -247,9 +249,36 @@ def multi_choice_question(consultation):
     question = QuestionFactory(
         consultation=consultation, has_free_text=False, has_multiple_choice=True
     )
-    MultiChoiceAnswerFactory.create_batch(2, question=question)
+    for answer in ["red", "blue", "green"]:
+        MultiChoiceAnswerFactory.create(question=question, text=answer)
     yield question
     question.delete()
+
+
+@pytest.fixture
+def multi_choice_responses(multi_choice_question):
+    red = multi_choice_question.multichoiceanswer_set.get(
+        question=multi_choice_question, text="red"
+    )
+    blue = multi_choice_question.multichoiceanswer_set.get(
+        question=multi_choice_question, text="blue"
+    )
+
+    respondent_1 = RespondentFactory(consultation=multi_choice_question.consultation)
+    response_1 = Response.objects.create(respondent=respondent_1, question=multi_choice_question)
+    response_1.chosen_options.add(red)
+    response_1.chosen_options.add(blue)
+    response_1.save()
+
+    respondent_2 = RespondentFactory(consultation=multi_choice_question.consultation)
+    response_2 = Response.objects.create(respondent=respondent_2, question=multi_choice_question)
+    response_2.chosen_options.add(red)
+    response_2.save()
+
+    yield respondent_1
+
+    response_1.delete()
+    response_2.delete()
 
 
 @pytest.fixture()
