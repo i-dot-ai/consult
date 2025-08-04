@@ -6983,7 +6983,7 @@ class ProgressBar extends IaiLitBase {
 }
 customElements.define("iai-silver-progress-bar", ProgressBar);
 
-class DemographicsCard extends IaiLitBase {
+class ProgressCard extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         title: { type: String },
@@ -6994,7 +6994,7 @@ class DemographicsCard extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         i$4`
-            iai-demographics-card article {
+            iai-progress-card article {
                 height: 100%;
                 max-height: 40em;
                 overflow: auto;
@@ -7004,7 +7004,7 @@ class DemographicsCard extends IaiLitBase {
                 background: var(--iai-silver-color-light);
                 border-radius: 0.5em;
             }
-            iai-demographics-card ul {
+            iai-progress-card ul {
                 display: flex;
                 flex-direction: column;
                 gap: 1.5em;
@@ -7013,7 +7013,7 @@ class DemographicsCard extends IaiLitBase {
                 font-weight: bold;
                 font-size: 0.9em;
             }
-            iai-demographics-card li {
+            iai-progress-card li {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -7022,29 +7022,29 @@ class DemographicsCard extends IaiLitBase {
                 line-height: 1.5em;
                 gap: 0.5em;
             }
-            iai-demographics-card li>* {
+            iai-progress-card li>* {
                 width: 100%;
                 word-wrap: break-word;
             }
-            iai-demographics-card li .percentage {
+            iai-progress-card li .percentage {
                 font-size: 0.8em;
                 color: rgba(0, 0, 0, 0.5);
             }
-            iai-demographics-card li .count {
+            iai-progress-card li .count {
                 font-size: 1.2em;
             }
-            iai-demographics-card li {
+            iai-progress-card li {
                 font-size: 0.9em;
                 color: rgba(0, 0, 0, 0.6);
             }
-            iai-demographics-card .info {
+            iai-progress-card .info {
                 display: flex;
                 gap: 0.5em;
             }
-            iai-demographics-card .label {
+            iai-progress-card .label {
                 font-size: 0.9em;
             }
-            iai-demographics-card .counts {
+            iai-progress-card .counts {
                 display: flex;
                 align-items: center;
                 gap: 1em;
@@ -7052,8 +7052,8 @@ class DemographicsCard extends IaiLitBase {
                 font-size: 0.8em;
             }
             
-            iai-demographics-card iai-silver-progress-bar .container,
-            iai-demographics-card iai-silver-progress-bar .container .bar {
+            iai-progress-card iai-silver-progress-bar .container,
+            iai-progress-card iai-silver-progress-bar .container .bar {
                 height: 0.6em;
             }
         `
@@ -7067,7 +7067,7 @@ class DemographicsCard extends IaiLitBase {
         this.data = {};
         this._totalCount = 0;
         
-        this.applyStaticStyles("iai-demographics-card", DemographicsCard.styles);
+        this.applyStaticStyles("iai-progress-card", ProgressCard.styles);
     }
 
     updated(changedProps) {
@@ -7119,9 +7119,9 @@ class DemographicsCard extends IaiLitBase {
         `
     }
 }
-customElements.define("iai-demographics-card", DemographicsCard);
+customElements.define("iai-progress-card", ProgressCard);
 
-class DemographicsSection extends IaiLitBase {
+class ProgressCards extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         data: { type: Array },
@@ -7138,14 +7138,14 @@ class DemographicsSection extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         i$4` 
-            iai-demographics-section .cards {
+            iai-progress-cards .cards {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 1em;
                 max-width: 100%;
                 overflow: auto;
             }    
-            iai-demographics-section iai-demographics-card {
+            iai-progress-cards iai-progress-card {
                 flex-grow: 1;
                 max-width: 100%;
             }
@@ -7172,7 +7172,7 @@ class DemographicsSection extends IaiLitBase {
         this.demoFiltersApplied = () => {};
         this.themeFiltersApplied = () => {};
         
-        this.applyStaticStyles("iai-demographics-section", DemographicsSection.styles);
+        this.applyStaticStyles("iai-progress-cards", ProgressCards.styles);
     }
 
     getFilterWarningText() {
@@ -7218,10 +7218,10 @@ class DemographicsSection extends IaiLitBase {
                             ${Object.keys(this.data).map(category => {
                                 return Object.values(this.data[category]).length <= this._MAX_DEMO_ANSWERS
                                     ? x`
-                                        <iai-demographics-card
+                                        <iai-progress-card
                                             .title=${this.toTitleCase(category)}
                                             .data=${this.data[category]}
-                                        ></iai-demographics-card>
+                                        ></iai-progress-card>
                                     ` : ""})}
                         </div>
                     </div>
@@ -7230,7 +7230,7 @@ class DemographicsSection extends IaiLitBase {
         `
     }
 }
-customElements.define("iai-demographics-section", DemographicsSection);
+customElements.define("iai-progress-cards", ProgressCards);
 
 class ResponseRefinement extends IaiLitBase {
     static properties = {
@@ -8173,7 +8173,7 @@ class QuestionDetailPage extends IaiLitBase {
     renderThemeAnalysisSection = () => {
         return x`
             <section>
-                <iai-demographics-section
+                <iai-progress-cards
                     .data=${this._demoData}
                     .title=${"Demographics"}
                     .subtitle=${"Demographic breakdown for this question"}
@@ -8182,13 +8182,13 @@ class QuestionDetailPage extends IaiLitBase {
                     .demoFiltersApplied=${this.demoFiltersApplied}
                     .themeFiltersApplied=${this.themeFiltersApplied}
                     .total=${this._filteredTotal}
-                ></iai-demographics-section>
+                ></iai-progress-cards>
             </section>
 
             ${this._multiChoice[""] && Object.keys(this._multiChoice[""]).length > 0 ?
                 x`
                     <section>
-                        <iai-demographics-section
+                        <iai-progress-cards
                             .data=${this._multiChoice}
                             .title=${"Multiple Choice Answers"}
                             .themeFilters=${this._themeFilters}
@@ -8196,7 +8196,7 @@ class QuestionDetailPage extends IaiLitBase {
                             .demoFiltersApplied=${this.demoFiltersApplied}
                             .themeFiltersApplied=${this.themeFiltersApplied}
                             .total=${this._filteredTotal}
-                        ></iai-demographics-section>
+                        ></iai-progress-cards>
                     </section>
                 `
             : ""}

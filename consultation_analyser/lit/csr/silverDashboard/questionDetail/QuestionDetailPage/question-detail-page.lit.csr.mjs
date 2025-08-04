@@ -10,7 +10,7 @@ import Filters from '../../Filters/filters.lit.csr.mjs';
 import ThemeAnalysis from '../../ThemeAnalysis/theme-analysis.lit.csr.mjs';
 import QuestionTitle from '../QuestionTitle/question-title.lit.csr.mjs';
 import TabView from '../../../TabView/tab-view.lit.csr.mjs';
-import DemographicsSection from '../DemographicsSection/demographics-section.lit.csr.mjs';
+import ProgressCards from '../ProgressCards/progress-cards.lit.csr.mjs';
 import Tag from '../../Tag/tag.lit.csr.mjs';
 import ResponseRefinement from '../ResponseRefinement/response-refinement.lit.csr.mjs';
 import ResponsesList from '../ResponsesList/responses-list.lit.csr.mjs';
@@ -391,7 +391,7 @@ export default class QuestionDetailPage extends IaiLitBase {
     renderThemeAnalysisSection = () => {
         return html`
             <section>
-                <iai-demographics-section
+                <iai-progress-cards
                     .data=${this._demoData}
                     .title=${"Demographics"}
                     .subtitle=${"Demographic breakdown for this question"}
@@ -400,13 +400,13 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .demoFiltersApplied=${this.demoFiltersApplied}
                     .themeFiltersApplied=${this.themeFiltersApplied}
                     .total=${this._filteredTotal}
-                ></iai-demographics-section>
+                ></iai-progress-cards>
             </section>
 
             ${this._multiChoice[""] && Object.keys(this._multiChoice[""]).length > 0 ?
                 html`
                     <section>
-                        <iai-demographics-section
+                        <iai-progress-cards
                             .data=${this._multiChoice}
                             .title=${"Multiple Choice Answers"}
                             .themeFilters=${this._themeFilters}
@@ -414,7 +414,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                             .demoFiltersApplied=${this.demoFiltersApplied}
                             .themeFiltersApplied=${this.themeFiltersApplied}
                             .total=${this._filteredTotal}
-                        ></iai-demographics-section>
+                        ></iai-progress-cards>
                     </section>
                 `
             : ""}
