@@ -62,14 +62,11 @@ class DemographicAggregationsSerializer(serializers.Serializer):
 
 
 class ThemeSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField()
+
     class Meta:
         model = Theme
         fields = ["id", "name", "description"]
-
-    def to_representation(self, instance):
-        representation = super().to_representation(instance=instance)
-        representation["id"] = str(instance.id)
-        return representation
 
 
 class ThemeInformationSerializer(serializers.Serializer):

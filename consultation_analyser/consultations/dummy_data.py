@@ -88,7 +88,7 @@ def create_dummy_consultation_from_yaml(
             )
 
             if has_free_text:
-                response.free_text = random.choice(question_data.get("free_text_answers", [""]))
+                response.free_text = random.choice(question_data.get("free_text_answers", ["no"]))
                 response.save()
                 themes_for_response = random.sample(
                     theme_objects, k=random.randint(1, len(theme_objects))
