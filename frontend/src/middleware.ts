@@ -45,7 +45,9 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     ];
 
     for (const skipPattern of toSkip) {
-        if (skipPattern.test(context.url.pathname)) {
+        if (skipPattern.test(context.url.pathname)
+            && !context.url.pathname.includes("/api/consultations")
+        ) {
             return next();
         }
     }
