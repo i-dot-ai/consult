@@ -390,35 +390,6 @@ export default class QuestionDetailPage extends IaiLitBase {
 
     renderThemeAnalysisSection = () => {
         return html`
-            <section>
-                <iai-progress-cards
-                    .data=${this._demoData}
-                    .title=${"Demographics"}
-                    .subtitle=${"Demographic breakdown for this question"}
-                    .themeFilters=${this._themeFilters}
-                    .demoFilters=${this._demoFilters}
-                    .demoFiltersApplied=${this.demoFiltersApplied}
-                    .themeFiltersApplied=${this.themeFiltersApplied}
-                    .total=${this._filteredTotal}
-                ></iai-progress-cards>
-            </section>
-
-            ${this._multiChoice[""] && Object.keys(this._multiChoice[""]).length > 0 ?
-                html`
-                    <section>
-                        <iai-progress-cards
-                            .data=${this._multiChoice}
-                            .title=${"Multiple Choice Answers"}
-                            .themeFilters=${this._themeFilters}
-                            .demoFilters=${this._demoFilters}
-                            .demoFiltersApplied=${this.demoFiltersApplied}
-                            .themeFiltersApplied=${this.themeFiltersApplied}
-                            .total=${this._filteredTotal}
-                        ></iai-progress-cards>
-                    </section>
-                `
-            : ""}
-
             <section class="filters">
                 <iai-filters
                     .consultationSlug=${this.consultationSlug}
@@ -462,7 +433,36 @@ export default class QuestionDetailPage extends IaiLitBase {
                     .setDemoFilters=${this.setDemoFilters}
                 ></iai-filters>
             </section>
-            
+
+            <section>
+                <iai-progress-cards
+                    .data=${this._demoData}
+                    .title=${"Demographics"}
+                    .subtitle=${"Demographic breakdown for this question"}
+                    .themeFilters=${this._themeFilters}
+                    .demoFilters=${this._demoFilters}
+                    .demoFiltersApplied=${this.demoFiltersApplied}
+                    .themeFiltersApplied=${this.themeFiltersApplied}
+                    .total=${this._filteredTotal}
+                ></iai-progress-cards>
+            </section>
+
+            ${this._multiChoice[""] && Object.keys(this._multiChoice[""]).length > 0 ?
+                html`
+                    <section>
+                        <iai-progress-cards
+                            .data=${this._multiChoice}
+                            .title=${"Multiple Choice Answers"}
+                            .themeFilters=${this._themeFilters}
+                            .demoFilters=${this._demoFilters}
+                            .demoFiltersApplied=${this.demoFiltersApplied}
+                            .themeFiltersApplied=${this.themeFiltersApplied}
+                            .total=${this._filteredTotal}
+                        ></iai-progress-cards>
+                    </section>
+                `
+            : ""}
+
             ${this.hasFreeText ? html`
                 <section class="theme-analysis">
                     <iai-theme-analysis
