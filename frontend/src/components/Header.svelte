@@ -1,10 +1,12 @@
-<script>
+<script lang="ts">
     import clsx from "clsx";
 
     import { Routes } from "../global/enums";
 
     import GovIcon from "./svg/GovIcon.svelte";
     import MobileMenu from "./MobileMenu.svelte";
+
+    export let isSignedIn: boolean = false;
 </script>
 
 <header class={clsx([
@@ -68,11 +70,19 @@
             </div>
 
             <MobileMenu
-                items={[
-                    {text: "Support", url: Routes.Support},
-                    {text: "Your consultations", url: Routes.Consultations},
-                    {text: "Sign out", url: Routes.SignOut},
-                ]}
+                items={isSignedIn
+                    ? [
+                        {text: "Support", url: Routes.Support},
+                        {text: "Your consultations", url: Routes.Consultations},
+                        {text: "Sign out", url: Routes.SignOut},
+                    ]
+                    : [
+                        {text: "How it works", url: Routes.HowItWorks},
+                        {text: "Data sharing", url: Routes.DataSharing},
+                        {text: "Get involved", url: Routes.GetInvolved},
+                        {text: "Sign in", url: Routes.SignIn},
+                    ]
+                }
             />
         </div>
     </div>

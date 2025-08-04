@@ -3,8 +3,9 @@
 
     import { slide } from "svelte/transition";
 
-    import Button from "./inputs/Button.svelte";
+    import { Routes } from "../global/enums.ts"
 
+    import Button from "./inputs/Button.svelte";
 
     export let magicLink = "";
 
@@ -17,7 +18,7 @@
             error = "No magic link found";
         }
         try {
-            fetch("/api/astro/magic-link", {
+            const response = await fetch("/api/astro/magic-link", {
                 method: "POST",
                 body: JSON.stringify({
                     token: magicLink,
@@ -26,6 +27,13 @@
                     "Content-Type": "application/json",
                 }
             })
+
+            if (!response.ok) {
+                error = "Response failed";
+                return;
+            }
+
+            window.location.href = Routes.Home;
         } catch(err) {
             error = err.message;
         }

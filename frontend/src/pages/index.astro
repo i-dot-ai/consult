@@ -1,17 +1,10 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Section from '../components/Section.svelte';
-import Link from '../components/Link.svelte';
+import Title from '../components/Title.svelte';
 ---
 <Layout>
 	<Section>
-		<div class="p-6 flex items-center justify-center">
-			<ul class="flex flex-col gap-4">
-				<Link href="/consultations">Consultations</Link>
-				<Link href="/how-it-works">How it works</Link>
-				<Link href="/data-sharing">Data sharing</Link>
-				<Link href="/sign-in">Sign in</Link>
-			</ul>
-		</div>
+		<Title text="Home" />
 	</Section>
 </Layout>

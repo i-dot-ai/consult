@@ -2,6 +2,8 @@
 import "../styles/global.css";
 import Header from "../components/Header.svelte";
 import Footer from "../components/Footer.svelte";
+
+const accessToken = Astro.cookies.get("access")?.value;
 ---
 <!doctype html>
 <html lang="en">
@@ -14,7 +16,7 @@ import Footer from "../components/Footer.svelte";
 		<script is:inline src="/lit/index.js"></script>
 	</head>
 	<body>
-		<Header client:load />
+		<Header client:load isSignedIn={Boolean(accessToken)} />
 			<slot />
 		<Footer />
 	</body>

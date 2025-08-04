@@ -2,6 +2,10 @@ export enum Routes {
     Home = "/",
     Consultations = "/consultations",
     Support = "/support",
+    HowItWorks = "/how-it-works",
+    DataSharing = "/data-sharing",
+    GetInvolved = "/get-involved",
+    SignIn = "/sign-in",
     SignOut = "/sign-out",
 }
 
