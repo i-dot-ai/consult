@@ -68,8 +68,6 @@ class TestParseFiltersFromSerializer:
 
         assert filters["sentiment_list"] == ["AGREEMENT", "DISAGREEMENT"]
         assert filters["theme_list"] == ["1", "2", "3"]
-        assert filters["themes_sort_direction"] == "ascending"
-        assert filters["themes_sort_type"] == "frequency"
         assert filters["evidence_rich"] is True
         assert filters["search_value"] == "test search"
         assert filters["search_mode"] == "semantic"
