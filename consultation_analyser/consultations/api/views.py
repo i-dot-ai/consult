@@ -18,7 +18,7 @@ from ..views.sessions import send_magic_link_if_email_exists
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
     ConsultationSerializer,
-    CrossCuttingThemesResponseSerializer,
+    CrossCuttingThemeSerializer,
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     FilterSerializer,
@@ -41,82 +41,16 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         return models.Consultation.objects.filter(users=self.request.user).order_by("-created_at")
 
-    @action(detail=True, methods=["get"], url_path="cross-cutting-themes")
-    def cross_cutting_themes(self, request, pk=None):
-        """Get cross-cutting themes for a consultation with unique respondents calculation"""
-        consultation = self.get_object()
-        
-        total_respondents = models.Respondent.objects.filter(consultation=consultation).count()
-        
-        cross_cutting_themes = models.CrossCuttingTheme.objects.filter(
-            consultation=consultation
-        ).prefetch_related('theme_assignments__theme__question')
-        
-        cross_cutting_themes_data = []
-        
-        for cct in cross_cutting_themes:
-            assigned_themes = [assignment.theme for assignment in cct.theme_assignments.all()]
-            theme_ids = [theme.id for theme in assigned_themes]
-            
-            unique_respondents_count = 0
-            unique_respondents_percentage = 0.0
-            
-            if theme_ids:
-                unique_respondents = models.Respondent.objects.filter(
-                    response__annotation__themes__id__in=theme_ids,
-                    consultation=consultation
-                ).distinct()
-                
-                unique_respondents_count = unique_respondents.count()
-                if total_respondents > 0:
-                    unique_respondents_percentage = (unique_respondents_count / total_respondents) * 100
-            
-            questions_involved = set()
-            themes_details = []
-            for assignment in cct.theme_assignments.all():
-                theme = assignment.theme
-                questions_involved.add(theme.question.number)
-                
-                mention_count = models.Response.objects.filter(
-                    annotation__themes__id=theme.id
-                ).distinct().count()
-                
-                themes_details.append({
-                    "theme_id": str(theme.id),
-                    "theme_name": theme.name,
-                    "theme_key": theme.key,
-                    "theme_description": theme.description,
-                    "question_number": theme.question.number,
-                    "question_total_responses": theme.question.total_responses or 0,
-                    "mention_count": mention_count
-                })
-            
-            total_mentions = sum(theme["mention_count"] for theme in themes_details)
-            
-            theme_data = {
-                "id": str(cct.id),
-                "name": cct.name,
-                "description": cct.description,
-                "unique_respondents_count": unique_respondents_count,
-                "unique_respondents_percentage": round(unique_respondents_percentage, 1),
-                "questions": sorted(list(questions_involved)),
-                "total_mentions": total_mentions,
-                "themes": themes_details
-            }
-            
-            cross_cutting_themes_data.append(theme_data)
-        
-        response_data = {
-            "consultation_id": str(consultation.id),
-            "consultation_title": consultation.title,
-            "total_respondents": total_respondents,
-            "cross_cutting_themes": cross_cutting_themes_data
-        }
-        
-        serializer = CrossCuttingThemesResponseSerializer(data=response_data)
-        serializer.is_valid(raise_exception=True)
-        
-        return Response(serializer.data)
+
+class ThemeViewSet(ReadOnlyModelViewSet):
+    serializer_class = CrossCuttingThemeSerializer
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+
+    def get_queryset(self):
+        consultation_uuid = self.kwargs["consultation_pk"]
+        return models.CrossCuttingTheme.objects.filter(
+            consultation_id=consultation_uuid, consultation__users=self.request.user
+        ).order_by("-created_at")
 
 
 class QuestionViewSet(ReadOnlyModelViewSet):
@@ -126,7 +60,7 @@ class QuestionViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
         return models.Question.objects.filter(
-            consultation__id=consultation_uuid, consultation__users=self.request.user
+            consultation_id=consultation_uuid, consultation__users=self.request.user
         ).order_by("-created_at")
 
     @action(detail=True, methods=["get"], url_path="demographic-options")

@@ -2,15 +2,18 @@ from rest_framework import serializers
 
 from consultation_analyser.consultations.models import (
     Consultation,
+    CrossCuttingTheme,
     MultiChoiceAnswer,
     Question,
+    Response,
+    Theme,
 )
 
 
 class MultiChoiceAnswerSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = MultiChoiceAnswer
-        fields = ["answer"]
+        fields = ["text"]
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
@@ -90,32 +93,26 @@ class FilterSerializer(serializers.Serializer):
     page_size = serializers.IntegerField(required=False, default=50, min_value=1, max_value=100)
 
 
-class ThemeDetailSerializer(serializers.Serializer):
-    """Serializer for individual theme details within cross-cutting themes"""
-    theme_id = serializers.CharField()
-    theme_name = serializers.CharField()
-    theme_key = serializers.CharField()
-    theme_description = serializers.CharField()
-    question_number = serializers.IntegerField()
-    question_total_responses = serializers.IntegerField()
-    mention_count = serializers.IntegerField()
+class ThemeSerializer2(serializers.ModelSerializer):
+    question_id = serializers.UUIDField(source="question.id")
+
+    response_count = serializers.SerializerMethodField()
+
+    def get_response_count(self, theme: Theme) -> int:
+        return Response.objects.filter(annotation__themes=theme).count()
+
+    class Meta:
+        model = Theme
+        fields = ["name", "description", "key", "question_id", "response_count"]
 
 
-class CrossCuttingThemeSerializer(serializers.Serializer):
-    """Serializer for individual cross-cutting theme"""
-    id = serializers.CharField()
-    name = serializers.CharField()
-    description = serializers.CharField()
-    unique_respondents_count = serializers.IntegerField()
-    unique_respondents_percentage = serializers.FloatField()
-    questions = serializers.ListField(child=serializers.IntegerField())
-    total_mentions = serializers.IntegerField()
-    themes = ThemeDetailSerializer(many=True)
+class CrossCuttingThemeSerializer(serializers.ModelSerializer):
+    themes = ThemeSerializer2(many=True, source="theme_set", read_only=True)
+    response_count = serializers.SerializerMethodField()
 
+    def get_response_count(self, cross_cutting_theme: CrossCuttingTheme) -> int:
+        return Response.objects.filter(annotation__themes__parent=cross_cutting_theme).count()
 
-class CrossCuttingThemesResponseSerializer(serializers.Serializer):
-    """Serializer for cross-cutting themes API response"""
-    consultation_id = serializers.CharField()
-    consultation_title = serializers.CharField()
-    total_respondents = serializers.IntegerField()
-    cross_cutting_themes = CrossCuttingThemeSerializer(many=True)
+    class Meta:
+        model = CrossCuttingTheme
+        fields = ["name", "description", "themes", "response_count"]
