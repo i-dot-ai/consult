@@ -17,7 +17,7 @@
             error = "No magic link found";
         }
         try {
-            fetch("/api/magic-link", {
+            fetch("/api/astro/magic-link", {
                 method: "POST",
                 body: JSON.stringify({
                     token: magicLink,

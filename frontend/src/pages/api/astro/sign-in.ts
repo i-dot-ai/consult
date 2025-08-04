@@ -2,7 +2,7 @@ export const prerender = false;
 
 import type { APIRoute } from 'astro';
 
-import { getBackendUrl } from '../../global/utils';
+import { getBackendUrl } from '../../../global/utils';
 
 
 export const POST: APIRoute = async ({ request }) => {

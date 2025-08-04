@@ -34,7 +34,7 @@
         sending = true;
 
         try {
-            const response = await fetch(`/api/sign-in`, {
+            const response = await fetch(`/api/astro/sign-in`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",

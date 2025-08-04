@@ -40,14 +40,12 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         /^\/$/,
         /^\/sign-in[\/]?$/,
         /^\/magic-link\/[A-Za-z0-9\-]*[\/]?$/,
-        /^\/api\/.*/,
+        /^\/api\/astro\/.*/,
         /^\/.well-known\/.*/,
     ];
 
     for (const skipPattern of toSkip) {
-        if (skipPattern.test(context.url.pathname)
-            && !context.url.pathname.includes("/api/consultations")
-        ) {
+        if (skipPattern.test(context.url.pathname)) {
             return next();
         }
     }
