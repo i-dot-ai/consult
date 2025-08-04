@@ -10,7 +10,7 @@ from consultation_analyser.consultations.models import (
 class MultiChoiceAnswerSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = MultiChoiceAnswer
-        fields = ["answer"]
+        fields = ["text"]
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
@@ -77,10 +77,6 @@ class FilterSerializer(serializers.Serializer):
 
     sentimentFilters = serializers.CharField(required=False, allow_blank=True)
     themeFilters = serializers.CharField(required=False, allow_blank=True)
-    themesSortDirection = serializers.ChoiceField(
-        choices=["ascending", "descending"], required=False
-    )
-    themesSortType = serializers.ChoiceField(choices=["frequency", "alphabetical"], required=False)
     evidenceRich = serializers.BooleanField(required=False)
     searchValue = serializers.CharField(required=False)
     searchMode = serializers.ChoiceField(choices=["semantic", "keyword"], required=False)
@@ -88,3 +84,8 @@ class FilterSerializer(serializers.Serializer):
     # Pagination parameters
     page = serializers.IntegerField(required=False, default=1, min_value=1)
     page_size = serializers.IntegerField(required=False, default=50, min_value=1, max_value=100)
+
+
+class MultiChoiceAnswerCount(serializers.Serializer):
+    answer = serializers.CharField(source="chosen_options__text")
+    response_count = serializers.IntegerField()

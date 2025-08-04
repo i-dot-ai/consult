@@ -3,13 +3,15 @@ import { html, css } from 'lit';
 import IaiLitBase from '../../../../IaiLitBase.mjs';
 import Title from '../../Title/title.lit.csr.mjs';
 import Panel from '../../Panel/panel.lit.csr.mjs';
-import DemographicsCard from '../DemographicsCard/demographics-card.lit.csr.mjs';
+import ProgressCard from '../ProgressCard/progress-card.lit.csr.mjs';
 
 
-export default class DemographicsSection extends IaiLitBase {
+export default class ProgressCards extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         data: { type: Array },
+        title: { type: String },
+        subtitle: { type: String },
         themeFilters: { type: Array },
         demoFilters: { type: Object},
         total: { type: Number },
@@ -21,14 +23,14 @@ export default class DemographicsSection extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         css` 
-            iai-demographics-section .cards {
+            iai-progress-cards .cards {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 1em;
                 max-width: 100%;
                 overflow: auto;
             }    
-            iai-demographics-section iai-demographics-card {
+            iai-progress-cards iai-progress-card {
                 flex-grow: 1;
                 max-width: 100%;
             }
@@ -45,6 +47,8 @@ export default class DemographicsSection extends IaiLitBase {
         this._MAX_DEMO_ANSWERS = 10;
 
         // Prop defaults
+        this.title = "";
+        this.subtitle = "";
         this.data = [];
         this.themeFilters = [];
         this.demoFilters = {};
@@ -53,7 +57,7 @@ export default class DemographicsSection extends IaiLitBase {
         this.demoFiltersApplied = () => {};
         this.themeFiltersApplied = () => {};
         
-        this.applyStaticStyles("iai-demographics-section", DemographicsSection.styles);
+        this.applyStaticStyles("iai-progress-cards", ProgressCards.styles);
     }
 
     getFilterWarningText() {
@@ -76,8 +80,8 @@ export default class DemographicsSection extends IaiLitBase {
                 <div slot="content">
                     <div class="top-panel">
                         <iai-silver-title
-                            .text=${"Demographics"}
-                            .subtext=${"Demographic breakdown for this question"}
+                            .text=${this.title}
+                            .subtext=${this.subtitle}
                             .icon=${"group"}
                             .level=${2}
                         ></iai-silver-title>
@@ -99,10 +103,10 @@ export default class DemographicsSection extends IaiLitBase {
                             ${Object.keys(this.data).map(category => {
                                 return Object.values(this.data[category]).length <= this._MAX_DEMO_ANSWERS
                                     ? html`
-                                        <iai-demographics-card
+                                        <iai-progress-card
                                             .title=${this.toTitleCase(category)}
                                             .data=${this.data[category]}
-                                        ></iai-demographics-card>
+                                        ></iai-progress-card>
                                     ` : ""})}
                         </div>
                     </div>
@@ -111,4 +115,4 @@ export default class DemographicsSection extends IaiLitBase {
         `
     }
 }
-customElements.define("iai-demographics-section", DemographicsSection);
+customElements.define("iai-progress-cards", ProgressCards);

@@ -15,8 +15,6 @@ class FilterParams(TypedDict, total=False):
     search_mode: str
     demo_filters: dict[str, str]
     search_value: str
-    themes_sort_type: str
-    themes_sort_direction: str
 
 
 def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
@@ -30,12 +28,6 @@ def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
     theme_filters = validated_data.get("themeFilters", "")
     if theme_filters:
         filters["theme_list"] = theme_filters.split(",")
-
-    if "themesSortDirection" in validated_data:
-        filters["themes_sort_direction"] = validated_data["themesSortDirection"]
-
-    if "themesSortType" in validated_data:
-        filters["themes_sort_type"] = validated_data["themesSortType"]
 
     if validated_data.get("evidenceRich"):
         filters["evidence_rich"] = True

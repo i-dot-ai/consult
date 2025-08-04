@@ -212,28 +212,12 @@ class TestFilterSerializer:
         validated = serializer.validated_data
         assert validated["sentimentFilters"] == "AGREEMENT,DISAGREEMENT"
         assert validated["themeFilters"] == "1,2,3"
-        assert validated["themesSortDirection"] == "ascending"
-        assert validated["themesSortType"] == "frequency"
         assert validated["evidenceRich"] is True
         assert validated["searchValue"] == "test search"
         assert validated["searchMode"] == "semantic"
         assert validated["demoFilters"] == ["individual:true", "region:north"]
         assert validated["page"] == 2
         assert validated["page_size"] == 25
-
-    def test_invalid_sort_direction(self):
-        """Test filter serializer with invalid sort direction"""
-        data = {"themesSortDirection": "invalid"}
-        serializer = FilterSerializer(data=data)
-        assert not serializer.is_valid()
-        assert "themesSortDirection" in serializer.errors
-
-    def test_invalid_sort_type(self):
-        """Test filter serializer with invalid sort type"""
-        data = {"themesSortType": "invalid"}
-        serializer = FilterSerializer(data=data)
-        assert not serializer.is_valid()
-        assert "themesSortType" in serializer.errors
 
     def test_invalid_search_mode(self):
         """Test filter serializer with invalid search mode"""
