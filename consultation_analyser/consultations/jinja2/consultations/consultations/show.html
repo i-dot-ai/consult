@@ -41,8 +41,8 @@
     
     async function loadConsultationData() {
       try {
-        // First, get all consultations to find the one with matching slug
-        const consultationsResponse = await fetch('/api/consultations/', {
+        // Get consultation directly by slug using filter
+        const consultationsResponse = await fetch(`/api/consultations/?slug=${encodeURIComponent(consultationSlug)}`, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -55,11 +55,12 @@
 
         const consultationsData = await consultationsResponse.json();
         const consultations = consultationsData.results || consultationsData;
-        const consultation = consultations.find(c => c.slug === consultationSlug);
         
-        if (!consultation) {
+        if (consultations.length === 0) {
           throw new Error('Consultation not found');
         }
+        
+        const consultation = consultations[0];
 
         // Get questions for this consultation
         const questionsResponse = await fetch(`/api/consultations/${consultation.id}/questions/`, {

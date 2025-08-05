@@ -49,6 +49,7 @@ def get_current_user(request):
 class ConsultationViewSet(ReadOnlyModelViewSet):
     serializer_class = ConsultationSerializer
     permission_classes = [HasDashboardAccess]
+    filterset_fields = ["slug"]
 
     def get_queryset(self):
         return models.Consultation.objects.filter(users=self.request.user).order_by("-created_at")

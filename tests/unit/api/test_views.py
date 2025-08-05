@@ -701,6 +701,42 @@ def test_consultations_list(client, consultation_user, multi_choice_question):
 
 
 @pytest.mark.django_db
+def test_consultations_list_filter_by_slug(client, consultation_user, multi_choice_question):
+    """Test that consultations can be filtered by slug"""
+    client.force_login(consultation_user)
+    consultation = multi_choice_question.consultation
+
+    # Test filtering by slug
+    url = reverse("consultations-list")
+    response = client.get(url, {"slug": consultation.slug})
+    assert response.status_code == 200
+
+    data = response.json()
+    results = data.get("results", data)  # Handle paginated/non-paginated responses
+
+    # Should return exactly one consultation
+    assert len(results) == 1
+    assert results[0]["slug"] == consultation.slug
+    assert results[0]["title"] == consultation.title
+
+
+@pytest.mark.django_db
+def test_consultations_list_filter_by_nonexistent_slug(client, consultation_user):
+    """Test that filtering by non-existent slug returns empty results"""
+    client.force_login(consultation_user)
+
+    url = reverse("consultations-list")
+    response = client.get(url, {"slug": "nonexistent-slug"})
+    assert response.status_code == 200
+
+    data = response.json()
+    results = data.get("results", data)  # Handle paginated/non-paginated responses
+
+    # Should return empty list
+    assert len(results) == 0
+
+
+@pytest.mark.django_db
 def test_multi_choice_answer_count(
     client, consultation_user, multi_choice_question, multi_choice_responses
 ):
