@@ -225,7 +225,11 @@ def create_embeddings(consultation_id: UUID):
     for i in range(0, total, batch_size):
         responses = queryset.order_by("id")[i : i + batch_size]
 
-        free_texts = [response.free_text or "" for response in responses]
+        free_texts = [
+            f"Question: {response.question.text} \nAnswer: {response.free_text}"
+            for response in responses
+        ]
+
         embeddings = embed_text(free_texts)
 
         for response, embedding in zip(responses, embeddings):
@@ -550,7 +554,9 @@ def import_questions(
             responses = queue.enqueue(
                 import_responses, question, responses_file_key, multiple_choice_file
             )
-            queue.enqueue(create_embeddings, question.consultation.id, depends_on=responses)
+            queue.enqueue(
+                create_embeddings, question.consultation.id, depends_on=responses
+            )
 
             if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
                 logger.info("not importing output-mappings")
