@@ -36,27 +36,33 @@
   </div>
 
   <script>
-    // Get consultation ID from Django context
-    const consultationId = '{{ consultation_id }}';
+    // Get consultation slug from Django context
+    const consultationSlug = '{{ consultation_slug }}';
     
     async function loadConsultationData() {
       try {
-        // Get consultation directly by ID
-        const consultationResponse = await fetch(`/api/consultations/${consultationId}/`, {
+        // First, get all consultations to find the one with matching slug
+        const consultationsResponse = await fetch('/api/consultations/', {
           headers: {
             'Content-Type': 'application/json',
           },
           credentials: 'same-origin'
         });
 
-        if (!consultationResponse.ok) {
-          throw new Error(`HTTP error! status: ${consultationResponse.status}`);
+        if (!consultationsResponse.ok) {
+          throw new Error(`HTTP error! status: ${consultationsResponse.status}`);
         }
 
-        const consultation = await consultationResponse.json();
+        const consultationsData = await consultationsResponse.json();
+        const consultations = consultationsData.results || consultationsData;
+        const consultation = consultations.find(c => c.slug === consultationSlug);
+        
+        if (!consultation) {
+          throw new Error('Consultation not found');
+        }
 
         // Get questions for this consultation
-        const questionsResponse = await fetch(`/api/consultations/${consultationId}/questions/`, {
+        const questionsResponse = await fetch(`/api/consultations/${consultation.id}/questions/`, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -68,6 +74,7 @@
         }
 
         const questionsData = await questionsResponse.json();
+        // Handle both paginated and non-paginated API responses
         const questions = questionsData.results || questionsData;
 
         // Populate the web component
@@ -99,43 +106,13 @@
 
   <noscript>
     <div class="govuk-grid-row">
-      <div class="govuk-grid-column-three-quarters">
-
-        <div class="govuk-grid-row">
-          <div class="govuk-grid-column-full">
-
-            {% for question_dict in questions_list %}
-              <div class="iai-panel govuk-!-margin-bottom-4">
-                <span class="govuk-caption-m "><a class="govuk-link" href="{{ url('question_responses', kwargs={'consultation_slug': consultation.slug, 'question_slug': question_dict.question.slug}) }}">Question {{ question_dict.question.number }}</a></span>
-                <h2 class="govuk-heading-m govuk-!-margin-top-1">{{ question_dict.question.text }}</h2>
-
-                {% if question_dict.free_text_question_part %}
-                    <h3 class="govuk-heading-s">Free text response</h3>
-                    <p class="govuk-body">
-                      This question has {{ question_dict.free_text_count }} free text responses.
-                    </p>
-                {% else %}
-                  <p class="govuk-body">This question does not have free text responses</p>
-                {% endif %}
-
-                <hr class="govuk-section-break govuk-section-break--m govuk-section-break--visible">
-
-                {% if question_dict.multiple_option_question_part %}
-                  <h3 class="govuk-heading-s">Response to multiple choice</h3>
-                  {% for key, value in question_dict.multiple_option_counts.items() %}
-                      <p>{{key}}: {{value}}</p>
-                   {% endfor %}
-                {% else %}
-                  <p class="govuk-body">This question does not have a multiple choice part</p>
-                {% endif %}
-
-              </div>
-            {% endfor %}
-
-            {% from "components/pagination.html" import render_pagination %}
-            {{ render_pagination(pagination) }}
-
-          </div>
+      <div class="govuk-grid-column-full">
+        <div class="govuk-warning-text">
+          <span class="govuk-warning-text__icon" aria-hidden="true">!</span>
+          <strong class="govuk-warning-text__text">
+            <span class="govuk-warning-text__assistive">Warning</span>
+            JavaScript is required to view this page. Please enable JavaScript in your browser.
+          </strong>
         </div>
       </div>
     </div>
