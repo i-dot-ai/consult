@@ -9,18 +9,9 @@ from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django_rq import get_queue
 
-from consultation_analyser.consultations.models import (
-    Consultation,
-    CrossCuttingTheme,
-    DemographicOption,
-    MultiChoiceAnswer,
-    Question,
-    Respondent,
-    Response,
-    ResponseAnnotation,
-    ResponseAnnotationTheme,
-    Theme,
-)
+from consultation_analyser.consultations.models import (Consultation, CrossCuttingTheme, DemographicOption,
+                                                        MultiChoiceAnswer, Question, Respondent, Response,
+                                                        ResponseAnnotation, ResponseAnnotationTheme, Theme)
 from consultation_analyser.embeddings import embed_text
 
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
@@ -589,7 +580,7 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
         cct_data = json.loads(response["Body"].read())
     except s3_client.exceptions.NoSuchKey:
         logger.info("No cross_cutting_themes.json found, skipping cross-cutting themes import")
-        return
+        raise
     except Exception as e:
         logger.error(f"Error reading cross-cutting themes file: {str(e)}")
         raise
