@@ -16,6 +16,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 
 from .. import models
 from ..views.sessions import send_magic_link_if_email_exists
+from .filters import QuestionFilter
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
     ConsultationSerializer,
@@ -58,6 +59,7 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
 class QuestionViewSet(ReadOnlyModelViewSet):
     serializer_class = QuestionSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    filterset_class = QuestionFilter
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]

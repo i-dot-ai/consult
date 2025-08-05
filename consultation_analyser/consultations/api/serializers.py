@@ -25,6 +25,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     multiple_choice_options = MultiChoiceAnswerSerializer(
         many=True, source="multichoiceanswer_set", read_only=True
     )
+    proportion_of_audited_answers = serializers.ReadOnlyField()
 
     class Meta:
         model = Question
@@ -38,6 +39,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
             "has_free_text",
             "has_multiple_choice",
             "multiple_choice_options",
+            "proportion_of_audited_answers",
         ]
 
 
