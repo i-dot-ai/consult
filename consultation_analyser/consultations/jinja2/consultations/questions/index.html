@@ -28,7 +28,7 @@
   <script>
     document.addEventListener('DOMContentLoaded', function() {
       const consultationSlug = '{{ consultation_slug }}';
-      
+
       // First fetch the consultation to get the ID and title
       fetch(`/api/consultations/?slug=${consultationSlug}`)
         .then(response => response.json())
@@ -37,9 +37,9 @@
             const consultation = data.results[0];
             document.getElementById('consultation-title').textContent = consultation.title;
             document.title = consultation.title;
-            
+
             // Now fetch questions with free text and themes
-            return fetch(`/api/consultations/${consultation.id}/questions/?has_free_text=true&has_themes=true`);
+            return fetch(`/api/consultations/${consultation.id}/questions/?has_free_text=true&has_free_text=true`);
           } else {
             throw new Error('Consultation not found');
           }
@@ -47,13 +47,13 @@
         .then(response => response.json())
         .then(data => {
           const questionsList = document.getElementById('questions-list');
-          
+
           data.results.forEach(question => {
             const listItem = document.createElement('li');
             listItem.className = 'con-question-list__item iai-display-flex govuk-!-padding-top-4 govuk-!-padding-bottom-4 govuk-!-padding-left-7 govuk-!-padding-right-7';
-            
+
             const percentage = Math.round(question.proportion_of_audited_answers * 100);
-            
+
             listItem.innerHTML = `
               <p class="govuk-!-margin-bottom-1 govuk-!-margin-top-0">${question.question_text}</p>
               <div class="con-question-list__button-group iai-display-flex govuk-!-margin-left-3">
@@ -67,7 +67,7 @@
                 </a>
               </div>
             `;
-            
+
             questionsList.appendChild(listItem);
           });
         })

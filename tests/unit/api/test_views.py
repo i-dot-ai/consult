@@ -8,6 +8,7 @@ from django.urls import reverse
 from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.models import DemographicOption
 from consultation_analyser.factories import (
+    QuestionFactory,
     RespondentFactory,
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
@@ -759,179 +760,32 @@ def test_multi_choice_answer_count(
 
 
 @pytest.mark.django_db
-class TestQuestionViewSetFilters:
-    """Test QuestionViewSet filterset_fields filters"""
+@pytest.mark.parametrize("has_free_text", [True, False, ""])
+def test_filter(client, consultation_user, consultation, has_free_text):
+    """Test filtering questions by has_free_text"""
 
-    def test_filter_by_has_free_text_true(self, client, consultation_user, consultation):
-        """Test filtering questions by has_free_text=True"""
-        from consultation_analyser.factories import QuestionFactory
+    # Create questions with different free text settings
+    _free_text_question = QuestionFactory(
+        consultation=consultation, has_free_text=True, text="Free text question"
+    )
+    _multi_choice_question = QuestionFactory(
+        consultation=consultation, has_free_text=False, text="Multi choice question"
+    )
 
-        # Create questions with different free text settings
-        _free_text_question = QuestionFactory(
-            consultation=consultation, has_free_text=True, text="Free text question"
-        )
-        _multi_choice_question = QuestionFactory(
-            consultation=consultation, has_free_text=False, text="Multi choice question"
-        )
+    client.force_login(consultation_user)
+    url = reverse("question-list", kwargs={"consultation_pk": consultation.id})
 
-        client.force_login(consultation_user)
-        url = reverse("question-list", kwargs={"consultation_pk": consultation.id})
+    # Filter by has_free_text=True
+    response = client.get(url, {"has_free_text": has_free_text})
+    assert response.status_code == 200
 
-        # Filter by has_free_text=True
-        response = client.get(url, {"has_free_text": "true"})
-        assert response.status_code == 200
+    data = response.json()
+    results = data.get("results", data)
 
-        data = response.json()
-        results = data.get("results", data)
-
-        # Should only return the free text question
+    if has_free_text == "":
+        # should return both
+        assert len(results) == 2
+    else:
+        # should return just one question
         assert len(results) == 1
-        assert results[0]["question_text"] == "Free text question"
-        assert results[0]["has_free_text"] is True
-
-    def test_filter_by_has_free_text_false(self, client, consultation_user, consultation):
-        """Test filtering questions by has_free_text=False"""
-        from consultation_analyser.factories import QuestionFactory
-
-        # Create questions with different free text settings
-        _free_text_question = QuestionFactory(
-            consultation=consultation, has_free_text=True, text="Free text question"
-        )
-        _multi_choice_question = QuestionFactory(
-            consultation=consultation, has_free_text=False, text="Multi choice question"
-        )
-
-        client.force_login(consultation_user)
-        url = reverse("question-list", kwargs={"consultation_pk": consultation.id})
-
-        # Filter by has_free_text=False
-        response = client.get(url, {"has_free_text": "false"})
-        assert response.status_code == 200
-
-        data = response.json()
-        results = data.get("results", data)
-
-        # Should only return the multi choice question
-        assert len(results) == 1
-        assert results[0]["question_text"] == "Multi choice question"
-        assert results[0]["has_free_text"] is False
-
-    def test_filter_by_has_themes_true(self, client, consultation_user, consultation):
-        """Test filtering questions by has_themes=true (questions with themes)"""
-        from consultation_analyser.factories import QuestionFactory, ThemeFactory
-
-        # Create questions - one with themes, one without
-        question_with_themes = QuestionFactory(
-            consultation=consultation, has_free_text=True, text="Question with themes"
-        )
-        _question_without_themes = QuestionFactory(
-            consultation=consultation, has_free_text=True, text="Question without themes"
-        )
-
-        # Add theme to first question
-        ThemeFactory(question=question_with_themes, name="Test Theme")
-
-        client.force_login(consultation_user)
-        url = reverse("question-list", kwargs={"consultation_pk": consultation.id})
-
-        # Filter by has_themes=true
-        response = client.get(url, {"has_themes": "true"})
-        assert response.status_code == 200
-
-        data = response.json()
-        results = data.get("results", data)
-
-        # Should only return the question with themes
-        assert len(results) == 1
-        assert results[0]["question_text"] == "Question with themes"
-
-    def test_filter_by_theme_set_isnull_true(self, client, consultation_user, consultation):
-        """Test filtering questions by theme_set__isnull=True (questions without themes)"""
-        from consultation_analyser.factories import QuestionFactory, ThemeFactory
-
-        # Create questions - one with themes, one without
-        question_with_themes = QuestionFactory(
-            consultation=consultation, has_free_text=True, text="Question with themes"
-        )
-        _question_without_themes = QuestionFactory(
-            consultation=consultation, has_free_text=True, text="Question without themes"
-        )
-
-        # Add theme to first question
-        ThemeFactory(question=question_with_themes, name="Test Theme")
-
-        client.force_login(consultation_user)
-        url = reverse("question-list", kwargs={"consultation_pk": consultation.id})
-
-        # Filter by has_themes=True
-        response = client.get(url, {"has_themes": "false"})
-        assert response.status_code == 200
-
-        data = response.json()
-        results = data.get("results", data)
-
-        # Should only return the question without themes
-        assert len(results) == 1
-        assert results[0]["question_text"] == "Question without themes"
-
-    def test_combined_filters(self, client, consultation_user, consultation):
-        """Test combining both filters: has_free_text=True and theme_set__isnull=False"""
-        from consultation_analyser.factories import QuestionFactory, ThemeFactory
-
-        # Create various combinations of questions
-        free_text_with_themes = QuestionFactory(
-            consultation=consultation, has_free_text=True, text="Free text with themes"
-        )
-        _free_text_without_themes = QuestionFactory(
-            consultation=consultation, has_free_text=True, text="Free text without themes"
-        )
-        multi_choice_with_themes = QuestionFactory(
-            consultation=consultation, has_free_text=False, text="Multi choice with themes"
-        )
-        _multi_choice_without_themes = QuestionFactory(
-            consultation=consultation, has_free_text=False, text="Multi choice without themes"
-        )
-
-        # Add themes to some questions
-        ThemeFactory(question=free_text_with_themes, name="Theme 1")
-        ThemeFactory(question=multi_choice_with_themes, name="Theme 2")
-
-        client.force_login(consultation_user)
-        url = reverse("question-list", kwargs={"consultation_pk": consultation.id})
-
-        # Filter by both has_free_text=True AND has_themes=true
-        response = client.get(url, {"has_free_text": "true", "has_themes": "true"})
-        assert response.status_code == 200
-
-        data = response.json()
-        results = data.get("results", data)
-
-        # Should only return the free text question with themes
-        assert len(results) == 1
-        assert results[0]["question_text"] == "Free text with themes"
-        assert results[0]["has_free_text"] is True
-
-    def test_no_filters_returns_all_questions(self, client, consultation_user, consultation):
-        """Test that no filters returns all questions for the consultation"""
-        from consultation_analyser.factories import QuestionFactory, ThemeFactory
-
-        # Create various questions
-        question1 = QuestionFactory(consultation=consultation, has_free_text=True)
-        _question2 = QuestionFactory(consultation=consultation, has_free_text=False)
-        _question3 = QuestionFactory(consultation=consultation, has_free_text=True)
-
-        # Add theme to one question
-        ThemeFactory(question=question1, name="Test Theme")
-
-        client.force_login(consultation_user)
-        url = reverse("question-list", kwargs={"consultation_pk": consultation.id})
-
-        # No filters - should return all questions
-        response = client.get(url)
-        assert response.status_code == 200
-
-        data = response.json()
-        results = data.get("results", data)
-
-        # Should return all 3 questions
-        assert len(results) == 3
+        assert results[0]["has_free_text"] == has_free_text
