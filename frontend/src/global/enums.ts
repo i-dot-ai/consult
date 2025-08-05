@@ -13,6 +13,6 @@ export const getConsultationDetailUrl = (consultationId: string) => {
     return `${Routes.Consultations}/${consultationId}`;
 };
 
-export const getResponseDetailUrl = (consultationId: string, responseId: string) => {
-    return `${Routes.Consultations}/${consultationId}/responses/${responseId}`;
+export const getQuestionDetailUrl = (consultationId: string, questionId: string) => {
+    return `${Routes.Consultations}/${consultationId}/responses/${questionId}`;
 };

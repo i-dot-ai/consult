@@ -14,8 +14,8 @@
     let sending: boolean = false;
     let success: boolean = false;
 
-    const setEmail = (e) => {
-        email = e.target.value;
+    const setEmail = (newValue) => {
+        email = newValue;
 
         error = (email && !email.includes("@"))
             ? INVALID_EMAIL_MSG

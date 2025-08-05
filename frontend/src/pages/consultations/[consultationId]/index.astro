@@ -1,27 +1,15 @@
 ---
 import Layout from "../../../layouts/Layout.astro";
 
-import QuestionOverview from "../../../components/dashboard/QuestionsOverview.svelte";
+import ConsultationDetail from "../../../components/dashboard/ConsultationDetail.svelte";
 import Section from "../../../components/Section.svelte";
 import CrossCuttingThemes from "../../../components/CrossCuttingThemes.svelte";
 
-import { getConsultationById } from "../../../global/api";
-
 const { consultationId } = Astro.params;
-
-const consultation = getConsultationById(consultationId || "");
 ---
 <Layout>
     <Section>
-        <QuestionOverview consultation={consultation} />
-
-        <iai-question-overview-page></iai-question-overview-page>
-
-        <script define:vars={{ consultation }}>
-            const el = document.getElementsByTagName("iai-question-overview-page")[0];
-            el.title = consultation.title;
-            el.questions = consultation.questions;
-        </script>
+        <ConsultationDetail client:load consultationId={consultationId} />
 
         <CrossCuttingThemes client:load />
     </Section>
