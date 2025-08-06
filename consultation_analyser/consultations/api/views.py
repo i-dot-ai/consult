@@ -18,6 +18,7 @@ from ..views.sessions import send_magic_link_if_email_exists
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
     ConsultationSerializer,
+    CrossCuttingThemeSerializer,
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     FilterSerializer,
@@ -42,6 +43,17 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
         return models.Consultation.objects.filter(users=self.request.user).order_by("-created_at")
 
 
+class ThemeViewSet(ReadOnlyModelViewSet):
+    serializer_class = CrossCuttingThemeSerializer
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+
+    def get_queryset(self):
+        consultation_uuid = self.kwargs["consultation_pk"]
+        return models.CrossCuttingTheme.objects.filter(
+            consultation_id=consultation_uuid, consultation__users=self.request.user
+        ).order_by("-created_at")
+
+
 class QuestionViewSet(ReadOnlyModelViewSet):
     serializer_class = QuestionSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
@@ -49,7 +61,7 @@ class QuestionViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
         return models.Question.objects.filter(
-            consultation__id=consultation_uuid, consultation__users=self.request.user
+            consultation_id=consultation_uuid, consultation__users=self.request.user
         ).order_by("-created_at")
 
     @action(
