@@ -50,3 +50,10 @@ class TestResponse:
 
         assert response.annotation == annotation
         assert annotation.response == response
+
+@pytest.mark.django_db
+def test_indexing():
+    response = factories.ResponseFactory(free_text="support workers")
+    response.save()
+    response.refresh_from_db()
+    assert response.search_vector == "'support':1 'worker':2"

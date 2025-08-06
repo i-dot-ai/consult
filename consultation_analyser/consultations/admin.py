@@ -30,7 +30,7 @@ class ResponseAdmin(admin.ModelAdmin):
     readonly_fields = [
         "respondent",
         "question",
-        "free_text",
+        # "free_text",
         "search_vector",
     ]
 
