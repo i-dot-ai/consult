@@ -554,9 +554,7 @@ def import_questions(
             responses = queue.enqueue(
                 import_responses, question, responses_file_key, multiple_choice_file
             )
-            queue.enqueue(
-                create_embeddings, question.consultation.id, depends_on=responses
-            )
+            queue.enqueue(create_embeddings, question.consultation.id, depends_on=responses)
 
             if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
                 logger.info("not importing output-mappings")
