@@ -11,6 +11,7 @@
     import type { Question } from "../../global/types.ts";
     import { getQuestionDetailUrl } from "../../global/enums.ts";
     import { applyHighlight } from "../../global/utils.ts";
+    import { favStore } from "../../global/stores.ts";
 
     export let questions: Consultation;
     export let consultationId: string = "";
@@ -45,11 +46,11 @@
                             variant="ghost"
                             handleClick={(e) => {
                                 e.stopPropagation();
-                                console.log("favouriting: ", question.id);
+                                favStore.toggleFav(question.id);
                             }}
                         >
                             <MaterialIcon size="1.3rem" color="gray">
-                                <Star />
+                                <Star fill={$favStore.includes(question.id)} />
                             </MaterialIcon>
                         </Button>
                     </div>

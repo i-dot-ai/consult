@@ -11,7 +11,6 @@
 
     export let consultationId: string = "";
     export let questionTitle: string = "";
-    export let isFavourited: boolean = false;
     
     let _responsesTotal: number = 0;
 </script>

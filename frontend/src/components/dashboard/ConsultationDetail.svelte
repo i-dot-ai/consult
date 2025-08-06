@@ -6,10 +6,13 @@
     import Link from "../Link.svelte";
     import QuestionList from "./QuestionList.svelte";
     import TextInput from "../inputs/TextInput.svelte";
-    
+    import TitleRow from "./TitleRow.svelte";
+    import Help from "../svg/material/Help.svelte";
+    import Star from "../svg/material/Star.svelte";
+
     import type { Question, Consultation } from "../../global/types.ts";
     import { getConsultationDetailUrl } from "../../global/enums.ts";
-
+    import { favStore } from "../../global/stores.ts";
 
     export let consultationId: string = "";
 
@@ -23,22 +26,66 @@
             const response = await fetch(`/api/consultations/${consultationId}`);
             if (!response.ok) {
                 error = "Response not ok";
-                loading = false;
                 return;
             }
             const consultationData = await response.json();
             consultation = consultationData;
-            loading = false;
             error = "";
         } catch(err) {
             error = err.message;
+        } finally {
+            loading = false;
         }
     })
 </script>
 
-<section class="mt-4">
+
+<section transition:slide class="my-8">
+    <div class="my-2">
+        <TitleRow title="Favourited questions">
+            <Star slot="icon" />
+        </TitleRow>
+    </div>
+
+    {#if $favStore.length > 0}
+        {#if loading}
+            <p transition:slide>Loading questions...</p>
+        {:else if error}
+            <p transition:slide>{error}</p>
+        {:else}
+            <div transition:slide>
+                <div class="mb-8">
+                    <QuestionList
+                        consultationId={consultation.id}
+                        questions={consultation.questions
+                            .filter(question => $favStore.includes(question.id))
+                        }
+                        highlightText={searchValue}
+                    />
+                </div>
+            </div>
+        {/if}
+    {:else}
+        <p transition:slide>You have not favourited any question.</p>
+    {/if}
+</section>
+
+<section class="my-8">
+    <div class="my-2">
+        <TitleRow
+            title="All consultation questions"
+            subtitle="Browse or search through all questions in this consultation."
+        >
+            <Help slot="icon" />
+
+            <p slot="aside">
+                {consultation?.questions?.length || 0} questions
+            </p>
+        </TitleRow>
+    </div>
+
     {#if loading}
-        <p transition:slide>Loading consultation...</p>
+        <p transition:slide>Loading questions...</p>
     {:else if error}
         <p transition:slide>{error}</p>
     {:else}
@@ -53,17 +100,19 @@
                 setValue={(value) => searchValue = value.trim()}
             />
 
-            <QuestionList
-                consultationId={consultation.id}
-                questions={consultation.questions.filter(question => {
-                    return (
-                        `Q${question.number}: ${question.question_text}`
-                        .toLocaleLowerCase()
-                        .includes(searchValue.toLocaleLowerCase())
-                    )
-                })}
-                highlightText={searchValue}
-            />
+            <div class="mb-4">
+                <QuestionList
+                    consultationId={consultation.id}
+                    questions={consultation.questions.filter(question => {
+                        return (
+                            `Q${question.number}: ${question.question_text}`
+                            .toLocaleLowerCase()
+                            .includes(searchValue.toLocaleLowerCase())
+                        )
+                    })}
+                    highlightText={searchValue}
+                />
+            </div>
         </div>
     {/if}
 </section>
