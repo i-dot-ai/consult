@@ -54,6 +54,35 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         return models.Consultation.objects.filter(users=self.request.user).order_by("-created_at")
 
+    def get_object(self):
+        consultation = get_object_or_404(models.Consultation, **self.kwargs)
+
+        if not consultation.users.filter(pk=self.request.user.pk).exists():
+            raise PermissionDenied("You don't have permission to access this object.")
+
+        return consultation
+
+    @action(detail=True, methods=["get"], url_path="demographic-options")
+    def demographic_options(self, request, pk=None, consultation_pk=None):
+        """Get all demographic options for a consultation"""
+        consultation = self.get_object()
+
+        # Get all demographic fields and their possible values from normalized storage
+        options = (
+            models.DemographicOption.objects.filter(consultation=consultation)
+            .values_list("field_name", "field_value")
+            .order_by("field_name", "field_value")
+        )
+
+        result = defaultdict(list)
+        for field_name, field_value in options:
+            result[field_name].append(field_value)
+
+        serializer = DemographicOptionsSerializer(data={"demographic_options": dict(result)})
+        serializer.is_valid()
+
+        return Response(serializer.data)
+
 
 class QuestionViewSet(ReadOnlyModelViewSet):
     serializer_class = QuestionSerializer
@@ -79,28 +108,6 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         )
         serializer = self.get_serializer(instance=answer_count, many=True)
         return JsonResponse(data=serializer.data, safe=False)
-
-    @action(detail=True, methods=["get"], url_path="demographic-options")
-    def demographic_options(self, request, pk=None, consultation_pk=None):
-        """Get all demographic options for a consultation"""
-        question = self.get_object()
-        consultation = question.consultation
-
-        # Get all demographic fields and their possible values from normalized storage
-        options = (
-            models.DemographicOption.objects.filter(consultation=consultation)
-            .values_list("field_name", "field_value")
-            .order_by("field_name", "field_value")
-        )
-
-        result = defaultdict(list)
-        for field_name, field_value in options:
-            result[field_name].append(field_value)
-
-        serializer = DemographicOptionsSerializer(data={"demographic_options": dict(result)})
-        serializer.is_valid()
-
-        return Response(serializer.data)
 
     @action(detail=True, methods=["get"], url_path="demographic-aggregations")
     def demographic_aggregations(self, request, pk=None, consultation_pk=None):

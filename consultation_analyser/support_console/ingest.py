@@ -3,6 +3,7 @@ import logging
 from uuid import UUID
 
 import boto3
+import requests
 import tiktoken
 from botocore.exceptions import ClientError
 from django.conf import settings
@@ -22,7 +23,11 @@ from consultation_analyser.consultations.models import (
 )
 from consultation_analyser.embeddings import embed_text
 
-encoding = tiktoken.encoding_for_model("text-embedding-3-small")
+try:
+    encoding = tiktoken.encoding_for_model("text-embedding-3-small")
+except requests.exceptions.ConnectionError:
+    encoding = tiktoken.Encoding
+
 logger = logging.getLogger("import")
 DEFAULT_BATCH_SIZE = 10_000
 DEFAULT_TIMEOUT_SECONDS = 3_600
