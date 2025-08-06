@@ -11,7 +11,7 @@
     import Star from "../svg/material/Star.svelte";
 
     import type { Question, Consultation } from "../../global/types.ts";
-    import { getConsultationDetailUrl } from "../../global/enums.ts";
+    import { getConsultationDetailUrl } from "../../global/routes.ts";
     import { favStore } from "../../global/stores.ts";
 
     export let consultationId: string = "";

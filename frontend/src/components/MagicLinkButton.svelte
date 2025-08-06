@@ -3,7 +3,7 @@
 
     import { slide } from "svelte/transition";
 
-    import { Routes } from "../global/enums.ts"
+    import { Routes } from "../global/routes.ts"
 
     import Button from "./inputs/Button.svelte";
 

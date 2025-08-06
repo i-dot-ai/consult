@@ -7,7 +7,7 @@
     import Star from "../svg/material/Star.svelte";
     import SearchCard from "./SearchCard.svelte";
 
-    import { getConsultationDetailUrl } from "../../global/enums.ts";
+    import { getConsultationDetailUrl } from "../../global/routes.ts";
 
     export let consultationId: string = "";
     export let questionTitle: string = "";

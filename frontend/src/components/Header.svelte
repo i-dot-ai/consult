@@ -1,7 +1,7 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import { Routes } from "../global/enums";
+    import { Routes } from "../global/routes.ts";
 
     import GovIcon from "./svg/GovIcon.svelte";
     import MobileMenu from "./MobileMenu.svelte";

@@ -5,7 +5,7 @@
     import Title from "../Title.svelte";
     import Link from "../Link.svelte";
 
-    import { getConsultationDetailUrl } from "../../global/enums.ts";
+    import { getConsultationDetailUrl } from "../../global/routes.ts";
     import type { Consultation } from "../../global/types.ts";
    
     let consultations: Array<Consultation> = [];

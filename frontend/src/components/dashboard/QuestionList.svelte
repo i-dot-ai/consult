@@ -9,7 +9,7 @@
     import Button from "../inputs/Button.svelte";
 
     import type { Question } from "../../global/types.ts";
-    import { getQuestionDetailUrl } from "../../global/enums.ts";
+    import { getQuestionDetailUrl } from "../../global/routes.ts";
     import { applyHighlight } from "../../global/utils.ts";
     import { favStore } from "../../global/stores.ts";
 
