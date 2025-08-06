@@ -12,44 +12,31 @@
     import QuestionCard from "./QuestionCard.svelte";
 
     import { getConsultationDetailUrl } from "../../global/routes.ts";
+    import { createFetchStore } from "../../global/stores.ts";
 
     export let consultationId: string = "";
     export let questionId: string = "";
 
     let consultation: Consultation;
     let answers;
-    let loading: boolean = true;
-    let error: string = "";
+
+    const {
+        loading: isConsultationLoading,
+        error: consultationError,
+        load: loadConsultation,
+        data: consultationData,
+    } = createFetchStore(`/api/consultations/${consultationId}/`);
+
+    const {
+        loading: isAnswersLoading,
+        error: answersError,
+        load: loadAnswers,
+        data: answersData,
+    } = createFetchStore(`/api/consultations/${consultationId}/questions/${questionId}/filtered-responses/`);
 
     onMount(async () => {
-        try {
-            const consultationResponse = await fetch(`/api/consultations/${consultationId}/`);
-            if (!consultationResponse.ok) {
-                error = "consultationResponse not ok";
-                return;
-            }
-            consultation = await consultationResponse.json();
-            error = "";
-        } catch(err) {
-            error = err.message;
-        } finally {
-            loading = false;
-        }
-    })
-    onMount(async () => {
-        try {
-            const filteredAnswers = await fetch(`/api/consultations/${consultationId}/questions/${questionId}/filtered-responses/`);
-            if (!filteredAnswers.ok) {
-                error = "filteredAnswers not ok";
-                return;
-            }
-            answers = await filteredAnswers.json();
-            error = "";
-        } catch(err) {
-            error = err.message;
-        } finally {
-            loading = false;
-        }
+        loadConsultation();
+        loadAnswers();
     })
 </script>
 
@@ -75,13 +62,25 @@
 </section>
 
 <section>
-    {#if consultation}
+    {#if $isConsultationLoading}
+        <p transition:slide>Loading consultation</p>
+    {:else if $consultationError}
+        <p transition:slide>Consultation Error: {$consultationError}</p>
+    {:else}
         <QuestionCard
             clickable={true}
-            consultationId={consultation?.id}
-            question={consultation?.questions.find(question => question.id === questionId)}
+            consultationId={$consultationData.id}
+            question={$consultationData.questions?.find(question => question.id === questionId)}
         />
+    {/if}
+</section>
+
+<section>
+    {#if $isAnswersLoading}
+        <p>Loading answers...</p>
+    {:else if $answersError}
+        <p>Answers Error: {$answersError}</p>
     {:else}
-        <p transition:slide>Loading consultation</p>
+        <p>Answers loaded</p>
     {/if}
 </section>

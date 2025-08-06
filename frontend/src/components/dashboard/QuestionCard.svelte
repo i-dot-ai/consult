@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { fade } from "svelte/transition";
+
     import type { Question } from "../../global/types.ts";
     import { favStore } from "../../global/stores.ts";
     import { getQuestionDetailUrl } from "../../global/routes.ts";
