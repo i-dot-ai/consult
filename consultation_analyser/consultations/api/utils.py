@@ -118,7 +118,7 @@ def get_filtered_responses_with_themes(
         )
 
     if filters and filters.get("search_value"):
-        search_query = SearchQuery(filters["search_value"])
+        search_query = SearchQuery(filters["search_value"], config="english")
 
         if filters.get("search_mode") == "semantic":
             # semantic_distance: exact match = 0, exact opposite = 2
