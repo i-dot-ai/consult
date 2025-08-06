@@ -1,18 +1,56 @@
 <script lang="ts">
     import clsx from "clsx";
 
+    import { onMount } from "svelte";
+    import { slide } from "svelte/transition";
+
     import MaterialIcon from "../MaterialIcon.svelte";
     import Button from "../inputs/Button.svelte";
     import Panel from "../dashboard/Panel.svelte";
     import Star from "../svg/material/Star.svelte";
     import SearchCard from "./SearchCard.svelte";
+    import QuestionCard from "./QuestionCard.svelte";
 
     import { getConsultationDetailUrl } from "../../global/routes.ts";
 
     export let consultationId: string = "";
-    export let questionTitle: string = "";
-    
-    let _responsesTotal: number = 0;
+    export let questionId: string = "";
+
+    let consultation: Consultation;
+    let answers;
+    let loading: boolean = true;
+    let error: string = "";
+
+    onMount(async () => {
+        try {
+            const consultationResponse = await fetch(`/api/consultations/${consultationId}/`);
+            if (!consultationResponse.ok) {
+                error = "consultationResponse not ok";
+                return;
+            }
+            consultation = await consultationResponse.json();
+            error = "";
+        } catch(err) {
+            error = err.message;
+        } finally {
+            loading = false;
+        }
+    })
+    onMount(async () => {
+        try {
+            const filteredAnswers = await fetch(`/api/consultations/${consultationId}/questions/${questionId}/filtered-responses/`);
+            if (!filteredAnswers.ok) {
+                error = "filteredAnswers not ok";
+                return;
+            }
+            answers = await filteredAnswers.json();
+            error = "";
+        } catch(err) {
+            error = err.message;
+        } finally {
+            loading = false;
+        }
+    })
 </script>
 
 <section class={clsx([
@@ -37,26 +75,13 @@
 </section>
 
 <section>
-    <Panel>
-        <SearchCard title={questionTitle}>
-            <Button
-                slot="aside"
-                variant={"ghost"}
-                handleClick={() => {}}
-            >
-                <MaterialIcon size={"1.3rem"}>
-                    <Star />
-                </MaterialIcon>
-            </Button>
-
-            <div slot="footer">
-                <small class={clsx([
-                    "flex",
-                    "items-center",
-                ])}>
-                    {_responsesTotal.toLocaleString()} responses
-                </small>
-            </div>
-        </SearchCard>
-    </Panel>
+    {#if consultation}
+        <QuestionCard
+            clickable={true}
+            consultationId={consultation?.id}
+            question={consultation?.questions.find(question => question.id === questionId)}
+        />
+    {:else}
+        <p transition:slide>Loading consultation</p>
+    {/if}
 </section>
