@@ -41,7 +41,7 @@ urlpatterns = [
     path("api/", include(router.urls)),
     path("api/", include(consultations_router.urls)),
     path("api/", include(questions_router.urls)),
-    path("api/user", get_current_user, name="user"),
+    path("api/user/", get_current_user, name="user"),
     path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/show-next/",
         answers.show_next,
