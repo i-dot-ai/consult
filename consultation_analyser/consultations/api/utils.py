@@ -1,6 +1,5 @@
 from typing import TypedDict
 
-from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Count, Q
 from pgvector.django import CosineDistance
 

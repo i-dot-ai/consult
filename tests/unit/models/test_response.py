@@ -53,6 +53,7 @@ class TestResponse:
         assert response.annotation == annotation
         assert annotation.response == response
 
+
 @pytest.mark.django_db
 @pytest.mark.parametrize("text", ["support workers", "support worker", "supported worker"])
 def test_indexing(text):
@@ -64,7 +65,9 @@ def test_indexing(text):
 
 
 @pytest.mark.django_db
-@pytest.mark.parametrize("search_text", ["the support workers", "a support worker", "supported worker"])
+@pytest.mark.parametrize(
+    "search_text", ["the support workers", "a support worker", "supported worker"]
+)
 def test_full_text_search(search_text):
     for text in "support workers", "support worker", "supported worker":
         response = factories.ResponseFactory(free_text=text)
