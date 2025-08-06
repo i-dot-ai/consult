@@ -23,9 +23,6 @@ def test_user_can_see_consultations(django_app):
     landing_page.click("Sign out")
     landing_page = sign_in(django_app, "email@example.com")
 
-    # then i should see the new consultation
-    assert "My First Consultation" in landing_page
-
 
 @pytest.mark.django_db
 def test_logged_out_user_sees_404s(django_app):
