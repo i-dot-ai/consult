@@ -9,9 +9,18 @@ from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django_rq import get_queue
 
-from consultation_analyser.consultations.models import (Consultation, CrossCuttingTheme, DemographicOption,
-                                                        MultiChoiceAnswer, Question, Respondent, Response,
-                                                        ResponseAnnotation, ResponseAnnotationTheme, Theme)
+from consultation_analyser.consultations.models import (
+    Consultation,
+    CrossCuttingTheme,
+    DemographicOption,
+    MultiChoiceAnswer,
+    Question,
+    Respondent,
+    Response,
+    ResponseAnnotation,
+    ResponseAnnotationTheme,
+    Theme,
+)
 from consultation_analyser.embeddings import embed_text
 
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
