@@ -7,12 +7,12 @@
   <h1 class="govuk-heading-l">{{ page_title }}</h1>
 
   <div id="loading" class="govuk-body">Loading consultations...</div>
-  
+
   <div id="consultations-container" style="display: none;">
     <p class="govuk-body">Click to review themes for your consultations</p>
     <ul id="consultations-list" class="govuk-list"></ul>
   </div>
-  
+
   <div id="no-consultations" style="display: none;">
     <p class="govuk-body">You do not have any consultations</p>
   </div>
@@ -23,7 +23,7 @@
 
   <script>
     let userHasDashboardAccess = false;
-    
+
     async function loadUserData() {
       try {
         const response = await fetch('/api/user/', {
@@ -45,7 +45,7 @@
         userHasDashboardAccess = false;
       }
     }
-    
+
     async function loadConsultations() {
       try {
         const response = await fetch('/api/consultations/', {
@@ -60,39 +60,39 @@
         }
 
         const data = await response.json();
-        const consultations = data.results || data;
-        
+        const consultations = data.results;
+
         const loadingEl = document.getElementById('loading');
         const containerEl = document.getElementById('consultations-container');
         const noConsultationsEl = document.getElementById('no-consultations');
         const listEl = document.getElementById('consultations-list');
-        
+
         loadingEl.style.display = 'none';
-        
+
         if (consultations.length === 0) {
           noConsultationsEl.style.display = 'block';
           return;
         }
-        
+
         // Build consultations list
         listEl.innerHTML = consultations.map(consultation => `
           <li class="govuk-!-margin-top-2 govuk-!-margin-bottom-6">
             <h2 class="govuk-heading-m">${escapeHtml(consultation.title)}</h2>
-            <a href="/consultations/${consultation.slug}/review-questions/" 
+            <a href="/consultations/${consultation.slug}/review-questions/"
                class="govuk-body-l govuk-link govuk-link--no-visited-state govuk-!-margin-right-5">
               View evaluation
             </a>
             ${userHasDashboardAccess ? `
-              <a href="/consultations/${consultation.slug}/" 
+              <a href="/consultations/${consultation.slug}/"
                  class="govuk-body-l govuk-link govuk-link--no-visited-state govuk-!-margin-right-5">
                 View dashboard
               </a>
             ` : ''}
           </li>
         `).join('');
-        
+
         containerEl.style.display = 'block';
-        
+
       } catch (error) {
         console.error('Error loading consultations:', error);
         document.getElementById('loading').style.display = 'none';
