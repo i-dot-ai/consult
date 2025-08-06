@@ -1,6 +1,5 @@
 from typing import TypedDict
 
-from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Count, Q
 from pgvector.django import CosineDistance
 
@@ -15,8 +14,6 @@ class FilterParams(TypedDict, total=False):
     search_mode: str
     demo_filters: dict[str, str]
     search_value: str
-    themes_sort_type: str
-    themes_sort_direction: str
 
 
 def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
@@ -30,12 +27,6 @@ def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
     theme_filters = validated_data.get("themeFilters", "")
     if theme_filters:
         filters["theme_list"] = theme_filters.split(",")
-
-    if "themesSortDirection" in validated_data:
-        filters["themes_sort_direction"] = validated_data["themesSortDirection"]
-
-    if "themesSortType" in validated_data:
-        filters["themes_sort_type"] = validated_data["themesSortType"]
 
     if validated_data.get("evidenceRich"):
         filters["evidence_rich"] = True
@@ -126,22 +117,13 @@ def get_filtered_responses_with_themes(
         )
 
     if filters and filters.get("search_value"):
-        search_query = SearchQuery(filters["search_value"])
-
         if filters.get("search_mode") == "semantic":
             # semantic_distance: exact match = 0, exact opposite = 2
             embedded_query = embed_text(filters["search_value"])
             distance = CosineDistance("embedding", embedded_query)
             return queryset.annotate(distance=distance).order_by("distance")
         else:
-            # term_frequency: exact match = 1+, no match = 0
-            # normalization = 1: divides the rank by 1 + the logarithm of the document length
-            distance = SearchRank("search_vector", search_query, normalization=1)
-            return (
-                queryset.filter(search_vector=search_query)
-                .annotate(distance=distance)
-                .order_by("-distance")
-            )
+            return queryset.filter(free_text__icontains=filters["search_value"])
 
     return queryset.order_by("created_at")  # Consistent ordering for pagination
 

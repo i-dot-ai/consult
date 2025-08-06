@@ -80,10 +80,6 @@ class FilterSerializer(serializers.Serializer):
 
     sentimentFilters = serializers.CharField(required=False, allow_blank=True)
     themeFilters = serializers.CharField(required=False, allow_blank=True)
-    themesSortDirection = serializers.ChoiceField(
-        choices=["ascending", "descending"], required=False
-    )
-    themesSortType = serializers.ChoiceField(choices=["frequency", "alphabetical"], required=False)
     evidenceRich = serializers.BooleanField(required=False)
     searchValue = serializers.CharField(required=False)
     searchMode = serializers.ChoiceField(choices=["semantic", "keyword"], required=False)
@@ -116,3 +112,8 @@ class CrossCuttingThemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CrossCuttingTheme
         fields = ["name", "description", "themes", "response_count"]
+
+
+class MultiChoiceAnswerCount(serializers.Serializer):
+    answer = serializers.CharField(source="chosen_options__text")
+    response_count = serializers.IntegerField()

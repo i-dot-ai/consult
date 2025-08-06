@@ -118,7 +118,7 @@ jobs:
       SUCCESS_PAYLOAD: "{ \"blocks\": [ { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \":large_green_circle: `prod` *deployment succeeded*\\n\\n Deployed SHA: `${{ needs.set-vars.outputs.sha-short }}`"
       FAILURE_PAYLOAD: "{ \"blocks\": [ { \"type\": \"section\", \"text\": { \"type\": \"mrkdwn\", \"text\": \":x: `prod` *deployment failed*\\n\\n Attempted SHA: `${{ needs.set-vars.outputs.sha-short }}`\\nLogs: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}\" } } ] }"
     secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
+      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
   stop-runner:
     needs:
