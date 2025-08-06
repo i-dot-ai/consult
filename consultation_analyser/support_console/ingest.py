@@ -699,6 +699,15 @@ def create_consultation(
             consultation_code,
             timestamp,
         )
+        
+        # Import cross-cutting themes after all questions and themes are imported
+        queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
+        queue.enqueue(
+            import_cross_cutting_themes,
+            consultation,
+            consultation_code,
+            timestamp,
+        )
 
     except Exception as e:
         logger.error(f"Error importing consultation {consultation_name}: {str(e)}")
