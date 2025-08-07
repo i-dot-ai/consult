@@ -161,7 +161,7 @@ cython_debug/
 
 # Frontend
 node_modules
-frontend/CACHE
+legacy-frontend/CACHE
 frontend/govuk-assets
 frontend/iai-assets
 frontend/admin

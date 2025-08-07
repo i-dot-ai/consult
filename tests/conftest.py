@@ -2,7 +2,20 @@ import json
 
 import boto3
 import pytest
+from django.contrib.auth.models import Group
 from moto import mock_aws
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from consultation_analyser.constants import DASHBOARD_ACCESS
+from consultation_analyser.consultations.models import Response
+from consultation_analyser.factories import (
+    ConsultationFactory,
+    MultiChoiceAnswerFactory,
+    QuestionFactory,
+    RespondentFactory,
+    ThemeFactory,
+    UserFactory,
+)
 
 
 @pytest.fixture
@@ -162,3 +175,127 @@ def mock_consultation_input_objects(mock_s3_bucket):
         mock_s3_bucket,
         "app_data/consultations/con1/outputs/mapping/2025-04-01/question_part_2/detail_detection.jsonl",
     ).put(Body=evidence_rich_mappings_2_jsonl)
+
+
+@pytest.fixture
+def dashboard_access_group():
+    group = Group.objects.get(name=DASHBOARD_ACCESS)
+    yield group
+    group.delete()
+
+
+@pytest.fixture
+def non_dashboard_user():
+    user = UserFactory()
+    yield user
+    user.delete()
+
+
+@pytest.fixture
+def dashboard_user(dashboard_access_group):
+    user = UserFactory()
+    user.groups.add(dashboard_access_group)
+    user.save()
+    yield user
+    user.delete()
+
+
+@pytest.fixture
+def non_consultation_user():
+    user = UserFactory()
+    yield user
+    user.delete()
+
+
+@pytest.fixture
+def dashboard_user_token(dashboard_user):
+    refresh = RefreshToken.for_user(dashboard_user)
+    yield str(refresh.access_token)
+
+
+@pytest.fixture
+def non_consultation_user_token(non_consultation_user):
+    refresh = RefreshToken.for_user(non_consultation_user)
+    yield str(refresh.access_token)
+
+
+@pytest.fixture
+def non_dashboard_user_token(non_dashboard_user):
+    refresh = RefreshToken.for_user(non_dashboard_user)
+    yield str(refresh.access_token)
+
+
+@pytest.fixture
+def consultation(dashboard_user, non_dashboard_user):
+    _consultation = ConsultationFactory()
+    _consultation.users.add(dashboard_user)
+    _consultation.users.add(non_dashboard_user)
+    _consultation.save()
+    yield _consultation
+    _consultation.delete()
+
+
+@pytest.fixture
+def free_text_question(consultation):
+    question = QuestionFactory(
+        consultation=consultation, has_free_text=True, has_multiple_choice=False
+    )
+    yield question
+    question.delete()
+
+
+@pytest.fixture
+def multi_choice_question(consultation):
+    question = QuestionFactory(
+        consultation=consultation, has_free_text=False, has_multiple_choice=True
+    )
+    for answer in ["red", "blue", "green"]:
+        MultiChoiceAnswerFactory.create(question=question, text=answer)
+    yield question
+    question.delete()
+
+
+@pytest.fixture
+def multi_choice_responses(multi_choice_question):
+    red = multi_choice_question.multichoiceanswer_set.get(
+        question=multi_choice_question, text="red"
+    )
+    blue = multi_choice_question.multichoiceanswer_set.get(
+        question=multi_choice_question, text="blue"
+    )
+
+    respondent_1 = RespondentFactory(consultation=multi_choice_question.consultation)
+    response_1 = Response.objects.create(respondent=respondent_1, question=multi_choice_question)
+    response_1.chosen_options.add(red)
+    response_1.chosen_options.add(blue)
+    response_1.save()
+
+    respondent_2 = RespondentFactory(consultation=multi_choice_question.consultation)
+    response_2 = Response.objects.create(respondent=respondent_2, question=multi_choice_question)
+    response_2.chosen_options.add(red)
+    response_2.save()
+
+    yield respondent_1
+
+    response_1.delete()
+    response_2.delete()
+
+
+@pytest.fixture()
+def theme(free_text_question):
+    return ThemeFactory(question=free_text_question, name="Theme A", key="A")
+
+
+@pytest.fixture()
+def theme2(free_text_question):
+    return ThemeFactory(question=free_text_question, name="Theme B", key="B")
+
+
+@pytest.fixture()
+def consultation_user(consultation):
+    user = UserFactory()
+    dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
+    user.groups.add(dash_access)
+    user.save()
+    consultation.users.add(user)
+    return user

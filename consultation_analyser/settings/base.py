@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     "simple_history",
     "rest_framework",
     "django_filters",
+    "rest_framework_simplejwt",
 ]
 
 
@@ -306,7 +307,7 @@ if DEBUG and ("pytest" not in sys.modules and "test" not in sys.argv):
     INSTALLED_APPS += ["silk"]
 
 # changing this will require a database migration
-EMBEDDING_DIMENSION = 1024
+EMBEDDING_DIMENSION = 3072
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
@@ -315,5 +316,9 @@ REST_FRAMEWORK = {
     "DEFAULT_RENDERER_CLASSES": (
         "drf_orjson_renderer.renderers.ORJSONRenderer",
         "rest_framework.renderers.BrowsableAPIRenderer",
+    ),
+    "DEFAULT_AUTHENTICATION_CLASSES": (
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+        "rest_framework.authentication.SessionAuthentication",
     ),
 }

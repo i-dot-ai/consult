@@ -60,3 +60,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     @property
     def has_dashboard_access(self):
         return self.groups.filter(name=DASHBOARD_ACCESS).exists()
+
+    @property
+    def username(self):
+        return self.email

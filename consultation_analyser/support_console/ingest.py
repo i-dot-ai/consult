@@ -11,7 +11,9 @@ from django_rq import get_queue
 
 from consultation_analyser.consultations.models import (
     Consultation,
+    CrossCuttingTheme,
     DemographicOption,
+    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -25,6 +27,18 @@ encoding = tiktoken.encoding_for_model("text-embedding-3-small")
 logger = logging.getLogger("import")
 DEFAULT_BATCH_SIZE = 10_000
 DEFAULT_TIMEOUT_SECONDS = 3_600
+
+
+def s3_key_exists(key: str) -> bool:
+    s3_client = boto3.client("s3")
+    try:
+        s3_client.head_object(Bucket=settings.AWS_BUCKET_NAME, Key=key)
+        return True
+    except ClientError as e:
+        if e.response["Error"]["Code"] == "404":
+            return False
+        else:
+            raise  # Re-raise if it's a different error
 
 
 def get_question_folders(inputs_path: str, bucket_name: str) -> list[str]:
@@ -126,17 +140,22 @@ def validate_consultation_structure(
             # Check input files
             question_file = f"{folder}question.json"
             responses_file = f"{folder}responses.jsonl"
+            multiple_choice_file = f"{folder}multi_choice.jsonl"
 
             try:
                 response = s3.get_object(Bucket=bucket_name, Key=question_file)
                 question_data = json.loads(response["Body"].read())
                 has_free_text = question_data.get("has_free_text", True)
+                multiple_choice_options = question_data.get("options", [])
+                has_multiple_choice = True if multiple_choice_options else False
             except s3.exceptions.NoSuchKey:
                 errors.append(f"Missing {question_file}")
                 has_free_text = True
+                has_multiple_choice = False
             except Exception as e:
                 errors.append(f"Error checking {question_file}: {str(e)}")
                 has_free_text = True
+                has_multiple_choice = False
 
             try:
                 s3.head_object(Bucket=bucket_name, Key=responses_file)
@@ -144,6 +163,14 @@ def validate_consultation_structure(
                 errors.append(f"Missing {responses_file}")
             except Exception as e:
                 errors.append(f"Error checking {responses_file}: {str(e)}")
+
+            if has_multiple_choice:
+                try:
+                    s3.head_object(Bucket=bucket_name, Key=multiple_choice_file)
+                except s3.exceptions.NoSuchKey:
+                    errors.append(f"Missing {multiple_choice_file}")
+                except Exception as e:
+                    errors.append(f"Error checking {multiple_choice_file}: {str(e)}")
 
             # Check output files for this question part, if it is a free-text question
             if has_free_text:
@@ -199,7 +226,11 @@ def create_embeddings(consultation_id: UUID):
     for i in range(0, total, batch_size):
         responses = queryset.order_by("id")[i : i + batch_size]
 
-        free_texts = [response.free_text or "" for response in responses]
+        free_texts = [
+            f"Question: {response.question.text} \nAnswer: {response.free_text}"
+            for response in responses
+        ]
+
         embeddings = embed_text(free_texts)
 
         for response, embedding in zip(responses, embeddings):
@@ -311,12 +342,54 @@ def import_response_annotations(question: Question, output_folder: str):
     ResponseAnnotation.objects.bulk_create(annotations_to_save)
 
 
-def _embed_responses(responses: list[dict]) -> list[Response]:
-    embeddings = embed_text([r["free_text"] for r in responses])
-    return [Response(embedding=embedding, **r) for r, embedding in zip(responses, embeddings)]
+def read_response_file(responses_file_key: str) -> dict[str, str]:
+    s3_client = boto3.client("s3")
+
+    try:
+        responses_data = s3_client.get_object(
+            Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key
+        )
+    except s3_client.exceptions.NoSuchKey:
+        return {}
+
+    text_response_dict = {}
+    for line in responses_data["Body"].iter_lines():
+        response_data = json.loads(line.decode("utf-8"))
+        themefinder_id = response_data["themefinder_id"]
+        if free_text := response_data.get("text"):
+            assert isinstance(free_text, str)
+            text_response_dict[themefinder_id] = free_text
+    return text_response_dict
 
 
-def import_responses(question: Question, responses_file_key: str):
+def read_multi_choice_response_file(responses_file_key: str) -> dict[str, list[str]]:
+    s3_client = boto3.client("s3")
+
+    try:
+        responses_data = s3_client.get_object(
+            Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key
+        )
+    except s3_client.exceptions.NoSuchKey:
+        return {}
+
+    multi_choice_response_dict = {}
+    for line in responses_data["Body"].iter_lines():
+        response_data = json.loads(line.decode("utf-8"))
+        themefinder_id = response_data["themefinder_id"]
+        if chosen_options := response_data.get("options"):
+            assert isinstance(chosen_options, list)
+            multi_choice_response_dict[themefinder_id] = chosen_options
+    return multi_choice_response_dict
+
+
+def merge_free_text_and_multi_choice(
+    free_text: dict[str, str], multi_choice: dict[str, list[str]]
+) -> list[tuple[str, str | None, list[str] | None]]:
+    keys = set(free_text).union(multi_choice)
+    return [(key, free_text.get(key), multi_choice.get(key)) for key in keys]
+
+
+def import_responses(question: Question, responses_file_key: str, multichoice_file_key: str):
     """
     Import response data for a Consultation Question.
 
@@ -324,9 +397,11 @@ def import_responses(question: Question, responses_file_key: str):
         question: Question object for response
         responses_file_key: s3key
     """
-    s3_client = boto3.client("s3")
 
-    responses_data = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=responses_file_key)
+    plain_response_dict = read_response_file(responses_file_key)
+
+    multichoice_data = read_multi_choice_response_file(multichoice_file_key)
+    responses = merge_free_text_and_multi_choice(plain_response_dict, multichoice_data)
 
     try:
         # Get respondents
@@ -336,52 +411,53 @@ def import_responses(question: Question, responses_file_key: str):
         # Second pass: create responses
         # type: ignore
         responses_to_save: list = []  # type: ignore
+        multi_choice_response_to_save: list[tuple[Response, list[str]]] = []  # type: ignore
         max_total_tokens = 100_000
         max_batch_size = 2048
         total_tokens = 0
 
-        for i, line in enumerate(responses_data["Body"].iter_lines()):
-            response_data = json.loads(line.decode("utf-8"))
-            themefinder_id = response_data["themefinder_id"]
-
+        for i, (themefinder_id, free_text, chosen_options) in enumerate(responses):
             if themefinder_id not in respondent_dict:
                 logger.warning(f"No respondent found for themefinder_id: {themefinder_id}")
                 continue
 
-            free_text = response_data.get("text", "")
-            if not free_text:
-                logger.warning(f"Empty text for themefinder_id: {themefinder_id}")
-                continue
-
-            token_count = len(encoding.encode(free_text))
-            if token_count > 8192:
-                logger.warning(f"Truncated text for themefinder_id: {themefinder_id}")
-                free_text = free_text[:1000]
+            if free_text:
                 token_count = len(encoding.encode(free_text))
+                if token_count > 8192:
+                    logger.warning(f"Truncated text for themefinder_id: {themefinder_id}")
+                    free_text = free_text[:1000]
+                    token_count = len(encoding.encode(free_text))
+            else:
+                token_count = 0
 
             if (
                 total_tokens + token_count > max_total_tokens
                 or len(responses_to_save) >= max_batch_size
             ):
-                embedded_responses_to_save = _embed_responses(responses_to_save)
-                Response.objects.bulk_create(embedded_responses_to_save)
+                Response.objects.bulk_create(responses_to_save)
+
                 responses_to_save = []
                 total_tokens = 0
                 logger.info("saved %s Responses for question %s", i + 1, question.number)
 
-            responses_to_save.append(
-                dict(
-                    respondent=respondent_dict[themefinder_id],
-                    question=question,
-                    free_text=free_text,
-                    chosen_options=response_data.get("chosen_options", []),
-                )
+            response = Response(
+                respondent=respondent_dict[themefinder_id],
+                question=question,
+                free_text=free_text,
             )
+
+            if chosen_options:
+                multi_choice_response_to_save.append((response, chosen_options))
+
+            responses_to_save.append(response)
             total_tokens += token_count
 
         # last batch
-        embedded_responses_to_save = _embed_responses(responses_to_save)
-        Response.objects.bulk_create(embedded_responses_to_save)
+        Response.objects.bulk_create(responses_to_save)
+        for response, answers in multi_choice_response_to_save:
+            chosen_options = MultiChoiceAnswer.objects.filter(question=question, text__in=answers)
+            response.chosen_options.set(chosen_options)
+            response.save()
 
         # re-save the responses to ensure that every response has search_vector
         # i.e the lexical bit
@@ -459,7 +535,7 @@ def import_questions(
             question_data = json.loads(response["Body"].read())
 
             question_text = question_data.get("question_text", "")
-            multiple_choice_options = question_data.get("options", [])
+            multi_choice_options = question_data.get("multi_choice_options", [])
             if not question_text:
                 raise ValueError(f"Question text is required for question {question_number}")
 
@@ -469,14 +545,21 @@ def import_questions(
                 slug=f"question-{question_number}",
                 number=question_number,
                 has_free_text=question_data.get("has_free_text", True),
-                has_multiple_choice=bool(multiple_choice_options),
-                multiple_choice_options=multiple_choice_options,
+                has_multiple_choice=bool(multi_choice_options),
             )
+            for answer in multi_choice_options:
+                MultiChoiceAnswer.objects.create(question=question, text=answer)
 
             responses_file_key = f"{question_folder}responses.jsonl"
-            responses = queue.enqueue(import_responses, question, responses_file_key)
+            multiple_choice_file = f"{question_folder}multi_choice.jsonl"
+            responses = queue.enqueue(
+                import_responses, question, responses_file_key, multiple_choice_file
+            )
+            queue.enqueue(create_embeddings, question.consultation.id, depends_on=responses)
 
-            if question.has_free_text:
+            if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
+                logger.info("not importing output-mappings")
+            else:
                 output_folder = f"{outputs_path}question_part_{question_num_str}/"
                 themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
                 response_annotations = queue.enqueue(
@@ -492,6 +575,64 @@ def import_questions(
     except Exception as e:
         logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
         raise
+
+
+def import_cross_cutting_themes(consultation: Consultation, consultation_code: str, timestamp: str):
+    """
+    Import cross-cutting themes that span across multiple questions.
+    Must run after all themes have been imported.
+    """
+    logger.info(f"Starting cross-cutting themes import for consultation {consultation.title}")
+
+    s3_client = boto3.client("s3")
+    cct_file_key = f"app_data/consultations/{consultation_code}/outputs/mapping/{timestamp}/cross_cutting_themes.json"
+
+    try:
+        # Check if file exists
+        response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=cct_file_key)
+        cct_data = json.loads(response["Body"].read())
+    except s3_client.exceptions.NoSuchKey:
+        logger.info("No cross_cutting_themes.json found, skipping cross-cutting themes import")
+        raise
+    except Exception as e:
+        logger.error(f"Error reading cross-cutting themes file: {str(e)}")
+        raise
+
+    # Get all questions for this consultation for lookup
+    questions_dict = {q.number: q for q in Question.objects.filter(consultation=consultation)}
+
+    for cct_entry in cct_data:
+        # Create the cross-cutting theme
+        cross_cutting_theme = CrossCuttingTheme.objects.create(
+            consultation=consultation, name=cct_entry["name"], description=cct_entry["description"]
+        )
+        logger.info(f"Created cross-cutting theme: {cross_cutting_theme.name}")
+
+        # Create assignments for each theme
+        for theme_ref in cct_entry["themes"]:
+            question_number = theme_ref["question_number"]
+            theme_key = theme_ref["theme_key"]
+
+            # Find the question
+            question = questions_dict.get(question_number)
+            if not question:
+                raise ValueError(
+                    f"Question {question_number} not found for cross-cutting theme '{cct_entry['name']}'"
+                )
+
+            # Find the theme
+            try:
+                theme = Theme.objects.get(question=question, key=theme_key)
+                theme.parent = cross_cutting_theme
+                theme.save()
+            except Theme.DoesNotExist:
+                raise ValueError(
+                    f"Theme {theme_key} not found for question {question_number} in cross-cutting theme '{cct_entry['name']}'"
+                )
+            except Theme.MultipleObjectsReturned:
+                raise ValueError(
+                    f"Multiple themes with key {theme_key} found for question {question_number} in cross-cutting theme '{cct_entry['name']}'"
+                )
 
 
 def import_respondents(consultation: Consultation, consultation_code: str):
@@ -567,6 +708,15 @@ def create_consultation(
         import_respondents(consultation, consultation_code)
 
         import_questions(
+            consultation,
+            consultation_code,
+            timestamp,
+        )
+        
+        # Import cross-cutting themes after all questions and themes are imported
+        queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
+        queue.enqueue(
+            import_cross_cutting_themes,
             consultation,
             consultation_code,
             timestamp,

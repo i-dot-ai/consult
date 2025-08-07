@@ -29,11 +29,11 @@ JSON_SCHEMA_URL_NAMES = ["raw_schema"]
 
 # API endpoints return 403 instead of 404 for unauthenticated users
 API_URL_NAMES = [
-    "question-demographics",
-    "question-demographic_aggregations",
-    "question-themes",
-    "question-theme_aggregations",
-    "question-filtered_responses",
+    "question-demographic-options",
+    "question-demographic-aggregations",
+    "question-theme-information",
+    "question-theme-aggregations",
+    "question-filtered-responses",
     "question-detail",
 ]
 
@@ -189,8 +189,8 @@ def test_api_urls_permission_required(client, url_pattern):
 
     url = reverse(viewname=url_pattern, kwargs=possible_args)
 
-    # Not logged in - should return 403 (DRF permission denied)
-    check_expected_status_code(client, url, expected_status_code=403)
+    # Not logged in - should return 401 (DRF un-authenticated)
+    check_expected_status_code(client, url, expected_status_code=401)
 
     # Logged in with a user for this consultation - 200
     client.force_login(user)

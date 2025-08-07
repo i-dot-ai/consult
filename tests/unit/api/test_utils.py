@@ -9,7 +9,10 @@ from consultation_analyser.consultations.api.utils import (
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
 )
-from consultation_analyser.consultations.models import ResponseAnnotation
+from consultation_analyser.consultations.models import (
+    MultiChoiceAnswer,
+    ResponseAnnotation,
+)
 from consultation_analyser.factories import (
     ConsultationFactory,
     QuestionFactory,
@@ -65,8 +68,6 @@ class TestParseFiltersFromSerializer:
 
         assert filters["sentiment_list"] == ["AGREEMENT", "DISAGREEMENT"]
         assert filters["theme_list"] == ["1", "2", "3"]
-        assert filters["themes_sort_direction"] == "ascending"
-        assert filters["themes_sort_type"] == "frequency"
         assert filters["evidence_rich"] is True
         assert filters["search_value"] == "test search"
         assert filters["search_mode"] == "semantic"
@@ -277,14 +278,13 @@ class TestGetFilteredResponsesWithThemes:
         ResponseFactory(question=question, free_text="The quick brown fox jumps over the lazy dog")
         ResponseFactory(question=question, free_text="Mary loves the lamb, you know")
 
-        filters = {"search_value": "mary lamb", "search_mode": "keyword"}
+        filters = {"search_value": "lamb, H", "search_mode": "keyword"}
         queryset = get_filtered_responses_with_themes(question, filters)
 
         # Should return responses that contain the search terms
         results = list(queryset)
-        assert len(results) == 2
-        for response in results:
-            assert "mary" in response.free_text.lower() or "lamb" in response.free_text.lower()
+        assert len(results) == 1
+        assert "lamb, H" in results[0].free_text
 
     def test_queryset_optimization(self, question):
         """Test that queryset uses proper optimizations"""
@@ -313,15 +313,18 @@ class TestBuildRespondentDataFast:
             question=question,
             respondent=respondent,
             free_text="Test response",
-            chosen_options=["option1", "option2"],
         )
+        for option in ["option1", "option2"]:
+            answer = MultiChoiceAnswer.objects.create(question=response.question, text=option)
+            response.chosen_options.add(answer)
+        response.save()
 
         data = build_respondent_data_fast(response)
 
         assert data["identifier"] == str(respondent.identifier)
         assert data["free_text_answer_text"] == "Test response"
         assert data["demographic_data"] == {"individual": True, "region": "north"}
-        assert data["multiple_choice_answer"] == ["option1", "option2"]
+        assert sorted(data["multiple_choice_answer"]) == ["option1", "option2"]
         assert data["evidenceRich"] is False  # No annotation
         assert data["themes"] == []
 
@@ -370,22 +373,6 @@ class TestBuildRespondentDataFast:
             assert "id" in theme_data
             assert "name" in theme_data
             assert "description" in theme_data
-
-    def test_empty_fields_handling(self, question):
-        """Test handling of empty/None fields"""
-        respondent = RespondentFactory(consultation=question.consultation, demographics={})
-        response = ResponseFactory(
-            question=question,
-            respondent=respondent,
-            free_text="",  # Use empty string instead of None to avoid embedding issues
-            chosen_options=None,
-        )
-
-        data = build_respondent_data_fast(response)
-
-        assert data["free_text_answer_text"] == ""
-        assert data["demographic_data"] == {}
-        assert data["multiple_choice_answer"] == []
 
     def test_no_annotation(self, question):
         """Test respondent data when no annotation exists"""

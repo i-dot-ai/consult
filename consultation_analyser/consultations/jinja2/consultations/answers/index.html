@@ -32,12 +32,16 @@
 </style>
 
 <iai-question-detail-page
+  consultationId="{{ question.consultation_id }}"
   consultationSlug="{{ consultation_slug }}"
+  consultationTitle="{{ question.consultation_name }}"
+  questionId="{{ question.id }}"
   questionSlug="{{ question_slug }}"
   questionText="Q{{ question.number }}: {{ question.text }}"
-  questionId="{{ question.id }}"
-  consultationTitle="{{ question.consultation_name }}"
-  consultationId="{{ question.consultation_id }}"
 ></iai-question-detail-page>
+<script>
+  const questionDetailPageEl = document.getElementsByTagName("iai-question-detail-page")[0];
+  questionDetailPageEl.hasFreeText = {% if question.has_free_text %}true{% else %}false{% endif %};
+</script>
 
 {% endblock %}

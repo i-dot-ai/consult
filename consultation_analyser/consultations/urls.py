@@ -1,10 +1,14 @@
 from django.urls import include, path
 from rest_framework import routers
 from rest_framework_nested.routers import NestedDefaultRouter
+from rest_framework_simplejwt.views import TokenRefreshView
 
 from .api.views import (
     ConsultationViewSet,
     QuestionViewSet,
+    ThemeViewSet,
+    generate_magic_link,
+    verify_magic_link,
 )
 from .views import answers, consultations, pages, questions, root, sessions
 
@@ -13,8 +17,10 @@ router.register("consultations", ConsultationViewSet, basename="consultations")
 
 consultations_router = NestedDefaultRouter(router, r"consultations", lookup="consultation")
 consultations_router.register("questions", QuestionViewSet, basename="question")
+consultations_router.register("themes", ThemeViewSet, basename="theme")
 
 questions_router = NestedDefaultRouter(consultations_router, r"questions", lookup="question")
+themes_router = NestedDefaultRouter(consultations_router, r"themes", lookup="theme")
 
 
 urlpatterns = [
@@ -37,6 +43,7 @@ urlpatterns = [
     path("api/", include(router.urls)),
     path("api/", include(consultations_router.urls)),
     path("api/", include(questions_router.urls)),
+    path("api/", include(themes_router.urls)),
     path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/show-next/",
         answers.show_next,
@@ -56,4 +63,8 @@ urlpatterns = [
     path("sign-in/", sessions.new, name="sign_in"),
     path("sign-out/", sessions.destroy, name="sign_out"),
     path("magic-link/<uuid:token>/", sessions.MagicLinkView.as_view(), name="magic_link"),
+    # JWT
+    path("api/magic-link/", generate_magic_link, name="token-magic-link"),
+    path("api/token/", verify_magic_link, name="create-token"),
+    path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh-token"),
 ]

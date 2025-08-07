@@ -3,7 +3,6 @@ from textwrap import shorten
 
 import faker as _faker
 from django.conf import settings
-from django.contrib.postgres.fields import ArrayField
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVector, SearchVectorField
 from django.core.validators import BaseValidator
@@ -80,15 +79,17 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     # Question configuration
     has_free_text = models.BooleanField(default=True)
     has_multiple_choice = models.BooleanField(default=False)
-    multiple_choice_options = ArrayField(
-        models.TextField(), null=True, default=None, blank=True
-    )  # List of options when has_multiple_choice=True
     total_responses = models.IntegerField(
         default=0,
         help_text="Number of free text responses for this question",
         null=True,
         blank=True,
     )
+
+    @property
+    def multiple_choice_options(self) -> list:
+        """List of options when has_multiple_choice=True"""
+        return list(self.multichoiceanswer_set.all())
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -165,10 +166,8 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
 
     # Response content
-    free_text = models.TextField(blank=True)  # Free text response
-    chosen_options = ArrayField(
-        models.TextField(), null=True, default=None, blank=True
-    )  # Multiple choice selections
+    free_text = models.TextField(null=True, blank=True)  # Free text response
+    chosen_options = models.ManyToManyField("MultiChoiceAnswer", blank=True)
     embedding = VectorField(dimensions=settings.EMBEDDING_DIMENSION, null=True, blank=True)
     search_vector = SearchVectorField(null=True, blank=True)
 
@@ -183,7 +182,9 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
     def __str__(self):
-        return shorten(self.free_text, width=64, placeholder="...")
+        if self.free_text:
+            return shorten(self.free_text, width=64, placeholder="...")
+        return "multi-choice response"
 
 
 @receiver(post_save, sender=Response)
@@ -193,7 +194,9 @@ def update_search_vector(sender, instance, created, **kwargs):
         return
 
     # Update the search vector
-    Response.objects.filter(pk=instance.pk).update(search_vector=SearchVector("free_text"))
+    Response.objects.filter(pk=instance.pk).update(
+        search_vector=SearchVector("free_text", config="english")
+    )
 
 
 class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -253,6 +256,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     name = models.CharField(max_length=256)
     description = models.TextField()
     key = models.CharField(max_length=128, null=True, blank=True)
+    parent = models.ForeignKey("CrossCuttingTheme", on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -264,6 +268,27 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
         indexes = [
             models.Index(fields=["question"]),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class CrossCuttingTheme(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Cross-cutting themes that encompass multiple regular themes across a consultation"""
+
+    consultation = models.ForeignKey(
+        Consultation, on_delete=models.CASCADE, related_name="cross_cutting_themes"
+    )
+    name = models.CharField(max_length=256)
+    description = models.TextField()
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                fields=["consultation", "name"],
+                name="unique_cross_cutting_theme",
+            ),
         ]
 
     def __str__(self):
@@ -382,3 +407,13 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
             )
 
         super().save(*args, **kwargs)
+
+
+class MultiChoiceAnswer(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore[misc]
+    """a possible answer to a multi choice question"""
+
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    text = models.TextField()
+
+    def __str__(self):
+        return f"{self.question.number} = {self.text}"

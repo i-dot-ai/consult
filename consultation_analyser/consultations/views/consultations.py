@@ -1,11 +1,13 @@
 import logging
 
 from django.core.paginator import Paginator
+from django.db.models import Count
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, render
 
 from consultation_analyser.consultations import models
 
+from ..models import MultiChoiceAnswer
 from .decorators import user_can_see_consultation, user_can_see_dashboards
 
 logger = logging.getLogger("upload")
@@ -38,8 +40,9 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
 
         non_null_responses_count = (
             models.Response.objects.filter(question=question)
+            .annotate(chosen_count=Count("chosen_options"))
             .exclude(free_text__isnull=True)
-            .exclude(chosen_options__isnull=True)
+            .exclude(chosen_count=0)
             .count()
         )
         question_dict["number_responses"] = non_null_responses_count
@@ -49,12 +52,14 @@ def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
             question_dict["multiple_option_question_part"] = question
 
             # Get option counts
-            responses = models.Response.objects.filter(question=question).values("chosen_options")
-            option_counts: dict[str, int] = {}
-            for response in responses:
-                if options := response.get("chosen_options"):
-                    for option in options:
-                        option_counts[option] = option_counts.get(option, 0) + 1
+            responses = (
+                MultiChoiceAnswer.objects.filter(question=question)
+                .values("question__text")
+                .annotate(response_count=Count("response"))
+            )
+            option_counts = {
+                response["question__text"]: response["response_count"] for response in responses
+            }
 
             question_dict["multiple_option_counts"] = option_counts
 
