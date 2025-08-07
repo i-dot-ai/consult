@@ -1,6 +1,5 @@
 from typing import TypedDict
 
-from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Count, Q
 from pgvector.django import CosineDistance
 
@@ -118,22 +117,13 @@ def get_filtered_responses_with_themes(
         )
 
     if filters and filters.get("search_value"):
-        search_query = SearchQuery(filters["search_value"])
-
         if filters.get("search_mode") == "semantic":
             # semantic_distance: exact match = 0, exact opposite = 2
             embedded_query = embed_text(filters["search_value"])
             distance = CosineDistance("embedding", embedded_query)
             return queryset.annotate(distance=distance).order_by("distance")
         else:
-            # term_frequency: exact match = 1+, no match = 0
-            # normalization = 1: divides the rank by 1 + the logarithm of the document length
-            distance = SearchRank("search_vector", search_query, normalization=1)
-            return (
-                queryset.filter(search_vector=search_query)
-                .annotate(distance=distance)
-                .order_by("-distance")
-            )
+            return queryset.filter(free_text__icontains=filters["search_value"])
 
     return queryset.order_by("created_at")  # Consistent ordering for pagination
 

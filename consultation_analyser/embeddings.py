@@ -18,7 +18,7 @@ def embed_text(text: str | list[str]) -> list[float] | list[list[float]]:
     if hosting_environment.is_deployed():
         client = AzureOpenAI()
         response = client.embeddings.create(
-            input=text, model="text-embedding-3-small", dimensions=settings.EMBEDDING_DIMENSION
+            input=text, model="text-embedding-3-large", dimensions=settings.EMBEDDING_DIMENSION
         )
         if isinstance(text, str):
             return response.data[0].embedding

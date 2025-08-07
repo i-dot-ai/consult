@@ -3,8 +3,11 @@ from rest_framework import serializers
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
     Consultation,
+    CrossCuttingTheme,
     MultiChoiceAnswer,
     Question,
+    Response,
+    Theme,
 )
 
 
@@ -93,6 +96,31 @@ class FilterSerializer(serializers.Serializer):
     # Pagination parameters
     page = serializers.IntegerField(required=False, default=1, min_value=1)
     page_size = serializers.IntegerField(required=False, default=50, min_value=1, max_value=100)
+
+
+class ThemeSerializer2(serializers.ModelSerializer):
+    question_id = serializers.UUIDField(source="question.id")
+
+    response_count = serializers.SerializerMethodField()
+
+    def get_response_count(self, theme: Theme) -> int:
+        return Response.objects.filter(annotation__themes=theme).count()
+
+    class Meta:
+        model = Theme
+        fields = ["name", "description", "key", "question_id", "response_count"]
+
+
+class CrossCuttingThemeSerializer(serializers.ModelSerializer):
+    themes = ThemeSerializer2(many=True, source="theme_set", read_only=True)
+    response_count = serializers.SerializerMethodField()
+
+    def get_response_count(self, cross_cutting_theme: CrossCuttingTheme) -> int:
+        return Response.objects.filter(annotation__themes__parent=cross_cutting_theme).count()
+
+    class Meta:
+        model = CrossCuttingTheme
+        fields = ["name", "description", "themes", "response_count"]
 
 
 class MultiChoiceAnswerCount(serializers.Serializer):

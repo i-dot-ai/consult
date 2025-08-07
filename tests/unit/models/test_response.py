@@ -1,7 +1,9 @@
 import pytest
+from django.contrib.postgres.search import SearchQuery
 
 from consultation_analyser import factories
 from consultation_analyser.consultations import models
+from consultation_analyser.consultations.models import Response
 
 
 @pytest.mark.django_db
@@ -50,3 +52,28 @@ class TestResponse:
 
         assert response.annotation == annotation
         assert annotation.response == response
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("text", ["support workers", "support worker", "supported worker"])
+def test_indexing(text):
+    response = factories.ResponseFactory(free_text=text)
+    response.save()
+    response.refresh_from_db()
+    # we expect all texts to have the same representation
+    assert response.search_vector == "'support':1 'worker':2"
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "search_text", ["the support workers", "a support worker", "supported worker"]
+)
+def test_full_text_search(search_text):
+    for text in "support workers", "support worker", "supported worker":
+        response = factories.ResponseFactory(free_text=text)
+        response.save()
+        response.refresh_from_db()
+
+    search_query = SearchQuery(search_text, config="english")
+    # we expect all results to be returned
+    assert Response.objects.filter(search_vector=search_query).count() == 3

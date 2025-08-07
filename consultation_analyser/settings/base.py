@@ -307,7 +307,7 @@ if DEBUG and ("pytest" not in sys.modules and "test" not in sys.argv):
     INSTALLED_APPS += ["silk"]
 
 # changing this will require a database migration
-EMBEDDING_DIMENSION = 1024
+EMBEDDING_DIMENSION = 3072
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
