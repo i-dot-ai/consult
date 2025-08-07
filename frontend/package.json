@@ -25,5 +25,8 @@
   "devDependencies": {
     "@melt-ui/pp": "^0.3.2",
     "@melt-ui/svelte": "^0.86.6"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-musl": "4.46.2"
   }
 }
