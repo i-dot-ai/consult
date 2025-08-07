@@ -2,7 +2,7 @@ import { html } from 'lit';
 
 import { action } from "@storybook/addon-actions";
 
-import DemographicsSection from './demographics-section.lit.csr.mjs';
+import ProgressCards from './progress-cards.lit.csr.mjs';
 
 
 const TEST_DATA = {
@@ -35,13 +35,13 @@ const TEST_DATA = {
 
 // More on how to set up stories at: https://storybook.js.org/docs/writing-stories
 export default {
-  title: 'Csr/SilverDashboard/QuestionDetail/DemographicsSection',
+  title: 'Csr/SilverDashboard/QuestionDetail/ProgressCards',
   tags: ['autodocs'],
   render: (args) => {
     return html`
-      <iai-demographics-section
+      <iai-progress-cards
         .data=${args.data}
-      ></iai-demographics-section>
+      ></iai-progress-cards>
     `
   },
 };

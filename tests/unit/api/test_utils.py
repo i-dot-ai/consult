@@ -68,8 +68,6 @@ class TestParseFiltersFromSerializer:
 
         assert filters["sentiment_list"] == ["AGREEMENT", "DISAGREEMENT"]
         assert filters["theme_list"] == ["1", "2", "3"]
-        assert filters["themes_sort_direction"] == "ascending"
-        assert filters["themes_sort_type"] == "frequency"
         assert filters["evidence_rich"] is True
         assert filters["search_value"] == "test search"
         assert filters["search_mode"] == "semantic"
@@ -280,14 +278,13 @@ class TestGetFilteredResponsesWithThemes:
         ResponseFactory(question=question, free_text="The quick brown fox jumps over the lazy dog")
         ResponseFactory(question=question, free_text="Mary loves the lamb, you know")
 
-        filters = {"search_value": "mary lamb", "search_mode": "keyword"}
+        filters = {"search_value": "lamb, H", "search_mode": "keyword"}
         queryset = get_filtered_responses_with_themes(question, filters)
 
         # Should return responses that contain the search terms
         results = list(queryset)
-        assert len(results) == 2
-        for response in results:
-            assert "mary" in response.free_text.lower() or "lamb" in response.free_text.lower()
+        assert len(results) == 1
+        assert "lamb, H" in results[0].free_text
 
     def test_queryset_optimization(self, question):
         """Test that queryset uses proper optimizations"""

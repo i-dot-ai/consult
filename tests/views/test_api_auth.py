@@ -56,7 +56,7 @@ def test_create_token_fail(client):
 def test_api_urls_permission_required(
     client,
     dashboard_user,
-    question,
+    free_text_question,
     dashboard_user_token,
     url_pattern,
     non_consultation_user_token,
@@ -70,7 +70,7 @@ def test_api_urls_permission_required(
     """
     url = reverse(
         viewname=url_pattern,
-        kwargs={"consultation_pk": question.consultation.pk, "pk": question.pk},
+        kwargs={"consultation_pk": free_text_question.consultation.pk, "pk": free_text_question.pk},
     )
 
     # Not logged in - should return 401 (DRF un-authenticated)
