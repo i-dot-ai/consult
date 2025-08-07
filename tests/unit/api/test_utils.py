@@ -125,34 +125,24 @@ class TestParseFiltersFromSerializer:
 
 @pytest.mark.django_db
 class TestBuildResponseFilterQuery:
-    def test_basic_question_filter(self, question):
-        """Test that basic query always includes question filter"""
-        filters = {}
-        query = build_response_filter_query(filters, question)
-
-        assert "question" in str(query)
-        # Check that the query contains the question filter
-        query_str = str(query)
-        assert "question" in query_str
-
     def test_sentiment_filter(self, question):
         """Test sentiment filtering"""
         filters = {"sentiment_list": ["AGREEMENT", "DISAGREEMENT"]}
-        query = build_response_filter_query(filters, question)
+        query = build_response_filter_query(filters)
 
         assert "annotation__sentiment__in" in str(query)
 
     def test_evidence_rich_filter(self, question):
         """Test evidence rich filtering"""
         filters = {"evidence_rich": True}
-        query = build_response_filter_query(filters, question)
+        query = build_response_filter_query(filters)
 
         assert "annotation__evidence_rich" in str(query)
 
     def test_demographic_filters_boolean(self, question):
         """Test demographic filters with boolean values"""
         filters = {"demo_filters": {"individual": "true", "has_disability": "false"}}
-        query = build_response_filter_query(filters, question)
+        query = build_response_filter_query(filters)
 
         query_str = str(query)
         assert "respondent__demographics__individual" in query_str
@@ -161,7 +151,7 @@ class TestBuildResponseFilterQuery:
     def test_demographic_filters_string(self, question):
         """Test demographic filters with string values"""
         filters = {"demo_filters": {"region": "north", "age_group": "25-34"}}
-        query = build_response_filter_query(filters, question)
+        query = build_response_filter_query(filters)
 
         query_str = str(query)
         assert "respondent__demographics__region" in query_str
@@ -174,7 +164,7 @@ class TestBuildResponseFilterQuery:
             "evidence_rich": True,
             "demo_filters": {"individual": "true"},
         }
-        query = build_response_filter_query(filters, question)
+        query = build_response_filter_query(filters)
 
         # Should have AND logic (default for Q objects)
         query_str = str(query)
@@ -191,7 +181,7 @@ class TestGetFilteredResponsesWithThemes:
         respondent = RespondentFactory(consultation=question.consultation)
         response = ResponseFactory(question=question, respondent=respondent)
 
-        queryset = get_filtered_responses_with_themes(question)
+        queryset = get_filtered_responses_with_themes(question.response_set.all())
 
         assert queryset.count() == 1
         assert queryset.first() == response
@@ -211,7 +201,7 @@ class TestGetFilteredResponsesWithThemes:
 
         # Filter for individual=true
         filters = {"demo_filters": {"individual": "true"}}
-        queryset = get_filtered_responses_with_themes(question, filters)
+        queryset = get_filtered_responses_with_themes(question.response_set.all(), filters)
 
         assert queryset.count() == 1
         assert queryset.first() == response1
@@ -241,7 +231,7 @@ class TestGetFilteredResponsesWithThemes:
 
         # Filter by theme1 AND theme2
         filters = {"theme_list": [str(theme.id), str(theme2.id)]}
-        queryset = get_filtered_responses_with_themes(question, filters)
+        queryset = get_filtered_responses_with_themes(question.response_set.all(), filters)
 
         # Should only return response1 which has both themes
         assert queryset.count() == 1
@@ -261,7 +251,7 @@ class TestGetFilteredResponsesWithThemes:
         mock_embed_text.return_value = v1
 
         filters = {"search_value": "test query", "search_mode": "semantic"}
-        queryset = get_filtered_responses_with_themes(question, filters)
+        queryset = get_filtered_responses_with_themes(question.response_set.all(), filters)
 
         # Should be ordered by semantic similarity (distance)
         responses = list(queryset)
@@ -279,7 +269,7 @@ class TestGetFilteredResponsesWithThemes:
         ResponseFactory(question=question, free_text="Mary loves the lamb, you know")
 
         filters = {"search_value": "lamb, H", "search_mode": "keyword"}
-        queryset = get_filtered_responses_with_themes(question, filters)
+        queryset = get_filtered_responses_with_themes(question.response_set.all(), filters)
 
         # Should return responses that contain the search terms
         results = list(queryset)
@@ -291,7 +281,7 @@ class TestGetFilteredResponsesWithThemes:
         respondent = RespondentFactory(consultation=question.consultation)
         ResponseFactory(question=question, respondent=respondent)
 
-        queryset = get_filtered_responses_with_themes(question)
+        queryset = get_filtered_responses_with_themes(question.response_set.all())
 
         # Check that prefetch_related is used
         assert hasattr(queryset, "_prefetch_related_lookups")

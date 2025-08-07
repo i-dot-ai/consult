@@ -1,5 +1,6 @@
 from rest_framework import serializers
 
+from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
     Consultation,
     CrossCuttingTheme,
@@ -9,6 +10,12 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotation,
     Theme,
 )
+
+
+class UserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ["email", "has_dashboard_access"]
 
 
 class MultiChoiceAnswerSerializer(serializers.HyperlinkedModelSerializer):
@@ -22,6 +29,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     multiple_choice_options = MultiChoiceAnswerSerializer(
         many=True, source="multichoiceanswer_set", read_only=True
     )
+    proportion_of_audited_answers = serializers.ReadOnlyField()
 
     class Meta:
         model = Question
@@ -35,6 +43,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
             "has_free_text",
             "has_multiple_choice",
             "multiple_choice_options",
+            "proportion_of_audited_answers",
         ]
 
 

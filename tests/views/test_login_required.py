@@ -4,8 +4,8 @@ from django.urls import reverse
 
 from consultation_analyser import factories
 from consultation_analyser.constants import DASHBOARD_ACCESS
-from consultation_analyser.consultations.models import Consultation
 from consultation_analyser.consultations.urls import urlpatterns
+from tests.utils import build_url
 
 PUBLIC_URL_NAMES = [
     "root",
@@ -29,11 +29,11 @@ JSON_SCHEMA_URL_NAMES = ["raw_schema"]
 
 # API endpoints return 403 instead of 404 for unauthenticated users
 API_URL_NAMES = [
-    "question-demographic-options",
+    "consultations-demographic-options",
     "question-demographic-aggregations",
     "question-theme-information",
     "question-theme-aggregations",
-    "question-filtered-responses",
+    "response-list",
     "question-detail",
 ]
 
@@ -82,21 +82,6 @@ def set_up_consultation(user):
         "consultation_slug": consultation.slug,
         "question_slug": question.slug,
         "response_id": response.id,
-    }
-    return possible_args
-
-
-def set_up_consultation_api(user):
-    question = factories.QuestionFactory()
-    consultation = question.consultation
-    consultation.users.add(user)
-    consultation.save()
-
-    response = factories.ResponseFactory(question=question)
-    factories.ResponseAnnotationFactory(response=response)
-    possible_args = {
-        "consultation_pk": consultation.id,
-        "pk": question.id,
     }
     return possible_args
 
@@ -181,13 +166,18 @@ def test_api_urls_permission_required(client, url_pattern):
     """
     user = factories.UserFactory()
     non_consultation_user = factories.UserFactory()
-    possible_args = set_up_consultation_api(user)
+    question = factories.QuestionFactory()
+    question.consultation.users.add(user)
+    question.consultation.save()
+
+    response = factories.ResponseFactory(question=question)
+    factories.ResponseAnnotationFactory(response=response)
 
     dashboard_access = Group.objects.get(name=DASHBOARD_ACCESS)
     user.groups.add(dashboard_access)
     user.save()
 
-    url = reverse(viewname=url_pattern, kwargs=possible_args)
+    url = build_url(url_pattern, question)
 
     # Not logged in - should return 401 (DRF un-authenticated)
     check_expected_status_code(client, url, expected_status_code=401)
@@ -205,8 +195,7 @@ def test_api_urls_permission_required(client, url_pattern):
     # Logged in with user without dashboard access - 403
     user_no_dashboard = factories.UserFactory()
     # Need to get the consultation from the database to add the user
-    consultation = Consultation.objects.get(id=possible_args["consultation_pk"])
-    consultation.users.add(user_no_dashboard)
+    question.consultation.users.add(user_no_dashboard)
     client.force_login(user_no_dashboard)
     check_expected_status_code(client, url, 403)
     client.logout()

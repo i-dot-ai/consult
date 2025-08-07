@@ -6,8 +6,10 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from .api.views import (
     ConsultationViewSet,
     QuestionViewSet,
+    ResponseViewSet,
     ThemeViewSet,
     generate_magic_link,
+    get_current_user,
     verify_magic_link,
 )
 from .views import answers, consultations, pages, questions, root, sessions
@@ -15,12 +17,15 @@ from .views import answers, consultations, pages, questions, root, sessions
 router = routers.DefaultRouter()
 router.register("consultations", ConsultationViewSet, basename="consultations")
 
-consultations_router = NestedDefaultRouter(router, r"consultations", lookup="consultation")
+consultations_router = NestedDefaultRouter(router, "consultations", lookup="consultation")
 consultations_router.register("questions", QuestionViewSet, basename="question")
 consultations_router.register("themes", ThemeViewSet, basename="theme")
 
-questions_router = NestedDefaultRouter(consultations_router, r"questions", lookup="question")
-themes_router = NestedDefaultRouter(consultations_router, r"themes", lookup="theme")
+questions_router = NestedDefaultRouter(consultations_router, "questions", lookup="question")
+themes_router = NestedDefaultRouter(consultations_router, "themes", lookup="theme")
+
+questions_router.register("responses", ResponseViewSet, basename="response")
+responses_router = NestedDefaultRouter(questions_router, "responses", lookup="response")
 
 
 urlpatterns = [
@@ -44,6 +49,8 @@ urlpatterns = [
     path("api/", include(consultations_router.urls)),
     path("api/", include(questions_router.urls)),
     path("api/", include(themes_router.urls)),
+    path("api/user/", get_current_user, name="user"),
+    path("api/", include(responses_router.urls)),
     path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/show-next/",
         answers.show_next,

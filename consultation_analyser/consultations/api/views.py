@@ -1,14 +1,14 @@
 from collections import defaultdict
 
-import orjson
 from django.core.exceptions import PermissionDenied
-from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -27,6 +27,7 @@ from .serializers import (
     ResponseSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
+    UserSerializer,
 )
 from .utils import (
     build_response_filter_query,
@@ -35,12 +36,52 @@ from .utils import (
 )
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    """
+    Returns the current logged-in user's information
+    """
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)
+
+
 class ConsultationViewSet(ReadOnlyModelViewSet):
     serializer_class = ConsultationSerializer
     permission_classes = [HasDashboardAccess]
+    filterset_fields = ["slug"]
 
     def get_queryset(self):
         return models.Consultation.objects.filter(users=self.request.user).order_by("-created_at")
+
+    def get_object(self):
+        consultation = get_object_or_404(models.Consultation, **self.kwargs)
+
+        if not consultation.users.filter(pk=self.request.user.pk).exists():
+            raise PermissionDenied("You don't have permission to access this object.")
+
+        return consultation
+
+    @action(detail=True, methods=["get"], url_path="demographic-options")
+    def demographic_options(self, request, pk=None, consultation_pk=None):
+        """Get all demographic options for a consultation"""
+        consultation = self.get_object()
+
+        # Get all demographic fields and their possible values from normalized storage
+        options = (
+            models.DemographicOption.objects.filter(consultation=consultation)
+            .values_list("field_name", "field_value")
+            .order_by("field_name", "field_value")
+        )
+
+        result = defaultdict(list)
+        for field_name, field_value in options:
+            result[field_name].append(field_value)
+
+        serializer = DemographicOptionsSerializer(data={"demographic_options": dict(result)})
+        serializer.is_valid()
+
+        return Response(serializer.data)
 
 
 class ThemeViewSet(ReadOnlyModelViewSet):
@@ -57,6 +98,7 @@ class ThemeViewSet(ReadOnlyModelViewSet):
 class QuestionViewSet(ReadOnlyModelViewSet):
     serializer_class = QuestionSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    filterset_fields = ["has_free_text"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
@@ -78,28 +120,6 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         serializer = self.get_serializer(instance=answer_count, many=True)
         return JsonResponse(data=serializer.data, safe=False)
 
-    @action(detail=True, methods=["get"], url_path="demographic-options")
-    def demographic_options(self, request, pk=None, consultation_pk=None):
-        """Get all demographic options for a consultation"""
-        question = self.get_object()
-        consultation = question.consultation
-
-        # Get all demographic fields and their possible values from normalized storage
-        options = (
-            models.DemographicOption.objects.filter(consultation=consultation)
-            .values_list("field_name", "field_value")
-            .order_by("field_name", "field_value")
-        )
-
-        result = defaultdict(list)
-        for field_name, field_value in options:
-            result[field_name].append(field_value)
-
-        serializer = DemographicOptionsSerializer(data={"demographic_options": dict(result)})
-        serializer.is_valid()
-
-        return Response(serializer.data)
-
     @action(detail=True, methods=["get"], url_path="demographic-aggregations")
     def demographic_aggregations(self, request, pk=None, consultation_pk=None):
         """Get demographic aggregations for filtered responses"""
@@ -114,9 +134,9 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         filters = parse_filters_from_serializer(filter_serializer.validated_data)
 
         # Single query that joins responses -> respondents and gets demographics directly
-        response_filter = build_response_filter_query(filters, question)
+        response_filter = build_response_filter_query(filters)
         respondents_data = models.Respondent.objects.filter(
-            response__in=models.Response.objects.filter(response_filter)
+            response__in=question.response_set.filter(response_filter)
         ).values_list("demographics", flat=True)
 
         # Aggregate in memory (much faster than nested loops)
@@ -168,7 +188,9 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         if question.has_free_text:
             # Use the same filtering logic as FilteredResponsesAPIView
             # This ensures theme filtering uses AND logic consistently
-            filtered_responses = get_filtered_responses_with_themes(question, filters)
+            filtered_responses = get_filtered_responses_with_themes(
+                question.response_set.all(), filters
+            )
 
             # Get theme counts from the filtered responses
             theme_counts = (
@@ -185,42 +207,32 @@ class QuestionViewSet(ReadOnlyModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"], url_path="filtered-responses")
-    def filtered_responses(self, request, pk=None, consultation_pk=None):
-        """Get paginated filtered responses with orjson optimization"""
-        question = self.get_object()
+
+class StandardResultsSetPagination(PageNumberPagination):
+    page_size = 100
+    page_size_query_param = "page_size"
+    max_page_size = 1000
+
+
+class ResponseViewSet(ReadOnlyModelViewSet):
+    serializer_class = ResponseSerializer
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    pagination_class = StandardResultsSetPagination
+
+    def get_queryset(self):
+        question_uuid = self.kwargs["question_pk"]
+        queryset = models.Response.objects.filter(question_id=question_uuid)
 
         # Validate query parameters
-        filter_serializer = FilterSerializer(data=request.query_params)
+        filter_serializer = FilterSerializer(data=self.request.query_params)
         filter_serializer.is_valid(raise_exception=True)
 
         # Parse filters
         filters = parse_filters_from_serializer(filter_serializer.validated_data)
 
-        # Get pagination parameters from validated data
-        page_num = filter_serializer.validated_data.get("page", 1)
-        page_size = filter_serializer.validated_data.get("page_size", 50)
-
         # Get filtered responses with themes (optimized with prefetching)
-        filtered_qs = get_filtered_responses_with_themes(question, filters)
-
-        # Use Django's lazy pagination
-        paginator = Paginator(filtered_qs, page_size, allow_empty_first_page=True)
-        page_obj = paginator.page(page_num)
-
-        # Get total respondents count for this question (single query)
-        all_respondents_count = models.Response.objects.filter(question=question).count()
-
-        serializer = ResponseSerializer(instance=page_obj.object_list.all(), many=True)
-        data = {
-            "all_respondents": serializer.data,
-            "has_more_pages": page_obj.has_next(),
-            "respondents_total": all_respondents_count,
-            "filtered_total": paginator.count,
-        }
-
-        # Return HttpResponse
-        return HttpResponse(orjson.dumps(data), content_type="application/json")
+        filtered_qs = get_filtered_responses_with_themes(queryset, filters)
+        return filtered_qs
 
 
 @api_view(["POST"])
