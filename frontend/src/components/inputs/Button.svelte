@@ -4,10 +4,12 @@
     export let variant: "default" | "ghost" | "primary" = "default";
     export let handleClick = () => {};
     export let disabled: boolean = false;
+    export let fullWidth: boolean = false;
 </script>
 
 <button
     class={clsx([
+        fullWidth && "w-full",
         "self-start",
         "cursor-pointer",
         "rounded-md",

@@ -47,12 +47,12 @@ export const favStore = createFavStore();
 
 
 // Shared fetch logic
-export const createFetchStore = (url: string) => {
+export const createFetchStore = () => {
     const data = writable(null);
     const loading = writable(true);
     const error = writable(null);
 
-    const load = async () => {
+    const load = async (url: string) => {
         loading.set(true);
         error.set(null);
         try {
@@ -60,7 +60,9 @@ export const createFetchStore = (url: string) => {
             if (!response.ok) {
                 throw new Error(`Fetch Error: ${response.statusText}`);
             }
-            data.set(await response.json());
+            const parsedData = await response.json();
+            data.set(parsedData);
+            return parsedData;
         } catch(err) {
             error.set(err.message);
         } finally {
