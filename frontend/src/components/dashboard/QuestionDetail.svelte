@@ -104,13 +104,13 @@
 
         // Append next page of answers to existing answers
         try {
-            const answersData = await loadAnswers(`/api/consultations/${consultationId}/questions/${questionId}/filtered-responses/${queryString}`);
+            await loadAnswers(`/api/consultations/${consultationId}/questions/${questionId}/filtered-responses/${queryString}`);
 
-            if (answersData.all_respondents) {
-                const newAnswers = answersData.all_respondents;
+            if ($answersData.all_respondents) {
+                const newAnswers = $answersData.all_respondents;
                 answers = [...answers, ...newAnswers];
             }
-            hasMorePages = answersData.has_more_pages || false;
+            hasMorePages = $answersData.has_more_pages || false;
         } catch {}
 
         currPage += 1;
