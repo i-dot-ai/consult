@@ -114,7 +114,7 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         filters = parse_filters_from_serializer(filter_serializer.validated_data)
 
         # Single query that joins responses -> respondents and gets demographics directly
-        response_filter = build_response_filter_query(filters, question)
+        response_filter = build_response_filter_query(filters)
         respondents_data = models.Respondent.objects.filter(
             response__in=models.Response.objects.filter(response_filter)
         ).values_list("demographics", flat=True)
@@ -168,7 +168,7 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         if question.has_free_text:
             # Use the same filtering logic as FilteredResponsesAPIView
             # This ensures theme filtering uses AND logic consistently
-            filtered_responses = get_filtered_responses_with_themes(question, filters)
+            filtered_responses = get_filtered_responses_with_themes(question.response_set.all(), filters)
 
             # Get theme counts from the filtered responses
             theme_counts = (
@@ -202,7 +202,7 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         page_size = filter_serializer.validated_data.get("page_size", 50)
 
         # Get filtered responses with themes (optimized with prefetching)
-        filtered_qs = get_filtered_responses_with_themes(question, filters)
+        filtered_qs = get_filtered_responses_with_themes(question.response_set.all(), filters)
 
         # Use Django's lazy pagination
         paginator = Paginator(filtered_qs, page_size, allow_empty_first_page=True)

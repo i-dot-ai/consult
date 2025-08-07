@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from django.db.models import Count, Q
+from django.db.models import Count, Q, QuerySet
 from pgvector.django import CosineDistance
 
 from ...embeddings import embed_text
@@ -52,9 +52,9 @@ def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
     return filters
 
 
-def build_response_filter_query(filters: FilterParams, question: models.Question) -> Q:
+def build_response_filter_query(filters: FilterParams) -> Q:
     """Build a Q object for filtering responses based on filter params"""
-    query = Q(question=question)
+    query = Q()
 
     if filters.get("sentiment_list"):
         query &= Q(annotation__sentiment__in=filters["sentiment_list"])
@@ -79,13 +79,13 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
 
 
 def get_filtered_responses_with_themes(
-    question: models.Question,
+    queryset: QuerySet,
     filters: FilterParams | None = None,
 ):
     """Single optimized query to get all filtered responses with their themes"""
-    response_filter = build_response_filter_query(filters or {}, question)
+    response_filter = build_response_filter_query(filters or {})
     queryset = (
-        models.Response.objects.filter(response_filter)
+        queryset.filter(response_filter)
         .select_related("respondent", "annotation")
         .prefetch_related("annotation__themes")
         .only(
