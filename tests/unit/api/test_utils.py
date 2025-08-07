@@ -125,7 +125,6 @@ class TestParseFiltersFromSerializer:
 
 @pytest.mark.django_db
 class TestBuildResponseFilterQuery:
-
     def test_sentiment_filter(self, question):
         """Test sentiment filtering"""
         filters = {"sentiment_list": ["AGREEMENT", "DISAGREEMENT"]}

@@ -51,7 +51,7 @@ def test_create_token_fail(client):
         "question-demographic-aggregations",
         "question-theme-information",
         "question-theme-aggregations",
-        "question-filtered-responses",
+        "response-list",
         "question-detail",
     ],
 )
