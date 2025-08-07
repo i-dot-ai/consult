@@ -12,7 +12,7 @@ def build_url(url_pattern: str, question: Question) -> str:
     if url_pattern.startswith("consultations-"):
         return reverse(url_pattern, kwargs={"pk": question.consultation.pk})
 
-    if url_pattern.startswith("question-"):
+      if url_pattern.startswith("question-"):
         return reverse(
             url_pattern, kwargs={"consultation_pk": question.consultation.pk, "pk": question.pk}
         )
