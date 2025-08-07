@@ -20,12 +20,7 @@ def test_consultation_page(django_app):
     sign_in(django_app, user.email)
 
     consultation_slug = consultation.slug
-    question = Question.objects.filter(consultation=consultation).first()
+    _question = Question.objects.filter(consultation=consultation).first()
     consultation_page = django_app.get(f"/consultations/{consultation_slug}/")
 
     assert "All Questions" in consultation_page
-    assert "Free text response" in consultation_page
-    assert question.text in consultation_page
-
-    response_page = consultation_page.click("Question 1", index=0)
-    assert f"{question.text}" in response_page

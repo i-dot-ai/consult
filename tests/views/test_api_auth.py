@@ -5,6 +5,8 @@ from django.urls import reverse
 from magic_link.models import MagicLink
 from rest_framework_simplejwt.tokens import RefreshToken
 
+from tests.utils import build_url
+
 
 @pytest.mark.django_db
 def test_token_magic_link(client, dashboard_user):
@@ -45,7 +47,7 @@ def test_create_token_fail(client):
 @pytest.mark.parametrize(
     "url_pattern",
     [
-        "question-demographic-options",
+        "consultations-demographic-options",
         "question-demographic-aggregations",
         "question-theme-information",
         "question-theme-aggregations",
@@ -68,10 +70,7 @@ def test_api_urls_permission_required(
     API endpoints use DRF permissions which return 403 (Forbidden) rather than
     404 (Not Found) for unauthorized access.
     """
-    url = reverse(
-        viewname=url_pattern,
-        kwargs={"consultation_pk": free_text_question.consultation.pk, "pk": free_text_question.pk},
-    )
+    url = build_url(url_pattern, free_text_question)
 
     # Not logged in - should return 401 (DRF un-authenticated)
     assert client.get(url).status_code == 401

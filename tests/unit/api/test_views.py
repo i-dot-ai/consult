@@ -8,11 +8,13 @@ from django.urls import reverse
 from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.models import DemographicOption
 from consultation_analyser.factories import (
+    QuestionFactory,
     RespondentFactory,
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
     UserFactory,
 )
+from tests.utils import build_url
 
 
 @pytest.mark.django_db
@@ -21,11 +23,8 @@ class TestDemographicOptionsAPIView:
         """Test API endpoint returns empty options when no demographic data exists"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic-options",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
-            },
+            "consultations-demographic-options",
+            kwargs={"pk": free_text_question.consultation.id},
         )
         response = client.get(url)
 
@@ -55,11 +54,8 @@ class TestDemographicOptionsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic-options",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
-            },
+            "consultations-demographic-options",
+            kwargs={"pk": free_text_question.consultation.id},
         )
         response = client.get(url)
 
@@ -75,11 +71,8 @@ class TestDemographicOptionsAPIView:
     def test_permission_required(self, client, free_text_question):
         """Test API endpoint requires proper permissions"""
         url = reverse(
-            "question-demographic-options",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
-            },
+            "consultations-demographic-options",
+            kwargs={"pk": free_text_question.consultation.id},
         )
         response = client.get(url)
         assert response.status_code == 401
@@ -87,11 +80,9 @@ class TestDemographicOptionsAPIView:
     def test_invalid_consultation_slug(self, client, consultation_user):
         """Test API endpoint with invalid consultation slug"""
         client.force_login(consultation_user)
-        url = reverse(
-            "question-demographic-options", kwargs={"consultation_pk": uuid4(), "pk": uuid4()}
-        )
+        url = reverse("consultations-demographic-options", kwargs={"pk": uuid4()})
         response = client.get(url)
-        assert response.status_code == 403  # DRF returns 403 for permission denied
+        assert response.status_code == 404  # NOT FOUND
 
 
 @pytest.mark.django_db
@@ -595,7 +586,7 @@ class TestAPIViewPermissions:
     @pytest.mark.parametrize(
         "endpoint_name",
         [
-            "question-demographic-options",
+            "consultations-demographic-options",
             "question-demographic-aggregations",
             "question-theme-information",
             "question-theme-aggregations",
@@ -605,20 +596,14 @@ class TestAPIViewPermissions:
     )
     def test_unauthenticated_access_denied(self, client, free_text_question, endpoint_name):
         """Test that unauthenticated users cannot access any API endpoint"""
-        url = reverse(
-            endpoint_name,
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
-            },
-        )
+        url = build_url(endpoint_name, free_text_question)
         response = client.get(url)
         assert response.status_code == 401
 
     @pytest.mark.parametrize(
         "endpoint_name",
         [
-            "question-demographic-options",
+            "consultations-demographic-options",
             "question-demographic-aggregations",
             "question-theme-information",
             "question-theme-aggregations",
@@ -631,20 +616,15 @@ class TestAPIViewPermissions:
     ):
         """Test that users without dashboard access cannot access any API endpoint"""
         client.force_login(user_without_dashboard_access)
-        url = reverse(
-            endpoint_name,
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
-            },
-        )
+        url = build_url(endpoint_name, free_text_question)
         response = client.get(url)
         assert response.status_code == 403
 
     @pytest.mark.parametrize(
         "endpoint_name",
         [
-            "question-demographic-options",
+            "consultations-detail",
+            "consultations-demographic-options",
             "question-demographic-aggregations",
             "question-theme-information",
             "question-theme-aggregations",
@@ -657,13 +637,7 @@ class TestAPIViewPermissions:
     ):
         """Test that users without consultation access cannot access any API endpoint"""
         client.force_login(user_without_consultation_access)
-        url = reverse(
-            endpoint_name,
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
-            },
-        )
+        url = build_url(endpoint_name, free_text_question)
         response = client.get(url)
         assert response.status_code == 403
 
@@ -675,21 +649,9 @@ class TestAPIViewErrorHandling:
     def test_nonexistent_consultation(self, client, consultation_user):
         """Test API endpoints with non-existent consultation"""
         client.force_login(consultation_user)
-        url = reverse(
-            "question-demographic-options", kwargs={"consultation_pk": uuid4(), "pk": uuid4()}
-        )
+        url = reverse("consultations-demographic-options", kwargs={"pk": uuid4()})
         response = client.get(url)
-        assert response.status_code == 403  # DRF returns 403 for permission denied
-
-    def test_nonexistent_question(self, client, consultation_user, free_text_question):
-        """Test API endpoints with non-existent question"""
-        client.force_login(consultation_user)
-        url = reverse(
-            "question-demographic-options",
-            kwargs={"consultation_pk": free_text_question.consultation.id, "pk": uuid4()},
-        )
-        response = client.get(url)
-        assert response.status_code == 404
+        assert response.status_code == 404  # NOT FOUND
 
 
 @pytest.mark.django_db
@@ -698,6 +660,42 @@ def test_consultations_list(client, consultation_user, multi_choice_question):
     url = reverse("consultations-list")
     response = client.get(url)
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_consultations_list_filter_by_slug(client, consultation_user, multi_choice_question):
+    """Test that consultations can be filtered by slug"""
+    client.force_login(consultation_user)
+    consultation = multi_choice_question.consultation
+
+    # Test filtering by slug
+    url = reverse("consultations-list")
+    response = client.get(url, {"slug": consultation.slug})
+    assert response.status_code == 200
+
+    data = response.json()
+    results = data.get("results", data)  # Handle paginated/non-paginated responses
+
+    # Should return exactly one consultation
+    assert len(results) == 1
+    assert results[0]["slug"] == consultation.slug
+    assert results[0]["title"] == consultation.title
+
+
+@pytest.mark.django_db
+def test_consultations_list_filter_by_nonexistent_slug(client, consultation_user):
+    """Test that filtering by non-existent slug returns empty results"""
+    client.force_login(consultation_user)
+
+    url = reverse("consultations-list")
+    response = client.get(url, {"slug": "nonexistent-slug"})
+    assert response.status_code == 200
+
+    data = response.json()
+    results = data.get("results", data)  # Handle paginated/non-paginated responses
+
+    # Should return empty list
+    assert len(results) == 0
 
 
 @pytest.mark.django_db
@@ -720,3 +718,35 @@ def test_multi_choice_answer_count(
 
     expected = [{"answer": "blue", "response_count": 1}, {"answer": "red", "response_count": 2}]
     assert sort_by_answer(response.json()) == sort_by_answer(expected)
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("has_free_text", [True, False, ""])
+def test_filter(client, consultation_user, consultation, has_free_text):
+    """Test filtering questions by has_free_text"""
+
+    # Create questions with different free text settings
+    _free_text_question = QuestionFactory(
+        consultation=consultation, has_free_text=True, text="Free text question"
+    )
+    _multi_choice_question = QuestionFactory(
+        consultation=consultation, has_free_text=False, text="Multi choice question"
+    )
+
+    client.force_login(consultation_user)
+    url = reverse("question-list", kwargs={"consultation_pk": consultation.id})
+
+    # Filter by has_free_text=True
+    response = client.get(url, {"has_free_text": has_free_text})
+    assert response.status_code == 200
+
+    data = response.json()
+    results = data.get("results", data)
+
+    if has_free_text == "":
+        # should return both
+        assert len(results) == 2
+    else:
+        # should return just one question
+        assert len(results) == 1
+        assert results[0]["has_free_text"] == has_free_text

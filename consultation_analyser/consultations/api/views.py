@@ -8,7 +8,8 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -27,6 +28,7 @@ from .serializers import (
     ResponseSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
+    UserSerializer,
 )
 from .utils import (
     build_response_filter_query,
@@ -35,12 +37,52 @@ from .utils import (
 )
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    """
+    Returns the current logged-in user's information
+    """
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)
+
+
 class ConsultationViewSet(ReadOnlyModelViewSet):
     serializer_class = ConsultationSerializer
     permission_classes = [HasDashboardAccess]
+    filterset_fields = ["slug"]
 
     def get_queryset(self):
         return models.Consultation.objects.filter(users=self.request.user).order_by("-created_at")
+
+    def get_object(self):
+        consultation = get_object_or_404(models.Consultation, **self.kwargs)
+
+        if not consultation.users.filter(pk=self.request.user.pk).exists():
+            raise PermissionDenied("You don't have permission to access this object.")
+
+        return consultation
+
+    @action(detail=True, methods=["get"], url_path="demographic-options")
+    def demographic_options(self, request, pk=None, consultation_pk=None):
+        """Get all demographic options for a consultation"""
+        consultation = self.get_object()
+
+        # Get all demographic fields and their possible values from normalized storage
+        options = (
+            models.DemographicOption.objects.filter(consultation=consultation)
+            .values_list("field_name", "field_value")
+            .order_by("field_name", "field_value")
+        )
+
+        result = defaultdict(list)
+        for field_name, field_value in options:
+            result[field_name].append(field_value)
+
+        serializer = DemographicOptionsSerializer(data={"demographic_options": dict(result)})
+        serializer.is_valid()
+
+        return Response(serializer.data)
 
 
 class ThemeViewSet(ReadOnlyModelViewSet):
@@ -57,6 +99,7 @@ class ThemeViewSet(ReadOnlyModelViewSet):
 class QuestionViewSet(ReadOnlyModelViewSet):
     serializer_class = QuestionSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    filterset_fields = ["has_free_text"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
@@ -77,28 +120,6 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         )
         serializer = self.get_serializer(instance=answer_count, many=True)
         return JsonResponse(data=serializer.data, safe=False)
-
-    @action(detail=True, methods=["get"], url_path="demographic-options")
-    def demographic_options(self, request, pk=None, consultation_pk=None):
-        """Get all demographic options for a consultation"""
-        question = self.get_object()
-        consultation = question.consultation
-
-        # Get all demographic fields and their possible values from normalized storage
-        options = (
-            models.DemographicOption.objects.filter(consultation=consultation)
-            .values_list("field_name", "field_value")
-            .order_by("field_name", "field_value")
-        )
-
-        result = defaultdict(list)
-        for field_name, field_value in options:
-            result[field_name].append(field_value)
-
-        serializer = DemographicOptionsSerializer(data={"demographic_options": dict(result)})
-        serializer.is_valid()
-
-        return Response(serializer.data)
 
     @action(detail=True, methods=["get"], url_path="demographic-aggregations")
     def demographic_aggregations(self, request, pk=None, consultation_pk=None):
