@@ -712,7 +712,7 @@ def create_consultation(
             consultation_code,
             timestamp,
         )
-        
+
         # Import cross-cutting themes after all questions and themes are imported
         queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
         queue.enqueue(

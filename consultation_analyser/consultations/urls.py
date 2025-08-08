@@ -8,6 +8,7 @@ from .api.views import (
     QuestionViewSet,
     ThemeViewSet,
     generate_magic_link,
+    get_current_user,
     verify_magic_link,
 )
 from .views import answers, consultations, pages, questions, root, sessions
@@ -44,6 +45,7 @@ urlpatterns = [
     path("api/", include(consultations_router.urls)),
     path("api/", include(questions_router.urls)),
     path("api/", include(themes_router.urls)),
+    path("api/user/", get_current_user, name="user"),
     path(
         "consultations/<str:consultation_slug>/responses/<str:question_slug>/show-next/",
         answers.show_next,
