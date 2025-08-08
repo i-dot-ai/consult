@@ -31,7 +31,8 @@ def test_create_token(client, dashboard_user):
     url = reverse("create-token")
     response = client.post(url, data={"token": link.token})
     assert response.status_code == 200
-    assert "access" in response.json()
+    assert response.json()["access"]
+    assert response.json()["sessionId"]
 
 
 @pytest.mark.django_db
@@ -89,12 +90,13 @@ def test_api_urls_permission_required(
 
 
 @pytest.mark.django_db
-def test_expired_token(client, dashboard_user):
+def test_token_expired(client, dashboard_user):
     token = AccessToken.for_user(dashboard_user)
-    token.set_exp(from_time=token.current_time, lifetime=timedelta(seconds=-1))
+    token.set_exp(lifetime=timedelta(seconds=-1))
+
     url = reverse("consultations-list")
 
-    response = client.get(url, headers={"Authorization": f"Bearer {token}"})
-    assert response.status_code == 401
+    response = client.post(url, headers={"Authorization": f"Bearer {token}"})
 
+    assert response.status_code == 401
     assert response.json()["messages"][0]["message"] == "Token is expired"

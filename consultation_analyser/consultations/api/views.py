@@ -280,4 +280,12 @@ def verify_magic_link(request) -> HttpResponse:
         return JsonResponse(data={"detail": str(ex.args[0])}, status=403)
     else:
         link.audit(request)
-        return JsonResponse({"access": str(token)})
+        # Ensure session is created if it doesn't exist
+        if not request.session.session_key:
+            request.session.save()
+        return JsonResponse(
+            {
+                "access": str(token),
+                "sessionId": request.session.session_key,
+            }
+        )
