@@ -14,8 +14,8 @@ RUN npm ci --only=production
 COPY frontend/ .
 
 # Create non-root user for security
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+RUN groupadd -g 1001 nodejs
+RUN useradd -r -u 1001 -g nodejs nextjs
 
 # Change ownership of app directory
 RUN chown -R nextjs:nodejs /app
