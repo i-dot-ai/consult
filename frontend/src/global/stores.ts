@@ -47,25 +47,48 @@ export const favStore = createFavStore();
 
 
 // Shared fetch logic
-export const createFetchStore = (url: string) => {
+export const createFetchStore = () => {
     const data = writable(null);
     const loading = writable(true);
     const error = writable(null);
 
-    const load = async () => {
-        loading.set(true);
-        error.set(null);
-        try {
-            const response = await fetch(url);
-            if (!response.ok) {
-                throw new Error(`Fetch Error: ${response.statusText}`);
-            }
-            data.set(await response.json());
-        } catch(err) {
-            error.set(err.message);
-        } finally {
-            loading.set(false);
+    const DEBOUNCE_DELAY = 500;
+    let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
+    let prevPromise: Promise<void> | null = null;
+    let resolvePrev: (() => void) | null = null;
+
+    const load = async (url: string) => {
+        if (debounceTimeout) {
+            clearTimeout(debounceTimeout);
+            debounceTimeout = null;
         }
+
+        prevPromise = new Promise<void>((resolve) => {
+            resolvePrev = resolve;
+
+            debounceTimeout = setTimeout(async () => {
+                loading.set(true);
+                error.set(null);
+                try {
+                    const response = await fetch(url);
+                    if (!response.ok) {
+                        throw new Error(`Fetch Error: ${response.statusText}`);
+                    }
+                    const parsedData = await response.json();
+                    data.set(parsedData);
+                } catch(err) {
+                    error.set(err.message);
+                } finally {
+                    loading.set(false);
+
+                    if (resolvePrev) {
+                        resolvePrev();
+                    }
+                }
+            }, DEBOUNCE_DELAY);
+        })
+
+        return prevPromise;
     };
 
     return { data, loading, error, load };
