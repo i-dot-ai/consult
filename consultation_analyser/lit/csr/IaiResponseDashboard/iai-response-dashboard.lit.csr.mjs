@@ -295,7 +295,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         map[theme.id] = theme;
                         return map;
                     }, {});
-                    
+
                     // Convert theme_aggregations format to theme_mappings format
                     this.themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
                         const themeInfo = themeInfoMap[id] || {};
@@ -315,28 +315,28 @@ export default class IaiResponseDashboard extends IaiLitBase {
 
                 // Now fetch responses
                 const responsesResponse = await fetch(
-                    `/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(),
+                    `/api/consultations/${this.consultationId}/questions/${this.questionId}/responses/?` + this.buildQuery(),
                     { signal }
                 );
-                
+
                 if (!responsesResponse.ok) {
                     throw new Error(`HTTP error! status: ${responsesResponse.status}`);
                 }
-                
+
                 const responsesData = await responsesResponse.json();
-                
+
                 // Add all responses
                 this.responses = this.responses.concat(
-                    responsesData.all_respondents.map(response => ({
+                    responsesData.results.map(response => ({
                         ...response,
                         visible: true,
                     }))
                 );
-                
+
                 // Update metadata
                 this.responsesTotal = responsesData.respondents_total;
-                this._responsesFilteredTotal = responsesData.filtered_total;
-                this._hasMorePages = responsesData.has_more_pages;
+                this._responsesFilteredTotal = responsesData.count;
+                this._hasMorePages = Boolean(responsesData.next);
 
             } catch (err) {
                 if (err.name == "AbortError") {
