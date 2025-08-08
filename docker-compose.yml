@@ -1,0 +1,16 @@
+
+services:
+
+  # Frontend
+  frontend:
+    image: node:18
+    working_dir: /app
+    ports:
+      - "4321:4321"
+    volumes:
+      - ./frontend:/app
+    command: sh -c "npm install && npm run dev"
+
+
+volumes:
+  frontend_node_modules:
