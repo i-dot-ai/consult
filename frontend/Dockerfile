@@ -8,10 +8,13 @@ WORKDIR /app
 COPY frontend/package*.json ./
 
 # Install dependencies
-RUN npm ci --only=production
+RUN npm ci
 
 # Copy application code
 COPY frontend/ .
+
+# Build the application
+RUN npm run build
 
 # Create non-root user for security
 RUN groupadd -g 1001 nodejs
