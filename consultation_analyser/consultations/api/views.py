@@ -8,7 +8,8 @@ from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -18,6 +19,7 @@ from ..views.sessions import send_magic_link_if_email_exists
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
     ConsultationSerializer,
+    CrossCuttingThemeSerializer,
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     FilterSerializer,
@@ -25,6 +27,7 @@ from .serializers import (
     QuestionSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
+    UserSerializer,
 )
 from .utils import (
     build_respondent_data_fast,
@@ -34,43 +37,36 @@ from .utils import (
 )
 
 
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def get_current_user(request):
+    """
+    Returns the current logged-in user's information
+    """
+    serializer = UserSerializer(request.user)
+    return Response(serializer.data)
+
+
 class ConsultationViewSet(ReadOnlyModelViewSet):
     serializer_class = ConsultationSerializer
     permission_classes = [HasDashboardAccess]
+    filterset_fields = ["slug"]
 
     def get_queryset(self):
         return models.Consultation.objects.filter(users=self.request.user).order_by("-created_at")
 
+    def get_object(self):
+        consultation = get_object_or_404(models.Consultation, **self.kwargs)
 
-class QuestionViewSet(ReadOnlyModelViewSet):
-    serializer_class = QuestionSerializer
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+        if not consultation.users.filter(pk=self.request.user.pk).exists():
+            raise PermissionDenied("You don't have permission to access this object.")
 
-    def get_queryset(self):
-        consultation_uuid = self.kwargs["consultation_pk"]
-        return models.Question.objects.filter(
-            consultation__id=consultation_uuid, consultation__users=self.request.user
-        ).order_by("-created_at")
-
-    @action(
-        detail=True,
-        methods=["get"],
-        url_path="multi-choice-response-count",
-        serializer_class=MultiChoiceAnswerCount,
-    )
-    def multi_choice_response_count(self, request, pk=None, consultation_pk=None):
-        question = self.get_object()
-        answer_count = question.response_set.values("chosen_options__text").annotate(
-            response_count=Count("id")
-        )
-        serializer = self.get_serializer(instance=answer_count, many=True)
-        return JsonResponse(data=serializer.data, safe=False)
+        return consultation
 
     @action(detail=True, methods=["get"], url_path="demographic-options")
     def demographic_options(self, request, pk=None, consultation_pk=None):
         """Get all demographic options for a consultation"""
-        question = self.get_object()
-        consultation = question.consultation
+        consultation = self.get_object()
 
         # Get all demographic fields and their possible values from normalized storage
         options = (
@@ -87,6 +83,43 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         serializer.is_valid()
 
         return Response(serializer.data)
+
+
+class ThemeViewSet(ReadOnlyModelViewSet):
+    serializer_class = CrossCuttingThemeSerializer
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+
+    def get_queryset(self):
+        consultation_uuid = self.kwargs["consultation_pk"]
+        return models.CrossCuttingTheme.objects.filter(
+            consultation_id=consultation_uuid, consultation__users=self.request.user
+        ).order_by("-created_at")
+
+
+class QuestionViewSet(ReadOnlyModelViewSet):
+    serializer_class = QuestionSerializer
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    filterset_fields = ["has_free_text"]
+
+    def get_queryset(self):
+        consultation_uuid = self.kwargs["consultation_pk"]
+        return models.Question.objects.filter(
+            consultation_id=consultation_uuid, consultation__users=self.request.user
+        ).order_by("-created_at")
+
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="multi-choice-response-count",
+        serializer_class=MultiChoiceAnswerCount,
+    )
+    def multi_choice_response_count(self, request, pk=None, consultation_pk=None):
+        question = self.get_object()
+        answer_count = question.response_set.values("chosen_options__text").annotate(
+            response_count=Count("id")
+        )
+        serializer = self.get_serializer(instance=answer_count, many=True)
+        return JsonResponse(data=serializer.data, safe=False)
 
     @action(detail=True, methods=["get"], url_path="demographic-aggregations")
     def demographic_aggregations(self, request, pk=None, consultation_pk=None):
