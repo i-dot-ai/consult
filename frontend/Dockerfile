@@ -13,9 +13,6 @@ RUN npm ci
 # Copy application code
 COPY frontend/ .
 
-# Build the application
-RUN npm run build
-
 # Create non-root user for security
 RUN groupadd -g 1001 nodejs
 RUN useradd -r -u 1001 -g nodejs -m nextjs
@@ -23,7 +20,12 @@ RUN useradd -r -u 1001 -g nodejs -m nextjs
 # Change ownership of app directory
 RUN chown -R nextjs:nodejs /app
 RUN chown -R nextjs:nodejs /home/nextjs
+
+# Switch to non-root user
 USER nextjs
+
+# Build the application
+RUN npm run build
 
 # Expose port
 EXPOSE 4321
