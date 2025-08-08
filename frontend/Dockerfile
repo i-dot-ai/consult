@@ -35,8 +35,11 @@ RUN npm uninstall lightningcss @tailwindcss/vite tailwindcss && npm install ligh
 # Build the application
 RUN npm run build
 
+# Verify build output exists
+RUN ls -la dist/
+
 # Expose port
 EXPOSE 4321
 
 # Start the application
-CMD ["npm", "start"]
+CMD ["node", "./dist/server/entry.mjs"]
