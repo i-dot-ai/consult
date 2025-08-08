@@ -1,7 +1,6 @@
 from django.urls import include, path
 from rest_framework import routers
 from rest_framework_nested.routers import NestedDefaultRouter
-from rest_framework_simplejwt.views import TokenRefreshView
 
 from .api.views import (
     ConsultationViewSet,

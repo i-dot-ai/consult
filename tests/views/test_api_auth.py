@@ -4,7 +4,7 @@ from uuid import uuid4
 import pytest
 from django.urls import reverse
 from magic_link.models import MagicLink
-from rest_framework_simplejwt.tokens import RefreshToken, AccessToken
+from rest_framework_simplejwt.tokens import AccessToken
 
 from tests.utils import build_url
 
@@ -100,4 +100,3 @@ def test_token_expired(client, dashboard_user):
 
     assert response.status_code == 401
     assert response.json()["messages"][0]["message"] == "Token is expired"
-
