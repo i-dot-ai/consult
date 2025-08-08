@@ -4,7 +4,7 @@
   "version": "0.0.1",
   "scripts": {
     "dev": "astro dev --host",
-    "start": "astro preview --host",
+    "start": "node ./dist/server/entry.mjs",
     "build": "astro build",
     "preview": "astro preview --host",
     "astro": "astro",
