@@ -37,9 +37,16 @@ RUN npm run build
 
 # Verify build output exists
 RUN ls -la dist/
+RUN ls -la dist/server/
+RUN test -f dist/server/entry.mjs && echo "Server entry file exists" || echo "Server entry file NOT found"
 
 # Expose port
 EXPOSE 4321
 
+# Set environment variables
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=4321
+
 # Start the application
-CMD ["node", "./dist/server/entry.mjs"]
+CMD ["node", "/app/dist/server/entry.mjs"]
