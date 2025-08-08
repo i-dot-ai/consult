@@ -93,12 +93,16 @@
         data: multiChoiceAggrData,
     } = createFetchStore();
 
+    onMount(() => {
+        // Load consultation data once on mount
+        loadConsultation(`/api/consultations/${consultationId}/`);
+    })
+
     async function loadData(filters) {
         const queryString = buildQuery(filters);
 
         // Skip the rest of the requests if they are already requested for this filter set
         if (currPage === 1) {
-            loadConsultation(`/api/consultations/${consultationId}/${queryString}`);
             loadThemeInfo(`/api/consultations/${consultationId}/questions/${questionId}/theme-aggregations/${queryString}`);
             loadThemeAggr(`/api/consultations/${consultationId}/questions/${questionId}/theme-information/${queryString}`);
             loadDemoOptions(`/api/consultations/${consultationId}/questions/${questionId}/demographic-options/${queryString}`);
