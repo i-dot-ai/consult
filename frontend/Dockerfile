@@ -33,12 +33,12 @@ RUN ls -la dist/server/
 RUN test -f dist/server/entry.mjs && echo "Server entry file exists" || echo "Server entry file NOT found"
 
 # Expose port
-EXPOSE 4321
+EXPOSE 3000
 
 # Set environment variables
 ENV NODE_ENV=production
 ENV HOST=0.0.0.0
-ENV PORT=4321
+ENV PORT=3000
 
 # Start the application
 CMD ["node", "/app/dist/server/entry.mjs"]
