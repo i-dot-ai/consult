@@ -62,7 +62,7 @@
 
     {#each tabs as tab}
         {#if tab.id === $value}
-            <div transition:slide use:melt={$content(tab.id)} class="grow bg-white p-5">
+            <div transition:slide use:melt={$content(tab.id)} class="grow bg-white">
                 <svelte:component this={tab.component} {...(tab.props || {})} />
             </div>
         {/if}

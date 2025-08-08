@@ -215,6 +215,7 @@
             answers: answers,
             isAnswersLoading: $isAnswersLoading,
             answersError: $answersError,
+            filteredTotal: $answersData?.filtered_total,
             hasMorePages: hasMorePages,
             handleLoadClick: () => loadData({
                 searchValue: searchValue,
