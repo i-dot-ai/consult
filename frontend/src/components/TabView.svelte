@@ -5,11 +5,23 @@
 
     import { createTabs, melt } from '@melt-ui/svelte';
 
+    import { writable } from 'svelte/store'
+
+
+    export let tabs: Tab[] = []; 
+    export let value: string = "";
+    export let onValueChange: (val: {curr: string, next: string}) => {};
+
+    const writableValue = writable(value);
+    $: {
+        writableValue.set(value);
+    }
+
     const {
         elements: { root, list, content, trigger },
-        states: { value },
     } = createTabs({
-        defaultValue: 'tab-1',
+        value: writableValue,
+        onValueChange: onValueChange,
     });
 
     interface Tab {
@@ -18,7 +30,6 @@
         component: any;
         props: Object;
     }
-    export let tabs: Tab[] = [];
 </script>
 
 <div
@@ -52,7 +63,7 @@
                 "transition-colors",
                 "duration-300",
                 "cursor-pointer",
-                $value === tab.id && "bg-white",
+                $writableValue === tab.id && "bg-white",
                 "hover:bg-neutral-100",
             ])}>
                 {tab.title}
@@ -61,7 +72,7 @@
     </div>
 
     {#each tabs as tab}
-        {#if tab.id === $value}
+        {#if tab.id === $writableValue}
             <div transition:slide use:melt={$content(tab.id)} class="grow bg-white">
                 <svelte:component this={tab.component} {...(tab.props || {})} />
             </div>

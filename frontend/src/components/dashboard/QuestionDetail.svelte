@@ -27,6 +27,13 @@
     let hasMorePages: boolean = true;
     let answers = [];
 
+    const TabNames = {
+        QuestionSummary: "tab-question-summary",
+        ResponseAnalysis: "tab-response-analysis",
+    }
+
+    let activeTab = TabNames.QuestionSummary;
+
     let searchValue: string = "";
     let searchMode: "keyword" | "semantic" = "keyword";
     let themeFilters: string[] = [];
@@ -201,32 +208,44 @@
     {/if}
 </section>
 
-<TabView tabs={[
-    {
-        id: 'tab-1',
-        title: 'Question summary',
-        component: QuestionSummary,
-    },
-    {
-        id: 'tab-2',
-        title: 'Response analysis',
-        component: ResponseAnalysis,
-        props: {
-            answers: answers,
-            isAnswersLoading: $isAnswersLoading,
-            answersError: $answersError,
-            filteredTotal: $answersData?.filtered_total,
-            hasMorePages: hasMorePages,
-            handleLoadClick: () => loadData({
-                searchValue: searchValue,
-                searchMode: searchMode,
-                themeFilters: themeFilters,
-                evidenceRich: evidenceRich,
-                demoFilters: demoFilters,
-            }),
-        }
-    },
-]} />
+<TabView
+    value={activeTab}
+    onValueChange={({ curr, next }) => activeTab = next}
+    tabs={[
+        {
+            id: TabNames.QuestionSummary,
+            title: 'Question summary',
+            component: QuestionSummary,
+        },
+        {
+            id: TabNames.ResponseAnalysis,
+            title: 'Response analysis',
+            component: ResponseAnalysis,
+            props: {
+                answers: answers,
+                isAnswersLoading: $isAnswersLoading,
+                answersError: $answersError,
+                filteredTotal: $answersData?.filtered_total,
+                hasMorePages: hasMorePages,
+                handleLoadClick: () => loadData({
+                    searchValue: searchValue,
+                    searchMode: searchMode,
+                    themeFilters: themeFilters,
+                    evidenceRich: evidenceRich,
+                    demoFilters: demoFilters,
+                }),
+            }
+        },
+    ]}
+/>
+<div class="my-4">
+    <Button variant="outline" handleClick={() => {
+        console.log(TabNames.ResponseAnalysis)
+        activeTab = TabNames.ResponseAnalysis
+    }}>
+        Change Tab
+    </Button>
+</div>
 
 <div class="my-4">
     <Button variant="outline" handleClick={() => evidenceRich = !evidenceRich}>
