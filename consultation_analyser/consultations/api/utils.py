@@ -1,6 +1,6 @@
 from typing import TypedDict
 
-from django.db.models import Count, Q
+from django.db.models import Count, Q, QuerySet
 from pgvector.django import CosineDistance
 
 from ...embeddings import embed_text
@@ -52,9 +52,9 @@ def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
     return filters
 
 
-def build_response_filter_query(filters: FilterParams, question: models.Question) -> Q:
+def build_response_filter_query(filters: FilterParams) -> Q:
     """Build a Q object for filtering responses based on filter params"""
-    query = Q(question=question)
+    query = Q()
 
     if filters.get("sentiment_list"):
         query &= Q(annotation__sentiment__in=filters["sentiment_list"])
@@ -79,13 +79,13 @@ def build_response_filter_query(filters: FilterParams, question: models.Question
 
 
 def get_filtered_responses_with_themes(
-    question: models.Question,
+    queryset: QuerySet,
     filters: FilterParams | None = None,
 ):
     """Single optimized query to get all filtered responses with their themes"""
-    response_filter = build_response_filter_query(filters or {}, question)
+    response_filter = build_response_filter_query(filters or {})
     queryset = (
-        models.Response.objects.filter(response_filter)
+        queryset.filter(response_filter)
         .select_related("respondent", "annotation")
         .prefetch_related("annotation__themes")
         .only(
@@ -126,45 +126,3 @@ def get_filtered_responses_with_themes(
             return queryset.filter(free_text__icontains=filters["search_value"])
 
     return queryset.order_by("created_at")  # Consistent ordering for pagination
-
-
-def build_respondent_data_fast(response: models.Response) -> dict:
-    """Optimized respondent data builder for orjson serialization.
-
-    This version minimizes Python object creation and is optimized for speed.
-    Use this when you need maximum performance for large datasets.
-    """
-    # Pre-allocate the dictionary with all keys to avoid rehashing
-    multiple_choice_answers = [x["text"] for x in response.chosen_options.all().values("text")]
-    data = {
-        "identifier": str(response.respondent.identifier),
-        "free_text_answer_text": response.free_text or "",
-        "demographic_data": response.respondent.demographics or {},
-        "themes": [],
-        "multiple_choice_answer": multiple_choice_answers,
-        "evidenceRich": False,
-    }
-
-    # Early return if no annotation (common case optimization)
-    if not (hasattr(response, "annotation") and response.annotation):
-        return data
-
-    annotation = response.annotation
-
-    # Direct boolean assignment (faster than conditional)
-    data["evidenceRich"] = annotation.evidence_rich == models.ResponseAnnotation.EvidenceRich.YES
-
-    # Optimize theme building - use prefetched data efficiently
-    themes = annotation.themes.all()
-    if themes:
-        # List comprehension is faster than append() in loop
-        data["themes"] = [
-            {
-                "id": theme.id,
-                "name": theme.name,
-                "description": theme.description,
-            }
-            for theme in themes
-        ]
-
-    return data
