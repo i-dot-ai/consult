@@ -27,7 +27,5 @@
   },
   "devDependencies": {
   },
-  "optionalDependencies": {
-    "@rollup/rollup-linux-x64-musl": "4.46.2"
-  }
+  "optionalDependencies": {}
 }
