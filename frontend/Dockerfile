@@ -15,10 +15,11 @@ COPY frontend/ .
 
 # Create non-root user for security
 RUN groupadd -g 1001 nodejs
-RUN useradd -r -u 1001 -g nodejs nextjs
+RUN useradd -r -u 1001 -g nodejs -m nextjs
 
 # Change ownership of app directory
 RUN chown -R nextjs:nodejs /app
+RUN chown -R nextjs:nodejs /home/nextjs
 USER nextjs
 
 # Expose port
