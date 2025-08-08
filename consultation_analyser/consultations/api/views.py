@@ -12,7 +12,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken
 
 from .. import models
 from ..views.sessions import send_magic_link_if_email_exists
@@ -274,15 +274,10 @@ def verify_magic_link(request) -> HttpResponse:
     try:
         link.validate()
         link.authorize(request.user)
-        refresh = RefreshToken.for_user(link.user)
+        token = AccessToken.for_user(link.user)
     except (PermissionDenied, InvalidLink) as ex:
         link.audit(request, error=ex)
         return JsonResponse(data={"detail": str(ex.args[0])}, status=403)
     else:
         link.audit(request)
-        return JsonResponse(
-            {
-                "access": str(refresh.access_token),
-                "refresh": str(refresh),
-            }
-        )
+        return JsonResponse({"access": str(token)})

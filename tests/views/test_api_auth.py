@@ -1,9 +1,10 @@
+from datetime import timedelta
 from uuid import uuid4
 
 import pytest
 from django.urls import reverse
 from magic_link.models import MagicLink
-from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.tokens import AccessToken
 
 from tests.utils import build_url
 
@@ -31,7 +32,6 @@ def test_create_token(client, dashboard_user):
     response = client.post(url, data={"token": link.token})
     assert response.status_code == 200
     assert "access" in response.json()
-    assert "refresh" in response.json()
 
 
 @pytest.mark.django_db
@@ -89,12 +89,12 @@ def test_api_urls_permission_required(
 
 
 @pytest.mark.django_db
-def test_refresh(client, dashboard_user):
-    refresh = RefreshToken.for_user(dashboard_user)
-    url = reverse("refresh-token")
+def test_expired_token(client, dashboard_user):
+    token = AccessToken.for_user(dashboard_user)
+    token.set_exp(from_time=token.current_time, lifetime=timedelta(seconds=-1))
+    url = reverse("consultations-list")
 
-    response = client.post(url, data={"refresh": str(refresh)})
-    assert response.status_code == 200, response.content
-    assert set(response.json()) == {"access"}
+    response = client.get(url, headers={"Authorization": f"Bearer {token}"})
+    assert response.status_code == 401
 
-    assert response.json()["access"] != str(refresh.token)
+    assert response.json()["messages"][0]["message"] == "Token is expired"

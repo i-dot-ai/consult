@@ -1,7 +1,6 @@
 from django.urls import include, path
 from rest_framework import routers
 from rest_framework_nested.routers import NestedDefaultRouter
-from rest_framework_simplejwt.views import TokenRefreshView
 
 from .api.views import (
     ConsultationViewSet,
@@ -68,5 +67,4 @@ urlpatterns = [
     # JWT
     path("api/magic-link/", generate_magic_link, name="token-magic-link"),
     path("api/token/", verify_magic_link, name="create-token"),
-    path("api/token/refresh/", TokenRefreshView.as_view(), name="refresh-token"),
 ]
