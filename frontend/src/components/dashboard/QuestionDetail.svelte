@@ -10,6 +10,10 @@
     import Star from "../svg/material/Star.svelte";
     import SearchCard from "./SearchCard.svelte";
     import QuestionCard from "./QuestionCard.svelte";
+    import TabView from "../TabView.svelte";
+    import Title from "../Title.svelte";
+    import QuestionSummary from "./QuestionSummary.svelte";
+    import ResponseAnalysis from "./ResponseAnalysis.svelte";
 
     import { getConsultationDetailUrl } from "../../global/routes.ts";
     import { createFetchStore } from "../../global/stores.ts";
@@ -193,43 +197,34 @@
     {/if}
 </section>
 
-<section class="my-4">
-    {#if $isAnswersLoading}
-        <p>Loading answers...</p>
-    {:else if $answersError}
-        <p>Answers Error: {$answersError}</p>
-    {:else}
-        <p>Answers loaded</p>
-    {/if}
-</section>
+<TabView tabs={[
+    {
+        id: 'tab-1',
+        title: 'Question summary',
+        component: QuestionSummary,
+    },
+    {
+        id: 'tab-2',
+        title: 'Response analysis',
+        component: ResponseAnalysis,
+        props: {
+            answers: answers,
+            isAnswersLoading: $isAnswersLoading,
+            answersError: $answersError,
+            hasMorePages: hasMorePages,
+            handleLoadClick: () => loadData({
+                searchValue: searchValue,
+                searchMode: searchMode,
+                themeFilters: themeFilters,
+                evidenceRich: evidenceRich,
+                demoFilters: demoFilters,
+            }),
+        }
+    },
+]} />
 
 <div class="my-4">
     <Button variant="outline" handleClick={() => evidenceRich = !evidenceRich}>
         Toggle Evidence Rich
     </Button>
 </div>
-
-{#each answers as answer}
-    <p class="my-4" transition:slide>{answer.free_text_answer_text}</p>
-{/each}
-
-{#if hasMorePages}
-    <div transition:slide class={clsx([
-        "transition-all",
-        "duration-300",
-        "overflow-hidden",
-        $isAnswersLoading ? "w-[14ch]" : "w-[10ch]",
-    ])}>
-        <Button fullWidth={true} variant="outline" handleClick={() => loadData({
-            searchValue: searchValue,
-            searchMode: searchMode,
-            themeFilters: themeFilters,
-            evidenceRich: evidenceRich,
-            demoFilters: demoFilters,
-        })}>
-            <span class="w-full whitespace-nowrap text-center">
-                {$isAnswersLoading ? "Loading answers" : "Load more"}
-            </span>
-        </Button>
-    </div>
-{/if}
