@@ -5,7 +5,7 @@
     import Title from "../Title.svelte";
     import Link from "../Link.svelte";
 
-    import { getConsultationDetailUrl } from "../../global/routes.ts";
+    import { getConsultationDetailUrl, getConsultationEvalUrl } from "../../global/routes.ts";
     import type { Consultation } from "../../global/types.ts";
    
     let consultations: Array<Consultation> = [];
@@ -39,7 +39,7 @@
                     <Title level={2} text={consultation.title} />
                     
                     <div class="flex gap-2">
-                        <Link href={getConsultationDetailUrl(consultation.id)}>
+                        <Link href={getConsultationEvalUrl(consultation.id)}>
                             View Evaluation
                         </Link>
                         {#if dashboardPermitted}

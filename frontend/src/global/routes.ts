@@ -13,6 +13,10 @@ export const getConsultationDetailUrl = (consultationId: string) => {
     return `${Routes.Consultations}/${consultationId}`;
 };
 
+export const getConsultationEvalUrl = (consultationId: string) => {
+    return `${Routes.Consultations}/${consultationId}/review-questions/`;
+};
+
 export const getQuestionDetailUrl = (consultationId: string, questionId: string) => {
     return `${Routes.Consultations}/${consultationId}/responses/${questionId}`;
 };

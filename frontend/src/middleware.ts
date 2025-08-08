@@ -42,7 +42,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         /^\/magic-link\/[A-Za-z0-9\-]*[\/]?$/,
         /^\/api\/astro\/.*/,
         /^\/.well-known\/.*/,
-        /^\/consultations.*/,
+        /^\/consultations.*(?<!\/review-questions\/)$/,
     ];
 
     for (const skipPattern of toSkip) {
