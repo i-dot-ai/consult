@@ -20,6 +20,7 @@
 <svelte:element this={tag} class={clsx([
     weight === "bold" ? "font-bold" : "font-light",
     level === 1 ? "text-2xl" : "text-xl",
+    "text-neutral-700",
 ])} >
     {@html text}
 </svelte:element>
