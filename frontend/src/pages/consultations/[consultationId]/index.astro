@@ -1,0 +1,16 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+
+import ConsultationDetail from "../../../components/dashboard/ConsultationDetail.svelte";
+import Section from "../../../components/Section.svelte";
+import CrossCuttingThemes from "../../../components/CrossCuttingThemes.svelte";
+
+const { consultationId } = Astro.params;
+---
+<Layout>
+    <Section>
+        <ConsultationDetail client:load consultationId={consultationId} />
+
+        <CrossCuttingThemes client:load />
+    </Section>
+</Layout>

@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 import orjson
+from django.contrib.auth import login
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Count
@@ -280,6 +281,8 @@ def verify_magic_link(request) -> HttpResponse:
         return JsonResponse(data={"detail": str(ex.args[0])}, status=403)
     else:
         link.audit(request)
+        # Log the user into Django session
+        login(request, link.user)
         # Ensure session is created if it doesn't exist
         if not request.session.session_key:
             request.session.save()

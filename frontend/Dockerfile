@@ -1,28 +1,44 @@
 # Use official Node.js runtime as base image
-FROM node:20-alpine
+FROM node:20-slim
 
 # Set working directory in container
 WORKDIR /app
 
 # Copy package files
-COPY package*.json ./
+COPY frontend/package*.json ./
 
-# Install dependencies
-RUN npm ci --only=production
+# Install all dependencies including optional (needed for esbuild platform binaries)
+RUN npm ci
 
 # Copy application code
-COPY . .
+COPY frontend/ .
 
 # Create non-root user for security
-RUN addgroup -g 1001 -S nodejs
-RUN adduser -S nextjs -u 1001
+RUN groupadd -g 1001 nodejs
+RUN useradd -r -u 1001 -g nodejs -m nextjs
 
 # Change ownership of app directory
 RUN chown -R nextjs:nodejs /app
+RUN chown -R nextjs:nodejs /home/nextjs
+
+# Switch to non-root user
 USER nextjs
+
+# Build the application
+RUN npm run build
+
+# Verify build output exists
+RUN ls -la dist/
+RUN ls -la dist/server/
+RUN test -f dist/server/entry.mjs && echo "Server entry file exists" || echo "Server entry file NOT found"
 
 # Expose port
 EXPOSE 3000
 
+# Set environment variables
+ENV NODE_ENV=production
+ENV HOST=0.0.0.0
+ENV PORT=3000
+
 # Start the application
-CMD ["npm", "start"]
+CMD ["node", "/app/dist/server/entry.mjs"]
