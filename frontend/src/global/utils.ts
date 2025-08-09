@@ -16,7 +16,7 @@ export const getBackendUrl = (url: string): string | undefined => {
     } else if (env === "dev") {
         return "https://consult-dev.ai.cabinetoffice.gov.uk";
     } else if (env === "local") {
-        return "http://localhost:8000";
+        return import.meta.env.PUBLIC_API_URL || "http://localhost:8000";
     }
 }
 
