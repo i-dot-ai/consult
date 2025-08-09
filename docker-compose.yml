@@ -51,7 +51,7 @@ services:
       - "3000:3000"
     environment:
       - NODE_ENV=development
-      - BACKEND_URL=http://backend:8000
+      - PUBLIC_BACKEND_URL=http://backend:8000
     volumes:
       - ./frontend:/app
     depends_on:

@@ -9,9 +9,9 @@ export const getEnv = (url: string): string => {
 }
 
 export const getBackendUrl = (url: string): string => {
-    const backendUrl = import.meta.env.BACKEND_URL;
+    const backendUrl = import.meta.env.PUBLIC_BACKEND_URL;
     if (!backendUrl) {
-        throw new Error("BACKEND_URL environment variable is not set. This is required for the application to function.");
+        throw new Error("PUBLIC_BACKEND_URL environment variable is not set. This is required for the application to function.");
     }
     return backendUrl;
 }

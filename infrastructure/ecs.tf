@@ -21,6 +21,8 @@ locals {
     "OPENAI_API_VERSION"                   = local.secret_env_vars.OPENAI_API_VERSION,
     "AZURE_OPENAI_ENDPOINT"                = local.secret_env_vars.AZURE_OPENAI_ENDPOINT,
     "BACKEND_URL"                          = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
+    # need to duplicate this because Astro's import.meta.env only exposes environment variables that start with PUBLIC_.
+    "PUBLIC_BACKEND_URL"                   = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
   }
 
   batch_env_vars = merge(local.base_env_vars, {
