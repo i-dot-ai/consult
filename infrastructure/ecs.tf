@@ -38,7 +38,7 @@ locals {
     "MAPPING_BATCH_JOB_DEFINITION"        = module.batch_job_mapping.job_definition_name  
     "SIGN_OFF_BATCH_JOB_NAME"             = "${local.name}-sign-off-job"
     "SIGN_OFF_BATCH_JOB_QUEUE"            = module.batch_job_sign_off.job_queue_name 
-    "SIGN_OFF_BATCH_JOB_DEFINITION"       = module.batch_job_sign_off.job_definition_name  
+    "SIGN_OFF_BATCH_JOB_DEFINITION"       = module.batch_job_sign_off.job_definition_name
   })
 
   ecs_env_vars = { for k, v in local.ecs_env_vars_raw : k => tostring(v) }
