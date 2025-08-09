@@ -12,6 +12,7 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   interface TokenData {
     access?: string;
     refresh?: string;
+    sessionId?: string;
   }
   let data: TokenData = {};
 
@@ -40,6 +41,9 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     }
     if (data.refresh) {
       cookies.set("refresh", data.refresh, { path: "/" });
+    }
+    if (data.sessionId) {
+      cookies.set("sessionId", data.sessionId, { path: "/" });
     }
   } catch(err: any) {
     message = err.message;

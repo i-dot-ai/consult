@@ -16,9 +16,11 @@ const accessToken = Astro.cookies.get("access")?.value;
 		<script is:inline src="/lit/index.js"></script>
 	</head>
 	<body>
-		<Header client:load isSignedIn={Boolean(accessToken)} />
-			<slot />
-		<Footer />
+		<div class="mx-auto max-w-screen-2xl">
+			<Header client:load isSignedIn={Boolean(accessToken)} />
+				<slot />
+			<Footer />
+		</div>
 	</body>
 </html>
 

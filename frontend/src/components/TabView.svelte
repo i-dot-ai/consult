@@ -1,13 +1,27 @@
 <script lang="ts">
     import clsx from "clsx";
 
+    import { slide, fade } from "svelte/transition";
+
     import { createTabs, melt } from '@melt-ui/svelte';
+
+    import { writable } from 'svelte/store'
+
+
+    export let tabs: Tab[] = []; 
+    export let value: string = "";
+    export let onValueChange: (val: {curr: string, next: string}) => {};
+
+    const writableValue = writable(value);
+    $: {
+        writableValue.set(value);
+    }
 
     const {
         elements: { root, list, content, trigger },
-        states: { value },
     } = createTabs({
-        defaultValue: 'tab-1',
+        value: writableValue,
+        onValueChange: onValueChange,
     });
 
     interface Tab {
@@ -16,33 +30,41 @@
         component: any;
         props: Object;
     }
-    export let tabs: Tab[] = [];
 </script>
 
 <div
-  use:melt={$root}
-  class={'flex flex-col overflow-hidden rounded-lg shadow-md w-full'}
+    use:melt={$root}
+    class={clsx([
+        "flex",
+        "flex-col",
+        "overflow-hidden"
+    ])}
 >
     <div
         use:melt={$list}
         class={clsx([
             "flex",
-            "shrink-0",
             "overflow-x-auto",
-            "bg-neutral-100",
+            "m-auto",
+            "rounded-2xl",
+            "bg-neutral-200",
         ])}
         aria-label="Question details"
     >
         {#each tabs as tab}
             <button use:melt={$trigger(tab.id)} class={clsx([
-                "p-1",
+                "m-1",
+                "py-1",
+                "px-2",
+                "text-sm",
+                "rounded-2xl",
                 "trigger",
                 "relative",
-                "grow",
                 "transition-colors",
                 "duration-300",
                 "cursor-pointer",
-                $value === tab.id && "bg-neutral-300",
+                $writableValue === tab.id && "bg-white",
+                "hover:bg-neutral-100",
             ])}>
                 {tab.title}
             </button>
@@ -50,9 +72,10 @@
     </div>
 
     {#each tabs as tab}
-        <div use:melt={$content(tab.id)} class="grow bg-white p-5">
-            <svelte:component this={tab.component} {...(tab.props || {})} />
-        </div>
+        {#if tab.id === $writableValue}
+            <div transition:slide use:melt={$content(tab.id)} class="grow bg-white">
+                <svelte:component this={tab.component} {...(tab.props || {})} />
+            </div>
+        {/if}
     {/each}
 </div>
-
