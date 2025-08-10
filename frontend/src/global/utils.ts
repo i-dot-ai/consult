@@ -8,16 +8,19 @@ export const getEnv = (url: string): string => {
     return "local";
 }
 
-export const getBackendUrl = (url: string): string | undefined => {
-    const env = getEnv(url);
-
-    if (env === "prod") {
-        return "https://consult.ai.cabinetoffice.gov.uk";
-    } else if (env === "dev") {
-        return "https://consult-dev.ai.cabinetoffice.gov.uk";
-    } else if (env === "local") {
-        return "http://localhost:8000";
+export const getBackendUrl = (url: string): string => {
+    // Try runtime environment variable first (for server-side)
+    if (typeof process !== 'undefined' && process.env?.BACKEND_URL) {
+        return process.env.BACKEND_URL;
     }
+    
+    // Fall back to build-time public env var (for client-side)
+    const backendUrl = import.meta.env.PUBLIC_BACKEND_URL;
+    if (backendUrl) {
+        return backendUrl;
+    }
+    
+    throw new Error("BACKEND_URL environment variable is not set. This is required for the application to function.");
 }
 
 export const applyHighlight = (fullText: string, matchedText: string): string => {
