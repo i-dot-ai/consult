@@ -4191,7 +4191,7 @@ class IaiResponseDashboard extends IaiLitBase {
 
                 // Now fetch responses
                 const responsesResponse = await fetch(
-                    `/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(),
+                    `/api/consultations/${this.consultationS}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(),
                     { signal }
                 );
 
