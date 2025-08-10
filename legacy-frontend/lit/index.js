@@ -4161,7 +4161,7 @@ class IaiResponseDashboard extends IaiLitBase {
                     // Get theme information (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-information/`, { signal }).then(r => r.json()) : null,
                     // Get demographic options (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-options/`, { signal }).then(r => r.json()) : null
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/demographic-options/`, { signal }).then(r => r.json()) : null
                 ]);
 
                 // Update theme mappings only on first page to reflect current filters
@@ -8016,7 +8016,7 @@ class QuestionDetailPage extends IaiLitBase {
                     // Get theme information (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-information/`, { signal }).then(r => r.json()) : null,
                     // Get demographic options (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-options/`, { signal }).then(r => r.json()) : null,
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/demographic-options/`, { signal }).then(r => r.json()) : null,
                     // Get demographic aggregations (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                     // Get multi-choice answer aggregations (only on first page)
