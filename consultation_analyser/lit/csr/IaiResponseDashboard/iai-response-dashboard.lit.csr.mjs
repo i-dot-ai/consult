@@ -285,7 +285,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                     // Get theme information (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-information/`, { signal }).then(r => r.json()) : null,
                     // Get demographic options (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-options/`, { signal }).then(r => r.json()) : null
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/demographic-options/`, { signal }).then(r => r.json()) : null
                 ]);
 
                 // Update theme mappings only on first page to reflect current filters
@@ -295,7 +295,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         map[theme.id] = theme;
                         return map;
                     }, {});
-                    
+
                     // Convert theme_aggregations format to theme_mappings format
                     this.themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
                         const themeInfo = themeInfoMap[id] || {};
@@ -318,13 +318,13 @@ export default class IaiResponseDashboard extends IaiLitBase {
                     `/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(),
                     { signal }
                 );
-                
+
                 if (!responsesResponse.ok) {
                     throw new Error(`HTTP error! status: ${responsesResponse.status}`);
                 }
-                
+
                 const responsesData = await responsesResponse.json();
-                
+
                 // Add all responses
                 this.responses = this.responses.concat(
                     responsesData.all_respondents.map(response => ({
@@ -332,7 +332,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         visible: true,
                     }))
                 );
-                
+
                 // Update metadata
                 this.responsesTotal = responsesData.respondents_total;
                 this._responsesFilteredTotal = responsesData.filtered_total;

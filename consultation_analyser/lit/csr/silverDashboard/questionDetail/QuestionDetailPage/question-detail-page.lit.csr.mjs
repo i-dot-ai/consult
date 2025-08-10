@@ -104,7 +104,7 @@ export default class QuestionDetailPage extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-        
+
         this._MAX_THEME_FILTERS = Infinity;
         this._PAGE_SIZE = 50;
         this._DEBOUNCE_DELAY = 500;
@@ -138,7 +138,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         this._demoData = {};
         this._demoOptions = {};
         this._multiChoice = {};
-        
+
         this._searchValue = "";
         this._searchMode = "keyword";
         this._highlightMatches = true;
@@ -234,7 +234,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                     // Get theme information (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-information/`, { signal }).then(r => r.json()) : null,
                     // Get demographic options (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-options/`, { signal }).then(r => r.json()) : null,
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/demographic-options/`, { signal }).then(r => r.json()) : null,
                     // Get demographic aggregations (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                     // Get multi-choice answer aggregations (only on first page)
@@ -254,7 +254,7 @@ export default class QuestionDetailPage extends IaiLitBase {
                         map[theme.id] = theme;
                         return map;
                     }, {});
-                    
+
                     // Convert theme_aggregations format to theme_mappings format
                     const themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
                         const themeInfo = themeInfoMap[id] || {};
