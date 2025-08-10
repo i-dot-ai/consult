@@ -30,7 +30,7 @@
       const consultationSlug = '{{ consultation_slug }}';
 
       // First fetch the consultation to get the ID and title
-      fetch(`/api/consultations/?slug=${consultationSlug}`)
+      fetch(`/api/consultations/?pk=${consultationId}`)
         .then(response => response.json())
         .then(data => {
           if (data.results && data.results.length > 0) {

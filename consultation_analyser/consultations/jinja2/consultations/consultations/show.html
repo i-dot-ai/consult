@@ -22,7 +22,7 @@
   </style>
 
   <div id="loading" class="govuk-body">Loading consultation...</div>
-  
+
   <div id="error-message" style="display: none;" class="govuk-error-message">
     <span class="govuk-visually-hidden">Error:</span> Failed to load consultation. Please try refreshing the page.
   </div>
@@ -37,12 +37,12 @@
 
   <script>
     // Get consultation slug from Django context
-    const consultationSlug = '{{ consultation_slug }}';
-    
+    const consultationSlug = '{{ consultationId }}';
+
     async function loadConsultationData() {
       try {
         // Get consultation directly by slug using filter
-        const consultationsResponse = await fetch(`/api/consultations/?slug=${encodeURIComponent(consultationSlug)}`, {
+        const consultationsResponse = await fetch(`/api/consultations/?pk=${encodeURIComponent(consultationId)}`, {
           headers: {
             'Content-Type': 'application/json',
           },
@@ -55,11 +55,11 @@
 
         const consultationsData = await consultationsResponse.json();
         const consultations = consultationsData.results || consultationsData;
-        
+
         if (consultations.length === 0) {
           throw new Error('Consultation not found');
         }
-        
+
         const consultation = consultations[0];
 
         // Get questions for this consultation
@@ -80,7 +80,7 @@
 
         // Populate the web component
         const questionOverviewPage = document.getElementsByTagName("iai-question-overview-page")[0];
-        
+
         questionOverviewPage.consultationName = consultation.title;
         questionOverviewPage.questions = questions.map(question => ({
           id: question.id,
@@ -93,7 +93,7 @@
         // Hide loading and show content
         document.getElementById('loading').style.display = 'none';
         document.getElementById('consultation-content').style.display = 'block';
-        
+
       } catch (error) {
         console.error('Error loading consultation data:', error);
         document.getElementById('loading').style.display = 'none';

@@ -1,7 +1,8 @@
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 
 from .decorators import user_can_see_consultation, user_can_see_dashboards
+from ..models import Consultation
 
 
 def index(request: HttpRequest) -> HttpResponse:
@@ -12,7 +13,8 @@ def index(request: HttpRequest) -> HttpResponse:
 @user_can_see_consultation
 def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
     # Dashboard page - pass consultation_slug to template for API calls
+    consultation = get_object_or_404(Consultation, slug=consultation_slug)
     context = {
-        "consultation_slug": consultation_slug,
+        "consultation_id": consultation.pk,
     }
     return render(request, "consultations/consultations/show.html", context)
