@@ -1,8 +1,8 @@
 from django.http import HttpRequest, HttpResponse
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404, render
 
-from .decorators import user_can_see_consultation, user_can_see_dashboards
 from ..models import Consultation
+from .decorators import user_can_see_consultation, user_can_see_dashboards
 
 
 def index(request: HttpRequest) -> HttpResponse:
