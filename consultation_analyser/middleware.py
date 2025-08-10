@@ -1,5 +1,34 @@
 from django.contrib.auth.middleware import LoginRequiredMiddleware
 from django.http import Http404
+from rest_framework_simplejwt.authentication import JWTAuthentication
+from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+from django.contrib.auth.models import AnonymousUser
+
+
+class JWTAuthenticationMiddleware:
+    """Authenticate JWT tokens for regular Django views (non-DRF)."""
+    
+    def __init__(self, get_response):
+        self.get_response = get_response
+        self.jwt_auth = JWTAuthentication()
+    
+    def __call__(self, request):
+        # Try to authenticate using JWT token from Authorization header
+        try:
+            auth_header = request.META.get('HTTP_AUTHORIZATION')
+            if auth_header and auth_header.startswith('Bearer '):
+                result = self.jwt_auth.authenticate(request)
+                if result is not None:
+                    user, token = result
+                    request.user = user
+                    # Mark as authenticated via JWT for later middleware
+                    request._cached_user = user
+        except (InvalidToken, TokenError):
+            # If JWT is invalid, let AuthenticationMiddleware handle it normally
+            pass
+        
+        response = self.get_response(request)
+        return response
 
 
 class SupportAppStaffRequiredMiddleware:

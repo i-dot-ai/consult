@@ -35,6 +35,7 @@ services:
       - GIT_SHA=
       - APP_BUCKET=
       - ADMIN_USERS=email@example.com
+      - BACKEND_URL=http://backend:8000
     volumes:
       - .:/app
       - /app/node_modules
