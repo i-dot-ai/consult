@@ -1,6 +1,5 @@
 import csv
 import datetime
-import logging
 import os
 import uuid
 from io import StringIO
@@ -15,7 +14,7 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotation,
 )
 
-logger = logging.getLogger("export")
+logger = settings.LOGGER
 
 
 def get_timestamp() -> str:

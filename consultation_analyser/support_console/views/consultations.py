@@ -17,7 +17,7 @@ from consultation_analyser.consultations.export_user_theme import export_user_th
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
 
-logger = logging.getLogger("export")
+logger = settings.LOGGER
 
 
 @job("default", timeout=1800)
@@ -25,6 +25,8 @@ def import_consultation_job(
     consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
 ) -> None:
     """Job wrapper for importing consultations."""
+    logger.refresh_context()
+
     return ingest.create_consultation(
         consultation_name=consultation_name,
         consultation_code=consultation_code,
@@ -35,6 +37,8 @@ def import_consultation_job(
 
 @job("default", timeout=3_600)
 def delete_consultation_job(consultation: models.Consultation):
+    logger.refresh_context()
+
     consultation_id = consultation.id
     consultation_title = consultation.title
 
@@ -43,7 +47,11 @@ def delete_consultation_job(consultation: models.Consultation):
         consultation = models.Consultation.objects.get(id=consultation_id)
 
         # Delete related objects in order to avoid foreign key constraints
-        logger.info(f"Deleting consultation '{consultation_title}' (ID: {consultation_id})")
+        logger.info(
+            "Deleting consultation '{consultation_title}' (ID: {consultation_id})",
+            consultation_title=consultation_title,
+            consultation_id=consultation_id,
+        )
         with connection.cursor() as cursor:
             cursor.execute(
                 """
@@ -132,12 +140,17 @@ def delete_consultation_job(consultation: models.Consultation):
 
     except Exception as e:
         logger.error(
-            f"Error deleting consultation '{consultation_title}' (ID: {consultation_id}): {str(e)}"
+            "Error deleting consultation '{consultation_title}' (ID: {consultation_id}): {error}",
+            consultation_title=consultation_title,
+            consultation_id=consultation_id,
+            error=e,
         )
         raise
 
 
 def index(request: HttpRequest) -> HttpResponse:
+    logger.refresh_context()
+
     if request.POST:
         try:
             if request.POST.get("generate_dummy_consultation") is not None:
@@ -167,6 +180,8 @@ def index(request: HttpRequest) -> HttpResponse:
 
 
 def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
+    logger.refresh_context()
+
     consultation = models.Consultation.objects.get(id=consultation_id)
     context = {
         "consultation": consultation,
@@ -185,6 +200,8 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
 
 def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
+    logger.refresh_context()
+
     consultation = models.Consultation.objects.get(id=consultation_id)
     questions = models.Question.objects.filter(consultation=consultation).order_by("number")
 
@@ -197,6 +214,8 @@ def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
 
 def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
+    logger.refresh_context()
+
     consultation = get_object_or_404(models.Consultation, id=consultation_id)
     questions = models.Question.objects.filter(
         consultation=consultation, has_free_text=True
@@ -235,10 +254,14 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
 
 
 def import_summary(request: HttpRequest) -> HttpResponse:
+    logger.refresh_context()
+
     return render(request, "support_console/consultations/import_summary.html", context={})
 
 
 def import_consultation_view(request: HttpRequest) -> HttpResponse:
+    logger.refresh_context()
+
     bucket_name = settings.AWS_BUCKET_NAME
     consultation_folders = ingest.get_consultation_codes()
 
@@ -288,6 +311,8 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
 
 def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UUID) -> HttpResponse:
     """Delete a question from a consultation"""
+    logger.refresh_context()
+
     question = models.Question.objects.get(consultation__id=consultation_id, id=question_id)
     context = {
         "question": question,
@@ -305,6 +330,8 @@ def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UU
 
 
 def themefinder(request: HttpRequest) -> HttpResponse:
+    logger.refresh_context()
+
     consultation_folders = ingest.get_folder_names_for_dropdown()
     bucket_name = settings.AWS_BUCKET_NAME
 
@@ -334,6 +361,8 @@ def themefinder(request: HttpRequest) -> HttpResponse:
 
 
 def sign_off(request: HttpRequest) -> HttpResponse:
+    logger.refresh_context()
+
     consultation_folders = ingest.get_folder_names_for_dropdown()
     bucket_name = settings.AWS_BUCKET_NAME
 

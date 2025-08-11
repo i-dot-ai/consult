@@ -1,5 +1,4 @@
 import json
-import logging
 import random
 from typing import Optional
 
@@ -17,8 +16,9 @@ from consultation_analyser.factories import (
     ThemeFactory,
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
+from django.conf import settings
 
-logger = logging.getLogger("dummy_data")
+logger = settings.LOGGER
 
 
 def create_dummy_consultation_from_yaml(
@@ -41,7 +41,7 @@ def create_dummy_consultation_from_yaml(
         RespondentFactory(consultation=consultation, themefinder_id=i + 1)
         for i in range(number_respondents)
     ]
-    logger.info(f"Created {number_respondents} respondents")
+    logger.info("Created {number_respondents} respondents", number_respondents=number_respondents)
 
     with open(file_path, "r") as file:
         questions_data = yaml.safe_load(file)
@@ -117,9 +117,15 @@ def create_dummy_consultation_from_yaml(
                     response.chosen_options.add(answer)
                 response.save()
 
-        logger.info(f"Finished adding question and responses for question {question.number}")
+        logger.info(
+            "Finished adding question and responses for question {question_number}",
+            question_number=question.number,
+        )
         models.DemographicOption.rebuild_for_consultation(consultation=consultation)
-        logger.info(f"Finished adding dummy data for consultation {consultation.slug}")
+        logger.info(
+            "Finished adding dummy data for consultation {consultation_slug}",
+            consultation_slug=consultation.slug,
+        )
     return consultation
 
 

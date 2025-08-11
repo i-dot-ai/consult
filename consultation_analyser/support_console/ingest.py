@@ -1,5 +1,4 @@
 import json
-import logging
 from uuid import UUID
 
 import boto3
@@ -24,7 +23,7 @@ from consultation_analyser.consultations.models import (
 from consultation_analyser.embeddings import embed_text
 
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
-logger = logging.getLogger("import")
+logger = settings.LOGGER
 DEFAULT_BATCH_SIZE = 10_000
 DEFAULT_TIMEOUT_SECONDS = 3_600
 
@@ -472,7 +471,10 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
 
     except Exception as e:
         logger.error(
-            f"Error importing responses for consultation {question.consultation.title}, question {question.number}: {str(e)}"
+            "Error importing responses for consultation {question_consultation_title}, question {question_number}: {error}",
+            question_consultation_title=question.consultation.title,
+            question_number=question.number,
+            error=e,
         )
         raise
 
@@ -495,7 +497,11 @@ def import_themes(question: Question, output_folder: str):
         )
 
     themes = Theme.objects.bulk_create(themes_to_save)
-    logger.info(f"Imported {len(themes)} themes for question {question.number}")
+    logger.info(
+        "Imported {len_themes} themes for question {question_number}",
+        len_themes=len(themes),
+        question_number=question.number,
+    )
 
 
 def import_questions(
@@ -510,7 +516,7 @@ def import_questions(
         consultation_code: S3 folder name containing the consultation data
         timestamp: Timestamp folder name for the AI outputs
     """
-    logger.info(f"Starting question import for consultation {consultation.title})")
+    logger.info("Starting question import for consultation {title})", title=consultation.title)
 
     bucket_name = settings.AWS_BUCKET_NAME
     base_path = f"app_data/consultations/{consultation_code}/"
@@ -528,7 +534,7 @@ def import_questions(
             question_num_str = question_folder.split("/")[-2].replace("question_part_", "")
             question_number = int(question_num_str)
 
-            logger.info(f"Processing question {question_number}")
+            logger.info("Processing question {question_number}", question_number=question_number)
 
             question_file_key = f"{question_folder}question.json"
             response = s3_client.get_object(Bucket=bucket_name, Key=question_file_key)
@@ -573,7 +579,11 @@ def import_questions(
                 )
 
     except Exception as e:
-        logger.error(f"Error importing question data for {consultation_code}: {str(e)}")
+        logger.error(
+            "Error importing question data for {consultation_code}: {error}",
+            consultation_code=consultation_code,
+            error=e,
+        )
         raise
 
 
@@ -582,7 +592,10 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
     Import cross-cutting themes that span across multiple questions.
     Must run after all themes have been imported.
     """
-    logger.info(f"Starting cross-cutting themes import for consultation {consultation.title}")
+    logger.info(
+        "Starting cross-cutting themes import for consultation {consultation_title}",
+        consultation_title=consultation.title,
+    )
 
     s3_client = boto3.client("s3")
     cct_file_key = f"app_data/consultations/{consultation_code}/outputs/mapping/{timestamp}/cross_cutting_themes.json"
@@ -595,7 +608,7 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
         logger.info("No cross_cutting_themes.json found, skipping cross-cutting themes import")
         raise
     except Exception as e:
-        logger.error(f"Error reading cross-cutting themes file: {str(e)}")
+        logger.error("Error reading cross-cutting themes file: {msg}", msg=e)
         raise
 
     # Get all questions for this consultation for lookup
@@ -606,7 +619,10 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
         cross_cutting_theme = CrossCuttingTheme.objects.create(
             consultation=consultation, name=cct_entry["name"], description=cct_entry["description"]
         )
-        logger.info(f"Created cross-cutting theme: {cross_cutting_theme.name}")
+        logger.info(
+            "Created cross-cutting theme: {cross_cutting_theme_name}",
+            cross_cutting_theme_name=cross_cutting_theme.name,
+        )
 
         # Create assignments for each theme
         for theme_ref in cct_entry["themes"]:
@@ -643,7 +659,10 @@ def import_respondents(consultation: Consultation, consultation_code: str):
         consultation: Consultation object for respondents
         consultation_code: list of respondent data
     """
-    logger.info(f"Starting import_respondents batch for consultation {consultation.title})")
+    logger.info(
+        "Starting import_respondents batch for consultation {consultation_title})",
+        consultation_title=consultation.title,
+    )
 
     s3_client = boto3.client("s3")
     respondents_file_key = f"app_data/consultations/{consultation_code}/inputs/respondents.jsonl"
@@ -672,7 +691,10 @@ def import_respondents(consultation: Consultation, consultation_code: str):
 
     # Build demographic options from respondent data
     demographic_options_count = DemographicOption.rebuild_for_consultation(consultation)
-    logger.info(f"Created {demographic_options_count} demographic options")
+    logger.info(
+        "Created {demographic_options_count} demographic options",
+        demographic_options_count=demographic_options_count,
+    )
 
 
 def create_consultation(
@@ -703,7 +725,11 @@ def create_consultation(
         user = User.objects.get(id=current_user_id)
         consultation.users.add(user)
 
-        logger.info(f"Created consultation: {consultation.title} (ID: {consultation.id})")
+        logger.info(
+            "Created consultation: {consultation_title} (ID: {consultation_id})",
+            consultation_title=consultation.title,
+            consultation_id=consultation.id,
+        )
 
         import_respondents(consultation, consultation_code)
 
@@ -723,7 +749,11 @@ def create_consultation(
         )
 
     except Exception as e:
-        logger.error(f"Error importing consultation {consultation_name}: {str(e)}")
+        logger.error(
+            "Error importing consultation {consultation_name}: {msg}",
+            consultation_name=consultation_name,
+            msg=e,
+        )
         raise
 
 
@@ -785,12 +815,12 @@ def send_job_to_sqs(consultation_code: str, job_type: str) -> dict:
 
     try:
         # Send message to SQS
-        logger.info(f"Sending message to SQS: {json.dumps(message_body)}")
+        logger.info("Sending message to SQS: {msg}", msg=json.dumps(message_body))
         response = sqs.send_message(QueueUrl=QUEUE_URL, MessageBody=json.dumps(message_body))
 
-        logger.info(f"Message sent to SQS. MessageId: {response['MessageId']}")
+        logger.info("Message sent to SQS. MessageId: {msg}", msg=response["MessageId"])
         return response
 
     except Exception as e:
-        logger.error(f"Error sending message to SQS: {str(e)}")
+        logger.error("Error sending message to SQS: {error}", error=e)
         raise e
