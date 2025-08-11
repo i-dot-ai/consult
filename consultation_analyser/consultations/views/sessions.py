@@ -1,3 +1,5 @@
+import logging
+
 import magic_link.views
 from django.conf import settings
 from django.contrib import messages
@@ -27,11 +29,9 @@ def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
 
         # Log magic link in local environment only
         if HostingEnvironment.is_local():
-            logger = settings.LOGGER
+            logger = logging.getLogger("django.server")
             logger.info(
-                "##################### Sending magic link to {email}: {magic_link}",
-                email=email,
-                magic_link=magic_link,
+                f"##################### Sending magic link to {email}: {magic_link}"
             )
 
         # Send email in test and deployed environments (test backend will capture it)
