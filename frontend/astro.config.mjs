@@ -10,10 +10,6 @@ export default defineConfig({
   output: "server",
   integrations: [svelte(), tailwind({ applyBaseStyles: false })],
 
-  vite: {
-      plugins: [tailwindcss()],
-  },
-
   server: {
     host: "0.0.0.0",
     port: 3000,
