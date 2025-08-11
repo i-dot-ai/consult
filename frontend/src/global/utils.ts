@@ -27,3 +27,13 @@ export const applyHighlight = (fullText: string, matchedText: string): string =>
     const regex = new RegExp(matchedText, "gi");
     return fullText.replace(regex, match => `<span class="bg-yellow-300">${match}</span>`);
 }
+
+export const getPercentage = (partialValue: number, totalValue: number): number => {
+    if (totalValue === 0) {
+        return 0;
+    }
+    const percentage = (partialValue / totalValue) * 100;
+
+    // Round to 1 decimal point
+    return Math.round(percentage * 10) / 10;
+}

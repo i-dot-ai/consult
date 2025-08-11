@@ -40,26 +40,30 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
     const hasBody = !["GET", "HEAD"].includes(context.request.method);
 
-    const response = await fetch(fullBackendUrl, {
-        method: context.request.method,
-        headers: {
-            ...context.request.headers,
-            "Authorization": `Bearer ${accessToken}`
-        },
-        duplex: "half",
-        body: hasBody
-            ? context.request.body
-            : undefined,
-    });
+    try {
+        const response = await fetch(fullBackendUrl, {
+            method: context.request.method,
+            headers: {
+                ...context.request.headers,
+                "Authorization": `Bearer ${accessToken}`
+            },
+            duplex: "half",
+            body: hasBody
+                ? context.request.body
+                : undefined,
+        });
 
-    if (response.status === 401) {
-        return context.redirect("/sign-out");
+        if (response.status === 401) {
+            return context.redirect("/sign-out");
+        }
+
+        const body = await response.arrayBuffer();
+
+        return new Response(body, {
+            status: response.status,
+            headers: response.headers,
+        })
+    } catch {
+        return new Response(null, { status: 500 });
     }
-
-    const body = await response.arrayBuffer();
-
-    return new Response(body, {
-        status: response.status,
-        headers: response.headers,
-    })
 }
