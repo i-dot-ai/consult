@@ -110,8 +110,8 @@
 
         // Skip the rest of the requests if they are already requested for this filter set
         if (currPage === 1) {
-            loadThemeInfo(`/api/consultations/${consultationId}/questions/${questionId}/theme-aggregations/${queryString}`);
-            loadThemeAggr(`/api/consultations/${consultationId}/questions/${questionId}/theme-information/${queryString}`);
+            loadThemeAggr(`/api/consultations/${consultationId}/questions/${questionId}/theme-aggregations/${queryString}`);
+            loadThemeInfo(`/api/consultations/${consultationId}/questions/${questionId}/theme-information/${queryString}`);
             loadDemoOptions(`/api/consultations/${consultationId}/demographic-options/${queryString}`);
             loadDemoAggr(`/api/consultations/${consultationId}/questions/${questionId}/demographic-aggregations/${queryString}`);
             loadMultiChoiceAggr(`/api/consultations/${consultationId}/questions/${questionId}/multi-choice-response-count/${queryString}`);
@@ -216,6 +216,15 @@
             id: TabNames.QuestionSummary,
             title: 'Question summary',
             component: QuestionSummary,
+            props: {
+                themes: Object.keys($themeAggrData?.theme_aggregations || []).map(themeId => {
+                    return ({
+                        count: $themeAggrData?.theme_aggregations[themeId],
+                        ...($themeInfoData?.themes?.find(themeInfo => themeInfo.id === themeId)),
+                    })
+                }),
+                totalAnswers: $answersData?.respondents_total,
+            }
         },
         {
             id: TabNames.ResponseAnalysis,

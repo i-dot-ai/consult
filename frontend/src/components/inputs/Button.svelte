@@ -2,6 +2,7 @@
     import clsx from "clsx";
 
     export let variant: "default" | "ghost" | "primary" = "default";
+    export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
     export let handleClick = () => {};
     export let disabled: boolean = false;
     export let fullWidth: boolean = false;
@@ -10,6 +11,7 @@
 <button
     class={clsx([
         fullWidth && "w-full",
+        `text-${size}`,
         "self-start",
         "cursor-pointer",
         "rounded-md",
