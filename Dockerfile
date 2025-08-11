@@ -7,7 +7,7 @@ RUN apt-get update && apt-get install --yes nodejs npm > /dev/null
 WORKDIR /src
 
 COPY package.json .
-RUN npm install --omit=optional && rm -rf package-lock.json && npm install --omit=optional
+RUN npm install --omit=optional
 
 
 # poetry
