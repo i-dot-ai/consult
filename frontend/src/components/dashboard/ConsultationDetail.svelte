@@ -11,7 +11,7 @@
     import Star from "../svg/material/Star.svelte";
 
     import type { Question, Consultation } from "../../global/types.ts";
-    import { getConsultationDetailUrl } from "../../global/routes.ts";
+    import { getConsultationDetailUrl, getApiConsultationUrl } from "../../global/routes.ts";
     import { favStore } from "../../global/stores.ts";
 
     export let consultationId: string = "";
@@ -23,7 +23,7 @@
 
     onMount(async () => {
         try {
-            const response = await fetch(`/api/consultations/${consultationId}`);
+            const response = await fetch(getApiConsultationUrl(consultationId));
             if (!response.ok) {
                 error = "Response not ok";
                 return;

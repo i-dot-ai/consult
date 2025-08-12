@@ -47,6 +47,11 @@ variable "ecr_repository_uri" {
   description = "ECR repo uri"
 }
 
+variable "frontend_repository_uri" {
+  type        = string
+  description = "Frontend ECR repo uri"
+}
+
 variable "ecs_cluster_name" {
   type        = string
   description = "ECS cluster name to attach service to"

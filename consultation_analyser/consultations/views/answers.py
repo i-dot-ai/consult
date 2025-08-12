@@ -12,14 +12,14 @@ from .decorators import user_can_see_consultation, user_can_see_dashboards
 @user_can_see_consultation
 def index(
     request: HttpRequest,
-    consultation_slug: str,
-    question_slug: str,
+    consultation_id: str,
+    question_id: str,
 ):
     # Get question data
-    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
+    consultation = get_object_or_404(models.Consultation, pk=consultation_id)
     question = get_object_or_404(
         models.Question,
-        slug=question_slug,
+        pk=question_id,
         consultation=consultation,
     )
 
@@ -27,9 +27,10 @@ def index(
     # Minimal context - all dynamic data loaded via respondents_json
     context = {
         "consultation_name": consultation.title,
-        "consultation_slug": consultation_slug,
+        "consultation_id": str(consultation.id),
+        "consultation_slug": consultation.slug,
         "question": question,
-        "question_slug": question_slug,
+        "question_id": question.id,
         "free_text_question_part": question if question.has_free_text else None,
         "has_multiple_choice_question_part": question.has_multiple_choice,
         "selected_theme_mappings": [],  # Empty - loaded via AJAX
@@ -45,13 +46,13 @@ def index(
 @user_can_see_consultation
 def show(
     request: HttpRequest,
-    consultation_slug: str,
-    question_slug: str,
+    consultation_id: UUID,
+    question_id: UUID,
     response_id: UUID,
 ):
     # Allow user to review and update theme mappings for a response.
-    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
+    consultation = get_object_or_404(models.Consultation, id=consultation_id)
+    question = get_object_or_404(models.Question, id=question_id, consultation=consultation)
     response = get_object_or_404(models.Response, id=response_id, question=question)
 
     # Get or create annotation for this response
@@ -78,13 +79,13 @@ def show(
         annotation.mark_human_reviewed(request.user)
 
         return redirect(
-            "show_next_response", consultation_slug=consultation_slug, question_slug=question_slug
+            "show_next_response", consultation_id=consultation_id, question_id=question_id
         )
 
     elif request.method == "GET":
         context = {
             "consultation_name": consultation.title,
-            "consultation_slug": consultation_slug,
+            "consultation_id": consultation_id,
             "question": question,
             "response": response,
             "all_themes": list(all_themes),
@@ -96,14 +97,14 @@ def show(
 
 
 @user_can_see_consultation
-def show_next(request: HttpRequest, consultation_slug: str, question_slug: str):
-    consultation = get_object_or_404(models.Consultation, slug=consultation_slug)
-    question = get_object_or_404(models.Question, slug=question_slug, consultation=consultation)
+def show_next(request: HttpRequest, consultation_id: UUID, question_id: UUID):
+    consultation = get_object_or_404(models.Consultation, id=consultation_id)
+    question = get_object_or_404(models.Question, id=question_id, consultation=consultation)
 
     def handle_no_responses():
         context = {
             "consultation_name": consultation.title,
-            "consultation_slug": consultation_slug,
+            "consultation_slug": consultation.slug,
             "question": question,
         }
         return render(request, "consultations/answers/no_responses.html", context)
@@ -130,8 +131,8 @@ def show_next(request: HttpRequest, consultation_slug: str, question_slug: str):
     if next_response:
         return redirect(
             "show_response",
-            consultation_slug=consultation_slug,
-            question_slug=question_slug,
+            consultation_id=consultation_id,
+            question_id=question_id,
             response_id=next_response.id,
         )
 

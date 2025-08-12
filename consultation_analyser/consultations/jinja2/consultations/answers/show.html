@@ -72,7 +72,7 @@
           Save and continue to a new response
         </button>
         <button class="govuk-button govuk-button--secondary" data-module="govuk-button" data-govuk-button-init=""
-          formaction="{{ url('show_next_response', kwargs={'question_slug': question.slug, 'consultation_slug': consultation_slug}) }}"
+          formaction="{{ url('show_next_response', kwargs={'question_id': question.id, 'consultation_id': consultation_id}) }}"
           formmethod="get">
           Skip this response
         </button>

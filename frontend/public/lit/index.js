@@ -9,20 +9,20 @@ const t$3=globalThis,e$4=t$3.ShadowRoot&&(void 0===t$3.ShadyCSS||t$3.ShadyCSS.na
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const{is:i$3,defineProperty:e$3,getOwnPropertyDescriptor:h$2,getOwnPropertyNames:r$4,getOwnPropertySymbols:o$5,getPrototypeOf:n$3}=Object,a$1=globalThis,c$3=a$1.trustedTypes,l$1=c$3?c$3.emptyScript:"",p$2=a$1.reactiveElementPolyfillSupport,d$1=(t,s)=>t,u$3={toAttribute(t,s){switch(s){case Boolean:t=t?l$1:null;break;case Object:case Array:t=null==t?t:JSON.stringify(t);}return t},fromAttribute(t,s){let i=t;switch(s){case Boolean:i=null!==t;break;case Number:i=null===t?null:Number(t);break;case Object:case Array:try{i=JSON.parse(t);}catch(t){i=null;}}return i}},f$3=(t,s)=>!i$3(t,s),b={attribute:true,type:String,converter:u$3,reflect:false,useDefault:false,hasChanged:f$3};Symbol.metadata??=Symbol("metadata"),a$1.litPropertyMetadata??=new WeakMap;let y$1 = class y extends HTMLElement{static addInitializer(t){this._$Ei(),(this.l??=[]).push(t);}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(t,s=b){if(s.state&&(s.attribute=false),this._$Ei(),this.prototype.hasOwnProperty(t)&&((s=Object.create(s)).wrapped=true),this.elementProperties.set(t,s),!s.noAccessor){const i=Symbol(),h=this.getPropertyDescriptor(t,i,s);void 0!==h&&e$3(this.prototype,t,h);}}static getPropertyDescriptor(t,s,i){const{get:e,set:r}=h$2(this.prototype,t)??{get(){return this[s]},set(t){this[s]=t;}};return {get:e,set(s){const h=e?.call(this);r?.call(this,s),this.requestUpdate(t,h,i);},configurable:true,enumerable:true}}static getPropertyOptions(t){return this.elementProperties.get(t)??b}static _$Ei(){if(this.hasOwnProperty(d$1("elementProperties")))return;const t=n$3(this);t.finalize(),void 0!==t.l&&(this.l=[...t.l]),this.elementProperties=new Map(t.elementProperties);}static finalize(){if(this.hasOwnProperty(d$1("finalized")))return;if(this.finalized=true,this._$Ei(),this.hasOwnProperty(d$1("properties"))){const t=this.properties,s=[...r$4(t),...o$5(t)];for(const i of s)this.createProperty(i,t[i]);}const t=this[Symbol.metadata];if(null!==t){const s=litPropertyMetadata.get(t);if(void 0!==s)for(const[t,i]of s)this.elementProperties.set(t,i);}this._$Eh=new Map;for(const[t,s]of this.elementProperties){const i=this._$Eu(t,s);void 0!==i&&this._$Eh.set(i,t);}this.elementStyles=this.finalizeStyles(this.styles);}static finalizeStyles(s){const i=[];if(Array.isArray(s)){const e=new Set(s.flat(1/0).reverse());for(const s of e)i.unshift(c$4(s));}else void 0!==s&&i.push(c$4(s));return i}static _$Eu(t,s){const i=s.attribute;return  false===i?void 0:"string"==typeof i?i:"string"==typeof t?t.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=false,this.hasUpdated=false,this._$Em=null,this._$Ev();}_$Ev(){this._$ES=new Promise((t=>this.enableUpdating=t)),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach((t=>t(this)));}addController(t){(this._$EO??=new Set).add(t),void 0!==this.renderRoot&&this.isConnected&&t.hostConnected?.();}removeController(t){this._$EO?.delete(t);}_$E_(){const t=new Map,s=this.constructor.elementProperties;for(const i of s.keys())this.hasOwnProperty(i)&&(t.set(i,this[i]),delete this[i]);t.size>0&&(this._$Ep=t);}createRenderRoot(){const t=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return S$1(t,this.constructor.elementStyles),t}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(true),this._$EO?.forEach((t=>t.hostConnected?.()));}enableUpdating(t){}disconnectedCallback(){this._$EO?.forEach((t=>t.hostDisconnected?.()));}attributeChangedCallback(t,s,i){this._$AK(t,i);}_$ET(t,s){const i=this.constructor.elementProperties.get(t),e=this.constructor._$Eu(t,i);if(void 0!==e&&true===i.reflect){const h=(void 0!==i.converter?.toAttribute?i.converter:u$3).toAttribute(s,i.type);this._$Em=t,null==h?this.removeAttribute(e):this.setAttribute(e,h),this._$Em=null;}}_$AK(t,s){const i=this.constructor,e=i._$Eh.get(t);if(void 0!==e&&this._$Em!==e){const t=i.getPropertyOptions(e),h="function"==typeof t.converter?{fromAttribute:t.converter}:void 0!==t.converter?.fromAttribute?t.converter:u$3;this._$Em=e,this[e]=h.fromAttribute(s,t.type)??this._$Ej?.get(e)??null,this._$Em=null;}}requestUpdate(t,s,i){if(void 0!==t){const e=this.constructor,h=this[t];if(i??=e.getPropertyOptions(t),!((i.hasChanged??f$3)(h,s)||i.useDefault&&i.reflect&&h===this._$Ej?.get(t)&&!this.hasAttribute(e._$Eu(t,i))))return;this.C(t,s,i);} false===this.isUpdatePending&&(this._$ES=this._$EP());}C(t,s,{useDefault:i,reflect:e,wrapped:h},r){i&&!(this._$Ej??=new Map).has(t)&&(this._$Ej.set(t,r??s??this[t]),true!==h||void 0!==r)||(this._$AL.has(t)||(this.hasUpdated||i||(s=void 0),this._$AL.set(t,s)),true===e&&this._$Em!==t&&(this._$Eq??=new Set).add(t));}async _$EP(){this.isUpdatePending=true;try{await this._$ES;}catch(t){Promise.reject(t);}const t=this.scheduleUpdate();return null!=t&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(const[t,s]of this._$Ep)this[t]=s;this._$Ep=void 0;}const t=this.constructor.elementProperties;if(t.size>0)for(const[s,i]of t){const{wrapped:t}=i,e=this[s];true!==t||this._$AL.has(s)||void 0===e||this.C(s,void 0,i,e);}}let t=false;const s=this._$AL;try{t=this.shouldUpdate(s),t?(this.willUpdate(s),this._$EO?.forEach((t=>t.hostUpdate?.())),this.update(s)):this._$EM();}catch(s){throw t=false,this._$EM(),s}t&&this._$AE(s);}willUpdate(t){}_$AE(t){this._$EO?.forEach((t=>t.hostUpdated?.())),this.hasUpdated||(this.hasUpdated=true,this.firstUpdated(t)),this.updated(t);}_$EM(){this._$AL=new Map,this.isUpdatePending=false;}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(t){return  true}update(t){this._$Eq&&=this._$Eq.forEach((t=>this._$ET(t,this[t]))),this._$EM();}updated(t){}firstUpdated(t){}};y$1.elementStyles=[],y$1.shadowRootOptions={mode:"open"},y$1[d$1("elementProperties")]=new Map,y$1[d$1("finalized")]=new Map,p$2?.({ReactiveElement:y$1}),(a$1.reactiveElementVersions??=[]).push("2.1.0");
+ */const{is:i$3,defineProperty:e$3,getOwnPropertyDescriptor:h$2,getOwnPropertyNames:r$4,getOwnPropertySymbols:o$5,getPrototypeOf:n$3}=Object,a$1=globalThis,c$3=a$1.trustedTypes,l$1=c$3?c$3.emptyScript:"",p$2=a$1.reactiveElementPolyfillSupport,d$1=(t,s)=>t,u$3={toAttribute(t,s){switch(s){case Boolean:t=t?l$1:null;break;case Object:case Array:t=null==t?t:JSON.stringify(t);}return t},fromAttribute(t,s){let i=t;switch(s){case Boolean:i=null!==t;break;case Number:i=null===t?null:Number(t);break;case Object:case Array:try{i=JSON.parse(t);}catch(t){i=null;}}return i}},f$3=(t,s)=>!i$3(t,s),b={attribute:true,type:String,converter:u$3,reflect:false,useDefault:false,hasChanged:f$3};Symbol.metadata??=Symbol("metadata"),a$1.litPropertyMetadata??=new WeakMap;let y$1 = class y extends HTMLElement{static addInitializer(t){this._$Ei(),(this.l??=[]).push(t);}static get observedAttributes(){return this.finalize(),this._$Eh&&[...this._$Eh.keys()]}static createProperty(t,s=b){if(s.state&&(s.attribute=false),this._$Ei(),this.prototype.hasOwnProperty(t)&&((s=Object.create(s)).wrapped=true),this.elementProperties.set(t,s),!s.noAccessor){const i=Symbol(),h=this.getPropertyDescriptor(t,i,s);void 0!==h&&e$3(this.prototype,t,h);}}static getPropertyDescriptor(t,s,i){const{get:e,set:r}=h$2(this.prototype,t)??{get(){return this[s]},set(t){this[s]=t;}};return {get:e,set(s){const h=e?.call(this);r?.call(this,s),this.requestUpdate(t,h,i);},configurable:true,enumerable:true}}static getPropertyOptions(t){return this.elementProperties.get(t)??b}static _$Ei(){if(this.hasOwnProperty(d$1("elementProperties")))return;const t=n$3(this);t.finalize(),void 0!==t.l&&(this.l=[...t.l]),this.elementProperties=new Map(t.elementProperties);}static finalize(){if(this.hasOwnProperty(d$1("finalized")))return;if(this.finalized=true,this._$Ei(),this.hasOwnProperty(d$1("properties"))){const t=this.properties,s=[...r$4(t),...o$5(t)];for(const i of s)this.createProperty(i,t[i]);}const t=this[Symbol.metadata];if(null!==t){const s=litPropertyMetadata.get(t);if(void 0!==s)for(const[t,i]of s)this.elementProperties.set(t,i);}this._$Eh=new Map;for(const[t,s]of this.elementProperties){const i=this._$Eu(t,s);void 0!==i&&this._$Eh.set(i,t);}this.elementStyles=this.finalizeStyles(this.styles);}static finalizeStyles(s){const i=[];if(Array.isArray(s)){const e=new Set(s.flat(1/0).reverse());for(const s of e)i.unshift(c$4(s));}else void 0!==s&&i.push(c$4(s));return i}static _$Eu(t,s){const i=s.attribute;return  false===i?void 0:"string"==typeof i?i:"string"==typeof t?t.toLowerCase():void 0}constructor(){super(),this._$Ep=void 0,this.isUpdatePending=false,this.hasUpdated=false,this._$Em=null,this._$Ev();}_$Ev(){this._$ES=new Promise((t=>this.enableUpdating=t)),this._$AL=new Map,this._$E_(),this.requestUpdate(),this.constructor.l?.forEach((t=>t(this)));}addController(t){(this._$EO??=new Set).add(t),void 0!==this.renderRoot&&this.isConnected&&t.hostConnected?.();}removeController(t){this._$EO?.delete(t);}_$E_(){const t=new Map,s=this.constructor.elementProperties;for(const i of s.keys())this.hasOwnProperty(i)&&(t.set(i,this[i]),delete this[i]);t.size>0&&(this._$Ep=t);}createRenderRoot(){const t=this.shadowRoot??this.attachShadow(this.constructor.shadowRootOptions);return S$1(t,this.constructor.elementStyles),t}connectedCallback(){this.renderRoot??=this.createRenderRoot(),this.enableUpdating(true),this._$EO?.forEach((t=>t.hostConnected?.()));}enableUpdating(t){}disconnectedCallback(){this._$EO?.forEach((t=>t.hostDisconnected?.()));}attributeChangedCallback(t,s,i){this._$AK(t,i);}_$ET(t,s){const i=this.constructor.elementProperties.get(t),e=this.constructor._$Eu(t,i);if(void 0!==e&&true===i.reflect){const h=(void 0!==i.converter?.toAttribute?i.converter:u$3).toAttribute(s,i.type);this._$Em=t,null==h?this.removeAttribute(e):this.setAttribute(e,h),this._$Em=null;}}_$AK(t,s){const i=this.constructor,e=i._$Eh.get(t);if(void 0!==e&&this._$Em!==e){const t=i.getPropertyOptions(e),h="function"==typeof t.converter?{fromAttribute:t.converter}:void 0!==t.converter?.fromAttribute?t.converter:u$3;this._$Em=e;const r=h.fromAttribute(s,t.type);this[e]=r??this._$Ej?.get(e)??r,this._$Em=null;}}requestUpdate(t,s,i){if(void 0!==t){const e=this.constructor,h=this[t];if(i??=e.getPropertyOptions(t),!((i.hasChanged??f$3)(h,s)||i.useDefault&&i.reflect&&h===this._$Ej?.get(t)&&!this.hasAttribute(e._$Eu(t,i))))return;this.C(t,s,i);} false===this.isUpdatePending&&(this._$ES=this._$EP());}C(t,s,{useDefault:i,reflect:e,wrapped:h},r){i&&!(this._$Ej??=new Map).has(t)&&(this._$Ej.set(t,r??s??this[t]),true!==h||void 0!==r)||(this._$AL.has(t)||(this.hasUpdated||i||(s=void 0),this._$AL.set(t,s)),true===e&&this._$Em!==t&&(this._$Eq??=new Set).add(t));}async _$EP(){this.isUpdatePending=true;try{await this._$ES;}catch(t){Promise.reject(t);}const t=this.scheduleUpdate();return null!=t&&await t,!this.isUpdatePending}scheduleUpdate(){return this.performUpdate()}performUpdate(){if(!this.isUpdatePending)return;if(!this.hasUpdated){if(this.renderRoot??=this.createRenderRoot(),this._$Ep){for(const[t,s]of this._$Ep)this[t]=s;this._$Ep=void 0;}const t=this.constructor.elementProperties;if(t.size>0)for(const[s,i]of t){const{wrapped:t}=i,e=this[s];true!==t||this._$AL.has(s)||void 0===e||this.C(s,void 0,i,e);}}let t=false;const s=this._$AL;try{t=this.shouldUpdate(s),t?(this.willUpdate(s),this._$EO?.forEach((t=>t.hostUpdate?.())),this.update(s)):this._$EM();}catch(s){throw t=false,this._$EM(),s}t&&this._$AE(s);}willUpdate(t){}_$AE(t){this._$EO?.forEach((t=>t.hostUpdated?.())),this.hasUpdated||(this.hasUpdated=true,this.firstUpdated(t)),this.updated(t);}_$EM(){this._$AL=new Map,this.isUpdatePending=false;}get updateComplete(){return this.getUpdateComplete()}getUpdateComplete(){return this._$ES}shouldUpdate(t){return  true}update(t){this._$Eq&&=this._$Eq.forEach((t=>this._$ET(t,this[t]))),this._$EM();}updated(t){}firstUpdated(t){}};y$1.elementStyles=[],y$1.shadowRootOptions={mode:"open"},y$1[d$1("elementProperties")]=new Map,y$1[d$1("finalized")]=new Map,p$2?.({ReactiveElement:y$1}),(a$1.reactiveElementVersions??=[]).push("2.1.1");
 
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const t$2=globalThis,i$2=t$2.trustedTypes,s$3=i$2?i$2.createPolicy("lit-html",{createHTML:t=>t}):void 0,e$2="$lit$",h$1=`lit$${Math.random().toFixed(9).slice(2)}$`,o$4="?"+h$1,n$2=`<${o$4}>`,r$3=document,l=()=>r$3.createComment(""),c$2=t=>null===t||"object"!=typeof t&&"function"!=typeof t,a=Array.isArray,u$2=t=>a(t)||"function"==typeof t?.[Symbol.iterator],d="[ \t\n\f\r]",f$2=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,v$1=/-->/g,_=/>/g,m$1=RegExp(`>|${d}(?:([^\\s"'>=/]+)(${d}*=${d}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`,"g"),p$1=/'/g,g=/"/g,$=/^(?:script|style|textarea|title)$/i,y=t=>(i,...s)=>({_$litType$:t,strings:i,values:s}),x=y(1),T=Symbol.for("lit-noChange"),E=Symbol.for("lit-nothing"),A=new WeakMap,C=r$3.createTreeWalker(r$3,129);function P(t,i){if(!a(t)||!t.hasOwnProperty("raw"))throw Error("invalid template strings array");return void 0!==s$3?s$3.createHTML(i):i}const V=(t,i)=>{const s=t.length-1,o=[];let r,l=2===i?"<svg>":3===i?"<math>":"",c=f$2;for(let i=0;i<s;i++){const s=t[i];let a,u,d=-1,y=0;for(;y<s.length&&(c.lastIndex=y,u=c.exec(s),null!==u);)y=c.lastIndex,c===f$2?"!--"===u[1]?c=v$1:void 0!==u[1]?c=_:void 0!==u[2]?($.test(u[2])&&(r=RegExp("</"+u[2],"g")),c=m$1):void 0!==u[3]&&(c=m$1):c===m$1?">"===u[0]?(c=r??f$2,d=-1):void 0===u[1]?d=-2:(d=c.lastIndex-u[2].length,a=u[1],c=void 0===u[3]?m$1:'"'===u[3]?g:p$1):c===g||c===p$1?c=m$1:c===v$1||c===_?c=f$2:(c=m$1,r=void 0);const x=c===m$1&&t[i+1].startsWith("/>")?" ":"";l+=c===f$2?s+n$2:d>=0?(o.push(a),s.slice(0,d)+e$2+s.slice(d)+h$1+x):s+h$1+(-2===d?i:x);}return [P(t,l+(t[s]||"<?>")+(2===i?"</svg>":3===i?"</math>":"")),o]};class N{constructor({strings:t,_$litType$:s},n){let r;this.parts=[];let c=0,a=0;const u=t.length-1,d=this.parts,[f,v]=V(t,s);if(this.el=N.createElement(f,n),C.currentNode=this.el.content,2===s||3===s){const t=this.el.content.firstChild;t.replaceWith(...t.childNodes);}for(;null!==(r=C.nextNode())&&d.length<u;){if(1===r.nodeType){if(r.hasAttributes())for(const t of r.getAttributeNames())if(t.endsWith(e$2)){const i=v[a++],s=r.getAttribute(t).split(h$1),e=/([.?@])?(.*)/.exec(i);d.push({type:1,index:c,name:e[2],strings:s,ctor:"."===e[1]?H:"?"===e[1]?I:"@"===e[1]?L:k}),r.removeAttribute(t);}else t.startsWith(h$1)&&(d.push({type:6,index:c}),r.removeAttribute(t));if($.test(r.tagName)){const t=r.textContent.split(h$1),s=t.length-1;if(s>0){r.textContent=i$2?i$2.emptyScript:"";for(let i=0;i<s;i++)r.append(t[i],l()),C.nextNode(),d.push({type:2,index:++c});r.append(t[s],l());}}}else if(8===r.nodeType)if(r.data===o$4)d.push({type:2,index:c});else {let t=-1;for(;-1!==(t=r.data.indexOf(h$1,t+1));)d.push({type:7,index:c}),t+=h$1.length-1;}c++;}}static createElement(t,i){const s=r$3.createElement("template");return s.innerHTML=t,s}}function S(t,i,s=t,e){if(i===T)return i;let h=void 0!==e?s._$Co?.[e]:s._$Cl;const o=c$2(i)?void 0:i._$litDirective$;return h?.constructor!==o&&(h?._$AO?.(false),void 0===o?h=void 0:(h=new o(t),h._$AT(t,s,e)),void 0!==e?(s._$Co??=[])[e]=h:s._$Cl=h),void 0!==h&&(i=S(t,h._$AS(t,i.values),h,e)),i}let M$1 = class M{constructor(t,i){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=i;}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){const{el:{content:i},parts:s}=this._$AD,e=(t?.creationScope??r$3).importNode(i,true);C.currentNode=e;let h=C.nextNode(),o=0,n=0,l=s[0];for(;void 0!==l;){if(o===l.index){let i;2===l.type?i=new R(h,h.nextSibling,this,t):1===l.type?i=new l.ctor(h,l.name,l.strings,this,t):6===l.type&&(i=new z(h,this,t)),this._$AV.push(i),l=s[++n];}o!==l?.index&&(h=C.nextNode(),o++);}return C.currentNode=r$3,e}p(t){let i=0;for(const s of this._$AV) void 0!==s&&(void 0!==s.strings?(s._$AI(t,s,i),i+=s.strings.length-2):s._$AI(t[i])),i++;}};class R{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(t,i,s,e){this.type=2,this._$AH=E,this._$AN=void 0,this._$AA=t,this._$AB=i,this._$AM=s,this.options=e,this._$Cv=e?.isConnected??true;}get parentNode(){let t=this._$AA.parentNode;const i=this._$AM;return void 0!==i&&11===t?.nodeType&&(t=i.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,i=this){t=S(this,t,i),c$2(t)?t===E||null==t||""===t?(this._$AH!==E&&this._$AR(),this._$AH=E):t!==this._$AH&&t!==T&&this._(t):void 0!==t._$litType$?this.$(t):void 0!==t.nodeType?this.T(t):u$2(t)?this.k(t):this._(t);}O(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}T(t){this._$AH!==t&&(this._$AR(),this._$AH=this.O(t));}_(t){this._$AH!==E&&c$2(this._$AH)?this._$AA.nextSibling.data=t:this.T(r$3.createTextNode(t)),this._$AH=t;}$(t){const{values:i,_$litType$:s}=t,e="number"==typeof s?this._$AC(t):(void 0===s.el&&(s.el=N.createElement(P(s.h,s.h[0]),this.options)),s);if(this._$AH?._$AD===e)this._$AH.p(i);else {const t=new M$1(e,this),s=t.u(this.options);t.p(i),this.T(s),this._$AH=t;}}_$AC(t){let i=A.get(t.strings);return void 0===i&&A.set(t.strings,i=new N(t)),i}k(t){a(this._$AH)||(this._$AH=[],this._$AR());const i=this._$AH;let s,e=0;for(const h of t)e===i.length?i.push(s=new R(this.O(l()),this.O(l()),this,this.options)):s=i[e],s._$AI(h),e++;e<i.length&&(this._$AR(s&&s._$AB.nextSibling,e),i.length=e);}_$AR(t=this._$AA.nextSibling,i){for(this._$AP?.(false,true,i);t&&t!==this._$AB;){const i=t.nextSibling;t.remove(),t=i;}}setConnected(t){ void 0===this._$AM&&(this._$Cv=t,this._$AP?.(t));}}class k{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(t,i,s,e,h){this.type=1,this._$AH=E,this._$AN=void 0,this.element=t,this.name=i,this._$AM=e,this.options=h,s.length>2||""!==s[0]||""!==s[1]?(this._$AH=Array(s.length-1).fill(new String),this.strings=s):this._$AH=E;}_$AI(t,i=this,s,e){const h=this.strings;let o=false;if(void 0===h)t=S(this,t,i,0),o=!c$2(t)||t!==this._$AH&&t!==T,o&&(this._$AH=t);else {const e=t;let n,r;for(t=h[0],n=0;n<h.length-1;n++)r=S(this,e[s+n],i,n),r===T&&(r=this._$AH[n]),o||=!c$2(r)||r!==this._$AH[n],r===E?t=E:t!==E&&(t+=(r??"")+h[n+1]),this._$AH[n]=r;}o&&!e&&this.j(t);}j(t){t===E?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"");}}class H extends k{constructor(){super(...arguments),this.type=3;}j(t){this.element[this.name]=t===E?void 0:t;}}class I extends k{constructor(){super(...arguments),this.type=4;}j(t){this.element.toggleAttribute(this.name,!!t&&t!==E);}}class L extends k{constructor(t,i,s,e,h){super(t,i,s,e,h),this.type=5;}_$AI(t,i=this){if((t=S(this,t,i,0)??E)===T)return;const s=this._$AH,e=t===E&&s!==E||t.capture!==s.capture||t.once!==s.once||t.passive!==s.passive,h=t!==E&&(s===E||e);e&&this.element.removeEventListener(this.name,this,s),h&&this.element.addEventListener(this.name,this,t),this._$AH=t;}handleEvent(t){"function"==typeof this._$AH?this._$AH.call(this.options?.host??this.element,t):this._$AH.handleEvent(t);}}class z{constructor(t,i,s){this.element=t,this.type=6,this._$AN=void 0,this._$AM=i,this.options=s;}get _$AU(){return this._$AM._$AU}_$AI(t){S(this,t);}}const Z={I:R},j=t$2.litHtmlPolyfillSupport;j?.(N,R),(t$2.litHtmlVersions??=[]).push("3.3.0");const B=(t,i,s)=>{const e=s?.renderBefore??i;let h=e._$litPart$;if(void 0===h){const t=s?.renderBefore??null;e._$litPart$=h=new R(i.insertBefore(l(),t),t,void 0,s??{});}return h._$AI(t),h};
+const t$2=globalThis,i$2=t$2.trustedTypes,s$3=i$2?i$2.createPolicy("lit-html",{createHTML:t=>t}):void 0,e$2="$lit$",h$1=`lit$${Math.random().toFixed(9).slice(2)}$`,o$4="?"+h$1,n$2=`<${o$4}>`,r$3=document,l=()=>r$3.createComment(""),c$2=t=>null===t||"object"!=typeof t&&"function"!=typeof t,a=Array.isArray,u$2=t=>a(t)||"function"==typeof t?.[Symbol.iterator],d="[ \t\n\f\r]",f$2=/<(?:(!--|\/[^a-zA-Z])|(\/?[a-zA-Z][^>\s]*)|(\/?$))/g,v$1=/-->/g,_=/>/g,m$1=RegExp(`>|${d}(?:([^\\s"'>=/]+)(${d}*=${d}*(?:[^ \t\n\f\r"'\`<>=]|("|')|))|$)`,"g"),p$1=/'/g,g=/"/g,$=/^(?:script|style|textarea|title)$/i,y=t=>(i,...s)=>({_$litType$:t,strings:i,values:s}),x=y(1),T=Symbol.for("lit-noChange"),E=Symbol.for("lit-nothing"),A=new WeakMap,C=r$3.createTreeWalker(r$3,129);function P(t,i){if(!a(t)||!t.hasOwnProperty("raw"))throw Error("invalid template strings array");return void 0!==s$3?s$3.createHTML(i):i}const V=(t,i)=>{const s=t.length-1,o=[];let r,l=2===i?"<svg>":3===i?"<math>":"",c=f$2;for(let i=0;i<s;i++){const s=t[i];let a,u,d=-1,y=0;for(;y<s.length&&(c.lastIndex=y,u=c.exec(s),null!==u);)y=c.lastIndex,c===f$2?"!--"===u[1]?c=v$1:void 0!==u[1]?c=_:void 0!==u[2]?($.test(u[2])&&(r=RegExp("</"+u[2],"g")),c=m$1):void 0!==u[3]&&(c=m$1):c===m$1?">"===u[0]?(c=r??f$2,d=-1):void 0===u[1]?d=-2:(d=c.lastIndex-u[2].length,a=u[1],c=void 0===u[3]?m$1:'"'===u[3]?g:p$1):c===g||c===p$1?c=m$1:c===v$1||c===_?c=f$2:(c=m$1,r=void 0);const x=c===m$1&&t[i+1].startsWith("/>")?" ":"";l+=c===f$2?s+n$2:d>=0?(o.push(a),s.slice(0,d)+e$2+s.slice(d)+h$1+x):s+h$1+(-2===d?i:x);}return [P(t,l+(t[s]||"<?>")+(2===i?"</svg>":3===i?"</math>":"")),o]};class N{constructor({strings:t,_$litType$:s},n){let r;this.parts=[];let c=0,a=0;const u=t.length-1,d=this.parts,[f,v]=V(t,s);if(this.el=N.createElement(f,n),C.currentNode=this.el.content,2===s||3===s){const t=this.el.content.firstChild;t.replaceWith(...t.childNodes);}for(;null!==(r=C.nextNode())&&d.length<u;){if(1===r.nodeType){if(r.hasAttributes())for(const t of r.getAttributeNames())if(t.endsWith(e$2)){const i=v[a++],s=r.getAttribute(t).split(h$1),e=/([.?@])?(.*)/.exec(i);d.push({type:1,index:c,name:e[2],strings:s,ctor:"."===e[1]?H:"?"===e[1]?I:"@"===e[1]?L:k}),r.removeAttribute(t);}else t.startsWith(h$1)&&(d.push({type:6,index:c}),r.removeAttribute(t));if($.test(r.tagName)){const t=r.textContent.split(h$1),s=t.length-1;if(s>0){r.textContent=i$2?i$2.emptyScript:"";for(let i=0;i<s;i++)r.append(t[i],l()),C.nextNode(),d.push({type:2,index:++c});r.append(t[s],l());}}}else if(8===r.nodeType)if(r.data===o$4)d.push({type:2,index:c});else {let t=-1;for(;-1!==(t=r.data.indexOf(h$1,t+1));)d.push({type:7,index:c}),t+=h$1.length-1;}c++;}}static createElement(t,i){const s=r$3.createElement("template");return s.innerHTML=t,s}}function S(t,i,s=t,e){if(i===T)return i;let h=void 0!==e?s._$Co?.[e]:s._$Cl;const o=c$2(i)?void 0:i._$litDirective$;return h?.constructor!==o&&(h?._$AO?.(false),void 0===o?h=void 0:(h=new o(t),h._$AT(t,s,e)),void 0!==e?(s._$Co??=[])[e]=h:s._$Cl=h),void 0!==h&&(i=S(t,h._$AS(t,i.values),h,e)),i}let M$1 = class M{constructor(t,i){this._$AV=[],this._$AN=void 0,this._$AD=t,this._$AM=i;}get parentNode(){return this._$AM.parentNode}get _$AU(){return this._$AM._$AU}u(t){const{el:{content:i},parts:s}=this._$AD,e=(t?.creationScope??r$3).importNode(i,true);C.currentNode=e;let h=C.nextNode(),o=0,n=0,l=s[0];for(;void 0!==l;){if(o===l.index){let i;2===l.type?i=new R(h,h.nextSibling,this,t):1===l.type?i=new l.ctor(h,l.name,l.strings,this,t):6===l.type&&(i=new z(h,this,t)),this._$AV.push(i),l=s[++n];}o!==l?.index&&(h=C.nextNode(),o++);}return C.currentNode=r$3,e}p(t){let i=0;for(const s of this._$AV) void 0!==s&&(void 0!==s.strings?(s._$AI(t,s,i),i+=s.strings.length-2):s._$AI(t[i])),i++;}};class R{get _$AU(){return this._$AM?._$AU??this._$Cv}constructor(t,i,s,e){this.type=2,this._$AH=E,this._$AN=void 0,this._$AA=t,this._$AB=i,this._$AM=s,this.options=e,this._$Cv=e?.isConnected??true;}get parentNode(){let t=this._$AA.parentNode;const i=this._$AM;return void 0!==i&&11===t?.nodeType&&(t=i.parentNode),t}get startNode(){return this._$AA}get endNode(){return this._$AB}_$AI(t,i=this){t=S(this,t,i),c$2(t)?t===E||null==t||""===t?(this._$AH!==E&&this._$AR(),this._$AH=E):t!==this._$AH&&t!==T&&this._(t):void 0!==t._$litType$?this.$(t):void 0!==t.nodeType?this.T(t):u$2(t)?this.k(t):this._(t);}O(t){return this._$AA.parentNode.insertBefore(t,this._$AB)}T(t){this._$AH!==t&&(this._$AR(),this._$AH=this.O(t));}_(t){this._$AH!==E&&c$2(this._$AH)?this._$AA.nextSibling.data=t:this.T(r$3.createTextNode(t)),this._$AH=t;}$(t){const{values:i,_$litType$:s}=t,e="number"==typeof s?this._$AC(t):(void 0===s.el&&(s.el=N.createElement(P(s.h,s.h[0]),this.options)),s);if(this._$AH?._$AD===e)this._$AH.p(i);else {const t=new M$1(e,this),s=t.u(this.options);t.p(i),this.T(s),this._$AH=t;}}_$AC(t){let i=A.get(t.strings);return void 0===i&&A.set(t.strings,i=new N(t)),i}k(t){a(this._$AH)||(this._$AH=[],this._$AR());const i=this._$AH;let s,e=0;for(const h of t)e===i.length?i.push(s=new R(this.O(l()),this.O(l()),this,this.options)):s=i[e],s._$AI(h),e++;e<i.length&&(this._$AR(s&&s._$AB.nextSibling,e),i.length=e);}_$AR(t=this._$AA.nextSibling,i){for(this._$AP?.(false,true,i);t!==this._$AB;){const i=t.nextSibling;t.remove(),t=i;}}setConnected(t){ void 0===this._$AM&&(this._$Cv=t,this._$AP?.(t));}}class k{get tagName(){return this.element.tagName}get _$AU(){return this._$AM._$AU}constructor(t,i,s,e,h){this.type=1,this._$AH=E,this._$AN=void 0,this.element=t,this.name=i,this._$AM=e,this.options=h,s.length>2||""!==s[0]||""!==s[1]?(this._$AH=Array(s.length-1).fill(new String),this.strings=s):this._$AH=E;}_$AI(t,i=this,s,e){const h=this.strings;let o=false;if(void 0===h)t=S(this,t,i,0),o=!c$2(t)||t!==this._$AH&&t!==T,o&&(this._$AH=t);else {const e=t;let n,r;for(t=h[0],n=0;n<h.length-1;n++)r=S(this,e[s+n],i,n),r===T&&(r=this._$AH[n]),o||=!c$2(r)||r!==this._$AH[n],r===E?t=E:t!==E&&(t+=(r??"")+h[n+1]),this._$AH[n]=r;}o&&!e&&this.j(t);}j(t){t===E?this.element.removeAttribute(this.name):this.element.setAttribute(this.name,t??"");}}class H extends k{constructor(){super(...arguments),this.type=3;}j(t){this.element[this.name]=t===E?void 0:t;}}class I extends k{constructor(){super(...arguments),this.type=4;}j(t){this.element.toggleAttribute(this.name,!!t&&t!==E);}}class L extends k{constructor(t,i,s,e,h){super(t,i,s,e,h),this.type=5;}_$AI(t,i=this){if((t=S(this,t,i,0)??E)===T)return;const s=this._$AH,e=t===E&&s!==E||t.capture!==s.capture||t.once!==s.once||t.passive!==s.passive,h=t!==E&&(s===E||e);e&&this.element.removeEventListener(this.name,this,s),h&&this.element.addEventListener(this.name,this,t),this._$AH=t;}handleEvent(t){"function"==typeof this._$AH?this._$AH.call(this.options?.host??this.element,t):this._$AH.handleEvent(t);}}class z{constructor(t,i,s){this.element=t,this.type=6,this._$AN=void 0,this._$AM=i,this.options=s;}get _$AU(){return this._$AM._$AU}_$AI(t){S(this,t);}}const Z={I:R},j=t$2.litHtmlPolyfillSupport;j?.(N,R),(t$2.litHtmlVersions??=[]).push("3.3.1");const B=(t,i,s)=>{const e=s?.renderBefore??i;let h=e._$litPart$;if(void 0===h){const t=s?.renderBefore??null;e._$litPart$=h=new R(i.insertBefore(l(),t),t,void 0,s??{});}return h._$AI(t),h};
 
 /**
  * @license
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const s$2=globalThis;let i$1 = class i extends y$1{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0;}createRenderRoot(){const t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){const r=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=B(r,this.renderRoot,this.renderOptions);}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(true);}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(false);}render(){return T}};i$1._$litElement$=true,i$1["finalized"]=true,s$2.litElementHydrateSupport?.({LitElement:i$1});const o$3=s$2.litElementPolyfillSupport;o$3?.({LitElement:i$1});(s$2.litElementVersions??=[]).push("4.2.0");
+ */const s$2=globalThis;let i$1 = class i extends y$1{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0;}createRenderRoot(){const t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){const r=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=B(r,this.renderRoot,this.renderOptions);}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(true);}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(false);}render(){return T}};i$1._$litElement$=true,i$1["finalized"]=true,s$2.litElementHydrateSupport?.({LitElement:i$1});const o$3=s$2.litElementPolyfillSupport;o$3?.({LitElement:i$1});(s$2.litElementVersions??=[]).push("4.2.1");
 
 class IaiLitBase extends i$1 {
     static styles = i$4`
@@ -85,7 +85,7 @@ class IaiLitBase extends i$1 {
             FAVOURITE_QUESTIONS: "favouriteQuestions",
         };
     }
-    
+
     createRenderRoot() {
         return this;
     }
@@ -257,7 +257,7 @@ class IaiExpandingText extends IaiLitBase {
             iai-expanding-text .iai-text-content:not(.iai-text-truncated).clickable::before {
                 transform: rotate(90deg);
             }
-                
+
             iai-expanding-text .iai-text-content.iai-text-truncated {
                 display: -webkit-box;
                 display: box;
@@ -300,7 +300,7 @@ class IaiExpandingText extends IaiLitBase {
             this.querySelector(".iai-text-content"),
             this.lines
         );
-    } 
+    }
 
     firstUpdated() {
         this.applyStaticStyles("iai-expanding-text", IaiExpandingText.styles);
@@ -377,7 +377,7 @@ class IaiTextWithFallback extends IaiLitBase {
         super();
 
         this.applyStaticStyles("iai-text-with-fallback", IaiTextWithFallback.styles);
-        
+
         // By default, render fallback if text is falsy
         this.fallbackCondition = (text) => !text;
     }
@@ -425,7 +425,7 @@ class IaiIcon extends IaiLitBase {
         this.fill = 0;
         this.opsz = 48;
         this.wght = 300;
-        
+
         this.applyStaticStyles("iai-icon", IaiIcon.styles);
     }
 
@@ -641,7 +641,7 @@ class IaiDataTable extends IaiLitBase {
             }
             return 0;
         });
-        
+
         return result;
     }
 
@@ -711,11 +711,11 @@ class IaiDataTable extends IaiLitBase {
         return x`
             <table class="govuk-table govuk-body" mentionstable="">
                 <thead class="govuk-table__head">
-                    <tr class="govuk-table__row">    
+                    <tr class="govuk-table__row">
                         ${this.getHeaders().map(header => this.renderHeader(header))}
                     </tr>
                 </thead>
-          
+
                 <tbody class="govuk-table__body">
                     ${data.map(row => x`
                         <tr
@@ -831,7 +831,7 @@ class IaiCsvDownload extends IaiLitBase {
         }
 
         const localData = Array.isArray(data) ? data : [data];
-        
+
         const keys = Object.keys(data[0]);
         const rows = [
             keys.join(","),
@@ -953,7 +953,7 @@ class IaiResponseFilters extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-        
+
         this._SLOT_NAMES = ["filters"];
 
         this.applyStaticStyles("iai-response-filters", IaiResponseFilters.styles);
@@ -1125,7 +1125,7 @@ class IaiResponsesTitle extends IaiLitBase {
 
         // Prop defaults
         this.total = 0;
-        
+
         this.applyStaticStyles("iai-responses-title", IaiResponsesTitle.styles);
     }
 
@@ -1161,7 +1161,7 @@ class IaiExpandingPill extends IaiLitBase {
             iai-expanding-pill {
                 font-size: 0.9em;
             }
-            
+
             iai-expanding-pill button {
                 display: flex;
                 justify-content: space-between;
@@ -1215,7 +1215,7 @@ class IaiExpandingPill extends IaiLitBase {
     }
 
     render() {
-        return x`    
+        return x`
             <button
                 class=${this._expanded ? "expanded" : ""}
                 @click=${_ => this._expanded = !this._expanded}
@@ -1483,12 +1483,12 @@ class IaiResponseFilterGroup extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-        
+
         this._SLOT_NAMES = ["content"];
-        
+
         // Prop defaults
         this.title = "";
-        
+
         this.applyStaticStyles("iai-response-filter-group", IaiResponseFilterGroup.styles);
     }
 
@@ -1507,7 +1507,7 @@ class IaiResponseFilterGroup extends IaiLitBase {
                     <slot name="content"></slot>
 
                 </fieldset>
-            </div>      
+            </div>
         `;
     }
 }
@@ -1552,10 +1552,10 @@ class IaiQuestionTopbar extends IaiLitBase {
 
         // Prop defaults
         this.title = "";
-        
+
         this.applyStaticStyles("iai-question-topbar", IaiQuestionTopbar.styles);
     }
-    
+
     updated() {
         this._SLOT_NAMES.forEach(slotName => this.applySlots(slotName));
     }
@@ -1601,7 +1601,7 @@ class IaiQuestionBody extends IaiLitBase {
         // Prop defaults
         this.text = "";
         this.searchValue = "";
-        
+
         this.applyStaticStyles("iai-question-body", IaiQuestionBody.styles);
     }
 
@@ -1609,7 +1609,7 @@ class IaiQuestionBody extends IaiLitBase {
         const regex = new RegExp(matchedText, "gi");
         return o$2(fullText.replace(regex, match => `<span class="matched-text">${match}</span>`));
     }
-    
+
     render() {
         return x`
             <p>${this.getHighlightedText(this.text, this.searchValue)}</p>
@@ -1659,7 +1659,7 @@ class IaiIconButton extends IaiLitBase {
         // Prop defaults
         this.title = "";
         this.handleClick = () => {};
-        
+
         this.applyStaticStyles("iai-icon-button", IaiIconButton.styles);
     }
 
@@ -1703,7 +1703,7 @@ class IaiQuestionTile extends IaiLitBase {
                 width: 31%;
             }
             iai-question-tile .question-tile {
-                height: 100%;    
+                height: 100%;
                 background: white;
                 padding: 1em;
                 border-radius: var(--iai-border-radius);
@@ -1819,7 +1819,7 @@ class IaiQuestionTile extends IaiLitBase {
                                 this.handleFavouriteClick(e);
                             }}
                             @keydown=${(e) => e.stopPropagation()}
-                        >    
+                        >
                             <iai-icon
                                 slot="icon"
                                 name="star"
@@ -1832,7 +1832,7 @@ class IaiQuestionTile extends IaiLitBase {
                         </iai-icon-button>
                     </div>
                 </iai-question-topbar>
-                
+
                 <iai-question-body
                     .text=${this.getTruncatedText(this.body, this.maxLength)}
                     .searchValue=${this.searchValue}
@@ -1876,7 +1876,7 @@ class IaiQuestionOverviewSubtitle extends IaiLitBase {
         // Prop defaults
         this.title = "";
         this.total = 0;
-        
+
         this.applyStaticStyles("iai-question-overview-subtitle", IaiQuestionOverviewSubtitle.styles);
     }
 
@@ -1970,7 +1970,7 @@ class IaiProgressBar extends IaiLitBase {
                 background: var(--iai-colour-pink);
             }
             iai-progress-bar .container .label {
-                display: block;    
+                display: block;
                 position: absolute;
                 right: 0.5em;
                 text-align: right;
@@ -1992,7 +1992,7 @@ class IaiProgressBar extends IaiLitBase {
         // Prop defaults
         this.value = 0;
         this.label = "";
-        
+
         this.applyStaticStyles("iai-progress-bar", IaiProgressBar.styles);
     }
 
@@ -2406,7 +2406,7 @@ class IaiQuestionTiles extends IaiLitBase {
                 <div class="govuk-grid-column-one-quarter-from-desktop overview-panel">
                     <div class="search-container">
                         <iai-text-input
-                            inputId="question-search"  
+                            inputId="question-search"
                             name="question-search"
                             .label=${x`
                                 <iai-icon
@@ -2423,7 +2423,7 @@ class IaiQuestionTiles extends IaiLitBase {
                             .hideLabel=${false}
                         ></iai-text-input>
                     </div>
-                    
+
                     ${this._selectedQuestion ? x`
                         <iai-question-overview
                             .title=${this._selectedQuestion.title}
@@ -2459,7 +2459,7 @@ class IaiPageTitle extends IaiLitBase {
         // Prop defaults
         this.title = "";
         this.subtitle = "";
-        
+
         this.applyStaticStyles("iai-page-title", IaiPageTitle.styles);
     }
 
@@ -2489,7 +2489,7 @@ class IaiChip extends IaiLitBase {
             iai-chip {
                 font-size: 0.9em;
             }
-            
+
             iai-chip div {
                 display: flex;
                 justify-content: space-between;
@@ -2518,7 +2518,7 @@ class IaiChip extends IaiLitBase {
     }
 
     render() {
-        return x`    
+        return x`
             <div>
                 <span>
                     ${this.label}
@@ -2562,7 +2562,7 @@ class IaiAnimatedNumber extends IaiLitBase {
         this.number = 0;
         this.duration = 1000;
         this._displayNumber = 0;
-        
+
         this.applyStaticStyles("iai-animated-number", IaiAnimatedNumber.styles);
     }
 
@@ -2640,7 +2640,7 @@ class IaiLoadingIndicator extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-        
+
         this.applyStaticStyles("iai-loading-indicator", IaiLoadingIndicator.styles);
     }
 
@@ -2697,7 +2697,7 @@ typeof SuppressedError === "function" ? SuppressedError : function (error, suppr
  * @license
  * Copyright 2020 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
- */const {I:t}=Z,f$1=o=>void 0===o.strings,s$1=()=>document.createComment(""),r$1=(o,i,n)=>{const e=o._$AA.parentNode,l=void 0===i?o._$AB:i._$AA;if(void 0===n){const i=e.insertBefore(s$1(),l),c=e.insertBefore(s$1(),l);n=new t(i,c,o,o.options);}else {const t=n._$AB.nextSibling,i=n._$AM,c=i!==o;if(c){let t;n._$AQ?.(o),n._$AM=o,void 0!==n._$AP&&(t=o._$AU)!==i._$AU&&n._$AP(t);}if(t!==l||c){let o=n._$AA;for(;o!==t;){const t=o.nextSibling;e.insertBefore(o,l),o=t;}}}return n},v=(o,t,i=o)=>(o._$AI(t,i),o),u$1={},m=(o,t=u$1)=>o._$AH=t,p=o=>o._$AH,M=o=>{o._$AP?.(false,true);let t=o._$AA;const i=o._$AB.nextSibling;for(;t!==i;){const o=t.nextSibling;t.remove(),t=o;}};
+ */const {I:t}=Z,f$1=o=>void 0===o.strings,r$1=()=>document.createComment(""),s$1=(o,i,n)=>{const e=o._$AA.parentNode,l=void 0===i?o._$AB:i._$AA;if(void 0===n){const i=e.insertBefore(r$1(),l),d=e.insertBefore(r$1(),l);n=new t(i,d,o,o.options);}else {const t=n._$AB.nextSibling,i=n._$AM,d=i!==o;if(d){let t;n._$AQ?.(o),n._$AM=o,void 0!==n._$AP&&(t=o._$AU)!==i._$AU&&n._$AP(t);}if(t!==l||d){let o=n._$AA;for(;o!==t;){const t=o.nextSibling;e.insertBefore(o,l),o=t;}}}return n},v=(o,t,i=o)=>(o._$AI(t,i),o),u$1={},m=(o,t=u$1)=>o._$AH=t,p=o=>o._$AH,M=o=>{o._$AR(),o._$AA.remove();};
 
 /**
  * @license
@@ -2710,7 +2710,7 @@ typeof SuppressedError === "function" ? SuppressedError : function (error, suppr
  * Copyright 2017 Google LLC
  * SPDX-License-Identifier: BSD-3-Clause
  */
-const u=(e,s,t)=>{const r=new Map;for(let l=s;l<=t;l++)r.set(e[l],l);return r},c=e$1(class extends i{constructor(e){if(super(e),e.type!==t$1.CHILD)throw Error("repeat() can only be used in text expressions")}dt(e,s,t){let r;void 0===t?t=s:void 0!==s&&(r=s);const l=[],o=[];let i=0;for(const s of e)l[i]=r?r(s,i):i,o[i]=t(s,i),i++;return {values:o,keys:l}}render(e,s,t){return this.dt(e,s,t).values}update(s,[t,r,c]){const d=p(s),{values:p$1,keys:a}=this.dt(t,r,c);if(!Array.isArray(d))return this.ut=a,p$1;const h=this.ut??=[],v$1=[];let m$1,y,x=0,j=d.length-1,k=0,w=p$1.length-1;for(;x<=j&&k<=w;)if(null===d[x])x++;else if(null===d[j])j--;else if(h[x]===a[k])v$1[k]=v(d[x],p$1[k]),x++,k++;else if(h[j]===a[w])v$1[w]=v(d[j],p$1[w]),j--,w--;else if(h[x]===a[w])v$1[w]=v(d[x],p$1[w]),r$1(s,v$1[w+1],d[x]),x++,w--;else if(h[j]===a[k])v$1[k]=v(d[j],p$1[k]),r$1(s,d[x],d[j]),j--,k++;else if(void 0===m$1&&(m$1=u(a,k,w),y=u(h,x,j)),m$1.has(h[x]))if(m$1.has(h[j])){const e=y.get(a[k]),t=void 0!==e?d[e]:null;if(null===t){const e=r$1(s,d[x]);v(e,p$1[k]),v$1[k]=e;}else v$1[k]=v(t,p$1[k]),r$1(s,d[x],t),d[e]=null;k++;}else M(d[j]),j--;else M(d[x]),x++;for(;k<=w;){const e=r$1(s,v$1[w+1]);v(e,p$1[k]),v$1[k++]=e;}for(;x<=j;){const e=d[x++];null!==e&&M(e);}return this.ut=a,m(s,v$1),T}});
+const u=(e,s,t)=>{const r=new Map;for(let l=s;l<=t;l++)r.set(e[l],l);return r},c=e$1(class extends i{constructor(e){if(super(e),e.type!==t$1.CHILD)throw Error("repeat() can only be used in text expressions")}dt(e,s,t){let r;void 0===t?t=s:void 0!==s&&(r=s);const l=[],o=[];let i=0;for(const s of e)l[i]=r?r(s,i):i,o[i]=t(s,i),i++;return {values:o,keys:l}}render(e,s,t){return this.dt(e,s,t).values}update(s,[t,r,c]){const d=p(s),{values:p$1,keys:a}=this.dt(t,r,c);if(!Array.isArray(d))return this.ut=a,p$1;const h=this.ut??=[],v$1=[];let m$1,y,x=0,j=d.length-1,k=0,w=p$1.length-1;for(;x<=j&&k<=w;)if(null===d[x])x++;else if(null===d[j])j--;else if(h[x]===a[k])v$1[k]=v(d[x],p$1[k]),x++,k++;else if(h[j]===a[w])v$1[w]=v(d[j],p$1[w]),j--,w--;else if(h[x]===a[w])v$1[w]=v(d[x],p$1[w]),s$1(s,v$1[w+1],d[x]),x++,w--;else if(h[j]===a[k])v$1[k]=v(d[j],p$1[k]),s$1(s,d[x],d[j]),j--,k++;else if(void 0===m$1&&(m$1=u(a,k,w),y=u(h,x,j)),m$1.has(h[x]))if(m$1.has(h[j])){const e=y.get(a[k]),t=void 0!==e?d[e]:null;if(null===t){const e=s$1(s,d[x]);v(e,p$1[k]),v$1[k]=e;}else v$1[k]=v(t,p$1[k]),s$1(s,d[x],t),d[e]=null;k++;}else M(d[j]),j--;else M(d[x]),x++;for(;k<=w;){const e=s$1(s,v$1[w+1]);v(e,p$1[k]),v$1[k++]=e;}for(;x<=j;){const e=d[x++];null!==e&&M(e);}return this.ut=a,m(s,v$1),T}});
 
 /**
  * @license
@@ -3859,7 +3859,7 @@ class IaiVirtualList extends IaiLitBase {
         this.handleScrollEnd = () => {};
         this.message = "";
         this._canCallCallback = true;
-        
+
         this.applyStaticStyles("iai-virtual-list", IaiVirtualList.styles);
     }
 
@@ -4152,11 +4152,68 @@ class IaiResponseDashboard extends IaiLitBase {
             this._errorOccured = false;
             this._isLoading = true;
 
-            const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
-
-            let response;
+            // Use streaming for responses and regular fetch for metadata endpoints
             try {
-                response = await this.fetchData(url, { signal });
+                // Fetch non-streaming endpoints first (only on first page)
+                const [themeAggregationsData, themeInformationData, demographicOptionsData] = await Promise.all([
+                    // Get theme aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    // Get theme information (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-information/`, { signal }).then(r => r.json()) : null,
+                    // Get demographic options (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/demographic-options/`, { signal }).then(r => r.json()) : null
+                ]);
+
+                // Update theme mappings only on first page to reflect current filters
+                if (this._currentPage === 1 && themeAggregationsData && themeInformationData) {
+                    // Create theme info lookup map
+                    const themeInfoMap = themeInformationData.themes.reduce((map, theme) => {
+                        map[theme.id] = theme;
+                        return map;
+                    }, {});
+
+                    // Convert theme_aggregations format to theme_mappings format
+                    this.themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
+                        const themeInfo = themeInfoMap[id] || {};
+                        return {
+                            value: id,
+                            label: themeInfo.name || "",
+                            description: themeInfo.description || "",
+                            count: count.toString()
+                        };
+                    });
+                }
+
+                // Update demographic options if available
+                if (demographicOptionsData) {
+                    this.demographicOptions = demographicOptionsData.demographic_options;
+                }
+
+                // Now fetch responses
+                const responsesResponse = await fetch(
+                    `/api/consultations/${this.consultationId}/questions/${this.questionId}/filtered-responses/?` + this.buildQuery(),
+                    { signal }
+                );
+
+                if (!responsesResponse.ok) {
+                    throw new Error(`HTTP error! status: ${responsesResponse.status}`);
+                }
+
+                const responsesData = await responsesResponse.json();
+
+                // Add all responses
+                this.responses = this.responses.concat(
+                    responsesData.all_respondents.map(response => ({
+                        ...response,
+                        visible: true,
+                    }))
+                );
+
+                // Update metadata
+                this.responsesTotal = responsesData.respondents_total;
+                this._responsesFilteredTotal = responsesData.filtered_total;
+                this._hasMorePages = responsesData.has_more_pages;
+
             } catch (err) {
                 if (err.name == "AbortError") {
                     console.log("stale request aborted");
@@ -4172,34 +4229,6 @@ class IaiResponseDashboard extends IaiLitBase {
                 }
                 this._isLoading = false;
             }
-
-            if (!response.ok) {
-                this._errorOccured = true;
-                throw new Error(`Response status: ${response.status}`);
-            }
-
-            const responsesData = await response.json();
-
-            this.responses = this.responses.concat(
-                responsesData.all_respondents.map(response => ({
-                    ...response,
-                    visible: true,
-                }))
-            );
-            this.responsesTotal = responsesData.respondents_total;
-            this._responsesFilteredTotal = responsesData.filtered_total;
-
-            // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
-            if (this._currentPage === 1 && responsesData.theme_mappings) {
-                this.themeMappings = responsesData.theme_mappings;
-            }
-
-            // Update demographic options if available
-            if (responsesData.demographic_options) {
-                this.demographicOptions = responsesData.demographic_options;
-            }
-
-            this._hasMorePages = responsesData.has_more_pages;
 
             this._currentPage = this._currentPage + 1;
         }, this._DEBOUNCE_DELAY);
@@ -4899,11 +4928,11 @@ class IconTile extends IaiLitBase {
         IaiLitBase.styles,
         i$4`
             iai-silver-icon-tile {
-                display: block;    
+                display: block;
                 width: max-content;
             }
             iai-silver-icon-tile .icon-tile-container {
-                display: flex;    
+                display: flex;
                 justify-content: center;
                 align-items: center;
                 background: salmon;
@@ -5074,7 +5103,7 @@ class Panel extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-        
+
         // Prop defaults
         this.borderColor = "";
 
@@ -5242,255 +5271,6 @@ class SelectInput extends IaiLitBase {
 }
 customElements.define("iai-silver-select-input", SelectInput);
 
-class Card extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        color: { type: String },
-        backgroundColor: { type: String },
-        text: { type: String },
-        number: { type: Number },
-        icon: { type: String },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-silver-card {
-                display: block;    
-                width: max-content;
-            }
-            iai-silver-card p {
-                margin: 0;
-            }
-            iai-silver-card .number {
-                font-size: 1.3em;
-            }
-            iai-silver-card .text {
-                font-size: 0.8em;
-            }
-            iai-silver-card div[slot="content"] {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                gap: 1em;
-                padding: 1em;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.color = "white";
-        this.backgroundColor = "black";
-        this.text = "";
-        this.number = 0;
-        this.icon = "";
-
-        this.applyStaticStyles("iai-silver-card", Card.styles);
-    }
-
-    render() {
-        return x`
-            <iai-silver-panel .borderColor=${this.color}>
-                <div slot="content">
-                    <iai-silver-icon-tile
-                        .color=${this.color}
-                        .backgroundColor=${this.backgroundColor}
-                        .name=${this.name}
-                    ></iai-silver-icon-tile>
-                    <div>
-                        <p class="text">${this.text}</p>
-                        <p class="number">${this.number}</p>
-                    </div>
-                </div>
-            </iai-silver-panel>
-        `
-    }
-}
-customElements.define("iai-silver-card", Card);
-
-class Consultation extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        status: { type: String },
-        title: { type: String },
-        description: { type: String },
-        department: { type: String },
-        numResponses: { type: Number },
-        numQuestions: { type: Number },
-        numThemes: { type: Number },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-silver-consultation .topbar {
-                display: flex;
-                justify-content: space-between;
-                margin-bottom: 1em;
-            }
-            iai-silver-consultation .topbar .tags {
-                display: flex;    
-                align-items: center;
-                gap: 0.5em;
-            }
-
-            iai-silver-consultation .tag {
-                padding: 0.3em 0.5em;
-            }
-
-            iai-silver-consultation .status {
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                font-size: 0.8em;
-                color: white;
-                background: #85d07e;                
-                border-radius: 0.5em;
-            }
-            iai-silver-consultation .department {
-                font-size: 0.8em;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.status = "";
-        this.title = "";
-        this.description = "";
-        this.department = "";
-        this.numResponses = 0;
-        this.numQuestions = 0;
-        this.numThemes = 0;
-
-        this.applyStaticStyles("iai-silver-consultation", Consultation.styles);
-    }
-
-    getIconColor = (status) => {
-        switch (status) {
-            case this.CONSULTATION_STATUSES.open:
-                return "#85d07e";
-            case this.CONSULTATION_STATUSES.analysing:
-                return "#efdb5d";
-            case this.CONSULTATION_STATUSES.completed:
-                return "#0b8478";
-            case this.CONSULTATION_STATUSES.closed:
-                return "var(--iai-silver-color-text)";
-            default:
-                return "#85d07e";
-        }
-    }
-
-    getTagColor = (status) => {
-        switch (status) {
-            case this.CONSULTATION_STATUSES.open:
-                return "#85d07e";
-            case this.CONSULTATION_STATUSES.analysing:
-                return "#efdb5d";
-            case this.CONSULTATION_STATUSES.completed:
-                return "#0b8478";
-            case this.CONSULTATION_STATUSES.closed:
-                return "#f8f9fa";
-            default:
-                return "#85d07e";
-        }
-    }
-
-    render() {
-        return x`
-            <iai-silver-panel>
-                <div slot="content">
-                    <div class="topbar">
-                        <div class="tags">
-                            <iai-icon
-                                name="schedule"
-                                .color=${this.getIconColor(this.status)}
-                            ></iai-icon>
-
-                            <span class="tag status" style=${`background: ${this.getTagColor(this.status)}; color: ${this.status == this.CONSULTATION_STATUSES.closed ? "black" : "white"}`}>
-                                ${this.status}
-                            </span>
-
-                            <span class="tag" style="border-radius: 0.5em; background: white; border: 1px solid var(--iai-silver-color-mid); padding-inline: 0.5em; font-size: 0.8em; display: flex; justify-content: center; align-items: center;">
-                                Transport
-                            </span>
-                        </div>
-                        <div>
-                            <iai-silver-button
-                                .text=${"View analysis"}
-                                .handleClick=${() => console.log("button clicked")}
-                            ></iai-silver-button>
-                        </div>
-                    </div>
-
-                    <iai-silver-title
-                        .text=${this.title}
-                        .variant=${"secondary"}
-                    ></iai-silver-title>
-
-                    <p>
-                        ${this.description}
-                    </p>
-                    
-                    <div style="display: flex; gap: 1em;">
-                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
-                            <iai-icon
-                                name="calendar_month"
-                                color="var(--iai-silver-color-text)"
-                            ></iai-icon>
-                            <small>
-                                4 May 2024 - 8 Aug 2024
-                            </small>
-                        </div>
-
-                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
-                            <iai-icon
-                                name="group"
-                                color="var(--iai-silver-color-text)"
-                            ></iai-icon>
-                            <small>
-                                ${this.numResponses.toLocaleString()} responses
-                            </small>
-                        </div>
-
-                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
-                            <iai-icon
-                                name="description"
-                                color="var(--iai-silver-color-text)"
-                            ></iai-icon>
-                            <small>
-                                ${this.numQuestions} questions
-                            </small>
-                        </div>
-
-                        <div style="display: flex; align-items: center; gap: 0.25em; margin-bottom: 0.5em;">
-                            <iai-icon
-                                name="monitoring"
-                                color="var(--iai-silver-color-text)"
-                            ></iai-icon>
-                            <small>
-                                ${this.numThemes} themes
-                            </small>
-                        </div>
-                    </div>
-
-                    <small class="department">
-                        ${this.department}
-                    </small>
-                </div>
-            </iai-silver-panel>
-        `
-    }
-}
-customElements.define("iai-silver-consultation", Consultation);
-
 class CrossSearchCard extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -5529,7 +5309,7 @@ class CrossSearchCard extends IaiLitBase {
             iai-silver-cross-search-card .tag {
                 display: flex;
                 justify-content: center;
-                align-items: center;    
+                align-items: center;
                 padding: 0.3em 0.5em;
                 background: #e6e6e7;
                 font-size: 0.8em;
@@ -5626,7 +5406,7 @@ class Tag extends IaiLitBase {
                 display: grid;
                 width: max-content;
                 max-width: 100%;
-                gap: 0.5em; 
+                gap: 0.5em;
                 padding: 0.3em 0.5em;
                 font-size: 0.8em;
                 line-height: 1.5em;
@@ -5656,7 +5436,7 @@ class Tag extends IaiLitBase {
         this.text = "";
         this.subtext = "";
         this.matchBackground = false;
-        
+
         this.applyStaticStyles("iai-silver-tag", Tag.styles);
     }
 
@@ -5707,7 +5487,7 @@ class Tag extends IaiLitBase {
                     border: 1px solid ${this.getTagColor(this.status).ternary};
                 }
             </style>
-            
+
             <span id=${this.contentId} class="tag">
                 <span class="text-container">
                     ${this.icon
@@ -5725,7 +5505,7 @@ class Tag extends IaiLitBase {
                 ${this.subtext ? x`
                     <span>
                         ${this.subtext}
-                    </span>    
+                    </span>
                 ` : ""}
             </span>
         `
@@ -6000,6 +5780,555 @@ class ToggleInput extends IaiLitBase {
 }
 customElements.define("iai-toggle-input", ToggleInput);
 
+class ThemeFiltersWarning extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        themes: { type: Array },
+        themeFilters: { type: Array },
+        updateThemeFilters: { type: Function },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-theme-filters-warning .theme-tag .material-symbols-outlined {
+                font-size: 1.3em;
+            }
+            iai-theme-filters-warning iai-silver-button button {
+                width: max-content;
+                display: flex;
+                align-items: center;
+                padding-inline: 0.5em;
+                gap: 0.5em;
+                font-weight: bold;
+                color: var(--iai-silver-color-text);
+            }
+            iai-theme-filters-warning iai-silver-tag {
+                width: 100%;
+                display: block;
+                margin-bottom: 1em;
+            }
+            iai-theme-filters-warning .tag-container iai-silver-tag {
+                width: auto;
+                margin: 0;
+            }
+            iai-theme-filters-warning iai-silver-tag .tag-container {
+                display: flex;
+                gap: 0.5em;
+                align-items: center;
+                flex-wrap: wrap;
+            }
+            iai-theme-filters-warning iai-silver-tag .theme-tag {
+                display: flex;
+                gap: 0.5em;
+                font-size: 1.2em;
+                align-items: center;
+            }
+            iai-theme-filters-warning iai-silver-tag .theme-tag iai-icon-button {
+                margin-top: 0.1em;
+            }
+            iai-theme-filters-warning iai-silver-tag .tag {
+                width: 100%;
+            }
+            iai-theme-filters-warning iai-silver-button button {
+                width: max-content;
+                display: flex;
+                align-items: center;
+                padding-inline: 0.5em;
+                gap: 0.5em;
+                font-weight: bold;
+                color: var(--iai-silver-color-text);
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        this.themes = [];
+        this.themeFilters = [];
+        this.updateThemeFilters = () => {};
+
+        this.applyStaticStyles("iai-theme-filters-warning", ThemeFiltersWarning.styles);
+    }
+
+    render() {
+        return x`
+            <iai-silver-tag
+                .status=${"Analysing"}
+                .icon=${"report"}
+                .text=${`Selected themes (${this.themeFilters.length})`}
+                .subtext=${x`
+                    <div class="tag-container">
+                        ${this.themeFilters.map(themeFilter => x`
+                        <iai-silver-tag
+                            .text=${x`
+                                <div class="theme-tag">
+                                    ${this.themes.find(theme => theme.id == themeFilter).title}
+
+                                    <iai-icon-button .handleClick=${() => this.updateThemeFilters(themeFilter)}>
+                                        <iai-icon
+                                            slot="icon"
+                                            .name=${"close"}
+                                        ></iai-icon>
+                                    </iai-icon-button>
+
+                                </div>`}
+                        ></iai-silver-tag>
+                        `)}
+
+                        <iai-silver-button
+                            .text=${"Clear all"}
+                            .handleClick=${() => this.updateThemeFilters()}
+                        ></iai-silver-button>
+                    </div>
+                `}
+            >
+            </iai-silver-tag>
+        `;
+    }
+}
+customElements.define("iai-theme-filters-warning", ThemeFiltersWarning);
+
+class MultiDropdown extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        title: { type: String },
+        text: { type: String },
+        options: { type: Array }, //  { id, checked, title, handleClick }
+
+        _panelVisible: { type: Boolean },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-multi-dropdown label,
+            iai-multi-dropdown select,
+            iai-multi-dropdown input {
+                //font-size: 0.9em !important;
+            }
+            iai-multi-dropdown label {
+                cursor: pointer;
+                word-break: break-word;
+                line-height: 1.5em;
+            }
+            iai-multi-dropdown .filters {
+                display: flex;
+                gap: 1em;
+                width: 100%;
+                flex-direction: column;
+            }
+            iai-multi-dropdown input[type="checkbox"] {
+                width: auto;
+                filter: grayscale(0.5) hue-rotate(75deg);
+                cursor: pointer;
+            }
+
+            iai-multi-dropdown ul {
+                list-style: none;
+                padding-left: 0;
+                margin: 0;
+            }
+            iai-multi-dropdown ul li {
+                display: flex;
+                gap: 0.5em;
+                justify-content: flex-start;
+                margin-bottom: 0.5em;
+            }
+
+            iai-multi-dropdown .popup-button .popup-panel {
+                position: absolute;
+                top: 2em;
+                width: max-content;
+                max-width: 80vw;
+                max-height: 20em;
+                overflow: auto;
+                right: 0;
+                background: white;
+                padding: 1em;
+                margin: 0;
+                z-index: 2;
+                border: 1px solid var(--iai-silver-color-mid);
+                border-radius: 0.5em;
+                opacity: 1;
+                transition: opacity 0.3s ease-in-out;
+                box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
+            }
+            iai-multi-dropdown .popup-button {
+                position: relative;
+            }
+            iai-multi-dropdown .popup-button .popup-panel.left-placement {
+                right: unset;
+                left: 0;
+            }
+            iai-multi-dropdown .popup-panel .content {
+                display: flex;
+                align-items: center;
+                gap: 1em;
+            }
+            iai-multi-dropdown .popup-button .icon-container {
+                margin-bottom: 0.5em;
+            }
+            iai-multi-dropdown .popup-button iai-silver-title {
+                color: var(--iai-silver-color-dark);
+                cursor: pointer;
+            }
+            iai-multi-dropdown .popup-button .popup-button__body {
+                position: relative;
+            }
+            iai-multi-dropdown .popup-button .popup-button__body iai-silver-button button {
+                width: 100%;
+                line-height: 2em;
+                background: var(--iai-silver-color-light);
+                border: none;
+                border-radius: 0.3em;
+            }
+            iai-multi-dropdown .popup-button .popup-button__text {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                gap: 0.5em;
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+
+        // Prop defaults
+        this.title = "";
+        this.text = "";
+        this.options = [];
+
+        this._panelVisible = false;
+        this._leftPlacement = false;
+
+        this.applyStaticStyles("iai-multi-dropdown", MultiDropdown.styles);
+    }
+
+    handleOutsideClick = (e) => {
+        if (!this.contains(e.target)) {
+            this._panelVisible = false;
+        }
+    }
+
+    connectedCallback() {
+        super.connectedCallback();
+        this.setupPanelListeners(window.addEventListener);    }
+
+    disconnectedCallback() {
+        this.setupPanelListeners(window.removeEventListener);
+        super.disconnectedCallback();
+    }
+
+    setupPanelListeners = (func) => {
+        ["click", "touchstart"].forEach(eventName => {
+            func(eventName, this.handleOutsideClick);
+        });
+    }
+
+    isLeftPlaced = () => {
+        const buttonEl = this.querySelector("iai-silver-button");
+        if (!buttonEl) {
+            return;
+        }
+
+        const rect = buttonEl.getBoundingClientRect();
+
+        const elementCenter = rect.left + rect.width / 2;
+        const screenCenter = window.innerWidth / 2;
+
+        return elementCenter < screenCenter;
+    }
+
+    willUpdate(changedProps) {
+        if (changedProps.has("_panelVisible")) {
+            this._leftPlacement = this.isLeftPlaced();
+        }
+    }
+
+    render() {
+        return x`
+            <div class="popup-button">
+                <iai-silver-title
+                    .level=${3}
+                    .text=${this.title}
+                    @click=${() => this._panelVisible = !this._panelVisible}
+                ></iai-silver-title>
+
+                <div class="popup-button__body">
+                    <iai-silver-button
+                        .text=${x`
+                            <div class="popup-button__text">
+                                <span>
+                                    ${this.text}
+                                </span>
+                                <iai-icon
+                                    .name=${"keyboard_arrow_down"}
+                                ></iai-icon>
+                            </div>
+                        `}
+                        .handleClick=${() => this._panelVisible = !this._panelVisible}
+                    ></iai-silver-button>
+
+                    ${this.options.length > 0 ? x`
+                        <div
+                            class=${"popup-panel" + (this._leftPlacement ? " left-placement" : "")}
+                            style=${`
+                                opacity: ${this._panelVisible ? 1 : 0};
+                                pointer-events: ${this._panelVisible ? "auto" : "none"};
+                            `}
+                        >
+                            <div class="content">
+                                <ul>
+                                    ${this.options.map(option => {
+                                        const optionId = `${this.contentId}-${option.id.replace(" ", "-")}`;
+
+                                        return x`
+                                            <li>
+                                                <input
+                                                    type="checkbox"
+                                                    class="theme-checkbox"
+                                                    id=${optionId}
+                                                    name=${`multi-dropdown-${this.contentId}`}
+                                                    .value=${option.id}
+                                                    .checked=${option.checked}
+                                                    @click=${option.handleClick}
+                                                />
+                                                <label for=${optionId}>
+                                                    ${option.title}
+                                                </label>
+                                            </li>
+                                        `}
+                                    )}
+                                </ul>
+                            </div>
+                        </div>
+                    ` : ""}
+                </div>
+
+            </div>
+        `
+    }
+}
+customElements.define("iai-multi-dropdown", MultiDropdown);
+
+class Filters extends IaiLitBase {
+    static properties = {
+        ...IaiLitBase.properties,
+        consultationSlug: { type: String },
+        themes: { type: Array },
+        demoOptions: { type: Object },
+
+        demoFiltersApplied: { type: Function },
+        themeFiltersApplied: { type: Function },
+
+        themeFilters: { type: Array },
+        updateThemeFilters: { type: Function },
+
+        sortType: { type: String },
+        setSortType: { type: Function },
+
+        sortDirection: { type: String },
+        setSortDirection: { type: Function },
+
+        demoFilters: { type: Object },
+        setDemoFilters: { type: Function },
+    }
+
+    static styles = [
+        IaiLitBase.styles,
+        i$4`
+            iai-filters div[slot="content"] {
+                padding-block: 0.5em;
+            }
+            iai-filters iai-silver-icon-tile {
+                font-size: 0.8em;
+            }
+            iai-filters .theme-title {
+                font-weight: bold;
+                color: var(--iai-silver-color-text);
+            }
+            iai-filters iai-silver-button button {
+                width: max-content;
+                display: flex;
+                align-items: center;
+                padding-inline: 0.5em;
+                gap: 0.5em;
+                font-weight: bold;
+                color: var(--iai-silver-color-text);
+            }
+            iai-filters .filters-row {
+                display: grid;
+                gap: 1em;
+            }
+            iai-filters .total-themes {
+                display: flex;
+                flex-direction: column;
+                max-height: max-content;
+                padding: 1em;
+                font-size: 0.8em;
+                white-space: nowrap;
+                background: #fcf1f6;
+                border-radius: 0.5em;
+            }
+            iai-filters .total-themes span {
+                font-size: 1.5em;
+                font-weight: bold;
+            }
+            iai-filters .filters-row {
+                margin-bottom: 1em;
+                background: var(--iai-silver-color-light);
+                padding: 1em;
+                border-radius: 0.5em;
+            }
+            iai-filters .filters {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 1em;
+                align-items: center;
+            }
+            iai-filters .filters iai-silver-select-input{
+                white-space: nowrap;
+            }
+            iai-filters .top-panel {
+                margin-bottom: 2em;
+            }
+            iai-filters .filters select.govuk-select {
+                font-size: 0.9em;
+                background: var(--iai-silver-color-light-darker);
+            }
+            iai-filters iai-multi-dropdown button {
+                background: var(--iai-silver-color-light-darker) !important;
+            }
+            iai-filters .export-button button {
+                padding-block: 0.2em;
+            }
+            iai-filters .filters .demographics-title .icon-container {
+                margin: 0;
+                color: var(--iai-silver-color-dark);
+            }
+            iai-filters .filters .govuk-form-group:has(select){
+                margin: 0;
+            }
+            iai-filters .info-container {
+                display: flex;
+                justify-content: space-between;
+            }
+            @media (min-width: 40.0625em) {
+                .govuk-form-group {
+                    margin-bottom: 0;
+                }
+            }
+        `
+    ]
+
+    constructor() {
+        super();
+        this.contentId = this.generateId();
+        this._NUMBER_ANIMATION_DURATION = 1000;
+
+        this.themes = [];
+        this.demoOptions = {};
+
+        this.demoFiltersApplied = () => {};
+        this.themeFiltersApplied = () => {};
+
+        this.themeFilters = [];
+        this.updateThemeFilters = () => {};
+
+        this.demoFilters = {};
+        this.setDemoFilters = () => {};
+
+        this.sortType = "";
+        this.setSortType = () => {};
+
+        this.sortDirection = "";
+        this.setSortDirection = () => {};
+
+        this.applyStaticStyles("iai-filters", Filters.styles);
+    }
+
+    render() {
+        return x`
+            <div class="top-panel">
+                <div class="filters-row">
+                    <div class="filters">
+                        <iai-silver-select-input
+                            .inputId=${"sort-value"}
+                            .name=${"sort-value"}
+                            .label=${"Sort by:"}
+                            .hideLabel=${false}
+                            .value=${this.sortType}
+                            .options=${[
+                                { value: "frequency", text: "Frequency" },
+                                { value: "alphabetical", text: "A-Z" },
+                            ]}
+                            .handleChange=${(e) => this.setSortType(e.target.value)}
+                            .horizontal=${true}
+                        ></iai-silver-select-input>
+
+                        <iai-icon-button .handleClick=${
+                            () => this.setSortDirection(this.sortDirection === "ascending"
+                                ? "descending"
+                                : "ascending"
+                        )}>
+                            <iai-icon
+                                slot="icon"
+                                .name=${this.sortDirection === "ascending"
+                                    ? "arrow_downward"
+                                    : "arrow_upward"
+                                }
+                            ></iai-icon>
+                        </iai-icon-button>
+                    </div>
+
+                    <div class="filters">
+                        ${Object.keys(this.demoOptions).map(category => {
+                            return x`
+                                <iai-multi-dropdown
+                                    .title=${category}
+                                    .text=${`${this.demoFilters[category]?.length || 0} filters selected`}
+                                    .options=${this.demoOptions[category].map(option => ({
+                                        id: option,
+                                        checked: Boolean(this.demoFilters[category]?.includes(option)),
+                                        title: option,
+                                        handleClick: (e) => {
+                                            this.setDemoFilters(category, option);
+                                        },
+                                    }))}
+                                ></iai-multi-dropdown>
+                            `
+                        })}
+                    </div>
+
+                    ${this.themeFiltersApplied() || this.demoFiltersApplied() ? x`
+                        <iai-silver-button
+                            .text=${"Clear filters"}
+                            .handleClick=${() => {
+                                this.updateThemeFilters();
+                                this.setDemoFilters();
+                            }}
+                        ></iai-silver-button>
+                    ` : ""}
+                </div>
+
+                ${this.themeFilters.length > 0 ? x`
+                    <iai-theme-filters-warning
+                        .themes=${this.themes}
+                        .themeFilters=${this.themeFilters}
+                        .updateThemeFilters=${this.updateThemeFilters}
+                    ></iai-theme-filters-warning>
+                ` : ""}
+            </div>
+        `
+    }
+}
+customElements.define("iai-filters", Filters);
+
 class ThemesTable extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -6168,365 +6497,14 @@ class ThemesTable extends IaiLitBase {
 }
 customElements.define("iai-themes-table", ThemesTable);
 
-class ThemeFiltersWarning extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        themes: { type: Array },
-        themeFilters: { type: Array },
-        updateThemeFilters: { type: Function },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-theme-filters-warning .theme-tag .material-symbols-outlined {
-                font-size: 1.3em;
-            }
-            iai-theme-filters-warning iai-silver-button button {
-                width: max-content;
-                display: flex;
-                align-items: center;
-                padding-inline: 0.5em;
-                gap: 0.5em;
-                font-weight: bold;
-                color: var(--iai-silver-color-text);
-            }
-            iai-theme-filters-warning iai-silver-tag {
-                width: 100%;
-                display: block;
-                margin-bottom: 1em;
-            }
-            iai-theme-filters-warning .tag-container iai-silver-tag {
-                width: auto;
-                margin: 0;
-            }
-            iai-theme-filters-warning iai-silver-tag .tag-container {
-                display: flex;
-                gap: 0.5em;
-                align-items: center;
-                flex-wrap: wrap;
-            }
-            iai-theme-filters-warning iai-silver-tag .theme-tag {
-                display: flex;
-                gap: 0.5em;
-                font-size: 1.2em;
-                align-items: center;
-            }
-            iai-theme-filters-warning iai-silver-tag .theme-tag iai-icon-button {
-                margin-top: 0.1em;
-            }
-            iai-theme-filters-warning iai-silver-tag .tag {
-                width: 100%;
-            }
-            iai-theme-filters-warning iai-silver-button button {
-                width: max-content;
-                display: flex;
-                align-items: center;
-                padding-inline: 0.5em;
-                gap: 0.5em;
-                font-weight: bold;
-                color: var(--iai-silver-color-text);
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        this.themes = [];
-        this.themeFilters = [];
-        this.updateThemeFilters = () => {};
-
-        this.applyStaticStyles("iai-theme-filters-warning", ThemeFiltersWarning.styles);
-    }
-    
-    render() {
-        return x`
-            <iai-silver-tag
-                .status=${"Analysing"}
-                .icon=${"report"}
-                .text=${`Selected themes (${this.themeFilters.length})`}
-                .subtext=${x`
-                    <div class="tag-container">
-                        ${this.themeFilters.map(themeFilter => x`
-                        <iai-silver-tag
-                            .text=${x`
-                                <div class="theme-tag">
-                                    ${this.themes.find(theme => theme.id == themeFilter).title}
-
-                                    <iai-icon-button .handleClick=${() => this.updateThemeFilters(themeFilter)}>
-                                        <iai-icon
-                                            slot="icon"
-                                            .name=${"close"}
-                                        ></iai-icon>
-                                    </iai-icon-button>
-                                    
-                                </div>`}
-                        ></iai-silver-tag>
-                        `)}
-
-                        <iai-silver-button
-                            .text=${"Clear all"}
-                            .handleClick=${() => this.updateThemeFilters()}
-                        ></iai-silver-button>
-                    </div>
-                `}
-            >
-            </iai-silver-tag>
-        `;
-    }
-}
-customElements.define("iai-theme-filters-warning", ThemeFiltersWarning);
-
-class MultiDropdown extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        title: { type: String },
-        text: { type: String },
-        options: { type: Array }, //  { id, checked, title, handleClick }
-
-        _panelVisible: { type: Boolean },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-multi-dropdown label,
-            iai-multi-dropdown select,
-            iai-multi-dropdown input {
-                //font-size: 0.9em !important;
-            }
-            iai-multi-dropdown label {
-                cursor: pointer;
-                word-break: break-word;
-                line-height: 1.5em;
-            }
-            iai-multi-dropdown .filters {
-                display: flex;
-                gap: 1em;
-                width: 100%;
-                flex-direction: column;
-            }
-            iai-multi-dropdown input[type="checkbox"] {
-                width: auto;
-                filter: grayscale(0.5) hue-rotate(75deg);
-                cursor: pointer;
-            }
-
-            iai-multi-dropdown ul {
-                list-style: none;
-                padding-left: 0;
-                margin: 0;
-            }
-            iai-multi-dropdown ul li {
-                display: flex;
-                gap: 0.5em;
-                justify-content: flex-start;
-                margin-bottom: 0.5em;
-            }
-            
-            iai-multi-dropdown .popup-button .popup-panel {
-                position: absolute;
-                top: 2em;
-                width: max-content;
-                max-width: 80vw;
-                max-height: 20em;
-                overflow: auto;
-                right: 0;
-                background: white;
-                padding: 1em;
-                margin: 0;
-                z-index: 2;
-                border: 1px solid var(--iai-silver-color-mid);
-                border-radius: 0.5em;
-                opacity: 1;
-                transition: opacity 0.3s ease-in-out;
-                box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
-            }
-            iai-multi-dropdown .popup-button {
-                position: relative;
-            }
-            iai-multi-dropdown .popup-button .popup-panel.left-placement {
-                right: unset;
-                left: 0;
-            }
-            iai-multi-dropdown .popup-panel .content {
-                display: flex;
-                align-items: center;
-                gap: 1em;
-            }
-            iai-multi-dropdown .popup-button .icon-container {
-                margin-bottom: 0.5em;
-            }
-            iai-multi-dropdown .popup-button iai-silver-title {
-                color: var(--iai-silver-color-dark);
-                cursor: pointer;
-            }
-            iai-multi-dropdown .popup-button .popup-button__body {
-                position: relative;
-            }
-            iai-multi-dropdown .popup-button .popup-button__body iai-silver-button button {
-                width: 100%;    
-                line-height: 2em;
-                background: var(--iai-silver-color-light);
-                border: none;
-                border-radius: 0.3em;
-            }
-            iai-multi-dropdown .popup-button .popup-button__text {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: 0.5em;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.title = "";
-        this.text = "";
-        this.options = [];
-
-        this._panelVisible = false;
-        this._leftPlacement = false;
-        
-        this.applyStaticStyles("iai-multi-dropdown", MultiDropdown.styles);
-    }
-
-    handleOutsideClick = (e) => {
-        if (!this.contains(e.target)) {
-            this._panelVisible = false;
-        }
-    }
-
-    connectedCallback() {
-        super.connectedCallback();
-        this.setupPanelListeners(window.addEventListener);    }
-
-    disconnectedCallback() {
-        this.setupPanelListeners(window.removeEventListener);
-        super.disconnectedCallback();
-    }
-
-    setupPanelListeners = (func) => {
-        ["click", "touchstart"].forEach(eventName => {
-            func(eventName, this.handleOutsideClick);
-        });
-    }
-
-    isLeftPlaced = () => {
-        const buttonEl = this.querySelector("iai-silver-button");
-        if (!buttonEl) {
-            return;
-        }
-
-        const rect = buttonEl.getBoundingClientRect();
-
-        const elementCenter = rect.left + rect.width / 2;
-        const screenCenter = window.innerWidth / 2;
-
-        return elementCenter < screenCenter;
-    }
-
-    willUpdate(changedProps) {
-        if (changedProps.has("_panelVisible")) {
-            this._leftPlacement = this.isLeftPlaced();
-        }
-    }
-
-    render() {
-        return x`
-            <div class="popup-button">
-                <iai-silver-title
-                    .level=${3}
-                    .text=${this.title}
-                    @click=${() => this._panelVisible = !this._panelVisible}
-                ></iai-silver-title>
-
-                <div class="popup-button__body">
-                    <iai-silver-button
-                        .text=${x`
-                            <div class="popup-button__text">
-                                <span>
-                                    ${this.text}
-                                </span>
-                                <iai-icon
-                                    .name=${"keyboard_arrow_down"}
-                                ></iai-icon>
-                            </div>
-                        `}
-                        .handleClick=${() => this._panelVisible = !this._panelVisible}
-                    ></iai-silver-button>
-
-                    ${this.options.length > 0 ? x`
-                        <div
-                            class=${"popup-panel" + (this._leftPlacement ? " left-placement" : "")}
-                            style=${`
-                                opacity: ${this._panelVisible ? 1 : 0};
-                                pointer-events: ${this._panelVisible ? "auto" : "none"};
-                            `}
-                        >
-                            <div class="content">
-                                <ul>
-                                    ${this.options.map(option => {
-                                        const optionId = `${this.contentId}-${option.id.replace(" ", "-")}`;
-
-                                        return x`
-                                            <li>
-                                                <input
-                                                    type="checkbox"
-                                                    class="theme-checkbox"
-                                                    id=${optionId}
-                                                    name=${`multi-dropdown-${this.contentId}`}
-                                                    .value=${option.id}
-                                                    .checked=${option.checked}
-                                                    @click=${option.handleClick}
-                                                />
-                                                <label for=${optionId}>
-                                                    ${option.title}
-                                                </label>
-                                            </li>
-                                        `}
-                                    )}
-                                </ul>
-                            </div>
-                        </div>
-                    ` : ""}
-                </div>
-                
-            </div>
-        `
-    }
-}
-customElements.define("iai-multi-dropdown", MultiDropdown);
-
 class ThemeAnalysis extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         consultationSlug: { type: String },
         themes: { type: Array },
-        demoData: { type: Object },
-        demoOptions: { type: Object },
         totalResponses: { type: Number },
-
-        demoFiltersApplied: { type: Function },
-        themeFiltersApplied: { type: Function },
-
         themeFilters: { type: Array },
         updateThemeFilters: { type: Function },
-
-        sortType: { type: String },
-        setSortType: { type: Function },
-
-        sortDirection: { type: String },
-        setSortDirection: { type: Function },
-
-        demoFilters: { type: Object },
-        setDemoFilters: { type: Function },
     }
 
     static styles = [
@@ -6580,7 +6558,7 @@ class ThemeAnalysis extends IaiLitBase {
             }
             iai-theme-analysis .total-themes {
                 display: flex;
-                flex-direction: column;    
+                flex-direction: column;
                 max-height: max-content;
                 padding: 1em;
                 font-size: 0.8em;
@@ -6644,25 +6622,11 @@ class ThemeAnalysis extends IaiLitBase {
         this.contentId = this.generateId();
         this._NUMBER_ANIMATION_DURATION = 1000;
 
+        this.consultationSlug = "";
         this.themes = [];
-        this.demoData = {};
-        this.demoOptions = {};
         this.totalResponses = 0;
-
-        this.demoFiltersApplied = () => {};
-        this.themeFiltersApplied = () => {};
-
         this.themeFilters = [];
         this.updateThemeFilters = () => {};
-
-        this.demoFilters = {};
-        this.setDemoFilters = () => {};
-        
-        this.sortType = "";
-        this.setSortType = () => {};
-
-        this.sortDirection = "";
-        this.setSortDirection = () => {};
 
         this.applyStaticStyles("iai-theme-analysis", ThemeAnalysis.styles);
     }
@@ -6693,75 +6657,6 @@ class ThemeAnalysis extends IaiLitBase {
                             `}
                         ></iai-silver-title>
 
-                        <div class="filters-row">
-                            <div class="filters">
-                                <iai-silver-select-input
-                                    .inputId=${"sort-value"}
-                                    .name=${"sort-value"}
-                                    .label=${"Sort by:"}
-                                    .hideLabel=${false}
-                                    .value=${this.sortType}
-                                    .options=${[
-                                        { value: "frequency", text: "Frequency" },
-                                        { value: "alphabetical", text: "A-Z" },
-                                    ]}
-                                    .handleChange=${(e) => this.setSortType(e.target.value)}
-                                    .horizontal=${true}
-                                ></iai-silver-select-input>
-
-                                <iai-icon-button .handleClick=${
-                                    () => this.setSortDirection(this.sortDirection === "ascending"
-                                        ? "descending"
-                                        : "ascending"
-                                )}>
-                                    <iai-icon
-                                        slot="icon"
-                                        .name=${this.sortDirection === "ascending"
-                                            ? "arrow_downward"
-                                            : "arrow_upward"
-                                        }
-                                    ></iai-icon>
-                                </iai-icon-button>
-                            </div>
-
-                            <div class="filters">
-                                ${Object.keys(this.demoOptions).map(category => {
-                                    return x`
-                                        <iai-multi-dropdown
-                                            .title=${category}
-                                            .text=${`${this.demoFilters[category]?.length || 0} filters selected`}
-                                            .options=${this.demoOptions[category].map(option => ({
-                                                id: option,
-                                                checked: Boolean(this.demoFilters[category]?.includes(option)),
-                                                title: option,
-                                                handleClick: (e) => {
-                                                    this.setDemoFilters(category, option);
-                                                },
-                                            }))}
-                                        ></iai-multi-dropdown>
-                                    `
-                                })}
-                            </div>
-
-                            ${this.themeFiltersApplied() || this.demoFiltersApplied() ? x`
-                                <iai-silver-button
-                                    .text=${"Clear filters"}
-                                    .handleClick=${() => {
-                                        this.updateThemeFilters();
-                                        this.setDemoFilters();
-                                    }}
-                                ></iai-silver-button>
-                            ` : ""}
-                        </div>
-
-                        ${this.themeFilters.length > 0 ? x`
-                            <iai-theme-filters-warning
-                                .themes=${this.themes}
-                                .themeFilters=${this.themeFilters}
-                                .updateThemeFilters=${this.updateThemeFilters}
-                            ></iai-theme-filters-warning>
-                        ` : ""}
-                        
                         <div class="info-container">
                             <small>
                                 Total Themes
@@ -6811,7 +6706,7 @@ class QuestionTitle extends IaiLitBase {
                 margin-bottom: 1em;
             }
             iai-silver-question-title .topbar .tags {
-                display: flex;    
+                display: flex;
                 align-items: center;
                 gap: 0.5em;
             }
@@ -6826,7 +6721,7 @@ class QuestionTitle extends IaiLitBase {
                 align-items: center;
                 font-size: 0.8em;
                 color: white;
-                background: #85d07e;                
+                background: #85d07e;
                 border-radius: 0.5em;
             }
             iai-silver-question-title .responses {
@@ -7032,276 +6927,6 @@ class TabView extends IaiLitBase {
 }
 customElements.define("iai-tab-view", TabView);
 
-class CrossSearch extends IaiLitBase {
-    static properties = {
-        ...IaiLitBase.properties,
-        searchValue: { type: String },
-        searchMode: { type: String },
-        searchType: { type: String },
-        searchHighlight: { type: Boolean },
-        _settingsVisible: { type: Boolean },
-
-        results: { type: Array },
-    }
-
-    static styles = [
-        IaiLitBase.styles,
-        i$4`
-            iai-silver-cross-search {
-                color: var(--iai-silver-color-text);
-            }
-            iai-silver-cross-search section {
-                margin-block: 2em;
-            }
-            iai-silver-cross-search .govuk-form-group {
-                margin: 0;
-            }
-
-            iai-silver-cross-search .cards {
-                display: flex;
-                gap: 1em;
-                justify-content: space-between;
-                margin-block: 2em;
-            }
-            iai-silver-cross-search .cards iai-silver-card {
-                width: 23%;
-            }
-
-
-            iai-silver-cross-search div[slot="content"] {
-                padding: 1em;
-            }
-            iai-silver-cross-search .inputs {
-                display: flex;
-                justify-content: space-between;
-                gap: 1em;
-                margin-block: 0.5em;
-                flex-wrap: wrap;
-            }
-            iai-silver-cross-search div[slot="content"] .info {
-                display: flex;
-                gap: 0.5em;
-                margin-top: 0.5em;
-            }
-            iai-silver-cross-search small {
-                display: flex;
-                align-items: center;
-                font-size: 0.8em;
-            }
-            iai-silver-cross-search .inputs .group {
-                display: flex;
-                gap: 1em;
-                flex-wrap: wrap;
-                position: relative;
-            }
-            iai-silver-cross-search .inputs .popup {
-                position: absolute;
-                top: 2em;
-                width: max-content;
-                right: 0;
-                background: white;
-                padding: 1em;
-                margin: 0;
-                z-index: 2;
-                border: 1px solid var(--iai-silver-color-mid);
-                border-radius: 0.5em;
-                opacity: 1;
-                transition: opacity 0.3s ease-in-out;
-                box-shadow: rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0) 0px 0px 0px 0px, rgba(0, 0, 0, 0.1) 0px 4px 6px -1px, rgba(0, 0, 0, 0.1) 0px 2px 4px -2px;
-            }
-            iai-silver-cross-search .inputs iai-icon-button button:hover {
-                background-color: var(--iai-silver-color-light);
-            }
-           
-            iai-silver-cross-search iai-silver-search-box {
-                flex-grow: 1;
-            }
-            
-            iai-silver-cross-search ul.results-list {
-                display: flex;
-                flex-direction: column;
-                gap: 1.5em;
-                list-style: none;
-                padding-left: 0;
-            }
-        `
-    ]
-
-    constructor() {
-        super();
-        this.contentId = this.generateId();
-
-        // Prop defaults
-        this.searchValue = "";
-        this.searchMode = "keyword";
-        this.searchType = "all";
-        this.searchHighlight = true;
-        this._settingsVisible = false;
-
-        this.results = [
-            {
-                title: "DGSF air quality consultation",
-                description: "Public consultation on air quality improvement measures and policy recommendations for local communities.",
-                type: "question",
-            },
-            {
-            
-                title: "Future of Transport Strategy",
-                description: "Consultation on sustainable transport infrastructure and policies for the next decade.",
-                type: "response",
-            },
-            {
-                title: "Digital Services Accessibility Standards",
-                description: "Review of accessibility requirements for government digital services and public websites.",
-                type: "question",
-            },
-            {
-                title: "Social Housing Policy Review",
-                description: "Comprehensive review of social housing policies and affordable housing provision.",
-                type: "response",
-            },
-        ];
-
-        this.applyStaticStyles("iai-silver-cross-search", CrossSearch.styles);
-    }
-
-    shouldDisplay = (result) => {
-        if (this.searchValue && (
-            !result.title.toLocaleLowerCase().includes(this.searchValue.toLocaleLowerCase()) &&
-            !result.description.toLocaleLowerCase().includes(this.searchValue.toLocaleLowerCase())
-        )) {
-            return false;
-        }
-
-        if (this.searchType !== "all" && (
-            this.searchType !== result.type
-        )) {
-            return false;
-        }
-        return true;
-    }
-
-    render() {
-        return x`
-            <section>
-                <iai-silver-panel>
-                    <div slot="content">
-                        <div class="inputs">
-                            <div class="group">
-                                <iai-silver-select-input
-                                    .inputId=${"search-mode"}
-                                    .name=${"search-mode"}
-                                    .label=${"Search:"}
-                                    .hideLabel=${false}
-                                    .value=${this.searchMode}
-                                    .options=${[
-                                        { value: "keyword", text: "Keyword" },
-                                        { value: "semantic", text: "Semantic" },
-                                    ]}
-                                    .handleChange=${(e) => this.searchMode = e.target.value}
-                                    .horizontal=${true}
-                                ></iai-silver-select-input>
-
-                                <iai-silver-select-input
-                                    .inputId=${"search-type"}
-                                    .name=${"search-type"}
-                                    .label=${"Show:"}
-                                    .hideLabel=${false}
-                                    .value=${this.searchType}
-                                    .options=${[
-                                        { value: "all", text: "All Types" },
-                                        { value: "question", text: "Questions" },
-                                        { value: "response", text: "Responses" },
-                                    ]}
-                                    .handleChange=${(e) => this.searchType = e.target.value}
-                                    .horizontal=${true}
-                                ></iai-silver-select-input>
-                            </div>
-
-                            <div class="group">
-                                <iai-icon-button
-                                    title="Search settings"
-                                    @click=${() => this._settingsVisible = !this._settingsVisible}
-                                >
-                                    <iai-icon
-                                        slot="icon"
-                                        name="settings"
-                                        .color=${this._settingsVisible ? "var(--iai-silver-color-dark)" : "var(--iai-silver-color-text)"}
-                                        .fill=${1}
-                                    ></iai-icon>
-                                </iai-icon-button>
-
-                                <div class="popup" style=${`opacity: ${this._settingsVisible ? 1 : 0}; pointer-events: ${this._settingsVisible ? "auto" : "none"};`}>
-                                    <iai-silver-title
-                                        .text=${"Search Settings"}
-                                        .variant=${"secondary"}
-                                    ></iai-silver-title>
-                                    <div style="display: flex; align-items: center; gap: 1em;">
-                                        <iai-toggle-input
-                                            style="margin-top: 1em;"
-                                            name=${"highligh-matches"}
-                                            .handleChange=${(e) => {
-                                                console.log(e.target.value);
-                                                this.searchHighlight = !this.searchHighlight;
-                                            }}
-                                            inputId=${"highligh-matches-toggle"}
-                                            label=${"Highlight Matches"}
-                                            value=${this.searchHighlight}
-                                            .checked=${this.searchHighlight}
-                                        ></iai-toggle-input>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <iai-silver-search-box
-                            .inputId=${"default-search"}
-                            .name=${"default-search"}
-                            .label=${"Search"}
-                            .placeholder=${this.searchMode == "keyword"
-                                ? "Search by keywords in questions, themes or descriptions..."
-                                : "Search by concepts like 'pollution sources', 'health effects', 'solutions'..."
-                            }
-                            .value=${this.searchValue}
-                            .handleInput=${(e) => this.searchValue = e.target.value.trim()}
-                        ></iai-silver-search-box>
-
-                        ${this.searchMode === "semantic"
-                            ? x`
-                                <div class="info">
-                                    <iai-icon
-                                        .name=${"wand_stars"}
-                                    ></iai-icon>
-                                    <small>AI understands the meaning of your search</small>
-                                </div>
-                            `
-                            : ""
-                        }
-
-                        <ul class="results-list">
-                            ${this.results
-                                .filter(result => this.shouldDisplay(result))
-                                .map(result => x`
-                                    <li>
-                                        <iai-silver-cross-search-card
-                                            .type=${result.type}
-                                            .title=${result.title}
-                                            .description=${result.description}
-                                            .tags=${["test tag 1", "test tag 2","test tag 1 test tag 1 test tag 1", "test tag 2","test tag 1", "test tag 2","test tag 1", "test tag 2","test tag 1", "test tag 2","test tag 1 test tag 1", "test tag 2","test tag 1", "test tag 2"]}
-                                            .highlightText=${this.searchHighlight ? this.searchValue : ""}
-                                        ></iai-silver-cross-search-card>
-                                    </li>
-                                `)
-                            }
-                        </ul>
-                    </div>
-                </iai-silver-panel>
-            </section>
-        `
-    }
-}
-customElements.define("iai-silver-cross-search", CrossSearch);
-
 class ProgressBar extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
@@ -7342,7 +6967,7 @@ class ProgressBar extends IaiLitBase {
 
         this.value = 0;
         this.variant = "primary";
-        
+
         this.applyStaticStyles("iai-silver-progress-bar", ProgressBar.styles);
     }
 
@@ -7358,7 +6983,7 @@ class ProgressBar extends IaiLitBase {
 }
 customElements.define("iai-silver-progress-bar", ProgressBar);
 
-class DemographicsCard extends IaiLitBase {
+class ProgressCard extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         title: { type: String },
@@ -7369,7 +6994,7 @@ class DemographicsCard extends IaiLitBase {
     static styles = [
         IaiLitBase.styles,
         i$4`
-            iai-demographics-card article {
+            iai-progress-card article {
                 height: 100%;
                 max-height: 40em;
                 overflow: auto;
@@ -7379,7 +7004,7 @@ class DemographicsCard extends IaiLitBase {
                 background: var(--iai-silver-color-light);
                 border-radius: 0.5em;
             }
-            iai-demographics-card ul {
+            iai-progress-card ul {
                 display: flex;
                 flex-direction: column;
                 gap: 1.5em;
@@ -7388,7 +7013,7 @@ class DemographicsCard extends IaiLitBase {
                 font-weight: bold;
                 font-size: 0.9em;
             }
-            iai-demographics-card li {
+            iai-progress-card li {
                 display: flex;
                 justify-content: space-between;
                 align-items: center;
@@ -7397,38 +7022,38 @@ class DemographicsCard extends IaiLitBase {
                 line-height: 1.5em;
                 gap: 0.5em;
             }
-            iai-demographics-card li>* {
+            iai-progress-card li>* {
                 width: 100%;
                 word-wrap: break-word;
             }
-            iai-demographics-card li .percentage {
+            iai-progress-card li .percentage {
                 font-size: 0.8em;
                 color: rgba(0, 0, 0, 0.5);
             }
-            iai-demographics-card li .count {
+            iai-progress-card li .count {
                 font-size: 1.2em;
             }
-            iai-demographics-card li {
+            iai-progress-card li {
                 font-size: 0.9em;
                 color: rgba(0, 0, 0, 0.6);
             }
-            iai-demographics-card .info {
+            iai-progress-card .info {
                 display: flex;
                 gap: 0.5em;
             }
-            iai-demographics-card .label {
+            iai-progress-card .label {
                 font-size: 0.9em;
             }
-            iai-demographics-card .counts {
+            iai-progress-card .counts {
                 display: flex;
                 align-items: center;
                 gap: 1em;
                 font-weight: normal;
                 font-size: 0.8em;
             }
-            
-            iai-demographics-card iai-silver-progress-bar .container,
-            iai-demographics-card iai-silver-progress-bar .container .bar {
+
+            iai-progress-card iai-silver-progress-bar .container,
+            iai-progress-card iai-silver-progress-bar .container .bar {
                 height: 0.6em;
             }
         `
@@ -7441,8 +7066,8 @@ class DemographicsCard extends IaiLitBase {
         // Prop defaults
         this.data = {};
         this._totalCount = 0;
-        
-        this.applyStaticStyles("iai-demographics-card", DemographicsCard.styles);
+
+        this.applyStaticStyles("iai-progress-card", ProgressCard.styles);
     }
 
     updated(changedProps) {
@@ -7454,10 +7079,12 @@ class DemographicsCard extends IaiLitBase {
     render() {
         return x`
             <article>
-                <iai-silver-title
-                    .text=${this.title}
-                    .level=${3}
-                ></iai-silver-title>
+                ${this.title ? x`
+                    <iai-silver-title
+                        .text=${this.title}
+                        .level=${3}
+                    ></iai-silver-title>
+                ` : ""}
 
                 <ul>
                     ${Object.keys(this.data).map(key => {
@@ -7492,12 +7119,14 @@ class DemographicsCard extends IaiLitBase {
         `
     }
 }
-customElements.define("iai-demographics-card", DemographicsCard);
+customElements.define("iai-progress-card", ProgressCard);
 
-class DemographicsSection extends IaiLitBase {
+class ProgressCards extends IaiLitBase {
     static properties = {
         ...IaiLitBase.properties,
         data: { type: Array },
+        title: { type: String },
+        subtitle: { type: String },
         themeFilters: { type: Array },
         demoFilters: { type: Object},
         total: { type: Number },
@@ -7508,15 +7137,15 @@ class DemographicsSection extends IaiLitBase {
 
     static styles = [
         IaiLitBase.styles,
-        i$4` 
-            iai-demographics-section .cards {
+        i$4`
+            iai-progress-cards .cards {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 1em;
                 max-width: 100%;
                 overflow: auto;
-            }    
-            iai-demographics-section iai-demographics-card {
+            }
+            iai-progress-cards iai-progress-card {
                 flex-grow: 1;
                 max-width: 100%;
             }
@@ -7533,6 +7162,8 @@ class DemographicsSection extends IaiLitBase {
         this._MAX_DEMO_ANSWERS = 10;
 
         // Prop defaults
+        this.title = "";
+        this.subtitle = "";
         this.data = [];
         this.themeFilters = [];
         this.demoFilters = {};
@@ -7540,8 +7171,8 @@ class DemographicsSection extends IaiLitBase {
 
         this.demoFiltersApplied = () => {};
         this.themeFiltersApplied = () => {};
-        
-        this.applyStaticStyles("iai-demographics-section", DemographicsSection.styles);
+
+        this.applyStaticStyles("iai-progress-cards", ProgressCards.styles);
     }
 
     getFilterWarningText() {
@@ -7564,8 +7195,8 @@ class DemographicsSection extends IaiLitBase {
                 <div slot="content">
                     <div class="top-panel">
                         <iai-silver-title
-                            .text=${"Demographics"}
-                            .subtext=${"Demographic breakdown for this question"}
+                            .text=${this.title}
+                            .subtext=${this.subtitle}
                             .icon=${"group"}
                             .level=${2}
                         ></iai-silver-title>
@@ -7587,10 +7218,10 @@ class DemographicsSection extends IaiLitBase {
                             ${Object.keys(this.data).map(category => {
                                 return Object.values(this.data[category]).length <= this._MAX_DEMO_ANSWERS
                                     ? x`
-                                        <iai-demographics-card
+                                        <iai-progress-card
                                             .title=${this.toTitleCase(category)}
                                             .data=${this.data[category]}
-                                        ></iai-demographics-card>
+                                        ></iai-progress-card>
                                     ` : ""})}
                         </div>
                     </div>
@@ -7599,7 +7230,7 @@ class DemographicsSection extends IaiLitBase {
         `
     }
 }
-customElements.define("iai-demographics-section", DemographicsSection);
+customElements.define("iai-progress-cards", ProgressCards);
 
 class ResponseRefinement extends IaiLitBase {
     static properties = {
@@ -7787,7 +7418,7 @@ class ResponseRefinement extends IaiLitBase {
 
         this._settingsVisible = false;
         this._themeFiltersVisible = false;
-        
+
         this.applyStaticStyles("iai-response-refinement", ResponseRefinement.styles);
     }
 
@@ -7929,7 +7560,7 @@ class ResponseRefinement extends IaiLitBase {
                                 .checked=${this.evidenceRich}
                             ></iai-toggle-input>
                         </div>
-                        
+
                         <div class="filters-row">
                             ${Object.keys(this.demoOptions).map(key => x`
                                 <iai-multi-dropdown
@@ -8063,7 +7694,7 @@ class ResponsesList extends IaiLitBase {
         this.isLoading = false;
         this.highlightedText = "";
         this.handleThemeTagClick = () => {};
-        
+
         this.applyStaticStyles("iai-silver-responses-list", ResponsesList.styles);
     }
 
@@ -8117,7 +7748,7 @@ class ResponsesList extends IaiLitBase {
                                         ID: ${response.id || "Not Available"}
                                     </small>
                                 </header>
-                                
+
                                 ${response.text ? x`
                                     <p>
                                         ${this.highlightedText
@@ -8136,7 +7767,7 @@ class ResponsesList extends IaiLitBase {
                                         `)}
                                     </ul>
                                 ` : ""}
-                                
+
                                 ${response.themes.length > 0 ? x`
                                     <footer>
                                         <small>
@@ -8180,10 +7811,12 @@ class QuestionDetailPage extends IaiLitBase {
         _isFavourited: { type: Boolean},
 
         consultationSlug: { type: String },
+        consultationId: { type: String },
         questionSlug: { type: String },
         consultationTitle: { type: String},
         questionText: { type: String},
         questionId: { type: String },
+        hasFreeText: { type: Boolean },
 
         responses: { type: Array },
         _responsesTotal: { type: Number },
@@ -8191,6 +7824,7 @@ class QuestionDetailPage extends IaiLitBase {
         _themes: { type: Array },
         _demoData: { type: Object },
         _demoOptions: { type: Object },
+        _multiChoice: { type: Object },
 
         _searchValue: { type: String },
         _searchMode: { type: String },
@@ -8252,7 +7886,7 @@ class QuestionDetailPage extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-        
+
         this._MAX_THEME_FILTERS = Infinity;
         this._PAGE_SIZE = 50;
         this._DEBOUNCE_DELAY = 500;
@@ -8272,10 +7906,12 @@ class QuestionDetailPage extends IaiLitBase {
         this._isFavourited = false;
 
         this.consultationSlug = "";
+        this.consultationId = "";
         this.questionSlug = "";
         this.consultationTitle = "";
         this.questionText = "";
         this.questionId = "";
+        this.hasFreeText = false;
 
         this.responses = [];
         this._responsesTotal = 0;
@@ -8283,7 +7919,8 @@ class QuestionDetailPage extends IaiLitBase {
         this._themes = [];
         this._demoData = {};
         this._demoOptions = {};
-        
+        this._multiChoice = {};
+
         this._searchValue = "";
         this._searchMode = "keyword";
         this._highlightMatches = true;
@@ -8329,12 +7966,6 @@ class QuestionDetailPage extends IaiLitBase {
             ...(this._evidenceRichFilter && {
                 evidenceRich: this._evidenceRichFilter
             }),
-            ...(this._themesSortType && {
-                themesSortType: this._themesSortType
-            }),
-            ...(this._themesSortDirection && {
-                themesSortDirection: this._themesSortDirection
-            }),
             page: this._currentPage,
             page_size: this._PAGE_SIZE.toString(),
         });
@@ -8375,11 +8006,82 @@ class QuestionDetailPage extends IaiLitBase {
             this._errorOccured = false;
             this._isLoading = true;
 
-            const url = `/consultations/${this.consultationSlug}/responses/${this.questionSlug}/json?` + this.buildQuery();
-
-            let response;
+            // Use multiple modular endpoints instead of single question_responses_json
             try {
-                response = await this.fetchData(url, { signal });
+                const [filteredResponsesData, themeAggregationsData, themeInformationData, demographicOptionsData, demographicAggregationsData, multiChoiceData] = await Promise.all([
+                    // Get paginated response data
+                    this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/filtered-responses/?` + this.buildQuery(), { signal }).then(r => r.json()),
+                    // Get theme aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    // Get theme information (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-information/`, { signal }).then(r => r.json()) : null,
+                    // Get demographic options (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/demographic-options/`, { signal }).then(r => r.json()) : null,
+                    // Get demographic aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    // Get multi-choice answer aggregations (only on first page)
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/multi-choice-response-count/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                ]);
+
+                this.responses = this.responses.concat(filteredResponsesData.all_respondents);
+
+                this._responsesTotal = filteredResponsesData.respondents_total;
+                this._filteredTotal = filteredResponsesData.filtered_total;
+                this._hasMorePages = filteredResponsesData.has_more_pages;
+
+                // Update theme data only on first page to reflect current filters
+                if (this._currentPage === 1 && themeAggregationsData && themeInformationData) {
+                    // Create theme info lookup map
+                    const themeInfoMap = themeInformationData.themes.reduce((map, theme) => {
+                        map[theme.id] = theme;
+                        return map;
+                    }, {});
+
+                    // Convert theme_aggregations format to theme_mappings format
+                    const themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
+                        const themeInfo = themeInfoMap[id] || {};
+                        return {
+                            value: id,
+                            label: themeInfo.name || "",
+                            description: themeInfo.description || "",
+                            count: count.toString()
+                        };
+                    });
+
+                    this._themes = themeMappings.map(mapping => ({
+                        id: mapping.value,
+                        title: mapping.label,
+                        description: mapping.description,
+                        mentions: parseInt(mapping.count),
+                        handleClick: () => {
+                            this._themeFilters = [mapping.value];
+                            this._activeTab = this._TAB_INDECES["Response Analysis"];
+                        }
+                    }));
+
+                    this.themeMappings = themeMappings;
+                }
+
+                // Update demographic data if available
+                if (demographicAggregationsData) {
+                    this._demoData = demographicAggregationsData.demographic_aggregations || {};
+                }
+                if (demographicOptionsData) {
+                    this._demoOptions = demographicOptionsData.demographic_options || {};
+                }
+
+                if (multiChoiceData) {
+                    // empty string to avoid displaying title on card
+                    const formattedMultiChoice = {"": {}};
+                    multiChoiceData.forEach(data => {
+                        if (!data.answer) {
+                            return;
+                        }
+                        formattedMultiChoice[""][data.answer] = data.response_count;
+                    });
+                    this._multiChoice = formattedMultiChoice;
+                }
+
             } catch (err) {
                 if (err.name == "AbortError") {
                     console.log("stale request aborted");
@@ -8395,39 +8097,6 @@ class QuestionDetailPage extends IaiLitBase {
                 }
                 this._isLoading = false;
             }
-
-            if (!response.ok) {
-                this._errorOccured = true;
-                throw new Error(`Response status: ${response.status}`);
-            }
-
-            const responsesData = await response.json();
-
-            this.responses = this.responses.concat(responsesData.all_respondents);
-
-            this._responsesTotal = responsesData.respondents_total;
-            this._filteredTotal = responsesData.filtered_total;
-
-            this._themes = responsesData.theme_mappings.map(mapping => ({
-                id: mapping.value,
-                title: mapping.label,
-                description: mapping.description,
-                mentions: parseInt(mapping.count),
-                handleClick: () => {
-                    this._themeFilters = [mapping.value];
-                    this._activeTab = this._TAB_INDECES["Response Analysis"];
-                }
-            }));
-
-            this._demoData = responsesData.demographic_aggregations || {};
-            this._demoOptions = responsesData.demographic_options || {};
-
-            // Update theme mappings only on first page (when _currentPage === 1) to reflect current filters
-            if (this._currentPage === 1 && responsesData.theme_mappings) {
-                this.themeMappings = responsesData.theme_mappings;
-            }
-
-            this._hasMorePages = responsesData.has_more_pages;
 
             this._currentPage = this._currentPage + 1;
         }, this._DEBOUNCE_DELAY);
@@ -8490,9 +8159,7 @@ class QuestionDetailPage extends IaiLitBase {
             changedProps.has("_searchMode")         ||
             changedProps.has("_evidenceRichFilter") ||
             changedProps.has("_themeFilters")       ||
-            changedProps.has("_demoFilters")        ||
-            changedProps.has("_themesSortType")     ||
-            changedProps.has("_themesSortDirection")
+            changedProps.has("_demoFilters")
         ) {
             this.resetResponses();
             this.fetchResponses();
@@ -8505,31 +8172,39 @@ class QuestionDetailPage extends IaiLitBase {
 
     renderThemeAnalysisSection = () => {
         return x`
-            <section>
-                <iai-demographics-section
-                    .data=${this._demoData}
-                    .themeFilters=${this._themeFilters}
-                    .demoFilters=${this._demoFilters}
-                    .demoFiltersApplied=${this.demoFiltersApplied}
-                    .themeFiltersApplied=${this.themeFiltersApplied}
-                    .total=${this._filteredTotal}
-                ></iai-demographics-section>
-            </section>
-            
-            <section class="theme-analysis">
-                <iai-theme-analysis
+            <section class="filters">
+                <iai-filters
                     .consultationSlug=${this.consultationSlug}
-                    .themes=${this._themes}
-                    .demoData=${this._demoData}
+                    .themes=${this._themes.toSorted((a, b) => {
+                        let valA, valB;
+
+                        if (this._themesSortType === "frequency") {
+                            valA = a.mentions;
+                            valB = b.mentions;
+                        } else {
+                            valA = a.title;
+                            valB = b.title;
+                        }
+
+                        const directionOffset = this._themesSortDirection === "ascending"
+                            ? 1
+                            : -1;
+
+                        if (valA < valB) {
+                            return -1 * directionOffset;
+                        } else if (valB < valA) {
+                            return 1 * directionOffset;
+                        }
+                        return 0;
+                    })}
                     .demoOptions=${this._demoOptions}
-                    .totalResponses=${this._filteredTotal}
 
                     .demoFiltersApplied=${this.demoFiltersApplied}
                     .themeFiltersApplied=${this.themeFiltersApplied}
 
                     .themeFilters=${this._themeFilters}
                     .updateThemeFilters=${this.updateThemeFilters}
-                    
+
                     .sortType=${this._themesSortType}
                     .setSortType=${newSortType => this._themesSortType = newSortType}
 
@@ -8538,8 +8213,71 @@ class QuestionDetailPage extends IaiLitBase {
 
                     .demoFilters=${this._demoFilters}
                     .setDemoFilters=${this.setDemoFilters}
-                ></iai-theme-analysis>
+                ></iai-filters>
             </section>
+
+            <section>
+                <iai-progress-cards
+                    .data=${this._demoData}
+                    .title=${"Demographics"}
+                    .subtitle=${"Demographic breakdown for this question"}
+                    .themeFilters=${this._themeFilters}
+                    .demoFilters=${this._demoFilters}
+                    .demoFiltersApplied=${this.demoFiltersApplied}
+                    .themeFiltersApplied=${this.themeFiltersApplied}
+                    .total=${this._filteredTotal}
+                ></iai-progress-cards>
+            </section>
+
+            ${this._multiChoice[""] && Object.keys(this._multiChoice[""]).length > 0 ?
+                x`
+                    <section>
+                        <iai-progress-cards
+                            .data=${this._multiChoice}
+                            .title=${"Multiple Choice Answers"}
+                            .themeFilters=${this._themeFilters}
+                            .demoFilters=${this._demoFilters}
+                            .demoFiltersApplied=${this.demoFiltersApplied}
+                            .themeFiltersApplied=${this.themeFiltersApplied}
+                            .total=${this._filteredTotal}
+                        ></iai-progress-cards>
+                    </section>
+                `
+            : ""}
+
+            ${this.hasFreeText ? x`
+                <section class="theme-analysis">
+                    <iai-theme-analysis
+                        .consultationSlug=${this.consultationSlug}
+                        .totalResponses=${this._filteredTotal}
+                        .themes=${this._themes.toSorted((a, b) => {
+                            let valA, valB;
+
+                            if (this._themesSortType === "frequency") {
+                                valA = a.mentions;
+                                valB = b.mentions;
+                            } else {
+                                valA = a.title;
+                                valB = b.title;
+                            }
+
+                            const directionOffset = this._themesSortDirection === "ascending"
+                                ? 1
+                                : -1;
+
+                            if (valA < valB) {
+                                return -1 * directionOffset;
+                            } else if (valB < valA) {
+                                return 1 * directionOffset;
+                            }
+                            return 0;
+                        })}
+                        .themeFilters=${this._themeFilters}
+                        .updateThemeFilters=${this.updateThemeFilters}
+                    ></iai-theme-analysis>
+                </section>
+            `: ""}
+
         `
     }
 
@@ -8644,7 +8382,7 @@ class QuestionDetailPage extends IaiLitBase {
                         ></iai-icon>
                         <span>Back to all questions</span>
                     `}
-                    .handleClick=${() => window.location.href = `/consultations/${this.consultationSlug}/`}
+                    .handleClick=${() => window.location.href = `/consultations/${this.consultationId}/`}
                 ></iai-silver-button>
 
                 <small>
@@ -8698,10 +8436,15 @@ class QuestionDetailPage extends IaiLitBase {
                         title: this.renderTabButton("Question summary", "lan"),
                         content: this.renderThemeAnalysisSection()
                     },
-                    {
-                        title: this.renderTabButton("Response analysis", "finance"),
-                        content: this.renderResponsesSection()
-                    },
+                    ...(this.hasFreeText
+                        ? [
+                            {
+                                title: this.renderTabButton("Response analysis", "finance"),
+                                content: this.renderResponsesSection()
+                            }
+                        ]
+                        : []
+                    )
                 ]}
             ></iai-tab-view>
         `

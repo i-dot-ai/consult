@@ -1,0 +1,18 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Section from '../../components/Section.svelte';
+import Title from '../../components/Title.svelte';
+import Link from '../../components/Link.svelte';
+---
+<Layout>
+	<Section>
+        <Title level={1} text="Design" />
+        <p>Click on below links to view components in isolation.</p>
+
+        <ul>
+            <Link href="/design/themes-table">
+                Themes Table
+            </Link>
+        </ul>
+    </Section>
+</Layout>

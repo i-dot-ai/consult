@@ -79,8 +79,8 @@ def set_up_consultation(user):
     response = factories.ResponseFactory(question=question)
     factories.ResponseAnnotationFactory(response=response)
     possible_args = {
-        "consultation_slug": consultation.slug,
-        "question_slug": question.slug,
+        "consultation_id": consultation.id,
+        "question_id": question.id,
         "response_id": response.id,
     }
     return possible_args

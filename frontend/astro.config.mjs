@@ -2,17 +2,17 @@
 import { defineConfig } from 'astro/config';
 import svelte from "@astrojs/svelte";
 
-import tailwindcss from "@tailwindcss/vite";
-
+import tailwind from "@astrojs/tailwind";
 import node from "@astrojs/node";
 
 // https://astro.build/config
 export default defineConfig({
   output: "server",
-  integrations: [svelte()],
+  integrations: [svelte(), tailwind({ applyBaseStyles: false })],
 
-  vite: {
-      plugins: [tailwindcss()],
+  server: {
+    host: "0.0.0.0",
+    port: 3000,
   },
 
   adapter: node({

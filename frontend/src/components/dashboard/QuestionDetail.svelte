@@ -112,7 +112,7 @@
         if (currPage === 1) {
             loadThemeAggr(`/api/consultations/${consultationId}/questions/${questionId}/theme-aggregations/${queryString}`);
             loadThemeInfo(`/api/consultations/${consultationId}/questions/${questionId}/theme-information/${queryString}`);
-            loadDemoOptions(`/api/consultations/${consultationId}/questions/${questionId}/demographic-options/${queryString}`);
+            loadDemoOptions(`/api/consultations/${consultationId}/demographic-options/${queryString}`);
             loadDemoAggr(`/api/consultations/${consultationId}/questions/${questionId}/demographic-aggregations/${queryString}`);
             loadMultiChoiceAggr(`/api/consultations/${consultationId}/questions/${questionId}/multi-choice-response-count/${queryString}`);
         }
