@@ -10,10 +10,11 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     const protectedRoutes = [
         /^\/sign-out[\/]?$/,
         /^\/consultations.*/,
+        /^\/design.*/,
     ];
 
     for (const protectedRoute of protectedRoutes) {
-        if (protectedRoute.test(context.url.pathname) && !context.cookies.get("access")?.value) {
+        if (protectedRoute.test(url.pathname) && !context.cookies.get("access")?.value) {
             return new Response(null, { status: 404 });
         }
     }
@@ -23,7 +24,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
     // skip as new pages are moved to astro
     const toSkip = [
-        /^\/$/,
+        // /^\/$/,
         /^\/sign-in[\/]?$/,
         /^\/sign-out[\/]?$/,
         /^\/magic-link\/[A-Za-z0-9\-]*[\/]?$/,
@@ -32,6 +33,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         /^\/health[\/]?$/,
         /^\/.well-known\/.*/,
         /^\/consultations.*(?<!\/review-questions\/)$/,
+        /^\/design.*/,
     ];
 
     for (const skipPattern of toSkip) {
@@ -70,8 +72,17 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
             body: requestBody,
         });
 
-        if (response.status === 401) {
+        if (response.status === 401){
             return context.redirect("/sign-out");
+        }
+
+        const redirectStatuses = [301, 302, 303, 307, 308] as const;
+        type RedirectStatus = typeof redirectStatuses[number];
+        if (redirectStatuses.includes(response.status as RedirectStatus)) {
+            const location = response.headers.get("location");
+            if (location) {
+                return context.redirect(location, response.status as RedirectStatus);
+            }
         }
 
         const body = await response.arrayBuffer();

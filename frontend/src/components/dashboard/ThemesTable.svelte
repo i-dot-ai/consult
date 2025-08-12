@@ -1,4 +1,6 @@
 <script lang="ts">
+    import clsx from "clsx";
+
     import { slide } from "svelte/transition";
     import { flip } from "svelte/animate";
 
@@ -12,6 +14,8 @@
         name: string;
         description: string;
         count: number;
+        highlighted?: boolean;
+        handleClick?: Function;
     }
     export let themes: Theme[] = [];
     export let totalAnswers: number = 0;
@@ -30,16 +34,29 @@
         </thead>
         <tbody>
             {#each themes as theme (theme.id)}
-                <tr animate:flip={{ duration: 200 }} class="text-xs border-y border-neutral-300 py-2">
+                <tr
+                    animate:flip={{ duration: 200 }}
+                    class={clsx([
+                        "text-xs",
+                        "border-y",
+                        "border-neutral-300",
+                        "py-2",
+                        "cursor-pointer",
+                        "transition-colors",
+                        "duration-300",
+                        "hover:bg-neutral-100",
+                        theme.highlighted && clsx([
+                            "bg-neutral-100",
+                            "border-l-4",
+                            "border-l-primary",
+                        ]),
+                    ])}
+                    on:click={theme.handleClick}
+                >
                     <td class="pr-4">
-                        <div transition:slide class="flex">
-                            <div class="flex items-center justify-center p-2">
-                                <input type="checkbox" />
-                            </div>
-                            <div class="py-2">
-                                <h3 class="font-bold text-sm">{theme.name}</h3>
-                                <p class="text-sm">{theme.description}</p>
-                            </div>
+                        <div transition:slide class="p-2">
+                            <h3 class="font-bold text-sm">{theme.name}</h3>
+                            <p class="text-sm">{theme.description}</p>
                         </div>
                     </td>
                     <td class="pr-4">

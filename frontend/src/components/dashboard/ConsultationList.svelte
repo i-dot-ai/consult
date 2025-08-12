@@ -5,8 +5,8 @@
     import Title from "../Title.svelte";
     import Link from "../Link.svelte";
 
-    import { getConsultationDetailUrl, getConsultationEvalUrl } from "../../global/routes.ts";
     import type { Consultation } from "../../global/types.ts";
+    import { Routes, getConsultationDetailUrl, getConsultationEvalUrl } from "../../global/routes.ts";
    
     let consultations: Array<Consultation> = [];
     let loading: boolean = true;
@@ -14,7 +14,7 @@
 
     onMount(async () => {
         loading = true;
-        const response = await fetch("/api/consultations");
+        const response = await fetch(Routes.ApiConsultations);
         const consultationData = await response.json();
         consultations = consultationData.results;
         loading = false;
@@ -22,7 +22,7 @@
 
     onMount(async () => {
         loading = true;
-        const response = await fetch("/api/user/");
+        const response = await fetch(Routes.ApiUser);
         const userData = await response.json();
         dashboardPermitted = userData.has_dashboard_access;
         loading = false;
@@ -39,7 +39,7 @@
                     <Title level={2} text={consultation.title} />
                     
                     <div class="flex gap-2">
-                        <Link href={getConsultationEvalUrl(consultation.id)}>
+                        <Link href={getConsultationEvalUrl(consultation.slug)}>
                             View Evaluation
                         </Link>
                         {#if dashboardPermitted}
