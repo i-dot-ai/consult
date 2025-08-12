@@ -593,7 +593,7 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
         cct_data = json.loads(response["Body"].read())
     except s3_client.exceptions.NoSuchKey:
         logger.info("No cross_cutting_themes.json found, skipping cross-cutting themes import")
-        raise
+        return  # Don't fail, just skip
     except Exception as e:
         logger.error(f"Error reading cross-cutting themes file: {str(e)}")
         raise
@@ -608,11 +608,10 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
         )
         logger.info(f"Created cross-cutting theme: {cross_cutting_theme.name}")
 
-        # Create assignments for each theme
-        for theme_ref in cct_entry["themes"]:
-            question_number = theme_ref["question_number"]
-            theme_key = theme_ref["theme_key"]
-
+        # Process themes dictionary: {question_number: [theme_keys]}
+        themes_dict = cct_entry.get("themes", {})
+        
+        for question_number, theme_keys in themes_dict.items():
             # Find the question
             question = questions_dict.get(question_number)
             if not question:
@@ -620,19 +619,21 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
                     f"Question {question_number} not found for cross-cutting theme '{cct_entry['name']}'"
                 )
 
-            # Find the theme
-            try:
-                theme = Theme.objects.get(question=question, key=theme_key)
-                theme.parent = cross_cutting_theme
-                theme.save()
-            except Theme.DoesNotExist:
-                raise ValueError(
-                    f"Theme {theme_key} not found for question {question_number} in cross-cutting theme '{cct_entry['name']}'"
-                )
-            except Theme.MultipleObjectsReturned:
-                raise ValueError(
-                    f"Multiple themes with key {theme_key} found for question {question_number} in cross-cutting theme '{cct_entry['name']}'"
-                )
+            # Process each theme key for this question
+            for theme_key in theme_keys:
+                # Find the theme
+                try:
+                    theme = Theme.objects.get(question=question, key=theme_key)
+                    theme.parent = cross_cutting_theme
+                    theme.save()
+                except Theme.DoesNotExist:
+                    raise ValueError(
+                        f"Theme {theme_key} not found for question {question_number} in cross-cutting theme '{cct_entry['name']}'"
+                    )
+                except Theme.MultipleObjectsReturned:
+                    raise ValueError(
+                        f"Multiple themes with key {theme_key} found for question {question_number} in cross-cutting theme '{cct_entry['name']}'"
+                    )
 
 
 def import_respondents(consultation: Consultation, consultation_code: str):
