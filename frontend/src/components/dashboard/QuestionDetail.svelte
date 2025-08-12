@@ -195,15 +195,16 @@
 </section>
 
 <section class="my-4">
-    {#if $isConsultationLoading}
-        <p transition:slide>Loading consultation</p>
-    {:else if $consultationError}
-        <p transition:slide>Consultation Error: {$consultationError}</p>
+    {#if $consultationError}
+        <p>Consultation Error: {$consultationError}</p>
     {:else}
         <QuestionCard
+            skeleton={$isConsultationLoading}
             clickable={false}
-            consultationId={$consultationData.id}
-            question={$consultationData.questions?.find(question => question.id === questionId)}
+            consultationId={!$isConsultationLoading && $consultationData.id}
+            question={!$isConsultationLoading &&
+                $consultationData.questions?.find(question => question.id === questionId)
+            }
         />
     {/if}
 </section>

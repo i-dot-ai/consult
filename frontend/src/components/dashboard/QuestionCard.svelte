@@ -1,4 +1,6 @@
 <script lang="ts">
+    import clsx from "clsx";
+
     import { fade } from "svelte/transition";
 
     import type { Question } from "../../global/types.ts";
@@ -19,12 +21,23 @@
     export let highlightText: string = "";
     export let clickable: boolean = false;
     export let skeleton: boolean = false;
+
+    let skeletonBlink: boolean = false;
+    let skeletonIntervalId;
+
+    $: {
+        clearInterval(skeletonIntervalId);
+
+        if (skeleton) {
+            skeletonIntervalId = setInterval(() => skeletonBlink = !skeletonBlink, 1000);
+        }
+    }
 </script>
 
 <div transition:fade={{duration: 200}} >
     <ConditionalRender
         element={Link}
-        condition={clickable}
+        condition={clickable && !skeleton}
         variant="block"
         href={getQuestionDetailUrl(consultationId, question.id)}
         title={`Q${question.number}: ${question.question_text}`}
@@ -33,30 +46,63 @@
         <Panel>
             <article class="flex gap-2 items-start">
                 <div class="mt-0.5">
-                    <MaterialIcon size="1.3rem" color="teal">
-                        <Help />
-                    </MaterialIcon>
+                    {#if !skeleton}
+                        <MaterialIcon size="1.3rem" color="teal">
+                            <Help />
+                        </MaterialIcon>
+                    {/if}
                 </div>
                 <div class="grow">
-                    <p class="text-md">
-                        {@html applyHighlight(`Q${question.number}: ${question.question_text}`, highlightText)}
-                    </p>
-                    <div class="text-sm mt-2">
-                        {question.total_responses} responses
-                    </div>
+                    {#if skeleton}
+                        <p class={clsx([
+                            "text-md",
+                            "transition-colors",
+                            "duration-1000",
+                            skeletonBlink
+                                ? " bg-neutral-200 text-neutral-200"
+                                : " bg-neutral-100 text-neutral-100"
+                        ])}>
+                            {"SKELETON ".repeat(20)}
+                        </p>
+
+                        <div class={clsx([
+                            "text-sm",
+                            "mt-2",
+                            "transition-colors",
+                            "duration-1000",
+                            skeleton && clsx([
+                                "w-max",
+                                skeletonBlink
+                                    ? "bg-neutral-200 text-neutral-200"
+                                    : "bg-neutral-100 text-neutral-100"
+                            ])
+                        ])}>
+                            000 responses
+                        </div>
+                    {:else}
+                        <p in:fade class="text-md">
+                            {@html applyHighlight(`Q${question.number}: ${question.question_text}`, highlightText)}
+                        </p>
+
+                        <div in:fade class="text-sm mt-2">
+                            {question.total_responses} responses
+                        </div>
+                    {/if}
                 </div>
                 <div class="mt-0.5">
-                    <Button
-                        variant="ghost"
-                        handleClick={(e) => {
-                            e.stopPropagation();
-                            favStore.toggleFav(question.id);
-                        }}
-                    >
-                        <MaterialIcon size="1.3rem" color="gray">
-                            <Star fill={$favStore.includes(question.id)} />
-                        </MaterialIcon>
-                    </Button>
+                    {#if !skeleton}
+                        <Button
+                            variant="ghost"
+                            handleClick={(e) => {
+                                e.stopPropagation();
+                                favStore.toggleFav(question.id);
+                            }}
+                        >
+                            <MaterialIcon size="1.3rem" color="gray">
+                                <Star fill={$favStore.includes(question.id)} />
+                            </MaterialIcon>
+                        </Button>
+                    {/if}
                 </div>
             </article>    
         </Panel>
