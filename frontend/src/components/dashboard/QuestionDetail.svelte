@@ -201,7 +201,7 @@
         <p transition:slide>Consultation Error: {$consultationError}</p>
     {:else}
         <QuestionCard
-            clickable={true}
+            clickable={false}
             consultationId={$consultationData.id}
             question={$consultationData.questions?.find(question => question.id === questionId)}
         />
