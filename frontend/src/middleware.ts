@@ -54,21 +54,40 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         if (hasBody) {
             try {
                 requestBody = await context.request.arrayBuffer();
+                console.log("Request body size:", requestBody?.byteLength || 0);
+                if (requestBody && requestBody.byteLength > 0) {
+                    // Convert to string to see what we're sending (for debugging)
+                    const bodyText = new TextDecoder().decode(requestBody);
+                    console.log("Request body content:", bodyText.substring(0, 200)); // First 200 chars
+                }
             } catch (e) {
                 console.error("Error reading request body:", e);
             }
         }
 
+        // Create headers object properly
+        const headersToSend = new Headers();
+        
+        // Copy all original headers
+        for (const [key, value] of context.request.headers.entries()) {
+            headersToSend.set(key, value);
+        }
+        
+        // Add/override specific headers
+        headersToSend.set("Authorization", `Bearer ${accessToken}`);
+        headersToSend.set("Cookie", cookieHeader);
+        if (csrfCookie) {
+            headersToSend.set("X-CSRFToken", csrfCookie.value);
+        }
+        
+        if (hasBody) {
+            console.log("Content-Type header:", context.request.headers.get("content-type"));
+            console.log("All headers being sent:", Object.fromEntries(headersToSend.entries()));
+        }
+
         const response = await fetch(fullBackendUrl, {
             method: context.request.method,
-            headers: {
-                ...context.request.headers,
-                "Authorization": `Bearer ${accessToken}`,
-                "Cookie": cookieHeader, // Ensure cookie header is forwarded
-                ...(csrfCookie && {
-                    "X-CSRFToken": csrfCookie.value
-                })
-            },
+            headers: headersToSend,
             body: requestBody,
             redirect: "manual",
         });

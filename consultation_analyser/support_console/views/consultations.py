@@ -14,6 +14,7 @@ from consultation_analyser.consultations.dummy_data import (
     create_dummy_consultation_from_yaml_job,
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
+from consultation_analyser.consultations.models import MultiChoiceAnswer
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
 
@@ -41,6 +42,7 @@ def delete_consultation_job(consultation: models.Consultation):
     try:
         # Refetch the consultation to ensure we have a fresh DB connection
         consultation = models.Consultation.objects.get(id=consultation_id)
+        MultiChoiceAnswer.objects.filter(question__consultation_id=consultation.id).delete()
 
         # Delete related objects in order to avoid foreign key constraints
         logger.info(f"Deleting consultation '{consultation_title}' (ID: {consultation_id})")
