@@ -51,3 +51,22 @@ class LoginRequiredMiddleware404(LoginRequiredMiddleware):
 
     def handle_no_permission(self, request, view_func):
         raise Http404
+
+
+class CSRFExemptMiddleware:
+    """
+    Middleware to disable CSRF protection for support console routes during migration.
+
+    This is a temporary measure while we're proxying /support/ routes through the
+    Astro frontend. Once the migration is complete, this middleware should be removed.
+    """
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Disable CSRF checks for support console routes
+        if request.path.startswith("/support/"):
+            setattr(request, "_dont_enforce_csrf_checks", True)
+
+        return self.get_response(request)

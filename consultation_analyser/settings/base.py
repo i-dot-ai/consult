@@ -71,6 +71,7 @@ MIDDLEWARE = [
     "consultation_analyser.middleware.JWTAuthenticationMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "consultation_analyser.middleware.CSRFExemptMiddleware",  # Must be before CsrfViewMiddleware
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
