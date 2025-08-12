@@ -41,18 +41,33 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
 
     const hasBody = !["GET", "HEAD"].includes(context.request.method);
+    const csrfCookie = context.cookies.get("csrftoken");
 
     try {
+        // Get all cookies and forward them
+        const cookieHeader = context.request.headers.get("cookie") || "";
+        
+        // Handle request body properly for forms
+        let requestBody = undefined;
+        if (hasBody) {
+            try {
+                requestBody = await context.request.arrayBuffer();
+            } catch (e) {
+                console.error("Error reading request body:", e);
+            }
+        }
+        
         const response = await fetch(fullBackendUrl, {
             method: context.request.method,
             headers: {
                 ...context.request.headers,
-                "Authorization": `Bearer ${accessToken}`
+                "Authorization": `Bearer ${accessToken}`,
+                "Cookie": cookieHeader, // Ensure cookie header is forwarded
+                ...(csrfCookie && {
+                    "X-CSRFToken": csrfCookie.value
+                })
             },
-            duplex: "half",
-            body: hasBody
-                ? context.request.body
-                : undefined,
+            body: requestBody,
         });
 
         if (response.status === 401) {
@@ -61,10 +76,13 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
         const body = await response.arrayBuffer();
 
-        return new Response(body, {
+        // Create new response and forward all headers including Set-Cookie
+        const newResponse = new Response(body, {
             status: response.status,
             headers: response.headers,
-        })
+        });
+
+        return newResponse;
     } catch {
         return new Response(null, { status: 500 });
     }
