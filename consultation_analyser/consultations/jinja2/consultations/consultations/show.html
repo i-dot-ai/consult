@@ -37,7 +37,7 @@
 
   <script>
     // Get consultation slug from Django context
-    const consultationSlug = '{{ consultationId }}';
+    const consultationId = '{{ consultation_id }}';
 
     async function loadConsultationData() {
       try {
@@ -85,7 +85,7 @@
         questionOverviewPage.questions = questions.map(question => ({
           id: question.id,
           title: `Q${question.number}: ${question.question_text}`,
-          url: `/consultations/${consultation.slug}/responses/${question.slug}/`,
+          url: `/consultations/${consultation.id}/responses/${question.id}/`,
           numResponses: question.total_responses,
           status: "Open",
         }));

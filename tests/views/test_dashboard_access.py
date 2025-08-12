@@ -13,12 +13,12 @@ def test_dashboard_access(client):
     consultation = factories.ConsultationFactory()
     question = factories.QuestionFactory(consultation=consultation)
 
-    dashboard_url_1 = reverse("consultation", args=(consultation.slug,))
+    dashboard_url_1 = reverse("consultation", args=(consultation.id,))
     dashboard_url_2 = reverse(
         "question_responses",
         args=(
-            consultation.slug,
-            question.slug,
+            consultation.id,
+            question.id,
         ),
     )
 

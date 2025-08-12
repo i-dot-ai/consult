@@ -392,7 +392,7 @@ export default class QuestionDetailPage extends IaiLitBase {
         return html`
             <section class="filters">
                 <iai-filters
-                    .consultationSlug=${this.consultationSlug}
+                    .consultationId=${this.consultationId}
                     .themes=${this._themes.toSorted((a, b) => {
                         let valA, valB;
 
