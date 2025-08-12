@@ -39,7 +39,7 @@
                     <Title level={2} text={consultation.title} />
                     
                     <div class="flex gap-2">
-                        <Link href={getConsultationEvalUrl(consultation.slug)}>
+                        <Link href={getConsultationEvalUrl(consultation.id)}>
                             View Evaluation
                         </Link>
                         {#if dashboardPermitted}

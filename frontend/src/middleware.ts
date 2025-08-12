@@ -58,7 +58,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
                 console.error("Error reading request body:", e);
             }
         }
-        
+
         const response = await fetch(fullBackendUrl, {
             method: context.request.method,
             headers: {
@@ -70,6 +70,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
                 })
             },
             body: requestBody,
+            redirect: "manual",
         });
 
         if (response.status === 401){
