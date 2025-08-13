@@ -9,13 +9,14 @@ export enum Routes {
     SignOut = "/sign-out",
     ApiConsultations = "/api/consultations",
     ApiUser = "/api/user/",
+    Evaluations = "/evaluations"
 }
 export const getConsultationDetailUrl = (consultationId: string) => {
     return `${Routes.Consultations}/${consultationId}`;
 };
 
 export const getConsultationEvalUrl = (consultationId: string) => {
-    return `${Routes.Consultations}/${consultationId}/review-questions/`;
+    return `${Routes.Evaluations}/${consultationId}/questions/`;
 };
 
 export const getQuestionDetailUrl = (consultationId: string, questionId: string) => {
