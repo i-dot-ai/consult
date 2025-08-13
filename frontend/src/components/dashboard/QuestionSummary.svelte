@@ -47,16 +47,16 @@
     </Panel>
 </section>
 
-<section class="my-4">
-    <Panel>
-        <TitleRow
-            level={2}
-            title="Multiple Choice Answers"
-        >
-            <Star slot="icon" />
-        </TitleRow>
+{#if multiChoice[""] && Object.keys(multiChoice[""]).length > 0}
+    <section class="my-4">
+        <Panel>
+            <TitleRow
+                level={2}
+                title="Multiple Choice Answers"
+            >
+                <Star slot="icon" />
+            </TitleRow>
 
-        {#if multiChoice[""] && Object.keys(multiChoice[""]).length > 0}
             <ProgressCards
                 totalAnswers={totalAnswers}
                 filteredTotal={filteredTotal}
@@ -67,9 +67,9 @@
                 demoFiltersApplied={demoFiltersApplied}
                 themeFiltersApplied={themeFiltersApplied}
             />
-        {/if}
-    </Panel>
-</section>
+        </Panel>
+    </section>
+{/if}
 
 <section class="my-4">
     <Panel>
