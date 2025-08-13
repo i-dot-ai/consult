@@ -10,6 +10,7 @@ from django.shortcuts import get_object_or_404
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import NotAuthenticated
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -50,7 +51,7 @@ def get_current_user(request):
 
 class ConsultationViewSet(ReadOnlyModelViewSet):
     serializer_class = ConsultationSerializer
-    permission_classes = [HasDashboardAccess]
+    permission_classes = [IsAuthenticated]
     filterset_fields = ["slug"]
 
     def get_queryset(self):
@@ -64,10 +65,14 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
 
         return consultation
 
-    @action(detail=True, methods=["get"], url_path="demographic-options")
-    def demographic_options(self, request, pk=None, consultation_pk=None):
+    # permission_classes=[CanSeeConsultation]
+    @action(detail=True, methods=["get"], url_path="demographic-options", )
+    def demographic_options(self, request, pk=None):
         """Get all demographic options for a consultation"""
         consultation = self.get_object()
+
+        if not request.user.has_dashboard_access:
+            raise PermissionDenied()
 
         # Get all demographic fields and their possible values from normalized storage
         options = (
