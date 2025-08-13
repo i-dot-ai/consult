@@ -225,6 +225,8 @@
                     })
                 }),
                 totalAnswers: $answersData?.respondents_total,
+                filteredTotal: $answersData?.filtered_total,
+                demoData: $demoAggrData?.demographic_aggregations,
             }
         },
         {

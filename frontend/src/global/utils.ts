@@ -40,3 +40,12 @@ export const getPercentage = (partialValue: number, totalValue: number): number 
     // Round to 1 decimal point
     return Math.round(percentage * 10) / 10;
 }
+
+export const toTitleCase = (text: string): string => {
+    return text
+        .replace("-", " ")
+        .replace(
+            /\w\S*/g,
+            text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
+        );
+}
