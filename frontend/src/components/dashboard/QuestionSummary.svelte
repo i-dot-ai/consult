@@ -5,6 +5,7 @@
     import Panel from "./Panel.svelte";
     import TitleRow from "./TitleRow.svelte";
     import ThemesTable from "./ThemesTable.svelte";
+    import ProgressCards from "../ProgressCards.svelte";
 
     const MAX_CARDS_ALLOWED = 10;
 
@@ -15,6 +16,7 @@
         demoFilters = [],
         themes = [],
         themeFilters = [],
+        multiChoice = {},
         demoFiltersApplied = () => false,
         themeFiltersApplied = () => false,
     } = $props();
@@ -32,17 +34,40 @@
             <Star slot="icon" />
         </TitleRow>
 
-        <div class="flex flex-wrap gap-2 max-w-full mt-4 overflow-auto">
-            {#each Object.keys(demoData) as category}
-                {#if Object.values(demoData[category]).length <= MAX_CARDS_ALLOWED}
-                    <iai-progress-card
-                        class="max-w-full grow"
-                        title={toTitleCase(category)}
-                        data={demoData[category]}
-                    ></iai-progress-card>
-                {/if}
-            {/each}
-        </div>
+        <ProgressCards
+            totalAnswers={totalAnswers}
+            filteredTotal={filteredTotal}
+            demoData={demoData}
+            demoFilters={demoFilters}
+            themes={themes}
+            themeFilters={themeFilters}
+            demoFiltersApplied={demoFiltersApplied}
+            themeFiltersApplied={themeFiltersApplied}
+        />
+    </Panel>
+</section>
+
+<section class="my-4">
+    <Panel>
+        <TitleRow
+            level={2}
+            title="Multiple Choice Answers"
+        >
+            <Star slot="icon" />
+        </TitleRow>
+
+        {#if multiChoice[""] && Object.keys(multiChoice[""]).length > 0}
+            <ProgressCards
+                totalAnswers={totalAnswers}
+                filteredTotal={filteredTotal}
+                demoData={multiChoice}
+                demoFilters={demoFilters}
+                themes={themes}
+                themeFilters={themeFilters}
+                demoFiltersApplied={demoFiltersApplied}
+                themeFiltersApplied={themeFiltersApplied}
+            />
+        {/if}
     </Panel>
 </section>
 

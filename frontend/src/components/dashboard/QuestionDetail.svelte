@@ -171,6 +171,25 @@
         currPage = 1;
         hasMorePages = true;
     }
+
+    function formatMultiChoiceData(multiChoiceData: Array<{
+        response_count: number,
+        answer?: string,
+    }>) {
+        if (!multiChoiceData) {
+            return {};
+        }
+
+        // empty string to avoid displaying title on card
+        const formattedMultiChoice = {"": {}};
+        multiChoiceData.forEach(data => {
+            if (!data.answer) {
+                return;
+            }
+            formattedMultiChoice[""][data.answer] = data.response_count;
+        })
+        return formattedMultiChoice;
+    }
 </script>
 
 <section class={clsx([
@@ -227,6 +246,7 @@
                 totalAnswers: $answersData?.respondents_total,
                 filteredTotal: $answersData?.filtered_total,
                 demoData: $demoAggrData?.demographic_aggregations,
+                multiChoice: formatMultiChoiceData($multiChoiceAggrData)
             }
         },
         {
