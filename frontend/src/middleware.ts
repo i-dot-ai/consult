@@ -97,7 +97,11 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
             return context.redirect("/sign-out");
         }
 
-        const redirectStatuses = [301, 302, 303, 304, 307, 308] as const;
+        if (response.status === 304){
+            return response;
+        }
+
+        const redirectStatuses = [301, 302, 303, 307, 308] as const;
         type RedirectStatus = typeof redirectStatuses[number];
         if (redirectStatuses.includes(response.status as RedirectStatus)) {
             const location = response.headers.get("location");
