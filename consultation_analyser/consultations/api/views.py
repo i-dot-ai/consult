@@ -10,7 +10,6 @@ from django.shortcuts import get_object_or_404
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
 from rest_framework.decorators import action, api_view, permission_classes
-from rest_framework.exceptions import NotAuthenticated
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -66,7 +65,11 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
         return consultation
 
     # permission_classes=[CanSeeConsultation]
-    @action(detail=True, methods=["get"], url_path="demographic-options", )
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="demographic-options",
+    )
     def demographic_options(self, request, pk=None):
         """Get all demographic options for a consultation"""
         consultation = self.get_object()
