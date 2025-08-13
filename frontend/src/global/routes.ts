@@ -1,5 +1,6 @@
 export enum Routes {
     Home = "/",
+    Evaluations = "/evaluations",
     Consultations = "/consultations",
     Support = "/support",
     HowItWorks = "/how-it-works",
@@ -9,7 +10,6 @@ export enum Routes {
     SignOut = "/sign-out",
     ApiConsultations = "/api/consultations",
     ApiUser = "/api/user/",
-    Evaluations = "/evaluations"
 }
 export const getConsultationDetailUrl = (consultationId: string) => {
     return `${Routes.Consultations}/${consultationId}`;
