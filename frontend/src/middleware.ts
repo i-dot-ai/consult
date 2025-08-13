@@ -32,7 +32,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         /^\/api\/health[\/]?$/,
         /^\/health[\/]?$/,
         /^\/.well-known\/.*/,
-        /^\/consultations.*(?<!\/review-questions\/)$/,
+        // /^\/consultations.*/,
+        // /^\/evaluations.*/,
         /^\/design.*/,
     ];
 

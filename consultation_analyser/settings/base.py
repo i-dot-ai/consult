@@ -116,7 +116,7 @@ WSGI_APPLICATION = "consultation_analyser.wsgi.application"
 AUTH_USER_MODEL = "authentication.User"
 
 CSRF_TRUSTED_ORIGINS = [
-    "http://localhost:4321",
+    "http://localhost:3000",
     "https://consult.ai.cabinetoffice.gov.uk",
     "https://consult-dev.ai.cabinetoffice.gov.uk",
 ]
