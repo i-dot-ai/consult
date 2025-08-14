@@ -3,6 +3,7 @@
 
     export let variant: "default" | "ghost" | "primary" = "default";
     export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
+    export let highlighted: boolean = false;
     export let handleClick = () => {};
     export let disabled: boolean = false;
     export let fullWidth: boolean = false;
@@ -36,6 +37,10 @@
         disabled && "disabled:hover:bg-gray-200",
         disabled && "disabled:hover:border-gray-300",
         disabled && "disabled:hover:text-gray-400",
+
+        highlighted && !disabled && "bg-neutral-800",
+        highlighted && !disabled && "text-white",
+        highlighted && !disabled && "hover:bg-neutral-600",
     ])}
     disabled={disabled}
     on:click={handleClick}

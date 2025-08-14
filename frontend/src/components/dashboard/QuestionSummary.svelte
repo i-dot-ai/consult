@@ -126,10 +126,10 @@
 
             <div class="flex items-center gap-1">
                 <small>Order:</small>
-                <Button size="xs" handleClick={() => sortAscending = false}>
+                <Button size="xs" highlighted={!sortAscending} handleClick={() => sortAscending = false}>
                     High to Low
                 </Button>
-                <Button size="xs" handleClick={() => sortAscending = true}>
+                <Button size="xs" highlighted={sortAscending} handleClick={() => sortAscending = true}>
                     Low to High
                 </Button>
             </div>
