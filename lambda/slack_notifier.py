@@ -3,7 +3,6 @@ import logging
 import os
 
 import urllib3
-
 from django.conf import settings
 
 logger = settings.LOGGER

@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 import orjson
+from django.contrib.auth import login
 from django.core.exceptions import PermissionDenied
 from django.core.paginator import Paginator
 from django.db.models import Count
@@ -49,7 +50,7 @@ def get_current_user(request):
 
 class ConsultationViewSet(ReadOnlyModelViewSet):
     serializer_class = ConsultationSerializer
-    permission_classes = [HasDashboardAccess]
+    permission_classes = [IsAuthenticated]
     filterset_fields = ["slug"]
 
     def get_queryset(self):
@@ -63,10 +64,18 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
 
         return consultation
 
-    @action(detail=True, methods=["get"], url_path="demographic-options")
-    def demographic_options(self, request, pk=None, consultation_pk=None):
+    # permission_classes=[CanSeeConsultation]
+    @action(
+        detail=True,
+        methods=["get"],
+        url_path="demographic-options",
+    )
+    def demographic_options(self, request, pk=None):
         """Get all demographic options for a consultation"""
         consultation = self.get_object()
+
+        if not request.user.has_dashboard_access:
+            raise PermissionDenied()
 
         # Get all demographic fields and their possible values from normalized storage
         options = (
@@ -103,9 +112,13 @@ class QuestionViewSet(ReadOnlyModelViewSet):
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
-        return models.Question.objects.filter(
-            consultation_id=consultation_uuid, consultation__users=self.request.user
-        ).order_by("-created_at")
+        return (
+            models.Question.objects.filter(
+                consultation_id=consultation_uuid, consultation__users=self.request.user
+            )
+            .annotate(response_count=Count("response"))
+            .order_by("-created_at")
+        )
 
     @action(
         detail=True,
@@ -280,6 +293,8 @@ def verify_magic_link(request) -> HttpResponse:
         return JsonResponse(data={"detail": str(ex.args[0])}, status=403)
     else:
         link.audit(request)
+        # Log the user into Django session
+        login(request, link.user)
         # Ensure session is created if it doesn't exist
         if not request.session.session_key:
             request.session.save()

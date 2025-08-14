@@ -1,9 +1,10 @@
 locals {
   record_prefix = var.env == "prod" ? var.project_name : "${var.project_name}-${var.env}"
   host          = terraform.workspace == "prod" ? "${var.project_name}.ai.cabinetoffice.gov.uk" : "${var.project_name}-${terraform.workspace}.ai.cabinetoffice.gov.uk"
+  host_backend  = terraform.workspace == "prod" ? "${var.project_name}-backend-external.ai.cabinetoffice.gov.uk" : "${var.project_name}-backend-external-${terraform.workspace}.ai.cabinetoffice.gov.uk"
   name          = "${var.team_name}-${var.env}-${var.project_name}"
-  batch_memory        = 8192
-  batch_vcpus         = 4
+  batch_memory  = 8192
+  batch_vcpus   = 4
   ecs_memory    = var.env == "prod" ? 4096 : 4096
   ecs_cpus      = var.env == "prod" ? 2048 : 1024
 
@@ -81,3 +82,4 @@ data "aws_ssm_parameter" "slack_webhook_url" {
     aws_ssm_parameter.env_secrets 
   ]
 }
+

@@ -33,8 +33,9 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
 ENVIRONMENT = env("ENVIRONMENT")
 
+DOMAIN_NAME = env("DOMAIN_NAME", default="0.0.0.0")  # nosec
 
-ALLOWED_HOSTS: list[str] = [os.getenv("DOMAIN_NAME", "0.0.0.0"), "*"]  # nosec
+ALLOWED_HOSTS: list[str] = [DOMAIN_NAME, "*"]  # nosec
 
 # Application definition
 
@@ -70,8 +71,10 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
+    "consultation_analyser.middleware.JWTAuthenticationMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.common.CommonMiddleware",
+    "consultation_analyser.middleware.CSRFExemptMiddleware",  # Must be before CsrfViewMiddleware
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
@@ -114,6 +117,12 @@ TEMPLATES = [
 WSGI_APPLICATION = "consultation_analyser.wsgi.application"
 
 AUTH_USER_MODEL = "authentication.User"
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:3000",
+    "https://consult.ai.cabinetoffice.gov.uk",
+    "https://consult-dev.ai.cabinetoffice.gov.uk",
+]
 
 # Database with Connection Pooling
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases

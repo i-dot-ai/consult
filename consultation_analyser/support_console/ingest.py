@@ -626,7 +626,7 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
 
         # Process themes dictionary: {question_number: [theme_keys]}
         themes_dict = cct_entry.get("themes", {})
-        
+
         for question_number, theme_keys in themes_dict.items():
             # Find the question
             question = questions_dict.get(question_number)

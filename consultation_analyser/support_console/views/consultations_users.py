@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from django.conf import settings
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
@@ -9,8 +10,6 @@ from consultation_analyser.consultations import models
 from consultation_analyser.support_console.forms.add_users_to_consultation_form import (
     AddUsersToConsultationForm,
 )
-
-from django.conf import settings
 
 logger = settings.LOGGER
 

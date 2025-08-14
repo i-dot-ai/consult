@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import Group
 from django.http import HttpRequest
@@ -9,7 +10,6 @@ from consultation_analyser.consultations.models import Consultation
 
 from ..forms.edit_user_form import EditUserForm
 from ..forms.new_user_form import NewUserForm
-from django.conf import settings
 
 logger = settings.LOGGER
 

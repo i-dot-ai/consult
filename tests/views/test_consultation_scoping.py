@@ -17,7 +17,7 @@ def test_get_consultation_we_own(client):
     consultation_we_own = ConsultationFactory()
     consultation_we_own.users.add(user)
     client.force_login(user)
-    response = client.get(f"/consultations/{consultation_we_own.slug}/")
+    response = client.get(f"/consultations/{consultation_we_own.id}/")
     assert response.status_code == 200
 
 
@@ -33,4 +33,4 @@ def test_get_consultation_we_do_not_own():
 
     # rest of Django not around to catch 404 so we'll catch it ourselves
     with pytest.raises(Http404):
-        consultations.show(invalid_request, consultation_slug=consultation_we_do_not_own.slug)
+        consultations.show(invalid_request, consultation_slug=consultation_we_do_not_own.id)

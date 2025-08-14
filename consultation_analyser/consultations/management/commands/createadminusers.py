@@ -1,10 +1,9 @@
 import os
 
+from django.conf import settings
 from django.core.management import BaseCommand
 
 from consultation_analyser.authentication.models import User
-
-from django.conf import settings
 
 logger = settings.LOGGER
 

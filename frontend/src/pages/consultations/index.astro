@@ -1,0 +1,16 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Section from '../../components/Section.svelte';
+import Title from '../../components/Title.svelte';
+
+import ConsultationList from '../../components/dashboard/ConsultationList.svelte';
+---
+<Layout>
+	<Section>
+		<Title level={1} text="Your consultations" />
+
+		<p>Click to review themes for your consultations</p>
+
+		<ConsultationList client:load />
+	</Section>
+</Layout>

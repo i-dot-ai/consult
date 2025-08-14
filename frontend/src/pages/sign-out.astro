@@ -1,0 +1,22 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Section from '../components/Section.svelte';
+import Title from '../components/Title.svelte';
+
+["access", "sessionId"].forEach(cookie => {
+    Astro.cookies.set(cookie, "", {
+        path: "/",
+        sameSite: "lax",
+        expires: new Date(0),
+    })
+})
+---
+<Layout>
+	<Section>
+		<Title level={1} text="Signed out" />
+
+        <p class="my-4 text-md text-gray-500">
+            You have signed out
+        </p>
+	</Section>
+</Layout>

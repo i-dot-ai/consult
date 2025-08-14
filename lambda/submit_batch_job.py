@@ -1,7 +1,6 @@
 import json
 
 import boto3
-
 from django.conf import settings
 
 logger = settings.LOGGER

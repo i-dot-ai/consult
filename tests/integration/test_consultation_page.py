@@ -19,8 +19,7 @@ def test_consultation_page(django_app):
 
     sign_in(django_app, user.email)
 
-    consultation_slug = consultation.slug
     _question = Question.objects.filter(consultation=consultation).first()
-    consultation_page = django_app.get(f"/consultations/{consultation_slug}/")
+    consultation_page = django_app.get(f"/consultations/{consultation.id}/")
 
     assert "All Questions" in consultation_page

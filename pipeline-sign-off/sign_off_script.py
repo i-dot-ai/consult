@@ -9,6 +9,7 @@ from typing import Any, Dict
 
 import boto3
 import pandas as pd
+from django.conf import settings
 from langchain_openai import AzureChatOpenAI
 from themefinder import (
     theme_condensation,
@@ -16,8 +17,6 @@ from themefinder import (
     theme_mapping,
     theme_refinement,
 )
-
-from django.conf import settings
 
 logger = settings.LOGGER
 

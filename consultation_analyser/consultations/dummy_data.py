@@ -3,6 +3,7 @@ import random
 from typing import Optional
 
 import yaml
+from django.conf import settings
 from django_rq import job
 
 from consultation_analyser.consultations import models
@@ -16,7 +17,6 @@ from consultation_analyser.factories import (
     ThemeFactory,
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
-from django.conf import settings
 
 logger = settings.LOGGER
 

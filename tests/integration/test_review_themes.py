@@ -35,7 +35,7 @@ def test_review_show_response(django_app):
     sign_in(django_app, user.email)
 
     # Review response 1 - test adding a theme on review
-    url = reverse("show_response", args=(consultation.slug, question.slug, response1.id))
+    url = reverse("show_response", args=(consultation.id, question.id, response1.id))
     review_response_page = django_app.get(url)
     review_response_page.form["theme"] = [str(theme_a.id), str(theme_b.id)]
     next_response = review_response_page.form.submit().follow()
@@ -61,7 +61,7 @@ def test_review_show_response(django_app):
     )
 
     # Now test reviewing a response making no further changes
-    url = reverse("show_response", args=(consultation.slug, question.slug, response2.id))
+    url = reverse("show_response", args=(consultation.id, question.id, response2.id))
     review_response_page = django_app.get(url)
     review_response_page.form["theme"] = [str(theme_a.id), str(theme_b.id)]
     next_response = review_response_page.form.submit().follow()

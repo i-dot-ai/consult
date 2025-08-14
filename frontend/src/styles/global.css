@@ -1,0 +1,28 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    --color-primary: #c40678;
+}
+
+@view-transition {
+    navigation: auto;
+}
+
+/* Temp until components ported to svelte */
+iai-csv-download iai-silver-button button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+iai-csv-download iai-silver-button .material-symbols-outlined {
+    font-size: 1.3rem;
+}
+table iai-progress-bar .container {
+    max-width: 3rem;
+}
+table iai-progress-bar .container .bar {
+    height: 0.5rem;
+}
