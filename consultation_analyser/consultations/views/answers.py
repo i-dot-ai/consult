@@ -1,11 +1,14 @@
 from datetime import datetime
 from uuid import UUID
 
+from django.conf import settings
 from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .. import models
 from .decorators import user_can_see_consultation, user_can_see_dashboards
+
+logger = settings.LOGGER
 
 
 @user_can_see_dashboards
@@ -15,6 +18,8 @@ def index(
     consultation_id: str,
     question_id: str,
 ):
+    logger.refresh_context()
+
     # Get question data
     consultation = get_object_or_404(models.Consultation, pk=consultation_id)
     question = get_object_or_404(
@@ -50,6 +55,8 @@ def show(
     question_id: UUID,
     response_id: UUID,
 ):
+    logger.refresh_context()
+
     # Allow user to review and update theme mappings for a response.
     consultation = get_object_or_404(models.Consultation, id=consultation_id)
     question = get_object_or_404(models.Question, id=question_id, consultation=consultation)
@@ -98,6 +105,7 @@ def show(
 
 @user_can_see_consultation
 def show_next(request: HttpRequest, consultation_id: UUID, question_id: UUID):
+    logger.refresh_context()
     consultation = get_object_or_404(models.Consultation, id=consultation_id)
     question = get_object_or_404(models.Question, id=question_id, consultation=consultation)
 

@@ -1,5 +1,6 @@
 from uuid import UUID
 
+from django.conf import settings
 from django.contrib import messages
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import redirect, render
@@ -10,8 +11,12 @@ from consultation_analyser.support_console.forms.add_users_to_consultation_form 
     AddUsersToConsultationForm,
 )
 
+logger = settings.LOGGER
+
 
 def new(request: HttpRequest, consultation_id: UUID):
+    logger.refresh_context()
+
     consultation = models.Consultation.objects.get(id=consultation_id)
     users = models.User.objects.exclude(id__in=[u.id for u in consultation.users.all()]).all()
 
@@ -34,6 +39,8 @@ def new(request: HttpRequest, consultation_id: UUID):
 
 
 def delete(request: HttpRequest, consultation_id: UUID, user_id: UUID) -> HttpResponse:
+    logger.refresh_context()
+
     consultation = models.Consultation.objects.get(id=consultation_id)
     user = models.User.objects.get(id=user_id)
 

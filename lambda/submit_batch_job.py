@@ -1,11 +1,9 @@
 import json
-import logging
 
 import boto3
+from django.conf import settings
 
-# Set up logging
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
+logger = settings.LOGGER
 
 # AWS Batch client
 batch_client = boto3.client("batch")
@@ -15,12 +13,14 @@ def lambda_handler(event, context):
     """
     Lambda handler to process a single SQS message and submit job to AWS Batch.
     """
-    logger.info(f"Received event with {len(event['Records'])} records")
+    logger.info("Received event with {n_records} records", n_records=len(event["Records"]))
 
     records = event.get("Records", [])
 
     if len(records) != 1:
-        raise ValueError(f"Expected exactly 1 SQS record, but received {len(records)}")
+        raise ValueError(
+            "Expected exactly 1 SQS record, but received {n_records}", n_records=len(records)
+        )
 
     record = records[0]
     logger.info("Processing SQS record")
@@ -28,9 +28,9 @@ def lambda_handler(event, context):
     message_body = record["body"]
     try:
         message_data = json.loads(message_body)
-        logger.info(f"Parsed message: {message_data}")
+        logger.info("Parsed message: {message_data}", message_data=message_data)
     except json.JSONDecodeError as e:
-        raise ValueError(f"Invalid JSON in message body: {str(e)}")
+        raise ValueError("Invalid JSON in message body: {msg}", mesg=e)
 
     process_message(message_data)
 
@@ -72,15 +72,22 @@ def process_message(message_data):
     # Add containerOverrides if present
     if container_overrides:
         submit_job_kwargs["containerOverrides"] = container_overrides
-        logger.info(f"Using container overrides: {container_overrides}")
+        logger.info(
+            "Using container overrides: {container_overrides}",
+            container_overrides=container_overrides,
+        )
 
     # Add parameters if present (for backward compatibility)
     if job_parameters:
         submit_job_kwargs["parameters"] = job_parameters
-        logger.info(f"Using parameters: {job_parameters}")
+        logger.info("Using parameters: {job_parameters}", job_parameters=job_parameters)
 
-    logger.info(f"Submitting AWS Batch job: {job_name}")
+    logger.info("Submitting AWS Batch job: {job_name}", job_name=job_name)
     response = batch_client.submit_job(**submit_job_kwargs)
 
     job_id = response["jobId"]
-    logger.info(f"Successfully submitted job: {job_id} for jobName: {job_name}")
+    logger.info(
+        "Successfully submitted job: {job_id} for jobName: {job_name}",
+        job_id=job_id,
+        job_name=job_name,
+    )

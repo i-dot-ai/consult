@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth.models import Group
 from django.http import HttpRequest
@@ -10,13 +11,17 @@ from consultation_analyser.consultations.models import Consultation
 from ..forms.edit_user_form import EditUserForm
 from ..forms.new_user_form import NewUserForm
 
+logger = settings.LOGGER
+
 
 def index(request: HttpRequest):
+    logger.refresh_context()
     users = User.objects.all().order_by("email")
     return render(request, "support_console/users/index.html", {"users": users})
 
 
 def new(request: HttpRequest):
+    logger.refresh_context()
     if not request.POST:
         form = NewUserForm()
     else:
@@ -31,6 +36,8 @@ def new(request: HttpRequest):
 
 
 def show(request: HttpRequest, user_id: int):
+    logger.refresh_context()
+
     user = get_object_or_404(User, pk=user_id)
     consultations = Consultation.objects.filter(users__in=[user])
     dashboard_group = Group.objects.get(name=DASHBOARD_ACCESS)
