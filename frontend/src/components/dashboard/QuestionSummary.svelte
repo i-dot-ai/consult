@@ -1,5 +1,6 @@
 <script lang="ts">
-    import { toTitleCase } from "../../global/utils.ts";
+    import type { FormattedTheme } from "../../globa/types.ts";
+    import { toTitleCase, getPercentage } from "../../global/utils.ts";
 
     import Star from "../svg/material/Star.svelte";
     import Panel from "./Panel.svelte";
@@ -9,6 +10,18 @@
 
     const MAX_CARDS_ALLOWED = 10;
 
+    interface Props {
+        totalAnswers: number;
+        filteredTotal: number;
+        demoData: any;
+        demoFilters: any;
+        themes: FormattedTheme[];
+        themeFilters: string[];
+        multiChoice: Object;
+        consultationSlug?: string;
+        demoFiltersApplied?: () => boolean;
+        themeFiltersApplied?: () => boolean;
+    }
     let {
         totalAnswers = 0,
         filteredTotal = 0,
@@ -17,9 +30,10 @@
         themes = [],
         themeFilters = [],
         multiChoice = {},
+        consultationSlug = "",
         demoFiltersApplied = () => false,
         themeFiltersApplied = () => false,
-    } = $props();
+    }: Props = $props();
 
     let sortAscending: boolean = true;
 </script>
@@ -79,6 +93,21 @@
             subtitle={`Total themes ${themes?.length || 0}`}
         >
             <Star slot="icon" />
+
+            <iai-csv-download
+                slot="aside"
+                class="text-xs"
+                fileName={`theme_mentions_for_${consultationSlug}.csv`}
+                variant="silver"
+                data={
+                    themes.map(theme => ({
+                        "Theme Name": theme.name,
+                        "Theme Description": theme.description,
+                        "Mentions": theme.count,
+                        "Percentage": getPercentage(theme.count, totalAnswers),
+                    }))
+                }
+            ></iai-csv-download>
         </TitleRow>
 
         <ThemesTable

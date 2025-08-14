@@ -267,6 +267,7 @@
                 filteredTotal: $answersData?.filtered_total,
                 demoData: $demoAggrData?.demographic_aggregations,
                 multiChoice: formatMultiChoiceData($multiChoiceAggrData),
+                consultationSlug: $consultationData?.slug,
             }
         },
         {

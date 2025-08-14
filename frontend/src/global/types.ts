@@ -15,3 +15,12 @@ export interface Consultation {
     slug: string;
     questions: Array<Question>;
 }
+
+export interface FormattedTheme {
+    id: string;
+    name: string;
+    description: string;
+    count: number;
+    highlighted?: boolean;
+    handleClick?: Function;
+}

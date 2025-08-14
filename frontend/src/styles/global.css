@@ -9,3 +9,14 @@
 @view-transition {
     navigation: auto;
 }
+
+/* Temp until component ported to svelte */
+iai-csv-download iai-silver-button button {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 0.5rem;
+}
+iai-csv-download iai-silver-button .material-symbols-outlined {
+    font-size: 1.3rem;
+}
