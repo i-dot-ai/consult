@@ -26,3 +26,6 @@ table iai-progress-bar .container {
 table iai-progress-bar .container .bar {
     height: 0.5rem;
 }
+table iai-progress-bar .container .bar.full {
+    border-radius: 0.5em;
+}
