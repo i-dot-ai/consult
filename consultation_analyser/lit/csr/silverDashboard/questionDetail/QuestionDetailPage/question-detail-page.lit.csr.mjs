@@ -241,11 +241,11 @@ export default class QuestionDetailPage extends IaiLitBase {
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/multi-choice-response-count/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                 ]);
 
-                this.responses = this.responses.concat(filteredResponsesData.all_respondents);
+                this.responses = this.responses.concat(filteredResponsesData.results);
 
                 this._responsesTotal = filteredResponsesData.respondents_total;
-                this._filteredTotal = filteredResponsesData.filtered_total;
-                this._hasMorePages = filteredResponsesData.has_more_pages;
+                this._filteredTotal = filteredResponsesData.count;
+                this._hasMorePages = Boolean(filteredResponsesData.next);
 
                 // Update theme data only on first page to reflect current filters
                 if (this._currentPage === 1 && themeAggregationsData && themeInformationData) {
