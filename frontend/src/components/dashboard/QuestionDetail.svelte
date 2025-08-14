@@ -257,6 +257,7 @@
             props: {
                 themes: Object.keys($themeAggrData?.theme_aggregations || []).map(themeId => {
                     return ({
+                        id: themeId,
                         count: $themeAggrData?.theme_aggregations[themeId],
                         highlighted: themeFilters.includes(themeId),
                         handleClick: () => updateThemeFilters(themeId),

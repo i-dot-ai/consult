@@ -7,17 +7,10 @@
     import Button from "../inputs/Button.svelte";
     import Title from "../Title.svelte";
 
+    import type { FormattedTheme } from "../../global/types.ts";
     import { getPercentage } from "../../global/utils.ts";
 
-    interface Theme {
-        id: string;
-        name: string;
-        description: string;
-        count: number;
-        highlighted?: boolean;
-        handleClick?: Function;
-    }
-    export let themes: Theme[] = [];
+    export let themes: FormattedTheme[] = [];
     export let totalAnswers: number = 0;
 </script>
 
@@ -63,7 +56,13 @@
                         {theme.count}
                     </td>
                     <td class="pr-4">
-                        {getPercentage(theme.count, totalAnswers)}%
+                        <div class="flex items-center gap-1">
+                            {getPercentage(theme.count, totalAnswers)}%
+                            <iai-silver-progress-bar
+                                value={getPercentage(theme.count, totalAnswers)}
+                                label=""
+                            ></iai-silver-progress-bar>
+                        </div>
                     </td>
                     <!-- <td>
                         <Button size="xs" handleClick={() => console.log(theme.id)}>
