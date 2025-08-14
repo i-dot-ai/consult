@@ -25,7 +25,7 @@
     <table class="w-full text-md my-8">
         <thead>
             <tr>
-                {#each ["Theme", "Mentions", "Percentage", "Actions"] as header}
+                {#each ["Theme", "Mentions", "Percentage" /*, "Actions"*/] as header}
                     <th class="text-left text-md m-2 pr-4">
                         {header}
                     </th>
@@ -65,11 +65,11 @@
                     <td class="pr-4">
                         {getPercentage(theme.count, totalAnswers)}%
                     </td>
-                    <td>
+                    <!-- <td>
                         <Button size="xs" handleClick={() => console.log(theme.id)}>
                             View Responses
                         </Button>
-                    </td>
+                    </td> -->
                 </tr>
             {/each}
         </tbody>
