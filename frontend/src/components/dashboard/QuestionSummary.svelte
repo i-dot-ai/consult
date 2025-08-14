@@ -4,6 +4,7 @@
 
     import Star from "../svg/material/Star.svelte";
     import Panel from "./Panel.svelte";
+    import Button from "../inputs/Button.svelte";
     import TitleRow from "./TitleRow.svelte";
     import ThemesTable from "./ThemesTable.svelte";
     import ProgressCards from "../ProgressCards.svelte";
@@ -19,6 +20,7 @@
         themeFilters: string[];
         multiChoice: Object;
         consultationSlug?: string;
+        sortAscending?: boolean;
         demoFiltersApplied?: () => boolean;
         themeFiltersApplied?: () => boolean;
     }
@@ -31,11 +33,10 @@
         themeFilters = [],
         multiChoice = {},
         consultationSlug = "",
+        sortAscending = true,
         demoFiltersApplied = () => false,
         themeFiltersApplied = () => false,
     }: Props = $props();
-
-    let sortAscending: boolean = true;
 </script>
 
 <section class="my-4">
@@ -90,7 +91,7 @@
         <TitleRow
             level={2}
             title="Theme analysis"
-            subtitle={`Total themes ${themes?.length || 0}`}
+            subtitle="Analysis of key themes mentioned in responses to this question."
         >
             <Star slot="icon" />
 
@@ -111,8 +112,27 @@
         </TitleRow>
 
         <ThemesTable
-            themes={themes}
+            themes={[...themes].sort((a,b) => sortAscending
+                ? a.count - b.count
+                : b.count - a.count
+            )}
             totalAnswers={totalAnswers}
         />
+
+        <div class="flex justify-between items-center">
+            <small>
+                {`Showing ${themes?.length || 0} themes • Click rows to select themes for response analysis`}
+            </small>
+
+            <div class="flex items-center gap-1">
+                <small>Order:</small>
+                <Button size="xs" handleClick={() => sortAscending = false}>
+                    High to Low
+                </Button>
+                <Button size="xs" handleClick={() => sortAscending = true}>
+                    Low to High
+                </Button>
+            </div>
+        </div>
     </Panel>
 </section>

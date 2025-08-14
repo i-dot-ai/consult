@@ -40,6 +40,7 @@
     let themeFilters: string[] = [];
     let demoFilters: {[key: string]: string[]} = {};
     let evidenceRich: boolean = false;
+    let sortAscending: boolean = false;
 
     $: {
         resetAnswers();
@@ -269,6 +270,7 @@
                 demoData: $demoAggrData?.demographic_aggregations,
                 multiChoice: formatMultiChoiceData($multiChoiceAggrData),
                 consultationSlug: $consultationData?.slug,
+                sortAscending: sortAscending,
             }
         },
         {
@@ -294,7 +296,6 @@
 />
 <div class="my-4">
     <Button variant="outline" handleClick={() => {
-        console.log(TabNames.ResponseAnalysis)
         activeTab = TabNames.ResponseAnalysis
     }}>
         Change Tab
@@ -302,7 +303,9 @@
 </div>
 
 <div class="my-4">
-    <Button variant="outline" handleClick={() => evidenceRich = !evidenceRich}>
+    <Button variant="outline" handleClick={() => {
+        evidenceRich = !evidenceRich
+    }}>
         Toggle Evidence Rich
     </Button>
 </div>

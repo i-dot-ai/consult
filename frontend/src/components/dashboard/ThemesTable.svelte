@@ -16,9 +16,9 @@
 
 <div class="w-full overflow-auto">
     <table class="w-full text-md my-8">
-        <thead>
+        <thead class="text-sm">
             <tr>
-                {#each ["Theme", "Mentions", "Percentage" /*, "Actions"*/] as header}
+                {#each ["Theme", "Mentions", "% Percentage" /*, "Actions"*/] as header}
                     <th class="text-left text-md m-2 pr-4">
                         {header}
                     </th>
