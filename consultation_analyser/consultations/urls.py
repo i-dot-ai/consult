@@ -32,9 +32,9 @@ urlpatterns = [
     path("privacy/", pages.privacy, name="privacy"),
     # login required
     path("consultations/", consultations.index, name="consultations"),
-    path("consultations/<str:consultation_slug>/", consultations.show, name="consultation"),
+    path("consultations/<uuid:consultation_id>/", consultations.show, name="consultation"),
     path(
-        "consultations/<str:consultation_slug>/responses/<str:question_slug>/",
+        "consultations/<uuid:consultation_id>/responses/<uuid:question_id>/",
         answers.index,
         name="question_responses",
     ),
@@ -46,17 +46,17 @@ urlpatterns = [
     path("api/", include(themes_router.urls)),
     path("api/user/", get_current_user, name="user"),
     path(
-        "consultations/<str:consultation_slug>/responses/<str:question_slug>/show-next/",
+        "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/show-next/",
         answers.show_next,
         name="show_next_response",
     ),
     path(
-        "consultations/<str:consultation_slug>/responses/<str:question_slug>/<uuid:response_id>/",
+        "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/responses/<uuid:response_id>/",
         answers.show,
         name="show_response",
     ),
     path(
-        "consultations/<str:consultation_slug>/review-questions/",
+        "evaluations/<uuid:consultation_id>/questions/",
         questions.index,
         name="review_free_text_questions",
     ),

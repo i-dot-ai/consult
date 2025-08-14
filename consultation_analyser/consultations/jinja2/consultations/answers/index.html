@@ -8,7 +8,7 @@
 {% block content %}
 
   <noscript>
-    <p class="govuk-heading-s">{{ consultation_name }}</p>
+    <p class="govuk-heading-s">{{ consultation_id }}</p>
     <p class="govuk-body">JavaScript is required to view this page</p>
   </noscript>
 
@@ -20,7 +20,7 @@
       },
       {
         "text": "All questions",
-        "href": "/consultations/" + consultation_slug
+        "href": "/consultations/" + consultation_id
       }
     ]
   }) }}
@@ -33,7 +33,6 @@
 
 <iai-question-detail-page
   consultationId="{{ question.consultation_id }}"
-  consultationSlug="{{ consultation_slug }}"
   consultationTitle="{{ question.consultation_name }}"
   questionId="{{ question.id }}"
   questionSlug="{{ question_slug }}"

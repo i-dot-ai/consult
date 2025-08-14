@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import render
 
@@ -10,9 +12,9 @@ def index(request: HttpRequest) -> HttpResponse:
 
 @user_can_see_dashboards
 @user_can_see_consultation
-def show(request: HttpRequest, consultation_slug: str) -> HttpResponse:
+def show(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
     # Dashboard page - pass consultation_slug to template for API calls
     context = {
-        "consultation_slug": consultation_slug,
+        "consultation_id": consultation_id,
     }
     return render(request, "consultations/consultations/show.html", context)

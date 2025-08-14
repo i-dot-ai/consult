@@ -281,11 +281,11 @@ export default class IaiResponseDashboard extends IaiLitBase {
                 // Fetch non-streaming endpoints first (only on first page)
                 const [themeAggregationsData, themeInformationData, demographicOptionsData] = await Promise.all([
                     // Get theme aggregations (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                     // Get theme information (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/theme-information/`, { signal }).then(r => r.json()) : null,
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-information/`, { signal }).then(r => r.json()) : null,
                     // Get demographic options (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/demographic-options/`, { signal }).then(r => r.json()) : null
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/demographic-options/`, { signal }).then(r => r.json()) : null
                 ]);
 
                 // Update theme mappings only on first page to reflect current filters
@@ -295,7 +295,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         map[theme.id] = theme;
                         return map;
                     }, {});
-                    
+
                     // Convert theme_aggregations format to theme_mappings format
                     this.themeMappings = Object.entries(themeAggregationsData.theme_aggregations).map(([id, count]) => {
                         const themeInfo = themeInfoMap[id] || {};
@@ -315,16 +315,16 @@ export default class IaiResponseDashboard extends IaiLitBase {
 
                 // Now fetch responses
                 const responsesResponse = await fetch(
-                    `/api/consultations/${this.consultationSlug}/questions/${this.questionSlug}/filtered-responses/?` + this.buildQuery(),
+                    `/api/consultations/${this.consultationId}/questions/${this.questionId}/filtered-responses/?` + this.buildQuery(),
                     { signal }
                 );
-                
+
                 if (!responsesResponse.ok) {
                     throw new Error(`HTTP error! status: ${responsesResponse.status}`);
                 }
-                
+
                 const responsesData = await responsesResponse.json();
-                
+
                 // Add all responses
                 this.responses = this.responses.concat(
                     responsesData.all_respondents.map(response => ({
@@ -332,7 +332,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
                         visible: true,
                     }))
                 );
-                
+
                 // Update metadata
                 this.responsesTotal = responsesData.respondents_total;
                 this._responsesFilteredTotal = responsesData.filtered_total;

@@ -78,12 +78,12 @@
         listEl.innerHTML = consultations.map(consultation => `
           <li class="govuk-!-margin-top-2 govuk-!-margin-bottom-6">
             <h2 class="govuk-heading-m">${consultation.title}</h2>
-            <a href="/consultations/${consultation.slug}/review-questions/"
+            <a href="/evaluations/${consultation.id}/questions/"
                class="govuk-body-l govuk-link govuk-link--no-visited-state govuk-!-margin-right-5">
               View evaluation
             </a>
             ${userHasDashboardAccess ? `
-              <a href="/consultations/${consultation.slug}/"
+              <a href="/consultations/${consultation.id}/"
                  class="govuk-body-l govuk-link govuk-link--no-visited-state govuk-!-margin-right-5">
                 View dashboard
               </a>

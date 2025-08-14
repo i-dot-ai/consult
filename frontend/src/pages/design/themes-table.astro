@@ -1,0 +1,26 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Section from '../../components/Section.svelte';
+import Title from '../../components/Title.svelte';
+
+import ThemesTable from "../../components/dashboard/ThemesTable.svelte";
+
+const themes = [
+    {id: "1", name: "Theme one", description: "This is theme one", count: 10, handleClick: () => console.log(1)},
+    {id: "2", name: "Theme two", description: "This is theme two", count: 80, handleClick: () => console.log(2), highlighted: true},
+    {id: "3", name: "Theme three", description: "This is theme three", count: 30, handleClick: () => console.log(3)},
+
+]
+const totalAnswers = 100;
+---
+<Layout>
+	<Section>
+        <Title level={1} text="Design - Themes Table" />
+
+        <ThemesTable
+            client:load
+            themes={themes}
+            totalAnswers={totalAnswers}
+        />
+    </Section>
+</Layout>
