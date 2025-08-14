@@ -367,10 +367,10 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered-responses",
+            "response-list",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
         response = client.get(url)
@@ -380,15 +380,15 @@ class TestFilteredResponsesAPIView:
         # Parse the response
         data = orjson.loads(response.content)
 
-        assert "all_respondents" in data
-        assert "respondents_total" in data
-        assert "filtered_total" in data
-        assert len(data["all_respondents"]) == 1
-        assert data["respondents_total"] == 1
-        assert data["filtered_total"] == 1
+        assert "results" in data
+        # assert "respondents_total" in data
+        assert "count" in data
+        assert len(data["results"]) == 1
+        # assert data["respondents_total"] == 1
+        assert data["count"] == 1
 
         # Verify respondent data structure
-        respondent_data = data["all_respondents"][0]
+        respondent_data = data["results"][0]
         assert respondent_data["identifier"] == str(respondent.identifier)
         assert respondent_data["free_text_answer_text"] == "Test response"
         assert respondent_data["demographic_data"] == {"individual": True}
@@ -404,10 +404,10 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered-responses",
+            "response-list",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
         response = client.get(url + "?page_size=2&page=1")
@@ -416,9 +416,9 @@ class TestFilteredResponsesAPIView:
 
         data = orjson.loads(response.content)
 
-        assert len(data["all_respondents"]) == 2
-        assert data["has_more_pages"] is True
-        assert data["respondents_total"] == 5
+        assert len(data["results"]) == 2
+        assert data["next"] is not None
+        assert data["count"] == 5
 
     def test_get_filtered_responses_with_demographic_filters(
         self, client, consultation_user, free_text_question
@@ -439,10 +439,10 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered-responses",
+            "response-list",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
 
@@ -453,10 +453,10 @@ class TestFilteredResponsesAPIView:
 
         data = orjson.loads(response.content)
 
-        assert data["respondents_total"] == 2  # Total respondents
-        assert data["filtered_total"] == 1  # Filtered to individuals only
-        assert len(data["all_respondents"]) == 1
-        assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
+        # assert data["respondents_total"] == 2  # Total respondents
+        assert data["count"] == 1  # Filtered to individuals only
+        assert len(data["results"]) == 1
+        assert data["results"][0]["identifier"] == str(respondent1.identifier)
 
     def test_get_filtered_responses_with_theme_filters(
         self, client, consultation_user, free_text_question, theme, theme2
@@ -491,10 +491,10 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered-responses",
+            "response-list",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
 
@@ -505,10 +505,10 @@ class TestFilteredResponsesAPIView:
 
         data = orjson.loads(response.content)
 
-        assert data["respondents_total"] == 3  # Total respondents
-        assert data["filtered_total"] == 1  # Only response1 has both themes
-        assert len(data["all_respondents"]) == 1
-        assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
+        # assert data["respondents_total"] == 3  # Total respondents
+        assert data["count"] == 1  # Only response1 has both themes
+        assert len(data["results"]) == 1
+        assert data["results"][0]["identifier"] == str(respondent1.identifier)
 
     def test_get_filtered_responses_invalid_parameters(
         self, client, consultation_user, free_text_question
@@ -516,10 +516,10 @@ class TestFilteredResponsesAPIView:
         """Test API endpoint handles invalid parameters"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered-responses",
+            "response-list",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
 
@@ -590,7 +590,7 @@ class TestAPIViewPermissions:
             "question-demographic-aggregations",
             "question-theme-information",
             "question-theme-aggregations",
-            "question-filtered-responses",
+            "response-list",
             "question-detail",
         ],
     )
@@ -607,7 +607,7 @@ class TestAPIViewPermissions:
             "question-demographic-aggregations",
             "question-theme-information",
             "question-theme-aggregations",
-            "question-filtered-responses",
+            "response-list",
             "question-detail",
         ],
     )
@@ -628,7 +628,7 @@ class TestAPIViewPermissions:
             "question-demographic-aggregations",
             "question-theme-information",
             "question-theme-aggregations",
-            "question-filtered-responses",
+            "response-list",
             "question-detail",
         ],
     )

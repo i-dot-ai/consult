@@ -7,6 +7,7 @@ from consultation_analyser.consultations.models import (
     MultiChoiceAnswer,
     Question,
     Response,
+    ResponseAnnotation,
     Theme,
 )
 
@@ -75,10 +76,12 @@ class DemographicAggregationsSerializer(serializers.Serializer):
     )
 
 
-class ThemeSerializer(serializers.Serializer):
-    id = serializers.IntegerField()
-    name = serializers.CharField()
-    description = serializers.CharField()
+class ThemeSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField()
+
+    class Meta:
+        model = Theme
+        fields = ["id", "name", "description"]
 
 
 class ThemeInformationSerializer(serializers.Serializer):
@@ -131,3 +134,31 @@ class CrossCuttingThemeSerializer(serializers.ModelSerializer):
 class MultiChoiceAnswerCount(serializers.Serializer):
     answer = serializers.CharField(source="chosen_options__text")
     response_count = serializers.IntegerField()
+
+
+class ResponseSerializer(serializers.ModelSerializer):
+    identifier = serializers.CharField(source="respondent.themefinder_id")
+    free_text_answer_text = serializers.CharField(source="free_text")
+    demographic_data = serializers.JSONField(source="respondent.demographics")
+    themes = ThemeSerializer(source="annotation.themes", many=True, read_only=True, default=[])
+    multiple_choice_answer = serializers.SlugRelatedField(
+        source="chosen_options", slug_field="text", many=True, read_only=True
+    )
+    evidenceRich = serializers.SerializerMethodField()
+
+    def get_evidenceRich(self, obj) -> bool:
+        try:
+            return obj.annotation.evidence_rich == ResponseAnnotation.EvidenceRich.YES
+        except AttributeError:
+            return False
+
+    class Meta:
+        model = Response
+        fields = [
+            "identifier",
+            "free_text_answer_text",
+            "demographic_data",
+            "themes",
+            "multiple_choice_answer",
+            "evidenceRich",
+        ]
