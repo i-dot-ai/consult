@@ -1,7 +1,4 @@
-import logging
-
 import magic_link.views
-from django.conf import settings
 from django.contrib import messages
 from django.contrib.auth import logout
 from django.contrib.auth.decorators import login_not_required
@@ -17,6 +14,10 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 
 
 def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
+    from django.conf import settings
+
+    settings.LOGGER.refresh_context()
+
     try:
         email = email.lower()
         user = User.objects.get(email=email)
@@ -29,8 +30,14 @@ def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
 
         # Log magic link in local environment only
         if HostingEnvironment.is_local():
-            logger = logging.getLogger("django.server")
-            logger.info(f"##################### Sending magic link to {email}: {magic_link}")
+            from django.conf import settings
+
+            logger = settings.LOGGER
+            logger.info(
+                "##################### Sending magic link to {email}: {magic_link}",
+                email=email,
+                magic_link=magic_link,
+            )
 
         # Send email in test and deployed environments (test backend will capture it)
         # Use Django's test detection as fallback

@@ -1,11 +1,11 @@
 import os
-from logging import getLogger
 
+from django.conf import settings
 from django.core.management import BaseCommand
 
 from consultation_analyser.authentication.models import User
 
-logger = getLogger(__file__)
+logger = settings.LOGGER
 
 
 class Command(BaseCommand):
@@ -17,6 +17,6 @@ class Command(BaseCommand):
                 email=email.strip(), defaults={"is_staff": True}
             )
             if created:
-                logger.info("created %s as admin", user.email)
+                logger.info("created {email} as admin", email=user.email)
             else:
-                logger.info("set %s as admin", user.email)
+                logger.info("set {email} as admin", email=user.email)

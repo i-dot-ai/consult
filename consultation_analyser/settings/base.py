@@ -17,6 +17,9 @@ from datetime import timedelta
 from pathlib import Path
 
 import environ
+from i_dot_ai_utilities.logging.structured_logger import StructuredLogger
+from i_dot_ai_utilities.logging.types.enrichment_types import ExecutionEnvironmentType
+from i_dot_ai_utilities.logging.types.log_output_format import LogOutputFormat
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -234,6 +237,13 @@ LOGGING = {
     },
 }
 
+LOGGER = StructuredLogger(
+    level="info",
+    options={
+        "execution_environment": ExecutionEnvironmentType.LOCAL,
+        "log_format": LogOutputFormat.TEXT,
+    },
+)
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
