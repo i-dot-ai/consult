@@ -22,6 +22,7 @@
     export let questionId: string = "";
 
     const PAGE_SIZE = 50;
+    const MAX_THEME_FILTERS = Infinity;
 
     let currPage: number = 1;
     let hasMorePages: boolean = true;
@@ -190,6 +191,23 @@
         })
         return formattedMultiChoice;
     }
+
+    const updateThemeFilters = (newFilter: string) => {
+        if (!newFilter) {
+            // Clear filters if newFilter is falsy
+            themeFilters = [];
+            return;
+        }
+        if (themeFilters.includes(newFilter)) {
+            themeFilters = [...themeFilters.filter(filter => filter !== newFilter)];
+        } else {
+            if (themeFilters.length === MAX_THEME_FILTERS) {
+                themeFilters = [...themeFilters.slice(1), newFilter];
+            } else {
+                themeFilters = [...themeFilters, newFilter];
+            }
+        }
+    }
 </script>
 
 <section class={clsx([
@@ -240,13 +258,15 @@
                 themes: Object.keys($themeAggrData?.theme_aggregations || []).map(themeId => {
                     return ({
                         count: $themeAggrData?.theme_aggregations[themeId],
+                        highlighted: themeFilters.includes(themeId),
+                        handleClick: () => updateThemeFilters(themeId),
                         ...($themeInfoData?.themes?.find(themeInfo => themeInfo.id === themeId)),
                     })
                 }),
                 totalAnswers: $answersData?.respondents_total,
                 filteredTotal: $answersData?.filtered_total,
                 demoData: $demoAggrData?.demographic_aggregations,
-                multiChoice: formatMultiChoiceData($multiChoiceAggrData)
+                multiChoice: formatMultiChoiceData($multiChoiceAggrData),
             }
         },
         {
