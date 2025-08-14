@@ -294,18 +294,3 @@
         },
     ]}
 />
-<div class="my-4">
-    <Button variant="outline" handleClick={() => {
-        activeTab = TabNames.ResponseAnalysis
-    }}>
-        Change Tab
-    </Button>
-</div>
-
-<div class="my-4">
-    <Button variant="outline" handleClick={() => {
-        evidenceRich = !evidenceRich
-    }}>
-        Toggle Evidence Rich
-    </Button>
-</div>

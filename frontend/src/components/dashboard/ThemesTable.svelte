@@ -57,7 +57,9 @@
                     </td>
                     <td class="pr-4">
                         <div class="flex items-center gap-1">
-                            {getPercentage(theme.count, totalAnswers)}%
+                            <span class="w-[5ch]">
+                                {getPercentage(theme.count, totalAnswers)}%
+                            </span>
                             <iai-silver-progress-bar
                                 value={getPercentage(theme.count, totalAnswers)}
                                 label=""
