@@ -112,9 +112,13 @@ class QuestionViewSet(ReadOnlyModelViewSet):
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
-        return models.Question.objects.filter(
-            consultation_id=consultation_uuid, consultation__users=self.request.user
-        ).order_by("-created_at")
+        return (
+            models.Question.objects.filter(
+                consultation_id=consultation_uuid, consultation__users=self.request.user
+            )
+            .annotate(response_count=Count("response"))
+            .order_by("-created_at")
+        )
 
     @action(
         detail=True,

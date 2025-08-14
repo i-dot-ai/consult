@@ -155,7 +155,6 @@ class TestQuestionSerializer:
         assert serializer.is_valid()
         expected = {
             "text": "What do you think about this topic?",
-            "total_responses": 150,
             "number": 1,
             "slug": "topic",
         }
@@ -181,7 +180,7 @@ class TestQuestionSerializer:
         }
         serializer = QuestionSerializer(data=data)
         assert not serializer.is_valid()
-        assert "total_responses" in serializer.errors
+        assert "number" in serializer.errors
 
 
 class TestFilterSerializer:

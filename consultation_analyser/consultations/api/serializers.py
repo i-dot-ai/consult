@@ -29,6 +29,11 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
         many=True, source="multichoiceanswer_set", read_only=True
     )
     proportion_of_audited_answers = serializers.ReadOnlyField()
+    total_responses = serializers.IntegerField(
+        read_only=True,
+        source="response_count",
+        required=False,
+    )
 
     class Meta:
         model = Question
