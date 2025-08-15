@@ -29,3 +29,11 @@ table iai-progress-bar .container .bar {
 table iai-progress-bar .container .bar.full {
     border-radius: 0.5em;
 }
+.demo-filter iai-progress-bar .container,
+.demo-filter iai-progress-bar .container .bar {
+    height: 0.5rem;
+}
+.demo-filter iai-progress-bar .container,
+table iai-progress-bar .container {
+    background-color: #bebebe !important;
+}
