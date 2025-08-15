@@ -71,11 +71,6 @@
         {/each}
     </div>
 
-    {#each tabs as tab (tab.id)}
-        {#if tab.id === $writableValue}
-            <div transition:slide use:melt={$content(tab.id)} class="grow bg-white">
-                <svelte:component this={tab.component} {...(tab.props || {})} />
-            </div>
-        {/if}
-    {/each}
+    <!-- Handle which tab to render in parent -->
+    <slot />
 </div>
