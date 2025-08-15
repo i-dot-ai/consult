@@ -18,9 +18,9 @@
     <table class="w-full text-md my-8">
         <thead class="text-sm">
             <tr>
-                {#each ["Theme", "Mentions", "% Percentage" /*, "Actions"*/] as header}
+                {#each ["Theme", "Mentions", "%&nbsp;Percentage" /*, "Actions"*/] as header}
                     <th class="text-left text-md m-2 pr-4">
-                        {header}
+                        {@html header}
                     </th>
                 {/each}
             </tr>
@@ -45,6 +45,9 @@
                         ]),
                     ])}
                     on:click={theme.handleClick}
+                    tabindex="0"
+                    role="button"
+                    aria-pressed={theme.highlighted ? "true" : "false"}
                 >
                     <td class="pr-4">
                         <div transition:slide class="p-2">

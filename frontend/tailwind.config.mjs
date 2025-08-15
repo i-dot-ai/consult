@@ -4,8 +4,11 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: 'var(--color-primary)',
+        "primary": 'var(--color-primary)',
       },
+      screens: {
+        '3xl': '1920px',
+      }
     },
   },
   plugins: [],

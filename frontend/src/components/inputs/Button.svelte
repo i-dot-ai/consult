@@ -4,6 +4,7 @@
     export let variant: "default" | "ghost" | "primary" = "default";
     export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
     export let highlighted: boolean = false;
+    export let highlightVariant: "dark" | "light" = "dark"; 
     export let handleClick = () => {};
     export let disabled: boolean = false;
     export let fullWidth: boolean = false;
@@ -18,10 +19,10 @@
         "rounded-md",
         "py-1",
         "px-2",
-        variant !== "ghost" && "border",
+        "border",
         variant === "primary" && "text-white",
         variant === "primary" && "bg-primary",
-        "border-gray-300",
+        variant === "ghost" ? "border-transparent" : "border-gray-300",
         "transition-colors",
         "duration-300",
         "flex",
@@ -31,19 +32,26 @@
         variant === "primary" && "hover:text-primary",
         variant === "primary" && "hover:border-primary",
 
-        disabled && "disabled:bg-gray-200",
-        disabled && "disabled:text-gray-400",
-        disabled && "disabled:cursor-not-allowed",
-        disabled && "disabled:hover:bg-gray-200",
-        disabled && "disabled:hover:border-gray-300",
-        disabled && "disabled:hover:text-gray-400",
+        disabled && clsx([
+            "disabled:bg-gray-200",
+            "disabled:text-gray-400",
+            "disabled:cursor-not-allowed",
+            "disabled:hover:bg-gray-200",
+            "disabled:hover:border-gray-300",
+            "disabled:hover:text-gray-400",
+        ]),
 
-        highlighted && !disabled && "bg-neutral-800",
-        highlighted && !disabled && "text-white",
-        highlighted && !disabled && "hover:bg-neutral-600",
+        highlighted && !disabled && clsx([
+            highlightVariant === "dark" && "bg-neutral-800 text-white hover:bg-neutral-700",
+            highlightVariant === "light" && "bg-pink-100 text-neutral-800 border border-pink-200 hover:bg-pink-200",
+        ]),
     ])}
     disabled={disabled}
     on:click={handleClick}
+    aria-pressed={highlighted !== undefined
+        ? highlighted ? "true" : "false"
+        : undefined
+    }
 >
     <slot />
 </button>

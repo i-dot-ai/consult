@@ -20,9 +20,20 @@ iai-csv-download iai-silver-button button {
 iai-csv-download iai-silver-button .material-symbols-outlined {
     font-size: 1.3rem;
 }
+iai-progress-bar .container .bar.full {
+    border-radius: 0.5em !important;
+}
 table iai-progress-bar .container {
     max-width: 3rem;
 }
 table iai-progress-bar .container .bar {
     height: 0.5rem;
+}
+.demo-filter iai-progress-bar .container,
+.demo-filter iai-progress-bar .container .bar {
+    height: 0.5rem;
+}
+.demo-filter iai-progress-bar .container,
+table iai-progress-bar .container {
+    background-color: #bebebe !important;
 }

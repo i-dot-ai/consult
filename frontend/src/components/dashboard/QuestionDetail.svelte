@@ -2,7 +2,7 @@
     import clsx from "clsx";
 
     import { onMount } from "svelte";
-    import { slide } from "svelte/transition";
+    import { fly, fade, slide } from "svelte/transition";
 
     import MaterialIcon from "../MaterialIcon.svelte";
     import Button from "../inputs/Button.svelte";
@@ -193,6 +193,30 @@
         return formattedMultiChoice;
     }
 
+    const setDemoFilters = (newFilterKey: string, newFilterValue: string) => {
+        if (!newFilterKey || !newFilterValue) {
+            // Clear filters if nothing is passed
+            demoFilters = {};
+            return;
+        }
+
+        const existingFilters = demoFilters[newFilterKey] || [];
+
+        let resultFilters;
+        if (existingFilters.includes(newFilterValue)) {
+            // Remove filter if already added
+            resultFilters = existingFilters.filter(filter => newFilterValue !== filter);
+        } else {
+            // Avoid duplicates when adding filters
+            resultFilters = [...new Set([...existingFilters, newFilterValue])];
+        }
+
+        demoFilters = {
+            ...demoFilters,
+            [newFilterKey]: resultFilters,
+        }
+    }
+
     const updateThemeFilters = (newFilter: string) => {
         if (!newFilter) {
             // Clear filters if newFilter is falsy
@@ -251,46 +275,45 @@
     value={activeTab}
     onValueChange={({ curr, next }) => activeTab = next}
     tabs={[
-        {
-            id: TabNames.QuestionSummary,
-            title: 'Question summary',
-            component: QuestionSummary,
-            props: {
-                themes: Object.keys($themeAggrData?.theme_aggregations || []).map(themeId => {
-                    return ({
-                        id: themeId,
-                        count: $themeAggrData?.theme_aggregations[themeId],
-                        highlighted: themeFilters.includes(themeId),
-                        handleClick: () => updateThemeFilters(themeId),
-                        ...($themeInfoData?.themes?.find(themeInfo => themeInfo.id === themeId)),
-                    })
-                }),
-                totalAnswers: $answersData?.respondents_total,
-                filteredTotal: $answersData?.filtered_total,
-                demoData: $demoAggrData?.demographic_aggregations,
-                multiChoice: formatMultiChoiceData($multiChoiceAggrData),
-                consultationSlug: $consultationData?.slug,
-                sortAscending: sortAscending,
-            }
-        },
-        {
-            id: TabNames.ResponseAnalysis,
-            title: 'Response analysis',
-            component: ResponseAnalysis,
-            props: {
-                answers: answers,
-                isAnswersLoading: $isAnswersLoading,
-                answersError: $answersError,
-                filteredTotal: $answersData?.filtered_total,
-                hasMorePages: hasMorePages,
-                handleLoadClick: () => loadData({
-                    searchValue: searchValue,
-                    searchMode: searchMode,
-                    themeFilters: themeFilters,
-                    evidenceRich: evidenceRich,
-                    demoFilters: demoFilters,
-                }),
-            }
-        },
+        { id: TabNames.QuestionSummary, title: "Question Summary" },
+        { id: TabNames.ResponseAnalysis, title: "Response Analysis"},
     ]}
-/>
+>
+    {#if activeTab === TabNames.QuestionSummary}
+        <QuestionSummary
+            themes={Object.keys($themeAggrData?.theme_aggregations || []).map(themeId => {
+                return ({
+                    id: themeId,
+                    count: $themeAggrData?.theme_aggregations[themeId],
+                    highlighted: themeFilters.includes(themeId),
+                    handleClick: () => updateThemeFilters(themeId),
+                    ...($themeInfoData?.themes?.find(themeInfo => themeInfo.id === themeId)),
+                })
+            })}
+            totalAnswers={$answersData?.respondents_total}
+            filteredTotal={$answersData?.filtered_total}
+            demoData={$demoAggrData?.demographic_aggregations}
+            demoOptions={$demoOptionsData?.demographic_options}
+            demoFilters={demoFilters}
+            setDemoFilters={setDemoFilters}
+            multiChoice={formatMultiChoiceData($multiChoiceAggrData)}
+            consultationSlug={$consultationData?.slug}
+            sortAscending={sortAscending}
+        />
+    {:else if activeTab === TabNames.ResponseAnalysis}
+        <ResponseAnalysis
+            answers={answers}
+            isAnswersLoading={$isAnswersLoading}
+            answersError={$answersError}
+            filteredTotal={$answersData?.filtered_total}
+            hasMorePages={hasMorePages}
+            handleLoadClick={() => loadData({
+                searchValue: searchValue,
+                searchMode: searchMode,
+                themeFilters: themeFilters,
+                evidenceRich: evidenceRich,
+                demoFilters: demoFilters,
+            })}
+        />
+    {/if}
+</TabView>
