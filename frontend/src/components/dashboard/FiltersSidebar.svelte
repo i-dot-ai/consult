@@ -6,6 +6,8 @@
     import Button from "../inputs/Button.svelte";
     import Star from "../svg/material/Star.svelte";
 
+    import { getPercentage } from "../../global/utils.ts";
+
     let {
         showEvidenceRich = true,
         demoOptions = {},
@@ -13,6 +15,15 @@
         demoFilters = {},
         setDemoFilters = () => {},
     } = $props();
+
+    // Derive to avoid calculating on re-render
+    let totalCounts = $derived.by(() => {
+		let counts = {};
+		for (const category of Object.keys(demoData)) {
+            counts[category] = Object.values(demoData[category]).reduce( (a, b) => a + b, 0 );
+		}
+		return counts;
+	})
 </script>
 
 <aside>
@@ -29,6 +40,9 @@
                     </Button>
 
                     {#each demoOptions[category] as rowKey}
+                        {@const rowValue = demoData[category] && demoData[category][rowKey] || 0}
+                        {@const percentage = getPercentage(rowValue, totalCounts[category])}
+
                         <div class="my-1">
                             <Button
                                 variant="ghost"
@@ -41,11 +55,11 @@
                                 <div class="demo-filter w-full">
                                     <div class="grid grid-cols-3 gap-1 mb-1">
                                         <span class="text-left">{rowKey}</span>
-                                        <span class="text-right">{demoData[category] && demoData[category][rowKey] || 0}%</span>
-                                        <span class="text-right">{demoData[category] && demoData[category][rowKey] || 0}</span>
+                                        <span class="text-right">{percentage}%</span>
+                                        <span class="text-right">{rowValue}</span>
                                     </div>
                                     <iai-silver-progress-bar
-                                        value={20}
+                                        value={percentage}
                                     ></iai-silver-progress-bar>
                                 </div>
                             </Button>
