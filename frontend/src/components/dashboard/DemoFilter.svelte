@@ -20,7 +20,7 @@
     let expanded = $state(true);
 </script>
 
-<div transition:fade>
+<section transition:fade>
     <Panel level={2} border={true} bg={true}>
         <Button
             variant="ghost"
@@ -29,7 +29,7 @@
             handleClick={() => expanded = !expanded}
         >
             <div class="flex justify-between w-full">
-                <span>{category}</span>
+                <h3>{category}</h3>
 
                 <div class={clsx([
                     "transition-transform",
@@ -72,4 +72,4 @@
             {/if}
         {/each}
     </Panel>
-</div>
+</section>
