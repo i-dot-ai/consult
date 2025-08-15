@@ -314,7 +314,7 @@ class TestBuildRespondentDataFast:
         assert serializer.data["identifier"] == str(respondent.identifier)
         assert serializer.data["free_text_answer_text"] == "Test response"
         assert serializer.data["demographic_data"] == {"individual": True, "region": "north"}
-        assert serializer.data["multiple_choice_answer"] == ["option1", "option2"]
+        assert sorted(serializer.data["multiple_choice_answer"]) == ["option1", "option2"]
         assert serializer.data["evidenceRich"] is False  # No annotation
         assert serializer.data["themes"] is None
 

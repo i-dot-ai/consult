@@ -315,7 +315,7 @@ export default class IaiResponseDashboard extends IaiLitBase {
 
                 // Now fetch responses
                 const responsesResponse = await fetch(
-                    `/api/consultations/${this.consultationId}/questions/${this.questionId}/filtered-responses/?` + this.buildQuery(),
+                    `/api/consultations/${this.consultationId}/questions/${this.questionId}/responses/?` + this.buildQuery(),
                     { signal }
                 );
 
