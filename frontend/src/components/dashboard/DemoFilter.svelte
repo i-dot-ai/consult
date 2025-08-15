@@ -33,7 +33,7 @@
             {@const percentage = getPercentage(rowValue, totalCounts[category])}
 
             {#if expanded}
-                <div transition:slide class="my-1 p-1">
+                <div transition:slide class="my-1">
                     <Button
                         variant="ghost"
                         size="xs"
@@ -42,13 +42,14 @@
                         highlighted={demoFilters[category]?.includes(rowKey)}
                         highlightVariant="light"
                     >
-                        <div class="demo-filter w-full">
+                        <div class="demo-filter w-full relative pb-3">
                             <div class="grid grid-cols-3 gap-1 mb-1">
                                 <span class="text-left">{rowKey}</span>
                                 <span class="text-right">{percentage}%</span>
                                 <span class="text-right">{rowValue}</span>
                             </div>
                             <iai-silver-progress-bar
+                                class="absolute bottom-1 left-0 w-full"
                                 value={percentage}
                             ></iai-silver-progress-bar>
                         </div>
