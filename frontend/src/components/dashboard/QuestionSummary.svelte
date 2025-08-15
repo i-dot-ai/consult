@@ -3,6 +3,7 @@
     import { toTitleCase, getPercentage } from "../../global/utils.ts";
 
     import Star from "../svg/material/Star.svelte";
+    import Lan from "../svg/material/Lan.svelte";
     import Panel from "./Panel.svelte";
     import Button from "../inputs/Button.svelte";
     import TitleRow from "./TitleRow.svelte";
@@ -103,7 +104,7 @@
                     title="Theme analysis"
                     subtitle="Analysis of key themes mentioned in responses to this question."
                 >
-                    <Star slot="icon" />
+                    <Lan slot="icon" />
 
                     <iai-csv-download
                         slot="aside"

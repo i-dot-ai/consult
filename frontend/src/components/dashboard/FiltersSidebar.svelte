@@ -2,7 +2,7 @@
     import TitleRow from "./TitleRow.svelte";
     import Panel from "./Panel.svelte";
     import DemoFilter from "./DemoFilter.svelte";
-    import Star from "../svg/material/Star.svelte";
+    import FilterAlt from "../svg/material/FilterAlt.svelte";
 
     let {
         showEvidenceRich = true,
@@ -25,7 +25,7 @@
 <aside>
     <Panel>
         <TitleRow level={2} title="Filters" subtitle="">
-            <Star slot="icon" />
+            <FilterAlt slot="icon" />
         </TitleRow>
 
         {#each Object.keys(demoOptions) as category (category)}
