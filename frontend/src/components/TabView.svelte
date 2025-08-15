@@ -1,7 +1,7 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import { slide, fade } from "svelte/transition";
+    import { slide, fade, fly } from "svelte/transition";
 
     import { createTabs, melt } from '@melt-ui/svelte';
 
@@ -12,9 +12,20 @@
     export let value: string = "";
     export let onValueChange: (val: {curr: string, next: string}) => {};
 
+    let prevTabIndex: number = 0;
+    let direction: "forward" | "backward" = "forward";
     const writableValue = writable(value);
+
     $: {
+        // Determine navigation direction for fly animation
+        const activeTabIndex = tabs.findIndex(tab => tab.id === value);
+        direction = activeTabIndex < prevTabIndex ? "backward" : "forward";
+
+        // Update writableValue for the parent
         writableValue.set(value);
+
+        // Keep track of prev tab index for fly animation
+        prevTabIndex = tabs.findIndex(tab => tab.id === value);
     }
 
     const {
@@ -72,5 +83,10 @@
     </div>
 
     <!-- Handle which tab to render in parent -->
-    <slot />
+    {#key value}
+        <!-- positive x: from right | negative x: from left -->
+        <div in:fly={{ x: direction === "forward" ? 300 : -300 }}>
+            <slot />
+        </div>
+    {/key}
 </div>
