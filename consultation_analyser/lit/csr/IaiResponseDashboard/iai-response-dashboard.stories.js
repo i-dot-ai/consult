@@ -7,10 +7,10 @@ const mockFetch = () =>
     ok: true,
     status: 200,
     json: () => Promise.resolve({
-      "results": [],
+      "all_respondents": [],
       "has_more_pages": false,
       "respondents_total": 0,
-      "count": 0
+      "filtered_total": 0
     })
   })
 

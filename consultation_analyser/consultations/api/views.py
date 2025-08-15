@@ -226,6 +226,22 @@ class BespokeResultsSetPagination(PageNumberPagination):
     page_size = 100
     page_size_query_param = "page_size"
     max_page_size = 1000
+    total = 0
+
+    def paginate_queryset(self, queryset, request, view=None):
+        self.total = queryset.count()
+        pqs = super().paginate_queryset(queryset, request, view)
+        return pqs
+
+    def get_paginated_response(self, data):
+        return Response({
+            "respondents_total": self.total,
+            'filtered_total': self.page.paginator.count,
+            'has_more_pages': bool(self.get_next_link()),
+            # 'previous': self.get_previous_link(),
+            'all_respondents': data,
+        })
+
 
     def get_paginated_response(self, data):
         original = super().get_paginated_response(data).data
