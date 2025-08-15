@@ -1,4 +1,4 @@
-from collections import defaultdict, OrderedDict
+from collections import OrderedDict, defaultdict
 
 from django.contrib.auth import login
 from django.core.exceptions import PermissionDenied
