@@ -280,44 +280,40 @@
     ]}
 >
     {#if activeTab === TabNames.QuestionSummary}
-        <div in:fly={{ x: -300 }}>
-            <QuestionSummary
-                themes={Object.keys($themeAggrData?.theme_aggregations || []).map(themeId => {
-                    return ({
-                        id: themeId,
-                        count: $themeAggrData?.theme_aggregations[themeId],
-                        highlighted: themeFilters.includes(themeId),
-                        handleClick: () => updateThemeFilters(themeId),
-                        ...($themeInfoData?.themes?.find(themeInfo => themeInfo.id === themeId)),
-                    })
-                })}
-                totalAnswers={$answersData?.respondents_total}
-                filteredTotal={$answersData?.filtered_total}
-                demoData={$demoAggrData?.demographic_aggregations}
-                demoOptions={$demoOptionsData?.demographic_options}
-                demoFilters={demoFilters}
-                setDemoFilters={setDemoFilters}
-                multiChoice={formatMultiChoiceData($multiChoiceAggrData)}
-                consultationSlug={$consultationData?.slug}
-                sortAscending={sortAscending}
-            />
-        </div>
+        <QuestionSummary
+            themes={Object.keys($themeAggrData?.theme_aggregations || []).map(themeId => {
+                return ({
+                    id: themeId,
+                    count: $themeAggrData?.theme_aggregations[themeId],
+                    highlighted: themeFilters.includes(themeId),
+                    handleClick: () => updateThemeFilters(themeId),
+                    ...($themeInfoData?.themes?.find(themeInfo => themeInfo.id === themeId)),
+                })
+            })}
+            totalAnswers={$answersData?.respondents_total}
+            filteredTotal={$answersData?.filtered_total}
+            demoData={$demoAggrData?.demographic_aggregations}
+            demoOptions={$demoOptionsData?.demographic_options}
+            demoFilters={demoFilters}
+            setDemoFilters={setDemoFilters}
+            multiChoice={formatMultiChoiceData($multiChoiceAggrData)}
+            consultationSlug={$consultationData?.slug}
+            sortAscending={sortAscending}
+        />
     {:else if activeTab === TabNames.ResponseAnalysis}
-        <div in:fly={{ x: 300 }}>
-            <ResponseAnalysis
-                answers={answers}
-                isAnswersLoading={$isAnswersLoading}
-                answersError={$answersError}
-                filteredTotal={$answersData?.filtered_total}
-                hasMorePages={hasMorePages}
-                handleLoadClick={() => loadData({
-                    searchValue: searchValue,
-                    searchMode: searchMode,
-                    themeFilters: themeFilters,
-                    evidenceRich: evidenceRich,
-                    demoFilters: demoFilters,
-                })}
-            />
-        </div>
+        <ResponseAnalysis
+            answers={answers}
+            isAnswersLoading={$isAnswersLoading}
+            answersError={$answersError}
+            filteredTotal={$answersData?.filtered_total}
+            hasMorePages={hasMorePages}
+            handleLoadClick={() => loadData({
+                searchValue: searchValue,
+                searchMode: searchMode,
+                themeFilters: themeFilters,
+                evidenceRich: evidenceRich,
+                demoFilters: demoFilters,
+            })}
+        />
     {/if}
 </TabView>
