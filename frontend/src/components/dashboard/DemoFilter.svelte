@@ -1,9 +1,12 @@
 <script lang="ts">
+    import clsx from "clsx";
     import { slide, fade } from "svelte/transition";
 
     import { getPercentage } from "../../global/utils.ts";
     import Panel from "./Panel.svelte";
     import Button from "../inputs/Button.svelte";
+    import MaterialIcon from "../MaterialIcon.svelte";
+    import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
 
     let {
         category = "",
@@ -25,7 +28,18 @@
             fullWidth={true}
             handleClick={() => expanded = !expanded}
         >
-            {category}
+            <div class="flex justify-between w-full">
+                <span>{category}</span>
+
+                <div class={clsx([
+                    "transition-transform",
+                    !expanded && "-rotate-90",
+                ])}>
+                    <MaterialIcon size="1.3rem">
+                        <KeyboardArrowDown />
+                    </MaterialIcon>
+                </div>
+            </div>
         </Button>
 
         {#each demoOptions[category] as rowKey}
