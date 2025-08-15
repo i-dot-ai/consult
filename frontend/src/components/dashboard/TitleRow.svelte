@@ -6,7 +6,7 @@
 
     export let title: string = "";
     export let subtitle: string = "";
-    export let level: string = 2;
+    export let level: number = 2;
 </script>
 
 <div class="flex gap-2">
@@ -16,6 +16,7 @@
                 "bg-primary",
                 "p-2",
                 "rounded-md",
+                !subtitle && "mt-1.5",
             ])}>
                 <MaterialIcon size="1.3rem" color="white">
                     <slot name="icon" />
