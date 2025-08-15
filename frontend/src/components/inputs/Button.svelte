@@ -32,17 +32,19 @@
         variant === "primary" && "hover:text-primary",
         variant === "primary" && "hover:border-primary",
 
-        disabled && "disabled:bg-gray-200",
-        disabled && "disabled:text-gray-400",
-        disabled && "disabled:cursor-not-allowed",
-        disabled && "disabled:hover:bg-gray-200",
-        disabled && "disabled:hover:border-gray-300",
-        disabled && "disabled:hover:text-gray-400",
+        disabled && clsx([
+            "disabled:bg-gray-200",
+            "disabled:text-gray-400",
+            "disabled:cursor-not-allowed",
+            "disabled:hover:bg-gray-200",
+            "disabled:hover:border-gray-300",
+            "disabled:hover:text-gray-400",
+        ]),
 
         highlighted && !disabled && clsx([
-            highlightVariant === "dark" && "bg-neutral-800 text-white",
-            highlightVariant === "light" && "bg-pink-100 text-neutral-800 border border-pink-200",
-        ])
+            highlightVariant === "dark" && "bg-neutral-800 text-white hover:bg-neutral-700",
+            highlightVariant === "light" && "bg-pink-100 text-neutral-800 border border-pink-200 hover:bg-pink-200",
+        ]),
     ])}
     disabled={disabled}
     on:click={handleClick}

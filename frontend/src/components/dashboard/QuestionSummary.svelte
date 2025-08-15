@@ -121,7 +121,6 @@
                     ></iai-csv-download>
                 </TitleRow>
 
-                <p>{filteredTotal}</p>
                 <ThemesTable
                     themes={[...themes].sort((a,b) => sortAscending
                         ? a.count - b.count
