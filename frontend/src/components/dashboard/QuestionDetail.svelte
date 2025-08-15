@@ -193,6 +193,30 @@
         return formattedMultiChoice;
     }
 
+    const setDemoFilters = (newFilterKey: string, newFilterValue: string) => {
+        if (!newFilterKey || !newFilterValue) {
+            // Clear filters if nothing is passed
+            demoFilters = {};
+            return;
+        }
+
+        const existingFilters = demoFilters[newFilterKey] || [];
+
+        let resultFilters;
+        if (existingFilters.includes(newFilterValue)) {
+            // Remove filter if already added
+            resultFilters = existingFilters.filter(filter => newFilterValue !== filter);
+        } else {
+            // Avoid duplicates when adding filters
+            resultFilters = [...new Set([...existingFilters, newFilterValue])];
+        }
+
+        demoFilters = {
+            ...demoFilters,
+            [newFilterKey]: resultFilters,
+        }
+    }
+
     const updateThemeFilters = (newFilter: string) => {
         if (!newFilter) {
             // Clear filters if newFilter is falsy
@@ -268,6 +292,9 @@
                 totalAnswers: $answersData?.respondents_total,
                 filteredTotal: $answersData?.filtered_total,
                 demoData: $demoAggrData?.demographic_aggregations,
+                demoOptions: $demoOptionsData?.demographic_options,
+                demoFilters: demoFilters,
+                setDemoFilters: setDemoFilters,
                 multiChoice: formatMultiChoiceData($multiChoiceAggrData),
                 consultationSlug: $consultationData?.slug,
                 sortAscending: sortAscending,
