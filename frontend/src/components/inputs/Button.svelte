@@ -48,6 +48,10 @@
     ])}
     disabled={disabled}
     on:click={handleClick}
+    aria-pressed={highlighted !== undefined
+        ? highlighted ? "true" : "false"
+        : undefined
+    }
 >
     <slot />
 </button>

@@ -45,6 +45,9 @@
                         ]),
                     ])}
                     on:click={theme.handleClick}
+                    tabindex="0"
+                    role="button"
+                    aria-pressed={theme.highlighted ? "true" : "false"}
                 >
                     <td class="pr-4">
                         <div transition:slide class="p-2">
