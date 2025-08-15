@@ -67,6 +67,20 @@
                                 value={percentage}
                             ></iai-silver-progress-bar>
                         </div>
+
+                        <!-- TODO: Alt Design, TBC
+                            <div class="demo-filter w-full relative pb-2">
+                                <p class="text-left">{rowKey}</p>
+                                <div class="flex justify-between">
+                                    <span class="text-right">{percentage}%</span>
+                                    <iai-silver-progress-bar
+                                        class="absolute bottom-1 left-0 w-1/2 left-[25%] bottom-3"
+                                        value={percentage}
+                                    ></iai-silver-progress-bar>
+                                    <span class="text-right">{rowValue}</span>
+                                </div>
+                            </div>
+                        -->
                     </Button>
                 </div>
             {/if}
