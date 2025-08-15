@@ -380,15 +380,15 @@ class TestFilteredResponsesAPIView:
         # Parse the response
         data = orjson.loads(response.content)
 
-        assert "results" in data
-        # assert "respondents_total" in data
-        assert "count" in data
-        assert len(data["results"]) == 1
-        # assert data["respondents_total"] == 1
-        assert data["count"] == 1
+        assert "all_respondents" in data
+        assert "respondents_total" in data
+        assert "filtered_total" in data
+        assert len(data["all_respondents"]) == 1
+        assert data["respondents_total"] == 1
+        assert data["filtered_total"] == 1
 
         # Verify respondent data structure
-        respondent_data = data["results"][0]
+        respondent_data = data["all_respondents"][0]
         assert respondent_data["identifier"] == str(respondent.identifier)
         assert respondent_data["free_text_answer_text"] == "Test response"
         assert respondent_data["demographic_data"] == {"individual": True}
@@ -416,9 +416,9 @@ class TestFilteredResponsesAPIView:
 
         data = orjson.loads(response.content)
 
-        assert len(data["results"]) == 2
-        assert data["next"] is not None
-        assert data["count"] == 5
+        assert len(data["all_respondents"]) == 2
+        assert data["has_more_pages"]
+        assert data["filtered_total"] == 5
 
     def test_get_filtered_responses_with_demographic_filters(
         self, client, consultation_user, free_text_question
@@ -453,9 +453,9 @@ class TestFilteredResponsesAPIView:
 
         data = orjson.loads(response.content)
 
-        # assert data["respondents_total"] == 2  # Total respondents
-        assert data["count"] == 1  # Filtered to individuals only
-        assert len(data["results"]) == 1
+        assert data["respondents_total"] == 2  # Total respondents
+        assert data["filtered_total"] == 1  # Filtered to individuals only
+        assert len(data["all_respondents"]) == 1
         assert data["results"][0]["identifier"] == str(respondent1.identifier)
 
     def test_get_filtered_responses_with_theme_filters(
@@ -506,9 +506,9 @@ class TestFilteredResponsesAPIView:
         data = orjson.loads(response.content)
 
         # assert data["respondents_total"] == 3  # Total respondents
-        assert data["count"] == 1  # Only response1 has both themes
-        assert len(data["results"]) == 1
-        assert data["results"][0]["identifier"] == str(respondent1.identifier)
+        assert data["filtered_total"] == 1  # Only response1 has both themes
+        assert len(data["all_respondents"]) == 1
+        assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
     def test_get_filtered_responses_invalid_parameters(
         self, client, consultation_user, free_text_question
