@@ -456,7 +456,7 @@ class TestFilteredResponsesAPIView:
         assert data["respondents_total"] == 2  # Total respondents
         assert data["filtered_total"] == 1  # Filtered to individuals only
         assert len(data["all_respondents"]) == 1
-        assert data["results"][0]["identifier"] == str(respondent1.identifier)
+        assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
     def test_get_filtered_responses_with_theme_filters(
         self, client, consultation_user, free_text_question, theme, theme2

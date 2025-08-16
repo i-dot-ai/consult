@@ -1,4 +1,4 @@
-from collections import OrderedDict, defaultdict
+from collections import defaultdict
 
 from django.contrib.auth import login
 from django.core.exceptions import PermissionDenied
@@ -225,22 +225,21 @@ class StandardResultsSetPagination(PageNumberPagination):
     page_size = 100
     page_size_query_param = "page_size"
     max_page_size = 1000
-    total = 0
-
-    def paginate_queryset(self, queryset, request, view=None):
-        self.total = queryset.count()
-        pqs = super().paginate_queryset(queryset, request, view)
-        return pqs
 
     def get_paginated_response(self, data):
-        return Response({
-            "respondents_total": self.total,
-            'filtered_total': self.page.paginator.count,
-            'has_more_pages': bool(self.get_next_link()),
-            # 'previous': self.get_previous_link(),
-            'all_respondents': data,
-        })
+        original = super().get_paginated_response(data).data
 
+        question_id = self.request._request.path.split("/")[5]
+        respondents_total = models.Response.objects.filter(question_id=question_id).count()
+
+        return Response(
+            {
+                "respondents_total": respondents_total,
+                "filtered_total": original["count"],
+                "has_more_pages": bool(original["next"]),
+                "all_respondents": original["results"],
+            }
+        )
 
 
 class ResponseViewSet(ReadOnlyModelViewSet):
