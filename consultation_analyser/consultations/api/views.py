@@ -221,7 +221,8 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         return Response(serializer.data)
 
 
-class StandardResultsSetPagination(PageNumberPagination):
+class BespokeResultsSetPagination(PageNumberPagination):
+    # TODO: remove this, and adapt .js to mach standard PageNumberPagination
     page_size = 100
     page_size_query_param = "page_size"
     max_page_size = 1000
@@ -245,7 +246,7 @@ class StandardResultsSetPagination(PageNumberPagination):
 class ResponseViewSet(ReadOnlyModelViewSet):
     serializer_class = ResponseSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
-    pagination_class = StandardResultsSetPagination
+    pagination_class = BespokeResultsSetPagination
 
     def get_queryset(self):
         question_uuid = self.kwargs["question_pk"]
