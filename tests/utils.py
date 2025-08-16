@@ -11,8 +11,23 @@ def get_sorted_theme_string(themes: list[models.Theme]) -> str:
 def build_url(url_pattern: str, question: Question) -> str:
     if url_pattern.startswith("consultations-"):
         return reverse(url_pattern, kwargs={"pk": question.consultation.pk})
+
     if url_pattern.startswith("question-"):
         return reverse(
-            url_pattern, kwargs={"consultation_pk": question.consultation.pk, "pk": question.pk}
+            url_pattern,
+            kwargs={
+                "consultation_pk": question.consultation.pk,
+                "pk": question.pk,
+            },
         )
+
+    if url_pattern.startswith("response-"):
+        return reverse(
+            url_pattern,
+            kwargs={
+                "consultation_pk": question.consultation.pk,
+                "question_pk": question.pk,
+            },
+        )
+
     raise ValueError("unrecognised url_pattern")

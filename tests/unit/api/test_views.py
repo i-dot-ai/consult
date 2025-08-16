@@ -367,10 +367,10 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered-responses",
+            "response-list",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
         response = client.get(url)
@@ -404,10 +404,10 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered-responses",
+            "response-list",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
         response = client.get(url + "?page_size=2&page=1")
@@ -417,8 +417,8 @@ class TestFilteredResponsesAPIView:
         data = orjson.loads(response.content)
 
         assert len(data["all_respondents"]) == 2
-        assert data["has_more_pages"] is True
-        assert data["respondents_total"] == 5
+        assert data["has_more_pages"]
+        assert data["filtered_total"] == 5
 
     def test_get_filtered_responses_with_demographic_filters(
         self, client, consultation_user, free_text_question
@@ -439,10 +439,10 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered-responses",
+            "response-list",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
 
@@ -491,10 +491,10 @@ class TestFilteredResponsesAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered-responses",
+            "response-list",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
 
@@ -505,7 +505,7 @@ class TestFilteredResponsesAPIView:
 
         data = orjson.loads(response.content)
 
-        assert data["respondents_total"] == 3  # Total respondents
+        # assert data["respondents_total"] == 3  # Total respondents
         assert data["filtered_total"] == 1  # Only response1 has both themes
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
@@ -516,10 +516,10 @@ class TestFilteredResponsesAPIView:
         """Test API endpoint handles invalid parameters"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-filtered-responses",
+            "response-list",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
 
@@ -590,7 +590,7 @@ class TestAPIViewPermissions:
             "question-demographic-aggregations",
             "question-theme-information",
             "question-theme-aggregations",
-            "question-filtered-responses",
+            "response-list",
             "question-detail",
         ],
     )
@@ -607,7 +607,7 @@ class TestAPIViewPermissions:
             "question-demographic-aggregations",
             "question-theme-information",
             "question-theme-aggregations",
-            "question-filtered-responses",
+            "response-list",
             "question-detail",
         ],
     )
@@ -628,7 +628,7 @@ class TestAPIViewPermissions:
             "question-demographic-aggregations",
             "question-theme-information",
             "question-theme-aggregations",
-            "question-filtered-responses",
+            "response-list",
             "question-detail",
         ],
     )

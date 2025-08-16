@@ -228,7 +228,7 @@ export default class QuestionDetailPage extends IaiLitBase {
             try {
                 const [filteredResponsesData, themeAggregationsData, themeInformationData, demographicOptionsData, demographicAggregationsData, multiChoiceData] = await Promise.all([
                     // Get paginated response data
-                    this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/filtered-responses/?` + this.buildQuery(), { signal }).then(r => r.json()),
+                    this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/responses/?` + this.buildQuery(), { signal }).then(r => r.json()),
                     // Get theme aggregations (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                     // Get theme information (only on first page)

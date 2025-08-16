@@ -1,3 +1,5 @@
+from uuid import uuid4
+
 from consultation_analyser.consultations.api.serializers import (
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
@@ -67,7 +69,7 @@ class TestDemographicAggregationsSerializer:
 class TestThemeSerializer:
     def test_valid_data(self):
         """Test theme serializer with valid data"""
-        data = {"id": 1, "name": "Test Theme", "description": "A test theme description"}
+        data = {"id": uuid4(), "name": "Test Theme", "description": "A test theme description"}
         serializer = ThemeSerializer(data=data)
         assert serializer.is_valid()
         assert serializer.validated_data == data
@@ -93,8 +95,8 @@ class TestThemeInformationSerializer:
         """Test theme information serializer with valid data"""
         data = {
             "themes": [
-                {"id": 1, "name": "Theme A", "description": "Description A"},
-                {"id": 2, "name": "Theme B", "description": "Description B"},
+                {"id": uuid4(), "name": "Theme A", "description": "Description A"},
+                {"id": uuid4(), "name": "Theme B", "description": "Description B"},
             ]
         }
         serializer = ThemeInformationSerializer(data=data)
