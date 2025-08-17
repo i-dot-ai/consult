@@ -47,7 +47,7 @@
             <article class="flex gap-2 items-start">
                 <div class="mt-0.5">
                     {#if !skeleton}
-                        <MaterialIcon size="1.3rem" color="teal">
+                        <MaterialIcon size="1.3rem" color="fill-teal-500">
                             <Help />
                         </MaterialIcon>
                     {/if}
@@ -98,8 +98,12 @@
                                 favStore.toggleFav(question.id);
                             }}
                         >
-                            <MaterialIcon size="1.3rem" color="gray">
-                                <Star fill={$favStore.includes(question.id)} />
+                            {@const favourited = $favStore.includes(question.id)}
+                            <MaterialIcon
+                                size="1.3rem"
+                                color={favourited ? "fill-yellow-500" : "fill-gray-500"
+                            }>
+                                <Star fill={favourited} />
                             </MaterialIcon>
                         </Button>
                     {/if}
