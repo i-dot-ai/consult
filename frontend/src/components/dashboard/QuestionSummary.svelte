@@ -131,7 +131,7 @@
                 </TitleRow>
 
                 {#if themeFilters.length > 0}
-                    <div transition:slide class="my-4">
+                    <section transition:slide class="my-4">
                         <div class="mb-2">
                             <Title level={3} text={`Selected Themes (${themeFilters.length})`} />
                         </div>
@@ -155,7 +155,7 @@
                                 </Tag>
                             {/each}
                         </div>
-                    </div>
+                    </section>
                 {/if}
 
                 <ThemesTable
