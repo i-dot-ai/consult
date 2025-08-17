@@ -314,6 +314,10 @@
                 evidenceRich: evidenceRich,
                 demoFilters: demoFilters,
             })}
+            demoData={$demoAggrData?.demographic_aggregations}
+            demoOptions={$demoOptionsData?.demographic_options}
+            demoFilters={demoFilters}
+            setDemoFilters={setDemoFilters}
         />
     {/if}
 </TabView>
