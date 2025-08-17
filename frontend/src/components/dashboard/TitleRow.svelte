@@ -18,7 +18,7 @@
                 "rounded-md",
                 !subtitle && "mt-1.5",
             ])}>
-                <MaterialIcon size="1.3rem" color="white">
+                <MaterialIcon size="1.3rem" color="fill-white">
                     <slot name="icon" />
                 </MaterialIcon>
             </div>

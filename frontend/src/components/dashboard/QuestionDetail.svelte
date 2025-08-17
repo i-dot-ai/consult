@@ -295,7 +295,9 @@
             demoData={$demoAggrData?.demographic_aggregations}
             demoOptions={$demoOptionsData?.demographic_options}
             demoFilters={demoFilters}
+            themeFilters={themeFilters}
             setDemoFilters={setDemoFilters}
+            updateThemeFilters={updateThemeFilters}
             multiChoice={formatMultiChoiceData($multiChoiceAggrData)}
             consultationSlug={$consultationData?.slug}
             sortAscending={sortAscending}

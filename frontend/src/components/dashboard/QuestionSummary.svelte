@@ -4,12 +4,15 @@
 
     import Star from "../svg/material/Star.svelte";
     import Lan from "../svg/material/Lan.svelte";
+    import Close from "../svg/material/Close.svelte";
     import Panel from "./Panel.svelte";
+    import MaterialIcon from "../MaterialIcon.svelte";
     import Button from "../inputs/Button.svelte";
     import TitleRow from "./TitleRow.svelte";
     import ThemesTable from "./ThemesTable.svelte";
     import ProgressCards from "../ProgressCards.svelte";
     import FiltersSidebar from "./FiltersSidebar.svelte";
+    import Tag from "../Tag.svelte";
 
     const MAX_CARDS_ALLOWED = 10;
 
@@ -24,6 +27,7 @@
         consultationSlug?: string;
         sortAscending?: boolean;
         setDemoFilters?: () => {};
+        updateThemeFilters?: () => {};
         demoFiltersApplied?: () => boolean;
         themeFiltersApplied?: () => boolean;
     }
@@ -38,7 +42,8 @@
         multiChoice = {},
         consultationSlug = "",
         sortAscending = true,
-        setDemoFilters,
+        setDemoFilters = () => {},
+        updateThemeFilters = () => {},
         demoFiltersApplied = () => false,
         themeFiltersApplied = () => false,
     }: Props = $props();
@@ -121,6 +126,22 @@
                         }
                     ></iai-csv-download>
                 </TitleRow>
+
+                {#if themeFilters.length > 0}
+                    <div class="flex gap-1 flex-wrap">
+                        {#each themeFilters as themeFilterId}
+                            <Tag>
+                                <span>{themeFilterId}</span>
+
+                                <Button variant="ghost" size="xs" handleClick={() => updateThemeFilters(themeFilterId)}>
+                                    <MaterialIcon color="fill-white" hoverColor="fill-primary">
+                                        <Close />
+                                    </MaterialIcon>
+                                </Button>
+                            </Tag>
+                        {/each}
+                    </div>
+                {/if}
 
                 <ThemesTable
                     themes={[...themes].sort((a,b) => sortAscending

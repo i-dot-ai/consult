@@ -1,6 +1,9 @@
 <script>
-    export let color = "black";
+    export let color = "fill-white";
+    export let hoverColor = null;
     export let size = "1rem";
+
+    let hovering = false;
 </script>
 
 <svg
@@ -8,7 +11,10 @@
     width={size}
     height={size}
     viewBox="0 -960 960 960"
-    fill={color}
+    class={hoverColor && hovering ? hoverColor : color}
+    on:mouseenter={() => hovering = true}
+    on:mouseleave={() => hovering = false}
+    role="img"
 >
     <slot />
 </svg>
