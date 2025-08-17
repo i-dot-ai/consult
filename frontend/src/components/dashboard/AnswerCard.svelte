@@ -10,6 +10,7 @@
     export let evidenceRich: boolean = false;
     export let multiAnswers: string[] = [];
     export let themes: string[] = [];
+    export let themeFilters: string[] = [];
     export let handleThemeTagClick = () => {};
 </script>
 
@@ -92,6 +93,8 @@
                 {#each themes as theme}
                     <Button
                         handleClick={() => handleThemeTagClick(theme.id)}
+                        highlighted={themeFilters.includes(theme.id)}
+                        highlightVariant="light"
                         size="xs"
                     >
                         {theme.name}
