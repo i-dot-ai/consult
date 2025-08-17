@@ -245,7 +245,7 @@
     <Button handleClick={() => {
         window.location.href = getConsultationDetailUrl(consultationId);
     }}>
-        <MaterialIcon class="shrink-0">
+        <MaterialIcon color="fill-neutral-600" class="shrink-0">
             <Star />
         </MaterialIcon>
         <span class="text-sm">Back to all questions</span>

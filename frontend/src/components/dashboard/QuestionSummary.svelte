@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { slide } from "svelte/transition";
+
     import type { FormattedTheme } from "../../globa/types.ts";
     import { toTitleCase, getPercentage } from "../../global/utils.ts";
 
@@ -7,6 +9,7 @@
     import Close from "../svg/material/Close.svelte";
     import Panel from "./Panel.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
+    import Title from "../Title.svelte";
     import Button from "../inputs/Button.svelte";
     import TitleRow from "./TitleRow.svelte";
     import ThemesTable from "./ThemesTable.svelte";
@@ -128,18 +131,30 @@
                 </TitleRow>
 
                 {#if themeFilters.length > 0}
-                    <div class="flex gap-1 flex-wrap">
-                        {#each themeFilters as themeFilterId}
-                            <Tag>
-                                <span>{themeFilterId}</span>
+                    <div transition:slide class="my-4">
+                        <div class="mb-2">
+                            <Title level={3} text={`Selected Themes (${themeFilters.length})`} />
+                        </div>
 
-                                <Button variant="ghost" size="xs" handleClick={() => updateThemeFilters(themeFilterId)}>
-                                    <MaterialIcon color="fill-white" hoverColor="fill-primary">
-                                        <Close />
-                                    </MaterialIcon>
-                                </Button>
-                            </Tag>
-                        {/each}
+                        <div class="flex gap-1 flex-wrap">
+                            {#each themeFilters as themeFilterId}
+                                <Tag>
+                                    <span>
+                                        {themes.find(theme => theme.id === themeFilterId)?.name || themeFilterId}
+                                    </span>
+
+                                    <Button
+                                        variant="ghost"
+                                        size="xs"
+                                        handleClick={() => updateThemeFilters(themeFilterId)}
+                                    >
+                                        <MaterialIcon color="fill-white" hoverColor="fill-primary">
+                                            <Close />
+                                        </MaterialIcon>
+                                    </Button>
+                                </Tag>
+                            {/each}
+                        </div>
                     </div>
                 {/if}
 
