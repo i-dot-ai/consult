@@ -15,7 +15,7 @@
 </script>
 
 <div class="w-full overflow-auto">
-    <table class="w-full text-md my-8">
+    <table class="w-full text-md my-4">
         <thead class="text-sm">
             <tr>
                 {#each ["Theme", "Mentions", "%&nbsp;Percentage" /*, "Actions"*/] as header}

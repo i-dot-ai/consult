@@ -40,7 +40,7 @@
     ])}>
         <MaterialIcon
             size={"1.5rem"}
-            color={"white"}
+            color={"fill-white"}
         >
             <Menu />
         </MaterialIcon>
