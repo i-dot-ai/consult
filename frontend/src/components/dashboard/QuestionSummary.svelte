@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { slide } from "svelte/transition";
+    import { slide, fly } from "svelte/transition";
 
     import type { FormattedTheme } from "../../globa/types.ts";
     import { toTitleCase, getPercentage } from "../../global/utils.ts";
@@ -137,22 +137,24 @@
                         </div>
 
                         <div class="flex gap-1 flex-wrap">
-                            {#each themeFilters as themeFilterId}
-                                <Tag>
-                                    <span>
-                                        {themes.find(theme => theme.id === themeFilterId)?.name || themeFilterId}
-                                    </span>
+                            {#each themeFilters as themeFilterId (themeFilterId)}
+                                <div transition:fly={{ x: 300 }}>
+                                    <Tag>
+                                        <span>
+                                            {themes.find(theme => theme.id === themeFilterId)?.name || themeFilterId}
+                                        </span>
 
-                                    <Button
-                                        variant="ghost"
-                                        size="xs"
-                                        handleClick={() => updateThemeFilters(themeFilterId)}
-                                    >
-                                        <MaterialIcon color="fill-white" hoverColor="fill-primary">
-                                            <Close />
-                                        </MaterialIcon>
-                                    </Button>
-                                </Tag>
+                                        <Button
+                                            variant="ghost"
+                                            size="xs"
+                                            handleClick={() => updateThemeFilters(themeFilterId)}
+                                        >
+                                            <MaterialIcon color="fill-white" hoverColor="fill-primary">
+                                                <Close />
+                                            </MaterialIcon>
+                                        </Button>
+                                    </Tag>
+                                </div>
                             {/each}
                         </div>
                     </section>

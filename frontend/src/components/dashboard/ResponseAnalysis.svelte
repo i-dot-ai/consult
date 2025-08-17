@@ -1,7 +1,7 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import { slide } from "svelte/transition";
+    import { slide, fly } from "svelte/transition";
     import Button from "../inputs/Button.svelte";
     import TitleRow from "./TitleRow.svelte";
     import Panel from "./Panel.svelte";
@@ -51,9 +51,9 @@
                     {:else}
                         <div>
                             <ul>
-                                {#each answers as answer (answer.identifier)}
+                                {#each answers as answer, i (answer.identifier)}
                                     <li>
-                                        <div transition:slide>
+                                        <div transition:fly={{ x: 300, delay: 100 * i }}>
                                             <AnswerCard
                                                 demoData={Object.values(answer.demographic_data)}
                                                 multiAnswers={answer.multiple_choice_answer}
