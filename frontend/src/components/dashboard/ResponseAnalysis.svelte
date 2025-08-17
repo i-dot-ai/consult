@@ -20,7 +20,9 @@
     export let demoOptions: Object = {};
     export let demoData: Object = {};
     export let demoFilters: Object = {};
+    export let themeFilters: Array = [];
     export let setDemoFilters: Function = () => {};
+    export let updateThemeFilters: Function = () => {};
 </script>
 
 <div class="grid grid-cols-4 gap-4">
@@ -43,40 +45,46 @@
                     <TitleRow level={3} title={`Responses (${filteredTotal})`} subtitle="All responses to this question" />
 
                     {#if isAnswersLoading && answers.length === 0}
-                        <p>Loading answers...</p>
+                        <p transition:slide>Loading answers...</p>
                     {:else if answersError}
-                        <p>Answers Error: {answersError}</p>
+                        <p transition:slide>Answers Error: {answersError}</p>
                     {:else}
-                        <ul>
-                            {#each answers as answer}
-                                <li>
-                                    <AnswerCard
-                                        demoData={Object.values(answer.demographic_data)}
-                                        multiAnswers={answer.multiple_choice_answer}
-                                        evidenceRich={answer.evidenceRich}
-                                        id={answer.identifier}
-                                        text={answer.free_text_answer_text}
-                                        themes={answer.themes}
-                                    />
-                                </li>
-                            {/each}
-                        </ul>
+                        <div>
+                            <ul>
+                                {#each answers as answer (answer.identifier)}
+                                    <li>
+                                        <div transition:slide>
+                                            <AnswerCard
+                                                demoData={Object.values(answer.demographic_data)}
+                                                multiAnswers={answer.multiple_choice_answer}
+                                                evidenceRich={answer.evidenceRich}
+                                                id={answer.identifier}
+                                                text={answer.free_text_answer_text}
+                                                themes={answer.themes}
+                                                themeFilters={themeFilters}
+                                                handleThemeTagClick={(themeId) => updateThemeFilters(themeId)}
+                                            />
+                                        </div>
+                                    </li>
+                                {/each}
+                            </ul>
 
-                        <div class="m-auto w-max">
-                            {#if hasMorePages}
-                                <div transition:slide class={clsx([
-                                    "transition-all",
-                                    "duration-300",
-                                    "overflow-hidden",
-                                    isAnswersLoading ? "w-[14ch]" : "w-[10ch]",
-                                ])}>
-                                    <Button fullWidth={true} variant="outline" handleClick={handleLoadClick}>
-                                        <span class="w-full whitespace-nowrap text-center">
-                                            {isAnswersLoading ? "Loading answers" : "Load more"}
-                                        </span>
-                                    </Button>
-                                </div>
-                            {/if}
+                            <div class="m-auto w-max">
+                                {#if hasMorePages}
+                                    <div class={clsx([
+                                        "transition-all",
+                                        "duration-300",
+                                        "overflow-hidden",
+                                        isAnswersLoading ? "w-[14ch]" : "w-[10ch]",
+                                    ])}>
+                                        <Button fullWidth={true} variant="outline" handleClick={handleLoadClick}>
+                                            <span class="w-full whitespace-nowrap text-center">
+                                                {isAnswersLoading ? "Loading answers" : "Load more"}
+                                            </span>
+                                        </Button>
+                                    </div>
+                                {/if}
+                            </div>
                         </div>
                     {/if}
                 </section>
