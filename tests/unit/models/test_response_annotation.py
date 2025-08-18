@@ -19,7 +19,7 @@ class TestResponseAnnotation:
         annotation = ResponseAnnotationFactory()
         assert isinstance(annotation, ResponseAnnotation)
         assert annotation.sentiment in ["AGREEMENT", "DISAGREEMENT", "UNCLEAR"]
-        assert annotation.evidence_rich in ["YES", "NO"]
+        assert isinstance(annotation.evidence_rich, bool)
         assert not annotation.human_reviewed
         assert annotation.reviewed_by is None
         assert annotation.reviewed_at is None
@@ -75,7 +75,7 @@ class TestResponseAnnotation:
         response = ResponseFactory()
 
         # Test each valid choice
-        for evidence in ["YES", "NO"]:
+        for evidence in [True, False]:
             annotation = ResponseAnnotation.objects.create(
                 response=response, evidence_rich=evidence
             )

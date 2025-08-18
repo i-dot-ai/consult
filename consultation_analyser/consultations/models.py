@@ -328,18 +328,12 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
         DISAGREEMENT = "DISAGREEMENT", "Disagreement"
         UNCLEAR = "UNCLEAR", "Unclear"
 
-    class EvidenceRich(models.TextChoices):
-        YES = "YES", "Yes"
-        NO = "NO", "No"
-
     response = models.OneToOneField(Response, on_delete=models.CASCADE, related_name="annotation")
 
     # AI-generated outputs (only for free text responses)
     themes = models.ManyToManyField(Theme, through="ResponseAnnotationTheme", blank=True)
     sentiment = models.CharField(max_length=12, choices=Sentiment.choices, null=True, blank=True)
-    evidence_rich = models.CharField(
-        max_length=3, choices=EvidenceRich.choices, null=True, blank=True
-    )
+    evidence_rich = models.BooleanField(default=False, null=True, blank=True)
 
     # Human review tracking
     human_reviewed = models.BooleanField(default=False)

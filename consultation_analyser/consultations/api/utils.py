@@ -4,7 +4,6 @@ from django.db.models import Count, Q, QuerySet
 from pgvector.django import CosineDistance
 
 from ...embeddings import embed_text
-from .. import models
 
 
 class FilterParams(TypedDict, total=False):
@@ -59,8 +58,8 @@ def build_response_filter_query(filters: FilterParams) -> Q:
     if filters.get("sentiment_list"):
         query &= Q(annotation__sentiment__in=filters["sentiment_list"])
 
-    if filters.get("evidence_rich"):
-        query &= Q(annotation__evidence_rich=models.ResponseAnnotation.EvidenceRich.YES)
+    if evidence_rich := filters.get("evidence_rich"):
+        query &= Q(annotation__evidence_rich=evidence_rich)
 
     # Handle demographic filters
     if demo_filters := filters.get("demo_filters"):

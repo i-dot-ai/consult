@@ -145,7 +145,7 @@ class ResponseAnnotationFactory(DjangoModelFactory):
 
     response = factory.SubFactory(ResponseFactory)
     sentiment = fuzzy.FuzzyChoice(models.ResponseAnnotation.Sentiment.values)
-    evidence_rich = fuzzy.FuzzyChoice(models.ResponseAnnotation.EvidenceRich.values)
+    evidence_rich = fuzzy.FuzzyChoice([True, False])
     human_reviewed = False
     reviewed_by = None
     reviewed_at = None
