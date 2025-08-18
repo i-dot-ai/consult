@@ -240,21 +240,6 @@ class BespokeResultsSetPagination(PageNumberPagination):
             }
         )
 
-    def get_paginated_response(self, data):
-        original = super().get_paginated_response(data).data
-
-        question_id = self.request._request.path.split("/")[5]
-        respondents_total = models.Response.objects.filter(question_id=question_id).count()
-
-        return Response(
-            {
-                "respondents_total": respondents_total,
-                "filtered_total": original["count"],
-                "has_more_pages": bool(original["next"]),
-                "all_respondents": original["results"],
-            }
-        )
-
 
 class ResponseViewSet(ReadOnlyModelViewSet):
     serializer_class = ResponseSerializer
