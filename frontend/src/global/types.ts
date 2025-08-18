@@ -24,3 +24,17 @@ export interface FormattedTheme {
     highlighted?: boolean;
     handleClick?: Function;
 }
+
+export interface SelectOption {
+    value: string;
+    label: string;
+}
+
+export enum SearchModeValues {
+    SEMANTIC = "semantic",
+    KEYWORD = "keyword",
+}
+export enum SearchModeLabels {
+    SEMANTIC = "Semantic",
+    KEYWORD = "Keyword",
+}
