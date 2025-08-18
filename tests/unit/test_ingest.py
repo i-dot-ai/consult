@@ -286,8 +286,14 @@ class TestRespondentsImport:
         respondents = Respondent.objects.filter(consultation=consultation)
         assert respondents.count() == 4
 
-        assert respondents.first().demographics["location"] == "Wales"
-        assert respondents.last().demographics["location"] == "Scotland"
+        assert (
+            respondents.first().demographics.filter(field_name="location").first().field_value
+            == "Wales"
+        )
+        assert (
+            respondents.last().demographics.filter(field_name="location").first().field_value
+            == "Scotland"
+        )
 
     @patch("consultation_analyser.support_console.ingest.boto3")
     @patch("consultation_analyser.support_console.ingest.settings")

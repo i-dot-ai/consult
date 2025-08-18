@@ -10,6 +10,7 @@ from consultation_analyser.consultations.api.utils import (
     parse_filters_from_serializer,
 )
 from consultation_analyser.consultations.models import (
+    DemographicOption,
     MultiChoiceAnswer,
 )
 from consultation_analyser.factories import (
@@ -26,6 +27,42 @@ from consultation_analyser.factories import (
 @pytest.fixture()
 def consultation():
     return ConsultationFactory()
+
+
+@pytest.fixture()
+def individual_demographic_option(consultation):
+    do = DemographicOption.objects.create(
+        consultation=consultation, field_name="individual", field_value="true"
+    )
+    yield do
+    do.delete()
+
+
+@pytest.fixture()
+def no_disability_demographic_option(consultation):
+    do = DemographicOption.objects.create(
+        consultation=consultation, field_name="has_disability", field_value="false"
+    )
+    yield do
+    do.delete()
+
+
+@pytest.fixture()
+def north_demographic_option(consultation):
+    do = DemographicOption.objects.create(
+        consultation=consultation, field_name="region", field_value="north"
+    )
+    yield do
+    do.delete()
+
+
+@pytest.fixture()
+def twenty_five_demographic_option(consultation):
+    do = DemographicOption.objects.create(
+        consultation=consultation, field_name="age_group", field_value="25-34"
+    )
+    yield do
+    do.delete()
 
 
 @pytest.fixture()
@@ -138,25 +175,33 @@ class TestBuildResponseFilterQuery:
 
         assert "annotation__evidence_rich" in str(query)
 
-    def test_demographic_filters_boolean(self, question):
+    def test_demographic_filters_boolean(
+        self, question, individual_demographic_option, no_disability_demographic_option
+    ):
         """Test demographic filters with boolean values"""
         filters = {"demo_filters": {"individual": "true", "has_disability": "false"}}
         query = build_response_filter_query(filters)
 
-        query_str = str(query)
-        assert "respondent__demographics__individual" in query_str
-        assert "respondent__demographics__has_disability" in query_str
+        assert query.connector == "AND"
+        assert query.children == [
+            ("respondent__demographics", individual_demographic_option),
+            ("respondent__demographics", no_disability_demographic_option),
+        ]
 
-    def test_demographic_filters_string(self, question):
+    def test_demographic_filters_string(
+        self, question, north_demographic_option, twenty_five_demographic_option
+    ):
         """Test demographic filters with string values"""
         filters = {"demo_filters": {"region": "north", "age_group": "25-34"}}
         query = build_response_filter_query(filters)
 
-        query_str = str(query)
-        assert "respondent__demographics__region" in query_str
-        assert "respondent__demographics__age_group" in query_str
+        assert query.connector == "AND"
+        assert query.children == [
+            ("respondent__demographics", north_demographic_option),
+            ("respondent__demographics", twenty_five_demographic_option),
+        ]
 
-    def test_combined_filters(self, question):
+    def test_combined_filters(self, question, individual_demographic_option):
         """Test multiple filters combined with AND logic"""
         filters = {
             "sentiment_list": ["AGREEMENT"],
@@ -166,10 +211,12 @@ class TestBuildResponseFilterQuery:
         query = build_response_filter_query(filters)
 
         # Should have AND logic (default for Q objects)
-        query_str = str(query)
-        assert "annotation__sentiment__in" in query_str
-        assert "annotation__evidence_rich" in query_str
-        assert "respondent__demographics__individual" in query_str
+        assert query.connector == "AND"
+        assert query.children == [
+            ("annotation__sentiment__in", ["AGREEMENT"]),
+            ("annotation__evidence_rich", ResponseAnnotation.EvidenceRich.YES),
+            ("respondent__demographics", individual_demographic_option),
+        ]
 
 
 @pytest.mark.django_db
@@ -189,17 +236,17 @@ class TestGetFilteredResponsesWithThemes:
         """Test filtering by demographics"""
         # Create respondents with different demographics
         respondent1 = RespondentFactory(
-            consultation=question.consultation, demographics={"individual": True}
+            consultation=question.consultation, demographics={"individual": "True"}
         )
         respondent2 = RespondentFactory(
-            consultation=question.consultation, demographics={"individual": False}
+            consultation=question.consultation, demographics={"individual": "False"}
         )
 
         response1 = ResponseFactory(question=question, respondent=respondent1)
         ResponseFactory(question=question, respondent=respondent2)
 
         # Filter for individual=true
-        filters = {"demo_filters": {"individual": "true"}}
+        filters = {"demo_filters": {"individual": "True"}}
         queryset = get_filtered_responses_with_themes(question.response_set.all(), filters)
 
         assert queryset.count() == 1
@@ -312,7 +359,7 @@ class TestBuildRespondentDataFast:
 
         assert serializer.data["identifier"] == str(respondent.identifier)
         assert serializer.data["free_text_answer_text"] == "Test response"
-        assert serializer.data["demographic_data"] == {"individual": True, "region": "north"}
+        assert serializer.data["demographic_data"] == {"individual": "True", "region": "north"}
         assert sorted(serializer.data["multiple_choice_answer"]) == ["option1", "option2"]
         assert serializer.data["evidenceRich"] is None  # No annotation
         assert serializer.data["themes"] is None

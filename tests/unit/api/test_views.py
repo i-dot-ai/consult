@@ -6,7 +6,6 @@ from django.contrib.auth.models import Group
 from django.urls import reverse
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
-from consultation_analyser.consultations.models import DemographicOption
 from consultation_analyser.factories import (
     QuestionFactory,
     RespondentFactory,
@@ -48,9 +47,6 @@ class TestDemographicOptionsAPIView:
             consultation=free_text_question.consultation,
             demographics={"individual": True, "region": "north", "age": 45},
         )
-
-        # Rebuild demographic options from respondent data
-        DemographicOption.rebuild_for_consultation(free_text_question.consultation)
 
         client.force_login(consultation_user)
         url = reverse(
@@ -158,11 +154,11 @@ class TestDemographicAggregationsAPIView:
         # Create respondents with different demographics
         respondent1 = RespondentFactory(
             consultation=free_text_question.consultation,
-            demographics={"individual": True, "region": "north"},
+            demographics={"individual": "True", "region": "north"},
         )
         respondent2 = RespondentFactory(
             consultation=free_text_question.consultation,
-            demographics={"individual": False, "region": "south"},
+            demographics={"individual": "False", "region": "south"},
         )
 
         ResponseFactory(question=free_text_question, respondent=respondent1)
@@ -178,7 +174,7 @@ class TestDemographicAggregationsAPIView:
         )
 
         # Filter by individual=true
-        response = client.get(url + "?demoFilters=individual:true")
+        response = client.get(url + "?demoFilters=individual:True")
 
         assert response.status_code == 200
         data = response.json()
@@ -359,7 +355,7 @@ class TestFilteredResponsesAPIView:
         """Test API endpoint returns filtered responses correctly"""
         # Create test data
         respondent = RespondentFactory(
-            consultation=free_text_question.consultation, demographics={"individual": True}
+            consultation=free_text_question.consultation, demographics={"individual": "True"}
         )
         ResponseFactory(
             question=free_text_question, respondent=respondent, free_text="Test response"
@@ -391,7 +387,7 @@ class TestFilteredResponsesAPIView:
         respondent_data = data["all_respondents"][0]
         assert respondent_data["identifier"] == str(respondent.identifier)
         assert respondent_data["free_text_answer_text"] == "Test response"
-        assert respondent_data["demographic_data"] == {"individual": True}
+        assert respondent_data["demographic_data"] == {"individual": "True"}
 
     def test_get_filtered_responses_with_pagination(
         self, client, consultation_user, free_text_question
@@ -427,11 +423,11 @@ class TestFilteredResponsesAPIView:
         # Create respondents with different demographics
         respondent1 = RespondentFactory(
             consultation=free_text_question.consultation,
-            demographics={"individual": True, "region": "north"},
+            demographics={"individual": "True", "region": "north"},
         )
         respondent2 = RespondentFactory(
             consultation=free_text_question.consultation,
-            demographics={"individual": False, "region": "south"},
+            demographics={"individual": "False", "region": "south"},
         )
 
         ResponseFactory(question=free_text_question, respondent=respondent1)
@@ -447,7 +443,7 @@ class TestFilteredResponsesAPIView:
         )
 
         # Filter by individual=true
-        response = client.get(url + "?demoFilters=individual:true")
+        response = client.get(url + "?demoFilters=individual:True")
 
         assert response.status_code == 200
 

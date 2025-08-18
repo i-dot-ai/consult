@@ -5,6 +5,7 @@ import pytest
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
     Consultation,
+    DemographicOption,
     Question,
     Respondent,
     Response,
@@ -35,12 +36,19 @@ def test_delete_consultation_cascading():
     )
 
     # Create respondents
-    respondent1 = Respondent.objects.create(
-        consultation=consultation, themefinder_id=1, demographics={"age": "25-34"}
+    o1, _ = DemographicOption.objects.get_or_create(
+        consultation=consultation, field_name="age", field_value="25-34"
     )
-    respondent2 = Respondent.objects.create(
-        consultation=consultation, themefinder_id=2, demographics={"age": "35-44"}
+    respondent1 = Respondent.objects.create(consultation=consultation, themefinder_id=1)
+    respondent1.demographics.add(o1)
+    respondent1.save()
+
+    o2, _ = DemographicOption.objects.get_or_create(
+        consultation=consultation, field_name="age", field_value="35-44"
     )
+    respondent2 = Respondent.objects.create(consultation=consultation, themefinder_id=2)
+    respondent2.demographics.add(o2)
+    respondent2.save()
 
     # Create responses
     response1 = Response.objects.create(

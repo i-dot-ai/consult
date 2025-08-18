@@ -150,15 +150,13 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         response_filter = build_response_filter_query(filters)
         respondents_data = models.Respondent.objects.filter(
             response__in=question.response_set.filter(response_filter)
-        ).values_list("demographics", flat=True)
+        )
 
         # Aggregate in memory (much faster than nested loops)
         aggregations = defaultdict(lambda: defaultdict(int))  # type:ignore
-        for demographics in respondents_data:
-            if demographics:
-                for field_name, field_value in demographics.items():
-                    value_str = str(field_value)
-                    aggregations[field_name][value_str] += 1
+        for respondent in respondents_data:
+            for demographic in respondent.demographics.all():
+                aggregations[demographic.field_name][demographic.field_value] += 1
 
         result = {field: dict(counts) for field, counts in aggregations.items()}
 

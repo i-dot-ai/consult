@@ -8,7 +8,7 @@ from faker import Faker
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations import models
-from consultation_analyser.consultations.models import MultiChoiceAnswer
+from consultation_analyser.consultations.models import DemographicOption, MultiChoiceAnswer
 from consultation_analyser.embeddings import embed_text
 
 fake = Faker()
@@ -78,12 +78,26 @@ class RespondentFactory(DjangoModelFactory):
 
     consultation = factory.SubFactory(ConsultationFactory)
     themefinder_id = factory.LazyAttribute(lambda o: random.randint(2, 500000000))
-    demographics = factory.LazyAttribute(
-        lambda o: {
-            "Nation": random.choice(["England", "Wales", "Northern Ireland", "Scotland"]),
-            "Age": random.choice(["Under 18", "18-35", "36-50", "51-65", "66+"]),
-        }
-    )
+
+    @factory.post_generation
+    def demographics(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        if not extracted:
+            extracted = {
+                "Nation": random.choice(["England", "Wales", "Northern Ireland", "Scotland"]),
+                "Age": random.choice(["Under 18", "18-35", "36-50", "51-65", "66+"]),
+            }
+
+        for k, v in extracted.items():
+            o, _ = DemographicOption.objects.get_or_create(
+                consultation=self.consultation,
+                field_name=k,
+                field_value=v,
+            )
+            self.demographics.add(o)
+        self.save()
 
 
 class ResponseFactory(DjangoModelFactory):
