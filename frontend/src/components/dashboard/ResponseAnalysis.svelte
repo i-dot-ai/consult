@@ -6,9 +6,12 @@
     import TitleRow from "./TitleRow.svelte";
     import Panel from "./Panel.svelte";
     import AnswerCard from "./AnswerCard.svelte";
-    import Star from "../svg/material/Star.svelte";
     import Finance from "../svg/material/Finance.svelte";
     import FiltersSidebar from "./FiltersSidebar.svelte";
+    import Select from "../inputs/Select.svelte";
+    import { SearchModeLabels, SearchModeValues } from "../../global/types";
+    import Title from "../Title.svelte";
+    import TextInput from "../inputs/TextInput.svelte";
 
     export let isAnswersLoading: boolean = true;
     export let answersError: string = "";
@@ -17,10 +20,15 @@
     export let filteredTotal: number = 0;
     export let handleLoadClick = () => {};
 
+    export let searchValue: string = "";
+    export let setSearchValue = (value: string) => {};
+    export let searchMode: SearchModeValues = SearchModeValues.KEYWORD;
+    export let setSearchMode = (next: string) => {};
+
     export let demoOptions: Object = {};
     export let demoData: Object = {};
     export let demoFilters: Object = {};
-    export let themeFilters: Array = [];
+    export let themeFilters: string[] = [];
     export let setDemoFilters: Function = () => {};
     export let updateThemeFilters: Function = () => {};
 </script>
@@ -40,6 +48,39 @@
                 >
                     <Finance slot="icon" />
                 </TitleRow>
+
+                <div class="my-8">
+                    <div class="mb-2">
+                        <Title level={3} text="Search responses:" />
+                    </div>
+
+                    <div class="flex justify-between items-center gap-4">
+                        <div class="grow">
+                            <TextInput
+                                variant="search"
+                                id="search-input"
+                                label="Search"
+                                placeholder="Search..."
+                                hideLabel={true}
+                                value={searchValue}
+                                setValue={(value: string) => setSearchValue(value.trim())}
+                            />
+                        </div>
+
+                        <Select
+                            label="Search Mode"
+                            hideLabel={true}
+                            value={searchMode}
+                            options={[
+                                { value: SearchModeValues.KEYWORD, label: SearchModeLabels.KEYWORD },
+                                { value: SearchModeValues.SEMANTIC, label: SearchModeLabels.SEMANTIC },
+                            ]}
+                            handleChange={(nextValue: string) => {
+                                setSearchMode(nextValue);
+                            }}
+                        />
+                    </div>
+                </div>
 
                 <section>
                     <TitleRow level={3} title={`Responses (${filteredTotal})`} subtitle="All responses to this question" />
@@ -77,7 +118,7 @@
                                         "overflow-hidden",
                                         isAnswersLoading ? "w-[14ch]" : "w-[10ch]",
                                     ])}>
-                                        <Button fullWidth={true} variant="outline" handleClick={handleLoadClick}>
+                                        <Button fullWidth={true} handleClick={handleLoadClick}>
                                             <span class="w-full whitespace-nowrap text-center">
                                                 {isAnswersLoading ? "Loading answers" : "Load more"}
                                             </span>

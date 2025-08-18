@@ -17,6 +17,7 @@
 
     import { getConsultationDetailUrl } from "../../global/routes.ts";
     import { createFetchStore } from "../../global/stores.ts";
+    import { SearchModeValues } from "../../global/types.ts";
 
     export let consultationId: string = "";
     export let questionId: string = "";
@@ -36,7 +37,7 @@
     let activeTab = TabNames.QuestionSummary;
 
     let searchValue: string = "";
-    let searchMode: "keyword" | "semantic" = "keyword";
+    let searchMode: SearchModeValues = SearchModeValues.KEYWORD;
     let themeFilters: string[] = [];
     let demoFilters: {[key: string]: string[]} = {};
     let evidenceRich: boolean = false;
@@ -159,8 +160,9 @@
             if (filterArr && filterArr.length > 0) {
                 // TODO: Replace below with the commented out code after the back end is implemented.
                 // Only processing the first filter for now to avoid breaking back end responses.
-                // params.append("demoFilters", `${key}:${filterArr.join(",")}`);
-                params.append("demoFilters", `${key}:${filterArr[0]}`);
+                filterArr.forEach((filterArrItem: string) => {
+                    params.append("demoFilters", `${key}:${filterArrItem}`);
+                })
             }
         }
 
@@ -316,6 +318,10 @@
                 evidenceRich: evidenceRich,
                 demoFilters: demoFilters,
             })}
+            searchValue={searchValue}
+            setSearchValue={(value) => searchValue = value}
+            searchMode={searchMode}
+            setSearchMode={newSearchMode => searchMode = newSearchMode}
             demoData={$demoAggrData?.demographic_aggregations}
             demoOptions={$demoOptionsData?.demographic_options}
             demoFilters={demoFilters}
