@@ -10,11 +10,9 @@ from consultation_analyser.consultations.api.utils import (
     parse_filters_from_serializer,
 )
 from consultation_analyser.consultations.models import (
-    DemographicOption,
     MultiChoiceAnswer,
 )
 from consultation_analyser.factories import (
-    ConsultationFactory,
     QuestionFactory,
     RespondentFactory,
     ResponseAnnotationFactory,
@@ -22,47 +20,6 @@ from consultation_analyser.factories import (
     ResponseFactory,
     ThemeFactory,
 )
-
-
-@pytest.fixture()
-def consultation():
-    return ConsultationFactory()
-
-
-@pytest.fixture()
-def individual_demographic_option(consultation):
-    do = DemographicOption.objects.create(
-        consultation=consultation, field_name="individual", field_value=True
-    )
-    yield do
-    do.delete()
-
-
-@pytest.fixture()
-def no_disability_demographic_option(consultation):
-    do = DemographicOption.objects.create(
-        consultation=consultation, field_name="has_disability", field_value=False
-    )
-    yield do
-    do.delete()
-
-
-@pytest.fixture()
-def north_demographic_option(consultation):
-    do = DemographicOption.objects.create(
-        consultation=consultation, field_name="region", field_value="north"
-    )
-    yield do
-    do.delete()
-
-
-@pytest.fixture()
-def twenty_five_demographic_option(consultation):
-    do = DemographicOption.objects.create(
-        consultation=consultation, field_name="age_group", field_value="25-34"
-    )
-    yield do
-    do.delete()
 
 
 @pytest.fixture()

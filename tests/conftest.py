@@ -7,7 +7,7 @@ from moto import mock_aws
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
-from consultation_analyser.consultations.models import Response
+from consultation_analyser.consultations.models import DemographicOption, Response
 from consultation_analyser.factories import (
     ConsultationFactory,
     MultiChoiceAnswerFactory,
@@ -299,3 +299,39 @@ def consultation_user(consultation):
     user.save()
     consultation.users.add(user)
     return user
+
+
+@pytest.fixture()
+def individual_demographic_option(consultation):
+    do = DemographicOption.objects.create(
+        consultation=consultation, field_name="individual", field_value=True
+    )
+    yield do
+    do.delete()
+
+
+@pytest.fixture()
+def no_disability_demographic_option(consultation):
+    do = DemographicOption.objects.create(
+        consultation=consultation, field_name="has_disability", field_value=False
+    )
+    yield do
+    do.delete()
+
+
+@pytest.fixture()
+def north_demographic_option(consultation):
+    do = DemographicOption.objects.create(
+        consultation=consultation, field_name="region", field_value="north"
+    )
+    yield do
+    do.delete()
+
+
+@pytest.fixture()
+def twenty_five_demographic_option(consultation):
+    do = DemographicOption.objects.create(
+        consultation=consultation, field_name="age_group", field_value="25-34"
+    )
+    yield do
+    do.delete()
