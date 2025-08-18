@@ -33,7 +33,7 @@ API_URL_NAMES = [
     "question-demographic-aggregations",
     "question-theme-information",
     "question-theme-aggregations",
-    "question-filtered-responses",
+    "response-list",
     "question-detail",
 ]
 

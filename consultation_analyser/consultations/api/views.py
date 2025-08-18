@@ -1,15 +1,14 @@
 from collections import defaultdict
 
-import orjson
 from django.contrib.auth import login
 from django.core.exceptions import PermissionDenied
-from django.core.paginator import Paginator
 from django.db.models import Count
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ReadOnlyModelViewSet
@@ -26,12 +25,12 @@ from .serializers import (
     FilterSerializer,
     MultiChoiceAnswerCount,
     QuestionSerializer,
+    ResponseSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
     UserSerializer,
 )
 from .utils import (
-    build_respondent_data_fast,
     build_response_filter_query,
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
@@ -148,9 +147,9 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         filters = parse_filters_from_serializer(filter_serializer.validated_data)
 
         # Single query that joins responses -> respondents and gets demographics directly
-        response_filter = build_response_filter_query(filters, question)
+        response_filter = build_response_filter_query(filters)
         respondents_data = models.Respondent.objects.filter(
-            response__in=models.Response.objects.filter(response_filter)
+            response__in=question.response_set.filter(response_filter)
         ).values_list("demographics", flat=True)
 
         # Aggregate in memory (much faster than nested loops)
@@ -202,7 +201,9 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         if question.has_free_text:
             # Use the same filtering logic as FilteredResponsesAPIView
             # This ensures theme filtering uses AND logic consistently
-            filtered_responses = get_filtered_responses_with_themes(question, filters)
+            filtered_responses = get_filtered_responses_with_themes(
+                question.response_set.all(), filters
+            )
 
             # Get theme counts from the filtered responses
             theme_counts = (
@@ -219,42 +220,48 @@ class QuestionViewSet(ReadOnlyModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"], url_path="filtered-responses")
-    def filtered_responses(self, request, pk=None, consultation_pk=None):
-        """Get paginated filtered responses with orjson optimization"""
-        question = self.get_object()
+
+class BespokeResultsSetPagination(PageNumberPagination):
+    # TODO: remove this, and adapt .js to mach standard PageNumberPagination
+    page_size = 100
+    page_size_query_param = "page_size"
+    max_page_size = 1000
+
+    def get_paginated_response(self, data):
+        original = super().get_paginated_response(data).data
+
+        question_id = self.request._request.path.split("/")[5]
+        respondents_total = models.Response.objects.filter(question_id=question_id).count()
+
+        return Response(
+            {
+                "respondents_total": respondents_total,
+                "filtered_total": original["count"],
+                "has_more_pages": bool(original["next"]),
+                "all_respondents": original["results"],
+            }
+        )
+
+
+class ResponseViewSet(ReadOnlyModelViewSet):
+    serializer_class = ResponseSerializer
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    pagination_class = BespokeResultsSetPagination
+
+    def get_queryset(self):
+        question_uuid = self.kwargs["question_pk"]
+        queryset = models.Response.objects.filter(question_id=question_uuid)
 
         # Validate query parameters
-        filter_serializer = FilterSerializer(data=request.query_params)
+        filter_serializer = FilterSerializer(data=self.request.query_params)
         filter_serializer.is_valid(raise_exception=True)
 
         # Parse filters
         filters = parse_filters_from_serializer(filter_serializer.validated_data)
 
-        # Get pagination parameters from validated data
-        page_num = filter_serializer.validated_data.get("page", 1)
-        page_size = filter_serializer.validated_data.get("page_size", 50)
-
         # Get filtered responses with themes (optimized with prefetching)
-        filtered_qs = get_filtered_responses_with_themes(question, filters)
-
-        # Use Django's lazy pagination
-        paginator = Paginator(filtered_qs, page_size, allow_empty_first_page=True)
-        page_obj = paginator.page(page_num)
-
-        # Get total respondents count for this question (single query)
-        all_respondents_count = models.Response.objects.filter(question=question).count()
-
-        # Use orjson for faster serialization of large response sets
-        data = {
-            "all_respondents": [build_respondent_data_fast(r) for r in page_obj.object_list],
-            "has_more_pages": page_obj.has_next(),
-            "respondents_total": all_respondents_count,
-            "filtered_total": paginator.count,
-        }
-
-        # Return orjson-optimized HttpResponse
-        return HttpResponse(orjson.dumps(data), content_type="application/json")
+        filtered_qs = get_filtered_responses_with_themes(queryset, filters)
+        return filtered_qs
 
 
 @api_view(["POST"])

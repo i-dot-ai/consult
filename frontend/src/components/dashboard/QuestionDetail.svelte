@@ -121,7 +121,7 @@
 
         // Append next page of answers to existing answers
         try {
-            await loadAnswers(`/api/consultations/${consultationId}/questions/${questionId}/filtered-responses/${queryString}`);
+            await loadAnswers(`/api/consultations/${consultationId}/questions/${questionId}/responses/${queryString}`);
 
             if ($answersData.all_respondents) {
                 const newAnswers = $answersData.all_respondents;

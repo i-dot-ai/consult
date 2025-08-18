@@ -101,14 +101,13 @@ class ResponseWithMultipleChoiceFactory(ResponseFactory):
     free_text = ""
 
     @factory.post_generation
-    def create_multiple_choice_responses(self, create, extracted, **kwargs):
+    def themes(self, create, extracted, **kwargs):
         if not create:
             return
 
-        options = list(self.question.multiple_choice_options)
         chosen_options = random.sample(
-            options,
-            k=random.randint(1, len(options)),
+            self.question.multiple_choice_options,
+            k=random.randint(1, len(self.question.multiple_choice_options)),
         )
         self.chosen_options.set(chosen_options)
         self.save()
@@ -119,13 +118,12 @@ class ResponseWithBothFactory(ResponseFactory):
     free_text = factory.LazyAttribute(lambda o: fake.paragraph())
 
     @factory.post_generation
-    def create_multiple_choice_responses(self, create, extracted, **kwargs):
+    def themes(self, create, extracted, **kwargs):
         if not create:
             return
-        options = list(self.question.multiple_choice_options)
         chosen_options = random.sample(
-            options,
-            k=random.randint(1, len(options)),
+            self.question.multiple_choice_options,
+            k=random.randint(1, len(self.question.multiple_choice_options)),
         )
         self.chosen_options.set(chosen_options)
         self.save()
