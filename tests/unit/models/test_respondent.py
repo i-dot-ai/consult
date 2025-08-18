@@ -12,7 +12,6 @@ class TestRespondent:
         assert isinstance(respondent, models.Respondent)
         assert respondent.consultation
         assert respondent.themefinder_id
-        assert isinstance(respondent.demographics, dict)
 
     def test_respondent_identifier_property(self):
         """Test the identifier property"""
@@ -26,9 +25,9 @@ class TestRespondent:
 
     def test_respondent_demographics(self):
         """Test demographics field"""
-        demographics = {"age": 35, "gender": "female", "location": "London"}
+        demographics = {"age": "35", "gender": "female", "location": "London"}
         respondent = factories.RespondentFactory(demographics=demographics)
-        assert respondent.demographics == demographics
+        assert {x.field_name: x.field_value for x in respondent.demographics.all()} == demographics
 
     def test_respondent_consultation_relationship(self):
         """Test foreign key relationship with Consultation"""

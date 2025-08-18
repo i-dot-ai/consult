@@ -672,26 +672,27 @@ def import_respondents(consultation: Consultation, consultation_code: str):
         themefinder_id = respondent_data.get("themefinder_id")
         demographics = respondent_data.get("demographic_data", {})
 
-        respondents_to_save.append(
-            Respondent(
-                consultation=consultation,
-                themefinder_id=themefinder_id,
-                demographics=demographics,
-            )
+        respondent = Respondent(
+            consultation=consultation,
+            themefinder_id=themefinder_id,
         )
+
+        for field_name, field_value in demographics.items():
+            demographic_option, _ = DemographicOption.objects.get_or_create(
+                consultation=consultation,
+                field_name=field_name,
+                field_value=field_value,
+            )
+            respondent.demographics.add(demographic_option)
+
+        respondents_to_save.append(respondent)
+
         if len(respondents_to_save) >= DEFAULT_BATCH_SIZE:
             Respondent.objects.bulk_create(respondents_to_save)
             respondents_to_save = []
             logger.info("saved %s Respondents", i + 1)
 
     Respondent.objects.bulk_create(respondents_to_save)
-
-    # Build demographic options from respondent data
-    demographic_options_count = DemographicOption.rebuild_for_consultation(consultation)
-    logger.info(
-        "Created {demographic_options_count} demographic options",
-        demographic_options_count=demographic_options_count,
-    )
 
 
 def create_consultation(

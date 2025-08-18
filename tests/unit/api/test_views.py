@@ -6,7 +6,6 @@ from django.contrib.auth.models import Group
 from django.urls import reverse
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
-from consultation_analyser.consultations.models import DemographicOption
 from consultation_analyser.factories import (
     QuestionFactory,
     RespondentFactory,
@@ -49,9 +48,6 @@ class TestDemographicOptionsAPIView:
             demographics={"individual": True, "region": "north", "age": 45},
         )
 
-        # Rebuild demographic options from respondent data
-        DemographicOption.rebuild_for_consultation(free_text_question.consultation)
-
         client.force_login(consultation_user)
         url = reverse(
             "consultations-demographic-options",
@@ -64,7 +60,7 @@ class TestDemographicOptionsAPIView:
         assert "demographic_options" in data
         options = data["demographic_options"]
 
-        assert set(options["individual"]) == {"False", "True"}
+        assert set(options["individual"]) == {False, True}
         assert set(options["region"]) == {"north", "south"}
         assert set(options["age"]) == {"25", "35", "45"}
 

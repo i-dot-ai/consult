@@ -147,7 +147,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     themefinder_id = models.IntegerField(null=True, blank=True)
-    demographics = models.JSONField(default=dict)
+    demographics = models.ManyToManyField("DemographicOption", blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         indexes = [
@@ -204,7 +204,7 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
 
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     field_name = models.CharField(max_length=128)
-    field_value = models.CharField(max_length=256)
+    field_value = models.JSONField()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -219,34 +219,6 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def __str__(self):
         return f"{self.field_name}={self.field_value}"
-
-    @classmethod
-    def rebuild_for_consultation(cls, consultation: "Consultation") -> int:
-        """Rebuild demographic options for a consultation from respondent data"""
-        # Clear existing options
-        cls.objects.filter(consultation=consultation).delete()
-
-        # Collect unique demographic field/value pairs
-        demographic_options_to_create = set()
-
-        respondents = Respondent.objects.filter(consultation=consultation)
-        for respondent in respondents:
-            if respondent.demographics:
-                for field_name, field_value in respondent.demographics.items():
-                    demographic_options_to_create.add((field_name, str(field_value)))
-
-        # Bulk create new options
-        options_to_save = [
-            cls(
-                consultation=consultation,
-                field_name=field_name[:128],
-                field_value=field_value[:256],
-            )
-            for field_name, field_value in demographic_options_to_create
-        ]
-
-        cls.objects.bulk_create(options_to_save)
-        return len(options_to_save)
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
