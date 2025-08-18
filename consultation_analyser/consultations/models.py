@@ -204,7 +204,7 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
 
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     field_name = models.CharField(max_length=128)
-    field_value = models.CharField(max_length=256)
+    field_value = models.JSONField()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [

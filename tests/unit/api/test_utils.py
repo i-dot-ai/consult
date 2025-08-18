@@ -32,7 +32,7 @@ def consultation():
 @pytest.fixture()
 def individual_demographic_option(consultation):
     do = DemographicOption.objects.create(
-        consultation=consultation, field_name="individual", field_value="true"
+        consultation=consultation, field_name="individual", field_value=True
     )
     yield do
     do.delete()
@@ -41,7 +41,7 @@ def individual_demographic_option(consultation):
 @pytest.fixture()
 def no_disability_demographic_option(consultation):
     do = DemographicOption.objects.create(
-        consultation=consultation, field_name="has_disability", field_value="false"
+        consultation=consultation, field_name="has_disability", field_value=False
     )
     yield do
     do.delete()
@@ -236,17 +236,17 @@ class TestGetFilteredResponsesWithThemes:
         """Test filtering by demographics"""
         # Create respondents with different demographics
         respondent1 = RespondentFactory(
-            consultation=question.consultation, demographics={"individual": "True"}
+            consultation=question.consultation, demographics={"individual": True}
         )
         respondent2 = RespondentFactory(
-            consultation=question.consultation, demographics={"individual": "False"}
+            consultation=question.consultation, demographics={"individual": False}
         )
 
         response1 = ResponseFactory(question=question, respondent=respondent1)
         ResponseFactory(question=question, respondent=respondent2)
 
         # Filter for individual=true
-        filters = {"demo_filters": {"individual": "True"}}
+        filters = {"demo_filters": {"individual": "true"}}
         queryset = get_filtered_responses_with_themes(question.response_set.all(), filters)
 
         assert queryset.count() == 1
@@ -359,7 +359,7 @@ class TestBuildRespondentDataFast:
 
         assert serializer.data["identifier"] == str(respondent.identifier)
         assert serializer.data["free_text_answer_text"] == "Test response"
-        assert serializer.data["demographic_data"] == {"individual": "True", "region": "north"}
+        assert serializer.data["demographic_data"] == {"individual": True, "region": "north"}
         assert sorted(serializer.data["multiple_choice_answer"]) == ["option1", "option2"]
         assert serializer.data["evidenceRich"] is None  # No annotation
         assert serializer.data["themes"] is None

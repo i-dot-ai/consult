@@ -30,6 +30,7 @@ class Migration(migrations.Migration):
             name="new_demographics",
             field=models.ManyToManyField(blank=True, to="consultations.demographicoption"),
         ),
+        migrations.RunPython(back_populate_new_demographics),
         migrations.RemoveField(
             model_name="respondent",
             name="demographics",
