@@ -1,9 +1,12 @@
+import json
+from json import JSONDecodeError
 from typing import TypedDict
 
 from django.db.models import Count, Q, QuerySet
 from pgvector.django import CosineDistance
 
 from ...embeddings import embed_text
+from ..models import DemographicOption
 
 
 class FilterParams(TypedDict, total=False):
@@ -51,6 +54,14 @@ def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
     return filters
 
 
+def safe_json_encode(txt: str):
+    """try and cast a string to json otherwise fallback to string"""
+    try:
+        return json.loads(txt)
+    except JSONDecodeError:
+        return txt
+
+
 def build_response_filter_query(filters: FilterParams) -> Q:
     """Build a Q object for filtering responses based on filter params"""
     query = Q()
@@ -64,15 +75,13 @@ def build_response_filter_query(filters: FilterParams) -> Q:
     # Handle demographic filters
     if demo_filters := filters.get("demo_filters"):
         for field, value in demo_filters.items():
-            field_query = Q()
-            # Handle boolean values
-            if value.lower() in ["true", "false"]:
-                bool_value = value.lower() == "true"
-                field_query |= Q(**{f"respondent__demographics__{field}": bool_value})
-            else:
-                # Handle string values
-                field_query |= Q(**{f"respondent__demographics__{field}": value})
-            query &= field_query
+            try:
+                demographic = DemographicOption.objects.get(
+                    field_name=field, field_value=safe_json_encode(value)
+                )
+                query &= Q(respondent__demographics=demographic)
+            except DemographicOption.DoesNotExist:
+                pass
 
     return query
 

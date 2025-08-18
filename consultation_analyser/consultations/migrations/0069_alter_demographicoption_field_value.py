@@ -16,7 +16,7 @@ def conver_boolean_values(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("consultations", "0067_remove_respondent_demographics_and_more"),
+        ("consultations", "0068_remove_respondent_demographics_and_more"),
     ]
 
     operations = [

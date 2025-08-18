@@ -21,7 +21,7 @@ def back_populate_new_demographics(apps, schema_editor):
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("consultations", "0066_crosscuttingtheme_theme_parent_and_more"),
+        ("consultations", "0067_responseannotation_new_evidence_rich"),
     ]
 
     operations = [

@@ -171,7 +171,7 @@ class TestBuildResponseFilterQuery:
         assert query.connector == "AND"
         assert query.children == [
             ("annotation__sentiment__in", ["AGREEMENT"]),
-            ("annotation__evidence_rich", ResponseAnnotation.EvidenceRich.YES),
+            ("annotation__evidence_rich", True),
             ("respondent__demographics", individual_demographic_option),
         ]
 

@@ -1,3 +1,5 @@
+from typing import Any
+
 from rest_framework import serializers
 
 from consultation_analyser.authentication.models import User
@@ -138,12 +140,15 @@ class MultiChoiceAnswerCount(serializers.Serializer):
 class ResponseSerializer(serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id")
     free_text_answer_text = serializers.CharField(source="free_text")
-    demographic_data = serializers.JSONField(source="respondent.demographics")
+    demographic_data = serializers.SerializerMethodField()
     themes = ThemeSerializer(source="annotation.themes", many=True, read_only=True, default=[])
     multiple_choice_answer = serializers.SlugRelatedField(
         source="chosen_options", slug_field="text", many=True, read_only=True
     )
     evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
+
+    def get_demographic_data(self, obj) -> dict[str, Any] | None:
+        return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
 
     class Meta:
         model = Response
