@@ -174,7 +174,7 @@ class TestDemographicAggregationsAPIView:
         )
 
         # Filter by individual=true
-        response = client.get(url + "?demoFilters=individual:True")
+        response = client.get(url + "?demoFilters=individual:true")
 
         assert response.status_code == 200
         data = response.json()
@@ -184,7 +184,7 @@ class TestDemographicAggregationsAPIView:
         assert aggregations["individual"]["True"] == 1
         assert aggregations["region"]["north"] == 1
         # Should not have data from individual=False respondent
-        assert False not in aggregations["individual"]
+        assert "False" not in aggregations["individual"]
         assert "south" not in aggregations["region"]
 
     def test_invalid_filter_parameters(self, client, consultation_user, free_text_question):
