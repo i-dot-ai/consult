@@ -90,16 +90,11 @@ class RespondentFactory(DjangoModelFactory):
                 "Age": random.choice(["Under 18", "18-35", "36-50", "51-65", "66+"]),
             }
 
-        def encode(x):
-            if isinstance(x, bool):
-                return x
-            return str(x)
-
         for k, v in extracted.items():
             o, _ = DemographicOption.objects.get_or_create(
                 consultation=self.consultation,
                 field_name=k,
-                field_value=encode(v),
+                field_value=v,
             )
             self.demographics.add(o)
         self.save()
