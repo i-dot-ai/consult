@@ -1,5 +1,3 @@
-import json
-from json import JSONDecodeError
 from typing import TypedDict
 
 from django.db.models import Count, Q, QuerySet
@@ -55,11 +53,12 @@ def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
 
 
 def safe_json_encode(txt: str):
-    """try and cast a string to json otherwise fallback to string"""
-    try:
-        return json.loads(txt)
-    except JSONDecodeError:
-        return txt
+    """try and cast a bool or str to json, anything else will be a string"""
+    if txt.lower() == "true":
+        return True
+    if txt.lower() == "false":
+        return False
+    return txt
 
 
 def build_response_filter_query(filters: FilterParams) -> Q:

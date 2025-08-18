@@ -62,7 +62,7 @@ class TestDemographicOptionsAPIView:
 
         assert set(options["individual"]) == {False, True}
         assert set(options["region"]) == {"north", "south"}
-        assert set(options["age"]) == {25, 35, 45}
+        assert set(options["age"]) == {"25", "35", "45"}
 
     def test_permission_required(self, client, free_text_question):
         """Test API endpoint requires proper permissions"""

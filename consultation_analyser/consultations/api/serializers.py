@@ -148,7 +148,12 @@ class ResponseSerializer(serializers.ModelSerializer):
     evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
-        return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
+        def encode(txt: str):
+            if isinstance(txt, (bool, str)):
+                return txt
+            return str(txt)
+
+        return {d.field_name: encode(d.field_value) for d in obj.respondent.demographics.all()}
 
     class Meta:
         model = Response
