@@ -247,7 +247,6 @@ class TestThemeInformationAPIView:
 
         # Verify theme structure
         for theme_data in themes:
-            assert "id" in theme_data
             assert "name" in theme_data
             assert "description" in theme_data
 
@@ -350,8 +349,8 @@ class TestThemeAggregationsAPIView:
 
 
 @pytest.mark.django_db
-class TestFilteredResponsesAPIView:
-    def test_get_filtered_responses_basic(self, client, consultation_user, free_text_question):
+class TestResponsesAPIView:
+    def test_get_responses_basic(self, client, consultation_user, free_text_question):
         """Test API endpoint returns filtered responses correctly"""
         # Create test data
         respondent = RespondentFactory(
@@ -389,9 +388,7 @@ class TestFilteredResponsesAPIView:
         assert respondent_data["free_text_answer_text"] == "Test response"
         assert respondent_data["demographic_data"] == {"individual": True}
 
-    def test_get_filtered_responses_with_pagination(
-        self, client, consultation_user, free_text_question
-    ):
+    def test_get_responses_with_pagination(self, client, consultation_user, free_text_question):
         """Test API endpoint pagination"""
         # Create multiple respondents
         for i in range(5):
@@ -416,7 +413,7 @@ class TestFilteredResponsesAPIView:
         assert data["has_more_pages"]
         assert data["filtered_total"] == 5
 
-    def test_get_filtered_responses_with_demographic_filters(
+    def test_get_responses_with_demographic_filters(
         self, client, consultation_user, free_text_question
     ):
         """Test API endpoint with demographic filtering"""
@@ -454,7 +451,7 @@ class TestFilteredResponsesAPIView:
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
-    def test_get_filtered_responses_with_theme_filters(
+    def test_get_responses_with_theme_filters(
         self, client, consultation_user, free_text_question, theme, theme2
     ):
         """Test API endpoint with theme filtering using AND logic"""
@@ -506,9 +503,7 @@ class TestFilteredResponsesAPIView:
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
-    def test_get_filtered_responses_invalid_parameters(
-        self, client, consultation_user, free_text_question
-    ):
+    def test_get_responses_invalid_parameters(self, client, consultation_user, free_text_question):
         """Test API endpoint handles invalid parameters"""
         client.force_login(consultation_user)
         url = reverse(
@@ -526,6 +521,52 @@ class TestFilteredResponsesAPIView:
         # Test invalid page number
         response = client.get(url + "?page=0")
         assert response.status_code == 400
+
+    def test_update_evidence_rich(self, client, consultation_user, free_text_annotation):
+        client.force_login(consultation_user)
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        assert free_text_annotation.evidence_rich is True
+
+        response = client.patch(
+            url,
+            data='{"evidenceRich": false}',
+            headers={"Content-Type": "application/json"},
+        )
+        assert response.status_code == 200
+        assert response.json()["evidenceRich"] is False
+        free_text_annotation.refresh_from_db()
+        assert free_text_annotation.evidence_rich is False
+
+    def test_update_themes(self, client, consultation_user, free_text_annotation):
+        client.force_login(consultation_user)
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        assert list(free_text_annotation.themes.values_list("key", flat=True)) == ["A"]
+
+        response = client.patch(
+            url,
+            data='{"themes": [{"key": "B"}]}',
+            headers={"Content-Type": "application/json"},
+        )
+        assert response.status_code == 200
+        assert [x["key"] for x in response.json()["themes"]] == ["B"]
+        free_text_annotation.refresh_from_db()
+        assert list(free_text_annotation.themes.values_list("key", flat=True)) == ["B"]
 
 
 @pytest.mark.django_db

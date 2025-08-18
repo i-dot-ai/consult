@@ -227,7 +227,7 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     name = models.CharField(max_length=256)
     description = models.TextField()
-    key = models.CharField(max_length=128, null=True, blank=True)
+    key = models.CharField(max_length=128, null=True)
     parent = models.ForeignKey("CrossCuttingTheme", on_delete=models.CASCADE, null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):

@@ -72,7 +72,10 @@ class TestThemeSerializer:
         data = {"id": uuid4(), "name": "Test Theme", "description": "A test theme description"}
         serializer = ThemeSerializer(data=data)
         assert serializer.is_valid()
-        assert serializer.validated_data == data
+        assert serializer.validated_data == {
+            "description": "A test theme description",
+            "name": "Test Theme",
+        }
 
     def test_missing_required_fields(self):
         """Test theme serializer with missing required fields"""
@@ -84,10 +87,10 @@ class TestThemeSerializer:
 
     def test_invalid_id_type(self):
         """Test theme serializer with invalid ID type"""
-        data = {"id": "invalid", "name": "Test Theme", "description": "A test theme description"}
+        data = {"id": "invalid", "key": "Test Theme", "description": "A test theme description"}
         serializer = ThemeSerializer(data=data)
         assert not serializer.is_valid()
-        assert "id" in serializer.errors
+        assert "name" in serializer.errors
 
 
 class TestThemeInformationSerializer:
@@ -101,7 +104,13 @@ class TestThemeInformationSerializer:
         }
         serializer = ThemeInformationSerializer(data=data)
         assert serializer.is_valid()
-        assert serializer.validated_data == data
+        expected = {
+            "themes": [
+                {"name": "Theme A", "description": "Description A"},
+                {"name": "Theme B", "description": "Description B"},
+            ]
+        }
+        assert serializer.validated_data == expected
 
     def test_empty_themes(self):
         """Test theme information serializer with empty themes list"""

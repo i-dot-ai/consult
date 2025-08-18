@@ -382,6 +382,7 @@ class TestBuildRespondentDataFast:
 
         # Verify all expected keys are present
         expected_keys = {
+            "id",
             "identifier",
             "free_text_answer_text",
             "demographic_data",

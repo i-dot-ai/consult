@@ -7,7 +7,14 @@ from moto import mock_aws
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
-from consultation_analyser.consultations.models import DemographicOption, Response
+from consultation_analyser.consultations.models import (
+    DemographicOption,
+    Respondent,
+    Response,
+    ResponseAnnotation,
+    ResponseAnnotationTheme,
+    Theme,
+)
 from consultation_analyser.factories import (
     ConsultationFactory,
     MultiChoiceAnswerFactory,
@@ -242,6 +249,36 @@ def free_text_question(consultation):
     )
     yield question
     question.delete()
+
+
+@pytest.fixture
+def respondent_1(consultation):
+    respondent = Respondent.objects.create(consultation=consultation)
+    yield respondent
+    respondent.delete()
+
+
+@pytest.fixture
+def free_text_response(free_text_question, respondent_1):
+    response = Response.objects.create(question=free_text_question, respondent=respondent_1)
+
+    yield response
+    response.delete()
+
+
+@pytest.fixture
+def free_text_annotation(free_text_response):
+    annotation = ResponseAnnotation.objects.create(response=free_text_response, evidence_rich=True)
+    theme_a = Theme.objects.create(question=free_text_response.question, key="A")
+    annotation_a = ResponseAnnotationTheme.objects.create(
+        response_annotation=annotation, theme=theme_a
+    )
+    theme_b = Theme.objects.create(question=free_text_response.question, key="B")
+    yield annotation
+    annotation_a.delete()
+    theme_a.delete()
+    theme_b.delete()
+    annotation.delete()
 
 
 @pytest.fixture
