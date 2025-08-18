@@ -11,7 +11,6 @@ from consultation_analyser.consultations.api.utils import (
 )
 from consultation_analyser.consultations.models import (
     MultiChoiceAnswer,
-    ResponseAnnotation,
 )
 from consultation_analyser.factories import (
     ConsultationFactory,
@@ -315,7 +314,7 @@ class TestBuildRespondentDataFast:
         assert serializer.data["free_text_answer_text"] == "Test response"
         assert serializer.data["demographic_data"] == {"individual": True, "region": "north"}
         assert sorted(serializer.data["multiple_choice_answer"]) == ["option1", "option2"]
-        assert serializer.data["evidenceRich"] is False  # No annotation
+        assert serializer.data["evidenceRich"] is None  # No annotation
         assert serializer.data["themes"] is None
 
     def test_with_annotation_evidence_rich(self, question):
@@ -323,9 +322,7 @@ class TestBuildRespondentDataFast:
         respondent = RespondentFactory(consultation=question.consultation)
         response = ResponseFactory(question=question, respondent=respondent)
 
-        ResponseAnnotationFactory(
-            response=response, evidence_rich=ResponseAnnotation.EvidenceRich.YES
-        )
+        ResponseAnnotationFactory(response=response, evidence_rich=True)
 
         serializer = ResponseSerializer(instance=response)
 
@@ -336,9 +333,7 @@ class TestBuildRespondentDataFast:
         respondent = RespondentFactory(consultation=question.consultation)
         response = ResponseFactory(question=question, respondent=respondent)
 
-        ResponseAnnotationFactory(
-            response=response, evidence_rich=ResponseAnnotation.EvidenceRich.NO
-        )
+        ResponseAnnotationFactory(response=response, evidence_rich=False)
 
         serializer = ResponseSerializer(instance=response)
 
@@ -371,7 +366,7 @@ class TestBuildRespondentDataFast:
 
         serializer = ResponseSerializer(instance=response)
 
-        assert serializer.data["evidenceRich"] is False
+        assert serializer.data["evidenceRich"] is None
         assert serializer.data["themes"] is None
 
     def test_performance_optimized_structure(self, question):

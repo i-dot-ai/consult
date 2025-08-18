@@ -311,12 +311,8 @@ def import_response_annotations(question: Question, output_folder: str):
     evidence_dict = {}
     for line in evidence_response["Body"].iter_lines():
         evidence = json.loads(line.decode("utf-8"))
-        evidence_value = (evidence.get("evidence_rich") or "NO").upper()
-        evidence_dict[evidence["themefinder_id"]] = (
-            ResponseAnnotation.EvidenceRich.YES
-            if evidence_value == "YES"
-            else ResponseAnnotation.EvidenceRich.NO
-        )
+        evidence_value = evidence.get("evidence_rich", "NO").upper() == "YES"
+        evidence_dict[evidence["themefinder_id"]] = evidence_value
 
     # Create annotations
     responses = Response.objects.filter(question=question).values_list(
@@ -329,7 +325,7 @@ def import_response_annotations(question: Question, output_folder: str):
         annotation = ResponseAnnotation(
             response_id=response_id,
             sentiment=sentiment_dict.get(themefinder_id, ResponseAnnotation.Sentiment.UNCLEAR),
-            evidence_rich=evidence_dict.get(themefinder_id, ResponseAnnotation.EvidenceRich.NO),
+            evidence_rich=evidence_dict.get(themefinder_id, False),
             human_reviewed=False,
         )
         annotations_to_save.append(annotation)

@@ -7,7 +7,6 @@ from consultation_analyser.consultations.models import (
     MultiChoiceAnswer,
     Question,
     Response,
-    ResponseAnnotation,
     Theme,
 )
 
@@ -144,13 +143,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     multiple_choice_answer = serializers.SlugRelatedField(
         source="chosen_options", slug_field="text", many=True, read_only=True
     )
-    evidenceRich = serializers.SerializerMethodField()
-
-    def get_evidenceRich(self, obj) -> bool:
-        try:
-            return obj.annotation.evidence_rich == ResponseAnnotation.EvidenceRich.YES
-        except AttributeError:
-            return False
+    evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
 
     class Meta:
         model = Response

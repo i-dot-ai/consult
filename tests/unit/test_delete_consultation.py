@@ -68,7 +68,7 @@ def test_delete_consultation_cascading():
     annotation1 = ResponseAnnotation.objects.create(
         response=response1,
         sentiment=ResponseAnnotation.Sentiment.AGREEMENT,
-        evidence_rich=ResponseAnnotation.EvidenceRich.YES,
+        evidence_rich=True,
         human_reviewed=False,
     )
     annotation1.themes.add(theme1)
@@ -76,7 +76,7 @@ def test_delete_consultation_cascading():
     annotation2 = ResponseAnnotation.objects.create(
         response=response2,
         sentiment=ResponseAnnotation.Sentiment.DISAGREEMENT,
-        evidence_rich=ResponseAnnotation.EvidenceRich.NO,
+        evidence_rich=False,
         human_reviewed=False,
     )
     annotation2.themes.add(theme2)
@@ -130,7 +130,7 @@ def test_delete_consultation_job_success(mock_connection):
     annotation = ResponseAnnotation.objects.create(
         response=response,
         sentiment=ResponseAnnotation.Sentiment.UNCLEAR,
-        evidence_rich=ResponseAnnotation.EvidenceRich.NO,
+        evidence_rich=False,
     )
     annotation.themes.add(theme)
 

@@ -93,9 +93,7 @@ def test_response_annotation_factory():
     annotation = factories.ResponseAnnotationFactory()
     assert models.ResponseAnnotation.objects.filter(id=annotation.id).exists()
     assert annotation.sentiment in [choice.value for choice in models.ResponseAnnotation.Sentiment]
-    assert annotation.evidence_rich in [
-        choice.value for choice in models.ResponseAnnotation.EvidenceRich
-    ]
+    assert isinstance(annotation.evidence_rich, bool)
     assert not annotation.human_reviewed
     assert annotation.themes.count() >= 1
 
