@@ -279,6 +279,8 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
         User, on_delete=models.SET_NULL, null=True, blank=True
     )  # None for AI, User for human
 
+    history = HistoricalRecords()
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(

@@ -9,6 +9,7 @@ from consultation_analyser.consultations.models import (
     MultiChoiceAnswer,
     Question,
     Response,
+    ResponseAnnotationTheme,
     Theme,
 )
 
@@ -175,7 +176,17 @@ class ResponseSerializer(serializers.ModelSerializer):
                 instance.annotation.evidence_rich = annotation["evidence_rich"]
 
             if "themes" in annotation:
-                instance.annotation.themes.set(annotation["themes"])
+                ResponseAnnotationTheme.objects.filter(
+                    response_annotation=instance.annotation
+                ).delete()
+                for theme in annotation["themes"]:
+                    ResponseAnnotationTheme.objects.create(
+                        response_annotation=instance.annotation,
+                        theme=theme,
+                        is_original_ai_assignment=False,
+                        assigned_by=self.context["request"].user,
+                    )
+                instance.annotation.refresh_from_db()
 
             if "sentiment" in annotation:
                 instance.annotation.sentiment = annotation["sentiment"]
