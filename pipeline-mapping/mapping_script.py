@@ -8,7 +8,9 @@ from pathlib import Path
 
 import boto3
 import pandas as pd
-from langchain_openai import AzureChatOpenAI
+# from langchain_openai import AzureChatOpenAI
+from langchain_openai import ChatLiteLLM
+
 from themefinder import detail_detection, theme_mapping
 
 # Configure logging
@@ -19,10 +21,19 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-llm = AzureChatOpenAI(
+# llm = AzureChatOpenAI(
+#     model="gpt-4o",
+#     temperature=0,
+# )
+
+llm = ChatLiteLLM(
     model="gpt-4o",
     temperature=0,
+    api_key=os.environ["LITELLM_GOVAI_CLIENT_API_KEY"],
+    base_url=os.environ["LLM_GATEWAY_URL"],
 )
+
+
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 BASE_PREFIX = "app_data/consultations/"
 
