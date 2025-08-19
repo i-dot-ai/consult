@@ -527,6 +527,47 @@ class TestFilteredResponsesAPIView:
         response = client.get(url + "?page=0")
         assert response.status_code == 400
 
+    def test_get_filtered_responses_with_respondent_filters(
+        self, client, consultation_user, free_text_question, theme, theme2, consultation_user_token
+    ):
+        """Test API endpoint with theme filtering using AND logic"""
+        # Create responses with different theme combinations
+        respondent1 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent2 = RespondentFactory(consultation=free_text_question.consultation)
+
+        _ = ResponseFactory(
+            question=free_text_question, respondent=respondent1, free_text="Response 1"
+        )
+        _ = ResponseFactory(
+            question=free_text_question, respondent=respondent2, free_text="Response 2"
+        )
+
+        client.force_login(consultation_user)
+
+        url = reverse(
+            "response-list",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "question_pk": free_text_question.id,
+            },
+        )
+
+        # Filter by respondent1 - should only return response1
+        response = client.get(
+            url,
+            params ={"respondent_id": respondent1.id},
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
+
+        data = response.json()
+
+        assert data["respondents_total"] == 2  # Total respondents
+        assert data["filtered_total"] == 1  # Only response1
+        assert len(data["all_respondents"]) == 1
+        assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
+
 
 @pytest.mark.django_db
 class TestQuestionInformationAPIView:

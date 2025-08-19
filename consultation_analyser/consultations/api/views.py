@@ -245,6 +245,7 @@ class ResponseViewSet(ReadOnlyModelViewSet):
     serializer_class = ResponseSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
     pagination_class = BespokeResultsSetPagination
+    filterset_fields = ["respondent_id"]
 
     def get_queryset(self):
         question_uuid = self.kwargs["question_pk"]

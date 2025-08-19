@@ -208,6 +208,12 @@ def non_consultation_user():
 
 
 @pytest.fixture
+def consultation_user_token(consultation_user):
+    refresh = RefreshToken.for_user(consultation_user)
+    yield str(refresh.access_token)
+
+
+@pytest.fixture
 def dashboard_user_token(dashboard_user):
     refresh = RefreshToken.for_user(dashboard_user)
     yield str(refresh.access_token)
