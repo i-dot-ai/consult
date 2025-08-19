@@ -1,5 +1,5 @@
 <script lang="ts">
-    import { slide, fly } from "svelte/transition";
+    import { slide, fly, fade } from "svelte/transition";
 
     import type { FormattedTheme } from "../../globa/types.ts";
     import { toTitleCase, getPercentage } from "../../global/utils.ts";
@@ -16,6 +16,8 @@
     import ProgressCards from "../ProgressCards.svelte";
     import FiltersSidebar from "./FiltersSidebar.svelte";
     import Tag from "../Tag.svelte";
+    import Alert from "../Alert.svelte";
+    import FilterAlt from "../svg/material/FilterAlt.svelte";
 
     const MAX_CARDS_ALLOWED = 10;
 
@@ -31,8 +33,8 @@
         sortAscending?: boolean;
         setDemoFilters?: () => {};
         updateThemeFilters?: () => {};
-        demoFiltersApplied?: () => boolean;
-        themeFiltersApplied?: () => boolean;
+        demoFiltersApplied?: (filters) => boolean;
+        themeFiltersApplied?: (filters: string[]) => boolean;
     }
     let {
         totalAnswers = 0,
@@ -130,8 +132,21 @@
                     ></iai-csv-download>
                 </TitleRow>
 
-                {#if themeFilters.length > 0}
+                {#if demoFiltersApplied(demoFilters) || themeFiltersApplied(themeFilters)}
+                    <div transition:fly={{x:300}} class="my-4">
+                        <Alert>
+                            <FilterAlt slot="icon" />
+
+                            <p slot="text" class="text-sm">
+                                Results are filtered
+                            </p>
+                        </Alert>
+                    </div>
+                {/if}
+
+                {#if themeFiltersApplied(themeFilters)}
                     <section transition:slide class="my-4">
+
                         <div class="mb-2">
                             <Title level={3} text={`Selected Themes (${themeFilters.length})`} />
                         </div>

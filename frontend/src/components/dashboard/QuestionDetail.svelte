@@ -235,6 +235,22 @@
             }
         }
     }
+
+    const demoFiltersApplied = (demoFilters): boolean => {
+        for (const key of Object.keys(demoFilters)) {
+            const filterArr = demoFilters[key];
+
+            // filterArr can be undefined or empty array
+            if (filterArr && filterArr.filter(Boolean).length > 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    const themeFiltersApplied = (themeFilters: string[]): boolean => {
+        return themeFilters.length > 0;
+    }
 </script>
 
 <section class={clsx([
@@ -300,6 +316,8 @@
             themeFilters={themeFilters}
             setDemoFilters={setDemoFilters}
             updateThemeFilters={updateThemeFilters}
+            demoFiltersApplied={demoFiltersApplied}
+            themeFiltersApplied={themeFiltersApplied}
             multiChoice={formatMultiChoiceData($multiChoiceAggrData)}
             consultationSlug={$consultationData?.slug}
             sortAscending={sortAscending}
@@ -328,6 +346,8 @@
             themeFilters={themeFilters}
             setDemoFilters={setDemoFilters}
             updateThemeFilters={updateThemeFilters}
+            themeFiltersApplied={themeFiltersApplied}
+            demoFiltersApplied={demoFiltersApplied}
         />
     {/if}
 </TabView>
