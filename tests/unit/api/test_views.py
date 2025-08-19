@@ -554,8 +554,7 @@ class TestFilteredResponsesAPIView:
 
         # Filter by respondent1 - should only return response1
         response = client.get(
-            url,
-            params ={"respondent_id": respondent1.id},
+            url + f"?respondent_id={respondent1.id}",
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
