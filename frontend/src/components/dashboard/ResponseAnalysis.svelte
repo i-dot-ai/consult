@@ -16,6 +16,7 @@
     import FilterAlt from "../svg/material/FilterAlt.svelte";
 
     export let isAnswersLoading: boolean = true;
+    export let isThemesLoading: boolean = true;
     export let answersError: string = "";
     export let answers = [];
     export let hasMorePages: boolean = true;
@@ -50,6 +51,7 @@
             {setDemoFilters}
             {evidenceRich}
             {setEvidenceRich}
+            loading={isThemesLoading}
         />
     </div>
 

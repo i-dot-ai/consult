@@ -310,7 +310,7 @@
                     ...($themeInfoData?.themes?.find(themeInfo => themeInfo.id === themeId)),
                 })
             })}
-            loading={$isThemeAggrLoading}
+            themesLoading={$isThemeAggrLoading}
             totalAnswers={$answersData?.respondents_total}
             filteredTotal={$answersData?.filtered_total}
             demoData={$demoAggrData?.demographic_aggregations}
@@ -355,6 +355,7 @@
             setEvidenceRich={setEvidenceRich}
             themeFiltersApplied={themeFiltersApplied}
             demoFiltersApplied={demoFiltersApplied}
+            isThemesLoading={$isThemeAggrLoading}
         />
     {/if}
 </TabView>

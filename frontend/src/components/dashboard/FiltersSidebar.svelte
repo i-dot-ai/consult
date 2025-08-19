@@ -1,4 +1,6 @@
 <script lang="ts">
+    import { fade } from "svelte/transition";
+
     import TitleRow from "./TitleRow.svelte";
     import Panel from "./Panel.svelte";
     import DemoFilter from "./DemoFilter.svelte";
@@ -15,6 +17,7 @@
         setDemoFilters = () => {},
         evidenceRich = false,
         setEvidenceRich = () => {},
+        loading = true,
     } = $props();
 
     // Derive to avoid calculating on re-render
@@ -55,15 +58,26 @@
             </Panel>
         {/if}
 
-        {#each Object.keys(demoOptions) as category (category)}
-            <DemoFilter
-                {setDemoFilters}
-                {category}
-                {demoOptions}
-                {demoData}
-                {demoFilters}
-                {totalCounts}
-            />
-        {/each}
+        {#if loading}
+            <div in:fade>
+                {#each "_".repeat(3) as _}
+                    <DemoFilter skeleton={true} />
+                {/each}
+            </div>
+        {:else}
+            <div in:fade>
+                {#each Object.keys(demoOptions) as category (category)}
+                    <DemoFilter
+                        {setDemoFilters}
+                        {category}
+                        {demoOptions}
+                        {demoData}
+                        {demoFilters}
+                        {totalCounts}
+                        skeleton={loading}
+                    />
+                {/each}
+            </div>
+        {/if}
     </Panel>
 </aside>
