@@ -522,7 +522,7 @@ class TestResponsesAPIView:
         response = client.get(url + "?page=0")
         assert response.status_code == 400
 
-    def test_update_evidence_rich(self, client, consultation_user, free_text_annotation):
+    def test_put_response_evidence_rich(self, client, consultation_user, free_text_annotation):
         client.force_login(consultation_user)
         url = reverse(
             "response-detail",
@@ -545,7 +545,7 @@ class TestResponsesAPIView:
         free_text_annotation.refresh_from_db()
         assert free_text_annotation.evidence_rich is False
 
-    def test_update_themes(self, client, consultation_user, free_text_annotation):
+    def test_put_response_themes(self, client, consultation_user, free_text_annotation):
         client.force_login(consultation_user)
         url = reverse(
             "response-detail",
@@ -567,6 +567,25 @@ class TestResponsesAPIView:
         assert [x["key"] for x in response.json()["themes"]] == ["B"]
         free_text_annotation.refresh_from_db()
         assert list(free_text_annotation.themes.values_list("key", flat=True)) == ["B"]
+
+    def test_put_response_themes_invalid(self, client, consultation_user, free_text_annotation):
+        client.force_login(consultation_user)
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        response = client.patch(
+            url,
+            data='{"themes": [{"key": "C"}]}',
+            headers={"Content-Type": "application/json"},
+        )
+        assert response.status_code == 400
+        assert response.json() == {"themes": [['Invalid key "C" - theme does not exist.']]}
 
 
 @pytest.mark.django_db

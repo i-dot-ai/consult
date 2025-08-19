@@ -69,20 +69,17 @@ class TestDemographicAggregationsSerializer:
 class TestThemeSerializer:
     def test_valid_data(self):
         """Test theme serializer with valid data"""
-        data = {"id": uuid4(), "name": "Test Theme", "description": "A test theme description"}
+        data = {"id": uuid4(), "key": "Test Theme", "description": "A test theme description"}
         serializer = ThemeSerializer(data=data)
         assert serializer.is_valid()
-        assert serializer.validated_data == {
-            "description": "A test theme description",
-            "name": "Test Theme",
-        }
+        assert serializer.validated_data == data
 
     def test_missing_required_fields(self):
         """Test theme serializer with missing required fields"""
         data = {"id": 1}
         serializer = ThemeSerializer(data=data)
         assert not serializer.is_valid()
-        assert "name" in serializer.errors
+        assert "key" in serializer.errors
         assert "description" in serializer.errors
 
     def test_invalid_id_type(self):
@@ -90,7 +87,7 @@ class TestThemeSerializer:
         data = {"id": "invalid", "key": "Test Theme", "description": "A test theme description"}
         serializer = ThemeSerializer(data=data)
         assert not serializer.is_valid()
-        assert "name" in serializer.errors
+        assert "id" in serializer.errors
 
 
 class TestThemeInformationSerializer:
@@ -98,19 +95,13 @@ class TestThemeInformationSerializer:
         """Test theme information serializer with valid data"""
         data = {
             "themes": [
-                {"id": uuid4(), "name": "Theme A", "description": "Description A"},
-                {"id": uuid4(), "name": "Theme B", "description": "Description B"},
+                {"id": uuid4(), "key": "Theme A", "description": "Description A"},
+                {"id": uuid4(), "key": "Theme B", "description": "Description B"},
             ]
         }
         serializer = ThemeInformationSerializer(data=data)
         assert serializer.is_valid()
-        expected = {
-            "themes": [
-                {"name": "Theme A", "description": "Description A"},
-                {"name": "Theme B", "description": "Description B"},
-            ]
-        }
-        assert serializer.validated_data == expected
+        assert serializer.validated_data == data
 
     def test_empty_themes(self):
         """Test theme information serializer with empty themes list"""

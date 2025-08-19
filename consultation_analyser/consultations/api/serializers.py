@@ -78,11 +78,32 @@ class DemographicAggregationsSerializer(serializers.Serializer):
 
 
 class ThemeSerializer(serializers.ModelSerializer):
-    id = serializers.UUIDField(read_only=True)
+    id = serializers.UUIDField(required=False)
+    key = serializers.CharField(required=True)
+    name = serializers.CharField(required=False)
+
+    default_error_messages = {
+        "does_not_exist": 'Invalid key "{pk}" - theme does not exist.',
+    }
 
     class Meta:
         model = Theme
         fields = ["id", "name", "description", "key"]
+
+    def to_internal_value(self, data):
+        internal_value = super().to_internal_value(data)
+
+        try:
+            return Theme.objects.get(
+                key=internal_value["key"],
+                question=self.parent.parent.instance.question,
+            )
+        except AttributeError:
+            # this occurs when there is no parent, so we cant work out
+            # which question the theme belongs to, this shouldnt happen IRL
+            return internal_value
+        except Theme.DoesNotExist:
+            self.fail("does_not_exist", pk=internal_value["key"])
 
 
 class ThemeInformationSerializer(serializers.Serializer):
@@ -153,15 +174,10 @@ class ResponseSerializer(serializers.ModelSerializer):
     def update(self, instance: Response, validated_data):
         if annotation := validated_data.get("annotation"):
             if "evidence_rich" in annotation:
-                instance.annotation.evidence_rich = annotation.pop("evidence_rich")
+                instance.annotation.evidence_rich = annotation["evidence_rich"]
 
-            if themes := annotation.get("themes"):
-                new_themes = []
-                for theme in themes:
-                    new_themes.append(
-                        Theme.objects.get(key=theme["key"], question=instance.question)
-                    )
-                instance.annotation.themes.set(new_themes)
+            if "themes" in annotation:
+                instance.annotation.themes.set(annotation["themes"])
 
             instance.annotation.save()
 
