@@ -35,11 +35,22 @@
     export let updateThemeFilters: Function = () => {};
     export let themeFiltersApplied: Function = () => {};
     export let demoFiltersApplied: Function = () => {};
+
+    export let evidenceRich: boolean = false;
+    export let setEvidenceRich = (value: boolean) => {};
 </script>
 
 <div class="grid grid-cols-4 gap-4">
     <div class="col-span-4 md:col-span-1">
-        <FiltersSidebar {demoOptions} {demoData} {demoFilters} {setDemoFilters} />
+        <FiltersSidebar
+            showEvidenceRich={true}
+            {demoOptions}
+            {demoData}
+            {demoFilters}
+            {setDemoFilters}
+            {evidenceRich}
+            {setEvidenceRich}
+        />
     </div>
 
     <div class="col-span-4 md:col-span-3">
@@ -58,7 +69,7 @@
                         <Title level={3} text="Search responses:" />
                     </div>
 
-                    {#if demoFiltersApplied(demoFilters) || themeFiltersApplied(themeFilters)}
+                    {#if demoFiltersApplied(demoFilters) || themeFiltersApplied(themeFilters) || evidenceRich}
                         <div transition:fly={{x:300}} class="my-4">
                             <Alert>
                                 <FilterAlt slot="icon" />
