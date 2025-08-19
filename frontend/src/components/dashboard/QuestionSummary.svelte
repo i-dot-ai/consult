@@ -35,6 +35,8 @@
         updateThemeFilters?: () => {};
         demoFiltersApplied?: (filters) => boolean;
         themeFiltersApplied?: (filters: string[]) => boolean;
+        evidenceRich: boolean;
+        setEvidenceRich: (value: boolean) => {};
     }
     let {
         totalAnswers = 0,
@@ -56,7 +58,13 @@
 
 <div class="grid grid-cols-4 gap-4">
     <div class="col-span-4 md:col-span-1">
-        <FiltersSidebar {demoOptions} {demoData} {demoFilters} {setDemoFilters} />
+        <FiltersSidebar
+            showEvidenceRich={false}
+            {demoOptions}
+            {demoData}
+            {demoFilters}
+            {setDemoFilters}
+        />
     </div>
 
     <div class="col-span-4 md:col-span-3">
