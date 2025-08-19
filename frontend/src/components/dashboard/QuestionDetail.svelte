@@ -251,6 +251,8 @@
     const themeFiltersApplied = (themeFilters: string[]): boolean => {
         return themeFilters.length > 0;
     }
+
+    const setEvidenceRich = (value: boolean) => evidenceRich = value;
 </script>
 
 <section class={clsx([
@@ -318,6 +320,8 @@
             updateThemeFilters={updateThemeFilters}
             demoFiltersApplied={demoFiltersApplied}
             themeFiltersApplied={themeFiltersApplied}
+            evidenceRich={evidenceRich}
+            setEvidenceRich={setEvidenceRich}
             multiChoice={formatMultiChoiceData($multiChoiceAggrData)}
             consultationSlug={$consultationData?.slug}
             sortAscending={sortAscending}
@@ -346,6 +350,8 @@
             themeFilters={themeFilters}
             setDemoFilters={setDemoFilters}
             updateThemeFilters={updateThemeFilters}
+            evidenceRich={evidenceRich}
+            setEvidenceRich={setEvidenceRich}
             themeFiltersApplied={themeFiltersApplied}
             demoFiltersApplied={demoFiltersApplied}
         />
