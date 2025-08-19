@@ -9,7 +9,7 @@ from pathlib import Path
 import boto3
 import pandas as pd
 # from langchain_openai import AzureChatOpenAI
-from langchain_openai import ChatLiteLLM
+from langchain_litellm import ChatLiteLLM
 
 from themefinder import detail_detection, theme_mapping
 
