@@ -7,14 +7,20 @@
     import MaterialIcon from "../MaterialIcon.svelte";
     import Diamond from "../svg/material/Diamond.svelte";
 
+    interface Theme {
+        id: string;
+        name: string;
+    }
+
     export let id: string = "";
     export let text: string = "";
     export let demoData: string[] = [];
     export let evidenceRich: boolean = false;
     export let multiAnswers: string[] = [];
-    export let themes: string[] = [];
+    export let themes: Theme[] = [];
     export let themeFilters: string[] = [];
-    export let handleThemeTagClick = () => {};
+    export let handleThemeTagClick = (themeId: string) => {};
+    export let skeleton: boolean = false;
 </script>
 
 <Panel>
@@ -34,18 +40,26 @@
             "flex-wrap",
             "text-sm",
         ])}>
-            {#if demoData.length > 0 || evidenceRich}
+            {#if (demoData.length > 0 || evidenceRich) || skeleton}
                 <div class={clsx([
                     "flex",
                     "flex-wrap",
                     "items-center",
                     "gap-1",
                 ])}>
-                    {#each demoData as demoDataItem}
-                        <Tag>
-                            <span class="text-xs">{demoDataItem}</span>
-                        </Tag>
-                    {/each}
+                    {#if skeleton}
+                        {#each "_".repeat(3) as _}
+                            <Tag>
+                                <span class="text-xs bg-neutral-100 text-neutral-100 select-none">skeleton</span>
+                            </Tag>
+                        {/each}
+                    {:else}
+                        {#each demoData as demoDataItem}
+                            <Tag>
+                                <span class="text-xs">{demoDataItem}</span>
+                            </Tag>
+                        {/each}
+                    {/if}
 
                     {#if evidenceRich}
                         <Tag variant="warning">
@@ -59,12 +73,22 @@
                 </div>
             {/if}
 
-            <small>
+            <small class={clsx([
+                skeleton && "bg-neutral-100 text-neutral-100 select-none"
+            ])}>
                 ID: {id || "Not Available"}
             </small>
         </header>
 
-        {#if text}
+        {#if skeleton}
+            <p class={clsx([
+                "bg-neutral-100",
+                "text-neutral-100",
+                "select-none",
+            ])}>
+                {"SKELETON ".repeat(20)}
+            </p>
+        {:else if text}
             <p>
                 {text}
             </p>

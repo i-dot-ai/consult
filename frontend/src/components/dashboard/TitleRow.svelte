@@ -3,10 +3,11 @@
 
     import Title from "../Title.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
+    import type { TitleLevels } from "../../global/types";
 
     export let title: string = "";
     export let subtitle: string = "";
-    export let level: number = 2;
+    export let level: TitleLevels = 2;
 </script>
 
 <div class="flex gap-2">

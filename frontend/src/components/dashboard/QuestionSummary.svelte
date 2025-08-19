@@ -22,6 +22,7 @@
     const MAX_CARDS_ALLOWED = 10;
 
     interface Props {
+        loading?: boolean;
         totalAnswers: number;
         filteredTotal: number;
         demoData: any;
@@ -39,6 +40,7 @@
         setEvidenceRich: (value: boolean) => {};
     }
     let {
+        loading = true,
         totalAnswers = 0,
         filteredTotal = 0,
         demoData = {},
@@ -189,6 +191,7 @@
                         : b.count - a.count
                     )}
                     totalAnswers={filteredTotal}
+                    skeleton={loading}
                 />
 
                 <div class="flex justify-between items-center flex-wrap gap-y-4">

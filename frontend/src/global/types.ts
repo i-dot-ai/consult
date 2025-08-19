@@ -38,3 +38,11 @@ export enum SearchModeLabels {
     SEMANTIC = "Semantic",
     KEYWORD = "Keyword",
 }
+export enum TitleLevels {
+    One = 1,
+    Two = 2,
+    Three = 3,
+    Four = 4,
+    Five = 5,
+    Six = 6,
+}
