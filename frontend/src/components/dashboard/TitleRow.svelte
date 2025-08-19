@@ -13,12 +13,12 @@
     {#if $$slots.icon}
         <div class="flex justify-center items-center">
             <div class={clsx([
-                "bg-primary",
+                "bg-pink-50",
                 "p-2",
                 "rounded-md",
                 !subtitle && "mt-1.5",
             ])}>
-                <MaterialIcon size="1.3rem" color="fill-white">
+                <MaterialIcon size="1.3rem" color="fill-pink-700">
                     <slot name="icon" />
                 </MaterialIcon>
             </div>
@@ -27,7 +27,7 @@
     <div class="grow">
         <Title level={level} text={title} />
         {#if subtitle}
-            <p class="text-gray-600 text-sm">
+            <p class="text-neutral-600 text-sm">
                 {subtitle}
             </p>
         {/if}
