@@ -137,11 +137,16 @@ class MultiChoiceAnswerCount(serializers.Serializer):
     response_count = serializers.IntegerField()
 
 
+class RelatedThemeSerializer(serializers.PrimaryKeyRelatedField):
+    queryset = Theme.objects.all()
+    def to_representation(self, value):
+        return ThemeSerializer().to_representation(value)
+
 class ResponseSerializer(serializers.ModelSerializer):
-    identifier = serializers.CharField(source="respondent.themefinder_id")
-    free_text_answer_text = serializers.CharField(source="free_text")
-    demographic_data = serializers.SerializerMethodField()
-    themes = ThemeSerializer(source="annotation.themes", many=True, read_only=True, default=[])
+    identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
+    free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
+    demographic_data = serializers.SerializerMethodField(read_only=True)
+    themes = RelatedThemeSerializer(source="annotation.themes", many=True, default=[])
     multiple_choice_answer = serializers.SlugRelatedField(
         source="chosen_options", slug_field="text", many=True, read_only=True
     )
@@ -158,6 +163,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Response
         fields = [
+            "id",
             "identifier",
             "free_text_answer_text",
             "demographic_data",
