@@ -35,7 +35,7 @@
                     "transition-transform",
                     !expanded && "-rotate-90",
                 ])}>
-                    <MaterialIcon size="1.3rem">
+                    <MaterialIcon color="fill-neutral-400" size="1.3rem">
                         <KeyboardArrowDown />
                     </MaterialIcon>
                 </div>
