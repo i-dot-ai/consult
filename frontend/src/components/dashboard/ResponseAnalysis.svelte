@@ -12,6 +12,8 @@
     import { SearchModeLabels, SearchModeValues } from "../../global/types";
     import Title from "../Title.svelte";
     import TextInput from "../inputs/TextInput.svelte";
+    import Alert from "../Alert.svelte";
+    import FilterAlt from "../svg/material/FilterAlt.svelte";
 
     export let isAnswersLoading: boolean = true;
     export let answersError: string = "";
@@ -31,6 +33,8 @@
     export let themeFilters: string[] = [];
     export let setDemoFilters: Function = () => {};
     export let updateThemeFilters: Function = () => {};
+    export let themeFiltersApplied: Function = () => {};
+    export let demoFiltersApplied: Function = () => {};
 </script>
 
 <div class="grid grid-cols-4 gap-4">
@@ -53,6 +57,18 @@
                     <div class="mb-2">
                         <Title level={3} text="Search responses:" />
                     </div>
+
+                    {#if demoFiltersApplied(demoFilters) || themeFiltersApplied(themeFilters)}
+                        <div transition:fly={{x:300}} class="my-4">
+                            <Alert>
+                                <FilterAlt slot="icon" />
+
+                                <p slot="text" class="text-sm">
+                                    Results are filtered
+                                </p>
+                            </Alert>
+                        </div>
+                    {/if}
 
                     <div class="flex justify-between items-center gap-4">
                         <div class="grow">
