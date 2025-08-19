@@ -21,7 +21,9 @@
     let totalCounts = $derived.by(() => {
 		let counts = {};
 		for (const category of Object.keys(demoData)) {
-            counts[category] = Object.values(demoData[category]).reduce( (a, b) => a + b, 0 );
+            counts[category] = Object.values(demoData[category]).reduce(
+                (a, b) => a + b, 0
+            );
 		}
 		return counts;
 	})

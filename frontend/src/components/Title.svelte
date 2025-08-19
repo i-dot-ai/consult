@@ -1,7 +1,8 @@
 <script lang="ts">
     import clsx from "clsx";
+    import type { TitleLevels } from "../global/types";
 
-    export let level: 1 | 2 | 3 | 4 | 5 | 6 = 1;
+    export let level: TitleLevels = 1;
     export let text: string = "";
     export let weight: "bold" | "light" = "bold";
 
