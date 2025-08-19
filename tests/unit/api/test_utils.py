@@ -389,5 +389,6 @@ class TestBuildRespondentDataFast:
             "themes",
             "multiple_choice_answer",
             "evidenceRich",
+            "sentiment",
         }
         assert set(serializer.data.keys()) == expected_keys

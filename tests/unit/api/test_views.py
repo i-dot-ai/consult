@@ -638,6 +638,42 @@ class TestAPIViewPermissions:
         response = client.get(url)
         assert response.status_code == 403
 
+    def test_patch_response_sentiment(self, client, consultation_user_token, free_text_annotation):
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        assert free_text_annotation.evidence_rich is True
+
+        # Create initial history record
+        free_text_annotation.save()
+
+        response = client.patch(
+            url,
+            data='{"sentiment": "AGREEMENT"}',
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["sentiment"] == "AGREEMENT"
+        free_text_annotation.refresh_from_db()
+        assert free_text_annotation.sentiment == "AGREEMENT"
+
+        # Verify version history captures the change from True to False using django-simple-history
+        history = free_text_annotation.history.all().order_by("history_date")
+        assert len(history) >= 2  # At least 2 versions (initial + post-PATCH)
+
+        # The first version should have sentiment=null, latest should have sentiment="AGREEMENT"
+        assert history[0].sentiment is None  # Initial state
+        assert history.last().sentiment == "AGREEMENT"  # Final state after PATCH
+
     def test_patch_response_evidence_rich(
         self, client, consultation_user_token, free_text_annotation
     ):

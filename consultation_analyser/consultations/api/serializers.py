@@ -164,6 +164,7 @@ class ResponseSerializer(serializers.ModelSerializer):
         source="chosen_options", slug_field="text", many=True, read_only=True
     )
     evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
+    sentiment = serializers.CharField(source="annotation.sentiment")
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
@@ -175,6 +176,9 @@ class ResponseSerializer(serializers.ModelSerializer):
 
             if "themes" in annotation:
                 instance.annotation.themes.set(annotation["themes"])
+
+            if "sentiment" in annotation:
+                instance.annotation.sentiment = annotation["sentiment"]
 
             instance.annotation.save()
 
@@ -190,4 +194,5 @@ class ResponseSerializer(serializers.ModelSerializer):
             "themes",
             "multiple_choice_answer",
             "evidenceRich",
+            "sentiment",
         ]
