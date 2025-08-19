@@ -315,7 +315,7 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
     reviewed_at = models.DateTimeField(null=True, blank=True)
 
     # History tracking
-    history = HistoricalRecords(m2m_fields=[themes])
+    history = HistoricalRecords()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         indexes = [
