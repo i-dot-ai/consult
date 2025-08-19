@@ -162,7 +162,7 @@
                         <div class="flex gap-1 flex-wrap">
                             {#each themeFilters as themeFilterId (themeFilterId)}
                                 <div transition:fly={{ x: 300 }}>
-                                    <Tag>
+                                    <Tag variant="primary">
                                         <span>
                                             {themes.find(theme => theme.id === themeFilterId)?.name || themeFilterId}
                                         </span>

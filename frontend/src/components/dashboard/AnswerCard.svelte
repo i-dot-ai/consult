@@ -3,6 +3,9 @@
 
     import Button from "../inputs/Button.svelte";
     import Panel from "./Panel.svelte";
+    import Tag from "../Tag.svelte";
+    import MaterialIcon from "../MaterialIcon.svelte";
+    import Diamond from "../svg/material/Diamond.svelte";
 
     export let id: string = "";
     export let text: string = "";
@@ -39,19 +42,19 @@
                     "gap-1",
                 ])}>
                     {#each demoData as demoDataItem}
-                        <iai-silver-tag
-                            icon={"diamond"}
-                            text={demoDataItem}
-                            variant={"default"}
-                        ></iai-silver-tag>
+                        <Tag>
+                            <span class="text-xs">{demoDataItem}</span>
+                        </Tag>
                     {/each}
 
                     {#if evidenceRich}
-                        <iai-silver-tag
-                            icon={"diamond"}
-                            text={"Evidence rich"}
-                            variant={"rich"}
-                        ></iai-silver-tag>
+                        <Tag variant="warning">
+                            <MaterialIcon size="1rem" color="fill-yellow-700">
+                                <Diamond />
+                            </MaterialIcon>
+
+                            <span class="text-xs">Evidence-rich</span>
+                        </Tag>
                     {/if}
                 </div>
             {/if}
@@ -73,9 +76,9 @@
                 "gap-1",
             ])}>
                 {#each multiAnswers as multiAnswer}
-                    <iai-silver-tag
-                        text={multiAnswer}
-                    ></iai-silver-tag>
+                    <Tag>
+                        <span class="text-xs">{multiAnswer}</span>
+                    </Tag>
                 {/each}
             </ul>
         {/if}
