@@ -1,2 +1,2 @@
-themefinder
+themefinder==0.7.1
 langchain-litellm
