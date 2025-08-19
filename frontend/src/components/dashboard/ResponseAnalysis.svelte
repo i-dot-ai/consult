@@ -110,7 +110,7 @@
                 </div>
 
                 <section>
-                    <TitleRow level={3} title={`Responses (${filteredTotal})`} subtitle="All responses to this question" />
+                    <TitleRow level={3} title={`${filteredTotal} responses found`} subtitle="All responses to this question" />
 
                     {#if isAnswersLoading && answers.length === 0}
                         <p transition:slide>Loading answers...</p>

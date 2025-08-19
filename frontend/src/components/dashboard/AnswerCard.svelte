@@ -90,7 +90,7 @@
                 "gap-1",
                 "flex-wrap",
             ])}>
-                <small>
+                <small class="text-neutral-500">
                     Themes:
                 </small>
                 {#each themes as theme}
