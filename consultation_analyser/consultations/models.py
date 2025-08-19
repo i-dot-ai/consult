@@ -1,7 +1,6 @@
 import uuid
 from textwrap import shorten
 
-import reversion
 from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVector, SearchVectorField
@@ -220,7 +219,6 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
         return f"{self.field_name}={self.field_value}"
 
 
-@reversion.register()
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
     """AI-generated themes for a question (only for free text parts)"""
 

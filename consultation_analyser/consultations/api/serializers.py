@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.utils import timezone
 from rest_framework import serializers
 
 from consultation_analyser.authentication.models import User
@@ -166,12 +167,21 @@ class ResponseSerializer(serializers.ModelSerializer):
     )
     evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
     sentiment = serializers.CharField(source="annotation.sentiment")
+    human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
 
     def update(self, instance: Response, validated_data):
         if annotation := validated_data.get("annotation"):
+            if "human_reviewed" in annotation:
+                human_reviewed = annotation["human_reviewed"]
+                instance.annotation.human_reviewed = human_reviewed
+                instance.annotation.reviewed_by = (
+                    self.context["request"].user if human_reviewed else None
+                )
+                instance.annotation.reviewed_at = timezone.now() if human_reviewed else None
+
             if "evidence_rich" in annotation:
                 instance.annotation.evidence_rich = annotation["evidence_rich"]
 
@@ -206,4 +216,5 @@ class ResponseSerializer(serializers.ModelSerializer):
             "multiple_choice_answer",
             "evidenceRich",
             "sentiment",
+            "human_reviewed",
         ]

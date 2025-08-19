@@ -1,4 +1,5 @@
 import json
+from datetime import datetime
 from uuid import uuid4
 
 import orjson
@@ -639,6 +640,49 @@ class TestAPIViewPermissions:
         response = client.get(url)
         assert response.status_code == 403
 
+    def test_patch_response_human_reviewed(
+        self, client, consultation_user, consultation_user_token, free_text_annotation
+    ):
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        assert free_text_annotation.human_reviewed is False
+        assert free_text_annotation.reviewed_by is None
+        assert free_text_annotation.reviewed_at is None
+
+        response = client.patch(
+            url,
+            data='{"human_reviewed": true}',
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["human_reviewed"] is True
+        free_text_annotation.refresh_from_db()
+        assert free_text_annotation.human_reviewed is True
+
+        # Verify version history captures the change from True to False using django-simple-history
+        history = free_text_annotation.history.all().order_by("history_date")
+        assert history.count() == 2
+
+        # The first version should have human_reviewed=False
+        assert history.first().human_reviewed is False
+        assert history.first().reviewed_by is None
+        assert history.first().reviewed_at is None
+
+        # latest should have human_reviewed=True
+        assert history.last().human_reviewed is True
+        assert history.last().reviewed_by == consultation_user
+        assert isinstance(history.last().reviewed_at, datetime)
+
     def test_patch_response_sentiment(self, client, consultation_user_token, free_text_annotation):
         url = reverse(
             "response-detail",
@@ -650,9 +694,6 @@ class TestAPIViewPermissions:
         )
 
         assert free_text_annotation.evidence_rich is True
-
-        # Create initial history record
-        free_text_annotation.save()
 
         response = client.patch(
             url,
@@ -669,10 +710,10 @@ class TestAPIViewPermissions:
 
         # Verify version history captures the change from True to False using django-simple-history
         history = free_text_annotation.history.all().order_by("history_date")
-        assert len(history) >= 2  # At least 2 versions (initial + post-PATCH)
+        assert history.count() == 2
 
         # The first version should have sentiment=null, latest should have sentiment="AGREEMENT"
-        assert history[0].sentiment is None  # Initial state
+        assert history.first().sentiment is None  # Initial state
         assert history.last().sentiment == "AGREEMENT"  # Final state after PATCH
 
     def test_patch_response_evidence_rich(
@@ -689,9 +730,6 @@ class TestAPIViewPermissions:
 
         assert free_text_annotation.evidence_rich is True
 
-        # Create initial history record
-        free_text_annotation.save()
-
         response = client.patch(
             url,
             data='{"evidenceRich": false}',
@@ -707,10 +745,10 @@ class TestAPIViewPermissions:
 
         # Verify version history captures the change from True to False using django-simple-history
         history = free_text_annotation.history.all().order_by("history_date")
-        assert len(history) >= 2  # At least 2 versions (initial + post-PATCH)
+        assert history.count() == 2
 
         # The first version should have evidence_rich=True, latest should have evidence_rich=False
-        assert history[0].evidence_rich is True  # Initial state
+        assert history.first().evidence_rich is True  # Initial state
         assert history.last().evidence_rich is False  # Final state after PATCH
 
     def test_patch_response_themes(
