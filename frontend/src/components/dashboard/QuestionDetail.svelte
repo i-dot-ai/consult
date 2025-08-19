@@ -310,6 +310,7 @@
                     ...($themeInfoData?.themes?.find(themeInfo => themeInfo.id === themeId)),
                 })
             })}
+            loading={$isThemeAggrLoading}
             totalAnswers={$answersData?.respondents_total}
             filteredTotal={$answersData?.filtered_total}
             demoData={$demoAggrData?.demographic_aggregations}
@@ -343,7 +344,7 @@
             searchValue={searchValue}
             setSearchValue={(value) => searchValue = value}
             searchMode={searchMode}
-            setSearchMode={newSearchMode => searchMode = newSearchMode}
+            setSearchMode={(newSearchMode: SearchModeValues) => searchMode = newSearchMode}
             demoData={$demoAggrData?.demographic_aggregations}
             demoOptions={$demoOptionsData?.demographic_options}
             demoFilters={demoFilters}

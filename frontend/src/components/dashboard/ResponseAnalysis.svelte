@@ -1,7 +1,7 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import { slide, fly } from "svelte/transition";
+    import { slide, fly, fade } from "svelte/transition";
     import Button from "../inputs/Button.svelte";
     import TitleRow from "./TitleRow.svelte";
     import Panel from "./Panel.svelte";
@@ -25,7 +25,7 @@
     export let searchValue: string = "";
     export let setSearchValue = (value: string) => {};
     export let searchMode: SearchModeValues = SearchModeValues.KEYWORD;
-    export let setSearchMode = (next: string) => {};
+    export let setSearchMode = (next: SearchModeValues) => {};
 
     export let demoOptions: Object = {};
     export let demoData: Object = {};
@@ -113,9 +113,17 @@
                     <TitleRow level={3} title={`${filteredTotal} responses found`} subtitle="All responses to this question" />
 
                     {#if isAnswersLoading && answers.length === 0}
-                        <p transition:slide>Loading answers...</p>
+                        <div transition:fade>
+                            {#each "_".repeat(5) as _}
+                                <AnswerCard skeleton={true} />
+                            {/each}
+                        </div>
                     {:else if answersError}
-                        <p transition:slide>Answers Error: {answersError}</p>
+                        <div transition:slide>
+                            <Alert>
+                                <span slot="text">Answers Error: {answersError}</span>
+                            </Alert>
+                        </div>
                     {:else}
                         <div>
                             <ul>
@@ -136,6 +144,14 @@
                                     </li>
                                 {/each}
                             </ul>
+
+                            {#if isAnswersLoading}
+                                <div transition:fade>
+                                    {#each "_".repeat(5) as _}
+                                        <AnswerCard skeleton={true} />
+                                    {/each}
+                                </div>
+                            {/if}
 
                             <div class="m-auto w-max">
                                 {#if hasMorePages}
