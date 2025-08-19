@@ -13,6 +13,8 @@
     export let themes: FormattedTheme[] = [];
     export let totalAnswers: number = 0;
     export let skeleton: boolean = false;
+
+    const TABLE_FLIP_SPEED = 10;
 </script>
 
 <div class="w-full overflow-auto">
@@ -67,7 +69,7 @@
             <tbody in:fade>
                 {#each themes as theme (theme.id)}
                     <tr
-                        animate:flip={{ duration: 200 }}
+                        animate:flip={{ duration: 300 + (themes.length * TABLE_FLIP_SPEED) }}
                         class={clsx([
                             "text-xs",
                             "border-y",
