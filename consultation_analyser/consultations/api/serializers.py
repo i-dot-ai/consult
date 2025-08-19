@@ -100,6 +100,7 @@ class FilterSerializer(serializers.Serializer):
     themeFilters = serializers.CharField(required=False, allow_blank=True)
     demoFilters = serializers.ListField(child=serializers.CharField(), required=False)
     evidenceRich = serializers.BooleanField(required=False)
+    respondent_id = serializers.UUIDField(required=False)
     searchValue = serializers.CharField(required=False)
     searchMode = serializers.ChoiceField(choices=["semantic", "keyword"], required=False)
 

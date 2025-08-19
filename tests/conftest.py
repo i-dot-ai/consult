@@ -206,6 +206,11 @@ def non_consultation_user():
     yield user
     user.delete()
 
+@pytest.fixture
+def consultation_user_token(consultation_user):
+    refresh = RefreshToken.for_user(consultation_user)
+    yield str(refresh.access_token)
+
 
 @pytest.fixture
 def dashboard_user_token(dashboard_user):

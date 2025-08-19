@@ -1,4 +1,5 @@
 from typing import TypedDict
+from uuid import UUID
 
 from django.db.models import Count, Q, QuerySet
 from pgvector.django import CosineDistance
@@ -11,8 +12,9 @@ class FilterParams(TypedDict, total=False):
     sentiment_list: list[str]
     theme_list: list[str]
     evidence_rich: bool
-    search_mode: str
     demo_filters: dict[str, str]
+    respondent_id: UUID
+    search_mode: str
     search_value: str
 
 
@@ -30,6 +32,9 @@ def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
 
     if validated_data.get("evidenceRich"):
         filters["evidence_rich"] = True
+
+    if respondent_id:=validated_data.get("respondent_id"):
+        filters["respondent_id"] = respondent_id
 
     if "searchValue" in validated_data:
         filters["search_value"] = validated_data["searchValue"]
@@ -70,6 +75,9 @@ def build_response_filter_query(filters: FilterParams) -> Q:
 
     if evidence_rich := filters.get("evidence_rich"):
         query &= Q(annotation__evidence_rich=evidence_rich)
+
+    if respondent_id := filters.get("respondent_id"):
+        query &= Q(respondent_id=respondent_id)
 
     # Handle demographic filters
     if demo_filters := filters.get("demo_filters"):
