@@ -1,3 +1,4 @@
+import json
 from uuid import uuid4
 
 import orjson
@@ -636,6 +637,85 @@ class TestAPIViewPermissions:
         url = build_url(endpoint_name, free_text_question)
         response = client.get(url)
         assert response.status_code == 403
+
+    def test_patch_response_evidence_rich(
+        self, client, consultation_user_token, free_text_annotation
+    ):
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        assert free_text_annotation.evidence_rich is True
+
+        response = client.patch(
+            url,
+            data='{"evidenceRich": false}',
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["evidenceRich"] is False
+        free_text_annotation.refresh_from_db()
+        assert free_text_annotation.evidence_rich is False
+
+    def test_patch_response_themes(
+        self, client, consultation_user_token, free_text_annotation, alternative_theme
+    ):
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        assert list(free_text_annotation.themes.values_list("key", flat=True)) == ["A"]
+
+        response = client.patch(
+            url,
+            data=json.dumps({"themes": [{"id": str(alternative_theme.id)}]}),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 200, response.json()
+        assert [x["key"] for x in response.json()["themes"]] == ["B"]
+        free_text_annotation.refresh_from_db()
+        assert list(free_text_annotation.themes.values_list("key", flat=True)) == ["B"]
+
+    def test_patch_response_themes_invalid(
+        self, client, consultation_user_token, free_text_annotation
+    ):
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        fake_uuid = str(uuid4())
+
+        response = client.patch(
+            url,
+            data=json.dumps({"themes": [{"id": fake_uuid}]}),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 400
+        assert response.json() == {"themes": [f'Invalid pk "{fake_uuid}" - object does not exist.']}
 
 
 @pytest.mark.django_db

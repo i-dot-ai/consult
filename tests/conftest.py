@@ -7,7 +7,14 @@ from moto import mock_aws
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from consultation_analyser.constants import DASHBOARD_ACCESS
-from consultation_analyser.consultations.models import DemographicOption, Response
+from consultation_analyser.consultations.models import (
+    DemographicOption,
+    Respondent,
+    Response,
+    ResponseAnnotation,
+    ResponseAnnotationTheme,
+    Theme,
+)
 from consultation_analyser.factories import (
     ConsultationFactory,
     MultiChoiceAnswerFactory,
@@ -208,6 +215,12 @@ def non_consultation_user():
 
 
 @pytest.fixture
+def consultation_user_token(consultation_user):
+    refresh = RefreshToken.for_user(consultation_user)
+    yield str(refresh.access_token)
+
+
+@pytest.fixture
 def dashboard_user_token(dashboard_user):
     refresh = RefreshToken.for_user(dashboard_user)
     yield str(refresh.access_token)
@@ -335,3 +348,38 @@ def twenty_five_demographic_option(consultation):
     )
     yield do
     do.delete()
+
+
+@pytest.fixture
+def respondent_1(consultation):
+    respondent = Respondent.objects.create(consultation=consultation)
+    yield respondent
+    respondent.delete()
+
+
+@pytest.fixture
+def free_text_response(free_text_question, respondent_1):
+    response = Response.objects.create(question=free_text_question, respondent=respondent_1)
+
+    yield response
+    response.delete()
+
+
+@pytest.fixture
+def free_text_annotation(free_text_response):
+    annotation = ResponseAnnotation.objects.create(response=free_text_response, evidence_rich=True)
+    theme_a = Theme.objects.create(question=free_text_response.question, key="A")
+    annotation_a = ResponseAnnotationTheme.objects.create(
+        response_annotation=annotation, theme=theme_a
+    )
+    yield annotation
+    annotation_a.delete()
+    theme_a.delete()
+    annotation.delete()
+
+
+@pytest.fixture
+def alternative_theme(free_text_response):
+    theme = Theme.objects.create(question=free_text_response.question, key="B")
+    yield theme
+    theme.delete()

@@ -79,10 +79,13 @@ class DemographicAggregationsSerializer(serializers.Serializer):
 
 class ThemeSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField()
+    name = serializers.CharField(required=False)
+    description = serializers.CharField(required=False)
+    key = serializers.CharField(required=False)
 
     class Meta:
         model = Theme
-        fields = ["id", "name", "description"]
+        fields = ["id", "name", "description", "key"]
 
 
 class ThemeInformationSerializer(serializers.Serializer):
@@ -138,9 +141,19 @@ class MultiChoiceAnswerCount(serializers.Serializer):
 
 
 class RelatedThemeSerializer(serializers.PrimaryKeyRelatedField):
+    """this is a variation on the PrimaryKeyRelatedField where
+    representation is actually that of the ThemeSerializer
+    """
+
     queryset = Theme.objects.all()
+
+    def to_internal_value(self, data):
+        data = ThemeSerializer().to_internal_value(data)["id"]
+        return super().to_internal_value(data)
+
     def to_representation(self, value):
         return ThemeSerializer().to_representation(value)
+
 
 class ResponseSerializer(serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
@@ -153,12 +166,19 @@ class ResponseSerializer(serializers.ModelSerializer):
     evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
-        def encode(txt: str):
-            if isinstance(txt, (bool, str)):
-                return txt
-            return str(txt)
+        return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
 
-        return {d.field_name: encode(d.field_value) for d in obj.respondent.demographics.all()}
+    def update(self, instance: Response, validated_data):
+        if annotation := validated_data.get("annotation"):
+            if "evidence_rich" in annotation:
+                instance.annotation.evidence_rich = annotation["evidence_rich"]
+
+            if "themes" in annotation:
+                instance.annotation.themes.set(annotation["themes"])
+
+            instance.annotation.save()
+
+        return instance
 
     class Meta:
         model = Response
