@@ -35,6 +35,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         /^\/consultations.*/,
         // /^\/evaluations.*/,
         /^\/design.*/,
+        /^\/_astro.*/,
     ];
 
     for (const skipPattern of toSkip) {
