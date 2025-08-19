@@ -16,14 +16,14 @@ locals {
       name  = "AWS_REGION"
       value = var.region
     },
-    {
-      name  = "AZURE_OPENAI_API_KEY"
-      value = "placeholder" # Update value in SSM - Do not hardcode
-    },
-    {
-      name  = "AZURE_OPENAI_ENDPOINT"
-      value = "placeholder" # Update value in SSM - Do not hardcode
-    },
+    # {
+    #   name  = "AZURE_OPENAI_API_KEY"
+    #   value = "placeholder" # Update value in SSM - Do not hardcode
+    # },
+    # {
+    #   name  = "AZURE_OPENAI_ENDPOINT"
+    #   value = "placeholder" # Update value in SSM - Do not hardcode
+    # },
     {
       name  = "OPENAI_API_VERSION"
       value = "placeholder" # Update value in SSM - Do not hardcode
@@ -35,6 +35,10 @@ locals {
     {
       name  = "THEMEFINDER_SLACK_WEBHOOK_URL"
       value = "placeholder" # Update value in SSM - Do not hardcode
+    },
+    {
+      name  = "LITELLM_GOVAI_CLIENT_OPENAI_API_KEY"
+      value = data.aws_ssm_parameter.litellm_api_key.arn
     }
   ]
 }
