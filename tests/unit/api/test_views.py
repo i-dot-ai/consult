@@ -652,6 +652,9 @@ class TestAPIViewPermissions:
 
         assert free_text_annotation.evidence_rich is True
 
+        # Create initial history record
+        free_text_annotation.save()
+
         response = client.patch(
             url,
             data='{"evidenceRich": false}',
@@ -665,6 +668,14 @@ class TestAPIViewPermissions:
         free_text_annotation.refresh_from_db()
         assert free_text_annotation.evidence_rich is False
 
+        # Verify version history captures the change from True to False using django-simple-history
+        history = free_text_annotation.history.all().order_by("history_date")
+        assert len(history) >= 2  # At least 2 versions (initial + post-PATCH)
+
+        # The first version should have evidence_rich=True, latest should have evidence_rich=False
+        assert history[0].evidence_rich is True  # Initial state
+        assert history.last().evidence_rich is False  # Final state after PATCH
+
     def test_patch_response_themes(
         self, client, consultation_user_token, free_text_annotation, alternative_theme
     ):
@@ -676,6 +687,9 @@ class TestAPIViewPermissions:
                 "pk": free_text_annotation.response.id,
             },
         )
+
+        # Create initial history record
+        free_text_annotation.save()
 
         assert list(free_text_annotation.themes.values_list("key", flat=True)) == ["A"]
 
@@ -689,8 +703,20 @@ class TestAPIViewPermissions:
         )
         assert response.status_code == 200, response.json()
         assert [x["key"] for x in response.json()["themes"]] == ["B"]
-        free_text_annotation.refresh_from_db()
-        assert list(free_text_annotation.themes.values_list("key", flat=True)) == ["B"]
+
+        # Verify M2M version history using django-simple-history
+        history = free_text_annotation.history.all().order_by("history_date")
+        assert len(history) >= 2  # At least 2 versions (initial + post-PATCH)
+
+        # The initial version might be empty - find the first version that has themes
+        initial_record_with_themes = next(record for record in history if record.themes.exists())
+
+        initial_themes = set(initial_record_with_themes.themes.values_list("theme__key", flat=True))
+        final_themes = set(history.last().themes.values_list("theme__key", flat=True))
+
+        # Verify the actual theme change: A → B
+        assert initial_themes == {"A"}
+        assert final_themes == {"B"}
 
     def test_patch_response_themes_invalid(
         self, client, consultation_user_token, free_text_annotation
