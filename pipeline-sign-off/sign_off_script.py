@@ -17,8 +17,6 @@ from themefinder import (
     theme_refinement,
 )
 
-
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,

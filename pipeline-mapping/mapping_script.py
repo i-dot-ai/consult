@@ -30,6 +30,7 @@ llm = ChatOpenAI(
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 BASE_PREFIX = "app_data/consultations/"
 
+
 def download_s3_subdir(subdir: str) -> None:
     """
     Recursively downloads the contents of a specified subdirectory from S3
