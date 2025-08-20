@@ -36,7 +36,7 @@
 
     <button
         use:melt={$root}
-        class="relative cursor-pointer rounded-full bg-neutral-300 transition-colors data-[state=checked]:bg-neutral-800 shrink-0"
+        class="relative cursor-pointer rounded-full bg-neutral-300 transition-colors data-[state=checked]:bg-neutral-800 shrink-0 data-[state=checked]:hover:bg-neutral-600 hover:bg-neutral-400"
         id={id}
         aria-labelledby={`${id}-label`}
     >
