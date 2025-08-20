@@ -8,8 +8,8 @@ from pathlib import Path
 
 import boto3
 import pandas as pd
-# from langchain_openai import AzureChatOpenAI
-from langchain_litellm import ChatLiteLLM
+from langchain_openai import AzureChatOpenAI
+# from langchain_litellm import ChatLiteLLM
 
 from themefinder import detail_detection, theme_mapping
 
@@ -21,17 +21,21 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# llm = AzureChatOpenAI(
-#     model="gpt-4o",
-#     temperature=0,
-# )
 
-llm = ChatLiteLLM(
+
+llm = AzureChatOpenAI(
     model="gpt-4o",
     temperature=0,
-    api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-    base_url=os.environ["LLM_GATEWAY_URL"],
+    openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+    openai_api_base=os.environ["LLM_GATEWAY_URL"],
 )
+
+# llm = ChatLiteLLM(
+#     model="gpt-4o",
+#     temperature=0,
+#     api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+#     base_url=os.environ["LLM_GATEWAY_URL"],
+# )
 
 
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
