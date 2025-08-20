@@ -10,8 +10,11 @@ import boto3
 import pandas as pd
 # from langchain_openai import AzureChatOpenAI
 from langchain_litellm import ChatLiteLLM
+import litellm
 
 from themefinder import detail_detection, theme_mapping
+
+litellm._turn_on_debug()
 
 # Configure logging
 logging.basicConfig(
@@ -21,16 +24,9 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-print("Gateway URL:", os.environ.get("LLM_GATEWAY_URL"))
-print("API Key (first 10 chars):", os.environ.get("LITELLM_CONSULT_OPENAI_API_KEY", "NOT SET")[:10])
+print("Gateway URL:", os.environ.get("OPENAI_API_BASE"))
+print("API Key (first 10 chars):", os.environ.get("OPENAI_API_KEY", "NOT SET")[:10])
 
-# Test if your gateway is reachable
-import requests
-try:
-    response = requests.get(os.environ["LLM_GATEWAY_URL"])
-    print("Gateway status:", response.status_code)
-except Exception as e:
-    print("Gateway connection error:", e)
 
 llm = ChatLiteLLM(
     model="gpt-4o",
