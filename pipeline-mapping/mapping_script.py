@@ -27,6 +27,7 @@ llm = ChatLiteLLM(
     temperature=0,
     api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
     base_url=os.environ["LLM_GATEWAY_URL"],   # your LiteLLM gateway URL
+    provider="litellm"  
 )
 
 # llm = AzureChatOpenAI(
