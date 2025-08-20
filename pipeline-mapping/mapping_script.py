@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 llm = AzureChatOpenAI(
     model="gpt-4o",
     temperature=0,
-    openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-    openai_api_base=os.environ["LLM_GATEWAY_URL"],
+    api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+    base_url=os.environ["LLM_GATEWAY_URL"],
 )
 
 # llm = ChatLiteLLM(
