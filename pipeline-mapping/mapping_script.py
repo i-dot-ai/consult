@@ -13,6 +13,14 @@ from langchain_litellm import ChatLiteLLM
 
 from themefinder import detail_detection, theme_mapping
 
+# Configure logging
+logging.basicConfig(
+    level=logging.INFO,
+    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
+    datefmt="%Y-%m-%d %H:%M:%S",
+)
+logger = logging.getLogger(__name__)
+
 print("Gateway URL:", os.environ.get("LLM_GATEWAY_URL"))
 print("API Key (first 10 chars):", os.environ.get("LITELLM_CONSULT_OPENAI_API_KEY", "NOT SET")[:10])
 
