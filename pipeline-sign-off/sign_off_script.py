@@ -9,7 +9,6 @@ from typing import Any, Dict
 
 import boto3
 import pandas as pd
-from django.conf import settings
 from langchain_openai import ChatOpenAI
 from themefinder import (
     theme_condensation,
@@ -18,7 +17,6 @@ from themefinder import (
     theme_refinement,
 )
 
-logger = settings.LOGGER
 
 
 # Configure logging
@@ -27,6 +25,8 @@ logging.basicConfig(
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
+logger = logging.getLogger(__name__)
+
 
 llm = ChatOpenAI(
     model="gpt-4o",
