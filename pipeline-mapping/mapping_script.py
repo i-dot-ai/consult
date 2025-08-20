@@ -9,12 +9,8 @@ from pathlib import Path
 import boto3
 import pandas as pd
 # from langchain_openai import AzureChatOpenAI
-from langchain_litellm import ChatLiteLLM
-import litellm
-
+from langchain_openai import ChatOpenAI
 from themefinder import detail_detection, theme_mapping
-
-litellm._turn_on_debug()
 
 # Configure logging
 logging.basicConfig(
@@ -24,18 +20,20 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-print("Gateway URL:", os.environ.get("OPENAI_API_BASE"))
-print("API Key (first 10 chars):", os.environ.get("OPENAI_API_KEY", "NOT SET")[:10])
+# llm = AzureChatOpenAI(
+#     model="gpt-4o",
+#     temperature=0,
+# )
 
-
-llm = ChatLiteLLM(
+llm = ChatOpenAI(
     model="gpt-4o",
     temperature=0,
+    openai_api_base=os.environ["LLM_GATEWAY_URL"],
+    openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
 )
 
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 BASE_PREFIX = "app_data/consultations/"
-
 
 def download_s3_subdir(subdir: str) -> None:
     """

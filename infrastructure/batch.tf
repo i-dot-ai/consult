@@ -39,8 +39,8 @@ module "batch_job_mapping" {
     "REPO" : "consult",
     "AWS_ACCOUNT_ID": data.aws_caller_identity.current.id,
     "DOCKER_BUILDER_CONTAINER": "consult-mapping",
-    "OPENAI_API_KEY": data.aws_ssm_parameter.litellm_api_key.value
-    "OPENAI_API_BASE": local.llm_gateway_url
+    "LITELLM_CONSULT_OPENAI_API_KEY": data.aws_ssm_parameter.litellm_api_key.value
+    "LLM_GATEWAY_URL": local.llm_gateway_url
   }
   additional_iam_policies  = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
   secrets = [
@@ -68,8 +68,8 @@ module "batch_job_sign_off" {
     "REPO" : "consult",
     "AWS_ACCOUNT_ID": data.aws_caller_identity.current.id,
     "DOCKER_BUILDER_CONTAINER": "consult-sign-off",
-    "OPENAI_API_KEY": data.aws_ssm_parameter.litellm_api_key.value
-    "OPENAI_API_BASE": local.llm_gateway_url
+    "LITELLM_CONSULT_OPENAI_API_KEY": data.aws_ssm_parameter.litellm_api_key.value
+    "LLM_GATEWAY_URL": local.llm_gateway_url
   }
   additional_iam_policies  = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
   secrets = [
