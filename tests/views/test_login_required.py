@@ -1,9 +1,7 @@
 import pytest
-from django.contrib.auth.models import Group
 from django.urls import reverse
 
 from consultation_analyser import factories
-from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.urls import urlpatterns
 from tests.utils import build_url
 
@@ -119,7 +117,7 @@ url_patterns_to_test = [
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("url_pattern", url_patterns_to_test)
-def test_consultations_urls_login_required(client, url_pattern):
+def test_consultations_urls_login_required(client, dashboard_access_group, url_pattern):
     """
     This tests all URLs by default unless deliberately excluded (special cases).
 
@@ -135,8 +133,7 @@ def test_consultations_urls_login_required(client, url_pattern):
     non_consultation_user = factories.UserFactory()
     possible_args = set_up_consultation(user)
 
-    dashboard_access = Group.objects.get(name=DASHBOARD_ACCESS)
-    user.groups.add(dashboard_access)
+    user.groups.add(dashboard_access_group)
     user.save()
 
     url = get_url_for_pattern(url_pattern, possible_args)
@@ -157,7 +154,7 @@ def test_consultations_urls_login_required(client, url_pattern):
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("url_pattern", API_URL_NAMES)
-def test_api_urls_permission_required(client, url_pattern):
+def test_api_urls_permission_required(client, dashboard_access_group, url_pattern):
     """
     Test API endpoints return 403 for authentication/permission failures.
 
@@ -173,8 +170,7 @@ def test_api_urls_permission_required(client, url_pattern):
     response = factories.ResponseFactory(question=question)
     factories.ResponseAnnotationFactory(response=response)
 
-    dashboard_access = Group.objects.get(name=DASHBOARD_ACCESS)
-    user.groups.add(dashboard_access)
+    user.groups.add(dashboard_access_group)
     user.save()
 
     url = build_url(url_pattern, question)
@@ -211,7 +207,7 @@ url_patterns_to_test = [
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("url_pattern", url_patterns_to_test)
-def test_urls_permission_required(client, url_pattern):
+def test_urls_permission_required(client, dashboard_access_group, url_pattern):
     """
     Test API endpoints return 403 for authentication/permission failures.
     """
@@ -219,8 +215,7 @@ def test_urls_permission_required(client, url_pattern):
     non_consultation_user = factories.UserFactory()
     possible_args = set_up_consultation(user)
 
-    dashboard_access = Group.objects.get(name=DASHBOARD_ACCESS)
-    user.groups.add(dashboard_access)
+    user.groups.add(dashboard_access_group)
     user.save()
 
     url = get_url_for_pattern(url_pattern, possible_args)

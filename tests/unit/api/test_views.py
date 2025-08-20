@@ -2,10 +2,8 @@ from uuid import uuid4
 
 import orjson
 import pytest
-from django.contrib.auth.models import Group
 from django.urls import reverse
 
-from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.factories import (
     QuestionFactory,
     RespondentFactory,
@@ -571,11 +569,10 @@ class TestAPIViewPermissions:
         return UserFactory()
 
     @pytest.fixture()
-    def user_without_consultation_access(self):
+    def user_without_consultation_access(self, dashboard_access_group):
         """User with dashboard access but not consultation access"""
         user = UserFactory()
-        dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
-        user.groups.add(dash_access)
+        user.groups.add(dashboard_access_group)
         user.save()
         return user
 

@@ -292,10 +292,9 @@ def theme2(free_text_question):
 
 
 @pytest.fixture()
-def consultation_user(consultation):
+def consultation_user(consultation, dashboard_access_group):
     user = UserFactory()
-    dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
-    user.groups.add(dash_access)
+    user.groups.add(dashboard_access_group)
     user.save()
     consultation.users.add(user)
     return user

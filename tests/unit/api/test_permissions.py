@@ -1,10 +1,8 @@
 from unittest.mock import Mock
 
 import pytest
-from django.contrib.auth.models import Group
 from django.test import RequestFactory
 
-from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.api.permissions import (
     CanSeeConsultation,
     HasDashboardAccess,
@@ -18,10 +16,9 @@ def consultation():
 
 
 @pytest.fixture()
-def user_with_dashboard_access():
+def user_with_dashboard_access(dashboard_access_group):
     user = UserFactory()
-    dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
-    user.groups.add(dash_access)
+    user.groups.add(dashboard_access_group)
     user.save()
     return user
 
@@ -204,12 +201,11 @@ class TestCanSeeConsultation:
 class TestPermissionsCombined:
     """Test how permissions work when combined in API views"""
 
-    def test_both_permissions_required(self, request_factory, consultation):
+    def test_both_permissions_required(self, request_factory, consultation, dashboard_access_group):
         """Test that both HasDashboardAccess and CanSeeConsultation must pass"""
         # User with dashboard access but not consultation access
         user_with_dashboard = UserFactory()
-        dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
-        user_with_dashboard.groups.add(dash_access)
+        user_with_dashboard.groups.add(dashboard_access_group)
         user_with_dashboard.save()
 
         # User with consultation access but not dashboard access
@@ -218,7 +214,7 @@ class TestPermissionsCombined:
 
         # User with both accesses
         user_with_both = UserFactory()
-        dash_access.user_set.add(user_with_both)
+        dashboard_access_group.user_set.add(user_with_both)
         consultation.users.add(user_with_both)
 
         view = Mock()
