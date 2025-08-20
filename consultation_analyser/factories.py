@@ -84,7 +84,7 @@ class RespondentFactory(DjangoModelFactory):
         if not create or not extracted:
             return
 
-        if not extracted:
+        if extracted is None:
             extracted = {
                 "Nation": random.choice(["England", "Wales", "Northern Ireland", "Scotland"]),
                 "Age": random.choice(["Under 18", "18-35", "36-50", "51-65", "66+"]),

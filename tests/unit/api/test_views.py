@@ -29,21 +29,10 @@ class TestDemographicOptionsAPIView:
         assert "demographic_options" in data
         assert data["demographic_options"] == {}
 
-    def test_get_demographic_options_with_data(self, client, consultation_user, free_text_question):
+    def test_get_demographic_options_with_data(self, client, consultation_user, free_text_question,
+                                               respondent_1, respondent_2, respondent_3):
         """Test API endpoint returns demographic options correctly"""
         # Create respondents with different demographic data
-        RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"individual": True, "region": "north", "age": 25},
-        )
-        RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"individual": False, "region": "south", "age": 35},
-        )
-        RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"individual": True, "region": "north", "age": 45},
-        )
 
         client.force_login(consultation_user)
         url = reverse(
@@ -100,27 +89,15 @@ class TestDemographicAggregationsAPIView:
         assert data["demographic_aggregations"] == {}
 
     def test_get_demographic_aggregations_with_data(
-        self, client, consultation_user, free_text_question
+        self, client, consultation_user, free_text_question, respondent_1, respondent_2, respondent_3
     ):
         """Test API endpoint returns demographic aggregations correctly"""
         # Create respondents with different demographic data
-        respondent1 = RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"gender": "male", "age_group": "25-34", "region": "north"},
-        )
-        respondent2 = RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"gender": "female", "age_group": "25-34", "region": "south"},
-        )
-        respondent3 = RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"gender": "male", "age_group": "35-44", "region": "north"},
-        )
 
         # Create responses for each respondent
-        ResponseFactory(respondent=respondent1, question=free_text_question)
-        ResponseFactory(respondent=respondent2, question=free_text_question)
-        ResponseFactory(respondent=respondent3, question=free_text_question)
+        ResponseFactory(respondent=respondent_1, question=free_text_question)
+        ResponseFactory(respondent=respondent_2, question=free_text_question)
+        ResponseFactory(respondent=respondent_3, question=free_text_question)
 
         client.force_login(consultation_user)
         url = reverse(
@@ -137,29 +114,20 @@ class TestDemographicAggregationsAPIView:
         assert "demographic_aggregations" in data
 
         aggregations = data["demographic_aggregations"]
-        assert aggregations["gender"]["male"] == 2
-        assert aggregations["gender"]["female"] == 1
-        assert aggregations["age_group"]["25-34"] == 2
-        assert aggregations["age_group"]["35-44"] == 1
+        assert aggregations["age"]["25"] == 1
+        assert aggregations["age"]["35"] == 1
+        assert aggregations["age"]["45"] == 1
         assert aggregations["region"]["north"] == 2
         assert aggregations["region"]["south"] == 1
 
     def test_get_demographic_aggregations_with_filters(
-        self, client, consultation_user, free_text_question
+        self, client, consultation_user, free_text_question,respondent_1, respondent_2
     ):
         """Test API endpoint applies demographic filters correctly"""
         # Create respondents with different demographics
-        respondent1 = RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"individual": True, "region": "north"},
-        )
-        respondent2 = RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"individual": False, "region": "south"},
-        )
 
-        ResponseFactory(question=free_text_question, respondent=respondent1)
-        ResponseFactory(question=free_text_question, respondent=respondent2)
+        ResponseFactory(question=free_text_question, respondent=respondent_1)
+        ResponseFactory(question=free_text_question, respondent=respondent_2)
 
         client.force_login(consultation_user)
         url = reverse(
@@ -271,15 +239,13 @@ class TestThemeAggregationsAPIView:
         assert data["theme_aggregations"] == {}
 
     def test_get_theme_aggregations_with_responses(
-        self, client, consultation_user, free_text_question, theme_a, theme_b
+        self, client, consultation_user, free_text_question, theme_a, theme_b, respondent_1, respondent_2
     ):
         """Test API endpoint returns theme aggregations correctly"""
         # Create respondents and responses
-        respondent1 = RespondentFactory(consultation=free_text_question.consultation)
-        respondent2 = RespondentFactory(consultation=free_text_question.consultation)
 
-        response1 = ResponseFactory(question=free_text_question, respondent=respondent1)
-        response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
+        response1 = ResponseFactory(question=free_text_question, respondent=respondent_1)
+        response2 = ResponseFactory(question=free_text_question, respondent=respondent_2)
 
         # Create annotations with themes
         annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
@@ -307,15 +273,13 @@ class TestThemeAggregationsAPIView:
         assert aggregations[str(theme_b.id)] == 1  # Theme B appears in 1 response
 
     def test_get_theme_aggregations_with_filters(
-        self, client, consultation_user, free_text_question, theme_a, theme_b
+        self, client, consultation_user, free_text_question, theme_a, theme_b, respondent_1, respondent_2
     ):
         """Test API endpoint applies theme filtering correctly"""
         # Create responses with different theme combinations
-        respondent1 = RespondentFactory(consultation=free_text_question.consultation)
-        respondent2 = RespondentFactory(consultation=free_text_question.consultation)
 
-        response1 = ResponseFactory(question=free_text_question, respondent=respondent1)
-        response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
+        response1 = ResponseFactory(question=free_text_question, respondent=respondent_1)
+        response2 = ResponseFactory(question=free_text_question, respondent=respondent_2)
 
         # Response 1: has theme1 and theme2
         annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
@@ -348,14 +312,11 @@ class TestThemeAggregationsAPIView:
 
 @pytest.mark.django_db
 class TestFilteredResponsesAPIView:
-    def test_get_filtered_responses_basic(self, client, consultation_user, free_text_question):
+    def test_get_filtered_responses_basic(self, client, consultation_user, free_text_question, respondent_1):
         """Test API endpoint returns filtered responses correctly"""
         # Create test data
-        respondent = RespondentFactory(
-            consultation=free_text_question.consultation, demographics={"individual": True}
-        )
         ResponseFactory(
-            question=free_text_question, respondent=respondent, free_text="Test response"
+            question=free_text_question, respondent=respondent_1, free_text="Test response"
         )
 
         client.force_login(consultation_user)
@@ -382,9 +343,9 @@ class TestFilteredResponsesAPIView:
 
         # Verify respondent data structure
         respondent_data = data["all_respondents"][0]
-        assert respondent_data["identifier"] == str(respondent.identifier)
+        assert respondent_data["identifier"] == str(respondent_1.identifier)
         assert respondent_data["free_text_answer_text"] == "Test response"
-        assert respondent_data["demographic_data"] == {"individual": True}
+        assert respondent_data["demographic_data"] == {'age': '25', 'individual': True, 'region': 'north'}
 
     def test_get_filtered_responses_with_pagination(
         self, client, consultation_user, free_text_question
@@ -414,21 +375,12 @@ class TestFilteredResponsesAPIView:
         assert data["filtered_total"] == 5
 
     def test_get_filtered_responses_with_demographic_filters(
-        self, client, consultation_user, free_text_question
+        self, client, consultation_user, free_text_question, respondent_1, respondent_2
     ):
         """Test API endpoint with demographic filtering"""
         # Create respondents with different demographics
-        respondent1 = RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"individual": True, "region": "north"},
-        )
-        respondent2 = RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"individual": False, "region": "south"},
-        )
-
-        ResponseFactory(question=free_text_question, respondent=respondent1)
-        ResponseFactory(question=free_text_question, respondent=respondent2)
+        ResponseFactory(question=free_text_question, respondent=respondent_1)
+        ResponseFactory(question=free_text_question, respondent=respondent_2)
 
         client.force_login(consultation_user)
         url = reverse(
@@ -449,25 +401,22 @@ class TestFilteredResponsesAPIView:
         assert data["respondents_total"] == 2  # Total respondents
         assert data["filtered_total"] == 1  # Filtered to individuals only
         assert len(data["all_respondents"]) == 1
-        assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
+        assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
 
     def test_get_filtered_responses_with_theme_filters(
-        self, client, consultation_user, free_text_question, theme_a, theme_b
+        self, client, consultation_user, free_text_question, theme_a, theme_b, respondent_1, respondent_2, respondent_3
     ):
         """Test API endpoint with theme filtering using AND logic"""
         # Create responses with different theme combinations
-        respondent1 = RespondentFactory(consultation=free_text_question.consultation)
-        respondent2 = RespondentFactory(consultation=free_text_question.consultation)
-        respondent3 = RespondentFactory(consultation=free_text_question.consultation)
 
         response1 = ResponseFactory(
-            question=free_text_question, respondent=respondent1, free_text="Response 1"
+            question=free_text_question, respondent=respondent_1, free_text="Response 1"
         )
         response2 = ResponseFactory(
-            question=free_text_question, respondent=respondent2, free_text="Response 2"
+            question=free_text_question, respondent=respondent_2, free_text="Response 2"
         )
         response3 = ResponseFactory(
-            question=free_text_question, respondent=respondent3, free_text="Response 3"
+            question=free_text_question, respondent=respondent_3, free_text="Response 3"
         )
 
         # Response 1: has theme and theme2
@@ -501,7 +450,7 @@ class TestFilteredResponsesAPIView:
         # assert data["respondents_total"] == 3  # Total respondents
         assert data["filtered_total"] == 1  # Only response1 has both themes
         assert len(data["all_respondents"]) == 1
-        assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
+        assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
 
     def test_get_filtered_responses_invalid_parameters(
         self, client, consultation_user, free_text_question

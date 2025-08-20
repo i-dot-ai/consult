@@ -13,14 +13,12 @@ from tests.utils import get_sorted_theme_string
 @pytest.mark.django_db
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
 @patch("consultation_analyser.consultations.export_user_theme.settings.ENVIRONMENT", "production")
-def test_export_user_theme(mock_boto_client, consultation, free_text_question):
+def test_export_user_theme(mock_boto_client, consultation, free_text_question, respondent_1, respondent_2):
     user = factories.UserFactory(is_staff=True)
     # Set up consultation with question and responses
     consultation.users.add(user)
-    respondent = factories.RespondentFactory(consultation=consultation, themefinder_id=1)
-    respondent2 = factories.RespondentFactory(consultation=consultation, themefinder_id=2)
-    response = factories.ResponseFactory(question=free_text_question, respondent=respondent)
-    response2 = factories.ResponseFactory(question=free_text_question, respondent=respondent2)
+    response = factories.ResponseFactory(question=free_text_question, respondent=respondent_1)
+    response2 = factories.ResponseFactory(question=free_text_question, respondent=respondent_2)
 
     # Set up themes
     theme1 = factories.ThemeFactory(question=free_text_question, key="B")
@@ -58,7 +56,7 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
 
     # First answer has been audited and changed by user
     assert exported_data[0] == {
-        "Response ID": str(respondent.themefinder_id),
+        "Response ID": str(respondent_1.themefinder_id),
         "Consultation": consultation.title,
         "Question number": str(free_text_question.number),
         "Question text": free_text_question.text,
@@ -73,7 +71,7 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
 
     # Second answer has not been audited
     assert exported_data[1] == {
-        "Response ID": str(respondent2.themefinder_id),
+        "Response ID": str(respondent_2.themefinder_id),
         "Consultation": consultation.title,
         "Question number": str(free_text_question.number),
         "Question text": free_text_question.text,
@@ -90,7 +88,7 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
 @pytest.mark.django_db
 @patch("django_rq.enqueue")
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
-def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_text_question):
+def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_text_question, respondent_1):
     """Test that the export job is correctly enqueued"""
     from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 
@@ -99,8 +97,7 @@ def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_tex
     consultation.users.add(user)
 
     # Create at least one question with responses for the export to work
-    respondent = factories.RespondentFactory(consultation=consultation)
-    response = factories.ResponseFactory(question=free_text_question, respondent=respondent)
+    response = factories.ResponseFactory(question=free_text_question, respondent=respondent_1)
 
     # Create annotation so there's something to export
     annotation = factories.ResponseAnnotationFactoryNoThemes(

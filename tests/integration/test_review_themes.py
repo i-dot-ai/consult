@@ -14,15 +14,13 @@ from tests.helpers import sign_in
 
 
 @pytest.mark.django_db
-def test_review_show_response(django_app):
+def test_review_show_response(django_app, respondent_1, respondent_2):
     user = UserFactory()
     question = QuestionWithBothFactory()
     consultation = question.consultation
     consultation.users.add(user)
-    respondent1 = RespondentFactory(consultation=consultation)
-    respondent2 = RespondentFactory(consultation=consultation)
-    response1 = ResponseFactory(respondent=respondent1, question=question)
-    response2 = ResponseFactory(respondent=respondent2, question=question)
+    response1 = ResponseFactory(respondent=respondent_1, question=question)
+    response2 = ResponseFactory(respondent=respondent_2, question=question)
 
     # Add some themes
     theme_a = ThemeFactory(question=question, key="A")

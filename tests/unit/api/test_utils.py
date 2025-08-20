@@ -161,29 +161,21 @@ class TestBuildResponseFilterQuery:
 
 @pytest.mark.django_db
 class TestGetFilteredResponsesWithThemes:
-    def test_no_filters(self, free_text_question):
+    def test_no_filters(self, free_text_question, respondent_1):
         """Test getting responses with no filters"""
         # Create test data
-        respondent = RespondentFactory(consultation=free_text_question.consultation)
-        response = ResponseFactory(question=free_text_question, respondent=respondent)
+        response = ResponseFactory(question=free_text_question, respondent=respondent_1)
 
         queryset = get_filtered_responses_with_themes(free_text_question.response_set.all())
 
         assert queryset.count() == 1
         assert queryset.first() == response
 
-    def test_demographic_filters(self, free_text_question):
+    def test_demographic_filters(self, free_text_question, respondent_1, respondent_2):
         """Test filtering by demographics"""
-        # Create respondents with different demographics
-        respondent1 = RespondentFactory(
-            consultation=free_text_question.consultation, demographics={"individual": True}
-        )
-        respondent2 = RespondentFactory(
-            consultation=free_text_question.consultation, demographics={"individual": False}
-        )
 
-        response1 = ResponseFactory(question=free_text_question, respondent=respondent1)
-        ResponseFactory(question=free_text_question, respondent=respondent2)
+        response1 = ResponseFactory(question=free_text_question, respondent=respondent_1)
+        ResponseFactory(question=free_text_question, respondent=respondent_2)
 
         # Filter for individual=true
         filters = {"demo_filters": {"individual": "true"}}
@@ -194,16 +186,13 @@ class TestGetFilteredResponsesWithThemes:
         assert queryset.count() == 1
         assert queryset.first() == response1
 
-    def test_theme_filters_and_logic(self, free_text_question, theme_a, theme_b):
+    def test_theme_filters_and_logic(self, free_text_question, theme_a, theme_b, respondent_1, respondent_2, respondent_3):
         """Test theme filtering uses AND logic"""
         # Create responses with different theme combinations
-        respondent1 = RespondentFactory(consultation=free_text_question.consultation)
-        respondent2 = RespondentFactory(consultation=free_text_question.consultation)
-        respondent3 = RespondentFactory(consultation=free_text_question.consultation)
 
-        response1 = ResponseFactory(question=free_text_question, respondent=respondent1)
-        response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
-        response3 = ResponseFactory(question=free_text_question, respondent=respondent3)
+        response1 = ResponseFactory(question=free_text_question, respondent=respondent_1)
+        response2 = ResponseFactory(question=free_text_question, respondent=respondent_2)
+        response3 = ResponseFactory(question=free_text_question, respondent=respondent_3)
 
         # Response 1: has theme1 and theme2
         annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
@@ -275,10 +264,9 @@ class TestGetFilteredResponsesWithThemes:
         assert len(results) == 1
         assert "lamb, H" in results[0].free_text
 
-    def test_queryset_optimization(self, free_text_question):
+    def test_queryset_optimization(self, free_text_question, respondent_1):
         """Test that queryset uses proper optimizations"""
-        respondent = RespondentFactory(consultation=free_text_question.consultation)
-        ResponseFactory(question=free_text_question, respondent=respondent)
+        ResponseFactory(question=free_text_question, respondent=respondent_1)
 
         queryset = get_filtered_responses_with_themes(free_text_question.response_set.all())
 
@@ -293,15 +281,11 @@ class TestGetFilteredResponsesWithThemes:
 
 @pytest.mark.django_db
 class TestBuildRespondentDataFast:
-    def test_basic_respondent_data(self, free_text_question):
+    def test_basic_respondent_data(self, free_text_question, respondent_1):
         """Test building basic respondent data"""
-        respondent = RespondentFactory(
-            consultation=free_text_question.consultation,
-            demographics={"individual": True, "region": "north"},
-        )
         response = ResponseFactory(
             question=free_text_question,
-            respondent=respondent,
+            respondent=respondent_1,
             free_text="Test response",
         )
         for option in ["option1", "option2"]:
@@ -311,17 +295,16 @@ class TestBuildRespondentDataFast:
 
         serializer = ResponseSerializer(instance=response)
 
-        assert serializer.data["identifier"] == str(respondent.identifier)
+        assert serializer.data["identifier"] == str(respondent_1.identifier)
         assert serializer.data["free_text_answer_text"] == "Test response"
-        assert serializer.data["demographic_data"] == {"individual": True, "region": "north"}
+        assert serializer.data["demographic_data"] == {'age': '25', 'individual': True, 'region': 'north'}
         assert sorted(serializer.data["multiple_choice_answer"]) == ["option1", "option2"]
         assert serializer.data["evidenceRich"] is None  # No annotation
         assert serializer.data["themes"] is None
 
-    def test_with_annotation_evidence_rich(self, free_text_question):
+    def test_with_annotation_evidence_rich(self, free_text_question, respondent_1):
         """Test respondent data with evidence rich annotation"""
-        respondent = RespondentFactory(consultation=free_text_question.consultation)
-        response = ResponseFactory(question=free_text_question, respondent=respondent)
+        response = ResponseFactory(question=free_text_question, respondent=respondent_1)
 
         ResponseAnnotationFactory(response=response, evidence_rich=True)
 
@@ -329,10 +312,9 @@ class TestBuildRespondentDataFast:
 
         assert serializer.data["evidenceRich"] is True
 
-    def test_with_annotation_not_evidence_rich(self, free_text_question):
+    def test_with_annotation_not_evidence_rich(self, free_text_question, respondent_1):
         """Test respondent data with non-evidence rich annotation"""
-        respondent = RespondentFactory(consultation=free_text_question.consultation)
-        response = ResponseFactory(question=free_text_question, respondent=respondent)
+        response = ResponseFactory(question=free_text_question, respondent=respondent_1)
 
         ResponseAnnotationFactory(response=response, evidence_rich=False)
 
@@ -340,10 +322,9 @@ class TestBuildRespondentDataFast:
 
         assert serializer.data["evidenceRich"] is False
 
-    def test_with_themes(self, free_text_question, theme_a, theme_b):
+    def test_with_themes(self, free_text_question, theme_a, theme_b, respondent_1):
         """Test respondent data with themes"""
-        respondent = RespondentFactory(consultation=free_text_question.consultation)
-        response = ResponseFactory(question=free_text_question, respondent=respondent)
+        response = ResponseFactory(question=free_text_question, respondent=respondent_1)
 
         annotation = ResponseAnnotationFactoryNoThemes(response=response)
         annotation.add_original_ai_themes([theme_a, theme_b])
@@ -360,20 +341,18 @@ class TestBuildRespondentDataFast:
             assert "name" in theme_data
             assert "description" in theme_data
 
-    def test_no_annotation(self, free_text_question):
+    def test_no_annotation(self, free_text_question, respondent_1):
         """Test respondent data when no annotation exists"""
-        respondent = RespondentFactory(consultation=free_text_question.consultation)
-        response = ResponseFactory(question=free_text_question, respondent=respondent)
+        response = ResponseFactory(question=free_text_question, respondent=respondent_1)
 
         serializer = ResponseSerializer(instance=response)
 
         assert serializer.data["evidenceRich"] is None
         assert serializer.data["themes"] is None
 
-    def test_performance_optimized_structure(self, free_text_question):
+    def test_performance_optimized_structure(self, free_text_question, respondent_1):
         """Test that the function returns optimized data structure"""
-        respondent = RespondentFactory(consultation=free_text_question.consultation)
-        response = ResponseFactory(question=free_text_question, respondent=respondent)
+        response = ResponseFactory(question=free_text_question, respondent=respondent_1)
 
         serializer = ResponseSerializer(instance=response)
 

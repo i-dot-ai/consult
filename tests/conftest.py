@@ -355,3 +355,46 @@ def twenty_five_demographic_option(consultation):
     )
     yield demographic_option
     demographic_option.delete()
+
+
+@pytest.fixture()
+def respondent_1(consultation):
+    respondent = RespondentFactory(
+        consultation=consultation,
+        themefinder_id=1,
+        demographics={"individual": True, "region": "north", "age": 25}
+    )
+    yield respondent
+    respondent.delete()
+
+
+@pytest.fixture()
+def respondent_2(consultation):
+    respondent = RespondentFactory(
+        consultation=consultation,
+        themefinder_id=2,
+        demographics={"individual": False, "region": "south", "age": 35}
+    )
+    yield respondent
+    respondent.delete()
+
+@pytest.fixture()
+def respondent_3(consultation):
+    respondent = RespondentFactory(
+        consultation=consultation,
+        themefinder_id=3,
+         demographics={"individual": True, "region": "north", "age": 45}
+    )
+    yield respondent
+    respondent.delete()
+
+
+@pytest.fixture()
+def respondent_4(consultation):
+    respondent = RespondentFactory(
+        consultation=consultation,
+        themefinder_id=4,
+         # demographics={"individual": True, "region": "north", "age": 45}
+    )
+    yield respondent
+    respondent.delete()
