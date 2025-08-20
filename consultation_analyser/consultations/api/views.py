@@ -32,7 +32,6 @@ from .serializers import (
     UserSerializer,
 )
 from .utils import (
-    build_response_filter_query,
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
 )
@@ -134,7 +133,6 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         serializer = self.get_serializer(instance=answer_count, many=True)
         return JsonResponse(data=serializer.data, safe=False)
 
-
     @action(detail=True, methods=["get"], url_path="theme-information")
     def theme_information(self, request, pk=None, consultation_pk=None):
         """Get all theme information for a question"""
@@ -148,7 +146,6 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         serializer.is_valid()
 
         return Response(serializer.data)
-
 
 
 class BespokeResultsSetPagination(PageNumberPagination):
@@ -198,9 +195,7 @@ class ResponseViewSet(ReadOnlyModelViewSet):
         """Get demographic aggregations for filtered responses"""
 
         # Single query that joins responses -> respondents and gets demographics directly
-        respondents_data = models.Respondent.objects.filter(
-            response__in=self.get_queryset()
-        )
+        respondents_data = models.Respondent.objects.filter(response__in=self.get_queryset())
 
         # Aggregate in memory (much faster than nested loops)
         aggregations = defaultdict(lambda: defaultdict(int))  # type:ignore
