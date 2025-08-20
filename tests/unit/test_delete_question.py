@@ -2,12 +2,12 @@ import pytest
 
 from consultation_analyser import factories
 from consultation_analyser.consultations import models
+from consultation_analyser.factories import QuestionFactory
 
 
 @pytest.mark.django_db
-def test_delete_question():
-    consultation = factories.ConsultationFactory()
-    question = factories.QuestionFactory(consultation=consultation)
+def test_delete_question(consultation):
+    question = QuestionFactory()
     respondent = factories.RespondentFactory(consultation=consultation)
     response = factories.ResponseFactory(question=question, respondent=respondent)
     theme = factories.ThemeFactory(question=question)

@@ -1,24 +1,19 @@
 import pytest
-from django.contrib.auth.models import Group
 from django.urls import reverse
 
 from consultation_analyser import factories
-from consultation_analyser.constants import DASHBOARD_ACCESS
 
 
 @pytest.mark.django_db
-def test_dashboard_access(client):
-    dash_access = Group.objects.get(name=DASHBOARD_ACCESS)
+def test_dashboard_access(client, dashboard_access_group, consultation, free_text_question):
     user = factories.UserFactory()
-    consultation = factories.ConsultationFactory()
-    question = factories.QuestionFactory(consultation=consultation)
 
     dashboard_url_1 = reverse("consultation", args=(consultation.id,))
     dashboard_url_2 = reverse(
         "question_responses",
         args=(
             consultation.id,
-            question.id,
+            free_text_question.id,
         ),
     )
 
@@ -34,7 +29,7 @@ def test_dashboard_access(client):
 
     # User has consultation access and dashboard access
     # should be able to see dashboard pages
-    user.groups.add(dash_access)
+    user.groups.add(dashboard_access_group)
     user.save()
     response = client.get(dashboard_url_1)
     assert response.status_code == 200
