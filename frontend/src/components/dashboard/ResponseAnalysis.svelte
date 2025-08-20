@@ -71,7 +71,7 @@
                     <Finance slot="icon" />
                 </TitleRow>
 
-                <div class="mt-8">
+                <div class="mt-8 px-4">
                     <div class="mb-2">
                         <Title level={3} text="Search responses:" />
                     </div>
@@ -117,10 +117,12 @@
                 </div>
 
                 <section>
-                    <div class="my-4">
+                    <div class="my-8">
                         <Panel bg={true}>
+                            <Title level={3} text="Show responses by themes:"></Title>
+
                             {#if themeFilters.length > 0}
-                                <div transition:slide class="flex gap-2 flex-wrap items-center mb-2">
+                                <div transition:slide class="flex gap-2 flex-wrap items-center my-2">
                                     {#each themeFilters as themeFilter}
                                         <div transition:fly={{ x: 300 }}>
                                             <Tag variant="primary">
