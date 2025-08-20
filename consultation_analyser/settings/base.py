@@ -315,17 +315,10 @@ RQ_QUEUES = {
     },
 }
 
-# Django debug toolbar
-# https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#configure-internal-ips
 if DEBUG:
-    MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
-    INSTALLED_APPS += ["debug_toolbar"]
     INTERNAL_IPS = ["127.0.0.1"]
 
-if DEBUG and ("pytest" not in sys.modules and "test" not in sys.argv):
-    MIDDLEWARE += ["silk.middleware.SilkyMiddleware"]
-    INSTALLED_APPS += ["silk"]
-
+DEBUG_TOOLBAR_PANELS:list[str] = []
 # changing this will require a database migration
 EMBEDDING_DIMENSION = 3072
 
