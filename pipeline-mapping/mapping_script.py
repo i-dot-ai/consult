@@ -13,22 +13,32 @@ from langchain_community.chat_models import ChatLiteLLM
 
 from themefinder import detail_detection, theme_mapping
 
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
-    datefmt="%Y-%m-%d %H:%M:%S",
-)
-logger = logging.getLogger(__name__)
+print("Gateway URL:", os.environ.get("LLM_GATEWAY_URL"))
+print("API Key (first 10 chars):", os.environ.get("LITELLM_CONSULT_OPENAI_API_KEY", "NOT SET")[:10])
 
+# Test if your gateway is reachable
+import requests
+try:
+    response = requests.get(os.environ["LLM_GATEWAY_URL"])
+    print("Gateway status:", response.status_code)
+except Exception as e:
+    print("Gateway connection error:", e)
 
 llm = ChatLiteLLM(
     model="gpt-4o",
     temperature=0,
-    api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-    base_url=os.environ["LLM_GATEWAY_URL"],   # your LiteLLM gateway URL
-    provider="litellm"  
+    openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+    openai_api_base=os.environ["LLM_GATEWAY_URL"],
 )
+
+
+# llm = ChatLiteLLM(
+#     model="gpt-4o",
+#     temperature=0,
+#     api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+#     base_url=os.environ["LLM_GATEWAY_URL"],   # your LiteLLM gateway URL
+#     provider="litellm"  
+# )
 
 # llm = AzureChatOpenAI(
 #     model="gpt-4o",
