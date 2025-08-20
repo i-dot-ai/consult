@@ -9,7 +9,7 @@ from pathlib import Path
 import boto3
 import pandas as pd
 # from langchain_openai import AzureChatOpenAI
-from langchain_community.chat_models import ChatLiteLLM
+from langchain_litellm import ChatLiteLLM
 
 from themefinder import detail_detection, theme_mapping
 
@@ -27,10 +27,9 @@ except Exception as e:
 llm = ChatLiteLLM(
     model="gpt-4o",
     temperature=0,
-    openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-    openai_api_base=os.environ["LLM_GATEWAY_URL"],
+    api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+    base_url=os.environ["LLM_GATEWAY_URL"],
 )
-
 
 # llm = ChatLiteLLM(
 #     model="gpt-4o",
