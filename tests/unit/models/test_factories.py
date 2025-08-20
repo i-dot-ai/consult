@@ -19,21 +19,19 @@ def test_user_factory():
 
 
 @pytest.mark.django_db
-def test_consultation_factory():
-    consultation = factories.ConsultationFactory()
+def test_consultation_factory(consultation):
     assert models.Consultation.objects.filter(id=consultation.id).exists()
     assert consultation.title
     assert consultation.slug
 
 
 @pytest.mark.django_db
-def test_question_factories():
+def test_question_factories(free_text_question):
     # Test basic question with free text
-    question = factories.QuestionFactory()
-    assert models.Question.objects.filter(id=question.id).exists()
-    assert question.has_free_text
-    assert not question.has_multiple_choice
-    assert not MultiChoiceAnswer.objects.filter(question=question).exists()
+    assert models.Question.objects.filter(id=free_text_question.id).exists()
+    assert free_text_question.has_free_text
+    assert not free_text_question.has_multiple_choice
+    assert not MultiChoiceAnswer.objects.filter(question=free_text_question).exists()
 
     # Test question with multiple choice only
     mc_question = factories.QuestionWithMultipleChoiceFactory()
