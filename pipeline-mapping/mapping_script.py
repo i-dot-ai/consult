@@ -29,7 +29,7 @@ logger = logging.getLogger(__name__)
 llm = ChatLiteLLM(
     model="gpt-4o",
     temperature=0,
-    api_key=os.environ["LITELLM_GOVAI_CLIENT_API_KEY"],
+    api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
     base_url=os.environ["LLM_GATEWAY_URL"],
 )
 

@@ -37,7 +37,7 @@ locals {
       value = "placeholder" # Update value in SSM - Do not hardcode
     },
     {
-      name  = "LITELLM_GOVAI_CLIENT_OPENAI_API_KEY"
+      name  = "LITELLM_CONSULT_OPENAI_API_KEY"
       value = data.aws_ssm_parameter.litellm_api_key.arn
     }
   ]
