@@ -76,7 +76,7 @@
                         <Title level={3} text="Search responses:" />
                     </div>
 
-                    {#if demoFiltersApplied(demoFilters) || themeFiltersApplied(themeFilters) || evidenceRich}
+                    {#if demoFiltersApplied(demoFilters) || themeFiltersApplied(themeFilters) || evidenceRich || searchValue}
                         <div transition:fly={{x:300}} class="my-4">
                             <Alert>
                                 <FilterAlt slot="icon" />

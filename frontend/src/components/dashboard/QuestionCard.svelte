@@ -21,6 +21,7 @@
     export let highlightText: string = "";
     export let clickable: boolean = false;
     export let skeleton: boolean = false;
+    export let hideIcon: boolean = false;
 
     let skeletonBlink: boolean = false;
     let skeletonIntervalId;
@@ -46,7 +47,7 @@
         <Panel>
             <article class="flex gap-2 items-start">
                 <div class="mt-0.5">
-                    {#if !skeleton}
+                    {#if !skeleton && !hideIcon}
                         <MaterialIcon size="1.3rem" color="fill-teal-500">
                             <Help />
                         </MaterialIcon>

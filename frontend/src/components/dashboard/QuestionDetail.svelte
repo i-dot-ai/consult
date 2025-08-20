@@ -294,6 +294,7 @@
             question={!$isConsultationLoading &&
                 $consultationData.questions?.find(question => question.id === questionId)
             }
+            hideIcon={true}
         />
     {/if}
 </section>
