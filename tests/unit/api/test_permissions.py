@@ -1,56 +1,28 @@
 from unittest.mock import Mock
 
 import pytest
-from django.test import RequestFactory
 
 from consultation_analyser.consultations.api.permissions import (
     CanSeeConsultation,
     HasDashboardAccess,
 )
-from consultation_analyser.factories import ConsultationFactory, UserFactory
-
-
-@pytest.fixture()
-def consultation():
-    return ConsultationFactory()
-
-
-@pytest.fixture()
-def user_with_dashboard_access(dashboard_access_group):
-    user = UserFactory()
-    user.groups.add(dashboard_access_group)
-    user.save()
-    return user
-
-
-@pytest.fixture()
-def user_without_dashboard_access():
-    return UserFactory()
-
-
-@pytest.fixture()
-def request_factory():
-    return RequestFactory()
+from consultation_analyser.factories import UserFactory
 
 
 @pytest.mark.django_db
 class TestHasDashboardAccess:
-    def test_authenticated_user_with_dashboard_access(
-        self, request_factory, user_with_dashboard_access
-    ):
+    def test_authenticated_user_with_dashboard_access(self, request_factory, dashboard_user):
         """Test that authenticated user with dashboard access is granted permission"""
         request = request_factory.get("/")
-        request.user = user_with_dashboard_access
+        request.user = dashboard_user
 
         permission = HasDashboardAccess()
         assert permission.has_permission(request, None) is True
 
-    def test_authenticated_user_without_dashboard_access(
-        self, request_factory, user_without_dashboard_access
-    ):
+    def test_authenticated_user_without_dashboard_access(self, request_factory, non_dashboard_user):
         """Test that authenticated user without dashboard access is denied permission"""
         request = request_factory.get("/")
-        request.user = user_without_dashboard_access
+        request.user = non_dashboard_user
 
         permission = HasDashboardAccess()
         assert permission.has_permission(request, None) is False
@@ -64,25 +36,25 @@ class TestHasDashboardAccess:
         permission = HasDashboardAccess()
         assert permission.has_permission(request, None) is False
 
-    def test_user_has_dashboard_access_property(self, user_with_dashboard_access):
+    def test_user_has_dashboard_access_property(self, dashboard_user):
         """Test that user.has_dashboard_access property works correctly"""
-        assert user_with_dashboard_access.has_dashboard_access is True
+        assert dashboard_user.has_dashboard_access is True
 
-    def test_user_without_dashboard_access_property(self, user_without_dashboard_access):
+    def test_user_without_dashboard_access_property(self, non_dashboard_user):
         """Test that user without dashboard access returns False"""
-        assert user_without_dashboard_access.has_dashboard_access is False
+        assert non_dashboard_user.has_dashboard_access is False
 
 
 @pytest.mark.django_db
 class TestCanSeeConsultation:
     def test_user_with_consultation_access(
-        self, request_factory, user_with_dashboard_access, consultation
+        self, request_factory, non_dashboard_user, consultation, dashboard_user
     ):
         """Test that user with access to consultation is granted permission"""
-        consultation.users.add(user_with_dashboard_access)
+        consultation.users.add(dashboard_user)
 
         request = request_factory.get("/")
-        request.user = user_with_dashboard_access
+        request.user = non_dashboard_user
 
         # Mock view with consultation_slug in kwargs
         view = Mock()
@@ -91,14 +63,12 @@ class TestCanSeeConsultation:
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is True
 
-    def test_user_without_consultation_access(
-        self, request_factory, user_with_dashboard_access, consultation
-    ):
+    def test_user_without_consultation_access(self, request_factory, dashboard_user, consultation):
         """Test that user without access to consultation is denied permission"""
         # Don't add user to consultation.users
 
         request = request_factory.get("/")
-        request.user = user_with_dashboard_access
+        request.user = dashboard_user
 
         view = Mock()
         view.kwargs = {"consultation_slug": consultation.slug}
@@ -118,10 +88,10 @@ class TestCanSeeConsultation:
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is False
 
-    def test_missing_consultation_slug(self, request_factory, user_with_dashboard_access):
+    def test_missing_consultation_slug(self, request_factory, dashboard_user):
         """Test that missing consultation_slug denies permission"""
         request = request_factory.get("/")
-        request.user = user_with_dashboard_access
+        request.user = dashboard_user
 
         # View without consultation_slug in kwargs
         view = Mock()
@@ -130,10 +100,10 @@ class TestCanSeeConsultation:
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is False
 
-    def test_nonexistent_consultation_slug(self, request_factory, user_with_dashboard_access):
+    def test_nonexistent_consultation_slug(self, request_factory, dashboard_user):
         """Test that nonexistent consultation slug denies permission"""
         request = request_factory.get("/")
-        request.user = user_with_dashboard_access
+        request.user = dashboard_user
 
         view = Mock()
         view.kwargs = {"consultation_slug": "nonexistent-consultation"}
@@ -141,10 +111,10 @@ class TestCanSeeConsultation:
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is False
 
-    def test_consultation_slug_as_none(self, request_factory, user_with_dashboard_access):
+    def test_consultation_slug_as_none(self, request_factory, dashboard_user):
         """Test that None consultation_slug denies permission"""
         request = request_factory.get("/")
-        request.user = user_with_dashboard_access
+        request.user = dashboard_user
 
         view = Mock()
         view.kwargs = {"consultation_slug": None}
@@ -174,15 +144,13 @@ class TestCanSeeConsultation:
         request.user = user2
         assert permission.has_permission(request, view) is True
 
-    def test_user_removed_from_consultation(
-        self, request_factory, user_with_dashboard_access, consultation
-    ):
+    def test_user_removed_from_consultation(self, request_factory, dashboard_user, consultation):
         """Test that user loses access when removed from consultation"""
         # Initially add user to consultation
-        consultation.users.add(user_with_dashboard_access)
+        consultation.users.add(dashboard_user)
 
         request = request_factory.get("/")
-        request.user = user_with_dashboard_access
+        request.user = dashboard_user
 
         view = Mock()
         view.kwargs = {"consultation_pk": consultation.id}
@@ -191,7 +159,7 @@ class TestCanSeeConsultation:
         assert permission.has_permission(request, view) is True
 
         # Remove user from consultation
-        consultation.users.remove(user_with_dashboard_access)
+        consultation.users.remove(dashboard_user)
 
         # Should now be denied
         assert permission.has_permission(request, view) is False

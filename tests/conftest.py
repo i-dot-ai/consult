@@ -3,6 +3,7 @@ import json
 import boto3
 import pytest
 from django.contrib.auth.models import Group
+from django.test import RequestFactory
 from moto import mock_aws
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -16,6 +17,11 @@ from consultation_analyser.factories import (
     ThemeFactory,
     UserFactory,
 )
+
+
+@pytest.fixture()
+def request_factory():
+    return RequestFactory()
 
 
 @pytest.fixture
@@ -177,7 +183,7 @@ def mock_consultation_input_objects(mock_s3_bucket):
     ).put(Body=evidence_rich_mappings_2_jsonl)
 
 
-@pytest.fixture
+@pytest.fixture()
 def dashboard_access_group():
     group = Group.objects.get(name=DASHBOARD_ACCESS)
     yield group
@@ -193,6 +199,16 @@ def non_dashboard_user():
 
 @pytest.fixture
 def dashboard_user(dashboard_access_group):
+    user = UserFactory()
+    user.groups.add(dashboard_access_group)
+    user.save()
+    yield user
+    user.delete()
+
+
+@pytest.fixture()
+def user_without_consultation_access(dashboard_access_group):
+    """User with dashboard access but not consultation access"""
     user = UserFactory()
     user.groups.add(dashboard_access_group)
     user.save()
@@ -282,13 +298,17 @@ def multi_choice_responses(multi_choice_question):
 
 
 @pytest.fixture()
-def theme(free_text_question):
-    return ThemeFactory(question=free_text_question, name="Theme A", key="A")
+def theme_a(free_text_question):
+    theme = ThemeFactory(question=free_text_question, name="Theme A", key="A")
+    yield theme
+    theme.delete()
 
 
 @pytest.fixture()
-def theme2(free_text_question):
-    return ThemeFactory(question=free_text_question, name="Theme B", key="B")
+def theme_b(free_text_question):
+    theme = ThemeFactory(question=free_text_question, name="Theme B", key="B")
+    yield theme
+    theme.delete()
 
 
 @pytest.fixture()
@@ -297,40 +317,41 @@ def consultation_user(consultation, dashboard_access_group):
     user.groups.add(dashboard_access_group)
     user.save()
     consultation.users.add(user)
-    return user
+    yield user
+    user.delete()
 
 
 @pytest.fixture()
 def individual_demographic_option(consultation):
-    do = DemographicOption.objects.create(
+    demographic_option = DemographicOption.objects.create(
         consultation=consultation, field_name="individual", field_value=True
     )
-    yield do
-    do.delete()
+    yield demographic_option
+    demographic_option.delete()
 
 
 @pytest.fixture()
 def no_disability_demographic_option(consultation):
-    do = DemographicOption.objects.create(
+    demographic_option = DemographicOption.objects.create(
         consultation=consultation, field_name="has_disability", field_value=False
     )
-    yield do
-    do.delete()
+    yield demographic_option
+    demographic_option.delete()
 
 
 @pytest.fixture()
 def north_demographic_option(consultation):
-    do = DemographicOption.objects.create(
+    demographic_option = DemographicOption.objects.create(
         consultation=consultation, field_name="region", field_value="north"
     )
-    yield do
-    do.delete()
+    yield demographic_option
+    demographic_option.delete()
 
 
 @pytest.fixture()
 def twenty_five_demographic_option(consultation):
-    do = DemographicOption.objects.create(
+    demographic_option = DemographicOption.objects.create(
         consultation=consultation, field_name="age_group", field_value="25-34"
     )
-    yield do
-    do.delete()
+    yield demographic_option
+    demographic_option.delete()

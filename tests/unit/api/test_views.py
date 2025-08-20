@@ -9,7 +9,6 @@ from consultation_analyser.factories import (
     RespondentFactory,
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
-    UserFactory,
 )
 from tests.utils import build_url
 
@@ -221,7 +220,7 @@ class TestThemeInformationAPIView:
         assert data["themes"] == []
 
     def test_get_theme_information_with_themes(
-        self, client, consultation_user, free_text_question, theme, theme2
+        self, client, consultation_user, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint returns theme information correctly"""
         client.force_login(consultation_user)
@@ -272,7 +271,7 @@ class TestThemeAggregationsAPIView:
         assert data["theme_aggregations"] == {}
 
     def test_get_theme_aggregations_with_responses(
-        self, client, consultation_user, free_text_question, theme, theme2
+        self, client, consultation_user, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint returns theme aggregations correctly"""
         # Create respondents and responses
@@ -284,10 +283,10 @@ class TestThemeAggregationsAPIView:
 
         # Create annotations with themes
         annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
-        annotation1.add_original_ai_themes([theme])
+        annotation1.add_original_ai_themes([theme_a])
 
         annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
-        annotation2.add_original_ai_themes([theme, theme2])
+        annotation2.add_original_ai_themes([theme_a, theme_b])
 
         client.force_login(consultation_user)
         url = reverse(
@@ -304,11 +303,11 @@ class TestThemeAggregationsAPIView:
         assert "theme_aggregations" in data
 
         aggregations = data["theme_aggregations"]
-        assert aggregations[str(theme.id)] == 2  # Theme A appears in 2 responses
-        assert aggregations[str(theme2.id)] == 1  # Theme B appears in 1 response
+        assert aggregations[str(theme_a.id)] == 2  # Theme A appears in 2 responses
+        assert aggregations[str(theme_b.id)] == 1  # Theme B appears in 1 response
 
     def test_get_theme_aggregations_with_filters(
-        self, client, consultation_user, free_text_question, theme, theme2
+        self, client, consultation_user, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint applies theme filtering correctly"""
         # Create responses with different theme combinations
@@ -320,11 +319,11 @@ class TestThemeAggregationsAPIView:
 
         # Response 1: has theme1 and theme2
         annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
-        annotation1.add_original_ai_themes([theme, theme2])
+        annotation1.add_original_ai_themes([theme_a, theme_b])
 
         # Response 2: has only theme1
         annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
-        annotation2.add_original_ai_themes([theme])
+        annotation2.add_original_ai_themes([theme_a])
 
         client.force_login(consultation_user)
         url = reverse(
@@ -336,15 +335,15 @@ class TestThemeAggregationsAPIView:
         )
 
         # Filter by theme1 AND theme2 - should only return response1
-        response = client.get(url + f"?themeFilters={theme.id},{theme2.id}")
+        response = client.get(url + f"?themeFilters={theme_a.id},{theme_b.id}")
 
         assert response.status_code == 200
         data = response.json()
 
         # Should only show counts from responses that have BOTH themes
         aggregations = data["theme_aggregations"]
-        assert aggregations[str(theme.id)] == 1  # Only response1 has both themes
-        assert aggregations[str(theme2.id)] == 1  # Only response1 has both themes
+        assert aggregations[str(theme_a.id)] == 1  # Only response1 has both themes
+        assert aggregations[str(theme_b.id)] == 1  # Only response1 has both themes
 
 
 @pytest.mark.django_db
@@ -453,7 +452,7 @@ class TestFilteredResponsesAPIView:
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
     def test_get_filtered_responses_with_theme_filters(
-        self, client, consultation_user, free_text_question, theme, theme2
+        self, client, consultation_user, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint with theme filtering using AND logic"""
         # Create responses with different theme combinations
@@ -473,15 +472,15 @@ class TestFilteredResponsesAPIView:
 
         # Response 1: has theme and theme2
         annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
-        annotation1.add_original_ai_themes([theme, theme2])
+        annotation1.add_original_ai_themes([theme_a, theme_b])
 
         # Response 2: has only theme
         annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
-        annotation2.add_original_ai_themes([theme])
+        annotation2.add_original_ai_themes([theme_a])
 
         # Response 3: has only theme2
         annotation3 = ResponseAnnotationFactoryNoThemes(response=response3)
-        annotation3.add_original_ai_themes([theme2])
+        annotation3.add_original_ai_themes([theme_b])
 
         client.force_login(consultation_user)
         url = reverse(
@@ -493,7 +492,7 @@ class TestFilteredResponsesAPIView:
         )
 
         # Filter by theme AND theme2 - should only return response1
-        response = client.get(url + f"?themeFilters={theme.id},{theme2.id}")
+        response = client.get(url + f"?themeFilters={theme_a.id},{theme_b.id}")
 
         assert response.status_code == 200
 
@@ -563,19 +562,6 @@ class TestQuestionInformationAPIView:
 class TestAPIViewPermissions:
     """Test permissions across all API views"""
 
-    @pytest.fixture()
-    def user_without_dashboard_access(self):
-        """User without dashboard access"""
-        return UserFactory()
-
-    @pytest.fixture()
-    def user_without_consultation_access(self, dashboard_access_group):
-        """User with dashboard access but not consultation access"""
-        user = UserFactory()
-        user.groups.add(dashboard_access_group)
-        user.save()
-        return user
-
     @pytest.mark.parametrize(
         "endpoint_name",
         [
@@ -605,10 +591,10 @@ class TestAPIViewPermissions:
         ],
     )
     def test_user_without_dashboard_access_denied(
-        self, client, free_text_question, user_without_dashboard_access, endpoint_name
+        self, client, free_text_question, non_dashboard_user, endpoint_name
     ):
         """Test that users without dashboard access cannot access any API endpoint"""
-        client.force_login(user_without_dashboard_access)
+        client.force_login(non_dashboard_user)
         url = build_url(endpoint_name, free_text_question)
         response = client.get(url)
         assert response.status_code == 403
