@@ -78,7 +78,7 @@
                             <div class="demo-filter w-full relative pb-3">
                                 <div class="grid grid-cols-3 gap-1 mb-1">
                                     <span class="text-left truncate" title={rowKey}>
-                                        {rowKey}
+                                        {rowKey.replaceAll("'", "")}
                                     </span>
                                     <span class="text-right">{percentage}%</span>
                                     <span class="text-right">{rowValue}</span>
