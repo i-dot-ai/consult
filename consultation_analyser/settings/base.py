@@ -318,7 +318,6 @@ RQ_QUEUES = {
 if DEBUG:
     INTERNAL_IPS = ["127.0.0.1"]
 
-DEBUG_TOOLBAR_PANELS:list[str] = []
 # changing this will require a database migration
 EMBEDDING_DIMENSION = 3072
 
