@@ -5,8 +5,7 @@ from consultation_analyser.consultations import models
 
 
 @pytest.mark.django_db
-def test_delete_question():
-    consultation = factories.ConsultationFactory()
+def test_delete_question(consultation):
     question = factories.QuestionFactory(consultation=consultation)
     respondent = factories.RespondentFactory(consultation=consultation)
     response = factories.ResponseFactory(question=question, respondent=respondent)

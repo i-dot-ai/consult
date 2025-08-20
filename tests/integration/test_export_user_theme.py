@@ -13,10 +13,9 @@ from tests.utils import get_sorted_theme_string
 @pytest.mark.django_db
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
 @patch("consultation_analyser.consultations.export_user_theme.settings.ENVIRONMENT", "production")
-def test_export_user_theme(mock_boto_client, django_app):
+def test_export_user_theme(mock_boto_client, consultation):
     user = factories.UserFactory(is_staff=True)
     # Set up consultation with question and responses
-    consultation = factories.ConsultationFactory()
     consultation.users.add(user)
     question = factories.QuestionFactory(consultation=consultation)
     respondent = factories.RespondentFactory(consultation=consultation, themefinder_id=1)
@@ -92,13 +91,12 @@ def test_export_user_theme(mock_boto_client, django_app):
 @pytest.mark.django_db
 @patch("django_rq.enqueue")
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
-def test_start_export_job(mock_boto_client, mock_enqueue):
+def test_start_export_job(mock_boto_client, mock_enqueue, consultation):
     """Test that the export job is correctly enqueued"""
     from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 
     user = factories.UserFactory(is_staff=True)
     # Set up consultation with question and response
-    consultation = factories.ConsultationFactory()
     consultation.users.add(user)
 
     # Create at least one question with responses for the export to work

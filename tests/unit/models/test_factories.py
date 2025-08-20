@@ -19,8 +19,7 @@ def test_user_factory():
 
 
 @pytest.mark.django_db
-def test_consultation_factory():
-    consultation = factories.ConsultationFactory()
+def test_consultation_factory(consultation):
     assert models.Consultation.objects.filter(id=consultation.id).exists()
     assert consultation.title
     assert consultation.slug

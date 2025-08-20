@@ -5,9 +5,8 @@ from consultation_analyser import factories
 
 
 @pytest.mark.django_db
-def test_dashboard_access(client, dashboard_access_group):
+def test_dashboard_access(client, dashboard_access_group, consultation):
     user = factories.UserFactory()
-    consultation = factories.ConsultationFactory()
     question = factories.QuestionFactory(consultation=consultation)
 
     dashboard_url_1 = reverse("consultation", args=(consultation.id,))

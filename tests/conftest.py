@@ -243,7 +243,7 @@ def non_dashboard_user_token(non_dashboard_user):
 
 @pytest.fixture
 def consultation(dashboard_user, non_dashboard_user):
-    _consultation = ConsultationFactory()
+    _consultation = ConsultationFactory(title="My First Consultation", slug="my-first-consultation")
     _consultation.users.add(dashboard_user)
     _consultation.users.add(non_dashboard_user)
     _consultation.save()

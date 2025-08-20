@@ -39,12 +39,11 @@ def test_question_unique_slugs():
 
 
 @pytest.mark.django_db
-def test_question_save_same_slug():
+def test_question_save_same_slug(consultation):
     question_text = "What are your thoughts on the proposed changes?"
     slugified = "what-are-your-thoughts-on-the-proposed-changes"
-    consultation1 = ConsultationFactory()
     consultation2 = ConsultationFactory()
-    question1 = QuestionFactory(text=question_text, number=1, consultation=consultation1)
+    question1 = QuestionFactory(text=question_text, number=1, consultation=consultation)
     question2 = QuestionFactory(text=question_text, number=1, consultation=consultation2)
     # Can have the same slugs for questions for different consultations
     assert question1.slug == f"{slugified}-1"
