@@ -35,32 +35,7 @@ except Exception as e:
 llm = ChatLiteLLM(
     model="gpt-4o",
     temperature=0,
-    api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-    base_url=os.environ["LLM_GATEWAY_URL"],
 )
-
-# llm = ChatLiteLLM(
-#     model="gpt-4o",
-#     temperature=0,
-#     api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-#     base_url=os.environ["LLM_GATEWAY_URL"],   # your LiteLLM gateway URL
-#     provider="litellm"  
-# )
-
-# llm = AzureChatOpenAI(
-#     model="gpt-4o",
-#     temperature=0,
-#     api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-#     base_url=os.environ["LLM_GATEWAY_URL"],
-# )
-
-# llm = ChatLiteLLM(
-#     model="gpt-4o",
-#     temperature=0,
-#     api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-#     base_url=os.environ["LLM_GATEWAY_URL"],
-# )
-
 
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 BASE_PREFIX = "app_data/consultations/"
