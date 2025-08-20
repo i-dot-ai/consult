@@ -8,7 +8,6 @@ from pathlib import Path
 
 import boto3
 import pandas as pd
-# from langchain_openai import AzureChatOpenAI
 from langchain_openai import ChatOpenAI
 from themefinder import detail_detection, theme_mapping
 
@@ -20,10 +19,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-# llm = AzureChatOpenAI(
-#     model="gpt-4o",
-#     temperature=0,
-# )
 
 llm = ChatOpenAI(
     model="gpt-4o",

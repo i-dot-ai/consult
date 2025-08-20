@@ -16,22 +16,6 @@ locals {
       name  = "AWS_REGION"
       value = var.region
     },
-    # {
-    #   name  = "AZURE_OPENAI_API_KEY"
-    #   value = "placeholder" # Update value in SSM - Do not hardcode
-    # },
-    # {
-    #   name  = "AZURE_OPENAI_ENDPOINT"
-    #   value = "placeholder" # Update value in SSM - Do not hardcode
-    # },
-    # {
-    #   name  = "OPENAI_API_VERSION"
-    #   value = "placeholder" # Update value in SSM - Do not hardcode
-    # },
-    # {
-    #   name  = "DEPLOYMENT_NAME"
-    #   value = "placeholder" # Update value in SSM - Do not hardcode
-    # },
     {
       name  = "THEMEFINDER_SLACK_WEBHOOK_URL"
       value = "placeholder" # Update value in SSM - Do not hardcode
