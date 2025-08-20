@@ -5,7 +5,7 @@ from tests.helpers import sign_in
 
 
 @pytest.mark.django_db
-def test_user_can_see_consultations(django_app):
+def test_user_can_see_consultations(django_app, consultation):
     # given i am a user without consultations
     user = UserFactory(email="email@example.com", password="admin")  # pragma: allowlist secret
 
@@ -16,7 +16,6 @@ def test_user_can_see_consultations(django_app):
     assert "You do not have any consultations" in landing_page
 
     # but when i add a consultation
-    consultation = ConsultationFactory(title="My First Consultation")
     consultation.users.add(user)
 
     # and i sign in again
