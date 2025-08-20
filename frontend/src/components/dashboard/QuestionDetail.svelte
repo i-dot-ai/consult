@@ -18,6 +18,7 @@
     import { getConsultationDetailUrl } from "../../global/routes.ts";
     import { createFetchStore } from "../../global/stores.ts";
     import { SearchModeValues } from "../../global/types.ts";
+    import Alert from "../Alert.svelte";
 
     export let consultationId: string = "";
     export let questionId: string = "";
@@ -278,7 +279,13 @@
 
 <section class="my-4">
     {#if $consultationError}
-        <p>Consultation Error: {$consultationError}</p>
+        <div class="my-2">
+            <Alert>
+                <span slot="text" class="text-sm">
+                    Consultation Error: {$consultationError}
+                </span>
+            </Alert>
+        </div>
     {:else}
         <QuestionCard
             skeleton={$isConsultationLoading}
