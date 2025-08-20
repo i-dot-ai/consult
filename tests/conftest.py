@@ -311,6 +311,15 @@ def individual_demographic_option(consultation):
 
 
 @pytest.fixture()
+def group_demographic_option(consultation):
+    do = DemographicOption.objects.create(
+        consultation=consultation, field_name="individual", field_value=False
+    )
+    yield do
+    do.delete()
+
+
+@pytest.fixture()
 def no_disability_demographic_option(consultation):
     do = DemographicOption.objects.create(
         consultation=consultation, field_name="has_disability", field_value=False
@@ -323,6 +332,15 @@ def no_disability_demographic_option(consultation):
 def north_demographic_option(consultation):
     do = DemographicOption.objects.create(
         consultation=consultation, field_name="region", field_value="north"
+    )
+    yield do
+    do.delete()
+
+
+@pytest.fixture()
+def south_demographic_option(consultation):
+    do = DemographicOption.objects.create(
+        consultation=consultation, field_name="region", field_value="south"
     )
     yield do
     do.delete()

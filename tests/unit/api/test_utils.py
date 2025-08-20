@@ -64,9 +64,9 @@ class TestParseFiltersFromSerializer:
         assert filters["evidence_rich"] is True
         assert filters["search_value"] == "test search"
         assert filters["search_mode"] == "semantic"
-        assert filters["demo_filters"]["individual"] == "true"
-        assert filters["demo_filters"]["region"] == "north"
-        assert filters["demo_filters"]["age"] == "25-34"
+        assert filters["demo_filters"]["individual"] == ["true"]
+        assert filters["demo_filters"]["region"] == ["north"]
+        assert filters["demo_filters"]["age"] == ["25-34"]
 
     def test_empty_string_filters(self):
         """Test that empty string filters are handled correctly"""
@@ -86,6 +86,7 @@ class TestParseFiltersFromSerializer:
         validated_data = {
             "demoFilters": [
                 "simple:value",
+                "simple:another-value",
                 "with spaces:value with spaces",
                 "with:colon:in:value",
                 ":empty_key",
@@ -96,9 +97,9 @@ class TestParseFiltersFromSerializer:
         filters = parse_filters_from_serializer(validated_data)
 
         demo_filters = filters["demo_filters"]
-        assert demo_filters["simple"] == "value"
-        assert demo_filters["with spaces"] == "value with spaces"
-        assert demo_filters["with"] == "colon:in:value"  # Split on first colon only
+        assert demo_filters["simple"] == ["value", "another-value"]
+        assert demo_filters["with spaces"] == ["value with spaces"]
+        assert demo_filters["with"] == ["colon:in:value"]  # Split on first colon only
         # Empty key/value pairs and malformed entries should be filtered out
         assert "empty_value" not in demo_filters
         assert "" not in demo_filters
@@ -133,29 +134,40 @@ class TestBuildResponseFilterQuery:
         assert "annotation__evidence_rich" in str(query)
 
     def test_demographic_filters_boolean(
-        self, question, individual_demographic_option, no_disability_demographic_option
+        self,
+        question,
+        individual_demographic_option,
+        group_demographic_option,
+        no_disability_demographic_option,
     ):
         """Test demographic filters with boolean values"""
-        filters = {"demo_filters": {"individual": "true", "has_disability": "false"}}
+        filters = {"demo_filters": {"individual": ["true", "false"], "has_disability": ["false"]}}
         query = build_response_filter_query(filters)
 
         assert query.connector == "AND"
-        assert query.children == [
-            ("respondent__demographics", individual_demographic_option),
-            ("respondent__demographics", no_disability_demographic_option),
+        assert [(a, list(b)) for a, b in query.children] == [
+            (
+                "respondent__demographics__in",
+                [individual_demographic_option, group_demographic_option],
+            ),
+            ("respondent__demographics__in", [no_disability_demographic_option]),
         ]
 
     def test_demographic_filters_string(
-        self, question, north_demographic_option, twenty_five_demographic_option
+        self,
+        question,
+        north_demographic_option,
+        south_demographic_option,
+        twenty_five_demographic_option,
     ):
         """Test demographic filters with string values"""
-        filters = {"demo_filters": {"region": "north", "age_group": "25-34"}}
+        filters = {"demo_filters": {"region": ["north", "south"], "age_group": ["25-34"]}}
         query = build_response_filter_query(filters)
 
         assert query.connector == "AND"
-        assert query.children == [
-            ("respondent__demographics", north_demographic_option),
-            ("respondent__demographics", twenty_five_demographic_option),
+        assert [(a, list(b)) for a, b in query.children] == [
+            ("respondent__demographics__in", [north_demographic_option, south_demographic_option]),
+            ("respondent__demographics__in", [twenty_five_demographic_option]),
         ]
 
     def test_combined_filters(self, question, individual_demographic_option):
@@ -163,16 +175,23 @@ class TestBuildResponseFilterQuery:
         filters = {
             "sentiment_list": ["AGREEMENT"],
             "evidence_rich": True,
-            "demo_filters": {"individual": "true"},
+            "demo_filters": {"individual": ["true"]},
         }
         query = build_response_filter_query(filters)
 
         # Should have AND logic (default for Q objects)
         assert query.connector == "AND"
-        assert query.children == [
+
+        def listify(x):
+            try:
+                return list(x)
+            except TypeError:
+                return x
+
+        assert [(a, listify(b)) for a, b in query.children] == [
             ("annotation__sentiment__in", ["AGREEMENT"]),
             ("annotation__evidence_rich", True),
-            ("respondent__demographics", individual_demographic_option),
+            ("respondent__demographics__in", [individual_demographic_option]),
         ]
 
 
@@ -203,7 +222,7 @@ class TestGetFilteredResponsesWithThemes:
         ResponseFactory(question=question, respondent=respondent2)
 
         # Filter for individual=true
-        filters = {"demo_filters": {"individual": "true"}}
+        filters = {"demo_filters": {"individual": ["true"]}}
         queryset = get_filtered_responses_with_themes(question.response_set.all(), filters)
 
         assert queryset.count() == 1
