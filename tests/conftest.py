@@ -185,7 +185,7 @@ def mock_consultation_input_objects(mock_s3_bucket):
 
 @pytest.fixture()
 def dashboard_access_group():
-    group = Group.objects.get(name=DASHBOARD_ACCESS)
+    group, _ = Group.objects.get_or_create(name=DASHBOARD_ACCESS)
     yield group
     group.delete()
 
