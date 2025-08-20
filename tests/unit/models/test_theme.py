@@ -26,24 +26,22 @@ class TestTheme:
 
     def test_theme_key_uniqueness_per_question(self):
         """Test that theme keys must be unique within a question"""
-        question = QuestionFactory()
-        ThemeFactory(question=question, key="ENV")
+        theme = ThemeFactory(key="ENV")
 
         # Can't create another theme with same key for same question
         with pytest.raises(IntegrityError):
             Theme.objects.create(
-                question=question,
+                question=theme.question,
                 name="Another Environmental Theme",
                 description="Different description",
-                key="ENV",
+                key=theme.key,
             )
 
-    def test_theme_key_can_be_reused_across_questions(self):
+    def test_theme_key_can_be_reused_across_questions(self, free_text_question):
         """Test that same key can be used for themes in different questions"""
-        question1 = QuestionFactory()
         question2 = QuestionFactory()
 
-        theme1 = ThemeFactory(question=question1, key="ENV")
+        theme1 = ThemeFactory(question=free_text_question, key="ENV")
         theme2 = ThemeFactory(question=question2, key="ENV")
 
         assert theme1.key == theme2.key
@@ -59,14 +57,13 @@ class TestTheme:
         assert theme2.key is None
         assert theme1.question == theme2.question
 
-    def test_theme_question_relationship(self):
+    def test_theme_question_relationship(self, free_text_question):
         """Test the foreign key relationship with Question"""
-        question = QuestionFactory()
-        theme1 = ThemeFactory(question=question)
-        theme2 = ThemeFactory(question=question)
+        theme1 = ThemeFactory(question=free_text_question)
+        theme2 = ThemeFactory(question=free_text_question)
 
         # Check reverse relationship
-        question_themes = question.theme_set.all()
+        question_themes = free_text_question.theme_set.all()
         assert theme1 in question_themes
         assert theme2 in question_themes
         assert question_themes.count() == 2

@@ -51,12 +51,11 @@ def test_question_save_same_slug(consultation):
 
 
 @pytest.mark.django_db
-def test_question_configuration():
+def test_question_configuration(free_text_question):
     # Test free text only question (default)
-    question = QuestionFactory()
-    assert question.has_free_text
-    assert not question.has_multiple_choice
-    assert question.multiple_choice_options == []
+    assert free_text_question.has_free_text
+    assert not free_text_question.has_multiple_choice
+    assert free_text_question.multiple_choice_options == []
 
     # Test multiple choice only question
     mc_question = QuestionWithMultipleChoiceFactory()
