@@ -29,9 +29,8 @@ class TestRespondent:
         respondent = factories.RespondentFactory(demographics=demographics)
         assert {x.field_name: x.field_value for x in respondent.demographics.all()} == demographics
 
-    def test_respondent_consultation_relationship(self):
+    def test_respondent_consultation_relationship(self, consultation):
         """Test foreign key relationship with Consultation"""
-        consultation = factories.ConsultationFactory()
         respondent1 = factories.RespondentFactory(consultation=consultation)
         respondent2 = factories.RespondentFactory(consultation=consultation)
 

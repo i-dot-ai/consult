@@ -40,7 +40,7 @@ def show(request: HttpRequest, user_id: int):
 
     user = get_object_or_404(User, pk=user_id)
     consultations = Consultation.objects.filter(users__in=[user])
-    dashboard_group = Group.objects.get(name=DASHBOARD_ACCESS)
+    dashboard_group, _ = Group.objects.get_or_create(name=DASHBOARD_ACCESS)
 
     if not request.POST:
         form = EditUserForm(
