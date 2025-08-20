@@ -58,6 +58,7 @@
                             "text-md",
                             "transition-colors",
                             "duration-1000",
+                            "select-none",
                             skeletonBlink
                                 ? " bg-neutral-200 text-neutral-200"
                                 : " bg-neutral-100 text-neutral-100"
@@ -72,6 +73,7 @@
                             "duration-1000",
                             skeleton && clsx([
                                 "w-max",
+                                "select-none",
                                 skeletonBlink
                                     ? "bg-neutral-200 text-neutral-200"
                                     : "bg-neutral-100 text-neutral-100"

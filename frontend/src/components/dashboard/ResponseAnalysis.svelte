@@ -121,9 +121,11 @@
                             {/each}
                         </div>
                     {:else if answersError}
-                        <div transition:slide>
+                        <div transition:slide class="my-2">
                             <Alert>
-                                <span slot="text">Answers Error: {answersError}</span>
+                                <span slot="text" class="text-sm">
+                                    Answers Error: {answersError}
+                                </span>
                             </Alert>
                         </div>
                     {:else}

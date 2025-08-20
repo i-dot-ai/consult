@@ -23,20 +23,20 @@
 
 <div class="flex items-center justify-around flex-wrap gap-1">
     <label
-      class="pr-4 leading-none text-neutral-800"
+      class="pr-4 leading-none text-neutral-800 cursor-pointer"
       for={id}
       id={`${id}-label`}
     >
-    {#if $$slots.label}
-        <slot name="label" />
-    {:else}
-        {label}
-    {/if}
+        {#if $$slots.label}
+            <slot name="label" />
+        {:else}
+            {label}
+        {/if}
     </label>
 
     <button
         use:melt={$root}
-        class="relative cursor-default rounded-full bg-neutral-300 transition-colors data-[state=checked]:bg-neutral-800 shrink-0"
+        class="relative cursor-pointer rounded-full bg-neutral-300 transition-colors data-[state=checked]:bg-neutral-800 shrink-0"
         id={id}
         aria-labelledby={`${id}-label`}
     >
