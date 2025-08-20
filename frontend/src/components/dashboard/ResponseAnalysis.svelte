@@ -14,6 +14,10 @@
     import TextInput from "../inputs/TextInput.svelte";
     import Alert from "../Alert.svelte";
     import FilterAlt from "../svg/material/FilterAlt.svelte";
+    import SearchableSelect from "../inputs/SearchableSelect.svelte";
+    import Tag from "../Tag.svelte";
+    import MaterialIcon from "../MaterialIcon.svelte";
+    import Close from "../svg/material/Close.svelte";
 
     export let isAnswersLoading: boolean = true;
     export let isThemesLoading: boolean = true;
@@ -32,6 +36,7 @@
     export let demoData: Object = {};
     export let demoFilters: Object = {};
     export let themeFilters: string[] = [];
+    export let themes = [];
     export let setDemoFilters: Function = () => {};
     export let updateThemeFilters: Function = () => {};
     export let themeFiltersApplied: Function = () => {};
@@ -66,7 +71,7 @@
                     <Finance slot="icon" />
                 </TitleRow>
 
-                <div class="my-8">
+                <div class="mt-8">
                     <div class="mb-2">
                         <Title level={3} text="Search responses:" />
                     </div>
@@ -110,6 +115,49 @@
                         />
                     </div>
                 </div>
+
+                <section>
+                    <div class="my-4">
+                        <Panel bg={true}>
+                            {#if themeFilters.length > 0}
+                                <div transition:slide class="flex gap-2 flex-wrap items-center mb-2">
+                                    {#each themeFilters as themeFilter}
+                                        <div transition:fly={{ x: 300 }}>
+                                            <Tag variant="primary">
+                                                <span>
+                                                    {themes.find(theme => theme.id === themeFilter)?.name}
+                                                </span>
+
+                                                <div class="self-center">
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="xs"
+                                                        handleClick={() => updateThemeFilters(themeFilter)}
+                                                    >
+                                                        <MaterialIcon color="fill-white" hoverColor="fill-primary">
+                                                            <Close />
+                                                        </MaterialIcon>
+                                                    </Button>
+                                                </div>
+                                            </Tag>
+                                        </div>
+                                    {/each}
+                                </div>
+                            {/if}
+
+                            <SearchableSelect
+                                handleChange={(theme => updateThemeFilters(theme.value))}
+                                options={themes.map(theme => ({
+                                    value: theme.id,
+                                    label: theme.name,
+                                    description: theme.description,
+                                    disabled: false,
+                                }))}
+                                selectedValues={themeFilters}
+                            />
+                        </Panel>
+                    </div>
+                </section>
 
                 <section>
                     <TitleRow level={3} title={`${filteredTotal} responses found`} subtitle="All responses to this question" />

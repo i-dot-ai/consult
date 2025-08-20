@@ -1,4 +1,7 @@
 <script lang="ts">
+    // Using melt-ui select
+    // Docs: https://www.melt-ui.com/docs/builders/select
+
     import clsx from "clsx";
 
     import { createSelect, melt } from '@melt-ui/svelte';

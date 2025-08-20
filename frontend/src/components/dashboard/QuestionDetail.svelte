@@ -355,6 +355,7 @@
             demoData={$demoAggrData?.demographic_aggregations}
             demoOptions={$demoOptionsData?.demographic_options}
             demoFilters={demoFilters}
+            themes={$themeInfoData?.themes}
             themeFilters={themeFilters}
             setDemoFilters={setDemoFilters}
             updateThemeFilters={updateThemeFilters}

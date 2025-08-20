@@ -33,7 +33,7 @@
                 handleClick={() => expanded = !expanded}
             >
                 <div class="flex justify-between w-full">
-                    <h3>{category}</h3>
+                    <h3 class="truncate" title={category}>{category}</h3>
 
                     <div class={clsx([
                         "transition-transform",
@@ -77,7 +77,9 @@
                         >
                             <div class="demo-filter w-full relative pb-3">
                                 <div class="grid grid-cols-3 gap-1 mb-1">
-                                    <span class="text-left">{rowKey}</span>
+                                    <span class="text-left truncate" title={rowKey}>
+                                        {rowKey}
+                                    </span>
                                     <span class="text-right">{percentage}%</span>
                                     <span class="text-right">{rowValue}</span>
                                 </div>
