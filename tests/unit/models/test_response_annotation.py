@@ -7,7 +7,6 @@ from consultation_analyser.factories import (
     ResponseAnnotationFactory,
     ResponseFactory,
     ReviewedResponseAnnotationFactory,
-    ThemeFactory,
     UserFactory,
 )
 

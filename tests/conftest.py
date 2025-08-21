@@ -311,6 +311,7 @@ def theme_b(free_text_question):
     yield theme
     theme.delete()
 
+
 @pytest.fixture()
 def theme_c(free_text_question):
     theme = ThemeFactory(question=free_text_question, name="Theme C", key="C")

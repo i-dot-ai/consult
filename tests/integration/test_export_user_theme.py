@@ -14,12 +14,18 @@ from tests.utils import get_sorted_theme_string
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
 @patch("consultation_analyser.consultations.export_user_theme.settings.ENVIRONMENT", "production")
 def test_export_user_theme(
-    mock_boto_client, consultation, free_text_question, response_1, response_2, theme_a, theme_b, theme_c
+    mock_boto_client,
+    consultation,
+    free_text_question,
+    response_1,
+    response_2,
+    theme_a,
+    theme_b,
+    theme_c,
 ):
     user = factories.UserFactory(is_staff=True)
     # Set up consultation with question and responses
     consultation.users.add(user)
-
 
     # Create response annotations with AI-assigned themes
     annotation1 = factories.ResponseAnnotationFactoryNoThemes(

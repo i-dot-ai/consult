@@ -47,7 +47,6 @@ def test_review_show_response(django_app, response_1, response_2, theme_a, theme
     )
     assert set(human_reviewed_themes.values_list("theme_id", flat=True)) == {theme_a.id, theme_b.id}
 
-
     # Now test reviewing a response making no further changes
     url = reverse("show_response", args=(consultation.id, response_1.question.id, response_2.id))
     review_response_page = django_app.get(url)
