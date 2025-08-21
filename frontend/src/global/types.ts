@@ -1,3 +1,8 @@
+export interface NavItem {
+    text: string;
+    url: string;
+}
+
 export interface Question {
     id: string;
     number: number;
