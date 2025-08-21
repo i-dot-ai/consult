@@ -76,11 +76,10 @@ class TestThemeSerializer:
 
     def test_missing_required_fields(self):
         """Test theme serializer with missing required fields"""
-        data = {"id": 1}
+        data = {"key": 1}
         serializer = ThemeSerializer(data=data)
         assert not serializer.is_valid()
-        assert "name" in serializer.errors
-        assert "description" in serializer.errors
+        assert "id" in serializer.errors
 
     def test_invalid_id_type(self):
         """Test theme serializer with invalid ID type"""

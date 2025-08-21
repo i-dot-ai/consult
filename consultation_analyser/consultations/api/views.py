@@ -11,7 +11,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .. import models
@@ -241,10 +241,11 @@ class BespokeResultsSetPagination(PageNumberPagination):
         )
 
 
-class ResponseViewSet(ReadOnlyModelViewSet):
+class ResponseViewSet(ModelViewSet):
     serializer_class = ResponseSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
     pagination_class = BespokeResultsSetPagination
+    http_method_names = ["get", "patch"]
 
     def get_queryset(self):
         question_uuid = self.kwargs["question_pk"]

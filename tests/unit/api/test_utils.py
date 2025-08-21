@@ -379,11 +379,14 @@ class TestBuildRespondentDataFast:
 
         # Verify all expected keys are present
         expected_keys = {
+            "id",
             "identifier",
             "free_text_answer_text",
             "demographic_data",
             "themes",
             "multiple_choice_answer",
             "evidenceRich",
+            "sentiment",
+            "human_reviewed",
         }
         assert set(serializer.data.keys()) == expected_keys

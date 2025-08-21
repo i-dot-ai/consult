@@ -1,5 +1,6 @@
 from django.contrib import admin
 from django_rq import get_queue
+from simple_history.admin import SimpleHistoryAdmin
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -62,7 +63,7 @@ class QuestionAdmin(admin.ModelAdmin):
     inlines = [MultiChoiceAnswerInline]
 
 
-class ResponseAnnotationAdmin(admin.ModelAdmin):
+class ResponseAnnotationAdmin(SimpleHistoryAdmin):
     readonly_fields = [
         "response",
         "themes",
