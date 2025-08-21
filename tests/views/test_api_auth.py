@@ -49,9 +49,9 @@ def test_create_token_fail(client):
     "url_pattern",
     [
         "consultations-demographic-options",
-        "question-demographic-aggregations",
+        "response-demographic-aggregations",
         "question-theme-information",
-        "question-theme-aggregations",
+        "response-theme-aggregations",
         "response-list",
         "question-detail",
     ],

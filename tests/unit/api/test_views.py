@@ -89,10 +89,10 @@ class TestDemographicAggregationsAPIView:
         """Test API endpoint returns empty aggregations when no data exists"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic-aggregations",
+            "response-demographic-aggregations",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
         response = client.get(url)
@@ -127,10 +127,10 @@ class TestDemographicAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic-aggregations",
+            "response-demographic-aggregations",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
         response = client.get(url)
@@ -166,10 +166,10 @@ class TestDemographicAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic-aggregations",
+            "response-demographic-aggregations",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
 
@@ -191,10 +191,10 @@ class TestDemographicAggregationsAPIView:
         """Test API endpoint handles invalid filter parameters"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-demographic-aggregations",
+            "response-demographic-aggregations",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
 
@@ -260,10 +260,10 @@ class TestThemeAggregationsAPIView:
         """Test API endpoint returns empty aggregations when no responses exist"""
         client.force_login(consultation_user)
         url = reverse(
-            "question-theme-aggregations",
+            "response-theme-aggregations",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
         response = client.get(url)
@@ -293,10 +293,10 @@ class TestThemeAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-theme-aggregations",
+            "response-theme-aggregations",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
         response = client.get(url)
@@ -330,10 +330,10 @@ class TestThemeAggregationsAPIView:
 
         client.force_login(consultation_user)
         url = reverse(
-            "question-theme-aggregations",
+            "response-theme-aggregations",
             kwargs={
                 "consultation_pk": free_text_question.consultation.id,
-                "pk": free_text_question.id,
+                "question_pk": free_text_question.id,
             },
         )
 
@@ -528,7 +528,13 @@ class TestFilteredResponsesAPIView:
         assert response.status_code == 400
 
     def test_get_filtered_responses_with_respondent_filters(
-        self, client, consultation_user, free_text_question, consultation_user_token, respondent_1, respondent_2
+        self,
+        client,
+        consultation_user,
+        free_text_question,
+        consultation_user_token,
+        respondent_1,
+        respondent_2,
     ):
         """Test API endpoint with theme filtering using AND logic"""
         # Create responses with different theme combinations
@@ -607,9 +613,9 @@ class TestAPIViewPermissions:
         "endpoint_name",
         [
             "consultations-demographic-options",
-            "question-demographic-aggregations",
+            "response-demographic-aggregations",
             "question-theme-information",
-            "question-theme-aggregations",
+            "response-theme-aggregations",
             "response-list",
             "question-detail",
         ],
@@ -624,9 +630,9 @@ class TestAPIViewPermissions:
         "endpoint_name",
         [
             "consultations-demographic-options",
-            "question-demographic-aggregations",
+            "response-demographic-aggregations",
             "question-theme-information",
-            "question-theme-aggregations",
+            "response-theme-aggregations",
             "response-list",
             "question-detail",
         ],
@@ -645,9 +651,9 @@ class TestAPIViewPermissions:
         [
             "consultations-detail",
             "consultations-demographic-options",
-            "question-demographic-aggregations",
+            "response-demographic-aggregations",
             "question-theme-information",
-            "question-theme-aggregations",
+            "response-theme-aggregations",
             "response-list",
             "question-detail",
         ],

@@ -15,6 +15,7 @@ from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .. import models
+from ..models import Question
 from ..views.sessions import send_magic_link_if_email_exists
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
@@ -31,7 +32,6 @@ from .serializers import (
     UserSerializer,
 )
 from .utils import (
-    build_response_filter_query,
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
 )
@@ -133,43 +133,6 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         serializer = self.get_serializer(instance=answer_count, many=True)
         return JsonResponse(data=serializer.data, safe=False)
 
-    @action(detail=True, methods=["get"], url_path="demographic-aggregations")
-    def demographic_aggregations(self, request, pk=None, consultation_pk=None):
-        """Get demographic aggregations for filtered responses"""
-
-        # Validate query parameters
-        filter_serializer = FilterSerializer(data=request.query_params)
-        filter_serializer.is_valid(raise_exception=True)
-
-        # Parse filters
-        filters = parse_filters_from_serializer(filter_serializer.validated_data)
-
-        # Single query that joins responses -> respondents and gets demographics directly
-        response_filter = build_response_filter_query(filters)
-
-        aggregations = (
-            models.DemographicOption.objects.filter(
-                Exists(
-                    models.Response.objects.filter(
-                        response_filter,
-                        question_id=pk,
-                        respondent=OuterRef("respondent"),
-                    )
-                )
-            )
-            .values("field_name", "field_value")
-            .annotate(count=Count("respondent", distinct=True))
-        )
-
-        result = defaultdict(dict)
-        for item in aggregations:
-            result[item["field_name"]][item["field_value"]] = item["count"]
-
-        serializer = DemographicAggregationsSerializer(data={"demographic_aggregations": result})
-        serializer.is_valid()
-
-        return Response(serializer.data)
-
     @action(detail=True, methods=["get"], url_path="theme-information")
     def theme_information(self, request, pk=None, consultation_pk=None):
         """Get all theme information for a question"""
@@ -180,45 +143,6 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         themes = models.Theme.objects.filter(question=question).values("id", "name", "description")
 
         serializer = ThemeInformationSerializer(data={"themes": list(themes)})
-        serializer.is_valid()
-
-        return Response(serializer.data)
-
-    @action(detail=True, methods=["get"], url_path="theme-aggregations")
-    def theme_aggregations(self, request, pk=None, consultation_pk=None):
-        """Get theme aggregations for filtered responses"""
-
-        # Get the question object with consultation in one query
-        question = self.get_object()
-
-        # Validate query parameters
-        filter_serializer = FilterSerializer(data=request.query_params)
-        filter_serializer.is_valid(raise_exception=True)
-
-        # Parse filters
-        filters = parse_filters_from_serializer(filter_serializer.validated_data)
-
-        # Database-level aggregation using Django ORM hybrid approach
-        theme_aggregations = {}
-
-        if question.has_free_text:
-            # Use the same filtering logic as FilteredResponsesAPIView
-            # This ensures theme filtering uses AND logic consistently
-            filtered_responses = get_filtered_responses_with_themes(
-                question.response_set.all(), filters
-            )
-
-            # Get theme counts from the filtered responses
-            theme_counts = (
-                models.Theme.objects.filter(responseannotation__response__in=filtered_responses)
-                .values("id")
-                .annotate(count=Count("responseannotation__response"))
-                .order_by("id")
-            )
-
-            theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
-
-        serializer = ThemeAggregationsSerializer(data={"theme_aggregations": theme_aggregations})
         serializer.is_valid()
 
         return Response(serializer.data)
@@ -267,6 +191,55 @@ class ResponseViewSet(ModelViewSet):
         # Get filtered responses with themes (optimized with prefetching)
         filtered_qs = get_filtered_responses_with_themes(queryset, filters)
         return filtered_qs
+
+    @action(detail=False, methods=["get"], url_path="demographic-aggregations")
+    def demographic_aggregations(self, request, question_pk=None, consultation_pk=None):
+        """Get demographic aggregations for filtered responses"""
+
+        # Single query that joins responses -> respondents and gets demographics directly
+        aggregations = (
+            models.DemographicOption.objects.filter(
+                Exists(self.get_queryset().filter(respondent=OuterRef("respondent")))
+            )
+            .values("field_name", "field_value")
+            .annotate(count=Count("respondent", distinct=True))
+        )
+
+        result = defaultdict(dict)
+        for item in aggregations:
+            result[item["field_name"]][item["field_value"]] = item["count"]
+
+        serializer = DemographicAggregationsSerializer(data={"demographic_aggregations": result})
+        serializer.is_valid()
+
+        return Response(serializer.data)
+
+    @action(detail=False, methods=["get"], url_path="theme-aggregations")
+    def theme_aggregations(self, request, question_pk=None, consultation_pk=None):
+        """Get theme aggregations for filtered responses"""
+
+        # Get the question object with consultation in one query
+        question = get_object_or_404(Question, pk=question_pk)
+
+        # Database-level aggregation using Django ORM hybrid approach
+        theme_aggregations = {}
+
+        if question.has_free_text:
+            # Get theme counts from the filtered responses
+            theme_counts = (
+                models.Theme.objects.filter(
+                    Exists(self.get_queryset().filter(annotation=OuterRef("responseannotation")))
+                )
+                .values("id")
+                .annotate(count=Count("responseannotation"))
+            )
+
+            theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
+
+        serializer = ThemeAggregationsSerializer(data={"theme_aggregations": theme_aggregations})
+        serializer.is_valid()
+
+        return Response(serializer.data)
 
 
 @api_view(["POST"])
