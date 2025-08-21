@@ -1,10 +1,9 @@
 <script lang="ts">
-    import { slide, fly, fade } from "svelte/transition";
+    import { slide, fly } from "svelte/transition";
 
     import type { FormattedTheme } from "../../globa/types.ts";
-    import { toTitleCase, getPercentage } from "../../global/utils.ts";
+    import { getPercentage } from "../../global/utils.ts";
 
-    import Star from "../svg/material/Star.svelte";
     import Lan from "../svg/material/Lan.svelte";
     import Close from "../svg/material/Close.svelte";
     import Panel from "./Panel.svelte";
@@ -18,6 +17,7 @@
     import Tag from "../Tag.svelte";
     import Alert from "../Alert.svelte";
     import FilterAlt from "../svg/material/FilterAlt.svelte";
+    import List from "../svg/material/List.svelte";
 
     const MAX_CARDS_ALLOWED = 10;
 
@@ -71,29 +71,6 @@
     </div>
 
     <div class="col-span-4 md:col-span-3">
-        <!-- <section class="my-4">
-            <Panel>
-                <TitleRow
-                    level={2}
-                    title="Demographics"
-                    subtitle="Demographic breakdown for this question"
-                >
-                    <Star slot="icon" />
-                </TitleRow>
-
-                <ProgressCards
-                    totalAnswers={totalAnswers}
-                    filteredTotal={filteredTotal}
-                    demoData={demoData}
-                    demoFilters={demoFilters}
-                    themes={themes}
-                    themeFilters={themeFilters}
-                    demoFiltersApplied={demoFiltersApplied}
-                    themeFiltersApplied={themeFiltersApplied}
-                />
-            </Panel>
-        </section> -->
-
         {#if multiChoice[""] && Object.keys(multiChoice[""]).length > 0}
             <section class="my-4">
                 <Panel>
@@ -101,7 +78,7 @@
                         level={2}
                         title="Multiple Choice Answers"
                     >
-                        <Star slot="icon" />
+                        <List slot="icon" />
                     </TitleRow>
 
                     <ProgressCards
