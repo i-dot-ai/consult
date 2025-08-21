@@ -8,14 +8,13 @@ from consultation_analyser.consultations.export_user_theme import (
 
 
 @pytest.mark.django_db
-def test_get_position():
+def test_get_position(response_1):
     # Create a response with annotation and sentiment
-    response = factories.ResponseFactory()
     factories.ResponseAnnotationFactory(
-        response=response, sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT
+        response=response_1, sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT
     )
 
-    assert get_position(response) == models.ResponseAnnotation.Sentiment.AGREEMENT
+    assert get_position(response_1) == models.ResponseAnnotation.Sentiment.AGREEMENT
 
     # Test response without annotation
     response_no_annotation = factories.ResponseFactory()

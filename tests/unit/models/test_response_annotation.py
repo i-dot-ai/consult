@@ -48,36 +48,33 @@ class TestResponseAnnotation:
         for theme in annotation.themes.all():
             assert theme.question == annotation.response.question
 
-    def test_custom_themes(self):
+    def test_custom_themes(self, response_1):
         """Test creating annotation with specific themes"""
-        response = ResponseFactory()
-        theme1 = ThemeFactory(question=response.question)
-        theme2 = ThemeFactory(question=response.question)
+        theme1 = ThemeFactory(question=response_1.question)
+        theme2 = ThemeFactory(question=response_1.question)
 
-        annotation = ResponseAnnotationFactory(response=response, themes=[theme1, theme2])
+        annotation = ResponseAnnotationFactory(response=response_1, themes=[theme1, theme2])
 
         assert annotation.themes.count() == 2
         assert theme1 in annotation.themes.all()
         assert theme2 in annotation.themes.all()
 
-    def test_sentiment_choices(self):
+    def test_sentiment_choices(self, response_1):
         """Test sentiment field choices"""
-        response = ResponseFactory()
 
         # Test each valid choice
         for sentiment in ["AGREEMENT", "DISAGREEMENT", "UNCLEAR"]:
-            annotation = ResponseAnnotation.objects.create(response=response, sentiment=sentiment)
+            annotation = ResponseAnnotation.objects.create(response=response_1, sentiment=sentiment)
             assert annotation.sentiment == sentiment
             annotation.delete()
 
-    def test_evidence_rich_choices(self):
+    def test_evidence_rich_choices(self, response_1):
         """Test evidence_rich field choices"""
-        response = ResponseFactory()
 
         # Test each valid choice
         for evidence in [True, False]:
             annotation = ResponseAnnotation.objects.create(
-                response=response, evidence_rich=evidence
+                response=response_1, evidence_rich=evidence
             )
             assert annotation.evidence_rich == evidence
             annotation.delete()
@@ -104,11 +101,10 @@ class TestResponseAnnotation:
         assert reviewed.reviewed_by is not None
         assert reviewed.reviewed_at is not None
 
-    def test_annotation_without_ai_fields(self):
+    def test_annotation_without_ai_fields(self, response_1):
         """Test that AI fields are optional (for non-free-text responses)"""
-        response = ResponseFactory()
         annotation = ResponseAnnotation.objects.create(
-            response=response, sentiment=None, evidence_rich=None
+            response=response_1, sentiment=None, evidence_rich=None
         )
 
         assert annotation.sentiment is None

@@ -15,7 +15,7 @@ from consultation_analyser.factories import (
     QuestionFactory,
     RespondentFactory,
     ThemeFactory,
-    UserFactory,
+    UserFactory, ResponseFactory,
 )
 
 
@@ -398,3 +398,41 @@ def respondent_4(consultation):
     )
     yield respondent
     respondent.delete()
+
+@pytest.fixture()
+def response_1(free_text_question, respondent_1):
+    response = ResponseFactory(
+        question=free_text_question,
+        respondent=respondent_1,
+        free_text= "Test response"
+    )
+    yield response
+    response.delete()
+
+
+@pytest.fixture()
+def response_2(free_text_question, respondent_2):
+    response = ResponseFactory(
+        question=free_text_question,
+        respondent=respondent_2    )
+    yield response
+    response.delete()
+
+
+@pytest.fixture()
+def response_3(free_text_question, respondent_3):
+    response = ResponseFactory(
+        question=free_text_question,
+        respondent=respondent_3    )
+    yield response
+    response.delete()
+
+
+@pytest.fixture()
+def response_4(free_text_question, respondent_4):
+    response = ResponseFactory(
+        question=free_text_question,
+       respondent=respondent_4    )
+    yield response
+    response.delete()
+

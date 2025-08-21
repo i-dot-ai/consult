@@ -8,14 +8,13 @@ from consultation_analyser.consultations.models import Response
 
 @pytest.mark.django_db
 class TestResponse:
-    def test_response_creation(self):
+    def test_response_creation(self,response_1):
         """Test basic response creation"""
-        response = factories.ResponseFactory()
-        assert isinstance(response, models.Response)
-        assert response.free_text
-        assert response.chosen_options.count() == 0
-        assert response.respondent
-        assert response.question
+        assert isinstance(response_1, models.Response)
+        assert response_1.free_text
+        assert response_1.chosen_options.count() == 0
+        assert response_1.respondent
+        assert response_1.question
 
     def test_response_with_multiple_choice(self):
         """Test response with multiple choice selections"""
@@ -33,25 +32,23 @@ class TestResponse:
         assert response.free_text
         assert response.chosen_options.count() >= 1
 
-    def test_unique_constraint(self):
+    def test_unique_constraint(self, response_1):
         """Test that only one response per respondent per question is allowed"""
-        response = factories.ResponseFactory()
 
         # Try to create another response for same respondent and question
         with pytest.raises(Exception):  # Will raise IntegrityError
             models.Response.objects.create(
-                respondent=response.respondent,
-                question=response.free_text_question,
+                respondent=response_1.respondent,
+                question=response_1.free_text_question,
                 free_text="Duplicate response",
             )
 
-    def test_response_annotation_relationship(self):
+    def test_response_annotation_relationship(self, response_1):
         """Test one-to-one relationship with ResponseAnnotation"""
-        response = factories.ResponseFactory()
-        annotation = factories.ResponseAnnotationFactory(response=response)
+        annotation = factories.ResponseAnnotationFactory(response=response_1)
 
-        assert response.annotation == annotation
-        assert annotation.response == response
+        assert response_1.annotation == annotation
+        assert annotation.response == response_1
 
 
 @pytest.mark.django_db

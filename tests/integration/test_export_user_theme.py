@@ -13,12 +13,10 @@ from tests.utils import get_sorted_theme_string
 @pytest.mark.django_db
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
 @patch("consultation_analyser.consultations.export_user_theme.settings.ENVIRONMENT", "production")
-def test_export_user_theme(mock_boto_client, consultation, free_text_question, respondent_1, respondent_2):
+def test_export_user_theme(mock_boto_client, consultation, free_text_question, response_1, response_2):
     user = factories.UserFactory(is_staff=True)
     # Set up consultation with question and responses
     consultation.users.add(user)
-    response = factories.ResponseFactory(question=free_text_question, respondent=respondent_1)
-    response2 = factories.ResponseFactory(question=free_text_question, respondent=respondent_2)
 
     # Set up themes
     theme1 = factories.ThemeFactory(question=free_text_question, key="B")
@@ -27,14 +25,14 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question, r
 
     # Create response annotations with AI-assigned themes
     annotation1 = factories.ResponseAnnotationFactoryNoThemes(
-        response=response,
+        response=response_1,
         sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT,
         human_reviewed=False,
     )
     annotation1.add_original_ai_themes([theme1, theme2])
 
     annotation2 = factories.ResponseAnnotationFactoryNoThemes(
-        response=response2,
+        response=response_2,
         sentiment=models.ResponseAnnotation.Sentiment.UNCLEAR,
         human_reviewed=False,
     )
@@ -56,11 +54,11 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question, r
 
     # First answer has been audited and changed by user
     assert exported_data[0] == {
-        "Response ID": str(respondent_1.themefinder_id),
+        "Response ID": str(response_1.respondent.themefinder_id),
         "Consultation": consultation.title,
         "Question number": str(free_text_question.number),
         "Question text": free_text_question.text,
-        "Response text": response.free_text,
+        "Response text": response_1.free_text,
         "Response has been audited": str(True),
         "Original themes": get_sorted_theme_string([theme1, theme2]),
         "Current themes": get_sorted_theme_string([theme2, theme3]),
@@ -71,11 +69,11 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question, r
 
     # Second answer has not been audited
     assert exported_data[1] == {
-        "Response ID": str(respondent_2.themefinder_id),
+        "Response ID": str(response_2.respondent.themefinder_id),
         "Consultation": consultation.title,
         "Question number": str(free_text_question.number),
         "Question text": free_text_question.text,
-        "Response text": response2.free_text,
+        "Response text": response_2.free_text,
         "Response has been audited": str(False),
         "Original themes": f"{theme3.key}",
         "Current themes": f"{theme3.key}",  # When not audited, current = original
@@ -88,7 +86,7 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question, r
 @pytest.mark.django_db
 @patch("django_rq.enqueue")
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
-def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_text_question, respondent_1):
+def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_text_question, response_1):
     """Test that the export job is correctly enqueued"""
     from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 
@@ -97,11 +95,10 @@ def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_tex
     consultation.users.add(user)
 
     # Create at least one question with responses for the export to work
-    response = factories.ResponseFactory(question=free_text_question, respondent=respondent_1)
 
     # Create annotation so there's something to export
     annotation = factories.ResponseAnnotationFactoryNoThemes(
-        response=response, sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT
+        response=response_1, sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT
     )
     theme = factories.ThemeFactory(question=free_text_question)
     annotation.add_original_ai_themes([theme])
