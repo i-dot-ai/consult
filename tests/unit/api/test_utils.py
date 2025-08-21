@@ -118,7 +118,6 @@ class TestBuildResponseFilterQuery:
 
     def test_demographic_filters_boolean(
         self,
-        question,
         individual_demographic_option,
         group_demographic_option,
         no_disability_demographic_option,
@@ -138,7 +137,6 @@ class TestBuildResponseFilterQuery:
 
     def test_demographic_filters_string(
         self,
-        question,
         north_demographic_option,
         south_demographic_option,
         twenty_five_demographic_option,
