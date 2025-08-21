@@ -4,9 +4,9 @@
 
     import Title from "../Title.svelte";
     import Link from "../Link.svelte";
-    import QuestionList from "./QuestionList.svelte";
+    import QuestionList from "../dashboard/QuestionList.svelte";
     import TextInput from "../inputs/TextInput.svelte";
-    import TitleRow from "./TitleRow.svelte";
+    import TitleRow from "../dashboard/TitleRow.svelte";
     import Help from "../svg/material/Help.svelte";
     import Star from "../svg/material/Star.svelte";
 

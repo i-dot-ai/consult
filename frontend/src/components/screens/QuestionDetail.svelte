@@ -8,12 +8,12 @@
     import Button from "../inputs/Button.svelte";
     import Panel from "../dashboard/Panel.svelte";
     import Star from "../svg/material/Star.svelte";
-    import SearchCard from "./SearchCard.svelte";
-    import QuestionCard from "./QuestionCard.svelte";
+    import SearchCard from "../dashboard/SearchCard.svelte";
+    import QuestionCard from "../dashboard/QuestionCard.svelte";
     import TabView from "../TabView.svelte";
     import Title from "../Title.svelte";
-    import QuestionSummary from "./QuestionSummary.svelte";
-    import ResponseAnalysis from "./ResponseAnalysis.svelte";
+    import QuestionSummary from "../dashboard/QuestionSummary.svelte";
+    import ResponseAnalysis from "../dashboard/ResponseAnalysis.svelte";
 
     import { getConsultationDetailUrl } from "../../global/routes.ts";
     import { createFetchStore } from "../../global/stores.ts";
