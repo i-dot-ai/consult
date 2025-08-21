@@ -1,45 +1,41 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Section from '../../components/Section.svelte';
-import Title from '../../components/Title.svelte';
-import Link from '../../components/Link.svelte';
----
-<Layout>
-	<Section>
-        <Title level={1} text="Design" />
-        <p>Click on below links to view components in isolation.</p>
+import type { NavItem } from '../../global/types';
 
-        <ul class="flex flex-col gap-2 mt-4">
+import Story from '../../layouts/Story.astro';
+import Link from '../../components/Link.svelte';
+
+
+const links: NavItem[] = [
+    {
+        text: "/svg",
+        url: "/design/svg",
+    },
+    {
+        text: "Header",
+        url: "/design/header",
+    },
+    {
+        text: "Footer",
+        url: "/design/footer",
+    },
+    {
+        text: "Conditional Wrapper",
+        url: "/design/conditional-wrapper",
+    },
+    {
+        text: "Magic Link Button",
+        url: "/design/magic-link-button",
+    }
+]
+---
+<Story>
+    <ul class="flex flex-col gap-2 mt-4">
+        {links.map(link => (
             <li>
-                <Link href="/design/header">
-                    Header
+                <Link href={link.url}>
+                    {link.text}
                 </Link>
             </li>
-            <li>
-                <Link href="/design/footer">
-                    Footer
-                </Link>
-            </li>
-            <li>
-                <Link href="/design/themes-table">
-                    Themes Table
-                </Link>
-            </li>
-            <li>
-                <Link href="/design/conditional-wrapper">
-                    Conditional Wrapper
-                </Link>
-            </li>
-            <li>
-                <Link href="/design/magic-link-button">
-                    Magic Link Button
-                </Link>
-            </li>
-            <li>
-                <Link href="/design/svg">
-                    /svg
-                </Link>
-            </li>
-        </ul>
-    </Section>
-</Layout>
+        ))}
+    </ul>
+</Story>

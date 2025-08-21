@@ -1,31 +1,37 @@
 ---
-import Layout from '../../../layouts/Layout.astro';
-import Section from '../../../components/Section.svelte';
-import Title from '../../../components/Title.svelte';
+import type { NavItem } from '../../../global/types';
+
 import Link from '../../../components/Link.svelte';
+import Story from "../../../layouts/Story.astro";
+
+
+const links: NavItem[] = [
+    {
+        text: "GOV Icon",
+        url: "/design/svg/gov-icon",
+    },
+    {
+        text: "Iai Icon",
+        url: "/design/svg/iai-icon",
+    },
+    {
+        text: "Ogl Icon",
+        url: "/design/svg/ogl-icon",
+    },
+    {
+        text: "Announce Icon",
+        url: "/design/svg/announce-icon",
+    },
+];
 ---
-<Layout>
-	<Section>
-        <Title level={1} text="Design" />
-        <p>Click on below links to view components in isolation.</p>
-
-        <ul class="flex flex-col gap-2 mt-4">
+<Story title="svg">
+    <ul class="flex flex-col gap-2 mt-4">
+        {links.map(link => (
             <li>
-                <Link href="/design/svg/gov-icon">GOV Icon</Link>
+                <Link href={link.url}>
+                    {link.text}
+                </Link>
             </li>
-            <li>
-                <Link href="/design/svg/iai-icon">Iai Icon</Link>
-            </li>
-            <li>
-                <Link href="/design/svg/ogl-icon">Ogl Icon</Link>
-            </li>
-            <li>
-                <Link href="/design/svg/announce-icon">Announce Icon</Link>
-            </li>
-        </ul>
-
-        <div class="mt-4">
-            <Link href="/design">Back</Link>
-        </div>
-    </Section>
-</Layout>
+        ))}
+    </ul>
+</Story>
