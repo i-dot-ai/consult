@@ -1,5 +1,6 @@
 from typing import Any
 
+from django.utils import timezone
 from rest_framework import serializers
 
 from consultation_analyser.authentication.models import User
@@ -9,6 +10,7 @@ from consultation_analyser.consultations.models import (
     MultiChoiceAnswer,
     Question,
     Response,
+    ResponseAnnotationTheme,
     Theme,
 )
 
@@ -79,10 +81,13 @@ class DemographicAggregationsSerializer(serializers.Serializer):
 
 class ThemeSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField()
+    name = serializers.CharField(required=False)
+    description = serializers.CharField(required=False)
+    key = serializers.CharField(required=False)
 
     class Meta:
         model = Theme
-        fields = ["id", "name", "description"]
+        fields = ["id", "name", "description", "key"]
 
 
 class ThemeInformationSerializer(serializers.Serializer):
@@ -137,31 +142,79 @@ class MultiChoiceAnswerCount(serializers.Serializer):
     response_count = serializers.IntegerField()
 
 
+class RelatedThemeSerializer(serializers.PrimaryKeyRelatedField):
+    """this is a variation on the PrimaryKeyRelatedField where
+    representation is actually that of the ThemeSerializer
+    """
+
+    queryset = Theme.objects.all()
+
+    def to_internal_value(self, data):
+        data = ThemeSerializer().to_internal_value(data)["id"]
+        return super().to_internal_value(data)
+
+    def to_representation(self, value):
+        return ThemeSerializer().to_representation(value)
+
+
 class ResponseSerializer(serializers.ModelSerializer):
-    identifier = serializers.CharField(source="respondent.themefinder_id")
-    free_text_answer_text = serializers.CharField(source="free_text")
-    demographic_data = serializers.SerializerMethodField()
-    themes = ThemeSerializer(source="annotation.themes", many=True, read_only=True, default=[])
+    identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
+    free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
+    demographic_data = serializers.SerializerMethodField(read_only=True)
+    themes = RelatedThemeSerializer(source="annotation.themes", many=True, default=[])
     multiple_choice_answer = serializers.SlugRelatedField(
         source="chosen_options", slug_field="text", many=True, read_only=True
     )
     evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
+    sentiment = serializers.CharField(source="annotation.sentiment")
+    human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
-        def encode(txt: str):
-            if isinstance(txt, (bool, str)):
-                return txt
-            return str(txt)
+        return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
 
-        return {d.field_name: encode(d.field_value) for d in obj.respondent.demographics.all()}
+    def update(self, instance: Response, validated_data):
+        if annotation := validated_data.get("annotation"):
+            if "human_reviewed" in annotation:
+                human_reviewed = annotation["human_reviewed"]
+                instance.annotation.human_reviewed = human_reviewed
+                instance.annotation.reviewed_by = (
+                    self.context["request"].user if human_reviewed else None
+                )
+                instance.annotation.reviewed_at = timezone.now() if human_reviewed else None
+
+            if "evidence_rich" in annotation:
+                instance.annotation.evidence_rich = annotation["evidence_rich"]
+
+            if "themes" in annotation:
+                ResponseAnnotationTheme.objects.filter(
+                    response_annotation=instance.annotation
+                ).delete()
+                for theme in annotation["themes"]:
+                    ResponseAnnotationTheme.objects.create(
+                        response_annotation=instance.annotation,
+                        theme=theme,
+                        is_original_ai_assignment=False,
+                        assigned_by=self.context["request"].user,
+                    )
+                instance.annotation.refresh_from_db()
+
+            if "sentiment" in annotation:
+                instance.annotation.sentiment = annotation["sentiment"]
+
+            instance.annotation.save()
+
+        return instance
 
     class Meta:
         model = Response
         fields = [
+            "id",
             "identifier",
             "free_text_answer_text",
             "demographic_data",
             "themes",
             "multiple_choice_answer",
             "evidenceRich",
+            "sentiment",
+            "human_reviewed",
         ]
