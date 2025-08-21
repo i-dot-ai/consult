@@ -245,6 +245,7 @@ class ResponseViewSet(ModelViewSet):
     serializer_class = ResponseSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
     pagination_class = BespokeResultsSetPagination
+    filterset_fields = ["respondent_id"]
     http_method_names = ["get", "patch"]
 
     def get_queryset(self):
