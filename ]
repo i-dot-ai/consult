@@ -1,0 +1,76 @@
+Merge branch 'main' into feature/query-respondent_id
+
+# Conflicts:
+#	consultation_analyser/consultations/api/views.py
+#
+# It looks like you may be committing a merge.
+# If this is not correct, please run
+#	git update-ref -d MERGE_HEAD
+# and try again.
+
+
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+#
+# On branch feature/query-respondent_id
+# Your branch is behind 'origin/feature/query-respondent_id' by 31 commits, and can be fast-forwarded.
+#   (use "git pull" to update your local branch)
+#
+# All conflicts fixed but you are still merging.
+#
+# Changes to be committed:
+#	modified:   .env.example
+#	modified:   consultation_analyser/consultations/admin.py
+#	modified:   consultation_analyser/consultations/api/serializers.py
+#	modified:   consultation_analyser/consultations/api/utils.py
+#	modified:   consultation_analyser/consultations/api/views.py
+#	modified:   consultation_analyser/consultations/migrations/0069_alter_demographicoption_field_value.py
+#	new file:   consultation_analyser/consultations/migrations/0070_historicalresponseannotation_and_more.py
+#	modified:   consultation_analyser/consultations/models.py
+#	modified:   consultation_analyser/settings/base.py
+#	modified:   consultation_analyser/settings/local.py
+#	modified:   consultation_analyser/support_console/urls.py
+#	modified:   consultation_analyser/support_console/views/users.py
+#	modified:   consultation_analyser/urls.py
+#	modified:   frontend/public/lit/index.js
+#	modified:   frontend/public/lit/index.js.map
+#	modified:   infrastructure/batch.tf
+#	modified:   infrastructure/data.tf
+#	modified:   infrastructure/iam.tf
+#	modified:   infrastructure/secrets.tf
+#	deleted:    legacy-frontend/debug_toolbar/css/print.css
+#	deleted:    legacy-frontend/debug_toolbar/css/toolbar.css
+#	deleted:    legacy-frontend/debug_toolbar/js/history.js
+#	deleted:    legacy-frontend/debug_toolbar/js/redirect.js
+#	deleted:    legacy-frontend/debug_toolbar/js/timer.js
+#	deleted:    legacy-frontend/debug_toolbar/js/toolbar.js
+#	deleted:    legacy-frontend/debug_toolbar/js/utils.js
+#	modified:   legacy-frontend/lit/index.js
+#	modified:   legacy-frontend/lit/index.js.map
+#	modified:   pipeline-mapping/mapping_script.py
+#	modified:   pipeline-sign-off/requirements.txt
+#	modified:   pipeline-sign-off/sign_off_script.py
+#	modified:   poetry.lock
+#	modified:   pyproject.toml
+#	modified:   tests/conftest.py
+#	modified:   tests/integration/test_consultation_page.py
+#	modified:   tests/integration/test_deleting_question_support.py
+#	modified:   tests/integration/test_export_user_theme.py
+#	modified:   tests/integration/test_user_can_see_consultations.py
+#	modified:   tests/request/test_support_pages.py
+#	new file:   tests/test_migrations.py
+#	modified:   tests/unit/api/test_permissions.py
+#	modified:   tests/unit/api/test_serializers.py
+#	modified:   tests/unit/api/test_utils.py
+#	modified:   tests/unit/api/test_views.py
+#	modified:   tests/unit/conftest.py
+#	modified:   tests/unit/models/test_factories.py
+#	modified:   tests/unit/models/test_question.py
+#	modified:   tests/unit/models/test_respondent.py
+#	modified:   tests/unit/models/test_theme.py
+#	modified:   tests/unit/models/test_user.py
+#	modified:   tests/unit/test_delete_question.py
+#	modified:   tests/views/test_consultation_scoping.py
+#	modified:   tests/views/test_dashboard_access.py
+#	modified:   tests/views/test_login_required.py
+#

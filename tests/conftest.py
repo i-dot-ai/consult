@@ -390,7 +390,13 @@ def twenty_five_demographic_option(consultation):
 
 @pytest.fixture
 def respondent_1(consultation):
-    respondent = Respondent.objects.create(consultation=consultation)
+    respondent = Respondent.objects.create(consultation=consultation, themefinder_id=1)
+    yield respondent
+    respondent.delete()
+
+@pytest.fixture
+def respondent_2(consultation):
+    respondent = Respondent.objects.create(consultation=consultation, themefinder_id=2)
     yield respondent
     respondent.delete()
 
