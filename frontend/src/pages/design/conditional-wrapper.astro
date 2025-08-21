@@ -1,6 +1,6 @@
 ---
 import Story from '../../layouts/Story.astro';
-import ConditionalRenderStory from "../../components/ConditionalRender/ConditionalRenderStory.svelte";
+import ConditionalWrapperStory from "../../components/ConditionalWrapper/ConditionalWrapperStory.svelte";
 
 const title = "Conditional Render";
 const description = `
@@ -10,5 +10,5 @@ const description = `
 `
 ---
 <Story title={title} description={description} >
-    <ConditionalRenderStory client:load />
+    <ConditionalWrapperStory client:load />
 </Story>

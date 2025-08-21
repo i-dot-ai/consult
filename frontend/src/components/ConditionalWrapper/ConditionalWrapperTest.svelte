@@ -1,11 +1,11 @@
 <script lang="ts">
-    import ConditionalRender from "./ConditionalRender.svelte";
+    import ConditionalWrapper from "./ConditionalWrapper.svelte";
 
     export let element = false;
     export let condition: boolean = false;
     export let slot: string = "";
 </script>
 
-<ConditionalRender element={element} condition={condition}>
+<ConditionalWrapper element={element} condition={condition}>
     {@html slot}
-</ConditionalRender>
+</ConditionalWrapper>

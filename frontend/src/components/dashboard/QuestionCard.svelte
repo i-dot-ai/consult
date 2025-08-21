@@ -9,7 +9,7 @@
     import { applyHighlight } from "../../global/utils.ts";
 
     import MaterialIcon from "../MaterialIcon.svelte";
-    import ConditionalRender from "../ConditionalRender/ConditionalRender.svelte";
+    import ConditionalWrapper from "../ConditionalWrapper/ConditionalWrapper.svelte";
     import Star from "../svg/material/Star.svelte";
     import Help from "../svg/material/Help.svelte";
     import Panel from "./Panel.svelte";
@@ -36,7 +36,7 @@
 </script>
 
 <div transition:fade={{duration: 200}} >
-    <ConditionalRender
+    <ConditionalWrapper
         element={Link}
         condition={clickable && !skeleton}
         variant="block"
@@ -113,5 +113,5 @@
                 </div>
             </article>    
         </Panel>
-    </ConditionalRender>
+    </ConditionalWrapper>
 </div>
