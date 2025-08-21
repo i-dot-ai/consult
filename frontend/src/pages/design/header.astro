@@ -1,0 +1,12 @@
+---
+import Story from '../../layouts/Story.astro';
+import HeaderStory from "../../components/Header/HeaderStory.svelte";
+
+const title = "Header";
+const description = `
+    Renders the header for all routes on the site.
+`
+---
+<Story title={title} description={description} >
+    <HeaderStory client:load isSignedIn={true} />
+</Story>
