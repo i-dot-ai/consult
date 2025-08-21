@@ -10,6 +10,6 @@
     {/if}
 
     <div class="text-pink-700">
-        <slot name="text" />
+        <slot />
     </div>
 </div>

@@ -125,7 +125,7 @@
                         <Alert>
                             <FilterAlt slot="icon" />
 
-                            <p slot="text" class="text-sm">
+                            <p class="text-sm">
                                 Results are filtered
                             </p>
                         </Alert>

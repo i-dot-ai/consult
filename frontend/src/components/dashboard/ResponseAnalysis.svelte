@@ -81,7 +81,7 @@
                             <Alert>
                                 <FilterAlt slot="icon" />
 
-                                <p slot="text" class="text-sm">
+                                <p class="text-sm">
                                     Results are filtered
                                 </p>
                             </Alert>
@@ -173,7 +173,7 @@
                     {:else if answersError}
                         <div transition:slide class="my-2">
                             <Alert>
-                                <span slot="text" class="text-sm">
+                                <span class="text-sm">
                                     Answers Error: {answersError}
                                 </span>
                             </Alert>

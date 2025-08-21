@@ -281,7 +281,7 @@
     {#if $consultationError}
         <div class="my-2">
             <Alert>
-                <span slot="text" class="text-sm">
+                <span class="text-sm">
                     Consultation Error: {$consultationError}
                 </span>
             </Alert>
