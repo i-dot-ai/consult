@@ -1,6 +1,9 @@
 locals {
   batch_mapping_image_url = "${var.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult-pipeline-mapping:${var.image_tag}"
   batch_sign_off_image_url = "${var.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult-pipeline-sign-off:${var.image_tag}"
+
+  llm_gateway_name       = var.env == "dev" || var.env == "preprod" ? "llm-gateway.${var.env}" : "llm-gateway"
+  llm_gateway_url        = "https://${local.llm_gateway_name}.i.ai.gov.uk"
 }
 
 module "batch_compute" {
@@ -36,6 +39,7 @@ module "batch_job_mapping" {
     "REPO" : "consult",
     "AWS_ACCOUNT_ID": data.aws_caller_identity.current.id,
     "DOCKER_BUILDER_CONTAINER": "consult-mapping",
+    "LLM_GATEWAY_URL": local.llm_gateway_url
   }
   additional_iam_policies  = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
   secrets = [
@@ -63,6 +67,7 @@ module "batch_job_sign_off" {
     "REPO" : "consult",
     "AWS_ACCOUNT_ID": data.aws_caller_identity.current.id,
     "DOCKER_BUILDER_CONTAINER": "consult-sign-off",
+    "LLM_GATEWAY_URL": local.llm_gateway_url
   }
   additional_iam_policies  = { "batch" : aws_iam_policy.ecs_exec_custom_policy.arn }
   secrets = [
