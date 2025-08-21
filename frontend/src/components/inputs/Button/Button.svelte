@@ -1,7 +1,7 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    export let variant: "default" | "ghost" | "primary" = "default";
+    export let variant: "default" | "primary" | "ghost" = "default";
     export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
     export let highlighted: boolean = false;
     export let highlightVariant: "dark" | "light" = "dark"; 
