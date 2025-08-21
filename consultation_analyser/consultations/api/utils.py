@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import TypedDict
 
 from django.db.models import Count, Q, QuerySet
@@ -12,7 +13,7 @@ class FilterParams(TypedDict, total=False):
     theme_list: list[str]
     evidence_rich: bool
     search_mode: str
-    demo_filters: dict[str, str]
+    demo_filters: dict[str, list[str]]
     search_value: str
 
 
@@ -40,14 +41,14 @@ def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
     # Parse demographic filters
     demo_filters = validated_data.get("demoFilters", [])
     if demo_filters:
-        filters_dict = {}
+        filters_dict = defaultdict(list)
         for filter_str in demo_filters:
             if ":" in filter_str:
                 key, value = filter_str.split(":", 1)
                 if key and value:
-                    filters_dict[key] = value
+                    filters_dict[key].append(value)
         if filters_dict:
-            filters["demo_filters"] = filters_dict
+            filters["demo_filters"] = dict(filters_dict)
 
     return filters
 
@@ -73,14 +74,12 @@ def build_response_filter_query(filters: FilterParams) -> Q:
 
     # Handle demographic filters
     if demo_filters := filters.get("demo_filters"):
-        for field, value in demo_filters.items():
-            try:
-                demographic = DemographicOption.objects.get(
-                    field_name=field, field_value=safe_json_encode(value)
-                )
-                query &= Q(respondent__demographics=demographic)
-            except DemographicOption.DoesNotExist:
-                pass
+        for field, values in demo_filters.items():
+            json_values = list(map(safe_json_encode, values))
+            demographics = DemographicOption.objects.filter(
+                field_name=field, field_value__in=json_values
+            )
+            query &= Q(respondent__demographics__in=demographics)
 
     return query
 
