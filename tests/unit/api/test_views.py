@@ -1,9 +1,12 @@
+import json
+from datetime import datetime
 from uuid import uuid4
 
 import orjson
 import pytest
 from django.urls import reverse
 
+from consultation_analyser.consultations.models import ResponseAnnotationTheme
 from consultation_analyser.factories import (
     QuestionFactory,
     RespondentFactory,
@@ -524,6 +527,44 @@ class TestFilteredResponsesAPIView:
         response = client.get(url + "?page=0")
         assert response.status_code == 400
 
+    def test_get_filtered_responses_with_respondent_filters(
+        self, client, consultation_user, free_text_question, consultation_user_token, respondent_1, respondent_2
+    ):
+        """Test API endpoint with theme filtering using AND logic"""
+        # Create responses with different theme combinations
+
+        _ = ResponseFactory(
+            question=free_text_question, respondent=respondent_1, free_text="Response 1"
+        )
+        _ = ResponseFactory(
+            question=free_text_question, respondent=respondent_2, free_text="Response 2"
+        )
+
+        client.force_login(consultation_user)
+
+        url = reverse(
+            "response-list",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "question_pk": free_text_question.id,
+            },
+        )
+
+        # Filter by respondent1 - should only return response1
+        response = client.get(
+            url + f"?respondent_id={respondent_1.id}",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
+
+        data = response.json()
+
+        assert data["respondents_total"] == 2  # Total respondents
+        assert data["filtered_total"] == 1  # Only response1
+        assert len(data["all_respondents"]) == 1
+        assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
+
 
 @pytest.mark.django_db
 class TestQuestionInformationAPIView:
@@ -619,6 +660,202 @@ class TestAPIViewPermissions:
         url = build_url(endpoint_name, free_text_question)
         response = client.get(url)
         assert response.status_code == 403
+
+    def test_patch_response_human_reviewed(
+        self, client, consultation_user, consultation_user_token, free_text_annotation
+    ):
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        assert free_text_annotation.human_reviewed is False
+        assert free_text_annotation.reviewed_by is None
+        assert free_text_annotation.reviewed_at is None
+
+        response = client.patch(
+            url,
+            data='{"human_reviewed": true}',
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["human_reviewed"] is True
+        free_text_annotation.refresh_from_db()
+        assert free_text_annotation.human_reviewed is True
+
+        # Verify version history captures the change from True to False using django-simple-history
+        history = free_text_annotation.history.all().order_by("history_date")
+        assert history.count() == 2
+
+        # The first version should have human_reviewed=False
+        assert history.first().human_reviewed is False
+        assert history.first().reviewed_by is None
+        assert history.first().reviewed_at is None
+
+        # latest should have human_reviewed=True
+        assert history.last().human_reviewed is True
+        assert history.last().reviewed_by == consultation_user
+        assert isinstance(history.last().reviewed_at, datetime)
+
+    def test_patch_response_sentiment(self, client, consultation_user_token, free_text_annotation):
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        assert free_text_annotation.evidence_rich is True
+
+        response = client.patch(
+            url,
+            data='{"sentiment": "AGREEMENT"}',
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["sentiment"] == "AGREEMENT"
+        free_text_annotation.refresh_from_db()
+        assert free_text_annotation.sentiment == "AGREEMENT"
+
+        # Verify version history captures the change from True to False using django-simple-history
+        history = free_text_annotation.history.all().order_by("history_date")
+        assert history.count() == 2
+
+        # The first version should have sentiment=null, latest should have sentiment="AGREEMENT"
+        assert history.first().sentiment is None  # Initial state
+        assert history.last().sentiment == "AGREEMENT"  # Final state after PATCH
+
+    def test_patch_response_evidence_rich(
+        self, client, consultation_user_token, free_text_annotation
+    ):
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        assert free_text_annotation.evidence_rich is True
+
+        response = client.patch(
+            url,
+            data='{"evidenceRich": false}',
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 200
+        assert response.json()["evidenceRich"] is False
+        free_text_annotation.refresh_from_db()
+        assert free_text_annotation.evidence_rich is False
+
+        # Verify version history captures the change from True to False using django-simple-history
+        history = free_text_annotation.history.all().order_by("history_date")
+        assert history.count() == 2
+
+        # The first version should have evidence_rich=True, latest should have evidence_rich=False
+        assert history.first().evidence_rich is True  # Initial state
+        assert history.last().evidence_rich is False  # Final state after PATCH
+
+    def test_patch_response_themes(
+        self,
+        client,
+        consultation_user,
+        consultation_user_token,
+        free_text_annotation,
+        alternative_theme,
+    ):
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        assert list(free_text_annotation.themes.values_list("key", flat=True)) == ["A"]
+
+        response = client.patch(
+            url,
+            data=json.dumps({"themes": [{"id": str(alternative_theme.id)}]}),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 200, response.json()
+        assert [x["key"] for x in response.json()["themes"]] == ["B"]
+
+        # check that there are two versions of the ResponseAnnotation
+        assert free_text_annotation.history.count() == 2
+
+        # get history of the ResponseAnnotation
+        history = ResponseAnnotationTheme.history.filter(
+            response_annotation=free_text_annotation
+        ).order_by("history_date")
+        assert history.count() == 3
+
+        initial, mid, final = history
+
+        # check all stages of history
+        # 1. add initial theme A
+        assert initial.history_type == "+"
+        assert initial.theme.key == "A"
+        assert initial.is_original_ai_assignment is True
+        assert initial.assigned_by is None
+
+        # 2. remove initial theme A
+        assert mid.history_type == "-"
+        assert mid.theme.key == "A"
+        assert mid.is_original_ai_assignment is True
+        assert mid.assigned_by is None
+
+        # 3. add new theme B
+        assert final.history_type == "+"
+        assert final.theme.key == "B"
+        assert final.is_original_ai_assignment is False
+        assert final.assigned_by == consultation_user
+
+    def test_patch_response_themes_invalid(
+        self, client, consultation_user_token, free_text_annotation
+    ):
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        fake_uuid = str(uuid4())
+
+        response = client.patch(
+            url,
+            data=json.dumps({"themes": [{"id": fake_uuid}]}),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 400
+        assert response.json() == {"themes": [f'Invalid pk "{fake_uuid}" - object does not exist.']}
 
 
 @pytest.mark.django_db

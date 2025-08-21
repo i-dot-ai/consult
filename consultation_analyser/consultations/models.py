@@ -1,7 +1,6 @@
 import uuid
 from textwrap import shorten
 
-import faker as _faker
 from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
 from django.contrib.postgres.search import SearchVector, SearchVectorField
@@ -12,10 +11,9 @@ from django.dispatch import receiver
 from django.utils import timezone
 from django.utils.text import slugify
 from pgvector.django import VectorField
+from simple_history.models import HistoricalRecords
 
 from consultation_analyser.authentication.models import User
-
-faker = _faker.Faker()
 
 
 # TODO: we don't use this anymore, remove it without manage.py makemigrations complaining
@@ -279,6 +277,8 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
         User, on_delete=models.SET_NULL, null=True, blank=True
     )  # None for AI, User for human
 
+    history = HistoricalRecords()
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(
@@ -303,7 +303,7 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
     response = models.OneToOneField(Response, on_delete=models.CASCADE, related_name="annotation")
 
     # AI-generated outputs (only for free text responses)
-    themes = models.ManyToManyField(Theme, through="ResponseAnnotationTheme", blank=True)
+    themes = models.ManyToManyField(Theme, through=ResponseAnnotationTheme, blank=True)
     sentiment = models.CharField(max_length=12, choices=Sentiment.choices, null=True, blank=True)
     evidence_rich = models.BooleanField(default=False, null=True, blank=True)
 
@@ -311,6 +311,9 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
     human_reviewed = models.BooleanField(default=False)
     reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
+
+    # History tracking
+    history = HistoricalRecords()
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         indexes = [
