@@ -48,16 +48,14 @@ class TestResponseAnnotation:
         for theme in annotation.themes.all():
             assert theme.question == annotation.response.question
 
-    def test_custom_themes(self, response_1):
+    def test_custom_themes(self, response_1, theme_a, theme_b):
         """Test creating annotation with specific themes"""
-        theme1 = ThemeFactory(question=response_1.question)
-        theme2 = ThemeFactory(question=response_1.question)
 
-        annotation = ResponseAnnotationFactory(response=response_1, themes=[theme1, theme2])
+        annotation = ResponseAnnotationFactory(response=response_1, themes=[theme_a, theme_b])
 
         assert annotation.themes.count() == 2
-        assert theme1 in annotation.themes.all()
-        assert theme2 in annotation.themes.all()
+        assert theme_a in annotation.themes.all()
+        assert theme_b in annotation.themes.all()
 
     def test_sentiment_choices(self, response_1):
         """Test sentiment field choices"""

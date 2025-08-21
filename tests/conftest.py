@@ -14,8 +14,9 @@ from consultation_analyser.factories import (
     MultiChoiceAnswerFactory,
     QuestionFactory,
     RespondentFactory,
+    ResponseFactory,
     ThemeFactory,
-    UserFactory, ResponseFactory,
+    UserFactory,
 )
 
 
@@ -310,6 +311,12 @@ def theme_b(free_text_question):
     yield theme
     theme.delete()
 
+@pytest.fixture()
+def theme_c(free_text_question):
+    theme = ThemeFactory(question=free_text_question, name="Theme C", key="C")
+    yield theme
+    theme.delete()
+
 
 @pytest.fixture()
 def consultation_user(consultation, dashboard_access_group):
@@ -362,7 +369,7 @@ def respondent_1(consultation):
     respondent = RespondentFactory(
         consultation=consultation,
         themefinder_id=1,
-        demographics={"individual": True, "region": "north", "age": 25}
+        demographics={"individual": True, "region": "north", "age": 25},
     )
     yield respondent
     respondent.delete()
@@ -373,17 +380,18 @@ def respondent_2(consultation):
     respondent = RespondentFactory(
         consultation=consultation,
         themefinder_id=2,
-        demographics={"individual": False, "region": "south", "age": 35}
+        demographics={"individual": False, "region": "south", "age": 35},
     )
     yield respondent
     respondent.delete()
+
 
 @pytest.fixture()
 def respondent_3(consultation):
     respondent = RespondentFactory(
         consultation=consultation,
         themefinder_id=3,
-         demographics={"individual": True, "region": "north", "age": 45}
+        demographics={"individual": True, "region": "north", "age": 45},
     )
     yield respondent
     respondent.delete()
@@ -394,17 +402,16 @@ def respondent_4(consultation):
     respondent = RespondentFactory(
         consultation=consultation,
         themefinder_id=4,
-         # demographics={"individual": True, "region": "north", "age": 45}
+        # demographics={"individual": True, "region": "north", "age": 45}
     )
     yield respondent
     respondent.delete()
 
+
 @pytest.fixture()
 def response_1(free_text_question, respondent_1):
     response = ResponseFactory(
-        question=free_text_question,
-        respondent=respondent_1,
-        free_text= "Test response"
+        question=free_text_question, respondent=respondent_1, free_text="Test response"
     )
     yield response
     response.delete()
@@ -412,27 +419,20 @@ def response_1(free_text_question, respondent_1):
 
 @pytest.fixture()
 def response_2(free_text_question, respondent_2):
-    response = ResponseFactory(
-        question=free_text_question,
-        respondent=respondent_2    )
+    response = ResponseFactory(question=free_text_question, respondent=respondent_2)
     yield response
     response.delete()
 
 
 @pytest.fixture()
 def response_3(free_text_question, respondent_3):
-    response = ResponseFactory(
-        question=free_text_question,
-        respondent=respondent_3    )
+    response = ResponseFactory(question=free_text_question, respondent=respondent_3)
     yield response
     response.delete()
 
 
 @pytest.fixture()
 def response_4(free_text_question, respondent_4):
-    response = ResponseFactory(
-        question=free_text_question,
-       respondent=respondent_4    )
+    response = ResponseFactory(question=free_text_question, respondent=respondent_4)
     yield response
     response.delete()
-

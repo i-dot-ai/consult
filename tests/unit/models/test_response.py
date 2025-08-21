@@ -8,7 +8,7 @@ from consultation_analyser.consultations.models import Response
 
 @pytest.mark.django_db
 class TestResponse:
-    def test_response_creation(self,response_1):
+    def test_response_creation(self, response_1):
         """Test basic response creation"""
         assert isinstance(response_1, models.Response)
         assert response_1.free_text

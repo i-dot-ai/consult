@@ -13,7 +13,6 @@ from consultation_analyser.consultations.models import (
     MultiChoiceAnswer,
 )
 from consultation_analyser.factories import (
-    RespondentFactory,
     ResponseAnnotationFactory,
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
@@ -182,10 +181,11 @@ class TestGetFilteredResponsesWithThemes:
         assert queryset.count() == 1
         assert queryset.first() == response_1
 
-    def test_theme_filters_and_logic(self, free_text_question, theme_a, theme_b, response_1, response_2, response_3):
+    def test_theme_filters_and_logic(
+        self, free_text_question, theme_a, theme_b, response_1, response_2, response_3
+    ):
         """Test theme filtering uses AND logic"""
         # Create responses with different theme combinations
-
 
         # Response 1: has theme1 and theme2
         annotation1 = ResponseAnnotationFactoryNoThemes(response=response_1)
@@ -285,7 +285,11 @@ class TestBuildRespondentDataFast:
 
         assert serializer.data["identifier"] == str(response_1.respondent.identifier)
         assert serializer.data["free_text_answer_text"] == "Test response"
-        assert serializer.data["demographic_data"] == {'age': '25', 'individual': True, 'region': 'north'}
+        assert serializer.data["demographic_data"] == {
+            "age": "25",
+            "individual": True,
+            "region": "north",
+        }
         assert sorted(serializer.data["multiple_choice_answer"]) == ["option1", "option2"]
         assert serializer.data["evidenceRich"] is None  # No annotation
         assert serializer.data["themes"] is None

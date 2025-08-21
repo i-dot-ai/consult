@@ -29,8 +29,15 @@ class TestDemographicOptionsAPIView:
         assert "demographic_options" in data
         assert data["demographic_options"] == {}
 
-    def test_get_demographic_options_with_data(self, client, consultation_user, free_text_question,
-                                               respondent_1, respondent_2, respondent_3):
+    def test_get_demographic_options_with_data(
+        self,
+        client,
+        consultation_user,
+        free_text_question,
+        respondent_1,
+        respondent_2,
+        respondent_3,
+    ):
         """Test API endpoint returns demographic options correctly"""
         # Create respondents with different demographic data
 
@@ -94,7 +101,6 @@ class TestDemographicAggregationsAPIView:
         """Test API endpoint returns demographic aggregations correctly"""
         # Create respondents with different demographic data
 
-
         client.force_login(consultation_user)
         url = reverse(
             "question-demographic-aggregations",
@@ -117,11 +123,10 @@ class TestDemographicAggregationsAPIView:
         assert aggregations["region"]["south"] == 1
 
     def test_get_demographic_aggregations_with_filters(
-        self, client, consultation_user, free_text_question,response_1, response_2
+        self, client, consultation_user, free_text_question, response_1, response_2
     ):
         """Test API endpoint applies demographic filters correctly"""
         # Create respondents with different demographics
-
 
         client.force_login(consultation_user)
         url = reverse(
@@ -233,11 +238,17 @@ class TestThemeAggregationsAPIView:
         assert data["theme_aggregations"] == {}
 
     def test_get_theme_aggregations_with_responses(
-        self, client, consultation_user, free_text_question, theme_a, theme_b, response_1, response_2
+        self,
+        client,
+        consultation_user,
+        free_text_question,
+        theme_a,
+        theme_b,
+        response_1,
+        response_2,
     ):
         """Test API endpoint returns theme aggregations correctly"""
         # Create respondents and responses
-
 
         # Create annotations with themes
         annotation1 = ResponseAnnotationFactoryNoThemes(response=response_1)
@@ -265,11 +276,17 @@ class TestThemeAggregationsAPIView:
         assert aggregations[str(theme_b.id)] == 1  # Theme B appears in 1 response
 
     def test_get_theme_aggregations_with_filters(
-        self, client, consultation_user, free_text_question, theme_a, theme_b, response_1, response_2
+        self,
+        client,
+        consultation_user,
+        free_text_question,
+        theme_a,
+        theme_b,
+        response_1,
+        response_2,
     ):
         """Test API endpoint applies theme filtering correctly"""
         # Create responses with different theme combinations
-
 
         # Response 1: has theme1 and theme2
         annotation1 = ResponseAnnotationFactoryNoThemes(response=response_1)
@@ -302,7 +319,9 @@ class TestThemeAggregationsAPIView:
 
 @pytest.mark.django_db
 class TestFilteredResponsesAPIView:
-    def test_get_filtered_responses_basic(self, client, consultation_user, free_text_question, response_1):
+    def test_get_filtered_responses_basic(
+        self, client, consultation_user, free_text_question, response_1
+    ):
         """Test API endpoint returns filtered responses correctly"""
 
         client.force_login(consultation_user)
@@ -331,7 +350,11 @@ class TestFilteredResponsesAPIView:
         respondent_data = data["all_respondents"][0]
         assert respondent_data["identifier"] == str(response_1.respondent.identifier)
         assert respondent_data["free_text_answer_text"] == "Test response"
-        assert respondent_data["demographic_data"] == {'age': '25', 'individual': True, 'region': 'north'}
+        assert respondent_data["demographic_data"] == {
+            "age": "25",
+            "individual": True,
+            "region": "north",
+        }
 
     def test_get_filtered_responses_with_pagination(
         self, client, consultation_user, free_text_question
@@ -387,11 +410,18 @@ class TestFilteredResponsesAPIView:
         assert data["all_respondents"][0]["identifier"] == str(response_1.respondent.identifier)
 
     def test_get_filtered_responses_with_theme_filters(
-        self, client, consultation_user, free_text_question, theme_a, theme_b, response_1, response_2, response_3
+        self,
+        client,
+        consultation_user,
+        free_text_question,
+        theme_a,
+        theme_b,
+        response_1,
+        response_2,
+        response_3,
     ):
         """Test API endpoint with theme filtering using AND logic"""
         # Create responses with different theme combinations
-
 
         # Response 1: has theme and theme2
         annotation1 = ResponseAnnotationFactoryNoThemes(response=response_1)

@@ -3,37 +3,28 @@ from django.urls import reverse
 
 from consultation_analyser.consultations import models
 from consultation_analyser.factories import (
-    QuestionWithBothFactory,
-    RespondentFactory,
     ResponseAnnotationFactoryNoThemes,
-    ResponseFactory,
-    ThemeFactory,
     UserFactory,
 )
 from tests.helpers import sign_in
 
 
 @pytest.mark.django_db
-def test_review_show_response(django_app, respondent_1, respondent_2):
+def test_review_show_response(django_app, response_1, response_2, theme_a, theme_b):
     user = UserFactory()
-    question = QuestionWithBothFactory()
-    consultation = question.consultation
+    consultation = response_1.question.consultation
     consultation.users.add(user)
-    response1 = ResponseFactory(respondent=respondent_1, question=question)
-    response2 = ResponseFactory(respondent=respondent_2, question=question)
 
     # Add some themes
-    theme_a = ThemeFactory(question=question, key="A")
-    theme_b = ThemeFactory(question=question, key="B")
-    response_annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
+    response_annotation1 = ResponseAnnotationFactoryNoThemes(response=response_1)
     response_annotation1.add_original_ai_themes([theme_a])
-    response_annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
+    response_annotation2 = ResponseAnnotationFactoryNoThemes(response=response_2)
     response_annotation2.add_original_ai_themes([theme_a, theme_b])
 
     sign_in(django_app, user.email)
 
     # Review response 1 - test adding a theme on review
-    url = reverse("show_response", args=(consultation.id, question.id, response1.id))
+    url = reverse("show_response", args=(consultation.id, response_1.question.id, response_1.id))
     review_response_page = django_app.get(url)
     review_response_page.form["theme"] = [str(theme_a.id), str(theme_b.id)]
     next_response = review_response_page.form.submit().follow()
@@ -41,7 +32,7 @@ def test_review_show_response(django_app, respondent_1, respondent_2):
 
     # Check the response (annotation) is now audited
     response_annotation1.refresh_from_db()
-    assert set(response_annotation1.themes.all()) == set([theme_a, theme_b])
+    assert set(response_annotation1.themes.all()) == {theme_a, theme_b}
 
     assert response_annotation1.human_reviewed
     assert response_annotation1.reviewed_by == user
@@ -54,12 +45,11 @@ def test_review_show_response(django_app, respondent_1, respondent_2):
     human_reviewed_themes = models.ResponseAnnotationTheme.objects.filter(
         response_annotation=response_annotation1, is_original_ai_assignment=False
     )
-    assert set(human_reviewed_themes.values_list("theme_id", flat=True)) == set(
-        {theme_a.id, theme_b.id}
-    )
+    assert set(human_reviewed_themes.values_list("theme_id", flat=True)) == {theme_a.id, theme_b.id}
+
 
     # Now test reviewing a response making no further changes
-    url = reverse("show_response", args=(consultation.id, question.id, response2.id))
+    url = reverse("show_response", args=(consultation.id, response_1.question.id, response_2.id))
     review_response_page = django_app.get(url)
     review_response_page.form["theme"] = [str(theme_a.id), str(theme_b.id)]
     next_response = review_response_page.form.submit().follow()

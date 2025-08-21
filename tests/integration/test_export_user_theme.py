@@ -13,15 +13,13 @@ from tests.utils import get_sorted_theme_string
 @pytest.mark.django_db
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
 @patch("consultation_analyser.consultations.export_user_theme.settings.ENVIRONMENT", "production")
-def test_export_user_theme(mock_boto_client, consultation, free_text_question, response_1, response_2):
+def test_export_user_theme(
+    mock_boto_client, consultation, free_text_question, response_1, response_2, theme_a, theme_b, theme_c
+):
     user = factories.UserFactory(is_staff=True)
     # Set up consultation with question and responses
     consultation.users.add(user)
 
-    # Set up themes
-    theme1 = factories.ThemeFactory(question=free_text_question, key="B")
-    theme2 = factories.ThemeFactory(question=free_text_question, key="A")
-    theme3 = factories.ThemeFactory(question=free_text_question, key="C")
 
     # Create response annotations with AI-assigned themes
     annotation1 = factories.ResponseAnnotationFactoryNoThemes(
@@ -29,18 +27,18 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question, r
         sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT,
         human_reviewed=False,
     )
-    annotation1.add_original_ai_themes([theme1, theme2])
+    annotation1.add_original_ai_themes([theme_b, theme_a])
 
     annotation2 = factories.ResponseAnnotationFactoryNoThemes(
         response=response_2,
         sentiment=models.ResponseAnnotation.Sentiment.UNCLEAR,
         human_reviewed=False,
     )
-    annotation2.add_original_ai_themes([theme3])
+    annotation2.add_original_ai_themes([theme_c])
 
     with freeze_time("2023-01-01 12:00:00"):
         # Simulate user review - changing themes for response1
-        annotation1.set_human_reviewed_themes([theme2, theme3], user)
+        annotation1.set_human_reviewed_themes([theme_a, theme_c], user)
         annotation1.mark_human_reviewed(user)
 
     # Call the method
@@ -60,8 +58,8 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question, r
         "Question text": free_text_question.text,
         "Response text": response_1.free_text,
         "Response has been audited": str(True),
-        "Original themes": get_sorted_theme_string([theme1, theme2]),
-        "Current themes": get_sorted_theme_string([theme2, theme3]),
+        "Original themes": get_sorted_theme_string([theme_b, theme_a]),
+        "Current themes": get_sorted_theme_string([theme_a, theme_c]),
         "Position": "AGREEMENT",
         "Auditors": user.email,
         "First audited at": "2023-01-01 12:00:00+00:00",
@@ -75,8 +73,8 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question, r
         "Question text": free_text_question.text,
         "Response text": response_2.free_text,
         "Response has been audited": str(False),
-        "Original themes": f"{theme3.key}",
-        "Current themes": f"{theme3.key}",  # When not audited, current = original
+        "Original themes": f"{theme_c.key}",
+        "Current themes": f"{theme_c.key}",  # When not audited, current = original
         "Position": "UNCLEAR",
         "Auditors": "",
         "First audited at": "",
@@ -86,7 +84,9 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question, r
 @pytest.mark.django_db
 @patch("django_rq.enqueue")
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
-def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_text_question, response_1):
+def test_start_export_job(
+    mock_boto_client, mock_enqueue, consultation, free_text_question, response_1
+):
     """Test that the export job is correctly enqueued"""
     from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 

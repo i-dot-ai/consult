@@ -156,9 +156,7 @@ def test_consultations_urls_login_required(
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("url_pattern", API_URL_NAMES)
-def test_api_urls_permission_required(
-    client, dashboard_access_group, response_1, url_pattern
-):
+def test_api_urls_permission_required(client, dashboard_access_group, response_1, url_pattern):
     """
     Test API endpoints return 403 for authentication/permission failures.
 
