@@ -1,0 +1,14 @@
+---
+import Story from '../../layouts/Story.astro';
+import ConditionalRenderStory from "../../components/ConditionalRender/ConditionalRenderStory.svelte";
+
+const title = "Conditional Render";
+const description = `
+    Renders slotted elements inside an optional element 
+    depending on the condition provided. Element can be 
+    an HTML tag or another svelte component.
+`
+---
+<Story title={title} description={description} >
+    <ConditionalRenderStory client:load />
+</Story>
