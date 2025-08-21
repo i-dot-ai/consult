@@ -225,16 +225,13 @@ class ResponseViewSet(ModelViewSet):
         theme_aggregations = {}
 
         if question.has_free_text:
-            # Use the same filtering logic as FilteredResponsesAPIView
-            # This ensures theme filtering uses AND logic consistently
-            filtered_responses = self.get_queryset()
-
             # Get theme counts from the filtered responses
             theme_counts = (
-                models.Theme.objects.filter(responseannotation__response__in=filtered_responses)
+                models.Theme.objects.filter(
+                    Exists(self.get_queryset().filter(annotation=OuterRef("responseannotation")))
+                )
                 .values("id")
-                .annotate(count=Count("responseannotation__response"))
-                .order_by("id")
+                .annotate(count=Count("responseannotation"))
             )
 
             theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
