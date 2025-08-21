@@ -206,7 +206,9 @@ class TestGetFilteredResponsesWithThemes:
 
         # Filter for individual=true
         filters = {"demo_filters": {"individual": ["true"]}}
-        queryset = get_filtered_responses_with_themes(question.response_set.all(), filters)
+        queryset = get_filtered_responses_with_themes(
+            free_text_question.response_set.all(), filters
+        )
 
         assert queryset.count() == 1
         assert queryset.first() == response1
