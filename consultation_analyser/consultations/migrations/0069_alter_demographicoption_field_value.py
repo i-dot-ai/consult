@@ -3,14 +3,16 @@
 from django.db import migrations, models
 
 
-def conver_boolean_values(apps, schema_editor):
+def convert_json_values(apps, schema_editor):
     DemographicOption = apps.get_model("consultations", "DemographicOption")
 
     for demographic_option in DemographicOption.objects.all():
         if demographic_option.field_value.lower() == "true":
-            demographic_option.field_value = True
+            demographic_option.new_field_value = True
         elif demographic_option.field_value.lower() == "false":
-            demographic_option.field_value = False
+            demographic_option.new_field_value = False
+        else:
+            demographic_option.new_field_value = repr(demographic_option.field_value)
         demographic_option.save()
 
 
@@ -20,10 +22,24 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.AddField(
+            model_name="demographicoption",
+            name="new_field_value",
+            field=models.JSONField(null=True),
+        ),
+        migrations.RunPython(convert_json_values),
+        migrations.RemoveField(
+            model_name="demographicoption",
+            name="field_value",
+        ),
+        migrations.RenameField(
+            model_name="demographicoption",
+            old_name="new_field_value",
+            new_name="field_value",
+        ),
         migrations.AlterField(
             model_name="demographicoption",
             name="field_value",
             field=models.JSONField(),
         ),
-        migrations.RunPython(conver_boolean_values),
     ]

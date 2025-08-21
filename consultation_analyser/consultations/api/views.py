@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from django.contrib.auth import login
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count
+from django.db.models import Count, Exists, OuterRef
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from magic_link.exceptions import InvalidLink
@@ -11,7 +11,7 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
-from rest_framework.viewsets import ReadOnlyModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
 from .. import models
@@ -170,10 +170,12 @@ class BespokeResultsSetPagination(PageNumberPagination):
         )
 
 
-class ResponseViewSet(ReadOnlyModelViewSet):
+class ResponseViewSet(ModelViewSet):
     serializer_class = ResponseSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
     pagination_class = BespokeResultsSetPagination
+    filterset_fields = ["respondent_id"]
+    http_method_names = ["get", "patch"]
 
     def get_queryset(self):
         question_uuid = self.kwargs["question_pk"]
@@ -195,15 +197,17 @@ class ResponseViewSet(ReadOnlyModelViewSet):
         """Get demographic aggregations for filtered responses"""
 
         # Single query that joins responses -> respondents and gets demographics directly
-        respondents_data = models.Respondent.objects.filter(response__in=self.get_queryset())
+        aggregations = (
+            models.DemographicOption.objects.filter(
+                Exists(self.get_queryset().filter(respondent=OuterRef("respondent")))
+            )
+            .values("field_name", "field_value")
+            .annotate(count=Count("respondent", distinct=True))
+        )
 
-        # Aggregate in memory (much faster than nested loops)
-        aggregations = defaultdict(lambda: defaultdict(int))  # type:ignore
-        for respondent in respondents_data:
-            for demographic in respondent.demographics.all():
-                aggregations[demographic.field_name][demographic.field_value] += 1
-
-        result = {field: dict(counts) for field, counts in aggregations.items()}
+        result = defaultdict(dict)
+        for item in aggregations:
+            result[item["field_name"]][item["field_value"]] = item["count"]
 
         serializer = DemographicAggregationsSerializer(data={"demographic_aggregations": result})
         serializer.is_valid()
