@@ -19,6 +19,10 @@ locals {
     {
       name  = "THEMEFINDER_SLACK_WEBHOOK_URL"
       value = "placeholder" # Update value in SSM - Do not hardcode
+    },
+    {
+      name  = "LITELLM_CONSULT_OPENAI_API_KEY"
+      value = data.aws_ssm_parameter.litellm_api_key.value
     }
   ]
 }
