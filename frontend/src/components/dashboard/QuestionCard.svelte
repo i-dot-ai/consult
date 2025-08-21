@@ -9,7 +9,7 @@
     import { applyHighlight } from "../../global/utils.ts";
 
     import MaterialIcon from "../MaterialIcon.svelte";
-    import ConditionalRender from "../ConditionalRender.svelte";
+    import ConditionalRender from "../ConditionalRender/ConditionalRender.svelte";
     import Star from "../svg/material/Star.svelte";
     import Help from "../svg/material/Help.svelte";
     import Panel from "./Panel.svelte";
