@@ -1,0 +1,31 @@
+---
+import Layout from '../../../layouts/Layout.astro';
+import Section from '../../../components/Section.svelte';
+import Title from '../../../components/Title.svelte';
+import Link from '../../../components/Link.svelte';
+---
+<Layout>
+	<Section>
+        <Title level={1} text="Design" />
+        <p>Click on below links to view components in isolation.</p>
+
+        <ul class="flex flex-col gap-2 mt-4">
+            <li>
+                <Link href="/design/svg/gov-icon">GOV Icon</Link>
+            </li>
+            <li>
+                <Link href="/design/svg/iai-icon">Iai Icon</Link>
+            </li>
+            <li>
+                <Link href="/design/svg/ogl-icon">Ogl Icon</Link>
+            </li>
+            <li>
+                <Link href="/design/svg/announce-icon">Announce Icon</Link>
+            </li>
+        </ul>
+
+        <div class="mt-4">
+            <Link href="/design">Back</Link>
+        </div>
+    </Section>
+</Layout>
