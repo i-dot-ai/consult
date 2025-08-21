@@ -7,7 +7,7 @@
 
     import TextInput from "../inputs/TextInput.svelte";
     import Link from "../Link.svelte";
-    import Button from "../inputs/Button.svelte";
+    import Button from "../inputs/Button/Button.svelte";
 
 
     const INVALID_EMAIL_MSG = "Please enter a valid email";
