@@ -2,7 +2,7 @@ from collections import defaultdict
 
 from django.contrib.auth import login
 from django.core.exceptions import PermissionDenied
-from django.db.models import Count
+from django.db.models import Count, Exists, OuterRef
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
 from magic_link.exceptions import InvalidLink
@@ -136,8 +136,6 @@ class QuestionViewSet(ReadOnlyModelViewSet):
     @action(detail=True, methods=["get"], url_path="demographic-aggregations")
     def demographic_aggregations(self, request, pk=None, consultation_pk=None):
         """Get demographic aggregations for filtered responses"""
-        # Get the question object with consultation in one query
-        question = self.get_object()
 
         # Validate query parameters
         filter_serializer = FilterSerializer(data=request.query_params)
@@ -148,17 +146,24 @@ class QuestionViewSet(ReadOnlyModelViewSet):
 
         # Single query that joins responses -> respondents and gets demographics directly
         response_filter = build_response_filter_query(filters)
-        respondents_data = models.Respondent.objects.filter(
-            response__in=question.response_set.filter(response_filter)
+
+        aggregations = (
+            models.DemographicOption.objects.filter(
+                Exists(
+                    models.Response.objects.filter(
+                        response_filter,
+                        question_id=pk,
+                        respondent=OuterRef("respondent"),
+                    )
+                )
+            )
+            .values("field_name", "field_value")
+            .annotate(count=Count("respondent", distinct=True))
         )
 
-        # Aggregate in memory (much faster than nested loops)
-        aggregations = defaultdict(lambda: defaultdict(int))  # type:ignore
-        for respondent in respondents_data:
-            for demographic in respondent.demographics.all():
-                aggregations[demographic.field_name][demographic.field_value] += 1
-
-        result = {field: dict(counts) for field, counts in aggregations.items()}
+        result = defaultdict(dict)
+        for item in aggregations:
+            result[item["field_name"]][item["field_value"]] = item["count"]
 
         serializer = DemographicAggregationsSerializer(data={"demographic_aggregations": result})
         serializer.is_valid()
