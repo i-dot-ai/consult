@@ -28,6 +28,7 @@
     export let handleChange = (value: string) => {};
     export let options: SearchableSelectOption[] = [];
     export let selectedValues: any[] = [];
+    export let hideArrow: boolean = false;
     export let notFoundMessage: string = "No results found";
 
     const handleSelectedChange = ({ curr, next }) => {
@@ -97,21 +98,23 @@
             ])}
             placeholder="Select themes..."
         />
-        <div class={clsx([
-            "absolute",
-            "right-2",
-            "top-1/2",
-            "z-10",
-            "-translate-y-1/2",
-            "text-neutral-900",
-            "transition-transform",
-            "-rotate-90",
-            $open && "rotate-0",
-        ])}>
-            <MaterialIcon color="fill-neutral-700">
-                <KeyboardArrowDown />
-            </MaterialIcon>
-        </div>
+        {#if !hideArrow}
+            <div class={clsx([
+                "absolute",
+                "right-2",
+                "top-1/2",
+                "z-10",
+                "-translate-y-1/2",
+                "text-neutral-900",
+                "transition-transform",
+                "-rotate-90",
+                $open && "rotate-0",
+            ])}>
+                <MaterialIcon color="fill-neutral-700">
+                    <KeyboardArrowDown />
+                </MaterialIcon>
+            </div>
+        {/if}
     </div>
 </div>
 

@@ -5,7 +5,7 @@
     import { fly, fade, slide } from "svelte/transition";
 
     import MaterialIcon from "../MaterialIcon.svelte";
-    import Button from "../inputs/Button.svelte";
+    import Button from "../inputs/Button/Button.svelte";
     import Panel from "../dashboard/Panel.svelte";
     import Star from "../svg/material/Star.svelte";
     import SearchCard from "../dashboard/SearchCard.svelte";

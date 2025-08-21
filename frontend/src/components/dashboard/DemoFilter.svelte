@@ -4,7 +4,7 @@
 
     import { getPercentage } from "../../global/utils.ts";
     import Panel from "./Panel.svelte";
-    import Button from "../inputs/Button.svelte";
+    import Button from "../inputs/Button/Button.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
     import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
 

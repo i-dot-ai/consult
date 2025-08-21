@@ -3,7 +3,7 @@
 
     import { fade } from "svelte/transition";
 
-    import Button from "./Button.svelte";
+    import Button from "./Button/Button.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
     import Close from "../svg/material/Close.svelte";
 

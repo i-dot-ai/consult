@@ -9,7 +9,7 @@
     import Panel from "./Panel.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
     import Title from "../Title.svelte";
-    import Button from "../inputs/Button.svelte";
+    import Button from "../inputs/Button/Button.svelte";
     import TitleRow from "./TitleRow.svelte";
     import ThemesTable from "./ThemesTable.svelte";
     import ProgressCards from "../ProgressCards.svelte";

@@ -1,7 +1,7 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import Button from "../inputs/Button.svelte";
+    import Button from "../inputs/Button/Button.svelte";
     import Panel from "./Panel.svelte";
     import Tag from "../Tag.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";

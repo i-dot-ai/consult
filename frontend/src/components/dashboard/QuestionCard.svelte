@@ -14,7 +14,7 @@
     import Help from "../svg/material/Help.svelte";
     import Panel from "./Panel.svelte";
     import Link from "../Link.svelte";
-    import Button from "../inputs/Button.svelte";
+    import Button from "../inputs/Button/Button.svelte";
 
     export let consultationId: string = "";
     export let question: Question = {};

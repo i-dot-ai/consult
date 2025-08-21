@@ -4,7 +4,7 @@
     import { fade } from "svelte/transition";
     import { flip } from "svelte/animate";
 
-    import Button from "../inputs/Button.svelte";
+    import Button from "../inputs/Button/Button.svelte";
     import Title from "../Title.svelte";
 
     import type { FormattedTheme } from "../../global/types.ts";

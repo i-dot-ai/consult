@@ -2,7 +2,7 @@
     import clsx from "clsx";
 
     import { slide, fly, fade } from "svelte/transition";
-    import Button from "../inputs/Button.svelte";
+    import Button from "../inputs/Button/Button.svelte";
     import TitleRow from "./TitleRow.svelte";
     import Panel from "./Panel.svelte";
     import AnswerCard from "./AnswerCard.svelte";
@@ -18,6 +18,8 @@
     import Tag from "../Tag.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
     import Close from "../svg/material/Close.svelte";
+    import Popover from "../inputs/Popover.svelte";
+    import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
 
     export let isAnswersLoading: boolean = true;
     export let isThemesLoading: boolean = true;
@@ -147,16 +149,27 @@
                                 </div>
                             {/if}
 
-                            <SearchableSelect
-                                handleChange={(theme => updateThemeFilters(theme.value))}
-                                options={themes.map(theme => ({
-                                    value: theme.id,
-                                    label: theme.name,
-                                    description: theme.description,
-                                    disabled: false,
-                                }))}
-                                selectedValues={themeFilters}
-                            />
+                            <div class="w-1/2 mt-4">
+                                <Popover>
+                                    <span slot="trigger" class="block text-left">
+                                        Select Themes...
+                                    </span>
+
+                                    <div slot="panel" class="w-full bg-white p-4 shadow-lg">
+                                        <SearchableSelect
+                                            handleChange={(theme => updateThemeFilters(theme.value))}
+                                            options={themes.map(theme => ({
+                                                value: theme.id,
+                                                label: theme.name,
+                                                description: theme.description,
+                                                disabled: false,
+                                            }))}
+                                            hideArrow={true}
+                                            selectedValues={themeFilters}
+                                        />
+                                    </div>
+                                </Popover>
+                            </div>
                         </Panel>
                     </div>
                 </section>
