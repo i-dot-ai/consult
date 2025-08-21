@@ -34,6 +34,18 @@ data "aws_iam_policy_document" "ecs_exec_custom_policy" {
       "arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/${local.name}/env_secrets/*"
     ]
   }
+  
+  statement {
+    effect = "Allow"
+    actions = [
+      "ssm:GetParameter",
+      "ssm:GetParameters",
+    ]
+    resources = [
+      "arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/${local.name}/env_secrets/*",
+      "arn:aws:ssm:*:${data.aws_caller_identity.current.account_id}:parameter/${var.team_name}-${var.env}-core-llm-gateway/env_secrets/*",
+    ]
+  }
 
   statement {
       effect = "Allow"

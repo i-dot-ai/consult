@@ -6,9 +6,8 @@ from tests.helpers import sign_in
 
 
 @pytest.mark.django_db
-def test_deleting_consultation_question_via_support(django_app):
-    question = factories.QuestionFactory()
-    consultation = question.consultation
+def test_deleting_consultation_question_via_support(django_app, free_text_question):
+    consultation = free_text_question.consultation
 
     # given I am an admin user
     user = factories.UserFactory(email="email@example.com", is_staff=True)
@@ -23,7 +22,9 @@ def test_deleting_consultation_question_via_support(django_app):
     delete_confirmation_page = consultations_page.click("Delete this question")
 
     # Confirm the delete question page URL is correct
-    expected_url = f"/support/consultations/{consultation.id}/questions/{question.id}/delete/"
+    expected_url = (
+        f"/support/consultations/{consultation.id}/questions/{free_text_question.id}/delete/"
+    )
     assert delete_confirmation_page.request.path == expected_url
     assert "Are you sure" in delete_confirmation_page
 
@@ -31,7 +32,7 @@ def test_deleting_consultation_question_via_support(django_app):
     delete_confirmation_page.form.submit("cancel_deletion")
 
     # Check question still exists
-    assert Question.objects.filter(id=question.id).count() == 1
+    assert Question.objects.filter(id=free_text_question.id).count() == 1
 
     # Go to consultation page in support
     consultations_page = django_app.get(f"/support/consultations/{consultation.id}/")
@@ -43,4 +44,4 @@ def test_deleting_consultation_question_via_support(django_app):
     delete_confirmation_page.form.submit("confirm_deletion")
 
     # Check question deleted
-    assert Question.objects.filter(id=question.id).count() == 0
+    assert Question.objects.filter(id=free_text_question.id).count() == 0

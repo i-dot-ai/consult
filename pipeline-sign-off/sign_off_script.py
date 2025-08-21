@@ -9,8 +9,7 @@ from typing import Any, Dict
 
 import boto3
 import pandas as pd
-from django.conf import settings
-from langchain_openai import AzureChatOpenAI
+from langchain_openai import ChatOpenAI
 from themefinder import (
     theme_condensation,
     theme_generation,
@@ -18,19 +17,20 @@ from themefinder import (
     theme_refinement,
 )
 
-logger = settings.LOGGER
-
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s - %(name)s - %(levelname)s - %(message)s",
     datefmt="%Y-%m-%d %H:%M:%S",
 )
+logger = logging.getLogger(__name__)
 
-llm = AzureChatOpenAI(
+
+llm = ChatOpenAI(
     model="gpt-4o",
     temperature=0,
+    openai_api_base=os.environ["LLM_GATEWAY_URL"],
+    openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
 )
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 BASE_PREFIX = "app_data/consultations/"
