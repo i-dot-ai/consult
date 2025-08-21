@@ -96,7 +96,7 @@
                     {#if !skeleton}
                         <Button
                             variant="ghost"
-                            handleClick={(e) => {
+                            handleClick={(e: MouseEvent) => {
                                 e.stopPropagation();
                                 favStore.toggleFav(question.id);
                             }}

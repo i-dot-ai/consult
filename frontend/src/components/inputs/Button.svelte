@@ -5,7 +5,7 @@
     export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
     export let highlighted: boolean = false;
     export let highlightVariant: "dark" | "light" = "dark"; 
-    export let handleClick = () => {};
+    export let handleClick = (e: MouseEvent) => {};
     export let disabled: boolean = false;
     export let fullWidth: boolean = false;
 </script>

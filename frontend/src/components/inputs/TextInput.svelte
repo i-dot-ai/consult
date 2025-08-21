@@ -41,7 +41,7 @@
         id={id}
         placeholder={placeholder}
         value={value}
-        on:input={(e) => setValue(e.target.value)}
+        on:input={(e) => setValue((e.target as HTMLInputElement).value)}
     />
 
     {#if variant === "search" && value}

@@ -31,7 +31,7 @@
             const consultationData = await response.json();
             consultation = consultationData;
             error = "";
-        } catch(err) {
+        } catch(err: any) {
             error = err.message;
         } finally {
             loading = false;
