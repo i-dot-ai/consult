@@ -1,12 +1,24 @@
 <script lang="ts">
+    // Using melt-ui switch
+    // Docs: https://www.melt-ui.com/docs/builders/switch
+
+    import clsx from "clsx";
+
     import { createSwitch, melt } from '@melt-ui/svelte';
+
+    interface Props {
+        id: string,
+        label: string,
+        value: boolean,
+        handleChange: (newValue: boolean) => void,
+    }
 
     let {
         id = "",
         label = "",
         value = false,
-        handleChange = (newValue: boolean) => {},
-    } = $props();
+        handleChange = () => {},
+    }: Props = $props();
 
     const {
         elements: { root, input },
@@ -36,12 +48,23 @@
 
     <button
         use:melt={$root}
-        class="relative cursor-pointer rounded-full bg-neutral-300 transition-colors data-[state=checked]:bg-neutral-800 shrink-0 data-[state=checked]:hover:bg-neutral-600 hover:bg-neutral-400"
+        class={clsx([
+            "relative",
+            "cursor-pointer",
+            "rounded-full",
+            "bg-neutral-300",
+            "transition-colors",
+            "data-[state=checked]:bg-neutral-800",
+            "shrink-0",
+            "data-[state=checked]:hover:bg-neutral-600",
+            "hover:bg-neutral-400",
+        ])}
         id={id}
         aria-labelledby={`${id}-label`}
     >
         <span class="thumb block rounded-full bg-white transition"></span>
     </button>
+
     <input use:melt={$input} />
 </div>
 
