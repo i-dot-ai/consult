@@ -3,7 +3,7 @@
 
     import { Routes } from "../../global/routes";
 
-    import Button from "../inputs/Button.svelte";
+    import Button from "../inputs/Button/Button.svelte";
     import Alert from "../Alert.svelte";
 
 
