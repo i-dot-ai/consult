@@ -236,6 +236,12 @@
                                     </div>
                                 {/if}
                             </div>
+
+                            {#if answers}
+                                <p class="text-sm text-center mt-2">
+                                    {`Showing first ${answers.length} of ${filteredTotal} responses. Use filters to narrow results.`}
+                                </p>
+                            {/if}
                         </div>
                     {/if}
                 </section>
