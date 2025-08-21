@@ -4157,7 +4157,7 @@ class IaiResponseDashboard extends IaiLitBase {
                 // Fetch non-streaming endpoints first (only on first page)
                 const [themeAggregationsData, themeInformationData, demographicOptionsData] = await Promise.all([
                     // Get theme aggregations (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/responses/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                     // Get theme information (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-information/`, { signal }).then(r => r.json()) : null,
                     // Get demographic options (only on first page)
@@ -8012,13 +8012,13 @@ class QuestionDetailPage extends IaiLitBase {
                     // Get paginated response data
                     this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/responses/?` + this.buildQuery(), { signal }).then(r => r.json()),
                     // Get theme aggregations (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/responses/theme-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                     // Get theme information (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/theme-information/`, { signal }).then(r => r.json()) : null,
                     // Get demographic options (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/demographic-options/`, { signal }).then(r => r.json()) : null,
                     // Get demographic aggregations (only on first page)
-                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
+                    this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/responses/demographic-aggregations/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                     // Get multi-choice answer aggregations (only on first page)
                     this._currentPage === 1 ? this.fetchData(`/api/consultations/${this.consultationId}/questions/${this.questionId}/multi-choice-response-count/?` + this.buildQuery(), { signal }).then(r => r.json()) : null,
                 ]);
