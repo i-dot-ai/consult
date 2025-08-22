@@ -27,6 +27,7 @@
     {/if}
     <div class="grow">
         <Title level={level} text={title} />
+
         {#if subtitle}
             <p class="text-neutral-600 text-sm">
                 {subtitle}

@@ -295,6 +295,7 @@
                 $consultationData.questions?.find(question => question.id === questionId)
             }
             hideIcon={true}
+            horizontal={true}
         />
     {/if}
 </section>

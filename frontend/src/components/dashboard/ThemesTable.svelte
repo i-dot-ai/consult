@@ -22,7 +22,7 @@
         <thead class="text-sm">
             <tr>
                 {#each ["Theme", "Mentions", "%&nbsp;Percentage" /*, "Actions"*/] as header}
-                    <th class="text-left text-md m-2 pr-4">
+                    <th class="text-left text-md m-2 pr-4 font-normal">
                         {@html header}
                     </th>
                 {/each}
@@ -92,8 +92,8 @@
                     >
                         <td class="pr-4">
                             <div transition:fade class="p-2">
-                                <h3 class="font-bold text-sm">{theme.name}</h3>
-                                <p class="text-sm">{theme.description}</p>
+                                <h3 class="font-normal text-sm">{theme.name}</h3>
+                                <p class="font-light text-sm">{theme.description}</p>
                             </div>
                         </td>
                         <td class="pr-4">
