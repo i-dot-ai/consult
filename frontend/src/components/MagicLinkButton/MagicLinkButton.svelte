@@ -1,17 +1,14 @@
 <script lang="ts">
-    import clsx from "clsx";
-
     import { slide } from "svelte/transition";
 
-    import { Routes } from "../global/routes.ts"
+    import { Routes } from "../../global/routes";
 
-    import Button from "./inputs/Button.svelte";
+    import Button from "../inputs/Button/Button.svelte";
+    import Alert from "../Alert.svelte";
 
-    export let magicLink = "";
 
-    let error = "";
-
-    const handleSubmit = async () => {
+    const validateMagicLink = async () => {
+        loading = true;
         error = "";
 
         if (!magicLink) {
@@ -34,26 +31,29 @@
             }
 
             window.location.href = Routes.Home;
-        } catch(err) {
+        } catch(err: any) {
             error = err.message;
+        } finally {
+            loading = false;
         }
     }
+
+    export let magicLink = "";
+
+    let loading = false;
+    let error = "";
 </script>
 
 <div class="mt-4">
-    <Button variant="primary" handleClick={handleSubmit}>
-        Sign in
+    <Button variant="primary" disabled={loading} handleClick={validateMagicLink}>
+        {loading ? "Signing in..." : "Sign in"}
     </Button>
 
     {#if error}
-        <small
-            transition:slide={{ duration: 300 }}
-            class={clsx([
-                "text-sm",
-                "text-red-500",
-            ])}
-        >
-            {error}
-        </small>
+        <div class="mt-2" transition:slide={{ duration: 300 }}>
+            <Alert>
+                {error}
+            </Alert>
+        </div>
     {/if}
 </div>

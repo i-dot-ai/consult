@@ -1,0 +1,37 @@
+---
+import type { NavItem } from '../../../global/types';
+
+import Link from '../../../components/Link.svelte';
+import Story from "../../../layouts/Story.astro";
+
+
+const links: NavItem[] = [
+    {
+        text: "GOV Icon",
+        url: "/design/svg/gov-icon",
+    },
+    {
+        text: "Iai Icon",
+        url: "/design/svg/iai-icon",
+    },
+    {
+        text: "Ogl Icon",
+        url: "/design/svg/ogl-icon",
+    },
+    {
+        text: "Announce Icon",
+        url: "/design/svg/announce-icon",
+    },
+];
+---
+<Story title="svg">
+    <ul class="flex flex-col gap-2 mt-4">
+        {links.map(link => (
+            <li>
+                <Link href={link.url}>
+                    {link.text}
+                </Link>
+            </li>
+        ))}
+    </ul>
+</Story>

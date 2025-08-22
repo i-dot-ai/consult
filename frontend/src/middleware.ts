@@ -32,9 +32,10 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         /^\/api\/health[\/]?$/,
         /^\/health[\/]?$/,
         /^\/.well-known\/.*/,
-        // /^\/consultations.*/,
+        /^\/consultations.*/,
         // /^\/evaluations.*/,
         /^\/design.*/,
+        /^\/_astro.*/,
     ];
 
     for (const skipPattern of toSkip) {

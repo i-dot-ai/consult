@@ -1,12 +1,30 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import { Routes } from "../global/routes.ts";
+    import { Routes } from "../../global/routes.ts";
 
-    import GovIcon from "./svg/GovIcon.svelte";
-    import MobileMenu from "./MobileMenu.svelte";
+    import type { NavItem } from "../../global/types.ts";
+
+    import GovIcon from "../svg/GovIcon.svelte";
+    import MobileMenu from "../MobileMenu.svelte";
+
 
     export let isSignedIn: boolean = false;
+
+    function getNavItems(isSignedIn: boolean): NavItem[] {
+        return isSignedIn
+            ? [
+                { text: "Support", url: Routes.Support },
+                { text: "Your consultations", url: Routes.Consultations },
+                { text: "Sign out", url: Routes.SignOut },
+            ]
+            : [
+                { text: "How it works", url: Routes.HowItWorks },
+                { text: "Data sharing", url: Routes.DataSharing },
+                { text: "Get involved", url: Routes.GetInvolved },
+                { text: "Sign in", url: Routes.SignIn },
+            ]
+    }
 </script>
 
 <header class={clsx([
@@ -22,6 +40,7 @@
             "flex",
             "items-center",
             "justify-between",
+            "gap-10",
             "h-12",
         ])}>
             <div class="flex items-center">
@@ -64,26 +83,30 @@
                     "font-medium",
                     "uppercase",
                     "bg-gray-500",
+                    "hidden",
+                    "sm:block",
                 ])}>
                     Alpha
                 </div>
             </div>
 
-            <MobileMenu
-                items={isSignedIn
-                    ? [
-                        {text: "Support", url: Routes.Support},
-                        {text: "Your consultations", url: Routes.Consultations},
-                        {text: "Sign out", url: Routes.SignOut},
-                    ]
-                    : [
-                        {text: "How it works", url: Routes.HowItWorks},
-                        {text: "Data sharing", url: Routes.DataSharing},
-                        {text: "Get involved", url: Routes.GetInvolved},
-                        {text: "Sign in", url: Routes.SignIn},
-                    ]
-                }
-            />
+            <nav class="hidden lg:block">
+                <ul class="flex gap-4 items-center">
+                    {#each getNavItems(isSignedIn) as navItem}
+                        <li>
+                            <a href={navItem.url} class="hover:underline">
+                                {navItem.text}
+                            </a>
+                        </li>
+                    {/each}
+                </ul>
+            </nav>
+
+            <div class="block lg:hidden">
+                <MobileMenu
+                    items={getNavItems(isSignedIn)}
+                />
+            </div>
         </div>
     </div>
 </header>

@@ -1,57 +1,50 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import { onMount } from "svelte";
-    import { slide } from "svelte/transition";
+    import { onMount, untrack } from "svelte";
+    import { fly, fade, slide } from "svelte/transition";
 
     import MaterialIcon from "../MaterialIcon.svelte";
-    import Button from "../inputs/Button.svelte";
+    import Button from "../inputs/Button/Button.svelte";
     import Panel from "../dashboard/Panel.svelte";
     import Star from "../svg/material/Star.svelte";
-    import SearchCard from "./SearchCard.svelte";
-    import QuestionCard from "./QuestionCard.svelte";
+    import SearchCard from "../dashboard/SearchCard.svelte";
+    import QuestionCard from "../dashboard/QuestionCard.svelte";
     import TabView from "../TabView.svelte";
     import Title from "../Title.svelte";
-    import QuestionSummary from "./QuestionSummary.svelte";
-    import ResponseAnalysis from "./ResponseAnalysis.svelte";
+    import QuestionSummary from "../dashboard/QuestionSummary.svelte";
+    import ResponseAnalysis from "../dashboard/ResponseAnalysis.svelte";
+    import Alert from "../Alert.svelte";
 
     import { getConsultationDetailUrl } from "../../global/routes.ts";
     import { createFetchStore } from "../../global/stores.ts";
+    import { SearchModeValues } from "../../global/types.ts";
+    import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
+    import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
 
-    export let consultationId: string = "";
-    export let questionId: string = "";
+
+    let {
+        consultationId = "",
+        questionId = "",
+    } = $props();
 
     const PAGE_SIZE = 50;
     const MAX_THEME_FILTERS = Infinity;
-
-    let currPage: number = 1;
-    let hasMorePages: boolean = true;
-    let answers = [];
-
     const TabNames = {
         QuestionSummary: "tab-question-summary",
         ResponseAnalysis: "tab-response-analysis",
     }
 
-    let activeTab = TabNames.QuestionSummary;
+    let currPage: number = $state(1);
+    let hasMorePages: boolean = $state(true);
+    let answers = $state([]);
 
-    let searchValue: string = "";
-    let searchMode: "keyword" | "semantic" = "keyword";
-    let themeFilters: string[] = [];
-    let demoFilters: {[key: string]: string[]} = {};
-    let evidenceRich: boolean = false;
-    let sortAscending: boolean = false;
+    let activeTab = $state(TabNames.QuestionSummary);
 
-    $: {
-        resetAnswers();
-        loadData({
-            searchValue: searchValue,
-            searchMode: searchMode,
-            themeFilters: themeFilters,
-            evidenceRich: evidenceRich,
-            demoFilters: demoFilters,
-        });
-    };
+    let searchValue: string = $state("");
+    let searchMode: SearchModeValues = $state(SearchModeValues.KEYWORD);
+    let evidenceRich: boolean = $state(false);
+    let sortAscending: boolean = $state(false);
 
     const {
         loading: isConsultationLoading,
@@ -107,8 +100,14 @@
         loadConsultation(`/api/consultations/${consultationId}/`);
     })
 
-    async function loadData(filters) {
-        const queryString = buildQuery(filters);
+    async function loadData() {
+        const queryString = buildQuery({
+            searchValue: searchValue,
+            searchMode: searchMode,
+            themeFilters: themeFilters.filters,
+            evidenceRich: evidenceRich,
+            demoFilters: demoFilters.filters,
+        });
 
         // Skip the rest of the requests if they are already requested for this filter set
         if (currPage === 1) {
@@ -138,7 +137,7 @@
             ...(filters.searchValue && {
                 searchValue: filters.searchValue
             }),
-            ...(themeFilters.length > 0 && {
+            ...(filters.themeFilters.length > 0 && {
                 themeFilters: filters.themeFilters.join(",")
             }),
             ...(searchMode && {
@@ -159,8 +158,9 @@
             if (filterArr && filterArr.length > 0) {
                 // TODO: Replace below with the commented out code after the back end is implemented.
                 // Only processing the first filter for now to avoid breaking back end responses.
-                // params.append("demoFilters", `${key}:${filterArr.join(",")}`);
-                params.append("demoFilters", `${key}:${filterArr[0]}`);
+                filterArr.forEach((filterArrItem: string) => {
+                    params.append("demoFilters", `${key}:${filterArrItem}`);
+                })
             }
         }
 
@@ -193,22 +193,17 @@
         return formattedMultiChoice;
     }
 
-    const updateThemeFilters = (newFilter: string) => {
-        if (!newFilter) {
-            // Clear filters if newFilter is falsy
-            themeFilters = [];
-            return;
-        }
-        if (themeFilters.includes(newFilter)) {
-            themeFilters = [...themeFilters.filter(filter => filter !== newFilter)];
-        } else {
-            if (themeFilters.length === MAX_THEME_FILTERS) {
-                themeFilters = [...themeFilters.slice(1), newFilter];
-            } else {
-                themeFilters = [...themeFilters, newFilter];
-            }
-        }
-    }
+    const setEvidenceRich = (value: boolean) => evidenceRich = value;
+
+    $effect(() => {
+        // dependencies
+        searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters;
+
+        resetAnswers();
+
+        // do not track deep dependencies
+        untrack(() => loadData());
+    })
 </script>
 
 <section class={clsx([
@@ -221,10 +216,15 @@
     <Button handleClick={() => {
         window.location.href = getConsultationDetailUrl(consultationId);
     }}>
-        <MaterialIcon class="shrink-0">
-            <Star />
-        </MaterialIcon>
-        <span class="text-sm">Back to all questions</span>
+        <div class="flex items-center gap-2 justify-between">
+            <div class="rotate-90">
+                <MaterialIcon color="fill-neutral-600">
+                    <KeyboardArrowDown />
+                </MaterialIcon>
+            </div>
+
+            <span class="text-sm">Back to all questions</span>
+        </div>
     </Button>
 
     <small>
@@ -234,7 +234,13 @@
 
 <section class="my-4">
     {#if $consultationError}
-        <p>Consultation Error: {$consultationError}</p>
+        <div class="my-2">
+            <Alert>
+                <span class="text-sm">
+                    Consultation Error: {$consultationError}
+                </span>
+            </Alert>
+        </div>
     {:else}
         <QuestionCard
             skeleton={$isConsultationLoading}
@@ -243,6 +249,8 @@
             question={!$isConsultationLoading &&
                 $consultationData.questions?.find(question => question.id === questionId)
             }
+            hideIcon={true}
+            horizontal={true}
         />
     {/if}
 </section>
@@ -251,46 +259,50 @@
     value={activeTab}
     onValueChange={({ curr, next }) => activeTab = next}
     tabs={[
-        {
-            id: TabNames.QuestionSummary,
-            title: 'Question summary',
-            component: QuestionSummary,
-            props: {
-                themes: Object.keys($themeAggrData?.theme_aggregations || []).map(themeId => {
-                    return ({
-                        id: themeId,
-                        count: $themeAggrData?.theme_aggregations[themeId],
-                        highlighted: themeFilters.includes(themeId),
-                        handleClick: () => updateThemeFilters(themeId),
-                        ...($themeInfoData?.themes?.find(themeInfo => themeInfo.id === themeId)),
-                    })
-                }),
-                totalAnswers: $answersData?.respondents_total,
-                filteredTotal: $answersData?.filtered_total,
-                demoData: $demoAggrData?.demographic_aggregations,
-                multiChoice: formatMultiChoiceData($multiChoiceAggrData),
-                consultationSlug: $consultationData?.slug,
-                sortAscending: sortAscending,
-            }
-        },
-        {
-            id: TabNames.ResponseAnalysis,
-            title: 'Response analysis',
-            component: ResponseAnalysis,
-            props: {
-                answers: answers,
-                isAnswersLoading: $isAnswersLoading,
-                answersError: $answersError,
-                filteredTotal: $answersData?.filtered_total,
-                hasMorePages: hasMorePages,
-                handleLoadClick: () => loadData({
-                    searchValue: searchValue,
-                    searchMode: searchMode,
-                    themeFilters: themeFilters,
-                    evidenceRich: evidenceRich,
-                    demoFilters: demoFilters,
-                }),
-            }
-        },
+        { id: TabNames.QuestionSummary, title: "Question Summary" },
+        { id: TabNames.ResponseAnalysis, title: "Response Analysis"},
     ]}
-/>
+>
+    {#if activeTab === TabNames.QuestionSummary}
+        <QuestionSummary
+            themes={Object.keys($themeAggrData?.theme_aggregations || []).map(themeId => {
+                return ({
+                    id: themeId,
+                    count: $themeAggrData?.theme_aggregations[themeId],
+                    highlighted: themeFilters.filters.includes(themeId),
+                    handleClick: () => themeFilters.update(themeId),
+                    ...($themeInfoData?.themes?.find(themeInfo => themeInfo.id === themeId)),
+                })
+            })}
+            themesLoading={$isThemeAggrLoading}
+            totalAnswers={$answersData?.respondents_total}
+            filteredTotal={$answersData?.filtered_total}
+            demoData={$demoAggrData?.demographic_aggregations}
+            demoOptions={$demoOptionsData?.demographic_options}
+            evidenceRich={evidenceRich}
+            setEvidenceRich={setEvidenceRich}
+            multiChoice={formatMultiChoiceData($multiChoiceAggrData)}
+            consultationSlug={$consultationData?.slug}
+            sortAscending={sortAscending}
+        />
+    {:else if activeTab === TabNames.ResponseAnalysis}
+        <ResponseAnalysis
+            answers={answers}
+            isAnswersLoading={$isAnswersLoading}
+            answersError={$answersError}
+            filteredTotal={$answersData?.filtered_total}
+            hasMorePages={hasMorePages}
+            handleLoadClick={() => loadData()}
+            searchValue={searchValue}
+            setSearchValue={(value) => searchValue = value}
+            searchMode={searchMode}
+            setSearchMode={(newSearchMode: SearchModeValues) => searchMode = newSearchMode}
+            demoData={$demoAggrData?.demographic_aggregations}
+            demoOptions={$demoOptionsData?.demographic_options}
+            themes={$themeInfoData?.themes}
+            evidenceRich={evidenceRich}
+            setEvidenceRich={setEvidenceRich}
+            isThemesLoading={$isThemeAggrLoading}
+        />
+    {/if}
+</TabView>

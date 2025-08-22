@@ -3,7 +3,7 @@
 
     import { fade } from "svelte/transition";
 
-    import Button from "./Button.svelte";
+    import Button from "./Button/Button.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
     import Close from "../svg/material/Close.svelte";
 
@@ -12,7 +12,7 @@
     export let hideLabel: boolean = false;
     export let value: string = "";
     export let placeholder: string = "";
-    export let setValue = () => {};
+    export let setValue = (newValue: string) => {};
 
     export let variant: "default" | "search" = "default";
 </script>
@@ -41,7 +41,7 @@
         id={id}
         placeholder={placeholder}
         value={value}
-        on:input={(e) => setValue(e.target.value)}
+        on:input={(e) => setValue((e.target as HTMLInputElement).value)}
     />
 
     {#if variant === "search" && value}
