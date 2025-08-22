@@ -18,8 +18,21 @@
     --color-primary: #c40678;
 }
 
+.blink {
+    animation: 2s blink ease-in-out infinite;
+    -webkit-animation: 2s blink ease-in-out infinite;
+}
+
 @view-transition {
     navigation: auto;
+}
+
+@keyframes blink {
+    0%, 100% {
+        opacity: 1;
+    } 50% {
+        opacity: 0.33;
+    }
 }
 
 /* Temp until components ported to svelte */

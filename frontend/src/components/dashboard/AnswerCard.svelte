@@ -51,9 +51,11 @@
                 ])}>
                     {#if skeleton}
                         {#each "_".repeat(3) as _}
-                            <Tag>
-                                <span class="text-xs bg-neutral-100 text-neutral-100 select-none">skeleton</span>
-                            </Tag>
+                            <div class="blink">
+                                <Tag>
+                                    <span class="text-xs bg-neutral-100 text-neutral-100 select-none">skeleton</span>
+                                </Tag>
+                            </div>
                         {/each}
                     {:else}
                         {#each demoData as demoDataItem}
@@ -76,7 +78,7 @@
             {/if}
 
             <small class={clsx([
-                skeleton && "bg-neutral-100 text-neutral-100 select-none"
+                skeleton && "bg-neutral-100 text-neutral-100 select-none blink"
             ])}>
                 ID: {id || "Not Available"}
             </small>
@@ -87,6 +89,7 @@
                 "bg-neutral-100",
                 "text-neutral-100",
                 "select-none",
+                "blink",
             ])}>
                 {"SKELETON ".repeat(20)}
             </p>
