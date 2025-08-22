@@ -9,7 +9,10 @@
     import Finance from "../svg/material/Finance.svelte";
     import FiltersSidebar from "./FiltersSidebar.svelte";
     import Select from "../inputs/Select.svelte";
+
     import { SearchModeLabels, SearchModeValues } from "../../global/types";
+    import { themeFilters, demoFilters } from "../../global/state.svelte";
+
     import Title from "../Title.svelte";
     import TextInput from "../inputs/TextInput.svelte";
     import Alert from "../Alert.svelte";
@@ -19,7 +22,6 @@
     import MaterialIcon from "../MaterialIcon.svelte";
     import Close from "../svg/material/Close.svelte";
     import Popover from "../inputs/Popover.svelte";
-    import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
 
     export let isAnswersLoading: boolean = true;
     export let isThemesLoading: boolean = true;
@@ -36,13 +38,7 @@
 
     export let demoOptions: Object = {};
     export let demoData: Object = {};
-    export let demoFilters: Object = {};
-    export let themeFilters: string[] = [];
     export let themes = [];
-    export let setDemoFilters: Function = () => {};
-    export let updateThemeFilters: Function = () => {};
-    export let themeFiltersApplied: Function = () => {};
-    export let demoFiltersApplied: Function = () => {};
 
     export let evidenceRich: boolean = false;
     export let setEvidenceRich = (value: boolean) => {};
@@ -54,8 +50,6 @@
             showEvidenceRich={true}
             {demoOptions}
             {demoData}
-            {demoFilters}
-            {setDemoFilters}
             {evidenceRich}
             {setEvidenceRich}
             loading={isThemesLoading}
@@ -78,7 +72,7 @@
                         <Title level={3} text="Search responses:" />
                     </div>
 
-                    {#if demoFiltersApplied(demoFilters) || themeFiltersApplied(themeFilters) || evidenceRich || searchValue}
+                    {#if demoFilters.applied() || themeFilters.applied()|| evidenceRich || searchValue}
                         <div transition:fly={{x:300}} class="my-4">
                             <Alert>
                                 <FilterAlt slot="icon" />
@@ -123,9 +117,9 @@
                         <Panel bg={true}>
                             <Title level={3} text="Show responses by themes:"></Title>
 
-                            {#if themeFilters.length > 0}
+                            {#if themeFilters.filters.length > 0}
                                 <div transition:slide class="flex gap-2 flex-wrap items-center my-2">
-                                    {#each themeFilters as themeFilter}
+                                    {#each themeFilters.filters as themeFilter}
                                         <div transition:fly={{ x: 300 }}>
                                             <Tag variant="primary">
                                                 <span>
@@ -136,7 +130,7 @@
                                                     <Button
                                                         variant="ghost"
                                                         size="xs"
-                                                        handleClick={() => updateThemeFilters(themeFilter)}
+                                                        handleClick={() => themeFilters.update(themeFilter)}
                                                     >
                                                         <MaterialIcon color="fill-white" hoverColor="fill-primary">
                                                             <Close />
@@ -157,7 +151,7 @@
 
                                     <div slot="panel" class="w-full bg-white p-4 shadow-lg">
                                         <SearchableSelect
-                                            handleChange={(theme => updateThemeFilters(theme.value))}
+                                            handleChange={(theme => themeFilters.update(theme.value))}
                                             options={themes.map(theme => ({
                                                 value: theme.id,
                                                 label: theme.name,
@@ -165,7 +159,7 @@
                                                 disabled: false,
                                             }))}
                                             hideArrow={true}
-                                            selectedValues={themeFilters}
+                                            selectedValues={themeFilters.filters}
                                         />
                                     </div>
                                 </Popover>
@@ -204,8 +198,6 @@
                                                 id={answer.identifier}
                                                 text={answer.free_text_answer_text}
                                                 themes={answer.themes}
-                                                themeFilters={themeFilters}
-                                                handleThemeTagClick={(themeId) => updateThemeFilters(themeId)}
                                                 highlightText={searchValue}
                                             />
                                         </div>

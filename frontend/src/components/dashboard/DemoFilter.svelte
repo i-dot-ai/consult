@@ -8,12 +8,12 @@
     import MaterialIcon from "../MaterialIcon.svelte";
     import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
 
+    import { demoFilters } from "../../global/state.svelte.ts";
+
     let {
         category = "",
         demoOptions = {},
         demoData = {},
-        demoFilters = {},
-        setDemoFilters = () => {},
         totalCounts = {},
         skeleton = false,
     } = $props();
@@ -71,8 +71,8 @@
                             variant="ghost"
                             size="xs"
                             fullWidth={true}
-                            handleClick={() => setDemoFilters(category, rowKey)}
-                            highlighted={demoFilters[category]?.includes(rowKey)}
+                            handleClick={() => demoFilters.update(category, rowKey)}
+                            highlighted={demoFilters.filters[category]?.includes(rowKey)}
                             highlightVariant="light"
                         >
                             <div class="demo-filter w-full relative pb-3">

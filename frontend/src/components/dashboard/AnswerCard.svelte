@@ -7,6 +7,7 @@
     import MaterialIcon from "../MaterialIcon.svelte";
     import Diamond from "../svg/material/Diamond.svelte";
     import { applyHighlight } from "../../global/utils";
+    import { themeFilters } from "../../global/state.svelte";
 
     interface Theme {
         id: string;
@@ -19,8 +20,6 @@
     export let evidenceRich: boolean = false;
     export let multiAnswers: string[] = [];
     export let themes: Theme[] = [];
-    export let themeFilters: string[] = [];
-    export let handleThemeTagClick = (themeId: string) => {};
     export let skeleton: boolean = false;
     export let highlightText: string = "";
 </script>
@@ -124,8 +123,8 @@
                 </small>
                 {#each themes as theme}
                     <Button
-                        handleClick={() => handleThemeTagClick(theme.id)}
-                        highlighted={themeFilters.includes(theme.id)}
+                        handleClick={() => themeFilters.update(theme.id)}
+                        highlighted={themeFilters.filters.includes(theme.id)}
                         highlightVariant="light"
                         size="xs"
                     >

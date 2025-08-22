@@ -1,7 +1,7 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import { onMount } from "svelte";
+    import { onMount, untrack } from "svelte";
     import { fly, fade, slide } from "svelte/transition";
 
     import MaterialIcon from "../MaterialIcon.svelte";
@@ -14,46 +14,37 @@
     import Title from "../Title.svelte";
     import QuestionSummary from "../dashboard/QuestionSummary.svelte";
     import ResponseAnalysis from "../dashboard/ResponseAnalysis.svelte";
+    import Alert from "../Alert.svelte";
 
     import { getConsultationDetailUrl } from "../../global/routes.ts";
     import { createFetchStore } from "../../global/stores.ts";
     import { SearchModeValues } from "../../global/types.ts";
-    import Alert from "../Alert.svelte";
+    import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
+    import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
 
-    export let consultationId: string = "";
-    export let questionId: string = "";
+
+    let {
+        consultationId = "",
+        questionId = "",
+    } = $props();
 
     const PAGE_SIZE = 50;
     const MAX_THEME_FILTERS = Infinity;
-
-    let currPage: number = 1;
-    let hasMorePages: boolean = true;
-    let answers = [];
-
     const TabNames = {
         QuestionSummary: "tab-question-summary",
         ResponseAnalysis: "tab-response-analysis",
     }
 
-    let activeTab = TabNames.QuestionSummary;
+    let currPage: number = $state(1);
+    let hasMorePages: boolean = $state(true);
+    let answers = $state([]);
 
-    let searchValue: string = "";
-    let searchMode: SearchModeValues = SearchModeValues.KEYWORD;
-    let themeFilters: string[] = [];
-    let demoFilters: {[key: string]: string[]} = {};
-    let evidenceRich: boolean = false;
-    let sortAscending: boolean = false;
+    let activeTab = $state(TabNames.QuestionSummary);
 
-    $: {
-        resetAnswers();
-        loadData({
-            searchValue: searchValue,
-            searchMode: searchMode,
-            themeFilters: themeFilters,
-            evidenceRich: evidenceRich,
-            demoFilters: demoFilters,
-        });
-    };
+    let searchValue: string = $state("");
+    let searchMode: SearchModeValues = $state(SearchModeValues.KEYWORD);
+    let evidenceRich: boolean = $state(false);
+    let sortAscending: boolean = $state(false);
 
     const {
         loading: isConsultationLoading,
@@ -109,8 +100,14 @@
         loadConsultation(`/api/consultations/${consultationId}/`);
     })
 
-    async function loadData(filters) {
-        const queryString = buildQuery(filters);
+    async function loadData() {
+        const queryString = buildQuery({
+            searchValue: searchValue,
+            searchMode: searchMode,
+            themeFilters: themeFilters.filters,
+            evidenceRich: evidenceRich,
+            demoFilters: demoFilters.filters,
+        });
 
         // Skip the rest of the requests if they are already requested for this filter set
         if (currPage === 1) {
@@ -140,7 +137,7 @@
             ...(filters.searchValue && {
                 searchValue: filters.searchValue
             }),
-            ...(themeFilters.length > 0 && {
+            ...(filters.themeFilters.length > 0 && {
                 themeFilters: filters.themeFilters.join(",")
             }),
             ...(searchMode && {
@@ -196,64 +193,17 @@
         return formattedMultiChoice;
     }
 
-    const setDemoFilters = (newFilterKey: string, newFilterValue: string) => {
-        if (!newFilterKey || !newFilterValue) {
-            // Clear filters if nothing is passed
-            demoFilters = {};
-            return;
-        }
-
-        const existingFilters = demoFilters[newFilterKey] || [];
-
-        let resultFilters;
-        if (existingFilters.includes(newFilterValue)) {
-            // Remove filter if already added
-            resultFilters = existingFilters.filter(filter => newFilterValue !== filter);
-        } else {
-            // Avoid duplicates when adding filters
-            resultFilters = [...new Set([...existingFilters, newFilterValue])];
-        }
-
-        demoFilters = {
-            ...demoFilters,
-            [newFilterKey]: resultFilters,
-        }
-    }
-
-    const updateThemeFilters = (newFilter: string) => {
-        if (!newFilter) {
-            // Clear filters if newFilter is falsy
-            themeFilters = [];
-            return;
-        }
-        if (themeFilters.includes(newFilter)) {
-            themeFilters = [...themeFilters.filter(filter => filter !== newFilter)];
-        } else {
-            if (themeFilters.length === MAX_THEME_FILTERS) {
-                themeFilters = [...themeFilters.slice(1), newFilter];
-            } else {
-                themeFilters = [...themeFilters, newFilter];
-            }
-        }
-    }
-
-    const demoFiltersApplied = (demoFilters): boolean => {
-        for (const key of Object.keys(demoFilters)) {
-            const filterArr = demoFilters[key];
-
-            // filterArr can be undefined or empty array
-            if (filterArr && filterArr.filter(Boolean).length > 0) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    const themeFiltersApplied = (themeFilters: string[]): boolean => {
-        return themeFilters.length > 0;
-    }
-
     const setEvidenceRich = (value: boolean) => evidenceRich = value;
+
+    $effect(() => {
+        // dependencies
+        searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters;
+
+        resetAnswers();
+
+        // do not track deep dependencies
+        untrack(() => loadData());
+    })
 </script>
 
 <section class={clsx([
@@ -266,10 +216,15 @@
     <Button handleClick={() => {
         window.location.href = getConsultationDetailUrl(consultationId);
     }}>
-        <MaterialIcon color="fill-neutral-600" class="shrink-0">
-            <Star />
-        </MaterialIcon>
-        <span class="text-sm">Back to all questions</span>
+        <div class="flex items-center gap-2 justify-between">
+            <div class="rotate-90">
+                <MaterialIcon color="fill-neutral-600">
+                    <KeyboardArrowDown />
+                </MaterialIcon>
+            </div>
+
+            <span class="text-sm">Back to all questions</span>
+        </div>
     </Button>
 
     <small>
@@ -314,8 +269,8 @@
                 return ({
                     id: themeId,
                     count: $themeAggrData?.theme_aggregations[themeId],
-                    highlighted: themeFilters.includes(themeId),
-                    handleClick: () => updateThemeFilters(themeId),
+                    highlighted: themeFilters.filters.includes(themeId),
+                    handleClick: () => themeFilters.update(themeId),
                     ...($themeInfoData?.themes?.find(themeInfo => themeInfo.id === themeId)),
                 })
             })}
@@ -324,12 +279,6 @@
             filteredTotal={$answersData?.filtered_total}
             demoData={$demoAggrData?.demographic_aggregations}
             demoOptions={$demoOptionsData?.demographic_options}
-            demoFilters={demoFilters}
-            themeFilters={themeFilters}
-            setDemoFilters={setDemoFilters}
-            updateThemeFilters={updateThemeFilters}
-            demoFiltersApplied={demoFiltersApplied}
-            themeFiltersApplied={themeFiltersApplied}
             evidenceRich={evidenceRich}
             setEvidenceRich={setEvidenceRich}
             multiChoice={formatMultiChoiceData($multiChoiceAggrData)}
@@ -343,28 +292,16 @@
             answersError={$answersError}
             filteredTotal={$answersData?.filtered_total}
             hasMorePages={hasMorePages}
-            handleLoadClick={() => loadData({
-                searchValue: searchValue,
-                searchMode: searchMode,
-                themeFilters: themeFilters,
-                evidenceRich: evidenceRich,
-                demoFilters: demoFilters,
-            })}
+            handleLoadClick={() => loadData()}
             searchValue={searchValue}
             setSearchValue={(value) => searchValue = value}
             searchMode={searchMode}
             setSearchMode={(newSearchMode: SearchModeValues) => searchMode = newSearchMode}
             demoData={$demoAggrData?.demographic_aggregations}
             demoOptions={$demoOptionsData?.demographic_options}
-            demoFilters={demoFilters}
             themes={$themeInfoData?.themes}
-            themeFilters={themeFilters}
-            setDemoFilters={setDemoFilters}
-            updateThemeFilters={updateThemeFilters}
             evidenceRich={evidenceRich}
             setEvidenceRich={setEvidenceRich}
-            themeFiltersApplied={themeFiltersApplied}
-            demoFiltersApplied={demoFiltersApplied}
             isThemesLoading={$isThemeAggrLoading}
         />
     {/if}

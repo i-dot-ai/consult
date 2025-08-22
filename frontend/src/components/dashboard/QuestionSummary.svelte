@@ -1,7 +1,7 @@
 <script lang="ts">
     import { slide, fly } from "svelte/transition";
 
-    import type { FormattedTheme } from "../../globa/types.ts";
+    import type { FormattedTheme } from "../../global/types.ts";
     import { getPercentage } from "../../global/utils.ts";
 
     import Lan from "../svg/material/Lan.svelte";
@@ -19,6 +19,8 @@
     import FilterAlt from "../svg/material/FilterAlt.svelte";
     import List from "../svg/material/List.svelte";
 
+    import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
+
     const MAX_CARDS_ALLOWED = 10;
 
     interface Props {
@@ -26,16 +28,10 @@
         totalAnswers: number;
         filteredTotal: number;
         demoData: any;
-        demoFilters: {};
         themes: FormattedTheme[];
-        themeFilters: string[];
         multiChoice: Object;
         consultationSlug?: string;
         sortAscending?: boolean;
-        setDemoFilters?: () => {};
-        updateThemeFilters?: () => {};
-        demoFiltersApplied?: (filters) => boolean;
-        themeFiltersApplied?: (filters: string[]) => boolean;
         evidenceRich: boolean;
         setEvidenceRich: (value: boolean) => {};
     }
@@ -45,16 +41,10 @@
         filteredTotal = 0,
         demoData = {},
         demoOptions = {},
-        demoFilters = {},
         themes = [],
-        themeFilters = [],
         multiChoice = {},
         consultationSlug = "",
         sortAscending = true,
-        setDemoFilters = () => {},
-        updateThemeFilters = () => {},
-        demoFiltersApplied = () => false,
-        themeFiltersApplied = () => false,
     }: Props = $props();
 </script>
 
@@ -64,8 +54,6 @@
             showEvidenceRich={false}
             {demoOptions}
             {demoData}
-            {demoFilters}
-            {setDemoFilters}
             loading={themesLoading}
         />
     </div>
@@ -85,11 +73,10 @@
                         totalAnswers={totalAnswers}
                         filteredTotal={filteredTotal}
                         demoData={multiChoice}
-                        demoFilters={demoFilters}
                         themes={themes}
-                        themeFilters={themeFilters}
-                        demoFiltersApplied={demoFiltersApplied}
-                        themeFiltersApplied={themeFiltersApplied}
+                        themeFilters={themeFilters.filters}
+                        demoFiltersApplied={demoFilters.applied}
+                        themeFiltersApplied={themeFilters.applied}
                     />
                 </Panel>
             </section>
@@ -120,7 +107,7 @@
                     ></iai-csv-download>
                 </TitleRow>
 
-                {#if demoFiltersApplied(demoFilters) || themeFiltersApplied(themeFilters)}
+                {#if demoFilters.applied() || themeFilters.applied()}
                     <div transition:fly={{x:300}} class="my-4">
                         <Alert>
                             <FilterAlt slot="icon" />
@@ -132,15 +119,15 @@
                     </div>
                 {/if}
 
-                {#if themeFiltersApplied(themeFilters)}
+                {#if themeFilters.applied()}
                     <section transition:slide class="my-4">
 
                         <div class="mb-2">
-                            <Title level={3} text={`Selected Themes (${themeFilters.length})`} />
+                            <Title level={3} text={`Selected Themes (${themeFilters.filters.length})`} />
                         </div>
 
                         <div class="flex gap-1 flex-wrap">
-                            {#each themeFilters as themeFilterId (themeFilterId)}
+                            {#each themeFilters.filters as themeFilterId (themeFilterId)}
                                 <div transition:fly={{ x: 300 }}>
                                     <Tag variant="primary">
                                         <span>
@@ -150,7 +137,7 @@
                                         <Button
                                             variant="ghost"
                                             size="xs"
-                                            handleClick={() => updateThemeFilters(themeFilterId)}
+                                            handleClick={() => themeFilters.update(themeFilterId)}
                                         >
                                             <MaterialIcon color="fill-white" hoverColor="fill-primary">
                                                 <Close />

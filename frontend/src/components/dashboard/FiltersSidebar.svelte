@@ -13,8 +13,6 @@
         showEvidenceRich = true,
         demoOptions = {},
         demoData = {},
-        demoFilters = {},
-        setDemoFilters = () => {},
         evidenceRich = false,
         setEvidenceRich = () => {},
         loading = true,
@@ -68,11 +66,9 @@
             <div in:fade>
                 {#each Object.keys(demoOptions) as category (category)}
                     <DemoFilter
-                        {setDemoFilters}
                         {category}
                         {demoOptions}
                         {demoData}
-                        {demoFilters}
                         {totalCounts}
                         skeleton={loading}
                     />
