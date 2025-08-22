@@ -206,6 +206,7 @@
                                                 themes={answer.themes}
                                                 themeFilters={themeFilters}
                                                 handleThemeTagClick={(themeId) => updateThemeFilters(themeId)}
+                                                highlightText={searchValue}
                                             />
                                         </div>
                                     </li>

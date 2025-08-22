@@ -6,6 +6,7 @@
     import Tag from "../Tag.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
     import Diamond from "../svg/material/Diamond.svelte";
+    import { applyHighlight } from "../../global/utils";
 
     interface Theme {
         id: string;
@@ -21,6 +22,7 @@
     export let themeFilters: string[] = [];
     export let handleThemeTagClick = (themeId: string) => {};
     export let skeleton: boolean = false;
+    export let highlightText: string = "";
 </script>
 
 <Panel>
@@ -90,7 +92,7 @@
             </p>
         {:else if text}
             <p>
-                {text}
+                {@html applyHighlight(text, highlightText)}
             </p>
         {/if}
 
