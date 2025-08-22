@@ -23,17 +23,6 @@
     export let skeleton: boolean = false;
     export let hideIcon: boolean = false;
     export let horizontal: boolean = false;
-
-    let skeletonBlink: boolean = false;
-    let skeletonIntervalId;
-
-    $: {
-        clearInterval(skeletonIntervalId);
-
-        if (skeleton) {
-            skeletonIntervalId = setInterval(() => skeletonBlink = !skeletonBlink, 1000);
-        }
-    }
 </script>
 
 <div transition:fade={{duration: 200}} >
@@ -80,9 +69,9 @@
                             "transition-colors",
                             "duration-1000",
                             "select-none",
-                            skeletonBlink
-                                ? " bg-neutral-200 text-neutral-200"
-                                : " bg-neutral-100 text-neutral-100"
+                            "bg-neutral-100",
+                            "text-neutral-100",
+                            "blink",
                         ])}>
                             {"SKELETON ".repeat(20)}
                         </p>
@@ -95,9 +84,9 @@
                             skeleton && clsx([
                                 "w-max",
                                 "select-none",
-                                skeletonBlink
-                                    ? "bg-neutral-200 text-neutral-200"
-                                    : "bg-neutral-100 text-neutral-100"
+                                "bg-neutral-100",
+                                "text-neutral-100",
+                                "blink",
                             ])
                         ])}>
                             000 responses

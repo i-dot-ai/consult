@@ -24,7 +24,7 @@
 <section>
     <Panel level={2} border={true} bg={skeleton ? false : true}>
         {#if skeleton}
-            <h3 class="bg-neutral-100 text-neutral-100 select-none w-max">skeleton</h3>
+            <h3 class="bg-neutral-100 text-neutral-100 select-none w-max blink">skeleton</h3>
         {:else}
             <Button
                 variant="ghost"
@@ -51,11 +51,11 @@
             <div class="my-1">
                 <div class="demo-filter w-full relative pb-3">
                     <div class="grid grid-cols-3 gap-1 mb-1">
-                        <span class="text-left bg-neutral-100 text-neutral-100 select-none">skeleton</span>
-                        <span class="text-right bg-neutral-100 text-neutral-100 select-none">000%</span>
-                        <span class="text-right bg-neutral-100 text-neutral-100 select-none">00000</span>
+                        <span class="text-left bg-neutral-100 text-neutral-100 select-none blink">skeleton</span>
+                        <span class="text-right bg-neutral-100 text-neutral-100 select-none blink">000%</span>
+                        <span class="text-right bg-neutral-100 text-neutral-100 select-none blink">00000</span>
                     </div>
-                    <div class="w-full bg-neutral-100 text-neutral-100 select-none">
+                    <div class="w-full bg-neutral-100 text-neutral-100 select-none blink">
                         {"_".repeat(10)}
                     </div>
                 </div>
