@@ -43,21 +43,21 @@
                     >
                         <td class="pr-4">
                             <div transition:fade class="p-2">
-                                <h3 class="font-bold text-sm bg-neutral-100 text-neutral-100 select-none w-max mb-2">{"SKELETON ".repeat(3)}</h3>
-                                <p class="text-sm bg-neutral-100 text-neutral-100 select-none">{"SKELETON ".repeat(5)}</p>
+                                <h3 class="font-bold text-sm bg-neutral-100 text-neutral-100 select-none blink w-max mb-2">{"SKELETON ".repeat(3)}</h3>
+                                <p class="text-sm bg-neutral-100 text-neutral-100 select-none blink">{"SKELETON ".repeat(5)}</p>
                             </div>
                         </td>
 
                         <td class="pr-4">
                             <div class="mt-8">
-                                <span class="bg-neutral-100 text-neutral-100 select-none">
+                                <span class="bg-neutral-100 text-neutral-100 select-none blink">
                                     000 SKELETON
                                 </span>
                             </div>
                         </td>
                         <td class="pr-4">
                             <div class="flex items-center gap-1 mt-8">
-                                <span class="w-[5ch] bg-neutral-100 text-neutral-100 select-none">
+                                <span class="w-[5ch] bg-neutral-100 text-neutral-100 select-none blink">
                                     000%
                                 </span>
                             </div>
