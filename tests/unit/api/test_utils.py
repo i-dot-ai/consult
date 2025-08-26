@@ -31,20 +31,16 @@ class TestParseFiltersFromSerializer:
     def test_all_filters(self):
         """Test parsing all types of filters"""
         validated_data = {
-            "sentimentFilters": "AGREEMENT,DISAGREEMENT",
             "themeFilters": "1,2,3",
             "themesSortDirection": "ascending",
             "themesSortType": "frequency",
-            "evidenceRich": True,
             "searchValue": "test search",
             "searchMode": "semantic",
             "demoFilters": ["individual:true", "region:north", "age:25-34"],
         }
         filters = parse_filters_from_serializer(validated_data)
 
-        assert filters["sentiment_list"] == ["AGREEMENT", "DISAGREEMENT"]
         assert filters["theme_list"] == ["1", "2", "3"]
-        assert filters["evidence_rich"] is True
         assert filters["search_value"] == "test search"
         assert filters["search_mode"] == "semantic"
         assert filters["demo_filters"]["individual"] == ["true"]
@@ -53,14 +49,9 @@ class TestParseFiltersFromSerializer:
 
     def test_empty_string_filters(self):
         """Test that empty string filters are handled correctly"""
-        validated_data = {"sentimentFilters": "", "themeFilters": "", "searchValue": ""}
+        validated_data = {"searchValue": ""}
         filters = parse_filters_from_serializer(validated_data)
 
-        # Empty strings may still be included but with empty values
-        if "sentiment_list" in filters:
-            assert filters["sentiment_list"] == [""]
-        if "theme_list" in filters:
-            assert filters["theme_list"] == [""]
         if "search_value" in filters:
             assert filters["search_value"] == ""
 
@@ -93,29 +84,9 @@ class TestParseFiltersFromSerializer:
         filters = parse_filters_from_serializer(validated_data)
         assert "demo_filters" not in filters
 
-    def test_evidence_rich_false(self):
-        """Test that evidenceRich=False doesn't add evidence_rich key"""
-        validated_data = {"evidenceRich": False}
-        filters = parse_filters_from_serializer(validated_data)
-        assert "evidence_rich" not in filters
-
 
 @pytest.mark.django_db
 class TestBuildResponseFilterQuery:
-    def test_sentiment_filter(self, free_text_question):
-        """Test sentiment filtering"""
-        filters = {"sentiment_list": ["AGREEMENT", "DISAGREEMENT"]}
-        query = build_response_filter_query(filters)
-
-        assert "annotation__sentiment__in" in str(query)
-
-    def test_evidence_rich_filter(self, free_text_question):
-        """Test evidence rich filtering"""
-        filters = {"evidence_rich": True}
-        query = build_response_filter_query(filters)
-
-        assert "annotation__evidence_rich" in str(query)
-
     def test_demographic_filters_boolean(
         self,
         individual_demographic_option,
@@ -149,30 +120,6 @@ class TestBuildResponseFilterQuery:
         assert [(a, list(b)) for a, b in query.children] == [
             ("respondent__demographics__in", [north_demographic_option, south_demographic_option]),
             ("respondent__demographics__in", [twenty_five_demographic_option]),
-        ]
-
-    def test_combined_filters(self, individual_demographic_option):
-        """Test multiple filters combined with AND logic"""
-        filters = {
-            "sentiment_list": ["AGREEMENT"],
-            "evidence_rich": True,
-            "demo_filters": {"individual": ["true"]},
-        }
-        query = build_response_filter_query(filters)
-
-        # Should have AND logic (default for Q objects)
-        assert query.connector == "AND"
-
-        def listify(x):
-            try:
-                return list(x)
-            except TypeError:
-                return x
-
-        assert [(a, listify(b)) for a, b in query.children] == [
-            ("annotation__sentiment__in", ["AGREEMENT"]),
-            ("annotation__evidence_rich", True),
-            ("respondent__demographics__in", [individual_demographic_option]),
         ]
 
 

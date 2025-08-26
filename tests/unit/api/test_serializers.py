@@ -195,11 +195,9 @@ class TestFilterSerializer:
     def test_all_valid_filters(self):
         """Test filter serializer with all valid filter types"""
         data = {
-            "sentimentFilters": "AGREEMENT,DISAGREEMENT",
             "themeFilters": "1,2,3",
             "themesSortDirection": "ascending",
             "themesSortType": "frequency",
-            "evidenceRich": True,
             "searchValue": "test search",
             "searchMode": "semantic",
             "demoFilters": ["individual:true", "region:north"],
@@ -210,9 +208,7 @@ class TestFilterSerializer:
         assert serializer.is_valid()
 
         validated = serializer.validated_data
-        assert validated["sentimentFilters"] == "AGREEMENT,DISAGREEMENT"
         assert validated["themeFilters"] == "1,2,3"
-        assert validated["evidenceRich"] is True
         assert validated["searchValue"] == "test search"
         assert validated["searchMode"] == "semantic"
         assert validated["demoFilters"] == ["individual:true", "region:north"]
@@ -246,26 +242,6 @@ class TestFilterSerializer:
         assert not serializer.is_valid()
         assert "page_size" in serializer.errors
 
-    def test_boolean_evidence_rich_conversion(self):
-        """Test that evidenceRich is properly converted to boolean"""
-        # Test string 'true'
-        data = {"evidenceRich": "true"}
-        serializer = FilterSerializer(data=data)
-        assert serializer.is_valid()
-        assert serializer.validated_data["evidenceRich"] is True
-
-        # Test string 'false'
-        data = {"evidenceRich": "false"}
-        serializer = FilterSerializer(data=data)
-        assert serializer.is_valid()
-        assert serializer.validated_data["evidenceRich"] is False
-
-        # Test boolean True
-        data = {"evidenceRich": True}
-        serializer = FilterSerializer(data=data)
-        assert serializer.is_valid()
-        assert serializer.validated_data["evidenceRich"] is True
-
     def test_demo_filters_list_validation(self):
         """Test that demoFilters accepts list of strings"""
         data = {"demoFilters": ["key1:value1", "key2:value2", "key3:value3"]}
@@ -291,8 +267,7 @@ class TestFilterSerializer:
 
     def test_blank_string_handling(self):
         """Test that blank strings are allowed for string fields that allow them"""
-        data = {"sentimentFilters": "", "themeFilters": ""}
+        data = {"themeFilters": ""}
         serializer = FilterSerializer(data=data)
         assert serializer.is_valid()
-        assert serializer.validated_data["sentimentFilters"] == ""
         assert serializer.validated_data["themeFilters"] == ""

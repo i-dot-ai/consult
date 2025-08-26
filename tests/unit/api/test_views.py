@@ -6,10 +6,11 @@ import orjson
 import pytest
 from django.urls import reverse
 
-from consultation_analyser.consultations.models import ResponseAnnotationTheme
+from consultation_analyser.consultations.models import ResponseAnnotation, ResponseAnnotationTheme
 from consultation_analyser.factories import (
     QuestionFactory,
     RespondentFactory,
+    ResponseAnnotationFactory,
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
 )
@@ -570,6 +571,118 @@ class TestFilteredResponsesAPIView:
         assert data["filtered_total"] == 1  # Only response1
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
+
+    @pytest.mark.parametrize(("evidence_rich", "count"), [(True, 1), (False, 1), (None, 2)])
+    def test_get_filtered_responses_with_evidence_rich_filters(
+        self,
+        client,
+        consultation_user,
+        free_text_question,
+        consultation_user_token,
+        respondent_1,
+        respondent_2,
+        evidence_rich,
+        count,
+    ):
+        """Test API endpoint with evidence_rich filtering using AND logic"""
+        # Create responses with different theme combinations
+
+        response_1 = ResponseFactory(
+            question=free_text_question, respondent=respondent_1, free_text="Response 1"
+        )
+        response_2 = ResponseFactory(
+            question=free_text_question, respondent=respondent_2, free_text="Response 2"
+        )
+
+        ResponseAnnotationFactory(response=response_1, evidence_rich=True)
+        ResponseAnnotationFactory(response=response_2, evidence_rich=False)
+
+        client.force_login(consultation_user)
+
+        url = reverse(
+            "response-list",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "question_pk": free_text_question.id,
+            },
+        )
+
+        response = client.get(
+            url + f"?evidenceRich={evidence_rich}",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
+
+        data = response.json()
+
+        assert data["respondents_total"] == 2  # Total respondents
+        assert data["filtered_total"] == count  # Only response1
+        assert len(data["all_respondents"]) == 2 if evidence_rich is None else 2
+        if evidence_rich is not None:
+            assert data["all_respondents"][0]["evidenceRich"] == evidence_rich
+
+    @pytest.mark.parametrize(
+        ("sentiments", "count", "expected"),
+        [
+            ("AGREEMENT,UNCLEAR", 2, ["AGREEMENT", "UNCLEAR"]),
+            ("AGREEMENT", 1, ["AGREEMENT"]),
+            ("DISAGREEMENT", 0, []),
+        ],
+    )
+    def test_get_filtered_responses_with_sentiment_filters(
+        self,
+        client,
+        consultation_user,
+        free_text_question,
+        consultation_user_token,
+        respondent_1,
+        respondent_2,
+        sentiments,
+        count,
+        expected,
+    ):
+        """Test API endpoint with evidence_rich filtering using AND logic"""
+        # Create responses with different theme combinations
+
+        response_1 = ResponseFactory(
+            question=free_text_question, respondent=respondent_1, free_text="Response 1"
+        )
+        response_2 = ResponseFactory(
+            question=free_text_question, respondent=respondent_2, free_text="Response 2"
+        )
+
+        ResponseAnnotationFactory(
+            response=response_1, sentiment=ResponseAnnotation.Sentiment.AGREEMENT
+        )
+        ResponseAnnotationFactory(
+            response=response_2, sentiment=ResponseAnnotation.Sentiment.UNCLEAR
+        )
+
+        client.force_login(consultation_user)
+
+        url = reverse(
+            "response-list",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "question_pk": free_text_question.id,
+            },
+        )
+
+        response = client.get(
+            url + f"?sentimentFilters={sentiments}",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
+
+        data = response.json()
+
+        assert data["respondents_total"] == 2  # Total respondents
+        assert data["filtered_total"] == count  # Only response1
+        assert len(data["all_respondents"]) == 2 if sentiments is None else 2
+
+        assert sorted(x["sentiment"] for x in data["all_respondents"]) == expected
 
 
 @pytest.mark.django_db

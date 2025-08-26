@@ -5,6 +5,8 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Exists, OuterRef
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
+from django_filters import BaseInFilter, BooleanFilter, CharFilter
+from django_filters.rest_framework import FilterSet
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
 from rest_framework.decorators import action, api_view, permission_classes
@@ -170,11 +172,17 @@ class BespokeResultsSetPagination(PageNumberPagination):
         )
 
 
+class ResponseFilter(FilterSet):
+    respondent_id = CharFilter()
+    sentimentFilters = BaseInFilter(field_name="annotation__sentiment", lookup_expr="in")
+    evidenceRich = BooleanFilter(field_name="annotation__evidence_rich")
+
+
 class ResponseViewSet(ModelViewSet):
     serializer_class = ResponseSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
     pagination_class = BespokeResultsSetPagination
-    filterset_fields = ["respondent_id"]
+    filterset_class = ResponseFilter
     http_method_names = ["get", "patch"]
 
     def get_queryset(self):

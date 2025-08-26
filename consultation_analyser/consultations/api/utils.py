@@ -9,9 +9,7 @@ from ..models import DemographicOption
 
 
 class FilterParams(TypedDict, total=False):
-    sentiment_list: list[str]
     theme_list: list[str]
-    evidence_rich: bool
     search_mode: str
     demo_filters: dict[str, list[str]]
     search_value: str
@@ -21,16 +19,9 @@ def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
     """Parse filter parameters from serializer validated data"""
     filters = FilterParams()
 
-    sentiment_filters = validated_data.get("sentimentFilters", "")
-    if sentiment_filters:
-        filters["sentiment_list"] = sentiment_filters.split(",")
-
     theme_filters = validated_data.get("themeFilters", "")
     if theme_filters:
         filters["theme_list"] = theme_filters.split(",")
-
-    if validated_data.get("evidenceRich"):
-        filters["evidence_rich"] = True
 
     if "searchValue" in validated_data:
         filters["search_value"] = validated_data["searchValue"]
@@ -65,12 +56,6 @@ def safe_json_encode(txt: str):
 def build_response_filter_query(filters: FilterParams) -> Q:
     """Build a Q object for filtering responses based on filter params"""
     query = Q()
-
-    if filters.get("sentiment_list"):
-        query &= Q(annotation__sentiment__in=filters["sentiment_list"])
-
-    if evidence_rich := filters.get("evidence_rich"):
-        query &= Q(annotation__evidence_rich=evidence_rich)
 
     # Handle demographic filters
     if demo_filters := filters.get("demo_filters"):
