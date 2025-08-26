@@ -85,8 +85,8 @@
                         </div>
                     {/if}
 
-                    <div class="flex justify-between items-center gap-4">
-                        <div class="grow">
+                    <div class="flex justify-between items-center gap-4 flex-col-reverse sm:flex-row">
+                        <div class="w-full sm:w-auto grow">
                             <TextInput
                                 variant="search"
                                 id="search-input"
@@ -98,18 +98,20 @@
                             />
                         </div>
 
-                        <Select
-                            label="Search Mode"
-                            hideLabel={true}
-                            value={searchMode}
-                            options={[
-                                { value: SearchModeValues.KEYWORD, label: SearchModeLabels.KEYWORD },
-                                { value: SearchModeValues.SEMANTIC, label: SearchModeLabels.SEMANTIC },
-                            ]}
-                            handleChange={(nextValue: string) => {
-                                setSearchMode(nextValue);
-                            }}
-                        />
+                        <div class="w-full sm:w-auto">
+                            <Select
+                                label="Search Mode"
+                                hideLabel={true}
+                                value={searchMode}
+                                options={[
+                                    { value: SearchModeValues.KEYWORD, label: SearchModeLabels.KEYWORD },
+                                    { value: SearchModeValues.SEMANTIC, label: SearchModeLabels.SEMANTIC },
+                                ]}
+                                handleChange={(nextValue: string) => {
+                                    setSearchMode(nextValue);
+                                }}
+                            />
+                        </div>
                     </div>
                 </div>
 
@@ -144,7 +146,7 @@
                                 </div>
                             {/if}
 
-                            <div class="w-1/2 mt-4">
+                            <div class="w-full md:w-1/2 mt-4">
                                 <Popover>
                                     <span slot="trigger" class="block text-left">
                                         Select Themes...

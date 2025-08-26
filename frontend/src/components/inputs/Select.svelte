@@ -54,7 +54,7 @@
 </script>
 
 
-<div class="flex flex-col gap-1 text-sm">
+<div class="flex flex-col gap-1 text-sm w-full">
     <!-- svelte-ignore a11y-label-has-associated-control - $label contains the 'for' attribute -->
     <label
         use:melt={$meltLabel}
