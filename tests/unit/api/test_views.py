@@ -528,7 +528,13 @@ class TestFilteredResponsesAPIView:
         assert response.status_code == 400
 
     def test_get_filtered_responses_with_respondent_filters(
-        self, client, consultation_user, free_text_question, consultation_user_token, respondent_1, respondent_2
+        self,
+        client,
+        consultation_user,
+        free_text_question,
+        consultation_user_token,
+        respondent_1,
+        respondent_2,
     ):
         """Test API endpoint with theme filtering using AND logic"""
         # Create responses with different theme combinations
@@ -564,6 +570,37 @@ class TestFilteredResponsesAPIView:
         assert data["filtered_total"] == 1  # Only response1
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
+
+    def test_get_responses_with_stared(
+        self,
+        client,
+        consultation_user,
+        dashboard_user,
+        consultation_user_token,
+        free_text_annotation,
+    ):
+        free_text_annotation.flagged_by.set([consultation_user, dashboard_user])
+        free_text_annotation.save()
+
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+        response = client.get(
+            url,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert set(data["flagged_by"]) == {consultation_user.email, dashboard_user.email}
 
 
 @pytest.mark.django_db

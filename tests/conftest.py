@@ -394,6 +394,7 @@ def respondent_1(consultation):
     yield respondent
     respondent.delete()
 
+
 @pytest.fixture
 def respondent_2(consultation):
     respondent = Respondent.objects.create(consultation=consultation, themefinder_id=2)

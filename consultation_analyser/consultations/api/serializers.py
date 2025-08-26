@@ -168,6 +168,9 @@ class ResponseSerializer(serializers.ModelSerializer):
     evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
     sentiment = serializers.CharField(source="annotation.sentiment")
     human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
+    flagged_by = serializers.SlugRelatedField(
+        source="annotation.flagged_by", slug_field="email", many=True, read_only=True
+    )
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
@@ -217,4 +220,5 @@ class ResponseSerializer(serializers.ModelSerializer):
             "evidenceRich",
             "sentiment",
             "human_reviewed",
+            "flagged_by",
         ]

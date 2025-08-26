@@ -311,6 +311,7 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
     human_reviewed = models.BooleanField(default=False)
     reviewed_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
     reviewed_at = models.DateTimeField(null=True, blank=True)
+    flagged_by = models.ManyToManyField(to=User, blank=True, related_name="flagged_by")
 
     # History tracking
     history = HistoricalRecords()
