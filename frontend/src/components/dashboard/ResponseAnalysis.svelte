@@ -24,6 +24,7 @@
     import Popover from "../inputs/Popover.svelte";
     import NotFoundMessage from "../NotFoundMessage.svelte";
 
+    export let pageSize: number = 50;
     export let isAnswersLoading: boolean = true;
     export let isThemesLoading: boolean = true;
     export let answersError: string = "";
@@ -43,6 +44,12 @@
 
     export let evidenceRich: boolean = false;
     export let setEvidenceRich = (value: boolean) => {};
+
+    const BASE_FLY_DELAY = 100;
+
+    function getDelay(index: number): number {
+        return BASE_FLY_DELAY * ((index+1) % pageSize);
+    }
 </script>
 
 <div class="grid grid-cols-4 gap-4">
@@ -201,17 +208,12 @@
                                 </span>
                             </Alert>
                         </div>
-                    {:else if answers.length === 0}
-                        <NotFoundMessage
-                            title="No responses found"
-                            body="Try adjusting your search terms or filters."
-                        />
                     {:else}
                         <div>
                             <ul>
                                 {#each answers as answer, i (answer.identifier)}
                                     <li>
-                                        <div transition:fly={{ x: 300, delay: 100 * i }}>
+                                        <div transition:fly={{ x: 300, delay: getDelay(i) }}>
                                             <AnswerCard
                                                 demoData={Object.values(answer.demographic_data)}
                                                 multiAnswers={answer.multiple_choice_answer}
@@ -225,6 +227,15 @@
                                     </li>
                                 {/each}
                             </ul>
+
+                            {#if answers.length === 0}
+                                <div transition:fade>
+                                    <NotFoundMessage
+                                        title="No responses found"
+                                        body="Try adjusting your search terms or filters."
+                                    />
+                                </div>
+                            {/if}
 
                             {#if isAnswersLoading}
                                 <div transition:fade>

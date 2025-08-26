@@ -284,6 +284,7 @@
         />
     {:else if activeTab === TabNames.ResponseAnalysis}
         <ResponseAnalysis
+            pageSize={PAGE_SIZE}
             answers={answers}
             isAnswersLoading={$isAnswersLoading}
             answersError={$answersError}
