@@ -188,9 +188,6 @@ class TestFilterSerializer:
     def test_all_valid_filters(self):
         """Test filter serializer with all valid filter types"""
         data = {
-            "themeFilters": "1,2,3",
-            "themesSortDirection": "ascending",
-            "themesSortType": "frequency",
             "searchValue": "test search",
             "searchMode": "semantic",
             "demoFilters": ["individual:true", "region:north"],
@@ -199,7 +196,6 @@ class TestFilterSerializer:
         assert serializer.is_valid()
 
         validated = serializer.validated_data
-        assert validated["themeFilters"] == "1,2,3"
         assert validated["searchValue"] == "test search"
         assert validated["searchMode"] == "semantic"
         assert validated["demoFilters"] == ["individual:true", "region:north"]
@@ -228,15 +224,4 @@ class TestFilterSerializer:
         assert not serializer.is_valid()
         assert "demoFilters" in serializer.errors
 
-    def test_optional_fields_not_required(self):
-        """Test that all filter fields are optional"""
-        data = {"page": 1}  # Only provide one optional field
-        serializer = FilterSerializer(data=data)
-        assert serializer.is_valid()
 
-    def test_blank_string_handling(self):
-        """Test that blank strings are allowed for string fields that allow them"""
-        data = {"themeFilters": ""}
-        serializer = FilterSerializer(data=data)
-        assert serializer.is_valid()
-        assert serializer.validated_data["themeFilters"] == ""

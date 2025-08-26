@@ -176,6 +176,24 @@ class ResponseFilter(FilterSet):
     respondent_id = CharFilter()
     sentimentFilters = BaseInFilter(field_name="annotation__sentiment", lookup_expr="in")
     evidenceRich = BooleanFilter(field_name="annotation__evidence_rich")
+    themeFilters = BaseInFilter(method="filter_themes")
+
+    def filter_themes(self, queryset, name, value):
+        if not value:
+            return queryset
+        # Use single JOIN with HAVING clause for AND logic
+        qs = (
+            queryset.filter(annotation__themes__id__in=value)
+            .annotate(matched_theme_count=Count("annotation__themes", distinct=True))
+            .filter(matched_theme_count=len(value))
+        )
+        return qs
+
+
+    def filter_queryset(self, queryset):
+        queryset = super().filter_queryset(queryset)
+        return queryset
+
 
 
 class ResponseViewSet(ModelViewSet):

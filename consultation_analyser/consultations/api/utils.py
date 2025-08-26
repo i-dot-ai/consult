@@ -19,10 +19,6 @@ def parse_filters_from_serializer(validated_data: dict) -> FilterParams:
     """Parse filter parameters from serializer validated data"""
     filters = FilterParams()
 
-    theme_filters = validated_data.get("themeFilters", "")
-    if theme_filters:
-        filters["theme_list"] = theme_filters.split(",")
-
     if "searchValue" in validated_data:
         filters["search_value"] = validated_data["searchValue"]
 
@@ -98,14 +94,6 @@ def get_filtered_responses_with_themes(
         .defer("embedding", "search_vector")
     )
 
-    if filters and filters.get("theme_list"):
-        theme_ids = filters["theme_list"]
-        # Use single JOIN with HAVING clause for AND logic
-        queryset = (
-            queryset.filter(annotation__themes__id__in=theme_ids)
-            .annotate(matched_theme_count=Count("annotation__themes", distinct=True))
-            .filter(matched_theme_count=len(theme_ids))
-        )
 
     if filters and filters.get("search_value"):
         if filters.get("search_mode") == "semantic":

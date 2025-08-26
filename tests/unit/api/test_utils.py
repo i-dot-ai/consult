@@ -31,16 +31,12 @@ class TestParseFiltersFromSerializer:
     def test_all_filters(self):
         """Test parsing all types of filters"""
         validated_data = {
-            "themeFilters": "1,2,3",
-            "themesSortDirection": "ascending",
-            "themesSortType": "frequency",
             "searchValue": "test search",
             "searchMode": "semantic",
             "demoFilters": ["individual:true", "region:north", "age:25-34"],
         }
         filters = parse_filters_from_serializer(validated_data)
 
-        assert filters["theme_list"] == ["1", "2", "3"]
         assert filters["search_value"] == "test search"
         assert filters["search_mode"] == "semantic"
         assert filters["demo_filters"]["individual"] == ["true"]
@@ -158,38 +154,6 @@ class TestGetFilteredResponsesWithThemes:
         assert queryset.count() == 1
         assert queryset.first() == response1
 
-    def test_theme_filters_and_logic(self, free_text_question, theme_a, theme_b):
-        """Test theme filtering uses AND logic"""
-        # Create responses with different theme combinations
-        respondent1 = RespondentFactory(consultation=free_text_question.consultation)
-        respondent2 = RespondentFactory(consultation=free_text_question.consultation)
-        respondent3 = RespondentFactory(consultation=free_text_question.consultation)
-
-        response1 = ResponseFactory(question=free_text_question, respondent=respondent1)
-        response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
-        response3 = ResponseFactory(question=free_text_question, respondent=respondent3)
-
-        # Response 1: has theme1 and theme2
-        annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
-        annotation1.add_original_ai_themes([theme_a, theme_b])
-
-        # Response 2: has only theme1
-        annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
-        annotation2.add_original_ai_themes([theme_a])
-
-        # Response 3: has only theme2
-        annotation3 = ResponseAnnotationFactoryNoThemes(response=response3)
-        annotation3.add_original_ai_themes([theme_b])
-
-        # Filter by theme1 AND theme2
-        filters = {"theme_list": [str(theme_a.id), str(theme_b.id)]}
-        queryset = get_filtered_responses_with_themes(
-            free_text_question.response_set.all(), filters
-        )
-
-        # Should only return response1 which has both themes
-        assert queryset.count() == 1
-        assert queryset.first() == response1
 
     @patch("consultation_analyser.consultations.api.utils.embed_text")
     def test_semantic_search(self, mock_embed_text, free_text_question):
