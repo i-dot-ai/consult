@@ -22,6 +22,7 @@
     import MaterialIcon from "../MaterialIcon.svelte";
     import Close from "../svg/material/Close.svelte";
     import Popover from "../inputs/Popover.svelte";
+    import Search from "../svg/material/Search.svelte";
 
     export let isAnswersLoading: boolean = true;
     export let isThemesLoading: boolean = true;
@@ -184,6 +185,15 @@
                                     Answers Error: {answersError}
                                 </span>
                             </Alert>
+                        </div>
+                    {:else if answers.length === 0}
+                        <div class="flex justify-center items-center flex-col min-h-32">
+                            <MaterialIcon color="fill-neutral-200" size="4rem">
+                                <Search />
+                            </MaterialIcon>
+
+                            <p class="text-xl">No responses found</p>
+                            <p class="text-neutral-600">Try adjusting your search terms or filters.</p>
                         </div>
                     {:else}
                         <div>
