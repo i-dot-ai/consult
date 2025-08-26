@@ -98,15 +98,6 @@ class ThemeAggregationsSerializer(serializers.Serializer):
     theme_aggregations = serializers.DictField(child=serializers.IntegerField())
 
 
-class FilterSerializer(serializers.Serializer):
-    """Serializer for query parameter filters"""
-
-    themeFilters = serializers.CharField(required=False, allow_blank=True)
-    searchValue = serializers.CharField(required=False)
-    searchMode = serializers.ChoiceField(choices=["semantic", "keyword"], required=False)
-    demoFilters = serializers.ListField(child=serializers.CharField(), required=False)
-
-
 class ThemeSerializer2(serializers.ModelSerializer):
     question_id = serializers.UUIDField(source="question.id")
 

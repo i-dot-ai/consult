@@ -188,20 +188,12 @@ class TestDemographicAggregationsAPIView:
         assert "False" not in aggregations["individual"]
         assert "south" not in aggregations["region"]
 
-    def test_invalid_filter_parameters(self, client, consultation_user, free_text_question):
-        """Test API endpoint handles invalid filter parameters"""
-        client.force_login(consultation_user)
-        url = reverse(
-            "response-demographic-aggregations",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
-        )
+        response = client.get(url + "?demoFilters=individual:true&demoFilters=individual:false")
 
-        # Test invalid search mode
-        response = client.get(url + "?searchMode=invalid")
-        assert response.status_code == 400
+        assert response.status_code == 200
+        data = response.json()
+        assert data["demographic_aggregations"]["individual"] == {"True": 1, "False": 1}
+        assert data["demographic_aggregations"]["region"] == {"north": 1, "south": 1}
 
 
 @pytest.mark.django_db

@@ -3,7 +3,6 @@ from uuid import uuid4
 from consultation_analyser.consultations.api.serializers import (
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
-    FilterSerializer,
     QuestionSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
@@ -182,44 +181,3 @@ class TestQuestionSerializer:
         serializer = QuestionSerializer(data=data)
         assert not serializer.is_valid()
         assert "number" in serializer.errors
-
-
-class TestFilterSerializer:
-    def test_all_valid_filters(self):
-        """Test filter serializer with all valid filter types"""
-        data = {
-            "searchValue": "test search",
-            "searchMode": "semantic",
-            "demoFilters": ["individual:true", "region:north"],
-        }
-        serializer = FilterSerializer(data=data)
-        assert serializer.is_valid()
-
-        validated = serializer.validated_data
-        assert validated["searchValue"] == "test search"
-        assert validated["searchMode"] == "semantic"
-        assert validated["demoFilters"] == ["individual:true", "region:north"]
-
-    def test_invalid_search_mode(self):
-        """Test filter serializer with invalid search mode"""
-        data = {"searchMode": "invalid"}
-        serializer = FilterSerializer(data=data)
-        assert not serializer.is_valid()
-        assert "searchMode" in serializer.errors
-
-    def test_demo_filters_list_validation(self):
-        """Test that demoFilters accepts list of strings"""
-        data = {"demoFilters": ["key1:value1", "key2:value2", "key3:value3"]}
-        serializer = FilterSerializer(data=data)
-        assert serializer.is_valid()
-        assert serializer.validated_data["demoFilters"] == [
-            "key1:value1",
-            "key2:value2",
-            "key3:value3",
-        ]
-
-        # Test invalid - not a list
-        data = {"demoFilters": "key1:value1"}
-        serializer = FilterSerializer(data=data)
-        assert not serializer.is_valid()
-        assert "demoFilters" in serializer.errors
