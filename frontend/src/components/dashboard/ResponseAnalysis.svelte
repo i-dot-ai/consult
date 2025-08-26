@@ -172,7 +172,20 @@
                 </section>
 
                 <section>
-                    <TitleRow level={3} title={`${filteredTotal} responses found`} subtitle="All responses to this question" />
+                    <TitleRow level={3} title={`${filteredTotal} responses found`} subtitle="All responses to this question">
+                        <div slot="aside">
+                            {#if themeFilters.applied() || demoFilters.applied() || evidenceRich || searchValue}
+                                <Button size="sm" handleClick={() => {
+                                    themeFilters.reset();
+                                    demoFilters.reset();
+                                    setEvidenceRich(false);
+                                    setSearchValue("");
+                                }}>
+                                    Clear filters
+                                </Button>
+                            {/if}
+                        </div>
+                    </TitleRow>
 
                     {#if isAnswersLoading && answers.length === 0}
                         <div transition:fade>

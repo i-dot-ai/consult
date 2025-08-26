@@ -10,6 +10,10 @@ function createThemeFiltersState() {
             return themeFilters.length > 0;
         },
 
+        reset: () => {
+            themeFilters = [];
+        },
+
         update: (newFilter: string) => {
             if (!newFilter) {
                 // Clear filters if newFilter is falsy
@@ -36,6 +40,10 @@ function createDemoFiltersState() {
 
     return {
         get filters() { return demoFilters },
+
+        reset: () => {
+            demoFilters = {};
+        },
 
         applied: (): boolean => {
             for (const key of Object.keys(demoFilters)) {
