@@ -32,7 +32,7 @@ export const applyHighlight = (fullText: string, matchedText: string): string =>
 }
 
 export const getPercentage = (partialValue: number, totalValue: number): number => {
-    if (totalValue === 0) {
+    if (!totalValue) {
         return 0;
     }
     const percentage = (partialValue / totalValue) * 100;

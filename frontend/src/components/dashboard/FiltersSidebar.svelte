@@ -40,6 +40,7 @@
             <Panel level={2} border={true} bg={true}>
                 <Switch
                     id="evidence-rich-toggle"
+                    label="Evidence Rich"
                     value={evidenceRich}
                     handleChange={(value: boolean) => setEvidenceRich(value)}
                 >
