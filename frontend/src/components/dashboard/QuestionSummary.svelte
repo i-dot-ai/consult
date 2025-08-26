@@ -151,7 +151,7 @@
                     </section>
                 {/if}
 
-                {#if themes.length === 0}
+                {#if themes.length === 0 && !themesLoading}
                     <NotFoundMessage
                         title="No themes found"
                         body="Try adjusting your search terms or filters."
