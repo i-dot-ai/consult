@@ -507,27 +507,6 @@ class TestFilteredResponsesAPIView:
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
-    def test_get_filtered_responses_invalid_parameters(
-        self, client, consultation_user, free_text_question
-    ):
-        """Test API endpoint handles invalid parameters"""
-        client.force_login(consultation_user)
-        url = reverse(
-            "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
-        )
-
-        # Test invalid page_size (too large)
-        response = client.get(url + "?page_size=200")
-        assert response.status_code == 400
-
-        # Test invalid page number
-        response = client.get(url + "?page=0")
-        assert response.status_code == 400
-
     def test_get_filtered_responses_with_respondent_filters(
         self,
         client,

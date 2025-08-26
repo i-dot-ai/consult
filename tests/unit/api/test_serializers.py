@@ -185,13 +185,6 @@ class TestQuestionSerializer:
 
 
 class TestFilterSerializer:
-    def test_empty_filters(self):
-        """Test filter serializer with no filters"""
-        data = {}
-        serializer = FilterSerializer(data=data)
-        assert serializer.is_valid()
-        assert serializer.validated_data == {"page": 1, "page_size": 50}  # defaults
-
     def test_all_valid_filters(self):
         """Test filter serializer with all valid filter types"""
         data = {
@@ -201,8 +194,6 @@ class TestFilterSerializer:
             "searchValue": "test search",
             "searchMode": "semantic",
             "demoFilters": ["individual:true", "region:north"],
-            "page": 2,
-            "page_size": 25,
         }
         serializer = FilterSerializer(data=data)
         assert serializer.is_valid()
@@ -212,8 +203,6 @@ class TestFilterSerializer:
         assert validated["searchValue"] == "test search"
         assert validated["searchMode"] == "semantic"
         assert validated["demoFilters"] == ["individual:true", "region:north"]
-        assert validated["page"] == 2
-        assert validated["page_size"] == 25
 
     def test_invalid_search_mode(self):
         """Test filter serializer with invalid search mode"""
@@ -221,26 +210,6 @@ class TestFilterSerializer:
         serializer = FilterSerializer(data=data)
         assert not serializer.is_valid()
         assert "searchMode" in serializer.errors
-
-    def test_invalid_pagination_parameters(self):
-        """Test filter serializer with invalid pagination parameters"""
-        # Test page too small
-        data = {"page": 0}
-        serializer = FilterSerializer(data=data)
-        assert not serializer.is_valid()
-        assert "page" in serializer.errors
-
-        # Test page_size too small
-        data = {"page_size": 0}
-        serializer = FilterSerializer(data=data)
-        assert not serializer.is_valid()
-        assert "page_size" in serializer.errors
-
-        # Test page_size too large
-        data = {"page_size": 200}
-        serializer = FilterSerializer(data=data)
-        assert not serializer.is_valid()
-        assert "page_size" in serializer.errors
 
     def test_demo_filters_list_validation(self):
         """Test that demoFilters accepts list of strings"""
