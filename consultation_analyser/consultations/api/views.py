@@ -189,11 +189,9 @@ class ResponseFilter(FilterSet):
         )
         return qs
 
-
     def filter_queryset(self, queryset):
         queryset = super().filter_queryset(queryset)
         return queryset
-
 
 
 class ResponseViewSet(ModelViewSet):
@@ -216,7 +214,10 @@ class ResponseViewSet(ModelViewSet):
 
         # Get filtered responses with themes (optimized with prefetching)
         filtered_qs = get_filtered_responses_with_themes(queryset, filters)
-        return filtered_qs
+
+        # Apply additional FilterSet filtering (including themeFilters)
+        filterset = self.filterset_class(self.request.GET, queryset=filtered_qs)
+        return filterset.qs
 
     @action(detail=False, methods=["get"], url_path="demographic-aggregations")
     def demographic_aggregations(self, request, question_pk=None, consultation_pk=None):
@@ -253,11 +254,9 @@ class ResponseViewSet(ModelViewSet):
         if question.has_free_text:
             # Get theme counts from the filtered responses
             theme_counts = (
-                models.Theme.objects.filter(
-                    Exists(self.get_queryset().filter(annotation=OuterRef("responseannotation")))
-                )
+                models.Theme.objects.filter(responseannotation__response__in=self.get_queryset())
                 .values("id")
-                .annotate(count=Count("responseannotation"))
+                .annotate(count=Count("responseannotation", distinct=True))
             )
 
             theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}

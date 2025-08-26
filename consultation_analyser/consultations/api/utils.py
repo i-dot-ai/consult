@@ -1,7 +1,7 @@
 from collections import defaultdict
 from typing import TypedDict
 
-from django.db.models import Count, Q, QuerySet
+from django.db.models import Q, QuerySet
 from pgvector.django import CosineDistance
 
 from ...embeddings import embed_text
@@ -93,7 +93,6 @@ def get_filtered_responses_with_themes(
         )
         .defer("embedding", "search_vector")
     )
-
 
     if filters and filters.get("search_value"):
         if filters.get("search_mode") == "semantic":

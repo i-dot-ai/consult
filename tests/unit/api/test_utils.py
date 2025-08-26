@@ -154,7 +154,6 @@ class TestGetFilteredResponsesWithThemes:
         assert queryset.count() == 1
         assert queryset.first() == response1
 
-
     @patch("consultation_analyser.consultations.api.utils.embed_text")
     def test_semantic_search(self, mock_embed_text, free_text_question):
         """Test semantic search functionality"""

@@ -223,5 +223,3 @@ class TestFilterSerializer:
         serializer = FilterSerializer(data=data)
         assert not serializer.is_valid()
         assert "demoFilters" in serializer.errors
-
-
