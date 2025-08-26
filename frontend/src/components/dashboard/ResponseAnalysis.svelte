@@ -48,7 +48,9 @@
     const BASE_FLY_DELAY = 100;
 
     function getDelay(index: number): number {
-        return BASE_FLY_DELAY * ((index+1) % pageSize);
+        // Reset delay after page size so load more button loads
+        // new answers without initial delay but still scattered
+        return BASE_FLY_DELAY * (index % pageSize);
     }
 </script>
 
