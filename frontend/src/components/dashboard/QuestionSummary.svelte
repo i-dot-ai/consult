@@ -1,7 +1,7 @@
 <script lang="ts">
     import { slide, fly } from "svelte/transition";
 
-    import type { FormattedTheme } from "../../global/types.ts";
+    import { TabNames, type FormattedTheme } from "../../global/types.ts";
     import { getPercentage } from "../../global/utils.ts";
 
     import Lan from "../svg/material/Lan.svelte";
@@ -29,12 +29,12 @@
         totalAnswers: number;
         filteredTotal: number;
         demoData: any;
+        demoOptions: any;
         themes: FormattedTheme[];
         multiChoice: Object;
         consultationSlug?: string;
         sortAscending?: boolean;
-        evidenceRich: boolean;
-        setEvidenceRich: (value: boolean) => {};
+        setActiveTab: (newTab: TabNames) => {};
     }
     let {
         themesLoading = true,
@@ -46,6 +46,7 @@
         multiChoice = {},
         consultationSlug = "",
         sortAscending = true,
+        setActiveTab = () => {},
     }: Props = $props();
 </script>
 
@@ -113,9 +114,22 @@
                         <Alert>
                             <FilterAlt slot="icon" />
 
-                            <p class="text-sm">
-                                Results are filtered
-                            </p>
+                            <div class="flex justify-between items-center gap-4 flex-wrap">
+                                <p class="text-sm">
+                                    Results are filtered
+                                </p>
+
+                                <Button
+                                    variant="primary"
+                                    size="sm"
+                                    handleClick={() => setActiveTab(TabNames.ResponseAnalysis)}
+                                >
+                                    {`View Responses${themeFilters.filters.length > 0
+                                        ? ` (${themeFilters.filters.length} Themes)`
+                                        : ""
+                                    }`}
+                                </Button>
+                            </div>
                         </Alert>
                     </div>
                 {/if}

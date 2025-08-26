@@ -18,7 +18,7 @@
 
     import { getConsultationDetailUrl } from "../../global/routes.ts";
     import { createFetchStore } from "../../global/stores.ts";
-    import { SearchModeValues } from "../../global/types.ts";
+    import { SearchModeValues, TabNames } from "../../global/types.ts";
     import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
     import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
 
@@ -30,10 +30,6 @@
 
     const PAGE_SIZE = 50;
     const MAX_THEME_FILTERS = Infinity;
-    const TabNames = {
-        QuestionSummary: "tab-question-summary",
-        ResponseAnalysis: "tab-response-analysis",
-    }
 
     let currPage: number = $state(1);
     let hasMorePages: boolean = $state(true);
@@ -279,11 +275,10 @@
             filteredTotal={$answersData?.filtered_total}
             demoData={$demoAggrData?.demographic_aggregations}
             demoOptions={$demoOptionsData?.demographic_options}
-            evidenceRich={evidenceRich}
-            setEvidenceRich={setEvidenceRich}
             multiChoice={formatMultiChoiceData($multiChoiceAggrData)}
             consultationSlug={$consultationData?.slug}
             sortAscending={sortAscending}
+            setActiveTab={(newTab) => activeTab = newTab}
         />
     {:else if activeTab === TabNames.ResponseAnalysis}
         <ResponseAnalysis

@@ -9,7 +9,7 @@
         </MaterialIcon>
     {/if}
 
-    <div class="text-pink-700">
+    <div class="text-pink-700 w-full">
         <slot />
     </div>
 </div>

@@ -51,3 +51,8 @@ export enum TitleLevels {
     Five = 5,
     Six = 6,
 }
+
+export enum TabNames {
+    QuestionSummary = "tab-question-summary",
+    ResponseAnalysis = "tab-response-analysis",
+}
