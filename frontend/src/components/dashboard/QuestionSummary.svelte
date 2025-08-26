@@ -20,6 +20,7 @@
     import List from "../svg/material/List.svelte";
 
     import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
+    import NotFoundMessage from "../NotFoundMessage.svelte";
 
     const MAX_CARDS_ALLOWED = 10;
 
@@ -150,14 +151,21 @@
                     </section>
                 {/if}
 
-                <ThemesTable
-                    themes={[...themes].sort((a,b) => sortAscending
-                        ? a.count - b.count
-                        : b.count - a.count
-                    )}
-                    totalAnswers={filteredTotal}
-                    skeleton={themesLoading}
-                />
+                {#if themes.length === 0}
+                    <NotFoundMessage
+                        title="No themes found"
+                        body="Try adjusting your search terms or filters."
+                    />
+                {:else}
+                    <ThemesTable
+                        themes={[...themes].sort((a,b) => sortAscending
+                            ? a.count - b.count
+                            : b.count - a.count
+                        )}
+                        totalAnswers={filteredTotal}
+                        skeleton={themesLoading}
+                    />
+                {/if}
 
                 <div class="flex justify-between items-center flex-wrap gap-y-4">
                     <small>
