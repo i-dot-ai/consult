@@ -99,6 +99,7 @@
                         <div in:fade class={clsx([
                             "text-sm",
                             "leading-6",
+                            "whitespace-nowrap",
                         ])}>
                             {question.total_responses} responses
                         </div>
