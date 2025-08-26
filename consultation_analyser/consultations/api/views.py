@@ -172,11 +172,20 @@ class BespokeResultsSetPagination(PageNumberPagination):
         )
 
 
+def safe_json_encode(txt: str):
+    """try and cast a bool or str to json, anything else will be a string"""
+    if txt.lower() == "true":
+        return True
+    if txt.lower() == "false":
+        return False
+    return txt
+
+
 class ResponseFilter(FilterSet):
-    respondent_id = CharFilter()
     sentimentFilters = BaseInFilter(field_name="annotation__sentiment", lookup_expr="in")
     evidenceRich = BooleanFilter(field_name="annotation__evidence_rich")
     themeFilters = BaseInFilter(method="filter_themes")
+    demoFilters = CharFilter(method="filter_demographics")
 
     def filter_themes(self, queryset, name, value):
         if not value:
@@ -189,9 +198,23 @@ class ResponseFilter(FilterSet):
         )
         return qs
 
-    def filter_queryset(self, queryset):
-        queryset = super().filter_queryset(queryset)
+    def filter_demographics(self, queryset, name, value):
+        demo_filters = self.data.getlist("demoFilters")
+        if not demo_filters:
+            return queryset
+
+        for filter_str in demo_filters:
+            if ":" in filter_str:
+                key, value = filter_str.split(":", 1)
+                queryset = queryset.filter(
+                    respondent__demographics__field_name=key,
+                    respondent__demographics__field_value=safe_json_encode(value),
+                )
         return queryset
+
+    class Meta:
+        model = models.Response
+        fields = ["respondent_id"]
 
 
 class ResponseViewSet(ModelViewSet):

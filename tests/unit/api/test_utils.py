@@ -5,7 +5,6 @@ from django.conf import settings
 
 from consultation_analyser.consultations.api.serializers import ResponseSerializer
 from consultation_analyser.consultations.api.utils import (
-    build_response_filter_query,
     get_filtered_responses_with_themes,
     parse_filters_from_serializer,
 )
@@ -33,15 +32,11 @@ class TestParseFiltersFromSerializer:
         validated_data = {
             "searchValue": "test search",
             "searchMode": "semantic",
-            "demoFilters": ["individual:true", "region:north", "age:25-34"],
         }
         filters = parse_filters_from_serializer(validated_data)
 
         assert filters["search_value"] == "test search"
         assert filters["search_mode"] == "semantic"
-        assert filters["demo_filters"]["individual"] == ["true"]
-        assert filters["demo_filters"]["region"] == ["north"]
-        assert filters["demo_filters"]["age"] == ["25-34"]
 
     def test_empty_string_filters(self):
         """Test that empty string filters are handled correctly"""
@@ -50,73 +45,6 @@ class TestParseFiltersFromSerializer:
 
         if "search_value" in filters:
             assert filters["search_value"] == ""
-
-    def test_demo_filters_parsing(self):
-        """Test demographic filters parsing with various formats"""
-        validated_data = {
-            "demoFilters": [
-                "simple:value",
-                "simple:another-value",
-                "with spaces:value with spaces",
-                "with:colon:in:value",
-                ":empty_key",
-                "empty_value:",
-                "no_colon",
-            ]
-        }
-        filters = parse_filters_from_serializer(validated_data)
-
-        demo_filters = filters["demo_filters"]
-        assert demo_filters["simple"] == ["value", "another-value"]
-        assert demo_filters["with spaces"] == ["value with spaces"]
-        assert demo_filters["with"] == ["colon:in:value"]  # Split on first colon only
-        # Empty key/value pairs and malformed entries should be filtered out
-        assert "empty_value" not in demo_filters
-        assert "" not in demo_filters
-
-    def test_demo_filters_empty_list(self):
-        """Test that empty demo filters list doesn't add demo_filters key"""
-        validated_data = {"demoFilters": []}
-        filters = parse_filters_from_serializer(validated_data)
-        assert "demo_filters" not in filters
-
-
-@pytest.mark.django_db
-class TestBuildResponseFilterQuery:
-    def test_demographic_filters_boolean(
-        self,
-        individual_demographic_option,
-        group_demographic_option,
-        no_disability_demographic_option,
-    ):
-        """Test demographic filters with boolean values"""
-        filters = {"demo_filters": {"individual": ["true", "false"], "has_disability": ["false"]}}
-        query = build_response_filter_query(filters)
-
-        assert query.connector == "AND"
-        assert [(a, list(b)) for a, b in query.children] == [
-            (
-                "respondent__demographics__in",
-                [individual_demographic_option, group_demographic_option],
-            ),
-            ("respondent__demographics__in", [no_disability_demographic_option]),
-        ]
-
-    def test_demographic_filters_string(
-        self,
-        north_demographic_option,
-        south_demographic_option,
-        twenty_five_demographic_option,
-    ):
-        """Test demographic filters with string values"""
-        filters = {"demo_filters": {"region": ["north", "south"], "age_group": ["25-34"]}}
-        query = build_response_filter_query(filters)
-
-        assert query.connector == "AND"
-        assert [(a, list(b)) for a, b in query.children] == [
-            ("respondent__demographics__in", [north_demographic_option, south_demographic_option]),
-            ("respondent__demographics__in", [twenty_five_demographic_option]),
-        ]
 
 
 @pytest.mark.django_db
@@ -131,28 +59,6 @@ class TestGetFilteredResponsesWithThemes:
 
         assert queryset.count() == 1
         assert queryset.first() == response
-
-    def test_demographic_filters(self, free_text_question):
-        """Test filtering by demographics"""
-        # Create respondents with different demographics
-        respondent1 = RespondentFactory(
-            consultation=free_text_question.consultation, demographics={"individual": True}
-        )
-        respondent2 = RespondentFactory(
-            consultation=free_text_question.consultation, demographics={"individual": False}
-        )
-
-        response1 = ResponseFactory(question=free_text_question, respondent=respondent1)
-        ResponseFactory(question=free_text_question, respondent=respondent2)
-
-        # Filter for individual=true
-        filters = {"demo_filters": {"individual": ["true"]}}
-        queryset = get_filtered_responses_with_themes(
-            free_text_question.response_set.all(), filters
-        )
-
-        assert queryset.count() == 1
-        assert queryset.first() == response1
 
     @patch("consultation_analyser.consultations.api.utils.embed_text")
     def test_semantic_search(self, mock_embed_text, free_text_question):
