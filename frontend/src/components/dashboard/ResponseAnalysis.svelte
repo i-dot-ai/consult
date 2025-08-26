@@ -23,6 +23,7 @@
     import Close from "../svg/material/Close.svelte";
     import Popover from "../inputs/Popover.svelte";
     import NotFoundMessage from "../NotFoundMessage.svelte";
+    import Flag2 from "../svg/material/Flag2.svelte";
 
     export let pageSize: number = 50;
     export let isAnswersLoading: boolean = true;
@@ -44,6 +45,9 @@
 
     export let evidenceRich: boolean = false;
     export let setEvidenceRich = (value: boolean) => {};
+
+    export let flaggedOnly: boolean = false;
+    export let setFlaggedOnly = (value: boolean) => {};
 
     const BASE_FLY_DELAY = 100;
 
@@ -182,7 +186,7 @@
 
                 <section>
                     <TitleRow level={3} title={`${filteredTotal} responses found`} subtitle="All responses to this question">
-                        <div slot="aside">
+                        <div slot="aside" class="flex gap-2 items-center flex-wrap">
                             {#if themeFilters.applied() || demoFilters.applied() || evidenceRich || searchValue}
                                 <Button size="sm" handleClick={() => {
                                     themeFilters.reset();
@@ -193,6 +197,19 @@
                                     Clear filters
                                 </Button>
                             {/if}
+
+                            <Button
+                                size="sm"
+                                highlightVariant="primary"
+                                highlighted={flaggedOnly}
+                                handleClick={() => setFlaggedOnly(!flaggedOnly)}
+                            >
+                                <MaterialIcon color={flaggedOnly ? "fill-white" : "fill-neutral-700"}>
+                                    <Flag2 />
+                                </MaterialIcon>
+
+                                Flagged only
+                            </Button>
                         </div>
                     </TitleRow>
 

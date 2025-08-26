@@ -2,16 +2,11 @@
     import clsx from "clsx";
 
     import { onMount, untrack } from "svelte";
-    import { fly, fade, slide } from "svelte/transition";
 
     import MaterialIcon from "../MaterialIcon.svelte";
     import Button from "../inputs/Button/Button.svelte";
-    import Panel from "../dashboard/Panel.svelte";
-    import Star from "../svg/material/Star.svelte";
-    import SearchCard from "../dashboard/SearchCard.svelte";
     import QuestionCard from "../dashboard/QuestionCard.svelte";
     import TabView from "../TabView.svelte";
-    import Title from "../Title.svelte";
     import QuestionSummary from "../dashboard/QuestionSummary.svelte";
     import ResponseAnalysis from "../dashboard/ResponseAnalysis.svelte";
     import Alert from "../Alert.svelte";
@@ -43,6 +38,7 @@
     let searchMode: SearchModeValues = $state(SearchModeValues.KEYWORD);
     let evidenceRich: boolean = $state(false);
     let sortAscending: boolean = $state(false);
+    let flaggedOnly: boolean = $state(false);
 
     const {
         loading: isConsultationLoading,
@@ -105,6 +101,7 @@
             themeFilters: themeFilters.filters,
             evidenceRich: evidenceRich,
             demoFilters: demoFilters.filters,
+            flaggedOnly: flaggedOnly,
         });
 
         // Skip the rest of the requests if they are already requested for this filter set
@@ -143,6 +140,9 @@
             }),
             ...(filters.evidenceRich && {
                 evidenceRich: filters.evidenceRich
+            }),
+            ...(filters.flaggedOnly && {
+                flaggedOnly: filters.flaggedOnly
             }),
             page: currPage,
             page_size: PAGE_SIZE.toString(),
@@ -195,7 +195,7 @@
 
     $effect(() => {
         // dependencies
-        searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters;
+        searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters, flaggedOnly;
 
         resetAnswers();
 
@@ -303,6 +303,8 @@
             evidenceRich={evidenceRich}
             setEvidenceRich={setEvidenceRich}
             isThemesLoading={$isThemeAggrLoading}
+            flaggedOnly={flaggedOnly}
+            setFlaggedOnly={(newValue) => flaggedOnly = newValue}
         />
     {/if}
 </TabView>
