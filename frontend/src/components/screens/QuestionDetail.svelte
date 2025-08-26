@@ -21,6 +21,8 @@
     import { SearchModeValues, TabNames } from "../../global/types.ts";
     import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
     import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
+    import Lan from "../svg/material/Lan.svelte";
+    import Finance from "../svg/material/Finance.svelte";
 
 
     let {
@@ -255,8 +257,8 @@
     value={activeTab}
     onValueChange={({ curr, next }) => activeTab = next}
     tabs={[
-        { id: TabNames.QuestionSummary, title: "Question Summary" },
-        { id: TabNames.ResponseAnalysis, title: "Response Analysis"},
+        { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
+        { id: TabNames.ResponseAnalysis, title: "Response Analysis", icon: Finance},
     ]}
 >
     {#if activeTab === TabNames.QuestionSummary}

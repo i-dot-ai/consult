@@ -6,6 +6,7 @@
     import { createTabs, melt } from '@melt-ui/svelte';
 
     import { writable } from 'svelte/store'
+    import MaterialIcon from "./MaterialIcon.svelte";
 
 
     export let tabs: Tab[] = []; 
@@ -38,6 +39,7 @@
     interface Tab {
         id: string;
         title: string;
+        icon?;
     }
 </script>
 
@@ -62,6 +64,10 @@
     >
         {#each tabs as tab}
             <button use:melt={$trigger(tab.id)} class={clsx([
+                "flex",
+                "items-center",
+                "justify-between",
+                "gap-1",
                 "m-1",
                 "py-1",
                 "px-2",
@@ -75,6 +81,12 @@
                 $writableValue === tab.id && "bg-white",
                 "hover:bg-neutral-100",
             ])}>
+                {#if tab.icon}
+                    <MaterialIcon color="fill-neutral-500">
+                        <svelte:component this={tab.icon} />
+                    </MaterialIcon>
+                {/if}
+
                 {tab.title}
             </button>
         {/each}
