@@ -34,6 +34,8 @@
         multiChoice: Object;
         consultationSlug?: string;
         sortAscending?: boolean;
+        searchValue: string;
+        evidenceRich: boolean;
         setActiveTab: (newTab: TabNames) => {};
     }
     let {
@@ -45,6 +47,8 @@
         themes = [],
         multiChoice = {},
         consultationSlug = "",
+        searchValue = "",
+        evidenceRich = false,
         sortAscending = true,
         setActiveTab = () => {},
     }: Props = $props();
@@ -109,7 +113,7 @@
                     ></iai-csv-download>
                 </TitleRow>
 
-                {#if demoFilters.applied() || themeFilters.applied()}
+                {#if demoFilters.applied() || themeFilters.applied() || evidenceRich || searchValue}
                     <div transition:fly={{x:300}} class="my-4">
                         <Alert>
                             <FilterAlt slot="icon" />

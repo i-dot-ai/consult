@@ -279,6 +279,8 @@
             demoOptions={$demoOptionsData?.demographic_options}
             multiChoice={formatMultiChoiceData($multiChoiceAggrData)}
             consultationSlug={$consultationData?.slug}
+            evidenceRich={evidenceRich}
+            searchValue={searchValue}
             sortAscending={sortAscending}
             setActiveTab={(newTab) => activeTab = newTab}
         />
