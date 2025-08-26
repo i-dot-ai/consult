@@ -894,6 +894,38 @@ class TestAPIViewPermissions:
         assert response.status_code == 400
         assert response.json() == {"themes": [f'Invalid pk "{fake_uuid}" - object does not exist.']}
 
+    def test_patch_response_flags(
+        self,
+        client,
+        consultation_user_token,
+        consultation_user,
+        dashboard_user,
+        free_text_annotation,
+    ):
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        assert free_text_annotation.flagged_by.count() == 0
+
+        response = client.patch(
+            url,
+            data=json.dumps({"flagged_by": [consultation_user.email, dashboard_user.email]}),
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 200
+        assert set(response.json()["flagged_by"]) == {consultation_user.email, dashboard_user.email}
+        free_text_annotation.refresh_from_db()
+        assert free_text_annotation.flagged_by.count() == 2
+
 
 @pytest.mark.django_db
 class TestAPIViewErrorHandling:

@@ -169,7 +169,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     sentiment = serializers.CharField(source="annotation.sentiment")
     human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
     flagged_by = serializers.SlugRelatedField(
-        source="annotation.flagged_by", slug_field="email", many=True, read_only=True
+        source="annotation.flagged_by", slug_field="email", many=True, queryset=User.objects.all()
     )
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
@@ -203,6 +203,10 @@ class ResponseSerializer(serializers.ModelSerializer):
 
             if "sentiment" in annotation:
                 instance.annotation.sentiment = annotation["sentiment"]
+
+            if "flagged_by" in annotation:
+                users = User.objects.filter(email__in=annotation["flagged_by"])
+                instance.annotation.flagged_by.set(users)
 
             instance.annotation.save()
 
