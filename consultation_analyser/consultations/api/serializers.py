@@ -157,6 +157,10 @@ class RelatedThemeSerializer(serializers.PrimaryKeyRelatedField):
         return ThemeSerializer().to_representation(value)
 
 
+class IsFlaggedSerializer(serializers.Serializer):
+    is_flagged = serializers.BooleanField()
+
+
 class ResponseSerializer(serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
     free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
@@ -168,9 +172,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
     sentiment = serializers.CharField(source="annotation.sentiment")
     human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
-    flagged_by = serializers.SlugRelatedField(
-        source="annotation.flagged_by", slug_field="email", many=True, queryset=User.objects.all()
-    )
+    is_flagged = serializers.BooleanField(read_only=True)
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
@@ -199,16 +201,13 @@ class ResponseSerializer(serializers.ModelSerializer):
                         is_original_ai_assignment=False,
                         assigned_by=self.context["request"].user,
                     )
-                instance.annotation.refresh_from_db()
 
             if "sentiment" in annotation:
                 instance.annotation.sentiment = annotation["sentiment"]
 
-            if "flagged_by" in annotation:
-                users = User.objects.filter(email__in=annotation["flagged_by"])
-                instance.annotation.flagged_by.set(users)
-
             instance.annotation.save()
+
+        instance.annotation.refresh_from_db()
 
         return instance
 
@@ -224,5 +223,5 @@ class ResponseSerializer(serializers.ModelSerializer):
             "evidenceRich",
             "sentiment",
             "human_reviewed",
-            "flagged_by",
+            "is_flagged",
         ]

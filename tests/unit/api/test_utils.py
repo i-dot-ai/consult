@@ -405,6 +405,5 @@ class TestBuildRespondentDataFast:
             "evidenceRich",
             "sentiment",
             "human_reviewed",
-            "flagged_by",
         }
         assert set(serializer.data.keys()) == expected_keys

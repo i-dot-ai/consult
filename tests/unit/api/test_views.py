@@ -600,7 +600,7 @@ class TestFilteredResponsesAPIView:
 
         assert response.status_code == 200
         data = response.json()
-        assert set(data["flagged_by"]) == {consultation_user.email, dashboard_user.email}
+        assert data["is_flagged"] is True
 
 
 @pytest.mark.django_db
@@ -894,16 +894,19 @@ class TestAPIViewPermissions:
         assert response.status_code == 400
         assert response.json() == {"themes": [f'Invalid pk "{fake_uuid}" - object does not exist.']}
 
+    @pytest.mark.parametrize("is_flagged", [True, False])
+    @pytest.mark.parametrize("already_flagged", [True, False])
     def test_patch_response_flags(
         self,
         client,
         consultation_user_token,
         consultation_user,
-        dashboard_user,
         free_text_annotation,
+        is_flagged,
+        already_flagged,
     ):
         url = reverse(
-            "response-detail",
+            "response-update-flag",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
                 "question_pk": free_text_annotation.response.question.id,
@@ -911,20 +914,28 @@ class TestAPIViewPermissions:
             },
         )
 
-        assert free_text_annotation.flagged_by.count() == 0
+        if already_flagged:
+            free_text_annotation.flagged_by.add(consultation_user)
+
+        assert (
+            free_text_annotation.flagged_by.filter(pk=consultation_user.pk).exists()
+            == already_flagged
+        )
 
         response = client.patch(
             url,
-            data=json.dumps({"flagged_by": [consultation_user.email, dashboard_user.email]}),
+            data=json.dumps({"is_flagged": is_flagged}),
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {consultation_user_token}",
             },
         )
-        assert response.status_code == 200
-        assert set(response.json()["flagged_by"]) == {consultation_user.email, dashboard_user.email}
+        assert response.status_code == 200, response.json()
+        assert response.json()["is_flagged"] == is_flagged
         free_text_annotation.refresh_from_db()
-        assert free_text_annotation.flagged_by.count() == 2
+        assert (
+            free_text_annotation.flagged_by.filter(pk=consultation_user.pk).exists() == is_flagged
+        )
 
 
 @pytest.mark.django_db
