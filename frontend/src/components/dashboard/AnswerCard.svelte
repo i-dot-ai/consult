@@ -59,7 +59,7 @@
                     {:else}
                         {#each demoData as demoDataItem}
                             <Tag>
-                                <span class="text-xs">{demoDataItem}</span>
+                                <span class="text-xs">{demoDataItem.replaceAll("'", "")}</span>
                             </Tag>
                         {/each}
                     {/if}
