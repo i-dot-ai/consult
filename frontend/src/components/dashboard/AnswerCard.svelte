@@ -64,7 +64,7 @@
                         {/each}
                     {/if}
 
-                    {#if evidenceRich}
+                    {#if evidenceRich && !skeleton}
                         <Tag variant="warning">
                             <MaterialIcon size="1rem" color="fill-yellow-700">
                                 <Diamond />
@@ -79,7 +79,11 @@
             <small class={clsx([
                 skeleton && "bg-neutral-100 text-neutral-100 select-none blink"
             ])}>
-                ID: {id || "Not Available"}
+                {#if skeleton}
+                    SKELETON
+                {:else}
+                    ID: {id || "Not Available"}
+                {/if}
             </small>
         </header>
 
@@ -98,7 +102,7 @@
             </p>
         {/if}
 
-        {#if multiAnswers.length > 0}
+        {#if multiAnswers.length > 0 && !skeleton}
             <ul class={clsx([
                 "flex",
                 "gap-1",
@@ -111,7 +115,7 @@
             </ul>
         {/if}
 
-        {#if themes.length > 0}
+        {#if themes.length > 0 && !skeleton}
             <footer class={clsx([
                 "flex",
                 "items-center",
