@@ -187,13 +187,13 @@ class ResponseSerializer(serializers.ModelSerializer):
 
             if "themes" in annotation:
                 ResponseAnnotationTheme.objects.filter(
-                    response_annotation=instance.annotation
+                    response_annotation=instance.annotation,
+                    assigned_by=self.context["request"].user,
                 ).delete()
                 for theme in annotation["themes"]:
                     ResponseAnnotationTheme.objects.create(
                         response_annotation=instance.annotation,
                         theme=theme,
-                        is_original_ai_assignment=False,
                         assigned_by=self.context["request"].user,
                     )
                 instance.annotation.refresh_from_db()

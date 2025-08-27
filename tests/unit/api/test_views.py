@@ -528,7 +528,13 @@ class TestFilteredResponsesAPIView:
         assert response.status_code == 400
 
     def test_get_filtered_responses_with_respondent_filters(
-        self, client, consultation_user, free_text_question, consultation_user_token, respondent_1, respondent_2
+        self,
+        client,
+        consultation_user,
+        free_text_question,
+        consultation_user_token,
+        respondent_1,
+        respondent_2,
     ):
         """Test API endpoint with theme filtering using AND logic"""
         # Create responses with different theme combinations
