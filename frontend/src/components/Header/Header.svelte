@@ -31,6 +31,8 @@
     "mb-0",
     "bg-black",
     "text-white",
+    "px-4",
+    "md:px-24",
 ])}>
     <div class={clsx([
         "relative",
@@ -53,7 +55,7 @@
                     "before:bg-primary",
                     "before:h-full",
                     "before:ml-6",
-                    "before:-skew-x-30",
+                    "before:-skew-x-[30deg]",
                     "before:w-32",
                 ])}>
                     <a href="/" class={clsx([
