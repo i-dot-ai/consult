@@ -809,9 +809,9 @@ class TestAPIViewPermissions:
             },
         )
         assert response.status_code == 200, response.json()
-        assert [x["key"] for x in response.json()["themes"]] == [
-            "AI assigned theme A",
-            "Human assigned theme C",
+        assert [(x["assigned_by"], x["key"]) for x in response.json()["themes"]] == [
+            ("AI", "AI assigned theme A"),
+            (consultation_user.email, "Human assigned theme C"),
         ]
 
         # check that there are two versions of the ResponseAnnotation
