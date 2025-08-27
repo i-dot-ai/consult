@@ -1,5 +1,5 @@
 resource "aws_cloudwatch_event_rule" "batch_job_consultation_import" {
-  name        = "${local.name}-batch-consultation-import"
+  name        = "${local.name}-import"
   description = "Trigger consultation import when batch job succeeds"
 
   event_pattern = jsonencode({
@@ -48,6 +48,7 @@ resource "aws_iam_role_policy" "eventbridge_policy" {
     ]
   })
 }
+
 
 resource "aws_cloudwatch_event_target" "slack_lambda_target" {
   rule      = aws_cloudwatch_event_rule.batch_job_state_change.name
