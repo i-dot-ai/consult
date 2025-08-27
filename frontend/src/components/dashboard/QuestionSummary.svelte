@@ -14,7 +14,7 @@
     import ThemesTable from "./ThemesTable.svelte";
     import ProgressCards from "../ProgressCards.svelte";
     import FiltersSidebar from "./FiltersSidebar.svelte";
-    import Tag from "../Tag.svelte";
+    import Tag from "../Tag/Tag.svelte";
     import Alert from "../Alert.svelte";
     import FilterAlt from "../svg/material/FilterAlt.svelte";
     import List from "../svg/material/List.svelte";

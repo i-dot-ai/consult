@@ -1,7 +1,7 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import { slide, fade, fly } from "svelte/transition";
+    import { fly } from "svelte/transition";
 
     import { createTabs, melt } from '@melt-ui/svelte';
 
