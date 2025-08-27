@@ -528,7 +528,13 @@ class TestFilteredResponsesAPIView:
         assert response.status_code == 400
 
     def test_get_filtered_responses_with_respondent_filters(
-        self, client, consultation_user, free_text_question, consultation_user_token, respondent_1, respondent_2
+        self,
+        client,
+        consultation_user,
+        free_text_question,
+        consultation_user_token,
+        respondent_1,
+        respondent_2,
     ):
         """Test API endpoint with theme filtering using AND logic"""
         # Create responses with different theme combinations
@@ -564,6 +570,34 @@ class TestFilteredResponsesAPIView:
         assert data["filtered_total"] == 1  # Only response1
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
+
+    @pytest.mark.parametrize("is_flagged", [True, False])
+    def test_get_responses_with_is_flagged(
+        self, client, consultation_user, consultation_user_token, free_text_annotation, is_flagged
+    ):
+        if is_flagged:
+            free_text_annotation.flagged_by.add(consultation_user)
+            free_text_annotation.save()
+
+        url = reverse(
+            "response-detail",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+        response = client.get(
+            url,
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+        assert data["is_flagged"] == is_flagged
 
 
 @pytest.mark.django_db
@@ -856,6 +890,42 @@ class TestAPIViewPermissions:
         )
         assert response.status_code == 400
         assert response.json() == {"themes": [f'Invalid pk "{fake_uuid}" - object does not exist.']}
+
+    @pytest.mark.parametrize("is_flagged", [True, False])
+    def test_patch_response_flags(
+        self,
+        client,
+        consultation_user_token,
+        consultation_user,
+        free_text_annotation,
+        is_flagged,
+    ):
+        url = reverse(
+            "response-toggle-flag",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+                "pk": free_text_annotation.response.id,
+            },
+        )
+
+        if is_flagged:
+            free_text_annotation.flagged_by.add(consultation_user)
+
+        assert free_text_annotation.flagged_by.contains(consultation_user) == is_flagged
+
+        response = client.patch(
+            url,
+            data="",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+        assert response.status_code == 200
+        free_text_annotation.refresh_from_db()
+        # check that the state has changed
+        assert free_text_annotation.flagged_by.contains(consultation_user) != is_flagged
 
 
 @pytest.mark.django_db

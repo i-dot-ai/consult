@@ -168,6 +168,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     evidenceRich = serializers.BooleanField(source="annotation.evidence_rich", default=False)
     sentiment = serializers.CharField(source="annotation.sentiment")
     human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
+    is_flagged = serializers.BooleanField(read_only=True)
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
@@ -196,13 +197,13 @@ class ResponseSerializer(serializers.ModelSerializer):
                         is_original_ai_assignment=False,
                         assigned_by=self.context["request"].user,
                     )
-                instance.annotation.refresh_from_db()
 
             if "sentiment" in annotation:
                 instance.annotation.sentiment = annotation["sentiment"]
 
             instance.annotation.save()
 
+        instance.refresh_from_db()
         return instance
 
     class Meta:
@@ -217,4 +218,5 @@ class ResponseSerializer(serializers.ModelSerializer):
             "evidenceRich",
             "sentiment",
             "human_reviewed",
+            "is_flagged",
         ]

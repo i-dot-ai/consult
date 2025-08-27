@@ -257,6 +257,14 @@ class ResponseViewSet(ModelViewSet):
         question_uuid = self.kwargs["question_pk"]
         queryset = models.Response.objects.filter(question_id=question_uuid)
 
+        queryset = queryset.annotate(
+            is_flagged=Exists(
+                models.ResponseAnnotation.objects.filter(
+                    response=OuterRef("pk"), flagged_by=self.request.user
+                )
+            )
+        )
+
         # Validate query parameters
         filter_serializer = FilterSerializer(data=self.request.query_params)
         filter_serializer.is_valid(raise_exception=True)
@@ -267,6 +275,17 @@ class ResponseViewSet(ModelViewSet):
         # Get filtered responses with themes (optimized with prefetching)
         filtered_qs = get_filtered_responses_with_themes(queryset, filters)
         return filtered_qs
+
+    @action(detail=True, methods=["patch"], url_path="toggle-flag")
+    def toggle_flag(self, request, consultation_pk=None, question_pk=None, pk=None):
+        """Toggle flag on/off for the user"""
+        response = self.get_object()
+        if response.annotation.flagged_by.contains(request.user):
+            response.annotation.flagged_by.remove(request.user)
+        else:
+            response.annotation.flagged_by.add(request.user)
+        response.annotation.save()
+        return Response()
 
 
 @api_view(["POST"])
