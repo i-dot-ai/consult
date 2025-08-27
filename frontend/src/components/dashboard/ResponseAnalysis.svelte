@@ -21,7 +21,7 @@
     import Tag from "../Tag.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
     import Close from "../svg/material/Close.svelte";
-    import Popover from "../inputs/Popover.svelte";
+    import Popover from "../inputs/Popover/Popover.svelte";
     import NotFoundMessage from "../NotFoundMessage.svelte";
     import Flag2 from "../svg/material/Flag2.svelte";
 
