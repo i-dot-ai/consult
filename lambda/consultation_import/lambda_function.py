@@ -11,22 +11,26 @@ def lambda_handler(event, context):
     
     # Extract batch job details
     detail = event.get('detail', {})
+    job_name = detail.get('jobName', 'unknown')
+    job_status = detail.get("status", "Unknown Status")
+
+    consultation_name = "Test Defra Consultation"
+    consultation_code = "defra" 
+    timestamp = "2025-08-21"
     
-    # Use real event data or test data
-    if detail:
-        job_name = detail.get('jobName', 'unknown')
-        job_status = detail.get('jobStatus', 'unknown')
-        parameters = detail.get('parameters', {})
-        consultation_name = parameters.get('CONSULTATION_NAME')
-        consultation_code = parameters.get('CONSULTATION_CODE') 
-        timestamp = parameters.get('TIMESTAMP')
-    else:
-        # Test data when no real event
-        job_name = "test-job"
-        job_status = "SUCCEEDED"
-        consultation_name = "Test Defra Consultation"
-        consultation_code = "defra" 
-        timestamp = "2025-08-21"
+    # # Use real event data or test data
+    # if detail:
+        
+    #     parameters = detail.get('parameters', {})
+    #     consultation_name = parameters.get('CONSULTATION_NAME')
+    #     consultation_code = parameters.get('CONSULTATION_CODE') 
+    #     timestamp = parameters.get('TIMESTAMP')
+    # else:
+    #     # Test data when no real event
+    #     job_name = "test-job"
+    #     job_status = "SUCCEEDED"
+        
+    
     
     print(f"Batch job '{job_name}' completed with status: {job_status}")
     
