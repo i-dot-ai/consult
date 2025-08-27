@@ -10,7 +10,7 @@
     export let tags: Array<string> = [];
     export let highlightText: string = "";
 
-    const applyTextHighlight = (text) => {
+    const applyTextHighlight = (text: string) => {
         if (!highlightText) {
             return text;
         }

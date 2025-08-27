@@ -1,7 +1,7 @@
 ---
 import "../styles/global.css";
-import Header from "../components/Header.svelte";
-import Footer from "../components/Footer.svelte";
+import Header from "../components/Header/Header.svelte";
+import Footer from "../components/Footer/Footer.svelte";
 
 const accessToken = Astro.cookies.get("access")?.value;
 ---
@@ -16,7 +16,7 @@ const accessToken = Astro.cookies.get("access")?.value;
 		<script is:inline src="/lit/index.js"></script>
 	</head>
 	<body>
-		<div class="flex flex-col h-full max-w-screen-2xl mx-auto">
+		<div class="flex flex-col h-full max-w-screen-3xl mx-auto">
 			<Header client:load isSignedIn={Boolean(accessToken)} />
 
 			<div class="grow">
