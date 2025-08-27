@@ -571,16 +571,13 @@ class TestFilteredResponsesAPIView:
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
 
-    def test_get_responses_with_stared(
-        self,
-        client,
-        consultation_user,
-        dashboard_user,
-        consultation_user_token,
-        free_text_annotation,
+    @pytest.mark.parametrize("is_flagged", [True, False])
+    def test_get_responses_with_is_flagged(
+        self, client, consultation_user, consultation_user_token, free_text_annotation, is_flagged
     ):
-        free_text_annotation.flagged_by.set([consultation_user, dashboard_user])
-        free_text_annotation.save()
+        if is_flagged:
+            free_text_annotation.flagged_by.add(consultation_user)
+            free_text_annotation.save()
 
         url = reverse(
             "response-detail",
@@ -600,7 +597,7 @@ class TestFilteredResponsesAPIView:
 
         assert response.status_code == 200
         data = response.json()
-        assert data["is_flagged"] is True
+        assert data["is_flagged"] == is_flagged
 
 
 @pytest.mark.django_db
