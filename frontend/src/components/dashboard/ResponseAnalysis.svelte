@@ -18,7 +18,7 @@
     import Alert from "../Alert.svelte";
     import FilterAlt from "../svg/material/FilterAlt.svelte";
     import SearchableSelect from "../inputs/SearchableSelect.svelte";
-    import Tag from "../Tag.svelte";
+    import Tag from "../Tag/Tag.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
     import Close from "../svg/material/Close.svelte";
     import Popover from "../inputs/Popover/Popover.svelte";
