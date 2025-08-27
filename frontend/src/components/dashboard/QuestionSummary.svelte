@@ -20,7 +20,7 @@
     import List from "../svg/material/List.svelte";
 
     import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
-    import NotFoundMessage from "../NotFoundMessage.svelte";
+    import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
 
     const MAX_CARDS_ALLOWED = 10;
 

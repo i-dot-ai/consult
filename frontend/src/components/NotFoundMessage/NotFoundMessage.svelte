@@ -1,6 +1,6 @@
 <script lang="ts">
-    import MaterialIcon from "./MaterialIcon.svelte";
-    import Search from "./svg/material/Search.svelte";
+    import MaterialIcon from "../MaterialIcon.svelte";
+    import Search from "../svg/material/Search.svelte";
 
     let {
         title = "",
