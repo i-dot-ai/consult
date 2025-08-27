@@ -895,7 +895,6 @@ class TestAPIViewPermissions:
         assert response.json() == {"themes": [f'Invalid pk "{fake_uuid}" - object does not exist.']}
 
     @pytest.mark.parametrize("is_flagged", [True, False])
-    @pytest.mark.parametrize("already_flagged", [True, False])
     def test_patch_response_flags(
         self,
         client,
@@ -903,10 +902,9 @@ class TestAPIViewPermissions:
         consultation_user,
         free_text_annotation,
         is_flagged,
-        already_flagged,
     ):
         url = reverse(
-            "response-update-flag",
+            "response-toggle-flag",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
                 "question_pk": free_text_annotation.response.question.id,
@@ -914,27 +912,27 @@ class TestAPIViewPermissions:
             },
         )
 
-        if already_flagged:
+        if is_flagged:
             free_text_annotation.flagged_by.add(consultation_user)
 
         assert (
             free_text_annotation.flagged_by.filter(pk=consultation_user.pk).exists()
-            == already_flagged
+            == is_flagged
         )
 
         response = client.patch(
             url,
-            data=json.dumps({"is_flagged": is_flagged}),
+            data="",
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {consultation_user_token}",
             },
         )
-        assert response.status_code == 200, response.json()
-        assert response.json()["is_flagged"] == is_flagged
+        assert response.status_code == 200
         free_text_annotation.refresh_from_db()
+        # check that the state has change
         assert (
-            free_text_annotation.flagged_by.filter(pk=consultation_user.pk).exists() == is_flagged
+            free_text_annotation.flagged_by.filter(pk=consultation_user.pk).exists() != is_flagged
         )
 
 

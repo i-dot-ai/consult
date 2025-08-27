@@ -157,10 +157,6 @@ class RelatedThemeSerializer(serializers.PrimaryKeyRelatedField):
         return ThemeSerializer().to_representation(value)
 
 
-class IsFlaggedSerializer(serializers.Serializer):
-    is_flagged = serializers.BooleanField()
-
-
 class ResponseSerializer(serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
     free_text_answer_text = serializers.CharField(source="free_text", read_only=True)

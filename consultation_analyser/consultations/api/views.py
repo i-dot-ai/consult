@@ -23,7 +23,6 @@ from .serializers import (
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     FilterSerializer,
-    IsFlaggedSerializer,
     MultiChoiceAnswerCount,
     QuestionSerializer,
     ResponseSerializer,
@@ -277,19 +276,16 @@ class ResponseViewSet(ModelViewSet):
         filtered_qs = get_filtered_responses_with_themes(queryset, filters)
         return filtered_qs
 
-    @action(detail=True, methods=["patch"], url_path="update-flag")
-    def update_flag(self, request, consultation_pk=None, question_pk=None, pk=None):
+    @action(detail=True, methods=["patch"], url_path="toggle-flag")
+    def toggle_flag(self, request, consultation_pk=None, question_pk=None, pk=None):
         """Toggle flag on/off for the user"""
         response = self.get_object()
-        serializer = IsFlaggedSerializer(data=request.data)
-        if not serializer.is_valid():
-            return JsonResponse(serializer.errors, status=400)
-        if serializer.validated_data["is_flagged"]:
-            response.annotation.flagged_by.add(request.user)
-        else:
+        if response.annotation.flagged_by.filter(pk=request.user.pk).exists():
             response.annotation.flagged_by.remove(request.user)
+        else:
+            response.annotation.flagged_by.add(request.user)
         response.annotation.save()
-        return JsonResponse(data=serializer.validated_data)
+        return Response()
 
 
 @api_view(["POST"])
