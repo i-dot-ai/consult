@@ -1,20 +1,32 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import { slide, fade } from "svelte/transition";
+    import { slide, fade, fly } from "svelte/transition";
 
     import { createTabs, melt } from '@melt-ui/svelte';
 
     import { writable } from 'svelte/store'
+    import MaterialIcon from "./MaterialIcon.svelte";
 
 
     export let tabs: Tab[] = []; 
     export let value: string = "";
     export let onValueChange: (val: {curr: string, next: string}) => {};
 
+    let prevTabIndex: number = 0;
+    let direction: "forward" | "backward" = "forward";
     const writableValue = writable(value);
+
     $: {
+        // Determine navigation direction for fly animation
+        const activeTabIndex = tabs.findIndex(tab => tab.id === value);
+        direction = activeTabIndex < prevTabIndex ? "backward" : "forward";
+
+        // Update writableValue for the parent
         writableValue.set(value);
+
+        // Keep track of prev tab index for fly animation
+        prevTabIndex = tabs.findIndex(tab => tab.id === value);
     }
 
     const {
@@ -27,8 +39,7 @@
     interface Tab {
         id: string;
         title: string;
-        component: any;
-        props: Object;
+        icon?;
     }
 </script>
 
@@ -53,6 +64,10 @@
     >
         {#each tabs as tab}
             <button use:melt={$trigger(tab.id)} class={clsx([
+                "flex",
+                "items-center",
+                "justify-between",
+                "gap-1",
                 "m-1",
                 "py-1",
                 "px-2",
@@ -66,16 +81,22 @@
                 $writableValue === tab.id && "bg-white",
                 "hover:bg-neutral-100",
             ])}>
+                {#if tab.icon}
+                    <MaterialIcon color="fill-neutral-500">
+                        <svelte:component this={tab.icon} />
+                    </MaterialIcon>
+                {/if}
+
                 {tab.title}
             </button>
         {/each}
     </div>
 
-    {#each tabs as tab (tab.id)}
-        {#if tab.id === $writableValue}
-            <div transition:slide use:melt={$content(tab.id)} class="grow bg-white">
-                <svelte:component this={tab.component} {...(tab.props || {})} />
-            </div>
-        {/if}
-    {/each}
+    <!-- Handle which tab to render in parent -->
+    {#key value}
+        <!-- positive x: from right | negative x: from left -->
+        <div in:fly={{ x: direction === "forward" ? 300 : -300 }}>
+            <slot />
+        </div>
+    {/key}
 </div>

@@ -3,9 +3,12 @@
 
     import { slide } from "svelte/transition";
 
-    import TextInput from "./inputs/TextInput.svelte";
-    import Link from "./Link.svelte";
-    import Button from "./inputs/Button.svelte";
+    import { Routes } from "../../global/routes";
+
+    import TextInput from "../inputs/TextInput.svelte";
+    import Link from "../Link.svelte";
+    import Button from "../inputs/Button/Button.svelte";
+
 
     const INVALID_EMAIL_MSG = "Please enter a valid email";
 
@@ -14,7 +17,7 @@
     let sending: boolean = false;
     let success: boolean = false;
 
-    const setEmail = (newValue) => {
+    const setEmail = (newValue: string) => {
         email = newValue;
 
         error = (email && !email.includes("@"))
@@ -34,7 +37,7 @@
         sending = true;
 
         try {
-            const response = await fetch(`/api/astro/sign-in`, {
+            const response = await fetch(Routes.ApiAstroSignIn, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
@@ -48,7 +51,7 @@
 
             success = true;
             email = "";
-        } catch(err) {
+        } catch(err: any) {
             error = err.message;
         } finally {
             sending = false;

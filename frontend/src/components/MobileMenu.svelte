@@ -1,17 +1,17 @@
 <script lang="ts">
+    // Using melt-ui dropdown menu
+    // Docs: https://www.melt-ui.com/docs/builders/dropdown-menu
+
+    import clsx from "clsx";
+
     import { slide } from "svelte/transition";
 
     import { createDropdownMenu, melt } from "@melt-ui/svelte";
 
-    import clsx from "clsx";
+    import type { NavItem } from "../global/types";
 
     import MaterialIcon from "./MaterialIcon.svelte";
     import Menu from "./svg/material/Menu.svelte";
-
-    interface NavItem {
-        text: string;
-        url: string;
-    }
 
     export let items: Array<NavItem> = [];
 
@@ -40,7 +40,7 @@
     ])}>
         <MaterialIcon
             size={"1.5rem"}
-            color={"white"}
+            color={"fill-white"}
         >
             <Menu />
         </MaterialIcon>

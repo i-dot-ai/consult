@@ -1,9 +1,9 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import AnnounceIcon from "./svg/AnnounceIcon.svelte";
-    import IaiIcon from "./svg/IaiIcon.svelte";
-    import OglIcon from "./svg/OglIcon.svelte";
+    import AnnounceIcon from "../svg/AnnounceIcon.svelte";
+    import IaiIcon from "../svg/IaiIcon.svelte";
+    import OglIcon from "../svg/OglIcon.svelte";
 </script>
 
 <footer class={clsx([

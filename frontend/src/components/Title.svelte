@@ -1,9 +1,11 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    export let level: 1 | 2 | 3 | 4 | 5 | 6 = 1;
+    import type { TitleLevels } from "../global/types";
+
+    export let level: TitleLevels = 1;
     export let text: string = "";
-    export let weight: "bold" | "light" = "bold";
+    export let weight: "light"  | "normal" | "bold" = "normal";
 
     const tagMap = {
         1: "h1",
@@ -18,8 +20,11 @@
 </script>
 
 <svelte:element this={tag} class={clsx([
-    weight === "bold" ? "font-bold" : "font-light",
-    level === 1 ? "text-2xl" : "text-xl",
+    weight === "bold" && "font-bold",
+    weight === "light" && "font-light",
+    level === 1 && "text-xl",
+    level === 2 && "text-lg",
+    level === 3 && "text-md",
     "text-neutral-700",
 ])} >
     {@html text}

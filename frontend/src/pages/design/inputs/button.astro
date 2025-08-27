@@ -1,0 +1,12 @@
+---
+import Story from '../../../layouts/Story.astro';
+import ButtonStory from "../../../components/inputs/Button/ButtonStory.svelte";
+
+const title = "inputs - Button";
+const description = `
+    Renders a button element.
+`;
+---
+<Story title={title} description={description} >
+    <ButtonStory client:load />
+</Story>
