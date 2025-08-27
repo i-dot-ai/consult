@@ -186,6 +186,14 @@ class ResponseAnnotationFactory(DjangoModelFactory):
                 themes_to_add.append(theme)
             self.add_original_ai_themes(themes_to_add)
 
+    @factory.post_generation
+    def flagged_by(self, create, extracted, **kwargs):
+        if not create or not extracted:
+            return
+
+        self.flagged_by.set(extracted)
+        self.save()
+
 
 class ReviewedResponseAnnotationFactory(ResponseAnnotationFactory):
     human_reviewed = True

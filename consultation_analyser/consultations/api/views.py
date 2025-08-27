@@ -247,6 +247,14 @@ class ResponseViewSet(ModelViewSet):
     def get_queryset(self):
         question_uuid = self.kwargs["question_pk"]
         queryset = models.Response.objects.filter(question_id=question_uuid)
+
+        queryset = queryset.annotate(
+            is_flagged=Exists(
+                models.ResponseAnnotation.objects.filter(
+                    response=OuterRef("pk"), flagged_by=self.request.user
+                )
+            )
+        )
         # Apply additional FilterSet filtering (including themeFilters)
         filterset = self.filterset_class(self.request.GET, queryset=queryset)
         return filterset.qs
@@ -255,7 +263,6 @@ class ResponseViewSet(ModelViewSet):
     def demographic_aggregations(self, request, question_pk=None, consultation_pk=None):
         """Get demographic aggregations for filtered responses"""
 
-        # Single query that joins responses -> respondents and gets demographics directly
         aggregations = (
             models.DemographicOption.objects.filter(
                 Exists(self.get_queryset().filter(respondent=OuterRef("respondent")))
@@ -263,6 +270,10 @@ class ResponseViewSet(ModelViewSet):
             .values("field_name", "field_value")
             .annotate(count=Count("respondent", distinct=True))
         )
+
+        result = defaultdict(dict)
+        for item in aggregations:
+            result[item["field_name"]][item["field_value"]] = item["count"]
 
         result = defaultdict(dict)
         for item in aggregations:
@@ -297,6 +308,17 @@ class ResponseViewSet(ModelViewSet):
         serializer.is_valid()
 
         return Response(serializer.data)
+
+    @action(detail=True, methods=["patch"], url_path="toggle-flag")
+    def toggle_flag(self, request, consultation_pk=None, question_pk=None, pk=None):
+        """Toggle flag on/off for the user"""
+        response = self.get_object()
+        if response.annotation.flagged_by.contains(request.user):
+            response.annotation.flagged_by.remove(request.user)
+        else:
+            response.annotation.flagged_by.add(request.user)
+        response.annotation.save()
+        return Response()
 
 
 @api_view(["POST"])
