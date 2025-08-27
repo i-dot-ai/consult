@@ -142,26 +142,35 @@ class MultiChoiceAnswerCount(serializers.Serializer):
     response_count = serializers.IntegerField()
 
 
-class RelatedThemeSerializer(serializers.PrimaryKeyRelatedField):
-    """this is a variation on the PrimaryKeyRelatedField where
-    representation is actually that of the ThemeSerializer
-    """
-
-    queryset = Theme.objects.all()
+class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField()
+    name = serializers.CharField(required=False, source="theme.name")
+    description = serializers.CharField(required=False, source="theme.description")
+    key = serializers.CharField(required=False, source="theme.key")
+    assigned_by = serializers.SerializerMethodField()
 
     def to_internal_value(self, data):
-        data = ThemeSerializer().to_internal_value(data)["id"]
-        return super().to_internal_value(data)
+        internal_value = super().to_internal_value(data)
+        internal_value = Theme.objects.get(pk=internal_value["id"])
+        return internal_value
 
-    def to_representation(self, value):
-        return ThemeSerializer().to_representation(value)
+    def get_assigned_by(self, obj):
+        if obj.assigned_by is None:
+            return "AI"
+        return obj.assigned_by.email
+
+    class Meta:
+        model = ResponseAnnotationTheme
+        fields = ["id", "assigned_by", "name", "description", "key"]
 
 
 class ResponseSerializer(serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
     free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
     demographic_data = serializers.SerializerMethodField(read_only=True)
-    themes = RelatedThemeSerializer(source="annotation.themes", many=True, default=[])
+    themes = ResponseAnnotationThemeSerializer(
+        source="annotation.responseannotationtheme_set", many=True
+    )
     multiple_choice_answer = serializers.SlugRelatedField(
         source="chosen_options", slug_field="text", many=True, read_only=True
     )
@@ -185,12 +194,12 @@ class ResponseSerializer(serializers.ModelSerializer):
             if "evidence_rich" in annotation:
                 instance.annotation.evidence_rich = annotation["evidence_rich"]
 
-            if "themes" in annotation:
+            if "responseannotationtheme_set" in annotation:
                 ResponseAnnotationTheme.objects.filter(
                     response_annotation=instance.annotation,
                     assigned_by=self.context["request"].user,
                 ).delete()
-                for theme in annotation["themes"]:
+                for theme in annotation["responseannotationtheme_set"]:
                     ResponseAnnotationTheme.objects.create(
                         response_annotation=instance.annotation,
                         theme=theme,
