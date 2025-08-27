@@ -190,3 +190,9 @@ tmp
 .build-cache
 *storybook.log
 *.zip
+
+lambda/build/
+lambda/**/*.zip
+lambda/**/celery/
+lambda/**/redis/
+lambda/**/__pycache__/
