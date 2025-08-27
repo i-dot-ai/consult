@@ -25,7 +25,7 @@
     export let horizontal: boolean = false;
 </script>
 
-<div transition:fade={{duration: 200}} >
+<div class="bg-white" transition:fade={{duration: 200}} >
     <ConditionalWrapper
         element={Link}
         condition={clickable && !skeleton}

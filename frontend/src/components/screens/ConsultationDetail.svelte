@@ -13,6 +13,7 @@
     import type { Question, Consultation } from "../../global/types.ts";
     import { getConsultationDetailUrl, getApiConsultationUrl } from "../../global/routes.ts";
     import { favStore } from "../../global/stores.ts";
+    import Panel from "../dashboard/Panel.svelte";
 
     export let consultationId: string = "";
 
@@ -84,35 +85,37 @@
         </TitleRow>
     </div>
 
-    {#if loading}
-        <p transition:slide>Loading questions...</p>
-    {:else if error}
-        <p transition:slide>{error}</p>
-    {:else}
-        <div transition:slide>
-            <TextInput
-                variant="search"
-                id="search-input"
-                label="Search"
-                placeholder="Search..."
-                hideLabel={true}
-                value={searchValue}
-                setValue={(value) => searchValue = value.trim()}
-            />
-
-            <div class="mb-4">
-                <QuestionList
-                    consultationId={consultation.id}
-                    questions={consultation.questions.filter(question => {
-                        return (
-                            `Q${question.number}: ${question.question_text}`
-                            .toLocaleLowerCase()
-                            .includes(searchValue.toLocaleLowerCase())
-                        )
-                    })}
-                    highlightText={searchValue}
+    <Panel bg={true} border={true}>
+        {#if loading}
+            <p transition:slide>Loading questions...</p>
+        {:else if error}
+            <p transition:slide>{error}</p>
+        {:else}
+            <div transition:slide>
+                <TextInput
+                    variant="search"
+                    id="search-input"
+                    label="Search"
+                    placeholder="Search..."
+                    hideLabel={true}
+                    value={searchValue}
+                    setValue={(value) => searchValue = value.trim()}
                 />
+
+                <div class="mb-4">
+                    <QuestionList
+                        consultationId={consultation.id}
+                        questions={consultation.questions.filter(question => {
+                            return (
+                                `Q${question.number}: ${question.question_text}`
+                                .toLocaleLowerCase()
+                                .includes(searchValue.toLocaleLowerCase())
+                            )
+                        })}
+                        highlightText={searchValue}
+                    />
+                </div>
             </div>
-        </div>
-    {/if}
+        {/if}
+    </Panel>
 </section>
