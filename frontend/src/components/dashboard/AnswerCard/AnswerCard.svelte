@@ -1,13 +1,13 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import Button from "../inputs/Button/Button.svelte";
-    import Panel from "./Panel.svelte";
-    import Tag from "../Tag/Tag.svelte";
-    import MaterialIcon from "../MaterialIcon.svelte";
-    import Diamond from "../svg/material/Diamond.svelte";
-    import { applyHighlight } from "../../global/utils";
-    import { themeFilters } from "../../global/state.svelte";
+    import Button from "../../inputs/Button/Button.svelte";
+    import Panel from "../Panel.svelte";
+    import Tag from "../../Tag/Tag.svelte";
+    import MaterialIcon from "../../MaterialIcon.svelte";
+    import Diamond from "../../svg/material/Diamond.svelte";
+    import { applyHighlight } from "../../../global/utils";
+    import { themeFilters } from "../../../global/state.svelte";
 
     interface Theme {
         id: string;
