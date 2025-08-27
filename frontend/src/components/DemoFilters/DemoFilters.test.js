@@ -1,0 +1,91 @@
+import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
+import userEvent from '@testing-library/user-event';
+import { render, cleanup, screen } from "@testing-library/svelte";
+
+import DemoFilters from "./DemoFilters.svelte";
+import { getPercentage } from "../../global/utils";
+import { demoFilters } from "../../global/state.svelte";
+
+
+let testData;
+
+describe("DemoFilters", () => {
+    beforeEach(() => {
+        testData = {
+            category: "country",
+            demoOptions: { "country": ["england", "scotland"] },
+            demoData: { "country": {"england": 10, "scotland": 20} },
+            totalCounts: { "country": 30 },
+        };
+
+        demoFilters.reset();
+    })
+
+    afterEach(() => {
+        cleanup();
+        demoFilters.reset();
+    })
+
+    it("should render data", () => {
+        const { getByText } = render(DemoFilters, {
+            category: testData.category,
+            demoOptions: testData.demoOptions,
+            demoData: testData.demoData,
+            totalCounts: testData.totalCounts,
+        });
+
+        expect(getByText(testData.category));
+        Object.keys(testData.demoOptions).forEach(option => {
+            expect(getByText(option));
+
+            Object.keys(testData.demoData[option]).forEach(rowKey => {
+                const rowValue = testData.demoData[option][rowKey];
+                expect(getByText(rowValue));
+                expect(getByText(getPercentage(rowValue, testData.totalCounts[option]) + "%"));
+            });
+        })
+    })
+
+    it("should not render data if skeleton", () => {
+        const { queryByText } = render(DemoFilters, {
+            category: testData.category,
+            demoOptions: testData.demoOptions,
+            demoData: testData.demoData,
+            totalCounts: testData.totalCounts,
+            skeleton: true,
+        });
+
+        expect(queryByText(testData.category)).toBeNull();
+        Object.keys(testData.demoOptions).forEach(option => {
+            expect(queryByText(option)).toBeNull();
+
+            Object.keys(testData.demoData[option]).forEach(rowKey => {
+                const rowValue = testData.demoData[option][rowKey];
+                expect(queryByText(rowValue)).toBeNull();
+                expect(queryByText(getPercentage(rowValue, testData.totalCounts[option]) + "%")).toBeNull();
+            });
+        })
+    })
+
+    it("should update filters state when clicked", async () => {
+        vi.mock("svelte/transition");
+
+        const user = userEvent.setup();
+        expect(demoFilters.filters).toEqual({});
+
+        render(DemoFilters, {
+            category: testData.category,
+            demoOptions: testData.demoOptions,
+            demoData: testData.demoData,
+            totalCounts: testData.totalCounts,
+        });
+
+        const buttons = await screen.findAllByRole("button");
+
+        for (const button of buttons) {
+            await user.click(button);
+        }
+
+        expect(demoFilters.filters).toEqual(testData.demoOptions);
+    })
+})
