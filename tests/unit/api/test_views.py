@@ -867,7 +867,7 @@ class TestAPIViewPermissions:
             },
         )
         assert response.status_code == 400
-        assert response.json() == {"themes": [f'Invalid pk "{fake_uuid}" - object does not exist.']}
+        assert response.json() == {"themes": [[f'Invalid pk "{fake_uuid}" - object does not exist.']]}
 
 
 @pytest.mark.django_db

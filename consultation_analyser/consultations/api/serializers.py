@@ -2,6 +2,7 @@ from typing import Any
 
 from django.utils import timezone
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
@@ -150,9 +151,12 @@ class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
     assigned_by = serializers.SerializerMethodField()
 
     def to_internal_value(self, data):
-        internal_value = super().to_internal_value(data)
-        internal_value = Theme.objects.get(pk=internal_value["id"])
-        return internal_value
+        pk = super().to_internal_value(data)["id"]
+        try:
+            return Theme.objects.get(pk=pk)
+        except Theme.DoesNotExist:
+            detail = f"Invalid pk \"{pk}\" - object does not exist."
+            raise ValidationError(detail=detail, code="invalid")
 
     def get_assigned_by(self, obj):
         if obj.assigned_by is None:
