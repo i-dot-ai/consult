@@ -142,7 +142,7 @@
                 evidenceRich: filters.evidenceRich
             }),
             ...(filters.flaggedOnly && {
-                flaggedOnly: filters.flaggedOnly
+                is_flagged: filters.flaggedOnly
             }),
             page: currPage,
             page_size: PAGE_SIZE.toString(),
