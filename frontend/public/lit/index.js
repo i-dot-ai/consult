@@ -98,7 +98,7 @@ class IaiLitBase extends i$1 {
             FAVOURITE_QUESTIONS: "favouriteQuestions",
         };
     }
-
+    
     createRenderRoot() {
         return this;
     }
@@ -238,7 +238,7 @@ class IaiExpandingText extends IaiLitBase {
             iai-expanding-text .iai-text-content:not(.iai-text-truncated).clickable::before {
                 transform: rotate(90deg);
             }
-
+                
             iai-expanding-text .iai-text-content.iai-text-truncated {
                 display: -webkit-box;
                 display: box;
@@ -281,7 +281,7 @@ class IaiExpandingText extends IaiLitBase {
             this.querySelector(".iai-text-content"),
             this.lines
         );
-    }
+    } 
 
     firstUpdated() {
         this.applyStaticStyles("iai-expanding-text", IaiExpandingText.styles);
@@ -358,7 +358,7 @@ class IaiTextWithFallback extends IaiLitBase {
         super();
 
         this.applyStaticStyles("iai-text-with-fallback", IaiTextWithFallback.styles);
-
+        
         // By default, render fallback if text is falsy
         this.fallbackCondition = (text) => !text;
     }
@@ -406,7 +406,7 @@ class IaiIcon extends IaiLitBase {
         this.fill = 0;
         this.opsz = 48;
         this.wght = 300;
-
+        
         this.applyStaticStyles("iai-icon", IaiIcon.styles);
     }
 
@@ -537,7 +537,7 @@ class IaiCsvDownload extends IaiLitBase {
         }
 
         const localData = Array.isArray(data) ? data : [data];
-
+        
         const keys = Object.keys(data[0]);
         const rows = [
             keys.join(","),
@@ -626,7 +626,7 @@ class IaiIconButton extends IaiLitBase {
         // Prop defaults
         this.title = "";
         this.handleClick = () => {};
-
+        
         this.applyStaticStyles("iai-icon-button", IaiIconButton.styles);
     }
 
@@ -667,7 +667,7 @@ class IaiPageTitle extends IaiLitBase {
         // Prop defaults
         this.title = "";
         this.subtitle = "";
-
+        
         this.applyStaticStyles("iai-page-title", IaiPageTitle.styles);
     }
 
@@ -708,7 +708,7 @@ class IaiProgressBar extends IaiLitBase {
                 background: var(--iai-colour-pink);
             }
             iai-progress-bar .container .label {
-                display: block;
+                display: block;    
                 position: absolute;
                 right: 0.5em;
                 text-align: right;
@@ -730,7 +730,7 @@ class IaiProgressBar extends IaiLitBase {
         // Prop defaults
         this.value = 0;
         this.label = "";
-
+        
         this.applyStaticStyles("iai-progress-bar", IaiProgressBar.styles);
     }
 
@@ -803,7 +803,7 @@ class ProgressBar extends IaiLitBase {
 
         this.value = 0;
         this.variant = "primary";
-
+        
         this.applyStaticStyles("iai-silver-progress-bar", ProgressBar.styles);
     }
 
@@ -831,11 +831,11 @@ class IconTile extends IaiLitBase {
         IaiLitBase.styles,
         i$4`
             iai-silver-icon-tile {
-                display: block;
+                display: block;    
                 width: max-content;
             }
             iai-silver-icon-tile .icon-tile-container {
-                display: flex;
+                display: flex;    
                 justify-content: center;
                 align-items: center;
                 background: salmon;
@@ -1054,7 +1054,7 @@ class ProgressCard extends IaiLitBase {
                 font-weight: normal;
                 font-size: 0.8em;
             }
-
+            
             iai-progress-card iai-silver-progress-bar .container,
             iai-progress-card iai-silver-progress-bar .container .bar {
                 height: 0.6em;
@@ -1069,7 +1069,7 @@ class ProgressCard extends IaiLitBase {
         // Prop defaults
         this.data = {};
         this._totalCount = 0;
-
+        
         this.applyStaticStyles("iai-progress-card", ProgressCard.styles);
     }
 
@@ -1144,7 +1144,7 @@ class Panel extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-
+        
         // Prop defaults
         this.borderColor = "";
 
@@ -1186,14 +1186,14 @@ class ProgressCards extends IaiLitBase {
 
     static styles = [
         IaiLitBase.styles,
-        i$4`
+        i$4` 
             iai-progress-cards .cards {
                 display: flex;
                 flex-wrap: wrap;
                 gap: 1em;
                 max-width: 100%;
                 overflow: auto;
-            }
+            }    
             iai-progress-cards iai-progress-card {
                 flex-grow: 1;
                 max-width: 100%;
@@ -1220,7 +1220,7 @@ class ProgressCards extends IaiLitBase {
 
         this.demoFiltersApplied = () => {};
         this.themeFiltersApplied = () => {};
-
+        
         this.applyStaticStyles("iai-progress-cards", ProgressCards.styles);
     }
 
@@ -1302,7 +1302,7 @@ class IaiAnimatedNumber extends IaiLitBase {
         this.number = 0;
         this.duration = 1000;
         this._displayNumber = 0;
-
+        
         this.applyStaticStyles("iai-animated-number", IaiAnimatedNumber.styles);
     }
 
@@ -1380,7 +1380,7 @@ class IaiLoadingIndicator extends IaiLitBase {
     constructor() {
         super();
         this.contentId = this.generateId();
-
+        
         this.applyStaticStyles("iai-loading-indicator", IaiLoadingIndicator.styles);
     }
 
