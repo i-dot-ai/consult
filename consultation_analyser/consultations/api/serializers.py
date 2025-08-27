@@ -203,8 +203,6 @@ class ResponseSerializer(serializers.ModelSerializer):
 
             instance.annotation.save()
 
-        instance.annotation.refresh_from_db()
-
         return instance
 
     class Meta:

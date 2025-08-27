@@ -280,7 +280,7 @@ class ResponseViewSet(ModelViewSet):
     def toggle_flag(self, request, consultation_pk=None, question_pk=None, pk=None):
         """Toggle flag on/off for the user"""
         response = self.get_object()
-        if response.annotation.flagged_by.filter(pk=request.user.pk).exists():
+        if response.annotation.flagged_by.contains(request.user):
             response.annotation.flagged_by.remove(request.user)
         else:
             response.annotation.flagged_by.add(request.user)

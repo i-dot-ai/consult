@@ -915,10 +915,7 @@ class TestAPIViewPermissions:
         if is_flagged:
             free_text_annotation.flagged_by.add(consultation_user)
 
-        assert (
-            free_text_annotation.flagged_by.filter(pk=consultation_user.pk).exists()
-            == is_flagged
-        )
+        assert free_text_annotation.flagged_by.contains(consultation_user) == is_flagged
 
         response = client.patch(
             url,
@@ -930,10 +927,8 @@ class TestAPIViewPermissions:
         )
         assert response.status_code == 200
         free_text_annotation.refresh_from_db()
-        # check that the state has change
-        assert (
-            free_text_annotation.flagged_by.filter(pk=consultation_user.pk).exists() != is_flagged
-        )
+        # check that the state has changed
+        assert free_text_annotation.flagged_by.contains(consultation_user) != is_flagged
 
 
 @pytest.mark.django_db
