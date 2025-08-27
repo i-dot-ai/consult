@@ -3,7 +3,7 @@
 
     import Button from "../inputs/Button/Button.svelte";
     import Panel from "./Panel.svelte";
-    import Tag from "../Tag.svelte";
+    import Tag from "../Tag/Tag.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
     import Diamond from "../svg/material/Diamond.svelte";
     import { applyHighlight } from "../../global/utils";
