@@ -79,7 +79,6 @@ class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
     readonly_fields = [
         "response_annotation",
         "theme",
-        "is_original_ai_assignment",
         "assigned_by",
     ]
 
