@@ -14,14 +14,27 @@
         name: string;
     }
 
-    export let id: string = "";
-    export let text: string = "";
-    export let demoData: string[] = [];
-    export let evidenceRich: boolean = false;
-    export let multiAnswers: string[] = [];
-    export let themes: Theme[] = [];
-    export let skeleton: boolean = false;
-    export let highlightText: string = "";
+    interface Props {
+        id: string;
+        text: string;
+        demoData: string[];
+        evidenceRich: boolean;
+        multiAnswers: string[];
+        themes: Theme[];
+        skeleton: boolean;
+        highlightText: string;
+    }
+
+    let {
+        id = "",
+        text = "",
+        demoData = [],
+        evidenceRich = false,
+        multiAnswers = [],
+        themes = [],
+        skeleton = false,
+        highlightText = "",
+    }: Props = $props();
 </script>
 
 <Panel>

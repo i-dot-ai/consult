@@ -1,7 +1,7 @@
 function createThemeFiltersState() {
     const MAX_THEME_FILTERS = Infinity;
 
-    let themeFilters = $state([]);
+    let themeFilters: string[] = $state([]);
 
     return {
         get filters() { return themeFilters },
