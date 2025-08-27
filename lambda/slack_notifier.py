@@ -3,9 +3,8 @@ import logging
 import os
 
 import urllib3
-from django.conf import settings
 
-logger = settings.LOGGER
+logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 SLACK_WEBHOOK_URL = os.environ.get("SLACK_WEBHOOK_URL")
@@ -21,12 +20,10 @@ def create_slack_message(job_name, status, job_id, job_type, subdir):
     elif job_type == "SIGNOFF":
         job_type_name = "Sign-off"
     elif not job_type or job_type.strip() == "":
-        logger.error("Job type is blank or null for job_id: {job_id}", job_id=job_id)
+        logger.error(f"Job type is blank or null for job_id: {job_id}")
         raise ValueError("Job type cannot be blank or null")
     else:
-        logger.error(
-            "Unknown job type: {job_type} for job_id: {job_id}", job_type=job_type, job_id=job_id
-        )
+        logger.error(f"Unknown job type: {job_type} for job_id: {job_id}")
         raise ValueError(f"Unknown job type: {job_type}")
 
     status_title_map = {
@@ -91,7 +88,7 @@ def send_to_slack(message):
 
 
 def lambda_handler(event, context):
-    logger.info("Received event: %s", json.dumps(event))
+    logger.info(f"Received event: {json.dumps(event)}")
 
     try:
         detail = event.get("detail", {})
@@ -99,7 +96,7 @@ def lambda_handler(event, context):
 
         # Only proceed for SUCCEEDED or RUNNING
         if job_status not in ["SUCCEEDED", "RUNNING", "FAILED"]:
-            logger.info("Ignoring job with status {job_status}", job_status=job_status)
+            logger.info(f"Ignoring job with status {job_status}")
             return {"statusCode": 200, "body": json.dumps(f"Ignored job with status {job_status}")}
 
         job_name = detail.get("jobName", "Unknown Job")
@@ -112,7 +109,7 @@ def lambda_handler(event, context):
         send_to_slack(slack_message)
 
     except Exception as e:
-        logger.error("Error processing event: error", error=e)
+        logger.error(f"Error processing event: {e}")
 
 
 def extract_job_details(detail, job_id):
@@ -129,11 +126,7 @@ def extract_job_details(detail, job_id):
 
         if command:  # Check if command exists and is not empty
             subdir, job_type = parse_command_args(command)
-            logger.info(
-                "Extracted job details: subdir={subdir}, job_type={job_type}",
-                subdir=subdir,
-                job_type=job_type,
-            )
+            logger.info(f"Extracted job details: subdir={subdir}, job_type={job_type}")
         else:
             logger.warning(f"No command found in container details for job {job_id}")
 
@@ -152,7 +145,7 @@ def parse_command_args(command):
     job_type = "unknown"
 
     try:
-        logger.debug("Parsing command: {command}", command=command)
+        logger.debug(f"Parsing command: {command}")
 
         # Find --subdir value
         if "--subdir" in command:
@@ -166,11 +159,7 @@ def parse_command_args(command):
             if idx + 1 < len(command):
                 job_type = command[idx + 1]
 
-        logger.info(
-            "Parsed from command: subdir={subdir}, job_type={job_type}",
-            subdir=subdir,
-            job_type=job_type,
-        )
+        logger.info(f"Parsed from command: subdir={subdir}, job_type={job_type}")
 
     except Exception as e:
         logger.warning(f"Error parsing command args: {e}")
