@@ -3,12 +3,20 @@
     import { slide } from "svelte/transition";
 
     import { getPercentage } from "../../global/utils.ts";
-    import Panel from "./Panel.svelte";
+    import Panel from "../dashboard/Panel.svelte";
     import Button from "../inputs/Button/Button.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
     import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
 
     import { demoFilters } from "../../global/state.svelte.ts";
+
+    interface Props {
+        category: string;
+        demoOptions: Object;
+        demoData: Object;
+        totalCounts: Object;
+        skeleton: boolean;
+    }
 
     let {
         category = "",
@@ -16,7 +24,7 @@
         demoData = {},
         totalCounts = {},
         skeleton = false,
-    } = $props();
+    }: Props = $props();
 
     let expanded = $state(true);
 </script>

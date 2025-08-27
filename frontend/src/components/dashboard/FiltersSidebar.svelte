@@ -3,7 +3,7 @@
 
     import TitleRow from "./TitleRow.svelte";
     import Panel from "./Panel.svelte";
-    import DemoFilter from "./DemoFilter.svelte";
+    import DemoFilter from "../DemoFilters/DemoFilters.svelte";
     import FilterAlt from "../svg/material/FilterAlt.svelte";
     import Switch from "../inputs/Switch.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
