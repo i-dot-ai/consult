@@ -9,6 +9,7 @@ module "elasticache" {
     {
       "worker" = module.worker.ecs_sg_id
       "ecs"    = module.backend.ecs_sg_id
+      "lambda" = aws_security_group.lambda_sg.id 
     }
   )
 }
