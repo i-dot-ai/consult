@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
-import userEvent from '@testing-library/user-event'
+import userEvent from '@testing-library/user-event';
 import { render, cleanup, screen } from "@testing-library/svelte";
 
 import Button from "./Button.svelte";
