@@ -5,7 +5,7 @@
     import Button from "../inputs/Button/Button.svelte";
     import TitleRow from "./TitleRow.svelte";
     import Panel from "./Panel.svelte";
-    import AnswerCard from "./AnswerCard.svelte";
+    import AnswerCard from "./AnswerCard/AnswerCard.svelte";
     import Finance from "../svg/material/Finance.svelte";
     import FiltersSidebar from "./FiltersSidebar.svelte";
     import Select from "../inputs/Select.svelte";
