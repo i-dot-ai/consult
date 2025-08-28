@@ -1,6 +1,7 @@
 import json
 import logging
 import boto3
+import datetime
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -60,8 +61,11 @@ def process_message(message_data):
     job_definition = message_data.get("jobDefinition")
     user_id = message_data.get("userId")
     consultation_name = message_data.get("consultationName")
+    consultation_code = message_data.get("consultationCode")
     container_overrides = message_data.get("containerOverrides", {})
     job_parameters = message_data.get("parameters", {})
+
+    date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d") 
 
     if not job_queue:
         raise ValueError("Missing required field: jobQueue")
@@ -81,7 +85,12 @@ def process_message(message_data):
     
     if consultation_name:
         all_parameters["consultation_name"] = str(consultation_name)
-    
+
+    if consultation_code:
+        all_parameters["consultation_code"] = str(consultation_code)
+
+    all_parameters["mappingDate"] = str(date)
+
     if job_parameters:
         all_parameters.update(job_parameters)
     

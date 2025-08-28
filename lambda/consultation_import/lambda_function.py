@@ -14,22 +14,12 @@ def lambda_handler(event, context):
     job_name = detail.get('jobName', 'unknown')
     job_status = detail.get("status", "Unknown Status")
 
-    consultation_name = "Test Defra Consultation"
-    consultation_code = "defra" 
-    timestamp = "2025-08-21"
-    
-    # # Use real event data or test data
-    # if detail:
-        
-    #     parameters = detail.get('parameters', {})
-    #     consultation_name = parameters.get('CONSULTATION_NAME')
-    #     consultation_code = parameters.get('CONSULTATION_CODE') 
-    #     timestamp = parameters.get('TIMESTAMP')
-    # else:
-    #     # Test data when no real event
-    #     job_name = "test-job"
-    #     job_status = "SUCCEEDED"
-        
+    parameters = detail.get('parameters', {})
+    consultation_name = parameters.get('consultation_name', 'unknown')
+    mapping_date = parameters.get('mappingDate', 'unknown')
+    user_id = parameters.get('userId', 'unknown')
+    consultation_code = parameters.get('consultation_code', 'unknown')
+
     
     
     print(f"Batch job '{job_name}' completed with status: {job_status}")
@@ -40,8 +30,8 @@ def lambda_handler(event, context):
         return {'statusCode': 200, 'body': 'Job not successful, skipping'}
     
     # Validate required parameters
-    if not all([consultation_name, consultation_code, timestamp]):
-        error_msg = f"Missing consultation parameters: name={consultation_name}, code={consultation_code}, timestamp={timestamp}"
+    if not all([consultation_name, consultation_code, mapping_date, user_id]):
+        error_msg = f"Missing consultation parameters: name={consultation_name}, consultation_code={consultation_code}, mapping_date={mapping_date}, user_id={user_id}"
         print(error_msg)
         return {'statusCode': 400, 'body': error_msg}
     
@@ -88,8 +78,8 @@ def lambda_handler(event, context):
             'consultation_analyser.support_console.views.consultations.import_consultation_job',  # Function import path
             consultation_name,      # First parameter
             consultation_code,      # Second parameter  
-            timestamp,              # Third parameter
-            133,                   # Fourth parameter (current_user_id)
+            mapping_date,              # Third parameter
+            user_id,                   # Fourth parameter (current_user_id)
         )
         
         print(f"✅ RQ job enqueued successfully!")
