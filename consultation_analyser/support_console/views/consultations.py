@@ -387,7 +387,7 @@ def sign_off(request: HttpRequest) -> HttpResponse:
                 # Send message to SQS
                 ingest.send_job_to_sqs(consultation_code, consultation_name, current_user_id, "SIGNOFF")
                 messages.success(
-                    request, f"Sign-off job submitted successfully for {consultation_code}-{consultation_name}!"
+                    request, mark_safe(f"Sign-off job submitted successfully for consultation '<strong>{consultation_name}</strong>' from folder '<strong>{consultation_code}</strong>'")
                 )
 
             except Exception as e:
