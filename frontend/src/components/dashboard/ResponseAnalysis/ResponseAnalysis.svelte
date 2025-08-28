@@ -2,28 +2,28 @@
     import clsx from "clsx";
 
     import { slide, fly, fade } from "svelte/transition";
-    import Button from "../inputs/Button/Button.svelte";
-    import TitleRow from "./TitleRow.svelte";
-    import Panel from "./Panel.svelte";
-    import AnswerCard from "./AnswerCard/AnswerCard.svelte";
-    import Finance from "../svg/material/Finance.svelte";
-    import FiltersSidebar from "./FiltersSidebar/FiltersSidebar.svelte";
-    import Select from "../inputs/Select.svelte";
+    import Button from "../../inputs/Button/Button.svelte";
+    import TitleRow from "../TitleRow.svelte";
+    import Panel from "../Panel.svelte";
+    import AnswerCard from "../AnswerCard/AnswerCard.svelte";
+    import Finance from "../../svg/material/Finance.svelte";
+    import FiltersSidebar from "../FiltersSidebar/FiltersSidebar.svelte";
+    import Select from "../../inputs/Select.svelte";
 
-    import { SearchModeLabels, SearchModeValues } from "../../global/types";
-    import { themeFilters, demoFilters } from "../../global/state.svelte";
+    import { SearchModeLabels, SearchModeValues } from "../../../global/types";
+    import { themeFilters, demoFilters } from "../../../global/state.svelte";
 
-    import Title from "../Title.svelte";
-    import TextInput from "../inputs/TextInput/TextInput.svelte";
-    import Alert from "../Alert.svelte";
-    import FilterAlt from "../svg/material/FilterAlt.svelte";
-    import SearchableSelect from "../inputs/SearchableSelect.svelte";
-    import Tag from "../Tag/Tag.svelte";
-    import MaterialIcon from "../MaterialIcon.svelte";
-    import Close from "../svg/material/Close.svelte";
-    import Popover from "../inputs/Popover/Popover.svelte";
-    import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
-    import Flag2 from "../svg/material/Flag2.svelte";
+    import Title from "../../Title.svelte";
+    import TextInput from "../../inputs/TextInput/TextInput.svelte";
+    import Alert from "../../Alert.svelte";
+    import FilterAlt from "../../svg/material/FilterAlt.svelte";
+    import SearchableSelect from "../../inputs/SearchableSelect.svelte";
+    import Tag from "../../Tag/Tag.svelte";
+    import MaterialIcon from "../../MaterialIcon.svelte";
+    import Close from "../../svg/material/Close.svelte";
+    import Popover from "../../inputs/Popover/Popover.svelte";
+    import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
+    import Flag2 from "../../svg/material/Flag2.svelte";
 
     export let pageSize: number = 50;
     export let isAnswersLoading: boolean = true;
