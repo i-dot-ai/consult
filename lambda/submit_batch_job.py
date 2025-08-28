@@ -1,7 +1,8 @@
+import datetime
 import json
 import logging
+
 import boto3
-import datetime
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)

@@ -1,7 +1,8 @@
 import json
-import os
-import redis
 import logging
+import os
+
+import redis
 import urllib3
 from rq import Queue
 
