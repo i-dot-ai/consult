@@ -27,7 +27,7 @@ export interface FormattedTheme {
     description: string;
     count: number;
     highlighted?: boolean;
-    handleClick?: Function;
+    handleClick?: (e: MouseEvent) => void;
 }
 
 export interface SelectOption {
