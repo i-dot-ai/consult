@@ -7,7 +7,7 @@
     import Panel from "./Panel.svelte";
     import AnswerCard from "./AnswerCard/AnswerCard.svelte";
     import Finance from "../svg/material/Finance.svelte";
-    import FiltersSidebar from "./FiltersSidebar.svelte";
+    import FiltersSidebar from "./FiltersSidebar/FiltersSidebar.svelte";
     import Select from "../inputs/Select.svelte";
 
     import { SearchModeLabels, SearchModeValues } from "../../global/types";
