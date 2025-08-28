@@ -786,7 +786,7 @@ def get_folder_names_for_dropdown() -> list[dict]:
     return consultation_folders_formatted
 
 
-def send_job_to_sqs(consultation_code: str, job_type: str) -> dict:
+def send_job_to_sqs(consultation_code: str,  current_user_id: int, job_type: str) -> dict:
     # SQS configuration - you should move these to settings.py
     QUEUE_URL = settings.SQS_QUEUE_URL
 
@@ -805,6 +805,7 @@ def send_job_to_sqs(consultation_code: str, job_type: str) -> dict:
         "jobName": job_name,
         "jobQueue": job_queue,
         "jobDefinition": job_definition,
+        "userId": current_user_id,
         "containerOverrides": {"command": ["--subdir", consultation_code, "--job-type", job_type]},
     }
 
