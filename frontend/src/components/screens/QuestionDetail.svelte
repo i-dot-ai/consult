@@ -7,8 +7,8 @@
     import Button from "../inputs/Button/Button.svelte";
     import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
     import TabView from "../TabView/TabView.svelte";
-    import QuestionSummary from "../dashboard/QuestionSummary.svelte";
-    import ResponseAnalysis from "../dashboard/ResponseAnalysis.svelte";
+    import QuestionSummary from "../dashboard/QuestionSummary/QuestionSummary.svelte";
+    import ResponseAnalysis from "../dashboard/ResponseAnalysis/ResponseAnalysis.svelte";
     import Alert from "../Alert.svelte";
 
     import { getConsultationDetailUrl } from "../../global/routes.ts";
