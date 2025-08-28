@@ -5,7 +5,7 @@
 
     import MaterialIcon from "../MaterialIcon.svelte";
     import Button from "../inputs/Button/Button.svelte";
-    import QuestionCard from "../dashboard/QuestionCard.svelte";
+    import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
     import TabView from "../TabView/TabView.svelte";
     import QuestionSummary from "../dashboard/QuestionSummary.svelte";
     import ResponseAnalysis from "../dashboard/ResponseAnalysis.svelte";
