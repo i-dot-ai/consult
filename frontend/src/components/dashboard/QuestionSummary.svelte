@@ -13,7 +13,7 @@
     import TitleRow from "./TitleRow.svelte";
     import ThemesTable from "./ThemesTable.svelte";
     import ProgressCards from "../ProgressCards.svelte";
-    import FiltersSidebar from "./FiltersSidebar.svelte";
+    import FiltersSidebar from "./FiltersSidebar/FiltersSidebar.svelte";
     import Tag from "../Tag/Tag.svelte";
     import Alert from "../Alert.svelte";
     import FilterAlt from "../svg/material/FilterAlt.svelte";
