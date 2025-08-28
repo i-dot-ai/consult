@@ -1,26 +1,26 @@
 <script lang="ts">
     import { slide, fly } from "svelte/transition";
 
-    import { TabNames, type FormattedTheme } from "../../global/types.ts";
-    import { getPercentage } from "../../global/utils.ts";
+    import { TabNames, type FormattedTheme } from "../../../global/types.ts";
+    import { getPercentage } from "../../../global/utils.ts";
 
-    import Lan from "../svg/material/Lan.svelte";
-    import Close from "../svg/material/Close.svelte";
-    import Panel from "./Panel.svelte";
-    import MaterialIcon from "../MaterialIcon.svelte";
-    import Title from "../Title.svelte";
-    import Button from "../inputs/Button/Button.svelte";
-    import TitleRow from "./TitleRow.svelte";
-    import ThemesTable from "./ThemesTable/ThemesTable.svelte";
-    import ProgressCards from "../ProgressCards.svelte";
-    import FiltersSidebar from "./FiltersSidebar/FiltersSidebar.svelte";
-    import Tag from "../Tag/Tag.svelte";
-    import Alert from "../Alert.svelte";
-    import FilterAlt from "../svg/material/FilterAlt.svelte";
-    import List from "../svg/material/List.svelte";
+    import Lan from "../../svg/material/Lan.svelte";
+    import Close from "../../svg/material/Close.svelte";
+    import Panel from "../Panel.svelte";
+    import MaterialIcon from "../../MaterialIcon.svelte";
+    import Title from "../../Title.svelte";
+    import Button from "../../inputs/Button/Button.svelte";
+    import TitleRow from "../TitleRow.svelte";
+    import ThemesTable from "../ThemesTable/ThemesTable.svelte";
+    import ProgressCards from "../../ProgressCards.svelte";
+    import FiltersSidebar from "../FiltersSidebar/FiltersSidebar.svelte";
+    import Tag from "../../Tag/Tag.svelte";
+    import Alert from "../../Alert.svelte";
+    import FilterAlt from "../../svg/material/FilterAlt.svelte";
+    import List from "../../svg/material/List.svelte";
 
-    import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
-    import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
+    import { themeFilters, demoFilters } from "../../../global/state.svelte.ts";
+    import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
 
     const MAX_CARDS_ALLOWED = 10;
 
