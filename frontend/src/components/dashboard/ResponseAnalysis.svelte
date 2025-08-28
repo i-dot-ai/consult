@@ -14,7 +14,7 @@
     import { themeFilters, demoFilters } from "../../global/state.svelte";
 
     import Title from "../Title.svelte";
-    import TextInput from "../inputs/TextInput.svelte";
+    import TextInput from "../inputs/TextInput/TextInput.svelte";
     import Alert from "../Alert.svelte";
     import FilterAlt from "../svg/material/FilterAlt.svelte";
     import SearchableSelect from "../inputs/SearchableSelect.svelte";
