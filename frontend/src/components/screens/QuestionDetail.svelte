@@ -255,7 +255,7 @@
 
 <TabView
     value={activeTab}
-    onValueChange={({ curr, next }) => activeTab = next}
+    onValueChange={(next: TabNames) => activeTab = next}
     tabs={[
         { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
         { id: TabNames.ResponseAnalysis, title: "Response Analysis", icon: Finance},
