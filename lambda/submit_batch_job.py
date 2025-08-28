@@ -48,6 +48,7 @@ def process_message(message_data):
     - jobDefinition
     - containerOverrides
     - jobType
+    - userId
     - parameters (optional, for backward compatibility)
     """
     if not isinstance(message_data, dict):
@@ -56,6 +57,7 @@ def process_message(message_data):
     job_name = message_data.get("jobName")
     job_queue = message_data.get("jobQueue")
     job_definition = message_data.get("jobDefinition")
+    user_id = message_data.get("userId")
     container_overrides = message_data.get("containerOverrides", {})
     job_parameters = message_data.get("parameters", {})
 
@@ -69,6 +71,7 @@ def process_message(message_data):
         "jobName": job_name,
         "jobQueue": job_queue,
         "jobDefinition": job_definition,
+        "userId": user_id,
     }
 
     # Add containerOverrides if present
@@ -82,6 +85,7 @@ def process_message(message_data):
         logger.info(f"Using parameters: {job_parameters}")
 
     logger.info(f"Submitting AWS Batch job: {job_name}")
+    logger.info(f"user id: {user_id}")
     response = batch_client.submit_job(**submit_job_kwargs)
 
     job_id = response["jobId"]
