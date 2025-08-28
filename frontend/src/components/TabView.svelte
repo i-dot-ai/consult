@@ -1,45 +1,67 @@
 <script lang="ts">
     import clsx from "clsx";
 
+    import { untrack, type Component } from "svelte";
+    import { writable } from 'svelte/store'
     import { fly } from "svelte/transition";
 
     import { createTabs, melt } from '@melt-ui/svelte';
 
-    import { writable } from 'svelte/store'
+    import { TabDirections, TabNames } from "../global/types";
+
     import MaterialIcon from "./MaterialIcon.svelte";
 
 
-    export let tabs: Tab[] = []; 
-    export let value: string = "";
-    export let onValueChange: (val: {curr: string, next: string}) => {};
+    interface Props {
+        tabs: Tab[];
+        value: string;
+        onValueChange: (newVal: TabNames ) => void;
+    }
 
-    let prevTabIndex: number = 0;
-    let direction: "forward" | "backward" = "forward";
+    let {
+        tabs = [],
+        value = "",
+        onValueChange = (newVal) => {},
+    }: Props = $props();
+
+    let prevTabIndex: number = $state(tabs.findIndex(tab => tab.id === value));
+    let direction: TabDirections = $state(TabDirections.Forward);
     const writableValue = writable(value);
 
-    $: {
-        // Determine navigation direction for fly animation
-        const activeTabIndex = tabs.findIndex(tab => tab.id === value);
-        direction = activeTabIndex < prevTabIndex ? "backward" : "forward";
+    $effect(() => {
+        // dependencies
+        value;
 
-        // Update writableValue for the parent
-        writableValue.set(value);
+        untrack(() => {
+            // Determine navigation direction for fly animation
+            const activeTabIndex = tabs.findIndex(tab => tab.id === value);
 
-        // Keep track of prev tab index for fly animation
-        prevTabIndex = tabs.findIndex(tab => tab.id === value);
-    }
+            direction = activeTabIndex <= prevTabIndex
+                ? TabDirections.Backward
+                : TabDirections.Forward;
+
+            // Update writableValue for the parent
+            writableValue.set(value);
+
+            // Keep track of prev tab index for fly animation
+            prevTabIndex = tabs.findIndex(tab => tab.id === value);
+        })
+    });
 
     const {
         elements: { root, list, content, trigger },
     } = createTabs({
         value: writableValue,
-        onValueChange: onValueChange,
+        onValueChange: ({ next }) => {
+            onValueChange(next as TabNames);
+            return next;
+        },
     });
 
     interface Tab {
         id: string;
         title: string;
-        icon?;
+        icon?: Component;
     }
 </script>
 
@@ -94,8 +116,7 @@
 
     <!-- Handle which tab to render in parent -->
     {#key value}
-        <!-- positive x: from right | negative x: from left -->
-        <div in:fly={{ x: direction === "forward" ? 300 : -300 }}>
+        <div in:fly={{ x: direction === TabDirections.Forward ? -300 : 300 }}>
             <slot />
         </div>
     {/key}
