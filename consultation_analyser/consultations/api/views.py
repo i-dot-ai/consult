@@ -5,11 +5,9 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Exists, OuterRef
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
-from django_filters import BaseInFilter, BooleanFilter, CharFilter
-from django_filters.rest_framework import FilterSet
+from django_filters.rest_framework import DjangoFilterBackend
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
-from pgvector.django import CosineDistance
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -17,10 +15,9 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
-from ...embeddings import embed_text
 from .. import models
-from ..models import Question
 from ..views.sessions import send_magic_link_if_email_exists
+from .filters import HybridSearchFilter, ResponseFilter
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
     ConsultationSerializer,
@@ -169,78 +166,11 @@ class BespokeResultsSetPagination(PageNumberPagination):
         )
 
 
-def safe_json_encode(txt: str):
-    """try and cast a bool or str to json, anything else will be a string"""
-    if txt.lower() == "true":
-        return True
-    if txt.lower() == "false":
-        return False
-    return txt
-
-
-class ResponseFilter(FilterSet):
-    sentimentFilters = BaseInFilter(field_name="annotation__sentiment", lookup_expr="in")
-    evidenceRich = BooleanFilter(field_name="annotation__evidence_rich")
-    themeFilters = BaseInFilter(method="filter_themes")
-    demoFilters = CharFilter(method="filter_demographics")
-    searchValue = CharFilter(method="filter_search")
-    searchMode = CharFilter(method="search_mode")
-
-    def filter_themes(self, queryset, name, value):
-        if not value:
-            return queryset
-        # Use single JOIN with HAVING clause for AND logic
-        qs = (
-            queryset.filter(annotation__themes__id__in=value)
-            .annotate(matched_theme_count=Count("annotation__themes", distinct=True))
-            .filter(matched_theme_count=len(value))
-        )
-        return qs
-
-    def filter_demographics(self, queryset, name, value):
-        demo_filters = self.data.getlist("demoFilters")
-        if not demo_filters:
-            return queryset
-
-        filter_dict = defaultdict(list)
-        for filter_str in demo_filters:
-            if ":" in filter_str:
-                key, value = filter_str.split(":", 1)
-                filter_dict[key].append(value)
-
-        for key, values in filter_dict.items():
-            python_values = list(map(safe_json_encode, values))
-            queryset = queryset.filter(
-                respondent__demographics__field_name=key,
-                respondent__demographics__field_value__in=python_values,
-            )
-        return queryset
-
-    def search_mode(self, queryset, name, value):
-        # just a hack to ensure that this field is validated but not used
-        return queryset
-
-    def filter_search(self, queryset, name, value):
-        if not value:
-            return queryset
-
-        if self.data.get("search_mode") == "semantic":
-            # semantic_distance: exact match = 0, exact opposite = 2
-            embedded_query = embed_text(value)
-            distance = CosineDistance("embedding", embedded_query)
-            return queryset.annotate(distance=distance).order_by("distance")
-        else:
-            return queryset.filter(free_text__icontains=value)
-
-    class Meta:
-        model = models.Response
-        fields = ["respondent_id"]
-
-
 class ResponseViewSet(ModelViewSet):
     serializer_class = ResponseSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
     pagination_class = BespokeResultsSetPagination
+    filter_backends = [HybridSearchFilter, DjangoFilterBackend]
     filterset_class = ResponseFilter
     http_method_names = ["get", "patch"]
 
@@ -289,7 +219,7 @@ class ResponseViewSet(ModelViewSet):
         """Get theme aggregations for filtered responses"""
 
         # Get the question object with consultation in one query
-        question = get_object_or_404(Question, pk=question_pk)
+        question = get_object_or_404(models.Question, pk=question_pk)
 
         # Database-level aggregation using Django ORM hybrid approach
         theme_aggregations = {}
