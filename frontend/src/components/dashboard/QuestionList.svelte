@@ -6,7 +6,7 @@
     import Help from "../svg/material/Help.svelte";
     import Star from "../svg/material/Star.svelte";
     import Panel from "./Panel.svelte";
-    import QuestionCard from "./QuestionCard.svelte";
+    import QuestionCard from "./QuestionCard/QuestionCard.svelte";
     import Button from "../inputs/Button/Button.svelte";
 
     import type { Question } from "../../global/types.ts";
