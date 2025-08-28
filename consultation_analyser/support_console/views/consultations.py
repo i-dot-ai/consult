@@ -336,14 +336,16 @@ def themefinder(request: HttpRequest) -> HttpResponse:
 
     consultation_folders = ingest.get_folder_names_for_dropdown()
     bucket_name = settings.AWS_BUCKET_NAME
+    current_user_id=request.user.id
 
     consultation_code = None
     if request.method == "POST":
         consultation_code = request.POST.get("consultation_code")
+        
         if consultation_code:
             try:
                 # Send message to SQS
-                ingest.send_job_to_sqs(consultation_code, "THEMEFINDER")
+                ingest.send_job_to_sqs(consultation_code, current_user_id, "THEMEFINDER")
                 messages.success(
                     request, f"Themefinder job submitted successfully for {consultation_code}!"
                 )
@@ -367,6 +369,8 @@ def sign_off(request: HttpRequest) -> HttpResponse:
 
     consultation_folders = ingest.get_folder_names_for_dropdown()
     bucket_name = settings.AWS_BUCKET_NAME
+    current_user_id=request.user.id,
+
 
     consultation_code = None
     if request.method == "POST":
@@ -374,7 +378,7 @@ def sign_off(request: HttpRequest) -> HttpResponse:
         if consultation_code:
             try:
                 # Send message to SQS
-                ingest.send_job_to_sqs(consultation_code, "SIGNOFF")
+                ingest.send_job_to_sqs(consultation_code, current_user_id, "SIGNOFF")
                 messages.success(
                     request, f"Sign-off job submitted successfully for {consultation_code}!"
                 )
