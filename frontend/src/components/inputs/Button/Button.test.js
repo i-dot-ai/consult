@@ -3,6 +3,7 @@ import userEvent from '@testing-library/user-event';
 import { render, cleanup, screen } from "@testing-library/svelte";
 
 import Button from "./Button.svelte";
+import ButtonStory from "./ButtonStory.svelte";
 
 
 describe("Button", () => {
@@ -44,5 +45,9 @@ describe("Button", () => {
 
         const button = screen.getByRole('button');
         expect(button.getAttribute("aria-pressed")).toEqual("false");
+    })
+
+    it("should render story", () => {
+        render(ButtonStory);
     })
 })

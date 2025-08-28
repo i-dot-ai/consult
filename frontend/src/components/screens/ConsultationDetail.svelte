@@ -2,18 +2,16 @@
     import { onMount } from "svelte";
     import { slide } from "svelte/transition";
 
-    import Title from "../Title.svelte";
-    import Link from "../Link.svelte";
-    import QuestionList from "../dashboard/QuestionList.svelte";
     import TextInput from "../inputs/TextInput/TextInput.svelte";
     import TitleRow from "../dashboard/TitleRow.svelte";
     import Help from "../svg/material/Help.svelte";
     import Star from "../svg/material/Star.svelte";
 
-    import type { Question, Consultation } from "../../global/types.ts";
+    import type { Consultation } from "../../global/types.ts";
     import { getConsultationDetailUrl, getApiConsultationUrl } from "../../global/routes.ts";
     import { favStore } from "../../global/stores.ts";
     import Panel from "../dashboard/Panel.svelte";
+    import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
 
     export let consultationId: string = "";
 
@@ -38,6 +36,15 @@
             loading = false;
         }
     })
+
+    $: favQuestions = consultation?.questions
+        .filter(question => $favStore.includes(question.id));
+
+    $: displayQuestions = consultation?.questions.filter(question => (
+        `Q${question.number}: ${question.question_text}`
+            .toLocaleLowerCase()
+            .includes(searchValue.toLocaleLowerCase())
+    ));
 </script>
 
 
@@ -56,13 +63,14 @@
         {:else}
             <div transition:slide>
                 <div class="mb-8">
-                    <QuestionList
-                        consultationId={consultation.id}
-                        questions={consultation.questions
-                            .filter(question => $favStore.includes(question.id))
-                        }
-                        highlightText={searchValue}
-                    />
+                    {#each favQuestions as question}
+                        <QuestionCard
+                            consultationId={consultation.id}
+                            question={question}
+                            highlightText={searchValue}
+                            clickable={true}
+                        />
+                    {/each}
                 </div>
             </div>
         {/if}
@@ -103,17 +111,14 @@
                 />
 
                 <div class="mb-4">
-                    <QuestionList
-                        consultationId={consultation.id}
-                        questions={consultation.questions.filter(question => {
-                            return (
-                                `Q${question.number}: ${question.question_text}`
-                                .toLocaleLowerCase()
-                                .includes(searchValue.toLocaleLowerCase())
-                            )
-                        })}
-                        highlightText={searchValue}
-                    />
+                    {#each displayQuestions as question}
+                        <QuestionCard
+                            consultationId={consultation.id}
+                            question={question}
+                            highlightText={searchValue}
+                            clickable={true}
+                        />
+                    {/each}
                 </div>
             </div>
         {/if}
