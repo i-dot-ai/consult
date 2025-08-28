@@ -806,6 +806,7 @@ def send_job_to_sqs(consultation_code: str,  consultation_name:str, current_user
         "jobQueue": job_queue,
         "jobDefinition": job_definition,
         "userId": current_user_id,
+        "consultationCode": consultation_code,
         "consultationName": consultation_name,
         "containerOverrides": {"command": ["--subdir", consultation_code, "--job-type", job_type]},
     }
