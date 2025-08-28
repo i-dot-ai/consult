@@ -6,7 +6,7 @@
     import MaterialIcon from "../MaterialIcon.svelte";
     import Button from "../inputs/Button/Button.svelte";
     import QuestionCard from "../dashboard/QuestionCard.svelte";
-    import TabView from "../TabView.svelte";
+    import TabView from "../TabView/TabView.svelte";
     import QuestionSummary from "../dashboard/QuestionSummary.svelte";
     import ResponseAnalysis from "../dashboard/ResponseAnalysis.svelte";
     import Alert from "../Alert.svelte";
@@ -255,7 +255,7 @@
 
 <TabView
     value={activeTab}
-    onValueChange={(next: TabNames) => activeTab = next}
+    handleChange={(next: TabNames) => activeTab = next}
     tabs={[
         { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
         { id: TabNames.ResponseAnalysis, title: "Response Analysis", icon: Finance},

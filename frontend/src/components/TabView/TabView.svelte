@@ -1,59 +1,46 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import { untrack, type Component } from "svelte";
+    import { type Component } from "svelte";
     import { writable } from 'svelte/store'
     import { fly } from "svelte/transition";
 
     import { createTabs, melt } from '@melt-ui/svelte';
 
-    import { TabDirections, TabNames } from "../global/types";
+    import { TabDirections, TabNames } from "../../global/types";
 
-    import MaterialIcon from "./MaterialIcon.svelte";
+    import MaterialIcon from "../MaterialIcon.svelte";
 
 
-    interface Props {
-        tabs: Tab[];
-        value: string;
-        onValueChange: (newVal: TabNames ) => void;
-    }
+    export let tabs: Tab[] = [];
+    export let value: string = "";
+    export let handleChange = (newVal: TabNames) => {};
 
-    let {
-        tabs = [],
-        value = "",
-        onValueChange = (newVal) => {},
-    }: Props = $props();
-
-    let prevTabIndex: number = $state(tabs.findIndex(tab => tab.id === value));
-    let direction: TabDirections = $state(TabDirections.Forward);
+    let prevTabIndex: number = tabs.findIndex(tab => tab.id === value);
+    let direction: TabDirections = TabDirections.Forward;
     const writableValue = writable(value);
 
-    $effect(() => {
-        // dependencies
-        value;
+    $: {
+        // Determine navigation direction for fly animation
+        const activeTabIndex = tabs.findIndex(tab => tab.id === value);
 
-        untrack(() => {
-            // Determine navigation direction for fly animation
-            const activeTabIndex = tabs.findIndex(tab => tab.id === value);
+        direction = activeTabIndex > prevTabIndex
+            ? TabDirections.Backward
+            : TabDirections.Forward;
 
-            direction = activeTabIndex <= prevTabIndex
-                ? TabDirections.Backward
-                : TabDirections.Forward;
+        // Update writableValue for the parent
+        writableValue.set(value);
 
-            // Update writableValue for the parent
-            writableValue.set(value);
-
-            // Keep track of prev tab index for fly animation
-            prevTabIndex = tabs.findIndex(tab => tab.id === value);
-        })
-    });
+        // Keep track of prev tab index for fly animation
+        prevTabIndex = tabs.findIndex(tab => tab.id === value);
+    }
 
     const {
         elements: { root, list, content, trigger },
     } = createTabs({
         value: writableValue,
         onValueChange: ({ next }) => {
-            onValueChange(next as TabNames);
+            handleChange(next as TabNames);
             return next;
         },
     });
