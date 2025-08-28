@@ -2,7 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 import userEvent from '@testing-library/user-event';
 import { render, cleanup, screen } from "@testing-library/svelte";
 
-import Switch from "./Switch.svelte";
+import SwitchTest from "./SwitchTest.svelte";
 
 
 describe("Switch", () => {
@@ -12,7 +12,7 @@ describe("Switch", () => {
         const user = userEvent.setup();
         const handleChangeMock = vi.fn();
 
-        render(Switch, {
+        render(SwitchTest, {
             id: "test-switch",
             value: false,
             label: "Test Switch",
@@ -33,7 +33,7 @@ describe("Switch", () => {
         const user = userEvent.setup();
         const handleChangeMock = vi.fn();
 
-        render(Switch, {
+        render(SwitchTest, {
             id: "test-switch",
             value: false,
             label: "Test Switch",
@@ -55,7 +55,7 @@ describe("Switch", () => {
     it("should have render props", async () => {
         const handleChangeMock = vi.fn();
 
-        const {container, getByLabelText} = render(Switch, {
+        const {container, getByLabelText} = render(SwitchTest, {
             id: "test-switch",
             value: false,
             label: "Test Switch",
@@ -70,7 +70,7 @@ describe("Switch", () => {
     it("should have be checked initially if value is true", async () => {
         const handleChangeMock = vi.fn();
 
-        render(Switch, {
+        render(SwitchTest, {
             id: "test-switch",
             value: true,
             label: "Test Switch",
@@ -78,5 +78,16 @@ describe("Switch", () => {
         });
         const button = screen.getByRole('switch');
         expect(button.getAttribute("data-state")).toEqual("checked");
+    })
+
+    it("should render label slot", async () => {
+        render(SwitchTest, {
+            id: "test-switch",
+            value: false,
+            label: "Test Switch",
+            labelSlot: "Label Slot Content",
+        });
+
+        expect(screen.getByText("Label Slot Content"));
     })
 })
