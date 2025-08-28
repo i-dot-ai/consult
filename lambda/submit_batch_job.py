@@ -49,6 +49,7 @@ def process_message(message_data):
     - containerOverrides
     - jobType
     - userId
+    - consultationName
     - parameters (optional, for backward compatibility)
     """
     if not isinstance(message_data, dict):
@@ -58,6 +59,7 @@ def process_message(message_data):
     job_queue = message_data.get("jobQueue")
     job_definition = message_data.get("jobDefinition")
     user_id = message_data.get("userId")
+    consultation_name = message_data.get("consultationName")
     container_overrides = message_data.get("containerOverrides", {})
     job_parameters = message_data.get("parameters", {})
 
@@ -71,8 +73,21 @@ def process_message(message_data):
         "jobName": job_name,
         "jobQueue": job_queue,
         "jobDefinition": job_definition,
-        "userId": user_id,
     }
+    
+    all_parameters = {}
+    if user_id:
+        all_parameters["userId"] = str(user_id) 
+    
+    if consultation_name:
+        all_parameters["consultation_name"] = str(consultation_name)
+    
+    if job_parameters:
+        all_parameters.update(job_parameters)
+    
+    if all_parameters:
+        submit_job_kwargs["parameters"] = all_parameters
+        logger.info(f"Using parameters: {all_parameters}")
 
     # Add containerOverrides if present
     if container_overrides:
