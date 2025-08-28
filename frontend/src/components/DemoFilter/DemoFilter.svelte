@@ -3,7 +3,7 @@
     import { slide } from "svelte/transition";
 
     import { getPercentage } from "../../global/utils.ts";
-    import Panel from "../dashboard/Panel.svelte";
+    import Panel from "../dashboard/Panel/Panel.svelte";
     import Button from "../inputs/Button/Button.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
     import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";

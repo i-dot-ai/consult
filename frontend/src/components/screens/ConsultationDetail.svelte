@@ -10,7 +10,7 @@
     import type { Consultation } from "../../global/types.ts";
     import { getConsultationDetailUrl, getApiConsultationUrl } from "../../global/routes.ts";
     import { favStore } from "../../global/stores.ts";
-    import Panel from "../dashboard/Panel.svelte";
+    import Panel from "../dashboard/Panel/Panel.svelte";
     import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
 
     export let consultationId: string = "";

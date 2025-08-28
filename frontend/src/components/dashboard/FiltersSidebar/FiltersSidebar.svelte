@@ -2,7 +2,7 @@
     import { fade } from "svelte/transition";
 
     import TitleRow from "../TitleRow.svelte";
-    import Panel from "../Panel.svelte";
+    import Panel from "../Panel/Panel.svelte";
     import DemoFilter from "../../DemoFilter/DemoFilter.svelte";
     import FilterAlt from "../../svg/material/FilterAlt.svelte";
     import Switch from "../../inputs/Switch/Switch.svelte";
