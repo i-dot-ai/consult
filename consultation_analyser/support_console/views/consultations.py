@@ -337,7 +337,7 @@ def themefinder(request: HttpRequest) -> HttpResponse:
 
     consultation_folders = ingest.get_folder_names_for_dropdown()
     bucket_name = settings.AWS_BUCKET_NAME
-    current_user_id=request.user.id
+    current_user_id = request.user.id
 
     consultation_code = None
     consultation_name = None
@@ -378,7 +378,7 @@ def sign_off(request: HttpRequest) -> HttpResponse:
 
     consultation_folders = ingest.get_folder_names_for_dropdown()
     bucket_name = settings.AWS_BUCKET_NAME
-    current_user_id=request.user.id,
+    current_user_id=request.user.id
 
 
     consultation_code = None

@@ -2,7 +2,7 @@ import json
 import logging
 import os
 
-import redis
+import redis  # type: ignore
 import urllib3
 from rq import Queue
 
