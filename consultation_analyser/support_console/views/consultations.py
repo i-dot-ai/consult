@@ -339,6 +339,7 @@ def themefinder(request: HttpRequest) -> HttpResponse:
     current_user_id=request.user.id
 
     consultation_code = None
+    consultation_name = None
     if request.method == "POST":
         consultation_code = request.POST.get("consultation_code")
         consultation_name = request.POST.get("consultation_name")
@@ -375,6 +376,8 @@ def sign_off(request: HttpRequest) -> HttpResponse:
 
 
     consultation_code = None
+    consultation_name = None
+    
     if request.method == "POST":
         consultation_code = request.POST.get("consultation_code")
         consultation_name = request.POST.get("consultation_name")
