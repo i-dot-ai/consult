@@ -54,10 +54,11 @@ module "consultation_import_lambda" {
   lambda_additional_policy_arns = {for idx, arn in [aws_iam_policy.lambda_exec_custom_policy.arn] : idx => arn}
   aws_security_group_ids = [aws_security_group.lambda_sg.id]
   subnet_ids              = data.terraform_remote_state.vpc.outputs.private_subnets
-  # Environment variables
   environment_variables = {
-    REDIS_HOST = module.elasticache.redis_address  # or hardcode your Redis host
-    REDIS_PORT = module.elasticache.redis_port  # or hardcode "6379"
-    AWS_BUCKET_NAME = module.app_bucket.id  # or hardcode your bucket ARN
+    REDIS_HOST = module.elasticache.redis_address  
+    REDIS_PORT = module.elasticache.redis_port 
+    AWS_BUCKET_NAME = module.app_bucket.id 
+    SLACK_WEBHOOK_URL = data.aws_ssm_parameter.slack_webhook_url.value
+    LAMBDA_AWS_REGION = local.secret_env_vars.AWS_REGION
   }
 }
