@@ -11,11 +11,11 @@
     import { demoFilters } from "../../global/state.svelte.ts";
 
     interface Props {
-        category: string;
-        demoOptions: Object;
-        demoData: Object;
-        totalCounts: Object;
-        skeleton: boolean;
+        category?: string;
+        demoOptions?: Object;
+        demoData?: Object;
+        totalCounts?: Object;
+        skeleton?: boolean;
     }
 
     let {
@@ -41,7 +41,9 @@
                 handleClick={() => expanded = !expanded}
             >
                 <div class="flex justify-between w-full">
-                    <h3 class="truncate" title={category}>{category}</h3>
+                    <h3 class="truncate" title={category}>
+                        {skeleton ? "Skeleton" : category}
+                    </h3>
 
                     <div class={clsx([
                         "transition-transform",

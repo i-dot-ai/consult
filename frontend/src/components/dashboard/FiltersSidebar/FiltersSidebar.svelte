@@ -1,13 +1,13 @@
 <script lang="ts">
     import { fade } from "svelte/transition";
 
-    import TitleRow from "./TitleRow.svelte";
-    import Panel from "./Panel.svelte";
-    import DemoFilter from "../DemoFilters/DemoFilters.svelte";
-    import FilterAlt from "../svg/material/FilterAlt.svelte";
-    import Switch from "../inputs/Switch/Switch.svelte";
-    import MaterialIcon from "../MaterialIcon.svelte";
-    import Diamond from "../svg/material/Diamond.svelte";
+    import TitleRow from "../TitleRow.svelte";
+    import Panel from "../Panel.svelte";
+    import DemoFilter from "../../DemoFilter/DemoFilter.svelte";
+    import FilterAlt from "../../svg/material/FilterAlt.svelte";
+    import Switch from "../../inputs/Switch/Switch.svelte";
+    import MaterialIcon from "../../MaterialIcon.svelte";
+    import Diamond from "../../svg/material/Diamond.svelte";
 
     let {
         showEvidenceRich = true,

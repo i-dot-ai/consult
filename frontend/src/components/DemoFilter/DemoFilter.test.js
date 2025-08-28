@@ -2,14 +2,14 @@ import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 import userEvent from '@testing-library/user-event';
 import { render, cleanup, screen } from "@testing-library/svelte";
 
-import DemoFilters from "./DemoFilters.svelte";
+import DemoFilter from "./DemoFilter.svelte";
 import { getPercentage } from "../../global/utils";
 import { demoFilters } from "../../global/state.svelte";
 
 
 let testData;
 
-describe("DemoFilters", () => {
+describe("DemoFilter", () => {
     beforeEach(() => {
         testData = {
             category: "country",
@@ -27,7 +27,7 @@ describe("DemoFilters", () => {
     })
 
     it("should render data", () => {
-        const { getByText } = render(DemoFilters, {
+        const { getByText } = render(DemoFilter, {
             category: testData.category,
             demoOptions: testData.demoOptions,
             demoData: testData.demoData,
@@ -47,7 +47,7 @@ describe("DemoFilters", () => {
     })
 
     it("should not render data if skeleton", () => {
-        const { queryByText } = render(DemoFilters, {
+        const { queryByText } = render(DemoFilter, {
             category: testData.category,
             demoOptions: testData.demoOptions,
             demoData: testData.demoData,
@@ -73,7 +73,7 @@ describe("DemoFilters", () => {
         const user = userEvent.setup();
         expect(demoFilters.filters).toEqual({});
 
-        render(DemoFilters, {
+        render(DemoFilter, {
             category: testData.category,
             demoOptions: testData.demoOptions,
             demoData: testData.demoData,
