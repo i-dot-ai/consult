@@ -86,7 +86,7 @@ def lambda_handler(event, context):
             user_id,  
         )
         
-        logger.info(f"✅ RQ job enqueued successfully!")
+        logger.info("✅ RQ job enqueued successfully!")
         logger.info(f"Job ID: {job.id}")
         logger.info(f"Job status: {job.get_status()}")
         
@@ -97,8 +97,7 @@ def lambda_handler(event, context):
         # Send Slack notification
         try:
             slack_message = create_slack_success_message(
-                consultation_name, consultation_code, mapping_date, 
-                user_id, job.id, queue_name, queue_length, job_name
+                consultation_name, consultation_code, mapping_date, job.id
             )
             send_slack_message(slack_message)
             slack_success = True
@@ -129,7 +128,7 @@ def lambda_handler(event, context):
         # Send error notification to Slack
         try:
             slack_error_message = create_slack_error_message(
-                error_msg, consultation_name, consultation_code, job_name
+                error_msg, consultation_name, consultation_code
             )
             send_slack_message(slack_error_message)
             logger.info("✅ Slack error notification sent successfully")
@@ -139,8 +138,7 @@ def lambda_handler(event, context):
         return {'statusCode': 500, 'body': error_msg}
 
 
-def create_slack_success_message(consultation_name, consultation_code, mapping_date, 
-                                user_id, job_id, queue_name, queue_length, batch_job_name):
+def create_slack_success_message(consultation_name, consultation_code, mapping_date, job_id):
     """
     Create Slack message payload for successful job
     """
@@ -184,7 +182,7 @@ def create_slack_success_message(consultation_name, consultation_code, mapping_d
     }
 
 
-def create_slack_error_message(error_msg, consultation_name, consultation_code, batch_job_name):
+def create_slack_error_message(error_msg, consultation_name, consultation_code):
     """
     Create Slack message payload for failed job
     """
@@ -208,10 +206,6 @@ def create_slack_error_message(error_msg, consultation_name, consultation_code, 
                     {
                         "type": "mrkdwn",
                         "text": f"*Consultation Code:*\n{consultation_code}"
-                    },
-                    {
-                        "type": "mrkdwn",
-                        "text": f"*Mapping Date:*\n{mapping_date}"
                     }
                 ]
             },
