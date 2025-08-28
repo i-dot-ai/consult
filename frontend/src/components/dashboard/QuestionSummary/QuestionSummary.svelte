@@ -6,7 +6,7 @@
 
     import Lan from "../../svg/material/Lan.svelte";
     import Close from "../../svg/material/Close.svelte";
-    import Panel from "../Panel.svelte";
+    import Panel from "../Panel/Panel.svelte";
     import MaterialIcon from "../../MaterialIcon.svelte";
     import Title from "../../Title.svelte";
     import Button from "../../inputs/Button/Button.svelte";

@@ -12,7 +12,7 @@
     import ConditionalWrapper from "../../ConditionalWrapper/ConditionalWrapper.svelte";
     import Star from "../../svg/material/Star.svelte";
     import Help from "../../svg/material/Help.svelte";
-    import Panel from "../Panel.svelte";
+    import Panel from "../Panel/Panel.svelte";
     import Link from "../../Link.svelte";
     import Button from "../../inputs/Button/Button.svelte";
 
