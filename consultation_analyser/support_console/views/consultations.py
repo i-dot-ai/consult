@@ -6,8 +6,7 @@ from django.contrib import messages
 from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
-from django.utils.html import escape
-from django.utils.safestring import mark_safe
+from django.utils.html import format_html
 from django_rq import job
 
 from consultation_analyser.consultations import models
@@ -351,7 +350,12 @@ def themefinder(request: HttpRequest) -> HttpResponse:
                 # Send message to SQS
                 ingest.send_job_to_sqs(consultation_code, consultation_name, current_user_id, "THEMEFINDER")
                 messages.success(
-                    mark_safe(f"Themefinder job submitted successfully for consultation '<strong>{escape(consultation_name)}</strong>' from folder '<strong>{escape(consultation_code)}</strong>'")
+                    request,
+                    format_html(
+                        "Themefinder job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
+                        consultation_name,
+                        consultation_code
+                    )
                 )
 
             except Exception as e:
@@ -388,7 +392,12 @@ def sign_off(request: HttpRequest) -> HttpResponse:
                 # Send message to SQS
                 ingest.send_job_to_sqs(consultation_code, consultation_name, current_user_id, "SIGNOFF")
                 messages.success(
-                    mark_safe(f"Sign-off job submitted successfully for consultation '<strong>{escape(consultation_name)}</strong>' from folder '<strong>{escape(consultation_code)}</strong>'")
+                    request,
+                    format_html(
+                        "Sign-off job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
+                        consultation_name,
+                        consultation_code
+                    )
                 )
 
             except Exception as e:
