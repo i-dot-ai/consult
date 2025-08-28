@@ -15,14 +15,14 @@
     }
 
     interface Props {
-        id: string;
-        text: string;
-        demoData: string[];
-        evidenceRich: boolean;
-        multiAnswers: string[];
-        themes: Theme[];
-        skeleton: boolean;
-        highlightText: string;
+        id?: string;
+        text?: string;
+        demoData?: string[];
+        evidenceRich?: boolean;
+        multiAnswers?: string[];
+        themes?: Theme[];
+        skeleton?: boolean;
+        highlightText?: string;
     }
 
     let {

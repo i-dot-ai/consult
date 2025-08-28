@@ -4,11 +4,8 @@
     import { fade } from "svelte/transition";
     import { flip } from "svelte/animate";
 
-    import Button from "../inputs/Button/Button.svelte";
-    import Title from "../Title.svelte";
-
-    import type { FormattedTheme } from "../../global/types.ts";
-    import { getPercentage } from "../../global/utils.ts";
+    import type { FormattedTheme } from "../../../global/types.ts";
+    import { getPercentage } from "../../../global/utils.ts";
 
     export let themes: FormattedTheme[] = [];
     export let totalAnswers: number = 0;
@@ -21,7 +18,7 @@
     <table class="w-full text-md my-4">
         <thead class="text-sm">
             <tr>
-                {#each ["Theme", "Mentions", "%&nbsp;Percentage" /*, "Actions"*/] as header}
+                {#each ["Theme", "Mentions", "%&nbsp;Percentage"] as header}
                     <th class="text-left text-md m-2 pr-4 font-normal">
                         {@html header}
                     </th>
@@ -110,11 +107,6 @@
                                 ></iai-silver-progress-bar>
                             </div>
                         </td>
-                        <!-- <td>
-                            <Button size="xs" handleClick={() => console.log(theme.id)}>
-                                View Responses
-                            </Button>
-                        </td> -->
                     </tr>
                 {/each}
             </tbody>

@@ -11,7 +11,7 @@
     import Title from "../Title.svelte";
     import Button from "../inputs/Button/Button.svelte";
     import TitleRow from "./TitleRow.svelte";
-    import ThemesTable from "./ThemesTable.svelte";
+    import ThemesTable from "./ThemesTable/ThemesTable.svelte";
     import ProgressCards from "../ProgressCards.svelte";
     import FiltersSidebar from "./FiltersSidebar/FiltersSidebar.svelte";
     import Tag from "../Tag/Tag.svelte";
@@ -36,7 +36,7 @@
         sortAscending?: boolean;
         searchValue: string;
         evidenceRich: boolean;
-        setActiveTab: (newTab: TabNames) => {};
+        setActiveTab: (newTab: TabNames) => void;
     }
     let {
         themesLoading = true,
