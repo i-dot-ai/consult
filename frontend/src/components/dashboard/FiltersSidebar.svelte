@@ -5,7 +5,7 @@
     import Panel from "./Panel.svelte";
     import DemoFilter from "../DemoFilters/DemoFilters.svelte";
     import FilterAlt from "../svg/material/FilterAlt.svelte";
-    import Switch from "../inputs/Switch.svelte";
+    import Switch from "../inputs/Switch/Switch.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
     import Diamond from "../svg/material/Diamond.svelte";
 
