@@ -9,6 +9,7 @@
     import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
 
     import { demoFilters } from "../../global/state.svelte.ts";
+    import Progress from "../Progress/Progress.svelte";
 
     interface Props {
         category?: string;
@@ -85,7 +86,7 @@
                             highlighted={demoFilters.filters[category]?.includes(rowKey)}
                             highlightVariant="light"
                         >
-                            <div class="demo-filter w-full relative pb-3">
+                            <div class="demo-filter w-full relative pb-1">
                                 <div class="grid grid-cols-3 gap-1 mb-1">
                                     <span class="text-left truncate" title={rowKey}>
                                         {rowKey.replaceAll("'", "")}
@@ -93,10 +94,8 @@
                                     <span class="text-right">{percentage}%</span>
                                     <span class="text-right">{rowValue}</span>
                                 </div>
-                                <iai-silver-progress-bar
-                                    class="absolute bottom-1 left-0 w-full"
-                                    value={percentage}
-                                ></iai-silver-progress-bar>
+
+                                <Progress value={percentage} />
                             </div>
 
                             <!-- TODO: Alt Design, TBC

@@ -12,17 +12,15 @@
     import Button from "../../inputs/Button/Button.svelte";
     import TitleRow from "../TitleRow.svelte";
     import ThemesTable from "../ThemesTable/ThemesTable.svelte";
-    import ProgressCards from "../../ProgressCards.svelte";
     import FiltersSidebar from "../FiltersSidebar/FiltersSidebar.svelte";
     import Tag from "../../Tag/Tag.svelte";
     import Alert from "../../Alert.svelte";
     import FilterAlt from "../../svg/material/FilterAlt.svelte";
-    import List from "../../svg/material/List.svelte";
 
     import { themeFilters, demoFilters } from "../../../global/state.svelte.ts";
     import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
+    import MultiChoice, { type MultiChoiceAnswer } from "../MultiChoice/MultiChoice.svelte";
 
-    const MAX_CARDS_ALLOWED = 10;
 
     interface Props {
         themesLoading?: boolean;
@@ -31,7 +29,7 @@
         demoData: any;
         demoOptions: any;
         themes: FormattedTheme[];
-        multiChoice: Object;
+        multiChoice: MultiChoiceAnswer[];
         consultationSlug?: string;
         sortAscending?: boolean;
         searchValue: string;
@@ -45,7 +43,7 @@
         demoData = {},
         demoOptions = {},
         themes = [],
-        multiChoice = {},
+        multiChoice = [],
         consultationSlug = "",
         searchValue = "",
         evidenceRich = false,
@@ -65,27 +63,9 @@
     </div>
 
     <div class="col-span-4 md:col-span-3">
-        {#if multiChoice[""] && Object.keys(multiChoice[""]).length > 0}
-            <section class="my-4">
-                <Panel>
-                    <TitleRow
-                        level={2}
-                        title="Multiple Choice Answers"
-                    >
-                        <List slot="icon" />
-                    </TitleRow>
 
-                    <ProgressCards
-                        totalAnswers={totalAnswers}
-                        filteredTotal={filteredTotal}
-                        demoData={multiChoice}
-                        themes={themes}
-                        themeFilters={themeFilters.filters}
-                        demoFiltersApplied={demoFilters.applied}
-                        themeFiltersApplied={themeFilters.applied}
-                    />
-                </Panel>
-            </section>
+        {#if multiChoice && multiChoice.length > 0}
+            <MultiChoice data={multiChoice} />
         {/if}
 
         <section class="my-4">
