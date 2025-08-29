@@ -198,7 +198,8 @@
                                 </Button>
                             {/if}
 
-                            <Button
+                            <!-- TODO: Activate after implementation is finished -->
+                            <!-- <Button
                                 size="sm"
                                 highlightVariant="primary"
                                 highlighted={flaggedOnly}
@@ -209,7 +210,7 @@
                                 </MaterialIcon>
 
                                 Flagged only
-                            </Button>
+                            </Button> -->
                         </div>
                     </TitleRow>
 
