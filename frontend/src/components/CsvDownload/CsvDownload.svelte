@@ -1,7 +1,7 @@
 <script lang="ts">
-    import Button from "./inputs/Button/Button.svelte";
-    import MaterialIcon from "./MaterialIcon.svelte";
-    import Download from "./svg/material/Download.svelte";
+    import Button from "../inputs/Button/Button.svelte";
+    import MaterialIcon from "../MaterialIcon.svelte";
+    import Download from "../svg/material/Download.svelte";
 
 
     interface Props {
@@ -39,6 +39,7 @@
     title="Download themes as CSV"
     href={getDownloadUrl(buildCsv(data))}
     download={fileName}
+    data-testid="csv-download"
 >
     <Button size="sm">
         <MaterialIcon color="fill-neutral-700">
