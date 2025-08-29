@@ -14,7 +14,7 @@ export default getViteConfig({
                 '**/tailwind.config.mjs',
                 '**/pages/**',
                 '**/layouts/**',
-                ...coverageConfigDefaults.exclude
+                ...coverageConfigDefaults.exclude,
             ],
         },
     },
