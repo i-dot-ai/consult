@@ -54,7 +54,7 @@
             "flex-wrap",
             "text-sm",
         ])}>
-            {#if (demoData.length > 0 || evidenceRich) || skeleton}
+            {#if (demoData && demoData.length > 0 || evidenceRich) || skeleton}
                 <div class={clsx([
                     "flex",
                     "flex-wrap",
@@ -115,7 +115,7 @@
             </p>
         {/if}
 
-        {#if multiAnswers.length > 0 && !skeleton}
+        {#if multiAnswers && multiAnswers.length > 0 && !skeleton}
             <ul class={clsx([
                 "flex",
                 "gap-1",
@@ -128,7 +128,7 @@
             </ul>
         {/if}
 
-        {#if themes.length > 0 && !skeleton}
+        {#if themes && themes.length > 0 && !skeleton}
             <footer class={clsx([
                 "flex",
                 "items-center",
