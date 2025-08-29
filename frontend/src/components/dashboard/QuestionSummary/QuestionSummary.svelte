@@ -20,6 +20,7 @@
     import { themeFilters, demoFilters } from "../../../global/state.svelte.ts";
     import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
     import MultiChoice, { type MultiChoiceAnswer } from "../MultiChoice/MultiChoice.svelte";
+    import CsvDownload from "../../CsvDownload.svelte";
 
 
     interface Props {
@@ -77,20 +78,17 @@
                 >
                     <Lan slot="icon" />
 
-                    <iai-csv-download
-                        slot="aside"
-                        class="text-xs"
-                        fileName={`theme_mentions_for_${consultationSlug}.csv`}
-                        variant="silver"
-                        data={
-                            themes.map(theme => ({
+                    <div slot="aside">
+                        <CsvDownload
+                            fileName={`theme_mentions_for_${consultationSlug}.csv`}
+                            data={themes.map(theme => ({
                                 "Theme Name": theme.name,
                                 "Theme Description": theme.description,
                                 "Mentions": theme.count,
                                 "Percentage": getPercentage(theme.count, totalAnswers),
-                            }))
-                        }
-                    ></iai-csv-download>
+                            }))}
+                        />
+                    </div>
                 </TitleRow>
 
                 {#if demoFilters.applied() || themeFilters.applied() || evidenceRich || searchValue}
