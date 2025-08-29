@@ -1,13 +1,13 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import Button from "../inputs/Button/Button.svelte";
-    import Panel from "./Panel.svelte";
-    import Tag from "../Tag.svelte";
-    import MaterialIcon from "../MaterialIcon.svelte";
-    import Diamond from "../svg/material/Diamond.svelte";
-    import { applyHighlight } from "../../global/utils";
-    import { themeFilters } from "../../global/state.svelte";
+    import Button from "../../inputs/Button/Button.svelte";
+    import Panel from "../Panel/Panel.svelte";
+    import Tag from "../../Tag/Tag.svelte";
+    import MaterialIcon from "../../MaterialIcon.svelte";
+    import Diamond from "../../svg/material/Diamond.svelte";
+    import { applyHighlight } from "../../../global/utils";
+    import { themeFilters } from "../../../global/state.svelte";
 
     interface Theme {
         id: string;
@@ -15,14 +15,14 @@
     }
 
     interface Props {
-        id: string;
-        text: string;
-        demoData: string[];
-        evidenceRich: boolean;
-        multiAnswers: string[];
-        themes: Theme[];
-        skeleton: boolean;
-        highlightText: string;
+        id?: string;
+        text?: string;
+        demoData?: string[];
+        evidenceRich?: boolean;
+        multiAnswers?: string[];
+        themes?: Theme[];
+        skeleton?: boolean;
+        highlightText?: string;
     }
 
     let {
@@ -54,7 +54,7 @@
             "flex-wrap",
             "text-sm",
         ])}>
-            {#if (demoData.length > 0 || evidenceRich) || skeleton}
+            {#if (demoData && demoData.length > 0 || evidenceRich) || skeleton}
                 <div class={clsx([
                     "flex",
                     "flex-wrap",
@@ -115,7 +115,7 @@
             </p>
         {/if}
 
-        {#if multiAnswers.length > 0 && !skeleton}
+        {#if multiAnswers && multiAnswers.length > 0 && !skeleton}
             <ul class={clsx([
                 "flex",
                 "gap-1",
@@ -128,7 +128,7 @@
             </ul>
         {/if}
 
-        {#if themes.length > 0 && !skeleton}
+        {#if themes && themes.length > 0 && !skeleton}
             <footer class={clsx([
                 "flex",
                 "items-center",

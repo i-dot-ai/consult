@@ -27,7 +27,7 @@ export interface FormattedTheme {
     description: string;
     count: number;
     highlighted?: boolean;
-    handleClick?: Function;
+    handleClick?: (e: MouseEvent) => void;
 }
 
 export interface SelectOption {
@@ -55,4 +55,9 @@ export enum TitleLevels {
 export enum TabNames {
     QuestionSummary = "tab-question-summary",
     ResponseAnalysis = "tab-response-analysis",
+}
+
+export enum TabDirections {
+    Forward = "forward",
+    Backward = "backward",
 }

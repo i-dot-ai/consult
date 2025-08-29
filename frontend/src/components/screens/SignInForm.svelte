@@ -5,7 +5,7 @@
 
     import { Routes } from "../../global/routes";
 
-    import TextInput from "../inputs/TextInput.svelte";
+    import TextInput from "../inputs/TextInput/TextInput.svelte";
     import Link from "../Link.svelte";
     import Button from "../inputs/Button/Button.svelte";
 

@@ -1,22 +1,26 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import Title from "../Title.svelte";
-    import MaterialIcon from "../MaterialIcon.svelte";
-    import Star from "../svg/material/Star.svelte";
+    import { applyHighlight } from "../../../global/utils";
 
-    export let title: string = "";
-    export let description: string = "";
-    export let tags: Array<string> = [];
-    export let highlightText: string = "";
+    import Title from "../../Title.svelte";
+    import MaterialIcon from "../../MaterialIcon.svelte";
+    import Star from "../../svg/material/Star.svelte";
 
-    const applyTextHighlight = (text: string) => {
-        if (!highlightText) {
-            return text;
-        }
-        const regex = new RegExp(highlightText, "gi");
-        return text.replace(regex, match => `<span class="bg-yellow-300">${match}</span>`);
+
+    interface Props {
+        title: string;
+        description: string;
+        tags: string[];
+        highlightText: string;
     }
+
+    let {
+        title = "",
+        description = "",
+        tags = [],
+        highlightText = "",
+    }: Props = $props();
 </script>
 
 <article>
@@ -45,7 +49,7 @@
                 <Title
                     weight={"light"}
                     level={3}
-                    text={applyTextHighlight(title)}
+                    text={applyHighlight(title, highlightText)}
                 />
 
                 <slot name="aside" />
@@ -53,8 +57,8 @@
 
             {#if description}
                 <p>
-                    {@html applyTextHighlight(description)}
-                </p>    
+                    {@html applyHighlight(description, highlightText)}
+                </p>
             {/if}
             
             <footer class={clsx([
