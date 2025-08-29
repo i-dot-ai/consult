@@ -6,6 +6,7 @@
 
     import type { FormattedTheme } from "../../../global/types.ts";
     import { getPercentage } from "../../../global/utils.ts";
+    import Progress from "../../Progress/Progress.svelte";
 
     export let themes: FormattedTheme[] = [];
     export let totalAnswers: number = 0;
@@ -101,10 +102,10 @@
                                 <span class="w-[5ch]">
                                     {getPercentage(theme.count, totalAnswers)}%
                                 </span>
-                                <iai-silver-progress-bar
-                                    value={getPercentage(theme.count, totalAnswers)}
-                                    label=""
-                                ></iai-silver-progress-bar>
+
+                                <div class="w-full max-w-[3rem]">
+                                    <Progress value={getPercentage(theme.count, totalAnswers)} />
+                                </div>
                             </div>
                         </td>
                     </tr>

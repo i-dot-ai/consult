@@ -172,25 +172,6 @@
         hasMorePages = true;
     }
 
-    function formatMultiChoiceData(multiChoiceData: Array<{
-        response_count: number,
-        answer?: string,
-    }>) {
-        if (!multiChoiceData) {
-            return {};
-        }
-
-        // empty string to avoid displaying title on card
-        const formattedMultiChoice = {"": {}};
-        multiChoiceData.forEach(data => {
-            if (!data.answer) {
-                return;
-            }
-            formattedMultiChoice[""][data.answer] = data.response_count;
-        })
-        return formattedMultiChoice;
-    }
-
     const setEvidenceRich = (value: boolean) => evidenceRich = value;
 
     $effect(() => {
@@ -277,7 +258,7 @@
             filteredTotal={$answersData?.filtered_total}
             demoData={$demoAggrData?.demographic_aggregations}
             demoOptions={$demoOptionsData?.demographic_options}
-            multiChoice={formatMultiChoiceData($multiChoiceAggrData)}
+            multiChoice={$multiChoiceAggrData?.filter(item => Boolean(item.answer))}
             consultationSlug={$consultationData?.slug}
             evidenceRich={evidenceRich}
             searchValue={searchValue}
