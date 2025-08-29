@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
 import QuestionSummary from "./QuestionSummary.svelte";
+import { getPercentage } from "../../../global/utils";
 
 
 let testData;
@@ -23,22 +24,22 @@ describe("QuestionSummary", () => {
     })
 
     it("should render multi choice data if passed", () => {
-        const multiChoice = { "": { "yes": 10, "no": 20 } };
+        const multiChoice = [
+            { answer: "yes", response_count: 10 },
+            { answer: "no", response_count: 20 },
+        ]
 
-        const { getByText } = render(QuestionSummary, {
+        const { getByText, getAllByText } = render(QuestionSummary, {
             multiChoice: multiChoice,
             themesLoading: testData.themesLoading,
         });
 
         expect(getByText("Multiple Choice Answers"));
 
-        // TODO: enable after porting iai-progress-card to Svelte
-        // ---
-        // Object.keys(multiChoice).forEach(key => {
-        //     Object.keys(multiChoice[key]).forEach(answerKey => {
-        //         expect(getByText(answerKey));
-        //         expect(getByText(multiChoice[key][answerKey]));
-        //     })
-        // })
+        multiChoice.forEach(item => {
+            expect(getByText(item.answer));
+            expect(getAllByText(item.response_count));
+            expect(getByText(getPercentage(item.response_count, 30) + "%"));
+        })
     })
 })
