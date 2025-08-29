@@ -20,7 +20,7 @@
     import { themeFilters, demoFilters } from "../../../global/state.svelte.ts";
     import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
     import MultiChoice, { type MultiChoiceAnswer } from "../MultiChoice/MultiChoice.svelte";
-    import CsvDownload from "../../CsvDownload.svelte";
+    import CsvDownload from "../../CsvDownload/CsvDownload.svelte";
 
 
     interface Props {
