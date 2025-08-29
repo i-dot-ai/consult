@@ -1,9 +1,13 @@
+import datetime
 import json
+import logging
 
 import boto3
-from django.conf import settings
 
-logger = settings.LOGGER
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+
 
 # AWS Batch client
 batch_client = boto3.client("batch")
@@ -13,7 +17,7 @@ def lambda_handler(event, context):
     """
     Lambda handler to process a single SQS message and submit job to AWS Batch.
     """
-    logger.info("Received event with {n_records} records", n_records=len(event["Records"]))
+    logger.info(f"Received event with {len(event['Records'])} records")
 
     records = event.get("Records", [])
 
@@ -28,9 +32,9 @@ def lambda_handler(event, context):
     message_body = record["body"]
     try:
         message_data = json.loads(message_body)
-        logger.info("Parsed message: {message_data}", message_data=message_data)
+        logger.info(f"Parsed message: {message_data}")
     except json.JSONDecodeError as e:
-        raise ValueError("Invalid JSON in message body: {msg}", mesg=e)
+        raise ValueError("Invalid JSON in message body: {msg}", {e})
 
     process_message(message_data)
 
@@ -46,16 +50,23 @@ def process_message(message_data):
     - jobDefinition
     - containerOverrides
     - jobType
+    - userId
+    - consultationName
     - parameters (optional, for backward compatibility)
     """
     if not isinstance(message_data, dict):
         raise ValueError("Message data must be a JSON object")
 
-    job_name = message_data.get("jobName", "lambda-batch-job")
+    job_name = message_data.get("jobName")
     job_queue = message_data.get("jobQueue")
     job_definition = message_data.get("jobDefinition")
+    user_id = message_data.get("userId")
+    consultation_name = message_data.get("consultationName")
+    consultation_code = message_data.get("consultationCode")
     container_overrides = message_data.get("containerOverrides", {})
     job_parameters = message_data.get("parameters", {})
+
+    date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d") 
 
     if not job_queue:
         raise ValueError("Missing required field: jobQueue")
@@ -68,26 +79,39 @@ def process_message(message_data):
         "jobQueue": job_queue,
         "jobDefinition": job_definition,
     }
+    
+    all_parameters = {}
+    if user_id:
+        all_parameters["userId"] = str(user_id) 
+    
+    if consultation_name:
+        all_parameters["consultation_name"] = str(consultation_name)
+
+    if consultation_code:
+        all_parameters["consultation_code"] = str(consultation_code)
+
+    all_parameters["mappingDate"] = str(date)
+
+    if job_parameters:
+        all_parameters.update(job_parameters)
+    
+    if all_parameters:
+        submit_job_kwargs["parameters"] = all_parameters
+        logger.info(f"Using parameters: {all_parameters}")
 
     # Add containerOverrides if present
     if container_overrides:
         submit_job_kwargs["containerOverrides"] = container_overrides
-        logger.info(
-            "Using container overrides: {container_overrides}",
-            container_overrides=container_overrides,
-        )
+        logger.info(f"Using container overrides: {container_overrides}")
 
     # Add parameters if present (for backward compatibility)
     if job_parameters:
         submit_job_kwargs["parameters"] = job_parameters
-        logger.info("Using parameters: {job_parameters}", job_parameters=job_parameters)
+        logger.info(f"Using parameters: {job_parameters}")
 
-    logger.info("Submitting AWS Batch job: {job_name}", job_name=job_name)
+    logger.info(f"Submitting AWS Batch job: {job_name}")
+    logger.info(f"user id: {user_id}")
     response = batch_client.submit_job(**submit_job_kwargs)
 
     job_id = response["jobId"]
-    logger.info(
-        "Successfully submitted job: {job_id} for jobName: {job_name}",
-        job_id=job_id,
-        job_name=job_name,
-    )
+    logger.info(f"Successfully submitted job: {job_id} for jobName: {job_name}")

@@ -76,6 +76,42 @@ data "archive_file" "slack_notifier_archive" {
   output_path = "${path.root}/../lambda/slack_notifier.zip"
 }
 
+
+resource "null_resource" "build_consultation_lambda" {
+  triggers = {
+    requirements = filemd5("${path.root}/../lambda/consultation_import/requirements.txt")
+    lambda_code  = filemd5("${path.root}/../lambda/consultation_import/lambda_function.py")
+  }
+
+  provisioner "local-exec" {
+    command = <<EOF
+      # Create temporary build directory
+      rm -rf ${path.root}/../lambda/consultation_import/build
+      mkdir -p ${path.root}/../lambda/consultation_import/build
+      
+      # Copy source files to build directory
+      cp ${path.root}/../lambda/consultation_import/*.py ${path.root}/../lambda/consultation_import/build/
+      cp ${path.root}/../lambda/consultation_import/requirements.txt ${path.root}/../lambda/consultation_import/build/
+
+      # Install dependencies in build directory with specific options
+      cd ${path.root}/../lambda/consultation_import/build
+      pip install -r requirements.txt -t . --no-cache-dir --platform linux_x86_64 --only-binary=:all:
+      
+      # Verify packages were installed
+      echo "Installed packages:"
+      ls -la | grep -E "(celery|redis)"
+    EOF
+  }
+}
+
+data "archive_file" "consultation_import_archive" {
+  depends_on  = [null_resource.build_consultation_lambda]
+  type        = "zip"
+  source_dir  = "${path.root}/../lambda/consultation_import/build"
+  output_path = "${path.root}/../lambda/consultation_import.zip"
+}
+
+
 data "aws_ssm_parameter" "slack_webhook_url" {
   name = "/i-dot-ai-${terraform.workspace}-consult/env_secrets/THEMEFINDER_SLACK_WEBHOOK_URL"
   depends_on = [
