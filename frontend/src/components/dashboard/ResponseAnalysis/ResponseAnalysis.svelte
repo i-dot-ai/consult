@@ -273,7 +273,7 @@
                                         "overflow-hidden",
                                         isAnswersLoading ? "w-[14ch]" : "w-[10ch]",
                                     ])}>
-                                        <Button fullWidth={true} handleClick={handleLoadClick}>
+                                        <Button fullWidth={true} handleClick={handleLoadClick} size="sm">
                                             <span class="w-full whitespace-nowrap text-center">
                                                 {isAnswersLoading ? "Loading answers" : "Load more"}
                                             </span>
