@@ -183,6 +183,10 @@
         // do not track deep dependencies
         untrack(() => loadData());
     })
+
+    let question = $derived($consultationData?.questions?.find(
+        question => question.id === questionId
+    ));
 </script>
 
 <section class={clsx([
@@ -225,9 +229,7 @@
             skeleton={$isConsultationLoading}
             clickable={false}
             consultationId={!$isConsultationLoading && $consultationData.id}
-            question={!$isConsultationLoading &&
-                $consultationData.questions?.find(question => question.id === questionId)
-            }
+            question={!$isConsultationLoading && question}
             hideIcon={true}
             horizontal={true}
         />
@@ -254,7 +256,7 @@
                 })
             })}
             themesLoading={$isThemeAggrLoading}
-            totalAnswers={$answersData?.respondents_total}
+            totalAnswers={question?.total_responses}
             filteredTotal={$answersData?.filtered_total}
             demoData={$demoAggrData?.demographic_aggregations}
             demoOptions={$demoOptionsData?.demographic_options}

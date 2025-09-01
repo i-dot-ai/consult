@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 import userEvent from '@testing-library/user-event';
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { render, cleanup, screen, getByText } from "@testing-library/svelte";
 
 import ThemesTable from "./ThemesTable.svelte";
 import { getPercentage } from "../../../global/utils";
@@ -33,7 +33,7 @@ describe("ThemesTable", () => {
     afterEach(() => cleanup())
 
     it("should render data", () => {
-        const { getByText } = render(ThemesTable, {
+        const { container, getByText } = render(ThemesTable, {
             themes: testData.themes,
             totalAnswers: testData.totalAnswers,
             skeleton: testData.skeleton,
@@ -44,7 +44,7 @@ describe("ThemesTable", () => {
             expect(getByText(theme.description));
             expect(getByText(theme.count));
             const percentage = getPercentage((theme.count), testData.totalAnswers);
-            expect(getByText(`${percentage}%`));
+            expect(getByText(`${Math.round(percentage)}%`));
         })
     })
 
@@ -94,5 +94,15 @@ describe("ThemesTable", () => {
             const percentage = getPercentage((theme.count), testData.totalAnswers);
             expect(queryByText(`${percentage}%`)).toBeNull();
         })
+    })
+
+    it("should render special text when percentage is below 1 but not 0", () => {
+        const { getAllByText } = render(ThemesTable, {
+            themes: testData.themes,
+            totalAnswers: 10000,
+            skeleton: false,
+        });
+
+        expect(getAllByText("<1%")).toBeTruthy();
     })
 })

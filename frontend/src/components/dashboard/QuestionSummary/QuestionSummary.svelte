@@ -158,7 +158,7 @@
                             ? a.count - b.count
                             : b.count - a.count
                         )}
-                        totalAnswers={filteredTotal}
+                        totalAnswers={totalAnswers}
                         skeleton={themesLoading}
                     />
                 {/if}

@@ -27,7 +27,7 @@ describe("DemoFilter", () => {
     })
 
     it("should render data", () => {
-        const { getByText } = render(DemoFilter, {
+        const { container, getByText } = render(DemoFilter, {
             category: testData.category,
             demoOptions: testData.demoOptions,
             demoData: testData.demoData,
@@ -41,13 +41,14 @@ describe("DemoFilter", () => {
             Object.keys(testData.demoData[option]).forEach(rowKey => {
                 const rowValue = testData.demoData[option][rowKey];
                 expect(getByText(rowValue));
-                expect(getByText(getPercentage(rowValue, testData.totalCounts[option]) + "%"));
+                const percentage = getPercentage(rowValue, testData.totalCounts[option]);
+                expect(container.querySelector(`[title="${percentage}%"]`)).toBeTruthy();
             });
         })
     })
 
     it("should not render data if skeleton", () => {
-        const { queryByText } = render(DemoFilter, {
+        const { container, queryByText } = render(DemoFilter, {
             category: testData.category,
             demoOptions: testData.demoOptions,
             demoData: testData.demoData,
@@ -62,7 +63,8 @@ describe("DemoFilter", () => {
             Object.keys(testData.demoData[option]).forEach(rowKey => {
                 const rowValue = testData.demoData[option][rowKey];
                 expect(queryByText(rowValue)).toBeNull();
-                expect(queryByText(getPercentage(rowValue, testData.totalCounts[option]) + "%")).toBeNull();
+                const percentage = getPercentage(rowValue, testData.totalCounts[option]);
+                expect(container.querySelector(`[title="${percentage}%"]`)).toBeNull();
             });
         })
     })
