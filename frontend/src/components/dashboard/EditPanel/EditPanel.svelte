@@ -11,6 +11,7 @@
     import Tag from "../../Tag/Tag.svelte";
     import Title from "../../Title.svelte";
     import TitleRow from "../TitleRow.svelte";
+    import AutoRenew from "../../svg/material/AutoRenew.svelte";
 
 
     function removeTheme(id: string) {
@@ -44,9 +45,13 @@
     let panelOpen: boolean = $state(false);
 
     onMount(() => {
+        resetStaged();
+    })
+
+    function resetStaged() {
         stagedThemes = [...themes];
         stagedEvidenceRich = evidenceRich;
-    })
+    }
 </script>
 
 
@@ -131,13 +136,29 @@
         <hr class="my-4" />
 
         <div class="w-full flex justify-end">
-            <Button variant="approve" size="sm" handleClick={() => submit()}>
-                <MaterialIcon>
-                    <Check />
-                </MaterialIcon>
+            <div class="w-1/2 mr-1">
+                <Button size="sm" handleClick={() => resetStaged()} fullWidth={true}>
+                    <div class="flex justify-center items-center gap-2 w-full py-0.5">
+                        <MaterialIcon color="fill-neutral-500">
+                            <AutoRenew />
+                        </MaterialIcon>
 
-                Save Changes
-            </Button>
+                        Reset
+                    </div>
+                </Button>
+            </div>
+
+            <div class="w-1/2 ml-1">
+                <Button variant="approve" size="sm" handleClick={() => submit()} fullWidth={true}>
+                    <div class="flex justify-center items-center gap-2 w-full py-0.5">
+                        <MaterialIcon>
+                            <Check />
+                        </MaterialIcon>
+
+                        <span class="whitespace-nowrap">Save Changes</span>
+                    </div>
+                </Button>
+            </div>
         </div>
     </div>
 </Popover>
