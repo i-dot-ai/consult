@@ -50,7 +50,7 @@
         <header class={clsx([
             "flex",
             "justify-between",
-            "items-center",
+            "items-start",
             "gap-1",
             "flex-wrap",
             "text-sm",
@@ -60,7 +60,8 @@
                     "flex",
                     "flex-wrap",
                     "items-center",
-                    "gap-1",
+                    "gap-2",
+                    "max-w-[80%]",
                 ])}>
                     {#if skeleton}
                         {#each "_".repeat(3) as _}
