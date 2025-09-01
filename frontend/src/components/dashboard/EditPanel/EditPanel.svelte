@@ -117,7 +117,7 @@
                     size="xs"
                     handleClick={() => stagedEvidenceRich = true}
                     highlighted={stagedEvidenceRich}
-                    highlightVariant="light"
+                    highlightVariant="approve"
                 >
                     Evidence-rich
                 </Button>
@@ -126,7 +126,7 @@
                     size="xs"
                     handleClick={() => stagedEvidenceRich = false}
                     highlighted={!stagedEvidenceRich}
-                    highlightVariant="light"
+                    highlightVariant="approve"
                 >
                     Not evidence-rich
                 </Button>
