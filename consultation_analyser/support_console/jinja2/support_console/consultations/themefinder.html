@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+{%- from 'govuk_frontend_jinja/components/input/macro.html' import govukInput -%}
 {%- from 'govuk_frontend_jinja/components/select/macro.html' import govukSelect -%}
 
 {% set page_title = "Run Themefinder" %}
@@ -55,6 +56,16 @@
           'classes': 'govuk-label--s'
         },
         'items': consultation_folders
+      }) }}
+
+      {{ govukInput({
+        'id': 'consultation_name',
+        'name': 'consultation_name',
+        'label': {
+          'text': 'Consultation title',
+          'classes': 'govuk-label--s'
+        },
+        'classes': 'govuk-input--width-30'
       }) }}
 
       {{ govukButton({

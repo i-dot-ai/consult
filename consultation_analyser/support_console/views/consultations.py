@@ -6,6 +6,7 @@ from django.contrib import messages
 from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils.html import format_html
 from django_rq import job
 
 from consultation_analyser.consultations import models
@@ -336,16 +337,25 @@ def themefinder(request: HttpRequest) -> HttpResponse:
 
     consultation_folders = ingest.get_folder_names_for_dropdown()
     bucket_name = settings.AWS_BUCKET_NAME
+    current_user_id = request.user.id
 
     consultation_code = None
+    consultation_name = None
     if request.method == "POST":
         consultation_code = request.POST.get("consultation_code")
+        consultation_name = request.POST.get("consultation_name")
+        
         if consultation_code:
             try:
                 # Send message to SQS
-                ingest.send_job_to_sqs(consultation_code, "THEMEFINDER")
+                ingest.send_job_to_sqs(consultation_code, consultation_name, current_user_id, "THEMEFINDER")
                 messages.success(
-                    request, f"Themefinder job submitted successfully for {consultation_code}!"
+                    request,
+                    format_html(
+                        "Themefinder job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
+                        consultation_name,
+                        consultation_code
+                    )
                 )
 
             except Exception as e:
@@ -357,6 +367,7 @@ def themefinder(request: HttpRequest) -> HttpResponse:
         "bucket_name": bucket_name,
         "consultation_folders": consultation_folders,
         "consultation_code": consultation_code,
+        "consultation_name": consultation_name,
     }
 
     return render(request, "support_console/consultations/themefinder.html", context=context)
@@ -367,16 +378,26 @@ def sign_off(request: HttpRequest) -> HttpResponse:
 
     consultation_folders = ingest.get_folder_names_for_dropdown()
     bucket_name = settings.AWS_BUCKET_NAME
+    current_user_id=request.user.id
+
 
     consultation_code = None
+    consultation_name = None
+    
     if request.method == "POST":
         consultation_code = request.POST.get("consultation_code")
+        consultation_name = request.POST.get("consultation_name")
         if consultation_code:
             try:
                 # Send message to SQS
-                ingest.send_job_to_sqs(consultation_code, "SIGNOFF")
+                ingest.send_job_to_sqs(consultation_code, consultation_name, current_user_id, "SIGNOFF")
                 messages.success(
-                    request, f"Sign-off job submitted successfully for {consultation_code}!"
+                    request,
+                    format_html(
+                        "Sign-off job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
+                        consultation_name,
+                        consultation_code
+                    )
                 )
 
             except Exception as e:
@@ -388,6 +409,7 @@ def sign_off(request: HttpRequest) -> HttpResponse:
         "bucket_name": bucket_name,
         "consultation_folders": consultation_folders,
         "consultation_code": consultation_code,
+        "consultation_name": consultation_name,
     }
 
     return render(request, "support_console/consultations/sign_off.html", context=context)
