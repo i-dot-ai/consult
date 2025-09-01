@@ -87,30 +87,20 @@
                             highlightVariant="light"
                         >
                             <div class="demo-filter w-full relative pb-1">
-                                <div class="grid grid-cols-3 gap-1 mb-1">
-                                    <span class="text-left truncate" title={rowKey}>
+                                <div class="flex justify-between items-center gap-1 ">
+                                    <span class="text-left truncate grow" title={rowKey}>
                                         {rowKey.replaceAll("'", "")}
                                     </span>
-                                    <span class="text-right">{percentage}%</span>
-                                    <span class="text-right">{rowValue}</span>
-                                </div>
 
-                                <Progress value={percentage} />
-                            </div>
+                                    <span class="text-right">
+                                        {rowValue}
+                                    </span>
 
-                            <!-- TODO: Alt Design, TBC
-                                <div class="demo-filter w-full relative pb-2">
-                                    <p class="text-left">{rowKey}</p>
-                                    <div class="flex justify-between">
-                                        <span class="text-right">{percentage}%</span>
-                                        <iai-silver-progress-bar
-                                            class="absolute bottom-1 left-0 w-1/2 left-[25%] bottom-3"
-                                            value={percentage}
-                                        ></iai-silver-progress-bar>
-                                        <span class="text-right">{rowValue}</span>
+                                    <div title={`${percentage}%`} class="w-12 shrink-0">
+                                        <Progress value={percentage} />
                                     </div>
                                 </div>
-                            -->
+                            </div>
                         </Button>
                     </div>
                 {/if}

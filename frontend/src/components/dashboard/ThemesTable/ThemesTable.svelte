@@ -66,6 +66,8 @@
         {:else}
             <tbody in:fade>
                 {#each themes as theme (theme.id)}
+                    {@const percentage = getPercentage(theme.count, totalAnswers)}
+
                     <tr
                         animate:flip={{ duration: 300 + (themes.length * TABLE_FLIP_SPEED) }}
                         class={clsx([
@@ -100,11 +102,14 @@
                         <td class="pr-4">
                             <div class="flex items-center gap-1">
                                 <span class="w-[5ch]">
-                                    {getPercentage(theme.count, totalAnswers)}%
+                                    {percentage > 0 && percentage < 1
+                                        ? "<1"
+                                        : Math.round(percentage)
+                                    }%
                                 </span>
 
                                 <div class="w-full max-w-[3rem]">
-                                    <Progress value={getPercentage(theme.count, totalAnswers)} />
+                                    <Progress value={percentage} />
                                 </div>
                             </div>
                         </td>
