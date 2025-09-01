@@ -405,7 +405,13 @@ def respondent_2(consultation):
 @pytest.fixture
 def free_text_response(free_text_question, respondent_1):
     response = Response.objects.create(question=free_text_question, respondent=respondent_1)
+    yield response
+    response.delete()
 
+
+@pytest.fixture
+def another_response(free_text_question, respondent_2):
+    response = Response.objects.create(question=free_text_question, respondent=respondent_2)
     yield response
     response.delete()
 
@@ -420,6 +426,17 @@ def free_text_annotation(free_text_response):
     yield annotation
     annotation_a.delete()
     theme_a.delete()
+    annotation.delete()
+
+
+@pytest.fixture
+def another_annotation(another_response, theme_b):
+    annotation = ResponseAnnotation.objects.create(response=another_response, evidence_rich=True)
+    annotation_a = ResponseAnnotationTheme.objects.create(
+        response_annotation=annotation, theme=theme_b
+    )
+    yield annotation
+    annotation_a.delete()
     annotation.delete()
 
 

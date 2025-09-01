@@ -26,6 +26,7 @@ class ResponseFilter(FilterSet):
     evidenceRich = BooleanFilter(field_name="annotation__evidence_rich")
     themeFilters = BaseInFilter(method="filter_themes")
     demoFilters = CharFilter(method="filter_demographics")
+    is_flagged = BooleanFilter()
 
     def filter_themes(self, queryset, name, value):
         if not value:
