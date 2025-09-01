@@ -104,6 +104,7 @@
                         description: theme.description,
                         disabled: false,
                     }))}
+                    selectedValues={stagedThemes.map(theme => theme.id)}
                     handleChange={(option) => addTheme(option)}
                 />
             </div>
