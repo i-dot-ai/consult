@@ -9,6 +9,7 @@
     import { applyHighlight } from "../../../global/utils";
     import { themeFilters } from "../../../global/state.svelte";
 
+
     interface Theme {
         id: string;
         name: string;
@@ -89,15 +90,21 @@
                 </div>
             {/if}
 
-            <small class={clsx([
-                skeleton && "bg-neutral-100 text-neutral-100 select-none blink"
-            ])}>
-                {#if skeleton}
-                    SKELETON
-                {:else}
-                    ID: {id || "Not Available"}
-                {/if}
-            </small>
+            <div class="flex items-center gap-2">
+                <!-- TODO: Enabled after implementation -->
+                <!-- <EditPanel /> -->
+
+                <small class={clsx([
+                    "whitespace-nowrap",
+                    skeleton && "bg-neutral-100 text-neutral-100 select-none blink",
+                ])}>
+                    {#if skeleton}
+                        SKELETON
+                    {:else}
+                        ID: {id || "Not Available"}
+                    {/if}
+                </small>
+            </div>
         </header>
 
         {#if skeleton}
@@ -118,7 +125,9 @@
         {#if multiAnswers && multiAnswers.length > 0 && !skeleton}
             <ul class={clsx([
                 "flex",
-                "gap-1",
+                "gap-2",
+                "flex-wrap",
+                "my-1",
             ])}>
                 {#each multiAnswers as multiAnswer}
                     <Tag>
