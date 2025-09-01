@@ -241,6 +241,7 @@
                                                 id={answer.identifier}
                                                 text={answer.free_text_answer_text}
                                                 themes={answer.themes}
+                                                themeOptions={themes}
                                                 highlightText={searchValue}
                                             />
                                         </div>

@@ -8,6 +8,7 @@
     import Diamond from "../../svg/material/Diamond.svelte";
     import { applyHighlight } from "../../../global/utils";
     import { themeFilters } from "../../../global/state.svelte";
+    import EditPanel from "../EditPanel/EditPanel.svelte";
 
 
     interface Theme {
@@ -22,6 +23,7 @@
         evidenceRich?: boolean;
         multiAnswers?: string[];
         themes?: Theme[];
+        themeOptions?: [],
         skeleton?: boolean;
         highlightText?: string;
     }
@@ -33,6 +35,7 @@
         evidenceRich = false,
         multiAnswers = [],
         themes = [],
+        themeOptions =[],
         skeleton = false,
         highlightText = "",
     }: Props = $props();
@@ -93,7 +96,7 @@
 
             <div class="flex items-center gap-2">
                 <!-- TODO: Enabled after implementation -->
-                <!-- <EditPanel /> -->
+                <EditPanel {themes} {themeOptions} {evidenceRich} {id} />
 
                 <small class={clsx([
                     "whitespace-nowrap",

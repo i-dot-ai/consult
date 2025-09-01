@@ -14,12 +14,19 @@
 
     export let label: string = '';
     export let open: boolean = false;
+    export let arrow: boolean = true;
+    export let border: boolean = true;
+    export let handleOpenChange = (next: boolean) => {};
 
     const {
-        elements: { trigger, content, arrow, close },
+        elements: { trigger, content, close },
         states,
     } = createPopover({
         forceVisible: true,
+        onOpenChange: ({ curr, next }) => {
+            handleOpenChange(next);
+            return next;
+        }
     });
 
     const sync = createSync(states);
@@ -28,22 +35,34 @@
 
 
 <button
-    class="trigger bg-white border border-neutral-100 rounded p-2 w-full"
+    class={clsx([
+        "trigger",
+        "w-full",
+        "p-2",
+        "bg-white",
+        border && clsx([
+            "border",
+            "border-neutral-100",
+        ]),
+        "rounded",
+    ])}
     use:melt={$trigger}
     aria-label={label}
 >
     <div class="flex justify-between items-center">
         <slot name="trigger" />
 
-        <div class={clsx([
-            "transition-transform",
-            "-rotate-90",
-            open && "rotate-0",
-        ])}>
-            <MaterialIcon color="fill-neutral-400">
-                <KeyboardArrowDown />
-            </MaterialIcon>
-        </div>
+        {#if arrow}
+            <div class={clsx([
+                "transition-transform",
+                "-rotate-90",
+                open && "rotate-0",
+            ])}>
+                <MaterialIcon color="fill-neutral-400">
+                    <KeyboardArrowDown />
+                </MaterialIcon>
+            </div>
+        {/if}
     </div>
 </button>
 

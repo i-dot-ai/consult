@@ -21,6 +21,7 @@
     import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
     import MultiChoice, { type MultiChoiceAnswer } from "../MultiChoice/MultiChoice.svelte";
     import CsvDownload from "../../CsvDownload/CsvDownload.svelte";
+    import Finance from "../../svg/material/Finance.svelte";
 
 
     interface Props {
@@ -106,6 +107,10 @@
                                     size="sm"
                                     handleClick={() => setActiveTab(TabNames.ResponseAnalysis)}
                                 >
+                                    <MaterialIcon>
+                                        <Finance />
+                                    </MaterialIcon>
+
                                     {`View Responses${themeFilters.filters.length > 0
                                         ? ` (${themeFilters.filters.length} Themes)`
                                         : ""

@@ -1,7 +1,7 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    export let variant: "default" | "primary" | "ghost" = "default";
+    export let variant: "default" | "primary" | "ghost" | "approve" = "default";
     export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
     export let highlighted: boolean = false;
     export let highlightVariant: "dark" | "light" | "primary" = "dark";
@@ -10,7 +10,17 @@
     export let fullWidth: boolean = false;
 </script>
 
+<style>
+    button[data-variant="approve"]:hover :global(svg) {
+        fill: var(--color-teal);
+    }
+    button[data-variant="primary"]:hover :global(svg) {
+        fill: var(--color-primary);
+    }
+</style>
+
 <button
+    data-variant={variant}
     class={clsx([
         fullWidth && "w-full",
         `text-${size}`,
@@ -20,8 +30,8 @@
         size === "xs" ? "py-0.5" : "py-1",
         size === "xs" ? "px-1" : "px-2",
         "border",
-        variant === "primary" && "text-white",
-        variant === "primary" && "bg-primary",
+        variant === "primary" && "bg-primary text-white",
+        variant === "approve" && "bg-teal text-white",
         variant === "ghost" ? "border-transparent" : "border-gray-300",
         "transition-colors",
         "duration-300",
@@ -29,8 +39,8 @@
         "gap-1",
         "items-center",
         "hover:bg-gray-100",
-        variant === "primary" && "hover:text-primary",
-        variant === "primary" && "hover:border-primary",
+        variant === "primary" && "hover:text-primary hover:border-primary",
+        variant === "approve" && "hover:text-teal hover:border-teal",
 
         disabled && clsx([
             "disabled:bg-gray-200",
