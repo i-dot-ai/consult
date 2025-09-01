@@ -27,7 +27,7 @@
     "@rollup/plugin-node-resolve": "^16.0.1",
     "@web/test-runner": "^0.20.2",
     "@web/test-runner-mocha": "^0.9.0",
-    "@x-govuk/govuk-prototype-components": "^3.0.9",
+    "@x-govuk/govuk-prototype-components": "^5.0.2",
     "dompurify": "^3.2.6",
     "govuk-frontend": "^5.10.2",
     "i.ai-design-system": "^0.5.2",
