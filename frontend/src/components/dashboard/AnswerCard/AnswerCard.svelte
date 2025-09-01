@@ -39,6 +39,8 @@
         skeleton = false,
         highlightText = "",
     }: Props = $props();
+
+    let editing: boolean = $state(false);
 </script>
 
 <Panel>
@@ -49,6 +51,14 @@
         "w-full",
         "rounded-xl",
         "leading-[1.5rem]",
+        "transition-all",
+        "duration-300",
+        editing && clsx([
+            "outline",
+            "outline-4",
+            "outline-teal",
+            "p-2",
+        ])
     ])}>
         <header class={clsx([
             "flex",
@@ -95,8 +105,13 @@
             {/if}
 
             <div class="flex items-center gap-2">
-                <!-- TODO: Enabled after implementation -->
-                <EditPanel {themes} {themeOptions} {evidenceRich} {id} />
+                <EditPanel
+                    {themes}
+                    {themeOptions}
+                    {evidenceRich}
+                    {id}
+                    setEditing={(val: boolean) => editing = val}
+                />
 
                 <small class={clsx([
                     "whitespace-nowrap",

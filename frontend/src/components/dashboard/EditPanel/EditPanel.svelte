@@ -38,6 +38,7 @@
         themes = [],
         themeOptions = [],
         evidenceRich = false,
+        setEditing = () => {},
     } = $props();
 
     let stagedThemes = $state([]);
@@ -59,7 +60,10 @@
     arrow={false}
     border={false}
     open={panelOpen}
-    handleOpenChange={newOpen => panelOpen = newOpen}
+    handleOpenChange={newOpen => {
+        panelOpen = newOpen;
+        setEditing(newOpen);
+    }}
 >
     <div slot="trigger">
         <MaterialIcon color="fill-neutral-500">
