@@ -91,9 +91,11 @@
                 "hover:bg-neutral-100",
             ])}>
                 {#if tab.icon}
-                    <MaterialIcon color="fill-neutral-500">
-                        <svelte:component this={tab.icon} />
-                    </MaterialIcon>
+                    <div class="shrink-0">
+                        <MaterialIcon color="fill-neutral-500">
+                            <svelte:component this={tab.icon} />
+                        </MaterialIcon>
+                    </div>
                 {/if}
 
                 {tab.title}
