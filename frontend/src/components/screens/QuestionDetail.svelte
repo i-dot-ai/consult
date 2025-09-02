@@ -2,6 +2,7 @@
     import clsx from "clsx";
 
     import { onMount, untrack } from "svelte";
+    import type { Writable } from "svelte/store"
 
     import MaterialIcon from "../MaterialIcon.svelte";
     import Button from "../inputs/Button/Button.svelte";
@@ -13,7 +14,7 @@
 
     import { getConsultationDetailUrl } from "../../global/routes.ts";
     import { createFetchStore } from "../../global/stores.ts";
-    import { SearchModeValues, TabNames } from "../../global/types.ts";
+    import { SearchModeValues, TabNames, type AnswersResponse, type FormattedTheme, type ResponseAnswer, type ResponseTheme, type ThemeInfoResponse } from "../../global/types.ts";
     import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
     import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
     import Lan from "../svg/material/Lan.svelte";
@@ -25,14 +26,14 @@
         questionId = "",
     } = $props();
 
-    const PAGE_SIZE = 50;
-    const MAX_THEME_FILTERS = Infinity;
+    const PAGE_SIZE: number = 50;
+    const MAX_THEME_FILTERS: number = Infinity;
 
     let currPage: number = $state(1);
     let hasMorePages: boolean = $state(true);
-    let answers = $state([]);
+    let answers: ResponseAnswer[] = $state([]);
 
-    let activeTab = $state(TabNames.QuestionSummary);
+    let activeTab: TabNames = $state(TabNames.QuestionSummary);
 
     let searchValue: string = $state("");
     let searchMode: SearchModeValues = $state(SearchModeValues.KEYWORD);
@@ -52,6 +53,11 @@
         error: answersError,
         load: loadAnswers,
         data: answersData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<AnswersResponse>,
     } = createFetchStore();
 
     const {
@@ -66,6 +72,11 @@
         error: themeInfoError,
         load: loadThemeInfo,
         data: themeInfoData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<ThemeInfoResponse>,
     } = createFetchStore();
 
     const {
@@ -252,9 +263,9 @@
                     count: $themeAggrData?.theme_aggregations[themeId],
                     highlighted: themeFilters.filters.includes(themeId),
                     handleClick: () => themeFilters.update(themeId),
-                    ...($themeInfoData?.themes?.find(themeInfo => themeInfo.id === themeId)),
+                    ...($themeInfoData?.themes?.find(themeInfo => themeInfo?.id === themeId)),
                 })
-            })}
+            }) as FormattedTheme[]}
             themesLoading={$isThemeAggrLoading}
             totalAnswers={question?.total_responses}
             filteredTotal={$answersData?.filtered_total}

@@ -10,7 +10,13 @@
     import FiltersSidebar from "../FiltersSidebar/FiltersSidebar.svelte";
     import Select from "../../inputs/Select.svelte";
 
-    import { SearchModeLabels, SearchModeValues } from "../../../global/types";
+    import {
+        SearchModeLabels,
+        SearchModeValues,
+        type ResponseAnswer,
+        type ResponseTheme,
+        type SearchableSelectOption,
+    } from "../../../global/types";
     import { themeFilters, demoFilters } from "../../../global/state.svelte";
 
     import Title from "../../Title.svelte";
@@ -25,11 +31,12 @@
     import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
     import Flag2 from "../../svg/material/Flag2.svelte";
 
+
     export let pageSize: number = 50;
     export let isAnswersLoading: boolean = true;
     export let isThemesLoading: boolean = true;
     export let answersError: string = "";
-    export let answers = [];
+    export let answers: ResponseAnswer[] = [];
     export let hasMorePages: boolean = true;
     export let filteredTotal: number = 0;
     export let handleLoadClick = () => {};
@@ -41,7 +48,7 @@
 
     export let demoOptions: Object = {};
     export let demoData: Object = {};
-    export let themes = [];
+    export let themes: ResponseTheme[] = [];
 
     export let evidenceRich: boolean = false;
     export let setEvidenceRich = (value: boolean) => {};
@@ -121,7 +128,7 @@
                                     { value: SearchModeValues.SEMANTIC, label: SearchModeLabels.SEMANTIC },
                                 ]}
                                 handleChange={(nextValue: string) => {
-                                    setSearchMode(nextValue);
+                                    setSearchMode(nextValue as SearchModeValues);
                                 }}
                             />
                         </div>
@@ -167,7 +174,11 @@
 
                                     <div slot="panel" class="w-full bg-white p-4 shadow-lg">
                                         <SearchableSelect
-                                            handleChange={(theme => themeFilters.update(theme.value))}
+                                            handleChange={(option: SearchableSelectOption) => {
+                                                if (option.value?.value) {
+                                                    themeFilters.update(option.value.value);
+                                                }
+                                            }}
                                             options={themes.map(theme => ({
                                                 value: theme.id,
                                                 label: theme.name,
@@ -238,7 +249,7 @@
                                                 demoData={Object.values(answer.demographic_data)}
                                                 multiAnswers={answer.multiple_choice_answer}
                                                 evidenceRich={answer.evidenceRich}
-                                                id={answer.identifier}
+                                                id={answer.identifier.toString()}
                                                 text={answer.free_text_answer_text}
                                                 themes={answer.themes}
                                                 themeOptions={themes}

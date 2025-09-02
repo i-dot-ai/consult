@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-
+import type { Writable } from "svelte/store"
 
 // Favourite questions logic
 const FAVS_STORAGE_KEY = "favouritedQuestions";
@@ -48,9 +48,9 @@ export const favStore = createFavStore();
 
 // Shared fetch logic
 export const createFetchStore = () => {
-    const data = writable(null);
-    const loading = writable(true);
-    const error = writable(null);
+    const data: Writable<any> = writable(null);
+    const loading: Writable<boolean> = writable(true);
+    const error: Writable<string> = writable("");
 
     const DEBOUNCE_DELAY = 500;
     let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -68,7 +68,7 @@ export const createFetchStore = () => {
 
             debounceTimeout = setTimeout(async () => {
                 loading.set(true);
-                error.set(null);
+                error.set("");
                 try {
                     const response = await fetch(
                         url,

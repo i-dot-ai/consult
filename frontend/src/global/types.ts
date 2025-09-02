@@ -28,6 +28,7 @@ export interface FormattedTheme {
     count: number;
     highlighted?: boolean;
     handleClick?: (e: MouseEvent) => void;
+    key?: string;
 }
 
 export interface SelectOption {
@@ -60,4 +61,41 @@ export enum TabNames {
 export enum TabDirections {
     Forward = "forward",
     Backward = "backward",
+}
+
+export interface SearchableSelectOption {
+    value: any,
+    label: string,
+    description?: string,
+    disabled?: boolean,
+}
+
+export interface ResponseTheme {
+    id: string;
+    name: string
+    description: string;
+    key?: string;
+}
+
+export interface ResponseAnswer {
+    id: string;
+    identifier: number;
+    free_text_answer_text: string;
+    demographic_data: Object;
+    themes: ResponseTheme[];
+    multiple_choice_answer: string[];
+    evidenceRich: boolean;
+    sentiment: string;
+    human_reviewed: boolean;
+    is_flagged: boolean;
+}
+
+export interface AnswersResponse {
+    respondents_total: number;
+    filtered_total: number;
+    has_more_pages: boolean;
+    all_respondents: ResponseAnswer[];
+}
+export interface ThemeInfoResponse {
+    themes: ResponseTheme[];
 }

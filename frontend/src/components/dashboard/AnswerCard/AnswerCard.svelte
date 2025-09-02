@@ -1,20 +1,17 @@
 <script lang="ts">
     import clsx from "clsx";
 
+    import type { ResponseTheme } from "../../../global/types";
+    import { applyHighlight } from "../../../global/utils";
+    import { themeFilters } from "../../../global/state.svelte";
+
     import Button from "../../inputs/Button/Button.svelte";
     import Panel from "../Panel/Panel.svelte";
     import Tag from "../../Tag/Tag.svelte";
     import MaterialIcon from "../../MaterialIcon.svelte";
     import Diamond from "../../svg/material/Diamond.svelte";
-    import { applyHighlight } from "../../../global/utils";
-    import { themeFilters } from "../../../global/state.svelte";
     import EditPanel from "../EditPanel/EditPanel.svelte";
 
-
-    interface Theme {
-        id: string;
-        name: string;
-    }
 
     interface Props {
         id?: string;
@@ -22,8 +19,8 @@
         demoData?: string[];
         evidenceRich?: boolean;
         multiAnswers?: string[];
-        themes?: Theme[];
-        themeOptions?: [],
+        themes?: ResponseTheme[];
+        themeOptions?: ResponseTheme[],
         skeleton?: boolean;
         highlightText?: string;
     }

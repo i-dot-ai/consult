@@ -1,5 +1,6 @@
 <script lang="ts">
     import { onMount } from "svelte";
+    import { slide } from "svelte/transition";
 
     import { createFetchStore } from "../../../global/stores";
 
@@ -14,12 +15,13 @@
     import Title from "../../Title.svelte";
     import TitleRow from "../TitleRow.svelte";
     import AutoRenew from "../../svg/material/AutoRenew.svelte";
+    import { type ResponseTheme, type SearchableSelectOption } from "../../../global/types";
 
 
     function removeTheme(id: string) {
         stagedThemes = stagedThemes.filter(theme => theme.id !== id);
     }
-    function addTheme(option) {
+    function addTheme(option: SearchableSelectOption) {
         if (stagedThemes.find(theme => theme.id === option.value)) {
             return;
         }
@@ -27,7 +29,7 @@
         stagedThemes = [...stagedThemes, {
             id: option.value,
             name: option.label,
-            description: option.description,
+            description: option.description || "",
         }]
     }
 
@@ -48,13 +50,13 @@
         setEditing = () => {},
     } = $props();
 
-    let stagedThemes = $state([]);
+    let stagedThemes: ResponseTheme[] = $state([]);
     let stagedEvidenceRich = $state(false);
     let panelOpen: boolean = $state(false);
 
     const {
         loading: isSubmitting,
-        error: submitErrpr,
+        error: submitError,
         load: updateAnswer,
         data: answerData,
     } = createFetchStore();
@@ -67,6 +69,8 @@
     function resetStaged() {
         stagedThemes = [...themes];
         stagedEvidenceRich = evidenceRich;
+        isSubmitting.set(false);
+        submitError.set("");
     }
 </script>
 
@@ -124,7 +128,11 @@
                         disabled: false,
                     }))}
                     selectedValues={stagedThemes.map(theme => theme.id)}
-                    handleChange={(option) => addTheme(option)}
+                    handleChange={(option: SearchableSelectOption) => {
+                        if (option.value) {
+                            addTheme(option.value);
+                        }
+                    }}
                 />
             </div>
         </div>
@@ -155,6 +163,10 @@
 
         <hr class="my-4" />
 
+        {#if $submitError}
+            <small class="block my-2 text-red-500" transition:slide>{$submitError}</small>
+        {/if}
+
         <div class="w-full flex justify-end">
             <div class="w-1/2 mr-1">
                 <Button size="sm" handleClick={() => resetStaged()} fullWidth={true}>
@@ -175,7 +187,9 @@
                             <Check />
                         </MaterialIcon>
 
-                        <span class="whitespace-nowrap">Save Changes</span>
+                        <span class="whitespace-nowrap">
+                            {$isSubmitting ? "Saving..." : "Save Changes"}
+                        </span>
                     </div>
                 </Button>
             </div>
