@@ -10,6 +10,7 @@
     import Diamond from "../../svg/material/Diamond.svelte";
     import type { DemoTotalCounts } from "../../../global/types";
 
+
     let {
         showEvidenceRich = true,
         demoOptions = {},
@@ -53,7 +54,7 @@
                             </MaterialIcon>
                         </div>
 
-                        <span class="text-xs">Show evidence rich first</span>
+                        <span class="text-xs">Show evidence rich</span>
                     </div>
                 </Switch>
             </Panel>

@@ -4,14 +4,15 @@ export interface NavItem {
 }
 
 export interface Question {
-    id: string;
-    number: number;
-    total_responses: number;
-    question_text: string;
-    slug: string;
-    has_free_text: boolean;
-    has_multiple_choice: boolean;
-    multiple_choice_options: Array<any>;
+    id?: string;
+    number?: number;
+    total_responses?: number;
+    question_text?: string;
+    slug?: string;
+    has_free_text?: boolean;
+    has_multiple_choice?: boolean;
+    multiple_choice_options?: { text: string }[];
+    proportion_of_audited_answers?: number;
 }
 
 export interface Consultation {
@@ -102,6 +103,12 @@ export interface DemoTotalCounts {
     [category: string]: number;
 }
 
+export interface ConsultationResponse {
+    id: string;
+    title: string;
+    slug: string;
+    questions: Question[];
+}
 export interface AnswersResponse {
     respondents_total: number;
     filtered_total: number;

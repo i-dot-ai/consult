@@ -30,7 +30,7 @@
         element={Link}
         condition={clickable && !skeleton}
         variant="block"
-        href={getQuestionDetailUrl(consultationId, question.id)}
+        href={getQuestionDetailUrl(consultationId, question.id || "")}
         title={`Q${question.number}: ${question.question_text}`}
         ariaLabel={`Click to view question: ${question.question_text}`}
     >
@@ -120,7 +120,7 @@
                                 variant="ghost"
                                 handleClick={(e: MouseEvent) => {
                                     e.stopPropagation();
-                                    favStore.toggleFav(question.id);
+                                    favStore.toggleFav(question.id || "");
                                 }}
                             >
                                 {@const favourited = $favStore.includes(question.id)}

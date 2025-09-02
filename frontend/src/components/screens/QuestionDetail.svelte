@@ -14,7 +14,7 @@
 
     import { getConsultationDetailUrl } from "../../global/routes.ts";
     import { createFetchStore } from "../../global/stores.ts";
-    import { SearchModeValues, TabNames, type AnswersResponse, type DemoAggrResponse, type DemoOptionsResponse, type FormattedTheme, type ResponseAnswer, type ResponseTheme, type ThemeInfoResponse } from "../../global/types.ts";
+    import { SearchModeValues, TabNames, type AnswersResponse, type ConsultationResponse, type DemoAggrResponse, type DemoOptionsResponse, type FormattedTheme, type ResponseAnswer, type ResponseTheme, type ThemeInfoResponse } from "../../global/types.ts";
     import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
     import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
     import Lan from "../svg/material/Lan.svelte";
@@ -46,6 +46,11 @@
         error: consultationError,
         load: loadConsultation,
         data: consultationData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<ConsultationResponse>,
     } = createFetchStore();
 
     const {
@@ -249,8 +254,8 @@
         <QuestionCard
             skeleton={$isConsultationLoading}
             clickable={false}
-            consultationId={!$isConsultationLoading && $consultationData.id}
-            question={!$isConsultationLoading && question}
+            consultationId={$consultationData?.id}
+            question={question}
             hideIcon={true}
             horizontal={true}
         />
@@ -277,7 +282,7 @@
                 })
             }) as FormattedTheme[]}
             themesLoading={$isThemeAggrLoading}
-            totalAnswers={question?.total_responses}
+            totalAnswers={question?.total_responses || 0}
             filteredTotal={$answersData?.filtered_total}
             demoData={$demoAggrData?.demographic_aggregations}
             demoOptions={$demoOptionsData?.demographic_options}
