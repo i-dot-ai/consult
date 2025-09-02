@@ -655,6 +655,90 @@ class TestFilteredResponsesAPIView:
 
         assert sorted(x["sentiment"] for x in data["all_respondents"]) == expected
 
+    @pytest.mark.parametrize(
+        ("is_flagged", "expected_responses"), [(True, 1), (False, 1), (None, 2)]
+    )
+    def test_get_filtered_response_is_flagged(
+        self,
+        client,
+        consultation_user_token,
+        consultation_user,
+        free_text_annotation,
+        another_annotation,
+        is_flagged,
+        expected_responses,
+    ):
+        free_text_annotation.flagged_by.add(consultation_user)
+        free_text_annotation.save()
+
+        url = reverse(
+            "response-list",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+            },
+        )
+
+        response = client.get(
+            url + f"?is_flagged={is_flagged}",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+
+        assert response.status_code == 200
+        assert response.json()["respondents_total"] == 2
+        assert response.json()["filtered_total"] == expected_responses
+        if expected_responses == 1:
+            assert response.json()["all_respondents"][0]["is_flagged"] == is_flagged
+
+    @pytest.mark.parametrize(
+        ("chosen_options", "expected_responses"),
+        [
+            (["red", "blue"], 2),
+            (["red"], 2),
+            (["blue"], 1),
+            (["not-a-real-answer"], 2),
+            ([], 2),
+        ],
+    )
+    def test_get_filtered_response_chosen_options(
+        self,
+        client,
+        consultation_user_token,
+        consultation_user,
+        multi_choice_responses,
+        multi_choice_question,
+        chosen_options,
+        expected_responses,
+    ):
+        url = reverse(
+            "response-list",
+            kwargs={
+                "consultation_pk": multi_choice_question.consultation.id,
+                "question_pk": multi_choice_question.id,
+            },
+        )
+
+        _chosen_options = multi_choice_question.multichoiceanswer_set.filter(
+            question=multi_choice_question, text__in=chosen_options
+        )
+
+        chosen_options_query = ",".join(str(x.pk) for x in _chosen_options)
+
+        response = client.get(
+            url + f"?chosen_options={chosen_options_query}",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+
+        assert response.status_code == 200
+        assert response.json()["respondents_total"] == 2
+        assert response.json()["filtered_total"] == expected_responses
+
     @pytest.mark.parametrize("is_flagged", [True, False])
     def test_get_responses_with_is_flagged(
         self, client, consultation_user, consultation_user_token, free_text_annotation, is_flagged
