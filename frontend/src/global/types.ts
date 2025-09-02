@@ -102,6 +102,9 @@ export interface DemoData {
 export interface DemoTotalCounts {
     [category: string]: number;
 }
+export interface ThemeAggr {
+    [id: string]: number;
+}
 
 export interface ConsultationResponse {
     id: string;
@@ -124,3 +127,11 @@ export interface DemoOptionsResponse {
 export interface DemoAggrResponse {
     demographic_aggregations: DemoData;
 }
+export interface ThemeAggrResponse {
+    theme_aggregations: ThemeAggr;
+}
+export interface MultiChoiceResponseItem {
+    "answer": "Don't know",
+    "response_count": 10
+}
+export type MultiChoiceResponse = MultiChoiceResponseItem[];

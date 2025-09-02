@@ -11,14 +11,26 @@
     import QuestionSummary from "../dashboard/QuestionSummary/QuestionSummary.svelte";
     import ResponseAnalysis from "../dashboard/ResponseAnalysis/ResponseAnalysis.svelte";
     import Alert from "../Alert.svelte";
-
-    import { getConsultationDetailUrl } from "../../global/routes.ts";
-    import { createFetchStore } from "../../global/stores.ts";
-    import { SearchModeValues, TabNames, type AnswersResponse, type ConsultationResponse, type DemoAggrResponse, type DemoOptionsResponse, type FormattedTheme, type ResponseAnswer, type ResponseTheme, type ThemeInfoResponse } from "../../global/types.ts";
-    import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
     import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
     import Lan from "../svg/material/Lan.svelte";
     import Finance from "../svg/material/Finance.svelte";
+
+    import { getConsultationDetailUrl } from "../../global/routes.ts";
+    import { createFetchStore } from "../../global/stores.ts";
+    import {
+        SearchModeValues,
+        TabNames,
+        type AnswersResponse,
+        type ConsultationResponse,
+        type DemoAggrResponse,
+        type DemoOptionsResponse,
+        type FormattedTheme,
+        type MultiChoiceResponse,
+        type ResponseAnswer,
+        type ThemeAggrResponse,
+        type ThemeInfoResponse
+    } from "../../global/types.ts";
+    import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
 
 
     interface QueryFilters {
@@ -84,6 +96,11 @@
         error: themeAggrError,
         load: loadThemeAggr,
         data: themeAggrData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<ThemeAggrResponse>,
     } = createFetchStore();
 
     const {
@@ -127,6 +144,11 @@
         error: multiChoiceAggrError,
         load: loadMultiChoiceAggr,
         data: multiChoiceAggrData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<MultiChoiceResponse>,
     } = createFetchStore();
 
     onMount(() => {

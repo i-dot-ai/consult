@@ -26,7 +26,7 @@
         themeOptions?: ResponseTheme[],
         skeleton?: boolean;
         highlightText?: string;
-        resetData: Function;
+        resetData?: Function;
     }
 
     let {
