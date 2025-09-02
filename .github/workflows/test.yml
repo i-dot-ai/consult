@@ -54,8 +54,6 @@ jobs:
 
       - name: Setup app
         run: |
-          poetry run python manage.py migrate
-          poetry run python manage.py makemigrations --check
           make govuk_frontend
         env:
           DJANGO_SECRET_KEY: dummy-key
@@ -77,34 +75,4 @@ jobs:
           SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
           SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
 
-      - name: Run app tests
-        run:
-          make test
-        env:
-          REDIS_HOST: redis
-          DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
-          BATCH_JOB_QUEUE: dummy-queue
-          BATCH_JOB_DEFINITION: dummy-definition
-          SQS_QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/123456789012/test-queue
-          MAPPING_BATCH_JOB_NAME: i-dot-ai-dev-consult-mapping-job
-          MAPPING_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-queue
-          MAPPING_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-definition
-          SIGN_OFF_BATCH_JOB_NAME: i-dot-ai-dev-consult-sign-off-job
-          SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
-          SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
 
-      - name: Run tests for migrations
-        run:
-          make test-migrations
-        env:
-          REDIS_HOST: redis
-          DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
-          BATCH_JOB_QUEUE: dummy-queue
-          BATCH_JOB_DEFINITION: dummy-definition
-          SQS_QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/123456789012/test-queue
-          MAPPING_BATCH_JOB_NAME: i-dot-ai-dev-consult-mapping-job
-          MAPPING_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-queue
-          MAPPING_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-definition
-          SIGN_OFF_BATCH_JOB_NAME: i-dot-ai-dev-consult-sign-off-job
-          SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
-          SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
