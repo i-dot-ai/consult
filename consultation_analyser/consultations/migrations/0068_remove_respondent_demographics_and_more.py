@@ -10,12 +10,13 @@ def back_populate_new_demographics(apps, schema_editor):
 
     for respondent in Respondent.objects.all():
         for name, value in respondent.demographics.items():
-            do, _ = DemographicOption.objects.get_or_create(
-                consultation=respondent.consultation,
-                field_name=name,
-                field_value=value,
-            )
-            respondent.new_demographics.add(do)
+            if name and value:
+                do, _ = DemographicOption.objects.get_or_create(
+                    consultation=respondent.consultation,
+                    field_name=name,
+                    field_value=value,
+                )
+                respondent.new_demographics.add(do)
         respondent.save()
 
 
