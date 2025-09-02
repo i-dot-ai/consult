@@ -17,6 +17,9 @@
     button[data-variant="primary"]:hover :global(svg) {
         fill: var(--color-primary);
     }
+    button[data-variant="ghost"]:hover :global(svg) {
+        fill: var(--color-primary);
+    }
 </style>
 
 <button

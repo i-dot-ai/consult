@@ -155,7 +155,7 @@
                                                         size="xs"
                                                         handleClick={() => themeFilters.update(themeFilter)}
                                                     >
-                                                        <MaterialIcon color="fill-white" hoverColor="fill-primary">
+                                                        <MaterialIcon color="fill-white">
                                                             <Close />
                                                         </MaterialIcon>
                                                     </Button>
