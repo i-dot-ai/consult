@@ -35,7 +35,7 @@ describe("FiltersSidebar", () => {
                 expect(getByText(testData.demoData[category][rowKey]));
             })
         })
-        expect(getByText("Show evidence rich first"));
+        expect(getByText("Show evidence rich"));
     })
 
     it("should not render data if loading", () => {
@@ -53,7 +53,7 @@ describe("FiltersSidebar", () => {
                 expect(queryByText(testData.demoData[category][rowKey])).toBeNull();
             })
         })
-        expect(getByText("Show evidence rich first"));
+        expect(getByText("Show evidence rich"));
     })
 
     it("should not render evidence rich switch if not show evidence rich", () => {
@@ -64,7 +64,7 @@ describe("FiltersSidebar", () => {
             evidenceRich: testData.evidenceRich,
         });
 
-        expect(queryByText("Show evidence rich first"));
+        expect(queryByText("Show evidence rich"));
     })
 
     it("should call set evidence rich func", async () => {
