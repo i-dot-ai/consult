@@ -13,6 +13,8 @@
     import {
         SearchModeLabels,
         SearchModeValues,
+        type DemoData,
+        type DemoOption,
         type ResponseAnswer,
         type ResponseTheme,
         type SearchableSelectOption,
@@ -32,6 +34,8 @@
     import Flag2 from "../../svg/material/Flag2.svelte";
 
 
+    export let consultationId: string = "";
+    export let questionId: string = "";
     export let pageSize: number = 50;
     export let isAnswersLoading: boolean = true;
     export let isThemesLoading: boolean = true;
@@ -46,8 +50,8 @@
     export let searchMode: SearchModeValues = SearchModeValues.KEYWORD;
     export let setSearchMode = (next: SearchModeValues) => {};
 
-    export let demoOptions: Object = {};
-    export let demoData: Object = {};
+    export let demoOptions: DemoOption = {};
+    export let demoData: DemoData = {};
     export let themes: ResponseTheme[] = [];
 
     export let evidenceRich: boolean = false;
@@ -246,10 +250,13 @@
                                     <li>
                                         <div transition:fly={{ x: 300, delay: getDelay(i) }}>
                                             <AnswerCard
+                                                consultationId={consultationId}
+                                                questionId={questionId}
+                                                answerId={answer.id}
+                                                displayId={answer.identifier.toString()}
                                                 demoData={Object.values(answer.demographic_data)}
                                                 multiAnswers={answer.multiple_choice_answer}
                                                 evidenceRich={answer.evidenceRich}
-                                                id={answer.identifier.toString()}
                                                 text={answer.free_text_answer_text}
                                                 themes={answer.themes}
                                                 themeOptions={themes}

@@ -81,13 +81,25 @@ export interface ResponseAnswer {
     id: string;
     identifier: number;
     free_text_answer_text: string;
-    demographic_data: Object;
+    demographic_data: { [category: string]: string };
     themes: ResponseTheme[];
     multiple_choice_answer: string[];
     evidenceRich: boolean;
     sentiment: string;
     human_reviewed: boolean;
     is_flagged: boolean;
+}
+
+export interface DemoOption {
+    [category: string]: string[];
+}
+
+export interface DemoData {
+    [category: string]: { [rowKey: string]: number };
+}
+
+export interface DemoTotalCounts {
+    [category: string]: number;
 }
 
 export interface AnswersResponse {
@@ -98,4 +110,10 @@ export interface AnswersResponse {
 }
 export interface ThemeInfoResponse {
     themes: ResponseTheme[];
+}
+export interface DemoOptionsResponse {
+    demographic_options: DemoOption;
+}
+export interface DemoAggrResponse {
+    demographic_aggregations: DemoData;
 }

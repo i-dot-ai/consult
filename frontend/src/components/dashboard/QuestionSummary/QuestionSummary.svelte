@@ -1,7 +1,7 @@
 <script lang="ts">
     import { slide, fly } from "svelte/transition";
 
-    import { TabNames, type FormattedTheme } from "../../../global/types.ts";
+    import { TabNames, type DemoData, type DemoOption, type FormattedTheme } from "../../../global/types.ts";
     import { getPercentage } from "../../../global/utils.ts";
 
     import Lan from "../../svg/material/Lan.svelte";
@@ -28,8 +28,8 @@
         themesLoading?: boolean;
         totalAnswers: number;
         filteredTotal: number;
-        demoData: any;
-        demoOptions: any;
+        demoData: DemoData;
+        demoOptions: DemoOption;
         themes: FormattedTheme[];
         multiChoice: MultiChoiceAnswer[];
         consultationSlug?: string;

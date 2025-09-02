@@ -14,7 +14,10 @@
 
 
     interface Props {
-        id?: string;
+        consultationId?: string;
+        questionId?: string;
+        answerId?: string;
+        displayId?: string;
         text?: string;
         demoData?: string[];
         evidenceRich?: boolean;
@@ -26,7 +29,10 @@
     }
 
     let {
-        id = "",
+        consultationId = "",
+        questionId = "",
+        answerId = "",
+        displayId = "",
         text = "",
         demoData = [],
         evidenceRich = false,
@@ -103,10 +109,12 @@
 
             <div class="flex items-center gap-2">
                 <EditPanel
+                    {consultationId}
+                    {questionId}
+                    answerId={answerId}
                     {themes}
                     {themeOptions}
                     {evidenceRich}
-                    {id}
                     setEditing={(val: boolean) => editing = val}
                 />
 
@@ -117,7 +125,7 @@
                     {#if skeleton}
                         SKELETON
                     {:else}
-                        ID: {id || "Not Available"}
+                        ID: {displayId || "Not Available"}
                     {/if}
                 </small>
             </div>

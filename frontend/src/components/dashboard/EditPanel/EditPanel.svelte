@@ -16,6 +16,7 @@
     import TitleRow from "../TitleRow.svelte";
     import AutoRenew from "../../svg/material/AutoRenew.svelte";
     import { type ResponseTheme, type SearchableSelectOption } from "../../../global/types";
+    import { getApiAnswerUrl } from "../../../global/routes";
 
 
     function removeTheme(id: string) {
@@ -34,21 +35,33 @@
     }
 
     function submit() {
-        console.log(`submitting update for answer ${id}:`, stagedThemes, stagedEvidenceRich);
+        console.log(`submitting update for answer ${answerId}:`, stagedThemes, stagedEvidenceRich);
 
-        updateAnswer(`/api/responses/update`, "PUT", {
-            "themes": stagedThemes.map(theme => theme.id).join(","),
+        updateAnswer(getApiAnswerUrl(consultationId, questionId, answerId), "PATCH", {
+            "themes": stagedThemes.map(theme => ({id: theme.id})),
             "evidenceRich": stagedEvidenceRich,
         } as unknown as BodyInit);
     }
 
+    interface Props {
+        consultationId: string;
+        questionId: string;
+        answerId: string;
+        themes: ResponseTheme[];
+        themeOptions: ResponseTheme[];
+        evidenceRich: boolean;
+        setEditing: Function;
+    }
+
     let {
-        id = "",
+        answerId = "",
         themes = [],
         themeOptions = [],
         evidenceRich = false,
         setEditing = () => {},
-    } = $props();
+        consultationId = "",
+        questionId = "",
+    }: Props = $props();
 
     let stagedThemes: ResponseTheme[] = $state([]);
     let stagedEvidenceRich = $state(false);

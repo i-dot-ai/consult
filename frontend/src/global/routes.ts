@@ -27,3 +27,6 @@ export const getQuestionDetailUrl = (consultationId: string, questionId: string)
 export const getApiConsultationUrl = (consultationId: string) => {
     return `${Routes.ApiConsultations}/${consultationId}`;
 }
+export const getApiAnswerUrl = (consultationId: string, questionId: string, answerId: string) => {
+    return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/responses/${answerId}/`;
+}

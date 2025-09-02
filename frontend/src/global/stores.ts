@@ -73,6 +73,9 @@ export const createFetchStore = () => {
                     const response = await fetch(
                         url,
                         {
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
                             method: method,
                             body: body ? JSON.stringify(body) : undefined,
                         }

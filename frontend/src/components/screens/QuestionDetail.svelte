@@ -14,7 +14,7 @@
 
     import { getConsultationDetailUrl } from "../../global/routes.ts";
     import { createFetchStore } from "../../global/stores.ts";
-    import { SearchModeValues, TabNames, type AnswersResponse, type FormattedTheme, type ResponseAnswer, type ResponseTheme, type ThemeInfoResponse } from "../../global/types.ts";
+    import { SearchModeValues, TabNames, type AnswersResponse, type DemoAggrResponse, type DemoOptionsResponse, type FormattedTheme, type ResponseAnswer, type ResponseTheme, type ThemeInfoResponse } from "../../global/types.ts";
     import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
     import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
     import Lan from "../svg/material/Lan.svelte";
@@ -84,6 +84,11 @@
         error: demoOptionsError,
         load: loadDemoOptions,
         data: demoOptionsData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<DemoOptionsResponse>,
     } = createFetchStore();
 
     const {
@@ -91,6 +96,11 @@
         error: demoAggrError,
         load: loadDemoAggr,
         data: demoAggrData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<DemoAggrResponse>,
     } = createFetchStore();
 
     const {
@@ -280,6 +290,8 @@
         />
     {:else if activeTab === TabNames.ResponseAnalysis}
         <ResponseAnalysis
+            consultationId={$consultationData?.id}
+            questionId={question?.id}
             pageSize={PAGE_SIZE}
             answers={answers}
             isAnswersLoading={$isAnswersLoading}
