@@ -1,11 +1,16 @@
 <script lang="ts">
     import clsx from "clsx";
 
+    import { type Snippet } from 'svelte';
+
+
     interface Props {
         variant?: "default" | "warning" | "primary";
+        children: Snippet,
     }
     let {
         variant="default",
+        children,
     }: Props = $props();
 </script>
 
@@ -28,5 +33,5 @@
     variant === "warning" && "text-yellow-700",
     variant === "warning" && "bg-yellow-100",
 ])}>
-    <slot />
+    {@render children()}
 </div>
