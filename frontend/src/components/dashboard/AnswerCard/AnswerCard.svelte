@@ -26,6 +26,7 @@
         themeOptions?: ResponseTheme[],
         skeleton?: boolean;
         highlightText?: string;
+        resetData: Function;
     }
 
     let {
@@ -41,6 +42,7 @@
         themeOptions =[],
         skeleton = false,
         highlightText = "",
+        resetData = () => {},
     }: Props = $props();
 
     let editing: boolean = $state(false);
@@ -115,6 +117,7 @@
                     {themes}
                     {themeOptions}
                     {evidenceRich}
+                    {resetData}
                     setEditing={(val: boolean) => editing = val}
                 />
 

@@ -44,6 +44,7 @@
     export let hasMorePages: boolean = true;
     export let filteredTotal: number = 0;
     export let handleLoadClick = () => {};
+    export let resetData = () => {};
 
     export let searchValue: string = "";
     export let setSearchValue = (value: string) => {};
@@ -261,6 +262,7 @@
                                                 themes={answer.themes}
                                                 themeOptions={themes}
                                                 highlightText={searchValue}
+                                                {resetData}
                                             />
                                         </div>
                                     </li>

@@ -2,7 +2,9 @@
     import { onMount } from "svelte";
     import { slide } from "svelte/transition";
 
+    import { type ResponseTheme, type SearchableSelectOption } from "../../../global/types";
     import { createFetchStore } from "../../../global/stores";
+    import { getApiAnswerUrl } from "../../../global/routes";
 
     import Button from "../../inputs/Button/Button.svelte";
     import Popover from "../../inputs/Popover/Popover.svelte";
@@ -15,8 +17,6 @@
     import Title from "../../Title.svelte";
     import TitleRow from "../TitleRow.svelte";
     import AutoRenew from "../../svg/material/AutoRenew.svelte";
-    import { type ResponseTheme, type SearchableSelectOption } from "../../../global/types";
-    import { getApiAnswerUrl } from "../../../global/routes";
 
 
     function removeTheme(id: string) {
@@ -34,13 +34,15 @@
         }]
     }
 
-    function submit() {
-        console.log(`submitting update for answer ${answerId}:`, stagedThemes, stagedEvidenceRich);
-
-        updateAnswer(getApiAnswerUrl(consultationId, questionId, answerId), "PATCH", {
+    async function submit() {
+        await updateAnswer(getApiAnswerUrl(consultationId, questionId, answerId), "PATCH", {
             "themes": stagedThemes.map(theme => ({id: theme.id})),
             "evidenceRich": stagedEvidenceRich,
         } as unknown as BodyInit);
+
+        if (!$submitError && !$isSubmitting) {
+            resetData();
+        }
     }
 
     interface Props {
@@ -50,17 +52,19 @@
         themes: ResponseTheme[];
         themeOptions: ResponseTheme[];
         evidenceRich: boolean;
+        resetData: Function;
         setEditing: Function;
     }
 
     let {
+        consultationId = "",
+        questionId = "",
         answerId = "",
         themes = [],
         themeOptions = [],
         evidenceRich = false,
+        resetData = () => {},
         setEditing = () => {},
-        consultationId = "",
-        questionId = "",
     }: Props = $props();
 
     let stagedThemes: ResponseTheme[] = $state([]);

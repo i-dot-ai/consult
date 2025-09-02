@@ -319,6 +319,10 @@
             filteredTotal={$answersData?.filtered_total}
             hasMorePages={hasMorePages}
             handleLoadClick={() => loadData()}
+            resetData={() => {
+                resetAnswers();
+                loadData();
+            }}
             searchValue={searchValue}
             setSearchValue={(value) => searchValue = value}
             searchMode={searchMode}
