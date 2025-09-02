@@ -7,6 +7,7 @@ from .api.views import (
     QuestionViewSet,
     ResponseViewSet,
     ThemeViewSet,
+    QuestionThemeViewSet,
     generate_magic_link,
     get_current_user,
     verify_magic_link,
@@ -25,6 +26,12 @@ themes_router = NestedDefaultRouter(consultations_router, "themes", lookup="them
 
 questions_router.register("responses", ResponseViewSet, basename="response")
 responses_router = NestedDefaultRouter(questions_router, "responses", lookup="response")
+
+
+questions_router.register("themes", QuestionThemeViewSet, basename="question-theme")
+question_theme_router = NestedDefaultRouter(questions_router, "themes", lookup="theme")
+
+
 
 
 urlpatterns = [
@@ -48,8 +55,10 @@ urlpatterns = [
     path("api/", include(consultations_router.urls)),
     path("api/", include(questions_router.urls)),
     path("api/", include(themes_router.urls)),
-    path("api/user/", get_current_user, name="user"),
+    path("api/", include(question_theme_router.urls)),
     path("api/", include(responses_router.urls)),
+    path("api/user/", get_current_user, name="user"),
+
     path(
         "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/show-next/",
         answers.show_next,

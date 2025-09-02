@@ -29,7 +29,7 @@ from .serializers import (
     ResponseSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
-    UserSerializer,
+    UserSerializer, ThemeSerializer2, BaseThemeSerializer,
 )
 
 
@@ -98,6 +98,15 @@ class ThemeViewSet(ReadOnlyModelViewSet):
         return models.CrossCuttingTheme.objects.filter(
             consultation_id=consultation_uuid, consultation__users=self.request.user
         ).order_by("-created_at")
+
+class QuestionThemeViewSet(ModelViewSet):
+    serializer_class = BaseThemeSerializer
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+
+    def get_queryset(self):
+        question_uuid = self.kwargs["question_pk"]
+        return models.Theme.objects.filter(question_id=question_uuid)
+
 
 
 class QuestionViewSet(ReadOnlyModelViewSet):
@@ -298,3 +307,5 @@ def verify_magic_link(request) -> HttpResponse:
                 "sessionId": request.session.session_key,
             }
         )
+
+

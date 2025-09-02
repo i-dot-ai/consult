@@ -5,8 +5,9 @@ from uuid import uuid4
 import orjson
 import pytest
 from django.urls import reverse
+from openai import models
 
-from consultation_analyser.consultations.models import ResponseAnnotation, ResponseAnnotationTheme
+from consultation_analyser.consultations.models import ResponseAnnotation, ResponseAnnotationTheme, Theme
 from consultation_analyser.factories import (
     QuestionFactory,
     RespondentFactory,
@@ -1120,3 +1121,70 @@ def test_filter(client, consultation_user, consultation, has_free_text):
         # should return just one question
         assert len(results) == 1
         assert results[0]["has_free_text"] == has_free_text
+
+
+
+@pytest.mark.django_db
+def test_question_themes_get_list(client, consultation_user_token, theme_a, theme_b):
+    url = reverse(
+        "question-theme-list",
+        kwargs={
+            "consultation_pk": theme_a.question.consultation.id,
+            "question_pk": theme_a.question.id,
+        },
+    )
+
+    response = client.get(
+        url,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["count"] == 2
+
+
+@pytest.mark.django_db
+def test_question_themes_get_detail(client, consultation_user_token, theme_a, theme_b):
+    url = reverse(
+        "question-theme-detail",
+        kwargs={
+            "consultation_pk": theme_a.question.consultation.id,
+            "question_pk": theme_a.question.id,
+            "pk": theme_a.pk
+        },
+    )
+
+    response = client.get(
+        url,
+        headers={
+            "Content-Type": "application/json",
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["id"] == str(theme_a.pk)
+
+
+@pytest.mark.django_db
+def test_question_themes_create(client, consultation_user_token, free_text_question):
+    assert not Theme.objects.filter(key="X").exists()
+    url = reverse(
+        "question-theme-list",
+        kwargs={
+            "consultation_pk": free_text_question.consultation.id,
+            "question_pk": free_text_question.id,
+        },
+    )
+
+    response = client.post(
+        url,
+        data={"key": "X", "name": "theme-x", "description": "a new mystery theme"},
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 201, response.json()
+    assert Theme.objects.filter(key="X").exists()

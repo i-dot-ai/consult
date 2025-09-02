@@ -97,8 +97,19 @@ class ThemeAggregationsSerializer(serializers.Serializer):
     theme_aggregations = serializers.DictField(child=serializers.IntegerField())
 
 
-class ThemeSerializer2(serializers.ModelSerializer):
-    question_id = serializers.UUIDField(source="question.id")
+class BaseThemeSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(read_only=True)
+
+    class Meta:
+        model = Theme
+        fields = ["id", "name", "description", "key"]
+
+    def create(self, validated_data):
+        return super().create(validated_data)
+
+
+class ThemeSerializer2(BaseThemeSerializer):
+    question_id = serializers.UUIDField(source="question.id", read_only=True)
 
     response_count = serializers.SerializerMethodField()
 
@@ -107,7 +118,7 @@ class ThemeSerializer2(serializers.ModelSerializer):
 
     class Meta:
         model = Theme
-        fields = ["name", "description", "key", "question_id", "response_count"]
+        fields = ["id", "name", "description", "key", "question_id", "response_count"]
 
 
 class CrossCuttingThemeSerializer(serializers.ModelSerializer):
