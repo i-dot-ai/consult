@@ -50,7 +50,7 @@
                 ])}>
                     {#if !skeleton && !hideIcon}
                         <div data-testid="question-icon">
-                            <MaterialIcon size="1.3rem" color="fill-teal-500">
+                            <MaterialIcon size="1.3rem" color="fill-teal">
                                 <Help />
                             </MaterialIcon>
                         </div>
