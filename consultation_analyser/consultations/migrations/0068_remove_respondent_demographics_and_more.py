@@ -4,30 +4,6 @@
 from django.db import migrations, models
 
 
-def back_populate_new_demographics(apps, schema_editor):
-    Respondent = apps.get_model("consultations", "Respondent")
-    DemographicOption = apps.get_model("consultations", "DemographicOption")
-
-    processed = 0
-    for respondent in (
-        Respondent.objects.filter(new_demographics__isnull=True)
-        .select_related("consultation")
-        .iterator()
-    ):
-        for name, value in respondent.demographics.items():
-            if name and value:
-                do, _ = DemographicOption.objects.get_or_create(
-                    consultation=respondent.consultation,
-                    field_name=name,
-                    field_value=value,
-                )
-                respondent.new_demographics.add(do)
-
-        processed += 1
-        if processed % 100 == 0:
-            print(f"Processed {processed} respondents")
-
-
 class Migration(migrations.Migration):
     atomic = False  # Critical for long migrations
     dependencies = [
@@ -40,7 +16,6 @@ class Migration(migrations.Migration):
             name="new_demographics",
             field=models.ManyToManyField(blank=True, to="consultations.demographicoption"),
         ),
-        # migrations.RunPython(back_populate_new_demographics),
         migrations.RenameField(
             model_name="respondent",
             old_name="demographics",
