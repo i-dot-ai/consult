@@ -25,10 +25,30 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RunSQL(
+            """
+            DO $$ 
+            BEGIN
+                IF NOT EXISTS (
+                    SELECT 1 FROM information_schema.tables 
+                    WHERE table_name = 'consultations_respondent_new_demographics'
+                ) THEN
+                    -- Field will be added if table doesn't exist
+                    ALTER TABLE consultations_respondent 
+                    ADD COLUMN new_demographics_temp BOOLEAN DEFAULT FALSE;
+                END IF;
+            END $$;
+            """,
+            reverse_sql=migrations.RunSQL.noop,
+        ),
         migrations.AddField(
             model_name="respondent",
             name="new_demographics",
             field=models.ManyToManyField(blank=True, to="consultations.demographicoption"),
+        ),
+        migrations.RunSQL(
+            "DROP COLUMN IF EXISTS new_demographics_temp CASCADE;",
+            reverse_sql=migrations.RunSQL.noop,
         ),
         migrations.RunPython(back_populate_new_demographics),
         migrations.RemoveField(
