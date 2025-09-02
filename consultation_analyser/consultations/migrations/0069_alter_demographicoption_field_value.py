@@ -22,6 +22,16 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
+        migrations.RenameField(
+            model_name="respondent",
+            old_name="demographics",
+            new_name="old_demographics",
+        ),
+        migrations.RenameField(
+            model_name="respondent",
+            old_name="new_demographics",
+            new_name="demographics",
+        ),
         migrations.AddField(
             model_name="demographicoption",
             name="new_field_value",
