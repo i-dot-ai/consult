@@ -9,11 +9,11 @@ def back_populate_new_demographics(apps, schema_editor):
     DemographicOption = apps.get_model("consultations", "DemographicOption")
 
     processed = 0
-    for respondent in Respondent.objects.select_related("consultation").iterator():
-        # Skip if already processed (for resume capability)
-        if respondent.new_demographics.exists():
-            continue
-
+    for respondent in (
+        Respondent.objects.filter(new_demographics__isnull=True)
+        .select_related("consultation")
+        .iterator()
+    ):
         for name, value in respondent.demographics.items():
             if name and value:
                 do, _ = DemographicOption.objects.get_or_create(
