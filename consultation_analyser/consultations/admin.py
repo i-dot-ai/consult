@@ -32,14 +32,14 @@ def back_populate_new_demographics(modeladmin, request, queryset):
     for respondent in (
         queryset.filter(new_demographics__isnull=True).select_related("consultation").iterator()
     ):
-        for name, value in respondent.demographics.items():
+        for name, value in respondent.old_demographics.items():
             if name and value:
                 do, _ = DemographicOption.objects.get_or_create(
                     consultation=respondent.consultation,
                     field_name=name,
                     field_value=value,
                 )
-                respondent.new_demographics.add(do)
+                respondent.demographics.add(do)
 
         processed += 1
         if processed % 100 == 0:
