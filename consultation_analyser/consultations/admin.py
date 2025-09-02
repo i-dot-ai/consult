@@ -26,6 +26,26 @@ def update_embeddings_admin(modeladmin, request, queryset):
     modeladmin.message_user(request, f"Processing {queryset.count()} consultations")
 
 
+@admin.action(description="migrate to new demographics")
+def back_populate_new_demographics(modeladmin, request, queryset):
+    processed = 0
+    for respondent in (
+        queryset.filter(new_demographics__isnull=True).select_related("consultation").iterator()
+    ):
+        for name, value in respondent.demographics.items():
+            if name and value:
+                do, _ = DemographicOption.objects.get_or_create(
+                    consultation=respondent.consultation,
+                    field_name=name,
+                    field_value=value,
+                )
+                respondent.new_demographics.add(do)
+
+        processed += 1
+        if processed % 100 == 0:
+            print(f"Processed {processed} respondents")
+
+
 class ResponseAdmin(admin.ModelAdmin):
     list_filter = ["question", "question__consultation"]
     list_display = ["free_text", "question"]
@@ -85,6 +105,7 @@ class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
 
 
 class RespondentAdmin(admin.ModelAdmin):
+    actions = [back_populate_new_demographics]
     readonly_fields = ["consultation", "themefinder_id", "demographics", "old_demographics"]
 
 
