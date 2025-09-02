@@ -2,6 +2,7 @@ import { afterEach, describe, expect, it, test } from "vitest";
 import { cleanup, render } from "@testing-library/svelte";
 
 import ConditionalWrapperTest from "./ConditionalWrapperTest.svelte";
+import ConditionalWrapperStory from "./ConditionalWrapperStory.svelte";
 
 
 describe("ConditionalRender", () => {
@@ -27,5 +28,9 @@ describe("ConditionalRender", () => {
         });
         expect(container.querySelector("a")).toBeFalsy();
         expect(getByText("rendered"));
+    })
+
+    it("should render story", () => {
+        render(ConditionalWrapperStory);
     })
 })

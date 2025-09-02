@@ -22,6 +22,7 @@
     ])}
     href={variant === "inline" ? href : null}
     aria-label={ariaLabel}
+    data-testId={ariaLabel}
     title={title}
     tabindex="0"
     role="button"

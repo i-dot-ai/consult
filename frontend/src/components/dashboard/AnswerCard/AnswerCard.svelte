@@ -1,13 +1,14 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import Button from "../inputs/Button/Button.svelte";
-    import Panel from "./Panel.svelte";
-    import Tag from "../Tag.svelte";
-    import MaterialIcon from "../MaterialIcon.svelte";
-    import Diamond from "../svg/material/Diamond.svelte";
-    import { applyHighlight } from "../../global/utils";
-    import { themeFilters } from "../../global/state.svelte";
+    import Button from "../../inputs/Button/Button.svelte";
+    import Panel from "../Panel/Panel.svelte";
+    import Tag from "../../Tag/Tag.svelte";
+    import MaterialIcon from "../../MaterialIcon.svelte";
+    import Diamond from "../../svg/material/Diamond.svelte";
+    import { applyHighlight } from "../../../global/utils";
+    import { themeFilters } from "../../../global/state.svelte";
+
 
     interface Theme {
         id: string;
@@ -15,14 +16,14 @@
     }
 
     interface Props {
-        id: string;
-        text: string;
-        demoData: string[];
-        evidenceRich: boolean;
-        multiAnswers: string[];
-        themes: Theme[];
-        skeleton: boolean;
-        highlightText: string;
+        id?: string;
+        text?: string;
+        demoData?: string[];
+        evidenceRich?: boolean;
+        multiAnswers?: string[];
+        themes?: Theme[];
+        skeleton?: boolean;
+        highlightText?: string;
     }
 
     let {
@@ -49,17 +50,18 @@
         <header class={clsx([
             "flex",
             "justify-between",
-            "items-center",
+            "items-start",
             "gap-1",
             "flex-wrap",
             "text-sm",
         ])}>
-            {#if (demoData.length > 0 || evidenceRich) || skeleton}
+            {#if (demoData && demoData.length > 0 || evidenceRich) || skeleton}
                 <div class={clsx([
                     "flex",
                     "flex-wrap",
                     "items-center",
-                    "gap-1",
+                    "gap-2",
+                    "max-w-[80%]",
                 ])}>
                     {#if skeleton}
                         {#each "_".repeat(3) as _}
@@ -89,15 +91,21 @@
                 </div>
             {/if}
 
-            <small class={clsx([
-                skeleton && "bg-neutral-100 text-neutral-100 select-none blink"
-            ])}>
-                {#if skeleton}
-                    SKELETON
-                {:else}
-                    ID: {id || "Not Available"}
-                {/if}
-            </small>
+            <div class="flex items-center gap-2">
+                <!-- TODO: Enabled after implementation -->
+                <!-- <EditPanel /> -->
+
+                <small class={clsx([
+                    "whitespace-nowrap",
+                    skeleton && "bg-neutral-100 text-neutral-100 select-none blink",
+                ])}>
+                    {#if skeleton}
+                        SKELETON
+                    {:else}
+                        ID: {id || "Not Available"}
+                    {/if}
+                </small>
+            </div>
         </header>
 
         {#if skeleton}
@@ -115,10 +123,12 @@
             </p>
         {/if}
 
-        {#if multiAnswers.length > 0 && !skeleton}
+        {#if multiAnswers && multiAnswers.length > 0 && !skeleton}
             <ul class={clsx([
                 "flex",
-                "gap-1",
+                "gap-2",
+                "flex-wrap",
+                "my-1",
             ])}>
                 {#each multiAnswers as multiAnswer}
                     <Tag>
@@ -128,7 +138,7 @@
             </ul>
         {/if}
 
-        {#if themes.length > 0 && !skeleton}
+        {#if themes && themes.length > 0 && !skeleton}
             <footer class={clsx([
                 "flex",
                 "items-center",
