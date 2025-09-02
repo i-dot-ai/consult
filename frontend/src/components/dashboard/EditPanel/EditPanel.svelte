@@ -34,7 +34,20 @@
         }]
     }
 
+    function noChangesStaged() {
+        if (stagedEvidenceRich !== evidenceRich) {
+            return false;
+        }
+        if (stagedThemes.length !== themes.length) {
+            return false;
+        }
+        return true;
+    }
+
     async function submit() {
+        if (noChangesStaged()) {
+            return;
+        }
         await updateAnswer(getApiAnswerUrl(consultationId, questionId, answerId), "PATCH", {
             "themes": stagedThemes.map(theme => ({id: theme.id})),
             "evidenceRich": stagedEvidenceRich,
@@ -200,9 +213,11 @@
             <div class="w-1/2 ml-1">
                 <Button variant="approve" size="sm" handleClick={() => submit()} fullWidth={true}>
                     <div class="flex justify-center items-center gap-2 w-full py-0.5">
-                        <MaterialIcon>
-                            <Check />
-                        </MaterialIcon>
+                        <div class="shrink-0">
+                            <MaterialIcon>
+                                <Check />
+                            </MaterialIcon>
+                        </div>
 
                         <span class="whitespace-nowrap">
                             {$isSubmitting ? "Saving..." : "Save Changes"}
