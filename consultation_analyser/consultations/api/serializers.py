@@ -104,9 +104,6 @@ class BaseThemeSerializer(serializers.ModelSerializer):
         model = Theme
         fields = ["id", "name", "description", "key"]
 
-    def create(self, validated_data):
-        return super().create(validated_data)
-
 
 class ThemeSerializer2(BaseThemeSerializer):
     question_id = serializers.UUIDField(source="question.id", read_only=True)

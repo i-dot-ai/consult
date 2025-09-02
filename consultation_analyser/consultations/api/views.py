@@ -20,6 +20,7 @@ from ..views.sessions import send_magic_link_if_email_exists
 from .filters import HybridSearchFilter, ResponseFilter
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
+    BaseThemeSerializer,
     ConsultationSerializer,
     CrossCuttingThemeSerializer,
     DemographicAggregationsSerializer,
@@ -29,7 +30,7 @@ from .serializers import (
     ResponseSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
-    UserSerializer, ThemeSerializer2, BaseThemeSerializer,
+    UserSerializer,
 )
 
 
@@ -99,14 +100,18 @@ class ThemeViewSet(ReadOnlyModelViewSet):
             consultation_id=consultation_uuid, consultation__users=self.request.user
         ).order_by("-created_at")
 
+
 class QuestionThemeViewSet(ModelViewSet):
     serializer_class = BaseThemeSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
 
+    def perform_create(self, serializer):
+        question_id = self.kwargs["question_pk"]
+        serializer.save(question_id=question_id)
+
     def get_queryset(self):
         question_uuid = self.kwargs["question_pk"]
         return models.Theme.objects.filter(question_id=question_uuid)
-
 
 
 class QuestionViewSet(ReadOnlyModelViewSet):
@@ -307,5 +312,3 @@ def verify_magic_link(request) -> HttpResponse:
                 "sessionId": request.session.session_key,
             }
         )
-
-

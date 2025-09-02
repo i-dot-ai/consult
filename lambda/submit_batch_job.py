@@ -8,7 +8,6 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 
-
 # AWS Batch client
 batch_client = boto3.client("batch")
 
@@ -66,7 +65,7 @@ def process_message(message_data):
     container_overrides = message_data.get("containerOverrides", {})
     job_parameters = message_data.get("parameters", {})
 
-    date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d") 
+    date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
 
     if not job_queue:
         raise ValueError("Missing required field: jobQueue")
@@ -79,11 +78,11 @@ def process_message(message_data):
         "jobQueue": job_queue,
         "jobDefinition": job_definition,
     }
-    
+
     all_parameters = {}
     if user_id:
-        all_parameters["userId"] = str(user_id) 
-    
+        all_parameters["userId"] = str(user_id)
+
     if consultation_name:
         all_parameters["consultation_name"] = str(consultation_name)
 
@@ -94,7 +93,7 @@ def process_message(message_data):
 
     if job_parameters:
         all_parameters.update(job_parameters)
-    
+
     if all_parameters:
         submit_job_kwargs["parameters"] = all_parameters
         logger.info(f"Using parameters: {all_parameters}")

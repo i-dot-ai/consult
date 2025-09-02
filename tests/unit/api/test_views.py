@@ -5,9 +5,12 @@ from uuid import uuid4
 import orjson
 import pytest
 from django.urls import reverse
-from openai import models
 
-from consultation_analyser.consultations.models import ResponseAnnotation, ResponseAnnotationTheme, Theme
+from consultation_analyser.consultations.models import (
+    ResponseAnnotation,
+    ResponseAnnotationTheme,
+    Theme,
+)
 from consultation_analyser.factories import (
     QuestionFactory,
     RespondentFactory,
@@ -1123,7 +1126,6 @@ def test_filter(client, consultation_user, consultation, has_free_text):
         assert results[0]["has_free_text"] == has_free_text
 
 
-
 @pytest.mark.django_db
 def test_question_themes_get_list(client, consultation_user_token, theme_a, theme_b):
     url = reverse(
@@ -1152,7 +1154,7 @@ def test_question_themes_get_detail(client, consultation_user_token, theme_a, th
         kwargs={
             "consultation_pk": theme_a.question.consultation.id,
             "question_pk": theme_a.question.id,
-            "pk": theme_a.pk
+            "pk": theme_a.pk,
         },
     )
 
@@ -1186,5 +1188,54 @@ def test_question_themes_create(client, consultation_user_token, free_text_quest
             "Authorization": f"Bearer {consultation_user_token}",
         },
     )
-    assert response.status_code == 201, response.json()
+    assert response.status_code == 201
     assert Theme.objects.filter(key="X").exists()
+
+
+@pytest.mark.django_db
+def test_question_themes_update(client, consultation_user_token, theme_a):
+    url = reverse(
+        "question-theme-detail",
+        kwargs={
+            "consultation_pk": theme_a.question.consultation.id,
+            "question_pk": theme_a.question.id,
+            "pk": theme_a.id,
+        },
+    )
+
+    response = client.patch(
+        url,
+        data={"key": "X", "name": "theme-x", "description": "updated description"},
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["description"] == "updated description"
+    theme_a.refresh_from_db()
+    assert theme_a.description == "updated description"
+
+
+@pytest.mark.django_db
+def test_question_themes_delete(client, consultation_user_token, theme_a):
+    assert Theme.objects.filter(key=theme_a.key).exists()
+
+    url = reverse(
+        "question-theme-detail",
+        kwargs={
+            "consultation_pk": theme_a.question.consultation.id,
+            "question_pk": theme_a.question.id,
+            "pk": theme_a.id,
+        },
+    )
+
+    response = client.delete(
+        url,
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 204
+    assert not Theme.objects.filter(key=theme_a.key).exists()
