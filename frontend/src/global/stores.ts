@@ -57,7 +57,7 @@ export const createFetchStore = () => {
     let prevPromise: Promise<void> | null = null;
     let resolvePrev: (() => void) | null = null;
 
-    const load = async (url: string) => {
+    const load = async (url: string, method:string="GET", body?: BodyInit) => {
         if (debounceTimeout) {
             clearTimeout(debounceTimeout);
             debounceTimeout = null;
@@ -70,13 +70,19 @@ export const createFetchStore = () => {
                 loading.set(true);
                 error.set(null);
                 try {
-                    const response = await fetch(url);
+                    const response = await fetch(
+                        url,
+                        {
+                            method: method,
+                            body: body ? JSON.stringify(body) : undefined,
+                        }
+                    );
                     if (!response.ok) {
                         throw new Error(`Fetch Error: ${response.statusText}`);
                     }
                     const parsedData = await response.json();
                     data.set(parsedData);
-                } catch(err) {
+                } catch(err: any) {
                     error.set(err.message);
                 } finally {
                     loading.set(false);

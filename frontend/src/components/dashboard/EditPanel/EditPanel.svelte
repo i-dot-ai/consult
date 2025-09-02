@@ -1,6 +1,8 @@
 <script lang="ts">
     import { onMount } from "svelte";
 
+    import { createFetchStore } from "../../../global/stores";
+
     import Button from "../../inputs/Button/Button.svelte";
     import Popover from "../../inputs/Popover/Popover.svelte";
     import SearchableSelect from "../../inputs/SearchableSelect.svelte";
@@ -31,6 +33,11 @@
 
     function submit() {
         console.log(`submitting update for answer ${id}:`, stagedThemes, stagedEvidenceRich);
+
+        updateAnswer(`/api/responses/update`, "PUT", {
+            "themes": stagedThemes.map(theme => theme.id).join(","),
+            "evidenceRich": stagedEvidenceRich,
+        } as unknown as BodyInit);
     }
 
     let {
@@ -44,6 +51,14 @@
     let stagedThemes = $state([]);
     let stagedEvidenceRich = $state(false);
     let panelOpen: boolean = $state(false);
+
+    const {
+        loading: isSubmitting,
+        error: submitErrpr,
+        load: updateAnswer,
+        data: answerData,
+    } = createFetchStore();
+
 
     onMount(() => {
         resetStaged();
