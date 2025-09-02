@@ -21,10 +21,24 @@
     import Finance from "../svg/material/Finance.svelte";
 
 
+    interface QueryFilters {
+        searchValue: string;
+        themeFilters: string[];
+        searchMode: SearchModeValues;
+        evidenceRich: boolean;
+        flaggedOnly: boolean;
+        demoFilters: {[category:string]: string[]}
+    }
+
+    interface Props {
+        consultationId: string;
+        questionId: string;
+    }
+
     let {
         consultationId = "",
         questionId = "",
-    } = $props();
+    }: Props = $props();
 
     const PAGE_SIZE: number = 50;
     const MAX_THEME_FILTERS: number = Infinity;
@@ -153,7 +167,7 @@
         currPage += 1;
     }
 
-    function buildQuery(filters) {
+    function buildQuery(filters: QueryFilters) {
         const params = new URLSearchParams({
             ...(filters.searchValue && {
                 searchValue: filters.searchValue
@@ -165,12 +179,12 @@
                 searchMode: filters.searchMode
             }),
             ...(filters.evidenceRich && {
-                evidenceRich: filters.evidenceRich
+                evidenceRich: JSON.stringify(filters.evidenceRich)
             }),
             ...(filters.flaggedOnly && {
-                is_flagged: filters.flaggedOnly
+                is_flagged: JSON.stringify(filters.flaggedOnly)
             }),
-            page: currPage,
+            page: currPage.toString(),
             page_size: PAGE_SIZE.toString(),
         })
 
@@ -178,7 +192,8 @@
         const validDemoFilterKeys = Object.keys(filters.demoFilters).filter(key => Boolean(filters.demoFilters[key]));
         // Add each demo filter as a duplicate demoFilter param
         for (const key of validDemoFilterKeys) {
-            const filterArr = filters.demoFilters[key];
+            const filterArr: string[] = filters.demoFilters[key];
+
             if (filterArr && filterArr.length > 0) {
                 // TODO: Replace below with the commented out code after the back end is implemented.
                 // Only processing the first filter for now to avoid breaking back end responses.
@@ -201,7 +216,7 @@
     const setEvidenceRich = (value: boolean) => evidenceRich = value;
 
     $effect(() => {
-        // dependencies
+        // @ts-ignore: ignore dependencies
         searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters, flaggedOnly;
 
         resetAnswers();

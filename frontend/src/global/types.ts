@@ -19,7 +19,7 @@ export interface Consultation {
     title: string;
     id: string;
     slug: string;
-    questions: Array<Question>;
+    questions: Question[];
 }
 
 export interface FormattedTheme {
