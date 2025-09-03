@@ -12,7 +12,7 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AddField(
             model_name="respondent",
-            name="new_demographics",
+            name="new_demographics2",
             field=models.ManyToManyField(blank=True, to="consultations.demographicoption"),
         ),
         migrations.RemoveField(
@@ -21,7 +21,7 @@ class Migration(migrations.Migration):
         ),
         migrations.RenameField(
             model_name="respondent",
-            old_name="new_demographics",
+            old_name="new_demographics2",
             new_name="demographics",
         ),
     ]
