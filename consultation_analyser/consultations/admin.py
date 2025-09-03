@@ -85,7 +85,7 @@ class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
 
 
 class RespondentAdmin(admin.ModelAdmin):
-    readonly_fields = ["consultation", "themefinder_id", "demographics"]
+    readonly_fields = ["consultation", "themefinder_id"]
 
 
 class DemographicOptionAdmin(admin.ModelAdmin):
