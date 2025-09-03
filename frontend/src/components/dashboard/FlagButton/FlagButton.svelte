@@ -11,16 +11,18 @@
         consultationId: string;
         questionId: string;
         answerId: string;
-        resetData: Function;
         isFlagged: boolean;
+        resetData: () => {};
+        toggleFlagMock: (url: string, method: string) => Promise<void>;
     }
 
     let {
         consultationId,
         questionId,
         answerId,
-        resetData,
         isFlagged,
+        resetData,
+        toggleFlagMock,
     }: Props = $props();
 
     const {
@@ -37,9 +39,13 @@
         size="xs"
         variant="ghost"
         handleClick={async () => {
-            await toggleFlag(getApiAnswerFlagUrl(consultationId, questionId, answerId), "PATCH");
+            let toggle = toggleFlagMock || toggleFlag;
+            await toggle(getApiAnswerFlagUrl(consultationId, questionId, answerId), "PATCH");
+
             resetData();
         }}
+        highlighted={isFlagged}
+        highlightVariant="none"
     >
         <MaterialIcon color={isFlagged ? "fill-primary" : "fill-neutral-500"}>
             <Flag2 fill={isFlagged} />
