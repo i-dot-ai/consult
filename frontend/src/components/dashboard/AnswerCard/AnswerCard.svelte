@@ -84,7 +84,7 @@
                     "flex-wrap",
                     "items-center",
                     "gap-2",
-                    "max-w-[80%]",
+                    "max-w-[75%]",
                 ])}>
                     {#if skeleton}
                         {#each "_".repeat(3) as _}
