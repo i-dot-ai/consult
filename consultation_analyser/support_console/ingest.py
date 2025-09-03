@@ -665,34 +665,29 @@ def import_respondents(consultation: Consultation, consultation_code: str):
     respondents_file_key = f"app_data/consultations/{consultation_code}/inputs/respondents.jsonl"
     response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=respondents_file_key)
 
-    respondents_to_save = []
-
     for i, line in enumerate(response["Body"].iter_lines()):
         respondent_data = json.loads(line.decode("utf-8"))
         themefinder_id = respondent_data.get("themefinder_id")
         demographics = respondent_data.get("demographic_data", {})
 
-        respondent = Respondent(
+        respondent = Respondent.objects.create(
             consultation=consultation,
             themefinder_id=themefinder_id,
         )
 
+        demographic_options = []
         for field_name, field_value in demographics.items():
             demographic_option, _ = DemographicOption.objects.get_or_create(
                 consultation=consultation,
                 field_name=field_name,
                 field_value=field_value,
             )
-            respondent.demographics.add(demographic_option)
+            demographic_options.append(demographic_option)
 
-        respondents_to_save.append(respondent)
+        respondent.demographics.set(demographic_options)
 
-        if len(respondents_to_save) >= DEFAULT_BATCH_SIZE:
-            Respondent.objects.bulk_create(respondents_to_save)
-            respondents_to_save = []
-            logger.info("saved %s Respondents", i + 1)
-
-    Respondent.objects.bulk_create(respondents_to_save)
+        if i % 100 == 0:
+            logger.error("imported {i} respondents", i=i)
 
 
 def create_consultation(
