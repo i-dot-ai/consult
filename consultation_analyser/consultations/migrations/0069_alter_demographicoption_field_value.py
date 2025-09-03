@@ -22,11 +22,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.AddField(
-            model_name="respondent",
-            name="new_demographics",
-            field=models.ManyToManyField(blank=True, to="consultations.demographicoption"),
-        ),
         migrations.RenameField(
             model_name="respondent",
             old_name="demographics",
