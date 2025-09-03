@@ -28,7 +28,7 @@
         skeleton?: boolean;
         highlightText?: string;
         isFlagged?: boolean;
-        resetData?: Function;
+        resetData?: () => void;
     }
 
     let {

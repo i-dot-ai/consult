@@ -12,8 +12,8 @@
         questionId: string;
         answerId: string;
         isFlagged: boolean;
-        resetData: () => {};
-        toggleFlagMock: (url: string, method: string) => Promise<void>;
+        resetData: () => void;
+        toggleFlagMock?: (url: string, method: string) => Promise<void>;
     }
 
     let {

@@ -131,7 +131,7 @@ export interface ThemeAggrResponse {
     theme_aggregations: ThemeAggr;
 }
 export interface MultiChoiceResponseItem {
-    "answer": "Don't know",
-    "response_count": 10
+    answer: string;
+    response_count: number;
 }
 export type MultiChoiceResponse = MultiChoiceResponseItem[];
