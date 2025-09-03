@@ -1,7 +1,6 @@
 #!/bin/sh
 
 venv/bin/django-admin showmigrations
-venv/bin/django-admin migrate --fake consultations 0068 || true
 venv/bin/django-admin migrate
 venv/bin/django-admin showmigrations
 venv/bin/django-admin collectstatic --noinput
