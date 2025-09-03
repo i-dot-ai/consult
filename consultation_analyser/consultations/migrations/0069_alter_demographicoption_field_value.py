@@ -22,25 +22,10 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RenameField(
-            model_name="respondent",
-            old_name="demographics",
-            new_name="old_demographics",
-        ),
-        migrations.AlterField(
-            model_name="respondent",
-            name="old_demographics",
-            field=models.JSONField(blank=True, default=dict, null=True),
-        ),
         migrations.AddField(
             model_name="respondent",
-            name="new_demographics",
+            name="demographics",
             field=models.ManyToManyField(blank=True, to="consultations.demographicoption"),
-        ),
-        migrations.RenameField(
-            model_name="respondent",
-            old_name="new_demographics",
-            new_name="demographics",
         ),
         migrations.AddField(
             model_name="demographicoption",

@@ -146,7 +146,6 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     themefinder_id = models.IntegerField(null=True, blank=True)
     demographics = models.ManyToManyField("DemographicOption", blank=True)
-    old_demographics = models.JSONField(default=dict, null=True, blank=True)
 
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
