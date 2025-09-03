@@ -30,3 +30,6 @@ export const getApiConsultationUrl = (consultationId: string) => {
 export const getApiAnswerUrl = (consultationId: string, questionId: string, answerId: string) => {
     return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/responses/${answerId}/`;
 }
+export const getApiAnswerFlagUrl = (consultationId: string, questionId: string, answerId: string) => {
+    return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/responses/${answerId}/toggle-flag/`;
+}

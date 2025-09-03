@@ -1,6 +1,8 @@
 <script lang="ts">
     import clsx from "clsx";
 
+
+    export let title: string = "";
     export let variant: "default" | "primary" | "ghost" | "approve" = "default";
     export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
     export let highlighted: boolean = false;
@@ -23,6 +25,7 @@
 </style>
 
 <button
+    title={title || undefined}
     data-variant={variant}
     class={clsx([
         fullWidth && "w-full",

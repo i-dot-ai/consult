@@ -214,8 +214,7 @@
                                 </Button>
                             {/if}
 
-                            <!-- TODO: Activate after implementation is finished -->
-                            <!-- <Button
+                            <Button
                                 size="sm"
                                 highlightVariant="primary"
                                 highlighted={flaggedOnly}
@@ -226,7 +225,7 @@
                                 </MaterialIcon>
 
                                 Flagged only
-                            </Button> -->
+                            </Button>
                         </div>
                     </TitleRow>
 
@@ -262,6 +261,7 @@
                                                 themes={answer.themes}
                                                 themeOptions={themes}
                                                 highlightText={searchValue}
+                                                isFlagged={answer.is_flagged}
                                                 {resetData}
                                             />
                                         </div>

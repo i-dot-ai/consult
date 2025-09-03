@@ -35,6 +35,7 @@
 
 
 <button
+    use:melt={$trigger}
     class={clsx([
         "trigger",
         "w-full",
@@ -46,7 +47,7 @@
         ]),
         "rounded",
     ])}
-    use:melt={$trigger}
+    title={label || undefined}
     aria-label={label}
 >
     <div class="flex justify-between items-center">

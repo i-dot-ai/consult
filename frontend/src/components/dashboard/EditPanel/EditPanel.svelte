@@ -106,6 +106,7 @@
 
 
 <Popover
+    label="Edit response labels"
     arrow={false}
     border={false}
     open={panelOpen}
@@ -134,7 +135,7 @@
         <div>
             <Title level={4} text="Themes" />
 
-            <ul class="flex flex-wrap gap-2 items-center justify-start my-1">
+            <ul class="flex flex-wrap gap-2 items-center justify-start my-1 sm:max-w-[30vw]">
                 {#each stagedThemes as theme}
                     <Tag>
                         {theme.name}

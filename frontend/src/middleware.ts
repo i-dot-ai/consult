@@ -120,7 +120,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         });
 
         return newResponse;
-    } catch(err) {
+    } catch(err: any) {
         console.log("Error 500:", err.message);
         return new Response(JSON.stringify({"message": err.message}), { status: 500 });
     }

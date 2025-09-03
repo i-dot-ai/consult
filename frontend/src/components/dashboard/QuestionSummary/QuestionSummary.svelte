@@ -158,14 +158,16 @@
                         body="Try adjusting your search terms or filters."
                     />
                 {:else}
-                    <ThemesTable
-                        themes={[...themes].sort((a,b) => sortAscending
-                            ? a.count - b.count
-                            : b.count - a.count
-                        )}
-                        totalAnswers={totalAnswers}
-                        skeleton={themesLoading}
-                    />
+                    <Panel>
+                        <ThemesTable
+                            themes={[...themes].sort((a,b) => sortAscending
+                                ? a.count - b.count
+                                : b.count - a.count
+                            )}
+                            totalAnswers={totalAnswers}
+                            skeleton={themesLoading}
+                        />
+                    </Panel>
                 {/if}
 
                 <div class="flex justify-between items-center flex-wrap gap-y-4">

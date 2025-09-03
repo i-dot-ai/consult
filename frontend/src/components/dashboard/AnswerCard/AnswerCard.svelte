@@ -11,6 +11,7 @@
     import MaterialIcon from "../../MaterialIcon.svelte";
     import Diamond from "../../svg/material/Diamond.svelte";
     import EditPanel from "../EditPanel/EditPanel.svelte";
+    import FlagButton from "../FlagButton/FlagButton.svelte";
 
 
     interface Props {
@@ -26,6 +27,7 @@
         themeOptions?: ResponseTheme[],
         skeleton?: boolean;
         highlightText?: string;
+        isFlagged?: boolean;
         resetData?: Function;
     }
 
@@ -42,6 +44,7 @@
         themeOptions =[],
         skeleton = false,
         highlightText = "",
+        isFlagged = false,
         resetData = () => {},
     }: Props = $props();
 
@@ -110,10 +113,18 @@
             {/if}
 
             <div class="flex items-center gap-2">
+                <FlagButton
+                    {consultationId}
+                    {questionId}
+                    {answerId}
+                    {resetData}
+                    {isFlagged}
+                />
+
                 <EditPanel
                     {consultationId}
                     {questionId}
-                    answerId={answerId}
+                    {answerId}
                     {themes}
                     {themeOptions}
                     {evidenceRich}
@@ -121,10 +132,13 @@
                     setEditing={(val: boolean) => editing = val}
                 />
 
-                <small class={clsx([
-                    "whitespace-nowrap",
-                    skeleton && "bg-neutral-100 text-neutral-100 select-none blink",
-                ])}>
+                <small
+                    title="Respondent ID"
+                    class={clsx([
+                        "whitespace-nowrap",
+                        skeleton && "bg-neutral-100 text-neutral-100 select-none blink",
+                    ])}
+                >
                     {#if skeleton}
                         SKELETON
                     {:else}
