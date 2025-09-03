@@ -1,6 +1,5 @@
 #!/bin/sh
 
-venv/bin/django-admin echo '\d consultations_respondent\n' | poetry run python manage.py dbshell
 venv/bin/django-admin showmigrations
 venv/bin/django-admin migrate
 venv/bin/django-admin showmigrations
