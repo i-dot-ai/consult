@@ -1,7 +1,8 @@
+import os
 import random
 
 from django.conf import settings
-from openai import AzureOpenAI
+from openai import OpenAI
 
 from consultation_analyser.hosting_environment import HostingEnvironment
 
@@ -16,7 +17,10 @@ def _uniform_vector(txt):
 
 def embed_text(text: str | list[str]) -> list[float] | list[list[float]]:
     if hosting_environment.is_deployed():
-        client = AzureOpenAI()
+        client = OpenAI(
+            base_url=os.environ["LLM_GATEWAY_URL"],
+            api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+        )
         response = client.embeddings.create(
             input=text, model="text-embedding-3-large", dimensions=settings.EMBEDDING_DIMENSION
         )
