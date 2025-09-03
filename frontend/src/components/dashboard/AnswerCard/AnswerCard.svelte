@@ -75,6 +75,8 @@
             "gap-1",
             "flex-wrap",
             "text-sm",
+            "flex-col-reverse",
+            "md:flex-row",
         ])}>
             {#if (demoData && demoData.length > 0 || evidenceRich) || skeleton}
                 <div class={clsx([
