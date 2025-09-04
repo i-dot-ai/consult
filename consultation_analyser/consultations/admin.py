@@ -48,7 +48,7 @@ def _reimport_demographics(consultation_id):
                         field_value=value,
                     )
                     demographics.append(do)
-            respondent.new_demographics.set(demographics)
+            respondent.demographics.set(demographics)
 
 
 @admin.action(description="re import demographic options")
