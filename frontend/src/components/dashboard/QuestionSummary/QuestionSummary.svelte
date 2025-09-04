@@ -1,7 +1,7 @@
 <script lang="ts">
     import { slide, fly } from "svelte/transition";
 
-    import { TabNames, type FormattedTheme } from "../../../global/types.ts";
+    import { TabNames, type DemoData, type DemoOption, type FormattedTheme } from "../../../global/types.ts";
     import { getPercentage } from "../../../global/utils.ts";
 
     import Lan from "../../svg/material/Lan.svelte";
@@ -21,14 +21,15 @@
     import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
     import MultiChoice, { type MultiChoiceAnswer } from "../MultiChoice/MultiChoice.svelte";
     import CsvDownload from "../../CsvDownload/CsvDownload.svelte";
+    import Finance from "../../svg/material/Finance.svelte";
 
 
     interface Props {
         themesLoading?: boolean;
         totalAnswers: number;
         filteredTotal: number;
-        demoData: any;
-        demoOptions: any;
+        demoData: DemoData;
+        demoOptions: DemoOption;
         themes: FormattedTheme[];
         multiChoice: MultiChoiceAnswer[];
         consultationSlug?: string;
@@ -106,6 +107,10 @@
                                     size="sm"
                                     handleClick={() => setActiveTab(TabNames.ResponseAnalysis)}
                                 >
+                                    <MaterialIcon>
+                                        <Finance />
+                                    </MaterialIcon>
+
                                     {`View Responses${themeFilters.filters.length > 0
                                         ? ` (${themeFilters.filters.length} Themes)`
                                         : ""
@@ -136,7 +141,7 @@
                                             size="xs"
                                             handleClick={() => themeFilters.update(themeFilterId)}
                                         >
-                                            <MaterialIcon color="fill-white" hoverColor="fill-primary">
+                                            <MaterialIcon color="fill-white">
                                                 <Close />
                                             </MaterialIcon>
                                         </Button>
@@ -153,14 +158,16 @@
                         body="Try adjusting your search terms or filters."
                     />
                 {:else}
-                    <ThemesTable
-                        themes={[...themes].sort((a,b) => sortAscending
-                            ? a.count - b.count
-                            : b.count - a.count
-                        )}
-                        totalAnswers={totalAnswers}
-                        skeleton={themesLoading}
-                    />
+                    <Panel>
+                        <ThemesTable
+                            themes={[...themes].sort((a,b) => sortAscending
+                                ? a.count - b.count
+                                : b.count - a.count
+                            )}
+                            totalAnswers={totalAnswers}
+                            skeleton={themesLoading}
+                        />
+                    </Panel>
                 {/if}
 
                 <div class="flex justify-between items-center flex-wrap gap-y-4">

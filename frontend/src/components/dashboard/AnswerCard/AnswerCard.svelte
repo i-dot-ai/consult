@@ -1,41 +1,54 @@
 <script lang="ts">
     import clsx from "clsx";
 
+    import type { ResponseTheme } from "../../../global/types";
+    import { applyHighlight } from "../../../global/utils";
+    import { themeFilters } from "../../../global/state.svelte";
+
     import Button from "../../inputs/Button/Button.svelte";
     import Panel from "../Panel/Panel.svelte";
     import Tag from "../../Tag/Tag.svelte";
     import MaterialIcon from "../../MaterialIcon.svelte";
     import Diamond from "../../svg/material/Diamond.svelte";
-    import { applyHighlight } from "../../../global/utils";
-    import { themeFilters } from "../../../global/state.svelte";
+    import EditPanel from "../EditPanel/EditPanel.svelte";
+    import FlagButton from "../FlagButton/FlagButton.svelte";
 
-
-    interface Theme {
-        id: string;
-        name: string;
-    }
 
     interface Props {
-        id?: string;
+        consultationId?: string;
+        questionId?: string;
+        answerId?: string;
+        displayId?: string;
         text?: string;
         demoData?: string[];
         evidenceRich?: boolean;
         multiAnswers?: string[];
-        themes?: Theme[];
+        themes?: ResponseTheme[];
+        themeOptions?: ResponseTheme[],
         skeleton?: boolean;
         highlightText?: string;
+        isFlagged?: boolean;
+        resetData?: () => void;
     }
 
     let {
-        id = "",
+        consultationId = "",
+        questionId = "",
+        answerId = "",
+        displayId = "",
         text = "",
         demoData = [],
         evidenceRich = false,
         multiAnswers = [],
         themes = [],
+        themeOptions =[],
         skeleton = false,
         highlightText = "",
+        isFlagged = false,
+        resetData = () => {},
     }: Props = $props();
+
+    let editing: boolean = $state(false);
 </script>
 
 <Panel>
@@ -46,6 +59,14 @@
         "w-full",
         "rounded-xl",
         "leading-[1.5rem]",
+        "transition-all",
+        "duration-300",
+        editing && clsx([
+            "outline",
+            "outline-4",
+            "outline-teal",
+            "p-2",
+        ])
     ])}>
         <header class={clsx([
             "flex",
@@ -54,6 +75,8 @@
             "gap-1",
             "flex-wrap",
             "text-sm",
+            "flex-col-reverse",
+            "md:flex-row",
         ])}>
             {#if (demoData && demoData.length > 0 || evidenceRich) || skeleton}
                 <div class={clsx([
@@ -61,7 +84,7 @@
                     "flex-wrap",
                     "items-center",
                     "gap-2",
-                    "max-w-[80%]",
+                    "max-w-[75%]",
                 ])}>
                     {#if skeleton}
                         {#each "_".repeat(3) as _}
@@ -92,17 +115,36 @@
             {/if}
 
             <div class="flex items-center gap-2">
-                <!-- TODO: Enabled after implementation -->
-                <!-- <EditPanel /> -->
+                <FlagButton
+                    {consultationId}
+                    {questionId}
+                    {answerId}
+                    {resetData}
+                    {isFlagged}
+                />
 
-                <small class={clsx([
-                    "whitespace-nowrap",
-                    skeleton && "bg-neutral-100 text-neutral-100 select-none blink",
-                ])}>
+                <EditPanel
+                    {consultationId}
+                    {questionId}
+                    {answerId}
+                    {themes}
+                    {themeOptions}
+                    {evidenceRich}
+                    {resetData}
+                    setEditing={(val: boolean) => editing = val}
+                />
+
+                <small
+                    title="Respondent ID"
+                    class={clsx([
+                        "whitespace-nowrap",
+                        skeleton && "bg-neutral-100 text-neutral-100 select-none blink",
+                    ])}
+                >
                     {#if skeleton}
                         SKELETON
                     {:else}
-                        ID: {id || "Not Available"}
+                        ID: {displayId || "Not Available"}
                     {/if}
                 </small>
             </div>

@@ -11,6 +11,7 @@
 <div
     data-testid="panel-component"
     class={clsx([
+        "h-full",
         "my-4",
         level === 1 && "p-4",
         level === 2 && "p-2",

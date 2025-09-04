@@ -10,11 +10,16 @@
     import { TabDirections, TabNames } from "../../global/types";
 
     import MaterialIcon from "../MaterialIcon.svelte";
+    import Title from "../Title.svelte";
+    import Button from "../inputs/Button/Button.svelte";
+    import ArrowForward from "../svg/material/ArrowForward.svelte";
 
 
     export let tabs: Tab[] = [];
     export let value: string = "";
-    export let handleChange = (newVal: TabNames) => {};
+    export let handleChange = (newVal: string) => {};
+    export let title: string = "";
+    export let variant: "default" | "dots" = "default";
 
     let prevTabIndex: number = tabs.findIndex(tab => tab.id === value);
     let direction: TabDirections = TabDirections.Forward;
@@ -40,10 +45,21 @@
     } = createTabs({
         value: writableValue,
         onValueChange: ({ next }) => {
-            handleChange(next as TabNames);
+            handleChange(next);
             return next;
         },
     });
+
+    function incrementTab() {
+        const currTabIndex: number = tabs.findIndex(tab => tab.id === $writableValue);
+        const nextTabIndex: number = currTabIndex + 1 >= tabs.length
+            ? 0
+            : currTabIndex + 1
+
+        const newTabId = tabs[nextTabIndex].id;
+        writableValue.set(newTabId);
+        handleChange(newTabId);
+    }
 
     interface Tab {
         id: string;
@@ -60,47 +76,92 @@
         "overflow-hidden"
     ])}
 >
-    <div
-        use:melt={$list}
-        class={clsx([
-            "flex",
-            "overflow-x-auto",
-            "m-auto",
-            "rounded-2xl",
-            "bg-neutral-200",
-        ])}
-        aria-label="Question details"
-    >
-        {#each tabs as tab}
-            <button use:melt={$trigger(tab.id)} class={clsx([
+    <div class={clsx([
+        "flex",
+        title ? "justify-between" : "justify-center",
+        "items-center",
+        "gap-4",
+    ])}>
+        {#if title}
+            <Title level={3} text={title} />
+        {/if}
+
+        <div
+            use:melt={$list}
+            class={clsx([
                 "flex",
                 "items-center",
-                "justify-between",
-                "gap-1",
-                "m-1",
-                "py-1",
-                "px-2",
-                "text-sm",
+                "overflow-x-auto",
                 "rounded-2xl",
-                "trigger",
-                "relative",
-                "transition-colors",
-                "duration-300",
-                "cursor-pointer",
-                $writableValue === tab.id && "bg-white",
-                "hover:bg-neutral-100",
-            ])}>
-                {#if tab.icon}
-                    <div class="shrink-0">
-                        <MaterialIcon color="fill-neutral-500">
-                            <svelte:component this={tab.icon} />
-                        </MaterialIcon>
-                    </div>
-                {/if}
+                variant === "default" && "bg-neutral-200",
+            ])}
+            aria-label="Question details"
+        >
+            {#if variant === "dots"}
+                <Button variant="ghost" handleClick={() => incrementTab()}>
+                    <MaterialIcon color="fill-neutral-500">
+                        <ArrowForward />
+                    </MaterialIcon>
+                </Button>
+            {/if}
 
-                {tab.title}
-            </button>
-        {/each}
+            {#each tabs as tab}
+                {#if variant === "default"}
+                    <button use:melt={$trigger(tab.id)} class={clsx([
+                        "flex",
+                        "items-center",
+                        "justify-between",
+                        "gap-1",
+                        "m-1",
+                        "py-1",
+                        "px-2",
+                        "text-sm",
+                        "rounded-2xl",
+                        "trigger",
+                        "relative",
+                        "transition-colors",
+                        "duration-300",
+                        "cursor-pointer",
+                        $writableValue === tab.id && "bg-white",
+                        "hover:bg-neutral-100",
+                    ])}>
+                        {#if tab.icon}
+                            <div class="shrink-0">
+                                <MaterialIcon color="fill-neutral-500">
+                                    <svelte:component this={tab.icon} />
+                                </MaterialIcon>
+                            </div>
+                        {/if}
+
+                        {tab.title}
+                    </button>
+                {:else if variant === "dots"}
+                    <button
+                        use:melt={$trigger(tab.id)}
+                        class={clsx([
+                            "flex",
+                            "items-center",
+                            "justify-between",
+                            "gap-1",
+                            "w-2",
+                            "h-2",
+                            "m-0.5",
+                            "p-0",
+                            "text-sm",
+                            "rounded-2xl",
+                            "trigger",
+                            "relative",
+                            "transition-colors",
+                            "duration-300",
+                            "cursor-pointer",
+                            "bg-neutral-300",
+                            $writableValue === tab.id && "bg-primary",
+                            "hover:bg-pink-200",
+                        ])}
+                    ></button>
+                {/if}
+            {/each}
+        </div>
     </div>
 
     <!-- Handle which tab to render in parent -->

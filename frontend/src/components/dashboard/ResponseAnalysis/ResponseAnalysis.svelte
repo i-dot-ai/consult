@@ -10,7 +10,15 @@
     import FiltersSidebar from "../FiltersSidebar/FiltersSidebar.svelte";
     import Select from "../../inputs/Select.svelte";
 
-    import { SearchModeLabels, SearchModeValues } from "../../../global/types";
+    import {
+        SearchModeLabels,
+        SearchModeValues,
+        type DemoData,
+        type DemoOption,
+        type ResponseAnswer,
+        type ResponseTheme,
+        type SearchableSelectOption,
+    } from "../../../global/types";
     import { themeFilters, demoFilters } from "../../../global/state.svelte";
 
     import Title from "../../Title.svelte";
@@ -25,23 +33,27 @@
     import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
     import Flag2 from "../../svg/material/Flag2.svelte";
 
+
+    export let consultationId: string = "";
+    export let questionId: string = "";
     export let pageSize: number = 50;
     export let isAnswersLoading: boolean = true;
     export let isThemesLoading: boolean = true;
     export let answersError: string = "";
-    export let answers = [];
+    export let answers: ResponseAnswer[] = [];
     export let hasMorePages: boolean = true;
     export let filteredTotal: number = 0;
     export let handleLoadClick = () => {};
+    export let resetData = () => {};
 
     export let searchValue: string = "";
     export let setSearchValue = (value: string) => {};
     export let searchMode: SearchModeValues = SearchModeValues.KEYWORD;
     export let setSearchMode = (next: SearchModeValues) => {};
 
-    export let demoOptions: Object = {};
-    export let demoData: Object = {};
-    export let themes = [];
+    export let demoOptions: DemoOption = {};
+    export let demoData: DemoData = {};
+    export let themes: ResponseTheme[] = [];
 
     export let evidenceRich: boolean = false;
     export let setEvidenceRich = (value: boolean) => {};
@@ -121,7 +133,7 @@
                                     { value: SearchModeValues.SEMANTIC, label: SearchModeLabels.SEMANTIC },
                                 ]}
                                 handleChange={(nextValue: string) => {
-                                    setSearchMode(nextValue);
+                                    setSearchMode(nextValue as SearchModeValues);
                                 }}
                             />
                         </div>
@@ -148,7 +160,7 @@
                                                         size="xs"
                                                         handleClick={() => themeFilters.update(themeFilter)}
                                                     >
-                                                        <MaterialIcon color="fill-white" hoverColor="fill-primary">
+                                                        <MaterialIcon color="fill-white">
                                                             <Close />
                                                         </MaterialIcon>
                                                     </Button>
@@ -167,7 +179,11 @@
 
                                     <div slot="panel" class="w-full bg-white p-4 shadow-lg">
                                         <SearchableSelect
-                                            handleChange={(theme => themeFilters.update(theme.value))}
+                                            handleChange={(option: SearchableSelectOption) => {
+                                                if (option.value?.value) {
+                                                    themeFilters.update(option.value.value);
+                                                }
+                                            }}
                                             options={themes.map(theme => ({
                                                 value: theme.id,
                                                 label: theme.name,
@@ -198,8 +214,7 @@
                                 </Button>
                             {/if}
 
-                            <!-- TODO: Activate after implementation is finished -->
-                            <!-- <Button
+                            <Button
                                 size="sm"
                                 highlightVariant="primary"
                                 highlighted={flaggedOnly}
@@ -210,7 +225,7 @@
                                 </MaterialIcon>
 
                                 Flagged only
-                            </Button> -->
+                            </Button>
                         </div>
                     </TitleRow>
 
@@ -235,13 +250,19 @@
                                     <li>
                                         <div transition:fly={{ x: 300, delay: getDelay(i) }}>
                                             <AnswerCard
+                                                consultationId={consultationId}
+                                                questionId={questionId}
+                                                answerId={answer.id}
+                                                displayId={answer.identifier.toString()}
                                                 demoData={Object.values(answer.demographic_data)}
                                                 multiAnswers={answer.multiple_choice_answer}
                                                 evidenceRich={answer.evidenceRich}
-                                                id={answer.identifier}
                                                 text={answer.free_text_answer_text}
                                                 themes={answer.themes}
+                                                themeOptions={themes}
                                                 highlightText={searchValue}
+                                                isFlagged={answer.is_flagged}
+                                                {resetData}
                                             />
                                         </div>
                                     </li>

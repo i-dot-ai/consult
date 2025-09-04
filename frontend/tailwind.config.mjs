@@ -5,6 +5,7 @@ export default {
     extend: {
       colors: {
         "primary": 'var(--color-primary)',
+        "teal": 'var(--color-teal)',
       },
       screens: {
         '3xl': '1920px',

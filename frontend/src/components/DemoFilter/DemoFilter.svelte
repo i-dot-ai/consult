@@ -10,12 +10,13 @@
 
     import { demoFilters } from "../../global/state.svelte.ts";
     import Progress from "../Progress/Progress.svelte";
+    import type { DemoData, DemoOption, DemoTotalCounts } from "../../global/types.ts";
 
     interface Props {
         category?: string;
-        demoOptions?: Object;
-        demoData?: Object;
-        totalCounts?: Object;
+        demoOptions?: DemoOption;
+        demoData?: DemoData;
+        totalCounts?: DemoTotalCounts;
         skeleton?: boolean;
     }
 

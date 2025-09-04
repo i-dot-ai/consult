@@ -1,5 +1,5 @@
 import { writable } from "svelte/store";
-
+import type { Writable } from "svelte/store"
 
 // Favourite questions logic
 const FAVS_STORAGE_KEY = "favouritedQuestions";
@@ -48,16 +48,16 @@ export const favStore = createFavStore();
 
 // Shared fetch logic
 export const createFetchStore = () => {
-    const data = writable(null);
-    const loading = writable(true);
-    const error = writable(null);
+    const data: Writable<any> = writable(null);
+    const loading: Writable<boolean> = writable(true);
+    const error: Writable<string> = writable("");
 
     const DEBOUNCE_DELAY = 500;
     let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
     let prevPromise: Promise<void> | null = null;
     let resolvePrev: (() => void) | null = null;
 
-    const load = async (url: string) => {
+    const load = async (url: string, method:string="GET", body?: BodyInit) => {
         if (debounceTimeout) {
             clearTimeout(debounceTimeout);
             debounceTimeout = null;
@@ -68,15 +68,24 @@ export const createFetchStore = () => {
 
             debounceTimeout = setTimeout(async () => {
                 loading.set(true);
-                error.set(null);
+                error.set("");
                 try {
-                    const response = await fetch(url);
+                    const response = await fetch(
+                        url,
+                        {
+                            headers: {
+                                "Content-Type": "application/json",
+                            },
+                            method: method,
+                            body: body ? JSON.stringify(body) : undefined,
+                        }
+                    );
                     if (!response.ok) {
                         throw new Error(`Fetch Error: ${response.statusText}`);
                     }
                     const parsedData = await response.json();
                     data.set(parsedData);
-                } catch(err) {
+                } catch(err: any) {
                     error.set(err.message);
                 } finally {
                     loading.set(false);
