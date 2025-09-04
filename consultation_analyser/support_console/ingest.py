@@ -478,7 +478,11 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
 def import_themes(question: Question, output_folder: str):
     s3_client = boto3.client("s3")
     themes_file_key = f"{output_folder}themes.json"
-    response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
+    try:
+        response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
+    except BaseException:
+        logger.error("couldn't load file {file}", file=themes_file_key)
+        raise
     theme_data = json.loads(response["Body"].read())
 
     themes_to_save = []
