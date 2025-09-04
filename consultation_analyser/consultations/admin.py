@@ -121,6 +121,7 @@ class RespondentAdmin(admin.ModelAdmin):
 
 
 class DemographicOptionAdmin(admin.ModelAdmin):
+    list_filter = ["consultation"]
     readonly_fields = ["consultation", "field_name", "field_value"]
 
 
