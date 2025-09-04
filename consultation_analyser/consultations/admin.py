@@ -1,3 +1,5 @@
+import json
+
 from django.contrib import admin
 from django_rq import get_queue
 from simple_history.admin import SimpleHistoryAdmin
@@ -34,7 +36,11 @@ def _reimport_demographics(consultation_id):
     for respondent in respondents:
         demographics = []
         if hasattr(respondent, "old_demographics") and respondent.old_demographics:
-            for name, value in respondent.old_demographics.items():
+            old_demographics = json.loads(respondent.old_demographics)
+            if not isinstance(old_demographics, dict):
+                raise ValueError(f"expected dict but got {type(old_demographics)}")
+
+            for name, value in old_demographics.items():
                 if name and value:
                     do, _ = DemographicOption.objects.get_or_create(
                         consultation=respondent.consultation,
