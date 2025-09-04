@@ -332,7 +332,11 @@ def import_response_annotations(question: Question, output_folder: str):
         if len(annotations_to_save) >= DEFAULT_BATCH_SIZE:
             ResponseAnnotation.objects.bulk_create(annotations_to_save)
             annotations_to_save = []
-            logger.info("saved %s ResponseAnnotations for question %s", i + 1, question.number)
+            logger.info(
+                "saved {i} ResponseAnnotations for question {question_number}",
+                i=i + 1,
+                question_number=question.number,
+            )
 
     ResponseAnnotation.objects.bulk_create(annotations_to_save)
 
@@ -413,13 +417,19 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
 
         for i, (themefinder_id, free_text, chosen_options) in enumerate(responses):
             if themefinder_id not in respondent_dict:
-                logger.warning(f"No respondent found for themefinder_id: {themefinder_id}")
+                logger.warning(
+                    "No respondent found for themefinder_id: {themefinder_id}",
+                    themefinder_id=themefinder_id,
+                )
                 continue
 
             if free_text:
                 token_count = len(encoding.encode(free_text))
                 if token_count > 8192:
-                    logger.warning(f"Truncated text for themefinder_id: {themefinder_id}")
+                    logger.warning(
+                        "Truncated text for themefinder_id: {themefinder_id}",
+                        themefinder_id=themefinder_id,
+                    )
                     free_text = free_text[:1000]
                     token_count = len(encoding.encode(free_text))
             else:
@@ -717,7 +727,9 @@ def create_consultation(
     """
     try:
         logger.info(
-            f"Starting consultation import: {consultation_name} (code: {consultation_code})"
+            "Starting consultation import: {consultation_name} (code: {consultation_code})",
+            consultation_name=consultation_name,
+            consultation_code=consultation_code,
         )
 
         consultation = Consultation.objects.create(title=consultation_name)
