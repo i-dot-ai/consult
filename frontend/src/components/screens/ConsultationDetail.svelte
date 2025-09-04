@@ -12,6 +12,8 @@
     import { favStore } from "../../global/stores.ts";
     import Panel from "../dashboard/Panel/Panel.svelte";
     import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
+    import Metrics from "../dashboard/Metrics/Metrics.svelte";
+
 
     export let consultationId: string = "";
 
@@ -47,6 +49,9 @@
     ));
 </script>
 
+<section transition:slide class="my-8">
+    <Metrics />
+</section>
 
 <section transition:slide class="my-8">
     <div class="my-2">
