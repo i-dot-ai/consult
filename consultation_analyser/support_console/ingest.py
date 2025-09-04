@@ -433,7 +433,11 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
 
                 responses_to_save = []
                 total_tokens = 0
-                logger.info("saved %s Responses for question %s", i + 1, question.number)
+                logger.info(
+                    "saved {response_number} Responses for question {question_number}",
+                    response_number=i + 1,
+                    question_number=question.number,
+                )
 
             response = Response(
                 respondent=respondent_dict[themefinder_id],
@@ -462,7 +466,9 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
         # Update total_responses count for the question
         question.update_total_responses()
         logger.info(
-            f"Updated total_responses count for question {question.number}: {question.total_responses}"
+            "Updated total_responses count for question {question_number}: {total_responses}",
+            question_number=question.number,
+            total_responses=question.total_responses,
         )
 
     except Exception as e:
