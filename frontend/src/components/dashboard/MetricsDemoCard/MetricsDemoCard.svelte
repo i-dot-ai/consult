@@ -60,7 +60,7 @@
 
 <div class="metrics-demo-card col-span-12 sm:col-span-6 lg:col-span-4">
     <Panel bg={true} border={true}>
-        <Title level={3} text={title} />
+        <Title level={4} text={title} />
 
         {#each items as item, index}
             {@render cardItem(item, index)}
