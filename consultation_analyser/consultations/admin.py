@@ -65,7 +65,7 @@ class ResponseAdmin(admin.ModelAdmin):
 
 
 class ConsultationAdmin(admin.ModelAdmin):
-    actions = [update_embeddings_admin]
+    actions = [update_embeddings_admin, reimport_demographics]
     readonly_fields = ["title", "slug", "users"]
 
 
