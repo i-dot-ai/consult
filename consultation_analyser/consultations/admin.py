@@ -26,6 +26,32 @@ def update_embeddings_admin(modeladmin, request, queryset):
     modeladmin.message_user(request, f"Processing {queryset.count()} consultations")
 
 
+def _reimport_demographics(consultation_id):
+    respondents = Respondent.objects.filter(consultation_id=consultation_id).extra(
+        select={"old_demographics": "old_demographics"}
+    )
+
+    for respondent in respondents:
+        demographics = []
+        if hasattr(respondent, "old_demographics") and respondent.old_demographics:
+            for name, value in respondent.old_demographics.items():
+                if name and value:
+                    do, _ = DemographicOption.objects.get_or_create(
+                        consultation=respondent.consultation,
+                        field_name=name,
+                        field_value=value,
+                    )
+                    demographics.append(do)
+            respondent.new_demographics.set(demographics)
+
+
+@admin.action(description="re import demographic options")
+def reimport_demographics(modeladmin, request, queryset):
+    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
+    for consultation in queryset:
+        queue.enqueue(_reimport_demographics, consultation.id)
+
+
 class ResponseAdmin(admin.ModelAdmin):
     list_filter = ["question", "question__consultation"]
     list_display = ["free_text", "question"]
