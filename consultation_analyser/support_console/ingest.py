@@ -486,10 +486,10 @@ def import_themes(question: Question, output_folder: str):
     themes_file_key = f"{output_folder}themes.json"
     try:
         response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
+        theme_data = json.loads(response["Body"].read())
     except BaseException:
-        logger.error("couldn't load file {file}", file=themes_file_key)
-        raise
-    theme_data = json.loads(response["Body"].read())
+        logger.info("couldn't load file {file}", file=themes_file_key)
+        return
 
     themes_to_save = []
     for theme in theme_data:
