@@ -3,6 +3,7 @@
 
     import Finance from "../../svg/material/Finance.svelte";
     import TabView from "../../TabView/TabView.svelte";
+    import Chart from "../Chart.svelte";
     import MetricsDemoCard from "../MetricsDemoCard/MetricsDemoCard.svelte";
     import MetricsSummary from "../MetricsSummary/MetricsSummary.svelte";
     import Panel from "../Panel/Panel.svelte";
@@ -50,7 +51,7 @@
     </div>
 
     <div class="grid grid-cols-12 gap-4">
-        <div class="col-span-3">
+        <div class="col-span-12 md:col-span-3">
             <Panel bg={true} border={true}>
                 <MetricsSummary
                     questionCount={26}
@@ -60,7 +61,7 @@
             </Panel>
         </div>
 
-        <div class="col-span-9 h-full">
+        <div class="col-span-12 md:col-span-9 h-full">
             <Panel bg={true} border={true}>
                 <TabView
                     title="Q3: How important is transparency in AI decision-making processes?"
@@ -71,6 +72,29 @@
                         { title: "Q12", id: "tab-2" },
                     ]}
                 >
+                <div class="overflow-x-auto">
+                    <div class="h-[10rem] flex flex-row-reverse justify-around mt-4">
+                        <div id="legend-container"></div>
+                            <div class="w-max">
+                                <Chart
+                                    labels={[
+                                        "Neutral or uncertain about effectiveness",
+                                        "Extremely effective and well structured",
+                                        "Completely ineffective and requires overhaul",
+                                        "Moderately effective with some improvements needed",
+                                        "Somewhat ineffective requiring significant changes",
+                                    ]}
+                                    data={[
+                                        720,
+                                        999,
+                                        280,
+                                        999,
+                                        600,
+                                    ]}
+                                />
+                            </div>
+                        </div>
+                    </div>
                 </TabView>
             </Panel>
         </div>
