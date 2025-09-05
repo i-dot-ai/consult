@@ -15,7 +15,7 @@ from consultation_analyser.consultations.dummy_data import (
     create_dummy_consultation_from_yaml_job,
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
-from consultation_analyser.consultations.models import MultiChoiceAnswer, DemographicOption
+from consultation_analyser.consultations.models import MultiChoiceAnswer
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
 
