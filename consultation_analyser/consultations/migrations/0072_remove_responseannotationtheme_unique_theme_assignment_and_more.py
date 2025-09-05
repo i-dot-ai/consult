@@ -7,7 +7,7 @@ from django.db import migrations, models
 
 class Migration(migrations.Migration):
     dependencies = [
-        ("consultations", "0070_historicalresponseannotation_and_more"),
+        ("consultations", "0071_responseannotation_flagged_by"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
     ]
 
