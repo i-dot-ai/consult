@@ -45,9 +45,8 @@ def delete_consultation_job(consultation: models.Consultation):
     consultation_title = consultation.title
 
     try:
-        # Refetch the consultation to ensure we have a fresh DB connection
+        # Re-fetch the consultation to ensure we have a fresh DB connection
         consultation = models.Consultation.objects.get(id=consultation_id)
-        MultiChoiceAnswer.objects.filter(question__consultation_id=consultation.id).delete()
 
         # Delete related objects in order to avoid foreign key constraints
         logger.info(
@@ -135,6 +134,7 @@ def delete_consultation_job(consultation: models.Consultation):
             )
 
         logger.info("Deleting consultation...")
+        MultiChoiceAnswer.objects.filter(question__consultation_id=consultation.id).delete()
         consultation.delete()
 
         logger.info(
