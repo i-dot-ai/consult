@@ -269,7 +269,7 @@ def import_response_annotation_themes(question: Question, output_folder: str):
                 ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
                 objects_to_save = []
                 logger.info(
-                    "saved %s ResponseAnnotationTheme for question %s", i + 1, question.number
+                    "saved {i} ResponseAnnotationTheme for question {question_number}", i=i + 1, question_number=question.number
                 )
 
     ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
