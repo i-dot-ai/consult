@@ -50,11 +50,11 @@ def test_review_show_response(django_app):
 
     # Check that we have a record of what has been human reviewed in the theme annotation
     ai_annotation_themes = models.ResponseAnnotationTheme.objects.filter(
-        response_annotation=response_annotation1, is_original_ai_assignment=True
+        response_annotation=response_annotation1, assigned_by__isnull=True
     )
     assert ai_annotation_themes.values_list("theme_id", flat=True)[0] == theme_a.id
     human_reviewed_themes = models.ResponseAnnotationTheme.objects.filter(
-        response_annotation=response_annotation1, is_original_ai_assignment=False
+        response_annotation=response_annotation1, assigned_by__isnull=False
     )
     assert set(human_reviewed_themes.values_list("theme_id", flat=True)) == set(
         {theme_a.id, theme_b.id}
@@ -72,8 +72,8 @@ def test_review_show_response(django_app):
 
     # Check the response themes are marked correctly.
     models.ResponseAnnotationTheme.objects.filter(
-        response_annotation=response_annotation2, is_original_ai_assignment=True
+        response_annotation=response_annotation2, assigned_by__isnull=True
     ).count() == 2
     models.ResponseAnnotationTheme.objects.filter(
-        response_annotation=response_annotation2, is_original_ai_assignment=False
+        response_annotation=response_annotation2, assigned_by__isnull=False
     ).count() == 2

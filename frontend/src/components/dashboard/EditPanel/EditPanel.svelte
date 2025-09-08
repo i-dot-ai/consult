@@ -113,6 +113,7 @@
     handleOpenChange={newOpen => {
         panelOpen = newOpen;
         setEditing(newOpen);
+        resetStaged();
     }}
 >
     <div slot="trigger">
@@ -199,18 +200,6 @@
         {/if}
 
         <div class="w-full flex justify-end">
-            <div class="w-1/2 mr-1">
-                <Button size="sm" handleClick={() => resetStaged()} fullWidth={true}>
-                    <div class="flex justify-center items-center gap-2 w-full py-0.5">
-                        <MaterialIcon color="fill-neutral-500">
-                            <AutoRenew />
-                        </MaterialIcon>
-
-                        Reset
-                    </div>
-                </Button>
-            </div>
-
             <div class="w-1/2 ml-1">
                 <Button variant="approve" size="sm" handleClick={() => submit()} fullWidth={true}>
                     <div class="flex justify-center items-center gap-2 w-full py-0.5">
