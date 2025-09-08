@@ -29,8 +29,8 @@
     "@web/test-runner-mocha": "^0.9.0",
     "@x-govuk/govuk-prototype-components": "^3.0.9",
     "dompurify": "^3.2.6",
-    "govuk-frontend": "^5.10.2",
-    "i.ai-design-system": "^0.5.2",
+    "govuk-frontend": "^5.11.2",
+    "i.ai-design-system": "^0.7.7",
     "jsdom": "^26.1.0",
     "json-schema-faker-cli": "^5.0.6",
     "lit": "^3.3.0"
@@ -46,8 +46,8 @@
     "@storybook/web-components-vite": "^8.6.12",
     "@types/chart.js": "^2.9.41",
     "jest": "^29.7.0",
-    "rollup": "^4.42.0",
-    "sass": "^1.89.1",
+    "rollup": "^4.50.1",
+    "sass": "^1.92.1",
     "storybook": "^8.6.12"
   }
 }
