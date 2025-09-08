@@ -54,6 +54,11 @@
     let currQuestion: number = $derived(questions[0]?.number);
     let chartQuestions = $derived(questions.filter(question => question.multiple_choice_options.length > 0));
     let chartQuestion = $derived(chartQuestions.find(question => question.number === currQuestion));
+
+    let totalResponses = $derived(questions?.reduce(
+        (acc, question) => acc + question.total_responses,
+        0,
+    ));
 </script>
 
 <Panel>
@@ -67,8 +72,8 @@
         <div class="col-span-12 md:col-span-3">
             <Panel bg={true} border={true}>
                 <MetricsSummary
-                    questionCount={26}
-                    responseCount={107573}
+                    questionCount={questions?.length}
+                    responseCount={totalResponses}
                     demoCount={5}
                 />
             </Panel>
@@ -90,7 +95,7 @@
                             "m-auto",
                         ])}
                     >
-                        <MaterialIcon color="fill-neutral-400" size="10rem">
+                        <MaterialIcon color="fill-neutral-300" size="10rem">
                             <ProgressActivity />
                         </MaterialIcon>
                     </div>
