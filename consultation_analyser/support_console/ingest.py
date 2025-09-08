@@ -269,7 +269,9 @@ def import_response_annotation_themes(question: Question, output_folder: str):
                 ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
                 objects_to_save = []
                 logger.info(
-                    "saved %s ResponseAnnotationTheme for question %s", i + 1, question.number
+                    "saved {i} ResponseAnnotationTheme for question {question_number}",
+                    i=i + 1,
+                    question_number=question.number,
                 )
 
     ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
@@ -332,7 +334,11 @@ def import_response_annotations(question: Question, output_folder: str):
         if len(annotations_to_save) >= DEFAULT_BATCH_SIZE:
             ResponseAnnotation.objects.bulk_create(annotations_to_save)
             annotations_to_save = []
-            logger.info("saved %s ResponseAnnotations for question %s", i + 1, question.number)
+            logger.info(
+                "saved {i} ResponseAnnotations for question {question_number}",
+                i=i + 1,
+                question_number=question.number,
+            )
 
     ResponseAnnotation.objects.bulk_create(annotations_to_save)
 
@@ -413,13 +419,19 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
 
         for i, (themefinder_id, free_text, chosen_options) in enumerate(responses):
             if themefinder_id not in respondent_dict:
-                logger.warning(f"No respondent found for themefinder_id: {themefinder_id}")
+                logger.warning(
+                    "No respondent found for themefinder_id: {themefinder_id}",
+                    themefinder_id=themefinder_id,
+                )
                 continue
 
             if free_text:
                 token_count = len(encoding.encode(free_text))
                 if token_count > 8192:
-                    logger.warning(f"Truncated text for themefinder_id: {themefinder_id}")
+                    logger.warning(
+                        "Truncated text for themefinder_id: {themefinder_id}",
+                        themefinder_id=themefinder_id,
+                    )
                     free_text = free_text[:1000]
                     token_count = len(encoding.encode(free_text))
             else:
@@ -433,7 +445,11 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
 
                 responses_to_save = []
                 total_tokens = 0
-                logger.info("saved %s Responses for question %s", i + 1, question.number)
+                logger.info(
+                    "saved {response_number} Responses for question {question_number}",
+                    response_number=i + 1,
+                    question_number=question.number,
+                )
 
             response = Response(
                 respondent=respondent_dict[themefinder_id],
@@ -462,7 +478,9 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
         # Update total_responses count for the question
         question.update_total_responses()
         logger.info(
-            f"Updated total_responses count for question {question.number}: {question.total_responses}"
+            "Updated total_responses count for question {question_number}: {total_responses}",
+            question_number=question.number,
+            total_responses=question.total_responses,
         )
 
     except Exception as e:
@@ -478,8 +496,12 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
 def import_themes(question: Question, output_folder: str):
     s3_client = boto3.client("s3")
     themes_file_key = f"{output_folder}themes.json"
-    response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
-    theme_data = json.loads(response["Body"].read())
+    try:
+        response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
+        theme_data = json.loads(response["Body"].read())
+    except BaseException:
+        logger.info("couldn't load file {file}", file=themes_file_key)
+        return
 
     themes_to_save = []
     for theme in theme_data:
@@ -665,34 +687,29 @@ def import_respondents(consultation: Consultation, consultation_code: str):
     respondents_file_key = f"app_data/consultations/{consultation_code}/inputs/respondents.jsonl"
     response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=respondents_file_key)
 
-    respondents_to_save = []
-
     for i, line in enumerate(response["Body"].iter_lines()):
         respondent_data = json.loads(line.decode("utf-8"))
         themefinder_id = respondent_data.get("themefinder_id")
         demographics = respondent_data.get("demographic_data", {})
 
-        respondent = Respondent(
+        respondent = Respondent.objects.create(
             consultation=consultation,
             themefinder_id=themefinder_id,
         )
 
+        demographic_options = []
         for field_name, field_value in demographics.items():
             demographic_option, _ = DemographicOption.objects.get_or_create(
                 consultation=consultation,
                 field_name=field_name,
                 field_value=field_value,
             )
-            respondent.demographics.add(demographic_option)
+            demographic_options.append(demographic_option)
 
-        respondents_to_save.append(respondent)
+        respondent.demographics.set(demographic_options)
 
-        if len(respondents_to_save) >= DEFAULT_BATCH_SIZE:
-            Respondent.objects.bulk_create(respondents_to_save)
-            respondents_to_save = []
-            logger.info("saved %s Respondents", i + 1)
-
-    Respondent.objects.bulk_create(respondents_to_save)
+        if i % 100 == 0:
+            logger.error("imported {i} respondents", i=i)
 
 
 def create_consultation(
@@ -712,7 +729,9 @@ def create_consultation(
     """
     try:
         logger.info(
-            f"Starting consultation import: {consultation_name} (code: {consultation_code})"
+            "Starting consultation import: {consultation_name} (code: {consultation_code})",
+            consultation_name=consultation_name,
+            consultation_code=consultation_code,
         )
 
         consultation = Consultation.objects.create(title=consultation_name)
