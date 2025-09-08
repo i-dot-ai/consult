@@ -1,28 +1,27 @@
 <script lang="ts">
     import { slide, fly } from "svelte/transition";
 
-    import { TabNames, type FormattedTheme } from "../../global/types.ts";
-    import { getPercentage } from "../../global/utils.ts";
+    import { TabNames, type FormattedTheme } from "../../../global/types.ts";
+    import { getPercentage } from "../../../global/utils.ts";
 
-    import Lan from "../svg/material/Lan.svelte";
-    import Close from "../svg/material/Close.svelte";
-    import Panel from "./Panel.svelte";
-    import MaterialIcon from "../MaterialIcon.svelte";
-    import Title from "../Title.svelte";
-    import Button from "../inputs/Button/Button.svelte";
-    import TitleRow from "./TitleRow.svelte";
-    import ThemesTable from "./ThemesTable.svelte";
-    import ProgressCards from "../ProgressCards.svelte";
-    import FiltersSidebar from "./FiltersSidebar.svelte";
-    import Tag from "../Tag.svelte";
-    import Alert from "../Alert.svelte";
-    import FilterAlt from "../svg/material/FilterAlt.svelte";
-    import List from "../svg/material/List.svelte";
+    import Lan from "../../svg/material/Lan.svelte";
+    import Close from "../../svg/material/Close.svelte";
+    import Panel from "../Panel/Panel.svelte";
+    import MaterialIcon from "../../MaterialIcon.svelte";
+    import Title from "../../Title.svelte";
+    import Button from "../../inputs/Button/Button.svelte";
+    import TitleRow from "../TitleRow.svelte";
+    import ThemesTable from "../ThemesTable/ThemesTable.svelte";
+    import FiltersSidebar from "../FiltersSidebar/FiltersSidebar.svelte";
+    import Tag from "../../Tag/Tag.svelte";
+    import Alert from "../../Alert.svelte";
+    import FilterAlt from "../../svg/material/FilterAlt.svelte";
 
-    import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
-    import NotFoundMessage from "../NotFoundMessage.svelte";
+    import { themeFilters, demoFilters } from "../../../global/state.svelte.ts";
+    import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
+    import MultiChoice, { type MultiChoiceAnswer } from "../MultiChoice/MultiChoice.svelte";
+    import CsvDownload from "../../CsvDownload/CsvDownload.svelte";
 
-    const MAX_CARDS_ALLOWED = 10;
 
     interface Props {
         themesLoading?: boolean;
@@ -31,12 +30,12 @@
         demoData: any;
         demoOptions: any;
         themes: FormattedTheme[];
-        multiChoice: Object;
+        multiChoice: MultiChoiceAnswer[];
         consultationSlug?: string;
         sortAscending?: boolean;
         searchValue: string;
         evidenceRich: boolean;
-        setActiveTab: (newTab: TabNames) => {};
+        setActiveTab: (newTab: TabNames) => void;
     }
     let {
         themesLoading = true,
@@ -45,7 +44,7 @@
         demoData = {},
         demoOptions = {},
         themes = [],
-        multiChoice = {},
+        multiChoice = [],
         consultationSlug = "",
         searchValue = "",
         evidenceRich = false,
@@ -65,27 +64,9 @@
     </div>
 
     <div class="col-span-4 md:col-span-3">
-        {#if multiChoice[""] && Object.keys(multiChoice[""]).length > 0}
-            <section class="my-4">
-                <Panel>
-                    <TitleRow
-                        level={2}
-                        title="Multiple Choice Answers"
-                    >
-                        <List slot="icon" />
-                    </TitleRow>
 
-                    <ProgressCards
-                        totalAnswers={totalAnswers}
-                        filteredTotal={filteredTotal}
-                        demoData={multiChoice}
-                        themes={themes}
-                        themeFilters={themeFilters.filters}
-                        demoFiltersApplied={demoFilters.applied}
-                        themeFiltersApplied={themeFilters.applied}
-                    />
-                </Panel>
-            </section>
+        {#if multiChoice && multiChoice.length > 0}
+            <MultiChoice data={multiChoice} />
         {/if}
 
         <section class="my-4">
@@ -97,20 +78,17 @@
                 >
                     <Lan slot="icon" />
 
-                    <iai-csv-download
-                        slot="aside"
-                        class="text-xs"
-                        fileName={`theme_mentions_for_${consultationSlug}.csv`}
-                        variant="silver"
-                        data={
-                            themes.map(theme => ({
+                    <div slot="aside">
+                        <CsvDownload
+                            fileName={`theme_mentions_for_${consultationSlug}.csv`}
+                            data={themes.map(theme => ({
                                 "Theme Name": theme.name,
                                 "Theme Description": theme.description,
                                 "Mentions": theme.count,
                                 "Percentage": getPercentage(theme.count, totalAnswers),
-                            }))
-                        }
-                    ></iai-csv-download>
+                            }))}
+                        />
+                    </div>
                 </TitleRow>
 
                 {#if demoFilters.applied() || themeFilters.applied() || evidenceRich || searchValue}
@@ -180,7 +158,7 @@
                             ? a.count - b.count
                             : b.count - a.count
                         )}
-                        totalAnswers={filteredTotal}
+                        totalAnswers={totalAnswers}
                         skeleton={themesLoading}
                     />
                 {/if}

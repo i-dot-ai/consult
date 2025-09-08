@@ -5,10 +5,10 @@
 
     import MaterialIcon from "../MaterialIcon.svelte";
     import Button from "../inputs/Button/Button.svelte";
-    import QuestionCard from "../dashboard/QuestionCard.svelte";
-    import TabView from "../TabView.svelte";
-    import QuestionSummary from "../dashboard/QuestionSummary.svelte";
-    import ResponseAnalysis from "../dashboard/ResponseAnalysis.svelte";
+    import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
+    import TabView from "../TabView/TabView.svelte";
+    import QuestionSummary from "../dashboard/QuestionSummary/QuestionSummary.svelte";
+    import ResponseAnalysis from "../dashboard/ResponseAnalysis/ResponseAnalysis.svelte";
     import Alert from "../Alert.svelte";
 
     import { getConsultationDetailUrl } from "../../global/routes.ts";
@@ -172,25 +172,6 @@
         hasMorePages = true;
     }
 
-    function formatMultiChoiceData(multiChoiceData: Array<{
-        response_count: number,
-        answer?: string,
-    }>) {
-        if (!multiChoiceData) {
-            return {};
-        }
-
-        // empty string to avoid displaying title on card
-        const formattedMultiChoice = {"": {}};
-        multiChoiceData.forEach(data => {
-            if (!data.answer) {
-                return;
-            }
-            formattedMultiChoice[""][data.answer] = data.response_count;
-        })
-        return formattedMultiChoice;
-    }
-
     const setEvidenceRich = (value: boolean) => evidenceRich = value;
 
     $effect(() => {
@@ -202,6 +183,10 @@
         // do not track deep dependencies
         untrack(() => loadData());
     })
+
+    let question = $derived($consultationData?.questions?.find(
+        question => question.id === questionId
+    ));
 </script>
 
 <section class={clsx([
@@ -244,9 +229,7 @@
             skeleton={$isConsultationLoading}
             clickable={false}
             consultationId={!$isConsultationLoading && $consultationData.id}
-            question={!$isConsultationLoading &&
-                $consultationData.questions?.find(question => question.id === questionId)
-            }
+            question={!$isConsultationLoading && question}
             hideIcon={true}
             horizontal={true}
         />
@@ -255,7 +238,7 @@
 
 <TabView
     value={activeTab}
-    onValueChange={({ curr, next }) => activeTab = next}
+    handleChange={(next: TabNames) => activeTab = next}
     tabs={[
         { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
         { id: TabNames.ResponseAnalysis, title: "Response Analysis", icon: Finance},
@@ -273,11 +256,11 @@
                 })
             })}
             themesLoading={$isThemeAggrLoading}
-            totalAnswers={$answersData?.respondents_total}
+            totalAnswers={question?.total_responses}
             filteredTotal={$answersData?.filtered_total}
             demoData={$demoAggrData?.demographic_aggregations}
             demoOptions={$demoOptionsData?.demographic_options}
-            multiChoice={formatMultiChoiceData($multiChoiceAggrData)}
+            multiChoice={$multiChoiceAggrData?.filter(item => Boolean(item.answer))}
             consultationSlug={$consultationData?.slug}
             evidenceRich={evidenceRich}
             searchValue={searchValue}

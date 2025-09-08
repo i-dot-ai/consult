@@ -659,6 +659,90 @@ class TestFilteredResponsesAPIView:
 
         assert sorted(x["sentiment"] for x in data["all_respondents"]) == expected
 
+    @pytest.mark.parametrize(
+        ("is_flagged", "expected_responses"), [(True, 1), (False, 1), (None, 2)]
+    )
+    def test_get_filtered_response_is_flagged(
+        self,
+        client,
+        consultation_user_token,
+        consultation_user,
+        free_text_annotation,
+        another_annotation,
+        is_flagged,
+        expected_responses,
+    ):
+        free_text_annotation.flagged_by.add(consultation_user)
+        free_text_annotation.save()
+
+        url = reverse(
+            "response-list",
+            kwargs={
+                "consultation_pk": free_text_annotation.response.question.consultation.id,
+                "question_pk": free_text_annotation.response.question.id,
+            },
+        )
+
+        response = client.get(
+            url + f"?is_flagged={is_flagged}",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+
+        assert response.status_code == 200
+        assert response.json()["respondents_total"] == 2
+        assert response.json()["filtered_total"] == expected_responses
+        if expected_responses == 1:
+            assert response.json()["all_respondents"][0]["is_flagged"] == is_flagged
+
+    @pytest.mark.parametrize(
+        ("chosen_options", "expected_responses"),
+        [
+            (["red", "blue"], 2),
+            (["red"], 2),
+            (["blue"], 1),
+            (["not-a-real-answer"], 2),
+            ([], 2),
+        ],
+    )
+    def test_get_filtered_response_chosen_options(
+        self,
+        client,
+        consultation_user_token,
+        consultation_user,
+        multi_choice_responses,
+        multi_choice_question,
+        chosen_options,
+        expected_responses,
+    ):
+        url = reverse(
+            "response-list",
+            kwargs={
+                "consultation_pk": multi_choice_question.consultation.id,
+                "question_pk": multi_choice_question.id,
+            },
+        )
+
+        _chosen_options = multi_choice_question.multichoiceanswer_set.filter(
+            question=multi_choice_question, text__in=chosen_options
+        )
+
+        chosen_options_query = ",".join(str(x.pk) for x in _chosen_options)
+
+        response = client.get(
+            url + f"?chosen_options={chosen_options_query}",
+            headers={
+                "Content-Type": "application/json",
+                "Authorization": f"Bearer {consultation_user_token}",
+            },
+        )
+
+        assert response.status_code == 200
+        assert response.json()["respondents_total"] == 2
+        assert response.json()["filtered_total"] == expected_responses
+
     @pytest.mark.parametrize("is_flagged", [True, False])
     def test_get_responses_with_is_flagged(
         self, client, consultation_user, consultation_user_token, free_text_annotation, is_flagged
@@ -911,7 +995,10 @@ class TestAPIViewPermissions:
             },
         )
 
-        assert list(free_text_annotation.themes.values_list("key", flat=True)) == ["A"]
+        assert list(free_text_annotation.themes.values_list("key", flat=True)) == [
+            "AI assigned theme A",
+            "Human assigned theme B",
+        ]
 
         response = client.patch(
             url,
@@ -922,7 +1009,10 @@ class TestAPIViewPermissions:
             },
         )
         assert response.status_code == 200, response.json()
-        assert [x["key"] for x in response.json()["themes"]] == ["B"]
+        assert [(x["assigned_by"], x["key"]) for x in response.json()["themes"]] == [
+            ("AI", "AI assigned theme A"),
+            (consultation_user.email, "Human assigned theme C"),
+        ]
 
         # check that there are two versions of the ResponseAnnotation
         assert free_text_annotation.history.count() == 2
@@ -931,28 +1021,28 @@ class TestAPIViewPermissions:
         history = ResponseAnnotationTheme.history.filter(
             response_annotation=free_text_annotation
         ).order_by("history_date")
-        assert history.count() == 3
-
-        initial, mid, final = history
+        assert history.count() == 4
 
         # check all stages of history
-        # 1. add initial theme A
-        assert initial.history_type == "+"
-        assert initial.theme.key == "A"
-        assert initial.is_original_ai_assignment is True
-        assert initial.assigned_by is None
+        # 0. add initial theme AI assigned theme A and....
+        assert history[0].history_type == "+"
+        assert history[0].theme.key == "AI assigned theme A"
+        assert history[0].assigned_by is None
 
-        # 2. remove initial theme A
-        assert mid.history_type == "-"
-        assert mid.theme.key == "A"
-        assert mid.is_original_ai_assignment is True
-        assert mid.assigned_by is None
+        # 1. ...Human assigned theme B
+        assert history[1].history_type == "+"
+        assert history[1].theme.key == "Human assigned theme B"
+        assert history[1].assigned_by.email == consultation_user.email
 
-        # 3. add new theme B
-        assert final.history_type == "+"
-        assert final.theme.key == "B"
-        assert final.is_original_ai_assignment is False
-        assert final.assigned_by == consultation_user
+        # 2. remove initial Human assigned theme B
+        assert history[2].history_type == "-"
+        assert history[2].theme.key == "Human assigned theme B"
+        assert history[2].assigned_by.email == consultation_user.email
+
+        # 3. add new Human assigned theme C
+        assert history[3].history_type == "+"
+        assert history[3].theme.key == "Human assigned theme C"
+        assert history[3].assigned_by == consultation_user
 
     def test_patch_response_themes_invalid(
         self, client, consultation_user_token, free_text_annotation
@@ -977,7 +1067,7 @@ class TestAPIViewPermissions:
             },
         )
         assert response.status_code == 400
-        assert response.json() == {"themes": [f'Invalid pk "{fake_uuid}" - object does not exist.']}
+        assert response.json() == {"themes": [[f'Invalid pk "{fake_uuid}" - object does not exist.']]}
 
     @pytest.mark.parametrize("is_flagged", [True, False])
     def test_patch_response_flags(

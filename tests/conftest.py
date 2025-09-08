@@ -405,26 +405,51 @@ def respondent_2(consultation):
 @pytest.fixture
 def free_text_response(free_text_question, respondent_1):
     response = Response.objects.create(question=free_text_question, respondent=respondent_1)
-
     yield response
     response.delete()
 
 
 @pytest.fixture
-def free_text_annotation(free_text_response):
+def another_response(free_text_question, respondent_2):
+    response = Response.objects.create(question=free_text_question, respondent=respondent_2)
+    yield response
+    response.delete()
+
+
+@pytest.fixture
+def free_text_annotation(free_text_response, consultation_user):
     annotation = ResponseAnnotation.objects.create(response=free_text_response, evidence_rich=True)
-    theme_a = Theme.objects.create(question=free_text_response.question, key="A")
+    theme_a = Theme.objects.create(question=free_text_response.question, key="AI assigned theme A")
+    theme_b = Theme.objects.create(
+        question=free_text_response.question, key="Human assigned theme B"
+    )
     annotation_a = ResponseAnnotationTheme.objects.create(
-        response_annotation=annotation, theme=theme_a
+        response_annotation=annotation, theme=theme_a, assigned_by=None
+    )
+    annotation_b = ResponseAnnotationTheme.objects.create(
+        response_annotation=annotation, theme=theme_b, assigned_by=consultation_user
     )
     yield annotation
     annotation_a.delete()
+    annotation_b.delete()
     theme_a.delete()
+    theme_b.delete()
+    annotation.delete()
+
+
+@pytest.fixture
+def another_annotation(another_response, theme_b):
+    annotation = ResponseAnnotation.objects.create(response=another_response, evidence_rich=True)
+    annotation_a = ResponseAnnotationTheme.objects.create(
+        response_annotation=annotation, theme=theme_b
+    )
+    yield annotation
+    annotation_a.delete()
     annotation.delete()
 
 
 @pytest.fixture
 def alternative_theme(free_text_response):
-    theme = Theme.objects.create(question=free_text_response.question, key="B")
+    theme = Theme.objects.create(question=free_text_response.question, key="Human assigned theme C")
     yield theme
     theme.delete()

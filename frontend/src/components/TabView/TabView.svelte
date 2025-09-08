@@ -1,26 +1,32 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import { slide, fade, fly } from "svelte/transition";
+    import { type Component } from "svelte";
+    import { writable } from 'svelte/store'
+    import { fly } from "svelte/transition";
 
     import { createTabs, melt } from '@melt-ui/svelte';
 
-    import { writable } from 'svelte/store'
-    import MaterialIcon from "./MaterialIcon.svelte";
+    import { TabDirections, TabNames } from "../../global/types";
+
+    import MaterialIcon from "../MaterialIcon.svelte";
 
 
-    export let tabs: Tab[] = []; 
+    export let tabs: Tab[] = [];
     export let value: string = "";
-    export let onValueChange: (val: {curr: string, next: string}) => {};
+    export let handleChange = (newVal: TabNames) => {};
 
-    let prevTabIndex: number = 0;
-    let direction: "forward" | "backward" = "forward";
+    let prevTabIndex: number = tabs.findIndex(tab => tab.id === value);
+    let direction: TabDirections = TabDirections.Forward;
     const writableValue = writable(value);
 
     $: {
         // Determine navigation direction for fly animation
         const activeTabIndex = tabs.findIndex(tab => tab.id === value);
-        direction = activeTabIndex < prevTabIndex ? "backward" : "forward";
+
+        direction = activeTabIndex > prevTabIndex
+            ? TabDirections.Backward
+            : TabDirections.Forward;
 
         // Update writableValue for the parent
         writableValue.set(value);
@@ -33,13 +39,16 @@
         elements: { root, list, content, trigger },
     } = createTabs({
         value: writableValue,
-        onValueChange: onValueChange,
+        onValueChange: ({ next }) => {
+            handleChange(next as TabNames);
+            return next;
+        },
     });
 
     interface Tab {
         id: string;
         title: string;
-        icon?;
+        icon?: Component;
     }
 </script>
 
@@ -82,9 +91,11 @@
                 "hover:bg-neutral-100",
             ])}>
                 {#if tab.icon}
-                    <MaterialIcon color="fill-neutral-500">
-                        <svelte:component this={tab.icon} />
-                    </MaterialIcon>
+                    <div class="shrink-0">
+                        <MaterialIcon color="fill-neutral-500">
+                            <svelte:component this={tab.icon} />
+                        </MaterialIcon>
+                    </div>
                 {/if}
 
                 {tab.title}
@@ -94,8 +105,7 @@
 
     <!-- Handle which tab to render in parent -->
     {#key value}
-        <!-- positive x: from right | negative x: from left -->
-        <div in:fly={{ x: direction === "forward" ? 300 : -300 }}>
+        <div in:fly={{ x: direction === TabDirections.Forward ? -300 : 300 }}>
             <slot />
         </div>
     {/key}

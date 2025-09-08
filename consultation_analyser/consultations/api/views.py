@@ -201,7 +201,7 @@ class ResponseViewSet(ModelViewSet):
         )
         # Apply additional FilterSet filtering (including themeFilters)
         filterset = self.filterset_class(self.request.GET, queryset=queryset)
-        return filterset.qs
+        return filterset.qs.distinct()
 
     @action(detail=False, methods=["get"], url_path="demographic-aggregations")
     def demographic_aggregations(self, request, question_pk=None, consultation_pk=None):

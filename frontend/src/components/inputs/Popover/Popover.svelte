@@ -8,8 +8,8 @@
     
     import { fade } from 'svelte/transition';
 
-    import MaterialIcon from '../MaterialIcon.svelte';
-    import KeyboardArrowDown from '../svg/material/KeyboardArrowDown.svelte';
+    import MaterialIcon from '../../MaterialIcon.svelte';
+    import KeyboardArrowDown from '../../svg/material/KeyboardArrowDown.svelte';
 
 
     export let label: string = '';

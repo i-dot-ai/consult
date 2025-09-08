@@ -3,12 +3,21 @@
     import { slide } from "svelte/transition";
 
     import { getPercentage } from "../../global/utils.ts";
-    import Panel from "./Panel.svelte";
+    import Panel from "../dashboard/Panel/Panel.svelte";
     import Button from "../inputs/Button/Button.svelte";
     import MaterialIcon from "../MaterialIcon.svelte";
     import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
 
     import { demoFilters } from "../../global/state.svelte.ts";
+    import Progress from "../Progress/Progress.svelte";
+
+    interface Props {
+        category?: string;
+        demoOptions?: Object;
+        demoData?: Object;
+        totalCounts?: Object;
+        skeleton?: boolean;
+    }
 
     let {
         category = "",
@@ -16,7 +25,7 @@
         demoData = {},
         totalCounts = {},
         skeleton = false,
-    } = $props();
+    }: Props = $props();
 
     let expanded = $state(true);
 </script>
@@ -33,7 +42,9 @@
                 handleClick={() => expanded = !expanded}
             >
                 <div class="flex justify-between w-full">
-                    <h3 class="truncate" title={category}>{category}</h3>
+                    <h3 class="truncate" title={category}>
+                        {skeleton ? "Skeleton" : category}
+                    </h3>
 
                     <div class={clsx([
                         "transition-transform",
@@ -75,33 +86,21 @@
                             highlighted={demoFilters.filters[category]?.includes(rowKey)}
                             highlightVariant="light"
                         >
-                            <div class="demo-filter w-full relative pb-3">
-                                <div class="grid grid-cols-3 gap-1 mb-1">
-                                    <span class="text-left truncate" title={rowKey}>
+                            <div class="demo-filter w-full relative pb-1">
+                                <div class="flex justify-between items-center gap-1 ">
+                                    <span class="text-left truncate grow" title={rowKey}>
                                         {rowKey.replaceAll("'", "")}
                                     </span>
-                                    <span class="text-right">{percentage}%</span>
-                                    <span class="text-right">{rowValue}</span>
-                                </div>
-                                <iai-silver-progress-bar
-                                    class="absolute bottom-1 left-0 w-full"
-                                    value={percentage}
-                                ></iai-silver-progress-bar>
-                            </div>
 
-                            <!-- TODO: Alt Design, TBC
-                                <div class="demo-filter w-full relative pb-2">
-                                    <p class="text-left">{rowKey}</p>
-                                    <div class="flex justify-between">
-                                        <span class="text-right">{percentage}%</span>
-                                        <iai-silver-progress-bar
-                                            class="absolute bottom-1 left-0 w-1/2 left-[25%] bottom-3"
-                                            value={percentage}
-                                        ></iai-silver-progress-bar>
-                                        <span class="text-right">{rowValue}</span>
+                                    <span class="text-right">
+                                        {rowValue}
+                                    </span>
+
+                                    <div title={`${percentage}%`} class="w-12 shrink-0">
+                                        <Progress value={percentage} />
                                     </div>
                                 </div>
-                            -->
+                            </div>
                         </Button>
                     </div>
                 {/if}

@@ -26,6 +26,8 @@ class ResponseFilter(FilterSet):
     evidenceRich = BooleanFilter(field_name="annotation__evidence_rich")
     themeFilters = BaseInFilter(method="filter_themes")
     demoFilters = CharFilter(method="filter_demographics")
+    is_flagged = BooleanFilter()
+    chosen_options = BaseInFilter(lookup_expr="in")
 
     def filter_themes(self, queryset, name, value):
         if not value:
@@ -59,9 +61,7 @@ class ResponseFilter(FilterSet):
 
     class Meta:
         model = Response
-        fields = [
-            "respondent_id",
-        ]
+        fields = ["respondent_id", "chosen_options"]
 
 
 class HybridSearchFilter(SearchFilter):
