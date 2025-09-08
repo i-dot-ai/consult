@@ -25,7 +25,7 @@ def sign_in(django_app, email):
     url = re.search("(?P<url>https?://\\S+)", sign_in_email.body).group("url")
 
     successful_sign_in_page = django_app.get(url)
-    homepage = successful_sign_in_page.form.submit().follow().follow()
+    homepage = successful_sign_in_page.form.submit().follow()
 
     mail.outbox.clear()
     return homepage
