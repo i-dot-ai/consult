@@ -78,13 +78,11 @@
 >
     <div class={clsx([
         "flex",
-        title ? "justify-between" : "justify-center",
+        $$slots.title ? "justify-between" : "justify-center",
         "items-center",
         "gap-4",
     ])}>
-        {#if title}
-            <Title level={3} text={title} />
-        {/if}
+        <slot name="title" />
 
         <div
             use:melt={$list}

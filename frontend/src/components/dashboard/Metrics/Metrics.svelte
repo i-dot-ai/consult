@@ -1,4 +1,6 @@
 <script lang="ts">
+    import clsx from "clsx";
+
     import type { DemoData } from "../../../global/types";
 
     import Finance from "../../svg/material/Finance.svelte";
@@ -8,7 +10,14 @@
     import MetricsSummary from "../MetricsSummary/MetricsSummary.svelte";
     import Panel from "../Panel/Panel.svelte";
     import TitleRow from "../TitleRow.svelte";
+    import Title from "../../Title.svelte";
+    import MaterialIcon from "../../MaterialIcon.svelte";
+    import ProgressActivity from "../../svg/material/ProgressActivity.svelte";
 
+
+    let {
+        questions = [],
+    } = $props();
 
     const metricsDemo: DemoData = {
         "Respondent Type": {
@@ -41,6 +50,10 @@
     }
 
     const paginatedDemoKeys = paginate(Object.keys(metricsDemo), itemsPerTab);
+
+    let currQuestion: number = $derived(questions[0]?.number);
+    let chartQuestions = $derived(questions.filter(question => question.multiple_choice_options.length > 0));
+    let chartQuestion = $derived(chartQuestions.find(question => question.number === currQuestion));
 </script>
 
 <Panel>
@@ -63,39 +76,59 @@
 
         <div class="col-span-12 md:col-span-9 h-full">
             <Panel bg={true} border={true}>
-                <TabView
-                    title="Q3: How important is transparency in AI decision-making processes?"
-                    variant="dots"
-                    tabs={[
-                        { title: "Q3", id: "tab-0" },
-                        { title: "Q7", id: "tab-1" },
-                        { title: "Q12", id: "tab-2" },
-                    ]}
-                >
-                <div class="overflow-x-auto">
-                    <div class="h-[10rem] flex flex-row-reverse justify-around mt-4">
-                        <div id="legend-container"></div>
-                            <div class="w-max">
-                                <Chart
-                                    labels={[
-                                        "Neutral or uncertain about effectiveness",
-                                        "Extremely effective and well structured",
-                                        "Completely ineffective and requires overhaul",
-                                        "Moderately effective with some improvements needed",
-                                        "Somewhat ineffective requiring significant changes",
-                                    ]}
-                                    data={[
-                                        720,
-                                        999,
-                                        280,
-                                        999,
-                                        600,
-                                    ]}
-                                />
+                {#if !chartQuestion}
+                    <div class="mb-4">
+                        <Title level={3} text={`Loading questions`} />
+                    </div>
+
+                    <div
+                        style="animation-timing-function: ease-in-out;"
+                        class={clsx([
+                            "animate-spin",
+                            "ease-in-out",
+                            "w-max",
+                            "m-auto",
+                        ])}
+                    >
+                        <MaterialIcon color="fill-neutral-400" size="3rem">
+                            <ProgressActivity />
+                        </MaterialIcon>
+                    </div>
+                {:else}
+                    <TabView
+                        variant="dots"
+                        tabs={chartQuestions.map(question => ({
+                            title: `Q${question.number}`,
+                            id: `tab-${question.number}`,
+                        }))}
+                        value={`tab-${currQuestion}`}
+                        handleChange={newTab => currQuestion = parseInt(newTab.replace("tab-", ""))}
+                    >
+                        <div slot="title">
+                            <Title
+                                level={3}
+                                text={`<span class="text-primary mr-1">Q${chartQuestion?.number}</span> ${chartQuestion?.question_text}`}
+                                maxChars={50}
+                            />
+                        </div>
+
+                        <div class="overflow-x-auto">
+                            <div class="h-[10rem] flex flex-row-reverse justify-center gap-4 mt-4">
+                                <div id="legend-container"></div>
+
+                                <div class="w-max">
+                                    <Chart
+                                        labels={
+                                            chartQuestion?.multiple_choice_options
+                                            .map((opt: {text: string, count: number}) => opt.text)
+                                        }
+                                        data={chartQuestion?.multiple_choice_options.map((_, i) => 100 * (i+1))}
+                                    />
+                                </div>
                             </div>
                         </div>
-                    </div>
-                </TabView>
+                    </TabView>
+                {/if}
             </Panel>
         </div>
     </div>
@@ -113,6 +146,10 @@
                 currPage = parseInt(newTab.replace("tab-", ""));
             }}
         >
+            <div slot="title">
+                <Title level={2} text="Demographics Breakdown" />
+            </div>
+
             <div class="grid grid-cols-12 gap-4">
                 {#each paginatedDemoKeys[currPage] as category}
                     <MetricsDemoCard
