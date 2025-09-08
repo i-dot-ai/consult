@@ -89,6 +89,7 @@
                     "text-ellipsis",
                     "ml-2",
                     "cursor-pointer",
+                    "text-sm",
                 ]);
 
                 li.onclick = () => {
