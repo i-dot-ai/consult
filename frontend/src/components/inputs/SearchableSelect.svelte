@@ -15,24 +15,20 @@
     import Check from '../svg/material/Check.svelte';
     import KeyboardArrowDown from '../svg/material/KeyboardArrowDown.svelte';
     import Search from '../svg/material/Search.svelte';
+    import type { SearchableSelectOption } from '../../global/types';
 
-
-    interface SearchableSelectOption {
-        value: string,
-        label: string,
-        description?: string,
-        disabled?: boolean,
-    }
 
     export let label: string = "";
-    export let handleChange = (value: string) => {};
+    export let handleChange = (option: SearchableSelectOption) => {};
     export let options: SearchableSelectOption[] = [];
     export let selectedValues: any[] = [];
     export let hideArrow: boolean = false;
     export let notFoundMessage: string = "No results found";
 
-    const handleSelectedChange = ({ curr, next }) => {
-        handleChange(next.value as string);
+    const handleSelectedChange = ({ curr, next }:
+        { curr: any, next: any }
+    ) => {
+        handleChange(next as SearchableSelectOption);
         return next;
     }
 

@@ -22,7 +22,8 @@ describe("AnswerCard", () => {
 
     it("should render data", () => {
         const { getByText } = render(AnswerCard, {
-            id: testData.id,
+            answerId: testData.id,
+            displayId: testData.id,
             text: testData.text,
             demoData: testData.demoData,
             multiAnswers: testData.multiAnswers,

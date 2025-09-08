@@ -7,8 +7,9 @@
 
     import type { Consultation } from "../../global/types.ts";
     import { Routes, getConsultationDetailUrl, getConsultationEvalUrl } from "../../global/routes.ts";
-   
-    let consultations: Array<Consultation> = [];
+
+
+    let consultations: Consultation[] = [];
     let loading: boolean = true;
     let dashboardPermitted: boolean = false;
 

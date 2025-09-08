@@ -8,6 +8,8 @@
     import Switch from "../../inputs/Switch/Switch.svelte";
     import MaterialIcon from "../../MaterialIcon.svelte";
     import Diamond from "../../svg/material/Diamond.svelte";
+    import type { DemoTotalCounts } from "../../../global/types";
+
 
     let {
         showEvidenceRich = true,
@@ -19,11 +21,12 @@
     } = $props();
 
     // Derive to avoid calculating on re-render
-    let totalCounts = $derived.by(() => {
-		let counts = {};
+    let totalCounts: DemoTotalCounts = $derived.by(() => {
+		let counts: any = {};
 		for (const category of Object.keys(demoData)) {
             counts[category] = Object.values(demoData[category]).reduce(
-                (a, b) => a + b, 0
+                (a, b) => (a as number) + (b as number),
+                0 //  initial value
             );
 		}
 		return counts;
@@ -51,7 +54,7 @@
                             </MaterialIcon>
                         </div>
 
-                        <span class="text-xs">Show evidence rich first</span>
+                        <span class="text-xs">Show evidence rich</span>
                     </div>
                 </Switch>
             </Panel>

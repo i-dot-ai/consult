@@ -2,6 +2,7 @@
     import clsx from "clsx";
 
     import { onMount, untrack } from "svelte";
+    import type { Writable } from "svelte/store"
 
     import MaterialIcon from "../MaterialIcon.svelte";
     import Button from "../inputs/Button/Button.svelte";
@@ -10,29 +11,55 @@
     import QuestionSummary from "../dashboard/QuestionSummary/QuestionSummary.svelte";
     import ResponseAnalysis from "../dashboard/ResponseAnalysis/ResponseAnalysis.svelte";
     import Alert from "../Alert.svelte";
-
-    import { getConsultationDetailUrl } from "../../global/routes.ts";
-    import { createFetchStore } from "../../global/stores.ts";
-    import { SearchModeValues, TabNames } from "../../global/types.ts";
-    import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
     import KeyboardArrowDown from "../svg/material/KeyboardArrowDown.svelte";
     import Lan from "../svg/material/Lan.svelte";
     import Finance from "../svg/material/Finance.svelte";
 
+    import { getConsultationDetailUrl } from "../../global/routes.ts";
+    import { createFetchStore } from "../../global/stores.ts";
+    import {
+        SearchModeValues,
+        TabNames,
+        type AnswersResponse,
+        type ConsultationResponse,
+        type DemoAggrResponse,
+        type DemoOptionsResponse,
+        type FormattedTheme,
+        type MultiChoiceResponse,
+        type ResponseAnswer,
+        type ThemeAggrResponse,
+        type ThemeInfoResponse
+    } from "../../global/types.ts";
+    import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
+
+
+    interface QueryFilters {
+        searchValue: string;
+        themeFilters: string[];
+        searchMode: SearchModeValues;
+        evidenceRich: boolean;
+        flaggedOnly: boolean;
+        demoFilters: {[category:string]: string[]}
+    }
+
+    interface Props {
+        consultationId: string;
+        questionId: string;
+    }
 
     let {
         consultationId = "",
         questionId = "",
-    } = $props();
+    }: Props = $props();
 
-    const PAGE_SIZE = 50;
-    const MAX_THEME_FILTERS = Infinity;
+    const PAGE_SIZE: number = 50;
+    const MAX_THEME_FILTERS: number = Infinity;
 
     let currPage: number = $state(1);
     let hasMorePages: boolean = $state(true);
-    let answers = $state([]);
+    let answers: ResponseAnswer[] = $state([]);
 
-    let activeTab = $state(TabNames.QuestionSummary);
+    let activeTab: TabNames = $state(TabNames.QuestionSummary);
 
     let searchValue: string = $state("");
     let searchMode: SearchModeValues = $state(SearchModeValues.KEYWORD);
@@ -45,6 +72,11 @@
         error: consultationError,
         load: loadConsultation,
         data: consultationData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<ConsultationResponse>,
     } = createFetchStore();
 
     const {
@@ -52,6 +84,11 @@
         error: answersError,
         load: loadAnswers,
         data: answersData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<AnswersResponse>,
     } = createFetchStore();
 
     const {
@@ -59,6 +96,11 @@
         error: themeAggrError,
         load: loadThemeAggr,
         data: themeAggrData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<ThemeAggrResponse>,
     } = createFetchStore();
 
     const {
@@ -66,6 +108,11 @@
         error: themeInfoError,
         load: loadThemeInfo,
         data: themeInfoData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<ThemeInfoResponse>,
     } = createFetchStore();
 
     const {
@@ -73,6 +120,11 @@
         error: demoOptionsError,
         load: loadDemoOptions,
         data: demoOptionsData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<DemoOptionsResponse>,
     } = createFetchStore();
 
     const {
@@ -80,6 +132,11 @@
         error: demoAggrError,
         load: loadDemoAggr,
         data: demoAggrData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<DemoAggrResponse>,
     } = createFetchStore();
 
     const {
@@ -87,6 +144,11 @@
         error: multiChoiceAggrError,
         load: loadMultiChoiceAggr,
         data: multiChoiceAggrData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<MultiChoiceResponse>,
     } = createFetchStore();
 
     onMount(() => {
@@ -127,7 +189,7 @@
         currPage += 1;
     }
 
-    function buildQuery(filters) {
+    function buildQuery(filters: QueryFilters) {
         const params = new URLSearchParams({
             ...(filters.searchValue && {
                 searchValue: filters.searchValue
@@ -139,12 +201,12 @@
                 searchMode: filters.searchMode
             }),
             ...(filters.evidenceRich && {
-                evidenceRich: filters.evidenceRich
+                evidenceRich: JSON.stringify(filters.evidenceRich)
             }),
             ...(filters.flaggedOnly && {
-                is_flagged: filters.flaggedOnly
+                is_flagged: JSON.stringify(filters.flaggedOnly)
             }),
-            page: currPage,
+            page: currPage.toString(),
             page_size: PAGE_SIZE.toString(),
         })
 
@@ -152,7 +214,8 @@
         const validDemoFilterKeys = Object.keys(filters.demoFilters).filter(key => Boolean(filters.demoFilters[key]));
         // Add each demo filter as a duplicate demoFilter param
         for (const key of validDemoFilterKeys) {
-            const filterArr = filters.demoFilters[key];
+            const filterArr: string[] = filters.demoFilters[key];
+
             if (filterArr && filterArr.length > 0) {
                 // TODO: Replace below with the commented out code after the back end is implemented.
                 // Only processing the first filter for now to avoid breaking back end responses.
@@ -175,7 +238,7 @@
     const setEvidenceRich = (value: boolean) => evidenceRich = value;
 
     $effect(() => {
-        // dependencies
+        // @ts-ignore: ignore dependencies
         searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters, flaggedOnly;
 
         resetAnswers();
@@ -228,8 +291,8 @@
         <QuestionCard
             skeleton={$isConsultationLoading}
             clickable={false}
-            consultationId={!$isConsultationLoading && $consultationData.id}
-            question={!$isConsultationLoading && question}
+            consultationId={$consultationData?.id}
+            question={question}
             hideIcon={true}
             horizontal={true}
         />
@@ -252,11 +315,11 @@
                     count: $themeAggrData?.theme_aggregations[themeId],
                     highlighted: themeFilters.filters.includes(themeId),
                     handleClick: () => themeFilters.update(themeId),
-                    ...($themeInfoData?.themes?.find(themeInfo => themeInfo.id === themeId)),
+                    ...($themeInfoData?.themes?.find(themeInfo => themeInfo?.id === themeId)),
                 })
-            })}
+            }) as FormattedTheme[]}
             themesLoading={$isThemeAggrLoading}
-            totalAnswers={question?.total_responses}
+            totalAnswers={question?.total_responses || 0}
             filteredTotal={$answersData?.filtered_total}
             demoData={$demoAggrData?.demographic_aggregations}
             demoOptions={$demoOptionsData?.demographic_options}
@@ -269,6 +332,8 @@
         />
     {:else if activeTab === TabNames.ResponseAnalysis}
         <ResponseAnalysis
+            consultationId={$consultationData?.id}
+            questionId={question?.id}
             pageSize={PAGE_SIZE}
             answers={answers}
             isAnswersLoading={$isAnswersLoading}
@@ -276,6 +341,10 @@
             filteredTotal={$answersData?.filtered_total}
             hasMorePages={hasMorePages}
             handleLoadClick={() => loadData()}
+            resetData={() => {
+                resetAnswers();
+                loadData();
+            }}
             searchValue={searchValue}
             setSearchValue={(value) => searchValue = value}
             searchMode={searchMode}

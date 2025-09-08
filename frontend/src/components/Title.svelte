@@ -25,6 +25,7 @@
     level === 1 && "text-xl",
     level === 2 && "text-lg",
     level === 3 && "text-md",
+    level === 4 && "text-sm",
     "text-neutral-700",
 ])} >
     {@html text}
