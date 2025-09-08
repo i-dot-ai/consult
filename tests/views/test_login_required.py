@@ -12,9 +12,6 @@ PUBLIC_URL_NAMES = [
     "get_involved",
     "privacy",
 ]
-GENERIC_CONSULTATION_URL_NAMES = [
-    "consultations",
-]
 AUTHENTICATION_URL_NAMES = [
     "sign_in",
     "sign_out",
@@ -37,7 +34,6 @@ API_URL_NAMES = [
 
 URL_NAMES_TO_EXCLUDE = (
     PUBLIC_URL_NAMES
-    + GENERIC_CONSULTATION_URL_NAMES
     + AUTHENTICATION_URL_NAMES
     + REDIRECTING_URL_NAMES
     + JSON_SCHEMA_URL_NAMES
@@ -51,21 +47,6 @@ def test_access_public_urls_no_login(client):
         url = reverse(url_name)
         response = client.get(url)
         assert response.status_code == 200
-
-
-@pytest.mark.django_db
-def test_access_generic_consultation_urls(client):
-    for url_name in GENERIC_CONSULTATION_URL_NAMES:
-        url = reverse(url_name)
-        # No login should give 404
-        response = client.get(url)
-        assert response.status_code == 404
-        # Any logged in user should be able to access pages
-        user = factories.UserFactory()
-        client.force_login(user)
-        response = client.get(url)
-        assert response.status_code == 200
-        client.logout()
 
 
 def set_up_consultation(user, free_text_question):

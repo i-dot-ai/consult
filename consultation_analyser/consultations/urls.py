@@ -11,7 +11,7 @@ from .api.views import (
     get_current_user,
     verify_magic_link,
 )
-from .views import answers, consultations, pages, questions, root, sessions
+from .views import answers, pages, questions, root, sessions
 
 router = routers.DefaultRouter()
 router.register("consultations", ConsultationViewSet, basename="consultations")
@@ -34,14 +34,6 @@ urlpatterns = [
     path("data-sharing/", pages.data_sharing, name="data_sharing"),
     path("get-involved/", pages.get_involved, name="get_involved"),
     path("privacy/", pages.privacy, name="privacy"),
-    # login required
-    path("consultations/", consultations.index, name="consultations"),
-    path("consultations/<uuid:consultation_id>/", consultations.show, name="consultation"),
-    path(
-        "consultations/<uuid:consultation_id>/responses/<uuid:question_id>/",
-        answers.index,
-        name="question_responses",
-    ),
     # New modular endpoints
     # API endpoints
     path("api/", include(router.urls)),

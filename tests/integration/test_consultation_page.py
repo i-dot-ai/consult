@@ -6,6 +6,7 @@ from consultation_analyser.factories import UserFactory
 from tests.helpers import sign_in
 
 
+@pytest.mark.xfail(reason="moved to astro")
 @pytest.mark.django_db
 def test_consultation_page(django_app, dashboard_access_group):
     user = UserFactory()
