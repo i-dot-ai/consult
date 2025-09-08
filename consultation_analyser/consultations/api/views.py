@@ -72,8 +72,8 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
             raise PermissionDenied()
 
         data = (
-            models.Response.objects.filter(question__consultation_id=pk)
-            .values("respondent__demographics__field_name", "respondent__demographics__field_value")
+            models.Respondent.objects.filter(consultation_id=pk)
+            .values("demographics__field_name", "demographics__field_value")
             .annotate(count=Count("id"))
         )
 

@@ -23,18 +23,18 @@ class TestDemographicOptionsSerializer:
 
         validated_data = [
             {
-                "respondent__demographics__field_name": "gender",
-                "respondent__demographics__field_value": "male",
+                "demographics__field_name": "gender",
+                "demographics__field_value": "male",
                 "count": 0,
             },
             {
-                "respondent__demographics__field_name": "age_group",
-                "respondent__demographics__field_value": "18-25",
+                "demographics__field_name": "age_group",
+                "demographics__field_value": "18-25",
                 "count": 2,
             },
             {
-                "respondent__demographics__field_name": "region",
-                "respondent__demographics__field_value": "north",
+                "demographics__field_name": "region",
+                "demographics__field_value": "north",
                 "count": 4,
             },
         ]

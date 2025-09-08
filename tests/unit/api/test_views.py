@@ -57,9 +57,16 @@ class TestDemographicOptionsAPIView:
         assert response.status_code == 200
         data = response.json()
 
-        assert set(data["individual"]) == {False, True}
-        assert set(data["region"]) == {"north", "south"}
-        assert set(data["age"]) == {"25", "35", "45"}
+        expected = [
+            {"count": 1, "name": "age", "value": "25"},
+            {"count": 1, "name": "age", "value": "35"},
+            {"count": 1, "name": "age", "value": "45"},
+            {"count": 1, "name": "individual", "value": False},
+            {"count": 2, "name": "individual", "value": True},
+            {"count": 2, "name": "region", "value": "north"},
+            {"count": 1, "name": "region", "value": "south"},
+        ]
+        assert data == expected
 
     def test_permission_required(self, client, free_text_question):
         """Test API endpoint requires proper permissions"""

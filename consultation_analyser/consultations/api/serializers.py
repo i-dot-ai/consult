@@ -68,8 +68,8 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class DemographicOptionsSerializer(serializers.Serializer):
-    name = serializers.CharField(source="respondent__demographics__field_name")
-    value = serializers.JSONField(source="respondent__demographics__field_value")
+    name = serializers.CharField(source="demographics__field_name")
+    value = serializers.JSONField(source="demographics__field_value")
     count = serializers.IntegerField()
 
 
