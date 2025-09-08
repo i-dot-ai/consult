@@ -66,25 +66,18 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
         url_path="demographic-options",
     )
     def demographic_options(self, request, pk=None):
-        """Get all demographic options for a consultation"""
-        consultation = self.get_object()
+        self.get_object()
 
         if not request.user.has_dashboard_access:
             raise PermissionDenied()
 
-        # Get all demographic fields and their possible values from normalized storage
-        options = (
-            models.DemographicOption.objects.filter(consultation=consultation)
-            .values_list("field_name", "field_value")
-            .order_by("field_name", "field_value")
+        data = (
+            models.Response.objects.filter(question__consultation_id=pk)
+            .values("respondent__demographics__field_name", "respondent__demographics__field_value")
+            .annotate(count=Count("id"))
         )
 
-        result = defaultdict(list)
-        for field_name, field_value in options:
-            result[field_name].append(field_value)
-
-        serializer = DemographicOptionsSerializer(data={"demographic_options": dict(result)})
-        serializer.is_valid()
+        serializer = DemographicOptionsSerializer(instance=data, many=True)
 
         return Response(serializer.data)
 
