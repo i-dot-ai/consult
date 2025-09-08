@@ -270,25 +270,21 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
 
     response_annotation = models.ForeignKey("ResponseAnnotation", on_delete=models.CASCADE)
     theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
-    is_original_ai_assignment = models.BooleanField(
-        default=True
-    )  # True for AI, False for human review
     assigned_by = models.ForeignKey(
-        User, on_delete=models.SET_NULL, null=True, blank=True
+        User, on_delete=models.CASCADE, null=True, blank=True
     )  # None for AI, User for human
 
     history = HistoricalRecords()
 
+    def is_original_ai_assignment(self) -> bool:
+        return self.assigned_by is None
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(
-                fields=["response_annotation", "theme", "is_original_ai_assignment"],
+                fields=["response_annotation", "theme", "assigned_by"],
                 name="unique_theme_assignment",
             ),
-        ]
-        indexes = [
-            models.Index(fields=["response_annotation", "is_original_ai_assignment"]),
-            models.Index(fields=["theme", "is_original_ai_assignment"]),
         ]
 
 
@@ -336,33 +332,31 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
             ResponseAnnotationTheme.objects.get_or_create(
                 response_annotation=self,
                 theme=theme,
-                is_original_ai_assignment=True,
                 defaults={"assigned_by": None},
             )
 
     def set_human_reviewed_themes(self, themes, user):
         """Set themes as human-reviewed, preserving original AI assignments"""
-        # Remove existing human-reviewed theme assignments
+        # Remove existing user-assigned theme assignments
         ResponseAnnotationTheme.objects.filter(
-            response_annotation=self, is_original_ai_assignment=False
+            response_annotation=self, assigned_by__isnull=False
         ).delete()
 
-        # Add new human-reviewed theme assignments
+        # Add new human-assigned themes
         for theme in themes:
             ResponseAnnotationTheme.objects.get_or_create(
                 response_annotation=self,
                 theme=theme,
-                is_original_ai_assignment=False,
-                defaults={"assigned_by": user},
+                assigned_by=user,
             )
 
     def get_original_ai_themes(self):
-        """Get themes that were originally assigned by AI"""
-        return self.themes.filter(responseannotationtheme__is_original_ai_assignment=True)
+        """Get themes assigned by AI"""
+        return self.themes.filter(responseannotationtheme__assigned_by__isnull=True)
 
     def get_human_reviewed_themes(self):
-        """Get themes that were assigned by human review"""
-        return self.themes.filter(responseannotationtheme__is_original_ai_assignment=False)
+        """Get themes assigned by human review"""
+        return self.themes.filter(responseannotationtheme__assigned_by__isnull=False)
 
     def save(self, *args, **kwargs) -> None:
         """
