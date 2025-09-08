@@ -90,7 +90,7 @@
                             "m-auto",
                         ])}
                     >
-                        <MaterialIcon color="fill-neutral-400" size="3rem">
+                        <MaterialIcon color="fill-neutral-400" size="10rem">
                             <ProgressActivity />
                         </MaterialIcon>
                     </div>
