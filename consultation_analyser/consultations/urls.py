@@ -1,4 +1,5 @@
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import routers
 from rest_framework_nested.routers import NestedDefaultRouter
 
@@ -40,8 +41,10 @@ urlpatterns = [
     path("api/", include(consultations_router.urls)),
     path("api/", include(questions_router.urls)),
     path("api/", include(themes_router.urls)),
-    path("api/user/", get_current_user, name="user"),
     path("api/", include(responses_router.urls)),
+    path("api/user/", get_current_user, name="user"),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path(
         "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/show-next/",
         answers.show_next,
