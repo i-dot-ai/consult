@@ -112,26 +112,35 @@ export interface ConsultationResponse {
     slug: string;
     questions: Question[];
 }
+
 export interface AnswersResponse {
     respondents_total: number;
     filtered_total: number;
     has_more_pages: boolean;
     all_respondents: ResponseAnswer[];
 }
+
 export interface ThemeInfoResponse {
     themes: ResponseTheme[];
 }
-export interface DemoOptionsResponse {
-    demographic_options: DemoOption;
-}
+
 export interface DemoAggrResponse {
     demographic_aggregations: DemoData;
 }
+
 export interface ThemeAggrResponse {
     theme_aggregations: ThemeAggr;
 }
+
 export interface MultiChoiceResponseItem {
     answer: string;
     response_count: number;
 }
 export type MultiChoiceResponse = MultiChoiceResponseItem[];
+
+export interface DemoOptionsResponseItem {
+    name: string;
+    value: string;
+    count: number;
+}
+export type DemoOptionsResponse = DemoOptionsResponseItem[];

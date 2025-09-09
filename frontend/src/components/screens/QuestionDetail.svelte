@@ -23,7 +23,9 @@
         type AnswersResponse,
         type ConsultationResponse,
         type DemoAggrResponse,
+        type DemoOption,
         type DemoOptionsResponse,
+        type DemoOptionsResponseItem,
         type FormattedTheme,
         type MultiChoiceResponse,
         type ResponseAnswer,
@@ -250,6 +252,24 @@
     let question = $derived($consultationData?.questions?.find(
         question => question.id === questionId
     ));
+
+    let formattedDemoOptions = $derived.by(() => {
+        if (!$demoOptionsData) {
+            return;
+        }
+
+        const formattedData: DemoOption = {};
+        const categories = [...new Set($demoOptionsData.map(data => data.name))];
+
+        for (const category of categories) {
+            const categoryData: DemoOptionsResponseItem[] = $demoOptionsData.filter(
+                opt => opt.name === category
+            );
+
+            formattedData[category] = categoryData.map(opt => opt.value);
+        }
+        return formattedData;
+    });
 </script>
 
 <section class={clsx([
@@ -301,7 +321,7 @@
 
 <TabView
     value={activeTab}
-    handleChange={(next: TabNames) => activeTab = next}
+    handleChange={(next: string) => activeTab = next as TabNames}
     tabs={[
         { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
         { id: TabNames.ResponseAnalysis, title: "Response Analysis", icon: Finance},
@@ -322,7 +342,7 @@
             totalAnswers={question?.total_responses || 0}
             filteredTotal={$answersData?.filtered_total}
             demoData={$demoAggrData?.demographic_aggregations}
-            demoOptions={$demoOptionsData?.demographic_options}
+            demoOptions={formattedDemoOptions || {}}
             multiChoice={$multiChoiceAggrData?.filter(item => Boolean(item.answer))}
             consultationSlug={$consultationData?.slug}
             evidenceRich={evidenceRich}
@@ -350,7 +370,7 @@
             searchMode={searchMode}
             setSearchMode={(newSearchMode: SearchModeValues) => searchMode = newSearchMode}
             demoData={$demoAggrData?.demographic_aggregations}
-            demoOptions={$demoOptionsData?.demographic_options}
+            demoOptions={formattedDemoOptions || {}}
             themes={$themeInfoData?.themes}
             evidenceRich={evidenceRich}
             setEvidenceRich={setEvidenceRich}
