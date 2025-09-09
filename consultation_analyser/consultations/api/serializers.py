@@ -25,9 +25,14 @@ class UserSerializer(serializers.ModelSerializer):
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
 
+    response_count = serializers.SerializerMethodField()
+
+    def get_response_count(self, obj) -> int:
+        return Response.objects.filter(chosen_options=obj).count()
+
     class Meta:
         model = MultiChoiceAnswer
-        fields = ["id", "text"]
+        fields = ["id", "text", "response_count"]
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
