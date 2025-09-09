@@ -1170,6 +1170,26 @@ class TestAPIViewErrorHandling:
 
 
 @pytest.mark.django_db
+def test_consultations_update(
+    client, consultation, consultation_user, non_consultation_user, consultation_user_token
+):
+    assert not consultation.users.contains(non_consultation_user)
+    url = reverse("consultations-detail", kwargs={"pk": consultation.id})
+    response = client.patch(
+        url,
+        data=json.dumps({"users": [non_consultation_user.email, consultation_user.email]}),
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    consultation.refresh_from_db()
+    assert consultation.users.contains(consultation_user)
+    assert consultation.users.contains(non_consultation_user)
+
+
+@pytest.mark.django_db
 def test_consultations_list(client, consultation_user, multi_choice_question):
     client.force_login(consultation_user)
     url = reverse("consultations-list")

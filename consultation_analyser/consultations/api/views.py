@@ -42,10 +42,11 @@ def get_current_user(request):
     return Response(serializer.data)
 
 
-class ConsultationViewSet(ReadOnlyModelViewSet):
+class ConsultationViewSet(ModelViewSet):
     serializer_class = ConsultationSerializer
     permission_classes = [IsAuthenticated]
     filterset_fields = ["slug"]
+    http_method_names = ["get", "patch"]
 
     def get_queryset(self):
         return models.Consultation.objects.filter(users=self.request.user).order_by("-created_at")

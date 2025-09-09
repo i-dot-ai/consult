@@ -71,9 +71,15 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
         read_only=True,
     )
 
+    users = serializers.SlugRelatedField(slug_field="email", many=True, queryset=User.objects.all())
+
     class Meta:
         model = Consultation
-        fields = ["id", "title", "slug", "questions"]
+        fields = ["id", "title", "slug", "questions", "users"]
+
+    def update(self, instance, validated_data):
+        u = super().update(instance, validated_data)
+        return u
 
 
 class DemographicOptionsSerializer(serializers.Serializer):
