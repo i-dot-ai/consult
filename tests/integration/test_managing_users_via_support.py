@@ -1,6 +1,5 @@
 import pytest
 
-from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.models import User
 from consultation_analyser.factories import UserFactory
 from tests.helpers import sign_in
@@ -43,7 +42,7 @@ def test_managing_users_via_support(django_app):
     assert user_page.form["dashboard_access"].checked is True
 
     assert new_user.is_staff
-    assert new_user.groups.filter(name=DASHBOARD_ACCESS).exists()
+    assert new_user.has_dashboard_access
 
     # Now remove dashboard access
     users_page = django_app.get("/support/users/")
@@ -55,7 +54,7 @@ def test_managing_users_via_support(django_app):
     assert user_page.form["is_staff"].checked is True
     assert user_page.form["dashboard_access"].checked is False
     new_user = User.objects.get(email="a-new-user@example.com")
-    assert not new_user.groups.filter(name=DASHBOARD_ACCESS).exists()
+    assert not new_user.has_dashboard_access
 
     # Now check we can't remove is_staff for current user
     users_page = django_app.get("/support/users/")
