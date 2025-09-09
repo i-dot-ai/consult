@@ -6,6 +6,7 @@ import orjson
 import pytest
 from django.urls import reverse
 
+from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import ResponseAnnotation, ResponseAnnotationTheme
 from consultation_analyser.factories import (
     QuestionFactory,
@@ -1242,3 +1243,87 @@ def test_filter(client, consultation_user, consultation, has_free_text):
         # should return just one question
         assert len(results) == 1
         assert results[0]["has_free_text"] == has_free_text
+
+
+@pytest.mark.django_db
+def test_users_list(client, consultation_user, dashboard_user, consultation_user_token):
+    url = reverse("user-list")
+    response = client.get(
+        url,
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["count"] >= 2
+
+
+@pytest.mark.django_db
+def test_users_detail(client, consultation_user, dashboard_user, consultation_user_token):
+    url = reverse(
+        "user-detail",
+        kwargs={"pk": consultation_user.pk},
+    )
+    response = client.get(
+        url,
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["email"] == consultation_user.email
+
+
+@pytest.mark.django_db
+def test_users_delete(client, consultation_user, consultation_user_token):
+    url = reverse(
+        "user-detail",
+        kwargs={"pk": consultation_user.pk},
+    )
+    response = client.delete(
+        url,
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 204
+    assert not User.objects.filter(pk=consultation_user.pk).exists()
+
+
+@pytest.mark.django_db
+def test_users_create(client, consultation_user, consultation_user_token):
+    assert not User.objects.filter(email="test@example.com").exists()
+    url = reverse("user-list")
+    response = client.post(
+        url,
+        data=json.dumps({"email": "test@example.com"}),
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 201
+    assert User.objects.filter(email="test@example.com").exists()
+
+
+@pytest.mark.django_db
+def test_users_patch(client, consultation_user, consultation_user_token):
+    assert consultation_user.has_dashboard_access is True
+    url = reverse(
+        "user-detail",
+        kwargs={"pk": consultation_user.pk},
+    )
+    response = client.patch(
+        url,
+        data=json.dumps({"has_dashboard_access": False}),
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["has_dashboard_access"] is False
+    assert consultation_user.has_dashboard_access is False

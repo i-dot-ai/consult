@@ -17,9 +17,11 @@ from consultation_analyser.consultations.models import (
 
 
 class UserSerializer(serializers.ModelSerializer):
+    has_dashboard_access = serializers.BooleanField(required=False)
+
     class Meta:
         model = User
-        fields = ["email", "has_dashboard_access"]
+        fields = ["email", "has_dashboard_access", "is_staff", "created_at"]
 
 
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
