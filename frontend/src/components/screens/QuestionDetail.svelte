@@ -30,7 +30,7 @@
         type ThemeAggrResponse,
         type ThemeInfoResponse
     } from "../../global/types.ts";
-    import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
+    import { themeFilters, demoFilters, multiAnswerFilters } from "../../global/state.svelte.ts";
 
 
     interface QueryFilters {
@@ -239,7 +239,7 @@
 
     $effect(() => {
         // @ts-ignore: ignore dependencies
-        searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters, flaggedOnly;
+        searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters, multiAnswerFilters.filters, flaggedOnly;
 
         resetAnswers();
 
@@ -301,7 +301,7 @@
 
 <TabView
     value={activeTab}
-    handleChange={(next: TabNames) => activeTab = next}
+    handleChange={(next: string) => activeTab = next as TabNames}
     tabs={[
         { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
         { id: TabNames.ResponseAnalysis, title: "Response Analysis", icon: Finance},
