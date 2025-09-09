@@ -1,12 +1,10 @@
 from typing import Any
 
-from django.contrib.auth.models import Group
 from django.utils import timezone
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 
 from consultation_analyser.authentication.models import User
-from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.models import (
     Consultation,
     CrossCuttingTheme,
@@ -24,29 +22,6 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ["email", "has_dashboard_access", "is_staff", "created_at"]
-
-    def create(self, validated_data):
-        has_dashboard_access = validated_data.pop("has_dashboard_access", False)
-        instance = super().create(validated_data)
-        if has_dashboard_access:
-            dashboard_group, _ = Group.objects.get_or_create(name=DASHBOARD_ACCESS)
-            instance.groups.add(dashboard_group)
-        return instance
-
-    def update(self, instance, validated_data):
-        dashboard_group, _ = Group.objects.get_or_create(name=DASHBOARD_ACCESS)
-
-        if "has_dashboard_access" in validated_data:
-            if validated_data["has_dashboard_access"]:
-                instance.groups.add(dashboard_group)
-            else:
-                instance.groups.remove(dashboard_group)
-
-        if "is_staff" in validated_data:
-            instance.is_staff = validated_data["is_staff"]
-
-        instance.save()
-        return instance
 
 
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):

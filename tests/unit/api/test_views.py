@@ -1326,4 +1326,5 @@ def test_users_patch(client, consultation_user, consultation_user_token):
     )
     assert response.status_code == 200
     assert response.json()["has_dashboard_access"] is False
+    consultation_user.refresh_from_db()
     assert consultation_user.has_dashboard_access is False
