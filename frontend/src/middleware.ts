@@ -8,7 +8,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
     // 404 if not logged in
     const protectedRoutes = [
-        /^\/sign-out[\/]?$/,
+        // /^\/sign-out[\/]?$/,
         /^\/consultations.*/,
         /^\/design.*/,
     ];
