@@ -6,7 +6,10 @@ import orjson
 import pytest
 from django.urls import reverse
 
-from consultation_analyser.consultations.models import ResponseAnnotation, ResponseAnnotationTheme
+from consultation_analyser.consultations.models import (
+    ResponseAnnotation,
+    ResponseAnnotationTheme,
+)
 from consultation_analyser.factories import (
     QuestionFactory,
     RespondentFactory,
@@ -149,18 +152,27 @@ class TestDemographicAggregationsAPIView:
         assert aggregations["region"]["south"] == 1
 
     def test_get_demographic_aggregations_with_filters(
-        self, client, consultation_user, free_text_question
+        self,
+        client,
+        consultation_user,
+        free_text_question,
+        individual_demographic,
+        northern_demographic,
+        group_demographic,
+        southern_demographic,
     ):
         """Test API endpoint applies demographic filters correctly"""
         # Create respondents with different demographics
+
         respondent1 = RespondentFactory(
             consultation=free_text_question.consultation,
-            demographics={"individual": True, "region": "north"},
         )
+        respondent1.demographics.set([individual_demographic, northern_demographic])
+
         respondent2 = RespondentFactory(
             consultation=free_text_question.consultation,
-            demographics={"individual": False, "region": "south"},
         )
+        respondent2.demographics.set([group_demographic, southern_demographic])
 
         ResponseFactory(question=free_text_question, respondent=respondent1)
         ResponseFactory(question=free_text_question, respondent=respondent2)
@@ -175,7 +187,7 @@ class TestDemographicAggregationsAPIView:
         )
 
         # Filter by individual=true
-        response = client.get(url + "?demoFilters=individual:true")
+        response = client.get(url + f"?demographics={individual_demographic.pk}")
 
         assert response.status_code == 200
         data = response.json()
@@ -188,7 +200,9 @@ class TestDemographicAggregationsAPIView:
         assert "False" not in aggregations["individual"]
         assert "south" not in aggregations["region"]
 
-        response = client.get(url + "?demoFilters=individual:true&demoFilters=individual:false")
+        response = client.get(
+            url + f"?demographics={individual_demographic.pk},{group_demographic.pk}"
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -410,18 +424,25 @@ class TestFilteredResponsesAPIView:
         assert data["filtered_total"] == 5
 
     def test_get_filtered_responses_with_demographic_filters(
-        self, client, consultation_user, free_text_question
+        self,
+        client,
+        consultation_user,
+        free_text_question,
+        individual_demographic,
+        northern_demographic,
+        group_demographic,
+        southern_demographic,
     ):
         """Test API endpoint with demographic filtering"""
         # Create respondents with different demographics
         respondent1 = RespondentFactory(
             consultation=free_text_question.consultation,
-            demographics={"individual": True, "region": "north"},
         )
+        respondent1.demographics.set([individual_demographic, northern_demographic])
         respondent2 = RespondentFactory(
             consultation=free_text_question.consultation,
-            demographics={"individual": False, "region": "south"},
         )
+        respondent2.demographics.set([group_demographic, southern_demographic])
 
         ResponseFactory(question=free_text_question, respondent=respondent1)
         ResponseFactory(question=free_text_question, respondent=respondent2)
@@ -436,7 +457,7 @@ class TestFilteredResponsesAPIView:
         )
 
         # Filter by individual=true
-        response = client.get(url + "?demoFilters=individual:true")
+        response = client.get(url + f"?demographics={individual_demographic.pk}")
 
         assert response.status_code == 200
 
