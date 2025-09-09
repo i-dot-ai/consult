@@ -22,10 +22,12 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["email", "has_dashboard_access"]
 
 
-class MultiChoiceAnswerSerializer(serializers.HyperlinkedModelSerializer):
+class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(read_only=True)
+
     class Meta:
         model = MultiChoiceAnswer
-        fields = ["text"]
+        fields = ["id", "text"]
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):

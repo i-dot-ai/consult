@@ -728,7 +728,7 @@ class TestFilteredResponsesAPIView:
         chosen_options_query = ",".join(str(x.pk) for x in _chosen_options)
 
         response = client.get(
-            url + f"?chosen_options={chosen_options_query}",
+            url + f"?multiple_choice_answer={chosen_options_query}",
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {consultation_user_token}",
