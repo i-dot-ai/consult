@@ -17,6 +17,7 @@
 
     let {
         questions = [],
+        loading = true,
     } = $props();
 
     const metricsDemo: DemoData = {
@@ -69,73 +70,90 @@
     </div>
 
     <div class="grid grid-cols-12 gap-4">
-        <div class="col-span-12 md:col-span-3">
+        <div class={clsx([
+            "col-span-12",
+            questions.length > 0 || loading ? "md:col-span-3" : "h-max",
+        ])}>
             <Panel bg={true} border={true}>
-                <MetricsSummary
-                    questionCount={questions?.length}
-                    responseCount={totalResponses}
-                    demoCount={5}
-                />
+                <div class={clsx([
+                    "flex",
+                    "justify-between",
+                    "max-w-[40rem]",
+                    "flex-wrap",
+                    !loading && !questions.length && "md:w-max md:gap-16 md:flex-nowrap",
+                ])}>
+                    <MetricsSummary
+                        questionCount={questions?.length}
+                        responseCount={totalResponses}
+                        demoCount={5}
+                    />
+                </div>
             </Panel>
         </div>
 
-        <div class="col-span-12 md:col-span-9 h-full">
-            <Panel bg={true} border={true}>
-                {#if !chartQuestion}
-                    <div class="mb-4">
-                        <Title level={3} text={`Loading questions`} />
-                    </div>
-
-                    <div
-                        style="animation-timing-function: ease-in-out;"
-                        class={clsx([
-                            "animate-spin",
-                            "ease-in-out",
-                            "w-max",
-                            "m-auto",
-                        ])}
-                    >
-                        <MaterialIcon color="fill-neutral-300" size="10rem">
-                            <ProgressActivity />
-                        </MaterialIcon>
-                    </div>
-                {:else}
-                    <TabView
-                        variant="dots"
-                        tabs={chartQuestions.map(question => ({
-                            title: `Q${question.number}`,
-                            id: `tab-${question.number}`,
-                        }))}
-                        value={`tab-${currQuestion}`}
-                        handleChange={newTab => currQuestion = parseInt(newTab.replace("tab-", ""))}
-                    >
-                        <div slot="title">
-                            <Title
-                                level={3}
-                                text={`<span class="text-primary mr-1">Q${chartQuestion?.number}</span> ${chartQuestion?.question_text}`}
-                                maxChars={50}
-                            />
+        {#if loading || questions.length > 0}
+            <div class={clsx([
+                "col-span-12",
+                "md:col-span-9",
+                "h-full",
+            ])}>
+                <Panel bg={true} border={true}>
+                    {#if loading}
+                        <div class="mb-4">
+                            <Title level={3} text={`Loading questions`} />
                         </div>
 
-                        <div class="overflow-x-auto">
-                            <div class="h-[10rem] flex flex-row-reverse justify-center gap-4 mt-4">
-                                <div id="legend-container"></div>
+                        <div
+                            style="animation-timing-function: ease-in-out;"
+                            class={clsx([
+                                "animate-spin",
+                                "ease-in-out",
+                                "w-max",
+                                "m-auto",
+                            ])}
+                        >
+                            <MaterialIcon color="fill-neutral-300" size="10rem">
+                                <ProgressActivity />
+                            </MaterialIcon>
+                        </div>
+                    {:else}
+                        <TabView
+                            variant="dots"
+                            tabs={chartQuestions.map(question => ({
+                                title: `Q${question.number}`,
+                                id: `tab-${question.number}`,
+                            }))}
+                            value={`tab-${currQuestion}`}
+                            handleChange={newTab => currQuestion = parseInt(newTab.replace("tab-", ""))}
+                        >
+                            <div slot="title">
+                                <Title
+                                    level={3}
+                                    text={`<span class="text-primary mr-1">Q${chartQuestion?.number}</span> ${chartQuestion?.question_text}`}
+                                    maxChars={50}
+                                />
+                            </div>
 
-                                <div class="w-max">
-                                    <Chart
-                                        labels={
-                                            chartQuestion?.multiple_choice_options
-                                            .map((opt: {text: string, count: number}) => opt.text)
-                                        }
-                                        data={chartQuestion?.multiple_choice_options.map((_, i) => 100 * (i+1))}
-                                    />
+                            <div class="overflow-x-auto">
+                                <div class="h-[10rem] flex flex-row-reverse justify-center gap-4 mt-4">
+                                    <div id="legend-container"></div>
+
+                                    <div class="w-max">
+                                        <Chart
+                                            labels={
+                                                chartQuestion?.multiple_choice_options
+                                                .map((opt: {text: string, count: number}) => opt.text)
+                                            }
+                                            data={chartQuestion?.multiple_choice_options.map((_, i) => 100 * (i+1))}
+                                        />
+                                    </div>
                                 </div>
                             </div>
-                        </div>
-                    </TabView>
-                {/if}
-            </Panel>
-        </div>
+                        </TabView>
+                    {/if}
+                </Panel>
+            </div>
+        {/if}
     </div>
 
     <div class="mt-8">

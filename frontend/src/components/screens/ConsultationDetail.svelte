@@ -50,7 +50,7 @@
 </script>
 
 <section transition:slide class="my-8">
-    <Metrics questions={consultation?.questions || []} />
+    <Metrics questions={consultation?.questions || []} loading={loading} />
 </section>
 
 <section transition:slide class="my-8">

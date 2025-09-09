@@ -21,7 +21,7 @@
 </script>
 
 {#snippet row(text: string, count: number, icon: Component)}
-    <div class="flex items-center justify-between my-2">
+    <div class="w-full flex items-center justify-between my-2 gap-4">
         <div class="flex items-center">
             <MaterialIcon color="fill-neutral-500">
                 <svelte:component this={icon} />
