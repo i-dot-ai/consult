@@ -7,10 +7,10 @@ from .api.views import (
     QuestionViewSet,
     ResponseViewSet,
     ThemeViewSet,
+    UserViewSet,
     generate_magic_link,
     get_current_user,
     verify_magic_link,
-    UserViewSet,
 )
 from .views import answers, pages, questions, root, sessions
 
