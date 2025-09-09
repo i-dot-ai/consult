@@ -1,7 +1,7 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import type { DemoData } from "../../../global/types";
+    import type { DemoData, DemoOption, Question } from "../../../global/types";
 
     import Finance from "../../svg/material/Finance.svelte";
     import TabView from "../../TabView/TabView.svelte";
@@ -15,9 +15,15 @@
     import ProgressActivity from "../../svg/material/ProgressActivity.svelte";
 
 
+    interface Props {
+        loading: boolean;
+        questions: Question[];
+        demoOptions: DemoOption[];
+    }
     let {
-        questions = [],
         loading = true,
+        questions = [],
+        demoOptions = [],
     } = $props();
 
     const metricsDemo: DemoData = {
@@ -156,35 +162,37 @@
         {/if}
     </div>
 
-    <div class="mt-8">
-        <TabView
-            variant="dots"    
-            title="Demographics Breakdown"
-            tabs={paginatedDemoKeys.map((pageKey: string, index: number) => ({
-                title: pageKey,
-                id: `tab-${index}`,
-            }))}
-            value={`tab-${currPage}`}
-            handleChange={(newTab) => {
-                currPage = parseInt(newTab.replace("tab-", ""));
-            }}
-        >
-            <div slot="title">
-                <Title level={2} text="Demographics Breakdown" />
-            </div>
+    {#if Object.keys(metricsDemo).length > 0}
+        <div class="mt-8">
+            <TabView
+                variant="dots"
+                title="Demographics Breakdown"
+                tabs={paginatedDemoKeys.map((pageKey: string, index: number) => ({
+                    title: pageKey,
+                    id: `tab-${index}`,
+                }))}
+                value={`tab-${currPage}`}
+                handleChange={(newTab) => {
+                    currPage = parseInt(newTab.replace("tab-", ""));
+                }}
+            >
+                <div slot="title">
+                    <Title level={2} text="Demographics Breakdown" />
+                </div>
 
-            <div class="grid grid-cols-12 gap-4">
-                {#each paginatedDemoKeys[currPage] as category}
-                    <MetricsDemoCard
-                        title={category}
-                        items={Object.keys(metricsDemo[category]).map(rowKey => ({
-                            title: rowKey,
-                            count: metricsDemo[category][rowKey],
-                            percentage: 67,
-                        }))}
-                    />
-                {/each}
-            </div>
-        </TabView>
-    </div>
+                <div class="grid grid-cols-12 gap-4">
+                    {#each paginatedDemoKeys[currPage] as category}
+                        <MetricsDemoCard
+                            title={category}
+                            items={Object.keys(metricsDemo[category]).map(rowKey => ({
+                                title: rowKey,
+                                count: metricsDemo[category][rowKey],
+                                percentage: 67,
+                            }))}
+                        />
+                    {/each}
+                </div>
+            </TabView>
+        </div>
+    {/if}
 </Panel>
