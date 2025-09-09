@@ -30,7 +30,7 @@
                 return;
             }
 
-            window.location.href = Routes.Home;
+            window.location.href = Routes.Consultations;
         } catch(err: any) {
             error = err.message;
         } finally {

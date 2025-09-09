@@ -169,20 +169,17 @@ class TestCanSeeConsultation:
 class TestPermissionsCombined:
     """Test how permissions work when combined in API views"""
 
-    def test_both_permissions_required(self, request_factory, consultation, dashboard_access_group):
+    def test_both_permissions_required(self, request_factory, consultation):
         """Test that both HasDashboardAccess and CanSeeConsultation must pass"""
         # User with dashboard access but not consultation access
-        user_with_dashboard = UserFactory()
-        user_with_dashboard.groups.add(dashboard_access_group)
-        user_with_dashboard.save()
+        user_with_dashboard = UserFactory(has_dashboard_access=True)
 
         # User with consultation access but not dashboard access
         user_with_consultation = UserFactory()
         consultation.users.add(user_with_consultation)
 
         # User with both accesses
-        user_with_both = UserFactory()
-        dashboard_access_group.user_set.add(user_with_both)
+        user_with_both = UserFactory(has_dashboard_access=True)
         consultation.users.add(user_with_both)
 
         view = Mock()

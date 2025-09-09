@@ -140,7 +140,7 @@ class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
         try:
             return Theme.objects.get(pk=pk)
         except Theme.DoesNotExist:
-            detail = f"Invalid pk \"{pk}\" - object does not exist."
+            detail = f'Invalid pk "{pk}" - object does not exist.'
             raise ValidationError(detail=detail, code="invalid")
 
     def get_assigned_by(self, obj):

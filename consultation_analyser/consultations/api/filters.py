@@ -48,7 +48,7 @@ class ResponseFilter(FilterSet):
         filter_dict = defaultdict(list)
         for filter_str in demo_filters:
             if ":" in filter_str:
-                key, value = filter_str.split(":", 1)
+                key, value = filter_str.rsplit(":", 1)
                 filter_dict[key].append(value)
 
         for key, values in filter_dict.items():

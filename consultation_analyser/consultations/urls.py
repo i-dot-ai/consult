@@ -1,4 +1,5 @@
 from django.urls import include, path
+from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import routers
 from rest_framework_nested.routers import NestedDefaultRouter
 
@@ -11,7 +12,7 @@ from .api.views import (
     get_current_user,
     verify_magic_link,
 )
-from .views import answers, consultations, pages, questions, root, sessions
+from .views import answers, pages, questions, root, sessions
 
 router = routers.DefaultRouter()
 router.register("consultations", ConsultationViewSet, basename="consultations")
@@ -34,22 +35,16 @@ urlpatterns = [
     path("data-sharing/", pages.data_sharing, name="data_sharing"),
     path("get-involved/", pages.get_involved, name="get_involved"),
     path("privacy/", pages.privacy, name="privacy"),
-    # login required
-    path("consultations/", consultations.index, name="consultations"),
-    path("consultations/<uuid:consultation_id>/", consultations.show, name="consultation"),
-    path(
-        "consultations/<uuid:consultation_id>/responses/<uuid:question_id>/",
-        answers.index,
-        name="question_responses",
-    ),
     # New modular endpoints
     # API endpoints
     path("api/", include(router.urls)),
     path("api/", include(consultations_router.urls)),
     path("api/", include(questions_router.urls)),
     path("api/", include(themes_router.urls)),
-    path("api/user/", get_current_user, name="user"),
     path("api/", include(responses_router.urls)),
+    path("api/user/", get_current_user, name="user"),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
     path(
         "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/show-next/",
         answers.show_next,
