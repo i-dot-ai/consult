@@ -3,6 +3,9 @@ import Layout from '../layouts/Layout.astro';
 import Section from '../components/Section/Section.svelte';
 import Title from '../components/Title.svelte';
 
+import { Routes } from '../global/routes';
+
+
 ["access", "sessionId"].forEach(cookie => {
     Astro.cookies.set(cookie, "", {
         path: "/",
@@ -10,6 +13,8 @@ import Title from '../components/Title.svelte';
         expires: new Date(0),
     })
 })
+
+return Astro.redirect(Routes.Home);
 ---
 <Layout>
 	<Section>
