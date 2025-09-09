@@ -6,46 +6,9 @@ from django.http import HttpRequest
 from django.shortcuts import get_object_or_404, redirect, render
 
 from .. import models
-from .decorators import user_can_see_consultation, user_can_see_dashboards
+from .decorators import user_can_see_consultation
 
 logger = settings.LOGGER
-
-
-@user_can_see_dashboards
-@user_can_see_consultation
-def index(
-    request: HttpRequest,
-    consultation_id: str,
-    question_id: str,
-):
-    logger.refresh_context()
-
-    # Get question data
-    consultation = get_object_or_404(models.Consultation, pk=consultation_id)
-    question = get_object_or_404(
-        models.Question,
-        pk=question_id,
-        consultation=consultation,
-    )
-
-    """Simplified index that just renders the template - all data loaded via AJAX"""
-    # Minimal context - all dynamic data loaded via respondents_json
-    context = {
-        "consultation_name": consultation.title,
-        "consultation_id": str(consultation.id),
-        "consultation_slug": consultation.slug,
-        "question": question,
-        "question_id": question.id,
-        "free_text_question_part": question if question.has_free_text else None,
-        "has_multiple_choice_question_part": question.has_multiple_choice,
-        "selected_theme_mappings": [],  # Empty - loaded via AJAX
-        "csv_button_data": [],  # Empty - loaded via AJAX
-        "multiple_choice_summary": [],  # Empty - loaded via AJAX
-        "stance_options": models.ResponseAnnotation.Sentiment.names,
-        "has_individual_data": False,  # Shouldn't use this, demographic filters work more generally
-    }
-
-    return render(request, "consultations/answers/index.html", context)
 
 
 @user_can_see_consultation

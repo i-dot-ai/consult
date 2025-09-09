@@ -58,21 +58,24 @@
                     "before:-skew-x-[30deg]",
                     "before:w-32",
                 ])}>
-                    <a href="/" class={clsx([
-                        "flex",
-                        "justify-center",
-                        "items-center",
-                        "relative",
-                        "left-4",
-                        "h-full",
-                        "w-full",
-                        "px-0",
-                        "pr-2",
-                        "pl-8",
-                        "text-white",
-                        "text-2xl",
-                        "no-underline",
-                    ])}>
+                    <a
+                        href={isSignedIn ? Routes.Consultations : Routes.Home}
+                        class={clsx([
+                            "flex",
+                            "justify-center",
+                            "items-center",
+                            "relative",
+                            "left-4",
+                            "h-full",
+                            "w-full",
+                            "px-0",
+                            "pr-2",
+                            "pl-8",
+                            "text-white",
+                            "text-2xl",
+                            "no-underline",
+                        ])}
+                    >
                         Consult
                     </a>
                 </div>

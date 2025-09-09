@@ -4,7 +4,6 @@ from webtest.app import AppError
 from consultation_analyser.factories import UserFactory
 from tests.helpers import sign_in
 
-CONSULTATIONS_ROUTE = "/consultations/"
 SUPPORT_ROUTE = "/support/consultations/"
 
 
@@ -21,9 +20,6 @@ def test_not_authenticated_navigation(django_app):
 
     assert_expected_menu_items(django_app, "/", expected_menu_items)
 
-    with pytest.raises(AppError):  # expect a 404 response
-        assert_expected_menu_items(django_app, CONSULTATIONS_ROUTE, expected_menu_items)
-
     with pytest.raises(AppError):
         assert_expected_menu_items(django_app, SUPPORT_ROUTE, expected_menu_items)
 
@@ -37,8 +33,6 @@ def test_authenticated_navigation(django_app):
 
     expected_menu_items = ["Your consultations", "Sign out"]
 
-    assert_expected_menu_items(django_app, CONSULTATIONS_ROUTE, expected_menu_items)
-
     with pytest.raises(AppError):
         assert_expected_menu_items(django_app, SUPPORT_ROUTE, expected_menu_items)
 
@@ -51,10 +45,6 @@ def test_authenticated_staff_navigation(django_app):
         is_staff=True,
     )
     sign_in(django_app, "email@example.com")
-
-    assert_expected_menu_items(
-        django_app, CONSULTATIONS_ROUTE, ["Support", "Your consultations", "Sign out"]
-    )
 
     assert_expected_menu_items(
         django_app, SUPPORT_ROUTE, ["Consultations", "Users", "Import", "Sign out"]

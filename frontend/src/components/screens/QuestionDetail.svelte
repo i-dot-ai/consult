@@ -32,7 +32,7 @@
         type ThemeAggrResponse,
         type ThemeInfoResponse
     } from "../../global/types.ts";
-    import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
+    import { themeFilters, demoFilters, multiAnswerFilters } from "../../global/state.svelte.ts";
 
 
     interface QueryFilters {
@@ -41,7 +41,8 @@
         searchMode: SearchModeValues;
         evidenceRich: boolean;
         flaggedOnly: boolean;
-        demoFilters: {[category:string]: string[]}
+        demoFilters: {[category:string]: string[]};
+        multiAnswerFilters: string[];
     }
 
     interface Props {
@@ -166,6 +167,7 @@
             evidenceRich: evidenceRich,
             demoFilters: demoFilters.filters,
             flaggedOnly: flaggedOnly,
+            multiAnswerFilters: multiAnswerFilters.filters,
         });
 
         // Skip the rest of the requests if they are already requested for this filter set
@@ -208,6 +210,9 @@
             ...(filters.flaggedOnly && {
                 is_flagged: JSON.stringify(filters.flaggedOnly)
             }),
+            ...(filters.multiAnswerFilters.length > 0 && {
+                multiple_choice_answer: filters.multiAnswerFilters.join(",")
+            }),
             page: currPage.toString(),
             page_size: PAGE_SIZE.toString(),
         })
@@ -241,7 +246,7 @@
 
     $effect(() => {
         // @ts-ignore: ignore dependencies
-        searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters, flaggedOnly;
+        searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters, multiAnswerFilters.filters, flaggedOnly;
 
         resetAnswers();
 

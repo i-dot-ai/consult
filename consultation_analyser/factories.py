@@ -18,6 +18,7 @@ class UserFactory(DjangoModelFactory):
     class Meta:
         model = User
 
+    has_dashboard_access = False
     email = factory.LazyAttribute(lambda o: fake.email())
     is_staff = False
     password = factory.LazyAttribute(lambda o: fake.password())

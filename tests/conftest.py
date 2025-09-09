@@ -2,12 +2,10 @@ import json
 
 import boto3
 import pytest
-from django.contrib.auth.models import Group
 from django.test import RequestFactory
 from moto import mock_aws
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from consultation_analyser.constants import DASHBOARD_ACCESS
 from consultation_analyser.consultations.models import (
     DemographicOption,
     Respondent,
@@ -190,13 +188,6 @@ def mock_consultation_input_objects(mock_s3_bucket):
     ).put(Body=evidence_rich_mappings_2_jsonl)
 
 
-@pytest.fixture()
-def dashboard_access_group():
-    group, _ = Group.objects.get_or_create(name=DASHBOARD_ACCESS)
-    yield group
-    group.delete()
-
-
 @pytest.fixture
 def non_dashboard_user():
     user = UserFactory()
@@ -205,19 +196,17 @@ def non_dashboard_user():
 
 
 @pytest.fixture
-def dashboard_user(dashboard_access_group):
-    user = UserFactory()
-    user.groups.add(dashboard_access_group)
+def dashboard_user():
+    user = UserFactory(has_dashboard_access=True)
     user.save()
     yield user
     user.delete()
 
 
 @pytest.fixture()
-def user_without_consultation_access(dashboard_access_group):
+def user_without_consultation_access():
     """User with dashboard access but not consultation access"""
-    user = UserFactory()
-    user.groups.add(dashboard_access_group)
+    user = UserFactory(has_dashboard_access=True)
     user.save()
     yield user
     user.delete()
@@ -325,10 +314,8 @@ def theme_b(free_text_question):
 
 
 @pytest.fixture()
-def consultation_user(consultation, dashboard_access_group):
-    user = UserFactory()
-    user.groups.add(dashboard_access_group)
-    user.save()
+def consultation_user(consultation):
+    user = UserFactory(has_dashboard_access=True)
     consultation.users.add(user)
     yield user
     user.delete()
