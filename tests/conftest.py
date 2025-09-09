@@ -315,7 +315,7 @@ def theme_b(free_text_question):
 
 @pytest.fixture()
 def consultation_user(consultation):
-    user = UserFactory(has_dashboard_access=True)
+    user = UserFactory(has_dashboard_access=True, is_staff=True)
     consultation.users.add(user)
     yield user
     user.delete()
