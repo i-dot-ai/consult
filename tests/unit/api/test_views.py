@@ -29,9 +29,7 @@ class TestDemographicOptionsAPIView:
         response = client.get(url)
 
         assert response.status_code == 200
-        data = response.json()
-        assert "demographic_options" in data
-        assert data["demographic_options"] == {}
+        assert response.json() == []
 
     def test_get_demographic_options_with_data(self, client, consultation_user, free_text_question):
         """Test API endpoint returns demographic options correctly"""
@@ -58,12 +56,17 @@ class TestDemographicOptionsAPIView:
 
         assert response.status_code == 200
         data = response.json()
-        assert "demographic_options" in data
-        options = data["demographic_options"]
 
-        assert set(options["individual"]) == {False, True}
-        assert set(options["region"]) == {"north", "south"}
-        assert set(options["age"]) == {"25", "35", "45"}
+        expected = [
+            {"count": 1, "name": "age", "value": "25"},
+            {"count": 1, "name": "age", "value": "35"},
+            {"count": 1, "name": "age", "value": "45"},
+            {"count": 1, "name": "individual", "value": False},
+            {"count": 2, "name": "individual", "value": True},
+            {"count": 2, "name": "region", "value": "north"},
+            {"count": 1, "name": "region", "value": "south"},
+        ]
+        assert data == expected
 
     def test_permission_required(self, client, free_text_question):
         """Test API endpoint requires proper permissions"""
@@ -1063,7 +1066,9 @@ class TestAPIViewPermissions:
             },
         )
         assert response.status_code == 400
-        assert response.json() == {"themes": [[f'Invalid pk "{fake_uuid}" - object does not exist.']]}
+        assert response.json() == {
+            "themes": [[f'Invalid pk "{fake_uuid}" - object does not exist.']]
+        }
 
     @pytest.mark.parametrize("is_flagged", [True, False])
     def test_patch_response_flags(
