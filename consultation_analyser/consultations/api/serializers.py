@@ -129,14 +129,14 @@ class MultiChoiceAnswerCount(serializers.Serializer):
 
 
 class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
-    id = serializers.UUIDField()
+    id = serializers.UUIDField(source="theme.id")
     name = serializers.CharField(required=False, source="theme.name")
     description = serializers.CharField(required=False, source="theme.description")
     key = serializers.CharField(required=False, source="theme.key")
     assigned_by = serializers.SerializerMethodField()
 
     def to_internal_value(self, data):
-        pk = super().to_internal_value(data)["id"]
+        pk = super().to_internal_value(data)["theme"]["id"]
         try:
             return Theme.objects.get(pk=pk)
         except Theme.DoesNotExist:
