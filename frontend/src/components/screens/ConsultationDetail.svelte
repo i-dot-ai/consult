@@ -64,7 +64,7 @@
     ));
 </script>
 
-<section transition:slide class="my-8">
+<section class="my-8">
     <Metrics
         questions={consultation?.questions || []}
         loading={loading}

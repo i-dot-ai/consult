@@ -1,6 +1,8 @@
 <script lang="ts">
     import clsx from "clsx";
 
+    import { slide } from "svelte/transition";
+
     import { getPercentage, paginateArray } from "../../../global/utils";
     import type { DemoOptionsResponseItem, Question } from "../../../global/types";
 
@@ -146,7 +148,7 @@
     </div>
 
     {#if paginatedCategories.length > 0 || demoOptionsLoading}
-        <div class="mt-8">
+        <div transition:slide class="mt-8">
             <TabView
                 variant="dots"
                 title="Demographics Breakdown"
