@@ -70,10 +70,6 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
         model = Consultation
         fields = ["id", "title", "slug", "questions", "users"]
 
-    def update(self, instance, validated_data):
-        u = super().update(instance, validated_data)
-        return u
-
 
 class DemographicOptionsSerializer(serializers.Serializer):
     demographic_options = serializers.DictField(
