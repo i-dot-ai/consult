@@ -3,6 +3,12 @@ export interface NavItem {
     url: string;
 }
 
+export interface QuestionMultiAnswer {
+    id: string;
+    text: string;
+    response_count: number;
+}
+
 export interface Question {
     id?: string;
     number?: number;
@@ -11,7 +17,7 @@ export interface Question {
     slug?: string;
     has_free_text?: boolean;
     has_multiple_choice?: boolean;
-    multiple_choice_options?: { text: string }[];
+    multiple_choice_answer?: QuestionMultiAnswer[];
     proportion_of_audited_answers?: number;
 }
 

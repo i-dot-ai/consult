@@ -4,7 +4,7 @@
     import { slide } from "svelte/transition";
 
     import { getPercentage, paginateArray } from "../../../global/utils";
-    import type { DemoOptionsResponseItem, Question } from "../../../global/types";
+    import type { DemoOptionsResponseItem, Question, QuestionMultiAnswer } from "../../../global/types";
 
     import TabView from "../../TabView/TabView.svelte";
     import Chart from "../Chart.svelte";
@@ -38,12 +38,12 @@
     const paginatedCategories = $derived(paginateArray(demoOptionCategories, itemsPerTab));
 
     let currQuestion: number = $derived(questions[0]?.number || 0);
-    let chartQuestions = $derived(questions.filter(question => {
-        return question.multiple_choice_options
-            ? question.multiple_choice_options.length > 0
+    let chartQuestions: Question[] = $derived(questions.filter((question: Question) => {
+        return question.multiple_choice_answer
+            ? question.multiple_choice_answer.length > 0
             : false
     }));
-    let chartQuestion = $derived(chartQuestions.find(question => question.number === currQuestion));
+    let chartQuestion: Question | undefined = $derived(chartQuestions.find(question => question.number === currQuestion));
 
     let totalResponses = $derived(questions?.reduce(
         (acc, question) => acc + (question?.total_responses || 0),
@@ -108,7 +108,7 @@
                     {:else}
                         <TabView
                             variant="dots"
-                            tabs={chartQuestions.map(question => ({
+                            tabs={chartQuestions.map((question: Question) => ({
                                 title: `Q${question.number}`,
                                 id: `tab-${question.number}`,
                             }))}
@@ -129,12 +129,16 @@
 
                                     <div class="w-max">
                                         <Chart
-                                            labels={chartQuestion?.multiple_choice_options?.map((opt) => {
-                                                return opt.text;
+                                            labels={chartQuestion?.multiple_choice_answer?.map((
+                                                multiChoiceAnswer: QuestionMultiAnswer,
+                                            ) => {
+                                                return multiChoiceAnswer.text;
                                             }) || []}
 
-                                            data={chartQuestion?.multiple_choice_options?.map((_, i) => {
-                                                return 100 * (i+1);
+                                            data={chartQuestion?.multiple_choice_answer?.map((
+                                                multiChoiceAnswer: QuestionMultiAnswer,
+                                            ) => {
+                                                return multiChoiceAnswer.response_count;
                                             }) || []}
                                         />
                                     </div>
