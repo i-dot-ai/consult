@@ -56,9 +56,9 @@ def test_review_show_response(django_app):
     human_reviewed_themes = models.ResponseAnnotationTheme.objects.filter(
         response_annotation=response_annotation1, assigned_by__isnull=False
     )
-    assert set(human_reviewed_themes.values_list("theme_id", flat=True)) == set(
-        {theme_a.id, theme_b.id}
-    )
+    assert set(human_reviewed_themes.values_list("theme_id", flat=True)) == {
+        theme_b.id,
+    }
 
     # Now test reviewing a response making no further changes
     url = reverse("show_response", args=(consultation.id, question.id, response2.id))

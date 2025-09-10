@@ -37,7 +37,7 @@ def show(
     if request.method == "POST":
         requested_themes = request.POST.getlist("theme")
 
-        # Set human-reviewed themes (preserves original AI assignments)
+        # Set human-reviewed themes (does not preserve original AI assignments)
         if requested_themes:
             themes_to_add = models.Theme.objects.filter(id__in=requested_themes, question=question)
             annotation.set_human_reviewed_themes(themes_to_add, request.user)
