@@ -27,7 +27,7 @@ class ResponseFilter(FilterSet):
     themeFilters = BaseInFilter(method="filter_themes")
     demoFilters = CharFilter(method="filter_demographics")
     is_flagged = BooleanFilter()
-    chosen_options = BaseInFilter(lookup_expr="in")
+    multiple_choice_answer = BaseInFilter(field_name="chosen_options", lookup_expr="in")
 
     def filter_themes(self, queryset, name, value):
         if not value:

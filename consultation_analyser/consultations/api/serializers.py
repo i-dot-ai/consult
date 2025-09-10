@@ -22,15 +22,22 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["email", "has_dashboard_access"]
 
 
-class MultiChoiceAnswerSerializer(serializers.HyperlinkedModelSerializer):
+class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(read_only=True)
+
+    response_count = serializers.SerializerMethodField()
+
+    def get_response_count(self, obj) -> int:
+        return Response.objects.filter(chosen_options=obj).count()
+
     class Meta:
         model = MultiChoiceAnswer
-        fields = ["text"]
+        fields = ["id", "text", "response_count"]
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     question_text = serializers.CharField(source="text")
-    multiple_choice_options = MultiChoiceAnswerSerializer(
+    multiple_choice_answer = MultiChoiceAnswerSerializer(
         many=True, source="multichoiceanswer_set", read_only=True
     )
     proportion_of_audited_answers = serializers.ReadOnlyField()
@@ -50,7 +57,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
             "number",
             "has_free_text",
             "has_multiple_choice",
-            "multiple_choice_options",
+            "multiple_choice_answer",
             "proportion_of_audited_answers",
         ]
 
