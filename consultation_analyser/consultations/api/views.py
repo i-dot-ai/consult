@@ -123,9 +123,9 @@ class QuestionViewSet(ReadOnlyModelViewSet):
     )
     def multi_choice_response_count(self, request, pk=None, consultation_pk=None):
         question = self.get_object()
-        answer_count = question.response_set.values("chosen_options__text").annotate(
-            response_count=Count("id")
-        )
+        answer_count = question.response_set.values(
+            "chosen_options__id", "chosen_options__text"
+        ).annotate(response_count=Count("id"))
         serializer = self.get_serializer(instance=answer_count, many=True)
         return JsonResponse(data=serializer.data, safe=False)
 

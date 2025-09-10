@@ -1212,11 +1212,11 @@ def test_multi_choice_answer_count(
     response = client.get(url)
     assert response.status_code == 200
 
-    def sort_by_answer(payload):
-        return sorted(payload, key=lambda x: x["answer"])
-
-    expected = [{"answer": "blue", "response_count": 1}, {"answer": "red", "response_count": 2}]
-    assert sort_by_answer(response.json()) == sort_by_answer(expected)
+    for text, response_count in ("blue", 1), ("red", 2):
+        assert (
+            next(x["response_count"] for x in response.json() if x["text"] == text)
+            == response_count
+        )
 
 
 @pytest.mark.django_db
