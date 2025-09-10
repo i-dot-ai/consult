@@ -282,7 +282,11 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(
-                fields=["response_annotation", "theme", "assigned_by"],
+                fields=[
+                    "response_annotation",
+                    "theme",
+                    "assigned_by",
+                ],  # TODO: remove assigned_by  from here
                 name="unique_theme_assignment",
             ),
         ]

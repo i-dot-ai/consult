@@ -187,14 +187,20 @@ class ResponseSerializer(serializers.ModelSerializer):
                 instance.annotation.evidence_rich = annotation["evidence_rich"]
 
             if "responseannotationtheme_set" in annotation:
-                ResponseAnnotationTheme.objects.filter(
-                    response_annotation=instance.annotation,
-                    assigned_by=self.context["request"].user,
+                # delete themes that are not proposed
+                current = {
+                    x.theme_id for x in instance.annotation.responseannotationtheme_set.all()
+                }
+                proposed = {x.id for x in annotation["responseannotationtheme_set"]}
+
+                instance.annotation.responseannotationtheme_set.filter(
+                    theme_id__in=current - proposed
                 ).delete()
-                for theme in annotation["responseannotationtheme_set"]:
+
+                for theme_id in proposed - current:
                     ResponseAnnotationTheme.objects.create(
                         response_annotation=instance.annotation,
-                        theme=theme,
+                        theme_id=theme_id,
                         assigned_by=self.context["request"].user,
                     )
 
