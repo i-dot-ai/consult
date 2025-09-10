@@ -285,8 +285,7 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
                 fields=[
                     "response_annotation",
                     "theme",
-                    "assigned_by",
-                ],  # TODO: remove assigned_by  from here
+                ],
                 name="unique_theme_assignment",
             ),
         ]
@@ -340,19 +339,34 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
             )
 
     def set_human_reviewed_themes(self, themes, user):
-        """Set themes as human-reviewed, preserving original AI assignments"""
+        """Set themes as human-reviewed, will override original AI assignments"""
         # Remove existing user-assigned theme assignments
-        ResponseAnnotationTheme.objects.filter(
-            response_annotation=self, assigned_by__isnull=False
+
+        current_theme_ids = {x.theme_id for x in self.responseannotationtheme_set.all()}
+        proposed_theme_ids = {x.id for x in themes}
+
+        self.responseannotationtheme_set.filter(
+            theme_id__in=current_theme_ids - proposed_theme_ids
         ).delete()
 
-        # Add new human-assigned themes
-        for theme in themes:
-            ResponseAnnotationTheme.objects.get_or_create(
+        for theme_id in proposed_theme_ids - current_theme_ids:
+            ResponseAnnotationTheme.objects.create(
                 response_annotation=self,
-                theme=theme,
+                theme_id=theme_id,
                 assigned_by=user,
             )
+
+        # ResponseAnnotationTheme.objects.filter(
+        #     response_annotation=self, assigned_by__isnull=False
+        # ).delete()
+        #
+        # # Add new human-assigned themes
+        # for theme in themes:
+        #     ResponseAnnotationTheme.objects.get_or_create(
+        #         response_annotation=self,
+        #         theme=theme,
+        #         assigned_by=user,
+        #     )
 
     def get_original_ai_themes(self):
         """Get themes assigned by AI"""
