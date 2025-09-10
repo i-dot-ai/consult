@@ -15,17 +15,24 @@
         type ChartOptions,
         type LegendItem,
     } from 'chart.js';
+    import { getPercentage } from "../../global/utils";
 
 
+    interface LabelItem {
+        text: string;
+        count: number;
+    }
     interface Props {
         data: number[];
-        labels: string[];
+        labels: LabelItem[];
     }
 
     let {
         data = [],
         labels = [],
     }: Props = $props();
+
+    const total = $derived(data.reduce((acc, curr) => acc + curr, 0));
 
     // Disables tree-shaking
     // Chart.register(...registerables);
@@ -116,6 +123,15 @@
                     "rounded-full",
                 ]);
 
+                const containerEl = document.createElement("div");
+                containerEl.className = clsx([
+                    "flex",
+                    "justify-between",
+                    "items-center",
+                    "w-full",
+                    "gap-8",
+                ]);
+
                 const textContainer = document.createElement('p');
                 textContainer.style.color = item.fontColor as string;
                 textContainer.className = clsx([
@@ -127,8 +143,28 @@
                 const text = document.createTextNode(item.text);
                 textContainer.appendChild(text);
 
+                const label = labels.find(label => label.text === item.text);
+                const count = label?.count || 0;
+                const percentage = getPercentage(count, total);
+
+                const countsContainer = document.createElement("div");
+                countsContainer.className = "flex gap-2 items-center";
+
+                const percentageEl = document.createElement("span");
+                percentageEl.className = "font-bold";
+                percentageEl.innerText = `${percentage}%`;
+
+                const countsEl = document.createElement("span");
+                countsEl.innerText = `(${ count.toString() })`;
+
+                countsContainer.appendChild(percentageEl);
+                countsContainer.appendChild(countsEl);
+
+                containerEl.appendChild(textContainer);
+                containerEl.appendChild(countsContainer);
+
                 li.appendChild(boxSpan);
-                li.appendChild(textContainer);
+                li.appendChild(containerEl);
                 ul.appendChild(li);
             });
         }
@@ -139,7 +175,7 @@
             new Chart(chartElement, {
                 type: 'doughnut',
                 data: {
-                    labels: labels,
+                    labels: labels.map(label => label.text),
                     datasets: [{
                         label: ' counts',
                         data: data,

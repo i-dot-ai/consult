@@ -132,7 +132,10 @@
                                             labels={chartQuestion?.multiple_choice_answer?.map((
                                                 multiChoiceAnswer: QuestionMultiAnswer,
                                             ) => {
-                                                return multiChoiceAnswer.text;
+                                                return ({
+                                                    count: multiChoiceAnswer.response_count,
+                                                    text: multiChoiceAnswer.text,
+                                                })
                                             }) || []}
 
                                             data={chartQuestion?.multiple_choice_answer?.map((
