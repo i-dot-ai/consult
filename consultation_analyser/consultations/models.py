@@ -356,18 +356,6 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
                 assigned_by=user,
             )
 
-        # ResponseAnnotationTheme.objects.filter(
-        #     response_annotation=self, assigned_by__isnull=False
-        # ).delete()
-        #
-        # # Add new human-assigned themes
-        # for theme in themes:
-        #     ResponseAnnotationTheme.objects.get_or_create(
-        #         response_annotation=self,
-        #         theme=theme,
-        #         assigned_by=user,
-        #     )
-
     def get_original_ai_themes(self):
         """Get themes assigned by AI"""
         return self.themes.filter(responseannotationtheme__assigned_by__isnull=True)
