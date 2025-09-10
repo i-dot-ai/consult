@@ -1,18 +1,19 @@
 <script lang="ts">
     import { onMount } from "svelte";
     import { slide } from "svelte/transition";
+    import type { Writable } from "svelte/store"
 
     import TextInput from "../inputs/TextInput/TextInput.svelte";
-    import TitleRow from "../dashboard/TitleRow.svelte";
     import Help from "../svg/material/Help.svelte";
     import Star from "../svg/material/Star.svelte";
-
-    import type { Consultation } from "../../global/types.ts";
-    import { getConsultationDetailUrl, getApiConsultationUrl } from "../../global/routes.ts";
-    import { favStore } from "../../global/stores.ts";
+    import TitleRow from "../dashboard/TitleRow.svelte";
     import Panel from "../dashboard/Panel/Panel.svelte";
     import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
     import Metrics from "../dashboard/Metrics/Metrics.svelte";
+
+    import type { Consultation, DemoOptionsResponse } from "../../global/types.ts";
+    import { getApiConsultationUrl } from "../../global/routes.ts";
+    import { createFetchStore, favStore } from "../../global/stores.ts";
 
 
     export let consultationId: string = "";
@@ -21,6 +22,18 @@
     let consultation: Consultation;
     let loading: boolean = true;
     let error: string = "";
+
+    const {
+        loading: isDemoOptionsLoading,
+        error: demoOptionsError,
+        load: loadDemoOptions,
+        data: demoOptionsData,
+    }: {
+        loading: Writable<boolean>,
+        error: Writable<string>,
+        load: Function,
+        data: Writable<DemoOptionsResponse>,
+    } = createFetchStore();
 
     onMount(async () => {
         try {
@@ -37,6 +50,8 @@
         } finally {
             loading = false;
         }
+
+        loadDemoOptions(`/api/consultations/${consultationId}/demographic-options/`);
     })
 
     $: favQuestions = consultation?.questions
@@ -50,7 +65,12 @@
 </script>
 
 <section transition:slide class="my-8">
-    <Metrics questions={consultation?.questions || []} loading={loading} />
+    <Metrics
+        questions={consultation?.questions || []}
+        loading={loading}
+        demoOptionsLoading={$isDemoOptionsLoading}
+        demoOptions={$demoOptionsData}
+    />
 </section>
 
 <section transition:slide class="my-8">

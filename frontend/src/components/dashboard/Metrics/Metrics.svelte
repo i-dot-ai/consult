@@ -1,9 +1,9 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import type { DemoData, DemoOption, Question } from "../../../global/types";
+    import { getPercentage, paginateArray } from "../../../global/utils";
+    import type { DemoOptionsResponseItem, Question } from "../../../global/types";
 
-    import Finance from "../../svg/material/Finance.svelte";
     import TabView from "../../TabView/TabView.svelte";
     import Chart from "../Chart.svelte";
     import MetricsDemoCard from "../MetricsDemoCard/MetricsDemoCard.svelte";
@@ -13,57 +13,38 @@
     import Title from "../../Title.svelte";
     import MaterialIcon from "../../MaterialIcon.svelte";
     import ProgressActivity from "../../svg/material/ProgressActivity.svelte";
+    import Finance from "../../svg/material/Finance.svelte";
 
 
     interface Props {
         loading: boolean;
         questions: Question[];
-        demoOptions: DemoOption[];
+        demoOptions: DemoOptionsResponseItem[];
+        demoOptionsLoading: boolean;
     }
     let {
         loading = true,
         questions = [],
         demoOptions = [],
-    } = $props();
+        demoOptionsLoading = true,
+    }: Props = $props();
 
-    const metricsDemo: DemoData = {
-        "Respondent Type": {
-            "Individual": 2621,
-            "Organisation": 1411,
-        },
-        "Geographic Distribution": {
-            "England": 2782,
-            "Scotland": 605,
-            "Wales": 44,
-            "N.Ireland": 61,
-        },
-        "Self-reported Disability": {
-            "No": 2943,
-            "Prefer Not to Say": 605,
-            "Yes": 484,
-        },
-    }
     const itemsPerTab = 3;
     let currPage: number = $state(0);
 
-    function paginate(arr: any[], size: number) {
-        return arr.reduce((acc, val, i) => {
-            let idx = Math.floor(i / size);
-            let page = acc[idx] || (acc[idx] = []);
-            page.push(val);
+    const demoOptionCategories = $derived([...new Set(demoOptions?.map(opt => opt.name))]);
+    const paginatedCategories = $derived(paginateArray(demoOptionCategories, itemsPerTab));
 
-            return acc;
-        }, [])
-    }
-
-    const paginatedDemoKeys = paginate(Object.keys(metricsDemo), itemsPerTab);
-
-    let currQuestion: number = $derived(questions[0]?.number);
-    let chartQuestions = $derived(questions.filter(question => question.multiple_choice_options.length > 0));
+    let currQuestion: number = $derived(questions[0]?.number || 0);
+    let chartQuestions = $derived(questions.filter(question => {
+        return question.multiple_choice_options
+            ? question.multiple_choice_options.length > 0
+            : false
+    }));
     let chartQuestion = $derived(chartQuestions.find(question => question.number === currQuestion));
 
     let totalResponses = $derived(questions?.reduce(
-        (acc, question) => acc + question.total_responses,
+        (acc, question) => acc + (question?.total_responses || 0),
         0,
     ));
 </script>
@@ -91,7 +72,7 @@
                     <MetricsSummary
                         questionCount={questions?.length}
                         responseCount={totalResponses}
-                        demoCount={5}
+                        demoCount={demoOptionCategories.length}
                     />
                 </div>
             </Panel>
@@ -146,11 +127,13 @@
 
                                     <div class="w-max">
                                         <Chart
-                                            labels={
-                                                chartQuestion?.multiple_choice_options
-                                                .map((opt: {text: string, count: number}) => opt.text)
-                                            }
-                                            data={chartQuestion?.multiple_choice_options.map((_, i) => 100 * (i+1))}
+                                            labels={chartQuestion?.multiple_choice_options?.map((opt) => {
+                                                return opt.text;
+                                            }) || []}
+
+                                            data={chartQuestion?.multiple_choice_options?.map((_, i) => {
+                                                return 100 * (i+1);
+                                            }) || []}
                                         />
                                     </div>
                                 </div>
@@ -162,18 +145,20 @@
         {/if}
     </div>
 
-    {#if Object.keys(metricsDemo).length > 0}
+    {#if paginatedCategories.length > 0 || demoOptionsLoading}
         <div class="mt-8">
             <TabView
                 variant="dots"
                 title="Demographics Breakdown"
-                tabs={paginatedDemoKeys.map((pageKey: string, index: number) => ({
-                    title: pageKey,
+                tabs={paginatedCategories.map((
+                    category: string, index: number
+                ) => ({
+                    title: category,
                     id: `tab-${index}`,
                 }))}
                 value={`tab-${currPage}`}
                 handleChange={(newTab) => {
-                    currPage = parseInt(newTab.replace("tab-", ""));
+                    currPage =  parseInt(newTab.replace("tab-", ""));
                 }}
             >
                 <div slot="title">
@@ -181,14 +166,27 @@
                 </div>
 
                 <div class="grid grid-cols-12 gap-4">
-                    {#each paginatedDemoKeys[currPage] as category}
+                    {#each paginatedCategories[currPage] as category}
+                        {@const categoryOptions = demoOptions
+                            .filter((opt: DemoOptionsResponseItem) => opt.name === category)
+                        }
+
+                        {@const total = categoryOptions
+                            .reduce((acc: number, opt: DemoOptionsResponseItem) => {
+                                return acc + opt.count;
+                            }, 0)
+                        }
+
                         <MetricsDemoCard
                             title={category}
-                            items={Object.keys(metricsDemo[category]).map(rowKey => ({
-                                title: rowKey,
-                                count: metricsDemo[category][rowKey],
-                                percentage: 67,
-                            }))}
+                            items={demoOptions
+                                .filter((opt: DemoOptionsResponseItem) => opt.name === category)
+                                .map((demoOption: DemoOptionsResponseItem) => ({
+                                    title: demoOption.value,
+                                    count: demoOption.count,
+                                    percentage: getPercentage(demoOption.count, total),
+                                }))
+                            }
                         />
                     {/each}
                 </div>

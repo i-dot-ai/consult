@@ -29,7 +29,7 @@
 
     let displayAll: boolean = $state(false);
 
-    const NUM_ABOVE_FOLD = 2;
+    const NUM_ABOVE_FOLD = 3;
 </script>
 
 {#snippet cardItem({title, count, percentage}: MetricsDemoItem, index: number)}
