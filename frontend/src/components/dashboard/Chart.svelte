@@ -130,6 +130,7 @@
                     "items-center",
                     "w-full",
                     "gap-8",
+                    item.hidden && "line-through",
                 ]);
 
                 const textContainer = document.createElement('p');

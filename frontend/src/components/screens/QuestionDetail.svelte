@@ -28,6 +28,7 @@
         type DemoOptionsResponseItem,
         type FormattedTheme,
         type MultiChoiceResponse,
+        type Question,
         type ResponseAnswer,
         type ThemeAggrResponse,
         type ThemeInfoResponse
@@ -143,15 +144,15 @@
     } = createFetchStore();
 
     const {
-        loading: isMultiChoiceAggrLoading,
-        error: multiChoiceAggrError,
-        load: loadMultiChoiceAggr,
-        data: multiChoiceAggrData,
+        loading: isQuestionLoading,
+        error: questionError,
+        load: loadQuestion,
+        data: questionData,
     }: {
         loading: Writable<boolean>,
         error: Writable<string>,
         load: Function,
-        data: Writable<MultiChoiceResponse>,
+        data: Writable<Question>,
     } = createFetchStore();
 
     onMount(() => {
@@ -176,7 +177,7 @@
             loadThemeInfo(`/api/consultations/${consultationId}/questions/${questionId}/theme-information/${queryString}`);
             loadDemoOptions(`/api/consultations/${consultationId}/demographic-options/${queryString}`);
             loadDemoAggr(`/api/consultations/${consultationId}/questions/${questionId}/responses/demographic-aggregations/${queryString}`);
-            loadMultiChoiceAggr(`/api/consultations/${consultationId}/questions/${questionId}/multi-choice-response-count/${queryString}`);
+            loadQuestion(`/api/consultations/${consultationId}/questions/${questionId}/${queryString}`);
         }
 
         // Append next page of answers to existing answers
@@ -348,7 +349,9 @@
             filteredTotal={$answersData?.filtered_total}
             demoData={$demoAggrData?.demographic_aggregations}
             demoOptions={formattedDemoOptions || {}}
-            multiChoice={$multiChoiceAggrData?.filter(item => Boolean(item.answer))}
+            multiChoice={$questionData?.multiple_choice_answer?.filter(
+                item => Boolean(item.text)
+            ) || []}
             consultationSlug={$consultationData?.slug}
             evidenceRich={evidenceRich}
             searchValue={searchValue}

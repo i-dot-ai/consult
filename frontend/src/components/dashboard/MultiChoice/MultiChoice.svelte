@@ -11,14 +11,11 @@
     import TitleRow from "../TitleRow.svelte";
     import List from "../../svg/material/List.svelte";
     import Button from "../../inputs/Button/Button.svelte";
+    import type { QuestionMultiAnswer } from "../../../global/types";
 
 
-    export interface MultiChoiceAnswer {
-        answer?: string;
-        response_count: number;
-    }
     interface Props {
-        data: MultiChoiceAnswer[];
+        data: QuestionMultiAnswer[];
     }
 
     let {
@@ -47,8 +44,8 @@
                         variant="ghost"
                         size="xs"
                         fullWidth={true}
-                        handleClick={() => {multiAnswerFilters.update(item.answer)}}
-                        highlighted={multiAnswerFilters.applied(item.answer)}
+                        handleClick={() => {multiAnswerFilters.update(item.id)}}
+                        highlighted={multiAnswerFilters.applied(item.id)}
                         highlightVariant="light"
                     >
                         <div class={clsx([
@@ -63,7 +60,7 @@
                             "p-1",
                         ])}>
                             <h3 class="w-1/2 text-left">
-                                {item.answer}
+                                {item.text}
                             </h3>
 
                             <div class={clsx([

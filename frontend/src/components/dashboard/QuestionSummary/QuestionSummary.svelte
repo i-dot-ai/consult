@@ -1,7 +1,13 @@
 <script lang="ts">
     import { slide, fly } from "svelte/transition";
 
-    import { TabNames, type DemoData, type DemoOption, type FormattedTheme } from "../../../global/types.ts";
+    import {
+        TabNames,
+        type DemoData,
+        type DemoOption,
+        type FormattedTheme,
+        type QuestionMultiAnswer
+    } from "../../../global/types.ts";
     import { getPercentage } from "../../../global/utils.ts";
 
     import Lan from "../../svg/material/Lan.svelte";
@@ -19,7 +25,7 @@
 
     import { themeFilters, demoFilters } from "../../../global/state.svelte.ts";
     import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
-    import MultiChoice, { type MultiChoiceAnswer } from "../MultiChoice/MultiChoice.svelte";
+    import MultiChoice from "../MultiChoice/MultiChoice.svelte";
     import CsvDownload from "../../CsvDownload/CsvDownload.svelte";
     import Finance from "../../svg/material/Finance.svelte";
 
@@ -31,7 +37,7 @@
         demoData: DemoData;
         demoOptions: DemoOption;
         themes: FormattedTheme[];
-        multiChoice: MultiChoiceAnswer[];
+        multiChoice: QuestionMultiAnswer[];
         consultationSlug?: string;
         sortAscending?: boolean;
         searchValue: string;

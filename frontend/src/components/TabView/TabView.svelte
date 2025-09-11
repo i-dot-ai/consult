@@ -78,11 +78,15 @@
 >
     <div class={clsx([
         "flex",
-        $$slots.title ? "justify-between" : "justify-center",
+        $$slots.title ? "justify-around" : "justify-center",
         "items-center",
         "gap-4",
+        "flex-wrap-reverse",
+        "gap-y-2",
     ])}>
-        <slot name="title" />
+        <div class="grow">
+            <slot name="title" />
+        </div>
 
         <div
             use:melt={$list}
