@@ -25,8 +25,8 @@ describe("QuestionSummary", () => {
 
     it("should render multi choice data if passed", () => {
         const multiChoice = [
-            { answer: "yes", response_count: 10 },
-            { answer: "no", response_count: 20 },
+            { text: "yes", response_count: 10 },
+            { text: "no", response_count: 20 },
         ]
 
         const { getByText, getAllByText } = render(QuestionSummary, {
@@ -37,7 +37,7 @@ describe("QuestionSummary", () => {
         expect(getByText("Multiple Choice Answers"));
 
         multiChoice.forEach(item => {
-            expect(getByText(item.answer));
+            expect(getByText(item.text));
             expect(getAllByText(item.response_count));
             expect(getByText(getPercentage(item.response_count, 30) + "%"));
         })
