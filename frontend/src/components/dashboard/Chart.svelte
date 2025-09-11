@@ -149,7 +149,7 @@
                 const percentage = getPercentage(count, total);
 
                 const countsContainer = document.createElement("div");
-                countsContainer.className = "flex gap-2 items-center";
+                countsContainer.className = "flex gap-2 items-center text-xs";
 
                 const percentageEl = document.createElement("span");
                 percentageEl.className = "font-bold";
