@@ -299,9 +299,12 @@
         </div>
     </Button>
 
-    <small>
-        Choose a different question to analyse
-    </small>
+    <!-- Text disabled temporarily, div kept to maintain layout -->
+    <div>
+        <!-- <small>
+            Choose a different question to analyse
+        </small> -->
+    </div>
 </section>
 
 <section class="my-4">
