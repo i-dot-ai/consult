@@ -23,14 +23,17 @@
         type AnswersResponse,
         type ConsultationResponse,
         type DemoAggrResponse,
+        type DemoOption,
         type DemoOptionsResponse,
+        type DemoOptionsResponseItem,
         type FormattedTheme,
         type MultiChoiceResponse,
+        type Question,
         type ResponseAnswer,
         type ThemeAggrResponse,
         type ThemeInfoResponse
     } from "../../global/types.ts";
-    import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
+    import { themeFilters, demoFilters, multiAnswerFilters } from "../../global/state.svelte.ts";
 
 
     interface QueryFilters {
@@ -39,7 +42,8 @@
         searchMode: SearchModeValues;
         evidenceRich: boolean;
         flaggedOnly: boolean;
-        demoFilters: {[category:string]: string[]}
+        demoFilters: {[category:string]: string[]};
+        multiAnswerFilters: string[];
     }
 
     interface Props {
@@ -140,15 +144,15 @@
     } = createFetchStore();
 
     const {
-        loading: isMultiChoiceAggrLoading,
-        error: multiChoiceAggrError,
-        load: loadMultiChoiceAggr,
-        data: multiChoiceAggrData,
+        loading: isQuestionLoading,
+        error: questionError,
+        load: loadQuestion,
+        data: questionData,
     }: {
         loading: Writable<boolean>,
         error: Writable<string>,
         load: Function,
-        data: Writable<MultiChoiceResponse>,
+        data: Writable<Question>,
     } = createFetchStore();
 
     onMount(() => {
@@ -164,6 +168,7 @@
             evidenceRich: evidenceRich,
             demoFilters: demoFilters.filters,
             flaggedOnly: flaggedOnly,
+            multiAnswerFilters: multiAnswerFilters.filters,
         });
 
         // Skip the rest of the requests if they are already requested for this filter set
@@ -172,7 +177,7 @@
             loadThemeInfo(`/api/consultations/${consultationId}/questions/${questionId}/theme-information/${queryString}`);
             loadDemoOptions(`/api/consultations/${consultationId}/demographic-options/${queryString}`);
             loadDemoAggr(`/api/consultations/${consultationId}/questions/${questionId}/responses/demographic-aggregations/${queryString}`);
-            loadMultiChoiceAggr(`/api/consultations/${consultationId}/questions/${questionId}/multi-choice-response-count/${queryString}`);
+            loadQuestion(`/api/consultations/${consultationId}/questions/${questionId}/${queryString}`);
         }
 
         // Append next page of answers to existing answers
@@ -205,6 +210,9 @@
             }),
             ...(filters.flaggedOnly && {
                 is_flagged: JSON.stringify(filters.flaggedOnly)
+            }),
+            ...(filters.multiAnswerFilters.length > 0 && {
+                multiple_choice_answer: filters.multiAnswerFilters.join(",")
             }),
             page: currPage.toString(),
             page_size: PAGE_SIZE.toString(),
@@ -239,7 +247,7 @@
 
     $effect(() => {
         // @ts-ignore: ignore dependencies
-        searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters, flaggedOnly;
+        searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters, multiAnswerFilters.filters, flaggedOnly;
 
         resetAnswers();
 
@@ -250,6 +258,24 @@
     let question = $derived($consultationData?.questions?.find(
         question => question.id === questionId
     ));
+
+    let formattedDemoOptions = $derived.by(() => {
+        if (!$demoOptionsData) {
+            return;
+        }
+
+        const formattedData: DemoOption = {};
+        const categories = [...new Set($demoOptionsData.map(data => data.name))];
+
+        for (const category of categories) {
+            const categoryData: DemoOptionsResponseItem[] = $demoOptionsData.filter(
+                opt => opt.name === category
+            );
+
+            formattedData[category] = categoryData.map(opt => opt.value);
+        }
+        return formattedData;
+    });
 </script>
 
 <section class={clsx([
@@ -273,9 +299,12 @@
         </div>
     </Button>
 
-    <small>
-        Choose a different question to analyse
-    </small>
+    <!-- Text disabled temporarily, div kept to maintain layout -->
+    <div>
+        <!-- <small>
+            Choose a different question to analyse
+        </small> -->
+    </div>
 </section>
 
 <section class="my-4">
@@ -301,7 +330,7 @@
 
 <TabView
     value={activeTab}
-    handleChange={(next: TabNames) => activeTab = next}
+    handleChange={(next: string) => activeTab = next as TabNames}
     tabs={[
         { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
         { id: TabNames.ResponseAnalysis, title: "Response Analysis", icon: Finance},
@@ -322,8 +351,10 @@
             totalAnswers={question?.total_responses || 0}
             filteredTotal={$answersData?.filtered_total}
             demoData={$demoAggrData?.demographic_aggregations}
-            demoOptions={$demoOptionsData?.demographic_options}
-            multiChoice={$multiChoiceAggrData?.filter(item => Boolean(item.answer))}
+            demoOptions={formattedDemoOptions || {}}
+            multiChoice={$questionData?.multiple_choice_answer?.filter(
+                item => Boolean(item.text)
+            ) || []}
             consultationSlug={$consultationData?.slug}
             evidenceRich={evidenceRich}
             searchValue={searchValue}
@@ -350,7 +381,7 @@
             searchMode={searchMode}
             setSearchMode={(newSearchMode: SearchModeValues) => searchMode = newSearchMode}
             demoData={$demoAggrData?.demographic_aggregations}
-            demoOptions={$demoOptionsData?.demographic_options}
+            demoOptions={formattedDemoOptions || {}}
             themes={$themeInfoData?.themes}
             evidenceRich={evidenceRich}
             setEvidenceRich={setEvidenceRich}

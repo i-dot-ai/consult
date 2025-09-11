@@ -75,9 +75,9 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class DemographicOptionsSerializer(serializers.Serializer):
-    demographic_options = serializers.DictField(
-        child=serializers.ListField(child=serializers.CharField())
-    )
+    name = serializers.CharField(source="demographics__field_name")
+    value = serializers.JSONField(source="demographics__field_value")
+    count = serializers.IntegerField()
 
 
 class DemographicAggregationsSerializer(serializers.Serializer):

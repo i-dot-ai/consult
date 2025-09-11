@@ -5,7 +5,7 @@
 
 
     interface Props {
-        variant?: "default" | "warning" | "primary";
+        variant?: "default" | "warning" | "primary" | "success";
         children: Snippet,
     }
     let {
@@ -24,14 +24,24 @@
     "py-0.5",
     "px-2",
     "text-xs",
-    variant === "default" && "bg-neutral-100",
-    variant === "default" && "text-neutral-800",
-
-    variant === "primary" && "bg-primary",
-    variant === "primary" && "text-white",
-
-    variant === "warning" && "text-yellow-700",
-    variant === "warning" && "bg-yellow-100",
+    variant === "default" && clsx([
+        "bg-neutral-100",
+        "text-neutral-800",
+    ]),
+    variant === "primary" && clsx([
+        "bg-primary",
+        "text-white",
+    ]),
+    variant === "warning" && clsx([
+        "text-yellow-700",
+        "bg-yellow-100",
+        "border border-yellow-400",
+    ]),
+    variant === "success" && clsx([
+        "text-emerald-700",
+        "bg-emerald-100",
+        "border border-emerald-400",
+    ]),
 ])}>
     {@render children()}
 </div>
