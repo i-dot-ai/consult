@@ -12,8 +12,10 @@
         Tooltip,
         registerables,
         type ChartConfiguration,
+        type ChartItem,
         type ChartOptions,
         type LegendItem,
+        type TooltipItem,
     } from 'chart.js';
     import { getPercentage } from "../../global/utils";
 
@@ -32,6 +34,7 @@
         labels = [],
     }: Props = $props();
 
+    const MAX_TOOLTIP_LENGTH = 20;
     const total = $derived(data.reduce((acc, curr) => acc + curr, 0));
 
     // Disables tree-shaking
@@ -192,6 +195,17 @@
                             position: "right",
                             align: "center",
                         },
+                        tooltip: {
+                            callbacks: {
+                                title: (item) => {
+                                    const label = item.at(0)?.label || "";
+
+                                    return label?.length > MAX_TOOLTIP_LENGTH
+                                        ? label.slice(0, MAX_TOOLTIP_LENGTH) + "..."
+                                        : label;
+                                }
+                            }
+                        },
                         //@ts-ignore: custom plugin adds htmlLegend
                         htmlLegend: {
                             containerID: 'legend-container',
@@ -201,7 +215,7 @@
                         padding: 0
                     }
                 },
-                plugins: [htmlLegendPlugin]
+                plugins: [htmlLegendPlugin],
             });
         }
     })
