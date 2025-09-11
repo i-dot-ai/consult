@@ -28,7 +28,7 @@ class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
     response_count = serializers.SerializerMethodField()
 
     def get_response_count(self, obj) -> int:
-        return Response.objects.filter(chosen_options=obj).count()
+        return obj.response_set.count()
 
     class Meta:
         model = MultiChoiceAnswer
