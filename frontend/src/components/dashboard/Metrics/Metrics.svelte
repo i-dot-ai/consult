@@ -80,7 +80,7 @@
             </Panel>
         </div>
 
-        {#if loading || questions.length > 0}
+        {#if loading || chartQuestions.length > 0}
             <div class={clsx([
                 "col-span-12",
                 "md:col-span-9",
