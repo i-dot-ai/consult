@@ -139,6 +139,8 @@
                 textContainer.className = clsx([
                     "m-0",
                     "p-0",
+                    "max-w-[80%]",
+                    "whitespace-break-spaces",
                     item.hidden && "line-through",
                 ]);
 
