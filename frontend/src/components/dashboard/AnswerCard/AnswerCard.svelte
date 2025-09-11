@@ -28,6 +28,7 @@
         skeleton?: boolean;
         highlightText?: string;
         isFlagged?: boolean;
+        isEdited?: boolean;
         resetData?: () => void;
     }
 
@@ -45,6 +46,7 @@
         skeleton = false,
         highlightText = "",
         isFlagged = false,
+        isEdited = false,
         resetData = () => {},
     }: Props = $props();
 
@@ -111,6 +113,12 @@
                             <span class="text-xs">Evidence-rich</span>
                         </Tag>
                     {/if}
+
+                    {#if isEdited && !skeleton}
+                        <Tag variant="success">
+                            <span class="text-xs">Edited</span>
+                        </Tag>
+                    {/if}
                 </div>
             {/if}
 
@@ -123,7 +131,8 @@
                     {isFlagged}
                 />
 
-                <EditPanel
+                <!-- Disabled temporarily -->
+                <!-- <EditPanel
                     {consultationId}
                     {questionId}
                     {answerId}
@@ -132,7 +141,7 @@
                     {evidenceRich}
                     {resetData}
                     setEditing={(val: boolean) => editing = val}
-                />
+                /> -->
 
                 <small
                     title="Respondent ID"

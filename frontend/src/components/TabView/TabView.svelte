@@ -84,7 +84,7 @@
         "flex-wrap-reverse",
         "gap-y-2",
     ])}>
-        <div class="grow">
+        <div class={clsx([$$slots.title && "grow"])}>
             <slot name="title" />
         </div>
 

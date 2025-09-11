@@ -262,6 +262,7 @@
                                                 themeOptions={themes}
                                                 highlightText={searchValue}
                                                 isFlagged={answer.is_flagged}
+                                                isEdited={answer.is_edited}
                                                 {resetData}
                                             />
                                         </div>

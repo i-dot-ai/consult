@@ -95,6 +95,7 @@ export interface ResponseAnswer {
     sentiment: string;
     human_reviewed: boolean;
     is_flagged: boolean;
+    is_edited?: boolean;
 }
 
 export interface DemoOption {
