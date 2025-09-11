@@ -69,7 +69,7 @@
         questions={consultation?.questions || []}
         loading={loading}
         demoOptionsLoading={$isDemoOptionsLoading}
-        demoOptions={$demoOptionsData}
+        demoOptions={$demoOptionsData || []}
     />
 </section>
 
