@@ -27,7 +27,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         // /^\/$/,
         /^\/sign-in[\/]?$/,
         /^\/sign-out[\/]?$/,
-        /^\/magic-link\/[A-Za-z0-9\-]*[\/]?$/,
+        /^\/oauth\/success[\/]?$/,
         /^\/api\/astro\/.*/,
         /^\/api\/health[\/]?$/,
         /^\/health[\/]?$/,

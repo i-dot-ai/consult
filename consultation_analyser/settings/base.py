@@ -46,8 +46,12 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.auth",
     "django.contrib.admin",
+    "django.contrib.sites",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.openid_connect",
     "waffle",  # feature flags
-    "magic_link",
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "consultation_analyser.support_console",
@@ -74,6 +78,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "consultation_analyser.middleware.JWTAuthenticationMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "django.middleware.common.CommonMiddleware",
     "consultation_analyser.middleware.CSRFExemptMiddleware",  # Must be before CsrfViewMiddleware
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -321,6 +326,46 @@ if DEBUG:
 
 # changing this will require a database migration
 EMBEDDING_DIMENSION = 3072
+
+# Sites framework
+SITE_ID = 1
+
+# Django Allauth configuration
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+ACCOUNT_LOGIN_METHODS = ["email"]
+ACCOUNT_SIGNUP_FIELDS = ["email"]
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
+ACCOUNT_USER_MODEL_USERNAME_FIELD = None
+ACCOUNT_USER_MODEL_EMAIL_FIELD = "email"
+
+SOCIALACCOUNT_PROVIDERS = {
+    "openid_connect": {
+        "APPS": [
+            {
+                "provider_id": "security_gov_uk",
+                "name": "security.gov.uk SSO",
+                "client_id": env("OAUTH_CLIENT_ID", default=""),
+                "secret": env("OAUTH_CLIENT_SECRET", default=""),
+                "settings": {
+                    "server_url": "https://sso.service.security.gov.uk/.well-known/openid-configuration",
+                    "token_auth_method": "client_secret_basic",
+                },
+            }
+        ]
+    }
+}
+
+# Custom allauth settings
+SOCIALACCOUNT_LOGIN_ON_GET = True
+LOGIN_REDIRECT_URL = "/auth/oauth/success/"
+
+# OAuth settings for frontend
+OAUTH_CLIENT_ID = env("OAUTH_CLIENT_ID", default="")
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",

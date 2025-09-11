@@ -27,4 +27,5 @@ handler500 = error_views.error_500
 urlpatterns = [
     path("", include(urls)),
     path("support/", include(support_console_urls)),
+    path("accounts/", include("allauth.urls")),
 ]

@@ -33,7 +33,6 @@ pydantic = "^2.11.7"
 datamodel-code-generator = "^0.33.0"
 django-types = "^0.22.0"
 django-waffle = "^5.0.0"
-django-magic-link = "^1.1.0"
 django-crispy-forms = "^2.3"
 crispy-forms-gds = "^2.0.1"
 django-gov-notify = { git = "https://github.com/i-dot-ai/django-gov-notify", branch = "support-python-3-12" }
@@ -65,6 +64,7 @@ drf-nested-routers = "^0.94.2"
 drf-orjson-renderer = "^1.7.3"
 djangorestframework-simplejwt = {extras = ["crypto"], version = "^5.5.1"}
 i-dot-ai-utilities = "^0.2.5"
+django-allauth = "^65.11.2"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.12.10"

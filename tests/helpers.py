@@ -1,34 +1,57 @@
 import os
-import re
 import time
 from pathlib import Path
 
 from django.conf import settings
-from django.core import mail
+from django.contrib.auth import get_user_model
+from rest_framework_simplejwt.tokens import AccessToken
+
+User = get_user_model()
 
 
 def sign_in(django_app, email):
-    homepage = django_app.get("/")
-    homepage.click("Sign in", index=0)
+    """
+    OAuth simulation helper - replaces magic link authentication.
 
-    login_page = django_app.get("/sign-in/")
-    login_page.form["email"] = "invalid@example.com"
-    login_page.form.submit()
+    Simulates the OAuth flow by:
+    1. Getting existing user (should already exist from test setup)
+    2. Generating a JWT token
+    3. Setting authentication cookies
+    4. Returning the authenticated homepage
+    """
+    # Get existing user (tests should create users via factories)
+    user_existed = True
+    try:
+        user = User.objects.get(email=email)
+    except User.DoesNotExist:
+        # Fallback: create user if it doesn't exist, but tests should create users
+        user = User.objects.create_user(email=email, has_dashboard_access=True)
+        user_existed = False
 
-    login_page = django_app.get("/sign-in/")
-    login_page.form["email"] = email
-    login_page.form.submit()
+    # OAuth success view sets dashboard access for new users, but preserves existing dashboard state
+    # Only automatically grant dashboard access for newly created users
+    if not user_existed and not user.has_dashboard_access:
+        user.has_dashboard_access = True
+        user.save()
 
-    sign_in_email = mail.outbox[0]
+    # Generate JWT token (simulating OAuth success view)
+    access_token = AccessToken.for_user(user)
 
-    assert sign_in_email.subject == "Sign in to Consult"
-    url = re.search("(?P<url>https?://\\S+)", sign_in_email.body).group("url")
+    # Mock the OAuth redirect and cookie setting
+    # Instead of going through OAuth flow, we'll directly set cookies
+    _homepage = django_app.get("/")
 
-    successful_sign_in_page = django_app.get(url)
-    homepage = successful_sign_in_page.form.submit().follow()
+    # Set authentication cookies (simulating Django OAuth success view)
+    django_app.set_cookie("access", str(access_token))
+    django_app.set_cookie("sessionId", "test-session-id")
 
-    mail.outbox.clear()
-    return homepage
+    # Also set Authorization header for JWT middleware
+    django_app.authorization = ("Bearer", str(access_token))
+
+    # Get homepage again with authentication cookies
+    authenticated_homepage = django_app.get("/")
+
+    return authenticated_homepage
 
 
 def save_and_open_page(html_string) -> None:

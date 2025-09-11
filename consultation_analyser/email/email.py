@@ -9,12 +9,3 @@ def send_templated_email(
 ) -> None:
     body = render_to_string(template, context=template_args, using="jinja2")
     send_mail(subject, body, "this-will-be-discarded@example.com", to)
-
-
-def send_magic_link_email(to: str, magic_link: str) -> None:
-    send_templated_email(
-        to=[to],
-        subject="Sign in to Consult",
-        template="consultations/magic_link_email.md",
-        template_args={"magic_link": magic_link},
-    )
