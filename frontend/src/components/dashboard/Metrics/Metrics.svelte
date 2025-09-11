@@ -61,7 +61,7 @@
     <div class="grid grid-cols-12 gap-4">
         <div class={clsx([
             "col-span-12",
-            questions.length > 0 || loading ? "md:col-span-3" : "h-max",
+            chartQuestions.length > 0 || loading ? "md:col-span-3" : "h-max",
         ])}>
             <Panel bg={true} border={true}>
                 <div class={clsx([
@@ -69,7 +69,7 @@
                     "justify-between",
                     "max-w-[40rem]",
                     "flex-wrap",
-                    !loading && !questions.length && "md:w-max md:gap-16 md:flex-nowrap",
+                    !loading && !chartQuestions.length && "md:w-max md:gap-16 md:flex-nowrap",
                 ])}>
                     <MetricsSummary
                         questionCount={questions?.length}
