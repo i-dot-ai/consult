@@ -123,25 +123,27 @@
             {/if}
 
             <div class="flex items-center gap-2">
-                <FlagButton
-                    {consultationId}
-                    {questionId}
-                    {answerId}
-                    {resetData}
-                    {isFlagged}
-                />
+                {#if !skeleton}
+                    <FlagButton
+                        {consultationId}
+                        {questionId}
+                        {answerId}
+                        {resetData}
+                        {isFlagged}
+                    />
 
-                <!-- Disabled temporarily -->
-                <!-- <EditPanel
-                    {consultationId}
-                    {questionId}
-                    {answerId}
-                    {themes}
-                    {themeOptions}
-                    {evidenceRich}
-                    {resetData}
-                    setEditing={(val: boolean) => editing = val}
-                /> -->
+                    <!-- Disabled temporarily -->
+                    <!-- <EditPanel
+                        {consultationId}
+                        {questionId}
+                        {answerId}
+                        {themes}
+                        {themeOptions}
+                        {evidenceRich}
+                        {resetData}
+                        setEditing={(val: boolean) => editing = val}
+                    /> -->
+                {/if}
 
                 <small
                     title="Respondent ID"
