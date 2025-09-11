@@ -12,10 +12,8 @@
         Tooltip,
         registerables,
         type ChartConfiguration,
-        type ChartItem,
         type ChartOptions,
         type LegendItem,
-        type TooltipItem,
     } from 'chart.js';
     import { getPercentage } from "../../global/utils";
 
