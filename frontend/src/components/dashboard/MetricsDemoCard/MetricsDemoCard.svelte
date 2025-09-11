@@ -42,10 +42,9 @@
                 "gap-2",
                 "my-2",
                 "justify-between",
-                "flex-wrap",
             ])}
         >
-            <p class="text-xs grow">{title}</p>
+            <p class="text-xs grow max-w-[60%]">{title}</p>
 
             <div class="flex items-center gap-2 justify-end">
                 <span class="text-sm">{count.toLocaleString()}</span>
