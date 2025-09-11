@@ -336,24 +336,40 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-ACCOUNT_LOGIN_METHODS = ["email"]
-ACCOUNT_SIGNUP_FIELDS = ["email"]
+# OAuth2 Settings
+LOGIN_URL = "/accounts/login/"
+LOGIN_REDIRECT_URL = "homepage"
+LOGOUT_REDIRECT_URL = "/"
+
+# Allauth Settings
+
 ACCOUNT_EMAIL_VERIFICATION = "none"
-ACCOUNT_LOGIN_ON_EMAIL_CONFIRMATION = True
-ACCOUNT_USER_MODEL_USERNAME_FIELD = None
-ACCOUNT_USER_MODEL_EMAIL_FIELD = "email"
+ACCOUNT_USER_MODEL_USERNAME_FIELD = "email"
+
+
+# Social Account Settings
+SOCIALACCOUNT_ONLY = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
 
 SOCIALACCOUNT_PROVIDERS = {
     "openid_connect": {
         "APPS": [
             {
-                "provider_id": "security_gov_uk",
-                "name": "security.gov.uk SSO",
-                "client_id": env("OAUTH_CLIENT_ID", default=""),
-                "secret": env("OAUTH_CLIENT_SECRET", default=""),
+                "provider_id": "gds",
+                "name": "GDS Internal Access",
+                "client_id": env.str("SOCIAL_AUTH_OIDC_KEY"),
+                "secret": env.str("SOCIAL_AUTH_OIDC_SECRET"),
                 "settings": {
-                    "server_url": "https://sso.service.security.gov.uk/.well-known/openid-configuration",
-                    "token_auth_method": "client_secret_basic",
+                    "server_url": env.str(
+                        "SOCIAL_AUTH_OIDC_ENDPOINT", "https://sso.service.security.gov.uk"
+                    ),
+                    "scope": ["openid", "email", "profile"],
+                    "token_auth_method": "client_secret_post",
                 },
             }
         ]
@@ -366,6 +382,7 @@ LOGIN_REDIRECT_URL = "/auth/oauth/success/"
 
 # OAuth settings for frontend
 OAUTH_CLIENT_ID = env("OAUTH_CLIENT_ID", default="")
+FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",

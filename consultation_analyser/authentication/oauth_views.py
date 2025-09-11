@@ -3,9 +3,7 @@ from datetime import timedelta
 from allauth.socialaccount.signals import pre_social_login
 from django.contrib.auth import get_user_model
 from django.dispatch import receiver
-from django.http import JsonResponse
 from django.shortcuts import redirect
-from django.urls import reverse
 from rest_framework_simplejwt.tokens import AccessToken
 
 User = get_user_model()
@@ -41,31 +39,53 @@ def oauth_success_view(request):
     Django generates JWT → Set secure cookies → Redirect to Astro frontend
     """
     if not request.user.is_authenticated:
-        return redirect(reverse("account_login"))
+        from django.conf import settings
 
-    # Ensure user has dashboard access
-    if not hasattr(request.user, "has_dashboard_access") or not request.user.has_dashboard_access:
-        request.user.has_dashboard_access = True
-        request.user.save()
+        frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
+        return redirect(f"{frontend_url}/sign-in?error=auth_failed")
 
-    # Generate JWT token
-    access_token = AccessToken.for_user(request.user)
+    try:
+        # Ensure user has dashboard access
+        if (
+            not hasattr(request.user, "has_dashboard_access")
+            or not request.user.has_dashboard_access
+        ):
+            request.user.has_dashboard_access = True
+            request.user.save()
 
-    # Generate session for compatibility
-    if not request.session.session_key:
-        request.session.save()
+        # Generate JWT token
+        access_token = AccessToken.for_user(request.user)
+
+        # Generate session for compatibility
+        if not request.session.session_key:
+            request.session.save()
+    except Exception as e:
+        # Log error and redirect to frontend with error
+        import logging
+
+        logger = logging.getLogger(__name__)
+        logger.error(f"OAuth success view error: {e}")
+        from django.conf import settings
+
+        frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
+        return redirect(f"{frontend_url}/sign-in?error=server_error")
 
     # Create response redirecting to frontend
-    frontend_url = "http://localhost:4321"  # Should be configurable
+    from django.conf import settings
+
+    frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
     response = redirect(f"{frontend_url}/oauth/success")
 
-    # Set secure HTTP-only cookies
+    # Set secure cookies
+    from django.conf import settings
+
     max_age = timedelta(hours=18).total_seconds()  # Match SIMPLE_JWT setting
+    is_secure = request.is_secure() or not settings.DEBUG  # Force secure in production
     cookie_options = {
         "max_age": int(max_age),
-        "httponly": False,  # Frontend needs to read these for API calls
-        "secure": request.is_secure(),
-        "samesite": "Lax",  # Allow cross-site for localhost development
+        "httponly": True,  # Secure HTTP-only cookies
+        "secure": is_secure,
+        "samesite": "Lax" if settings.DEBUG else "Strict",  # Strict in production
         "domain": None,  # Will work for localhost:4321 and localhost:8000
     }
 
@@ -77,10 +97,8 @@ def oauth_success_view(request):
 
 def oauth_error_view(request):
     """Handle OAuth authentication errors."""
-    return JsonResponse(
-        {
-            "error": "OAuth authentication failed",
-            "message": "There was an error during the authentication process.",
-        },
-        status=400,
-    )
+    from django.conf import settings
+
+    frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
+    error_type = request.GET.get("error", "oauth_error")
+    return redirect(f"{frontend_url}/sign-in?error={error_type}")

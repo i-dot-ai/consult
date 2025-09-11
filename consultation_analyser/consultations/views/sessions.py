@@ -8,7 +8,8 @@ from django.shortcuts import redirect
 @login_not_required
 def new(request: HttpRequest):
     """Redirect to OAuth login"""
-    return redirect("/accounts/openid_connect/security_gov_uk/login/")
+    # openid_connect_login' provider_id='gds
+    return redirect("/accounts/oidc/gds/login/")
 
 
 @login_not_required

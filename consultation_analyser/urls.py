@@ -17,6 +17,7 @@ Including another URLconf
 
 from django.urls import include, path
 
+from consultation_analyser.authentication.urls import api_urlpatterns as auth_api_urls
 from consultation_analyser.consultations import urls
 from consultation_analyser.error_pages import views as error_views
 from consultation_analyser.support_console import urls as support_console_urls
@@ -28,4 +29,4 @@ urlpatterns = [
     path("", include(urls)),
     path("support/", include(support_console_urls)),
     path("accounts/", include("allauth.urls")),
-]
+] + auth_api_urls

@@ -1,11 +1,19 @@
 from django.contrib import admin
+from django.contrib.auth.decorators import login_not_required
 from django.shortcuts import redirect
 from django.urls import include, path
 
 from .views import consultations, consultations_users, pages, users
 
+
+@login_not_required
+def support_redirect(request):
+    """Redirect to support consultations page."""
+    return redirect("/support/consultations/")
+
+
 urlpatterns = [
-    path("", lambda request: redirect("/support/consultations/"), name="support"),
+    path("", support_redirect, name="support"),
     path("sign-out/", pages.sign_out, name="support_sign_out"),
     path("users/", users.index, name="users"),
     path("users/new/", users.new, name="new_user"),
