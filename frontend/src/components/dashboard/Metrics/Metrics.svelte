@@ -124,10 +124,10 @@
                             </div>
 
                             <div class="overflow-x-auto">
-                                <div class="h-[10rem] flex flex-row-reverse justify-center gap-4 mt-4">
+                                <div class="flex flex-row-reverse justify-center gap-4 mt-4 flex-wrap">
                                     <div id="legend-container"></div>
 
-                                    <div class="w-max">
+                                    <div class="max-h-[10rem]">
                                         <Chart
                                             labels={chartQuestion?.multiple_choice_answer?.map((
                                                 multiChoiceAnswer: QuestionMultiAnswer,
