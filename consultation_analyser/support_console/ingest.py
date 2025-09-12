@@ -289,8 +289,20 @@ def import_response_annotations(question: Question, output_folder: str):
         sentiment_response = s3_client.get_object(
             Bucket=settings.AWS_BUCKET_NAME, Key=sentiment_file_key
         )
-        for line in sentiment_response["Body"].iter_lines():
+        for i, line in enumerate(sentiment_response["Body"].iter_lines()):
             sentiment = json.loads(line.decode("utf-8"))
+            try:
+                assert isinstance(sentiment, dict)
+                assert "sentiment" in sentiment
+                assert "themefinder_id" in sentiment
+            except AssertionError:
+                logger.error(
+                    "line malformed `{line}`, line_number={line_number}, sentiment_file_key={sentiment_file_key}",
+                    line=line,
+                    line_number=i,
+                    sentiment_file_key=sentiment_file_key,
+                )
+                raise
             sentiment_value = sentiment.get("sentiment", "UNCLEAR").upper()
 
             if sentiment_value == "AGREEMENT":
