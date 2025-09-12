@@ -38,6 +38,6 @@
     </div>
 {/snippet}
 
-{@render row( "Responses", questionCount, Description )}
-{@render row( "Questions", responseCount, Group )}
+{@render row( "Questions", questionCount, Group )}
+{@render row( "Responses", responseCount, Description )}
 {@render row( "Demographics",  demoCount, Shield )}
