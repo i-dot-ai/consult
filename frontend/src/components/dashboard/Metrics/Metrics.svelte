@@ -127,7 +127,7 @@
                                 <div class="flex flex-row-reverse justify-center gap-4 mt-4 flex-wrap">
                                     <div id="legend-container"></div>
 
-                                    <div class="max-h-[10rem]">
+                                    <div class="max-h-[10rem]" data-testid="metrics-chart">
                                         <Chart
                                             labels={chartQuestion?.multiple_choice_answer?.map((
                                                 multiChoiceAnswer: QuestionMultiAnswer,
