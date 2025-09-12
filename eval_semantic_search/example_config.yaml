@@ -1,0 +1,14 @@
+# Semantic Search Evaluation Configuration
+
+consultation_code: an_example
+output_file: results.json
+output_dir_timestamp: "2025-05-22"  # Timestamp folder containing themes
+
+# Number of top results to evaluate
+k: 20
+
+# Whether to prefix responses with question text
+use_question_prefix: false
+
+# Whether to import data (default: true)
+# import_data: true
