@@ -12,6 +12,7 @@
     import Progress from "../Progress/Progress.svelte";
     import type { DemoData, DemoOption, DemoTotalCounts } from "../../global/types.ts";
 
+
     interface Props {
         category?: string;
         demoOptions?: DemoOption;

@@ -8,9 +8,17 @@
     import Switch from "../../inputs/Switch/Switch.svelte";
     import MaterialIcon from "../../MaterialIcon.svelte";
     import Diamond from "../../svg/material/Diamond.svelte";
-    import type { DemoTotalCounts } from "../../../global/types";
+    import type { DemoData, DemoOption, DemoTotalCounts } from "../../../global/types";
 
 
+    interface Props {
+        showEvidenceRich: boolean;
+        demoOptions: DemoOption;
+        demoData: DemoData;
+        evidenceRich: boolean;
+        setEvidenceRich: (newVal: boolean) => void;
+        loading: boolean;
+    }
     let {
         showEvidenceRich = true,
         demoOptions = {},
@@ -18,7 +26,7 @@
         evidenceRich = false,
         setEvidenceRich = () => {},
         loading = true,
-    } = $props();
+    }: Props = $props();
 
     // Derive to avoid calculating on re-render
     let totalCounts: DemoTotalCounts = $derived.by(() => {
