@@ -5,13 +5,13 @@
 
     import { getPercentage } from "../../../global/utils";
     import { multiAnswerFilters } from "../../../global/state.svelte";
+    import type { QuestionMultiAnswer } from "../../../global/types";
 
     import Progress from "../../Progress/Progress.svelte";
     import Panel from "../Panel/Panel.svelte";
     import TitleRow from "../TitleRow.svelte";
     import List from "../../svg/material/List.svelte";
     import Button from "../../inputs/Button/Button.svelte";
-    import type { QuestionMultiAnswer } from "../../../global/types";
 
 
     interface Props {
