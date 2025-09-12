@@ -188,8 +188,16 @@
 
                         <MetricsDemoCard
                             title={category}
-                            items={demoOptions
+                            items={[...demoOptions]
                                 .filter((opt: DemoOptionsResponseItem) => opt.name === category)
+                                .sort((a: DemoOptionsResponseItem, b: DemoOptionsResponseItem) => {
+                                    if (a.count < b.count) {
+                                        return 1;
+                                    } else if (a.count > b.count) {
+                                        return -1;
+                                    }
+                                    return 0;
+                                })
                                 .map((demoOption: DemoOptionsResponseItem) => ({
                                     title: demoOption.value,
                                     count: demoOption.count,
