@@ -56,9 +56,6 @@ def oauth_success_view(request):
         # Generate JWT token
         access_token = AccessToken.for_user(request.user)
 
-        # Generate session for compatibility
-        if not request.session.session_key:
-            request.session.save()
     except Exception as e:
         # Log error and redirect to frontend with error
         import logging
@@ -70,11 +67,11 @@ def oauth_success_view(request):
         frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
         return redirect(f"{frontend_url}/sign-in?error=server_error")
 
-    # Create response redirecting to frontend
+    # Create response redirecting to frontend dashboard
     from django.conf import settings
 
     frontend_url = getattr(settings, "FRONTEND_URL", "http://localhost:3000")
-    response = redirect(f"{frontend_url}/oauth/success")
+    response = redirect(f"{frontend_url}/dashboard")
 
     # Set secure cookies
     from django.conf import settings
@@ -90,7 +87,6 @@ def oauth_success_view(request):
     }
 
     response.set_cookie("access", str(access_token), **cookie_options)
-    response.set_cookie("sessionId", request.session.session_key, **cookie_options)
 
     return response
 

@@ -1,21 +1,7 @@
 <script lang="ts">
-    import { startOAuthLogin } from "../../lib/oauth";
-    
     export let errorMessage: string | null = null;
     
-    let isLoading = false;
     let error: string | null = errorMessage;
-    
-    async function handleOAuthLogin() {
-        try {
-            isLoading = true;
-            error = null;
-            await startOAuthLogin();
-        } catch (err) {
-            error = err instanceof Error ? err.message : 'Login failed';
-            isLoading = false;
-        }
-    }
 </script>
 
 <div class="govuk-!-margin-bottom-6">
@@ -34,24 +20,17 @@
     
     <p class="govuk-body">Use your government account to sign in to the consultation analyser.</p>
     
-    <button 
+    <a 
+        href="/accounts/oidc/gds/login/"
         class="govuk-button govuk-button--start" 
-        type="button" 
-        on:click={handleOAuthLogin}
-        disabled={isLoading}
+        role="button"
+        draggable="false"
     >
-        {#if isLoading}
-            Signing in...
-        {:else}
-            Sign in with government account
-        {/if}
-        
-        {#if !isLoading}
-            <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
-                <path fill="currentColor" d="m0 0h13l20 20-20 20h-13v-8l13-12-13-12z"/>
-            </svg>
-        {/if}
-    </button>
+        Sign in with government account
+        <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
+            <path fill="currentColor" d="m0 0h13l20 20-20 20h-13v-8l13-12-13-12z"/>
+        </svg>
+    </a>
     
     <details class="govuk-details" data-module="govuk-details">
         <summary class="govuk-details__summary">
@@ -66,9 +45,3 @@
     </details>
 </div>
 
-<style>
-    .govuk-button:disabled {
-        opacity: 0.7;
-        cursor: not-allowed;
-    }
-</style>
