@@ -65,7 +65,10 @@ describe("CsvDownload", () => {
                     "Mentions": theme.count,
                     "Percentage": getPercentage(theme.count, 100),
                 })),
-            })
+            });
         }).not.toThrowError();
+
+        // Confirm this indeed is an invalid char
+        expect(() => btoa(" ’ ")).toThrowError();
     })
 })
