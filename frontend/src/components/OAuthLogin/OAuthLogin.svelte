@@ -22,26 +22,12 @@
     
     <a 
         href="/accounts/oidc/gds/login/"
-        class="govuk-button govuk-button--start" 
+        class="govuk-button"
         role="button"
         draggable="false"
+        data-module="govuk-button"
     >
-        Sign in with government account
-        <svg class="govuk-button__start-icon" xmlns="http://www.w3.org/2000/svg" width="17.5" height="19" viewBox="0 0 33 40" aria-hidden="true" focusable="false">
-            <path fill="currentColor" d="m0 0h13l20 20-20 20h-13v-8l13-12-13-12z"/>
-        </svg>
+        <b>Sign in</b>
     </a>
-    
-    <details class="govuk-details" data-module="govuk-details">
-        <summary class="govuk-details__summary">
-            <span class="govuk-details__summary-text">
-                Help with signing in
-            </span>
-        </summary>
-        <div class="govuk-details__text">
-            <p>You need a government account to access the consultation analyser.</p>
-            <p>If you don't have access or are having trouble signing in, contact your administrator.</p>
-        </div>
-    </details>
 </div>
 

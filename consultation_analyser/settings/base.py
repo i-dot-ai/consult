@@ -35,7 +35,17 @@ ENVIRONMENT = env("ENVIRONMENT")
 
 DOMAIN_NAME = env("DOMAIN_NAME", default="0.0.0.0")  # nosec
 
-ALLOWED_HOSTS: list[str] = [DOMAIN_NAME, "*"]  # nosec
+ALLOWED_HOSTS: list[str] = [
+    DOMAIN_NAME,
+    "localhost",
+    "127.0.0.1",
+    "consult.ai.cabinetoffice.gov.uk",
+    "consult-dev.ai.cabinetoffice.gov.uk",
+]
+
+# Add wildcard only in development
+if DEBUG:
+    ALLOWED_HOSTS.append("*")  # nosec
 
 # Application definition
 
