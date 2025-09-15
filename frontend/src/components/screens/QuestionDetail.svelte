@@ -34,6 +34,7 @@
         type ThemeInfoResponse
     } from "../../global/types.ts";
     import { themeFilters, demoFilters, multiAnswerFilters } from "../../global/state.svelte.ts";
+    import Panel from "../dashboard/Panel/Panel.svelte";
 
 
     interface QueryFilters {
@@ -307,26 +308,40 @@
     </div>
 </section>
 
-<section class="my-4">
-    {#if $consultationError}
-        <div class="my-2">
-            <Alert>
-                <span class="text-sm">
-                    Consultation Error: {$consultationError}
-                </span>
-            </Alert>
+<svelte:boundary>
+    <section class="my-4">
+        {#if $consultationError}
+            <div class="my-2">
+                <Alert>
+                    <span class="text-sm">
+                        Consultation Error: {$consultationError}
+                    </span>
+                </Alert>
+            </div>
+        {:else}
+            <QuestionCard
+                skeleton={$isConsultationLoading}
+                clickable={false}
+                consultationId={$consultationData?.id}
+                question={question}
+                hideIcon={true}
+                horizontal={true}
+            />
+        {/if}
+    </section>
+
+    {#snippet failed(error)}
+        <div>
+            {console.error(error)}
+
+            <Panel>
+                <Alert>
+                    Unexpected consultation error
+                </Alert>
+            </Panel>
         </div>
-    {:else}
-        <QuestionCard
-            skeleton={$isConsultationLoading}
-            clickable={false}
-            consultationId={$consultationData?.id}
-            question={question}
-            hideIcon={true}
-            horizontal={true}
-        />
-    {/if}
-</section>
+    {/snippet}
+</svelte:boundary>
 
 <TabView
     value={activeTab}
