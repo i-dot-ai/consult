@@ -338,7 +338,7 @@ AUTHENTICATION_BACKENDS = [
 
 # OAuth2 Settings
 LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "homepage"
+LOGIN_REDIRECT_URL = "/"
 LOGOUT_REDIRECT_URL = "/"
 
 # Allauth Settings
@@ -376,13 +376,9 @@ SOCIALACCOUNT_PROVIDERS = {
     }
 }
 
-# Custom allauth settings
-SOCIALACCOUNT_LOGIN_ON_GET = True
-LOGIN_REDIRECT_URL = "/auth/oauth/success/"
 
 # OAuth settings for frontend
-OAUTH_CLIENT_ID = env("OAUTH_CLIENT_ID", default="")
-FRONTEND_URL = env("FRONTEND_URL", default="http://localhost:3000")
+FRONTEND_URL = env.str("FRONTEND_URL", default="http://localhost:3000")
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
