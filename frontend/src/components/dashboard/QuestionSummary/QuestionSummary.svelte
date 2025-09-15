@@ -86,15 +86,21 @@
                     <Lan slot="icon" />
 
                     <div slot="aside">
-                        <CsvDownload
-                            fileName={`theme_mentions_for_${consultationSlug}.csv`}
-                            data={themes.map(theme => ({
-                                "Theme Name": theme.name,
-                                "Theme Description": theme.description,
-                                "Mentions": theme.count,
-                                "Percentage": getPercentage(theme.count, totalAnswers),
-                            }))}
-                        />
+                        <svelte:boundary>
+                            <CsvDownload
+                                fileName={`theme_mentions_for_${consultationSlug}.csv`}
+                                data={themes.map(theme => ({
+                                    "Theme Name": theme.name,
+                                    "Theme Description": theme.description,
+                                    "Mentions": theme.count,
+                                    "Percentage": getPercentage(theme.count, totalAnswers),
+                                }))}
+                            />
+
+                            {#snippet failed(error)}
+                                <div>{console.error(error)}</div>
+                            {/snippet}
+                        </svelte:boundary>
                     </div>
                 </TitleRow>
 
