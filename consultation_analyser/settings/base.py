@@ -348,7 +348,7 @@ AUTHENTICATION_BACKENDS = [
 
 # OAuth2 Settings
 LOGIN_URL = "/accounts/login/"
-LOGIN_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/oauth/callback/"
 LOGOUT_REDIRECT_URL = "/"
 
 # Allauth Settings

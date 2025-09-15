@@ -39,19 +39,12 @@ def oauth_success_view(request):
     if not request.user.is_authenticated:
         return redirect(f"{settings.FRONTEND_URL}/sign-in?error=auth_failed")
 
-    try:
-        access_token = AccessToken.for_user(request.user)
-    except Exception as e:
-        # Log error and redirect to frontend with error
-        logger.error(f"OAuth success view error: {e}")
-        return redirect(f"{settings.FRONTEND_URL}/sign-in?error=server_error")
+    access_token = AccessToken.for_user(request.user)
 
     # Create response redirecting to frontend dashboard
-
     response = redirect(settings.FRONTEND_URL)
 
     # Set secure cookies
-
     max_age = timedelta(hours=18).total_seconds()  # Match SIMPLE_JWT setting
     is_secure = request.is_secure() or not settings.DEBUG  # Force secure in production
     cookie_options = {
