@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
 import { cleanup, render, screen } from "@testing-library/svelte";
 
 import CsvDownload from "./CsvDownload.svelte";
+import { getPercentage } from "../../global/utils";
 
 
 let testData;
@@ -43,5 +44,31 @@ describe("CsvDownload", () => {
 
         const el = getByTestId("csv-download");
         expect(el.href).toEqual("data:text/csv;base64,");
+    })
+
+    it("should not fail on chars outside of latin-1 range", () => {
+        const TEST_DATA = {
+            "themes": [
+                {
+                    "id": "test-theme",
+                    "name": "Test Theme",
+                    "description": "Invalid char: ’ "
+                },
+            ]
+        }
+
+        expect( () => {
+            render(CsvDownload, {
+                data: TEST_DATA.themes.map(theme => ({
+                    "Theme Name": theme.name,
+                    "Theme Description": theme.description,
+                    "Mentions": theme.count,
+                    "Percentage": getPercentage(theme.count, 100),
+                })),
+            });
+        }).not.toThrowError();
+
+        // Confirm this indeed is an invalid char
+        expect(() => btoa(" ’ ")).toThrowError();
     })
 })
