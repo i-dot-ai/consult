@@ -62,12 +62,26 @@
 
 <div class="grid grid-cols-4 gap-4">
     <div class="col-span-4 md:col-span-1">
-        <FiltersSidebar
-            showEvidenceRich={false}
-            {demoOptions}
-            {demoData}
-            loading={themesLoading}
-        />
+        <svelte:boundary>
+            <FiltersSidebar
+                showEvidenceRich={false}
+                {demoOptions}
+                {demoData}
+                loading={themesLoading}
+            />
+
+            {#snippet failed(error)}
+                <div>
+                    {console.error(error)}
+
+                    <Panel>
+                        <Alert>
+                            Unexpected Filters Error
+                        </Alert>
+                    </Panel>
+                </div>
+            {/snippet}
+        </svelte:boundary>
     </div>
 
     <div class="col-span-4 md:col-span-3">
@@ -79,6 +93,14 @@
 
             {#snippet failed(error)}
                 <div>{console.error(error)}</div>
+
+                <div class="grow-0">
+                    <Panel>
+                        <Alert>
+                            Unexpected Multi-Choice Answers Error
+                        </Alert>
+                    </Panel>
+                </div>
             {/snippet}
         </svelte:boundary>
 
@@ -208,7 +230,15 @@
             </section>
 
             {#snippet failed(error)}
-                <div>{console.error(error)}</div>
+                <div>
+                    {console.error(error)}
+
+                    <Panel>
+                        <Alert>
+                            Unexpected Themes Table Error
+                        </Alert>
+                    </Panel>
+                </div>
             {/snippet}
         </svelte:boundary>
     </div>
