@@ -1020,8 +1020,8 @@ class TestAPIViewPermissions:
         consultation_user,
         consultation_user_token,
         free_text_annotation,
-        theme_a,
-        theme_c,
+        alternative_theme,
+        ai_assigned_theme,
     ):
         url = reverse(
             "response-detail",
@@ -1032,11 +1032,16 @@ class TestAPIViewPermissions:
             },
         )
 
-        assert list(free_text_annotation.themes.values_list("key", flat=True)) == ["A", "B"]
+        assert list(free_text_annotation.themes.values_list("key", flat=True)) == [
+            "AI assigned theme A",
+            "Human assigned theme B",
+        ]
 
         response = client.patch(
             url,
-            data=json.dumps({"themes": [{"id": str(theme_a.id)}, {"id": str(theme_c.id)}]}),
+            data=json.dumps(
+                {"themes": [{"id": str(ai_assigned_theme.id)}, {"id": str(alternative_theme.id)}]}
+            ),
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {consultation_user_token}",
@@ -1044,8 +1049,8 @@ class TestAPIViewPermissions:
         )
         assert response.status_code == 200, response.json()
         assert {(x["assigned_by"], x["key"]) for x in response.json()["themes"]} == {
-            ("AI", "A"),
-            (consultation_user.email, "C"),
+            ("AI", "AI assigned theme A"),
+            (consultation_user.email, "Human assigned theme C"),
         }
 
         # check that there are two versions of the ResponseAnnotation
@@ -1060,25 +1065,25 @@ class TestAPIViewPermissions:
         # check all stages of history
         # 0. add initial theme AI assigned theme A and....
         assert history[0].history_type == "+"
-        assert history[0].theme.key == "A"
+        assert history[0].theme.key == "AI assigned theme A"
         assert history[0].assigned_by is None
 
         # 1. ...Human assigned theme B
         assert history[1].history_type == "+"
-        assert history[1].theme.key == "B"
+        assert history[1].theme.key == "Human assigned theme B"
         assert history[1].assigned_by.email == consultation_user.email
 
         # 2. remove initial Human assigned theme B
         assert history[2].history_type == "-"
-        assert history[2].theme.key == "B"
+        assert history[2].theme.key == "Human assigned theme B"
         assert history[2].assigned_by.email == consultation_user.email
 
         # 3. add new Human assigned theme C
         assert history[3].history_type == "+"
-        assert history[3].theme.key == "C"
+        assert history[3].theme.key == "Human assigned theme C"
         assert history[3].assigned_by == consultation_user
 
-        assert list(free_text_annotation.get_original_ai_themes()) == [theme_a]
+        assert list(free_text_annotation.get_original_ai_themes()) == [ai_assigned_theme]
 
     def test_patch_response_themes_invalid(
         self, client, consultation_user_token, free_text_annotation
