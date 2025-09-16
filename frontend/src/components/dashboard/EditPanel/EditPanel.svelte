@@ -85,7 +85,7 @@
         evidenceRich = false,
         resetData = () => {},
         setEditing = () => {},
-        updateAnswerMock = () => {},
+        updateAnswerMock = async () => {},
     }: Props = $props();
 
     let stagedThemes: ResponseTheme[] = $state([]);
