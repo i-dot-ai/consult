@@ -130,11 +130,6 @@ class CrossCuttingThemeSerializer(serializers.ModelSerializer):
         fields = ["name", "description", "themes", "response_count"]
 
 
-class MultiChoiceAnswerCount(serializers.Serializer):
-    answer = serializers.CharField(source="chosen_options__text")
-    response_count = serializers.IntegerField()
-
-
 class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="theme.id")
     name = serializers.CharField(required=False, source="theme.name")
