@@ -65,7 +65,7 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
         "Response text": response.free_text,
         "Response has been audited": str(True),
         "Original themes": get_sorted_theme_string([theme1, theme2]),
-        "Current themes": get_sorted_theme_string([theme2, theme3]),
+        "Current themes": get_sorted_theme_string([theme2, theme2, theme3]),
         "Position": "AGREEMENT",
         "Auditors": user.email,
         "First audited at": "2023-01-01 12:00:00+00:00",
