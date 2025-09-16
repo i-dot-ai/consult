@@ -5,7 +5,7 @@
 
 
     interface Props {
-        variant?: "default" | "warning" | "primary" | "success";
+        variant?: "default" | "dark" | "warning" | "primary" | "success";
         children: Snippet,
     }
     let {
@@ -26,6 +26,10 @@
     "text-xs",
     variant === "default" && clsx([
         "bg-neutral-100",
+        "text-neutral-800",
+    ]),
+    variant === "dark" && clsx([
+        "bg-neutral-200",
         "text-neutral-800",
     ]),
     variant === "primary" && clsx([
