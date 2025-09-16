@@ -1021,6 +1021,7 @@ class TestAPIViewPermissions:
         consultation_user_token,
         free_text_annotation,
         alternative_theme,
+        ai_assigned_theme,
     ):
         url = reverse(
             "response-detail",
@@ -1079,6 +1080,8 @@ class TestAPIViewPermissions:
         assert history[3].history_type == "+"
         assert history[3].theme.key == "Human assigned theme C"
         assert history[3].assigned_by == consultation_user
+
+        assert list(free_text_annotation.get_original_ai_themes()) == [ai_assigned_theme]
 
     def test_patch_response_themes_invalid(
         self, client, consultation_user_token, free_text_annotation

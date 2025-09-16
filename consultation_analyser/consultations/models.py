@@ -351,8 +351,15 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
             )
 
     def get_original_ai_themes(self):
-        """Get themes assigned by AI"""
-        return self.themes.filter(responseannotationtheme__assigned_by__isnull=True)
+        """Get themes assigned by AI
+        Note that this implementation makes an implicit assumption that the AI only assigns the themes once
+        """
+        theme_ids = ResponseAnnotationTheme.history.filter(
+            response_annotation=self,
+            history_type="+",
+            assigned_by__isnull=True,
+        ).values_list("theme_id", flat=True)
+        return Theme.objects.filter(id__in=theme_ids)
 
     def get_human_reviewed_themes(self):
         """Get themes assigned by human review"""

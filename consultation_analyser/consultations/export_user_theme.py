@@ -22,23 +22,15 @@ def get_timestamp() -> str:
     return now.strftime("%Y-%m-%d-%H%M%S")
 
 
-def get_position(response: Response) -> str | None:
-    # In the new model, sentiment is stored directly in ResponseAnnotation
-    try:
-        annotation = response.annotation
-        return annotation.sentiment
-    except ResponseAnnotation.DoesNotExist:
-        return None
-
-
 def get_theme_mapping_output_row(
     response: Response,
 ) -> dict:
+    # TODO: this should be a DRF serializer?
     # In new model, themes are stored as ManyToMany with through table tracking original vs current
     question = response.question
     consultation_title = question.consultation.title
 
-    position = get_position(response=response)
+    position = None
 
     # Get original and current themes from the annotation
     original_themes = []
@@ -56,6 +48,7 @@ def get_theme_mapping_output_row(
             else annotation.get_original_ai_themes()
         )
         audited = annotation.human_reviewed
+        position = annotation.sentiment
         if annotation.reviewed_by:
             auditor_email = annotation.reviewed_by.email
         reviewed_at = annotation.reviewed_at
