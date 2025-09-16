@@ -42,7 +42,7 @@ def get_theme_mapping_output_row(
     try:
         annotation = response.annotation
         original_themes = annotation.get_original_ai_themes()
-        current_themes = annotation.themes.distinct()
+        current_themes = annotation.get_current_themes()
         audited = annotation.human_reviewed
         position = annotation.sentiment
         if annotation.reviewed_by:

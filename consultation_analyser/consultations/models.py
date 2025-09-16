@@ -367,6 +367,10 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
         ).values_list("theme_id", flat=True)
         return Theme.objects.filter(id__in=theme_ids)
 
+    def get_current_themes(self):
+        """Get latest themes assigned by any human or AI"""
+        return self.themes.distinct()
+
     def save(self, *args, **kwargs) -> None:
         """
         Override save to prevent accidental direct theme manipulation.
