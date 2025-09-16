@@ -1078,6 +1078,8 @@ class TestAPIViewPermissions:
         assert history[3].theme.key == "C"
         assert history[3].assigned_by == consultation_user
 
+        assert list(free_text_annotation.get_original_ai_themes()) == [theme_a]
+
     def test_patch_response_themes_invalid(
         self, client, consultation_user_token, free_text_annotation
     ):

@@ -367,6 +367,10 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
         ).values_list("theme_id", flat=True)
         return Theme.objects.filter(id__in=theme_ids)
 
+    def get_human_reviewed_themes(self):
+        """Get themes assigned by human review"""
+        return self.themes.filter(responseannotationtheme__assigned_by__isnull=False)
+
     def save(self, *args, **kwargs) -> None:
         """
         Override save to prevent accidental direct theme manipulation.
