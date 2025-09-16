@@ -313,13 +313,6 @@ def theme_b(free_text_question):
     theme.delete()
 
 
-@pytest.fixture
-def theme_c(free_text_response):
-    theme = Theme.objects.create(question=free_text_response.question, key="C")
-    yield theme
-    theme.delete()
-
-
 @pytest.fixture()
 def consultation_user(consultation):
     user = UserFactory(has_dashboard_access=True)
