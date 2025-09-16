@@ -57,7 +57,8 @@ def test_review_show_response(django_app):
         response_annotation=response_annotation1
     )
     assert set(current_themes.values_list("theme_id", flat=True)) == {
-        theme_a.id, theme_b.id,
+        theme_a.id,
+        theme_b.id,
     }
 
     # Now test reviewing a response making no further changes
