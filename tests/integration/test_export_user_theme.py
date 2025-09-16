@@ -13,7 +13,9 @@ from tests.utils import get_sorted_theme_string
 @pytest.mark.django_db
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
 @patch("consultation_analyser.consultations.export_user_theme.settings.ENVIRONMENT", "production")
-def test_export_user_theme(mock_boto_client, consultation, free_text_question):
+def test_export_user_theme(
+    mock_boto_client, consultation, free_text_question, theme_a, theme_b, theme_c
+):
     user = factories.UserFactory(is_staff=True)
     # Set up consultation with question and responses
     consultation.users.add(user)
@@ -22,29 +24,24 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
     response = factories.ResponseFactory(question=free_text_question, respondent=respondent)
     response2 = factories.ResponseFactory(question=free_text_question, respondent=respondent2)
 
-    # Set up themes
-    theme1 = factories.ThemeFactory(question=free_text_question, key="B")
-    theme2 = factories.ThemeFactory(question=free_text_question, key="A")
-    theme3 = factories.ThemeFactory(question=free_text_question, key="C")
-
     # Create response annotations with AI-assigned themes
     annotation1 = factories.ResponseAnnotationFactoryNoThemes(
         response=response,
         sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT,
         human_reviewed=False,
     )
-    annotation1.add_original_ai_themes([theme1, theme2])
+    annotation1.add_original_ai_themes([theme_a, theme_b])
 
     annotation2 = factories.ResponseAnnotationFactoryNoThemes(
         response=response2,
         sentiment=models.ResponseAnnotation.Sentiment.UNCLEAR,
         human_reviewed=False,
     )
-    annotation2.add_original_ai_themes([theme3])
+    annotation2.add_original_ai_themes([theme_c])
 
     with freeze_time("2023-01-01 12:00:00"):
         # Simulate user review - changing themes for response1
-        annotation1.set_human_reviewed_themes([theme3], user)
+        annotation1.set_human_reviewed_themes([theme_c], user)
         annotation1.mark_human_reviewed(user)
 
     # Call the method
@@ -64,8 +61,8 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
         "Question text": free_text_question.text,
         "Response text": response.free_text,
         "Response has been audited": str(True),
-        "Original themes": "",
-        "Current themes": get_sorted_theme_string([theme3]),
+        "Original themes": get_sorted_theme_string([theme_a, theme_b]),
+        "Current themes": get_sorted_theme_string([theme_c]),
         "Position": "AGREEMENT",
         "Auditors": user.email,
         "First audited at": "2023-01-01 12:00:00+00:00",
@@ -79,8 +76,8 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
         "Question text": free_text_question.text,
         "Response text": response2.free_text,
         "Response has been audited": str(False),
-        "Original themes": f"{theme3.key}",
-        "Current themes": f"{theme3.key}",  # When not audited, current = original
+        "Original themes": f"{theme_c.key}",
+        "Current themes": f"{theme_c.key}",  # When not audited, current = original
         "Position": "UNCLEAR",
         "Auditors": "",
         "First audited at": "",
