@@ -20,6 +20,7 @@
     {stakeholderName}
     {questionsAnswered}
     {totalQuestions}
+    updateStakeholderName={(newStakeholderName) => stakeholderName = newStakeholderName}
 />
 
 <hr class="my-8" />

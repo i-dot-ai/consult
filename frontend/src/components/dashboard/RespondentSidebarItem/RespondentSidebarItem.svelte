@@ -33,6 +33,10 @@
         }
         editing = !editing;
     };
+
+    $effect(() => {
+        stagedSubtitle = subtitle;
+    });
 </script>
 
 <div class="flex items-start gap-2 mt-4 text-xs">

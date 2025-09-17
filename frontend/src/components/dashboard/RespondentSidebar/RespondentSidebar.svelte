@@ -19,6 +19,7 @@
         stakeholderName: string;
         questionsAnswered: number;
         totalQuestions: number;
+        updateStakeholderName?: (newStakeholderName: string) => void;
     }
 
     let {
@@ -29,6 +30,7 @@
         stakeholderName = "",
         questionsAnswered = 0,
         totalQuestions = 0,
+        updateStakeholderName = () => {},
     }: Props = $props();
 </script>
 
@@ -70,7 +72,7 @@
             subtitle={stakeholderName}
             icon={Person}
             editable={true}
-            updateSubtitle={(newSubtitle) => console.log(`Updating ${stakeholderName} to ${newSubtitle}`)}
+            updateSubtitle={updateStakeholderName}
         />
 
         <hr class="my-4" />
