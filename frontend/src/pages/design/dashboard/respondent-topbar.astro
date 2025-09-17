@@ -1,0 +1,13 @@
+---
+import Story from '../../../layouts/Story.astro';
+import RespondentTopbarStory from "../../../components/dashboard/RespondentTopbar/RespondentTopbarStory.svelte";
+
+
+const title = "dashboard - RespondentTopbar";
+const description = `
+    Renders the respondent detail page topbar.
+`;
+---
+<Story title={title} description={description} >
+    <RespondentTopbarStory client:load />
+</Story>
