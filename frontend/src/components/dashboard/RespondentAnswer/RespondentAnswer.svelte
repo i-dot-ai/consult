@@ -12,6 +12,7 @@
         questionNumber: number;
         answerText: string;
         themes: string[];
+        evidenceRich: boolean;
     }
 
     let {
@@ -19,6 +20,7 @@
         questionNumber = 0,
         answerText = "",
         themes = [],
+        evidenceRich = false,
     }: Props = $props();
 </script>
 
@@ -64,13 +66,15 @@
             </a>
 
             <div class="whitespace-nowrap">
-                <Tag variant="warning">
-                    <MaterialIcon size="0.9rem" color="fill-yellow-600">
-                        <Diamond />
-                    </MaterialIcon>
+                {#if evidenceRich}
+                    <Tag variant="warning">
+                        <MaterialIcon size="0.9rem" color="fill-yellow-600">
+                            <Diamond />
+                        </MaterialIcon>
 
-                    <span class="text-xs">Evidence-rich</span>
-                </Tag>
+                        <span class="text-xs">Evidence-rich</span>
+                    </Tag>
+                {/if}
             </div>
         </header>
 

@@ -1,4 +1,5 @@
 <script lang="ts">
+    import Switch from "../../inputs/Switch/Switch.svelte";
     import TextInput from "../../inputs/TextInput/TextInput.svelte";
     import RespondentAnswer from "./RespondentAnswer.svelte";
 
@@ -7,6 +8,7 @@
     let questionNumber = $state(1);
     let answerText = $state("I agree in principle, but I think the guidelines should include a provision for periodic review to adapt to market changes.");
     let themes = $state([ "Innovation", "Standardized framework" ]);
+    let evidenceRich = $state(true);
 </script>
 
 <RespondentAnswer
@@ -14,6 +16,7 @@
     questionNumber={questionNumber}
     answerText={answerText}
     themes={themes}
+    evidenceRich={evidenceRich}
 />
 
 <hr class="my-8" />
@@ -49,3 +52,12 @@
         } catch {}
     }}
 />
+
+<div class="w-max">
+    <Switch
+        id="evidence-rich-input"
+        label="Evidence-rich"
+        value={evidenceRich}
+        handleChange={(newVal) => evidenceRich = newVal}
+    />
+</div>
