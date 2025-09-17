@@ -15,7 +15,7 @@
     }: Props = $props();
 
     const buildCsv = (data: any[]) => {
-        if (!data || !Object.keys(data).length > 0) {
+        if (!data || Object.keys(data).length <= 0) {
             return "";
         }
 
