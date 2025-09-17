@@ -1,10 +1,10 @@
 <script lang="ts">
     import clsx from "clsx";
 
-    import Panel from "../dashboard/Panel/Panel.svelte";
-    import Tag from "../Tag/Tag.svelte";
-    import MaterialIcon from "../MaterialIcon.svelte";
-    import Diamond from "../svg/material/Diamond.svelte";
+    import Panel from "../../dashboard/Panel/Panel.svelte";
+    import Tag from "../../Tag/Tag.svelte";
+    import MaterialIcon from "../../MaterialIcon.svelte";
+    import Diamond from "../../svg/material/Diamond.svelte";
 
 
     interface Props {

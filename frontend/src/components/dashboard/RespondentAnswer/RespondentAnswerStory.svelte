@@ -1,5 +1,5 @@
 <script lang="ts">
-    import TextInput from "../inputs/TextInput/TextInput.svelte";
+    import TextInput from "../../inputs/TextInput/TextInput.svelte";
     import RespondentAnswer from "./RespondentAnswer.svelte";
 
 
