@@ -11,6 +11,7 @@ export enum Routes {
     ApiConsultations = "/api/consultations",
     ApiUser = "/api/user/",
     ApiAstroSignIn = "/api/astro/sign-in",
+    Design = "/design",
 }
 export const getConsultationDetailUrl = (consultationId: string) => {
     return `${Routes.Consultations}/${consultationId}`;

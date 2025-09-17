@@ -1,6 +1,7 @@
 ---
 import Story from '../../../layouts/Story.astro';
 import RespondentAnswerStory from "../../../components/dashboard/RespondentAnswer/RespondentAnswerStory.svelte";
+import { Routes } from '../../../global/routes';
 
 
 const title = "dashboard - RespondentAnswer";
@@ -8,6 +9,6 @@ const description = `
     Renders a respondent answer card for the respondent detail page.
 `;
 ---
-<Story title={title} description={description} >
+<Story title={title} description={description} backUrl={Routes.Design + "/dashboard"}>
     <RespondentAnswerStory client:load />
 </Story>

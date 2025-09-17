@@ -3,6 +3,7 @@ import type { NavItem } from '../../../global/types';
 
 import Link from '../../../components/Link.svelte';
 import Story from "../../../layouts/Story.astro";
+import { Routes } from '../../../global/routes';
 
 
 const links: NavItem[] = [
@@ -24,7 +25,7 @@ const links: NavItem[] = [
     },
 ];
 ---
-<Story title="dashboard">
+<Story title="dashboard" backUrl={Routes.Design}>
     <ul class="flex flex-col gap-2 mt-4">
         {links.map(link => (
             <li>

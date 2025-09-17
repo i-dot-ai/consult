@@ -1,6 +1,7 @@
 ---
 import Story from '../../../layouts/Story.astro';
 import RespondentSidebarStory from "../../../components/dashboard/RespondentSidebar/RespondentSidebarStory.svelte";
+import { Routes } from '../../../global/routes';
 
 
 const title = "dashboard - RespondentSidebar";
@@ -8,6 +9,6 @@ const description = `
     Renders the respondent detail page sidebar.
 `;
 ---
-<Story title={title} description={description} >
+<Story title={title} description={description} backUrl={Routes.Design + "/dashboard"}>
     <RespondentSidebarStory client:load />
 </Story>
