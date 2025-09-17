@@ -315,6 +315,18 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
     # History tracking
     history = HistoricalRecords()
 
+    @property
+    def is_edited(self) -> bool:
+        """has this annotation ever been changed?"""
+        if self.history.count() > 1:
+            return True
+
+        # have associated themes every changed?
+        return ResponseAnnotationTheme.history.filter(
+            response_annotation=self,
+            assigned_by__isnull=False,
+        ).exists()
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         indexes = [
             models.Index(fields=["human_reviewed"]),

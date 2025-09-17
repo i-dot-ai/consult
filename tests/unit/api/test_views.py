@@ -744,18 +744,18 @@ class TestFilteredResponsesAPIView:
 
     @pytest.mark.parametrize("is_flagged", [True, False])
     def test_get_responses_with_is_flagged(
-        self, client, consultation_user, consultation_user_token, free_text_annotation, is_flagged
+        self, client, consultation_user, consultation_user_token, another_annotation, is_flagged
     ):
         if is_flagged:
-            free_text_annotation.flagged_by.add(consultation_user)
-            free_text_annotation.save()
+            another_annotation.flagged_by.add(consultation_user)
+            another_annotation.save()
 
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": another_annotation.response.question.consultation.id,
+                "question_pk": another_annotation.response.question.id,
+                "pk": another_annotation.response.id,
             },
         )
         response = client.get(
@@ -769,6 +769,7 @@ class TestFilteredResponsesAPIView:
         assert response.status_code == 200
         data = response.json()
         assert data["is_flagged"] == is_flagged
+        assert data["is_edited"] == is_flagged
 
 
 @pytest.mark.django_db
@@ -970,6 +971,7 @@ class TestAPIViewPermissions:
         assert response.json()["sentiment"] == "AGREEMENT"
         free_text_annotation.refresh_from_db()
         assert free_text_annotation.sentiment == "AGREEMENT"
+        assert response.json()["is_edited"] is True
 
         # Verify version history captures the change from True to False using django-simple-history
         history = free_text_annotation.history.all().order_by("history_date")
@@ -1003,6 +1005,7 @@ class TestAPIViewPermissions:
         )
         assert response.status_code == 200
         assert response.json()["evidenceRich"] is False
+        assert response.json()["is_edited"] is True
         free_text_annotation.refresh_from_db()
         assert free_text_annotation.evidence_rich is False
 
@@ -1052,6 +1055,8 @@ class TestAPIViewPermissions:
             ("AI", "AI assigned theme A"),
             (consultation_user.email, "Human assigned theme C"),
         ]
+
+        assert response.json()["is_edited"] is True
 
         # check that there are two versions of the ResponseAnnotation
         assert free_text_annotation.history.count() == 2
@@ -1144,9 +1149,11 @@ class TestAPIViewPermissions:
             },
         )
         assert response.status_code == 200
+
         free_text_annotation.refresh_from_db()
         # check that the state has changed
         assert free_text_annotation.flagged_by.contains(consultation_user) != is_flagged
+        assert free_text_annotation.is_edited is True
 
 
 @pytest.mark.django_db
