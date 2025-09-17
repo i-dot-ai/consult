@@ -5,9 +5,12 @@
     import Tag from "../../Tag/Tag.svelte";
     import MaterialIcon from "../../MaterialIcon.svelte";
     import Diamond from "../../svg/material/Diamond.svelte";
+    import { getQuestionDetailUrl } from "../../../global/routes";
 
 
     interface Props {
+        consultationId: string;
+        questionId: string;
         questionTitle: string;
         questionNumber: number;
         answerText: string;
@@ -16,6 +19,8 @@
     }
 
     let {
+        consultationId = "",
+        questionId = "",
         questionTitle = "",
         questionNumber = 0,
         answerText = "",
@@ -39,7 +44,7 @@
 <Panel border={true} bg={true}>
     <article>
         <header class="flex flex-col-reverse md:flex-row gap-y-4 justify-between items-start gap-2">
-            <a href="#">
+            <a href={getQuestionDetailUrl(consultationId, questionId)}>
                 <div class="flex items-start gap-2">
                     <div class={clsx([
                         "question-number",

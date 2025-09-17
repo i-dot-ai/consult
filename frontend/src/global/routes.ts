@@ -22,6 +22,9 @@ export const getConsultationEvalUrl = (consultationId: string) => {
 };
 
 export const getQuestionDetailUrl = (consultationId: string, questionId: string) => {
+    if (!consultationId || !questionId) {
+        return "#";
+    }
     return `${Routes.Consultations}/${consultationId}/responses/${questionId}`;
 };
 

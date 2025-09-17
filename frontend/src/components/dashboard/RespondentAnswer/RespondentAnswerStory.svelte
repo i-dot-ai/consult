@@ -4,6 +4,8 @@
     import RespondentAnswer from "./RespondentAnswer.svelte";
 
 
+    let consultationId = $state("123");
+    let questionId = $state("456");
     let questionTitle = $state("Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?");
     let questionNumber = $state(1);
     let answerText = $state("I agree in principle, but I think the guidelines should include a provision for periodic review to adapt to market changes.");
@@ -12,6 +14,8 @@
 </script>
 
 <RespondentAnswer
+    {consultationId}
+    {questionId}
     questionTitle={questionTitle}
     questionNumber={questionNumber}
     answerText={answerText}
@@ -20,6 +24,20 @@
 />
 
 <hr class="my-8" />
+
+<TextInput
+    id="input-consultation-id"
+    label="Consultation ID"
+    value={consultationId}
+    setValue={(newValue) => consultationId = newValue}
+/>
+
+<TextInput
+    id="input-question-id"
+    label="Question ID"
+    value={questionId}
+    setValue={(newValue) => questionId = newValue}
+/>
 
 <TextInput
     id="input-question-title"
