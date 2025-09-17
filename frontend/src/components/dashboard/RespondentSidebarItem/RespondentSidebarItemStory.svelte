@@ -34,9 +34,11 @@
     setValue={(newValue) => subtitle = newValue}
 />
 
-<Switch
-    id="editable-input"
-    label="Editable"
-    value={editable}
-    handleChange={(newVal) => editable = newVal}    
-/>
+<div class="w-max">
+    <Switch
+        id="editable-input"
+        label="Editable"
+        value={editable}
+        handleChange={(newVal) => editable = newVal}
+    />
+</div>
