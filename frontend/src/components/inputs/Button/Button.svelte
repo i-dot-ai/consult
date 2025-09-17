@@ -3,7 +3,7 @@
 
 
     export let title: string = "";
-    export let variant: "default" | "primary" | "ghost" | "approve" = "default";
+    export let variant: "default" | "primary" | "ghost" | "approve" | "approve" = "default";
     export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
     export let highlighted: boolean = false;
     export let highlightVariant: "dark" | "light" | "primary" | "approve" | "none" = "dark";
@@ -37,7 +37,7 @@
         size === "xs" ? "px-1" : "px-2",
         "border",
         variant === "primary" && "bg-primary text-white",
-        variant === "approve" && "bg-teal text-white",
+        variant === "approve" && "bg-emerald-700 text-white",
         variant === "ghost" ? "border-transparent" : "border-gray-300",
         "transition-colors",
         "duration-300",
