@@ -187,16 +187,10 @@ class ResponseSerializer(serializers.ModelSerializer):
                 instance.annotation.evidence_rich = annotation["evidence_rich"]
 
             if "responseannotationtheme_set" in annotation:
-                ResponseAnnotationTheme.objects.filter(
-                    response_annotation=instance.annotation,
-                    assigned_by=self.context["request"].user,
-                ).delete()
-                for theme in annotation["responseannotationtheme_set"]:
-                    ResponseAnnotationTheme.objects.create(
-                        response_annotation=instance.annotation,
-                        theme=theme,
-                        assigned_by=self.context["request"].user,
-                    )
+                instance.annotation.set_human_reviewed_themes(
+                    themes=annotation["responseannotationtheme_set"],
+                    user=self.context["request"].user,
+                )
 
             if "sentiment" in annotation:
                 instance.annotation.sentiment = annotation["sentiment"]

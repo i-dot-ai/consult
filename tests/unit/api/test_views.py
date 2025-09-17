@@ -1039,7 +1039,9 @@ class TestAPIViewPermissions:
 
         response = client.patch(
             url,
-            data=json.dumps({"themes": [{"id": str(alternative_theme.id)}]}),
+            data=json.dumps(
+                {"themes": [{"id": str(ai_assigned_theme.id)}, {"id": str(alternative_theme.id)}]}
+            ),
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {consultation_user_token}",
