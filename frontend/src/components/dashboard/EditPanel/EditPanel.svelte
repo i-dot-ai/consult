@@ -45,10 +45,12 @@
     }
 
     async function submit() {
+        let actualUpdateAnswer = updateAnswerMock || updateAnswer;
+
         if (noChangesStaged()) {
             return;
         }
-        await updateAnswer(getApiAnswerUrl(consultationId, questionId, answerId), "PATCH", {
+        await actualUpdateAnswer(getApiAnswerUrl(consultationId, questionId, answerId), "PATCH", {
             "themes": stagedThemes.map(theme => ({id: theme.id})),
             "evidenceRich": stagedEvidenceRich,
         } as unknown as BodyInit);
@@ -67,6 +69,11 @@
         evidenceRich: boolean;
         resetData: Function;
         setEditing: Function;
+        updateAnswerMock?: (
+            url: string,
+            method: string,
+            options: BodyInit
+        ) => Promise<void>;
     }
 
     let {
@@ -78,6 +85,7 @@
         evidenceRich = false,
         resetData = () => {},
         setEditing = () => {},
+        updateAnswerMock = async () => {},
     }: Props = $props();
 
     let stagedThemes: ResponseTheme[] = $state([]);
@@ -122,7 +130,7 @@
         </MaterialIcon>
     </div>
 
-    <div slot="panel" class="w-full bg-white p-4 shadow-lg">
+    <div slot="panel" class="w-full bg-white p-4 shadow-lg" data-testid="panel">
         <TitleRow level={3} title="Edit Response Labels">
             <div slot="aside">
                 <Button variant="ghost" handleClick={() => panelOpen = false}>
