@@ -66,4 +66,48 @@ describe("RespondentSidebarItem", () => {
         // check if subtitle is updated correctly
         expect(updateSubtitleMock).toHaveBeenCalledWith("New Subtitle");
     })
+
+    it("should reset staged subtitle if cancel is clicked", async () => {
+        vi.mock("svelte/transition");
+        const user = userEvent.setup();
+        const updateSubtitleMock = vi.fn();
+
+        const {
+            getByText,
+            getByTestId,
+            queryByLabelText,
+            getByLabelText,
+        } = render(RespondentSidebarItem, {
+            ...testData,
+            editable: true,
+            updateSubtitle: updateSubtitleMock,
+        });
+
+        // click to reveal buttons and text input
+        const editButton = getByTestId("edit-button");
+        await user.click(editButton);
+
+        // clear existing subtitle and type new one
+        let subtitleInput = getByLabelText("Edit Subtitle");
+        await user.clear(subtitleInput);
+        await user.type(subtitleInput, "New Subtitle");
+
+        // click to cancel edit
+        const cancelButton = getByTestId("cancel-button");
+        await user.click(cancelButton);
+
+        // text input should disappear at this point
+        expect(queryByLabelText("Edit Subtitle")).toBeNull();
+
+        // check that old subtitle is displayed still
+        expect(getByText(testData.subtitle));
+
+        // check that update callback never been called
+        expect(updateSubtitleMock).not.toHaveBeenCalled();
+
+        // re-enable edit mode and check that staged subtitle is reset
+        await user.click(editButton);
+        subtitleInput = getByLabelText("Edit Subtitle");
+        expect(subtitleInput.value).toBe(testData.subtitle);
+    })
 })
