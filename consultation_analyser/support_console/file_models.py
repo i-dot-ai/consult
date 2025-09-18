@@ -1,4 +1,4 @@
-from typing import Literal, Any
+from typing import Any, Literal
 
 from pydantic import BaseModel, computed_field, field_validator
 
@@ -19,7 +19,7 @@ class DetailDetection(BaseModel):
     def coerce_null_evidence_rich(cls, v):
         return "NO" if v is None else v
 
-    @computed_field # type:ignore
+    @computed_field  # type:ignore
     @property
     def evidence_rich_bool(self) -> bool:
         return self.evidence_rich == "YES"
@@ -38,8 +38,8 @@ class SentimentRecord(BaseModel):
     def sentiment_enum(self) -> Any:
         match self.sentiment:
             case "AGREEMENT":
-                return ResponseAnnotation.Sentiment.AGREEMENT # type:ignore
+                return ResponseAnnotation.Sentiment.AGREEMENT  # type:ignore
             case "DISAGREEMENT":
-                return ResponseAnnotation.Sentiment.DISAGREEMENT# type:ignore
+                return ResponseAnnotation.Sentiment.DISAGREEMENT  # type:ignore
             case _:
-                return ResponseAnnotation.Sentiment.UNCLEAR# type:ignore
+                return ResponseAnnotation.Sentiment.UNCLEAR  # type:ignore
