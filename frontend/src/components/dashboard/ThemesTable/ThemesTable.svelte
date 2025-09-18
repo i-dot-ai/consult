@@ -6,11 +6,21 @@
 
     import type { FormattedTheme } from "../../../global/types.ts";
     import { getPercentage } from "../../../global/utils.ts";
+
     import Progress from "../../Progress/Progress.svelte";
 
-    export let themes: FormattedTheme[] = [];
-    export let totalAnswers: number = 0;
-    export let skeleton: boolean = false;
+
+    interface Props {
+        themes: FormattedTheme[];
+        totalAnswers: number;
+        skeleton?: boolean;
+    }
+
+    let {
+        themes = [],
+        totalAnswers = 0,
+        skeleton = false,
+    }: Props = $props();
 
     const TABLE_FLIP_SPEED = 10;
 </script>
@@ -85,7 +95,7 @@
                                 "border-l-primary",
                             ]),
                         ])}
-                        on:click={theme.handleClick}
+                        onclick={theme.handleClick}
                         tabindex="0"
                         role="button"
                         aria-pressed={theme.highlighted ? "true" : "false"}
