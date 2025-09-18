@@ -291,13 +291,21 @@ def import_response_annotations(question: Question, output_folder: str):
     # Check if sentiment file exists and process it
     sentiment_dict = {}
     for sentiment in read_from_s3(
-        SentimentRecord, s3_client, settings.AWS_BUCKET_NAME, sentiment_file_key
+        SentimentRecord,
+        s3_client,
+        settings.AWS_BUCKET_NAME,
+        sentiment_file_key,
+        raise_error_if_file_missing=False,
     ):
         sentiment_dict[sentiment.themefinder_id] = sentiment.sentiment_enum
 
     evidence_dict = {}
     for evidence in read_from_s3(
-        DetailDetection, s3_client, settings.AWS_BUCKET_NAME, evidence_file_key
+        DetailDetection,
+        s3_client,
+        settings.AWS_BUCKET_NAME,
+        evidence_file_key,
+        raise_error_if_file_missing=False,
     ):
         evidence_dict[evidence.themefinder_id] = evidence.evidence_rich_bool
 
