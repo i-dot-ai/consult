@@ -322,6 +322,50 @@ def consultation_user(consultation):
 
 
 @pytest.fixture()
+def individual_demographic(consultation):
+    demographic = DemographicOption.objects.create(
+        consultation=consultation,
+        field_name="individual",
+        field_value=True,
+    )
+    yield demographic
+    demographic.delete()
+
+
+@pytest.fixture()
+def northern_demographic(consultation):
+    demographic = DemographicOption.objects.create(
+        consultation=consultation,
+        field_name="region",
+        field_value="north",
+    )
+    yield demographic
+    demographic.delete()
+
+
+@pytest.fixture()
+def group_demographic(consultation):
+    demographic = DemographicOption.objects.create(
+        consultation=consultation,
+        field_name="individual",
+        field_value=False,
+    )
+    yield demographic
+    demographic.delete()
+
+
+@pytest.fixture()
+def southern_demographic(consultation):
+    demographic = DemographicOption.objects.create(
+        consultation=consultation,
+        field_name="region",
+        field_value="south",
+    )
+    yield demographic
+    demographic.delete()
+
+
+@pytest.fixture()
 def individual_demographic_option(consultation):
     demographic_option = DemographicOption.objects.create(
         consultation=consultation, field_name="individual", field_value=True
