@@ -27,7 +27,7 @@
         "text-neutral-700",
         weight === "bold" && "font-bold",
         weight === "light" && "font-light",
-        level === 1 && "text-xl",
+        level === 1 && "text-3xl mb-5 font-semibold",
         level === 2 && "text-lg",
         level === 3 && "text-md",
         level === 4 && "text-sm",
