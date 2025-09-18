@@ -4,6 +4,7 @@ import { render, cleanup, screen, getByText } from "@testing-library/svelte";
 
 import ThemesTable from "./ThemesTable.svelte";
 import { getPercentage } from "../../../global/utils";
+import ThemesTableStory from "./ThemesTableStory.svelte";
 
 
 let testData;
@@ -104,5 +105,9 @@ describe("ThemesTable", () => {
         });
 
         expect(getAllByText("<1%")).toBeTruthy();
+    })
+
+    it("should render story", () => {
+        render(ThemesTableStory);
     })
 })

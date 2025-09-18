@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
 import PanelTest from "./PanelTest.svelte";
+import PanelStory from "./PanelStory.svelte";
 
 
 describe("Panel", () => {
@@ -30,5 +31,9 @@ describe("Panel", () => {
             slot: "<p>Slot Content</p>",
             level: level,
         });
+    })
+
+    it("should render story", () => {
+        render(PanelStory);
     })
 })

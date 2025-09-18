@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
 import RespondentAnswer from "./RespondentAnswer.svelte";
+import RespondentAnswerStory from "./RespondentAnswerStory.svelte";
 
 
 let testData;
@@ -49,5 +50,9 @@ describe("RespondentAnswer", () => {
         });
 
         expect(queryByText("Evidence-rich")).toBeNull();
+    })
+
+    it("should render story", () => {
+        render(RespondentAnswerStory);
     })
 })

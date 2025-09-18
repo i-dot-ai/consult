@@ -2,8 +2,9 @@ import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 import userEvent from '@testing-library/user-event';
 import { render, cleanup, screen } from "@testing-library/svelte";
 
-import RespondentSidebarItem from "./RespondentSidebarItem.svelte";
 import Star from "../../svg/material/Star.svelte";
+import RespondentSidebarItem from "./RespondentSidebarItem.svelte";
+import RespondentSidebarItemStory from "./RespondentSidebarItemStory.svelte";
 
 
 let testData;
@@ -109,5 +110,9 @@ describe("RespondentSidebarItem", () => {
         await user.click(editButton);
         subtitleInput = getByLabelText("Edit Subtitle");
         expect(subtitleInput.value).toBe(testData.subtitle);
+    })
+
+    it("should render story", () => {
+        render(RespondentSidebarItemStory);
     })
 })
