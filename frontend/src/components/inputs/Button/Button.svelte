@@ -10,6 +10,7 @@
     export let handleClick = (e: MouseEvent) => {};
     export let disabled: boolean = false;
     export let fullWidth: boolean = false;
+    export let testId: string = "";
 </script>
 
 <style>
@@ -70,6 +71,7 @@
         ? highlighted ? "true" : "false"
         : undefined
     }
+    data-testid={testId ? testId : undefined}
 >
     <slot />
 </button>

@@ -52,7 +52,7 @@
 
             {#if editable}
                 <div class="-mt-1">
-                    <Button variant="ghost" handleClick={toggleEditing}>
+                    <Button variant="ghost" handleClick={toggleEditing} testId="edit-button">
                         <MaterialIcon color="fill-neutral-700">
                             <EditSquare />
                         </MaterialIcon>
@@ -79,6 +79,7 @@
                                 updateSubtitle(stagedSubtitle);
                                 toggleEditing();
                             }}
+                            testId="save-button"
                         >
                             <div class="flex justify-center w-full gap-2">
                                 <MaterialIcon color="fill-white">
@@ -93,6 +94,7 @@
                         <Button
                             fullWidth={true}
                             handleClick={() => toggleEditing()}
+                            testId="cancel-button"
                         >
                             <div class="flex justify-center w-full gap-2">
                                 <MaterialIcon color="fill-neutral-500">
