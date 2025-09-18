@@ -12,20 +12,20 @@
 
 
     interface Props {
-        showEvidenceRich: boolean;
         demoOptions: DemoOption;
         demoData: DemoData;
-        evidenceRich: boolean;
-        setEvidenceRich: (newVal: boolean) => void;
         loading: boolean;
+        showEvidenceRich?: boolean;
+        evidenceRich?: boolean;
+        setEvidenceRich?: (newVal: boolean) => void;
     }
     let {
-        showEvidenceRich = true,
         demoOptions = {},
         demoData = {},
+        loading = true,
+        showEvidenceRich = true,
         evidenceRich = false,
         setEvidenceRich = () => {},
-        loading = true,
     }: Props = $props();
 
     // Derive to avoid calculating on re-render
