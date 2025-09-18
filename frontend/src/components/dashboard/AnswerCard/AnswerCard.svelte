@@ -12,6 +12,8 @@
     import Diamond from "../../svg/material/Diamond.svelte";
     import EditPanel from "../EditPanel/EditPanel.svelte";
     import FlagButton from "../FlagButton/FlagButton.svelte";
+    import Person from "../../svg/material/Person.svelte";
+    import { getRespondentDetailUrl, Routes } from "../../../global/routes";
 
 
     interface Props {
@@ -155,7 +157,20 @@
                     {#if skeleton}
                         SKELETON
                     {:else}
-                        ID: {displayId || "Not Available"}
+                        <div class="m-auto">
+                            <Button
+                                size="xs"
+                                handleClick={() => {
+                                    location.href = getRespondentDetailUrl(consultationId, displayId);
+                                }}
+                            >
+                                <MaterialIcon color="fill-neutral-500" size="0.8rem">
+                                    <Person />
+                                </MaterialIcon>
+
+                                <span class="ml-1">ID: {displayId}</span>
+                            </Button>
+                        </div>
                     {/if}
                 </small>
             </div>
