@@ -5,6 +5,7 @@
     import TextInput from '../../inputs/TextInput/TextInput.svelte';
     import Check from '../../svg/material/Check.svelte';
     import Close from '../../svg/material/Close.svelte';
+    import { slide } from 'svelte/transition';
 
 
     interface Props {
@@ -61,45 +62,47 @@
         </div>
         
         {#if editable && editing}
-            <TextInput
-                id="edit-subtitle-input"
-                label="Edit Subtitle"
-                hideLabel={true}
-                value={stagedSubtitle}
-                setValue={(newValue) => stagedSubtitle = newValue.trim()}
-            />
-            <div class="flex items-center justify-around gap-2 mt-2">
-                <div class="grow">
-                    <Button
-                        variant="approve"
-                        fullWidth={true}
-                        handleClick={() => {
-                            updateSubtitle(stagedSubtitle);
-                            toggleEditing();
-                        }}
-                    >
-                        <div class="flex justify-center w-full gap-2">
-                            <MaterialIcon color="fill-white">
-                                <Check />
-                            </MaterialIcon>
+            <div class="mt-1" transition:slide>
+                <TextInput
+                    id="edit-subtitle-input"
+                    label="Edit Subtitle"
+                    hideLabel={true}
+                    value={stagedSubtitle}
+                    setValue={(newValue) => stagedSubtitle = newValue.trim()}
+                />
+                <div class="flex items-center justify-around gap-2 mt-3">
+                    <div class="grow">
+                        <Button
+                            variant="approve"
+                            fullWidth={true}
+                            handleClick={() => {
+                                updateSubtitle(stagedSubtitle);
+                                toggleEditing();
+                            }}
+                        >
+                            <div class="flex justify-center w-full gap-2">
+                                <MaterialIcon color="fill-white">
+                                    <Check />
+                                </MaterialIcon>
 
-                            Save
-                        </div>
-                    </Button>
-                </div>
-                <div class="grow">
-                    <Button
-                        fullWidth={true}
-                        handleClick={() => toggleEditing()}
-                    >
-                        <div class="flex justify-center w-full gap-2">
-                            <MaterialIcon color="fill-neutral-500">
-                                <Close />
-                            </MaterialIcon>
+                                Save
+                            </div>
+                        </Button>
+                    </div>
+                    <div class="grow">
+                        <Button
+                            fullWidth={true}
+                            handleClick={() => toggleEditing()}
+                        >
+                            <div class="flex justify-center w-full gap-2">
+                                <MaterialIcon color="fill-neutral-500">
+                                    <Close />
+                                </MaterialIcon>
 
-                            Cancel
-                        </div>
-                    </Button>
+                                Cancel
+                            </div>
+                        </Button>
+                    </div>
                 </div>
             </div>
         {:else}
