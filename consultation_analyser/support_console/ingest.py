@@ -1,4 +1,5 @@
 import json
+from typing import Literal
 from uuid import UUID
 
 import boto3
@@ -7,6 +8,7 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django_rq import get_queue
+from pydantic import BaseModel, field_validator
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -277,6 +279,15 @@ def import_response_annotation_themes(question: Question, output_folder: str):
     ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
 
 
+class DetailDetection(BaseModel):
+    themefinder_id: int
+    evidence_rich: Literal["YES", "NO"] = "NO"
+
+    @field_validator("evidence_rich", mode="before")
+    def coerce_null_evidence_rich(cls, v):
+        return "NO" if v is None else v
+
+
 def import_response_annotations(question: Question, output_folder: str):
     sentiment_file_key = f"{output_folder}sentiment.jsonl"
     evidence_file_key = f"{output_folder}detail_detection.jsonl"
@@ -324,9 +335,8 @@ def import_response_annotations(question: Question, output_folder: str):
     evidence_response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=evidence_file_key)
     evidence_dict = {}
     for line in evidence_response["Body"].iter_lines():
-        evidence = json.loads(line.decode("utf-8"))
-        evidence_value = evidence.get("evidence_rich", "NO").upper() == "YES"
-        evidence_dict[evidence["themefinder_id"]] = evidence_value
+        evidence: DetailDetection = DetailDetection.model_validate_json(line.decode("utf-8"))
+        evidence_dict[evidence.themefinder_id] = evidence.evidence_rich
 
     # Create annotations
     responses = Response.objects.filter(question=question).values_list(
