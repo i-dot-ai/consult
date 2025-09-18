@@ -1,12 +1,17 @@
 from typing import Any, Literal
 
+from botocore.exceptions import ClientError
 from pydantic import BaseModel, computed_field, field_validator
 
 from consultation_analyser.consultations.models import ResponseAnnotation
 
-
-def read_from_s3(model, client, bucket: str, key: str):
-    s3_obj = client.get_object(Bucket=bucket, Key=key)
+def read_from_s3(model, client, bucket: str, key: str, raise_error_if_file_missing: bool=False):
+    try:
+        s3_obj = client.get_object(Bucket=bucket, Key=key)
+    except ClientError:
+        if raise_error_if_file_missing is True:
+            raise StopIteration
+        raise
     for line in s3_obj["Body"].iter_lines():
         yield model.model_validate_json(line.decode("utf-8"))
 
