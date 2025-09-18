@@ -17,10 +17,8 @@ Including another URLconf
 
 from django.urls import include, path
 
-from consultation_analyser.authentication import urls as auth_urls
 from consultation_analyser.consultations import urls
 from consultation_analyser.error_pages import views as error_views
-from consultation_analyser.support_console import urls as support_console_urls
 
 handler403 = error_views.error_403
 handler404 = error_views.error_404
@@ -28,7 +26,7 @@ handler500 = error_views.error_500
 
 urlpatterns = [
     path("", include(urls)),
-    path("", include(auth_urls)),
-    path("support/", include(support_console_urls)),
+    path("oauth/", include("consultation_analyser.authentication.urls")),
+    path("support/", include("consultation_analyser.support_console.urls")),
     path("accounts/", include("allauth.urls")),
 ]

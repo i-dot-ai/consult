@@ -61,5 +61,4 @@ urlpatterns = [
     # authentication
     path("sign-in/", sessions.new, name="sign_in"),
     path("sign-out/", sessions.destroy, name="sign_out"),
-    path("auth/", include("consultation_analyser.authentication.urls")),
 ]

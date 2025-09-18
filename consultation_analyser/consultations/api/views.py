@@ -2,7 +2,6 @@ from collections import defaultdict
 
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Exists, OuterRef
-from django.http import JsonResponse
 from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action, api_view, permission_classes
