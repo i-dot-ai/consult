@@ -336,7 +336,7 @@ def import_response_annotations(question: Question, output_folder: str):
     evidence_dict = {}
     for line in evidence_response["Body"].iter_lines():
         evidence: DetailDetection = DetailDetection.model_validate_json(line.decode("utf-8"))
-        evidence_dict[evidence.themefinder_id] = evidence.evidence_rich
+        evidence_dict[evidence.themefinder_id] = evidence.evidence_rich == "YES"
 
     # Create annotations
     responses = Response.objects.filter(question=question).values_list(
