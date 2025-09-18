@@ -36,7 +36,7 @@
 
 <div class="flex items-center justify-around flex-wrap gap-1">
     <label
-      class="pr-4 leading-none text-neutral-800 cursor-pointer"
+      class="grow pr-4 leading-none text-neutral-800 cursor-pointer"
       for={id}
       id={`${id}-label`}
     >

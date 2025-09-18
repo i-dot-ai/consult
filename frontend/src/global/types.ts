@@ -3,6 +3,12 @@ export interface NavItem {
     url: string;
 }
 
+export interface QuestionMultiAnswer {
+    id: string;
+    text: string;
+    response_count: number;
+}
+
 export interface Question {
     id?: string;
     number?: number;
@@ -11,7 +17,7 @@ export interface Question {
     slug?: string;
     has_free_text?: boolean;
     has_multiple_choice?: boolean;
-    multiple_choice_options?: { text: string }[];
+    multiple_choice_answer?: QuestionMultiAnswer[];
     proportion_of_audited_answers?: number;
 }
 
@@ -89,6 +95,7 @@ export interface ResponseAnswer {
     sentiment: string;
     human_reviewed: boolean;
     is_flagged: boolean;
+    is_edited?: boolean;
 }
 
 export interface DemoOption {
@@ -112,26 +119,35 @@ export interface ConsultationResponse {
     slug: string;
     questions: Question[];
 }
+
 export interface AnswersResponse {
     respondents_total: number;
     filtered_total: number;
     has_more_pages: boolean;
     all_respondents: ResponseAnswer[];
 }
+
 export interface ThemeInfoResponse {
     themes: ResponseTheme[];
 }
-export interface DemoOptionsResponse {
-    demographic_options: DemoOption;
-}
+
 export interface DemoAggrResponse {
     demographic_aggregations: DemoData;
 }
+
 export interface ThemeAggrResponse {
     theme_aggregations: ThemeAggr;
 }
+
 export interface MultiChoiceResponseItem {
     answer: string;
     response_count: number;
 }
 export type MultiChoiceResponse = MultiChoiceResponseItem[];
+
+export interface DemoOptionsResponseItem {
+    name: string;
+    value: string;
+    count: number;
+}
+export type DemoOptionsResponse = DemoOptionsResponseItem[];

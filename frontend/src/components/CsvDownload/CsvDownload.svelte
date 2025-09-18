@@ -30,7 +30,7 @@
     }
 
     const getDownloadUrl = (csvContent: string) => {
-        return "data:text/csv;base64," + btoa(csvContent);
+        return "data:text/csv;base64," + btoa(unescape(encodeURIComponent(csvContent)));
     }
 </script>
 

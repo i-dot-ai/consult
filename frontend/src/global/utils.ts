@@ -49,3 +49,16 @@ export const toTitleCase = (text: string): string => {
             text => text.charAt(0).toUpperCase() + text.substring(1).toLowerCase()
         );
 }
+
+export function paginateArray(arr: any[], size: number) {
+    if (!arr || arr.length === 0) {
+        return [];
+    }
+    return arr.reduce((acc, curr, i) => {
+        let index = Math.floor(i / size);
+        let page = acc[index] || (acc[index] = []);
+        page.push(curr);
+
+        return acc;
+    }, [])
+}

@@ -29,9 +29,7 @@ class TestDemographicOptionsAPIView:
         response = client.get(url)
 
         assert response.status_code == 200
-        data = response.json()
-        assert "demographic_options" in data
-        assert data["demographic_options"] == {}
+        assert response.json() == []
 
     def test_get_demographic_options_with_data(self, client, consultation_user, free_text_question):
         """Test API endpoint returns demographic options correctly"""
@@ -58,12 +56,17 @@ class TestDemographicOptionsAPIView:
 
         assert response.status_code == 200
         data = response.json()
-        assert "demographic_options" in data
-        options = data["demographic_options"]
 
-        assert set(options["individual"]) == {False, True}
-        assert set(options["region"]) == {"north", "south"}
-        assert set(options["age"]) == {"25", "35", "45"}
+        expected = [
+            {"count": 1, "name": "age", "value": "25"},
+            {"count": 1, "name": "age", "value": "35"},
+            {"count": 1, "name": "age", "value": "45"},
+            {"count": 1, "name": "individual", "value": False},
+            {"count": 2, "name": "individual", "value": True},
+            {"count": 2, "name": "region", "value": "north"},
+            {"count": 1, "name": "region", "value": "south"},
+        ]
+        assert data == expected
 
     def test_permission_required(self, client, free_text_question):
         """Test API endpoint requires proper permissions"""
@@ -741,18 +744,18 @@ class TestFilteredResponsesAPIView:
 
     @pytest.mark.parametrize("is_flagged", [True, False])
     def test_get_responses_with_is_flagged(
-        self, client, consultation_user, consultation_user_token, free_text_annotation, is_flagged
+        self, client, consultation_user, consultation_user_token, another_annotation, is_flagged
     ):
         if is_flagged:
-            free_text_annotation.flagged_by.add(consultation_user)
-            free_text_annotation.save()
+            another_annotation.flagged_by.add(consultation_user)
+            another_annotation.save()
 
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": another_annotation.response.question.consultation.id,
+                "question_pk": another_annotation.response.question.id,
+                "pk": another_annotation.response.id,
             },
         )
         response = client.get(
@@ -766,6 +769,7 @@ class TestFilteredResponsesAPIView:
         assert response.status_code == 200
         data = response.json()
         assert data["is_flagged"] == is_flagged
+        assert data["is_edited"] == is_flagged
 
 
 @pytest.mark.django_db
@@ -967,6 +971,7 @@ class TestAPIViewPermissions:
         assert response.json()["sentiment"] == "AGREEMENT"
         free_text_annotation.refresh_from_db()
         assert free_text_annotation.sentiment == "AGREEMENT"
+        assert response.json()["is_edited"] is True
 
         # Verify version history captures the change from True to False using django-simple-history
         history = free_text_annotation.history.all().order_by("history_date")
@@ -1000,6 +1005,7 @@ class TestAPIViewPermissions:
         )
         assert response.status_code == 200
         assert response.json()["evidenceRich"] is False
+        assert response.json()["is_edited"] is True
         free_text_annotation.refresh_from_db()
         assert free_text_annotation.evidence_rich is False
 
@@ -1018,6 +1024,7 @@ class TestAPIViewPermissions:
         consultation_user_token,
         free_text_annotation,
         alternative_theme,
+        ai_assigned_theme,
     ):
         url = reverse(
             "response-detail",
@@ -1035,7 +1042,9 @@ class TestAPIViewPermissions:
 
         response = client.patch(
             url,
-            data=json.dumps({"themes": [{"id": str(alternative_theme.id)}]}),
+            data=json.dumps(
+                {"themes": [{"id": str(ai_assigned_theme.id)}, {"id": str(alternative_theme.id)}]}
+            ),
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {consultation_user_token}",
@@ -1046,6 +1055,8 @@ class TestAPIViewPermissions:
             ("AI", "AI assigned theme A"),
             (consultation_user.email, "Human assigned theme C"),
         ]
+
+        assert response.json()["is_edited"] is True
 
         # check that there are two versions of the ResponseAnnotation
         assert free_text_annotation.history.count() == 2
@@ -1076,6 +1087,8 @@ class TestAPIViewPermissions:
         assert history[3].history_type == "+"
         assert history[3].theme.key == "Human assigned theme C"
         assert history[3].assigned_by == consultation_user
+
+        assert list(free_text_annotation.get_original_ai_themes()) == [ai_assigned_theme]
 
     def test_patch_response_themes_invalid(
         self, client, consultation_user_token, free_text_annotation
@@ -1136,9 +1149,11 @@ class TestAPIViewPermissions:
             },
         )
         assert response.status_code == 200
+
         free_text_annotation.refresh_from_db()
         # check that the state has changed
         assert free_text_annotation.flagged_by.contains(consultation_user) != is_flagged
+        assert free_text_annotation.is_edited is True
 
 
 @pytest.mark.django_db
@@ -1195,28 +1210,6 @@ def test_consultations_list_filter_by_nonexistent_slug(client, consultation_user
 
     # Should return empty list
     assert len(results) == 0
-
-
-@pytest.mark.django_db
-def test_multi_choice_answer_count(
-    client, consultation_user, multi_choice_question, multi_choice_responses
-):
-    client.force_login(consultation_user)
-    url = reverse(
-        "question-multi-choice-response-count",
-        kwargs={
-            "consultation_pk": multi_choice_question.consultation.pk,
-            "pk": multi_choice_question.pk,
-        },
-    )
-    response = client.get(url)
-    assert response.status_code == 200
-
-    def sort_by_answer(payload):
-        return sorted(payload, key=lambda x: x["answer"])
-
-    expected = [{"answer": "blue", "response_count": 1}, {"answer": "red", "response_count": 2}]
-    assert sort_by_answer(response.json()) == sort_by_answer(expected)
 
 
 @pytest.mark.django_db

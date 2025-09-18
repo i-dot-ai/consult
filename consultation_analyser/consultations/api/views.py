@@ -19,7 +19,6 @@ from .serializers import (
     CrossCuttingThemeSerializer,
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
-    MultiChoiceAnswerCount,
     QuestionSerializer,
     ResponseSerializer,
     ThemeAggregationsSerializer,
@@ -61,25 +60,18 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
         url_path="demographic-options",
     )
     def demographic_options(self, request, pk=None):
-        """Get all demographic options for a consultation"""
-        consultation = self.get_object()
+        self.get_object()
 
         if not request.user.has_dashboard_access:
             raise PermissionDenied()
 
-        # Get all demographic fields and their possible values from normalized storage
-        options = (
-            models.DemographicOption.objects.filter(consultation=consultation)
-            .values_list("field_name", "field_value")
-            .order_by("field_name", "field_value")
+        data = (
+            models.Respondent.objects.filter(consultation_id=pk)
+            .values("demographics__field_name", "demographics__field_value")
+            .annotate(count=Count("id"))
         )
 
-        result = defaultdict(list)
-        for field_name, field_value in options:
-            result[field_name].append(field_value)
-
-        serializer = DemographicOptionsSerializer(data={"demographic_options": dict(result)})
-        serializer.is_valid()
+        serializer = DemographicOptionsSerializer(instance=data, many=True)
 
         return Response(serializer.data)
 
@@ -109,20 +101,6 @@ class QuestionViewSet(ReadOnlyModelViewSet):
             .annotate(response_count=Count("response"))
             .order_by("-created_at")
         )
-
-    @action(
-        detail=True,
-        methods=["get"],
-        url_path="multi-choice-response-count",
-        serializer_class=MultiChoiceAnswerCount,
-    )
-    def multi_choice_response_count(self, request, pk=None, consultation_pk=None):
-        question = self.get_object()
-        answer_count = question.response_set.values("chosen_options__text").annotate(
-            response_count=Count("id")
-        )
-        serializer = self.get_serializer(instance=answer_count, many=True)
-        return JsonResponse(data=serializer.data, safe=False)
 
     @action(detail=True, methods=["get"], url_path="theme-information")
     def theme_information(self, request, pk=None, consultation_pk=None):

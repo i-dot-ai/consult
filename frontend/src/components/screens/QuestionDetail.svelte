@@ -23,14 +23,18 @@
         type AnswersResponse,
         type ConsultationResponse,
         type DemoAggrResponse,
+        type DemoOption,
         type DemoOptionsResponse,
+        type DemoOptionsResponseItem,
         type FormattedTheme,
         type MultiChoiceResponse,
+        type Question,
         type ResponseAnswer,
         type ThemeAggrResponse,
         type ThemeInfoResponse
     } from "../../global/types.ts";
-    import { themeFilters, demoFilters } from "../../global/state.svelte.ts";
+    import { themeFilters, demoFilters, multiAnswerFilters } from "../../global/state.svelte.ts";
+    import Panel from "../dashboard/Panel/Panel.svelte";
 
 
     interface QueryFilters {
@@ -39,7 +43,8 @@
         searchMode: SearchModeValues;
         evidenceRich: boolean;
         flaggedOnly: boolean;
-        demoFilters: {[category:string]: string[]}
+        demoFilters: {[category:string]: string[]};
+        multiAnswerFilters: string[];
     }
 
     interface Props {
@@ -140,15 +145,15 @@
     } = createFetchStore();
 
     const {
-        loading: isMultiChoiceAggrLoading,
-        error: multiChoiceAggrError,
-        load: loadMultiChoiceAggr,
-        data: multiChoiceAggrData,
+        loading: isQuestionLoading,
+        error: questionError,
+        load: loadQuestion,
+        data: questionData,
     }: {
         loading: Writable<boolean>,
         error: Writable<string>,
         load: Function,
-        data: Writable<MultiChoiceResponse>,
+        data: Writable<Question>,
     } = createFetchStore();
 
     onMount(() => {
@@ -164,6 +169,7 @@
             evidenceRich: evidenceRich,
             demoFilters: demoFilters.filters,
             flaggedOnly: flaggedOnly,
+            multiAnswerFilters: multiAnswerFilters.filters,
         });
 
         // Skip the rest of the requests if they are already requested for this filter set
@@ -172,7 +178,7 @@
             loadThemeInfo(`/api/consultations/${consultationId}/questions/${questionId}/theme-information/${queryString}`);
             loadDemoOptions(`/api/consultations/${consultationId}/demographic-options/${queryString}`);
             loadDemoAggr(`/api/consultations/${consultationId}/questions/${questionId}/responses/demographic-aggregations/${queryString}`);
-            loadMultiChoiceAggr(`/api/consultations/${consultationId}/questions/${questionId}/multi-choice-response-count/${queryString}`);
+            loadQuestion(`/api/consultations/${consultationId}/questions/${questionId}/${queryString}`);
         }
 
         // Append next page of answers to existing answers
@@ -205,6 +211,9 @@
             }),
             ...(filters.flaggedOnly && {
                 is_flagged: JSON.stringify(filters.flaggedOnly)
+            }),
+            ...(filters.multiAnswerFilters.length > 0 && {
+                multiple_choice_answer: filters.multiAnswerFilters.join(",")
             }),
             page: currPage.toString(),
             page_size: PAGE_SIZE.toString(),
@@ -239,7 +248,7 @@
 
     $effect(() => {
         // @ts-ignore: ignore dependencies
-        searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters, flaggedOnly;
+        searchValue, searchMode, themeFilters.filters, evidenceRich, demoFilters.filters, multiAnswerFilters.filters, flaggedOnly;
 
         resetAnswers();
 
@@ -250,6 +259,24 @@
     let question = $derived($consultationData?.questions?.find(
         question => question.id === questionId
     ));
+
+    let formattedDemoOptions = $derived.by(() => {
+        if (!$demoOptionsData) {
+            return;
+        }
+
+        const formattedData: DemoOption = {};
+        const categories = [...new Set($demoOptionsData.map(data => data.name))];
+
+        for (const category of categories) {
+            const categoryData: DemoOptionsResponseItem[] = $demoOptionsData.filter(
+                opt => opt.name === category
+            );
+
+            formattedData[category] = categoryData.map(opt => opt.value);
+        }
+        return formattedData;
+    });
 </script>
 
 <section class={clsx([
@@ -273,90 +300,123 @@
         </div>
     </Button>
 
-    <small>
-        Choose a different question to analyse
-    </small>
+    <!-- Text disabled temporarily, div kept to maintain layout -->
+    <div>
+        <!-- <small>
+            Choose a different question to analyse
+        </small> -->
+    </div>
 </section>
 
-<section class="my-4">
-    {#if $consultationError}
-        <div class="my-2">
-            <Alert>
-                <span class="text-sm">
-                    Consultation Error: {$consultationError}
-                </span>
-            </Alert>
+<svelte:boundary>
+    <section class="my-4">
+        {#if $consultationError}
+            <div class="my-2">
+                <Alert>
+                    <span class="text-sm">
+                        Consultation Error: {$consultationError}
+                    </span>
+                </Alert>
+            </div>
+        {:else}
+            <QuestionCard
+                skeleton={$isConsultationLoading}
+                clickable={false}
+                consultationId={$consultationData?.id}
+                question={question}
+                hideIcon={true}
+                horizontal={true}
+            />
+        {/if}
+    </section>
+
+    {#snippet failed(error)}
+        <div>
+            {console.error(error)}
+
+            <Panel>
+                <Alert>
+                    Unexpected consultation error
+                </Alert>
+            </Panel>
         </div>
-    {:else}
-        <QuestionCard
-            skeleton={$isConsultationLoading}
-            clickable={false}
-            consultationId={$consultationData?.id}
-            question={question}
-            hideIcon={true}
-            horizontal={true}
-        />
-    {/if}
-</section>
+    {/snippet}
+</svelte:boundary>
 
-<TabView
-    value={activeTab}
-    handleChange={(next: TabNames) => activeTab = next}
-    tabs={[
-        { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
-        { id: TabNames.ResponseAnalysis, title: "Response Analysis", icon: Finance},
-    ]}
->
-    {#if activeTab === TabNames.QuestionSummary}
-        <QuestionSummary
-            themes={Object.keys($themeAggrData?.theme_aggregations || []).map(themeId => {
-                return ({
-                    id: themeId,
-                    count: $themeAggrData?.theme_aggregations[themeId],
-                    highlighted: themeFilters.filters.includes(themeId),
-                    handleClick: () => themeFilters.update(themeId),
-                    ...($themeInfoData?.themes?.find(themeInfo => themeInfo?.id === themeId)),
-                })
-            }) as FormattedTheme[]}
-            themesLoading={$isThemeAggrLoading}
-            totalAnswers={question?.total_responses || 0}
-            filteredTotal={$answersData?.filtered_total}
-            demoData={$demoAggrData?.demographic_aggregations}
-            demoOptions={$demoOptionsData?.demographic_options}
-            multiChoice={$multiChoiceAggrData?.filter(item => Boolean(item.answer))}
-            consultationSlug={$consultationData?.slug}
-            evidenceRich={evidenceRich}
-            searchValue={searchValue}
-            sortAscending={sortAscending}
-            setActiveTab={(newTab) => activeTab = newTab}
-        />
-    {:else if activeTab === TabNames.ResponseAnalysis}
-        <ResponseAnalysis
-            consultationId={$consultationData?.id}
-            questionId={question?.id}
-            pageSize={PAGE_SIZE}
-            answers={answers}
-            isAnswersLoading={$isAnswersLoading}
-            answersError={$answersError}
-            filteredTotal={$answersData?.filtered_total}
-            hasMorePages={hasMorePages}
-            handleLoadClick={() => loadData()}
-            resetData={() => {
-                resetAnswers();
-                loadData();
-            }}
-            searchValue={searchValue}
-            setSearchValue={(value) => searchValue = value}
-            searchMode={searchMode}
-            setSearchMode={(newSearchMode: SearchModeValues) => searchMode = newSearchMode}
-            demoData={$demoAggrData?.demographic_aggregations}
-            demoOptions={$demoOptionsData?.demographic_options}
-            themes={$themeInfoData?.themes}
-            evidenceRich={evidenceRich}
-            setEvidenceRich={setEvidenceRich}
-            isThemesLoading={$isThemeAggrLoading}
-            flaggedOnly={flaggedOnly}
-            setFlaggedOnly={(newValue) => flaggedOnly = newValue}
-        />
-    {/if}
-</TabView>
+<svelte:boundary>
+    <TabView
+        value={activeTab}
+        handleChange={(next: string) => activeTab = next as TabNames}
+        tabs={[
+            { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
+            { id: TabNames.ResponseAnalysis, title: "Response Analysis", icon: Finance},
+        ]}
+    >
+        {#if activeTab === TabNames.QuestionSummary}
+            <QuestionSummary
+                themes={Object.keys($themeAggrData?.theme_aggregations || []).map(themeId => {
+                    return ({
+                        id: themeId,
+                        count: $themeAggrData?.theme_aggregations[themeId],
+                        highlighted: themeFilters.filters.includes(themeId),
+                        handleClick: () => themeFilters.update(themeId),
+                        ...($themeInfoData?.themes?.find(themeInfo => themeInfo?.id === themeId)),
+                    })
+                }) as FormattedTheme[]}
+                themesLoading={$isThemeAggrLoading}
+                totalAnswers={question?.total_responses || 0}
+                filteredTotal={$answersData?.filtered_total}
+                demoData={$demoAggrData?.demographic_aggregations}
+                demoOptions={formattedDemoOptions || {}}
+                multiChoice={$questionData?.multiple_choice_answer?.filter(
+                    item => Boolean(item.text)
+                ) || []}
+                consultationSlug={$consultationData?.slug}
+                evidenceRich={evidenceRich}
+                searchValue={searchValue}
+                sortAscending={sortAscending}
+                setActiveTab={(newTab) => activeTab = newTab}
+            />
+        {:else if activeTab === TabNames.ResponseAnalysis}
+            <ResponseAnalysis
+                consultationId={$consultationData?.id}
+                questionId={question?.id}
+                pageSize={PAGE_SIZE}
+                answers={answers}
+                isAnswersLoading={$isAnswersLoading}
+                answersError={$answersError}
+                filteredTotal={$answersData?.filtered_total}
+                hasMorePages={hasMorePages}
+                handleLoadClick={() => loadData()}
+                resetData={() => {
+                    resetAnswers();
+                    loadData();
+                }}
+                searchValue={searchValue}
+                setSearchValue={(value) => searchValue = value}
+                searchMode={searchMode}
+                setSearchMode={(newSearchMode: SearchModeValues) => searchMode = newSearchMode}
+                demoData={$demoAggrData?.demographic_aggregations}
+                demoOptions={formattedDemoOptions || {}}
+                themes={$themeInfoData?.themes}
+                evidenceRich={evidenceRich}
+                setEvidenceRich={setEvidenceRich}
+                isThemesLoading={$isThemeAggrLoading}
+                flaggedOnly={flaggedOnly}
+                setFlaggedOnly={(newValue) => flaggedOnly = newValue}
+            />
+        {/if}
+    </TabView>
+
+    {#snippet failed(error)}
+        <div>
+            {console.error(error)}
+
+            <Panel>
+                <Alert>
+                    Unexpected tab error
+                </Alert>
+            </Panel>
+        </div>
+    {/snippet}
+</svelte:boundary>

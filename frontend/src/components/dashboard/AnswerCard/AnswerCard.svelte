@@ -28,6 +28,7 @@
         skeleton?: boolean;
         highlightText?: string;
         isFlagged?: boolean;
+        isEdited?: boolean;
         resetData?: () => void;
     }
 
@@ -45,6 +46,7 @@
         skeleton = false,
         highlightText = "",
         isFlagged = false,
+        isEdited = false,
         resetData = () => {},
     }: Props = $props();
 
@@ -111,28 +113,37 @@
                             <span class="text-xs">Evidence-rich</span>
                         </Tag>
                     {/if}
+
+                    {#if isEdited && !skeleton}
+                        <Tag variant="success">
+                            <span class="text-xs">Edited</span>
+                        </Tag>
+                    {/if}
                 </div>
             {/if}
 
             <div class="flex items-center gap-2">
-                <FlagButton
-                    {consultationId}
-                    {questionId}
-                    {answerId}
-                    {resetData}
-                    {isFlagged}
-                />
+                {#if !skeleton}
+                    <FlagButton
+                        {consultationId}
+                        {questionId}
+                        {answerId}
+                        {resetData}
+                        {isFlagged}
+                    />
 
-                <EditPanel
-                    {consultationId}
-                    {questionId}
-                    {answerId}
-                    {themes}
-                    {themeOptions}
-                    {evidenceRich}
-                    {resetData}
-                    setEditing={(val: boolean) => editing = val}
-                />
+                    <!-- Disabled temporarily -->
+                    <!-- <EditPanel
+                        {consultationId}
+                        {questionId}
+                        {answerId}
+                        {themes}
+                        {themeOptions}
+                        {evidenceRich}
+                        {resetData}
+                        setEditing={(val: boolean) => editing = val}
+                    /> -->
+                {/if}
 
                 <small
                     title="Respondent ID"

@@ -6,6 +6,7 @@
     export let level: TitleLevels = 1;
     export let text: string = "";
     export let weight: "light"  | "normal" | "bold" = "normal";
+    export let maxChars: number = 0;
 
     const tagMap = {
         1: "h1",
@@ -19,14 +20,24 @@
     const tag = tagMap[level];
 </script>
 
-<svelte:element this={tag} class={clsx([
-    weight === "bold" && "font-bold",
-    weight === "light" && "font-light",
-    level === 1 && "text-xl",
-    level === 2 && "text-lg",
-    level === 3 && "text-md",
-    level === 4 && "text-sm",
-    "text-neutral-700",
-])} >
+<svelte:element
+    this={tag}
+    style={clsx([maxChars && `max-width: ${maxChars}ch;`])}
+    class={clsx([
+        "text-neutral-700",
+        weight === "bold" && "font-bold",
+        weight === "light" && "font-light",
+        level === 1 && "text-xl",
+        level === 2 && "text-lg",
+        level === 3 && "text-md",
+        level === 4 && "text-sm",
+        maxChars && clsx([
+            "max-w-[50ch]",
+            "text-ellipsis",
+            "whitespace-nowrap",
+            "overflow-x-hidden",
+        ])
+    ])}
+>
     {@html text}
 </svelte:element>

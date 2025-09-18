@@ -28,7 +28,7 @@ class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
     response_count = serializers.SerializerMethodField()
 
     def get_response_count(self, obj) -> int:
-        return Response.objects.filter(chosen_options=obj).count()
+        return obj.response_set.count()
 
     class Meta:
         model = MultiChoiceAnswer
@@ -75,9 +75,9 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class DemographicOptionsSerializer(serializers.Serializer):
-    demographic_options = serializers.DictField(
-        child=serializers.ListField(child=serializers.CharField())
-    )
+    name = serializers.CharField(source="demographics__field_name")
+    value = serializers.JSONField(source="demographics__field_value")
+    count = serializers.IntegerField()
 
 
 class DemographicAggregationsSerializer(serializers.Serializer):
@@ -130,11 +130,6 @@ class CrossCuttingThemeSerializer(serializers.ModelSerializer):
         fields = ["name", "description", "themes", "response_count"]
 
 
-class MultiChoiceAnswerCount(serializers.Serializer):
-    answer = serializers.CharField(source="chosen_options__text")
-    response_count = serializers.IntegerField()
-
-
 class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(source="theme.id")
     name = serializers.CharField(required=False, source="theme.name")
@@ -174,6 +169,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     sentiment = serializers.CharField(source="annotation.sentiment")
     human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
     is_flagged = serializers.BooleanField(read_only=True)
+    is_edited = serializers.BooleanField(source="annotation.is_edited")
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
@@ -192,16 +188,10 @@ class ResponseSerializer(serializers.ModelSerializer):
                 instance.annotation.evidence_rich = annotation["evidence_rich"]
 
             if "responseannotationtheme_set" in annotation:
-                ResponseAnnotationTheme.objects.filter(
-                    response_annotation=instance.annotation,
-                    assigned_by=self.context["request"].user,
-                ).delete()
-                for theme in annotation["responseannotationtheme_set"]:
-                    ResponseAnnotationTheme.objects.create(
-                        response_annotation=instance.annotation,
-                        theme=theme,
-                        assigned_by=self.context["request"].user,
-                    )
+                instance.annotation.set_human_reviewed_themes(
+                    themes=annotation["responseannotationtheme_set"],
+                    user=self.context["request"].user,
+                )
 
             if "sentiment" in annotation:
                 instance.annotation.sentiment = annotation["sentiment"]
@@ -224,4 +214,5 @@ class ResponseSerializer(serializers.ModelSerializer):
             "sentiment",
             "human_reviewed",
             "is_flagged",
+            "is_edited",
         ]
