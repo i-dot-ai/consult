@@ -10,7 +10,7 @@ from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
@@ -42,10 +42,11 @@ def get_current_user(request):
     return Response(serializer.data)
 
 
-class ConsultationViewSet(ReadOnlyModelViewSet):
+class ConsultationViewSet(ModelViewSet):
     serializer_class = ConsultationSerializer
     permission_classes = [IsAuthenticated]
     filterset_fields = ["slug"]
+    http_method_names = ["get", "patch"]
 
     def get_queryset(self):
         return models.Consultation.objects.filter(users=self.request.user).order_by("-created_at")
@@ -72,6 +73,7 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
 
         data = (
             models.Respondent.objects.filter(consultation_id=pk)
+            .order_by("demographics__field_name", "demographics__field_value")
             .values("demographics__field_name", "demographics__field_value")
             .annotate(count=Count("id"))
         )
@@ -227,6 +229,13 @@ class ResponseViewSet(ModelViewSet):
             response.annotation.flagged_by.add(request.user)
         response.annotation.save()
         return Response()
+
+
+class UserViewSet(ModelViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]
+    pagination_class = PageNumberPagination
+    queryset = models.User.objects.all()
 
 
 @api_view(["POST"])
