@@ -1,6 +1,4 @@
-from django.contrib.auth.middleware import LoginRequiredMiddleware
 from django.core.exceptions import PermissionDenied
-from django.http import Http404
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
 
@@ -45,13 +43,6 @@ class SupportAppStaffRequiredMiddleware:
             if (not request.user.is_staff) and (not request.path.startswith("/support/sign-out/")):
                 raise PermissionDenied()
         return response
-
-
-class LoginRequiredMiddleware404(LoginRequiredMiddleware):
-    """Require login, 404 if no access."""
-
-    def handle_no_permission(self, request, view_func):
-        raise Http404
 
 
 class CSRFExemptMiddleware:

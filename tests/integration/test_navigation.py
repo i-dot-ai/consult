@@ -7,38 +7,38 @@ from tests.helpers import sign_in
 SUPPORT_ROUTE = "/support/consultations/"
 
 
-def assert_expected_menu_items(django_app, endpoint, menu_items):
+def assert_expected_menu_items(django_app, endpoint, menu_item):
     response = django_app.get(endpoint)
     response_header = str(response.html.header)
-
-    for menu_item in menu_items:
-        assert menu_item in response_header
+    assert menu_item in response_header
 
 
-def test_not_authenticated_navigation(django_app):
-    expected_menu_items = ["How it works", "Data sharing", "Get involved", "Sign in"]
-
-    assert_expected_menu_items(django_app, "/", expected_menu_items)
+@pytest.mark.django_db
+@pytest.mark.parametrize(
+    "expected_menu_item", ["How it works", "Data sharing", "Get involved", "Sign in"]
+)
+def test_not_authenticated_navigation(django_app, expected_menu_item):
+    assert_expected_menu_items(django_app, "/", expected_menu_item)
 
     with pytest.raises(AppError):
-        assert_expected_menu_items(django_app, SUPPORT_ROUTE, expected_menu_items)
+        assert_expected_menu_items(django_app, SUPPORT_ROUTE, expected_menu_item)
 
 
 # Non-staff user
 @pytest.mark.django_db
-def test_authenticated_navigation(django_app):
+@pytest.mark.parametrize("expected_menu_item", ["Your consultations", "Sign out"])
+def test_authenticated_navigation(django_app, expected_menu_item):
     UserFactory(email="email@example.com", password="admin")  # pragma: allowlist secret
 
     sign_in(django_app, "email@example.com")
 
-    expected_menu_items = ["Your consultations", "Sign out"]
-
     with pytest.raises(AppError):
-        assert_expected_menu_items(django_app, SUPPORT_ROUTE, expected_menu_items)
+        assert_expected_menu_items(django_app, SUPPORT_ROUTE, expected_menu_item)
 
 
 @pytest.mark.django_db
-def test_authenticated_staff_navigation(django_app):
+@pytest.mark.parametrize("expected_menu_item", ["Consultations", "Users", "Import", "Sign out"])
+def test_authenticated_staff_navigation(django_app, expected_menu_item):
     UserFactory(
         email="email@example.com",
         password="admin",  # pragma: allowlist secret`
@@ -46,6 +46,4 @@ def test_authenticated_staff_navigation(django_app):
     )
     sign_in(django_app, "email@example.com")
 
-    assert_expected_menu_items(
-        django_app, SUPPORT_ROUTE, ["Consultations", "Users", "Import", "Sign out"]
-    )
+    assert_expected_menu_items(django_app, SUPPORT_ROUTE, expected_menu_item)

@@ -6,7 +6,7 @@ import pytest
     ("url", "expected_status_code"),
     [
         ("/support/", 403),  # Permission Denied
-        ("/support/sign-out/", 404),  # Not Found
+        ("/support/sign-out/", 302),  # Redirect
         ("/support/consultations/", 403),  # Permission Denied
         ("/support/consultations/{consultation_id}/", 403),  # Permission Denied
     ],
