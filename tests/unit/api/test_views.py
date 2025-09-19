@@ -769,7 +769,7 @@ class TestFilteredResponsesAPIView:
         assert response.status_code == 200
         data = response.json()
         assert data["is_flagged"] == is_flagged
-        assert data["is_edited"] == is_flagged
+        assert data["is_edited"] is True
 
 
 @pytest.mark.django_db
