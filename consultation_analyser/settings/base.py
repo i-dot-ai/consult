@@ -302,9 +302,6 @@ SIGN_OFF_BATCH_JOB_QUEUE = env("SIGN_OFF_BATCH_JOB_QUEUE")
 SIGN_OFF_BATCH_JOB_DEFINITION = env("SIGN_OFF_BATCH_JOB_DEFINITION")
 
 
-# Authentication
-LOGIN_URL = "/sign-in/"
-
 # version info
 GIT_SHA = env("GIT_SHA", default=None)
 
@@ -351,7 +348,7 @@ AUTHENTICATION_BACKENDS = [
 ]
 
 # OAuth2 Settings
-LOGIN_URL = "/accounts/login/"
+LOGIN_URL = "/accounts/oidc/gds/login/"
 LOGIN_REDIRECT_URL = "/oauth/callback/"
 LOGOUT_REDIRECT_URL = "/"
 
@@ -392,7 +389,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 
 # OAuth settings for frontend
-FRONTEND_URL = env.str("FRONTEND_URL", default="http://localhost:3000")
+FRONTEND_URL = "http://" + DOMAIN_NAME
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
