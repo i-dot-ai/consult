@@ -9,6 +9,19 @@ def remove_human_assigned_themes(apps, schema_editor):
     ResponseAnnotationTheme.objects.exclude(assigned_by__isnull=True).delete()
 
 
+def remove_duplicate_themes(apps, schema_editor):
+    ResponseAnnotationTheme = apps.get_model("consultations", "ResponseAnnotationTheme")
+
+    # Find duplicates and keep only the first occurrence
+    seen = set()
+    for obj in ResponseAnnotationTheme.objects.all():
+        key = (obj.response_annotation_id, obj.theme_id)
+        if key in seen:
+            obj.delete()
+        else:
+            seen.add(key)
+
+
 class Migration(migrations.Migration):
     dependencies = [
         (
@@ -20,6 +33,7 @@ class Migration(migrations.Migration):
 
     operations = [
         migrations.RunPython(remove_human_assigned_themes),
+        migrations.RunPython(remove_duplicate_themes),
         migrations.RemoveConstraint(
             model_name="responseannotationtheme",
             name="unique_theme_assignment",
