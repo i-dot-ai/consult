@@ -66,6 +66,7 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
 
         data = (
             models.Respondent.objects.filter(consultation_id=pk)
+            .order_by("demographics__field_name", "demographics__field_value")
             .values("demographics__field_name", "demographics__field_value")
             .annotate(count=Count("id"))
         )
