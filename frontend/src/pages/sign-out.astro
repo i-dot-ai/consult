@@ -5,16 +5,8 @@ import Title from '../components/Title.svelte';
 
 import { Routes } from '../global/routes';
 
-
-["access", "sessionId"].forEach(cookie => {
-    Astro.cookies.set(cookie, "", {
-        path: "/",
-        sameSite: "lax",
-        expires: new Date(0),
-    })
-})
-
-return Astro.redirect(Routes.Home);
+// Redirect to backend OAuth logout endpoint which properly clears HTTP-only cookies
+return Astro.redirect("/oauth/logout/");
 ---
 <Layout>
 	<Section>

@@ -15,7 +15,6 @@ PUBLIC_URL_NAMES = [
 AUTHENTICATION_URL_NAMES = [
     "sign_in",
     "sign_out",
-    "magic_link",
 ]  # No tests - tested elsewhere, all public
 
 REDIRECTING_URL_NAMES = ["show_next_response"]
@@ -91,7 +90,7 @@ url_patterns_excluding_magic_link = [
 url_patterns_to_test = [
     url_pattern
     for url_pattern in url_patterns_excluding_magic_link
-    if url_pattern.name not in URL_NAMES_TO_EXCLUDE
+    if hasattr(url_pattern, "name") and url_pattern.name not in URL_NAMES_TO_EXCLUDE
 ]
 
 
@@ -176,7 +175,7 @@ def test_api_urls_permission_required(
 url_patterns_to_test = [
     url_pattern
     for url_pattern in url_patterns_excluding_magic_link
-    if url_pattern.name in REDIRECTING_URL_NAMES
+    if hasattr(url_pattern, "name") and url_pattern.name in REDIRECTING_URL_NAMES
 ]
 
 

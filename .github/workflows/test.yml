@@ -76,6 +76,8 @@ jobs:
           SIGN_OFF_BATCH_JOB_NAME: i-dot-ai-dev-consult-sign-off-job
           SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
           SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
+          SOCIAL_AUTH_OIDC_KEY: 00000000-0000-0000-0000-00000000000
+          SOCIAL_AUTH_OIDC_SECRET: secret-key
 
       - name: Run app tests
         run:

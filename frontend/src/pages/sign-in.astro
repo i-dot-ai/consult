@@ -1,17 +1,18 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import Section from '../components/Section/Section.svelte';
-import Title from '../components/Title.svelte';
-import SignInForm from '../components/screens/SignInForm.svelte';
+import OAuthLogin from '../components/OAuthLogin/OAuthLogin.svelte';
+
+// Check for error parameter
+const error = Astro.url.searchParams.get('error');
+let errorMessage = null;
+
+if (error === 'auth_failed') {
+    errorMessage = 'Authentication failed. Please try again.';
+}
 ---
 <Layout>
 	<Section>
-		<Title level={1} text="Sign in" />
-
-        <p class="my-4 text-md text-gray-500">
-            Enter your email address to generate a link to sign in
-        </p>
-
-        <SignInForm client:load />
+        <OAuthLogin client:load errorMessage={errorMessage} />
 	</Section>
 </Layout>

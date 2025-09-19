@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% set page_title = "Access denied" %}
+
+{% block content %}
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-two-thirds">
+        <h1 class="govuk-heading-l">Access denied</h1>
+        <p class="govuk-body">
+          You do not have permission to access this page.
+        </p>
+        <p class="govuk-body">
+          This area is restricted to staff members only. If you believe you should have access, contact your administrator.
+        </p>
+        <p class="govuk-body">
+          <a href="/" class="govuk-link">Return to the main page</a>
+        </p>
+    </div>
+  </div>
+{% endblock %}
