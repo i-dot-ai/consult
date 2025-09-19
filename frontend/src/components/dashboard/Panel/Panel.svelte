@@ -5,6 +5,7 @@
         border = true,
         bg = false,
         level = 1,
+        children,
     } = $props();
 </script>
 
@@ -22,5 +23,5 @@
         bg && "bg-neutral-50",
     ])}
 >
-    <slot />
+    {@render children()}
 </div>

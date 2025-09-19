@@ -10,6 +10,7 @@
     interface Props {
         id: string,
         label: string,
+        hideLabel?: boolean,
         value: boolean,
         handleChange: (newValue: boolean) => void,
     }
@@ -17,6 +18,7 @@
     let {
         id = "",
         label = "",
+        hideLabel = false,
         value = false,
         handleChange = () => {},
     }: Props = $props();
@@ -34,18 +36,26 @@
     $effect(() => checked.set(value));
 </script>
 
-<div class="flex items-center justify-around flex-wrap gap-1">
-    <label
-      class="grow pr-4 leading-none text-neutral-800 cursor-pointer"
-      for={id}
-      id={`${id}-label`}
-    >
-        {#if $$slots.label}
-            <slot name="label" />
-        {:else}
-            {label}
-        {/if}
-    </label>
+<div class={clsx([
+    "flex",
+    "items-center",
+    !hideLabel && "justify-around",
+    "flex-wrap",
+    "gap-1",
+])}>
+    {#if !hideLabel}
+        <label
+        class="grow pr-4 leading-none text-neutral-800 cursor-pointer"
+        for={id}
+        id={`${id}-label`}
+        >
+            {#if $$slots.label}
+                <slot name="label" />
+            {:else}
+                {label}
+            {/if}
+        </label>
+    {/if}
 
     <button
         use:melt={$root}

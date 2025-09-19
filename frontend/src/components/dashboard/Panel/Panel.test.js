@@ -1,24 +1,35 @@
 import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
-import PanelTest from "./PanelTest.svelte";
-import PanelStory from "./PanelStory.svelte";
+import { createRawSnippet } from 'svelte';
 
+import PanelStory from "./PanelStory.svelte";
+import Panel from "./Panel.svelte";
+
+
+let childComponent;
 
 describe("Panel", () => {
+    beforeEach(() => {
+        childComponent = createRawSnippet(() => {
+            return {
+                render: () => "<p>Child Content</p>",
+            };
+        });
+    })
     afterEach(() => cleanup())
 
     it("should render slot", () => {
-        const { getByText } = render(PanelTest, { slot: "<p>Slot Content</p>" });
+        const { getByText } = render(Panel, { children: childComponent });
 
-        expect(getByText("Slot Content"));
+        expect(getByText("Child Content"));
     })
 
     it("should render correct css based on props", () => {
-        const { getByTestId } = render(PanelTest, {
-            slot: "<p>Slot Content</p>",
+        const { getByTestId } = render(Panel, {
             border: true,
             bg: true,
+            children: childComponent,
         });
 
         const panel = getByTestId("panel-component");
@@ -27,9 +38,9 @@ describe("Panel", () => {
     })
 
     it.each([1, 2, 3])("should render correctly for each level", (level) => {
-        render(PanelTest, {
-            slot: "<p>Slot Content</p>",
+        render(Panel, {
             level: level,
+            children: childComponent,
         });
     })
 
