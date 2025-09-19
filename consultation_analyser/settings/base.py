@@ -139,6 +139,11 @@ CSRF_TRUSTED_ORIGINS = [
     "https://consult-dev.ai.cabinetoffice.gov.uk",
 ]
 
+# Trust proxy headers for load balancer
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+
 # Database with Connection Pooling
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
 
