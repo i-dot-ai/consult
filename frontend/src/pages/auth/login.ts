@@ -2,7 +2,15 @@ import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ request, redirect }) => {
     const url = new URL(request.url);
-    const backendUrl = import.meta.env.PUBLIC_BACKEND_URL || 'http://localhost:8000';
+    const backendUrl = import.meta.env.PUBLIC_BACKEND_URL;
+    
+    if (!backendUrl) {
+        console.error('FATAL: PUBLIC_BACKEND_URL environment variable is not set!');
+        console.log('Available import.meta.env:', import.meta.env);
+        throw new Error('PUBLIC_BACKEND_URL environment variable is required');
+    }
+    
+    console.log('Using backend URL:', backendUrl);
     
     // Construct the backend OAuth login URL with all query parameters
     const backendLoginUrl = new URL('/accounts/oidc/gds/login/', backendUrl);
