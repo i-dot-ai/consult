@@ -33,7 +33,7 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
 ENVIRONMENT = env("ENVIRONMENT")
 
-DOMAIN_NAME = env("DOMAIN_NAME", default="0.0.0.0")  # nosec
+DOMAIN_NAME = env("DOMAIN_NAME", default="localhost:3000")  # nosec
 
 ALLOWED_HOSTS: list[str] = [
     DOMAIN_NAME,
@@ -349,7 +349,7 @@ AUTHENTICATION_BACKENDS = [
 
 # OAuth2 Settings
 LOGIN_URL = "/accounts/oidc/gds/login/"
-LOGIN_REDIRECT_URL = "/oauth/callback/"
+LOGIN_REDIRECT_URL = ("http://" if DEBUG else "https://") + DOMAIN_NAME
 LOGOUT_REDIRECT_URL = "/"
 
 # Allauth Settings
@@ -389,7 +389,7 @@ SOCIALACCOUNT_PROVIDERS = {
 
 
 # OAuth settings for frontend
-FRONTEND_URL = "http://" + DOMAIN_NAME
+FRONTEND_URL = ("http://" if DEBUG else "https://") + DOMAIN_NAME
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
