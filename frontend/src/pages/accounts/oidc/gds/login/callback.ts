@@ -2,11 +2,12 @@ import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ request, redirect }) => {
     const url = new URL(request.url);
-    const backendUrl = import.meta.env.PUBLIC_BACKEND_URL;
+    const backendUrl = process.env.PUBLIC_BACKEND_URL;
     
     if (!backendUrl) {
         console.error('FATAL: PUBLIC_BACKEND_URL environment variable is not set!');
-        console.log('Available import.meta.env:', import.meta.env);
+        console.log('Available process.env keys:', Object.keys(process.env));
+        console.log('process.env.PUBLIC_BACKEND_URL:', process.env.PUBLIC_BACKEND_URL);
         throw new Error('PUBLIC_BACKEND_URL environment variable is required');
     }
     

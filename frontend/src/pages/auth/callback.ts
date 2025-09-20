@@ -2,7 +2,7 @@ import type { APIRoute } from 'astro';
 
 export const GET: APIRoute = async ({ request, redirect }) => {
     const url = new URL(request.url);
-    const backendUrl = import.meta.env.PUBLIC_BACKEND_URL;
+    const backendUrl = process.env.PUBLIC_BACKEND_URL;
     
     // Construct the backend OAuth callback URL with all query parameters
     const backendCallbackUrl = new URL('/accounts/oidc/gds/login/callback/', backendUrl);
