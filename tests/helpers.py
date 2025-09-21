@@ -10,29 +10,7 @@ User = get_user_model()
 
 
 def sign_in(django_app, email):
-    """
-    OAuth simulation helper - replaces magic link authentication.
-
-    Simulates the OAuth flow by:
-    1. Getting existing user (should already exist from test setup)
-    2. Generating a JWT token
-    3. Setting authentication cookies
-    4. Returning the authenticated homepage
-    """
-    # Get existing user (tests should create users via factories)
-    user_existed = True
-    try:
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
-        # Fallback: create user if it doesn't exist, but tests should create users
-        user = User.objects.create_user(email=email, has_dashboard_access=True)
-        user_existed = False
-
-    # OAuth success view sets dashboard access for new users, but preserves existing dashboard state
-    # Only automatically grant dashboard access for newly created users
-    if not user_existed and not user.has_dashboard_access:
-        user.has_dashboard_access = True
-        user.save()
+    user = User.objects.get(email=email)
 
     # Generate JWT token (simulating OAuth success view)
     access_token = AccessToken.for_user(user)
