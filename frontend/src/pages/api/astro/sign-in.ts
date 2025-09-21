@@ -1,9 +1,8 @@
 export const prerender = false;
 
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
-import { getBackendUrl } from '../../../global/utils';
-
+import { getBackendUrl } from "../../../global/utils";
 
 export const POST: APIRoute = async ({ request }) => {
   let message = "success";
@@ -12,20 +11,23 @@ export const POST: APIRoute = async ({ request }) => {
   const requestBody = await request.json();
 
   try {
-    const backendResponse = await fetch(`${getBackendUrl(request.url)}/api/magic-link/`, {
-      method: "POST",
-      body: JSON.stringify({
-        "email": requestBody.email
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      }
-    })
+    const backendResponse = await fetch(
+      `${getBackendUrl(request.url)}/api/magic-link/`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          email: requestBody.email,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
     if (!backendResponse.ok) {
       message = "Response not ok";
       status = 500;
     }
-  } catch(err: any) {
+  } catch (err: any) {
     message = err?.message || "unknown";
     status = 500;
   }
@@ -36,6 +38,6 @@ export const POST: APIRoute = async ({ request }) => {
     }),
     {
       status: status,
-    }
+    },
   );
 };

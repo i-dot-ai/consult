@@ -1,93 +1,92 @@
 import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
-import userEvent from '@testing-library/user-event';
+import userEvent from "@testing-library/user-event";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
 import SwitchTest from "./SwitchTest.svelte";
 
-
 describe("Switch", () => {
-    afterEach(() => cleanup())
+  afterEach(() => cleanup());
 
-    it("should call handleChange func", async () => {
-        const user = userEvent.setup();
-        const handleChangeMock = vi.fn();
+  it("should call handleChange func", async () => {
+    const user = userEvent.setup();
+    const handleChangeMock = vi.fn();
 
-        render(SwitchTest, {
-            id: "test-switch",
-            value: false,
-            label: "Test Switch",
-            handleChange: handleChangeMock
-        });
+    render(SwitchTest, {
+      id: "test-switch",
+      value: false,
+      label: "Test Switch",
+      handleChange: handleChangeMock,
+    });
 
+    const button = screen.getByRole("switch");
 
-        const button = screen.getByRole('switch');
+    expect(handleChangeMock).toHaveBeenCalledTimes(1);
 
-        expect(handleChangeMock).toHaveBeenCalledTimes(1);
+    await user.click(button);
 
-        await user.click(button);
+    expect(handleChangeMock).toHaveBeenCalledTimes(2);
+  });
 
-        expect(handleChangeMock).toHaveBeenCalledTimes(2);
-    })
+  it("should have correct attributes when switched", async () => {
+    const user = userEvent.setup();
+    const handleChangeMock = vi.fn();
 
-    it("should have correct attributes when switched", async () => {
-        const user = userEvent.setup();
-        const handleChangeMock = vi.fn();
+    render(SwitchTest, {
+      id: "test-switch",
+      value: false,
+      label: "Test Switch",
+      handleChange: handleChangeMock,
+    });
 
-        render(SwitchTest, {
-            id: "test-switch",
-            value: false,
-            label: "Test Switch",
-            handleChange: handleChangeMock
-        });
+    const button = screen.getByRole("switch");
 
+    expect(button.getAttribute("data-state")).toEqual("unchecked");
+    expect(button.getAttribute("aria-checked")).toEqual("false");
 
-        const button = screen.getByRole('switch');
+    await user.click(button);
 
-        expect(button.getAttribute("data-state")).toEqual("unchecked");
-        expect(button.getAttribute("aria-checked")).toEqual("false");
+    expect(button.getAttribute("data-state")).toEqual("checked");
+    expect(button.getAttribute("aria-checked")).toEqual("true");
+  });
 
-        await user.click(button);
+  it("should have render props", async () => {
+    const handleChangeMock = vi.fn();
 
-        expect(button.getAttribute("data-state")).toEqual("checked");
-        expect(button.getAttribute("aria-checked")).toEqual("true");
-    })
+    const { container, getByLabelText } = render(SwitchTest, {
+      id: "test-switch",
+      value: false,
+      label: "Test Switch",
+      handleChange: handleChangeMock,
+    });
 
-    it("should have render props", async () => {
-        const handleChangeMock = vi.fn();
+    expect(container.querySelector("#test-switch")).toBeTruthy();
+    expect(
+      container.querySelector(`#test-switch-label[for="test-switch"]`),
+    ).toBeTruthy();
+    expect(getByLabelText("Test Switch"));
+  });
 
-        const {container, getByLabelText} = render(SwitchTest, {
-            id: "test-switch",
-            value: false,
-            label: "Test Switch",
-            handleChange: handleChangeMock,
-        });
+  it("should have be checked initially if value is true", async () => {
+    const handleChangeMock = vi.fn();
 
-        expect(container.querySelector("#test-switch")).toBeTruthy();
-        expect(container.querySelector(`#test-switch-label[for="test-switch"]`)).toBeTruthy();
-        expect(getByLabelText("Test Switch"));
-    })
+    render(SwitchTest, {
+      id: "test-switch",
+      value: true,
+      label: "Test Switch",
+      handleChange: handleChangeMock,
+    });
+    const button = screen.getByRole("switch");
+    expect(button.getAttribute("data-state")).toEqual("checked");
+  });
 
-    it("should have be checked initially if value is true", async () => {
-        const handleChangeMock = vi.fn();
+  it("should render label slot", async () => {
+    render(SwitchTest, {
+      id: "test-switch",
+      value: false,
+      label: "Test Switch",
+      labelSlot: "Label Slot Content",
+    });
 
-        render(SwitchTest, {
-            id: "test-switch",
-            value: true,
-            label: "Test Switch",
-            handleChange: handleChangeMock,
-        });
-        const button = screen.getByRole('switch');
-        expect(button.getAttribute("data-state")).toEqual("checked");
-    })
-
-    it("should render label slot", async () => {
-        render(SwitchTest, {
-            id: "test-switch",
-            value: false,
-            label: "Test Switch",
-            labelSlot: "Label Slot Content",
-        });
-
-        expect(screen.getByText("Label Slot Content"));
-    })
-})
+    expect(screen.getByText("Label Slot Content"));
+  });
+});
