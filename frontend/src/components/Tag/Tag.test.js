@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { render, cleanup } from "@testing-library/svelte";
 
 import TagTest from "./TagTest.svelte";

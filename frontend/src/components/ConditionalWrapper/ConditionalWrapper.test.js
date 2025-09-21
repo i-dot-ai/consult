@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, test } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, render } from "@testing-library/svelte";
 
 import ConditionalWrapperTest from "./ConditionalWrapperTest.svelte";

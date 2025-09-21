@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen, getByText } from "@testing-library/svelte";
+import { render, cleanup, screen } from "@testing-library/svelte";
 
 import ThemesTable from "./ThemesTable.svelte";
 import { getPercentage } from "../../../global/utils";
@@ -32,7 +32,7 @@ describe("ThemesTable", () => {
   afterEach(() => cleanup());
 
   it("should render data", () => {
-    const { container, getByText } = render(ThemesTable, {
+    const { getByText } = render(ThemesTable, {
       themes: testData.themes,
       totalAnswers: testData.totalAnswers,
       skeleton: testData.skeleton,
@@ -67,7 +67,7 @@ describe("ThemesTable", () => {
     const handleClickMock = vi.fn();
 
     render(ThemesTable, {
-      themes: testData.themes.map((theme, index) => ({
+      themes: testData.themes.map((theme) => ({
         ...theme,
         handleClick: handleClickMock,
       })),

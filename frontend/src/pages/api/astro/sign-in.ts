@@ -27,8 +27,11 @@ export const POST: APIRoute = async ({ request }) => {
       message = "Response not ok";
       status = 500;
     }
-  } catch (err: any) {
-    message = err?.message || "unknown";
+  } catch (err: unknown) {
+    if (err instanceof Error) {
+      message = err.message;
+    }
+    message = "unknown";
     status = 500;
   }
 

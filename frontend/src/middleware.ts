@@ -27,16 +27,16 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   // skip as new pages are moved to astro
   const toSkip = [
     /^\/$/,
-    /^\/data-sharing[\/]?$/,
-    /^\/get-involved[\/]?$/,
-    /^\/how-it-works[\/]?$/,
-    /^\/privacy[\/]?$/,
-    /^\/sign-in[\/]?$/,
-    /^\/sign-out[\/]?$/,
-    /^\/magic-link\/[A-Za-z0-9\-]*[\/]?$/,
+    /^\/data-sharing[/]?$/,
+    /^\/get-involved[/]?$/,
+    /^\/how-it-works[/]?$/,
+    /^\/privacy[/]?$/,
+    /^\/sign-in[/]?$/,
+    /^\/sign-out[/]?$/,
+    /^\/magic-link\/[A-Za-z0-9-]*[/]?$/,
     /^\/api\/astro\/.*/,
-    /^\/api\/health[\/]?$/,
-    /^\/health[\/]?$/,
+    /^\/api\/health[/]?$/,
+    /^\/health[/]?$/,
     /^\/.well-known\/.*/,
     /^\/consultations.*/,
     // /^\/evaluations.*/,
@@ -132,9 +132,10 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     });
 
     return newResponse;
-  } catch (err: any) {
-    console.log("Error 500:", err.message);
-    return new Response(JSON.stringify({ message: err.message }), {
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "unknown";
+    console.log("Error 500:", message);
+    return new Response(JSON.stringify({ message }), {
       status: 500,
     });
   }

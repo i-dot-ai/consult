@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
@@ -70,7 +70,7 @@ describe("FiltersSidebar", () => {
     const user = userEvent.setup();
     const setEvidenceRichMock = vi.fn();
 
-    const { getByText, queryByText } = render(FiltersSidebar, {
+    render(FiltersSidebar, {
       showEvidenceRich: testData.showEvidenceRich,
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,

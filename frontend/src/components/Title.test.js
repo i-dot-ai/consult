@@ -1,4 +1,4 @@
-import { describe, expect, it, test } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/svelte";
 
 import Title from "./Title.svelte";
@@ -23,6 +23,6 @@ describe("Title", () => {
   });
   it.each([0, 7, -1])("throws if invalid level", (level) => {
     const text = "Test Text";
-    expect(render(Title, { props: { level: level, text: text } })).toThrow;
+    expect(render(Title, { props: { level: level, text: text } }).toThrow);
   });
 });

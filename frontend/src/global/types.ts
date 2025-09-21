@@ -71,7 +71,7 @@ export enum TabDirections {
 }
 
 export interface SearchableSelectOption {
-  value: any;
+  value: unknown;
   label: string;
   description?: string;
   disabled?: boolean;

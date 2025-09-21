@@ -1,6 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
-import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { render, cleanup } from "@testing-library/svelte";
 
 import Metrics from "./Metrics.svelte";
 
@@ -64,32 +63,26 @@ describe("Metrics", () => {
   });
 
   it("should not render chart if no question has multi answers", () => {
-    const { getByText, getAllByText, getByTestId, queryByTestId } = render(
-      Metrics,
-      {
-        loading: false,
-        questions: testData.questions.map((question) => ({
-          ...question,
-          has_multiple_choice: false,
-          multiple_choice_answer: [],
-        })),
-        demoOptions: testData.demoOptions,
-        demoOptionsLoading: false,
-      },
-    );
+    const { queryByTestId } = render(Metrics, {
+      loading: false,
+      questions: testData.questions.map((question) => ({
+        ...question,
+        has_multiple_choice: false,
+        multiple_choice_answer: [],
+      })),
+      demoOptions: testData.demoOptions,
+      demoOptionsLoading: false,
+    });
     expect(queryByTestId("metrics-chart")).toBeNull();
   });
 
   it("should render chart if some questions have multi answers", () => {
-    const { getByText, getAllByText, getByTestId, queryByTestId } = render(
-      Metrics,
-      {
-        loading: false,
-        questions: testData.questions,
-        demoOptions: testData.demoOptions,
-        demoOptionsLoading: false,
-      },
-    );
+    const { getByTestId } = render(Metrics, {
+      loading: false,
+      questions: testData.questions,
+      demoOptions: testData.demoOptions,
+      demoOptionsLoading: false,
+    });
     expect(getByTestId("metrics-chart"));
   });
 

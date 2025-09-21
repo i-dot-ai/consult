@@ -11,13 +11,14 @@ function getInitialFavs() {
   const storedFavs = localStorage.getItem(FAVS_STORAGE_KEY);
   try {
     return storedFavs ? JSON.parse(storedFavs) : [];
-  } catch (e) {
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err) {
     return [];
   }
 }
 
 function createFavStore() {
-  const { subscribe, set, update } = writable(getInitialFavs());
+  const { subscribe, update } = writable(getInitialFavs());
 
   const syncLocalStorage = (val: Array<string>) => {
     localStorage.setItem(FAVS_STORAGE_KEY, JSON.stringify(val));
@@ -47,7 +48,7 @@ export const favStore = createFavStore();
 
 // Shared fetch logic
 export const createFetchStore = () => {
-  const data: Writable<any> = writable(null);
+  const data: Writable<unknown> = writable(null);
   const loading: Writable<boolean> = writable(true);
   const error: Writable<string> = writable("");
 
@@ -81,8 +82,9 @@ export const createFetchStore = () => {
           }
           const parsedData = await response.json();
           data.set(parsedData);
-        } catch (err: any) {
-          error.set(err.message);
+        } catch (err: unknown) {
+          const message = err instanceof Error ? err.message : "unknown";
+          error.set(message);
         } finally {
           loading.set(false);
 

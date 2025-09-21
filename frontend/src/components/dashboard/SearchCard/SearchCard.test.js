@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { render, cleanup } from "@testing-library/svelte";
 
 import SearchCardTest from "./SearchCardTest.svelte";

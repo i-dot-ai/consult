@@ -5,7 +5,6 @@ import type { APIRoute } from "astro";
 import { getBackendUrl } from "../../../global/utils";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-  let message = "success";
   let status = 200;
 
   interface TokenData {
@@ -33,7 +32,6 @@ export const POST: APIRoute = async ({ request, cookies }) => {
 
     const responseJson = await backendResponse.json();
     if (!backendResponse.ok) {
-      message = "Response not ok:" + JSON.stringify(responseJson);
       status = 500;
     }
     data = responseJson;
@@ -47,8 +45,8 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     if (data.sessionId) {
       cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
     }
-  } catch (err: any) {
-    message = err.message;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err: unknown) {
     status = 500;
   }
 

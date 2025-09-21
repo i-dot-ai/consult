@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { applyHighlight, getEnv, getPercentage, toTitleCase } from "./utils";
 
 describe("getPercentage", () => {

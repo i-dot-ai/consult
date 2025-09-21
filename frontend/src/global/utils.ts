@@ -8,7 +8,7 @@ export const getEnv = (url: string): string => {
   return "local";
 };
 
-export const getBackendUrl = (url: string): string => {
+export const getBackendUrl = (): string => {
   // Try runtime environment variable first (for server-side)
   if (typeof process !== "undefined" && process.env?.BACKEND_URL) {
     return process.env.BACKEND_URL;
@@ -61,13 +61,13 @@ export const toTitleCase = (text: string): string => {
     );
 };
 
-export function paginateArray(arr: any[], size: number) {
+export function paginateArray(arr: unknown[] | undefined, size: number) {
   if (!arr || arr.length === 0) {
     return [];
   }
-  return arr.reduce((acc, curr, i) => {
-    let index = Math.floor(i / size);
-    let page = acc[index] || (acc[index] = []);
+  return arr.reduce((acc: unknown[][], curr, i) => {
+    const index = Math.floor(i / size);
+    const page = acc[index] || (acc[index] = []);
     page.push(curr);
 
     return acc;

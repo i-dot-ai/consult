@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
@@ -42,8 +42,6 @@ describe("FlagButton", () => {
   });
 
   it("should have aria pressed false if not flagged", async () => {
-    const user = userEvent.setup();
-
     render(FlagButton, {
       consultationId: testData.consultationId,
       questionId: testData.questionId,
@@ -56,8 +54,6 @@ describe("FlagButton", () => {
   });
 
   it("should have aria pressed true if flagged", async () => {
-    const user = userEvent.setup();
-
     render(FlagButton, {
       consultationId: testData.consultationId,
       questionId: testData.questionId,

@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { afterEach, describe, expect, it } from "vitest";
+import { render, cleanup } from "@testing-library/svelte";
 
 import MetricsSummary from "./MetricsSummary.svelte";
 
