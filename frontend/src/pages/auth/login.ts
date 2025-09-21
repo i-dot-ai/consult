@@ -6,8 +6,10 @@ export const GET: APIRoute = async ({ request, redirect }) => {
     
     if (!backendUrl) {
         console.error('FATAL: PUBLIC_BACKEND_URL environment variable is not set!');
-        console.log('Available process.env keys:', Object.keys(process.env));
+        console.log('Available process.env keys:', Object.keys(process.env).sort());
         console.log('process.env.PUBLIC_BACKEND_URL:', process.env.PUBLIC_BACKEND_URL);
+        console.log('All env vars with BACKEND:', Object.keys(process.env).filter(k => k.includes('BACKEND')));
+        console.log('All env vars with URL:', Object.keys(process.env).filter(k => k.includes('URL')));
         throw new Error('PUBLIC_BACKEND_URL environment variable is required');
     }
     
