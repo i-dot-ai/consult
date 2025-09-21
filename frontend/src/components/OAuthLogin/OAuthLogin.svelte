@@ -21,7 +21,7 @@
     <p class="govuk-body">Use your government account to sign in to the consultation analyser.</p>
     
     <a 
-        href="/auth/login"
+        href="/accounts/oidc/gds/login/"
         class="govuk-button"
         role="button"
         draggable="false"
