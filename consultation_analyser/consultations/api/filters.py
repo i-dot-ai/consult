@@ -1,11 +1,12 @@
 from collections import defaultdict
 
 from django.db.models import Count
+from django_filters import UUIDFilter
 from django_filters.rest_framework import BaseInFilter, BooleanFilter, CharFilter, FilterSet
 from pgvector.django import CosineDistance
 from rest_framework.filters import SearchFilter
 
-from consultation_analyser.consultations.models import Response
+from consultation_analyser.consultations.models import Question, Response
 from consultation_analyser.embeddings import embed_text
 
 
@@ -18,6 +19,17 @@ def safe_json_encode(txt: str):
             return False
         case _:
             return txt
+
+
+class QuestionFilter(FilterSet):
+    # has_free_text = CharFilter()
+    respondent_id = UUIDFilter(field_name="response__respondent_id")
+
+    class Meta:
+        model = Question
+        fields = [
+            "has_free_text",
+        ]
 
 
 class ResponseFilter(FilterSet):
