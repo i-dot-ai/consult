@@ -10,6 +10,7 @@ def test_support_url_access(client):
     # Check anonymous user
     response = client.get(url)
     assert response.status_code == 302
+    assert response.url.endswith("/sign-in/")
 
     # Check normal non-staff user can't access
     user = factories.UserFactory()
