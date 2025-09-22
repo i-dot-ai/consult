@@ -30,19 +30,14 @@
       const consultationId = '{{ consultation_id }}';
 
       // First fetch the consultation to get the ID and title
-      fetch(`/api/consultations/?pk=${consultationId}`)
+      fetch(`/api/consultations/${consultationId}/`)
         .then(response => response.json())
-        .then(data => {
-          if (data.results && data.results.length > 0) {
-            const consultation = data.results[0];
-            document.getElementById('consultation-title').textContent = consultation.title;
-            document.title = consultation.title;
+        .then(consultation => {
+          document.getElementById('consultation-title').textContent = consultation.title;
+          document.title = consultation.title;
 
-            // Now fetch questions with free text and themes
-            return fetch(`/api/consultations/${consultation.id}/questions/?has_free_text=true&has_free_text=true`);
-          } else {
-            throw new Error('Consultation not found');
-          }
+          // Now fetch questions with free text and themes
+          return fetch(`/api/consultations/${consultation.id}/questions/?has_free_text=true&has_free_text=true`);
         })
         .then(response => response.json())
         .then(data => {
