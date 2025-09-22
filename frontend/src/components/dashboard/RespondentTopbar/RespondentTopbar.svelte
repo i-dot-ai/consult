@@ -4,15 +4,20 @@
     import Button from "../../inputs/Button/Button.svelte";
     import MaterialIcon from "../../MaterialIcon.svelte";
     import ArrowForward from "../../svg/material/ArrowForward.svelte";
-    import ChevronRight from "../../svg/material/ChevronRight.svelte";
+
+    import { type Snippet } from "svelte";
 
 
     interface Props {
-        respondentId: string;
+        title: string;
+        backUrl: string;
+        children?: Snippet;
     }
 
     let {
-        respondentId = "",
+        title = "",
+        backUrl = "",
+        children,
     }: Props = $props();
 </script>
 
@@ -27,7 +32,11 @@
 ])}>
     <div class="flex items-center gap-4">
         <div class="m-auto">
-            <Button size="xs" variant="ghost">
+            <Button
+                size="xs"
+                variant="ghost"
+                handleClick={() => location.href = backUrl}
+            >
                 <div class="rotate-180">
                     <MaterialIcon color="fill-neutral-700">
                         <ArrowForward />
@@ -38,26 +47,12 @@
             </Button>
         </div>
 
-        <h1 class="font-bold text-lg">Respondent {respondentId}</h1>
+        <h1 class="font-bold text-lg">{title}</h1>
     </div>
 
     <div class="flex items-center gap-4">
-        <Button size="xs">
-            <div class="rotate-180">
-                <MaterialIcon color="fill-neutral-700">
-                    <ChevronRight />
-                </MaterialIcon>
-            </div>
-
-            <span class="mr-2 my-[0.1rem]">Previous Respondent</span>
-        </Button>
-
-        <Button size="xs">
-            <span class="ml-2 my-[0.1rem]">Next Respondent</span>
-
-            <MaterialIcon color="fill-neutral-700">
-                <ChevronRight />
-            </MaterialIcon>
-        </Button>
+        {#if children}
+            {@render children()}
+        {/if}
     </div>
 </div>

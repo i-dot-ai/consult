@@ -25,11 +25,13 @@
     interface Props {
         data: number[];
         labels: LabelItem[];
+        legendId?: string;
     }
 
     let {
         data = [],
         labels = [],
+        legendId = "legend-container",
     }: Props = $props();
 
     const MAX_TOOLTIP_LENGTH = 20;
@@ -208,7 +210,7 @@
                         },
                         //@ts-ignore: custom plugin adds htmlLegend
                         htmlLegend: {
-                            containerID: 'legend-container',
+                            containerID: legendId,
                         }
                     },
                     layout: {

@@ -12,6 +12,7 @@ describe("RespondentTopbar", () => {
     beforeEach(() => {
         testData = {
             respondentId: "test-respondent",
+            backUrl: "#",
         };
     })
 

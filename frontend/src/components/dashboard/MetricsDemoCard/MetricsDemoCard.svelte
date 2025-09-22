@@ -20,20 +20,20 @@
     interface Props {
         title: string;
         items?: MetricsDemoItem[];
+        hideThreshold?: number;
     }
 
     let {
         title = "",
         items = [],
+        hideThreshold = 3,
     }: Props = $props();
 
     let displayAll: boolean = $state(false);
-
-    const NUM_ABOVE_FOLD = 3;
 </script>
 
 {#snippet cardItem({title, count, percentage}: MetricsDemoItem, index: number)}
-    {#if displayAll || index < NUM_ABOVE_FOLD}
+    {#if displayAll || index < hideThreshold}
         <div
             transition:slide
             class={clsx([
@@ -57,7 +57,13 @@
     {/if}
 {/snippet}
 
-<div transition:slide class="metrics-demo-card col-span-12 sm:col-span-6 lg:col-span-4">
+<div transition:slide class={clsx([
+    "metrics-demo-card",
+    "col-span-12",
+    "sm:col-span-6",
+    "lg:col-span-4",
+    "h-full",
+])}>
     <Panel bg={true} border={true}>
         <Title level={4} text={title} />
 
@@ -65,7 +71,7 @@
             {@render cardItem(item, index)}
         {/each}
 
-        {#if items.length > NUM_ABOVE_FOLD}
+        {#if items.length > hideThreshold}
             <hr class="my-2 border-neutral-300" />
 
             <Button
