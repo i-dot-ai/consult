@@ -9,7 +9,7 @@ def test_support_url_access(client):
     url = reverse("users")
     # Check anonymous user
     response = client.get(url)
-    assert response.status_code == 404
+    assert response.status_code == 302
 
     # Check normal non-staff user can't access
     user = factories.UserFactory()

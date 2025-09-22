@@ -80,7 +80,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "waffle.middleware.WaffleMiddleware",
-    "consultation_analyser.middleware.LoginRequiredMiddleware404",
     "consultation_analyser.middleware.SupportAppStaffRequiredMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
 ]
@@ -122,6 +121,7 @@ AUTH_USER_MODEL = "authentication.User"
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "https://consult.ai.cabinetoffice.gov.uk",
+    "https://consult-preprod.ai.cabinetoffice.gov.uk",
     "https://consult-dev.ai.cabinetoffice.gov.uk",
 ]
 

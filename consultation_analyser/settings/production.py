@@ -84,3 +84,5 @@ LOGGER = StructuredLogger(
         "log_format": LogOutputFormat.JSON,
     },
 )
+
+SIGNIN_URL = "https://" + DOMAIN_NAME + LOGIN_URL  # noqa: F405
