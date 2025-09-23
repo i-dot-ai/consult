@@ -8,8 +8,10 @@ from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
     Consultation,
     CrossCuttingTheme,
+    DemographicOption,
     MultiChoiceAnswer,
     Question,
+    Respondent,
     Response,
     ResponseAnnotationTheme,
     Theme,
@@ -218,3 +220,20 @@ class ResponseSerializer(serializers.ModelSerializer):
             "is_flagged",
             "is_edited",
         ]
+
+
+class DemographicOptionSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source="field_name")
+    value = serializers.JSONField(source="field_value")
+
+    class Meta:
+        model = DemographicOption
+        fields = ["name", "value"]
+
+
+class RespondentSerializer(serializers.ModelSerializer):
+    demographics = DemographicOptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Respondent
+        fields = ["id", "consultation", "themefinder_id", "demographics", "name"]

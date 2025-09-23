@@ -30,4 +30,13 @@ def build_url(url_pattern: str, question: Question) -> str:
             },
         )
 
+    if url_pattern.startswith("respondent-"):
+        return reverse(
+            url_pattern,
+            kwargs={
+                "consultation_pk": question.consultation.pk,
+                "pk": question.pk,
+            },
+        )
+
     raise ValueError("unrecognised url_pattern")
