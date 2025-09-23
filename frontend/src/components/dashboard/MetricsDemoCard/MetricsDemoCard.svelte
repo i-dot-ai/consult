@@ -24,7 +24,12 @@
     hideThreshold?: number;
   }
 
-  let { consultationId = "", title = "", items = [], hideThreshold = 3 }: Props = $props();
+  let {
+    consultationId = "",
+    title = "",
+    items = [],
+    hideThreshold = 3,
+  }: Props = $props();
 
   let displayAll: boolean = $state(false);
 </script>
@@ -74,7 +79,8 @@
       <Button
         size="xs"
         variant="ghost"
-        handleClick={() => location.href = getConsultationAnalysisUrl(consultationId)}
+        handleClick={() =>
+          (location.href = getConsultationAnalysisUrl(consultationId))}
       >
         <div class="flex justify-center items-center gap-1">
           <span>View All {items.length}</span>
