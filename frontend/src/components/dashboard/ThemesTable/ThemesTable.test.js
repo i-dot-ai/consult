@@ -106,9 +106,9 @@ describe("ThemesTable", () => {
     });
 
     expect(getAllByText("<1%")).toBeTruthy();
-  })
+  });
 
   it("should render story", () => {
     render(ThemesTableStory);
-  })
-})
+  });
+});

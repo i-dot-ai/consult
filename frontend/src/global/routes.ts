@@ -31,12 +31,15 @@ export const getQuestionDetailUrl = (
   return `${Routes.Consultations}/${consultationId}/responses/${questionId}`;
 };
 
-export const getRespondentDetailUrl = (consultationId: string, respondentId: string) => {
-    if (!consultationId || !respondentId) {
-        return "#";
-    }
-    return `${Routes.Consultations}/${consultationId}/respondent/${respondentId}`;
-}
+export const getRespondentDetailUrl = (
+  consultationId: string,
+  respondentId: string,
+) => {
+  if (!consultationId || !respondentId) {
+    return "#";
+  }
+  return `${Routes.Consultations}/${consultationId}/respondent/${respondentId}`;
+};
 export const getApiConsultationUrl = (consultationId: string) => {
   return `${Routes.ApiConsultations}/${consultationId}`;
 };

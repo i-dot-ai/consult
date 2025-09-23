@@ -20,6 +20,7 @@
     "@codemirror/lang-json": "^6.0.2",
     "@melt-ui/pp": "^0.3.2",
     "@melt-ui/svelte": "^0.86.6",
+    "@testing-library/svelte": "^5.2.8",
     "@testing-library/user-event": "^14.6.1",
     "astro": "^5.12.1",
     "chart.js": "^4.5.0",
@@ -33,7 +34,6 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
-    "@testing-library/svelte": "^5.2.8",
     "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.1.8",
