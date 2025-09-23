@@ -92,14 +92,12 @@
   </article>
 </Panel>
 
-<style lang="scss">
-  a:hover {
-    h3 {
-      color: var(--color-primary);
-    }
-    .question-number {
-      color: white;
-      background-color: var(--color-primary);
-    }
+<style>
+  a:hover h3 {
+    color: var(--color-primary);
+  }
+  a:hover .question-number {
+    color: white;
+    background-color: var(--color-primary);
   }
 </style>
