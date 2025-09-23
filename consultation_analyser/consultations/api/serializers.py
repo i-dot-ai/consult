@@ -157,6 +157,7 @@ class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
 
 class ResponseSerializer(serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
+    respondent_id = serializers.UUIDField(source="respondent.id", read_only=True)
     free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
     demographic_data = serializers.SerializerMethodField(read_only=True)
     themes = ResponseAnnotationThemeSerializer(
@@ -206,6 +207,7 @@ class ResponseSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "identifier",
+            "respondent_id",
             "free_text_answer_text",
             "demographic_data",
             "themes",
