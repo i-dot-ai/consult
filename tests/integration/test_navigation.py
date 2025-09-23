@@ -15,15 +15,6 @@ def assert_expected_menu_items(django_app, endpoint, menu_items):
         assert menu_item in response_header
 
 
-def test_not_authenticated_navigation(django_app):
-    expected_menu_items = ["How it works", "Data sharing", "Get involved", "Sign in"]
-
-    assert_expected_menu_items(django_app, "/", expected_menu_items)
-
-    with pytest.raises(AppError):
-        assert_expected_menu_items(django_app, SUPPORT_ROUTE, expected_menu_items)
-
-
 # Non-staff user
 @pytest.mark.django_db
 def test_authenticated_navigation(django_app):

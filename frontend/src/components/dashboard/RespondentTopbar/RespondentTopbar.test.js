@@ -2,6 +2,8 @@ import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 import userEvent from '@testing-library/user-event';
 import { render, cleanup, screen } from "@testing-library/svelte";
 
+import { createRawSnippet } from "svelte";
+
 import RespondentTopbar from "./RespondentTopbar.svelte";
 import RespondentTopbarStory from "./RespondentTopbarStory.svelte";
 
@@ -10,10 +12,10 @@ let testData;
 
 describe("RespondentTopbar", () => {
     beforeEach(() => {
-        testData = {
-            respondentId: "test-respondent",
-            backUrl: "#",
-        };
+      testData = {
+          title: "test-title",
+          backUrl: "#",
+      };
     })
 
     afterEach(() => cleanup())
@@ -23,10 +25,19 @@ describe("RespondentTopbar", () => {
             ...testData,
         });
 
-        expect(getByText(`Respondent ${testData.respondentId}`));
-        expect(getByText("Back to Analysis"));
-        expect(getByText("Previous Respondent"));
-        expect(getByText("Next Respondent"));        
+        expect(getByText(testData.title));
+        expect(getByText("Back to Analysis"));    
+    })
+
+    it("should render child", () => {
+        const { getByText, container } = render(RespondentTopbar, {
+            ...testData,
+            children: createRawSnippet(() => ({
+              render: () => `<p>Child content</p>`,
+            }))
+        });
+
+        expect(getByText(`Child content`));
     })
 
     it("should render story", () => {

@@ -50,6 +50,7 @@
         if (noChangesStaged()) {
             return;
         }
+
         await actualUpdateAnswer(getApiAnswerUrl(consultationId, questionId, answerId), "PATCH", {
             "themes": stagedThemes.map(theme => ({id: theme.id})),
             "evidenceRich": stagedEvidenceRich,
@@ -85,7 +86,7 @@
         evidenceRich = false,
         resetData = () => {},
         setEditing = () => {},
-        updateAnswerMock = async () => {},
+        updateAnswerMock,
     }: Props = $props();
 
     let stagedThemes: ResponseTheme[] = $state([]);

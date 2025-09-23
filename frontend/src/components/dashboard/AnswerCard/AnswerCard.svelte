@@ -134,8 +134,7 @@
                         {isFlagged}
                     />
 
-                    <!-- Disabled temporarily -->
-                    <!-- <EditPanel
+                    <EditPanel
                         {consultationId}
                         {questionId}
                         {answerId}
@@ -144,7 +143,7 @@
                         {evidenceRich}
                         {resetData}
                         setEditing={(val: boolean) => editing = val}
-                    /> -->
+                    />
                 {/if}
 
                 <small

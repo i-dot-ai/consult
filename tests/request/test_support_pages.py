@@ -12,4 +12,5 @@ def test_no_login_support_pages(client, consultation):
     for url in support_urls:
         full_url = f"/support/{url}"
         response = client.get(full_url)
-        assert response.status_code == 404  # No access - 404
+        assert response.status_code == 302  # Redirect
+        assert response.url.endswith("/sign-in/")
