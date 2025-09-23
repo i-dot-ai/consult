@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+from django.conf import settings
 from django.contrib.auth import login
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Exists, OuterRef
@@ -277,3 +278,8 @@ def verify_magic_link(request) -> HttpResponse:
                 "sessionId": request.session.session_key,
             }
         )
+
+
+@api_view(["GET"])
+def get_git_sha(_request) -> Response:
+    return Response({"sha": settings.GIT_SHA})
