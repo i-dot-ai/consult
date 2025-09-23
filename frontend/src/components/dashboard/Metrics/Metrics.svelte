@@ -22,12 +22,14 @@
   import Finance from "../../svg/material/Finance.svelte";
 
   interface Props {
+    consultationId: string;
     loading: boolean;
     questions: Question[];
     demoOptions: DemoOptionsResponseItem[];
     demoOptionsLoading: boolean;
   }
   let {
+    consultationId = "",
     loading = true,
     questions = [],
     demoOptions = [],
@@ -198,6 +200,7 @@
             )}
 
             <MetricsDemoCard
+              {consultationId}
               title={category}
               items={[...demoOptions]
                 .filter((opt: DemoOptionsResponseItem) => opt.name === category)

@@ -71,6 +71,7 @@
 
 <section class="my-8">
   <Metrics
+    {consultationId}
     questions={consultation?.questions || []}
     {loading}
     demoOptionsLoading={$isDemoOptionsLoading}

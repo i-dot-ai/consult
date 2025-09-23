@@ -9,6 +9,7 @@
   import Button from "../../inputs/Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import ArrowForward from "../../svg/material/ArrowForward.svelte";
+  import { getConsultationAnalysisUrl } from "../../../global/routes";
 
   interface MetricsDemoItem {
     title: string;
@@ -17,12 +18,13 @@
   }
 
   interface Props {
+    consultationId: string;
     title: string;
     items?: MetricsDemoItem[];
     hideThreshold?: number;
   }
 
-  let { title = "", items = [], hideThreshold = 3 }: Props = $props();
+  let { consultationId = "", title = "", items = [], hideThreshold = 3 }: Props = $props();
 
   let displayAll: boolean = $state(false);
 </script>
@@ -72,7 +74,7 @@
       <Button
         size="xs"
         variant="ghost"
-        handleClick={() => (displayAll = !displayAll)}
+        handleClick={() => location.href = getConsultationAnalysisUrl(consultationId)}
       >
         <div class="flex justify-center items-center gap-1">
           <span>View All {items.length}</span>
