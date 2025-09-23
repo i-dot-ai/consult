@@ -7,6 +7,7 @@
     export let text: string = "";
     export let weight: "light"  | "normal" | "bold" = "normal";
     export let maxChars: number = 0;
+    export let context: "dashboard" | "public" = "dashboard";
 
     const tagMap = {
         1: "h1",
@@ -27,10 +28,15 @@
         "text-neutral-700",
         weight === "bold" && "font-bold",
         weight === "light" && "font-light",
-        level === 1 && "text-xl",
+        level === 1 && context === "dashboard" && "text-xl",
         level === 2 && "text-lg",
         level === 3 && "text-md",
         level === 4 && "text-sm",
+        level === 1 && context === "public" && clsx([
+            "text-3xl",
+            "mb-5",
+            "font-bold",
+        ]),
         maxChars && clsx([
             "max-w-[50ch]",
             "text-ellipsis",

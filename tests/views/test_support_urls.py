@@ -9,7 +9,8 @@ def test_support_url_access(client):
     url = reverse("users")
     # Check anonymous user
     response = client.get(url)
-    assert response.status_code == 403
+    assert response.status_code == 302
+    assert response.url.endswith("/accounts/oidc/gds/login/")
 
     # Check normal non-staff user can't access
     user = factories.UserFactory()

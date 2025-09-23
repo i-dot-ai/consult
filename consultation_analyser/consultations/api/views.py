@@ -1,5 +1,6 @@
 from collections import defaultdict
 
+from django.conf import settings
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Exists, OuterRef
 from django.shortcuts import get_object_or_404
@@ -222,3 +223,8 @@ class ResponseViewSet(ModelViewSet):
             response.annotation.flagged_by.add(request.user)
         response.annotation.save()
         return Response()
+
+
+@api_view(["GET"])
+def get_git_sha(_request) -> Response:
+    return Response({"sha": settings.GIT_SHA})

@@ -9,6 +9,7 @@ from .api.views import (
     ResponseViewSet,
     ThemeViewSet,
     get_current_user,
+    get_git_sha,
 )
 from .views import answers, pages, questions, root, sessions
 
@@ -61,4 +62,5 @@ urlpatterns = [
     # authentication
     path("sign-in/", sessions.new, name="sign_in"),
     path("sign-out/", sessions.destroy, name="sign_out"),
+    path("git-sha/", get_git_sha, name="git-sha"),
 ]
