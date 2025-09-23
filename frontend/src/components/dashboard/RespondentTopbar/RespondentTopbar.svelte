@@ -1,27 +1,23 @@
 <script lang="ts">
-    import clsx from "clsx";
+  import clsx from "clsx";
 
-    import Button from "../../inputs/Button/Button.svelte";
-    import MaterialIcon from "../../MaterialIcon.svelte";
-    import ArrowForward from "../../svg/material/ArrowForward.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import ArrowForward from "../../svg/material/ArrowForward.svelte";
 
-    import { type Snippet } from "svelte";
+  import { type Snippet } from "svelte";
 
+  interface Props {
+    title: string;
+    backUrl: string;
+    children?: Snippet;
+  }
 
-    interface Props {
-        title: string;
-        backUrl: string;
-        children?: Snippet;
-    }
-
-    let {
-        title = "",
-        backUrl = "",
-        children,
-    }: Props = $props();
+  let { title = "", backUrl = "", children }: Props = $props();
 </script>
 
-<div class={clsx([
+<div
+  class={clsx([
     "flex",
     "items-center",
     "justify-center",
@@ -29,30 +25,31 @@
     "flex-wrap",
     "gap-4",
     "mb-4",
-])}>
-    <div class="flex items-center gap-4">
-        <div class="m-auto">
-            <Button
-                size="xs"
-                variant="ghost"
-                handleClick={() => location.href = backUrl}
-            >
-                <div class="rotate-180">
-                    <MaterialIcon color="fill-neutral-700">
-                        <ArrowForward />
-                    </MaterialIcon>
-                </div>
-
-                <span>Back to Analysis</span>
-            </Button>
+  ])}
+>
+  <div class="flex items-center gap-4">
+    <div class="m-auto">
+      <Button
+        size="xs"
+        variant="ghost"
+        handleClick={() => (location.href = backUrl)}
+      >
+        <div class="rotate-180">
+          <MaterialIcon color="fill-neutral-700">
+            <ArrowForward />
+          </MaterialIcon>
         </div>
 
-        <h1 class="font-bold text-lg">{title}</h1>
+        <span>Back to Analysis</span>
+      </Button>
     </div>
 
-    <div class="flex items-center gap-4">
-        {#if children}
-            {@render children()}
-        {/if}
-    </div>
+    <h1 class="font-bold text-lg">{title}</h1>
+  </div>
+
+  <div class="flex items-center gap-4">
+    {#if children}
+      {@render children()}
+    {/if}
+  </div>
 </div>
