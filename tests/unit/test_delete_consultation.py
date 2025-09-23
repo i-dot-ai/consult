@@ -6,6 +6,7 @@ from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
     Consultation,
     DemographicOption,
+    MultiChoiceAnswer,
     Question,
     Respondent,
     Response,
@@ -25,7 +26,7 @@ def test_delete_consultation_cascading():
     consultation = Consultation.objects.create(title="Test Consultation")
     consultation.users.add(user)
 
-    # Create question
+    # Create free text question
     question = Question.objects.create(
         consultation=consultation,
         text="What do you think?",
@@ -89,16 +90,34 @@ def test_delete_consultation_cascading():
     )
     annotation2.themes.add(theme2)
 
+    # Create multiple choice question
+    multiple_choice_question = Question.objects.create(
+        consultation=consultation,
+        text="What is your favourite colour",
+        slug="question-2",
+        number=2,
+        has_free_text=False,
+        has_multiple_choice=True,
+    )
+    red = MultiChoiceAnswer.objects.create(question=multiple_choice_question, text="red")
+    green = MultiChoiceAnswer.objects.create(question=multiple_choice_question, text="green")
+    blue = MultiChoiceAnswer.objects.create(question=multiple_choice_question, text="blue")
+    response3 = Response.objects.create(respondent=respondent1, question=multiple_choice_question)
+    response3.chosen_options.set([red, green])
+    response4 = Response.objects.create(respondent=respondent2, question=multiple_choice_question)
+    response4.chosen_options.set([blue])
+
     # Verify all objects exist
     assert Consultation.objects.count() == 1
-    assert Question.objects.count() == 1
+    assert Question.objects.count() == 2
     assert Respondent.objects.count() == 2
-    assert Response.objects.count() == 2
+    assert Response.objects.count() == 4
     assert Theme.objects.count() == 2
     assert ResponseAnnotation.objects.count() == 2
+    assert MultiChoiceAnswer.objects.count() == 3
 
     # Delete the consultation
-    consultation.delete()
+    delete_consultation_job(consultation)
 
     # Verify cascading deletion
     assert Consultation.objects.count() == 0
@@ -107,6 +126,7 @@ def test_delete_consultation_cascading():
     assert Response.objects.count() == 0
     assert Theme.objects.count() == 0
     assert ResponseAnnotation.objects.count() == 0
+    assert MultiChoiceAnswer.objects.count() == 0
 
 
 @pytest.mark.django_db

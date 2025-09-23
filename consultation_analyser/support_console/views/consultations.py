@@ -15,7 +15,6 @@ from consultation_analyser.consultations.dummy_data import (
     create_dummy_consultation_from_yaml_job,
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
-from consultation_analyser.consultations.models import MultiChoiceAnswer
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
 
@@ -37,6 +36,94 @@ def import_consultation_job(
     )
 
 
+def delete_question_related_table(table: str, consultation_id: UUID):
+    with connection.cursor() as cursor:
+        sql = f"""  
+        DELETE FROM {table}
+        WHERE question_id IN (
+            SELECT id FROM consultations_question
+            WHERE consultation_id = %s
+        )"""  # nosec B608
+        cursor.execute(sql, [consultation_id])
+
+
+def delete_response_related_table(table: str, consultation_id: UUID):
+    logger.info("Deleting records from table={table}", table=table)
+
+    with connection.cursor() as cursor:
+        sql = f"""  
+        DELETE FROM {table}
+        WHERE response_id IN (
+            SELECT r.id from consultations_response r
+            JOIN consultations_question q ON r.question_id = q.id
+            WHERE q.consultation_id = %s
+        )"""  # nosec B608
+        cursor.execute(sql, [consultation_id])
+
+
+
+def delete_consultation_related_table(table: str, consultation_id: UUID):
+    """Delete records from a table that directly references consultation_id"""
+    logger.info("Deleting records from table={table}", table=table)
+    with connection.cursor() as cursor:
+        cursor.execute(
+            f"DELETE FROM {table} WHERE consultation_id = %s",  # nosec B608
+            [consultation_id],
+        )
+
+
+def delete_respondent_related_table(table: str, consultation_id: UUID):
+    """Delete records from a table that references respondent_id"""
+    logger.info("Deleting records from table={table}", table=table)
+    with connection.cursor() as cursor:
+        sql = f"""  
+        DELETE FROM {table}
+        WHERE respondent_id IN (
+            SELECT id FROM consultations_respondent
+            WHERE consultation_id = %s
+        )"""  # nosec B608
+        cursor.execute(sql, [consultation_id])
+
+
+def delete_response_annotation_themes(consultation_id: UUID):
+    """Delete response annotation themes for a consultation"""
+    with connection.cursor() as cursor:
+        cursor.execute(  # nosec B608
+            """
+        DELETE FROM consultations_responseannotationtheme
+        WHERE response_annotation_id IN (
+            SELECT a.id from consultations_responseannotation a
+            JOIN consultations_response r ON a.response_id = r.id
+            JOIN consultations_question q ON r.question_id = q.id
+            WHERE q.consultation_id = %s
+        )""",
+            [consultation_id],
+        )
+
+
+def delete_responses_in_batches(consultation_id: UUID, batch_size: int = 1000):
+    """Delete responses in batches to avoid memory issues"""
+    while True:
+        with connection.cursor() as cursor:
+            cursor.execute(  # nosec B608
+                """
+            DELETE FROM consultations_response
+            WHERE ctid IN (
+                SELECT cr.ctid
+                FROM consultations_response cr
+                JOIN consultations_question cq ON cr.question_id = cq.id
+                WHERE cq.consultation_id = %s
+                LIMIT %s
+            );
+            """,
+                [consultation_id, batch_size],
+            )
+            logger.info(f"Deleted {batch_size} responses")
+
+            if cursor.rowcount == 0:
+                break
+
+
 @job("default", timeout=3_600)
 def delete_consultation_job(consultation: models.Consultation):
     logger.refresh_context()
@@ -54,112 +141,26 @@ def delete_consultation_job(consultation: models.Consultation):
             consultation_title=consultation_title,
             consultation_id=consultation_id,
         )
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-            DELETE FROM consultations_responseannotationtheme
-            WHERE response_annotation_id IN (
-                SELECT a.id from consultations_responseannotation a
-                JOIN consultations_response r ON a.response_id = r.id
-                JOIN consultations_question q ON r.question_id = q.id
-                WHERE q.consultation_id = %s
-            )""",
-                [consultation_id],
-            )
 
-        logger.info("Deleting response annotations...")
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-            DELETE FROM consultations_responseannotation
-            WHERE response_id IN (
-                SELECT r.id from consultations_response r
-                JOIN consultations_question q ON r.question_id = q.id
-                WHERE q.consultation_id = %s
-            )""",
-                [consultation_id],
-            )
+        # Delete in dependency order to avoid foreign key violations
+        logger.info("Deleting response annotation themes...")
+        delete_response_annotation_themes(consultation_id)
 
-        logger.info("Deleting response chosen_options...")
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-            DELETE FROM consultations_response_chosen_options
-            WHERE response_id IN (
-                SELECT r.id from consultations_response r
-                JOIN consultations_question q ON r.question_id = q.id
-                WHERE q.consultation_id = %s
-            )""",
-                [consultation_id],
-            )
+        delete_response_related_table("consultations_responseannotation", consultation_id)
+        delete_response_related_table("consultations_response_chosen_options", consultation_id)
 
         logger.info("Deleting responses...")
-        while True:
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                DELETE FROM consultations_response
-                WHERE ctid IN (
-                    SELECT cr.ctid
-                    FROM consultations_response cr
-                    JOIN consultations_question cq ON cr.question_id = cq.id
-                    WHERE cq.consultation_id = %s
-                    LIMIT 1000
-                );
-                """,
-                    [consultation_id],
-                )
-                logger.info("Deleted 1000 responses")
+        delete_responses_in_batches(consultation_id)
 
-                if cursor.rowcount == 0:
-                    break
+        delete_question_related_table("consultations_theme", consultation_id)
+        delete_question_related_table("consultations_multichoiceanswer", consultation_id)
 
-        logger.info("Deleting themes...")
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-            DELETE FROM consultations_theme
-            WHERE question_id IN (
-                SELECT id FROM consultations_question
-                WHERE consultation_id = %s
-            )""",
-                [consultation_id],
-            )
+        delete_respondent_related_table("consultations_respondent_demographics", consultation_id)
 
-        logger.info("Deleting questions...")
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                DELETE FROM consultations_question
-                WHERE consultation_id = %s
-            """,
-                [consultation_id],
-            )
-
-        logger.info("Deleting respondent_demographics...")
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                DELETE FROM consultations_respondent_demographics
-                WHERE respondent_id IN (
-                    SELECT id FROM consultations_respondent
-                    WHERE consultation_id = %s
-                )""",
-                [consultation_id],
-            )
-
-        logger.info("Deleting respondents...")
-        with connection.cursor() as cursor:
-            cursor.execute(
-                """
-                DELETE FROM consultations_respondent
-                WHERE consultation_id = %s
-            """,
-                [consultation_id],
-            )
+        delete_consultation_related_table("consultations_question", consultation_id)
+        delete_consultation_related_table("consultations_respondent", consultation_id)
 
         logger.info("Deleting consultation...")
-        MultiChoiceAnswer.objects.filter(question__consultation_id=consultation.id).delete()
         consultation.delete()
 
         logger.info(
