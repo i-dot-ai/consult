@@ -80,6 +80,19 @@ def delete_consultation_job(consultation: models.Consultation):
                 [consultation_id],
             )
 
+        logger.info("Deleting response chosen_options...")
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+            DELETE FROM consultations_response_chosen_options
+            WHERE response_id IN (
+                SELECT r.id from consultations_response r
+                JOIN consultations_question q ON r.question_id = q.id
+                WHERE q.consultation_id = %s
+            )""",
+                [consultation_id],
+            )
+
         logger.info("Deleting responses...")
         while True:
             with connection.cursor() as cursor:
@@ -120,6 +133,18 @@ def delete_consultation_job(consultation: models.Consultation):
                 DELETE FROM consultations_question
                 WHERE consultation_id = %s
             """,
+                [consultation_id],
+            )
+
+        logger.info("Deleting respondent_demographics...")
+        with connection.cursor() as cursor:
+            cursor.execute(
+                """
+                DELETE FROM consultations_respondent_demographics
+                WHERE respondent_id IN (
+                    SELECT id FROM consultations_respondent
+                    WHERE consultation_id = %s
+                )""",
                 [consultation_id],
             )
 
