@@ -1,0 +1,14 @@
+---
+import Story from '../../../layouts/Story.astro';
+import PanelStory from "../../../components/dashboard/Panel/PanelStory.svelte";
+import { Routes } from '../../../global/routes';
+
+
+const title = "dashboard - Panel";
+const description = `
+    Renders children inside a panel.
+`;
+---
+<Story title={title} description={description} backUrl={Routes.Design + "/dashboard"}>
+    <PanelStory client:load />
+</Story>

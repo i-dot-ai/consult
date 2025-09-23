@@ -1,12 +1,14 @@
 ---
 import Story from '../../layouts/Story.astro';
 import MagicLinkButtonStory from "../../components/MagicLinkButton/MagicLinkButtonStory.svelte";
+import { Routes } from '../../global/routes';
+
 
 const title = "Magic Link Button";
 const description = `
     Renders the magic link button that attempts to validate a magic link upon submit.
 `
 ---
-<Story title={title} description={description} >
+<Story title={title} description={description} backUrl={Routes.Design}>
     <MagicLinkButtonStory client:load magicLink={"123-456"} />
 </Story>

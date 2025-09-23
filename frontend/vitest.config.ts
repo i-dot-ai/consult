@@ -16,6 +16,7 @@ export default getViteConfig({
         ...coverageConfigDefaults.exclude,
       ],
     },
+    globals: true,
   },
   resolve: process.env.VITEST ? { conditions: ["browser"] } : undefined,
 });

@@ -5,12 +5,12 @@ import Title from '../components/Title.svelte';
 import Panel from '../components/dashboard/Panel/Panel.svelte';
 import Link from "../components/Link.svelte";
 
-const { title, description } = Astro.props;
+const { title, description, backUrl } = Astro.props;
 ---
 <Layout>
 	<Section>
         <div class="mb-2">
-            <Link href="javascript:history.back()">Back</Link>
+            <Link href={backUrl || "javascript:history.back()"}>Back</Link>
         </div>
 
         <Title level={1} text={"Design" + (title ? ` - ${title}` : "")} />
