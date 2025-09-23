@@ -1,12 +1,10 @@
 export const prerender = false;
 
-import type { APIRoute } from 'astro';
+import type { APIRoute } from "astro";
 
-import { getBackendUrl } from '../../../global/utils';
-
+import { getBackendUrl } from "../../../global/utils";
 
 export const POST: APIRoute = async ({ request, cookies }) => {
-  let message = "success";
   let status = 200;
 
   interface TokenData {
@@ -19,19 +17,21 @@ export const POST: APIRoute = async ({ request, cookies }) => {
   const requestBody = await request.json();
 
   try {
-    const backendResponse = await fetch(`${getBackendUrl(request.url)}/api/token/`, {
-      method: "POST",
-      body: JSON.stringify({
-        "token": requestBody.token
-      }),
-      headers: {
-        "Content-Type": "application/json",
-      }
-    })
+    const backendResponse = await fetch(
+      `${getBackendUrl(request.url)}/api/token/`,
+      {
+        method: "POST",
+        body: JSON.stringify({
+          token: requestBody.token,
+        }),
+        headers: {
+          "Content-Type": "application/json",
+        },
+      },
+    );
 
     const responseJson = await backendResponse.json();
     if (!backendResponse.ok) {
-      message = "Response not ok:" + JSON.stringify(responseJson);
       status = 500;
     }
     data = responseJson;
@@ -45,15 +45,12 @@ export const POST: APIRoute = async ({ request, cookies }) => {
     if (data.sessionId) {
       cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
     }
-  } catch(err: any) {
-    message = err.message;
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  } catch (err: unknown) {
     status = 500;
   }
-  
-  return new Response(
-    JSON.stringify(data),
-    {
-      status: status,
-    }
-  );
+
+  return new Response(JSON.stringify(data), {
+    status: status,
+  });
 };
