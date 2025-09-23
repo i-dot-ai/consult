@@ -37,8 +37,10 @@ def import_consultation_job(
 
 
 def delete_question_related_table(table: str, consultation_id: UUID):
+    logger.info("Deleting records from table={table}", table=table)
+
     with connection.cursor() as cursor:
-        sql = f"""  
+        sql = f"""
         DELETE FROM {table}
         WHERE question_id IN (
             SELECT id FROM consultations_question
@@ -51,7 +53,7 @@ def delete_response_related_table(table: str, consultation_id: UUID):
     logger.info("Deleting records from table={table}", table=table)
 
     with connection.cursor() as cursor:
-        sql = f"""  
+        sql = f"""
         DELETE FROM {table}
         WHERE response_id IN (
             SELECT r.id from consultations_response r
@@ -61,10 +63,10 @@ def delete_response_related_table(table: str, consultation_id: UUID):
         cursor.execute(sql, [consultation_id])
 
 
-
 def delete_consultation_related_table(table: str, consultation_id: UUID):
     """Delete records from a table that directly references consultation_id"""
     logger.info("Deleting records from table={table}", table=table)
+
     with connection.cursor() as cursor:
         cursor.execute(
             f"DELETE FROM {table} WHERE consultation_id = %s",  # nosec B608
@@ -75,8 +77,9 @@ def delete_consultation_related_table(table: str, consultation_id: UUID):
 def delete_respondent_related_table(table: str, consultation_id: UUID):
     """Delete records from a table that references respondent_id"""
     logger.info("Deleting records from table={table}", table=table)
+
     with connection.cursor() as cursor:
-        sql = f"""  
+        sql = f"""
         DELETE FROM {table}
         WHERE respondent_id IN (
             SELECT id FROM consultations_respondent
