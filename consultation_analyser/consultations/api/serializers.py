@@ -236,4 +236,4 @@ class RespondentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Respondent
-        fields = ["id", "consultation", "themefinder_id", "demographics", "name"]
+        fields = ["id", "themefinder_id", "demographics", "name"]
