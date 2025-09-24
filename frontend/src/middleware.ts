@@ -1,3 +1,5 @@
+import path from "path";
+
 import type { MiddlewareHandler } from "astro";
 import { getBackendUrl } from "./global/utils";
 
@@ -22,7 +24,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   }
 
   const backendUrl = getBackendUrl(url.hostname);
-  const fullBackendUrl = backendUrl + url.pathname + url.search;
+  const fullBackendUrl = path.join(backendUrl, url.pathname) + url.search;
 
   // skip as new pages are moved to astro
   const toSkip = [
@@ -75,29 +77,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
     // Create headers object properly
     const headersToSend = new Headers();
-
-    // skip as new pages are moved to astro
-    const toSkip = [
-      /^\/$/,
-      /^\/sign-in[\/]?$/,
-      /^\/sign-out[\/]?$/,
-      /^\/magic-link\/[A-Za-z0-9\-]*[\/]?$/,
-      /^\/api\/astro\/.*/,
-      /^\/api\/health[\/]?$/,
-      /^\/health[\/]?$/,
-      /^\/.well-known\/.*/,
-      /^\/consultations.*/,
-      // /^\/evaluations.*/,
-      /^\/design.*/,
-      /^\/stories.*/,
-      /^\/_astro.*/,
-    ];
-
-    for (const skipPattern of toSkip) {
-      if (skipPattern.test(context.url.pathname)) {
-        return next();
-      }
-    }
 
     // Copy all original headers
     for (const [key, value] of context.request.headers.entries()) {
