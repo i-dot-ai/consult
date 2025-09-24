@@ -271,7 +271,7 @@ def import_response_annotation_themes(question: Question, output_folder: str):
                 )
             )
             if len(objects_to_save) >= DEFAULT_BATCH_SIZE:
-                ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
+                ResponseAnnotationTheme.objects.bulk_create(objects_to_save, ignore_conflicts=True)
                 objects_to_save = []
                 logger.info(
                     "saved {i} ResponseAnnotationTheme for question {question_number}",
@@ -279,7 +279,7 @@ def import_response_annotation_themes(question: Question, output_folder: str):
                     question_number=question.number,
                 )
 
-    ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
+    ResponseAnnotationTheme.objects.bulk_create(objects_to_save, ignore_conflicts=True)
 
 
 def import_response_annotations(question: Question, output_folder: str):
