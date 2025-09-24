@@ -141,7 +141,7 @@
             <div class="w-full h-full">
               <Panel border={true} bg={true}>
                 <div class="flex flex-col justify-start h-full">
-                  <div class="flex items-center gap-4 mb-4">
+                  <div class="flex items-start gap-4 mb-4">
                     <span class="text-sm text-primary">
                       Q{question.number}
                     </span>
