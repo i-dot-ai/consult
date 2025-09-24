@@ -66,9 +66,11 @@
     ...new Set(($demoOptionsData || []).map((opt) => opt.name)),
   ]);
 
-  let chartQuestions = $derived($consultationData?.questions.filter(
-    (question) => question.has_multiple_choice
-  ));
+  let chartQuestions = $derived(
+    $consultationData?.questions.filter(
+      (question) => question.has_multiple_choice,
+    ),
+  );
 
   $effect(() => {
     loadConsultation(getApiConsultationUrl(consultationId));
