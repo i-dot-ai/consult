@@ -6,6 +6,7 @@ from rest_framework_nested.routers import NestedDefaultRouter
 from .api.views import (
     ConsultationViewSet,
     QuestionViewSet,
+    RespondentViewSet,
     ResponseViewSet,
     ThemeViewSet,
     generate_magic_link,
@@ -19,6 +20,8 @@ router = routers.DefaultRouter()
 router.register("consultations", ConsultationViewSet, basename="consultations")
 
 consultations_router = NestedDefaultRouter(router, "consultations", lookup="consultation")
+
+consultations_router.register("respondents", RespondentViewSet, basename="respondent")
 consultations_router.register("questions", QuestionViewSet, basename="question")
 consultations_router.register("themes", ThemeViewSet, basename="theme")
 

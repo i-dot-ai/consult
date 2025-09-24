@@ -26,6 +26,7 @@ from .serializers import (
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
     QuestionSerializer,
+    RespondentSerializer,
     ResponseSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
@@ -90,6 +91,18 @@ class ThemeViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
         return models.CrossCuttingTheme.objects.filter(
+            consultation_id=consultation_uuid, consultation__users=self.request.user
+        ).order_by("-created_at")
+
+
+class RespondentViewSet(ReadOnlyModelViewSet):
+    serializer_class = RespondentSerializer
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    filterset_fields = ["themefinder_id"]
+
+    def get_queryset(self):
+        consultation_uuid = self.kwargs["consultation_pk"]
+        return models.Respondent.objects.filter(
             consultation_id=consultation_uuid, consultation__users=self.request.user
         ).order_by("-created_at")
 

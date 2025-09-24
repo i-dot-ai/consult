@@ -856,6 +856,7 @@ class TestAPIViewPermissions:
             "response-theme-aggregations",
             "response-list",
             "question-detail",
+            "respondent-detail",
         ],
     )
     def test_unauthenticated_access_denied(self, client, free_text_question, endpoint_name):
@@ -873,6 +874,7 @@ class TestAPIViewPermissions:
             "response-theme-aggregations",
             "response-list",
             "question-detail",
+            "respondent-detail",
         ],
     )
     def test_user_without_dashboard_access_denied(
@@ -894,6 +896,7 @@ class TestAPIViewPermissions:
             "response-theme-aggregations",
             "response-list",
             "question-detail",
+            "respondent-detail",
         ],
     )
     def test_user_without_consultation_access_denied(
@@ -1288,3 +1291,67 @@ def test_git_sha(client):
     response = client.get(url)
     assert response.status_code == 200
     assert response.json() == {"sha": "00000000-0000-0000-0000-000000000000"}
+
+
+@pytest.mark.django_db
+def test_get_respondent_list(
+    client, consultation, respondent_1, respondent_2, consultation_user_token
+):
+    url = reverse(
+        "respondent-list",
+        kwargs={"consultation_pk": consultation.id},
+    )
+
+    response = client.get(
+        url,
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["count"] == 2
+
+
+@pytest.mark.django_db
+def test_get_respondent_query_themefinder_id(
+    client, consultation, respondent_1, respondent_2, consultation_user_token
+):
+    url = reverse(
+        "respondent-list",
+        kwargs={"consultation_pk": consultation.id},
+    )
+
+    response = client.get(
+        url + f"?themefinder_id={respondent_1.themefinder_id}",
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["count"] == 1
+    assert response.json()["results"][0]["id"] == str(respondent_1.id)
+
+
+@pytest.mark.django_db
+def test_get_respondent_detail(
+    client, consultation, respondent_1, respondent_2, consultation_user_token
+):
+    url = reverse(
+        "respondent-detail",
+        kwargs={
+            "consultation_pk": consultation.id,
+            "pk": respondent_1.id,
+        },
+    )
+
+    response = client.get(
+        url,
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["id"] == str(respondent_1.id)
