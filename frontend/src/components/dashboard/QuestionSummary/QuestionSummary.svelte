@@ -30,6 +30,7 @@
   import Finance from "../../svg/material/Finance.svelte";
 
   interface Props {
+    showThemes: boolean;
     themesLoading?: boolean;
     totalAnswers: number;
     filteredTotal: number;
@@ -44,6 +45,7 @@
     setActiveTab: (newTab: TabNames) => void;
   }
   let {
+    showThemes = true,
     themesLoading = true,
     totalAnswers = 0,
     filteredTotal = 0,
@@ -99,138 +101,140 @@
     </svelte:boundary>
 
     <svelte:boundary>
-      <section class="my-4">
-        <Panel>
-          <TitleRow
-            level={2}
-            title="Theme analysis"
-            subtitle="Analysis of key themes mentioned in responses to this question."
-          >
-            <Lan slot="icon" />
+      {#if showThemes}
+        <section class="my-4">
+          <Panel>
+            <TitleRow
+              level={2}
+              title="Theme analysis"
+              subtitle="Analysis of key themes mentioned in responses to this question."
+            >
+              <Lan slot="icon" />
 
-            <div slot="aside">
-              <svelte:boundary>
-                <CsvDownload
-                  fileName={`theme_mentions_for_${consultationSlug}.csv`}
-                  data={themes.map((theme) => ({
-                    "Theme Name": theme.name,
-                    "Theme Description": theme.description,
-                    Mentions: theme.count,
-                    Percentage: getPercentage(theme.count, totalAnswers),
-                  }))}
-                />
+              <div slot="aside">
+                <svelte:boundary>
+                  <CsvDownload
+                    fileName={`theme_mentions_for_${consultationSlug}.csv`}
+                    data={themes.map((theme) => ({
+                      "Theme Name": theme.name,
+                      "Theme Description": theme.description,
+                      Mentions: theme.count,
+                      Percentage: getPercentage(theme.count, totalAnswers),
+                    }))}
+                  />
 
-                {#snippet failed(error)}
-                  <div>{console.error(error)}</div>
-                {/snippet}
-              </svelte:boundary>
-            </div>
-          </TitleRow>
-
-          {#if demoFilters.applied() || themeFilters.applied() || evidenceRich || searchValue}
-            <div transition:fly={{ x: 300 }} class="my-4">
-              <Alert>
-                <FilterAlt slot="icon" />
-
-                <div class="flex justify-between items-center gap-4 flex-wrap">
-                  <p class="text-sm">Results are filtered</p>
-
-                  <Button
-                    variant="primary"
-                    size="sm"
-                    handleClick={() => setActiveTab(TabNames.ResponseAnalysis)}
-                  >
-                    <MaterialIcon>
-                      <Finance />
-                    </MaterialIcon>
-
-                    {`View Responses${
-                      themeFilters.filters.length > 0
-                        ? ` (${themeFilters.filters.length} Themes)`
-                        : ""
-                    }`}
-                  </Button>
-                </div>
-              </Alert>
-            </div>
-          {/if}
-
-          {#if themeFilters.applied()}
-            <section transition:slide class="my-4">
-              <div class="mb-2">
-                <Title
-                  level={3}
-                  text={`Selected Themes (${themeFilters.filters.length})`}
-                />
+                  {#snippet failed(error)}
+                    <div>{console.error(error)}</div>
+                  {/snippet}
+                </svelte:boundary>
               </div>
+            </TitleRow>
 
-              <div class="flex gap-1 flex-wrap">
-                {#each themeFilters.filters as themeFilterId (themeFilterId)}
-                  <div transition:fly={{ x: 300 }}>
-                    <Tag variant="primary">
-                      <span>
-                        {themes.find((theme) => theme.id === themeFilterId)
-                          ?.name || themeFilterId}
-                      </span>
+            {#if demoFilters.applied() || themeFilters.applied() || evidenceRich || searchValue}
+              <div transition:fly={{ x: 300 }} class="my-4">
+                <Alert>
+                  <FilterAlt slot="icon" />
 
-                      <Button
-                        variant="ghost"
-                        size="xs"
-                        handleClick={() => themeFilters.update(themeFilterId)}
-                      >
-                        <MaterialIcon color="fill-white">
-                          <Close />
-                        </MaterialIcon>
-                      </Button>
-                    </Tag>
+                  <div class="flex justify-between items-center gap-4 flex-wrap">
+                    <p class="text-sm">Results are filtered</p>
+
+                    <Button
+                      variant="primary"
+                      size="sm"
+                      handleClick={() => setActiveTab(TabNames.ResponseAnalysis)}
+                    >
+                      <MaterialIcon>
+                        <Finance />
+                      </MaterialIcon>
+
+                      {`View Responses${
+                        themeFilters.filters.length > 0
+                          ? ` (${themeFilters.filters.length} Themes)`
+                          : ""
+                      }`}
+                    </Button>
                   </div>
-                {/each}
+                </Alert>
               </div>
-            </section>
-          {/if}
+            {/if}
 
-          {#if themes.length === 0 && !themesLoading}
-            <NotFoundMessage
-              title="No themes found"
-              body="Try adjusting your search terms or filters."
-            />
-          {:else}
-            <Panel>
-              <ThemesTable
-                themes={[...themes].sort((a, b) =>
-                  sortAscending ? a.count - b.count : b.count - a.count,
-                )}
-                {totalAnswers}
-                skeleton={themesLoading}
+            {#if themeFilters.applied()}
+              <section transition:slide class="my-4">
+                <div class="mb-2">
+                  <Title
+                    level={3}
+                    text={`Selected Themes (${themeFilters.filters.length})`}
+                  />
+                </div>
+
+                <div class="flex gap-1 flex-wrap">
+                  {#each themeFilters.filters as themeFilterId (themeFilterId)}
+                    <div transition:fly={{ x: 300 }}>
+                      <Tag variant="primary">
+                        <span>
+                          {themes.find((theme) => theme.id === themeFilterId)
+                            ?.name || themeFilterId}
+                        </span>
+
+                        <Button
+                          variant="ghost"
+                          size="xs"
+                          handleClick={() => themeFilters.update(themeFilterId)}
+                        >
+                          <MaterialIcon color="fill-white">
+                            <Close />
+                          </MaterialIcon>
+                        </Button>
+                      </Tag>
+                    </div>
+                  {/each}
+                </div>
+              </section>
+            {/if}
+
+            {#if themes.length === 0 && !themesLoading}
+              <NotFoundMessage
+                title="No themes found"
+                body="Try adjusting your search terms or filters."
               />
-            </Panel>
-          {/if}
+            {:else}
+              <Panel>
+                <ThemesTable
+                  themes={[...themes].sort((a, b) =>
+                    sortAscending ? a.count - b.count : b.count - a.count,
+                  )}
+                  {totalAnswers}
+                  skeleton={themesLoading}
+                />
+              </Panel>
+            {/if}
 
-          <div class="flex justify-between items-center flex-wrap gap-y-4">
-            <small>
-              {`Showing ${themes?.length || 0} themes • Click rows to select themes for response analysis`}
-            </small>
+            <div class="flex justify-between items-center flex-wrap gap-y-4">
+              <small>
+                {`Showing ${themes?.length || 0} themes • Click rows to select themes for response analysis`}
+              </small>
 
-            <div class="flex items-center gap-1">
-              <small>Order:</small>
-              <Button
-                size="xs"
-                highlighted={!sortAscending}
-                handleClick={() => (sortAscending = false)}
-              >
-                High to Low
-              </Button>
-              <Button
-                size="xs"
-                highlighted={sortAscending}
-                handleClick={() => (sortAscending = true)}
-              >
-                Low to High
-              </Button>
+              <div class="flex items-center gap-1">
+                <small>Order:</small>
+                <Button
+                  size="xs"
+                  highlighted={!sortAscending}
+                  handleClick={() => (sortAscending = false)}
+                >
+                  High to Low
+                </Button>
+                <Button
+                  size="xs"
+                  highlighted={sortAscending}
+                  handleClick={() => (sortAscending = true)}
+                >
+                  Low to High
+                </Button>
+              </div>
             </div>
-          </div>
-        </Panel>
-      </section>
+          </Panel>
+        </section>
+      {/if}
 
       {#snippet failed(error)}
         <div>
