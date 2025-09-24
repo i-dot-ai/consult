@@ -296,6 +296,9 @@ class TestImportConsultationFullFlow:
         )
         assert annotations.count() == 3
 
+        for annotation in annotations:
+            assert annotation.history.count() == 1
+
 
 @pytest.mark.django_db
 class TestRespondentsImport:
