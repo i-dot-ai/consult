@@ -373,15 +373,16 @@
     handleChange={(next: string) => (activeTab = next as TabNames)}
     tabs={[
       { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
-      {
+      ...($questionData?.has_free_text ? [{ //  No second tab without free text
         id: TabNames.ResponseAnalysis,
         title: "Response Analysis",
         icon: Finance,
-      },
+      }] : []),
     ]}
   >
     {#if activeTab === TabNames.QuestionSummary}
       <QuestionSummary
+        showThemes={Boolean($isQuestionLoading || $questionData?.has_free_text)}
         themes={Object.keys($themeAggrData?.theme_aggregations || []).map(
           (themeId) => {
             return {
