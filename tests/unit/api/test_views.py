@@ -1249,27 +1249,27 @@ def test_filter(client, consultation_user, consultation, has_free_text):
 
 
 @pytest.mark.django_db
-def test_get_question_filtered_by_respondent(
+def test_get_responses_filtered_by_respondent(
     client,
     consultation,
     free_text_question,
-    multi_choice_question,
     respondent_1,
     respondent_2,
     consultation_user_token,
 ):
     """
-    Given two questions with two different responses by two different respondents
+    Given two responses by two different respondents
     when I query by one of the respondent_ids
-    I expect only the question that they have responded to, to be returned
+    I expect only the relevant responses to be returned
     """
-    ResponseFactory(respondent=respondent_1, question=free_text_question)
-    ResponseFactory(respondent=respondent_2, question=multi_choice_question)
+    response_1 = ResponseFactory(respondent=respondent_1, question=free_text_question)
+    _response_2 = ResponseFactory(respondent=respondent_2, question=free_text_question)
 
     url = reverse(
-        "question-list",
+        "response-list",
         kwargs={
             "consultation_pk": consultation.id,
+            "question_pk": free_text_question.id,
         },
     )
 
@@ -1281,8 +1281,10 @@ def test_get_question_filtered_by_respondent(
     )
 
     assert response.status_code == 200, response.json()
-    assert response.json()["count"] == 1
-    assert response.json()["results"][0]["id"] == str(free_text_question.id)
+    assert response.json()["respondents_total"] == 2
+    assert response.json()["filtered_total"] == 1
+    assert response.json()["all_respondents"][0]["id"] == str(response_1.id)
+    assert response.json()["all_respondents"][0]["respondent_id"] == str(respondent_1.id)
 
 
 @override_settings(GIT_SHA="00000000-0000-0000-0000-000000000000")

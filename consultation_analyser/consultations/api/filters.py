@@ -6,7 +6,7 @@ from django_filters.rest_framework import BaseInFilter, BooleanFilter, CharFilte
 from pgvector.django import CosineDistance
 from rest_framework.filters import SearchFilter
 
-from consultation_analyser.consultations.models import Question, Response
+from consultation_analyser.consultations.models import Response
 from consultation_analyser.embeddings import embed_text
 
 
@@ -21,17 +21,6 @@ def safe_json_encode(txt: str):
             return txt
 
 
-class QuestionFilter(FilterSet):
-    # has_free_text = CharFilter()
-    respondent_id = UUIDFilter(field_name="response__respondent_id")
-
-    class Meta:
-        model = Question
-        fields = [
-            "has_free_text",
-        ]
-
-
 class ResponseFilter(FilterSet):
     # TODO: adjust the frontend to match sensible DRF defaults
     sentimentFilters = BaseInFilter(field_name="annotation__sentiment", lookup_expr="in")
@@ -40,6 +29,7 @@ class ResponseFilter(FilterSet):
     demoFilters = CharFilter(method="filter_demographics")
     is_flagged = BooleanFilter()
     multiple_choice_answer = BaseInFilter(field_name="chosen_options", lookup_expr="in")
+    respondent_id = UUIDFilter()
 
     def filter_themes(self, queryset, name, value):
         if not value:
