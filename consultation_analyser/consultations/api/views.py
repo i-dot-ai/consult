@@ -95,10 +95,11 @@ class ThemeViewSet(ReadOnlyModelViewSet):
         ).order_by("-created_at")
 
 
-class RespondentViewSet(ReadOnlyModelViewSet):
+class RespondentViewSet(ModelViewSet):
     serializer_class = RespondentSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
     filterset_fields = ["themefinder_id"]
+    http_method_names = ["get", "patch"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]

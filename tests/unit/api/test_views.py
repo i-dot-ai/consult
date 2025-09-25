@@ -1284,6 +1284,7 @@ def test_get_question_filtered_by_respondent(
     assert response.json()["count"] == 1
     assert response.json()["results"][0]["id"] == str(free_text_question.id)
 
+
 @override_settings(GIT_SHA="00000000-0000-0000-0000-000000000000")
 def test_git_sha(client):
     url = reverse("git-sha")
@@ -1355,3 +1356,61 @@ def test_get_respondent_detail(
     )
     assert response.status_code == 200
     assert response.json()["id"] == str(respondent_1.id)
+
+
+@pytest.mark.django_db
+def test_patch_respondent_detail(client, consultation_user_token, respondent_1):
+    """we can update a respondents name"""
+    url = reverse(
+        "respondent-detail",
+        kwargs={
+            "consultation_pk": respondent_1.consultation.id,
+            "pk": respondent_1.id,
+        },
+    )
+
+    assert respondent_1.name is None
+    response = client.patch(
+        url,
+        content_type="application/json",
+        data={"name": "mr lebowski"},
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["name"] == "mr lebowski"
+    respondent_1.refresh_from_db()
+    assert respondent_1.name == "mr lebowski"
+
+
+@pytest.mark.django_db
+def test_patch_respondent_detail_read_only_field_ignored(
+    client, consultation_user_token, respondent_1
+):
+    """we cannot update a respondents themefinder_id"""
+
+    url = reverse(
+        "respondent-detail",
+        kwargs={
+            "consultation_pk": respondent_1.consultation.id,
+            "pk": respondent_1.id,
+        },
+    )
+
+    assert respondent_1.themefinder_id == 1
+    response = client.patch(
+        url,
+        content_type="application/json",
+        data={"themefinder_id": 100},
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    # note: DRF just ignores attempts to update read-only (editable=False) fields
+    # we can change this behaviour but given that our frontend is the only consumer of this
+    # API it doesnt seem worth it
+    assert response.status_code == 200
+    assert response.json()["themefinder_id"] == 1
+    respondent_1.refresh_from_db()
+    assert respondent_1.themefinder_id == 1
