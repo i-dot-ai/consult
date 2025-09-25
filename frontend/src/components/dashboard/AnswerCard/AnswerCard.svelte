@@ -19,7 +19,8 @@
     consultationId?: string;
     questionId?: string;
     answerId?: string;
-    displayId?: string;
+    respondentDisplayId?: string;
+    respondentId?: string;
     text?: string;
     demoData?: string[];
     evidenceRich?: boolean;
@@ -37,7 +38,8 @@
     consultationId = "",
     questionId = "",
     answerId = "",
-    displayId = "",
+    respondentDisplayId = "",
+    respondentId = "",
     text = "",
     demoData = [],
     evidenceRich = false,
@@ -166,7 +168,7 @@
                 handleClick={() => {
                   location.href = getRespondentDetailUrl(
                     consultationId,
-                    displayId,
+                    respondentId,
                   );
                 }}
               >
@@ -174,7 +176,7 @@
                   <Person />
                 </MaterialIcon>
 
-                <span class="ml-1">ID: {displayId}</span>
+                <span class="ml-1">ID: {respondentDisplayId}</span>
               </Button>
             </div>
           {/if}

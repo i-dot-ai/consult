@@ -309,7 +309,8 @@
                           {consultationId}
                           {questionId}
                           answerId={answer.id}
-                          displayId={answer.identifier.toString()}
+                          respondentId={answer.respondent_id}
+                          respondentDisplayId={answer.identifier.toString()}
                           demoData={Object.values(answer.demographic_data)}
                           multiAnswers={answer.multiple_choice_answer}
                           evidenceRich={answer.evidenceRich}
