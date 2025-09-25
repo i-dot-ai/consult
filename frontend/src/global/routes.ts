@@ -60,3 +60,6 @@ export const getApiAnswerFlagUrl = (
 ) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/responses/${answerId}/toggle-flag/`;
 };
+export const getApiConsultationRespondentsUrl = (consultationId: string, respondentId: string) => {
+  return `${Routes.ApiConsultations}/${consultationId}/respondents/`;
+}
