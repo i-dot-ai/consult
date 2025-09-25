@@ -52,3 +52,9 @@
     </div>
   {/if}
 </div>
+
+<style>
+  input:placeholder-shown {
+    text-overflow: ellipsis;
+  }
+</style>

@@ -48,7 +48,7 @@
       </Button>
     </div>
 
-    <h1 class="font-bold text-lg">{title}</h1>
+    <h1 class="font-bold text-lg text-center">{title}</h1>
   </div>
 
   <div class="flex items-center gap-4">

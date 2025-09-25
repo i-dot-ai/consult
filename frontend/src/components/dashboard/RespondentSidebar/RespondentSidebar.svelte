@@ -10,11 +10,12 @@
 
   import RespondentSidebarItem from "../RespondentSidebarItem/RespondentSidebarItem.svelte";
 
+  interface RespondentDemoItem {
+    name: string;
+    value: string;
+  }
   interface Props {
-    respondentType: string;
-    geographicLocation: string;
-    selfReportedDisability: string;
-    sector: string;
+    demoData: RespondentDemoItem[];
     stakeholderName: string;
     questionsAnswered: number;
     totalQuestions: number;
@@ -22,10 +23,7 @@
   }
 
   let {
-    respondentType = "",
-    geographicLocation = "",
-    selfReportedDisability = "",
-    sector = "",
+    demoData = [],
     stakeholderName = "",
     questionsAnswered = 0,
     totalQuestions = 0,
@@ -42,30 +40,16 @@
   </div>
 
   <div class="pl-4">
-    <RespondentSidebarItem
-      title="Respondent Type"
-      subtitle={respondentType}
-      icon={Person}
-    />
-
-    <RespondentSidebarItem
-      title="Geographic Location"
-      subtitle={geographicLocation}
-      icon={LocationOn}
-    />
-
-    <RespondentSidebarItem
-      title="Self-Reported Disability"
-      subtitle={selfReportedDisability}
-      icon={Shield}
-    />
-
-    <RespondentSidebarItem title="Sector" subtitle={sector} icon={Person} />
+    {#each demoData as demoDataItem}
+      <RespondentSidebarItem
+        title={demoDataItem.name.replaceAll("'", "")}
+        subtitle={demoDataItem.value}
+      />
+    {/each}
 
     <RespondentSidebarItem
       title="Stakeholder Name"
       subtitle={stakeholderName}
-      icon={Person}
       editable={true}
       updateSubtitle={updateStakeholderName}
     />
