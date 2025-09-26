@@ -19,7 +19,11 @@
     type ResponseTheme,
     type SearchableSelectOption,
   } from "../../../global/types";
-  import { themeFilters, demoFilters, multiAnswerFilters } from "../../../global/state.svelte";
+  import {
+    themeFilters,
+    demoFilters,
+    multiAnswerFilters,
+  } from "../../../global/state.svelte";
 
   import Title from "../../Title.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";

@@ -23,7 +23,11 @@
   import Alert from "../../Alert.svelte";
   import FilterAlt from "../../svg/material/FilterAlt.svelte";
 
-  import { themeFilters, demoFilters, multiAnswerFilters } from "../../../global/state.svelte.ts";
+  import {
+    themeFilters,
+    demoFilters,
+    multiAnswerFilters,
+  } from "../../../global/state.svelte.ts";
   import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
   import MultiChoice from "../MultiChoice/MultiChoice.svelte";
   import CsvDownload from "../../CsvDownload/CsvDownload.svelte";
