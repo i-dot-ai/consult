@@ -19,7 +19,11 @@
     type ResponseTheme,
     type SearchableSelectOption,
   } from "../../../global/types";
-  import { themeFilters, demoFilters } from "../../../global/state.svelte";
+  import {
+    themeFilters,
+    demoFilters,
+    multiAnswerFilters,
+  } from "../../../global/state.svelte";
 
   import Title from "../../Title.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
@@ -59,6 +63,9 @@
 
   export let flaggedOnly: boolean = false;
   export let setFlaggedOnly = (value: boolean) => {};
+
+  export let anyFilterApplied: boolean = false;
+  export let resetFilters: () => void = () => {};
 
   const BASE_FLY_DELAY = 100;
 
@@ -110,7 +117,7 @@
               <Title level={3} text="Search responses:" />
             </div>
 
-            {#if demoFilters.applied() || themeFilters.applied() || evidenceRich || searchValue}
+            {#if anyFilterApplied}
               <div transition:fly={{ x: 300 }} class="my-4">
                 <Alert>
                   <FilterAlt slot="icon" />
@@ -254,14 +261,11 @@
               subtitle="All responses to this question"
             >
               <div slot="aside" class="flex gap-2 items-center flex-wrap">
-                {#if themeFilters.applied() || demoFilters.applied() || evidenceRich || searchValue}
+                {#if anyFilterApplied}
                   <Button
                     size="sm"
                     handleClick={() => {
-                      themeFilters.reset();
-                      demoFilters.reset();
-                      setEvidenceRich(false);
-                      setSearchValue("");
+                      resetFilters();
                     }}
                   >
                     Clear filters
