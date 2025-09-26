@@ -264,11 +264,17 @@
     multiAnswerFilters.reset();
     evidenceRich = false;
     searchValue = "";
-  }
+  };
 
   const anyFilterApplied = () => {
-    return Boolean(themeFilters.applied() || demoFilters.applied() || multiAnswerFilters.applied() || evidenceRich || searchValue);
-  }
+    return Boolean(
+      themeFilters.applied() ||
+        demoFilters.applied() ||
+        multiAnswerFilters.applied() ||
+        evidenceRich ||
+        searchValue,
+    );
+  };
 
   const setEvidenceRich = (value: boolean) => (evidenceRich = value);
 
