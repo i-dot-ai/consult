@@ -64,6 +64,9 @@
   export let flaggedOnly: boolean = false;
   export let setFlaggedOnly = (value: boolean) => {};
 
+  export let anyFilterApplied: boolean = false;
+  export let resetFilters: () => void = () => {};
+
   const BASE_FLY_DELAY = 100;
 
   function getDelay(index: number): number {
@@ -114,7 +117,7 @@
               <Title level={3} text="Search responses:" />
             </div>
 
-            {#if demoFilters.applied() || themeFilters.applied() || multiAnswerFilters.applied() || evidenceRich || searchValue}
+            {#if anyFilterApplied}
               <div transition:fly={{ x: 300 }} class="my-4">
                 <Alert>
                   <FilterAlt slot="icon" />
@@ -258,15 +261,11 @@
               subtitle="All responses to this question"
             >
               <div slot="aside" class="flex gap-2 items-center flex-wrap">
-                {#if themeFilters.applied() || demoFilters.applied() || multiAnswerFilters.applied() || evidenceRich || searchValue}
+                {#if anyFilterApplied}
                   <Button
                     size="sm"
                     handleClick={() => {
-                      themeFilters.reset();
-                      demoFilters.reset();
-                      multiAnswerFilters.reset();
-                      setEvidenceRich(false);
-                      setSearchValue("");
+                      resetFilters();
                     }}
                   >
                     Clear filters
