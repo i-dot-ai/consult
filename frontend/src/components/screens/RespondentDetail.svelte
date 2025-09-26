@@ -14,6 +14,7 @@
   import { createFetchStore } from "../../global/stores.ts";
 
   import Panel from "../dashboard/Panel/Panel.svelte";
+  import Alert from "../Alert.svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
   import ChevronRight from "../svg/material/ChevronRight.svelte";
   import Button from "../inputs/Button/Button.svelte";
@@ -146,57 +147,81 @@
 
   <div class={clsx(["grid", "grid-cols-12", "gap-4"])}>
     <div class="col-span-12 md:col-span-3 h-max md:sticky md:top-4" in:slide>
-      <RespondentSidebar
-        demoData={currRespondent?.demographics}
-        stakeholderName={currRespondent?.name}
-        questionsAnswered={$questionsData?.results.length ?? 0}
-        totalQuestions={$consultationData?.questions?.length ?? 0}
-        updateStakeholderName={async (newStakeholderName) => {
-          // update current respondent stakeholder name
-          await loadRespondent(
-            getApiConsultationRespondentUrl(consultationId, respondentId),
-            "PATCH",
-            {
-              name: newStakeholderName,
-            },
-          );
+      <svelte:boundary>
+        <RespondentSidebar
+          demoData={currRespondent?.demographics}
+          stakeholderName={currRespondent?.name}
+          questionsAnswered={$questionsData?.results.length ?? 0}
+          totalQuestions={$consultationData?.questions?.length ?? 0}
+          updateStakeholderName={async (newStakeholderName) => {
+            // update current respondent stakeholder name
+            await loadRespondent(
+              getApiConsultationRespondentUrl(consultationId, respondentId),
+              "PATCH",
+              {
+                name: newStakeholderName,
+              },
+            );
 
-          // refresh respondents
-          loadRespondents(getApiConsultationRespondentsUrl(consultationId));
-        }}
-      />
+            // refresh respondents
+            loadRespondents(getApiConsultationRespondentsUrl(consultationId));
+          }}
+        />
+
+        {#snippet failed(error)}
+          <div>
+            {console.error(error)}
+
+            <Panel>
+              <Alert>Unexpected responses error</Alert>
+            </Panel>
+          </div>
+        {/snippet}
+      </svelte:boundary>
     </div>
 
     <div class="col-span-12 md:col-span-9">
-      <Panel>
-        <article>
-          <h2 class="text-sm">Responses to Consultation Questions</h2>
-          <p class="text-sm text-neutral-500">
-            All responses submitted by this respondent, ordered by question
-            number
-          </p>
+      <svelte:boundary>
+        <Panel>
+          <article>
+            <h2 class="text-sm">Responses to Consultation Questions</h2>
+            <p class="text-sm text-neutral-500">
+              All responses submitted by this respondent, ordered by question
+              number
+            </p>
 
-          <ul>
-            {#each $answersData?.all_respondents ?? [] as answer, i}
-              {@const answerQuestion = $questionsData?.results?.find(
-                (question) => question.id === answer.question_id,
-              )}
+            <ul>
+              {#each $answersData?.all_respondents ?? [] as answer, i}
+                {@const answerQuestion = $questionsData?.results?.find(
+                  (question) => question.id === answer.question_id,
+                )}
 
-              <RespondentAnswer
-                {consultationId}
-                questionId={answer.question_id}
-                questionTitle={answerQuestion?.question_text}
-                questionNumber={answerQuestion?.number}
-                answerText={answer.free_text_answer_text}
-                multiChoice={answer.multiple_choice_answer}
-                themes={answer.themes?.map((theme) => theme.name)}
-                evidenceRich={answer.evidenceRich}
-                delay={FLY_ANIMATION_DELAY * i}
-              />
-            {/each}
-          </ul>
-        </article>
-      </Panel>
+                <RespondentAnswer
+                  {consultationId}
+                  questionId={answer.question_id}
+                  questionTitle={answerQuestion?.question_text}
+                  questionNumber={answerQuestion?.number}
+                  answerText={answer.free_text_answer_text}
+                  multiChoice={answer.multiple_choice_answer}
+                  themes={answer.themes?.map((theme) => theme.name)}
+                  evidenceRich={answer.evidenceRich}
+                  delay={FLY_ANIMATION_DELAY * i}
+                />
+              {/each}
+            </ul>
+          </article>
+        </Panel>
+
+        {#snippet failed(error)}
+          <div>
+            {console.error(error)}
+
+            <Panel>
+              <Alert>Unexpected responses error</Alert>
+            </Panel>
+          </div>
+        {/snippet}
+      </svelte:boundary>
     </div>
   </div>
 </section>
