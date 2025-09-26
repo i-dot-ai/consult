@@ -1,9 +1,9 @@
 <script>
-    import Tag from "./Tag.svelte";
+  import Tag from "./Tag.svelte";
 
-    export let content = "";
+  export let content = "";
 </script>
 
 <Tag>
-    <p>{content}</p>
+  <p>{content}</p>
 </Tag>

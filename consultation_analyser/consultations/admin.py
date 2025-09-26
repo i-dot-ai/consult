@@ -16,14 +16,18 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
     Theme,
 )
-from consultation_analyser.support_console.ingest import DEFAULT_TIMEOUT_SECONDS, create_embeddings
+from consultation_analyser.support_console.ingest import (
+    DEFAULT_TIMEOUT_SECONDS,
+    create_embeddings_for_question,
+)
 
 
 @admin.action(description="(Re)Embed selected Consultations")
 def update_embeddings_admin(modeladmin, request, queryset):
     queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
     for consultation in queryset:
-        queue.enqueue(create_embeddings, consultation.id)
+        for question in consultation.question_set.all():
+            queue.enqueue(create_embeddings_for_question, question.id)
 
     modeladmin.message_user(request, f"Processing {queryset.count()} consultations")
 

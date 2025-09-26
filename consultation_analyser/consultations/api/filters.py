@@ -1,6 +1,7 @@
 from collections import defaultdict
 
 from django.db.models import Count
+from django_filters import UUIDFilter
 from django_filters.rest_framework import BaseInFilter, BooleanFilter, CharFilter, FilterSet
 from pgvector.django import CosineDistance
 from rest_framework.filters import SearchFilter
@@ -28,6 +29,8 @@ class ResponseFilter(FilterSet):
     demoFilters = CharFilter(method="filter_demographics")
     is_flagged = BooleanFilter()
     multiple_choice_answer = BaseInFilter(field_name="chosen_options", lookup_expr="in")
+    respondent_id = UUIDFilter()
+    question_id = UUIDFilter()
 
     def filter_themes(self, queryset, name, value):
         if not value:

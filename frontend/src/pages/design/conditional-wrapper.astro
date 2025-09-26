@@ -1,6 +1,8 @@
 ---
 import Story from '../../layouts/Story.astro';
 import ConditionalWrapperStory from "../../components/ConditionalWrapper/ConditionalWrapperStory.svelte";
+import { Routes } from '../../global/routes';
+
 
 const title = "Conditional Render";
 const description = `
@@ -9,6 +11,6 @@ const description = `
     an HTML tag or another svelte component.
 `
 ---
-<Story title={title} description={description} >
+<Story title={title} description={description} backUrl={Routes.Design}>
     <ConditionalWrapperStory client:load />
 </Story>

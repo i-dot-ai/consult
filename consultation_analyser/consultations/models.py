@@ -143,9 +143,10 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
-    themefinder_id = models.IntegerField(null=True, blank=True)
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, editable=False)
+    themefinder_id = models.IntegerField(null=True, blank=True, editable=False)
     demographics = models.ManyToManyField("DemographicOption", blank=True)
+    name = models.TextField(null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         indexes = [

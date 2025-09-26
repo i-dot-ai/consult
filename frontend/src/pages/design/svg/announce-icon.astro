@@ -1,9 +1,11 @@
 ---
 import Story from '../../../layouts/Story.astro';
 import AnnounceIcon from "../../../components/svg/AnnounceIcon.svelte";
+import { Routes } from '../../../global/routes';
+
 
 const title = "svg - GOV Icon";
 ---
-<Story title={title} >
+<Story title={title} backUrl={Routes.Design + "/svg"}>
     <AnnounceIcon />
 </Story>

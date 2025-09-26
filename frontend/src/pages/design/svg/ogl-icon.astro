@@ -1,9 +1,11 @@
 ---
 import Story from '../../../layouts/Story.astro';
 import OglIcon from "../../../components/svg/OglIcon.svelte";
+import { Routes } from '../../../global/routes';
+
 
 const title = "svg - OGL Icon";
 ---
-<Story title={title} >
+<Story title={title} backUrl={Routes.Design + "/svg"}>
     <OglIcon />
 </Story>

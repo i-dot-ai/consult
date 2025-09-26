@@ -7,6 +7,7 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django_rq import get_queue
+from simple_history.utils import bulk_create_with_history
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -220,10 +221,8 @@ def validate_consultation_structure(
     return is_valid, errors
 
 
-def create_embeddings(consultation_id: UUID):
-    queryset = Response.objects.filter(
-        question__consultation_id=consultation_id, free_text__isnull=False
-    )
+def create_embeddings_for_question(question_id: UUID):
+    queryset = Response.objects.filter(question_id=question_id, free_text__isnull=False)
     total = queryset.count()
     batch_size = 1_000
 
@@ -271,7 +270,9 @@ def import_response_annotation_themes(question: Question, output_folder: str):
                 )
             )
             if len(objects_to_save) >= DEFAULT_BATCH_SIZE:
-                ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
+                bulk_create_with_history(
+                    objects_to_save, ResponseAnnotationTheme, ignore_conflicts=True
+                )
                 objects_to_save = []
                 logger.info(
                     "saved {i} ResponseAnnotationTheme for question {question_number}",
@@ -279,7 +280,7 @@ def import_response_annotation_themes(question: Question, output_folder: str):
                     question_number=question.number,
                 )
 
-    ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
+    bulk_create_with_history(objects_to_save, ResponseAnnotationTheme, ignore_conflicts=True)
 
 
 def import_response_annotations(question: Question, output_folder: str):
@@ -325,7 +326,7 @@ def import_response_annotations(question: Question, output_folder: str):
         )
         annotations_to_save.append(annotation)
         if len(annotations_to_save) >= DEFAULT_BATCH_SIZE:
-            ResponseAnnotation.objects.bulk_create(annotations_to_save)
+            bulk_create_with_history(annotations_to_save, ResponseAnnotation)
             annotations_to_save = []
             logger.info(
                 "saved {i} ResponseAnnotations for question {question_number}",
@@ -333,7 +334,7 @@ def import_response_annotations(question: Question, output_folder: str):
                 question_number=question.number,
             )
 
-    ResponseAnnotation.objects.bulk_create(annotations_to_save)
+    bulk_create_with_history(annotations_to_save, ResponseAnnotation)
 
 
 def read_response_file(responses_file_key: str) -> dict[str, str]:
@@ -572,7 +573,7 @@ def import_questions(
             responses = queue.enqueue(
                 import_responses, question, responses_file_key, multiple_choice_file
             )
-            queue.enqueue(create_embeddings, question.consultation.id, depends_on=responses)
+            queue.enqueue(create_embeddings_for_question, question.id, depends_on=responses)
 
             if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
                 logger.info("not importing output-mappings")

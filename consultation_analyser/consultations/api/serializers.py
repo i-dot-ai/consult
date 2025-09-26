@@ -8,8 +8,10 @@ from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
     Consultation,
     CrossCuttingTheme,
+    DemographicOption,
     MultiChoiceAnswer,
     Question,
+    Respondent,
     Response,
     ResponseAnnotationTheme,
     Theme,
@@ -157,6 +159,7 @@ class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
 
 class ResponseSerializer(serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
+    respondent_id = serializers.UUIDField(source="respondent.id", read_only=True)
     free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
     demographic_data = serializers.SerializerMethodField(read_only=True)
     themes = ResponseAnnotationThemeSerializer(
@@ -206,6 +209,7 @@ class ResponseSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "identifier",
+            "respondent_id",
             "free_text_answer_text",
             "demographic_data",
             "themes",
@@ -216,3 +220,20 @@ class ResponseSerializer(serializers.ModelSerializer):
             "is_flagged",
             "is_edited",
         ]
+
+
+class DemographicOptionSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source="field_name")
+    value = serializers.JSONField(source="field_value")
+
+    class Meta:
+        model = DemographicOption
+        fields = ["name", "value"]
+
+
+class RespondentSerializer(serializers.ModelSerializer):
+    demographics = DemographicOptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Respondent
+        fields = ["id", "themefinder_id", "demographics", "name"]
