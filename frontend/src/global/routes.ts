@@ -46,6 +46,9 @@ export const getRespondentDetailUrl = (
 export const getApiConsultationUrl = (consultationId: string) => {
   return `${Routes.ApiConsultations}/${consultationId}`;
 };
+export const getApiAnswersUrl = (consultationId: string) => {
+  return `/api/consultations/${consultationId}/responses/`;
+}
 export const getApiAnswerUrl = (
   consultationId: string,
   questionId: string,
