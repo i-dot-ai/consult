@@ -30,6 +30,7 @@ class ResponseFilter(FilterSet):
     is_flagged = BooleanFilter()
     multiple_choice_answer = BaseInFilter(field_name="chosen_options", lookup_expr="in")
     respondent_id = UUIDFilter()
+    question_id = UUIDFilter()
 
     def filter_themes(self, queryset, name, value):
         if not value:

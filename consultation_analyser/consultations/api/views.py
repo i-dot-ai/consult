@@ -147,8 +147,10 @@ class BespokeResultsSetPagination(PageNumberPagination):
     def get_paginated_response(self, data):
         original = super().get_paginated_response(data).data
 
-        question_id = self.request._request.path.split("/")[5]
-        respondents_total = models.Response.objects.filter(question_id=question_id).count()
+        if question_id := self.request._request.GET.get("question_id"):
+            respondents_total = models.Response.objects.filter(question_id=question_id).count()
+        else:
+            respondents_total = None
 
         return Response(
             {
@@ -169,8 +171,8 @@ class ResponseViewSet(ModelViewSet):
     http_method_names = ["get", "patch"]
 
     def get_queryset(self):
-        question_uuid = self.kwargs["question_pk"]
-        queryset = models.Response.objects.filter(question_id=question_uuid)
+        consultation_uuid = self.kwargs["consultation_pk"]
+        queryset = models.Response.objects.filter(question__consultation_id=consultation_uuid)
 
         queryset = queryset.annotate(
             is_flagged=Exists(

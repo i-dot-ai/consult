@@ -103,13 +103,11 @@ class TestDemographicAggregationsAPIView:
         """Test API endpoint returns empty aggregations when no data exists"""
         url = reverse(
             "response-demographic-aggregations",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
         response = client.get(
             url,
+            query_params={"question_id": free_text_question.id},
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -143,13 +141,11 @@ class TestDemographicAggregationsAPIView:
 
         url = reverse(
             "response-demographic-aggregations",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
         response = client.get(
             url,
+            query_params={"question_id": free_text_question.id},
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -184,16 +180,13 @@ class TestDemographicAggregationsAPIView:
 
         url = reverse(
             "response-demographic-aggregations",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         # Filter by individual=true
         response = client.get(
             url,
-            query_params={"demoFilters": "individual:true"},
+            query_params={"demoFilters": "individual:true", "question_id": free_text_question.id},
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -282,13 +275,11 @@ class TestThemeAggregationsAPIView:
         """Test API endpoint returns empty aggregations when no responses exist"""
         url = reverse(
             "response-theme-aggregations",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
         response = client.get(
             url,
+            query_params={"question_id": free_text_question.id},
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -317,13 +308,11 @@ class TestThemeAggregationsAPIView:
 
         url = reverse(
             "response-theme-aggregations",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
         response = client.get(
             url,
+            query_params={"question_id": free_text_question.id},
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -356,16 +345,16 @@ class TestThemeAggregationsAPIView:
 
         url = reverse(
             "response-theme-aggregations",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         # Filter by theme1 AND theme2 - should only return response1
         response = client.get(
             url,
-            query_params={"themeFilters": f"{theme_a.id},{theme_b.id}"},
+            query_params={
+                "themeFilters": f"{theme_a.id},{theme_b.id}",
+                "question_id": free_text_question.id,
+            },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -394,13 +383,11 @@ class TestFilteredResponsesAPIView:
 
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
         response = client.get(
             url,
+            query_params={"question_id": free_text_question.id},
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -433,14 +420,15 @@ class TestFilteredResponsesAPIView:
 
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
         response = client.get(
             url,
-            query_params={"page_size": 2, "page": 1},
+            query_params={
+                "page_size": 2,
+                "page": 1,
+                "question_id": free_text_question.id,
+            },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -471,16 +459,16 @@ class TestFilteredResponsesAPIView:
 
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         # Filter by individual=true
         response = client.get(
             url,
-            query_params={"demoFilters": "individual:true"},
+            query_params={
+                "demoFilters": "individual:true",
+                "question_id": free_text_question.id,
+            },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -526,16 +514,16 @@ class TestFilteredResponsesAPIView:
 
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         # Filter by theme AND theme2 - should only return response1
         response = client.get(
             url,
-            query_params={"themeFilters": f"{theme_a.id},{theme_b.id}"},
+            query_params={
+                "themeFilters": f"{theme_a.id},{theme_b.id}",
+                "question_id": free_text_question.id,
+            },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -569,16 +557,16 @@ class TestFilteredResponsesAPIView:
 
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         # Filter by respondent1 - should only return response1
         response = client.get(
             url,
-            query_params={"respondent_id": respondent_1.id},
+            query_params={
+                "respondent_id": respondent_1.id,
+                "question_id": free_text_question.id,
+            },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -618,15 +606,15 @@ class TestFilteredResponsesAPIView:
 
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         response = client.get(
             url,
-            query_params={"evidenceRich": evidence_rich},
+            query_params={
+                "evidenceRich": evidence_rich,
+                "question_id": free_text_question.id,
+            },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -679,15 +667,15 @@ class TestFilteredResponsesAPIView:
 
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         response = client.get(
             url,
-            query_params={"sentimentFilters": sentiments},
+            query_params={
+                "sentimentFilters": sentiments,
+                "question_id": free_text_question.id,
+            },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -717,15 +705,15 @@ class TestFilteredResponsesAPIView:
 
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
-            },
+            kwargs={"consultation_pk": free_text_annotation.response.question.consultation.id},
         )
 
         response = client.get(
             url,
-            query_params={"is_flagged": is_flagged},
+            query_params={
+                "is_flagged": is_flagged,
+                "question_id": free_text_annotation.response.question.id,
+            },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -757,10 +745,7 @@ class TestFilteredResponsesAPIView:
     ):
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": multi_choice_question.consultation.id,
-                "question_pk": multi_choice_question.id,
-            },
+            kwargs={"consultation_pk": multi_choice_question.consultation.id},
         )
 
         _chosen_options = multi_choice_question.multichoiceanswer_set.filter(
@@ -771,7 +756,10 @@ class TestFilteredResponsesAPIView:
 
         response = client.get(
             url,
-            query_params={"multiple_choice_answer": chosen_options_query},
+            query_params={
+                "multiple_choice_answer": chosen_options_query,
+                "question_id": multi_choice_question.id,
+            },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -791,12 +779,12 @@ class TestFilteredResponsesAPIView:
             "response-detail",
             kwargs={
                 "consultation_pk": another_annotation.response.question.consultation.id,
-                "question_pk": another_annotation.response.question.id,
                 "pk": another_annotation.response.id,
             },
         )
         response = client.get(
             url,
+            query_params={"question_id": another_annotation.response.question.id},
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -952,7 +940,6 @@ class TestAPIViewPermissions:
             "response-detail",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
                 "pk": free_text_annotation.response.id,
             },
         )
@@ -991,7 +978,6 @@ class TestAPIViewPermissions:
             "response-detail",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
                 "pk": free_text_annotation.response.id,
             },
         )
@@ -1025,7 +1011,6 @@ class TestAPIViewPermissions:
             "response-detail",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
                 "pk": free_text_annotation.response.id,
             },
         )
@@ -1065,7 +1050,6 @@ class TestAPIViewPermissions:
             "response-detail",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
                 "pk": free_text_annotation.response.id,
             },
         )
@@ -1128,7 +1112,6 @@ class TestAPIViewPermissions:
             "response-detail",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
                 "pk": free_text_annotation.response.id,
             },
         )
@@ -1159,7 +1142,6 @@ class TestAPIViewPermissions:
             "response-toggle-flag",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
                 "pk": free_text_annotation.response.id,
             },
         )
@@ -1302,15 +1284,15 @@ def test_get_responses_filtered_by_respondent(
 
     url = reverse(
         "response-list",
-        kwargs={
-            "consultation_pk": consultation.id,
-            "question_pk": free_text_question.id,
-        },
+        kwargs={"consultation_pk": consultation.id},
     )
 
     response = client.get(
         url,
-        query_params={"respondent_id": respondent_1.id},
+        query_params={
+            "respondent_id": respondent_1.id,
+            "question_id": free_text_question.id,
+        },
         headers={"Authorization": f"Bearer {consultation_user_token}"},
     )
 
