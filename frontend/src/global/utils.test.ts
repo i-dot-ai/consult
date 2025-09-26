@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { applyHighlight, getEnv, getPercentage, toTitleCase } from "./utils";
+import {
+  applyHighlight,
+  formatDate,
+  getEnv,
+  getPercentage,
+  toTitleCase,
+} from "./utils";
 
 describe("getPercentage", () => {
   it("correctly calculates percentages", () => {
@@ -71,4 +77,18 @@ describe("getEnv", () => {
       expect(result).toEqual("local");
     },
   );
+});
+
+describe("formatDate", () => {
+  it("formats ISO date string to en-GB long date and short time", () => {
+    const dateStr = "2024-01-01T15:30:00Z";
+
+    expect(formatDate(dateStr)).toBe("1 January 2024 at 15:30");
+  });
+
+  it("handles invalid date strings", () => {
+    const dateStr = "not-a-date";
+
+    expect(formatDate(dateStr)).toBe("Invalid Date");
+  });
 });

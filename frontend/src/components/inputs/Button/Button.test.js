@@ -46,6 +46,14 @@ describe("Button", () => {
     expect(button.getAttribute("aria-pressed")).toEqual("false");
   });
 
+  it("renders as an anchor element when href is provided", () => {
+    render(Button, { href: "/test-link" });
+
+    const link = screen.getByRole("button");
+    expect(link.tagName).toBe("A");
+    expect(link.getAttribute("href")).toEqual("/test-link");
+  });
+
   it("should render story", () => {
     render(ButtonStory);
   });

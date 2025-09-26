@@ -73,3 +73,11 @@ export function paginateArray(arr: unknown[] | undefined, size: number) {
     return acc;
   }, []);
 }
+
+export const formatDate = (dateStr: string) => {
+  const date = new Date(dateStr);
+  return date.toLocaleString("en-GB", {
+    dateStyle: "long",
+    timeStyle: "short",
+  });
+};
