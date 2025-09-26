@@ -5,7 +5,10 @@
   let respondentId = $state("4815");
 </script>
 
-<RespondentTopbar title={`Respondend ${respondentId}`} backText="Back to Analysis" />
+<RespondentTopbar
+  title={`Respondend ${respondentId}`}
+  backText="Back to Analysis"
+/>
 
 <hr class="my-8" />
 

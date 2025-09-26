@@ -80,7 +80,9 @@
 
     {#if multiChoice?.length > 0}
       <div>
-        <h4 class="mt-4 mb-1 uppercase text-xs text-neutral-500">Multiple Choice Response:</h4>
+        <h4 class="mt-4 mb-1 uppercase text-xs text-neutral-500">
+          Multiple Choice Response:
+        </h4>
 
         <ul class="flex items-center flex-wrap gap-1">
           {#each multiChoice as multiChoiceAnswer}
@@ -94,7 +96,9 @@
 
     <div>
       {#if multiChoice?.length > 0}
-        <h4 class="mt-4 mb-1 uppercase text-xs text-neutral-500">Additional Comments:</h4>
+        <h4 class="mt-4 mb-1 uppercase text-xs text-neutral-500">
+          Additional Comments:
+        </h4>
       {/if}
       <p class="text-sm">
         {answerText}

@@ -7,7 +7,6 @@ import { createRawSnippet } from "svelte";
 import RespondentTopbar from "./RespondentTopbar.svelte";
 import RespondentTopbarStory from "./RespondentTopbarStory.svelte";
 
-
 let testData: {
   title: string;
   backText: string;

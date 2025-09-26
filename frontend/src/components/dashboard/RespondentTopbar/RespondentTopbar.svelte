@@ -33,10 +33,7 @@
       <Button
         size="xs"
         variant="ghost"
-        handleClick={onClickBack
-          ? onClickBack
-          : (e) => history.back()
-        }
+        handleClick={onClickBack ? onClickBack : (e) => history.back()}
       >
         <div class="rotate-180">
           <MaterialIcon color="fill-neutral-700">

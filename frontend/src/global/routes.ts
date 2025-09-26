@@ -62,10 +62,16 @@ export const getApiAnswerFlagUrl = (
 };
 export const getApiConsultationRespondentsUrl = (consultationId: string) => {
   return `${Routes.ApiConsultations}/${consultationId}/respondents/`;
-}
-export const getApiConsultationRespondentUrl = (consultationId: string, respondentId: string) => {
+};
+export const getApiConsultationRespondentUrl = (
+  consultationId: string,
+  respondentId: string,
+) => {
   return `${Routes.ApiConsultations}/${consultationId}/respondents/${respondentId}/`;
-}
-export const getQuestionsByRespondentUrl = (consultationId: string, respondentId: string) => {
+};
+export const getQuestionsByRespondentUrl = (
+  consultationId: string,
+  respondentId: string,
+) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/?respondent_id=${respondentId}`;
-}
+};

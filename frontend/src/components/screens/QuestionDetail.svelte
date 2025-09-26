@@ -373,11 +373,17 @@
     handleChange={(next: string) => (activeTab = next as TabNames)}
     tabs={[
       { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
-      ...($questionData?.has_free_text ? [{ //  No second tab without free text
-        id: TabNames.ResponseAnalysis,
-        title: "Response Analysis",
-        icon: Finance,
-      }] : []),
+
+      //  No second tab without free text
+      ...($questionData?.has_free_text
+        ? [
+            {
+              id: TabNames.ResponseAnalysis,
+              title: "Response Analysis",
+              icon: Finance,
+            },
+          ]
+        : []),
     ]}
   >
     {#if activeTab === TabNames.QuestionSummary}

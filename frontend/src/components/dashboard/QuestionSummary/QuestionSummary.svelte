@@ -135,13 +135,16 @@
                 <Alert>
                   <FilterAlt slot="icon" />
 
-                  <div class="flex justify-between items-center gap-4 flex-wrap">
+                  <div
+                    class="flex justify-between items-center gap-4 flex-wrap"
+                  >
                     <p class="text-sm">Results are filtered</p>
 
                     <Button
                       variant="primary"
                       size="sm"
-                      handleClick={() => setActiveTab(TabNames.ResponseAnalysis)}
+                      handleClick={() =>
+                        setActiveTab(TabNames.ResponseAnalysis)}
                     >
                       <MaterialIcon>
                         <Finance />
