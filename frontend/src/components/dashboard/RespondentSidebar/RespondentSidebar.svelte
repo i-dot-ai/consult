@@ -8,11 +8,12 @@
 
   import RespondentSidebarItem from "../RespondentSidebarItem/RespondentSidebarItem.svelte";
 
-  interface RespondentDemoItem {
+  export interface RespondentDemoItem {
     name: string;
     value: string;
   }
-  interface Props {
+
+  export interface Props {
     demoData: RespondentDemoItem[];
     stakeholderName: string;
     questionsAnswered: number;

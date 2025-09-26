@@ -15,7 +15,7 @@
   import Person from "../../svg/material/Person.svelte";
   import { getRespondentDetailUrl, Routes } from "../../../global/routes";
 
-  interface Props {
+  export interface Props {
     consultationId?: string;
     questionId?: string;
     answerId?: string;

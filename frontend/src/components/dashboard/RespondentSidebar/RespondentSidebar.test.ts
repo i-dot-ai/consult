@@ -2,19 +2,19 @@ import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
-import RespondentSidebar from "./RespondentSidebar.svelte";
+import RespondentSidebar, { type RespondentDemoItem, type Props } from "./RespondentSidebar.svelte";
 import RespondentSidebarStory from "./RespondentSidebarStory.svelte";
 import { getPercentage } from "../../../global/utils";
 
-let testData;
+let testData: Props;
 
 describe("RespondentSidebar", () => {
   beforeEach(() => {
     testData = {
-      respondentType: "Test type",
-      geographicLocation: "Test location",
-      selfReportedDisability: "Test disability",
-      sector: "Test sector",
+      demoData: [
+        { name: "country", value: "england" },
+        { name: "age", value: "25-35" },
+      ],
       stakeholderName: "Test stakeholder",
       questionsAnswered: 10,
       totalQuestions: 20,
@@ -24,14 +24,14 @@ describe("RespondentSidebar", () => {
   afterEach(() => cleanup());
 
   it("should render data", () => {
-    const { getByText, container } = render(RespondentSidebar, {
+    const { getByText } = render(RespondentSidebar, {
       ...testData,
     });
 
-    expect(getByText(testData.respondentType));
-    expect(getByText(testData.geographicLocation));
-    expect(getByText(testData.selfReportedDisability));
-    expect(getByText(testData.sector));
+    testData.demoData.forEach((dataItem) => {
+      expect(getByText(dataItem.name));
+      expect(getByText(dataItem.value));
+    })
     expect(getByText(testData.stakeholderName));
 
     const partialNum = testData.questionsAnswered;
