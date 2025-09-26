@@ -148,7 +148,6 @@
             {resetData}
             themes={themes || []}
             setEditing={(val: boolean) => (editing = val)}
-            themes={themes || []}
           />
         {/if}
 

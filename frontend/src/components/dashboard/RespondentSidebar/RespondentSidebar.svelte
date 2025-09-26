@@ -5,8 +5,6 @@
   import Person from "../../svg/material/Person.svelte";
   import Panel from "../Panel/Panel.svelte";
   import Calendar from "../../svg/material/Calendar.svelte";
-  import Shield from "../../svg/material/Shield.svelte";
-  import LocationOn from "../../svg/material/LocationOn.svelte";
 
   import RespondentSidebarItem from "../RespondentSidebarItem/RespondentSidebarItem.svelte";
 
@@ -42,7 +40,7 @@
   <div class="pl-4">
     {#each demoData as demoDataItem}
       <RespondentSidebarItem
-        title={demoDataItem.name.replaceAll("'", "")}
+        title={demoDataItem.name}
         subtitle={demoDataItem.value}
       />
     {/each}

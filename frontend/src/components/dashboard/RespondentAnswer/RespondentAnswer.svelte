@@ -13,6 +13,7 @@
     questionTitle: string;
     questionNumber: number;
     answerText: string;
+    multiChoice: string[];
     themes: string[];
     evidenceRich: boolean;
   }
@@ -23,6 +24,7 @@
     questionTitle = "",
     questionNumber = 0,
     answerText = "",
+    multiChoice = [],
     themes = [],
     evidenceRich = false,
   }: Props = $props();
@@ -31,7 +33,7 @@
 <Panel border={true} bg={true}>
   <article>
     <header
-      class="flex flex-col-reverse md:flex-row gap-y-4 justify-between items-start gap-2"
+      class="flex flex-col-reverse md:flex-row gap-y-4 justify-between items-start gap-2 mb-4"
     >
       <a href={getQuestionDetailUrl(consultationId, questionId)}>
         <div class="flex items-start gap-2">
@@ -76,19 +78,40 @@
       </div>
     </header>
 
-    <p class="text-sm my-4">
-      {answerText}
-    </p>
+    {#if multiChoice?.length > 0}
+      <div>
+        <h4 class="mt-4 mb-1 uppercase text-xs text-neutral-500">Multiple Choice Response:</h4>
 
-    <footer class="flex items-center flex-wrap gap-2">
-      <small class="text-xs text-neutral-500"> Themes: </small>
+        <ul class="flex items-center flex-wrap gap-1">
+          {#each multiChoice as multiChoiceAnswer}
+            <li class="text-xs">
+              {multiChoiceAnswer}
+            </li>
+          {/each}
+        </ul>
+      </div>
+    {/if}
 
-      {#each themes as theme}
-        <Tag variant="dark">
-          {theme}
-        </Tag>
-      {/each}
-    </footer>
+    <div>
+      {#if multiChoice?.length > 0}
+        <h4 class="mt-4 mb-1 uppercase text-xs text-neutral-500">Additional Comments:</h4>
+      {/if}
+      <p class="text-sm">
+        {answerText}
+      </p>
+    </div>
+
+    {#if themes?.length > 0}
+      <footer class="flex items-center flex-wrap gap-2 mt-4">
+        <small class="text-xs text-neutral-500"> Themes: </small>
+
+        {#each themes as theme}
+          <Tag variant="dark">
+            {theme}
+          </Tag>
+        {/each}
+      </footer>
+    {/if}
   </article>
 </Panel>
 
