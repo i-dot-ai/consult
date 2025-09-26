@@ -141,10 +141,10 @@
             {consultationId}
             {questionId}
             {answerId}
-            {themes}
             {themeOptions}
             {evidenceRich}
             {resetData}
+            themes={themes || []}
             setEditing={(val: boolean) => (editing = val)}
           />
         {/if}
