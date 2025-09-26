@@ -274,7 +274,7 @@
         multiAnswerFilters.applied() ||
         evidenceRich ||
         searchValue ||
-        flaggedOnly
+        flaggedOnly,
     );
   };
 
