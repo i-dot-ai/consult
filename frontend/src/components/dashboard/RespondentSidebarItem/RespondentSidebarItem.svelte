@@ -2,6 +2,7 @@
   import clsx from "clsx";
 
   import { slide } from "svelte/transition";
+  import type { Component } from "svelte";
 
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Button from "../../inputs/Button/Button.svelte";
@@ -10,10 +11,10 @@
   import Check from "../../svg/material/Check.svelte";
   import Close from "../../svg/material/Close.svelte";
 
-  interface Props {
+  export interface Props {
     title: string;
     subtitle: string;
-    icon?: any;
+    icon?: Component;
     editable?: boolean;
     updateSubtitle?: (newSubtitle: string) => void;
   }

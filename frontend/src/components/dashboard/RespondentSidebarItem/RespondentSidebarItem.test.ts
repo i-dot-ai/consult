@@ -2,17 +2,11 @@ import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
-import { type Component } from "svelte";
-
 import Star from "../../svg/material/Star.svelte";
-import RespondentSidebarItem from "./RespondentSidebarItem.svelte";
+import RespondentSidebarItem, { type Props } from "./RespondentSidebarItem.svelte";
 import RespondentSidebarItemStory from "./RespondentSidebarItemStory.svelte";
 
-let testData: {
-  title: string;
-  subtitle: string;
-  icon: Component;
-};
+let testData: Props;
 
 describe("RespondentSidebarItem", () => {
   beforeEach(() => {

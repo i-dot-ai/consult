@@ -4,13 +4,10 @@ import { render, cleanup, screen } from "@testing-library/svelte";
 
 import { createRawSnippet } from "svelte";
 
-import RespondentTopbar from "./RespondentTopbar.svelte";
+import RespondentTopbar, { type Props } from "./RespondentTopbar.svelte";
 import RespondentTopbarStory from "./RespondentTopbarStory.svelte";
 
-let testData: {
-  title: string;
-  backText: string;
-};
+let testData: Props;
 
 describe("RespondentTopbar", () => {
   beforeEach(() => {

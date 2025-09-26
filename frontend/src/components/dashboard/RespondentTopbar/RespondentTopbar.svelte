@@ -7,7 +7,7 @@
 
   import { type Snippet } from "svelte";
 
-  interface Props {
+  export interface Props {
     title: string;
     backText: string;
     onClickBack?: (e: MouseEvent) => void;
