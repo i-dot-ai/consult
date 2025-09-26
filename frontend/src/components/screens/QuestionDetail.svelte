@@ -175,7 +175,7 @@
     // Skip the rest of the requests if they are already requested for this filter set
     if (currPage === 1) {
       loadThemeAggr(
-        `/api/consultations/${consultationId}/questions/${questionId}/responses/theme-aggregations/${queryString}`,
+        `/api/consultations/${consultationId}/responses/theme-aggregations/${queryString}&question_id=${questionId}`,
       );
       loadThemeInfo(
         `/api/consultations/${consultationId}/questions/${questionId}/theme-information/${queryString}`,
@@ -184,7 +184,7 @@
         `/api/consultations/${consultationId}/demographic-options/${queryString}`,
       );
       loadDemoAggr(
-        `/api/consultations/${consultationId}/questions/${questionId}/responses/demographic-aggregations/${queryString}`,
+        `/api/consultations/${consultationId}/responses/demographic-aggregations/${queryString}&question_id=${questionId}`,
       );
       loadQuestion(
         `/api/consultations/${consultationId}/questions/${questionId}/${queryString}`,
@@ -194,7 +194,7 @@
     // Append next page of answers to existing answers
     try {
       await loadAnswers(
-        `/api/consultations/${consultationId}/questions/${questionId}/responses/${queryString}`,
+        `/api/consultations/${consultationId}/responses/${queryString}`,
       );
 
       if ($answersData.all_respondents) {

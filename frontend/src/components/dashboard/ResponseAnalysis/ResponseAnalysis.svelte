@@ -302,7 +302,7 @@
             {:else}
               <div>
                 <ul>
-                  {#each answers as answer, i (answer.identifier)}
+                  {#each answers as answer, i (answer.id)}
                     <li>
                       <div transition:fly={{ x: 300, delay: getDelay(i) }}>
                         <AnswerCard

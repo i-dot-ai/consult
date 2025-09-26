@@ -24,12 +24,10 @@ consultations_router = NestedDefaultRouter(router, "consultations", lookup="cons
 consultations_router.register("respondents", RespondentViewSet, basename="respondent")
 consultations_router.register("questions", QuestionViewSet, basename="question")
 consultations_router.register("themes", ThemeViewSet, basename="theme")
+consultations_router.register("responses", ResponseViewSet, basename="response")
 
 questions_router = NestedDefaultRouter(consultations_router, "questions", lookup="question")
 themes_router = NestedDefaultRouter(consultations_router, "themes", lookup="theme")
-
-questions_router.register("responses", ResponseViewSet, basename="response")
-responses_router = NestedDefaultRouter(questions_router, "responses", lookup="response")
 
 
 urlpatterns = [
@@ -45,7 +43,6 @@ urlpatterns = [
     path("api/", include(consultations_router.urls)),
     path("api/", include(questions_router.urls)),
     path("api/", include(themes_router.urls)),
-    path("api/", include(responses_router.urls)),
     path("api/user/", get_current_user, name="user"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
