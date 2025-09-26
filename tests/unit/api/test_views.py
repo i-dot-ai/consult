@@ -179,7 +179,7 @@ class TestDemographicAggregationsAPIView:
         )
 
         # Filter by individual=true
-        response = client.get(url + "?demoFilters=individual:true")
+        response = client.get(url, query_params={"demoFilters": "individual:true"})
 
         assert response.status_code == 200
         data = response.json()
@@ -335,7 +335,7 @@ class TestThemeAggregationsAPIView:
         )
 
         # Filter by theme1 AND theme2 - should only return response1
-        response = client.get(url + f"?themeFilters={theme_a.id},{theme_b.id}")
+        response = client.get(url, query_params={"themeFilters": f"{theme_a.id},{theme_b.id}"})
 
         assert response.status_code == 200
         data = response.json()
@@ -403,7 +403,7 @@ class TestFilteredResponsesAPIView:
                 "question_pk": free_text_question.id,
             },
         )
-        response = client.get(url + "?page_size=2&page=1")
+        response = client.get(url, query_params={"page_size": 2, "page": 1})
 
         assert response.status_code == 200
 
@@ -440,7 +440,7 @@ class TestFilteredResponsesAPIView:
         )
 
         # Filter by individual=true
-        response = client.get(url + "?demoFilters=individual:true")
+        response = client.get(url, query_params={"demoFilters": "individual:true"})
 
         assert response.status_code == 200
 
@@ -492,7 +492,7 @@ class TestFilteredResponsesAPIView:
         )
 
         # Filter by theme AND theme2 - should only return response1
-        response = client.get(url + f"?themeFilters={theme_a.id},{theme_b.id}")
+        response = client.get(url, query_params={"themeFilters": f"{theme_a.id},{theme_b.id}"})
 
         assert response.status_code == 200
 
@@ -534,7 +534,8 @@ class TestFilteredResponsesAPIView:
 
         # Filter by respondent1 - should only return response1
         response = client.get(
-            url + f"?respondent_id={respondent_1.id}",
+            url,
+            query_params={"respondent_id": respondent_1.id},
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -547,7 +548,7 @@ class TestFilteredResponsesAPIView:
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
 
-    @pytest.mark.parametrize(("evidence_rich", "count"), [(True, 1), (False, 1), (None, 2)])
+    @pytest.mark.parametrize(("evidence_rich", "count"), [(True, 1), (False, 1), ("", 2)])
     def test_get_filtered_responses_with_evidence_rich_filters(
         self,
         client,
@@ -583,7 +584,8 @@ class TestFilteredResponsesAPIView:
         )
 
         response = client.get(
-            url + f"?evidenceRich={evidence_rich}",
+            url,
+            query_params={"evidenceRich": evidence_rich},
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -645,7 +647,8 @@ class TestFilteredResponsesAPIView:
         )
 
         response = client.get(
-            url + f"?sentimentFilters={sentiments}",
+            url,
+            query_params={"sentimentFilters": sentiments},
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -659,9 +662,7 @@ class TestFilteredResponsesAPIView:
 
         assert sorted(x["sentiment"] for x in data["all_respondents"]) == expected
 
-    @pytest.mark.parametrize(
-        ("is_flagged", "expected_responses"), [(True, 1), (False, 1), (None, 2)]
-    )
+    @pytest.mark.parametrize(("is_flagged", "expected_responses"), [(True, 1), (False, 1), ("", 2)])
     def test_get_filtered_response_is_flagged(
         self,
         client,
@@ -684,7 +685,8 @@ class TestFilteredResponsesAPIView:
         )
 
         response = client.get(
-            url + f"?is_flagged={is_flagged}",
+            url,
+            query_params={"is_flagged": is_flagged},
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {consultation_user_token}",
@@ -732,7 +734,8 @@ class TestFilteredResponsesAPIView:
         chosen_options_query = ",".join(str(x.pk) for x in _chosen_options)
 
         response = client.get(
-            url + f"?multiple_choice_answer={chosen_options_query}",
+            url,
+            query_params={"multiple_choice_answer": chosen_options_query},
             headers={
                 "Content-Type": "application/json",
                 "Authorization": f"Bearer {consultation_user_token}",
@@ -1274,7 +1277,8 @@ def test_get_responses_filtered_by_respondent(
     )
 
     response = client.get(
-        f"{url}?respondent_id={respondent_1.id}",
+        url,
+        query_params={"respondent_id": respondent_1.id},
         headers={
             "Authorization": f"Bearer {consultation_user_token}",
         },
@@ -1326,7 +1330,8 @@ def test_get_respondent_query_themefinder_id(
     )
 
     response = client.get(
-        url + f"?themefinder_id={respondent_1.themefinder_id}",
+        url,
+        query_params={"themefinder_id": respondent_1.themefinder_id},
         content_type="application/json",
         headers={
             "Authorization": f"Bearer {consultation_user_token}",
