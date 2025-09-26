@@ -18,17 +18,17 @@
   }
 
   interface Props {
-    consultationId: string;
     title: string;
     items?: MetricsDemoItem[];
     hideThreshold?: number;
+    consultationId?: string;
   }
 
   let {
-    consultationId = "",
     title = "",
     items = [],
     hideThreshold = 3,
+    consultationId = "",
   }: Props = $props();
 
   let displayAll: boolean = $state(false);
@@ -73,7 +73,7 @@
       {@render cardItem(item, index)}
     {/each}
 
-    {#if items.length > hideThreshold}
+    {#if items.length > hideThreshold && consultationId}
       <hr class="my-2 border-neutral-300" />
 
       <Button

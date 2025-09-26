@@ -114,7 +114,7 @@
   });
 
   function resetStaged() {
-    stagedThemes = [...themes];
+    stagedThemes = themes ? [...themes] : [];
     stagedEvidenceRich = evidenceRich;
     isSubmitting.set(false);
     submitError.set("");

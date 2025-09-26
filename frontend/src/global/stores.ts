@@ -48,7 +48,7 @@ export const favStore = createFavStore();
 
 // Shared fetch logic
 export const createFetchStore = () => {
-  const data: Writable<unknown> = writable(null);
+  const data: Writable<any> = writable(null);
   const loading: Writable<boolean> = writable(true);
   const error: Writable<string> = writable("");
 

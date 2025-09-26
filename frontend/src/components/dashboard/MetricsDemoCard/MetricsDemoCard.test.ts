@@ -4,7 +4,19 @@ import { render, cleanup, screen } from "@testing-library/svelte";
 
 import MetricsDemoCard from "./MetricsDemoCard.svelte";
 
-let testData;
+interface Item {
+  title: string;
+  count: number;
+  percentage: number;
+}
+
+let testData: {
+  title: string;
+  items: Item[];
+  extraItems: Item[];
+  hideThreshold: number;
+  consultationId: string;
+};
 
 describe("MetricsDemoCard", () => {
   beforeEach(() => {
@@ -39,6 +51,8 @@ describe("MetricsDemoCard", () => {
           percentage: 25,
         },
       ],
+      hideThreshold: 3,
+      consultationId: "123-456",
     };
   });
   afterEach(() => cleanup());
@@ -58,12 +72,11 @@ describe("MetricsDemoCard", () => {
     expect(getByText("75%"));
   });
 
-  it("should toggle visibility of items above max", async () => {
+  it("should hide items above max", async () => {
     vi.mock("svelte/transition");
-    const user = userEvent.setup();
 
     const { getByText, queryByText } = render(MetricsDemoCard, {
-      title: testData.title,
+      ...testData,
       items: [...testData.items, ...testData.extraItems],
     });
 
@@ -76,11 +89,24 @@ describe("MetricsDemoCard", () => {
     expect(getByText("Test Demo Item 3"));
     expect(queryByText("Test Demo Item 4")).toBeNull();
     expect(queryByText("Test Demo Item 5")).toBeNull();
+  });
 
-    // Display all once button is clicked
-    const button = screen.getByRole("button");
-    await user.click(button);
+  it("should not hide items if threshold is infinity", async () => {
+    vi.mock("svelte/transition");
 
+    const { getByText, queryByText } = render(MetricsDemoCard, {
+      ...testData,
+      items: [...testData.items, ...testData.extraItems],
+      hideThreshold: Infinity,
+    });
+
+    // Expect button label displays correct number of items
+    expect(queryByText("View All 5")).toBeNull();
+
+    // Max display 3 initially
+    expect(getByText("Test Demo Item 1"));
+    expect(getByText("Test Demo Item 2"));
+    expect(getByText("Test Demo Item 3"));
     expect(getByText("Test Demo Item 4"));
     expect(getByText("Test Demo Item 5"));
   });

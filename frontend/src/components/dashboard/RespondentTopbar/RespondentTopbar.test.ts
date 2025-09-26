@@ -4,16 +4,16 @@ import { render, cleanup, screen } from "@testing-library/svelte";
 
 import { createRawSnippet } from "svelte";
 
-import RespondentTopbar from "./RespondentTopbar.svelte";
+import RespondentTopbar, { type Props } from "./RespondentTopbar.svelte";
 import RespondentTopbarStory from "./RespondentTopbarStory.svelte";
 
-let testData;
+let testData: Props;
 
 describe("RespondentTopbar", () => {
   beforeEach(() => {
     testData = {
       title: "test-title",
-      backUrl: "#",
+      backText: "Back to Analysis",
     };
   });
 
@@ -25,7 +25,7 @@ describe("RespondentTopbar", () => {
     });
 
     expect(getByText(testData.title));
-    expect(getByText("Back to Analysis"));
+    expect(getByText(testData.backText));
   });
 
   it("should render child", () => {
@@ -37,6 +37,24 @@ describe("RespondentTopbar", () => {
     });
 
     expect(getByText(`Child content`));
+  });
+
+  it("should call on back click callback", async () => {
+    const onClickBackMock = vi.fn();
+    const user = userEvent.setup();
+
+    const { getByRole } = render(RespondentTopbar, {
+      ...testData,
+      onClickBack: onClickBackMock,
+      children: createRawSnippet(() => ({
+        render: () => `<p>Child content</p>`,
+      })),
+    });
+
+    const button = getByRole("button");
+    await user.click(button);
+
+    expect(onClickBackMock).toHaveBeenCalledOnce();
   });
 
   it("should render story", () => {
