@@ -16,15 +16,19 @@
   export let disabled: boolean = false;
   export let fullWidth: boolean = false;
   export let testId: string = "";
+  export let href: string | undefined;
 </script>
 
-<button
+<svelte:element
+  this={href ? "a" : "button"}
+  role="button"
   title={title || undefined}
   data-variant={variant}
+  tabindex="0"
+  href={href}
   class={clsx([
     fullWidth && "w-full",
     `text-${size}`,
-    "self-start",
     "cursor-pointer",
     "rounded-md",
     size === "xs" ? "py-0.5" : "py-1",
@@ -35,7 +39,7 @@
     variant === "ghost" ? "border-transparent" : "border-gray-300",
     "transition-colors",
     "duration-300",
-    "flex",
+    "inline-flex",
     "gap-1",
     "items-center",
     "hover:bg-gray-100",
@@ -75,7 +79,7 @@
   data-testid={testId ? testId : undefined}
 >
   <slot />
-</button>
+</svelte:element>
 
 <style>
   button[data-variant="approve"]:hover :global(svg) {
