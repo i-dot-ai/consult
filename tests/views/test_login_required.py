@@ -5,13 +5,7 @@ from consultation_analyser import factories
 from consultation_analyser.consultations.urls import urlpatterns
 from tests.utils import build_url
 
-PUBLIC_URL_NAMES = [
-    "root",
-    "how_it_works",
-    "data_sharing",
-    "get_involved",
-    "privacy",
-]
+PUBLIC_URL_NAMES = ["root", "how_it_works", "data_sharing", "get_involved", "privacy", "git-sha"]
 AUTHENTICATION_URL_NAMES = [
     "sign_in",
     "sign_out",

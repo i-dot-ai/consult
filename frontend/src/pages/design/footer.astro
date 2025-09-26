@@ -1,12 +1,14 @@
 ---
 import Story from '../../layouts/Story.astro';
 import FooterStory from "../../components/Footer/FooterStory.svelte";
+import { Routes } from '../../global/routes';
+
 
 const title = "Footer";
 const description = `
     Renders the footer for all routes on the site.
 `
 ---
-<Story title={title} description={description} >
+<Story title={title} description={description} backUrl={Routes.Design}>
     <FooterStory client:load />
 </Story>

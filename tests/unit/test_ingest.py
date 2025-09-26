@@ -1,6 +1,7 @@
 from unittest.mock import Mock, patch
 
 import pytest
+from botocore.exceptions import ClientError
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -11,6 +12,7 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotation,
     Theme,
 )
+from consultation_analyser.support_console.file_models import SentimentRecord, read_from_s3
 from consultation_analyser.support_console.ingest import (
     create_consultation,
     get_consultation_codes,
@@ -70,6 +72,37 @@ def get_object_side_effect(Bucket, Key):
         return {"Body": Mock(iter_lines=Mock(return_value=evidence_data.split(b"\n")))}
     else:
         return None
+
+
+def test_read_from_s3_file_missing_raises_error():
+    mock_boto3 = Mock()
+    mock_boto3.get_object.side_effect = ClientError(
+        error_response={"Error": {"Code": "NoSuchKey"}}, operation_name="GetObject"
+    )
+    with pytest.raises(ValueError) as e:
+        list(
+            read_from_s3(
+                SentimentRecord,
+                mock_boto3,
+                "my-bucket",
+                "my-file",
+                raise_error_if_file_missing=True,
+            )
+        )
+    assert e.value.args[0] == "file not found my-bucket/my-file"
+
+
+def test_read_from_s3_file_missing_returns_empty():
+    mock_boto3 = Mock()
+    mock_boto3.get_object.side_effect = ClientError(
+        error_response={"Error": {"Code": "NoSuchKey"}}, operation_name="GetObject"
+    )
+    result = list(
+        read_from_s3(
+            SentimentRecord, mock_boto3, "my-bucket", "my-file", raise_error_if_file_missing=False
+        )
+    )
+    assert result == []
 
 
 class TestGetQuestionFolders:
@@ -262,6 +295,9 @@ class TestImportConsultationFullFlow:
             response__question__consultation=consultation
         )
         assert annotations.count() == 3
+
+        for annotation in annotations:
+            assert annotation.history.count() == 1
 
 
 @pytest.mark.django_db

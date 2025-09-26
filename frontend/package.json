@@ -2,30 +2,48 @@
   "name": "ui",
   "type": "module",
   "version": "0.0.1",
+  "engines": {
+    "node": "24.8"
+  },
   "scripts": {
     "dev": "astro dev --host",
     "start": "node /app/dist/server/entry.mjs",
     "build": "astro build",
     "preview": "astro preview --host",
     "astro": "astro",
-    "test": "npx vitest --coverage"
+    "test": "npx vitest --coverage",
+    "prettier-check": "npx prettier --check .",
+    "prettier-fix": "npx prettier --write ."
   },
   "dependencies": {
     "@astrojs/node": "^9.3.3",
     "@astrojs/svelte": "^7.1.0",
     "@astrojs/tailwind": "^5.1.2",
+    "@codemirror/lang-json": "^6.0.2",
     "@melt-ui/pp": "^0.3.2",
     "@melt-ui/svelte": "^0.86.6",
     "@testing-library/svelte": "^5.2.8",
+    "@testing-library/user-event": "^14.6.1",
     "astro": "^5.12.1",
+    "chart.js": "^4.5.0",
     "clsx": "^2.1.1",
     "express": "^5.1.0",
     "http-proxy-middleware": "^3.0.5",
     "jsdom": "^26.1.0",
+    "prettier-plugin-svelte": "^3.4.0",
+    "svelte-codemirror-editor": "^2.0.0",
     "tailwindcss": "^3.4.0",
     "vitest": "^3.2.4"
   },
   "devDependencies": {
-    "@vitest/coverage-v8": "^3.2.4"
+    "@eslint/js": "^9.36.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "eslint": "^9.36.0",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "globals": "^16.4.0",
+    "jiti": "^2.5.1",
+    "prettier": "3.6.2",
+    "typescript-eslint": "^8.44.0"
   }
 }

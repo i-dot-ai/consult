@@ -143,9 +143,10 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
 
 class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
-    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
-    themefinder_id = models.IntegerField(null=True, blank=True)
+    consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE, editable=False)
+    themefinder_id = models.IntegerField(null=True, blank=True, editable=False)
     demographics = models.ManyToManyField("DemographicOption", blank=True)
+    name = models.TextField(null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         indexes = [
@@ -282,7 +283,10 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
             models.UniqueConstraint(
-                fields=["response_annotation", "theme", "assigned_by"],
+                fields=[
+                    "response_annotation",
+                    "theme",
+                ],
                 name="unique_theme_assignment",
             ),
         ]
@@ -312,6 +316,18 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
     # History tracking
     history = HistoricalRecords()
 
+    @property
+    def is_edited(self) -> bool:
+        """has this annotation ever been changed?"""
+        if self.history.exists():
+            return True
+
+        # have associated themes ever been changed by a human?
+        return ResponseAnnotationTheme.history.filter(
+            response_annotation=self,
+            assigned_by__isnull=False,
+        ).exists()
+
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         indexes = [
             models.Index(fields=["human_reviewed"]),
@@ -336,27 +352,37 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
             )
 
     def set_human_reviewed_themes(self, themes, user):
-        """Set themes as human-reviewed, preserving original AI assignments"""
+        """Set themes as human-reviewed, will override original AI assignments"""
         # Remove existing user-assigned theme assignments
-        ResponseAnnotationTheme.objects.filter(
-            response_annotation=self, assigned_by__isnull=False
+
+        current_theme_ids = {x.theme_id for x in self.responseannotationtheme_set.all()}
+        proposed_theme_ids = {x.id for x in themes}
+
+        self.responseannotationtheme_set.filter(
+            theme_id__in=current_theme_ids - proposed_theme_ids
         ).delete()
 
-        # Add new human-assigned themes
-        for theme in themes:
-            ResponseAnnotationTheme.objects.get_or_create(
+        for theme_id in proposed_theme_ids - current_theme_ids:
+            ResponseAnnotationTheme.objects.create(
                 response_annotation=self,
-                theme=theme,
+                theme_id=theme_id,
                 assigned_by=user,
             )
 
     def get_original_ai_themes(self):
-        """Get themes assigned by AI"""
-        return self.themes.filter(responseannotationtheme__assigned_by__isnull=True)
+        """Get themes assigned by AI
+        Note that this implementation makes an implicit assumption that the AI only assigns the themes once
+        """
+        theme_ids = ResponseAnnotationTheme.history.filter(
+            response_annotation=self,
+            history_type="+",
+            assigned_by__isnull=True,
+        ).values_list("theme_id", flat=True)
+        return Theme.objects.filter(id__in=theme_ids)
 
-    def get_human_reviewed_themes(self):
-        """Get themes assigned by human review"""
-        return self.themes.filter(responseannotationtheme__assigned_by__isnull=False)
+    def get_current_themes(self):
+        """Get latest themes assigned by any human or AI"""
+        return self.themes.distinct()
 
     def save(self, *args, **kwargs) -> None:
         """

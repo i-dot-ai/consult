@@ -1,0 +1,13 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+
+import ConsultationAnalysis from "../../../../components/screens/ConsultationAnalysis.svelte";
+import Section from "../../../../components/Section/Section.svelte";
+
+const { consultationId } = Astro.params;
+---
+<Layout>
+    <Section>
+        <ConsultationAnalysis client:load consultationId={consultationId} />
+    </Section>
+</Layout>

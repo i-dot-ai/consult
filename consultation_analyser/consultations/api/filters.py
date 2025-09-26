@@ -1,4 +1,5 @@
 from django.db.models import Count
+from django_filters import UUIDFilter
 from django_filters.rest_framework import BaseInFilter, BooleanFilter, FilterSet
 from pgvector.django import CosineDistance
 from rest_framework.filters import SearchFilter
@@ -14,7 +15,9 @@ class ResponseFilter(FilterSet):
     themeFilters = BaseInFilter(method="filter_themes", lookup_expr="in")
     demographics = BaseInFilter(field_name="respondent__demographics", lookup_expr="in")
     is_flagged = BooleanFilter()
-    chosen_options = BaseInFilter(lookup_expr="in")
+    multiple_choice_answer = BaseInFilter(field_name="chosen_options", lookup_expr="in")
+    respondent_id = UUIDFilter()
+    question_id = UUIDFilter()
 
     def filter_themes(self, queryset, name, value):
         if not value:

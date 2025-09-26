@@ -1,19 +1,19 @@
 <script>
-    import Switch from "./Switch.svelte";
+  import Switch from "./Switch.svelte";
 
-    let {
-        id = "",
-        label = "",
-        value = false,
-        handleChange = () => {},
-        labelSlot = "",
-    } = $props();
+  let {
+    id = "",
+    label = "",
+    value = false,
+    handleChange = () => {},
+    labelSlot = "",
+  } = $props();
 </script>
 
 {#if labelSlot}
-    <Switch {id} {label} {value} {handleChange}>
-        <p slot="label">{labelSlot}</p>
-    </Switch>
+  <Switch {id} {label} {value} {handleChange}>
+    <p slot="label">{labelSlot}</p>
+  </Switch>
 {:else}
-    <Switch {id} {label} {value} {handleChange} />
+  <Switch {id} {label} {value} {handleChange} />
 {/if}

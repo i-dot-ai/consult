@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     "rest_framework",
     "django_filters",
     "rest_framework_simplejwt",
+    "drf_spectacular",
 ]
 
 
@@ -79,7 +80,6 @@ MIDDLEWARE = [
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "waffle.middleware.WaffleMiddleware",
-    "consultation_analyser.middleware.LoginRequiredMiddleware404",
     "consultation_analyser.middleware.SupportAppStaffRequiredMiddleware",
     "simple_history.middleware.HistoryRequestMiddleware",
 ]
@@ -121,6 +121,7 @@ AUTH_USER_MODEL = "authentication.User"
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "https://consult.ai.cabinetoffice.gov.uk",
+    "https://consult-preprod.ai.cabinetoffice.gov.uk",
     "https://consult-dev.ai.cabinetoffice.gov.uk",
 ]
 
@@ -333,8 +334,19 @@ REST_FRAMEWORK = {
         "rest_framework_simplejwt.authentication.JWTAuthentication",
         "rest_framework.authentication.SessionAuthentication",
     ),
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
 SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(hours=18),
+}
+
+# DRF Spectacular settings
+SPECTACULAR_SETTINGS = {
+    "TITLE": "Consultation Analyser API",
+    "DESCRIPTION": "REST API for the i.AI Consultation Analyser platform",
+    "VERSION": "1.0.0",
+    "SERVE_INCLUDE_SCHEMA": False,
+    "COMPONENT_SPLIT_REQUEST": True,
+    "SCHEMA_PATH_PREFIX": "/api/",
 }

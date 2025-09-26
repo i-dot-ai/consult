@@ -1,9 +1,11 @@
 ---
 import Story from '../../../layouts/Story.astro';
 import IaiIcon from "../../../components/svg/IaiIcon.svelte";
+import { Routes } from '../../../global/routes';
+
 
 const title = "svg - GOV Icon";
 ---
-<Story title={title} >
+<Story title={title} backUrl={Routes.Design + "/svg"}>
     <IaiIcon />
 </Story>
