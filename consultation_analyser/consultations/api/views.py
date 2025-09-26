@@ -186,7 +186,7 @@ class ResponseViewSet(ModelViewSet):
         return filterset.qs.distinct()
 
     @action(detail=False, methods=["get"], url_path="demographic-aggregations")
-    def demographic_aggregations(self, request, question_pk=None, consultation_pk=None):
+    def demographic_aggregations(self, request, consultation_pk=None):
         """Get demographic aggregations for filtered responses"""
 
         aggregations = (
@@ -211,24 +211,20 @@ class ResponseViewSet(ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=["get"], url_path="theme-aggregations")
-    def theme_aggregations(self, request, question_pk=None, consultation_pk=None):
+    def theme_aggregations(self, request, consultation_pk=None):
         """Get theme aggregations for filtered responses"""
 
-        # Get the question object with consultation in one query
-        question = get_object_or_404(models.Question, pk=question_pk)
-
-        # Database-level aggregation using Django ORM hybrid approach
-        theme_aggregations = {}
-
-        if question.has_free_text:
-            # Get theme counts from the filtered responses
-            theme_counts = (
-                models.Theme.objects.filter(responseannotation__response__in=self.get_queryset())
-                .values("id")
-                .annotate(count=Count("responseannotation", distinct=True))
+        # Get theme counts from the filtered responses
+        theme_counts = (
+            models.Theme.objects.filter(
+                responseannotation__response__in=self.get_queryset(),
+                responseannotation__response__question__has_free_text__isnull=False,
             )
+            .values("id")
+            .annotate(count=Count("responseannotation", distinct=True))
+        )
 
-            theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
+        theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
 
         serializer = ThemeAggregationsSerializer(data={"theme_aggregations": theme_aggregations})
         serializer.is_valid()
@@ -236,7 +232,7 @@ class ResponseViewSet(ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=["patch"], url_path="toggle-flag")
-    def toggle_flag(self, request, consultation_pk=None, question_pk=None, pk=None):
+    def toggle_flag(self, request, consultation_pk=None, pk=None):
         """Toggle flag on/off for the user"""
         response = self.get_object()
         if response.annotation.flagged_by.contains(request.user):
