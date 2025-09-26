@@ -71,6 +71,11 @@ urlpatterns = [
         questions.index,
         name="review_free_text_questions",
     ),
+    path(
+        "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/annotate/",
+        questions.annotate,
+        name="annotate_question",
+    ),
     # authentication
     path("sign-in/", sessions.new, name="sign_in"),
     path("sign-out/", sessions.destroy, name="sign_out"),

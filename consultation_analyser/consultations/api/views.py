@@ -5,6 +5,7 @@ from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Exists, OuterRef
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
+from pgvector.django import CosineDistance
 from django_filters.rest_framework import DjangoFilterBackend
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
@@ -17,6 +18,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from .. import models
 from ..views.sessions import send_magic_link_if_email_exists
+from ...embeddings import embed_text
 from .filters import HybridSearchFilter, ResponseFilter
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
@@ -156,6 +158,69 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         serializer.is_valid()
 
         return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], url_path="theme-responses")
+    def theme_responses(self, request, pk=None, consultation_pk=None):
+        """Get responses for a list of themes using vector similarity"""
+        question = self.get_object()
+        
+        # Get list of theme names from request data
+        themes = request.data.get('themes', [])
+        
+        if not themes:
+            return Response({
+                'status': 'error',
+                'message': 'No themes provided'
+            }, status=400)
+        
+        # Process each theme and get responses
+        all_responses = {}
+        
+        for theme in themes:
+            theme_name = theme.get('name', '').strip()
+            if not theme_name:
+                continue
+                
+            try:
+                # Get embedding for the theme name
+                embedded_query = embed_text(theme_name)
+                distance = CosineDistance("embedding", embedded_query)
+                
+                # Get closest responses for this theme
+                closest_responses = (
+                    models.Response.objects
+                    .filter(question=question)
+                    .annotate(distance=distance)
+                    .order_by("distance")[:10]
+                    .values("free_text", "distance")
+                )
+                
+                # Convert to list for JSON serialization
+                response_list = [
+                    {
+                        'free_text': response['free_text'],
+                        'distance': float(response['distance']) if response['distance'] else None
+                    } 
+                    for response in closest_responses
+                ]
+                
+                all_responses[theme_name] = {
+                    'responses': response_list,
+                    'count': len(response_list)
+                }
+                
+            except Exception as e:
+                all_responses[theme_name] = {
+                    'error': str(e),
+                    'responses': [],
+                    'count': 0
+                }
+        
+        return Response({
+            'status': 'success',
+            'theme_responses': all_responses,
+            'total_themes': len(themes)
+        })
 
 
 class BespokeResultsSetPagination(PageNumberPagination):
