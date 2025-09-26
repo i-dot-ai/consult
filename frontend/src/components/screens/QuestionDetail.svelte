@@ -15,7 +15,10 @@
   import Lan from "../svg/material/Lan.svelte";
   import Finance from "../svg/material/Finance.svelte";
 
-  import { getApiAnswersUrl, getConsultationDetailUrl } from "../../global/routes.ts";
+  import {
+    getApiAnswersUrl,
+    getConsultationDetailUrl,
+  } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
   import {
     SearchModeValues,
@@ -193,9 +196,7 @@
 
     // Append next page of answers to existing answers
     try {
-      await loadAnswers(
-        `${getApiAnswersUrl(consultationId)}/${queryString}`,
-      );
+      await loadAnswers(`${getApiAnswersUrl(consultationId)}/${queryString}`);
 
       if ($answersData.all_respondents) {
         const newAnswers = $answersData.all_respondents;

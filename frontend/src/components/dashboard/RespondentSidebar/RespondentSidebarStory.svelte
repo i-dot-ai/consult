@@ -1,6 +1,8 @@
 <script lang="ts">
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
-  import RespondentSidebar, { type RespondentDemoItem } from "./RespondentSidebar.svelte";
+  import RespondentSidebar, {
+    type RespondentDemoItem,
+  } from "./RespondentSidebar.svelte";
 
   let demoData: RespondentDemoItem[] = [
     { name: "Country", value: "England" },

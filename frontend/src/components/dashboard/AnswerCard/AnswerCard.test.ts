@@ -18,7 +18,8 @@ describe("AnswerCard", () => {
       evidenceRich: true,
       themes: [
         { id: "theme-1", name: "theme 1", description: "desc 1" },
-        { id: "theme-2", name: "theme 2", description: "desc 2" }],
+        { id: "theme-2", name: "theme 2", description: "desc 2" },
+      ],
     };
   });
 
