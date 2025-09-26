@@ -173,6 +173,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
     is_flagged = serializers.BooleanField(read_only=True)
     is_edited = serializers.BooleanField(source="annotation.is_edited")
+    question_id = serializers.UUIDField()
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
@@ -210,6 +211,7 @@ class ResponseSerializer(serializers.ModelSerializer):
             "id",
             "identifier",
             "respondent_id",
+            "question_id",
             "free_text_answer_text",
             "demographic_data",
             "themes",
