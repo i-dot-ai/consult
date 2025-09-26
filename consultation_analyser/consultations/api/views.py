@@ -148,18 +148,9 @@ class BespokeResultsSetPagination(PageNumberPagination):
         original = super().get_paginated_response(data).data
 
         if question_id := self.request._request.GET.get("question_id"):
-            respondents_total = models.Response.objects.filter(question_id=question_id).count()
-        else:
-            respondents_total = None
+            original["total"] = models.Response.objects.filter(question_id=question_id).count()
 
-        return Response(
-            {
-                "respondents_total": respondents_total,
-                "filtered_total": original["count"],
-                "has_more_pages": bool(original["next"]),
-                "all_respondents": original["results"],
-            }
-        )
+        return Response(original)
 
 
 class ResponseViewSet(ModelViewSet):

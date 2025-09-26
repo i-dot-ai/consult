@@ -396,15 +396,12 @@ class TestFilteredResponsesAPIView:
         # Parse the response
         data = orjson.loads(response.content)
 
-        assert "all_respondents" in data
-        assert "respondents_total" in data
-        assert "filtered_total" in data
-        assert len(data["all_respondents"]) == 1
-        assert data["respondents_total"] == 1
-        assert data["filtered_total"] == 1
+        assert len(data["results"]) == 1
+        assert data["total"] == 1
+        assert data["count"] == 1
 
         # Verify respondent data structure
-        respondent_data = data["all_respondents"][0]
+        respondent_data = data["results"][0]
         assert respondent_data["identifier"] == str(respondent.identifier)
         assert respondent_data["free_text_answer_text"] == "Test response"
         assert respondent_data["demographic_data"] == {"individual": True}
@@ -436,9 +433,9 @@ class TestFilteredResponsesAPIView:
 
         data = orjson.loads(response.content)
 
-        assert len(data["all_respondents"]) == 2
-        assert data["has_more_pages"]
-        assert data["filtered_total"] == 5
+        assert len(data["results"]) == 2
+        assert data["next"]
+        assert data["count"] == 5
 
     def test_get_filtered_responses_with_demographic_filters(
         self, client, consultation_user_token, free_text_question
@@ -476,10 +473,10 @@ class TestFilteredResponsesAPIView:
 
         data = orjson.loads(response.content)
 
-        assert data["respondents_total"] == 2  # Total respondents
-        assert data["filtered_total"] == 1  # Filtered to individuals only
-        assert len(data["all_respondents"]) == 1
-        assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
+        assert data["total"] == 2  # Total respondents
+        assert data["count"] == 1  # Filtered to individuals only
+        assert len(data["results"]) == 1
+        assert data["results"][0]["identifier"] == str(respondent1.identifier)
 
     def test_get_filtered_responses_with_theme_filters(
         self, client, consultation_user_token, free_text_question, theme_a, theme_b
@@ -531,10 +528,10 @@ class TestFilteredResponsesAPIView:
 
         data = orjson.loads(response.content)
 
-        # assert data["respondents_total"] == 3  # Total respondents
-        assert data["filtered_total"] == 1  # Only response1 has both themes
-        assert len(data["all_respondents"]) == 1
-        assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
+        # assert data["total"] == 3  # Total respondents
+        assert data["count"] == 1  # Only response1 has both themes
+        assert len(data["results"]) == 1
+        assert data["results"][0]["identifier"] == str(respondent1.identifier)
 
     def test_get_filtered_responses_with_respondent_filters(
         self,
@@ -574,10 +571,10 @@ class TestFilteredResponsesAPIView:
 
         data = response.json()
 
-        assert data["respondents_total"] == 2  # Total respondents
-        assert data["filtered_total"] == 1  # Only response1
-        assert len(data["all_respondents"]) == 1
-        assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
+        assert data["total"] == 2  # Total respondents
+        assert data["count"] == 1  # Only response1
+        assert len(data["results"]) == 1
+        assert data["results"][0]["identifier"] == str(respondent_1.identifier)
 
     @pytest.mark.parametrize(("evidence_rich", "count"), [(True, 1), (False, 1), ("", 2)])
     def test_get_filtered_responses_with_evidence_rich_filters(
@@ -622,11 +619,11 @@ class TestFilteredResponsesAPIView:
 
         data = response.json()
 
-        assert data["respondents_total"] == 2  # Total respondents
-        assert data["filtered_total"] == count  # Only response1
-        assert len(data["all_respondents"]) == 2 if evidence_rich is None else 2
+        assert data["total"] == 2  # Total respondents
+        assert data["count"] == count  # Only response1
+        assert len(data["results"]) == 2 if evidence_rich is None else 2
         if isinstance(evidence_rich, bool):
-            assert data["all_respondents"][0]["evidenceRich"] == evidence_rich
+            assert data["results"][0]["evidenceRich"] == evidence_rich
 
     @pytest.mark.parametrize(
         ("sentiments", "count", "expected"),
@@ -683,11 +680,11 @@ class TestFilteredResponsesAPIView:
 
         data = response.json()
 
-        assert data["respondents_total"] == 2  # Total respondents
-        assert data["filtered_total"] == count  # Only response1
-        assert len(data["all_respondents"]) == 2 if sentiments is None else 2
+        assert data["total"] == 2  # Total respondents
+        assert data["count"] == count  # Only response1
+        assert len(data["results"]) == 2 if sentiments is None else 2
 
-        assert sorted(x["sentiment"] for x in data["all_respondents"]) == expected
+        assert sorted(x["sentiment"] for x in data["results"]) == expected
 
     @pytest.mark.parametrize(("is_flagged", "expected_responses"), [(True, 1), (False, 1), ("", 2)])
     def test_get_filtered_response_is_flagged(
@@ -718,10 +715,10 @@ class TestFilteredResponsesAPIView:
         )
 
         assert response.status_code == 200
-        assert response.json()["respondents_total"] == 2
-        assert response.json()["filtered_total"] == expected_responses
+        assert response.json()["total"] == 2
+        assert response.json()["count"] == expected_responses
         if expected_responses == 1:
-            assert response.json()["all_respondents"][0]["is_flagged"] == is_flagged
+            assert response.json()["results"][0]["is_flagged"] == is_flagged
 
     @pytest.mark.parametrize(
         ("chosen_options", "expected_responses"),
@@ -764,8 +761,8 @@ class TestFilteredResponsesAPIView:
         )
 
         assert response.status_code == 200
-        assert response.json()["respondents_total"] == 2
-        assert response.json()["filtered_total"] == expected_responses
+        assert response.json()["total"] == 2
+        assert response.json()["count"] == expected_responses
 
     @pytest.mark.parametrize("is_flagged", [True, False])
     def test_get_responses_with_is_flagged(
@@ -1297,10 +1294,10 @@ def test_get_responses_filtered_by_respondent(
     )
 
     assert response.status_code == 200, response.json()
-    assert response.json()["respondents_total"] == 2
-    assert response.json()["filtered_total"] == 1
-    assert response.json()["all_respondents"][0]["id"] == str(response_1.id)
-    assert response.json()["all_respondents"][0]["respondent_id"] == str(respondent_1.id)
+    assert response.json()["total"] == 2
+    assert response.json()["count"] == 1
+    assert response.json()["results"][0]["id"] == str(response_1.id)
+    assert response.json()["results"][0]["respondent_id"] == str(respondent_1.id)
 
 
 @override_settings(GIT_SHA="00000000-0000-0000-0000-000000000000")
