@@ -23,7 +23,7 @@
   import Alert from "../../Alert.svelte";
   import FilterAlt from "../../svg/material/FilterAlt.svelte";
 
-  import { themeFilters, demoFilters } from "../../../global/state.svelte.ts";
+  import { themeFilters, demoFilters, multiAnswerFilters } from "../../../global/state.svelte.ts";
   import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
   import MultiChoice from "../MultiChoice/MultiChoice.svelte";
   import CsvDownload from "../../CsvDownload/CsvDownload.svelte";
@@ -127,7 +127,7 @@
             </div>
           </TitleRow>
 
-          {#if demoFilters.applied() || themeFilters.applied() || evidenceRich || searchValue}
+          {#if demoFilters.applied() || themeFilters.applied() || multiAnswerFilters.applied() || evidenceRich || searchValue}
             <div transition:fly={{ x: 300 }} class="my-4">
               <Alert>
                 <FilterAlt slot="icon" />
