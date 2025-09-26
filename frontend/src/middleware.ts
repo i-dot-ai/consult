@@ -12,6 +12,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     // /^\/sign-out[\/]?$/,
     /^\/consultations.*/,
     /^\/design.*/,
+    /^\/support.*/,
   ];
 
   for (const protectedRoute of protectedRoutes) {
@@ -42,6 +43,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/.well-known\/.*/,
     /^\/consultations.*/,
     // /^\/evaluations.*/,
+    /^\/support\/users[/]?$/,
     /^\/design.*/,
     /^\/_astro.*/,
   ];
