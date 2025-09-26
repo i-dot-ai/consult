@@ -9,7 +9,7 @@
   import Diamond from "../../svg/material/Diamond.svelte";
   import { getQuestionDetailUrl } from "../../../global/routes";
 
-  interface Props {
+  export interface Props {
     consultationId: string;
     questionId: string;
     questionTitle: string;
