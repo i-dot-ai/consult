@@ -264,6 +264,7 @@
     multiAnswerFilters.reset();
     evidenceRich = false;
     searchValue = "";
+    flaggedOnly = false;
   };
 
   const anyFilterApplied = () => {
@@ -272,7 +273,8 @@
         demoFilters.applied() ||
         multiAnswerFilters.applied() ||
         evidenceRich ||
-        searchValue,
+        searchValue ||
+        flaggedOnly
     );
   };
 
