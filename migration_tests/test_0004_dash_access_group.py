@@ -1,6 +1,6 @@
 import pytest
 
-from consultation_analyser.constants import DASHBOARD_ACCESS
+DASHBOARD_ACCESS = "Dashboard access"
 
 
 @pytest.mark.django_db()

@@ -1,14 +1,15 @@
 from collections import defaultdict
 
+from django.conf import settings
 from django.contrib.auth import login
 from django.core.exceptions import PermissionDenied
 from django.db.models import Count, Exists, OuterRef
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
-from pgvector.django import CosineDistance
 from django_filters.rest_framework import DjangoFilterBackend
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
+from pgvector.django import CosineDistance
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -16,9 +17,9 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
+from ...embeddings import embed_text
 from .. import models
 from ..views.sessions import send_magic_link_if_email_exists
-from ...embeddings import embed_text
 from .filters import HybridSearchFilter, ResponseFilter
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
@@ -27,8 +28,8 @@ from .serializers import (
     CrossCuttingThemeSerializer,
     DemographicAggregationsSerializer,
     DemographicOptionsSerializer,
-    MultiChoiceAnswerCount,
     QuestionSerializer,
+    RespondentSerializer,
     ResponseSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
@@ -69,25 +70,19 @@ class ConsultationViewSet(ReadOnlyModelViewSet):
         url_path="demographic-options",
     )
     def demographic_options(self, request, pk=None):
-        """Get all demographic options for a consultation"""
-        consultation = self.get_object()
+        self.get_object()
 
         if not request.user.has_dashboard_access:
             raise PermissionDenied()
 
-        # Get all demographic fields and their possible values from normalized storage
-        options = (
-            models.DemographicOption.objects.filter(consultation=consultation)
-            .values_list("field_name", "field_value")
-            .order_by("field_name", "field_value")
+        data = (
+            models.Respondent.objects.filter(consultation_id=pk)
+            .order_by("demographics__field_name", "demographics__field_value")
+            .values("demographics__field_name", "demographics__field_value")
+            .annotate(count=Count("id"))
         )
 
-        result = defaultdict(list)
-        for field_name, field_value in options:
-            result[field_name].append(field_value)
-
-        serializer = DemographicOptionsSerializer(data={"demographic_options": dict(result)})
-        serializer.is_valid()
+        serializer = DemographicOptionsSerializer(instance=data, many=True)
 
         return Response(serializer.data)
 
@@ -99,6 +94,19 @@ class ThemeViewSet(ReadOnlyModelViewSet):
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
         return models.CrossCuttingTheme.objects.filter(
+            consultation_id=consultation_uuid, consultation__users=self.request.user
+        ).order_by("-created_at")
+
+
+class RespondentViewSet(ModelViewSet):
+    serializer_class = RespondentSerializer
+    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    filterset_fields = ["themefinder_id"]
+    http_method_names = ["get", "patch"]
+
+    def get_queryset(self):
+        consultation_uuid = self.kwargs["consultation_pk"]
+        return models.Respondent.objects.filter(
             consultation_id=consultation_uuid, consultation__users=self.request.user
         ).order_by("-created_at")
 
@@ -131,20 +139,6 @@ class QuestionViewSet(ReadOnlyModelViewSet):
             .order_by("-created_at")
         )
 
-    @action(
-        detail=True,
-        methods=["get"],
-        url_path="multi-choice-response-count",
-        serializer_class=MultiChoiceAnswerCount,
-    )
-    def multi_choice_response_count(self, request, pk=None, consultation_pk=None):
-        question = self.get_object()
-        answer_count = question.response_set.values("chosen_options__text").annotate(
-            response_count=Count("id")
-        )
-        serializer = self.get_serializer(instance=answer_count, many=True)
-        return JsonResponse(data=serializer.data, safe=False)
-
     @action(detail=True, methods=["get"], url_path="theme-information")
     def theme_information(self, request, pk=None, consultation_pk=None):
         """Get all theme information for a question"""
@@ -163,64 +157,54 @@ class QuestionViewSet(ReadOnlyModelViewSet):
     def theme_responses(self, request, pk=None, consultation_pk=None):
         """Get responses for a list of themes using vector similarity"""
         question = self.get_object()
-        
+
         # Get list of theme names from request data
-        themes = request.data.get('themes', [])
-        
+        themes = request.data.get("themes", [])
+
         if not themes:
-            return Response({
-                'status': 'error',
-                'message': 'No themes provided'
-            }, status=400)
-        
+            return Response({"status": "error", "message": "No themes provided"}, status=400)
+
         # Process each theme and get responses
         all_responses = {}
-        
+
         for theme in themes:
-            theme_name = theme.get('name', '').strip()
+            theme_name = theme.get("name", "").strip()
             if not theme_name:
                 continue
-                
+
             try:
                 # Get embedding for the theme name
                 embedded_query = embed_text(theme_name)
                 distance = CosineDistance("embedding", embedded_query)
-                
+
                 # Get closest responses for this theme
                 closest_responses = (
-                    models.Response.objects
-                    .filter(question=question)
+                    models.Response.objects.filter(question=question)
                     .annotate(distance=distance)
                     .order_by("distance")[:10]
                     .values("free_text", "distance")
                 )
-                
+
                 # Convert to list for JSON serialization
                 response_list = [
                     {
-                        'free_text': response['free_text'],
-                        'distance': float(response['distance']) if response['distance'] else None
-                    } 
+                        "free_text": response["free_text"],
+                        "distance": float(response["distance"]) if response["distance"] else None,
+                    }
                     for response in closest_responses
                 ]
-                
+
                 all_responses[theme_name] = {
-                    'responses': response_list,
-                    'count': len(response_list)
+                    "responses": response_list,
+                    "count": len(response_list),
                 }
-                
+
             except Exception as e:
-                all_responses[theme_name] = {
-                    'error': str(e),
-                    'responses': [],
-                    'count': 0
-                }
-        
-        return Response({
-            'status': 'success',
-            'theme_responses': all_responses,
-            'total_themes': len(themes)
-        })
+                all_responses[theme_name] = {"error": str(e), "responses": [], "count": 0}
+
+        return Response(
+            {"status": "success", "theme_responses": all_responses, "total_themes": len(themes)}
+        )
 
 
 class BespokeResultsSetPagination(PageNumberPagination):
@@ -232,8 +216,10 @@ class BespokeResultsSetPagination(PageNumberPagination):
     def get_paginated_response(self, data):
         original = super().get_paginated_response(data).data
 
-        question_id = self.request._request.path.split("/")[5]
-        respondents_total = models.Response.objects.filter(question_id=question_id).count()
+        if question_id := self.request._request.GET.get("question_id"):
+            respondents_total = models.Response.objects.filter(question_id=question_id).count()
+        else:
+            respondents_total = None
 
         return Response(
             {
@@ -254,8 +240,8 @@ class ResponseViewSet(ModelViewSet):
     http_method_names = ["get", "patch"]
 
     def get_queryset(self):
-        question_uuid = self.kwargs["question_pk"]
-        queryset = models.Response.objects.filter(question_id=question_uuid)
+        consultation_uuid = self.kwargs["consultation_pk"]
+        queryset = models.Response.objects.filter(question__consultation_id=consultation_uuid)
 
         queryset = queryset.annotate(
             is_flagged=Exists(
@@ -269,7 +255,7 @@ class ResponseViewSet(ModelViewSet):
         return filterset.qs.distinct()
 
     @action(detail=False, methods=["get"], url_path="demographic-aggregations")
-    def demographic_aggregations(self, request, question_pk=None, consultation_pk=None):
+    def demographic_aggregations(self, request, consultation_pk=None):
         """Get demographic aggregations for filtered responses"""
 
         aggregations = (
@@ -294,24 +280,20 @@ class ResponseViewSet(ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=False, methods=["get"], url_path="theme-aggregations")
-    def theme_aggregations(self, request, question_pk=None, consultation_pk=None):
+    def theme_aggregations(self, request, consultation_pk=None):
         """Get theme aggregations for filtered responses"""
 
-        # Get the question object with consultation in one query
-        question = get_object_or_404(models.Question, pk=question_pk)
-
-        # Database-level aggregation using Django ORM hybrid approach
-        theme_aggregations = {}
-
-        if question.has_free_text:
-            # Get theme counts from the filtered responses
-            theme_counts = (
-                models.Theme.objects.filter(responseannotation__response__in=self.get_queryset())
-                .values("id")
-                .annotate(count=Count("responseannotation", distinct=True))
+        # Get theme counts from the filtered responses
+        theme_counts = (
+            models.Theme.objects.filter(
+                responseannotation__response__in=self.get_queryset(),
+                responseannotation__response__question__has_free_text__isnull=False,
             )
+            .values("id")
+            .annotate(count=Count("responseannotation", distinct=True))
+        )
 
-            theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
+        theme_aggregations = {str(theme["id"]): theme["count"] for theme in theme_counts}
 
         serializer = ThemeAggregationsSerializer(data={"theme_aggregations": theme_aggregations})
         serializer.is_valid()
@@ -319,7 +301,7 @@ class ResponseViewSet(ModelViewSet):
         return Response(serializer.data)
 
     @action(detail=True, methods=["patch"], url_path="toggle-flag")
-    def toggle_flag(self, request, consultation_pk=None, question_pk=None, pk=None):
+    def toggle_flag(self, request, consultation_pk=None, pk=None):
         """Toggle flag on/off for the user"""
         response = self.get_object()
         if response.annotation.flagged_by.contains(request.user):
@@ -377,3 +359,8 @@ def verify_magic_link(request) -> HttpResponse:
                 "sessionId": request.session.session_key,
             }
         )
+
+
+@api_view(["GET"])
+def get_git_sha(_request) -> Response:
+    return Response({"sha": settings.GIT_SHA})

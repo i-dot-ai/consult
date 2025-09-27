@@ -29,41 +29,20 @@
     document.addEventListener('DOMContentLoaded', function() {
       const consultationId = '{{ consultation_id }}';
 
-      // First fetch the consultation to get the title
-      fetch(`/api/consultations/${consultationId}/`, {
-        credentials: 'same-origin',
-        headers: {
-          'Content-Type': 'application/json'
-        }
-      })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-          }
-          return response.json();
-        })
+      // First fetch the consultation to get the ID and title
+      fetch(`/api/consultations/${consultationId}/`)
+        .then(response => response.json())
         .then(consultation => {
           document.getElementById('consultation-title').textContent = consultation.title;
           document.title = consultation.title;
 
-          // Now fetch questions with free text and themes using the original consultationId
-          return fetch(`/api/consultations/${consultationId}/questions/?has_free_text=true`, {
-            credentials: 'same-origin',
-            headers: {
-              'Content-Type': 'application/json'
-            }
-          });
+          // Now fetch questions with free text and themes
+          return consultation.questions;
         })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-          }
-          return response.json();
-        })
-        .then(data => {
+        .then(question => {
           const questionsList = document.getElementById('questions-list');
 
-          data.results.forEach(question => {
+          question.forEach(question => {
             const listItem = document.createElement('li');
             listItem.className = 'con-question-list__item iai-display-flex govuk-!-padding-top-4 govuk-!-padding-bottom-4 govuk-!-padding-left-7 govuk-!-padding-right-7';
 

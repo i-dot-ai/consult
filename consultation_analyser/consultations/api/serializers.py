@@ -8,8 +8,10 @@ from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
     Consultation,
     CrossCuttingTheme,
+    DemographicOption,
     MultiChoiceAnswer,
     Question,
+    Respondent,
     Response,
     ResponseAnnotationTheme,
     Theme,
@@ -22,15 +24,22 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["email", "has_dashboard_access"]
 
 
-class MultiChoiceAnswerSerializer(serializers.HyperlinkedModelSerializer):
+class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
+    id = serializers.UUIDField(read_only=True)
+
+    response_count = serializers.SerializerMethodField()
+
+    def get_response_count(self, obj) -> int:
+        return obj.response_set.count()
+
     class Meta:
         model = MultiChoiceAnswer
-        fields = ["text"]
+        fields = ["id", "text", "response_count"]
 
 
 class QuestionSerializer(serializers.HyperlinkedModelSerializer):
     question_text = serializers.CharField(source="text")
-    multiple_choice_options = MultiChoiceAnswerSerializer(
+    multiple_choice_answer = MultiChoiceAnswerSerializer(
         many=True, source="multichoiceanswer_set", read_only=True
     )
     proportion_of_audited_answers = serializers.ReadOnlyField()
@@ -50,7 +59,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
             "number",
             "has_free_text",
             "has_multiple_choice",
-            "multiple_choice_options",
+            "multiple_choice_answer",
             "proportion_of_audited_answers",
         ]
 
@@ -68,9 +77,9 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class DemographicOptionsSerializer(serializers.Serializer):
-    demographic_options = serializers.DictField(
-        child=serializers.ListField(child=serializers.CharField())
-    )
+    name = serializers.CharField(source="demographics__field_name")
+    value = serializers.JSONField(source="demographics__field_value")
+    count = serializers.IntegerField()
 
 
 class DemographicAggregationsSerializer(serializers.Serializer):
@@ -131,24 +140,19 @@ class CrossCuttingThemeSerializer(serializers.ModelSerializer):
         fields = ["name", "description", "themes", "response_count"]
 
 
-class MultiChoiceAnswerCount(serializers.Serializer):
-    answer = serializers.CharField(source="chosen_options__text")
-    response_count = serializers.IntegerField()
-
-
 class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
-    id = serializers.UUIDField()
+    id = serializers.UUIDField(source="theme.id")
     name = serializers.CharField(required=False, source="theme.name")
     description = serializers.CharField(required=False, source="theme.description")
     key = serializers.CharField(required=False, source="theme.key")
     assigned_by = serializers.SerializerMethodField()
 
     def to_internal_value(self, data):
-        pk = super().to_internal_value(data)["id"]
+        pk = super().to_internal_value(data)["theme"]["id"]
         try:
             return Theme.objects.get(pk=pk)
         except Theme.DoesNotExist:
-            detail = f"Invalid pk \"{pk}\" - object does not exist."
+            detail = f'Invalid pk "{pk}" - object does not exist.'
             raise ValidationError(detail=detail, code="invalid")
 
     def get_assigned_by(self, obj):
@@ -163,6 +167,7 @@ class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
 
 class ResponseSerializer(serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
+    respondent_id = serializers.UUIDField(source="respondent.id", read_only=True)
     free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
     demographic_data = serializers.SerializerMethodField(read_only=True)
     themes = ResponseAnnotationThemeSerializer(
@@ -175,6 +180,8 @@ class ResponseSerializer(serializers.ModelSerializer):
     sentiment = serializers.CharField(source="annotation.sentiment")
     human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
     is_flagged = serializers.BooleanField(read_only=True)
+    is_edited = serializers.BooleanField(source="annotation.is_edited")
+    question_id = serializers.UUIDField()
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
@@ -193,16 +200,10 @@ class ResponseSerializer(serializers.ModelSerializer):
                 instance.annotation.evidence_rich = annotation["evidence_rich"]
 
             if "responseannotationtheme_set" in annotation:
-                ResponseAnnotationTheme.objects.filter(
-                    response_annotation=instance.annotation,
-                    assigned_by=self.context["request"].user,
-                ).delete()
-                for theme in annotation["responseannotationtheme_set"]:
-                    ResponseAnnotationTheme.objects.create(
-                        response_annotation=instance.annotation,
-                        theme=theme,
-                        assigned_by=self.context["request"].user,
-                    )
+                instance.annotation.set_human_reviewed_themes(
+                    themes=annotation["responseannotationtheme_set"],
+                    user=self.context["request"].user,
+                )
 
             if "sentiment" in annotation:
                 instance.annotation.sentiment = annotation["sentiment"]
@@ -217,6 +218,8 @@ class ResponseSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "identifier",
+            "respondent_id",
+            "question_id",
             "free_text_answer_text",
             "demographic_data",
             "themes",
@@ -225,4 +228,22 @@ class ResponseSerializer(serializers.ModelSerializer):
             "sentiment",
             "human_reviewed",
             "is_flagged",
+            "is_edited",
         ]
+
+
+class DemographicOptionSerializer(serializers.ModelSerializer):
+    name = serializers.CharField(source="field_name")
+    value = serializers.JSONField(source="field_value")
+
+    class Meta:
+        model = DemographicOption
+        fields = ["name", "value"]
+
+
+class RespondentSerializer(serializers.ModelSerializer):
+    demographics = DemographicOptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Respondent
+        fields = ["id", "themefinder_id", "demographics", "name"]

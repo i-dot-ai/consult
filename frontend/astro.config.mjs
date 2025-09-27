@@ -1,5 +1,5 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
+import { defineConfig } from "astro/config";
 import svelte from "@astrojs/svelte";
 
 import tailwind from "@astrojs/tailwind";

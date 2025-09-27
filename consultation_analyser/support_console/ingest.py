@@ -7,6 +7,7 @@ from botocore.exceptions import ClientError
 from django.conf import settings
 from django.contrib.postgres.search import SearchVector
 from django_rq import get_queue
+from simple_history.utils import bulk_create_with_history
 
 from consultation_analyser.consultations.models import (
     Consultation,
@@ -21,6 +22,11 @@ from consultation_analyser.consultations.models import (
     Theme,
 )
 from consultation_analyser.embeddings import embed_text
+from consultation_analyser.support_console.file_models import (
+    DetailDetection,
+    SentimentRecord,
+    read_from_s3,
+)
 
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
 logger = settings.LOGGER
@@ -215,10 +221,8 @@ def validate_consultation_structure(
     return is_valid, errors
 
 
-def create_embeddings(consultation_id: UUID):
-    queryset = Response.objects.filter(
-        question__consultation_id=consultation_id, free_text__isnull=False
-    )
+def create_embeddings_for_question(question_id: UUID):
+    queryset = Response.objects.filter(question_id=question_id, free_text__isnull=False)
     total = queryset.count()
     batch_size = 1_000
 
@@ -266,53 +270,45 @@ def import_response_annotation_themes(question: Question, output_folder: str):
                 )
             )
             if len(objects_to_save) >= DEFAULT_BATCH_SIZE:
-                ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
+                bulk_create_with_history(
+                    objects_to_save, ResponseAnnotationTheme, ignore_conflicts=True
+                )
                 objects_to_save = []
                 logger.info(
-                    "saved %s ResponseAnnotationTheme for question %s", i + 1, question.number
+                    "saved {i} ResponseAnnotationTheme for question {question_number}",
+                    i=i + 1,
+                    question_number=question.number,
                 )
 
-    ResponseAnnotationTheme.objects.bulk_create(objects_to_save)
+    bulk_create_with_history(objects_to_save, ResponseAnnotationTheme, ignore_conflicts=True)
 
 
 def import_response_annotations(question: Question, output_folder: str):
     sentiment_file_key = f"{output_folder}sentiment.jsonl"
     evidence_file_key = f"{output_folder}detail_detection.jsonl"
+
     s3_client = boto3.client("s3")
 
     # Check if sentiment file exists and process it
     sentiment_dict = {}
-    try:
-        s3_client.head_object(Bucket=settings.AWS_BUCKET_NAME, Key=sentiment_file_key)
-        sentiment_response = s3_client.get_object(
-            Bucket=settings.AWS_BUCKET_NAME, Key=sentiment_file_key
-        )
-        for line in sentiment_response["Body"].iter_lines():
-            sentiment = json.loads(line.decode("utf-8"))
-            sentiment_value = sentiment.get("sentiment", "UNCLEAR").upper()
+    for sentiment in read_from_s3(
+        SentimentRecord,
+        s3_client,
+        settings.AWS_BUCKET_NAME,
+        sentiment_file_key,
+        raise_error_if_file_missing=False,
+    ):
+        sentiment_dict[sentiment.themefinder_id] = sentiment.sentiment_enum
 
-            if sentiment_value == "AGREEMENT":
-                sentiment_dict[sentiment["themefinder_id"]] = ResponseAnnotation.Sentiment.AGREEMENT
-            elif sentiment_value == "DISAGREEMENT":
-                sentiment_dict[sentiment["themefinder_id"]] = (
-                    ResponseAnnotation.Sentiment.DISAGREEMENT
-                )
-            else:
-                sentiment_dict[sentiment["themefinder_id"]] = ResponseAnnotation.Sentiment.UNCLEAR
-    except ClientError as e:
-        if e.response["Error"]["Code"] == "404":
-            logger.info(
-                f"Sentiment file not found: {sentiment_file_key}, using default UNCLEAR sentiment"
-            )
-        else:
-            raise
-
-    evidence_response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=evidence_file_key)
     evidence_dict = {}
-    for line in evidence_response["Body"].iter_lines():
-        evidence = json.loads(line.decode("utf-8"))
-        evidence_value = evidence.get("evidence_rich", "NO").upper() == "YES"
-        evidence_dict[evidence["themefinder_id"]] = evidence_value
+    for evidence in read_from_s3(
+        DetailDetection,
+        s3_client,
+        settings.AWS_BUCKET_NAME,
+        evidence_file_key,
+        raise_error_if_file_missing=False,
+    ):
+        evidence_dict[evidence.themefinder_id] = evidence.evidence_rich_bool
 
     # Create annotations
     responses = Response.objects.filter(question=question).values_list(
@@ -330,11 +326,15 @@ def import_response_annotations(question: Question, output_folder: str):
         )
         annotations_to_save.append(annotation)
         if len(annotations_to_save) >= DEFAULT_BATCH_SIZE:
-            ResponseAnnotation.objects.bulk_create(annotations_to_save)
+            bulk_create_with_history(annotations_to_save, ResponseAnnotation)
             annotations_to_save = []
-            logger.info("saved %s ResponseAnnotations for question %s", i + 1, question.number)
+            logger.info(
+                "saved {i} ResponseAnnotations for question {question_number}",
+                i=i + 1,
+                question_number=question.number,
+            )
 
-    ResponseAnnotation.objects.bulk_create(annotations_to_save)
+    bulk_create_with_history(annotations_to_save, ResponseAnnotation)
 
 
 def read_response_file(responses_file_key: str) -> dict[str, str]:
@@ -413,13 +413,19 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
 
         for i, (themefinder_id, free_text, chosen_options) in enumerate(responses):
             if themefinder_id not in respondent_dict:
-                logger.warning(f"No respondent found for themefinder_id: {themefinder_id}")
+                logger.warning(
+                    "No respondent found for themefinder_id: {themefinder_id}",
+                    themefinder_id=themefinder_id,
+                )
                 continue
 
             if free_text:
                 token_count = len(encoding.encode(free_text))
                 if token_count > 8192:
-                    logger.warning(f"Truncated text for themefinder_id: {themefinder_id}")
+                    logger.warning(
+                        "Truncated text for themefinder_id: {themefinder_id}",
+                        themefinder_id=themefinder_id,
+                    )
                     free_text = free_text[:1000]
                     token_count = len(encoding.encode(free_text))
             else:
@@ -433,7 +439,11 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
 
                 responses_to_save = []
                 total_tokens = 0
-                logger.info("saved %s Responses for question %s", i + 1, question.number)
+                logger.info(
+                    "saved {response_number} Responses for question {question_number}",
+                    response_number=i + 1,
+                    question_number=question.number,
+                )
 
             response = Response(
                 respondent=respondent_dict[themefinder_id],
@@ -462,7 +472,9 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
         # Update total_responses count for the question
         question.update_total_responses()
         logger.info(
-            f"Updated total_responses count for question {question.number}: {question.total_responses}"
+            "Updated total_responses count for question {question_number}: {total_responses}",
+            question_number=question.number,
+            total_responses=question.total_responses,
         )
 
     except Exception as e:
@@ -478,8 +490,12 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
 def import_themes(question: Question, output_folder: str):
     s3_client = boto3.client("s3")
     themes_file_key = f"{output_folder}themes.json"
-    response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
-    theme_data = json.loads(response["Body"].read())
+    try:
+        response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
+        theme_data = json.loads(response["Body"].read())
+    except BaseException:
+        logger.info("couldn't load file {file}", file=themes_file_key)
+        return
 
     themes_to_save = []
     for theme in theme_data:
@@ -557,7 +573,7 @@ def import_questions(
             responses = queue.enqueue(
                 import_responses, question, responses_file_key, multiple_choice_file
             )
-            queue.enqueue(create_embeddings, question.consultation.id, depends_on=responses)
+            queue.enqueue(create_embeddings_for_question, question.id, depends_on=responses)
 
             if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
                 logger.info("not importing output-mappings")
@@ -665,34 +681,29 @@ def import_respondents(consultation: Consultation, consultation_code: str):
     respondents_file_key = f"app_data/consultations/{consultation_code}/inputs/respondents.jsonl"
     response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=respondents_file_key)
 
-    respondents_to_save = []
-
     for i, line in enumerate(response["Body"].iter_lines()):
         respondent_data = json.loads(line.decode("utf-8"))
         themefinder_id = respondent_data.get("themefinder_id")
         demographics = respondent_data.get("demographic_data", {})
 
-        respondent = Respondent(
+        respondent = Respondent.objects.create(
             consultation=consultation,
             themefinder_id=themefinder_id,
         )
 
+        demographic_options = []
         for field_name, field_value in demographics.items():
             demographic_option, _ = DemographicOption.objects.get_or_create(
                 consultation=consultation,
                 field_name=field_name,
                 field_value=field_value,
             )
-            respondent.demographics.add(demographic_option)
+            demographic_options.append(demographic_option)
 
-        respondents_to_save.append(respondent)
+        respondent.demographics.set(demographic_options)
 
-        if len(respondents_to_save) >= DEFAULT_BATCH_SIZE:
-            Respondent.objects.bulk_create(respondents_to_save)
-            respondents_to_save = []
-            logger.info("saved %s Respondents", i + 1)
-
-    Respondent.objects.bulk_create(respondents_to_save)
+        if i % 100 == 0:
+            logger.error("imported {i} respondents", i=i)
 
 
 def create_consultation(
@@ -712,7 +723,9 @@ def create_consultation(
     """
     try:
         logger.info(
-            f"Starting consultation import: {consultation_name} (code: {consultation_code})"
+            "Starting consultation import: {consultation_name} (code: {consultation_code})",
+            consultation_name=consultation_name,
+            consultation_code=consultation_code,
         )
 
         consultation = Consultation.objects.create(title=consultation_name)

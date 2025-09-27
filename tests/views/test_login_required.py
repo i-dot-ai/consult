@@ -5,16 +5,7 @@ from consultation_analyser import factories
 from consultation_analyser.consultations.urls import urlpatterns
 from tests.utils import build_url
 
-PUBLIC_URL_NAMES = [
-    "root",
-    "how_it_works",
-    "data_sharing",
-    "get_involved",
-    "privacy",
-]
-GENERIC_CONSULTATION_URL_NAMES = [
-    "consultations",
-]
+PUBLIC_URL_NAMES = ["root", "how_it_works", "data_sharing", "get_involved", "privacy", "git-sha"]
 AUTHENTICATION_URL_NAMES = [
     "sign_in",
     "sign_out",
@@ -37,7 +28,6 @@ API_URL_NAMES = [
 
 URL_NAMES_TO_EXCLUDE = (
     PUBLIC_URL_NAMES
-    + GENERIC_CONSULTATION_URL_NAMES
     + AUTHENTICATION_URL_NAMES
     + REDIRECTING_URL_NAMES
     + JSON_SCHEMA_URL_NAMES
@@ -51,21 +41,6 @@ def test_access_public_urls_no_login(client):
         url = reverse(url_name)
         response = client.get(url)
         assert response.status_code == 200
-
-
-@pytest.mark.django_db
-def test_access_generic_consultation_urls(client):
-    for url_name in GENERIC_CONSULTATION_URL_NAMES:
-        url = reverse(url_name)
-        # No login should give 404
-        response = client.get(url)
-        assert response.status_code == 404
-        # Any logged in user should be able to access pages
-        user = factories.UserFactory()
-        client.force_login(user)
-        response = client.get(url)
-        assert response.status_code == 200
-        client.logout()
 
 
 def set_up_consultation(user, free_text_question):
@@ -117,7 +92,11 @@ url_patterns_to_test = [
 @pytest.mark.django_db
 @pytest.mark.parametrize("url_pattern", url_patterns_to_test)
 def test_consultations_urls_login_required(
-    client, dashboard_access_group, free_text_question, url_pattern
+    client,
+    free_text_question,
+    non_consultation_user,
+    dashboard_user,
+    url_pattern,
 ):
     """
     This tests all URLs by default unless deliberately excluded (special cases).
@@ -130,12 +109,7 @@ def test_consultations_urls_login_required(
         (2) add it as a special case to be excluded and write a separate test.
     """
 
-    user = factories.UserFactory()
-    non_consultation_user = factories.UserFactory()
-    possible_args = set_up_consultation(user, free_text_question)
-
-    user.groups.add(dashboard_access_group)
-    user.save()
+    possible_args = set_up_consultation(dashboard_user, free_text_question)
 
     url = get_url_for_pattern(url_pattern, possible_args)
 
@@ -143,7 +117,7 @@ def test_consultations_urls_login_required(
     check_expected_status_code(client, url, expected_status_code=404)
 
     # Logged in with a user for this consultation - 200
-    client.force_login(user)
+    client.force_login(dashboard_user)
     check_expected_status_code(client, url, 200)
     client.logout()
 
@@ -156,7 +130,7 @@ def test_consultations_urls_login_required(
 @pytest.mark.django_db
 @pytest.mark.parametrize("url_pattern", API_URL_NAMES)
 def test_api_urls_permission_required(
-    client, dashboard_access_group, free_text_question, url_pattern
+    client, free_text_question, dashboard_user, non_consultation_user, url_pattern
 ):
     """
     Test API endpoints return 403 for authentication/permission failures.
@@ -164,16 +138,9 @@ def test_api_urls_permission_required(
     API endpoints use DRF permissions which return 403 (Forbidden) rather than
     404 (Not Found) for unauthorized access.
     """
-    user = factories.UserFactory()
-    non_consultation_user = factories.UserFactory()
-    free_text_question.consultation.users.add(user)
-    free_text_question.consultation.save()
 
     response = factories.ResponseFactory(question=free_text_question)
     factories.ResponseAnnotationFactory(response=response)
-
-    user.groups.add(dashboard_access_group)
-    user.save()
 
     url = build_url(url_pattern, free_text_question)
 
@@ -181,7 +148,7 @@ def test_api_urls_permission_required(
     check_expected_status_code(client, url, expected_status_code=401)
 
     # Logged in with a user for this consultation - 200
-    client.force_login(user)
+    client.force_login(dashboard_user)
     check_expected_status_code(client, url, 200)
     client.logout()
 
@@ -209,16 +176,13 @@ url_patterns_to_test = [
 
 @pytest.mark.django_db
 @pytest.mark.parametrize("url_pattern", url_patterns_to_test)
-def test_urls_permission_required(client, dashboard_access_group, free_text_question, url_pattern):
+def test_urls_permission_required(
+    client, free_text_question, non_consultation_user, dashboard_user, url_pattern
+):
     """
     Test API endpoints return 403 for authentication/permission failures.
     """
-    user = factories.UserFactory()
-    non_consultation_user = factories.UserFactory()
-    possible_args = set_up_consultation(user, free_text_question)
-
-    user.groups.add(dashboard_access_group)
-    user.save()
+    possible_args = set_up_consultation(dashboard_user, free_text_question)
 
     url = get_url_for_pattern(url_pattern, possible_args)
 
@@ -226,7 +190,7 @@ def test_urls_permission_required(client, dashboard_access_group, free_text_ques
     check_expected_status_code(client, url, expected_status_code=404)
 
     # Logged in with a user for this consultation - 302
-    client.force_login(user)
+    client.force_login(dashboard_user)
     check_expected_status_code(client, url, 302)
     client.logout()
 

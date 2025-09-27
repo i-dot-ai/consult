@@ -1,3 +1,5 @@
+import json
+
 from django.contrib import admin
 from django_rq import get_queue
 from simple_history.admin import SimpleHistoryAdmin
@@ -14,16 +16,50 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
     Theme,
 )
-from consultation_analyser.support_console.ingest import DEFAULT_TIMEOUT_SECONDS, create_embeddings
+from consultation_analyser.support_console.ingest import (
+    DEFAULT_TIMEOUT_SECONDS,
+    create_embeddings_for_question,
+)
 
 
 @admin.action(description="(Re)Embed selected Consultations")
 def update_embeddings_admin(modeladmin, request, queryset):
     queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
     for consultation in queryset:
-        queue.enqueue(create_embeddings, consultation.id)
+        for question in consultation.question_set.all():
+            queue.enqueue(create_embeddings_for_question, question.id)
 
     modeladmin.message_user(request, f"Processing {queryset.count()} consultations")
+
+
+def _reimport_demographics(consultation_id):
+    respondents = Respondent.objects.filter(consultation_id=consultation_id).extra(
+        select={"old_demographics": "old_demographics"}
+    )
+
+    for respondent in respondents:
+        demographics = []
+        if hasattr(respondent, "old_demographics") and respondent.old_demographics:
+            old_demographics = json.loads(respondent.old_demographics)
+            if not isinstance(old_demographics, dict):
+                raise ValueError(f"expected dict but got {type(old_demographics)}")
+
+            for name, value in old_demographics.items():
+                if name and value:
+                    do, _ = DemographicOption.objects.get_or_create(
+                        consultation=respondent.consultation,
+                        field_name=name,
+                        field_value=value,
+                    )
+                    demographics.append(do)
+            respondent.demographics.set(demographics)
+
+
+@admin.action(description="re import demographic options")
+def reimport_demographics(modeladmin, request, queryset):
+    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
+    for consultation in queryset:
+        queue.enqueue(_reimport_demographics, consultation.id)
 
 
 class ResponseAdmin(admin.ModelAdmin):
@@ -39,7 +75,7 @@ class ResponseAdmin(admin.ModelAdmin):
 
 
 class ConsultationAdmin(admin.ModelAdmin):
-    actions = [update_embeddings_admin]
+    actions = [update_embeddings_admin, reimport_demographics]
     readonly_fields = ["title", "slug", "users"]
 
 
@@ -84,10 +120,11 @@ class ResponseAnnotationThemeAdmin(admin.ModelAdmin):
 
 
 class RespondentAdmin(admin.ModelAdmin):
-    readonly_fields = ["consultation", "themefinder_id", "demographics"]
+    readonly_fields = ["consultation", "themefinder_id"]
 
 
 class DemographicOptionAdmin(admin.ModelAdmin):
+    list_filter = ["consultation"]
     readonly_fields = ["consultation", "field_name", "field_value"]
 
 

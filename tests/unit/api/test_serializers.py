@@ -13,21 +13,37 @@ from consultation_analyser.consultations.api.serializers import (
 class TestDemographicOptionsSerializer:
     def test_valid_data(self):
         """Test serializer with valid demographic options data"""
-        data = {
-            "demographic_options": {
-                "gender": ["male", "female"],
-                "age_group": ["18-25", "26-35"],
-                "region": ["north", "south"],
-            }
-        }
-        serializer = DemographicOptionsSerializer(data=data)
+        data = [
+            {"name": "gender", "value": "male", "count": 0},
+            {"name": "age_group", "value": "18-25", "count": 2},
+            {"name": "region", "value": "north", "count": 4},
+        ]
+        serializer = DemographicOptionsSerializer(data=data, many=True)
         assert serializer.is_valid()
-        assert serializer.validated_data == data
+
+        validated_data = [
+            {
+                "demographics__field_name": "gender",
+                "demographics__field_value": "male",
+                "count": 0,
+            },
+            {
+                "demographics__field_name": "age_group",
+                "demographics__field_value": "18-25",
+                "count": 2,
+            },
+            {
+                "demographics__field_name": "region",
+                "demographics__field_value": "north",
+                "count": 4,
+            },
+        ]
+        assert serializer.validated_data == validated_data
 
     def test_empty_data(self):
         """Test serializer with empty demographic options"""
-        data = {"demographic_options": {}}
-        serializer = DemographicOptionsSerializer(data=data)
+        data = []
+        serializer = DemographicOptionsSerializer(data=data, many=True)
         assert serializer.is_valid()
         assert serializer.validated_data == data
 

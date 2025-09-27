@@ -1,9 +1,9 @@
-import json
 from datetime import datetime
 from uuid import uuid4
 
 import orjson
 import pytest
+from django.test import override_settings
 from django.urls import reverse
 
 from consultation_analyser.consultations.models import (
@@ -23,21 +23,25 @@ from tests.utils import build_url
 
 @pytest.mark.django_db
 class TestDemographicOptionsAPIView:
-    def test_get_demographic_options_empty(self, client, consultation_user, free_text_question):
+    def test_get_demographic_options_empty(
+        self, client, consultation_user_token, free_text_question
+    ):
         """Test API endpoint returns empty options when no demographic data exists"""
-        client.force_login(consultation_user)
         url = reverse(
             "consultations-demographic-options",
             kwargs={"pk": free_text_question.consultation.id},
         )
-        response = client.get(url)
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
-        data = response.json()
-        assert "demographic_options" in data
-        assert data["demographic_options"] == {}
+        assert response.json() == []
 
-    def test_get_demographic_options_with_data(self, client, consultation_user, free_text_question):
+    def test_get_demographic_options_with_data(
+        self, client, consultation_user_token, free_text_question
+    ):
         """Test API endpoint returns demographic options correctly"""
         # Create respondents with different demographic data
         RespondentFactory(
@@ -53,21 +57,28 @@ class TestDemographicOptionsAPIView:
             demographics={"individual": True, "region": "north", "age": 45},
         )
 
-        client.force_login(consultation_user)
         url = reverse(
             "consultations-demographic-options",
             kwargs={"pk": free_text_question.consultation.id},
         )
-        response = client.get(url)
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
         data = response.json()
-        assert "demographic_options" in data
-        options = data["demographic_options"]
 
-        assert set(options["individual"]) == {False, True}
-        assert set(options["region"]) == {"north", "south"}
-        assert set(options["age"]) == {"25", "35", "45"}
+        expected = [
+            {"count": 1, "name": "age", "value": "25"},
+            {"count": 1, "name": "age", "value": "35"},
+            {"count": 1, "name": "age", "value": "45"},
+            {"count": 1, "name": "individual", "value": False},
+            {"count": 2, "name": "individual", "value": True},
+            {"count": 2, "name": "region", "value": "north"},
+            {"count": 1, "name": "region", "value": "south"},
+        ]
+        assert data == expected
 
     def test_permission_required(self, client, free_text_question):
         """Test API endpoint requires proper permissions"""
@@ -78,29 +89,31 @@ class TestDemographicOptionsAPIView:
         response = client.get(url)
         assert response.status_code == 401
 
-    def test_invalid_consultation_slug(self, client, consultation_user):
+    def test_invalid_consultation_slug(self, client, consultation_user_token):
         """Test API endpoint with invalid consultation slug"""
-        client.force_login(consultation_user)
         url = reverse("consultations-demographic-options", kwargs={"pk": uuid4()})
-        response = client.get(url)
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
         assert response.status_code == 404  # NOT FOUND
 
 
 @pytest.mark.django_db
 class TestDemographicAggregationsAPIView:
     def test_get_demographic_aggregations_empty(
-        self, client, consultation_user, free_text_question
+        self, client, consultation_user_token, free_text_question
     ):
         """Test API endpoint returns empty aggregations when no data exists"""
-        client.force_login(consultation_user)
         url = reverse(
             "response-demographic-aggregations",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
-        response = client.get(url)
+        response = client.get(
+            url,
+            query_params={"question_id": free_text_question.id},
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -108,7 +121,7 @@ class TestDemographicAggregationsAPIView:
         assert data["demographic_aggregations"] == {}
 
     def test_get_demographic_aggregations_with_data(
-        self, client, consultation_user, free_text_question
+        self, client, consultation_user_token, free_text_question
     ):
         """Test API endpoint returns demographic aggregations correctly"""
         # Create respondents with different demographic data
@@ -130,15 +143,15 @@ class TestDemographicAggregationsAPIView:
         ResponseFactory(respondent=respondent2, question=free_text_question)
         ResponseFactory(respondent=respondent3, question=free_text_question)
 
-        client.force_login(consultation_user)
         url = reverse(
             "response-demographic-aggregations",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
-        response = client.get(url)
+        response = client.get(
+            url,
+            query_params={"question_id": free_text_question.id},
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -153,7 +166,7 @@ class TestDemographicAggregationsAPIView:
         assert aggregations["region"]["south"] == 1
 
     def test_get_demographic_aggregations_with_filters(
-        self, client, consultation_user, free_text_question
+        self, client, consultation_user_token, free_text_question
     ):
         """Test API endpoint applies demographic filters correctly"""
         # Create respondents with different demographics
@@ -169,17 +182,17 @@ class TestDemographicAggregationsAPIView:
         ResponseFactory(question=free_text_question, respondent=respondent1)
         ResponseFactory(question=free_text_question, respondent=respondent2)
 
-        client.force_login(consultation_user)
         url = reverse(
             "response-demographic-aggregations",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         # Filter by individual=true
-        response = client.get(url + "?demoFilters=individual:true")
+        response = client.get(
+            url,
+            query_params={"demoFilters": "individual:true", "question_id": free_text_question.id},
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -192,7 +205,10 @@ class TestDemographicAggregationsAPIView:
         assert "False" not in aggregations["individual"]
         assert "south" not in aggregations["region"]
 
-        response = client.get(url + "?demoFilters=individual:true&demoFilters=individual:false")
+        response = client.get(
+            url + "?demoFilters=individual:true&demoFilters=individual:false",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -202,9 +218,10 @@ class TestDemographicAggregationsAPIView:
 
 @pytest.mark.django_db
 class TestThemeInformationAPIView:
-    def test_get_theme_information_no_themes(self, client, consultation_user, free_text_question):
+    def test_get_theme_information_no_themes(
+        self, client, consultation_user_token, free_text_question
+    ):
         """Test API endpoint returns empty themes list when no themes exist"""
-        client.force_login(consultation_user)
         url = reverse(
             "question-theme-information",
             kwargs={
@@ -212,7 +229,10 @@ class TestThemeInformationAPIView:
                 "pk": free_text_question.id,
             },
         )
-        response = client.get(url)
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -220,10 +240,9 @@ class TestThemeInformationAPIView:
         assert data["themes"] == []
 
     def test_get_theme_information_with_themes(
-        self, client, consultation_user, free_text_question, theme_a, theme_b
+        self, client, consultation_user_token, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint returns theme information correctly"""
-        client.force_login(consultation_user)
         url = reverse(
             "question-theme-information",
             kwargs={
@@ -231,7 +250,10 @@ class TestThemeInformationAPIView:
                 "pk": free_text_question.id,
             },
         )
-        response = client.get(url)
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -252,18 +274,18 @@ class TestThemeInformationAPIView:
 @pytest.mark.django_db
 class TestThemeAggregationsAPIView:
     def test_get_theme_aggregations_no_responses(
-        self, client, consultation_user, free_text_question
+        self, client, consultation_user_token, free_text_question
     ):
         """Test API endpoint returns empty aggregations when no responses exist"""
-        client.force_login(consultation_user)
         url = reverse(
             "response-theme-aggregations",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
-        response = client.get(url)
+        response = client.get(
+            url,
+            query_params={"question_id": free_text_question.id},
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -271,7 +293,7 @@ class TestThemeAggregationsAPIView:
         assert data["theme_aggregations"] == {}
 
     def test_get_theme_aggregations_with_responses(
-        self, client, consultation_user, free_text_question, theme_a, theme_b
+        self, client, consultation_user_token, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint returns theme aggregations correctly"""
         # Create respondents and responses
@@ -288,15 +310,15 @@ class TestThemeAggregationsAPIView:
         annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
         annotation2.add_original_ai_themes([theme_a, theme_b])
 
-        client.force_login(consultation_user)
         url = reverse(
             "response-theme-aggregations",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
-        response = client.get(url)
+        response = client.get(
+            url,
+            query_params={"question_id": free_text_question.id},
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -307,7 +329,7 @@ class TestThemeAggregationsAPIView:
         assert aggregations[str(theme_b.id)] == 1  # Theme B appears in 1 response
 
     def test_get_theme_aggregations_with_filters(
-        self, client, consultation_user, free_text_question, theme_a, theme_b
+        self, client, consultation_user_token, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint applies theme filtering correctly"""
         # Create responses with different theme combinations
@@ -325,17 +347,20 @@ class TestThemeAggregationsAPIView:
         annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
         annotation2.add_original_ai_themes([theme_a])
 
-        client.force_login(consultation_user)
         url = reverse(
             "response-theme-aggregations",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         # Filter by theme1 AND theme2 - should only return response1
-        response = client.get(url + f"?themeFilters={theme_a.id},{theme_b.id}")
+        response = client.get(
+            url,
+            query_params={
+                "themeFilters": f"{theme_a.id},{theme_b.id}",
+                "question_id": free_text_question.id,
+            },
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
         data = response.json()
@@ -348,7 +373,9 @@ class TestThemeAggregationsAPIView:
 
 @pytest.mark.django_db
 class TestFilteredResponsesAPIView:
-    def test_get_filtered_responses_basic(self, client, consultation_user, free_text_question):
+    def test_get_filtered_responses_basic(
+        self, client, consultation_user_token, free_text_question
+    ):
         """Test API endpoint returns filtered responses correctly"""
         # Create test data
         respondent = RespondentFactory(
@@ -358,15 +385,15 @@ class TestFilteredResponsesAPIView:
             question=free_text_question, respondent=respondent, free_text="Test response"
         )
 
-        client.force_login(consultation_user)
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
-        response = client.get(url)
+        response = client.get(
+            url,
+            query_params={"question_id": free_text_question.id},
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
 
@@ -387,7 +414,7 @@ class TestFilteredResponsesAPIView:
         assert respondent_data["demographic_data"] == {"individual": True}
 
     def test_get_filtered_responses_with_pagination(
-        self, client, consultation_user, free_text_question
+        self, client, consultation_user_token, free_text_question
     ):
         """Test API endpoint pagination"""
         # Create multiple respondents
@@ -395,15 +422,19 @@ class TestFilteredResponsesAPIView:
             respondent = RespondentFactory(consultation=free_text_question.consultation)
             ResponseFactory(question=free_text_question, respondent=respondent)
 
-        client.force_login(consultation_user)
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
-        response = client.get(url + "?page_size=2&page=1")
+        response = client.get(
+            url,
+            query_params={
+                "page_size": 2,
+                "page": 1,
+                "question_id": free_text_question.id,
+            },
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
 
@@ -414,7 +445,7 @@ class TestFilteredResponsesAPIView:
         assert data["filtered_total"] == 5
 
     def test_get_filtered_responses_with_demographic_filters(
-        self, client, consultation_user, free_text_question
+        self, client, consultation_user_token, free_text_question
     ):
         """Test API endpoint with demographic filtering"""
         # Create respondents with different demographics
@@ -430,17 +461,20 @@ class TestFilteredResponsesAPIView:
         ResponseFactory(question=free_text_question, respondent=respondent1)
         ResponseFactory(question=free_text_question, respondent=respondent2)
 
-        client.force_login(consultation_user)
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         # Filter by individual=true
-        response = client.get(url + "?demoFilters=individual:true")
+        response = client.get(
+            url,
+            query_params={
+                "demoFilters": "individual:true",
+                "question_id": free_text_question.id,
+            },
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
 
@@ -452,7 +486,7 @@ class TestFilteredResponsesAPIView:
         assert data["all_respondents"][0]["identifier"] == str(respondent1.identifier)
 
     def test_get_filtered_responses_with_theme_filters(
-        self, client, consultation_user, free_text_question, theme_a, theme_b
+        self, client, consultation_user_token, free_text_question, theme_a, theme_b
     ):
         """Test API endpoint with theme filtering using AND logic"""
         # Create responses with different theme combinations
@@ -482,17 +516,20 @@ class TestFilteredResponsesAPIView:
         annotation3 = ResponseAnnotationFactoryNoThemes(response=response3)
         annotation3.add_original_ai_themes([theme_b])
 
-        client.force_login(consultation_user)
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         # Filter by theme AND theme2 - should only return response1
-        response = client.get(url + f"?themeFilters={theme_a.id},{theme_b.id}")
+        response = client.get(
+            url,
+            query_params={
+                "themeFilters": f"{theme_a.id},{theme_b.id}",
+                "question_id": free_text_question.id,
+            },
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
 
@@ -522,19 +559,18 @@ class TestFilteredResponsesAPIView:
             question=free_text_question, respondent=respondent_2, free_text="Response 2"
         )
 
-        client.force_login(consultation_user)
-
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         # Filter by respondent1 - should only return response1
         response = client.get(
-            url + f"?respondent_id={respondent_1.id}",
+            url,
+            query_params={
+                "respondent_id": respondent_1.id,
+                "question_id": free_text_question.id,
+            },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -547,7 +583,7 @@ class TestFilteredResponsesAPIView:
         assert len(data["all_respondents"]) == 1
         assert data["all_respondents"][0]["identifier"] == str(respondent_1.identifier)
 
-    @pytest.mark.parametrize(("evidence_rich", "count"), [(True, 1), (False, 1), (None, 2)])
+    @pytest.mark.parametrize(("evidence_rich", "count"), [(True, 1), (False, 1), ("", 2)])
     def test_get_filtered_responses_with_evidence_rich_filters(
         self,
         client,
@@ -572,18 +608,17 @@ class TestFilteredResponsesAPIView:
         ResponseAnnotationFactory(response=response_1, evidence_rich=True)
         ResponseAnnotationFactory(response=response_2, evidence_rich=False)
 
-        client.force_login(consultation_user)
-
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         response = client.get(
-            url + f"?evidenceRich={evidence_rich}",
+            url,
+            query_params={
+                "evidenceRich": evidence_rich,
+                "question_id": free_text_question.id,
+            },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -594,7 +629,7 @@ class TestFilteredResponsesAPIView:
         assert data["respondents_total"] == 2  # Total respondents
         assert data["filtered_total"] == count  # Only response1
         assert len(data["all_respondents"]) == 2 if evidence_rich is None else 2
-        if evidence_rich is not None:
+        if isinstance(evidence_rich, bool):
             assert data["all_respondents"][0]["evidenceRich"] == evidence_rich
 
     @pytest.mark.parametrize(
@@ -634,18 +669,17 @@ class TestFilteredResponsesAPIView:
             response=response_2, sentiment=ResponseAnnotation.Sentiment.UNCLEAR
         )
 
-        client.force_login(consultation_user)
-
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_question.consultation.id,
-                "question_pk": free_text_question.id,
-            },
+            kwargs={"consultation_pk": free_text_question.consultation.id},
         )
 
         response = client.get(
-            url + f"?sentimentFilters={sentiments}",
+            url,
+            query_params={
+                "sentimentFilters": sentiments,
+                "question_id": free_text_question.id,
+            },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -659,9 +693,7 @@ class TestFilteredResponsesAPIView:
 
         assert sorted(x["sentiment"] for x in data["all_respondents"]) == expected
 
-    @pytest.mark.parametrize(
-        ("is_flagged", "expected_responses"), [(True, 1), (False, 1), (None, 2)]
-    )
+    @pytest.mark.parametrize(("is_flagged", "expected_responses"), [(True, 1), (False, 1), ("", 2)])
     def test_get_filtered_response_is_flagged(
         self,
         client,
@@ -677,18 +709,16 @@ class TestFilteredResponsesAPIView:
 
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
-            },
+            kwargs={"consultation_pk": free_text_annotation.response.question.consultation.id},
         )
 
         response = client.get(
-            url + f"?is_flagged={is_flagged}",
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {consultation_user_token}",
+            url,
+            query_params={
+                "is_flagged": is_flagged,
+                "question_id": free_text_annotation.response.question.id,
             },
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
         assert response.status_code == 200
@@ -719,10 +749,7 @@ class TestFilteredResponsesAPIView:
     ):
         url = reverse(
             "response-list",
-            kwargs={
-                "consultation_pk": multi_choice_question.consultation.id,
-                "question_pk": multi_choice_question.id,
-            },
+            kwargs={"consultation_pk": multi_choice_question.consultation.id},
         )
 
         _chosen_options = multi_choice_question.multichoiceanswer_set.filter(
@@ -732,11 +759,12 @@ class TestFilteredResponsesAPIView:
         chosen_options_query = ",".join(str(x.pk) for x in _chosen_options)
 
         response = client.get(
-            url + f"?chosen_options={chosen_options_query}",
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {consultation_user_token}",
+            url,
+            query_params={
+                "multiple_choice_answer": chosen_options_query,
+                "question_id": multi_choice_question.id,
             },
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
         assert response.status_code == 200
@@ -745,36 +773,36 @@ class TestFilteredResponsesAPIView:
 
     @pytest.mark.parametrize("is_flagged", [True, False])
     def test_get_responses_with_is_flagged(
-        self, client, consultation_user, consultation_user_token, free_text_annotation, is_flagged
+        self, client, consultation_user, consultation_user_token, another_annotation, is_flagged
     ):
         if is_flagged:
-            free_text_annotation.flagged_by.add(consultation_user)
-            free_text_annotation.save()
+            another_annotation.flagged_by.add(consultation_user)
+            another_annotation.save()
 
         url = reverse(
             "response-detail",
             kwargs={
-                "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
-                "pk": free_text_annotation.response.id,
+                "consultation_pk": another_annotation.response.question.consultation.id,
+                "pk": another_annotation.response.id,
             },
         )
         response = client.get(
             url,
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {consultation_user_token}",
-            },
+            query_params={"question_id": another_annotation.response.question.id},
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
         assert response.status_code == 200
         data = response.json()
         assert data["is_flagged"] == is_flagged
+        assert data["is_edited"] is True
 
 
 @pytest.mark.django_db
 class TestQuestionInformationAPIView:
-    def test_get_question_information(self, client, consultation_user, free_text_question):
+    def test_get_free_text_question(
+        self, client, consultation_user, free_text_question, consultation_user_token
+    ):
         """Test API endpoint returns question information correctly"""
         # Add a known response count with free text
         for i in range(3):
@@ -786,7 +814,6 @@ class TestQuestionInformationAPIView:
         # Update the total_responses count
         free_text_question.update_total_responses()
 
-        client.force_login(consultation_user)
         url = reverse(
             "question-detail",
             kwargs={
@@ -794,15 +821,47 @@ class TestQuestionInformationAPIView:
                 "pk": free_text_question.id,
             },
         )
-        response = client.get(url)
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
 
         assert response.status_code == 200
         data = response.json()
 
-        assert "question_text" in data
-        assert "total_responses" in data
         assert data["question_text"] == free_text_question.text
         assert data["total_responses"] == 3
+        assert data["multiple_choice_answer"] == []
+
+    def test_get_multiple_choice_question(
+        self,
+        client,
+        consultation_user,
+        multi_choice_responses,
+        multi_choice_question,
+        consultation_user_token,
+    ):
+        """Test API endpoint returns question information correctly"""
+
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": multi_choice_question.consultation.id,
+                "pk": multi_choice_question.id,
+            },
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data["question_text"] == multi_choice_question.text
+        assert data["total_responses"] == 2
+        answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
+        assert answer_counts == {"blue": 1, "green": 0, "red": 2}
 
 
 @pytest.mark.django_db
@@ -818,6 +877,7 @@ class TestAPIViewPermissions:
             "response-theme-aggregations",
             "response-list",
             "question-detail",
+            "respondent-detail",
         ],
     )
     def test_unauthenticated_access_denied(self, client, free_text_question, endpoint_name):
@@ -835,15 +895,20 @@ class TestAPIViewPermissions:
             "response-theme-aggregations",
             "response-list",
             "question-detail",
+            "respondent-detail",
         ],
     )
     def test_user_without_dashboard_access_denied(
-        self, client, free_text_question, non_dashboard_user, endpoint_name
+        self, client, free_text_question, non_dashboard_user_token, endpoint_name
     ):
         """Test that users without dashboard access cannot access any API endpoint"""
-        client.force_login(non_dashboard_user)
         url = build_url(endpoint_name, free_text_question)
-        response = client.get(url)
+        response = client.get(
+            url,
+            headers={
+                "Authorization": f"Bearer {non_dashboard_user_token}",
+            },
+        )
         assert response.status_code == 403
 
     @pytest.mark.parametrize(
@@ -856,15 +921,20 @@ class TestAPIViewPermissions:
             "response-theme-aggregations",
             "response-list",
             "question-detail",
+            "respondent-detail",
         ],
     )
     def test_user_without_consultation_access_denied(
-        self, client, free_text_question, user_without_consultation_access, endpoint_name
+        self, client, free_text_question, non_consultation_user_token, endpoint_name
     ):
         """Test that users without consultation access cannot access any API endpoint"""
-        client.force_login(user_without_consultation_access)
         url = build_url(endpoint_name, free_text_question)
-        response = client.get(url)
+        response = client.get(
+            url,
+            headers={
+                "Authorization": f"Bearer {non_consultation_user_token}",
+            },
+        )
         assert response.status_code == 403
 
     def test_patch_response_human_reviewed(
@@ -874,7 +944,6 @@ class TestAPIViewPermissions:
             "response-detail",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
                 "pk": free_text_annotation.response.id,
             },
         )
@@ -885,11 +954,9 @@ class TestAPIViewPermissions:
 
         response = client.patch(
             url,
-            data='{"human_reviewed": true}',
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {consultation_user_token}",
-            },
+            data={"human_reviewed": True},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
         assert response.status_code == 200
         assert response.json()["human_reviewed"] is True
@@ -915,7 +982,6 @@ class TestAPIViewPermissions:
             "response-detail",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
                 "pk": free_text_annotation.response.id,
             },
         )
@@ -924,16 +990,15 @@ class TestAPIViewPermissions:
 
         response = client.patch(
             url,
-            data='{"sentiment": "AGREEMENT"}',
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {consultation_user_token}",
-            },
+            data={"sentiment": "AGREEMENT"},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
-        assert response.status_code == 200
+        assert response.status_code == 200, response.json()
         assert response.json()["sentiment"] == "AGREEMENT"
         free_text_annotation.refresh_from_db()
         assert free_text_annotation.sentiment == "AGREEMENT"
+        assert response.json()["is_edited"] is True
 
         # Verify version history captures the change from True to False using django-simple-history
         history = free_text_annotation.history.all().order_by("history_date")
@@ -950,7 +1015,6 @@ class TestAPIViewPermissions:
             "response-detail",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
                 "pk": free_text_annotation.response.id,
             },
         )
@@ -959,14 +1023,13 @@ class TestAPIViewPermissions:
 
         response = client.patch(
             url,
-            data='{"evidenceRich": false}',
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {consultation_user_token}",
-            },
+            data={"evidenceRich": False},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
         assert response.status_code == 200
         assert response.json()["evidenceRich"] is False
+        assert response.json()["is_edited"] is True
         free_text_annotation.refresh_from_db()
         assert free_text_annotation.evidence_rich is False
 
@@ -985,12 +1048,12 @@ class TestAPIViewPermissions:
         consultation_user_token,
         free_text_annotation,
         alternative_theme,
+        ai_assigned_theme,
     ):
         url = reverse(
             "response-detail",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
                 "pk": free_text_annotation.response.id,
             },
         )
@@ -1002,17 +1065,17 @@ class TestAPIViewPermissions:
 
         response = client.patch(
             url,
-            data=json.dumps({"themes": [{"id": str(alternative_theme.id)}]}),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {consultation_user_token}",
-            },
+            data={"themes": [{"id": str(ai_assigned_theme.id)}, {"id": str(alternative_theme.id)}]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
         assert response.status_code == 200, response.json()
         assert [(x["assigned_by"], x["key"]) for x in response.json()["themes"]] == [
             ("AI", "AI assigned theme A"),
             (consultation_user.email, "Human assigned theme C"),
         ]
+
+        assert response.json()["is_edited"] is True
 
         # check that there are two versions of the ResponseAnnotation
         assert free_text_annotation.history.count() == 2
@@ -1044,6 +1107,8 @@ class TestAPIViewPermissions:
         assert history[3].theme.key == "Human assigned theme C"
         assert history[3].assigned_by == consultation_user
 
+        assert list(free_text_annotation.get_original_ai_themes()) == [ai_assigned_theme]
+
     def test_patch_response_themes_invalid(
         self, client, consultation_user_token, free_text_annotation
     ):
@@ -1051,7 +1116,6 @@ class TestAPIViewPermissions:
             "response-detail",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
                 "pk": free_text_annotation.response.id,
             },
         )
@@ -1060,14 +1124,14 @@ class TestAPIViewPermissions:
 
         response = client.patch(
             url,
-            data=json.dumps({"themes": [{"id": fake_uuid}]}),
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {consultation_user_token}",
-            },
+            data={"themes": [{"id": fake_uuid}]},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
         assert response.status_code == 400
-        assert response.json() == {"themes": [[f'Invalid pk "{fake_uuid}" - object does not exist.']]}
+        assert response.json() == {
+            "themes": [[f'Invalid pk "{fake_uuid}" - object does not exist.']]
+        }
 
     @pytest.mark.parametrize("is_flagged", [True, False])
     def test_patch_response_flags(
@@ -1082,7 +1146,6 @@ class TestAPIViewPermissions:
             "response-toggle-flag",
             kwargs={
                 "consultation_pk": free_text_annotation.response.question.consultation.id,
-                "question_pk": free_text_annotation.response.question.id,
                 "pk": free_text_annotation.response.id,
             },
         )
@@ -1095,46 +1158,52 @@ class TestAPIViewPermissions:
         response = client.patch(
             url,
             data="",
-            headers={
-                "Content-Type": "application/json",
-                "Authorization": f"Bearer {consultation_user_token}",
-            },
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
         assert response.status_code == 200
+
         free_text_annotation.refresh_from_db()
         # check that the state has changed
         assert free_text_annotation.flagged_by.contains(consultation_user) != is_flagged
+        assert free_text_annotation.is_edited is True
 
 
 @pytest.mark.django_db
 class TestAPIViewErrorHandling:
     """Test error handling across API views"""
 
-    def test_nonexistent_consultation(self, client, consultation_user):
+    def test_nonexistent_consultation(self, client, consultation_user_token):
         """Test API endpoints with non-existent consultation"""
-        client.force_login(consultation_user)
         url = reverse("consultations-demographic-options", kwargs={"pk": uuid4()})
-        response = client.get(url)
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
         assert response.status_code == 404  # NOT FOUND
 
 
 @pytest.mark.django_db
-def test_consultations_list(client, consultation_user, multi_choice_question):
-    client.force_login(consultation_user)
+def test_consultations_list(client, consultation_user_token, multi_choice_question):
     url = reverse("consultations-list")
-    response = client.get(url)
+    response = client.get(
+        url,
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
     assert response.status_code == 200
 
 
 @pytest.mark.django_db
-def test_consultations_list_filter_by_slug(client, consultation_user, multi_choice_question):
+def test_consultations_list_filter_by_slug(client, consultation_user_token, multi_choice_question):
     """Test that consultations can be filtered by slug"""
-    client.force_login(consultation_user)
     consultation = multi_choice_question.consultation
 
     # Test filtering by slug
     url = reverse("consultations-list")
-    response = client.get(url, {"slug": consultation.slug})
+    response = client.get(
+        url,
+        {"slug": consultation.slug},
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
     assert response.status_code == 200
 
     data = response.json()
@@ -1147,12 +1216,15 @@ def test_consultations_list_filter_by_slug(client, consultation_user, multi_choi
 
 
 @pytest.mark.django_db
-def test_consultations_list_filter_by_nonexistent_slug(client, consultation_user):
+def test_consultations_list_filter_by_nonexistent_slug(client, consultation_user_token):
     """Test that filtering by non-existent slug returns empty results"""
-    client.force_login(consultation_user)
 
     url = reverse("consultations-list")
-    response = client.get(url, {"slug": "nonexistent-slug"})
+    response = client.get(
+        url,
+        {"slug": "nonexistent-slug"},
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
     assert response.status_code == 200
 
     data = response.json()
@@ -1163,30 +1235,8 @@ def test_consultations_list_filter_by_nonexistent_slug(client, consultation_user
 
 
 @pytest.mark.django_db
-def test_multi_choice_answer_count(
-    client, consultation_user, multi_choice_question, multi_choice_responses
-):
-    client.force_login(consultation_user)
-    url = reverse(
-        "question-multi-choice-response-count",
-        kwargs={
-            "consultation_pk": multi_choice_question.consultation.pk,
-            "pk": multi_choice_question.pk,
-        },
-    )
-    response = client.get(url)
-    assert response.status_code == 200
-
-    def sort_by_answer(payload):
-        return sorted(payload, key=lambda x: x["answer"])
-
-    expected = [{"answer": "blue", "response_count": 1}, {"answer": "red", "response_count": 2}]
-    assert sort_by_answer(response.json()) == sort_by_answer(expected)
-
-
-@pytest.mark.django_db
 @pytest.mark.parametrize("has_free_text", [True, False, ""])
-def test_filter(client, consultation_user, consultation, has_free_text):
+def test_filter(client, consultation_user_token, consultation, has_free_text):
     """Test filtering questions by has_free_text"""
 
     # Create questions with different free text settings
@@ -1197,11 +1247,14 @@ def test_filter(client, consultation_user, consultation, has_free_text):
         consultation=consultation, has_free_text=False, text="Multi choice question"
     )
 
-    client.force_login(consultation_user)
     url = reverse("question-list", kwargs={"consultation_pk": consultation.id})
 
     # Filter by has_free_text=True
-    response = client.get(url, {"has_free_text": has_free_text})
+    response = client.get(
+        url,
+        {"has_free_text": has_free_text},
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
     assert response.status_code == 200
 
     data = response.json()
@@ -1329,3 +1382,160 @@ def test_question_themes_delete(client, consultation_user_token, theme_a):
     )
     assert response.status_code == 204
     assert not Theme.objects.filter(key=theme_a.key).exists()
+
+
+@pytest.mark.django_db
+def test_get_responses_filtered_by_respondent(
+    client,
+    consultation,
+    free_text_question,
+    respondent_1,
+    respondent_2,
+    consultation_user_token,
+):
+    """
+    Given two responses by two different respondents
+    when I query by one of the respondent_ids
+    I expect only the relevant responses to be returned
+    """
+    response_1 = ResponseFactory(respondent=respondent_1, question=free_text_question)
+    _response_2 = ResponseFactory(respondent=respondent_2, question=free_text_question)
+
+    url = reverse(
+        "response-list",
+        kwargs={"consultation_pk": consultation.id},
+    )
+
+    response = client.get(
+        url,
+        query_params={
+            "respondent_id": respondent_1.id,
+            "question_id": free_text_question.id,
+        },
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+
+    assert response.status_code == 200, response.json()
+    assert response.json()["respondents_total"] == 2
+    assert response.json()["filtered_total"] == 1
+    assert response.json()["all_respondents"][0]["id"] == str(response_1.id)
+    assert response.json()["all_respondents"][0]["respondent_id"] == str(respondent_1.id)
+
+
+@override_settings(GIT_SHA="00000000-0000-0000-0000-000000000000")
+def test_git_sha(client):
+    url = reverse("git-sha")
+
+    response = client.get(url)
+    assert response.status_code == 200
+    assert response.json() == {"sha": "00000000-0000-0000-0000-000000000000"}
+
+
+@pytest.mark.django_db
+def test_get_respondent_list(
+    client, consultation, respondent_1, respondent_2, consultation_user_token
+):
+    url = reverse(
+        "respondent-list",
+        kwargs={"consultation_pk": consultation.id},
+    )
+
+    response = client.get(
+        url,
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["count"] == 2
+
+
+@pytest.mark.django_db
+def test_get_respondent_query_themefinder_id(
+    client, consultation, respondent_1, respondent_2, consultation_user_token
+):
+    url = reverse(
+        "respondent-list",
+        kwargs={"consultation_pk": consultation.id},
+    )
+
+    response = client.get(
+        url,
+        query_params={"themefinder_id": respondent_1.themefinder_id},
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["count"] == 1
+    assert response.json()["results"][0]["id"] == str(respondent_1.id)
+
+
+@pytest.mark.django_db
+def test_get_respondent_detail(
+    client, consultation, respondent_1, respondent_2, consultation_user_token
+):
+    url = reverse(
+        "respondent-detail",
+        kwargs={
+            "consultation_pk": consultation.id,
+            "pk": respondent_1.id,
+        },
+    )
+
+    response = client.get(
+        url,
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["id"] == str(respondent_1.id)
+
+
+@pytest.mark.django_db
+def test_patch_respondent_detail(client, consultation_user_token, respondent_1):
+    """we can update a respondents name"""
+    url = reverse(
+        "respondent-detail",
+        kwargs={
+            "consultation_pk": respondent_1.consultation.id,
+            "pk": respondent_1.id,
+        },
+    )
+
+    assert respondent_1.name is None
+    response = client.patch(
+        url,
+        content_type="application/json",
+        data={"name": "mr lebowski"},
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["name"] == "mr lebowski"
+    respondent_1.refresh_from_db()
+    assert respondent_1.name == "mr lebowski"
+
+
+@pytest.mark.django_db
+def test_patch_respondent_detail_read_only_field_ignored(
+    client, consultation_user_token, respondent_1
+):
+    """we cannot update a respondents themefinder_id"""
+
+    url = reverse(
+        "respondent-detail",
+        kwargs={
+            "consultation_pk": respondent_1.consultation.id,
+            "pk": respondent_1.id,
+        },
+    )
+
+    assert respondent_1.themefinder_id == 1
+    response = client.patch(
+        url,
+        content_type="application/json",
+        data={"themefinder_id": 100},
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+    # note: DRF just ignores attempts to update read-only (editable=False) fields
+    # we can change this behaviour but given that our frontend is the only consumer of this
+    # API it doesnt seem worth it
+    assert response.status_code == 200
+    assert response.json()["themefinder_id"] == 1
+    respondent_1.refresh_from_db()
+    assert respondent_1.themefinder_id == 1

@@ -2,69 +2,71 @@
 @tailwind components;
 @tailwind utilities;
 
-
 @font-face {
-    font-family: "Inter";
-    src: url(/fonts/inter/Inter-Regular.ttf) format('truetype');
-    font-weight: normal;
-    font-style: normal;
+  font-family: "Inter";
+  src: url(/fonts/inter/Inter-Regular.ttf) format("truetype");
+  font-weight: normal;
+  font-style: normal;
 }
 @font-face {
-    font-family: "Inter";
-    src: url(/fonts/inter/Inter-Bold.ttf) format('truetype');
-    font-weight: bold;
-    font-style: normal;
+  font-family: "Inter";
+  src: url(/fonts/inter/Inter-Bold.ttf) format("truetype");
+  font-weight: bold;
+  font-style: normal;
 }
 
 * {
-    font-family: Inter, sans-serif;
+  font-family: Inter, sans-serif;
 }
 
 :root {
-    --color-primary: #c40678;
+  --color-primary: #c40678;
+  --color-teal: oklch(0.6429 0.103 186.61);
 }
 
 .blink {
-    animation: 2s blink ease-in-out infinite;
-    -webkit-animation: 2s blink ease-in-out infinite;
+  animation: 2s blink ease-in-out infinite;
+  -webkit-animation: 2s blink ease-in-out infinite;
 }
 
 @view-transition {
-    navigation: auto;
+  navigation: auto;
 }
 
 @keyframes blink {
-    0%, 100% {
-        opacity: 1;
-    } 50% {
-        opacity: 0.33;
-    }
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.33;
+  }
 }
 
 /* Temp until components ported to svelte */
 iai-csv-download iai-silver-button button {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    gap: 0.5rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.5rem;
 }
 iai-csv-download iai-silver-button .material-symbols-outlined {
-    font-size: 1.3rem;
+  font-size: 1.3rem;
 }
 iai-progress-bar .container .bar.full {
-    border-radius: 0.5em !important;
+  border-radius: 0.5em !important;
 }
 table iai-progress-bar .container {
-    max-width: 3rem;
+  max-width: 3rem;
 }
 table iai-progress-bar .container .bar {
-    height: 0.5rem;
+  height: 0.5rem;
 }
 .demo-filter iai-progress-bar .container,
 .demo-filter iai-progress-bar .container .bar {
-    height: 0.5rem;
+  height: 0.5rem;
 }
 .demo-filter iai-progress-bar .container,
 table iai-progress-bar .container {
-    background-color: #bebebe !important;
+  background-color: #bebebe !important;
 }

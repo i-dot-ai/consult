@@ -1,80 +1,94 @@
 <script lang="ts">
-    import { fade } from "svelte/transition";
+  import { fade } from "svelte/transition";
 
-    import TitleRow from "../TitleRow.svelte";
-    import Panel from "../Panel/Panel.svelte";
-    import DemoFilter from "../../DemoFilter/DemoFilter.svelte";
-    import FilterAlt from "../../svg/material/FilterAlt.svelte";
-    import Switch from "../../inputs/Switch/Switch.svelte";
-    import MaterialIcon from "../../MaterialIcon.svelte";
-    import Diamond from "../../svg/material/Diamond.svelte";
+  import TitleRow from "../TitleRow.svelte";
+  import Panel from "../Panel/Panel.svelte";
+  import DemoFilter from "../../DemoFilter/DemoFilter.svelte";
+  import FilterAlt from "../../svg/material/FilterAlt.svelte";
+  import Switch from "../../inputs/Switch/Switch.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import Diamond from "../../svg/material/Diamond.svelte";
+  import type {
+    DemoData,
+    DemoOption,
+    DemoTotalCounts,
+  } from "../../../global/types";
 
-    let {
-        showEvidenceRich = true,
-        demoOptions = {},
-        demoData = {},
-        evidenceRich = false,
-        setEvidenceRich = () => {},
-        loading = true,
-    } = $props();
+  interface Props {
+    demoOptions: DemoOption;
+    demoData: DemoData;
+    loading: boolean;
+    showEvidenceRich?: boolean;
+    evidenceRich?: boolean;
+    setEvidenceRich?: (newVal: boolean) => void;
+  }
+  let {
+    demoOptions = {},
+    demoData = {},
+    loading = true,
+    showEvidenceRich = true,
+    evidenceRich = false,
+    setEvidenceRich = () => {},
+  }: Props = $props();
 
-    // Derive to avoid calculating on re-render
-    let totalCounts = $derived.by(() => {
-		let counts = {};
-		for (const category of Object.keys(demoData)) {
-            counts[category] = Object.values(demoData[category]).reduce(
-                (a, b) => a + b, 0
-            );
-		}
-		return counts;
-	})
+  // Derive to avoid calculating on re-render
+  let totalCounts: DemoTotalCounts = $derived.by(() => {
+    let counts: any = {};
+    for (const category of Object.keys(demoData)) {
+      counts[category] = Object.values(demoData[category]).reduce(
+        (a, b) => (a as number) + (b as number),
+        0, //  initial value
+      );
+    }
+    return counts;
+  });
 </script>
 
 <aside>
-    <Panel>
-        <TitleRow level={2} title="Filters" subtitle="">
-            <FilterAlt slot="icon" />
-        </TitleRow>
+  <Panel>
+    <TitleRow level={2} title="Filters" subtitle="">
+      <FilterAlt slot="icon" />
+    </TitleRow>
 
-        {#if showEvidenceRich}
-            <Panel level={2} border={true} bg={true}>
-                <Switch
-                    id="evidence-rich-toggle"
-                    label="Evidence Rich"
-                    value={evidenceRich}
-                    handleChange={(value: boolean) => setEvidenceRich(value)}
-                >
-                    <div slot="label" class="flex gap-1 items-center">
-                        <div class="bg-yellow-100 rounded-2xl text-xs p-0.5">
-                            <MaterialIcon size="1rem" color="fill-yellow-700">
-                                <Diamond />
-                            </MaterialIcon>
-                        </div>
-
-                        <span class="text-xs">Show evidence rich first</span>
-                    </div>
-                </Switch>
-            </Panel>
-        {/if}
-
-        {#if loading}
-            <div in:fade>
-                {#each "_".repeat(3) as _}
-                    <DemoFilter skeleton={true} />
-                {/each}
+    {#if showEvidenceRich}
+      <Panel level={2} border={true} bg={true}>
+        <Switch
+          id="evidence-rich-toggle"
+          label="Evidence Rich"
+          value={evidenceRich}
+          handleChange={(value: boolean) => setEvidenceRich(value)}
+        >
+          <div slot="label" class="flex gap-1 items-center">
+            <div class="bg-yellow-100 rounded-2xl text-xs p-0.5">
+              <MaterialIcon size="1rem" color="fill-yellow-700">
+                <Diamond />
+              </MaterialIcon>
             </div>
-        {:else}
-            <div in:fade>
-                {#each Object.keys(demoOptions) as category (category)}
-                    <DemoFilter
-                        {category}
-                        {demoOptions}
-                        {demoData}
-                        {totalCounts}
-                        skeleton={loading}
-                    />
-                {/each}
-            </div>
-        {/if}
-    </Panel>
+
+            <span class="text-xs">Show evidence rich</span>
+          </div>
+        </Switch>
+      </Panel>
+    {/if}
+
+    {#if loading}
+      <div in:fade>
+        {#each "_".repeat(3) as _}
+          <DemoFilter skeleton={true} />
+        {/each}
+      </div>
+    {:else}
+      <div in:fade>
+        {#each Object.keys(demoOptions) as category (category)}
+          <DemoFilter
+            {category}
+            {demoOptions}
+            {demoData}
+            {totalCounts}
+            skeleton={loading}
+          />
+        {/each}
+      </div>
+    {/if}
+  </Panel>
 </aside>
