@@ -29,22 +29,37 @@
     document.addEventListener('DOMContentLoaded', function() {
       const consultationId = '{{ consultation_id }}';
 
-      // First fetch the consultation to get the ID and title
-      fetch(`/api/consultations/?pk=${consultationId}`)
-        .then(response => response.json())
-        .then(data => {
-          if (data.results && data.results.length > 0) {
-            const consultation = data.results[0];
-            document.getElementById('consultation-title').textContent = consultation.title;
-            document.title = consultation.title;
-
-            // Now fetch questions with free text and themes
-            return fetch(`/api/consultations/${consultation.id}/questions/?has_free_text=true&has_free_text=true`);
-          } else {
-            throw new Error('Consultation not found');
+      // First fetch the consultation to get the title
+      fetch(`/api/consultations/${consultationId}/`, {
+        credentials: 'same-origin',
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
           }
+          return response.json();
         })
-        .then(response => response.json())
+        .then(consultation => {
+          document.getElementById('consultation-title').textContent = consultation.title;
+          document.title = consultation.title;
+
+          // Now fetch questions with free text and themes using the original consultationId
+          return fetch(`/api/consultations/${consultationId}/questions/?has_free_text=true`, {
+            credentials: 'same-origin',
+            headers: {
+              'Content-Type': 'application/json'
+            }
+          });
+        })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+          }
+          return response.json();
+        })
         .then(data => {
           const questionsList = document.getElementById('questions-list');
 
