@@ -5,6 +5,7 @@ from rest_framework_nested.routers import NestedDefaultRouter
 
 from .api.views import (
     ConsultationViewSet,
+    QuestionThemeViewSet,
     QuestionViewSet,
     RespondentViewSet,
     ResponseViewSet,
@@ -30,6 +31,10 @@ questions_router = NestedDefaultRouter(consultations_router, "questions", lookup
 themes_router = NestedDefaultRouter(consultations_router, "themes", lookup="theme")
 
 
+questions_router.register("themes", QuestionThemeViewSet, basename="question-theme")
+question_theme_router = NestedDefaultRouter(questions_router, "themes", lookup="theme")
+
+
 urlpatterns = [
     # public urls
     path("", root.root, name="root"),
@@ -43,9 +48,9 @@ urlpatterns = [
     path("api/", include(consultations_router.urls)),
     path("api/", include(questions_router.urls)),
     path("api/", include(themes_router.urls)),
-    path("api/user/", get_current_user, name="user"),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
+    path("api/user/", get_current_user, name="user"),
     path(
         "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/show-next/",
         answers.show_next,
@@ -60,6 +65,11 @@ urlpatterns = [
         "evaluations/<uuid:consultation_id>/questions/",
         questions.index,
         name="review_free_text_questions",
+    ),
+    path(
+        "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/annotate/",
+        questions.annotate,
+        name="annotate_question",
     ),
     # authentication
     path("sign-in/", sessions.new, name="sign_in"),
