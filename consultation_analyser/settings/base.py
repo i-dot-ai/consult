@@ -33,9 +33,19 @@ SECRET_KEY = env("DJANGO_SECRET_KEY")
 DEBUG = env("DEBUG")
 ENVIRONMENT = env("ENVIRONMENT")
 
-DOMAIN_NAME = env("DOMAIN_NAME", default="0.0.0.0")  # nosec
+DOMAIN_NAME = env("DOMAIN_NAME", default="localhost:3000")  # nosec
 
-ALLOWED_HOSTS: list[str] = [DOMAIN_NAME, "*"]  # nosec
+ALLOWED_HOSTS: list[str] = [
+    DOMAIN_NAME,
+    "localhost",
+    "127.0.0.1",
+    "consult.ai.cabinetoffice.gov.uk",
+    "consult-dev.ai.cabinetoffice.gov.uk",
+]
+
+# Add wildcard only in development
+if DEBUG:
+    ALLOWED_HOSTS.append("*")  # nosec
 
 # Application definition
 
@@ -46,13 +56,16 @@ INSTALLED_APPS = [
     "django.contrib.staticfiles",
     "django.contrib.auth",
     "django.contrib.admin",
+    "django.contrib.sites",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
+    "allauth.socialaccount.providers.openid_connect",
     "waffle",  # feature flags
-    "magic_link",
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "consultation_analyser.support_console",
     "consultation_analyser.error_pages",
-    "consultation_analyser.email",
     "compressor",
     "crispy_forms",
     "crispy_forms_gds",
@@ -74,6 +87,7 @@ MIDDLEWARE = [
     "django.contrib.sessions.middleware.SessionMiddleware",
     "consultation_analyser.middleware.JWTAuthenticationMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
+    "allauth.account.middleware.AccountMiddleware",
     "django.middleware.common.CommonMiddleware",
     "consultation_analyser.middleware.CSRFExemptMiddleware",  # Must be before CsrfViewMiddleware
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -124,6 +138,11 @@ CSRF_TRUSTED_ORIGINS = [
     "https://consult-preprod.ai.cabinetoffice.gov.uk",
     "https://consult-dev.ai.cabinetoffice.gov.uk",
 ]
+
+# Trust proxy headers for load balancer
+USE_X_FORWARDED_HOST = True
+USE_X_FORWARDED_PORT = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
 
 # Database with Connection Pooling
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -283,9 +302,6 @@ SIGN_OFF_BATCH_JOB_QUEUE = env("SIGN_OFF_BATCH_JOB_QUEUE")
 SIGN_OFF_BATCH_JOB_DEFINITION = env("SIGN_OFF_BATCH_JOB_DEFINITION")
 
 
-# Authentication
-LOGIN_URL = "/sign-in/"
-
 # version info
 GIT_SHA = env("GIT_SHA", default=None)
 
@@ -321,6 +337,59 @@ if DEBUG:
 
 # changing this will require a database migration
 EMBEDDING_DIMENSION = 3072
+
+# Sites framework
+SITE_ID = 1
+
+# Django Allauth configuration
+AUTHENTICATION_BACKENDS = [
+    "django.contrib.auth.backends.ModelBackend",
+    "allauth.account.auth_backends.AuthenticationBackend",
+]
+
+# OAuth2 Settings
+LOGIN_URL = "/accounts/oidc/gds/login/"
+LOGIN_REDIRECT_URL = ("http://" if DEBUG else "https://") + DOMAIN_NAME
+LOGOUT_REDIRECT_URL = "/"
+
+# Allauth Settings
+
+ACCOUNT_EMAIL_VERIFICATION = "none"
+ACCOUNT_USER_MODEL_USERNAME_FIELD = "email"
+
+
+# Social Account Settings
+SOCIALACCOUNT_ONLY = True
+SOCIALACCOUNT_LOGIN_ON_GET = True
+SOCIALACCOUNT_AUTO_SIGNUP = True
+SOCIALACCOUNT_EMAIL_REQUIRED = True
+SOCIALACCOUNT_EMAIL_VERIFICATION = "none"
+SOCIALACCOUNT_EMAIL_AUTHENTICATION = True
+SOCIALACCOUNT_EMAIL_AUTHENTICATION_AUTO_CONNECT = True
+
+SOCIALACCOUNT_PROVIDERS = {
+    "openid_connect": {
+        "APPS": [
+            {
+                "provider_id": "gds",
+                "name": "GDS Internal Access",
+                "client_id": env.str("SOCIAL_AUTH_OIDC_KEY"),
+                "secret": env.str("SOCIAL_AUTH_OIDC_SECRET"),
+                "settings": {
+                    "server_url": env.str(
+                        "SOCIAL_AUTH_OIDC_ENDPOINT", "https://sso.service.security.gov.uk"
+                    ),
+                    "scope": ["openid", "email", "profile"],
+                    "token_auth_method": "client_secret_post",
+                },
+            }
+        ]
+    }
+}
+
+
+# OAuth settings for frontend
+FRONTEND_URL = ("http://" if DEBUG else "https://") + DOMAIN_NAME
 
 REST_FRAMEWORK = {
     "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
