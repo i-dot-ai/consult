@@ -5,7 +5,7 @@
 {%- from 'govuk_frontend_jinja/components/textarea/macro.html' import govukTextarea -%}
 
 {% block content %}
-  <h1 class="govuk-heading-m">{{ "Edit Theme" if theme else "Add New Theme" }}</h1>
+  <h1 class="govuk-heading-m" id="page-title">{{ "Edit Theme" if theme_id else "Add New Theme" }}</h1>
   {{ govukBreadcrumbs({
     "items": [
       {
@@ -27,13 +27,7 @@
     <div class="govuk-grid-column-full">
       <div class="govuk-section-break govuk-section-break--m"></div>
 
-      <h2 class="govuk-heading-s">Question Text</h2>
-      <div class="govuk-inset-text">{{ question.text }}</div>
-      <div class="govuk-section-break govuk-section-break--m"></div>
-
-      <form method="post">
-        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
-
+      <form id="theme-form">
         <div class="govuk-form-group">
           {{ govukInput({
             "label": {
@@ -45,7 +39,6 @@
             },
             "id": "name",
             "name": "name",
-            "value": theme.name if theme else "",
             "classes": "govuk-!-width-full"
           }) }}
         </div>
@@ -61,7 +54,6 @@
             },
             "id": "description",
             "name": "description",
-            "value": theme.description if theme else "",
             "rows": 5
           }) }}
         </div>
@@ -69,7 +61,8 @@
         <div class="govuk-button-group">
           {{ govukButton({
             "text": "Save Theme",
-            "type": "submit"
+            "type": "submit",
+            "id": "save-btn"
           }) }}
 
           <a href="/evaluations/{{ consultation_id }}/questions/{{ question_id }}/themes/"
@@ -77,114 +70,203 @@
         </div>
       </form>
 
-      {% if theme %}
-      <div class="govuk-section-break govuk-section-break--l"></div>
+      <div id="responses-section" style="display: none;">
+        <div class="govuk-section-break govuk-section-break--l"></div>
 
-      <div class="govuk-form-group">
-        <h2 class="govuk-heading-s">Example Responses</h2>
-        <p class="govuk-hint">See responses that might be related to this theme</p>
+        <div class="govuk-form-group">
+          <h2 class="govuk-heading-s">Example Responses</h2>
+          <p class="govuk-hint">See responses that might be related to this theme</p>
 
-        <button type="button" id="see-responses-btn" class="govuk-button govuk-button--secondary">
-          See Example Responses
-        </button>
+          <button type="button" id="see-responses-btn" class="govuk-button govuk-button--secondary">
+            See Example Responses
+          </button>
 
-        <div id="responses-container" style="display: none; margin-top: 20px;">
-          <h3 class="govuk-heading-s">Related Responses</h3>
-          <div id="responses-list">
-            <!-- Responses will be loaded here -->
+          <div id="responses-container" style="display: none; margin-top: 20px;">
+            <h3 class="govuk-heading-s">Related Responses</h3>
+            <div id="responses-list">
+              <!-- Responses will be loaded here -->
+            </div>
           </div>
         </div>
       </div>
-      {% endif %}
     </div>
 
   </div>
 
-  {% if theme %}
   <script>
     document.addEventListener('DOMContentLoaded', function() {
-      const seeResponsesBtn = document.getElementById('see-responses-btn');
-      const responsesContainer = document.getElementById('responses-container');
-      const responsesList = document.getElementById('responses-list');
-      let isShowing = false;
-
-      seeResponsesBtn.addEventListener('click', function() {
-        if (isShowing) {
-          // Hide responses
-          responsesContainer.style.display = 'none';
-          seeResponsesBtn.textContent = 'See Example Responses';
-          isShowing = false;
-        } else {
-          // Show responses
-          loadExampleResponses();
-        }
+      const consultationId = '{{ consultation_id }}';
+      const questionId = '{{ question_id }}';
+      const themeId = '{{ theme_id }}' || null;
+      const apiUrl = `/api/consultations/${consultationId}/questions/${questionId}/themes/`;
+      
+      const form = document.getElementById('theme-form');
+      const nameInput = document.getElementById('name');
+      const descriptionInput = document.getElementById('description');
+      const saveBtn = document.getElementById('save-btn');
+      const responsesSection = document.getElementById('responses-section');
+      
+      // Load existing theme data if editing
+      if (themeId) {
+        loadThemeData();
+        responsesSection.style.display = 'block';
+      }
+      
+      // Handle form submission
+      form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        saveTheme();
       });
-
-      function loadExampleResponses() {
+      
+      function loadThemeData() {
+        fetch(`${apiUrl}${themeId}/`)
+          .then(response => response.json())
+          .then(theme => {
+            nameInput.value = theme.name || '';
+            descriptionInput.value = theme.description || '';
+          })
+          .catch(error => {
+            console.error('Error loading theme:', error);
+            alert('Error loading theme data. Please refresh the page.');
+          });
+      }
+      
+      function saveTheme() {
+        const name = nameInput.value.trim();
+        const description = descriptionInput.value.trim();
+        
+        if (!name) {
+          alert('Theme name is required.');
+          nameInput.focus();
+          return;
+        }
+        
         // Show loading state
-        seeResponsesBtn.textContent = 'Loading...';
-        seeResponsesBtn.disabled = true;
-
-        const consultationId = '{{ consultation_id }}';
-        const questionId = '{{ question_id }}';
-        const themeId = '{{ theme.id }}';
-        const apiUrl = `/api/consultations/${consultationId}/questions/${questionId}/themes/${themeId}/responses/`;
-
-        fetch(apiUrl, {
-          method: 'GET',
+        saveBtn.textContent = 'Saving...';
+        saveBtn.disabled = true;
+        
+        const data = {
+          name: name,
+          description: description
+        };
+        
+        const url = themeId ? `${apiUrl}${themeId}/` : apiUrl;
+        const method = themeId ? 'PUT' : 'POST';
+        
+        fetch(url, {
+          method: method,
           headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-          }
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken()
+          },
+          body: JSON.stringify(data)
         })
-        .then(response => response.json())
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
         .then(data => {
-          displayResponses(data);
+          // Success - redirect to theme list
+          window.location.href = `/evaluations/${consultationId}/questions/${questionId}/themes/`;
         })
         .catch(error => {
-          console.error('Error getting responses:', error);
-          alert('Error getting responses. Please try again.');
+          console.error('Error saving theme:', error);
+          alert('Failed to save theme. Please try again.');
         })
         .finally(() => {
-          seeResponsesBtn.disabled = false;
+          saveBtn.textContent = 'Save Theme';
+          saveBtn.disabled = false;
         });
       }
+      
+      function getCsrfToken() {
+        return document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+      }
+      
+      // Example responses functionality (only available when editing)
+      if (themeId) {
+        const seeResponsesBtn = document.getElementById('see-responses-btn');
+        const responsesContainer = document.getElementById('responses-container');
+        const responsesList = document.getElementById('responses-list');
+        let isShowing = false;
 
-      function displayResponses(responses) {
-        // Clear previous responses
-        responsesList.innerHTML = '';
+        seeResponsesBtn.addEventListener('click', function() {
+          if (isShowing) {
+            // Hide responses
+            responsesContainer.style.display = 'none';
+            seeResponsesBtn.textContent = 'See Example Responses';
+            isShowing = false;
+          } else {
+            // Show responses
+            loadExampleResponses();
+          }
+        });
 
-        if (!responses || responses.length === 0) {
-          responsesList.innerHTML = '<p class="govuk-body">No similar responses found for this theme.</p>';
-        } else {
-          // Create list of responses
-          const responseList = document.createElement('ol');
-          responseList.className = 'govuk-list govuk-list--number';
+        function loadExampleResponses() {
+          // Show loading state
+          seeResponsesBtn.textContent = 'Loading...';
+          seeResponsesBtn.disabled = true;
 
-          responses.forEach(response => {
-            const listItem = document.createElement('li');
-            listItem.className = 'govuk-!-margin-bottom-3';
-            listItem.innerHTML = `<p class="govuk-body-s" style="background: #f3f2f1; padding: 10px; border-radius: 3px;">${response.free_text}</p>`;
-            responseList.appendChild(listItem);
-          });
+          const responsesApiUrl = `${apiUrl}${themeId}/responses/`;
 
-          responsesList.appendChild(responseList);
-
-          // Add count information
-          const countInfo = document.createElement('p');
-          countInfo.className = 'govuk-body-s govuk-!-margin-top-3';
-          countInfo.style.color = '#626a6e';
-          countInfo.textContent = `Showing ${responses.length} example responses`;
-          responsesList.appendChild(countInfo);
+          fetch(responsesApiUrl)
+            .then(response => response.json())
+            .then(data => {
+              displayResponses(data);
+            })
+            .catch(error => {
+              console.error('Error getting responses:', error);
+              alert('Error getting responses. Please try again.');
+            })
+            .finally(() => {
+              seeResponsesBtn.disabled = false;
+            });
         }
 
-        // Show the responses container
-        responsesContainer.style.display = 'block';
+        function displayResponses(responses) {
+          // Clear previous responses
+          responsesList.innerHTML = '';
 
-        // Update button text
-        seeResponsesBtn.textContent = 'Hide Example Responses';
-        isShowing = true;
+          if (!responses || responses.length === 0) {
+            responsesList.innerHTML = '<p class="govuk-body">No similar responses found for this theme.</p>';
+          } else {
+            // Create list of responses
+            const responseList = document.createElement('ol');
+            responseList.className = 'govuk-list govuk-list--number';
+
+            responses.forEach(response => {
+              const listItem = document.createElement('li');
+              listItem.className = 'govuk-!-margin-bottom-3';
+              listItem.innerHTML = `<p class="govuk-body-s" style="background: #f3f2f1; padding: 10px; border-radius: 3px;">${escapeHtml(response.free_text)}</p>`;
+              responseList.appendChild(listItem);
+            });
+
+            responsesList.appendChild(responseList);
+
+            // Add count information
+            const countInfo = document.createElement('p');
+            countInfo.className = 'govuk-body-s govuk-!-margin-top-3';
+            countInfo.style.color = '#626a6e';
+            countInfo.textContent = `Showing ${responses.length} example responses`;
+            responsesList.appendChild(countInfo);
+          }
+
+          // Show the responses container
+          responsesContainer.style.display = 'block';
+
+          // Update button text
+          seeResponsesBtn.textContent = 'Hide Example Responses';
+          isShowing = true;
+        }
+      }
+      
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
       }
     });
   </script>
-  {% endif %}
 {% endblock %}

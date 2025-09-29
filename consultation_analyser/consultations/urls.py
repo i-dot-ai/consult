@@ -82,11 +82,6 @@ urlpatterns = [
         themes.theme_detail,
         name="theme_edit",
     ),
-    path(
-        "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/themes/<uuid:theme_id>/delete/",
-        themes.theme_delete,
-        name="theme_delete",
-    ),
     # authentication
     path("sign-in/", sessions.new, name="sign_in"),
     path("sign-out/", sessions.destroy, name="sign_out"),

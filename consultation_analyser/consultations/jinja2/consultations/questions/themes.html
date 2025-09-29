@@ -33,43 +33,150 @@
            class="govuk-button govuk-button--secondary">Back to Questions</a>
       </div>
 
-      {% if themes %}
-        <h2 class="govuk-heading-s govuk-!-margin-top-6">Current Themes</h2>
+      <div id="themes-container">
+        <div id="loading-message" class="govuk-inset-text govuk-!-margin-top-6">
+          <p>Loading themes...</p>
+        </div>
         
-        {% for theme in themes %}
-          <div class="govuk-summary-card govuk-!-margin-bottom-4">
-            <div class="govuk-summary-card__title-wrapper">
-              <h2 class="govuk-summary-card__title">{{ theme.name }}</h2>
-              <ul class="govuk-summary-card__actions">
-                <li class="govuk-summary-card__action">
-                  <a class="govuk-link" href="/evaluations/{{ consultation_id }}/questions/{{ question_id }}/themes/{{ theme.id }}/edit/">
-                    Edit<span class="govuk-visually-hidden"> theme {{ theme.name }}</span>
-                  </a>
-                </li>
-                <li class="govuk-summary-card__action">
-                  <a class="govuk-link govuk-link--destructive" href="/evaluations/{{ consultation_id }}/questions/{{ question_id }}/themes/{{ theme.id }}/delete/">
-                    Delete<span class="govuk-visually-hidden"> theme {{ theme.name }}</span>
-                  </a>
-                </li>
-              </ul>
-            </div>
-            <div class="govuk-summary-card__content">
-              <dl class="govuk-summary-list">
-                <div class="govuk-summary-list__row">
-                  <dt class="govuk-summary-list__key">Description</dt>
-                  <dd class="govuk-summary-list__value">{{ theme.description if theme.description else "No description provided" }}</dd>
-                </div>
-              </dl>
-            </div>
-          </div>
-        {% endfor %}
-      {% else %}
-        <div class="govuk-inset-text govuk-!-margin-top-6">
+        <div id="no-themes-message" class="govuk-inset-text govuk-!-margin-top-6" style="display: none;">
           <p>No themes have been created for this question yet.</p>
           <p>Click "Add New Theme" to create your first theme.</p>
         </div>
-      {% endif %}
+        
+        <div id="themes-list" style="display: none;">
+          <h2 class="govuk-heading-s govuk-!-margin-top-6">Current Themes</h2>
+          <div id="themes-cards">
+            <!-- Themes will be loaded here via API -->
+          </div>
+        </div>
+      </div>
     </div>
 
   </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const consultationId = '{{ consultation_id }}';
+      const questionId = '{{ question_id }}';
+      const apiUrl = `/api/consultations/${consultationId}/questions/${questionId}/themes/`;
+      
+      loadThemes();
+      
+      function loadThemes() {
+        console.log('Loading themes from:', apiUrl);
+        fetch(apiUrl)
+          .then(response => {
+            console.log('Response status:', response.status);
+            if (!response.ok) {
+              throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log('API response:', data);
+            const themes = data.results;
+            hideLoading();
+            if (themes.length === 0) {
+              showNoThemesMessage();
+            } else {
+              displayThemes(themes);
+            }
+          })
+          .catch(error => {
+            console.error('Error loading themes:', error);
+            hideLoading();
+            showError(error);
+          });
+      }
+      
+      function hideLoading() {
+        document.getElementById('loading-message').style.display = 'none';
+      }
+      
+      function showNoThemesMessage() {
+        document.getElementById('no-themes-message').style.display = 'block';
+      }
+      
+      function showError() {
+        const container = document.getElementById('themes-container');
+        container.innerHTML = '<div class="govuk-inset-text govuk-!-margin-top-6"><p>Error loading themes. Please refresh the page.</p></div>';
+      }
+      
+      function displayThemes(themes) {
+        const themesList = document.getElementById('themes-list');
+        const themesCards = document.getElementById('themes-cards');
+        
+        themesCards.innerHTML = '';
+        
+        themes.forEach(theme => {
+          const themeCard = createThemeCard(theme);
+          themesCards.appendChild(themeCard);
+        });
+        
+        themesList.style.display = 'block';
+      }
+      
+      function createThemeCard(theme) {
+        const card = document.createElement('div');
+        card.className = 'govuk-summary-card govuk-!-margin-bottom-4';
+        
+        card.innerHTML = `
+          <div class="govuk-summary-card__title-wrapper">
+            <h2 class="govuk-summary-card__title">${escapeHtml(theme.name)}</h2>
+            <ul class="govuk-summary-card__actions">
+              <li class="govuk-summary-card__action">
+                <a class="govuk-link" href="/evaluations/${consultationId}/questions/${questionId}/themes/${theme.id}/edit/">
+                  Edit<span class="govuk-visually-hidden"> theme ${escapeHtml(theme.name)}</span>
+                </a>
+              </li>
+              <li class="govuk-summary-card__action">
+                <button class="govuk-link govuk-link--destructive" onclick="deleteTheme('${theme.id}', '${escapeHtml(theme.name)}')" style="border: none; background: none; padding: 0; font: inherit; cursor: pointer;">
+                  Delete<span class="govuk-visually-hidden"> theme ${escapeHtml(theme.name)}</span>
+                </button>
+              </li>
+            </ul>
+          </div>
+          <div class="govuk-summary-card__content">
+            <dl class="govuk-summary-list">
+              <div class="govuk-summary-list__row">
+                <dt class="govuk-summary-list__key">Description</dt>
+                <dd class="govuk-summary-list__value">${theme.description ? escapeHtml(theme.description) : 'No description provided'}</dd>
+              </div>
+            </dl>
+          </div>
+        `;
+        
+        return card;
+      }
+      
+      function escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+      }
+      
+      // Global function for delete buttons
+      window.deleteTheme = function(themeId, themeName) {
+        if (confirm(`Are you sure you want to delete the theme "${themeName}"? This action cannot be undone.`)) {
+          fetch(`${apiUrl}${themeId}/`, {
+            method: 'DELETE',
+            headers: {
+              'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+            }
+          })
+          .then(response => {
+            if (response.ok) {
+              loadThemes(); // Reload themes
+            } else {
+              alert('Failed to delete theme. Please try again.');
+            }
+          })
+          .catch(error => {
+            console.error('Error deleting theme:', error);
+            alert('Failed to delete theme. Please try again.');
+          });
+        }
+      };
+    });
+  </script>
 {% endblock %}
