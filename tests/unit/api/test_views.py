@@ -767,9 +767,15 @@ class TestFilteredResponsesAPIView:
         assert response.json()["respondents_total"] == 2
         assert response.json()["filtered_total"] == expected_responses
 
-    @pytest.mark.parametrize("is_flagged", [True, False])
+    @pytest.mark.parametrize(("is_flagged", "is_edited"), [(True, True), (False, False)])
     def test_get_responses_with_is_flagged(
-        self, client, consultation_user, consultation_user_token, another_annotation, is_flagged
+        self,
+        client,
+        consultation_user,
+        consultation_user_token,
+        another_annotation,
+        is_flagged,
+        is_edited,
     ):
         if is_flagged:
             another_annotation.flagged_by.add(consultation_user)
@@ -791,7 +797,7 @@ class TestFilteredResponsesAPIView:
         assert response.status_code == 200
         data = response.json()
         assert data["is_flagged"] == is_flagged
-        assert data["is_edited"] is False
+        assert data["is_edited"] == is_edited
 
 
 @pytest.mark.django_db
