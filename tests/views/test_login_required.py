@@ -49,13 +49,11 @@ def set_up_consultation(user, free_text_question):
     consultation.save()
 
     response = factories.ResponseFactory(question=free_text_question)
-    theme = factories.ThemeFactory()
-    factories.ResponseAnnotationFactory(response=response, themes=[theme])
+    factories.ResponseAnnotationFactory(response=response)
     possible_args = {
         "consultation_id": consultation.id,
         "question_id": free_text_question.id,
         "response_id": response.id,
-        "theme_id": theme.id,
     }
     return possible_args
 
