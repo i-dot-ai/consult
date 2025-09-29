@@ -26,18 +26,18 @@
     "@web/test-runner": "^0.20.2",
     "@web/test-runner-mocha": "^0.9.0",
     "@x-govuk/govuk-prototype-components": "^3.0.9",
-    "dompurify": "^3.2.6",
-    "govuk-frontend": "^5.10.2",
-    "i.ai-design-system": "^0.5.2",
+    "dompurify": "^3.2.7",
+    "govuk-frontend": "^5.12.0",
+    "i.ai-design-system": "^0.7.7",
     "jsdom": "^26.1.0",
     "json-schema-faker-cli": "^5.0.6",
     "lit": "^3.3.0",
-    "sass-embedded": "^1.93.1"
+    "sass-embedded": "^1.93.2"
   },
   "devDependencies": {
     "@types/chart.js": "^2.9.41",
     "jest": "^29.7.0",
-    "rollup": "^4.42.0",
+    "rollup": "^4.52.3",
     "sass": "^1.89.1"
   }
 }
