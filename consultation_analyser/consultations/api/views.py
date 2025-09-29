@@ -129,33 +129,20 @@ class QuestionThemeViewSet(ModelViewSet):
         """Get responses for this theme using vector similarity"""
         theme = self.get_object()
 
-        try:
-            # Get embedding for the theme name
-            embedded_query = embed_text(theme.name)
-            distance = CosineDistance("embedding", embedded_query)
+        # Get embedding for the theme name
+        embedded_query = embed_text(theme.name)
+        distance = CosineDistance("embedding", embedded_query)
 
-            # Get closest responses for this theme
-            closest_responses = (
-                models.Response.objects.filter(question_id=question_pk)
-                .annotate(distance=distance)
-                .order_by("distance")[:10]
-            )
+        # Get closest responses for this theme
+        closest_responses = (
+            models.Response.objects.filter(question_id=question_pk)
+            .annotate(distance=distance)
+            .order_by("distance")[:10]
+        )
 
-            # Use SimpleResponseSerializer to serialize the responses
-            serializer = SimpleResponseSerializer(closest_responses, many=True)
-            return Response(serializer.data)
-
-        except Exception as e:
-            return Response(
-                {
-                    "status": "error",
-                    "message": str(e),
-                    "theme_name": theme.name,
-                    "responses": [],
-                    "count": 0,
-                },
-                status=500,
-            )
+        # Use SimpleResponseSerializer to serialize the responses
+        serializer = SimpleResponseSerializer(closest_responses, many=True)
+        return Response(serializer.data)
 
 
 class QuestionViewSet(ReadOnlyModelViewSet):
