@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{%- from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs -%}
+{%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+
+{% block content %}
+  <h1 class="govuk-heading-m">Question Themes</h1>
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Back to your consultations",
+        "href": "/consultations",
+      },
+      {
+        "text": "Questions",
+        "href": "/evaluations/" + consultation_id|string + "/questions/",
+      }
+    ]
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <div class="govuk-section-break govuk-section-break--m"></div>
+      
+      <h2 class="govuk-heading-s">Question Text</h2>
+      <div class="govuk-inset-text">{{ question.text }}</div>
+      <div class="govuk-section-break govuk-section-break--m"></div>
+
+      <div class="govuk-button-group">
+        <a href="/evaluations/{{ consultation_id }}/questions/{{ question_id }}/themes/new/" 
+           class="govuk-button">Add New Theme</a>
+        
+        <a href="/evaluations/{{ consultation_id }}/questions/" 
+           class="govuk-button govuk-button--secondary">Back to Questions</a>
+      </div>
+
+      {% if themes %}
+        <h2 class="govuk-heading-s govuk-!-margin-top-6">Current Themes</h2>
+        
+        {% for theme in themes %}
+          <div class="govuk-summary-card govuk-!-margin-bottom-4">
+            <div class="govuk-summary-card__title-wrapper">
+              <h2 class="govuk-summary-card__title">{{ theme.name }}</h2>
+              <ul class="govuk-summary-card__actions">
+                <li class="govuk-summary-card__action">
+                  <a class="govuk-link" href="/evaluations/{{ consultation_id }}/questions/{{ question_id }}/themes/{{ theme.id }}/edit/">
+                    Edit<span class="govuk-visually-hidden"> theme {{ theme.name }}</span>
+                  </a>
+                </li>
+                <li class="govuk-summary-card__action">
+                  <a class="govuk-link govuk-link--destructive" href="/evaluations/{{ consultation_id }}/questions/{{ question_id }}/themes/{{ theme.id }}/delete/">
+                    Delete<span class="govuk-visually-hidden"> theme {{ theme.name }}</span>
+                  </a>
+                </li>
+              </ul>
+            </div>
+            <div class="govuk-summary-card__content">
+              <dl class="govuk-summary-list">
+                <div class="govuk-summary-list__row">
+                  <dt class="govuk-summary-list__key">Description</dt>
+                  <dd class="govuk-summary-list__value">{{ theme.description if theme.description else "No description provided" }}</dd>
+                </div>
+              </dl>
+            </div>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div class="govuk-inset-text govuk-!-margin-top-6">
+          <p>No themes have been created for this question yet.</p>
+          <p>Click "Add New Theme" to create your first theme.</p>
+        </div>
+      {% endif %}
+    </div>
+
+  </div>
+{% endblock %}

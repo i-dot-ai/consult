@@ -31,6 +31,7 @@ from .serializers import (
     QuestionSerializer,
     RespondentSerializer,
     ResponseSerializer,
+    SimpleResponseSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
     UserSerializer,
@@ -123,6 +124,39 @@ class QuestionThemeViewSet(ModelViewSet):
         question_uuid = self.kwargs["question_pk"]
         return models.Theme.objects.filter(question_id=question_uuid)
 
+    @action(detail=True, methods=["get"], url_path="responses")
+    def responses(self, request, pk=None, question_pk=None, consultation_pk=None):
+        """Get responses for this theme using vector similarity"""
+        theme = self.get_object()
+
+        try:
+            # Get embedding for the theme name
+            embedded_query = embed_text(theme.name)
+            distance = CosineDistance("embedding", embedded_query)
+
+            # Get closest responses for this theme
+            closest_responses = (
+                models.Response.objects.filter(question_id=question_pk)
+                .annotate(distance=distance)
+                .order_by("distance")[:10]
+            )
+
+            # Use SimpleResponseSerializer to serialize the responses
+            serializer = SimpleResponseSerializer(closest_responses, many=True)
+            return Response(serializer.data)
+
+        except Exception as e:
+            return Response(
+                {
+                    "status": "error",
+                    "message": str(e),
+                    "theme_name": theme.name,
+                    "responses": [],
+                    "count": 0,
+                },
+                status=500,
+            )
+
 
 class QuestionViewSet(ReadOnlyModelViewSet):
     serializer_class = QuestionSerializer
@@ -152,59 +186,6 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         serializer.is_valid()
 
         return Response(serializer.data)
-
-    @action(detail=True, methods=["post"], url_path="theme-responses")
-    def theme_responses(self, request, pk=None, consultation_pk=None):
-        """Get responses for a list of themes using vector similarity"""
-        question = self.get_object()
-
-        # Get list of theme names from request data
-        themes = request.data.get("themes", [])
-
-        if not themes:
-            return Response({"status": "error", "message": "No themes provided"}, status=400)
-
-        # Process each theme and get responses
-        all_responses = {}
-
-        for theme in themes:
-            theme_name = theme.get("name", "").strip()
-            if not theme_name:
-                continue
-
-            try:
-                # Get embedding for the theme name
-                embedded_query = embed_text(theme_name)
-                distance = CosineDistance("embedding", embedded_query)
-
-                # Get closest responses for this theme
-                closest_responses = (
-                    models.Response.objects.filter(question=question)
-                    .annotate(distance=distance)
-                    .order_by("distance")[:10]
-                    .values("free_text", "distance")
-                )
-
-                # Convert to list for JSON serialization
-                response_list = [
-                    {
-                        "free_text": response["free_text"],
-                        "distance": float(response["distance"]) if response["distance"] else None,
-                    }
-                    for response in closest_responses
-                ]
-
-                all_responses[theme_name] = {
-                    "responses": response_list,
-                    "count": len(response_list),
-                }
-
-            except Exception as e:
-                all_responses[theme_name] = {"error": str(e), "responses": [], "count": 0}
-
-        return Response(
-            {"status": "success", "theme_responses": all_responses, "total_themes": len(themes)}
-        )
 
 
 class BespokeResultsSetPagination(PageNumberPagination):

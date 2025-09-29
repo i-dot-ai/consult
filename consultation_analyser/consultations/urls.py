@@ -15,7 +15,7 @@ from .api.views import (
     get_git_sha,
     verify_magic_link,
 )
-from .views import answers, pages, questions, root, sessions
+from .views import answers, pages, questions, root, sessions, themes
 
 router = routers.DefaultRouter()
 router.register("consultations", ConsultationViewSet, basename="consultations")
@@ -66,10 +66,26 @@ urlpatterns = [
         questions.index,
         name="review_free_text_questions",
     ),
+    # Theme management
     path(
-        "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/annotate/",
-        questions.annotate,
-        name="annotate_question",
+        "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/themes/",
+        themes.theme_list,
+        name="theme_list",
+    ),
+    path(
+        "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/themes/new/",
+        themes.theme_detail,
+        name="theme_create",
+    ),
+    path(
+        "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/themes/<uuid:theme_id>/edit/",
+        themes.theme_detail,
+        name="theme_edit",
+    ),
+    path(
+        "evaluations/<uuid:consultation_id>/questions/<uuid:question_id>/themes/<uuid:theme_id>/delete/",
+        themes.theme_delete,
+        name="theme_delete",
     ),
     # authentication
     path("sign-in/", sessions.new, name="sign_in"),

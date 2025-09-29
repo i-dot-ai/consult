@@ -1,0 +1,190 @@
+{% extends "base.html" %}
+{%- from "govuk_frontend_jinja/components/breadcrumbs/macro.html" import govukBreadcrumbs -%}
+{%- from 'govuk_frontend_jinja/components/button/macro.html' import govukButton -%}
+{%- from 'govuk_frontend_jinja/components/input/macro.html' import govukInput -%}
+{%- from 'govuk_frontend_jinja/components/textarea/macro.html' import govukTextarea -%}
+
+{% block content %}
+  <h1 class="govuk-heading-m">{{ "Edit Theme" if theme else "Add New Theme" }}</h1>
+  {{ govukBreadcrumbs({
+    "items": [
+      {
+        "text": "Back to your consultations",
+        "href": "/consultations",
+      },
+      {
+        "text": "Questions",
+        "href": "/evaluations/" + consultation_id|string + "/questions/",
+      },
+      {
+        "text": "Themes",
+        "href": "/evaluations/" + consultation_id|string + "/questions/" + question_id|string + "/themes/",
+      }
+    ]
+  }) }}
+
+  <div class="govuk-grid-row">
+    <div class="govuk-grid-column-full">
+      <div class="govuk-section-break govuk-section-break--m"></div>
+
+      <h2 class="govuk-heading-s">Question Text</h2>
+      <div class="govuk-inset-text">{{ question.text }}</div>
+      <div class="govuk-section-break govuk-section-break--m"></div>
+
+      <form method="post">
+        <input type="hidden" name="csrfmiddlewaretoken" value="{{ csrf_token }}">
+
+        <div class="govuk-form-group">
+          {{ govukInput({
+            "label": {
+              "text": "Theme Name",
+              "classes": "govuk-label--s"
+            },
+            "hint": {
+              "text": "Enter a descriptive name for this theme"
+            },
+            "id": "name",
+            "name": "name",
+            "value": theme.name if theme else "",
+            "classes": "govuk-!-width-full"
+          }) }}
+        </div>
+
+        <div class="govuk-form-group">
+          {{ govukTextarea({
+            "label": {
+              "text": "Theme Description",
+              "classes": "govuk-label--s"
+            },
+            "hint": {
+              "text": "Provide a detailed description of what this theme represents"
+            },
+            "id": "description",
+            "name": "description",
+            "value": theme.description if theme else "",
+            "rows": 5
+          }) }}
+        </div>
+
+        <div class="govuk-button-group">
+          {{ govukButton({
+            "text": "Save Theme",
+            "type": "submit"
+          }) }}
+
+          <a href="/evaluations/{{ consultation_id }}/questions/{{ question_id }}/themes/"
+             class="govuk-button govuk-button--secondary">Cancel</a>
+        </div>
+      </form>
+
+      {% if theme %}
+      <div class="govuk-section-break govuk-section-break--l"></div>
+
+      <div class="govuk-form-group">
+        <h2 class="govuk-heading-s">Example Responses</h2>
+        <p class="govuk-hint">See responses that might be related to this theme</p>
+
+        <button type="button" id="see-responses-btn" class="govuk-button govuk-button--secondary">
+          See Example Responses
+        </button>
+
+        <div id="responses-container" style="display: none; margin-top: 20px;">
+          <h3 class="govuk-heading-s">Related Responses</h3>
+          <div id="responses-list">
+            <!-- Responses will be loaded here -->
+          </div>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+  </div>
+
+  {% if theme %}
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      const seeResponsesBtn = document.getElementById('see-responses-btn');
+      const responsesContainer = document.getElementById('responses-container');
+      const responsesList = document.getElementById('responses-list');
+      let isShowing = false;
+
+      seeResponsesBtn.addEventListener('click', function() {
+        if (isShowing) {
+          // Hide responses
+          responsesContainer.style.display = 'none';
+          seeResponsesBtn.textContent = 'See Example Responses';
+          isShowing = false;
+        } else {
+          // Show responses
+          loadExampleResponses();
+        }
+      });
+
+      function loadExampleResponses() {
+        // Show loading state
+        seeResponsesBtn.textContent = 'Loading...';
+        seeResponsesBtn.disabled = true;
+
+        const consultationId = '{{ consultation_id }}';
+        const questionId = '{{ question_id }}';
+        const themeId = '{{ theme.id }}';
+        const apiUrl = `/api/consultations/${consultationId}/questions/${questionId}/themes/${themeId}/responses/`;
+
+        fetch(apiUrl, {
+          method: 'GET',
+          headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+          }
+        })
+        .then(response => response.json())
+        .then(data => {
+          displayResponses(data);
+        })
+        .catch(error => {
+          console.error('Error getting responses:', error);
+          alert('Error getting responses. Please try again.');
+        })
+        .finally(() => {
+          seeResponsesBtn.disabled = false;
+        });
+      }
+
+      function displayResponses(responses) {
+        // Clear previous responses
+        responsesList.innerHTML = '';
+
+        if (!responses || responses.length === 0) {
+          responsesList.innerHTML = '<p class="govuk-body">No similar responses found for this theme.</p>';
+        } else {
+          // Create list of responses
+          const responseList = document.createElement('ol');
+          responseList.className = 'govuk-list govuk-list--number';
+
+          responses.forEach(response => {
+            const listItem = document.createElement('li');
+            listItem.className = 'govuk-!-margin-bottom-3';
+            listItem.innerHTML = `<p class="govuk-body-s" style="background: #f3f2f1; padding: 10px; border-radius: 3px;">${response.free_text}</p>`;
+            responseList.appendChild(listItem);
+          });
+
+          responsesList.appendChild(responseList);
+
+          // Add count information
+          const countInfo = document.createElement('p');
+          countInfo.className = 'govuk-body-s govuk-!-margin-top-3';
+          countInfo.style.color = '#626a6e';
+          countInfo.textContent = `Showing ${responses.length} example responses`;
+          responsesList.appendChild(countInfo);
+        }
+
+        // Show the responses container
+        responsesContainer.style.display = 'block';
+
+        // Update button text
+        seeResponsesBtn.textContent = 'Hide Example Responses';
+        isShowing = true;
+      }
+    });
+  </script>
+  {% endif %}
+{% endblock %}

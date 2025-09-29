@@ -165,6 +165,12 @@ class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
         fields = ["id", "assigned_by", "name", "description", "key"]
 
 
+class SimpleResponseSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Response
+        fields = ["id", "free_text"]
+
+
 class ResponseSerializer(serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
     respondent_id = serializers.UUIDField(source="respondent.id", read_only=True)
