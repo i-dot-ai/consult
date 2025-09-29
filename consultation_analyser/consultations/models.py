@@ -319,7 +319,7 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
     @property
     def is_edited(self) -> bool:
         """has this annotation ever been changed?"""
-        if self.history.exists():
+        if self.history.count() > 1:
             return True
 
         # have associated themes ever been changed by a human?
