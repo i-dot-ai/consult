@@ -259,6 +259,26 @@
     hasMorePages = true;
   }
 
+  const resetFilters = () => {
+    themeFilters.reset();
+    demoFilters.reset();
+    multiAnswerFilters.reset();
+    evidenceRich = false;
+    searchValue = "";
+    flaggedOnly = false;
+  };
+
+  const anyFilterApplied = () => {
+    return Boolean(
+      themeFilters.applied() ||
+        demoFilters.applied() ||
+        multiAnswerFilters.applied() ||
+        evidenceRich ||
+        searchValue ||
+        flaggedOnly,
+    );
+  };
+
   const setEvidenceRich = (value: boolean) => (evidenceRich = value);
 
   $effect(() => {
@@ -416,6 +436,7 @@
         {searchValue}
         {sortAscending}
         setActiveTab={(newTab) => (activeTab = newTab)}
+        anyFilterApplied={anyFilterApplied()}
       />
     {:else if activeTab === TabNames.ResponseAnalysis}
       <ResponseAnalysis
@@ -445,6 +466,8 @@
         isThemesLoading={$isThemeAggrLoading}
         {flaggedOnly}
         setFlaggedOnly={(newValue) => (flaggedOnly = newValue)}
+        anyFilterApplied={anyFilterApplied()}
+        {resetFilters}
       />
     {/if}
   </TabView>

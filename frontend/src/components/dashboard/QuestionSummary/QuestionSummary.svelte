@@ -23,7 +23,11 @@
   import Alert from "../../Alert.svelte";
   import FilterAlt from "../../svg/material/FilterAlt.svelte";
 
-  import { themeFilters, demoFilters } from "../../../global/state.svelte.ts";
+  import {
+    themeFilters,
+    demoFilters,
+    multiAnswerFilters,
+  } from "../../../global/state.svelte.ts";
   import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
   import MultiChoice from "../MultiChoice/MultiChoice.svelte";
   import CsvDownload from "../../CsvDownload/CsvDownload.svelte";
@@ -43,6 +47,7 @@
     searchValue: string;
     evidenceRich: boolean;
     setActiveTab: (newTab: TabNames) => void;
+    anyFilterApplied: boolean;
   }
   let {
     showThemes = true,
@@ -58,6 +63,7 @@
     evidenceRich = false,
     sortAscending = true,
     setActiveTab = () => {},
+    anyFilterApplied = false,
   }: Props = $props();
 </script>
 
@@ -130,10 +136,10 @@
               </div>
             </TitleRow>
 
-            {#if demoFilters.applied() || themeFilters.applied() || evidenceRich || searchValue}
-              <div transition:fly={{ x: 300 }} class="my-4">
-                <Alert>
-                  <FilterAlt slot="icon" />
+          {#if anyFilterApplied}
+            <div transition:fly={{ x: 300 }} class="my-4">
+              <Alert>
+                <FilterAlt slot="icon" />
 
                   <div
                     class="flex justify-between items-center gap-4 flex-wrap"
