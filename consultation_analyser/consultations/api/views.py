@@ -99,7 +99,7 @@ class ThemeViewSet(ReadOnlyModelViewSet):
 class RespondentViewSet(ModelViewSet):
     serializer_class = RespondentSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
-    filterset_fields = ["themefinder_id"]
+    filterset_fields = {"themefinder_id": ["exact", "gte", "lte"]}
     http_method_names = ["get", "patch"]
 
     def get_queryset(self):
