@@ -9,7 +9,6 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
-from pgvector.django import CosineDistance
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAuthenticated
@@ -17,7 +16,6 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 from rest_framework_simplejwt.tokens import AccessToken
 
-from ...embeddings import embed_text
 from .. import models
 from ..views.sessions import send_magic_link_if_email_exists
 from .filters import HybridSearchFilter, ResponseFilter
@@ -31,7 +29,6 @@ from .serializers import (
     QuestionSerializer,
     RespondentSerializer,
     ResponseSerializer,
-    SimpleResponseSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
     UserSerializer,
@@ -123,26 +120,6 @@ class QuestionThemeViewSet(ModelViewSet):
     def get_queryset(self):
         question_uuid = self.kwargs["question_pk"]
         return models.Theme.objects.filter(question_id=question_uuid)
-
-    @action(detail=True, methods=["get"], url_path="responses")
-    def responses(self, request, pk=None, question_pk=None, consultation_pk=None):
-        """Get responses for this theme using vector similarity"""
-        theme = self.get_object()
-
-        # Get embedding for the theme name
-        embedded_query = embed_text(theme.name)
-        distance = CosineDistance("embedding", embedded_query)
-
-        # Get closest responses for this theme
-        closest_responses = (
-            models.Response.objects.filter(question_id=question_pk)
-            .annotate(distance=distance)
-            .order_by("distance")[:10]
-        )
-
-        # Use SimpleResponseSerializer to serialize the responses
-        serializer = SimpleResponseSerializer(closest_responses, many=True)
-        return Response(serializer.data)
 
 
 class QuestionViewSet(ReadOnlyModelViewSet):

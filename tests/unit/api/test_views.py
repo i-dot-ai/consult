@@ -1385,30 +1385,6 @@ def test_question_themes_delete(client, consultation_user_token, theme_a):
 
 
 @pytest.mark.django_db
-def test_question_themes_responses(client, consultation_user_token, free_text_question, theme_a):
-    response_1 = ResponseFactory(question=free_text_question)
-
-    url = reverse(
-        "question-theme-responses",
-        kwargs={
-            "consultation_pk": free_text_question.consultation.id,
-            "question_pk": free_text_question.id,
-            "pk": theme_a.id,
-        },
-    )
-
-    response = client.get(
-        url,
-        headers={
-            "Authorization": f"Bearer {consultation_user_token}",
-        },
-    )
-    assert response.status_code == 200
-    assert len(response.json()) == 1
-    assert response.json()[0]["id"] == str(response_1.id)
-
-
-@pytest.mark.django_db
 def test_get_responses_filtered_by_respondent(
     client,
     consultation,
