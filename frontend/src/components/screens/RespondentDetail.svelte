@@ -92,13 +92,13 @@
   let prevRespondent = $derived(
     $respondentsData?.results?.find(
       (respondent: Respondent) =>
-        respondent.themefinder_id === currRespondent.themefinder_id - 1,
+        respondent?.themefinder_id === currRespondent?.themefinder_id - 1,
     ) ?? null,
   );
   let nextRespondent = $derived(
     $respondentsData?.results?.find(
       (respondent: Respondent) =>
-        respondent.themefinder_id === currRespondent.themefinder_id + 1,
+        respondent?.themefinder_id === currRespondent?.themefinder_id + 1,
     ) ?? null,
   );
 </script>
