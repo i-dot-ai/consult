@@ -2,11 +2,13 @@
   import clsx from "clsx";
 
   import { fade } from "svelte/transition";
+  import type { HTMLInputTypeAttribute } from "svelte/elements";
 
   import Button from "../Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Close from "../../svg/material/Close.svelte";
 
+  export let inputType: HTMLInputTypeAttribute = "text";
   export let id: string = "";
   export let label: string = "";
   export let hideLabel: boolean = false;
@@ -32,7 +34,7 @@
       "focus:outline-yellow-300",
       variant === "search" && "pr-4",
     ])}
-    type="text"
+    type={inputType}
     {id}
     {placeholder}
     {value}

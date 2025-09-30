@@ -44,6 +44,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/consultations.*/,
     // /^\/evaluations.*/,
     /^\/support\/users[/]?$/,
+    /^\/support\/users\/new[/]?$/,
     /^\/design.*/,
     /^\/_astro.*/,
   ];
