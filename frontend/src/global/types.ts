@@ -152,3 +152,11 @@ export interface DemoOptionsResponseItem {
   count: number;
 }
 export type DemoOptionsResponse = DemoOptionsResponseItem[];
+
+export type User = {
+  id: number;
+  email: string;
+  has_dashboard_access: boolean;
+  is_staff: boolean;
+  created_at: string;
+};

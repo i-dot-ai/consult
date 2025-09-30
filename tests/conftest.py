@@ -315,7 +315,7 @@ def theme_b(free_text_question):
 
 @pytest.fixture()
 def consultation_user(consultation):
-    user = UserFactory(has_dashboard_access=True)
+    user = UserFactory(has_dashboard_access=True, is_staff=True)
     consultation.users.add(user)
     yield user
     user.delete()
@@ -385,6 +385,20 @@ def respondent_1(consultation):
 @pytest.fixture
 def respondent_2(consultation):
     respondent = Respondent.objects.create(consultation=consultation, themefinder_id=2)
+    yield respondent
+    respondent.delete()
+
+
+@pytest.fixture
+def respondent_3(consultation):
+    respondent = Respondent.objects.create(consultation=consultation, themefinder_id=3)
+    yield respondent
+    respondent.delete()
+
+
+@pytest.fixture
+def respondent_4(consultation):
+    respondent = Respondent.objects.create(consultation=consultation, themefinder_id=4)
     yield respondent
     respondent.delete()
 

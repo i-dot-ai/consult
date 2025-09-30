@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 from uuid import uuid4
 
@@ -6,6 +7,7 @@ import pytest
 from django.test import override_settings
 from django.urls import reverse
 
+from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import ResponseAnnotation, ResponseAnnotationTheme
 from consultation_analyser.factories import (
     QuestionFactory,
@@ -1355,6 +1357,33 @@ def test_get_respondent_query_themefinder_id(
 
 
 @pytest.mark.django_db
+def test_get_respondent_query_themefinder_range(
+    client,
+    consultation,
+    respondent_1,
+    respondent_2,
+    respondent_3,
+    respondent_4,
+    consultation_user_token,
+):
+    url = reverse(
+        "respondent-list",
+        kwargs={"consultation_pk": consultation.id},
+    )
+
+    response = client.get(
+        url,
+        query_params={"themefinder_id__gte": 2, "themefinder_id__lte": 4},
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["count"] == 3
+    actual_respondents = {x["id"] for x in response.json()["results"]}
+    expected_respondents = {str(respondent_2.id), str(respondent_3.id), str(respondent_4.id)}
+    assert actual_respondents == expected_respondents
+
+
+@pytest.mark.django_db
 def test_get_respondent_detail(
     client, consultation, respondent_1, respondent_2, consultation_user_token
 ):
@@ -1426,3 +1455,88 @@ def test_patch_respondent_detail_read_only_field_ignored(
     assert response.json()["themefinder_id"] == 1
     respondent_1.refresh_from_db()
     assert respondent_1.themefinder_id == 1
+
+
+@pytest.mark.django_db
+def test_users_list(client, consultation_user_token):
+    url = reverse("user-list")
+    response = client.get(
+        url,
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["count"] == 3
+
+
+@pytest.mark.django_db
+def test_users_detail(client, consultation_user, consultation_user_token):
+    url = reverse(
+        "user-detail",
+        kwargs={"pk": consultation_user.pk},
+    )
+    response = client.get(
+        url,
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["email"] == consultation_user.email
+
+
+@pytest.mark.django_db
+def test_users_delete(client, consultation_user, consultation_user_token):
+    url = reverse(
+        "user-detail",
+        kwargs={"pk": consultation_user.pk},
+    )
+    response = client.delete(
+        url,
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 204
+    assert not User.objects.filter(pk=consultation_user.pk).exists()
+
+
+@pytest.mark.django_db
+def test_users_create(client, consultation_user_token):
+    assert not User.objects.filter(email="test@example.com").exists()
+    url = reverse("user-list")
+    response = client.post(
+        url,
+        data=json.dumps({"email": "test@example.com"}),
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 201
+    assert User.objects.filter(email="test@example.com").exists()
+
+
+@pytest.mark.django_db
+def test_users_patch(client, consultation_user, consultation_user_token):
+    assert consultation_user.has_dashboard_access is True
+    url = reverse(
+        "user-detail",
+        kwargs={"pk": consultation_user.pk},
+    )
+    response = client.patch(
+        url,
+        data=json.dumps({"has_dashboard_access": False}),
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 200
+    assert response.json()["has_dashboard_access"] is False
+    consultation_user.refresh_from_db()
+    assert consultation_user.has_dashboard_access is False
