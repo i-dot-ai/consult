@@ -19,9 +19,11 @@ from consultation_analyser.consultations.models import (
 
 
 class UserSerializer(serializers.ModelSerializer):
+    has_dashboard_access = serializers.BooleanField(required=False)
+
     class Meta:
         model = User
-        fields = ["email", "has_dashboard_access"]
+        fields = ["id", "email", "has_dashboard_access", "is_staff", "created_at"]
 
 
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
@@ -71,9 +73,11 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
         read_only=True,
     )
 
+    users = serializers.SlugRelatedField(slug_field="email", many=True, queryset=User.objects.all())
+
     class Meta:
         model = Consultation
-        fields = ["id", "title", "slug", "questions"]
+        fields = ["id", "title", "slug", "questions", "users"]
 
 
 class DemographicOptionsSerializer(serializers.Serializer):
