@@ -9,6 +9,7 @@ from .api.views import (
     RespondentViewSet,
     ResponseViewSet,
     ThemeViewSet,
+    UserViewSet,
     generate_magic_link,
     get_current_user,
     get_git_sha,
@@ -18,6 +19,8 @@ from .views import answers, pages, questions, root, sessions
 
 router = routers.DefaultRouter()
 router.register("consultations", ConsultationViewSet, basename="consultations")
+router.register("users", UserViewSet, basename="user")
+
 
 consultations_router = NestedDefaultRouter(router, "consultations", lookup="consultation")
 
