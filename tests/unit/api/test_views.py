@@ -7,6 +7,7 @@ import pytest
 from django.test import override_settings
 from django.urls import reverse
 
+from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
     ResponseAnnotation,
     ResponseAnnotationTheme,
