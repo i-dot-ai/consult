@@ -35,9 +35,10 @@
   interface Props {
     consultationId: string;
     respondentId: string;
+    themefinderId: number;
   }
 
-  let { consultationId = "", respondentId = "" }: Props = $props();
+  let { consultationId = "", respondentId = "", themefinderId = 1 }: Props = $props();
 
   const {
     load: loadRespondents,
@@ -76,7 +77,10 @@
 
   $effect(() => {
     loadConsultation(getApiConsultationUrl(consultationId));
-    loadRespondents(getApiConsultationRespondentsUrl(consultationId));
+    loadRespondents(
+      getApiConsultationRespondentsUrl(consultationId)
+      + `?themefinder_id__gte=${themefinderId - 1}&themefinder_id__lt=${themefinderId + 1}`
+    );
     loadQuestions(getQuestionsByRespondentUrl(consultationId, respondentId));
     loadAnswers(
       `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
@@ -105,9 +109,7 @@
 
 <section>
   <RespondentTopbar
-    title={`Respondent ${
-      $isRepondentsLoading ? "loading..." : currRespondent?.themefinder_id
-    }`}
+    title={`Respondent ${themefinderId || "not found"}`}
     backText={"Back to Analysis"}
   >
     <Button

@@ -168,7 +168,7 @@
                   location.href = getRespondentDetailUrl(
                     consultationId,
                     respondentId,
-                  );
+                  ) + `?themefinder_id=${respondentDisplayId}`;
                 }}
               >
                 <MaterialIcon color="fill-neutral-500" size="0.8rem">
