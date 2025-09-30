@@ -119,7 +119,7 @@
         (location.href = getRespondentDetailUrl(
           consultationId,
           prevRespondent.id,
-        ))}
+        ) + `?themefinder_id=${themefinderId - 1}`)}
     >
       <div class="rotate-180">
         <MaterialIcon color="fill-neutral-700">
@@ -137,7 +137,7 @@
         (location.href = getRespondentDetailUrl(
           consultationId,
           nextRespondent.id,
-        ))}
+        ) + `?themefinder_id=${themefinderId + 1}`)}
     >
       <span class="ml-2 my-[0.1rem]">Next Respondent</span>
 
