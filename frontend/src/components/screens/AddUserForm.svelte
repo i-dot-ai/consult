@@ -8,6 +8,7 @@
   let email: string = "";
   let errorMessage: string = "";
   let loading: boolean = false;
+  let hasDashboardAccess: boolean = true;
 
   const setEmail = (inputtedEmail: string) => {
     email = inputtedEmail;
@@ -19,7 +20,7 @@
     try {
       const res = await fetch("/api/users/", {
         method: "POST",
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, has_dashboard_access: hasDashboardAccess }),
         headers: { "Content-Type": "application/json" },
       });
 
@@ -45,12 +46,30 @@
 >
 
   <TextInput
-    id={"email"}
-    label={"Email address"}
+    id="email"
+    label="Email address"
     inputType="email"
     value={email}
     setValue={setEmail}
   />
+
+  <label class="flex items-center gap-2">
+    <!--
+      This checkbox has a lot of the default styles which makes it 
+      look a bit inconsistent with the rest of the app. Since it's
+      only internal users that access the support console, we can
+      revisit this later if needed.
+     -->
+    <input
+      id="canAccessDashboards"
+      type="checkbox"
+      checked={hasDashboardAccess}
+      on:change={(e) => hasDashboardAccess = (e.target as HTMLInputElement).checked}
+      disabled={loading}
+      class="w-6 h-6 focus:ring-2 focus:ring-yellow-300"
+    />
+    Can access dashboards
+  </label>
 
   {#if errorMessage}
     <p class="text-sm text-red-500">{`Error: ${errorMessage}`}</p>
