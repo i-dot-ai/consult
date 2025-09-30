@@ -19,9 +19,11 @@ from consultation_analyser.consultations.models import (
 
 
 class UserSerializer(serializers.ModelSerializer):
+    has_dashboard_access = serializers.BooleanField(required=False)
+
     class Meta:
         model = User
-        fields = ["email", "has_dashboard_access"]
+        fields = ["id", "email", "has_dashboard_access", "is_staff", "created_at"]
 
 
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
@@ -71,9 +73,11 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
         read_only=True,
     )
 
+    users = serializers.SlugRelatedField(slug_field="email", many=True, queryset=User.objects.all())
+
     class Meta:
         model = Consultation
-        fields = ["id", "title", "slug", "questions"]
+        fields = ["id", "title", "slug", "questions", "users"]
 
 
 class DemographicOptionsSerializer(serializers.Serializer):
@@ -173,6 +177,7 @@ class ResponseSerializer(serializers.ModelSerializer):
     human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
     is_flagged = serializers.BooleanField(read_only=True)
     is_edited = serializers.BooleanField(source="annotation.is_edited")
+    question_id = serializers.UUIDField()
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
@@ -210,6 +215,7 @@ class ResponseSerializer(serializers.ModelSerializer):
             "id",
             "identifier",
             "respondent_id",
+            "question_id",
             "free_text_answer_text",
             "demographic_data",
             "themes",
