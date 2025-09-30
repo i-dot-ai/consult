@@ -12,6 +12,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     // /^\/sign-out[\/]?$/,
     /^\/consultations.*/,
     /^\/design.*/,
+    /^\/support.*/,
   ];
 
   for (const protectedRoute of protectedRoutes) {
@@ -26,27 +27,28 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const backendUrl = getBackendUrl(url.hostname);
   const fullBackendUrl = path.join(backendUrl, url.pathname) + url.search;
 
-    // skip as new pages are moved to astro
-    const toSkip = [
-        /^\/$/,
-        /^\/data-sharing[\/]?$/,
-        /^\/get-involved[\/]?$/,
-        /^\/how-it-works[\/]?$/,
-        /^\/privacy[\/]?$/,
-        /^\/sign-in[\/]?$/,
-        /^\/sign-out[\/]?$/,
-        /^\/accounts\/oidc\/gds\/login[\/]?$/,
-        /^\/accounts\/oidc\/gds\/login\/callback[\/]?$/,
-        /^\/oauth\/success[\/]?$/,
-        /^\/api\/astro\/.*/,
-        /^\/api\/health[\/]?$/,
-        /^\/health[\/]?$/,
-        /^\/.well-known\/.*/,
-        /^\/consultations.*/,
-        // /^\/evaluations.*/,
-        /^\/design.*/,
-        /^\/_astro.*/,
-    ];
+  // skip as new pages are moved to astro
+  const toSkip = [
+    /^\/$/,
+    /^\/data-sharing[/]?$/,
+    /^\/get-involved[/]?$/,
+    /^\/how-it-works[/]?$/,
+    /^\/privacy[/]?$/,
+    /^\/sign-in[/]?$/,
+    /^\/sign-out[/]?$/,
+    /^\/accounts\/oidc\/gds\/login[\/]?$/,
+    /^\/accounts\/oidc\/gds\/login\/callback[\/]?$/,
+    /^\/oauth\/success[\/]?$/,
+    /^\/api\/astro\/.*/,
+    /^\/api\/health[/]?$/,
+    /^\/health[/]?$/,
+    /^\/.well-known\/.*/,
+    /^\/consultations.*/,
+    // /^\/evaluations.*/,
+    /^\/support\/users[/]?$/,
+    /^\/design.*/,
+    /^\/_astro.*/,
+  ];
 
   for (const skipPattern of toSkip) {
     if (skipPattern.test(context.url.pathname)) {

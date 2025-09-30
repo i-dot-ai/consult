@@ -7,7 +7,7 @@ from django.shortcuts import get_object_or_404
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.pagination import PageNumberPagination
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
@@ -38,10 +38,11 @@ def get_current_user(request):
     return Response(serializer.data)
 
 
-class ConsultationViewSet(ReadOnlyModelViewSet):
+class ConsultationViewSet(ModelViewSet):
     serializer_class = ConsultationSerializer
     permission_classes = [IsAuthenticated]
     filterset_fields = ["slug"]
+    http_method_names = ["get", "patch"]
 
     def get_queryset(self):
         return models.Consultation.objects.filter(users=self.request.user).order_by("-created_at")
@@ -235,6 +236,13 @@ class ResponseViewSet(ModelViewSet):
             response.annotation.flagged_by.add(request.user)
         response.annotation.save()
         return Response()
+
+
+class UserViewSet(ModelViewSet):
+    serializer_class = UserSerializer
+    permission_classes = [IsAdminUser]
+    pagination_class = PageNumberPagination
+    queryset = models.User.objects.all()
 
 
 @api_view(["GET"])
