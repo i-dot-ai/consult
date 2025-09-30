@@ -390,6 +390,20 @@ def respondent_2(consultation):
 
 
 @pytest.fixture
+def respondent_3(consultation):
+    respondent = Respondent.objects.create(consultation=consultation, themefinder_id=3)
+    yield respondent
+    respondent.delete()
+
+
+@pytest.fixture
+def respondent_4(consultation):
+    respondent = Respondent.objects.create(consultation=consultation, themefinder_id=4)
+    yield respondent
+    respondent.delete()
+
+
+@pytest.fixture
 def free_text_response(free_text_question, respondent_1):
     response = Response.objects.create(question=free_text_question, respondent=respondent_1)
     yield response

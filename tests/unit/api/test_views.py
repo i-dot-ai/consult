@@ -1357,6 +1357,33 @@ def test_get_respondent_query_themefinder_id(
 
 
 @pytest.mark.django_db
+def test_get_respondent_query_themefinder_range(
+    client,
+    consultation,
+    respondent_1,
+    respondent_2,
+    respondent_3,
+    respondent_4,
+    consultation_user_token,
+):
+    url = reverse(
+        "respondent-list",
+        kwargs={"consultation_pk": consultation.id},
+    )
+
+    response = client.get(
+        url,
+        query_params={"themefinder_id__gte": 2, "themefinder_id__lte": 4},
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["count"] == 3
+    actual_respondents = {x["id"] for x in response.json()["results"]}
+    expected_respondents = {str(respondent_2.id), str(respondent_3.id), str(respondent_4.id)}
+    assert actual_respondents == expected_respondents
+
+
+@pytest.mark.django_db
 def test_get_respondent_detail(
     client, consultation, respondent_1, respondent_2, consultation_user_token
 ):
