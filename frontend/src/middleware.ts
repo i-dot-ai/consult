@@ -7,7 +7,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const accessToken = context.cookies.get("access")?.value;
   const url = context.url;
 
-  // 404 if not logged in
+  // Redirect to sign-in if not logged in
   const protectedRoutes = [
     // /^\/sign-out[\/]?$/,
     /^\/consultations.*/,
@@ -20,7 +20,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       protectedRoute.test(url.pathname) &&
       !context.cookies.get("access")?.value
     ) {
-      return new Response(null, { status: 404 });
+      return context.redirect("/sign-in");
     }
   }
 
