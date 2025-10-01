@@ -77,15 +77,19 @@
 
   $effect(() => {
     loadConsultation(getApiConsultationUrl(consultationId));
-    loadRespondents(
-      getApiConsultationRespondentsUrl(consultationId)
-      + `?themefinder_id__gte=${themefinderId - 1}&themefinder_id__lte=${themefinderId + 1}`
-    );
+    loadRespondents(getLoadRespondentsUrl());
     loadQuestions(getQuestionsByRespondentUrl(consultationId, respondentId));
     loadAnswers(
       `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
     );
   });
+
+  function getLoadRespondentsUrl() {
+    return (
+      getApiConsultationRespondentsUrl(consultationId)
+      + `?themefinder_id__gte=${themefinderId - 1}&themefinder_id__lte=${themefinderId + 1}`
+    )
+  }
 
   let currRespondent = $derived(
     $respondentsData?.results?.find(
@@ -166,7 +170,7 @@
             );
 
             // refresh respondents
-            loadRespondents(getApiConsultationRespondentsUrl(consultationId));
+            loadRespondents(getLoadRespondentsUrl());
           }}
         />
 
