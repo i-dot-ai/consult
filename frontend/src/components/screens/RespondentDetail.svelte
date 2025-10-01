@@ -79,7 +79,7 @@
     loadConsultation(getApiConsultationUrl(consultationId));
     loadRespondents(
       getApiConsultationRespondentsUrl(consultationId)
-      + `?themefinder_id__gte=${themefinderId - 1}&themefinder_id__lt=${themefinderId + 1}`
+      + `?themefinder_id__gte=${themefinderId - 1}&themefinder_id__lte=${themefinderId + 1}`
     );
     loadQuestions(getQuestionsByRespondentUrl(consultationId, respondentId));
     loadAnswers(
