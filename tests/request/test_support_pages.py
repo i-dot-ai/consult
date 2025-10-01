@@ -2,15 +2,17 @@ import pytest
 
 
 @pytest.mark.django_db
-def test_no_login_support_pages(client, consultation):
-    support_urls = [
-        "",
-        "sign-out/",
-        "consultations/",
-        f"consultations/{consultation.id}/",
-    ]
-    for url in support_urls:
-        full_url = f"/support/{url}"
-        response = client.get(full_url)
-        assert response.status_code == 302  # Redirect
-        assert response.url.endswith("/sign-in/")
+@pytest.mark.parametrize(
+    "url",
+    [
+        "/support/",
+        "/support/sign-out/",
+        "/support/consultations/",
+        "/support/consultations/{consultation_id}/",
+    ],
+)
+def test_no_login_support_pages(client, consultation, url):
+    full_url = url.format(consultation_id=consultation.id)
+    response = client.get(full_url)
+    assert response.status_code == 302
+    assert response.url.endswith("/accounts/oidc/gds/login/")

@@ -1,47 +1,10 @@
 from datetime import timedelta
-from uuid import uuid4
 
 import pytest
 from django.urls import reverse
-from magic_link.models import MagicLink
 from rest_framework_simplejwt.tokens import AccessToken
 
 from tests.utils import build_url
-
-
-@pytest.mark.django_db
-def test_token_magic_link(client, dashboard_user):
-    url = reverse("token-magic-link")
-    response = client.post(url, data={"email": dashboard_user.email})
-    assert response.status_code == 200
-    assert response.json() == {"message": "Magic link sent"}
-
-
-@pytest.mark.django_db
-def test_token_magic_link_fail(client, dashboard_user):
-    url = reverse("token-magic-link")
-    response = client.post(url, data={"user": dashboard_user.email})
-    assert response.status_code == 400
-    assert response.json() == {"detail": "Email required"}
-
-
-@pytest.mark.django_db
-def test_create_token(client, dashboard_user):
-    link = MagicLink.objects.create(user=dashboard_user)
-    url = reverse("create-token")
-    response = client.post(url, data={"token": link.token})
-    assert response.status_code == 200
-    assert response.json()["access"]
-    assert response.json()["sessionId"]
-
-
-@pytest.mark.django_db
-def test_create_token_fail(client):
-    token = uuid4()
-    url = reverse("create-token")
-    response = client.post(url, data={"token": token})
-    assert response.status_code == 404
-    assert response.json() == {"detail": "No MagicLink matches the given query."}
 
 
 @pytest.mark.django_db
