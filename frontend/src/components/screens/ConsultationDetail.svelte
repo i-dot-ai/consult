@@ -58,11 +58,11 @@
     );
   });
 
-  $: favQuestions = consultation?.questions.filter((question) =>
+  $: favQuestions = consultation?.results.filter((question) =>
     $favStore.includes(question.id),
   );
 
-  $: displayQuestions = consultation?.questions.filter((question) =>
+  $: displayQuestions = consultation?.results.filter((question) =>
     `Q${question.number}: ${question.question_text}`
       .toLocaleLowerCase()
       .includes(searchValue.toLocaleLowerCase()),
@@ -72,7 +72,7 @@
 <section class="my-8">
   <Metrics
     {consultationId}
-    questions={consultation?.questions || []}
+    questions={consultation?.results || []}
     {loading}
     demoOptionsLoading={$isDemoOptionsLoading}
     demoOptions={$demoOptionsData || []}
@@ -119,7 +119,7 @@
       <Help slot="icon" />
 
       <p slot="aside">
-        {consultation?.questions?.length || 0} questions
+        {consultation?.count || 0} questions
       </p>
     </TitleRow>
   </div>

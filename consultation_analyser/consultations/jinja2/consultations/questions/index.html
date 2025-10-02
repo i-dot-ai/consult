@@ -37,12 +37,13 @@
           document.title = consultation.title;
 
           // Now fetch questions with free text and themes
-          return consultation.questions;
+          return fetch(`/api/consultations/${consultationId}/questions`);
         })
+        .then(question_response => question_response.json())
         .then(question => {
           const questionsList = document.getElementById('questions-list');
 
-          question.forEach(question => {
+          question.results.forEach(question => {
             const listItem = document.createElement('li');
             listItem.className = 'con-question-list__item iai-display-flex govuk-!-padding-top-4 govuk-!-padding-bottom-4 govuk-!-padding-left-7 govuk-!-padding-right-7';
 
