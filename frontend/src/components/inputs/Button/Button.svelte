@@ -39,6 +39,7 @@
     variant === "ghost" ? "border-transparent" : "border-gray-300",
     "transition-colors",
     "duration-300",
+"self-start",
     "inline-flex",
     "gap-1",
     "items-center",
