@@ -15,7 +15,7 @@
     Consultation,
     DemoOptionsResponse,
   } from "../../global/types.ts";
-  import { getApiConsultationUrl } from "../../global/routes.ts";
+  import { getApiConsultationUrl, getApiQuestionsUrl } from "../../global/routes.ts";
   import { createFetchStore, favStore } from "../../global/stores.ts";
 
   export let consultationId: string = "";
@@ -53,16 +53,30 @@
       loading = false;
     }
 
+    loadQuestions(getApiQuestionsUrl(consultationId));
+
     loadDemoOptions(
       `/api/consultations/${consultationId}/demographic-options/`,
     );
   });
 
-  $: favQuestions = consultation?.results.filter((question) =>
+  const {
+    loading: isQuestionsLoading,
+    error: questionsError,
+    load: loadQuestions,
+    data: questionsData,
+  }: {
+    loading: Writable<boolean>;
+    error: Writable<string>;
+    load: Function;
+    data: Writable<any>;
+  } = createFetchStore();
+
+  $: favQuestions = $questionsData?.results?.filter((question) =>
     $favStore.includes(question.id),
   );
 
-  $: displayQuestions = consultation?.results.filter((question) =>
+  $: displayQuestions = $questionsData?.results?.filter((question) =>
     `Q${question.number}: ${question.question_text}`
       .toLocaleLowerCase()
       .includes(searchValue.toLocaleLowerCase()),
@@ -72,7 +86,7 @@
 <section class="my-8">
   <Metrics
     {consultationId}
-    questions={consultation?.results || []}
+    questions={$questionsData?.results || []}
     {loading}
     demoOptionsLoading={$isDemoOptionsLoading}
     demoOptions={$demoOptionsData || []}
@@ -119,7 +133,7 @@
       <Help slot="icon" />
 
       <p slot="aside">
-        {consultation?.count || 0} questions
+        {$questionsData?.results?.length || 0} questions
       </p>
     </TitleRow>
   </div>
