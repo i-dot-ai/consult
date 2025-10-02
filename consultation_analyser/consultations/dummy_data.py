@@ -4,7 +4,7 @@ from typing import Optional
 
 import yaml
 from django.conf import settings
-from django_rq import job
+from django_tasks import task
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.models import MultiChoiceAnswer
@@ -127,12 +127,16 @@ def create_dummy_consultation_from_yaml(
 
 
 # Will only be run occasionally to create dummy data - not in prod
-@job("default", timeout=2400)
+@task(priority=10, queue_name="default")
 def create_dummy_consultation_from_yaml_job(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
-    consultation: Optional[models.Consultation] = None,
+    consultation_id: Optional[str] = None,
 ):
+    consultation = None
+    if consultation_id:
+        consultation = models.Consultation.objects.get(id=consultation_id)
+
     create_dummy_consultation_from_yaml(
         file_path=file_path,
         number_respondents=number_respondents,

@@ -1,7 +1,7 @@
 import json
 
 from django.contrib import admin
-from django_rq import get_queue
+from django_tasks import task
 from simple_history.admin import SimpleHistoryAdmin
 
 from consultation_analyser.consultations.models import (
@@ -17,21 +17,20 @@ from consultation_analyser.consultations.models import (
     Theme,
 )
 from consultation_analyser.support_console.ingest import (
-    DEFAULT_TIMEOUT_SECONDS,
     create_embeddings_for_question,
 )
 
 
 @admin.action(description="(Re)Embed selected Consultations")
 def update_embeddings_admin(modeladmin, request, queryset):
-    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
     for consultation in queryset:
         for question in consultation.question_set.all():
-            queue.enqueue(create_embeddings_for_question, question.id)
+            create_embeddings_for_question.enqueue(str(question.id))
 
     modeladmin.message_user(request, f"Processing {queryset.count()} consultations")
 
 
+@task(priority=10, queue_name="default")
 def _reimport_demographics(consultation_id):
     respondents = Respondent.objects.filter(consultation_id=consultation_id).extra(
         select={"old_demographics": "old_demographics"}
@@ -57,9 +56,8 @@ def _reimport_demographics(consultation_id):
 
 @admin.action(description="re import demographic options")
 def reimport_demographics(modeladmin, request, queryset):
-    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
     for consultation in queryset:
-        queue.enqueue(_reimport_demographics, consultation.id)
+        _reimport_demographics.enqueue(consultation.id)
 
 
 class ResponseAdmin(admin.ModelAdmin):

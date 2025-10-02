@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.shortcuts import redirect
-from django.urls import include, path
+from django.urls import path
 
 from .views import consultations, consultations_users, pages, users
 
@@ -60,5 +60,4 @@ urlpatterns = [
         name="import_consultation",
     ),
     path("admin/", admin.site.urls),
-    path("django-rq/", include("django_rq.urls")),
 ]

@@ -3,6 +3,7 @@ from unittest.mock import Mock, patch
 import pytest
 from botocore.exceptions import ClientError
 
+from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
     Consultation,
     MultiChoiceAnswer,
@@ -252,8 +253,6 @@ class TestImportConsultationFullFlow:
     @patch("consultation_analyser.support_console.ingest.get_question_folders")
     @patch("consultation_analyser.support_console.ingest.settings")
     def test_import_consultation_success(self, mock_settings, mock_get_folders, mock_boto3):
-        from consultation_analyser.authentication.models import User
-
         # Create test user
         user = User.objects.create_user(email="test@example.com")
 
@@ -456,7 +455,7 @@ class TestResponsesImport:
         # Run the import
         responses_file_key = f"{question_folder}responses.jsonl"
         multi_choice_file_key = f"{question_folder}multi_choice.jsonl"
-        import_responses(question, responses_file_key, multi_choice_file_key)
+        import_responses.enqueue(str(question.id), responses_file_key, multi_choice_file_key)
 
         # Verify results
         responses = Response.objects.filter(question=question)
@@ -497,7 +496,7 @@ class TestMappingImport:
         Response.objects.create(respondent=respondent_2, question=question, free_text="no")
 
         # Run the import
-        import_response_annotations(question, output_folder)
+        import_response_annotations.enqueue(str(question.id), output_folder)
 
         # Verify results
         annotations = ResponseAnnotation.objects.filter(

@@ -7,7 +7,7 @@ from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.html import format_html
-from django_rq import job
+from django_tasks import task
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import (
@@ -21,7 +21,7 @@ from consultation_analyser.support_console import ingest
 logger = settings.LOGGER
 
 
-@job("default", timeout=1800)
+@task(priority=10, queue_name="default")
 def import_consultation_job(
     consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
 ) -> None:
@@ -36,7 +36,7 @@ def import_consultation_job(
     )
 
 
-def delete_question_related_table(table: str, consultation_id: UUID):
+def delete_question_related_table(table: str, consultation_id: str):
     logger.info("Deleting records from table={table}", table=table)
 
     with connection.cursor() as cursor:
@@ -49,7 +49,7 @@ def delete_question_related_table(table: str, consultation_id: UUID):
         cursor.execute(sql, [consultation_id])
 
 
-def delete_response_related_table(table: str, consultation_id: UUID):
+def delete_response_related_table(table: str, consultation_id: str):
     logger.info("Deleting records from table={table}", table=table)
 
     with connection.cursor() as cursor:
@@ -63,7 +63,7 @@ def delete_response_related_table(table: str, consultation_id: UUID):
         cursor.execute(sql, [consultation_id])
 
 
-def delete_consultation_related_table(table: str, consultation_id: UUID):
+def delete_consultation_related_table(table: str, consultation_id: str):
     """Delete records from a table that directly references consultation_id"""
     logger.info("Deleting records from table={table}", table=table)
 
@@ -74,7 +74,7 @@ def delete_consultation_related_table(table: str, consultation_id: UUID):
         )
 
 
-def delete_respondent_related_table(table: str, consultation_id: UUID):
+def delete_respondent_related_table(table: str, consultation_id: str):
     """Delete records from a table that references respondent_id"""
     logger.info("Deleting records from table={table}", table=table)
 
@@ -88,7 +88,7 @@ def delete_respondent_related_table(table: str, consultation_id: UUID):
         cursor.execute(sql, [consultation_id])
 
 
-def delete_response_annotation_themes(consultation_id: UUID):
+def delete_response_annotation_themes(consultation_id: str):
     """Delete response annotation themes for a consultation"""
     with connection.cursor() as cursor:
         cursor.execute(  # nosec B608
@@ -104,7 +104,7 @@ def delete_response_annotation_themes(consultation_id: UUID):
         )
 
 
-def delete_responses_in_batches(consultation_id: UUID, batch_size: int = 1000):
+def delete_responses_in_batches(consultation_id: str, batch_size: int = 1000):
     """Delete responses in batches to avoid memory issues"""
     while True:
         with connection.cursor() as cursor:
@@ -127,16 +127,14 @@ def delete_responses_in_batches(consultation_id: UUID, batch_size: int = 1000):
                 break
 
 
-@job("default", timeout=3_600)
-def delete_consultation_job(consultation: models.Consultation):
+@task(priority=10, queue_name="default")
+def delete_consultation_job(consultation_id: str):
     logger.refresh_context()
 
-    consultation_id = consultation.id
-    consultation_title = consultation.title
-
     try:
-        # Re-fetch the consultation to ensure we have a fresh DB connection
+        # Get the consultation object
         consultation = models.Consultation.objects.get(id=consultation_id)
+        consultation_title = consultation.title
 
         # Delete related objects in order to avoid foreign key constraints
         logger.info(
@@ -197,8 +195,8 @@ def index(request: HttpRequest) -> HttpResponse:
                 )
                 user = request.user
                 consultation.users.add(user)
-                create_dummy_consultation_from_yaml_job.delay(
-                    number_respondents=n, consultation=consultation
+                create_dummy_consultation_from_yaml_job.enqueue(
+                    number_respondents=n, consultation_id=str(consultation.id)
                 )
                 messages.success(
                     request,
@@ -221,7 +219,7 @@ def delete(request: HttpRequest, consultation_id: UUID) -> HttpResponse:
 
     if request.POST:
         if "confirm_deletion" in request.POST:
-            delete_consultation_job.delay(consultation=consultation)
+            delete_consultation_job.enqueue(consultation_id=str(consultation.id))
             messages.success(
                 request,
                 "The consultation has been sent for deletion - check queue dashboard for progress",
@@ -268,7 +266,7 @@ def export_consultation_theme_audit(request: HttpRequest, consultation_id: UUID)
         for id in question_ids:
             try:
                 logging.info("Exporting theme audit data - sending to queue")
-                export_user_theme_job.delay(question_id=UUID(id), s3_key=s3_key)
+                export_user_theme_job.enqueue(question_id=str(id), s3_key=s3_key)
             except Exception as e:
                 messages.error(request, e)
                 return render(request, "support_console/consultations/export_audit.html", context)
@@ -322,7 +320,7 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
 
         # If valid, queue the import job
         try:
-            import_consultation_job.delay(
+            import_consultation_job.enqueue(
                 consultation_name=consultation_name,
                 consultation_code=consultation_code,
                 timestamp=timestamp,

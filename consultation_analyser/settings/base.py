@@ -57,7 +57,8 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_forms_gds",
     "django.contrib.humanize",
-    "django_rq",
+    "django_tasks",
+    "django_tasks.backends.database",
     "simple_history",
     "rest_framework",
     "django_filters",
@@ -308,12 +309,11 @@ CACHES = {
     },
 }
 
-# rq
-RQ_QUEUES = {
+# django-tasks configuration
+TASKS = {
     "default": {
-        "USE_REDIS_CACHE": "redis",
-        "ASYNC": True,
-    },
+        "BACKEND": "django_tasks.backends.database.DatabaseBackend",
+    }
 }
 
 if DEBUG:
