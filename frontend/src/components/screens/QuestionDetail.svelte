@@ -15,7 +15,7 @@
   import Lan from "../svg/material/Lan.svelte";
   import Finance from "../svg/material/Finance.svelte";
 
-  import { getConsultationDetailUrl } from "../../global/routes.ts";
+  import { getApiQuestionsUrl, getConsultationDetailUrl } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
   import {
     SearchModeValues,
@@ -82,6 +82,18 @@
     error: Writable<string>;
     load: Function;
     data: Writable<ConsultationResponse>;
+  } = createFetchStore();
+
+  const {
+    loading: isQuestionsLoading,
+    error: questionsError,
+    load: loadQuestions,
+    data: questionsData,
+  }: {
+    loading: Writable<boolean>;
+    error: Writable<string>;
+    load: Function;
+    data: Writable<any>;
   } = createFetchStore();
 
   const {
@@ -157,8 +169,9 @@
   } = createFetchStore();
 
   onMount(() => {
-    // Load consultation data once on mount
+    // Load consultation and questions data once on mount
     loadConsultation(`/api/consultations/${consultationId}/`);
+    loadQuestions(getApiQuestionsUrl(consultationId));
   });
 
   async function loadData() {
@@ -297,7 +310,7 @@
   });
 
   let question = $derived(
-    $consultationData?.questions?.find(
+    $questionsData?.results?.find(
       (question) => question.id === questionId,
     ),
   );
@@ -356,17 +369,17 @@
 
 <svelte:boundary>
   <section class="my-4">
-    {#if $consultationError}
+    {#if $consultationError || $questionsError}
       <div class="my-2">
         <Alert>
           <span class="text-sm">
-            Consultation Error: {$consultationError}
+            Question Details Error: {$consultationError || $questionsError}
           </span>
         </Alert>
       </div>
     {:else}
       <QuestionCard
-        skeleton={$isConsultationLoading}
+        skeleton={$isQuestionsLoading || $isConsultationLoading}
         clickable={false}
         consultationId={$consultationData?.id}
         {question}
@@ -381,7 +394,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected consultation error</Alert>
+        <Alert>Unexpected question error</Alert>
       </Panel>
     </div>
   {/snippet}
