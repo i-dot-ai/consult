@@ -15,15 +15,12 @@
     Consultation,
     DemoOptionsResponse,
   } from "../../global/types.ts";
-  import { getApiConsultationUrl } from "../../global/routes.ts";
+  import { getApiQuestionsUrl } from "../../global/routes.ts";
   import { createFetchStore, favStore } from "../../global/stores.ts";
 
   export let consultationId: string = "";
 
   let searchValue: string = "";
-  let consultation: Consultation;
-  let loading: boolean = true;
-  let error: string = "";
 
   const {
     loading: isDemoOptionsLoading,
@@ -38,31 +35,30 @@
   } = createFetchStore();
 
   onMount(async () => {
-    try {
-      const response = await fetch(getApiConsultationUrl(consultationId));
-      if (!response.ok) {
-        error = "Response not ok";
-        return;
-      }
-      const consultationData = await response.json();
-      consultation = consultationData;
-      error = "";
-    } catch (err: any) {
-      error = err.message;
-    } finally {
-      loading = false;
-    }
+    loadQuestions(getApiQuestionsUrl(consultationId));
 
     loadDemoOptions(
       `/api/consultations/${consultationId}/demographic-options/`,
     );
   });
 
-  $: favQuestions = consultation?.results.filter((question) =>
+  const {
+    loading: isQuestionsLoading,
+    error: questionsError,
+    load: loadQuestions,
+    data: questionsData,
+  }: {
+    loading: Writable<boolean>;
+    error: Writable<string>;
+    load: Function;
+    data: Writable<any>;
+  } = createFetchStore();
+
+  $: favQuestions = $questionsData?.results?.filter((question) =>
     $favStore.includes(question.id),
   );
 
-  $: displayQuestions = consultation?.results.filter((question) =>
+  $: displayQuestions = $questionsData?.results?.filter((question) =>
     `Q${question.number}: ${question.question_text}`
       .toLocaleLowerCase()
       .includes(searchValue.toLocaleLowerCase()),
@@ -72,8 +68,8 @@
 <section class="my-8">
   <Metrics
     {consultationId}
-    questions={consultation?.results || []}
-    {loading}
+    questions={$questionsData?.results || []}
+    loading={$isQuestionsLoading}
     demoOptionsLoading={$isDemoOptionsLoading}
     demoOptions={$demoOptionsData || []}
   />
@@ -87,10 +83,10 @@
   </div>
 
   {#if $favStore.length > 0}
-    {#if loading}
+    {#if $isQuestionsLoading}
       <p transition:slide>Loading questions...</p>
-    {:else if error}
-      <p transition:slide>{error}</p>
+    {:else if $questionsError}
+      <p transition:slide>{$questionsError}</p>
     {:else}
       <div transition:slide>
         <div class="mb-8">
@@ -119,16 +115,16 @@
       <Help slot="icon" />
 
       <p slot="aside">
-        {consultation?.count || 0} questions
+        {$questionsData?.results?.length || 0} questions
       </p>
     </TitleRow>
   </div>
 
   <Panel bg={true} border={true}>
-    {#if loading}
+    {#if $isQuestionsLoading}
       <p transition:slide>Loading questions...</p>
-    {:else if error}
-      <p transition:slide>{error}</p>
+    {:else if $questionsError}
+      <p transition:slide>{$questionsError}</p>
     {:else}
       <div transition:slide>
         <TextInput
