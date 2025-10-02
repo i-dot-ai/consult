@@ -214,7 +214,7 @@ def test_delete_consultation_job_handles_exceptions(mock_logger, mock_connection
         side_effect=Exception("Database error"),
     ):
         with pytest.raises(Exception) as exc_info:
-            delete_consultation_job.enqueue(consultation_id=str(consultation.id))
+            delete_consultation_job.func(consultation_id=str(consultation.id))
 
         assert "Database error" in str(exc_info.value)
 

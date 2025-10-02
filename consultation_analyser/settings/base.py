@@ -57,13 +57,13 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_forms_gds",
     "django.contrib.humanize",
-    "django_tasks",
-    "django_tasks.backends.database",
     "simple_history",
     "rest_framework",
     "django_filters",
     "rest_framework_simplejwt",
     "drf_spectacular",
+    "django_tasks",
+    "django_tasks.backends.database",
 ]
 
 

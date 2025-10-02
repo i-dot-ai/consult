@@ -170,8 +170,7 @@ def delete_consultation_job(consultation_id: str):
 
     except Exception as e:
         logger.error(
-            "Error deleting consultation '{consultation_title}' (ID: {consultation_id}): {error}",
-            consultation_title=consultation_title,
+            "Error deleting consultation (ID: {consultation_id}): {error}",
             consultation_id=consultation_id,
             error=e,
         )
