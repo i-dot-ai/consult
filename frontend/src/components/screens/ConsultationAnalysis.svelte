@@ -6,6 +6,7 @@
 
   import {
     getApiConsultationUrl,
+    getApiQuestionsUrl,
     getConsultationDetailUrl,
   } from "../../global/routes";
   import {
@@ -44,6 +45,18 @@
   } = createFetchStore();
 
   const {
+    loading: isQuestionsLoading,
+    error: questionsError,
+    load: loadQuestions,
+    data: questionsData,
+  }: {
+    loading: Writable<boolean>;
+    error: Writable<string>;
+    load: Function;
+    data: Writable<ConsultationResponse>;
+  } = createFetchStore();
+
+  const {
     loading: isDemoOptionsLoading,
     error: demoOptionsError,
     load: loadDemoOptions,
@@ -56,7 +69,7 @@
   } = createFetchStore();
 
   let totalResponses = $derived(
-    $consultationData?.questions?.reduce(
+    $questionsData?.results?.reduce(
       (acc, question) => acc + (question?.total_responses || 0),
       0,
     ),
@@ -68,6 +81,7 @@
 
   $effect(() => {
     loadConsultation(getApiConsultationUrl(consultationId));
+    loadQuestions(getApiQuestionsUrl(consultationId));
     loadDemoOptions(
       `/api/consultations/${consultationId}/demographic-options/`,
     );
@@ -128,7 +142,9 @@
     </TitleRow>
 
     <div class="grid grid-cols-12 gap-4 mb-4">
-      {#each $consultationData?.questions.filter((question) => question.has_multiple_choice) as question}
+      {#each $questionsData?.results?.filter(
+        (question) => question.has_multiple_choice
+      ) as question}
         <div class="col-span-12 sm:col-span-6 lg:col-span-4 mt-4">
           <div class="w-full h-full">
             <Panel border={true} bg={true}>
