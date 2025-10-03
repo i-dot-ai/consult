@@ -33,7 +33,7 @@ describe("MultiChoice", () => {
   });
 
   it("should render data", () => {
-    const { getByText, getAllByText } = render(MultiChoice, {
+    const { container, getByText, getAllByText } = render(MultiChoice, {
       data: testData.data,
     });
 
@@ -46,6 +46,8 @@ describe("MultiChoice", () => {
         ),
       );
     });
+
+    expect(container).toMatchSnapshot();
   });
 
   it("should toggle multi answer filters when items clicked", async () => {
