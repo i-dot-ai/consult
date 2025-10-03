@@ -15,7 +15,12 @@
   import Lan from "../svg/material/Lan.svelte";
   import Finance from "../svg/material/Finance.svelte";
 
-  import { getApiQuestionsUrl, getConsultationDetailUrl } from "../../global/routes.ts";
+  import {
+    getApiAnswersUrl,
+    getApiQuestionsUrl,
+    getConsultationDetailUrl,
+  } from "../../global/routes.ts";
+
   import { createFetchStore } from "../../global/stores.ts";
   import {
     SearchModeValues,
@@ -206,9 +211,7 @@
 
     // Append next page of answers to existing answers
     try {
-      await loadAnswers(
-        `/api/consultations/${consultationId}/responses/${queryString}`,
-      );
+      await loadAnswers(`${getApiAnswersUrl(consultationId)}/${queryString}`);
 
       if ($answersData.all_respondents) {
         const newAnswers = $answersData.all_respondents;
@@ -406,15 +409,22 @@
     handleChange={(next: string) => (activeTab = next as TabNames)}
     tabs={[
       { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
-      {
-        id: TabNames.ResponseAnalysis,
-        title: "Response Analysis",
-        icon: Finance,
-      },
+
+      //  No second tab without free text
+      ...($questionData?.has_free_text
+        ? [
+            {
+              id: TabNames.ResponseAnalysis,
+              title: "Response Analysis",
+              icon: Finance,
+            },
+          ]
+        : []),
     ]}
   >
     {#if activeTab === TabNames.QuestionSummary}
       <QuestionSummary
+        showThemes={Boolean($isQuestionLoading || $questionData?.has_free_text)}
         themes={Object.keys($themeAggrData?.theme_aggregations || []).map(
           (themeId) => {
             return {

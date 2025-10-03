@@ -79,6 +79,12 @@
     ...new Set(($demoOptionsData || []).map((opt) => opt.name)),
   ]);
 
+  let chartQuestions = $derived(
+    $questionsData?.results?.filter(
+      (question) => question.has_multiple_choice,
+    ),
+  );
+
   $effect(() => {
     loadConsultation(getApiConsultationUrl(consultationId));
     loadQuestions(getApiQuestionsUrl(consultationId));
@@ -90,7 +96,8 @@
 
 <RespondentTopbar
   title="Detailed Consultation Analysis"
-  backUrl={getConsultationDetailUrl(consultationId)}
+  backText="Back to Overview"
+  onClickBack={() => (location.href = getConsultationDetailUrl(consultationId))}
 />
 
 <section>
@@ -132,72 +139,71 @@
   </Panel>
 </section>
 
-<section>
-  <Panel>
-    <TitleRow
-      title="Multiple Choice Questions"
-      subtitle="Detailed breakdown of all multiple choice question responses"
-    >
-      <PieChart slot="icon" />
-    </TitleRow>
+{#if chartQuestions?.length > 0}
+  <section>
+    <Panel>
+      <TitleRow
+        title="Multiple Choice Questions"
+        subtitle="Detailed breakdown of all multiple choice question responses"
+      >
+        <PieChart slot="icon" />
+      </TitleRow>
 
-    <div class="grid grid-cols-12 gap-4 mb-4">
-      {#each $questionsData?.results?.filter(
-        (question) => question.has_multiple_choice
-      ) as question}
-        <div class="col-span-12 sm:col-span-6 lg:col-span-4 mt-4">
-          <div class="w-full h-full">
-            <Panel border={true} bg={true}>
-              <div class="flex flex-col justify-start h-full">
-                <div class="flex items-center gap-4 mb-4">
-                  <span class="text-sm text-primary">
-                    Q{question.number}
-                  </span>
+      <div class="grid grid-cols-12 gap-4 mb-4">
+        {#each chartQuestions as question}
+          <div class="col-span-12 sm:col-span-6 lg:col-span-4 mt-4">
+            <div class="w-full h-full">
+              <Panel border={true} bg={true}>
+                <div class="flex flex-col justify-start h-full">
+                  <div class="flex items-start gap-4 mb-4">
+                    <span class="text-sm text-primary">
+                      Q{question.number}
+                    </span>
 
-                  <h3 class="text-xs">
-                    {question.question_text}
-                  </h3>
-                </div>
+                    <h3 class="text-xs">
+                      {question.question_text}
+                    </h3>
+                  </div>
 
-                <div
-                  class={clsx([
-                    "grow",
-                    "flex",
-                    "flex-row-reverse",
-                    "justify-center",
-                    "items-center",
-                    "gap-4",
-                    "flex-wrap",
-                    "md:flex-nowrap",
-                  ])}
-                >
-                  <!-- Container for custom HTML legend -->
-                  <div id={"legend-id" + question.number}></div>
+                  <div
+                    class={clsx([
+                      "grow",
+                      "flex",
+                      "flex-row-reverse",
+                      "justify-center",
+                      "items-center",
+                      "gap-4",
+                      "flex-wrap-reverse",
+                    ])}
+                  >
+                    <!-- Container for custom HTML legend -->
+                    <div id={"legend-id" + question.number}></div>
 
-                  <div class="h-[6rem]">
-                    <Chart
-                      legendId={"legend-id" + question.number}
-                      labels={question?.multiple_choice_answer?.map(
-                        (multiChoiceAnswer: QuestionMultiAnswer) => {
-                          return {
-                            count: multiChoiceAnswer.response_count,
-                            text: multiChoiceAnswer.text,
-                          };
-                        },
-                      ) || []}
-                      data={question?.multiple_choice_answer?.map(
-                        (multiChoiceAnswer: QuestionMultiAnswer) => {
-                          return multiChoiceAnswer.response_count;
-                        },
-                      ) || []}
-                    />
+                    <div class="h-[6rem]">
+                      <Chart
+                        legendId={"legend-id" + question.number}
+                        labels={question?.multiple_choice_answer?.map(
+                          (multiChoiceAnswer: QuestionMultiAnswer) => {
+                            return {
+                              count: multiChoiceAnswer.response_count,
+                              text: multiChoiceAnswer.text,
+                            };
+                          },
+                        ) || []}
+                        data={question?.multiple_choice_answer?.map(
+                          (multiChoiceAnswer: QuestionMultiAnswer) => {
+                            return multiChoiceAnswer.response_count;
+                          },
+                        ) || []}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            </Panel>
+              </Panel>
+            </div>
           </div>
-        </div>
-      {/each}
-    </div>
-  </Panel>
-</section>
+        {/each}
+      </div>
+    </Panel>
+  </section>
+{/if}

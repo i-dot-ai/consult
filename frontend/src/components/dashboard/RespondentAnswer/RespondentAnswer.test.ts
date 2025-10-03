@@ -1,10 +1,10 @@
 import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
-import RespondentAnswer from "./RespondentAnswer.svelte";
+import RespondentAnswer, { type Props } from "./RespondentAnswer.svelte";
 import RespondentAnswerStory from "./RespondentAnswerStory.svelte";
 
-let testData;
+let testData: Props;
 
 describe("RespondentAnswer", () => {
   beforeEach(() => {
@@ -16,6 +16,7 @@ describe("RespondentAnswer", () => {
       questionNumber: 1,
       answerText:
         "I agree in principle, but I think the guidelines should include a provision for periodic review to adapt to market changes.",
+      multiChoice: ["multi 1", "multi 2"],
       themes: ["Innovation", "Standardized framework"],
       evidenceRich: true,
     };
@@ -31,6 +32,9 @@ describe("RespondentAnswer", () => {
     expect(getByText(testData.questionTitle));
     expect(getByText(`Q${testData.questionNumber}`));
     expect(getByText(testData.answerText));
+    testData.multiChoice.forEach((multiAnswer) =>
+      expect(getByText(multiAnswer)),
+    );
     testData.themes.forEach((theme) => expect(getByText(theme)));
     expect(getByText("Evidence-rich"));
   });
