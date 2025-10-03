@@ -6,7 +6,10 @@ from freezegun import freeze_time
 
 from consultation_analyser import factories
 from consultation_analyser.consultations import models
-from consultation_analyser.consultations.export_user_theme import export_user_theme
+from consultation_analyser.consultations.export_user_theme import (
+    export_user_theme,
+    export_user_theme_job,
+)
 from tests.utils import get_sorted_theme_string
 
 
@@ -88,11 +91,9 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
 
 
 @pytest.mark.django_db
-@patch("django_rq.enqueue")
 @patch("consultation_analyser.consultations.export_user_theme.boto3.client")
-def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_text_question):
+def test_start_export_job(mock_boto_client, consultation, free_text_question):
     """Test that the export job is correctly enqueued"""
-    from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 
     user = factories.UserFactory(is_staff=True)
     # Set up consultation with question and response
@@ -109,13 +110,4 @@ def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_tex
     theme = factories.ThemeFactory(question=free_text_question)
     annotation.add_original_ai_themes([theme])
 
-    # Mock the enqueue to capture the call
-    mock_enqueue.return_value = None
-
-    # Import and call the enqueue function directly
-    from django_rq import enqueue
-
-    enqueue(export_user_theme_job, free_text_question.id, "test_key")
-
-    # Verify the job was enqueued
-    mock_enqueue.assert_called_once_with(export_user_theme_job, free_text_question.id, "test_key")
+    export_user_theme_job.enqueue(str(free_text_question.id), "test_key")
