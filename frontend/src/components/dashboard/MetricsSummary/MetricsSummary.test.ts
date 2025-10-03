@@ -13,7 +13,7 @@ describe("MetricsSummary", () => {
       demoCount: 30,
     };
 
-    const { getByText } = render(MetricsSummary, {
+    const { container, getByText } = render(MetricsSummary, {
       questionCount: TEST_DATA.questionCount,
       responseCount: TEST_DATA.responseCount,
       demoCount: TEST_DATA.demoCount,
@@ -27,5 +27,7 @@ describe("MetricsSummary", () => {
 
     expect(getByText("Demographics"));
     expect(getByText(TEST_DATA.demoCount));
+
+    expect(container).toMatchSnapshot();
   });
 });
