@@ -6,6 +6,7 @@
 
   import {
     getApiConsultationUrl,
+    getApiQuestionsUrl,
     getConsultationDetailUrl,
   } from "../../global/routes";
   import {
@@ -44,6 +45,18 @@
   } = createFetchStore();
 
   const {
+    loading: isQuestionsLoading,
+    error: questionsError,
+    load: loadQuestions,
+    data: questionsData,
+  }: {
+    loading: Writable<boolean>;
+    error: Writable<string>;
+    load: Function;
+    data: Writable<ConsultationResponse>;
+  } = createFetchStore();
+
+  const {
     loading: isDemoOptionsLoading,
     error: demoOptionsError,
     load: loadDemoOptions,
@@ -56,7 +69,7 @@
   } = createFetchStore();
 
   let totalResponses = $derived(
-    $consultationData?.questions?.reduce(
+    $questionsData?.results?.reduce(
       (acc, question) => acc + (question?.total_responses || 0),
       0,
     ),
@@ -67,13 +80,14 @@
   ]);
 
   let chartQuestions = $derived(
-    $consultationData?.questions.filter(
+    $questionsData?.results?.filter(
       (question) => question.has_multiple_choice,
     ),
   );
 
   $effect(() => {
     loadConsultation(getApiConsultationUrl(consultationId));
+    loadQuestions(getApiQuestionsUrl(consultationId));
     loadDemoOptions(
       `/api/consultations/${consultationId}/demographic-options/`,
     );
