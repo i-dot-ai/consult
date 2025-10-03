@@ -60,15 +60,6 @@
   class={clsx(["flex", "flex-col", "gap-4"])}
   on:submit|preventDefault={handleSubmit}
 >
-  <TextInput
-    id={"email-input"}
-    label={"Email address"}
-    hideLabel={true}
-    placeholder={"Your email"}
-    value={email}
-    setValue={setEmail}
-  />
-
   {#if error}
     <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
       {error}
@@ -89,7 +80,20 @@
     </small>
   {/if}
 
-  <Button variant="primary" handleClick={handleSubmit} disabled={sending}>
-    {sending ? "Sending..." : "Continue"}
-  </Button>
+  <div class="flex flex-wrap justify-start items-center gap-4">
+    <div class="grow max-w-[30ch]">
+      <TextInput
+        id={"email-input"}
+        label={"Email address"}
+        hideLabel={true}
+        placeholder={"Your email"}
+        value={email}
+        setValue={setEmail}
+      />
+    </div>
+
+    <Button variant="primary" handleClick={handleSubmit} disabled={sending}>
+      {sending ? "Sending..." : "Continue"}
+    </Button>
+  </div>
 </form>
