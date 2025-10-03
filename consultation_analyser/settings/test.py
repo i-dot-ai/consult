@@ -19,6 +19,7 @@ STORAGES["default"] = {
 TASKS = {
     "default": {
         "BACKEND": "django_tasks.backends.immediate.ImmediateBackend",
+        "ENQUEUE_ON_COMMIT": False, # type:ignore
     }
 }
 

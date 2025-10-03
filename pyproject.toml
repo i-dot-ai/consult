@@ -40,7 +40,7 @@ django-gov-notify = { git = "https://github.com/i-dot-ai/django-gov-notify", bra
 sentry-sdk = {version = ">=2.24.1", extras = ["django", "redis"]}
 psutil = "^7.1.0"
 pytest-random-order = "^1.2.0"
-django-tasks = "^0.1"
+django-tasks = "^0.8.1"
 django-redis = "^6.0.0"
 honcho = "^2.0.0"
 django-storages = "^1.14.6"
