@@ -1522,6 +1522,55 @@ def test_users_create(client, consultation_user_token):
 
 
 @pytest.mark.django_db
+def test_users_bulk_create_success(client, consultation_user_token):
+    emails = [f"bulkuser{i}@example.com" for i in range(1, 4)]
+    url = reverse("user-list")
+    response = client.post(
+        url,
+        data=json.dumps({"emails": emails}),
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}"
+        },
+    )
+    assert response.status_code == 201
+    assert User.objects.filter(email="bulkuser1@example.com").exists()
+    assert User.objects.filter(email="bulkuser2@example.com").exists()
+    assert User.objects.filter(email="bulkuser3@example.com").exists()
+
+
+@pytest.mark.django_db
+def test_users_bulk_create_failure(client, consultation_user_token):
+    User.objects.create(email="existing@example.com")
+    emails = ["existing@example.com", "newuser@example.com", "invalid-email"]
+    url = reverse("user-list")
+    response = client.post(
+        url,
+        data=json.dumps({"emails": emails, "has_dashboard_access": True}),
+        content_type="application/json",
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+    assert response.status_code == 400
+    assert User.objects.filter(email="newuser@example.com").exists()
+    assert response.json() == {
+        'detail': 'Some users not created.',
+        'errors': [
+            {
+                'email': 'existing@example.com',
+                'errors': { 
+                    'email': ['user with this email address already exists.']
+                }
+            }, {
+                'email': 'invalid-email',
+                'errors': {
+                    'email': ['Enter a valid email address.']
+                }
+            }
+        ]
+    }
+
+
+@pytest.mark.django_db
 def test_users_patch(client, consultation_user, consultation_user_token):
     assert consultation_user.has_dashboard_access is True
     url = reverse(
