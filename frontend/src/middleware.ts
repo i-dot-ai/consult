@@ -12,6 +12,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     // /^\/sign-out[\/]?$/,
     /^\/consultations.*/,
     /^\/design.*/,
+    /^\/stories.*/,
     /^\/support.*/,
   ];
 
@@ -47,6 +48,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/support\/users\/[A-Za-z0-9]*[/]?$/,
     /^\/support\/users\/new[/]?$/,
     /^\/design.*/,
+    /^\/stories.*/,
     /^\/_astro.*/,
   ];
 
