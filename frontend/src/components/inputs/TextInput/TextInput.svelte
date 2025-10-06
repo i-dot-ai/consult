@@ -24,6 +24,7 @@
   <input
     class={clsx([
       "w-full",
+      "mt-1",
       "p-1",
       "border",
       "border-gray-300",

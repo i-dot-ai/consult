@@ -34,6 +34,7 @@
     size === "xs" ? "py-0.5" : "py-1",
     size === "xs" ? "px-1" : "px-2",
     "border",
+    variant === "default" && "bg-white",
     variant === "primary" && "bg-primary text-white",
     variant === "approve" && "bg-emerald-700 text-white",
     variant === "ghost" ? "border-transparent" : "border-gray-300",
