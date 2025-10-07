@@ -62,11 +62,11 @@
       !disabled &&
       clsx([
         highlightVariant === "dark" &&
-          "bg-neutral-800 text-white hover:bg-neutral-700",
+          "!bg-neutral-800 text-white hover:bg-neutral-700",
         highlightVariant === "light" &&
-          "bg-pink-100 text-neutral-800 border border-pink-200 hover:bg-pink-200",
+          "!bg-pink-100 text-neutral-800 border border-pink-200 hover:bg-pink-200",
         highlightVariant === "primary" &&
-          "bg-primary text-white hover:bg-pink-500",
+          "!bg-primary text-white hover:bg-pink-500",
         highlightVariant === "approve" &&
           "border-teal text-teal hover:bg-teal-500",
       ]),
