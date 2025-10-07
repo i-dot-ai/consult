@@ -37,9 +37,11 @@ class TimeStampedModel(models.Model):
         abstract = True
         ordering = ["created_at"]
 
+
 class ConsultationStage(models.TextChoices):
     THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
     ANALYSIS = "analysis", "Analysis"
+
 
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     title = models.CharField(max_length=256)
@@ -71,6 +73,11 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         return shorten(self.slug, width=64, placeholder="...")
 
 
+class QuestionThemeStatus(models.TextChoices):
+    DRAFT = "draft", "Draft"
+    CONFIRMED = "confirmed", "Confirmed"
+
+
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     """
     Combined question model - can have free text, multiple choice, or both.
@@ -81,6 +88,11 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     text = models.TextField()
     slug = models.SlugField(max_length=256)
     number = models.IntegerField()
+    theme_status = models.CharField(
+        max_length=32,
+        choices=QuestionThemeStatus.choices,
+        default=QuestionThemeStatus.CONFIRMED
+    )
 
     # Question configuration
     has_free_text = models.BooleanField(default=True)
