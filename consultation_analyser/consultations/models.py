@@ -37,11 +37,19 @@ class TimeStampedModel(models.Model):
         abstract = True
         ordering = ["created_at"]
 
+class ConsultationStage(models.TextChoices):
+    THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
+    ANALYSIS = "analysis", "Analysis"
 
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     title = models.CharField(max_length=256)
     slug = models.SlugField(max_length=256, unique=True)
     users = models.ManyToManyField(User)
+    stage = models.CharField(
+        max_length=32,
+        choices=ConsultationStage.choices,
+        default=ConsultationStage.ANALYSIS,
+    )
 
     def save(self, *args, **kwargs):
         if not self.slug:
