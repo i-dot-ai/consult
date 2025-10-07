@@ -218,6 +218,23 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def __str__(self):
         return f"{self.field_name}={self.field_value}"
+    
+
+class CandidateTheme(UUIDPrimaryKeyModel, TimeStampedModel):
+    """AI-generated (candidate) themes for a question"""
+
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    name = models.TextField()
+    description = models.TextField()
+    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        indexes = [
+            models.Index(fields=["question"]),
+        ]
+
+    def __str__(self):
+        return self.name
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
