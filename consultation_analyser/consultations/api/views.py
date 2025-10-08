@@ -256,7 +256,9 @@ class UserViewSet(ModelViewSet):
             created_users = []
             errors = []
             for email in emails:
-                serializer = self.get_serializer(data={"email": email, "has_dashboard_access": has_dashboard_access})
+                serializer = self.get_serializer(
+                    data={"email": email, "has_dashboard_access": has_dashboard_access}
+                )
                 if serializer.is_valid():
                     user = serializer.save()
                     created_users.append(user)
@@ -268,7 +270,7 @@ class UserViewSet(ModelViewSet):
 
         # Otherwise, treat as single user creation using default DRF behavior
         return super().create(request, *args, **kwargs)
-    
+
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
     pagination_class = PageNumberPagination

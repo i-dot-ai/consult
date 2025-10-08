@@ -89,9 +89,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     slug = models.SlugField(max_length=256)
     number = models.IntegerField()
     theme_status = models.CharField(
-        max_length=32,
-        choices=QuestionThemeStatus.choices,
-        default=QuestionThemeStatus.CONFIRMED
+        max_length=32, choices=QuestionThemeStatus.choices, default=QuestionThemeStatus.CONFIRMED
     )
 
     # Question configuration
@@ -238,7 +236,7 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def __str__(self):
         return f"{self.field_name}={self.field_value}"
-    
+
 
 class CandidateTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     """AI-generated (candidate) themes for a question"""
