@@ -7,7 +7,7 @@
     getApiAnswersUrl,
     getApiConsultationRespondentUrl,
     getApiConsultationRespondentsUrl,
-    getApiConsultationUrl,
+    getApiQuestionsUrl,
     getQuestionDetailUrl,
     getQuestionsByRespondentUrl,
     getRespondentDetailUrl,
@@ -57,10 +57,10 @@
   } = createFetchStore();
 
   const {
-    load: loadConsultation,
-    loading: isConsultationLoading,
-    data: consultationData,
-    error: consultationError,
+    load: loadConsultationQuestions,
+    loading: isConsultationQuestionsLoading,
+    data: consultationQuestionsData,
+    error: consultationQuestionsError,
   } = createFetchStore();
 
   const {
@@ -78,7 +78,7 @@
   } = createFetchStore();
 
   $effect(() => {
-    loadConsultation(getApiConsultationUrl(consultationId));
+    loadConsultationQuestions(getApiQuestionsUrl(consultationId));
     loadRespondents(getLoadRespondentsUrl());
     loadQuestions(getQuestionsByRespondentUrl(consultationId, respondentId));
     loadAnswers(
@@ -161,7 +161,7 @@
           demoData={currRespondent?.demographics}
           stakeholderName={currRespondent?.name}
           questionsAnswered={$questionsData?.results.length ?? 0}
-          totalQuestions={$consultationData?.questions?.length ?? 0}
+          totalQuestions={$consultationQuestionsData?.results?.length ?? 0}
           updateStakeholderName={async (newStakeholderName) => {
             // update current respondent stakeholder name
             await loadRespondent(
