@@ -6,7 +6,8 @@ import tiktoken
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.contrib.postgres.search import SearchVector
-from django_rq import get_queue
+from django.shortcuts import get_object_or_404
+from django_tasks import task
 from simple_history.utils import bulk_create_with_history
 
 from consultation_analyser.consultations.models import (
@@ -221,7 +222,8 @@ def validate_consultation_structure(
     return is_valid, errors
 
 
-def create_embeddings_for_question(question_id: UUID):
+@task(priority=10, queue_name="default")
+def create_embeddings_for_question(question_id: str):
     queryset = Response.objects.filter(question_id=question_id, free_text__isnull=False)
     total = queryset.count()
     batch_size = 1_000
@@ -243,6 +245,7 @@ def create_embeddings_for_question(question_id: UUID):
         Response.objects.bulk_update(responses, ["embedding", "search_vector"])
 
 
+@task(priority=10, queue_name="default")
 def import_response_annotation_themes(question: Question, output_folder: str):
     mapping_file_key = f"{output_folder}mapping.jsonl"
     s3_client = boto3.client("s3")
@@ -283,7 +286,8 @@ def import_response_annotation_themes(question: Question, output_folder: str):
     bulk_create_with_history(objects_to_save, ResponseAnnotationTheme, ignore_conflicts=True)
 
 
-def import_response_annotations(question: Question, output_folder: str):
+@task(priority=10, queue_name="default")
+def import_response_annotations(question_id: UUID, output_folder: str):
     sentiment_file_key = f"{output_folder}sentiment.jsonl"
     evidence_file_key = f"{output_folder}detail_detection.jsonl"
 
@@ -311,7 +315,7 @@ def import_response_annotations(question: Question, output_folder: str):
         evidence_dict[evidence.themefinder_id] = evidence.evidence_rich_bool
 
     # Create annotations
-    responses = Response.objects.filter(question=question).values_list(
+    responses = Response.objects.filter(question_id=question_id).values_list(
         "id", "respondent__themefinder_id"
     )
     # save_mapping_data
@@ -329,9 +333,9 @@ def import_response_annotations(question: Question, output_folder: str):
             bulk_create_with_history(annotations_to_save, ResponseAnnotation)
             annotations_to_save = []
             logger.info(
-                "saved {i} ResponseAnnotations for question {question_number}",
+                "saved {i} ResponseAnnotations for question {question_id}",
                 i=i + 1,
-                question_number=question.number,
+                question_id=question_id,
             )
 
     bulk_create_with_history(annotations_to_save, ResponseAnnotation)
@@ -384,14 +388,16 @@ def merge_free_text_and_multi_choice(
     return [(key, free_text.get(key), multi_choice.get(key)) for key in keys]
 
 
-def import_responses(question: Question, responses_file_key: str, multichoice_file_key: str):
+@task(priority=10, queue_name="default")
+def import_responses(question_id: UUID, responses_file_key: str, multichoice_file_key: str):
     """
     Import response data for a Consultation Question.
 
     Args:
-        question: Question object for response
+        question_id: Question ID for response
         responses_file_key: s3key
     """
+    question = get_object_or_404(Question, id=question_id)
 
     plain_response_dict = read_response_file(responses_file_key)
 
@@ -487,7 +493,8 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
         raise
 
 
-def import_themes(question: Question, output_folder: str):
+@task(priority=10, queue_name="default")
+def import_themes(question_id: UUID, output_folder: str):
     s3_client = boto3.client("s3")
     themes_file_key = f"{output_folder}themes.json"
     try:
@@ -501,7 +508,7 @@ def import_themes(question: Question, output_folder: str):
     for theme in theme_data:
         themes_to_save.append(
             Theme(
-                question=question,
+                question_id=question_id,
                 name=theme["theme_name"],
                 description=theme["theme_description"],
                 key=theme["theme_key"],
@@ -510,9 +517,9 @@ def import_themes(question: Question, output_folder: str):
 
     themes = Theme.objects.bulk_create(themes_to_save)
     logger.info(
-        "Imported {len_themes} themes for question {question_number}",
+        "Imported {len_themes} themes for question {question_id}",
         len_themes=len(themes),
-        question_number=question.number,
+        question_id=question_id,
     )
 
 
@@ -533,8 +540,6 @@ def import_questions(
     bucket_name = settings.AWS_BUCKET_NAME
     base_path = f"app_data/consultations/{consultation_code}/"
     outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
-
-    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
 
     try:
         s3_client = boto3.client("s3")
@@ -570,25 +575,16 @@ def import_questions(
 
             responses_file_key = f"{question_folder}responses.jsonl"
             multiple_choice_file = f"{question_folder}multi_choice.jsonl"
-            responses = queue.enqueue(
-                import_responses, question, responses_file_key, multiple_choice_file
-            )
-            queue.enqueue(create_embeddings_for_question, question.id, depends_on=responses)
+            import_responses.enqueue(str(question.id), responses_file_key, multiple_choice_file)
+            create_embeddings_for_question.enqueue(str(question.id))
 
             if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
                 logger.info("not importing output-mappings")
             else:
                 output_folder = f"{outputs_path}question_part_{question_num_str}/"
-                themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
-                response_annotations = queue.enqueue(
-                    import_response_annotations, question, output_folder, depends_on=themes
-                )
-                queue.enqueue(
-                    import_response_annotation_themes,
-                    question,
-                    output_folder,
-                    depends_on=response_annotations,
-                )
+                import_themes.enqueue(str(question.id), output_folder)
+                import_response_annotations.enqueue(str(question.id), output_folder)
+                import_response_annotation_themes.enqueue(str(question.id), output_folder)
 
     except Exception as e:
         logger.error(
@@ -599,14 +595,15 @@ def import_questions(
         raise
 
 
-def import_cross_cutting_themes(consultation: Consultation, consultation_code: str, timestamp: str):
+@task(priority=10, queue_name="default")
+def import_cross_cutting_themes(consultation_id: UUID, consultation_code: str, timestamp: str):
     """
     Import cross-cutting themes that span across multiple questions.
     Must run after all themes have been imported.
     """
     logger.info(
-        "Starting cross-cutting themes import for consultation {consultation_title}",
-        consultation_title=consultation.title,
+        "Starting cross-cutting themes import for consultation {consultation_id}",
+        consultation_id=consultation_id,
     )
 
     s3_client = boto3.client("s3")
@@ -624,12 +621,14 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
         raise
 
     # Get all questions for this consultation for lookup
-    questions_dict = {q.number: q for q in Question.objects.filter(consultation=consultation)}
+    questions_dict = {q.number: q for q in Question.objects.filter(consultation_id=consultation_id)}
 
     for cct_entry in cct_data:
         # Create the cross-cutting theme
         cross_cutting_theme = CrossCuttingTheme.objects.create(
-            consultation=consultation, name=cct_entry["name"], description=cct_entry["description"]
+            consultation_id=consultation_id,
+            name=cct_entry["name"],
+            description=cct_entry["description"],
         )
         logger.info(
             "Created cross-cutting theme: {cross_cutting_theme_name}",
@@ -751,10 +750,8 @@ def create_consultation(
         )
 
         # Import cross-cutting themes after all questions and themes are imported
-        queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
-        queue.enqueue(
-            import_cross_cutting_themes,
-            consultation,
+        import_cross_cutting_themes.enqueue(
+            str(consultation.id),
             consultation_code,
             timestamp,
         )

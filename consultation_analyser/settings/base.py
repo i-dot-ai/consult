@@ -57,12 +57,13 @@ INSTALLED_APPS = [
     "crispy_forms",
     "crispy_forms_gds",
     "django.contrib.humanize",
-    "django_rq",
     "simple_history",
     "rest_framework",
     "django_filters",
     "rest_framework_simplejwt",
     "drf_spectacular",
+    "django_tasks",
+    "django_tasks.backends.database",
 ]
 
 
@@ -208,10 +209,6 @@ LOGGING = {
             "format": "[{server_time}] {name}: {message}",
             "style": "{",
         },
-        "rq_console": {
-            "format": "%(asctime)s %(message)s",
-            "datefmt": "%H:%M:%S",
-        },
     },
     "handlers": {
         "stdout": {
@@ -220,13 +217,6 @@ LOGGING = {
             "stream": sys.stdout,
             "formatter": "pipeline",
         },
-        "rq_console": {
-            "level": "INFO",
-            "class": "rq.logutils.ColorizingStreamHandler",
-            "stream": sys.stdout,
-            "formatter": "rq_console",
-            "exclude": ["%(asctime)s"],
-        },
     },
     "loggers": {
         "pipeline": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
@@ -234,7 +224,6 @@ LOGGING = {
         "import": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "export": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "dummy_data": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
-        "rq.worker": {"handlers": ["rq_console"], "level": "INFO"},
     },
 }
 
@@ -308,12 +297,11 @@ CACHES = {
     },
 }
 
-# rq
-RQ_QUEUES = {
+# django-tasks configuration
+TASKS = {
     "default": {
-        "USE_REDIS_CACHE": "redis",
-        "ASYNC": True,
-    },
+        "BACKEND": "django_tasks.backends.database.DatabaseBackend",
+    }
 }
 
 if DEBUG:
