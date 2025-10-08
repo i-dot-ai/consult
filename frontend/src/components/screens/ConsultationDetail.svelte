@@ -92,7 +92,7 @@
         <div class="mb-8">
           {#each favQuestions as question}
             <QuestionCard
-              consultationId={consultationId}
+              {consultationId}
               {question}
               highlightText={searchValue}
               clickable={true}
@@ -140,7 +140,7 @@
         <div class="mb-4">
           {#each displayQuestions as question}
             <QuestionCard
-              consultationId={consultationId}
+              {consultationId}
               {question}
               highlightText={searchValue}
               clickable={true}

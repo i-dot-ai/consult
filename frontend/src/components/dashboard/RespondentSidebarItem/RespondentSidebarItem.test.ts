@@ -3,7 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
 import Star from "../../svg/material/Star.svelte";
-import RespondentSidebarItem, { type Props } from "./RespondentSidebarItem.svelte";
+import RespondentSidebarItem, {
+  type Props,
+} from "./RespondentSidebarItem.svelte";
 import RespondentSidebarItemStory from "./RespondentSidebarItemStory.svelte";
 
 let testData: Props;

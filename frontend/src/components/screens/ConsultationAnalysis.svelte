@@ -80,9 +80,7 @@
   ]);
 
   let chartQuestions = $derived(
-    $questionsData?.results?.filter(
-      (question) => question.has_multiple_choice,
-    ),
+    $questionsData?.results?.filter((question) => question.has_multiple_choice),
   );
 
   $effect(() => {

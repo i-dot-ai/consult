@@ -9,7 +9,7 @@
   let hasDashboardAccess: boolean = true;
   let loading: boolean = false;
 
-  type MultipleUserError = { email: string, error: string }[];
+  type MultipleUserError = { email: string; error: string }[];
   let error: MultipleUserError | string | undefined;
 
   const handleSubmit = async () => {
@@ -27,7 +27,10 @@
       const reqBody = emails.length === 1 ? { email: emails[0] } : { emails };
       const res = await fetch("/api/users/", {
         method: "POST",
-        body: JSON.stringify({ ...reqBody, has_dashboard_access: hasDashboardAccess }),
+        body: JSON.stringify({
+          ...reqBody,
+          has_dashboard_access: hasDashboardAccess,
+        }),
         headers: { "Content-Type": "application/json" },
       });
 
@@ -39,11 +42,15 @@
           error = errorResponse.email?.[0] || "something went wrong.";
           return;
         } else {
-          const errorResponse: { errors: { email: string, errors: { email?: string[] } }[] }= await res.json();
-          error = errorResponse.errors.map(({email, errors}) => ({email, error: errors.email?.[0] || "something went wrong."  }));
+          const errorResponse: {
+            errors: { email: string; errors: { email?: string[] } }[];
+          } = await res.json();
+          error = errorResponse.errors.map(({ email, errors }) => ({
+            email,
+            error: errors.email?.[0] || "something went wrong.",
+          }));
         }
       }
-
     } catch (err: any) {
       error = err.message || "something went wrong.";
     } finally {
@@ -54,10 +61,9 @@
 
 <Title level={1} text="Add a user" />
 <form
-  class={clsx([ "max-w-md", "mt-4", "flex", "flex-col", "gap-4"])}
+  class={clsx(["max-w-md", "mt-4", "flex", "flex-col", "gap-4"])}
   on:submit|preventDefault={handleSubmit}
 >
-
   <label for="emailsInput">Email addresses</label>
   <textarea
     id="emailsInput"
@@ -79,7 +85,8 @@
       id="canAccessDashboards"
       type="checkbox"
       checked={hasDashboardAccess}
-      on:change={(e) => hasDashboardAccess = (e.target as HTMLInputElement).checked}
+      on:change={(e) =>
+        (hasDashboardAccess = (e.target as HTMLInputElement).checked)}
       disabled={loading}
       class="w-6 h-6 focus:ring-2 focus:ring-yellow-300"
     />
@@ -91,15 +98,15 @@
       <p class="text-sm text-red-500">{`Error: ${error}`}</p>
     {:else}
       {#each error as err}
-        <p class="text-sm text-red-500">{`Error for ${err.email}: ${err.error}`}</p>
+        <p class="text-sm text-red-500">
+          {`Error for ${err.email}: ${err.error}`}
+        </p>
       {/each}
     {/if}
   {/if}
 
   <div class="flex">
-    <Button variant="primary" disabled={loading}>
-      Add user
-    </Button>
+    <Button variant="primary" disabled={loading}>Add user</Button>
   </div>
 
   <div class="mt-4">

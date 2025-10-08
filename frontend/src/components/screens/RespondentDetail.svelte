@@ -40,7 +40,12 @@
     themefinderId: number;
   }
 
-  let { consultationId = "", questionId = "", respondentId = "", themefinderId = 1 }: Props = $props();
+  let {
+    consultationId = "",
+    questionId = "",
+    respondentId = "",
+    themefinderId = 1,
+  }: Props = $props();
 
   const {
     load: loadRespondents,
@@ -88,9 +93,9 @@
 
   function getLoadRespondentsUrl() {
     return (
-      getApiConsultationRespondentsUrl(consultationId)
-      + `?themefinder_id__gte=${themefinderId - 1}&themefinder_id__lte=${themefinderId + 1}`
-    )
+      getApiConsultationRespondentsUrl(consultationId) +
+      `?themefinder_id__gte=${themefinderId - 1}&themefinder_id__lte=${themefinderId + 1}`
+    );
   }
 
   let currRespondent = $derived(
@@ -117,16 +122,16 @@
   <RespondentTopbar
     title={`Respondent ${themefinderId || "not found"}`}
     backText={"Back to Analysis"}
-    onClickBack={() => location.href = getQuestionDetailUrl(consultationId, questionId)}
+    onClickBack={() =>
+      (location.href = getQuestionDetailUrl(consultationId, questionId))}
   >
     <Button
       size="xs"
       disabled={!Boolean(prevRespondent)}
       handleClick={(e) =>
-        (location.href = getRespondentDetailUrl(
-          consultationId,
-          prevRespondent.id,
-        ) + `?themefinder_id=${themefinderId - 1}&question_id=${questionId}`)}
+        (location.href =
+          getRespondentDetailUrl(consultationId, prevRespondent.id) +
+          `?themefinder_id=${themefinderId - 1}&question_id=${questionId}`)}
     >
       <div class="rotate-180">
         <MaterialIcon color="fill-neutral-700">
@@ -141,10 +146,9 @@
       size="xs"
       disabled={!Boolean(nextRespondent)}
       handleClick={(e) =>
-        (location.href = getRespondentDetailUrl(
-          consultationId,
-          nextRespondent.id,
-        ) + `?themefinder_id=${themefinderId + 1}&question_id=${questionId}`)}
+        (location.href =
+          getRespondentDetailUrl(consultationId, nextRespondent.id) +
+          `?themefinder_id=${themefinderId + 1}&question_id=${questionId}`)}
     >
       <span class="ml-2 my-[0.1rem]">Next Respondent</span>
 
