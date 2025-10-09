@@ -1529,9 +1529,7 @@ def test_users_bulk_create_success(client, consultation_user_token):
         url,
         data=json.dumps({"emails": emails}),
         content_type="application/json",
-        headers={
-            "Authorization": f"Bearer {consultation_user_token}"
-        },
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
     )
     assert response.status_code == 201
     assert User.objects.filter(email="bulkuser1@example.com").exists()
@@ -1553,20 +1551,14 @@ def test_users_bulk_create_failure(client, consultation_user_token):
     assert response.status_code == 400
     assert User.objects.filter(email="newuser@example.com").exists()
     assert response.json() == {
-        'detail': 'Some users not created.',
-        'errors': [
+        "detail": "Some users not created.",
+        "errors": [
             {
-                'email': 'existing@example.com',
-                'errors': { 
-                    'email': ['user with this email address already exists.']
-                }
-            }, {
-                'email': 'invalid-email',
-                'errors': {
-                    'email': ['Enter a valid email address.']
-                }
-            }
-        ]
+                "email": "existing@example.com",
+                "errors": {"email": ["user with this email address already exists."]},
+            },
+            {"email": "invalid-email", "errors": {"email": ["Enter a valid email address."]}},
+        ],
     }
 
 
