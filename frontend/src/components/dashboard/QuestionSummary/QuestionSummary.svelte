@@ -136,10 +136,10 @@
               </div>
             </TitleRow>
 
-          {#if anyFilterApplied}
-            <div transition:fly={{ x: 300 }} class="my-4">
-              <Alert>
-                <FilterAlt slot="icon" />
+            {#if anyFilterApplied}
+              <div transition:fly={{ x: 300 }} class="my-4">
+                <Alert>
+                  <FilterAlt slot="icon" />
 
                   <div
                     class="flex justify-between items-center gap-4 flex-wrap"

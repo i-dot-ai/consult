@@ -48,7 +48,7 @@ export const getApiConsultationUrl = (consultationId: string) => {
 };
 export const getApiAnswersUrl = (consultationId: string) => {
   return `/api/consultations/${consultationId}/responses/`;
-}
+};
 export const getApiQuestionsUrl = (consultationId: string) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/`;
 };

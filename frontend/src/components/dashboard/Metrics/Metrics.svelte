@@ -55,9 +55,11 @@
   );
 
   let currQuestion: number = $derived(chartQuestions.at(0)?.number || 0);
-  let selectedChartQuestion: Question | undefined = $derived(chartQuestions.find(
-    (chartQuestion) => chartQuestion?.number === currQuestion
-  ));
+  let selectedChartQuestion: Question | undefined = $derived(
+    chartQuestions.find(
+      (chartQuestion) => chartQuestion?.number === currQuestion,
+    ),
+  );
 
   let totalResponses = $derived(
     questions?.reduce(

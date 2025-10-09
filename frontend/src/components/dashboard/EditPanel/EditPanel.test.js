@@ -26,15 +26,15 @@ describe("EditPanel", () => {
   afterEach(() => cleanup());
 
   it("should match snapshot", async () => {
-    const { container } = render(EditPanel, {...testData});
+    const { container } = render(EditPanel, { ...testData });
 
     const button = container.querySelector("button");
-    ["aria-controls", "id"].forEach(attribute => {
+    ["aria-controls", "id"].forEach((attribute) => {
       // Confirm attribute is created
       expect(button.getAttribute(attribute)).toBeTruthy();
       // Remove randomly generated attributes to avoid mismatch
       button.removeAttribute(attribute);
-    })
+    });
 
     expect(container).toMatchSnapshot();
   });

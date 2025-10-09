@@ -25,7 +25,7 @@
   title={title || undefined}
   data-variant={variant}
   tabindex="0"
-  href={href}
+  {href}
   class={clsx([
     fullWidth && "w-full",
     `text-${size}`,

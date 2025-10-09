@@ -313,9 +313,7 @@
   });
 
   let question = $derived(
-    $questionsData?.results?.find(
-      (question) => question.id === questionId,
-    ),
+    $questionsData?.results?.find((question) => question.id === questionId),
   );
 
   let formattedDemoOptions = $derived.by(() => {

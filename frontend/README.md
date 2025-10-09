@@ -10,6 +10,7 @@
 To run locally, make sure you have the Django application running then run `npm run dev`.
 
 ## Testing
+
 Run `npx playwright install` to be able to run end-to-end tests with playwright.
 
 ## Commands
