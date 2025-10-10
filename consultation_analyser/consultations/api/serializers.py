@@ -71,7 +71,7 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Consultation
-        fields = ["id", "title", "slug", "users"]
+        fields = ["id", "title", "slug", "stage", "users"]
 
 
 class DemographicOptionsSerializer(serializers.Serializer):

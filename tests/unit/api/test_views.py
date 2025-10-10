@@ -1218,6 +1218,7 @@ def test_consultations_list_filter_by_slug(client, consultation_user_token, mult
     assert len(results) == 1
     assert results[0]["slug"] == consultation.slug
     assert results[0]["title"] == consultation.title
+    assert results[0]["stage"] == consultation.stage
 
 
 @pytest.mark.django_db
