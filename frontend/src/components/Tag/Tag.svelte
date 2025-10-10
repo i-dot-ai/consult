@@ -27,7 +27,7 @@
     variant === "warning" &&
       clsx(["text-yellow-700", "bg-yellow-100", "border border-yellow-400"]),
     variant === "success" &&
-      clsx(["text-emerald-700", "bg-emerald-100", "border border-emerald-400"]),
+      clsx(["text-emerald-700", "bg-emerald-50", "border border-emerald-400"]),
   ])}
 >
   {@render children()}
