@@ -4,7 +4,7 @@ from consultation_analyser.consultations import models
 from consultation_analyser.consultations.models import Question
 
 
-def get_sorted_theme_string(themes: list[models.Theme]) -> str:
+def get_sorted_theme_string(themes: list[models.SelectedTheme]) -> str:
     return ", ".join(sorted([theme.key if theme.key else theme.name for theme in themes]))
 
 

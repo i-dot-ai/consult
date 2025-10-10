@@ -1,10 +1,10 @@
 import pytest
 from django.db.utils import IntegrityError
 
-from consultation_analyser.consultations.models import Theme
+from consultation_analyser.consultations.models import SelectedTheme
 from consultation_analyser.factories import (
     QuestionFactory,
-    ThemeFactory,
+    SelectedThemeFactory,
 )
 
 
@@ -12,8 +12,8 @@ from consultation_analyser.factories import (
 class TestTheme:
     def test_theme_creation(self):
         """Test basic theme creation"""
-        theme = ThemeFactory()
-        assert isinstance(theme, Theme)
+        theme = SelectedThemeFactory()
+        assert isinstance(theme, SelectedTheme)
         assert theme.name
         assert theme.description
         assert theme.key
@@ -21,16 +21,16 @@ class TestTheme:
 
     def test_theme_str_representation(self):
         """Test string representation of theme"""
-        theme = ThemeFactory(name="Environmental Impact")
+        theme = SelectedThemeFactory(name="Environmental Impact")
         assert str(theme) == "Environmental Impact"
 
     def test_theme_key_uniqueness_per_question(self):
         """Test that theme keys must be unique within a question"""
-        theme = ThemeFactory(key="ENV")
+        theme = SelectedThemeFactory(key="ENV")
 
         # Can't create another theme with same key for same question
         with pytest.raises(IntegrityError):
-            Theme.objects.create(
+            SelectedTheme.objects.create(
                 question=theme.question,
                 name="Another Environmental Theme",
                 description="Different description",
@@ -41,16 +41,16 @@ class TestTheme:
         """Test that same key can be used for themes in different questions"""
         question2 = QuestionFactory()
 
-        theme1 = ThemeFactory(question=free_text_question, key="ENV")
-        theme2 = ThemeFactory(question=question2, key="ENV")
+        theme1 = SelectedThemeFactory(question=free_text_question, key="ENV")
+        theme2 = SelectedThemeFactory(question=question2, key="ENV")
 
         assert theme1.key == theme2.key
         assert theme1.question != theme2.question
 
     def test_theme_without_key(self):
         """Test that themes can be created without a key"""
-        theme1 = ThemeFactory(key=None)
-        theme2 = ThemeFactory(key=None, question=theme1.question)
+        theme1 = SelectedThemeFactory(key=None)
+        theme2 = SelectedThemeFactory(key=None, question=theme1.question)
 
         # Both themes can exist without keys even for same question
         assert theme1.key is None
@@ -59,11 +59,11 @@ class TestTheme:
 
     def test_theme_question_relationship(self, free_text_question):
         """Test the foreign key relationship with Question"""
-        theme1 = ThemeFactory(question=free_text_question)
-        theme2 = ThemeFactory(question=free_text_question)
+        theme1 = SelectedThemeFactory(question=free_text_question)
+        theme2 = SelectedThemeFactory(question=free_text_question)
 
         # Check reverse relationship
-        question_themes = free_text_question.theme_set.all()
+        question_themes = free_text_question.selectedtheme_set.all()
         assert theme1 in question_themes
         assert theme2 in question_themes
         assert question_themes.count() == 2
