@@ -155,7 +155,7 @@ def delete_consultation_job(consultation: models.Consultation):
         logger.info("Deleting responses...")
         delete_responses_in_batches(consultation_id)
 
-        delete_question_related_table("consultations_theme", consultation_id)
+        delete_question_related_table("consultations_selectedtheme", consultation_id)
         delete_question_related_table("consultations_multichoiceanswer", consultation_id)
 
         delete_respondent_related_table("consultations_respondent_demographics", consultation_id)

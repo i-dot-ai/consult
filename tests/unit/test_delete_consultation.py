@@ -11,7 +11,7 @@ from consultation_analyser.consultations.models import (
     Respondent,
     Response,
     ResponseAnnotation,
-    Theme,
+    SelectedTheme,
 )
 from consultation_analyser.support_console.views.consultations import delete_consultation_job
 
@@ -60,13 +60,13 @@ def test_delete_consultation_cascading():
     )
 
     # Create themes
-    theme1 = Theme.objects.create(
+    theme1 = SelectedTheme.objects.create(
         question=question,
         name="Positive feedback",
         description="Positive responses",
         key="positive",
     )
-    theme2 = Theme.objects.create(
+    theme2 = SelectedTheme.objects.create(
         question=question,
         name="Negative feedback",
         description="Negative responses",
@@ -112,7 +112,7 @@ def test_delete_consultation_cascading():
     assert Question.objects.count() == 2
     assert Respondent.objects.count() == 2
     assert Response.objects.count() == 4
-    assert Theme.objects.count() == 2
+    assert SelectedTheme.objects.count() == 2
     assert ResponseAnnotation.objects.count() == 2
     assert MultiChoiceAnswer.objects.count() == 3
 
@@ -124,7 +124,7 @@ def test_delete_consultation_cascading():
     assert Question.objects.count() == 0
     assert Respondent.objects.count() == 0
     assert Response.objects.count() == 0
-    assert Theme.objects.count() == 0
+    assert SelectedTheme.objects.count() == 0
     assert ResponseAnnotation.objects.count() == 0
     assert MultiChoiceAnswer.objects.count() == 0
 
@@ -151,7 +151,7 @@ def test_delete_consultation_job_success(mock_connection):
         respondent=respondent, question=question, free_text="Test response"
     )
 
-    theme = Theme.objects.create(
+    theme = SelectedTheme.objects.create(
         question=question, name="Test theme", description="Test description", key="test"
     )
 
@@ -169,7 +169,7 @@ def test_delete_consultation_job_success(mock_connection):
     assert Question.objects.filter(consultation_id=consultation_id).exists()
     assert Respondent.objects.filter(consultation_id=consultation_id).exists()
     assert Response.objects.filter(question__consultation_id=consultation_id).exists()
-    assert Theme.objects.filter(question__consultation_id=consultation_id).exists()
+    assert SelectedTheme.objects.filter(question__consultation_id=consultation_id).exists()
     assert ResponseAnnotation.objects.filter(
         response__question__consultation_id=consultation_id
     ).exists()
@@ -182,7 +182,7 @@ def test_delete_consultation_job_success(mock_connection):
     assert not Question.objects.filter(consultation_id=consultation_id).exists()
     assert not Respondent.objects.filter(consultation_id=consultation_id).exists()
     assert not Response.objects.filter(question__consultation_id=consultation_id).exists()
-    assert not Theme.objects.filter(question__consultation_id=consultation_id).exists()
+    assert not SelectedTheme.objects.filter(question__consultation_id=consultation_id).exists()
     assert not ResponseAnnotation.objects.filter(
         response__question__consultation_id=consultation_id
     ).exists()
@@ -275,10 +275,10 @@ def test_delete_consultation_with_multiple_questions():
     )
 
     # Create themes for both questions
-    theme1 = Theme.objects.create(
+    theme1 = SelectedTheme.objects.create(
         question=question1, name="Theme 1", key="t1", description="Theme for Q1"
     )
-    theme2 = Theme.objects.create(
+    theme2 = SelectedTheme.objects.create(
         question=question2, name="Theme 2", key="t2", description="Theme for Q2"
     )
 
@@ -296,7 +296,7 @@ def test_delete_consultation_with_multiple_questions():
     # Verify all data exists
     assert Question.objects.filter(consultation=consultation).count() == 2
     assert Response.objects.filter(question__consultation=consultation).count() == 2
-    assert Theme.objects.filter(question__consultation=consultation).count() == 2
+    assert SelectedTheme.objects.filter(question__consultation=consultation).count() == 2
     assert (
         ResponseAnnotation.objects.filter(response__question__consultation=consultation).count()
         == 2
@@ -308,7 +308,7 @@ def test_delete_consultation_with_multiple_questions():
     # Verify all related data is deleted
     assert Question.objects.filter(consultation_id=consultation.id).count() == 0
     assert Response.objects.filter(question__consultation_id=consultation.id).count() == 0
-    assert Theme.objects.filter(question__consultation_id=consultation.id).count() == 0
+    assert SelectedTheme.objects.filter(question__consultation_id=consultation.id).count() == 0
     assert (
         ResponseAnnotation.objects.filter(
             response__question__consultation_id=consultation.id

@@ -14,7 +14,7 @@ from consultation_analyser.consultations.models import (
     Response,
     ResponseAnnotation,
     ResponseAnnotationTheme,
-    Theme,
+    SelectedTheme,
 )
 from consultation_analyser.support_console.ingest import (
     DEFAULT_TIMEOUT_SECONDS,
@@ -128,13 +128,13 @@ class DemographicOptionAdmin(admin.ModelAdmin):
     readonly_fields = ["consultation", "field_name", "field_value"]
 
 
-class ThemeInline(admin.StackedInline):
-    model = Theme
+class SelectedThemeInline(admin.StackedInline):
+    model = SelectedTheme
     extra = 0
 
 
 class CrossCuttingThemeAdmin(admin.ModelAdmin):
-    inlines = [ThemeInline]
+    inlines = [SelectedThemeInline]
 
 
 admin.site.register(CrossCuttingTheme, CrossCuttingThemeAdmin)

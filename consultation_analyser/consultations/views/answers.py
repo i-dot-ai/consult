@@ -29,7 +29,7 @@ def show(
     annotation, _ = models.ResponseAnnotation.objects.get_or_create(response=response)
 
     # Get all themes for this question
-    all_themes = models.Theme.objects.filter(question=question)
+    all_themes = models.SelectedTheme.objects.filter(question=question)
 
     # Get existing themes for this response
     existing_themes = annotation.themes.all().values_list("id", flat=True)
@@ -39,7 +39,9 @@ def show(
 
         # Set human-reviewed themes (does not preserve original AI assignments)
         if requested_themes:
-            themes_to_add = models.Theme.objects.filter(id__in=requested_themes, question=question)
+            themes_to_add = models.SelectedTheme.objects.filter(
+                id__in=requested_themes, question=question
+            )
             annotation.set_human_reviewed_themes(themes_to_add, request.user)
         else:
             # No themes selected - clear human-reviewed assignments

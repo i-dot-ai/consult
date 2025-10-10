@@ -7,7 +7,7 @@ from consultation_analyser.factories import (
     ResponseAnnotationFactory,
     ResponseFactory,
     ReviewedResponseAnnotationFactory,
-    ThemeFactory,
+    SelectedThemeFactory,
     UserFactory,
 )
 
@@ -51,8 +51,8 @@ class TestResponseAnnotation:
     def test_custom_themes(self):
         """Test creating annotation with specific themes"""
         response = ResponseFactory()
-        theme1 = ThemeFactory(question=response.question)
-        theme2 = ThemeFactory(question=response.question)
+        theme1 = SelectedThemeFactory(question=response.question)
+        theme2 = SelectedThemeFactory(question=response.question)
 
         annotation = ResponseAnnotationFactory(response=response, themes=[theme1, theme2])
 

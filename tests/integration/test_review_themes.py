@@ -7,7 +7,7 @@ from consultation_analyser.factories import (
     RespondentFactory,
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
-    ThemeFactory,
+    SelectedThemeFactory,
     UserFactory,
 )
 from tests.helpers import sign_in
@@ -25,8 +25,8 @@ def test_review_show_response(django_app):
     response2 = ResponseFactory(respondent=respondent2, question=question)
 
     # Add some themes
-    theme_a = ThemeFactory(question=question, key="A")
-    theme_b = ThemeFactory(question=question, key="B")
+    theme_a = SelectedThemeFactory(question=question, key="A")
+    theme_b = SelectedThemeFactory(question=question, key="B")
     response_annotation1 = ResponseAnnotationFactoryNoThemes(response=response1)
     response_annotation1.add_original_ai_themes([theme_a])
     response_annotation2 = ResponseAnnotationFactoryNoThemes(response=response2)
