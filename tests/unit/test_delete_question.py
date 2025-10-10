@@ -10,7 +10,7 @@ def test_delete_question(consultation):
     question = QuestionFactory()
     respondent = factories.RespondentFactory(consultation=consultation)
     response = factories.ResponseFactory(question=question, respondent=respondent)
-    theme = factories.ThemeFactory(question=question)
+    theme = factories.SelectedThemeFactory(question=question)
     annotation = factories.ResponseAnnotationFactoryNoThemes(response=response)
     annotation.add_original_ai_themes([theme])
 
@@ -18,7 +18,7 @@ def test_delete_question(consultation):
 
     assert models.Question.objects.count() == 1
     assert models.Response.objects.count() == 1
-    assert models.Theme.objects.count() == 1
+    assert models.SelectedTheme.objects.count() == 1
     assert models.ResponseAnnotationTheme.objects.count() == 1
 
     question.delete()
@@ -26,5 +26,5 @@ def test_delete_question(consultation):
     assert models.Respondent.objects.count() == num_respondents
     assert models.Question.objects.count() == 0
     assert models.Response.objects.count() == 0
-    assert models.Theme.objects.count() == 0
+    assert models.SelectedTheme.objects.count() == 0
     assert models.ResponseAnnotationTheme.objects.count() == 0

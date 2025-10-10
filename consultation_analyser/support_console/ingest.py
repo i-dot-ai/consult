@@ -19,7 +19,7 @@ from consultation_analyser.consultations.models import (
     Response,
     ResponseAnnotation,
     ResponseAnnotationTheme,
-    Theme,
+    SelectedTheme,
 )
 from consultation_analyser.embeddings import embed_text
 from consultation_analyser.support_console.file_models import (
@@ -255,7 +255,7 @@ def import_response_annotation_themes(question: Question, output_folder: str):
 
     objects_to_save = []
 
-    theme_mappings = dict(Theme.objects.filter(question=question).values_list("key", "pk"))
+    theme_mappings = dict(SelectedTheme.objects.filter(question=question).values_list("key", "pk"))
 
     annotation_theme_mappings = ResponseAnnotation.objects.filter(
         response__question=question
@@ -500,7 +500,7 @@ def import_themes(question: Question, output_folder: str):
     themes_to_save = []
     for theme in theme_data:
         themes_to_save.append(
-            Theme(
+            SelectedTheme(
                 question=question,
                 name=theme["theme_name"],
                 description=theme["theme_description"],
@@ -508,7 +508,7 @@ def import_themes(question: Question, output_folder: str):
             )
         )
 
-    themes = Theme.objects.bulk_create(themes_to_save)
+    themes = SelectedTheme.objects.bulk_create(themes_to_save)
     logger.info(
         "Imported {len_themes} themes for question {question_number}",
         len_themes=len(themes),
@@ -651,14 +651,14 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
             for theme_key in theme_keys:
                 # Find the theme
                 try:
-                    theme = Theme.objects.get(question=question, key=theme_key)
+                    theme = SelectedTheme.objects.get(question=question, key=theme_key)
                     theme.parent = cross_cutting_theme
                     theme.save()
-                except Theme.DoesNotExist:
+                except SelectedTheme.DoesNotExist:
                     raise ValueError(
-                        f"Theme {theme_key} not found for question {question_number} in cross-cutting theme '{cct_entry['name']}'"
+                        f"SelectedTheme {theme_key} not found for question {question_number} in cross-cutting theme '{cct_entry['name']}'"
                     )
-                except Theme.MultipleObjectsReturned:
+                except SelectedTheme.MultipleObjectsReturned:
                     raise ValueError(
                         f"Multiple themes with key {theme_key} found for question {question_number} in cross-cutting theme '{cct_entry['name']}'"
                     )

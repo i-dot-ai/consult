@@ -14,7 +14,7 @@ from consultation_analyser.factories import (
     RespondentFactory,
     ResponseAnnotationFactoryNoThemes,
     ResponseFactory,
-    ThemeFactory,
+    SelectedThemeFactory,
 )
 from consultation_analyser.hosting_environment import HostingEnvironment
 
@@ -28,7 +28,7 @@ def create_dummy_consultation_from_yaml(
 ) -> ConsultationFactory:
     """
     Create consultation with questions, responses and themes from yaml file.
-    Creates relevant objects: Consultation, Question, Response, Theme, ResponseAnnotation,
+    Creates relevant objects: Consultation, Question, Response, SelectedTheme, ResponseAnnotation,
     Respondent.
     """
     if HostingEnvironment.is_production():
@@ -75,7 +75,7 @@ def create_dummy_consultation_from_yaml(
                 theme_name = data["name"]
                 theme_desc = data["description"]
                 theme_key = data["key"]
-                theme_obj = ThemeFactory(
+                theme_obj = SelectedThemeFactory(
                     question=question, description=theme_desc, key=theme_key, name=theme_name
                 )
                 theme_objects.append(theme_obj)

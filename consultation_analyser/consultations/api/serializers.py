@@ -14,7 +14,7 @@ from consultation_analyser.consultations.models import (
     Respondent,
     Response,
     ResponseAnnotationTheme,
-    Theme,
+    SelectedTheme,
 )
 
 
@@ -93,7 +93,7 @@ class ThemeSerializer(serializers.ModelSerializer):
     key = serializers.CharField(required=False)
 
     class Meta:
-        model = Theme
+        model = SelectedTheme
         fields = ["id", "name", "description", "key"]
 
 
@@ -110,16 +110,16 @@ class ThemeSerializer2(serializers.ModelSerializer):
 
     response_count = serializers.SerializerMethodField()
 
-    def get_response_count(self, theme: Theme) -> int:
+    def get_response_count(self, theme: SelectedTheme) -> int:
         return Response.objects.filter(annotation__themes=theme).count()
 
     class Meta:
-        model = Theme
+        model = SelectedTheme
         fields = ["name", "description", "key", "question_id", "response_count"]
 
 
 class CrossCuttingThemeSerializer(serializers.ModelSerializer):
-    themes = ThemeSerializer2(many=True, source="theme_set", read_only=True)
+    themes = ThemeSerializer2(many=True, source="selectedtheme_set", read_only=True)
     response_count = serializers.SerializerMethodField()
 
     def get_response_count(self, cross_cutting_theme: CrossCuttingTheme) -> int:
@@ -140,8 +140,8 @@ class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
     def to_internal_value(self, data):
         pk = super().to_internal_value(data)["theme"]["id"]
         try:
-            return Theme.objects.get(pk=pk)
-        except Theme.DoesNotExist:
+            return SelectedTheme.objects.get(pk=pk)
+        except SelectedTheme.DoesNotExist:
             detail = f'Invalid pk "{pk}" - object does not exist.'
             raise ValidationError(detail=detail, code="invalid")
 
