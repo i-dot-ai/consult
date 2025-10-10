@@ -105,7 +105,7 @@
             <td class="pr-4">
               <div transition:fade class="p-2">
                 <h3 class="font-normal text-sm">{theme.name}</h3>
-                <p class="font-light text-sm">{theme.description}</p>
+                <p class="font-light text-neutral-500 text-sm">{theme.description}</p>
               </div>
             </td>
             <td class="pr-4">
