@@ -111,7 +111,7 @@ class RespondentViewSet(ModelViewSet):
 
 class QuestionViewSet(ReadOnlyModelViewSet):
     serializer_class = QuestionSerializer
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    permission_classes = [CanSeeConsultation]
     filterset_fields = ["has_free_text"]
 
     def get_queryset(self):
