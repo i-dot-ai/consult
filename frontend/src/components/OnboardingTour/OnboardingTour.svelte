@@ -39,6 +39,10 @@
   let targetRect: TargetRect | null = $state(null);
 
   const updateTargetRect = () => {
+    if (isOnboardingComplete()) {
+      return;
+    }
+
     const step = steps[currStep];
 
     if (!step) {
