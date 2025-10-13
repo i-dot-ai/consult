@@ -63,6 +63,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
             "has_multiple_choice",
             "multiple_choice_answer",
             "proportion_of_audited_answers",
+            "theme_status",
         ]
 
 

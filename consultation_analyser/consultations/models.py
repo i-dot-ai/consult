@@ -74,23 +74,22 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         return shorten(self.slug, width=64, placeholder="...")
 
 
-class QuestionThemeStatus(models.TextChoices):
-    DRAFT = "draft", "Draft"
-    CONFIRMED = "confirmed", "Confirmed"
-
-
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     """
     Combined question model - can have free text, multiple choice, or both.
     Replaces the Question/QuestionPart split.
     """
 
+    class ThemeStatus(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        CONFIRMED = "confirmed", "Confirmed"
+
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     text = models.TextField()
     slug = models.SlugField(max_length=256)
     number = models.IntegerField()
     theme_status = models.CharField(
-        max_length=32, choices=QuestionThemeStatus.choices, default=QuestionThemeStatus.CONFIRMED
+        max_length=32, choices=ThemeStatus.choices, default=ThemeStatus.CONFIRMED
     )
 
     # Question configuration

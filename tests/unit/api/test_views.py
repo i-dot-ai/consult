@@ -8,7 +8,11 @@ from django.test import override_settings
 from django.urls import reverse
 
 from consultation_analyser.authentication.models import User
-from consultation_analyser.consultations.models import ResponseAnnotation, ResponseAnnotationTheme
+from consultation_analyser.consultations.models import (
+    Question,
+    ResponseAnnotation,
+    ResponseAnnotationTheme,
+)
 from consultation_analyser.factories import (
     QuestionFactory,
     RespondentFactory,
@@ -866,6 +870,50 @@ class TestQuestionInformationAPIView:
         assert data["total_responses"] == 2
         answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
         assert answer_counts == {"blue": 1, "green": 0, "red": 2}
+
+    def test_patch_question_theme_status(
+        self, client, consultation_user, free_text_question, consultation_user_token
+    ):
+        """Test API endpoint for patching a question's theme status"""
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        assert free_text_question.theme_status == Question.ThemeStatus.CONFIRMED
+        response = client.patch(
+            url,
+            data={"theme_status": Question.ThemeStatus.DRAFT},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        assert response.status_code == 200
+        free_text_question.refresh_from_db()
+        assert free_text_question.theme_status == Question.ThemeStatus.DRAFT
+
+    def test_patch_question_invalid_theme_status(
+        self, client, consultation_user, free_text_question, consultation_user_token
+    ):
+        """Test API endpoint for patching a question's theme status with invalid value"""
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        assert free_text_question.theme_status == Question.ThemeStatus.CONFIRMED
+        response = client.patch(
+            url,
+            data={"theme_status": "INVALID"},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        assert response.status_code == 400
+        free_text_question.refresh_from_db()
+        assert free_text_question.theme_status == Question.ThemeStatus.CONFIRMED
 
 
 @pytest.mark.django_db
