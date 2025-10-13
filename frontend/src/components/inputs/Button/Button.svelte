@@ -16,7 +16,7 @@
   export let disabled: boolean = false;
   export let fullWidth: boolean = false;
   export let testId: string = "";
-  export let href: string | undefined;
+  export let href: string | undefined = undefined;
 </script>
 
 <svelte:element
@@ -25,7 +25,7 @@
   title={title || undefined}
   data-variant={variant}
   tabindex="0"
-  href={href}
+  {href}
   class={clsx([
     fullWidth && "w-full",
     `text-${size}`,
@@ -39,6 +39,7 @@
     variant === "ghost" ? "border-transparent" : "border-gray-300",
     "transition-colors",
     "duration-300",
+    "self-start",
     "inline-flex",
     "gap-1",
     "items-center",

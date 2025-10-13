@@ -3,10 +3,12 @@ import userEvent from "@testing-library/user-event";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
 import Star from "../../svg/material/Star.svelte";
-import RespondentSidebarItem from "./RespondentSidebarItem.svelte";
+import RespondentSidebarItem, {
+  type Props,
+} from "./RespondentSidebarItem.svelte";
 import RespondentSidebarItemStory from "./RespondentSidebarItemStory.svelte";
 
-let testData;
+let testData: Props;
 
 describe("RespondentSidebarItem", () => {
   beforeEach(() => {
@@ -82,7 +84,7 @@ describe("RespondentSidebarItem", () => {
     await user.click(editButton);
 
     // clear existing subtitle and type new one
-    let subtitleInput = getByLabelText("Edit Subtitle");
+    let subtitleInput = getByLabelText("Edit Subtitle") as HTMLInputElement;
     await user.clear(subtitleInput);
     await user.type(subtitleInput, "New Subtitle");
 
@@ -101,7 +103,7 @@ describe("RespondentSidebarItem", () => {
 
     // re-enable edit mode and check that staged subtitle is reset
     await user.click(editButton);
-    subtitleInput = getByLabelText("Edit Subtitle");
+    subtitleInput = getByLabelText("Edit Subtitle") as HTMLInputElement;
     expect(subtitleInput.value).toBe(testData.subtitle);
   });
 

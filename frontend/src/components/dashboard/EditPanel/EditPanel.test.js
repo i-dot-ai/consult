@@ -25,6 +25,20 @@ describe("EditPanel", () => {
 
   afterEach(() => cleanup());
 
+  it("should match snapshot", async () => {
+    const { container } = render(EditPanel, { ...testData });
+
+    const button = container.querySelector("button");
+    ["aria-controls", "id"].forEach((attribute) => {
+      // Confirm attribute is created
+      expect(button.getAttribute(attribute)).toBeTruthy();
+      // Remove randomly generated attributes to avoid mismatch
+      button.removeAttribute(attribute);
+    });
+
+    expect(container).toMatchSnapshot();
+  });
+
   it("should open and close on click and call setEditing callback", async () => {
     vi.mock("svelte/transition");
     const setEditingMock = vi.fn();
@@ -85,7 +99,7 @@ describe("EditPanel", () => {
 
     // Correct endpoint is called with correct body
     expect(updateAnswerMock).toHaveBeenCalledWith(
-      `/api/consultations/${testData.consultationId}/questions/${testData.questionId}/responses/${testData.answerId}/`,
+      `/api/consultations/${testData.consultationId}/responses/${testData.answerId}/`,
       "PATCH",
       {
         evidenceRich: false,

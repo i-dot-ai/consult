@@ -93,7 +93,7 @@ class ThemeViewSet(ReadOnlyModelViewSet):
 class RespondentViewSet(ModelViewSet):
     serializer_class = RespondentSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
-    filterset_fields = ["themefinder_id"]
+    filterset_fields = {"themefinder_id": ["exact", "gte", "lte"]}
     http_method_names = ["get", "patch"]
 
     def get_queryset(self):
@@ -105,7 +105,7 @@ class RespondentViewSet(ModelViewSet):
 
 class QuestionViewSet(ReadOnlyModelViewSet):
     serializer_class = QuestionSerializer
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    permission_classes = [CanSeeConsultation]
     filterset_fields = ["has_free_text"]
 
     def get_queryset(self):
@@ -239,6 +239,32 @@ class ResponseViewSet(ModelViewSet):
 
 
 class UserViewSet(ModelViewSet):
+    def create(self, request, *args, **kwargs):
+        # Support both single and bulk creation
+        data = request.data
+        has_dashboard_access = data.get("has_dashboard_access", False)
+
+        # If 'emails' is present and is a list, treat as bulk creation
+        if isinstance(data.get("emails"), list):
+            emails = data["emails"]
+            created_users = []
+            errors = []
+            for email in emails:
+                serializer = self.get_serializer(
+                    data={"email": email, "has_dashboard_access": has_dashboard_access}
+                )
+                if serializer.is_valid():
+                    user = serializer.save()
+                    created_users.append(user)
+                else:
+                    errors.append({"email": email, "errors": serializer.errors})
+            if errors:
+                return Response({"detail": "Some users not created.", "errors": errors}, status=400)
+            return Response(self.get_serializer(created_users, many=True).data, status=201)
+
+        # Otherwise, treat as single user creation using default DRF behavior
+        return super().create(request, *args, **kwargs)
+
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
     pagination_class = PageNumberPagination

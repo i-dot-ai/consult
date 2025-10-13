@@ -15,11 +15,12 @@
   import Person from "../../svg/material/Person.svelte";
   import { getRespondentDetailUrl, Routes } from "../../../global/routes";
 
-  interface Props {
+  export interface Props {
     consultationId?: string;
     questionId?: string;
     answerId?: string;
-    displayId?: string;
+    respondentDisplayId?: string;
+    respondentId?: string;
     text?: string;
     demoData?: string[];
     evidenceRich?: boolean;
@@ -37,7 +38,8 @@
     consultationId = "",
     questionId = "",
     answerId = "",
-    displayId = "",
+    respondentDisplayId = "",
+    respondentId = "",
     text = "",
     demoData = [],
     evidenceRich = false,
@@ -163,17 +165,16 @@
               <Button
                 size="xs"
                 handleClick={() => {
-                  location.href = getRespondentDetailUrl(
-                    consultationId,
-                    displayId,
-                  );
+                  location.href =
+                    getRespondentDetailUrl(consultationId, respondentId) +
+                    `?themefinder_id=${respondentDisplayId}&question_id=${questionId}`;
                 }}
               >
                 <MaterialIcon color="fill-neutral-500" size="0.8rem">
                   <Person />
                 </MaterialIcon>
 
-                <span class="ml-1">ID: {displayId}</span>
+                <span class="ml-1">ID: {respondentDisplayId}</span>
               </Button>
             </div>
           {/if}

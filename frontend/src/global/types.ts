@@ -86,7 +86,8 @@ export interface ResponseTheme {
 
 export interface ResponseAnswer {
   id: string;
-  identifier: number;
+  identifier: number; // respondent themefinder id
+  respondent_id: string;
   free_text_answer_text: string;
   demographic_data: { [category: string]: string };
   themes: ResponseTheme[];

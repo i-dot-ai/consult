@@ -38,10 +38,21 @@ class TimeStampedModel(models.Model):
         ordering = ["created_at"]
 
 
+class ConsultationStage(models.TextChoices):
+    THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
+    ANALYSIS = "analysis", "Analysis"
+
+
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     title = models.CharField(max_length=256)
     slug = models.SlugField(max_length=256, unique=True)
     users = models.ManyToManyField(User)
+    stage = models.CharField(
+        max_length=32,
+        choices=ConsultationStage.choices,
+        default=ConsultationStage.ANALYSIS,
+    )
+    s3_bucket = models.CharField(max_length=256, null=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -63,6 +74,11 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         return shorten(self.slug, width=64, placeholder="...")
 
 
+class QuestionThemeStatus(models.TextChoices):
+    DRAFT = "draft", "Draft"
+    CONFIRMED = "confirmed", "Confirmed"
+
+
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     """
     Combined question model - can have free text, multiple choice, or both.
@@ -73,6 +89,9 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     text = models.TextField()
     slug = models.SlugField(max_length=256)
     number = models.IntegerField()
+    theme_status = models.CharField(
+        max_length=32, choices=QuestionThemeStatus.choices, default=QuestionThemeStatus.CONFIRMED
+    )
 
     # Question configuration
     has_free_text = models.BooleanField(default=True)
@@ -218,6 +237,23 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
 
     def __str__(self):
         return f"{self.field_name}={self.field_value}"
+
+
+class CandidateTheme(UUIDPrimaryKeyModel, TimeStampedModel):
+    """AI-generated (candidate) themes for a question"""
+
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    name = models.TextField()
+    description = models.TextField()
+    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        indexes = [
+            models.Index(fields=["question"]),
+        ]
+
+    def __str__(self):
+        return self.name
 
 
 class Theme(UUIDPrimaryKeyModel, TimeStampedModel):

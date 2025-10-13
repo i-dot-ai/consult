@@ -5,16 +5,16 @@
   import Person from "../../svg/material/Person.svelte";
   import Panel from "../Panel/Panel.svelte";
   import Calendar from "../../svg/material/Calendar.svelte";
-  import Shield from "../../svg/material/Shield.svelte";
-  import LocationOn from "../../svg/material/LocationOn.svelte";
 
   import RespondentSidebarItem from "../RespondentSidebarItem/RespondentSidebarItem.svelte";
 
-  interface Props {
-    respondentType: string;
-    geographicLocation: string;
-    selfReportedDisability: string;
-    sector: string;
+  export interface RespondentDemoItem {
+    name: string;
+    value: string;
+  }
+
+  export interface Props {
+    demoData: RespondentDemoItem[];
     stakeholderName: string;
     questionsAnswered: number;
     totalQuestions: number;
@@ -22,10 +22,7 @@
   }
 
   let {
-    respondentType = "",
-    geographicLocation = "",
-    selfReportedDisability = "",
-    sector = "",
+    demoData = [],
     stakeholderName = "",
     questionsAnswered = 0,
     totalQuestions = 0,
@@ -42,30 +39,16 @@
   </div>
 
   <div class="pl-4">
-    <RespondentSidebarItem
-      title="Respondent Type"
-      subtitle={respondentType}
-      icon={Person}
-    />
-
-    <RespondentSidebarItem
-      title="Geographic Location"
-      subtitle={geographicLocation}
-      icon={LocationOn}
-    />
-
-    <RespondentSidebarItem
-      title="Self-Reported Disability"
-      subtitle={selfReportedDisability}
-      icon={Shield}
-    />
-
-    <RespondentSidebarItem title="Sector" subtitle={sector} icon={Person} />
+    {#each demoData as demoDataItem}
+      <RespondentSidebarItem
+        title={demoDataItem.name}
+        subtitle={demoDataItem.value}
+      />
+    {/each}
 
     <RespondentSidebarItem
       title="Stakeholder Name"
       subtitle={stakeholderName}
-      icon={Person}
       editable={true}
       updateSubtitle={updateStakeholderName}
     />

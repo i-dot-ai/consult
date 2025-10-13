@@ -5,12 +5,12 @@ import json
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict
 
 import boto3
 import pandas as pd
 from langchain_openai import ChatOpenAI
 from themefinder import (
+    theme_clustering,
     theme_condensation,
     theme_generation,
     theme_mapping,
@@ -210,7 +210,7 @@ def save_to_excel(
             worksheet.write(2, col_num, col, header_format)
 
             # Write data cells with appropriate format
-            format_to_use = highlight_format if short_list and col_num < 3 else wrap_format
+            format_to_use = highlight_format if short_list and col_num < 4 else wrap_format
             for row_num in range(len(df)):
                 worksheet.write(row_num + 3, col_num, df.iloc[row_num, col_num], format_to_use)
 
@@ -236,7 +236,7 @@ def produce_short_list_df(themes_df: pd.DataFrame, mapped_df: pd.DataFrame) -> p
     short_list = short_list[["Theme Name", "Theme Description"]]
 
     # Count occurrences of each topic in the mapped responses
-    topic_counts: Dict[Any, Any] = {}
+    topic_counts: dict[str, int] = {}
     for labels in mapped_df["labels"]:
         for topic_id in labels:
             topic_counts[topic_id] = topic_counts.get(topic_id, 0) + 1
@@ -256,7 +256,91 @@ def produce_short_list_df(themes_df: pd.DataFrame, mapped_df: pd.DataFrame) -> p
             short_list.loc[topic_id, f"Example {i}"] = example
 
     # Sort by count in descending order
+    short_list.reset_index(inplace=True)
     return short_list.sort_values(by="Count", ascending=False)
+
+
+def agentic_theme_selection(
+    refined_themes_df,
+    llm,
+    min_selected_themes=10,
+    max_selected_themes=20,
+    max_cluster_retries=3,
+    initial_significance_percentage=5,
+    significance_adjustment_step=2,
+):
+    """
+    Iteratively select themes using clustering with adaptive significance threshold.
+    Will retry a fixed number of times before defaulting to top 20 themes.
+
+    Parameters:
+    -----------
+    refined_themes_df : pd.DataFrame
+        DataFrame containing themes with 'topic' column
+    llm : object
+        Language model object for theme clustering
+    min_selected_themes : int, default=10
+        Minimum number of themes to select
+    max_selected_themes : int, default=20
+        Maximum number of themes to select
+    max_cluster_retries : int, default=3
+        Maximum number of clustering iterations to attempt
+    initial_significance_percentage : int, default=5
+        Starting significance percentage for clustering
+    significance_adjustment_step : int, default=2
+        Amount to adjust significance percentage each iteration
+
+    Returns:
+    --------
+    pd.DataFrame
+        Selected themes with 'Theme Name', 'Theme Description', and 'topic' columns
+    """
+    refined_themes_df[["topic_label", "topic_description"]] = refined_themes_df["topic"].str.split(
+        ":", n=1, expand=True
+    )
+    selected_themes = pd.DataFrame()
+    cluster_iterations = 0
+    significance_percentage = initial_significance_percentage
+
+    while (
+        len(selected_themes) < min_selected_themes or len(selected_themes) > max_selected_themes
+    ) and (cluster_iterations < max_cluster_retries):
+        print(f"Iteration {cluster_iterations} (Significance %: {significance_percentage})")
+        try:
+            selected_themes, _ = theme_clustering(
+                refined_themes_df,
+                llm,
+                return_all_themes=False,
+                max_iterations=0,
+                significance_percentage=significance_percentage,
+            )
+            selected_themes["topic"] = (
+                selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
+            )
+            selected_themes.rename(
+                columns={"topic_label": "Theme Name", "topic_description": "Theme Description"},
+                inplace=True,
+            )
+            print(f"Selected {len(selected_themes)} themes")
+
+            # Adjust significance_percentage based on result
+            if len(selected_themes) > max_selected_themes:
+                significance_percentage += significance_adjustment_step
+            elif len(selected_themes) < min_selected_themes and significance_percentage > 2:
+                significance_percentage = max(
+                    2, significance_percentage - significance_adjustment_step
+                )
+        except Exception as e:
+            print(f"Retrying clustering due to error: {e}")
+        cluster_iterations += 1
+
+    if len(selected_themes) < min_selected_themes or len(selected_themes) > max_selected_themes:
+        print("Unsuccessful clustering, using top 20 themes")
+        selected_themes = refined_themes_df.sort_values(by="source_topic_count", ascending=False)[
+            :20
+        ].copy()
+
+    return selected_themes
 
 
 async def process_consultation(consultation_dir: str = "test_consultation") -> str:
@@ -302,14 +386,34 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
                     n_responses=len(responses_df),
                 )
 
-                # Select top 20 themes for short list
-                top_themes_df = refined_themes_df.iloc[:20]
-                # Map responses to themes
+                # Select short list, using clustering if more than 20 themes
+                if len(refined_themes_df) > 20:
+                    selected_themes = agentic_theme_selection(refined_themes_df, llm)
+                else:
+                    logger.info("Fewer than 20 themes, clustering not required")
+                    selected_themes = refined_themes_df.copy()
+
+                # Map responses to themes, including "None of the above" option
+                mapping_themes = selected_themes[["topic_id", "topic"]].copy()
+                mapping_themes = pd.concat(
+                    [
+                        mapping_themes,
+                        pd.DataFrame(
+                            [
+                                {
+                                    "topic_id": "XYZ",
+                                    "topic": "None of the above: the response doesn't match any of the provided topics.",
+                                }
+                            ]
+                        ),
+                    ],
+                    ignore_index=True,
+                )
 
                 mapped_df, _ = await theme_mapping(
                     responses_df,
                     llm,
-                    refined_themes_df=top_themes_df[["topic_id", "topic"]],
+                    refined_themes_df=mapping_themes[["topic_id", "topic"]],
                     question=question,
                 )
                 logger.info("N unprocessables: %d", len(_))
@@ -317,7 +421,7 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
                 # Save detailed short list
                 short_list_path = question_output_dir / "detailed_short_list.xlsx"
                 save_to_excel(
-                    produce_short_list_df(top_themes_df, mapped_df),
+                    produce_short_list_df(selected_themes, mapped_df),
                     str(short_list_path),
                     question=question,
                     short_list=True,

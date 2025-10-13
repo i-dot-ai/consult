@@ -46,6 +46,12 @@ export const getRespondentDetailUrl = (
 export const getApiConsultationUrl = (consultationId: string) => {
   return `${Routes.ApiConsultations}/${consultationId}`;
 };
+export const getApiAnswersUrl = (consultationId: string) => {
+  return `/api/consultations/${consultationId}/responses/`;
+};
+export const getApiQuestionsUrl = (consultationId: string) => {
+  return `${Routes.ApiConsultations}/${consultationId}/questions/`;
+};
 export const getApiAnswerUrl = (
   consultationId: string,
   questionId: string,
@@ -59,4 +65,19 @@ export const getApiAnswerFlagUrl = (
   answerId: string,
 ) => {
   return `${Routes.ApiConsultations}/${consultationId}/responses/${answerId}/toggle-flag/`;
+};
+export const getApiConsultationRespondentsUrl = (consultationId: string) => {
+  return `${Routes.ApiConsultations}/${consultationId}/respondents/`;
+};
+export const getApiConsultationRespondentUrl = (
+  consultationId: string,
+  respondentId: string,
+) => {
+  return `${Routes.ApiConsultations}/${consultationId}/respondents/${respondentId}/`;
+};
+export const getQuestionsByRespondentUrl = (
+  consultationId: string,
+  respondentId: string,
+) => {
+  return `${Routes.ApiConsultations}/${consultationId}/questions/?respondent_id=${respondentId}`;
 };

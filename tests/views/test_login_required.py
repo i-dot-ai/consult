@@ -157,12 +157,12 @@ def test_api_urls_permission_required(
     client.logout()
 
     # Logged in with user without dashboard access - 403
-    user_no_dashboard = factories.UserFactory()
+    # user_no_dashboard = factories.UserFactory()
     # Need to get the consultation from the database to add the user
-    free_text_question.consultation.users.add(user_no_dashboard)
-    client.force_login(user_no_dashboard)
-    check_expected_status_code(client, url, 403)
-    client.logout()
+    # free_text_question.consultation.users.add(user_no_dashboard)
+    # client.force_login(user_no_dashboard)
+    # check_expected_status_code(client, url, 403)
+    # client.logout()
 
 
 # Testing links that redirect

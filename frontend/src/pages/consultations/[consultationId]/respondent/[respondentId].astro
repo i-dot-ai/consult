@@ -1,0 +1,26 @@
+---
+import Layout from "../../../../layouts/Layout.astro";
+
+import RespondentDetail from "../../../../components/screens/RespondentDetail.svelte";
+import Section from "../../../../components/Section/Section.svelte";
+
+const { consultationId, respondentId } = Astro.params;
+const themefinderId = Astro.url.searchParams.get("themefinder_id");
+const questionId = Astro.url.searchParams.get("question_id");
+
+function parseThemefinderId(themefinderId: string | null): number {
+  const parsedId = parseInt(themefinderId || "");
+  return Number.isInteger(parsedId) ? parsedId : -1;
+}
+---
+<Layout>
+    <Section>
+        <RespondentDetail
+          client:load
+          consultationId={consultationId}
+          questionId={questionId}
+          respondentId={respondentId}
+          themefinderId={parseThemefinderId(themefinderId)}
+        />
+    </Section>
+</Layout>
