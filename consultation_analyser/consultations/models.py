@@ -239,31 +239,18 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
         return f"{self.field_name}={self.field_value}"
 
 
-class CandidateTheme(UUIDPrimaryKeyModel, TimeStampedModel):
-    """AI-generated (candidate) themes for a question"""
-
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    name = models.TextField()
-    description = models.TextField()
-    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        indexes = [
-            models.Index(fields=["question"]),
-        ]
-
-    def __str__(self):
-        return self.name
-
-
 class SelectedTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     """Themes that have been selected during / after theme sign-off"""
 
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    name = models.CharField(max_length=256)
+    name = models.TextField()
     description = models.TextField()
     key = models.CharField(max_length=128, null=True, blank=True)
-    parent = models.ForeignKey("CrossCuttingTheme", on_delete=models.CASCADE, null=True, blank=True)
+    crosscuttingtheme = models.ForeignKey(
+        "CrossCuttingTheme", on_delete=models.CASCADE, null=True, blank=True
+    )
+    version = models.IntegerField(default=1)
+    last_modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -273,6 +260,26 @@ class SelectedTheme(UUIDPrimaryKeyModel, TimeStampedModel):
                 condition=models.Q(key__isnull=False),
             ),
         ]
+        indexes = [
+            models.Index(fields=["question"]),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class CandidateTheme(UUIDPrimaryKeyModel, TimeStampedModel):
+    """AI-generated (candidate) themes for a question"""
+
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    name = models.TextField()
+    description = models.TextField()
+    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
+    selectedtheme = models.OneToOneField(
+        SelectedTheme, on_delete=models.SET_NULL, null=True, blank=True
+    )
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         indexes = [
             models.Index(fields=["question"]),
         ]
