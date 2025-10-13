@@ -83,7 +83,9 @@
   <div class="flex flex-wrap justify-start items-center gap-4">
     <div class="grow max-w-[30ch]">
       <TextInput
+        inputType="email"
         id={"email-input"}
+        autocomplete="email"
         label={"Email address"}
         hideLabel={true}
         placeholder={"Your email"}

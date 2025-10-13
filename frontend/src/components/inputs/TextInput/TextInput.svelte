@@ -14,6 +14,7 @@
   export let hideLabel: boolean = false;
   export let value: string = "";
   export let placeholder: string = "";
+  export let autocomplete: string = "";
   export let setValue = (newValue: string) => {};
 
   export let variant: "default" | "search" = "default";
@@ -38,6 +39,7 @@
     {id}
     {placeholder}
     {value}
+    {autocomplete}
     on:input={(e) => setValue((e.target as HTMLInputElement).value)}
   />
 
