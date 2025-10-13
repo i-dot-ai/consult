@@ -109,10 +109,11 @@ class RespondentViewSet(ModelViewSet):
         ).order_by("-created_at")
 
 
-class QuestionViewSet(ReadOnlyModelViewSet):
+class QuestionViewSet(ModelViewSet):
     serializer_class = QuestionSerializer
     permission_classes = [CanSeeConsultation]
     filterset_fields = ["has_free_text"]
+    http_method_names = ["get", "patch"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]

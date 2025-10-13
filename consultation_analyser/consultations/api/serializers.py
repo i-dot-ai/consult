@@ -63,6 +63,7 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
             "has_multiple_choice",
             "multiple_choice_answer",
             "proportion_of_audited_answers",
+            "theme_status",
         ]
 
 
@@ -71,7 +72,7 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Consultation
-        fields = ["id", "title", "slug", "users"]
+        fields = ["id", "title", "slug", "stage", "users"]
 
 
 class DemographicOptionsSerializer(serializers.Serializer):
