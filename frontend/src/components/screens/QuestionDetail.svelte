@@ -213,7 +213,7 @@
 
     // Append next page of answers to existing answers
     try {
-      await loadAnswers(`${getApiAnswersUrl(consultationId)}/${queryString}`);
+      await loadAnswers(`${getApiAnswersUrl(consultationId)}${queryString}`);
 
       if ($answersData.all_respondents) {
         const newAnswers = $answersData.all_respondents;
