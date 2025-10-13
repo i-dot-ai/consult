@@ -10,10 +10,8 @@ from .api.views import (
     ResponseViewSet,
     ThemeViewSet,
     UserViewSet,
-    generate_magic_link,
     get_current_user,
     get_git_sha,
-    verify_magic_link,
 )
 from .views import answers, pages, questions, root, sessions
 
@@ -67,9 +65,5 @@ urlpatterns = [
     # authentication
     path("sign-in/", sessions.new, name="sign_in"),
     path("sign-out/", sessions.destroy, name="sign_out"),
-    path("magic-link/<uuid:token>/", sessions.MagicLinkView.as_view(), name="magic_link"),
-    # JWT
-    path("api/magic-link/", generate_magic_link, name="token-magic-link"),
-    path("api/token/", verify_magic_link, name="create-token"),
     path("git-sha/", get_git_sha, name="git-sha"),
 ]

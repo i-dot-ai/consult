@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.http import Http404
+from django.core.exceptions import PermissionDenied
 from django.shortcuts import redirect
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
@@ -45,7 +45,7 @@ class SupportAppStaffRequiredMiddleware:
             # Must already be logged in from login required middleware.
             # Sign-out is excepted as we don't want to 404 on sign-out.
             if (not request.user.is_staff) and (not request.path.startswith("/support/sign-out/")):
-                raise Http404
+                raise PermissionDenied("Access to support console requires staff privileges")
         response = self.get_response(request)
         return response
 
