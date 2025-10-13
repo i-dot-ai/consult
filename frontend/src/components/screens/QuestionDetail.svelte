@@ -46,6 +46,7 @@
   import Panel from "../dashboard/Panel/Panel.svelte";
 
   interface QueryFilters {
+    questionId: string;
     searchValue: string;
     themeFilters: string[];
     searchMode: SearchModeValues;
@@ -181,6 +182,7 @@
 
   async function loadData() {
     const queryString = buildQuery({
+      questionId: questionId,
       searchValue: searchValue,
       searchMode: searchMode,
       themeFilters: themeFilters.filters,
@@ -225,6 +227,9 @@
 
   function buildQuery(filters: QueryFilters) {
     const params = new URLSearchParams({
+      ...(filters.questionId && {
+        question_id: filters.questionId,
+      }),
       ...(filters.searchValue && {
         searchValue: filters.searchValue,
       }),
