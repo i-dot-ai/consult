@@ -85,7 +85,8 @@
       <TextInput
         inputType="email"
         id={"email-input"}
-        autocomplete="email"
+        autocomplete="on"
+        name="email"
         label={"Email address"}
         hideLabel={true}
         placeholder={"Your email"}
@@ -94,7 +95,7 @@
       />
     </div>
 
-    <Button variant="primary" handleClick={handleSubmit} disabled={sending}>
+    <Button type="submit" variant="primary" handleClick={handleSubmit} disabled={sending}>
       {sending ? "Sending..." : "Continue"}
     </Button>
   </div>
