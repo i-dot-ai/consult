@@ -23,9 +23,9 @@ def test_export_user_theme(mock_boto_client, consultation, free_text_question):
     response2 = factories.ResponseFactory(question=free_text_question, respondent=respondent2)
 
     # Set up themes
-    theme1 = factories.ThemeFactory(question=free_text_question, key="B")
-    theme2 = factories.ThemeFactory(question=free_text_question, key="A")
-    theme3 = factories.ThemeFactory(question=free_text_question, key="C")
+    theme1 = factories.SelectedThemeFactory(question=free_text_question, key="B")
+    theme2 = factories.SelectedThemeFactory(question=free_text_question, key="A")
+    theme3 = factories.SelectedThemeFactory(question=free_text_question, key="C")
 
     # Create response annotations with AI-assigned themes
     annotation1 = factories.ResponseAnnotationFactoryNoThemes(
@@ -106,7 +106,7 @@ def test_start_export_job(mock_boto_client, mock_enqueue, consultation, free_tex
     annotation = factories.ResponseAnnotationFactoryNoThemes(
         response=response, sentiment=models.ResponseAnnotation.Sentiment.AGREEMENT
     )
-    theme = factories.ThemeFactory(question=free_text_question)
+    theme = factories.SelectedThemeFactory(question=free_text_question)
     annotation.add_original_ai_themes([theme])
 
     # Mock the enqueue to capture the call

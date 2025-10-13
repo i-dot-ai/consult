@@ -79,8 +79,8 @@ def test_response_factories():
 
 @pytest.mark.django_db
 def test_theme_factory():
-    theme = factories.ThemeFactory()
-    assert models.Theme.objects.filter(id=theme.id).exists()
+    theme = factories.SelectedThemeFactory()
+    assert models.SelectedTheme.objects.filter(id=theme.id).exists()
     assert theme.name
     assert theme.description
     assert theme.key

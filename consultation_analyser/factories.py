@@ -149,9 +149,9 @@ class ResponseWithBothFactory(ResponseFactory):
         self.save()
 
 
-class ThemeFactory(DjangoModelFactory):
+class SelectedThemeFactory(DjangoModelFactory):
     class Meta:
-        model = models.Theme
+        model = models.SelectedTheme
 
     question = factory.SubFactory(QuestionFactory)
     name = factory.LazyAttribute(lambda o: fake.sentence())
@@ -183,7 +183,7 @@ class ResponseAnnotationFactory(DjangoModelFactory):
             num_themes = random.randint(1, 3)
             themes_to_add = []
             for _ in range(num_themes):
-                theme = ThemeFactory(question=self.response.question)
+                theme = SelectedThemeFactory(question=self.response.question)
                 themes_to_add.append(theme)
             self.add_original_ai_themes(themes_to_add)
 

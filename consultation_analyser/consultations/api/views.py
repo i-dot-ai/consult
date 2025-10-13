@@ -131,7 +131,9 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         question = self.get_object()
 
         # Get all themes for this question
-        themes = models.Theme.objects.filter(question=question).values("id", "name", "description")
+        themes = models.SelectedTheme.objects.filter(question=question).values(
+            "id", "name", "description"
+        )
 
         serializer = ThemeInformationSerializer(data={"themes": list(themes)})
         serializer.is_valid()
@@ -217,7 +219,7 @@ class ResponseViewSet(ModelViewSet):
 
         # Get theme counts from the filtered responses
         theme_counts = (
-            models.Theme.objects.filter(
+            models.SelectedTheme.objects.filter(
                 responseannotation__response__in=self.get_queryset(),
                 responseannotation__response__question__has_free_text__isnull=False,
             )
