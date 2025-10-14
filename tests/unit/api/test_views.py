@@ -1,9 +1,11 @@
 import json
 from datetime import datetime
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 import orjson
 import pytest
+from django.conf import settings
 from django.test import override_settings
 from django.urls import reverse
 
@@ -271,6 +273,48 @@ class TestThemeInformationAPIView:
             assert "id" in theme_data
             assert "name" in theme_data
             assert "description" in theme_data
+
+    def test_get_selected_themes(
+        self, client, consultation_user_token, free_text_question, theme_a, theme_b
+    ):
+        """Test API endpoint returns selected themes for a question"""
+        url = reverse(
+            "question-selected-themes",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data == [
+            {
+                "id": str(theme_a.id),
+                "name": "Theme A",
+                "description": theme_a.description,
+                "version": 1,
+                "modified_at": theme_a.modified_at.astimezone(
+                    ZoneInfo(settings.TIME_ZONE)
+                ).isoformat(),
+                "last_modified_by": None,
+            },
+            {
+                "id": str(theme_b.id),
+                "name": "Theme B",
+                "description": theme_b.description,
+                "version": 1,
+                "modified_at": theme_b.modified_at.astimezone(
+                    ZoneInfo(settings.TIME_ZONE)
+                ).isoformat(),
+                "last_modified_by": theme_b.last_modified_by.email,
+            },
+        ]
 
 
 @pytest.mark.django_db
@@ -950,7 +994,9 @@ class TestAPIViewPermissions:
             "respondent-detail",
         ],
     )
-    @pytest.mark.skip(reason="We want users without dashboard access to be able to do evaluations and view consultation questions")
+    @pytest.mark.skip(
+        reason="We want users without dashboard access to be able to do evaluations and view consultation questions"
+    )
     def test_user_without_dashboard_access_denied(
         self, client, free_text_question, non_dashboard_user_token, endpoint_name
     ):

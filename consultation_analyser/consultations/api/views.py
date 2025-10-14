@@ -28,6 +28,7 @@ from .serializers import (
     QuestionSerializer,
     RespondentSerializer,
     ResponseSerializer,
+    SelectedThemeSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
     UserSerializer,
@@ -138,6 +139,15 @@ class QuestionViewSet(ModelViewSet):
 
         serializer = ThemeInformationSerializer(data={"themes": list(themes)})
         serializer.is_valid()
+
+        return Response(serializer.data)
+    
+    @action(detail=True, methods=["get"], url_path="selected_themes")
+    def selected_themes(self, request, pk=None, consultation_pk=None):
+        """List selected themes for a question"""
+        question = self.get_object()
+        selected_themes = models.SelectedTheme.objects.filter(question=question)
+        serializer = SelectedThemeSerializer(selected_themes, many=True)
 
         return Response(serializer.data)
 

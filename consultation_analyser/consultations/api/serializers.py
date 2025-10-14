@@ -106,6 +106,17 @@ class ThemeAggregationsSerializer(serializers.Serializer):
     theme_aggregations = serializers.DictField(child=serializers.IntegerField())
 
 
+class SelectedThemeSerializer(serializers.ModelSerializer):
+    last_modified_by = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SelectedTheme
+        fields = ["id", "name", "description", "version", "modified_at", "last_modified_by"]
+
+    def get_last_modified_by(self, obj):
+        return obj.last_modified_by.email if obj.last_modified_by else None
+
+
 class ThemeSerializer2(serializers.ModelSerializer):
     question_id = serializers.UUIDField(source="question.id")
 
