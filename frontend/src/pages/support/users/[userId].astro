@@ -1,0 +1,90 @@
+---
+import { fetchBackendApi } from "../../../global/api";
+import type { ConsultationResponse } from "../../../global/types";
+
+import Layout from "../../../layouts/Layout.astro";
+import Section from "../../../components/Section/Section.svelte";
+import Link from "../../../components/Link.svelte";
+import Title from "../../../components/Title.svelte";
+import EditUser from "../../../components/EditUser.svelte";
+
+const { userId } = Astro.params;
+
+if (!userId) {
+  return Astro.redirect("/support/users");
+}
+
+
+
+// Fetch all consultations to filter by this user
+let consultationsData = await fetchBackendApi<{ results: ConsultationResponse[] }>(
+  Astro, 
+  "/api/consultations/"
+);
+
+// Filter consultations that include this user
+const consultations = consultationsData.results;
+
+
+
+const showSuccessMessage = new URL(Astro.request.url).searchParams.get("updated") === "true";
+
+
+---
+
+<Layout>
+  <Section>
+    
+    {showSuccessMessage && (
+      <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-6">
+        User updated successfully
+      </div>
+    )}
+    
+
+    <!-- User Permissions -->
+    <EditUser 
+      client:load
+      userId={userId}
+    />
+
+    <!-- Consultations Section -->
+    <div>
+      <Title level={2} text="Consultations" />
+      
+      {consultations.length > 0 ? (
+        <div class="overflow-x-auto">
+          <table class="w-full text-left">
+            <thead class="font-bold border-b">
+              <tr>
+                <th class="py-3 pr-4">Consultation name</th>
+                <th class="py-3">Links</th>
+              </tr>
+            </thead>
+            <tbody>
+              {consultations.map((consultation) => (
+                <tr class="border-b hover:bg-gray-50">
+                  <td class="py-3 pr-4">{consultation.title}</td>
+                  <td class="py-3 space-y-1">
+                    <div>
+                      <Link href={`/support/consultations/${consultation.id}`}>
+                        View in support
+                      </Link>
+                    </div>
+                    <div>
+                      <Link href={`/consultations/${consultation.id}`}>
+                        View on frontend
+                      </Link>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      ) : (
+        <p class="text-gray-600">This user is not associated with any consultations</p>
+      )}
+    </div>
+  </Section>
+</Layout>

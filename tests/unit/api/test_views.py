@@ -950,7 +950,9 @@ class TestAPIViewPermissions:
             "respondent-detail",
         ],
     )
-    @pytest.mark.skip(reason="We want users without dashboard access to be able to do evaluations and view consultation questions")
+    @pytest.mark.skip(
+        reason="We want users without dashboard access to be able to do evaluations and view consultation questions"
+    )
     def test_user_without_dashboard_access_denied(
         self, client, free_text_question, non_dashboard_user_token, endpoint_name
     ):
@@ -1631,3 +1633,22 @@ def test_users_patch(client, consultation_user, consultation_user_token):
     assert response.json()["has_dashboard_access"] is False
     consultation_user.refresh_from_db()
     assert consultation_user.has_dashboard_access is False
+
+
+@pytest.mark.django_db
+def test_users_patch_fail(client, consultation_user, consultation_user_token):
+    assert consultation_user.is_staff is True
+    url = reverse(
+        "user-detail",
+        kwargs={"pk": consultation_user.pk},
+    )
+    response = client.patch(
+        url,
+        data=json.dumps({"is_staff": False}),
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 400
+    assert "You cannot remove admin privileges from yourself" in response.json()["is_staff"]

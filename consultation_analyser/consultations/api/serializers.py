@@ -25,6 +25,18 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = ["id", "email", "has_dashboard_access", "is_staff", "created_at"]
 
+    def validate_is_staff(self, value):
+        request = self.context.get("request")
+
+        # Check if this is an update operation and user is updating themselves
+        if self.instance and request and request.user == self.instance:
+            if value is False:
+                raise serializers.ValidationError(
+                    "You cannot remove admin privileges from yourself"
+                )
+
+        return value
+
 
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
