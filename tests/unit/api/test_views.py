@@ -16,6 +16,7 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
 )
 from consultation_analyser.factories import (
+    CandidateThemeFactory,
     QuestionFactory,
     RespondentFactory,
     ResponseAnnotationFactory,
@@ -313,6 +314,82 @@ class TestThemeInformationAPIView:
                     ZoneInfo(settings.TIME_ZONE)
                 ).isoformat(),
                 "last_modified_by": theme_b.last_modified_by.email,
+            },
+        ]
+
+    def test_get_candidate_themes(
+        self, client, consultation_user_token, free_text_question, theme_a, theme_b
+    ):
+        """Test API endpoint returns candidate themes for a question with nested children"""
+        # Build a candidate theme tree:
+        # root1
+        #   ├─ child1 (selected)
+        #   │   └─ grandchild1
+        #   └─ child2
+        # root2 (selected)
+
+        root1 = CandidateThemeFactory(question=free_text_question, parent=None)
+        child1 = CandidateThemeFactory(
+            question=free_text_question, parent=root1, selectedtheme=theme_a
+        )
+        grandchild1 = CandidateThemeFactory(question=free_text_question, parent=child1)
+        child2 = CandidateThemeFactory(question=free_text_question, parent=root1)
+        root2 = CandidateThemeFactory(
+            question=free_text_question, parent=None, selectedtheme=theme_b
+        )
+
+        url = reverse(
+            "question-candidate-themes",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data == [
+            {
+                "id": str(root1.id),
+                "name": root1.name,
+                "description": root1.description,
+                "selectedtheme_id": None,
+                "children": [
+                    {
+                        "id": str(child1.id),
+                        "name": child1.name,
+                        "description": child1.description,
+                        "selectedtheme_id": str(theme_a.id),
+                        "children": [
+                            {
+                                "id": str(grandchild1.id),
+                                "name": grandchild1.name,
+                                "description": grandchild1.description,
+                                "selectedtheme_id": None,
+                                "children": [],
+                            }
+                        ],
+                    },
+                    {
+                        "id": str(child2.id),
+                        "name": child2.name,
+                        "description": child2.description,
+                        "selectedtheme_id": None,
+                        "children": [],
+                    },
+                ],
+            },
+            {
+                "id": str(root2.id),
+                "name": root2.name,
+                "description": root2.description,
+                "selectedtheme_id": str(theme_b.id),
+                "children": [],
             },
         ]
 

@@ -308,7 +308,9 @@ def theme_a(free_text_question):
 
 @pytest.fixture()
 def theme_b(free_text_question, consultation_user):
-    theme = SelectedThemeFactory(question=free_text_question, name="Theme B", key="B", last_modified_by=consultation_user)
+    theme = SelectedThemeFactory(
+        question=free_text_question, name="Theme B", key="B", last_modified_by=consultation_user
+    )
     yield theme
     theme.delete()
 

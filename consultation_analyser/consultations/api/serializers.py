@@ -6,6 +6,7 @@ from rest_framework.exceptions import ValidationError
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
+    CandidateTheme,
     Consultation,
     CrossCuttingTheme,
     DemographicOption,
@@ -140,6 +141,24 @@ class CrossCuttingThemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CrossCuttingTheme
         fields = ["name", "description", "themes", "response_count"]
+
+
+class CandidateThemeSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CandidateTheme
+        fields = [
+            "id",
+            "name",
+            "description",
+            "children",
+            "selectedtheme_id",
+        ]
+
+    def get_children(self, obj):
+        children = CandidateTheme.objects.filter(parent=obj)
+        return CandidateThemeSerializer(children, many=True).data
 
 
 class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
