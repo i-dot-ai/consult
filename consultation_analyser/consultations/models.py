@@ -273,6 +273,7 @@ class CandidateTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
     name = models.TextField()
     description = models.TextField()
+    approximate_frequency = models.IntegerField(null=True)
     parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
     selectedtheme = models.OneToOneField(
         SelectedTheme, on_delete=models.SET_NULL, null=True, blank=True
