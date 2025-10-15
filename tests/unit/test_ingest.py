@@ -145,11 +145,14 @@ class TestGetConsultationCodes:
     def test_get_consultation_codes(self, mock_settings, mock_boto3):
         mock_settings.AWS_BUCKET_NAME = "test-bucket"
 
+        # app_data/consultations/{consultation_code}/outputs/mapping/{timestamp}/
         mock_objects = [
-            Mock(key="app_data/consultations/consultation1/inputs/file.json"),
-            Mock(key="app_data/consultations/consultation2/inputs/file.json"),
-            Mock(key="app_data/consultations/consultation1/outputs/file.json"),
-            Mock(key="app_data/consultations/other/file.json"),
+            Mock(key="app_data/consultations/consultation1/inputs/mapping/2025-12-12/file.json"),
+            Mock(
+                key="app_data/consultations/consultation2/outputs/mapping/2020-12-12/another_file.json"
+            ),
+            Mock(key="app_data/consultations/consultation1/outputs/mapping/2012-12-12/file.json"),
+            Mock(key="app_data/consultations/other/outputs/mapping/1066-12-12/file.json"),
         ]
 
         mock_bucket = Mock()
@@ -159,9 +162,9 @@ class TestGetConsultationCodes:
         result = get_consultation_codes()
 
         expected = [
-            {"text": "consultation1", "value": "consultation1"},
-            {"text": "consultation2", "value": "consultation2"},
-            {"text": "other", "value": "other"},
+            {"text": "consultation1 (2012-12-12)", "value": "consultation1-2012-12-12"},
+            {"text": "consultation2 (2020-12-12)", "value": "consultation2-2020-12-12"},
+            {"text": "other (1066-12-12)", "value": "other-1066-12-12"},
         ]
         assert sorted(result, key=lambda x: x["text"]) == sorted(expected, key=lambda x: x["text"])
 
