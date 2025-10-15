@@ -6,7 +6,7 @@
 
   export interface Props {
     title: string;
-    answers: string[];
+    answers?: string[];
     variant?: "selected" | "generated";
   }
 

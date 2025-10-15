@@ -1,19 +1,23 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { render, cleanup } from "@testing-library/svelte";
 
 import AnswersList, { type Props } from "./AnswersList.svelte";
 
-describe("AnswersList", () => {
-  afterEach(() => cleanup());
+let testData: Props;
 
-  it("should render", async () => {
-    const DATA: Props = {
+describe("AnswersList", () => {
+  beforeEach(() => {
+    testData = {
       title: "Test Title",
       answers: ["Answer 1", "Answer 2"],
     };
+  })
 
+  afterEach(() => cleanup());
+
+  it("should render", async () => {
     const { container, getByText, getAllByText, queryByText } = render(AnswersList, {
-      ...DATA,
+      ...testData,
     });
 
     expect(getByText("Test Title"));
@@ -30,4 +34,15 @@ describe("AnswersList", () => {
 
     expect(container).toMatchSnapshot();
   });
+
+  it("should render not found message if no answers", async () => {
+    const NOT_FOUND_MESSAGE = "There are no answers";
+
+    const { getByText } = render(AnswersList, {
+      ...testData,
+      answers: undefined,
+    });
+
+    expect(getByText(NOT_FOUND_MESSAGE));
+  })
 });
