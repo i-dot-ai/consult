@@ -35,7 +35,7 @@ describe("FlagButton", () => {
     await user.click(button);
 
     expect(toggleFlagMock).toHaveBeenCalledWith(
-      `/api/consultations/${testData.consultationId}/questions/${testData.questionId}/responses/${testData.answerId}/toggle-flag/`,
+      `/api/consultations/${testData.consultationId}/responses/${testData.answerId}/toggle-flag/`,
       "PATCH",
     );
     expect(resetDataMock).toHaveBeenCalledOnce();

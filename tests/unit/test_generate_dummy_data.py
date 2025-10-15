@@ -36,7 +36,7 @@ def test_create_dummy_consultation_from_yaml():
     assert q1.has_free_text
     assert q1.has_multiple_choice
 
-    q1_themes = models.Theme.objects.filter(question=q1)
+    q1_themes = models.SelectedTheme.objects.filter(question=q1)
     assert len(q1_themes) == 2
     assert q1_themes.get(key="A").name == "Standardized framework"
 

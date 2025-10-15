@@ -12,14 +12,14 @@ from consultation_analyser.consultations.models import (
     Response,
     ResponseAnnotation,
     ResponseAnnotationTheme,
-    Theme,
+    SelectedTheme,
 )
 from consultation_analyser.factories import (
     ConsultationFactory,
     MultiChoiceAnswerFactory,
     QuestionFactory,
     RespondentFactory,
-    ThemeFactory,
+    SelectedThemeFactory,
     UserFactory,
 )
 
@@ -301,14 +301,14 @@ def multi_choice_responses(multi_choice_question):
 
 @pytest.fixture()
 def theme_a(free_text_question):
-    theme = ThemeFactory(question=free_text_question, name="Theme A", key="A")
+    theme = SelectedThemeFactory(question=free_text_question, name="Theme A", key="A")
     yield theme
     theme.delete()
 
 
 @pytest.fixture()
 def theme_b(free_text_question):
-    theme = ThemeFactory(question=free_text_question, name="Theme B", key="B")
+    theme = SelectedThemeFactory(question=free_text_question, name="Theme B", key="B")
     yield theme
     theme.delete()
 
@@ -434,6 +434,20 @@ def respondent_2(consultation):
 
 
 @pytest.fixture
+def respondent_3(consultation):
+    respondent = Respondent.objects.create(consultation=consultation, themefinder_id=3)
+    yield respondent
+    respondent.delete()
+
+
+@pytest.fixture
+def respondent_4(consultation):
+    respondent = Respondent.objects.create(consultation=consultation, themefinder_id=4)
+    yield respondent
+    respondent.delete()
+
+
+@pytest.fixture
 def free_text_response(free_text_question, respondent_1):
     response = Response.objects.create(question=free_text_question, respondent=respondent_1)
     yield response
@@ -449,7 +463,7 @@ def another_response(free_text_question, respondent_2):
 
 @pytest.fixture
 def ai_assigned_theme(free_text_question):
-    theme = Theme.objects.create(question=free_text_question, key="AI assigned theme A")
+    theme = SelectedTheme.objects.create(question=free_text_question, key="AI assigned theme A")
     yield theme
     theme.delete()
 
@@ -457,7 +471,7 @@ def ai_assigned_theme(free_text_question):
 @pytest.fixture
 def free_text_annotation(free_text_response, consultation_user, ai_assigned_theme):
     annotation = ResponseAnnotation.objects.create(response=free_text_response, evidence_rich=True)
-    theme_b = Theme.objects.create(
+    theme_b = SelectedTheme.objects.create(
         question=free_text_response.question, key="Human assigned theme B"
     )
     annotation_a = ResponseAnnotationTheme.objects.create(
@@ -486,6 +500,8 @@ def another_annotation(another_response, theme_b):
 
 @pytest.fixture
 def alternative_theme(free_text_response):
-    theme = Theme.objects.create(question=free_text_response.question, key="Human assigned theme C")
+    theme = SelectedTheme.objects.create(
+        question=free_text_response.question, key="Human assigned theme C"
+    )
     yield theme
     theme.delete()

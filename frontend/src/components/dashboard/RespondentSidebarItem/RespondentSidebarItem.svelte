@@ -1,16 +1,20 @@
 <script lang="ts">
+  import clsx from "clsx";
+
+  import { slide } from "svelte/transition";
+  import type { Component } from "svelte";
+
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Button from "../../inputs/Button/Button.svelte";
   import EditSquare from "../../svg/material/EditSquare.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
   import Check from "../../svg/material/Check.svelte";
   import Close from "../../svg/material/Close.svelte";
-  import { slide } from "svelte/transition";
 
-  interface Props {
+  export interface Props {
     title: string;
     subtitle: string;
-    icon: any;
+    icon?: Component;
     editable?: boolean;
     updateSubtitle?: (newSubtitle: string) => void;
   }
@@ -39,13 +43,16 @@
   });
 </script>
 
-<div class="flex items-start gap-2 mt-4 text-xs">
-  <div class="bg-neutral-100 p-1 rounded-lg h-max">
-    <MaterialIcon size="1.3rem" color="fill-neutral-700">
-      <svelte:component this={icon} />
-    </MaterialIcon>
-  </div>
-  <div class="flex flex-col w-full">
+<div in:slide class="flex items-start gap-2 mt-4 text-xs">
+  {#if icon}
+    <div class="bg-neutral-100 p-1 rounded-lg h-max">
+      <MaterialIcon size="1.3rem" color="fill-neutral-700">
+        <svelte:component this={icon} />
+      </MaterialIcon>
+    </div>
+  {/if}
+
+  <div class="flex flex-col w-full flex-wrap bg-white">
     <div class="flex justify-between items-start">
       <h3 class="uppercase text-neutral-500">{title}</h3>
 
@@ -71,9 +78,10 @@
           label="Edit Subtitle"
           hideLabel={true}
           value={stagedSubtitle}
+          placeholder={"Business or organisation name"}
           setValue={(newValue) => (stagedSubtitle = newValue.trim())}
         />
-        <div class="flex items-center justify-around gap-2 mt-3">
+        <div class="flex items-center justify-around gap-2 flex-wrap mt-3">
           <div class="grow">
             <Button
               variant="approve"
@@ -111,7 +119,9 @@
         </div>
       </div>
     {:else}
-      <p>{subtitle}</p>
+      <p class={clsx([!subtitle && "text-neutral-400"])}>
+        {subtitle ?? "Add a stakeholder's name"}
+      </p>
     {/if}
   </div>
 </div>

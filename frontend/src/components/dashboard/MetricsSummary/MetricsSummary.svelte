@@ -6,7 +6,7 @@
   import Group from "../../svg/material/Group.svelte";
   import Shield from "../../svg/material/Shield.svelte";
 
-  interface Props {
+  export interface Props {
     questionCount: number;
     responseCount: number;
     demoCount: number;

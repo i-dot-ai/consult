@@ -15,7 +15,12 @@
   import Lan from "../svg/material/Lan.svelte";
   import Finance from "../svg/material/Finance.svelte";
 
-  import { getConsultationDetailUrl } from "../../global/routes.ts";
+  import {
+    getApiAnswersUrl,
+    getApiQuestionsUrl,
+    getConsultationDetailUrl,
+  } from "../../global/routes.ts";
+
   import { createFetchStore } from "../../global/stores.ts";
   import {
     SearchModeValues,
@@ -41,6 +46,7 @@
   import Panel from "../dashboard/Panel/Panel.svelte";
 
   interface QueryFilters {
+    questionId: string;
     searchValue: string;
     themeFilters: string[];
     searchMode: SearchModeValues;
@@ -82,6 +88,18 @@
     error: Writable<string>;
     load: Function;
     data: Writable<ConsultationResponse>;
+  } = createFetchStore();
+
+  const {
+    loading: isQuestionsLoading,
+    error: questionsError,
+    load: loadQuestions,
+    data: questionsData,
+  }: {
+    loading: Writable<boolean>;
+    error: Writable<string>;
+    load: Function;
+    data: Writable<any>;
   } = createFetchStore();
 
   const {
@@ -157,12 +175,14 @@
   } = createFetchStore();
 
   onMount(() => {
-    // Load consultation data once on mount
+    // Load consultation and questions data once on mount
     loadConsultation(`/api/consultations/${consultationId}/`);
+    loadQuestions(getApiQuestionsUrl(consultationId));
   });
 
   async function loadData() {
     const queryString = buildQuery({
+      questionId: questionId,
       searchValue: searchValue,
       searchMode: searchMode,
       themeFilters: themeFilters.filters,
@@ -193,9 +213,7 @@
 
     // Append next page of answers to existing answers
     try {
-      await loadAnswers(
-        `/api/consultations/${consultationId}/responses/${queryString}`,
-      );
+      await loadAnswers(`${getApiAnswersUrl(consultationId)}${queryString}`);
 
       if ($answersData.all_respondents) {
         const newAnswers = $answersData.all_respondents;
@@ -209,6 +227,9 @@
 
   function buildQuery(filters: QueryFilters) {
     const params = new URLSearchParams({
+      ...(filters.questionId && {
+        question_id: filters.questionId,
+      }),
       ...(filters.searchValue && {
         searchValue: filters.searchValue,
       }),
@@ -297,9 +318,7 @@
   });
 
   let question = $derived(
-    $consultationData?.questions?.find(
-      (question) => question.id === questionId,
-    ),
+    $questionsData?.results?.find((question) => question.id === questionId),
   );
 
   let formattedDemoOptions = $derived.by(() => {
@@ -356,17 +375,17 @@
 
 <svelte:boundary>
   <section class="my-4">
-    {#if $consultationError}
+    {#if $consultationError || $questionsError}
       <div class="my-2">
         <Alert>
           <span class="text-sm">
-            Consultation Error: {$consultationError}
+            Question Details Error: {$consultationError || $questionsError}
           </span>
         </Alert>
       </div>
     {:else}
       <QuestionCard
-        skeleton={$isConsultationLoading}
+        skeleton={$isQuestionsLoading || $isConsultationLoading}
         clickable={false}
         consultationId={$consultationData?.id}
         {question}
@@ -381,7 +400,7 @@
       {console.error(error)}
 
       <Panel>
-        <Alert>Unexpected consultation error</Alert>
+        <Alert>Unexpected question error</Alert>
       </Panel>
     </div>
   {/snippet}
@@ -393,15 +412,22 @@
     handleChange={(next: string) => (activeTab = next as TabNames)}
     tabs={[
       { id: TabNames.QuestionSummary, title: "Question Summary", icon: Lan },
-      {
-        id: TabNames.ResponseAnalysis,
-        title: "Response Analysis",
-        icon: Finance,
-      },
+
+      //  No second tab without free text
+      ...($questionData?.has_free_text
+        ? [
+            {
+              id: TabNames.ResponseAnalysis,
+              title: "Response Analysis",
+              icon: Finance,
+            },
+          ]
+        : []),
     ]}
   >
     {#if activeTab === TabNames.QuestionSummary}
       <QuestionSummary
+        showThemes={Boolean($isQuestionLoading || $questionData?.has_free_text)}
         themes={Object.keys($themeAggrData?.theme_aggregations || []).map(
           (themeId) => {
             return {

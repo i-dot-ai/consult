@@ -12,6 +12,8 @@
     "preview": "astro preview --host",
     "astro": "astro",
     "test": "npx vitest --coverage",
+    "e2e": "npx playwright test",
+    "e2e-ui": "npx playwright test --ui",
     "prettier-check": "npx prettier --check .",
     "prettier-fix": "npx prettier --write ."
   },
@@ -37,6 +39,8 @@
   },
   "devDependencies": {
     "@eslint/js": "^9.36.0",
+    "@playwright/test": "^1.55.1",
+    "@types/node": "^24.6.2",
     "@vitest/coverage-v8": "^3.2.4",
     "eslint": "^9.36.0",
     "eslint-config-prettier": "^10.1.8",

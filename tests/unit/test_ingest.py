@@ -10,7 +10,7 @@ from consultation_analyser.consultations.models import (
     Respondent,
     Response,
     ResponseAnnotation,
-    Theme,
+    SelectedTheme,
 )
 from consultation_analyser.support_console.file_models import SentimentRecord, read_from_s3
 from consultation_analyser.support_console.ingest import (
@@ -287,7 +287,7 @@ class TestImportConsultationFullFlow:
         responses = Response.objects.filter(question__consultation=consultation)
         assert responses.count() == 3
 
-        themes = Theme.objects.filter(question__consultation=consultation)
+        themes = SelectedTheme.objects.filter(question__consultation=consultation)
         assert themes.count() == 1
         assert themes.first().key == "A"
 
@@ -384,7 +384,7 @@ class TestQuestionsImport:
 
         assert [x.text for x in questions.first().multichoiceanswer_set.all()] == ["a", "b", "c"]
 
-        themes = Theme.objects.filter(question__consultation=consultation)
+        themes = SelectedTheme.objects.filter(question__consultation=consultation)
         assert themes.count() == 1
         assert themes.first().key == "A"
 
@@ -490,7 +490,7 @@ class TestMappingImport:
 
         consultation = Consultation.objects.create(title="Test Consultation")
         question = Question.objects.create(consultation=consultation, number=1)
-        Theme.objects.create(question=question, name="name", description="", key="A")
+        SelectedTheme.objects.create(question=question, name="name", description="", key="A")
         respondent_1 = Respondent.objects.create(consultation=consultation, themefinder_id=1)
         respondent_2 = Respondent.objects.create(consultation=consultation, themefinder_id=2)
         Response.objects.create(respondent=respondent_1, question=question, free_text="yes")

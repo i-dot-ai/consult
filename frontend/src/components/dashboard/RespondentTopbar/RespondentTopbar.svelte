@@ -7,13 +7,14 @@
 
   import { type Snippet } from "svelte";
 
-  interface Props {
+  export interface Props {
     title: string;
-    backUrl: string;
+    backText: string;
+    onClickBack?: (e: MouseEvent) => void;
     children?: Snippet;
   }
 
-  let { title = "", backUrl = "", children }: Props = $props();
+  let { title = "", backText = "", onClickBack, children }: Props = $props();
 </script>
 
 <div
@@ -32,7 +33,7 @@
       <Button
         size="xs"
         variant="ghost"
-        handleClick={() => (location.href = backUrl)}
+        handleClick={onClickBack ? onClickBack : (e) => history.back()}
       >
         <div class="rotate-180">
           <MaterialIcon color="fill-neutral-700">
@@ -40,11 +41,11 @@
           </MaterialIcon>
         </div>
 
-        <span>Back to Analysis</span>
+        <span>{backText}</span>
       </Button>
     </div>
 
-    <h1 class="font-bold text-lg">{title}</h1>
+    <h1 class="font-bold text-lg text-center">{title}</h1>
   </div>
 
   <div class="flex items-center gap-4">

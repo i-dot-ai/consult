@@ -38,10 +38,21 @@ class TimeStampedModel(models.Model):
         ordering = ["created_at"]
 
 
+class ConsultationStage(models.TextChoices):
+    THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
+    ANALYSIS = "analysis", "Analysis"
+
+
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     title = models.CharField(max_length=256)
     slug = models.SlugField(max_length=256, unique=True)
     users = models.ManyToManyField(User)
+    stage = models.CharField(
+        max_length=32,
+        choices=ConsultationStage.choices,
+        default=ConsultationStage.ANALYSIS,
+    )
+    s3_bucket = models.CharField(max_length=256, null=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -69,10 +80,17 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     Replaces the Question/QuestionPart split.
     """
 
+    class ThemeStatus(models.TextChoices):
+        DRAFT = "draft", "Draft"
+        CONFIRMED = "confirmed", "Confirmed"
+
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     text = models.TextField()
     slug = models.SlugField(max_length=256)
     number = models.IntegerField()
+    theme_status = models.CharField(
+        max_length=32, choices=ThemeStatus.choices, default=ThemeStatus.CONFIRMED
+    )
 
     # Question configuration
     has_free_text = models.BooleanField(default=True)
@@ -220,14 +238,18 @@ class DemographicOption(UUIDPrimaryKeyModel, TimeStampedModel):
         return f"{self.field_name}={self.field_value}"
 
 
-class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
-    """AI-generated themes for a question (only for free text parts)"""
+class SelectedTheme(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Themes that have been selected during / after theme sign-off"""
 
     question = models.ForeignKey(Question, on_delete=models.CASCADE)
-    name = models.CharField(max_length=256)
+    name = models.TextField()
     description = models.TextField()
     key = models.CharField(max_length=128, null=True, blank=True)
-    parent = models.ForeignKey("CrossCuttingTheme", on_delete=models.CASCADE, null=True, blank=True)
+    crosscuttingtheme = models.ForeignKey(
+        "CrossCuttingTheme", on_delete=models.CASCADE, null=True, blank=True
+    )
+    version = models.IntegerField(default=1)
+    last_modified_by = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True)
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
@@ -237,6 +259,26 @@ class Theme(UUIDPrimaryKeyModel, TimeStampedModel):
                 condition=models.Q(key__isnull=False),
             ),
         ]
+        indexes = [
+            models.Index(fields=["question"]),
+        ]
+
+    def __str__(self):
+        return self.name
+
+
+class CandidateTheme(UUIDPrimaryKeyModel, TimeStampedModel):
+    """AI-generated (candidate) themes for a question"""
+
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    name = models.TextField()
+    description = models.TextField()
+    parent = models.ForeignKey("self", on_delete=models.SET_NULL, null=True, blank=True)
+    selectedtheme = models.OneToOneField(
+        SelectedTheme, on_delete=models.SET_NULL, null=True, blank=True
+    )
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         indexes = [
             models.Index(fields=["question"]),
         ]
@@ -270,7 +312,7 @@ class ResponseAnnotationTheme(UUIDPrimaryKeyModel, TimeStampedModel):
     """Through model to track original AI vs human-reviewed theme assignments"""
 
     response_annotation = models.ForeignKey("ResponseAnnotation", on_delete=models.CASCADE)
-    theme = models.ForeignKey(Theme, on_delete=models.CASCADE)
+    theme = models.ForeignKey(SelectedTheme, on_delete=models.CASCADE)
     assigned_by = models.ForeignKey(
         User, on_delete=models.CASCADE, null=True, blank=True
     )  # None for AI, User for human
@@ -303,7 +345,7 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
     response = models.OneToOneField(Response, on_delete=models.CASCADE, related_name="annotation")
 
     # AI-generated outputs (only for free text responses)
-    themes = models.ManyToManyField(Theme, through=ResponseAnnotationTheme, blank=True)
+    themes = models.ManyToManyField(SelectedTheme, through=ResponseAnnotationTheme, blank=True)
     sentiment = models.CharField(max_length=12, choices=Sentiment.choices, null=True, blank=True)
     evidence_rich = models.BooleanField(default=False, null=True, blank=True)
 
@@ -378,7 +420,7 @@ class ResponseAnnotation(UUIDPrimaryKeyModel, TimeStampedModel):
             history_type="+",
             assigned_by__isnull=True,
         ).values_list("theme_id", flat=True)
-        return Theme.objects.filter(id__in=theme_ids)
+        return SelectedTheme.objects.filter(id__in=theme_ids)
 
     def get_current_themes(self):
         """Get latest themes assigned by any human or AI"""

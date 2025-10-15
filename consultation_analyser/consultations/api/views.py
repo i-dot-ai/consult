@@ -99,7 +99,7 @@ class ThemeViewSet(ReadOnlyModelViewSet):
 class RespondentViewSet(ModelViewSet):
     serializer_class = RespondentSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
-    filterset_fields = ["themefinder_id"]
+    filterset_fields = {"themefinder_id": ["exact", "gte", "lte"]}
     http_method_names = ["get", "patch"]
 
     def get_queryset(self):
@@ -109,10 +109,11 @@ class RespondentViewSet(ModelViewSet):
         ).order_by("-created_at")
 
 
-class QuestionViewSet(ReadOnlyModelViewSet):
+class QuestionViewSet(ModelViewSet):
     serializer_class = QuestionSerializer
-    permission_classes = [HasDashboardAccess, CanSeeConsultation]
+    permission_classes = [CanSeeConsultation]
     filterset_fields = ["has_free_text"]
+    http_method_names = ["get", "patch"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
@@ -131,7 +132,9 @@ class QuestionViewSet(ReadOnlyModelViewSet):
         question = self.get_object()
 
         # Get all themes for this question
-        themes = models.Theme.objects.filter(question=question).values("id", "name", "description")
+        themes = models.SelectedTheme.objects.filter(question=question).values(
+            "id", "name", "description"
+        )
 
         serializer = ThemeInformationSerializer(data={"themes": list(themes)})
         serializer.is_valid()
@@ -217,7 +220,7 @@ class ResponseViewSet(ModelViewSet):
 
         # Get theme counts from the filtered responses
         theme_counts = (
-            models.Theme.objects.filter(
+            models.SelectedTheme.objects.filter(
                 responseannotation__response__in=self.get_queryset(),
                 responseannotation__response__question__has_free_text__isnull=False,
             )
@@ -245,6 +248,32 @@ class ResponseViewSet(ModelViewSet):
 
 
 class UserViewSet(ModelViewSet):
+    def create(self, request, *args, **kwargs):
+        # Support both single and bulk creation
+        data = request.data
+        has_dashboard_access = data.get("has_dashboard_access", False)
+
+        # If 'emails' is present and is a list, treat as bulk creation
+        if isinstance(data.get("emails"), list):
+            emails = data["emails"]
+            created_users = []
+            errors = []
+            for email in emails:
+                serializer = self.get_serializer(
+                    data={"email": email, "has_dashboard_access": has_dashboard_access}
+                )
+                if serializer.is_valid():
+                    user = serializer.save()
+                    created_users.append(user)
+                else:
+                    errors.append({"email": email, "errors": serializer.errors})
+            if errors:
+                return Response({"detail": "Some users not created.", "errors": errors}, status=400)
+            return Response(self.get_serializer(created_users, many=True).data, status=201)
+
+        # Otherwise, treat as single user creation using default DRF behavior
+        return super().create(request, *args, **kwargs)
+
     serializer_class = UserSerializer
     permission_classes = [IsAdminUser]
     pagination_class = PageNumberPagination

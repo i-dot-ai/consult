@@ -46,7 +46,6 @@
     paginateArray(demoOptionCategories, itemsPerTab),
   );
 
-  let currQuestion: number = $derived(questions[0]?.number || 0);
   let chartQuestions: Question[] = $derived(
     questions.filter((question: Question) => {
       return question.multiple_choice_answer
@@ -54,8 +53,12 @@
         : false;
     }),
   );
-  let chartQuestion: Question | undefined = $derived(
-    chartQuestions.find((question) => question.number === currQuestion),
+
+  let currQuestion: number = $derived(chartQuestions.at(0)?.number || 0);
+  let selectedChartQuestion: Question | undefined = $derived(
+    chartQuestions.find(
+      (chartQuestion) => chartQuestion?.number === currQuestion,
+    ),
   );
 
   let totalResponses = $derived(
@@ -131,7 +134,12 @@
               <div slot="title">
                 <Title
                   level={3}
-                  text={`<span class="text-primary mr-1">Q${chartQuestion?.number}</span> ${chartQuestion?.question_text}`}
+                  text={`
+                    <span class="text-primary mr-1">
+                      Q${selectedChartQuestion?.number}
+                    </span>
+                    ${selectedChartQuestion?.question_text}
+                  `}
                   maxChars={50}
                 />
               </div>
@@ -144,7 +152,7 @@
 
                   <div class="max-h-[10rem]" data-testid="metrics-chart">
                     <Chart
-                      labels={chartQuestion?.multiple_choice_answer?.map(
+                      labels={selectedChartQuestion?.multiple_choice_answer?.map(
                         (multiChoiceAnswer: QuestionMultiAnswer) => {
                           return {
                             count: multiChoiceAnswer.response_count,
@@ -152,7 +160,7 @@
                           };
                         },
                       ) || []}
-                      data={chartQuestion?.multiple_choice_answer?.map(
+                      data={selectedChartQuestion?.multiple_choice_answer?.map(
                         (multiChoiceAnswer: QuestionMultiAnswer) => {
                           return multiChoiceAnswer.response_count;
                         },

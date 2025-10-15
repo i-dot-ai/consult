@@ -9,6 +9,7 @@ from django.urls import reverse
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
+    Question,
     ResponseAnnotation,
     ResponseAnnotationTheme,
 )
@@ -889,6 +890,50 @@ class TestQuestionInformationAPIView:
         answer_counts = {x["text"]: x["response_count"] for x in data["multiple_choice_answer"]}
         assert answer_counts == {"blue": 1, "green": 0, "red": 2}
 
+    def test_patch_question_theme_status(
+        self, client, consultation_user, free_text_question, consultation_user_token
+    ):
+        """Test API endpoint for patching a question's theme status"""
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        assert free_text_question.theme_status == Question.ThemeStatus.CONFIRMED
+        response = client.patch(
+            url,
+            data={"theme_status": Question.ThemeStatus.DRAFT},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        assert response.status_code == 200
+        free_text_question.refresh_from_db()
+        assert free_text_question.theme_status == Question.ThemeStatus.DRAFT
+
+    def test_patch_question_invalid_theme_status(
+        self, client, consultation_user, free_text_question, consultation_user_token
+    ):
+        """Test API endpoint for patching a question's theme status with invalid value"""
+        url = reverse(
+            "question-detail",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        assert free_text_question.theme_status == Question.ThemeStatus.CONFIRMED
+        response = client.patch(
+            url,
+            data={"theme_status": "INVALID"},
+            content_type="application/json",
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        assert response.status_code == 400
+        free_text_question.refresh_from_db()
+        assert free_text_question.theme_status == Question.ThemeStatus.CONFIRMED
+
 
 @pytest.mark.django_db
 class TestAPIViewPermissions:
@@ -923,6 +968,9 @@ class TestAPIViewPermissions:
             "question-detail",
             "respondent-detail",
         ],
+    )
+    @pytest.mark.skip(
+        reason="We want users without dashboard access to be able to do evaluations and view consultation questions"
     )
     def test_user_without_dashboard_access_denied(
         self, client, free_text_question, non_dashboard_user_token, endpoint_name
@@ -1239,6 +1287,7 @@ def test_consultations_list_filter_by_slug(client, consultation_user_token, mult
     assert len(results) == 1
     assert results[0]["slug"] == consultation.slug
     assert results[0]["title"] == consultation.title
+    assert results[0]["stage"] == consultation.stage
 
 
 @pytest.mark.django_db
@@ -1379,6 +1428,33 @@ def test_get_respondent_query_themefinder_id(
 
 
 @pytest.mark.django_db
+def test_get_respondent_query_themefinder_range(
+    client,
+    consultation,
+    respondent_1,
+    respondent_2,
+    respondent_3,
+    respondent_4,
+    consultation_user_token,
+):
+    url = reverse(
+        "respondent-list",
+        kwargs={"consultation_pk": consultation.id},
+    )
+
+    response = client.get(
+        url,
+        query_params={"themefinder_id__gte": 2, "themefinder_id__lte": 4},
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+    assert response.status_code == 200
+    assert response.json()["count"] == 3
+    actual_respondents = {x["id"] for x in response.json()["results"]}
+    expected_respondents = {str(respondent_2.id), str(respondent_3.id), str(respondent_4.id)}
+    assert actual_respondents == expected_respondents
+
+
+@pytest.mark.django_db
 def test_get_respondent_detail(
     client, consultation, respondent_1, respondent_2, consultation_user_token
 ):
@@ -1514,6 +1590,47 @@ def test_users_create(client, consultation_user_token):
     )
     assert response.status_code == 201
     assert User.objects.filter(email="test@example.com").exists()
+
+
+@pytest.mark.django_db
+def test_users_bulk_create_success(client, consultation_user_token):
+    emails = [f"bulkuser{i}@example.com" for i in range(1, 4)]
+    url = reverse("user-list")
+    response = client.post(
+        url,
+        data=json.dumps({"emails": emails}),
+        content_type="application/json",
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+    assert response.status_code == 201
+    assert User.objects.filter(email="bulkuser1@example.com").exists()
+    assert User.objects.filter(email="bulkuser2@example.com").exists()
+    assert User.objects.filter(email="bulkuser3@example.com").exists()
+
+
+@pytest.mark.django_db
+def test_users_bulk_create_failure(client, consultation_user_token):
+    User.objects.create(email="existing@example.com")
+    emails = ["existing@example.com", "newuser@example.com", "invalid-email"]
+    url = reverse("user-list")
+    response = client.post(
+        url,
+        data=json.dumps({"emails": emails, "has_dashboard_access": True}),
+        content_type="application/json",
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+    assert response.status_code == 400
+    assert User.objects.filter(email="newuser@example.com").exists()
+    assert response.json() == {
+        "detail": "Some users not created.",
+        "errors": [
+            {
+                "email": "existing@example.com",
+                "errors": {"email": ["user with this email address already exists."]},
+            },
+            {"email": "invalid-email", "errors": {"email": ["Enter a valid email address."]}},
+        ],
+    }
 
 
 @pytest.mark.django_db
