@@ -83,7 +83,14 @@ class TestDemographicOptionsAPIView:
             {"count": 2, "name": "region", "value": "north"},
             {"count": 1, "name": "region", "value": "south"},
         ]
-        assert data == expected
+
+        def f(x):
+            return {k: v for k, v in x.items() if k != "id"}
+
+        def _sort(items):
+            return sorted(items, key=lambda x: (x["name"], x["value"]))
+
+        assert _sort(map(f, data)) == _sort(expected)
 
     def test_permission_required(self, client, free_text_question):
         """Test API endpoint requires proper permissions"""

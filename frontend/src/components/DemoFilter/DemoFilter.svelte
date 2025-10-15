@@ -105,7 +105,7 @@
               <div class="demo-filter w-full relative pb-1">
                 <div class="flex justify-between items-center gap-1">
                   <span class="text-left truncate grow" title={rowKey}>
-                    {rowKey.replaceAll("'", "")}
+                    {rowKey ? rowKey.replaceAll("'", "") : ""}
                   </span>
 
                   <span class="text-right">

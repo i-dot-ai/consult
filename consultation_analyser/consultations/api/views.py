@@ -25,7 +25,7 @@ from .serializers import (
     ConsultationSerializer,
     CrossCuttingThemeSerializer,
     DemographicAggregationsSerializer,
-    DemographicOptionsSerializer,
+    DemographicOptionSerializer,
     QuestionSerializer,
     RespondentSerializer,
     ResponseSerializer,
@@ -75,15 +75,16 @@ class ConsultationViewSet(ModelViewSet):
         if not request.user.has_dashboard_access:
             raise PermissionDenied()
 
-        data = (
-            models.Respondent.objects.filter(consultation_id=pk)
-            .order_by("demographics__field_name", "demographics__field_value")
-            .values("demographics__field_name", "demographics__field_value")
-            .annotate(count=Count("id"))
+        # Get demographic options with counts using annotation
+        demographic_options = (
+            models.DemographicOption.objects.filter(consultation_id=pk)
+            .annotate(count=Count("respondent"))
+            .values("id", "field_name", "field_value", "count")
+            .order_by("field_name", "field_value")
         )
 
-        serializer = DemographicOptionsSerializer(instance=data, many=True)
-
+        # Serialize the response using the proper serializer
+        serializer = DemographicOptionSerializer(demographic_options, many=True)
         return Response(serializer.data)
 
 
