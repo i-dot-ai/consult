@@ -1775,6 +1775,7 @@ def test_users_patch_fail(client, consultation_user, consultation_user_token):
     assert "You cannot remove admin privileges from yourself" in response.json()["is_staff"]
 
 
+@pytest.mark.django_db
 def test_question_list(
     client, consultation_user_token, consultation, free_text_question, multi_choice_question
 ):
