@@ -1,0 +1,157 @@
+<script lang="ts">
+  import clsx from "clsx";
+
+  import { slide, fly } from "svelte/transition";
+
+  import type { GeneratedTheme, SelectedTheme } from "../../../global/types";
+
+  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import ChevronRight from "../../svg/material/ChevronRight.svelte";
+  import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
+  import Tag from "../../Tag/Tag.svelte";
+  import AnswersList from "../AnswersList/AnswersList.svelte";
+  import Visibility from "../../svg/material/Visibility.svelte";
+
+  export interface Props {
+    selectedThemes: SelectedTheme[];
+    theme: GeneratedTheme;
+    answers?: string[];
+    level?: number;
+    leftPadding?: number;
+    forceExpand?: boolean;
+    setForceExpand?: (newValue: boolean) => void;
+    handleSelect: (theme: GeneratedTheme) => void;
+  }
+  let {
+    selectedThemes = [],
+    theme,
+    answers = [],
+    level = 0,
+    leftPadding = 2,
+    forceExpand = false,
+    setForceExpand = () => {},
+    handleSelect = () => {},
+  }: Props = $props();
+
+  let expanded = $state(true);
+  let showAnswers = $state(false);
+
+  let disabled = $derived(
+    Boolean(selectedThemes.find(selectedTheme => selectedTheme.id === theme.id))
+  );
+
+  $effect(() => {
+    if (forceExpand) {
+      expanded = true;
+    }
+  })
+
+  const shouldShowAnswers = () => {
+    return showAnswers && !disabled;
+  }
+</script>
+
+<div
+  transition:slide
+  style="margin-left: {level * leftPadding}rem;"
+  class={clsx([
+    "generated-theme-card",
+    disabled && "grayscale",
+  ])}
+>
+  <Panel border={true}>
+    <article class="flex">
+      <div class={clsx([
+        "transition-all",
+        "duration-300",
+        shouldShowAnswers() ? "w-1/3" : "w-full",
+      ])}>
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            {#if theme.children?.length! > 0 && !disabled}
+              <Button variant="ghost" handleClick={() => {
+                expanded = !expanded;
+                setForceExpand(false);
+              }}>
+                <div class={clsx(["transition-transform", expanded && "rotate-90"])}>
+                  <MaterialIcon size="1.2rem" color="fill-emerald-700">
+                    <ChevronRight />
+                  </MaterialIcon>
+                </div>
+              </Button>
+            {/if}
+
+            <h3>{theme.name}</h3>
+
+            <Tag variant="success">
+              Level {level + 1}
+            </Tag>
+          </div>
+        </div>
+
+        <p class="text-neutral-500 text-sm">
+          {theme.description}
+        </p>
+
+        {#if !disabled}
+          <footer class="mt-4 flex items-center gap-2">
+            <Button variant="approve" size="sm" handleClick={() => {
+              disabled = !disabled
+              handleSelect(theme)
+            }}>
+              Select
+            </Button>
+            <Button size="sm" handleClick={() => showAnswers = !showAnswers}>
+              <div class="text-emerald-700 flex items-center gap-1">
+                <MaterialIcon color="fill-emerald-700">
+                  <Visibility />
+                </MaterialIcon>
+                {showAnswers ? "Hide" : "Representative"} Responses
+              </div>
+            </Button>
+          </footer>  
+        {/if}
+      </div>
+
+      {#if shouldShowAnswers()}
+        <aside
+          transition:fly={{ x: 300 }}
+          class="border-l border-neutral-200 ml-4 pl-4"
+        >
+          <AnswersList
+            variant="generated"
+            title="Representative Responses"
+            answers={answers}
+          />
+        </aside>
+      {:else}
+        <div class="p2"></div>
+      {/if}
+    </article>
+  </Panel>
+
+  {#if expanded && !disabled}
+    <div transition:slide class="pt-4">
+      {#each theme.children as childTheme (childTheme.id)}
+        <GeneratedThemeCard
+          {selectedThemes}
+          theme={childTheme}
+          level={level + 1}
+          {forceExpand}
+          {setForceExpand}
+          {handleSelect}
+        />
+      {/each} 
+    </div>
+  {:else}
+    <div class="pb-4"></div>
+  {/if}
+</div>
+
+<style>
+  .generated-theme-card :global(div[data-testid="panel-component"]) {
+    margin-block: 0;
+  }
+</style>
