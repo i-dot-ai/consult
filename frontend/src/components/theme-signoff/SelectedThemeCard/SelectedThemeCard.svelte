@@ -14,7 +14,7 @@
   import AddCustomTheme from "../AddCustomTheme/AddCustomTheme.svelte";
   import AnswersList from "../AnswersList/AnswersList.svelte";
 
-  interface Props {
+  export interface Props {
     theme: GeneratedTheme,
     answers: string[],
     removeTheme: (themeId: string) => void,
