@@ -1,4 +1,5 @@
 import json
+import re
 from uuid import UUID
 
 import boto3
@@ -89,12 +90,17 @@ def get_consultation_codes() -> list[dict]:
         # Get unique consultation folders
         consultation_codes = set()
         for obj in objects:
-            parts = obj.key.split("/")
-            if len(parts) >= 3 and parts[2]:  # Has consultation code
-                consultation_codes.add(parts[2])
+            if match := re.search(
+                r"^app_data\/consultations\/(\w+)\/outputs\/mapping\/(\d{2,4}-\d{2}-\d{2,4})\/?",
+                str(obj.key),
+            ):
+                consultation_codes.add(match.groups())
 
         # Format for dropdown
-        return [{"text": code, "value": code} for code in sorted(consultation_codes)]
+        return [
+            {"text": f"{code} ({timestamp})", "value": f"{code}-{timestamp}"}
+            for code, timestamp in sorted(consultation_codes)
+        ]
     except Exception:
         logger.exception("Failed to get consultation codes from S3")
         return []

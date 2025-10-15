@@ -21,6 +21,7 @@ from ..views.sessions import send_magic_link_if_email_exists
 from .filters import HybridSearchFilter, ResponseFilter
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
+    CandidateThemeSerializer,
     ConsultationSerializer,
     CrossCuttingThemeSerializer,
     DemographicAggregationsSerializer,
@@ -28,6 +29,7 @@ from .serializers import (
     QuestionSerializer,
     RespondentSerializer,
     ResponseSerializer,
+    SelectedThemeSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
     UserSerializer,
@@ -122,7 +124,7 @@ class QuestionViewSet(ModelViewSet):
                 consultation_id=consultation_uuid, consultation__users=self.request.user
             )
             .annotate(response_count=Count("response"))
-            .order_by("-created_at")
+            .order_by("number")
         )
 
     @action(detail=True, methods=["get"], url_path="theme-information")
@@ -138,6 +140,24 @@ class QuestionViewSet(ModelViewSet):
 
         serializer = ThemeInformationSerializer(data={"themes": list(themes)})
         serializer.is_valid()
+
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"], url_path="selected_themes")
+    def selected_themes(self, request, pk=None, consultation_pk=None):
+        """List selected themes for a question"""
+        question = self.get_object()
+        selected_themes = models.SelectedTheme.objects.filter(question=question)
+        serializer = SelectedThemeSerializer(selected_themes, many=True)
+
+        return Response(serializer.data)
+
+    @action(detail=True, methods=["get"], url_path="candidate_themes")
+    def candidate_themes(self, request, consultation_pk=None, pk=None):
+        """List candidate themes for a question with nested children"""
+        question = self.get_object()
+        roots = models.CandidateTheme.objects.filter(question=question, parent__isnull=True)
+        serializer = CandidateThemeSerializer(roots, many=True)
 
         return Response(serializer.data)
 
