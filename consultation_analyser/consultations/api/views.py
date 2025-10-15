@@ -143,22 +143,41 @@ class QuestionViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"], url_path="selected_themes")
-    def selected_themes(self, request, pk=None, consultation_pk=None):
-        """List selected themes for a question"""
-        question = self.get_object()
-        selected_themes = models.SelectedTheme.objects.filter(question=question)
-        serializer = SelectedThemeSerializer(selected_themes, many=True)
 
-        return Response(serializer.data)
+class SelectedThemeViewSet(ModelViewSet):
+    serializer_class = SelectedThemeSerializer
+    permission_classes = [CanSeeConsultation]
+    pagination_class = None
+    http_method_names = ["get"]
 
-    @action(detail=True, methods=["get"], url_path="candidate_themes")
-    def candidate_themes(self, request, consultation_pk=None, pk=None):
+    def get_queryset(self):
+        consultation_uuid = self.kwargs["consultation_pk"]
+        question_uuid = self.kwargs["question_pk"]
+        return models.SelectedTheme.objects.filter(
+            question__consultation_id=consultation_uuid,
+            question_id=question_uuid,
+            question__consultation__users=self.request.user,
+        )
+
+
+class CandidateThemeViewSet(ModelViewSet):
+    serializer_class = CandidateThemeSerializer
+    permission_classes = [CanSeeConsultation]
+    http_method_names = ["get"]
+
+    def get_queryset(self):
+        consultation_uuid = self.kwargs["consultation_pk"]
+        question_uuid = self.kwargs["question_pk"]
+        return models.CandidateTheme.objects.filter(
+            question__consultation_id=consultation_uuid,
+            question_id=question_uuid,
+            question__consultation__users=self.request.user,
+        )
+
+    def list(self, request, consultation_pk=None, question_pk=None):
         """List candidate themes for a question with nested children"""
-        question = self.get_object()
-        roots = models.CandidateTheme.objects.filter(question=question, parent__isnull=True)
+        roots = self.get_queryset().filter(parent__isnull=True)
         serializer = CandidateThemeSerializer(roots, many=True)
-
         return Response(serializer.data)
 
 

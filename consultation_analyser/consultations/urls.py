@@ -4,10 +4,12 @@ from rest_framework import routers
 from rest_framework_nested.routers import NestedDefaultRouter
 
 from .api.views import (
+    CandidateThemeViewSet,
     ConsultationViewSet,
     QuestionViewSet,
     RespondentViewSet,
     ResponseViewSet,
+    SelectedThemeViewSet,
     ThemeViewSet,
     UserViewSet,
     generate_magic_link,
@@ -30,6 +32,9 @@ consultations_router.register("themes", ThemeViewSet, basename="theme")
 consultations_router.register("responses", ResponseViewSet, basename="response")
 
 questions_router = NestedDefaultRouter(consultations_router, "questions", lookup="question")
+questions_router.register("selected-themes", SelectedThemeViewSet, basename="selected-theme")
+questions_router.register("candidate-themes", CandidateThemeViewSet, basename="candidate-theme")
+
 themes_router = NestedDefaultRouter(consultations_router, "themes", lookup="theme")
 
 
