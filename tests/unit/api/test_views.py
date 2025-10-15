@@ -1754,3 +1754,22 @@ def test_users_patch(client, consultation_user, consultation_user_token):
     assert response.json()["has_dashboard_access"] is False
     consultation_user.refresh_from_db()
     assert consultation_user.has_dashboard_access is False
+
+
+@pytest.mark.django_db
+def test_question_list(
+    client, consultation_user_token, consultation, free_text_question, multi_choice_question
+):
+    """Test the question list endpoint returns the questions in the right order"""
+
+    url = reverse("question-list", kwargs={"consultation_pk": consultation.id})
+
+    # Filter by has_free_text=True
+    response = client.get(
+        url,
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+    assert response.status_code == 200
+
+    data = response.json()
+    assert [x["number"] for x in data["results"]] == [1, 2]
