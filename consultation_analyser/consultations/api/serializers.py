@@ -21,10 +21,19 @@ from consultation_analyser.consultations.models import (
 
 class UserSerializer(serializers.ModelSerializer):
     has_dashboard_access = serializers.BooleanField(required=False)
+    emails = serializers.ListSerializer(child=serializers.EmailField(), required=False)
 
     class Meta:
         model = User
-        fields = ["id", "email", "has_dashboard_access", "is_staff", "created_at"]
+        fields = ["id", "email", "has_dashboard_access", "is_staff", "created_at", "emails"]
+
+    def to_internal_value(self, data):
+        if email := data.get( "email"):
+            data["email"] = email.lower()
+
+        if emails := data.get("emails"):
+            data["emails"] = [email.lower() for email in emails]
+        return super().to_internal_value(data)
 
 
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):

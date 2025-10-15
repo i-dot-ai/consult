@@ -1680,18 +1680,19 @@ def test_users_delete(client, consultation_user, consultation_user_token):
 
 @pytest.mark.django_db
 def test_users_create(client, consultation_user_token):
+    email = "Test@Example.com"
     assert not User.objects.filter(email="test@example.com").exists()
     url = reverse("user-list")
     response = client.post(
         url,
-        data=json.dumps({"email": "test@example.com"}),
+        data={"email": email},
         content_type="application/json",
         headers={
             "Authorization": f"Bearer {consultation_user_token}",
         },
     )
     assert response.status_code == 201
-    assert User.objects.filter(email="test@example.com").exists()
+    assert User.objects.get(id=response.json()["id"]).email == email.lower()
 
 
 @pytest.mark.django_db
