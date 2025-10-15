@@ -50,6 +50,7 @@
 
     disabled &&
       clsx([
+        "disabled",
         "disabled:bg-gray-200",
         "disabled:text-gray-400",
         "disabled:cursor-not-allowed",
@@ -84,13 +85,13 @@
 </svelte:element>
 
 <style>
-  button[data-variant="approve"]:hover :global(svg) {
+  button[data-variant="approve"]:not(.disabled):hover :global(svg) {
     fill: var(--color-teal);
   }
-  button[data-variant="primary"]:hover :global(svg) {
+  button[data-variant="primary"]:not(.disabled):hover :global(svg) {
     fill: var(--color-primary);
   }
-  button[data-variant="ghost"]:hover :global(svg) {
+  button[data-variant="ghost"]:not(.disabled):hover :global(svg) {
     fill: var(--color-primary);
   }
 </style>
