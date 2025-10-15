@@ -163,7 +163,6 @@ class TestGetConsultationCodes:
 
         expected = [
             {"text": "consultation1 (2012-12-12)", "value": "consultation1-2012-12-12"},
-            {"text": "consultation1 (2025-12-12)", "value": "consultation1-2025-12-12"},
             {"text": "consultation2 (2020-12-12)", "value": "consultation2-2020-12-12"},
             {"text": "other (1066-12-12)", "value": "other-1066-12-12"},
         ]

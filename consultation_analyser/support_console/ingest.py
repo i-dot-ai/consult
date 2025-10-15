@@ -1,4 +1,5 @@
 import json
+import re
 from uuid import UUID
 
 import boto3
@@ -89,9 +90,11 @@ def get_consultation_codes() -> list[dict]:
         # Get unique consultation folders
         consultation_codes = set()
         for obj in objects:
-            parts = obj.key.split("/")
-            if len(parts) >= 6 and parts[2] and parts[5]:  # Has consultation code and timestamp
-                consultation_codes.add((parts[2], parts[5]))
+            if match := re.search(
+                r"^app_data\/consultations\/(\w+)\/outputs\/mapping\/(\d{4}-\d{2}-\d{2})\/?",
+                str(obj.key),
+            ):
+                consultation_codes.add(match.groups())
 
         # Format for dropdown
         return [
