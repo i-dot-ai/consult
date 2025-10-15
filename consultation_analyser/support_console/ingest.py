@@ -569,6 +569,7 @@ def import_questions(
     consultation: Consultation,
     consultation_code: str,
     timestamp: str,
+    sign_off: bool = False,
 ):
     """
     Import question data for a consultation.
@@ -576,6 +577,7 @@ def import_questions(
         consultation: Consultation object for questions
         consultation_code: S3 folder name containing the consultation data
         timestamp: Timestamp folder name for the AI outputs
+        sign_off: If True, import candidate themes; if False, use standard theme import workflow
     """
     logger.info("Starting question import for consultation {title})", title=consultation.title)
 
@@ -624,20 +626,26 @@ def import_questions(
             )
             queue.enqueue(create_embeddings_for_question, question.id, depends_on=responses)
 
-            if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
-                logger.info("not importing output-mappings")
-            else:
+            if sign_off:
                 output_folder = f"{outputs_path}question_part_{question_num_str}/"
-                themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
-                response_annotations = queue.enqueue(
-                    import_response_annotations, question, output_folder, depends_on=themes
-                )
-                queue.enqueue(
-                    import_response_annotation_themes,
-                    question,
-                    output_folder,
-                    depends_on=response_annotations,
-                )
+                queue.enqueue(import_candidate_themes, question, output_folder, depends_on=responses)
+            else:
+                if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
+                    logger.info("not importing output-mappings")
+                else:
+                    output_folder = f"{outputs_path}question_part_{question_num_str}/"
+                    themes = queue.enqueue(
+                        import_themes, question, output_folder, depends_on=responses
+                    )
+                    response_annotations = queue.enqueue(
+                        import_response_annotations, question, output_folder, depends_on=themes
+                    )
+                    queue.enqueue(
+                        import_response_annotation_themes,
+                        question,
+                        output_folder,
+                        depends_on=response_annotations,
+                    )
 
     except Exception as e:
         logger.error(
