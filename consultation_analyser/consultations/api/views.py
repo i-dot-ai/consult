@@ -163,7 +163,7 @@ class SelectedThemeViewSet(ModelViewSet):
 class CandidateThemeViewSet(ModelViewSet):
     serializer_class = CandidateThemeSerializer
     permission_classes = [CanSeeConsultation]
-    http_method_names = ["get"]
+    http_method_names = ["get", "post"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
@@ -179,6 +179,24 @@ class CandidateThemeViewSet(ModelViewSet):
         roots = self.get_queryset().filter(parent__isnull=True)
         serializer = CandidateThemeSerializer(roots, many=True)
         return Response(serializer.data)
+
+    @action(detail=True, methods=["post"], url_path="select")
+    def select(self, request, consultation_pk=None, question_pk=None, pk=None):
+        """Select a candidate theme to add as a selected theme"""
+        candidate_theme = get_object_or_404(self.get_queryset(), pk=pk)
+
+        selected_theme = models.SelectedTheme.objects.create(
+            question=candidate_theme.question,
+            name=candidate_theme.name,
+            description=candidate_theme.description,
+            last_modified_by=request.user,
+        )
+
+        candidate_theme.selectedtheme_id = selected_theme.id
+        candidate_theme.save(update_fields=["selectedtheme_id"])
+
+        serializer = SelectedThemeSerializer(selected_theme)
+        return Response(serializer.data, status=201)
 
 
 class BespokeResultsSetPagination(PageNumberPagination):

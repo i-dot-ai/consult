@@ -14,6 +14,7 @@ from consultation_analyser.consultations.models import (
     Question,
     ResponseAnnotation,
     ResponseAnnotationTheme,
+    SelectedTheme,
 )
 from consultation_analyser.factories import (
     CandidateThemeFactory,
@@ -1348,6 +1349,50 @@ class TestCandidateThemeViewSet:
                 "children": [],
             },
         ]
+
+    def test_select_candidate_theme(
+        self,
+        client,
+        consultation_user,
+        consultation_user_token,
+        free_text_question,
+        candidate_theme,
+    ):
+        """Test API endpoint to select a candidate theme and create a SelectedTheme"""
+        url = reverse(
+            "candidate-theme-select",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "question_pk": free_text_question.id,
+                "pk": candidate_theme.id,
+            },
+        )
+        response = client.post(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        candidate_theme.refresh_from_db()
+        selected_theme = SelectedTheme.objects.get(pk=candidate_theme.selectedtheme_id)
+
+        assert selected_theme.id == candidate_theme.selectedtheme_id
+        assert selected_theme.name == candidate_theme.name
+        assert selected_theme.description == candidate_theme.description
+        assert selected_theme.question == free_text_question
+        assert selected_theme.version == 1
+        assert selected_theme.last_modified_by == consultation_user
+
+        assert response.status_code == 201
+        assert response.json() == {
+            "id": str(selected_theme.id),
+            "name": selected_theme.name,
+            "description": selected_theme.description,
+            "version": selected_theme.version,
+            "modified_at": selected_theme.modified_at.astimezone(
+                ZoneInfo(settings.TIME_ZONE)
+            ).isoformat(),
+            "last_modified_by": consultation_user.email,
+        }
 
 
 @pytest.mark.django_db
