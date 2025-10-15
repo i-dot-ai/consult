@@ -74,7 +74,7 @@ exports[`MultiChoice > should render data 1`] = `
           <!---->
           <button
             aria-pressed="false"
-            class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1vf7a7q"
+            class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1rjb6fa"
             data-variant="ghost"
             role="button"
             tabindex="0"
@@ -148,7 +148,7 @@ exports[`MultiChoice > should render data 1`] = `
           <!---->
           <button
             aria-pressed="false"
-            class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1vf7a7q"
+            class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1rjb6fa"
             data-variant="ghost"
             role="button"
             tabindex="0"
