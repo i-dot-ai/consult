@@ -10,6 +10,7 @@ from django_rq import get_queue
 from simple_history.utils import bulk_create_with_history
 
 from consultation_analyser.consultations.models import (
+    CandidateTheme,
     Consultation,
     CrossCuttingTheme,
     DemographicOption,
@@ -512,6 +513,54 @@ def import_themes(question: Question, output_folder: str):
     logger.info(
         "Imported {len_themes} themes for question {question_number}",
         len_themes=len(themes),
+        question_number=question.number,
+    )
+
+
+def import_candidate_themes(question: Question, output_folder: str):
+    s3_client = boto3.client("s3")
+    themes_file_key = f"{output_folder}clustered_themes.json"
+    try:
+        response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
+        theme_data = json.loads(response["Body"].read())
+    except BaseException:
+        logger.info("couldn't load file {file}", file=themes_file_key)
+        return
+
+    # First pass: create all themes without parent relationships
+    topic_id_to_candidate_theme = {}
+    themes_to_save = []
+    for theme in theme_data:
+        candidate_theme = CandidateTheme(
+            question=question,
+            name=theme["topic_label"],
+            description=theme["topic_description"],
+            approximate_frequency=theme["source_topic_count"],
+        )
+        themes_to_save.append(candidate_theme)
+
+    created_themes = CandidateTheme.objects.bulk_create(themes_to_save)
+
+    # Build mapping from topic_id to created CandidateTheme
+    for i, theme in enumerate(theme_data):
+        topic_id_to_candidate_theme[theme["topic_id"]] = created_themes[i]
+
+    # Second pass: set parent relationships
+    themes_to_update = []
+    for theme in theme_data:
+        parent_id = theme.get("parent_id")
+        if parent_id and parent_id != "0":
+            candidate_theme = topic_id_to_candidate_theme[theme["topic_id"]]
+            if parent_id in topic_id_to_candidate_theme:
+                candidate_theme.parent = topic_id_to_candidate_theme[parent_id]
+                themes_to_update.append(candidate_theme)
+
+    if themes_to_update:
+        CandidateTheme.objects.bulk_update(themes_to_update, ["parent"])
+
+    logger.info(
+        "Imported {len_themes} candidate themes for question {question_number}",
+        len_themes=len(created_themes),
         question_number=question.number,
     )
 
