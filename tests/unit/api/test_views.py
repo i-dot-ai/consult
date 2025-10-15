@@ -1,9 +1,11 @@
 import json
 from datetime import datetime
 from uuid import uuid4
+from zoneinfo import ZoneInfo
 
 import orjson
 import pytest
+from django.conf import settings
 from django.test import override_settings
 from django.urls import reverse
 
@@ -14,6 +16,7 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
 )
 from consultation_analyser.factories import (
+    CandidateThemeFactory,
     QuestionFactory,
     RespondentFactory,
     ResponseAnnotationFactory,
@@ -271,6 +274,124 @@ class TestThemeInformationAPIView:
             assert "id" in theme_data
             assert "name" in theme_data
             assert "description" in theme_data
+
+    def test_get_selected_themes(
+        self, client, consultation_user_token, free_text_question, theme_a, theme_b
+    ):
+        """Test API endpoint returns selected themes for a question"""
+        url = reverse(
+            "question-selected-themes",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
+
+        data = response.json()
+        assert data == [
+            {
+                "id": str(theme_a.id),
+                "name": "Theme A",
+                "description": theme_a.description,
+                "version": 1,
+                "modified_at": theme_a.modified_at.astimezone(
+                    ZoneInfo(settings.TIME_ZONE)
+                ).isoformat(),
+                "last_modified_by": None,
+            },
+            {
+                "id": str(theme_b.id),
+                "name": "Theme B",
+                "description": theme_b.description,
+                "version": 1,
+                "modified_at": theme_b.modified_at.astimezone(
+                    ZoneInfo(settings.TIME_ZONE)
+                ).isoformat(),
+                "last_modified_by": theme_b.last_modified_by.email,
+            },
+        ]
+
+    def test_get_candidate_themes(
+        self, client, consultation_user_token, free_text_question, theme_a, theme_b
+    ):
+        """Test API endpoint returns candidate themes for a question with nested children"""
+        # Build a candidate theme tree:
+        # root1
+        #   ├─ child1 (selected)
+        #   │   └─ grandchild1
+        #   └─ child2
+        # root2 (selected)
+
+        root1 = CandidateThemeFactory(question=free_text_question, parent=None)
+        child1 = CandidateThemeFactory(
+            question=free_text_question, parent=root1, selectedtheme=theme_a
+        )
+        grandchild1 = CandidateThemeFactory(question=free_text_question, parent=child1)
+        child2 = CandidateThemeFactory(question=free_text_question, parent=root1)
+        root2 = CandidateThemeFactory(
+            question=free_text_question, parent=None, selectedtheme=theme_b
+        )
+
+        url = reverse(
+            "question-candidate-themes",
+            kwargs={
+                "consultation_pk": free_text_question.consultation.id,
+                "pk": free_text_question.id,
+            },
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
+        data = response.json()
+
+        assert data == [
+            {
+                "id": str(root1.id),
+                "name": root1.name,
+                "description": root1.description,
+                "selectedtheme_id": None,
+                "children": [
+                    {
+                        "id": str(child1.id),
+                        "name": child1.name,
+                        "description": child1.description,
+                        "selectedtheme_id": str(theme_a.id),
+                        "children": [
+                            {
+                                "id": str(grandchild1.id),
+                                "name": grandchild1.name,
+                                "description": grandchild1.description,
+                                "selectedtheme_id": None,
+                                "children": [],
+                            }
+                        ],
+                    },
+                    {
+                        "id": str(child2.id),
+                        "name": child2.name,
+                        "description": child2.description,
+                        "selectedtheme_id": None,
+                        "children": [],
+                    },
+                ],
+            },
+            {
+                "id": str(root2.id),
+                "name": root2.name,
+                "description": root2.description,
+                "selectedtheme_id": str(theme_b.id),
+                "children": [],
+            },
+        ]
 
 
 @pytest.mark.django_db
@@ -1652,3 +1773,21 @@ def test_users_patch_fail(client, consultation_user, consultation_user_token):
     )
     assert response.status_code == 400
     assert "You cannot remove admin privileges from yourself" in response.json()["is_staff"]
+
+
+def test_question_list(
+    client, consultation_user_token, consultation, free_text_question, multi_choice_question
+):
+    """Test the question list endpoint returns the questions in the right order"""
+
+    url = reverse("question-list", kwargs={"consultation_pk": consultation.id})
+
+    # Filter by has_free_text=True
+    response = client.get(
+        url,
+        headers={"Authorization": f"Bearer {consultation_user_token}"},
+    )
+    assert response.status_code == 200
+
+    data = response.json()
+    assert [x["number"] for x in data["results"]] == [1, 2]

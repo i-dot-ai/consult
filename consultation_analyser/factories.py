@@ -159,6 +159,15 @@ class SelectedThemeFactory(DjangoModelFactory):
     key = factory.Sequence(lambda n: f"theme-{n}")
 
 
+class CandidateThemeFactory(DjangoModelFactory):
+    class Meta:
+        model = models.CandidateTheme
+
+    question = factory.SubFactory(QuestionFactory)
+    name = factory.LazyAttribute(lambda o: fake.sentence())
+    description = factory.LazyAttribute(lambda o: fake.paragraph())
+
+
 class ResponseAnnotationFactory(DjangoModelFactory):
     class Meta:
         model = models.ResponseAnnotation

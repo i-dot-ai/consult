@@ -6,6 +6,7 @@ from rest_framework.exceptions import ValidationError
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
+    CandidateTheme,
     Consultation,
     CrossCuttingTheme,
     DemographicOption,
@@ -118,6 +119,17 @@ class ThemeAggregationsSerializer(serializers.Serializer):
     theme_aggregations = serializers.DictField(child=serializers.IntegerField())
 
 
+class SelectedThemeSerializer(serializers.ModelSerializer):
+    last_modified_by = serializers.SerializerMethodField()
+
+    class Meta:
+        model = SelectedTheme
+        fields = ["id", "name", "description", "version", "modified_at", "last_modified_by"]
+
+    def get_last_modified_by(self, obj):
+        return obj.last_modified_by.email if obj.last_modified_by else None
+
+
 class ThemeSerializer2(serializers.ModelSerializer):
     question_id = serializers.UUIDField(source="question.id")
 
@@ -141,6 +153,24 @@ class CrossCuttingThemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CrossCuttingTheme
         fields = ["name", "description", "themes", "response_count"]
+
+
+class CandidateThemeSerializer(serializers.ModelSerializer):
+    children = serializers.SerializerMethodField()
+
+    class Meta:
+        model = CandidateTheme
+        fields = [
+            "id",
+            "name",
+            "description",
+            "children",
+            "selectedtheme_id",
+        ]
+
+    def get_children(self, obj):
+        children = CandidateTheme.objects.filter(parent=obj)
+        return CandidateThemeSerializer(children, many=True).data
 
 
 class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):

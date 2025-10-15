@@ -304,8 +304,9 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
 
     if request.POST:
         consultation_name = request.POST.get("consultation_name")
-        consultation_code = request.POST.get("consultation_code")
-        timestamp = request.POST.get("timestamp")
+        code_and_timestamp = request.POST.get("consultation_code")
+
+        consultation_code, timestamp = code_and_timestamp.split("-", 1)
 
         # TODO: replace with new logic to support multi-choice answers
         # # Validate structure

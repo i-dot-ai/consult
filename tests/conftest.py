@@ -256,7 +256,7 @@ def consultation(dashboard_user, non_dashboard_user):
 @pytest.fixture
 def free_text_question(consultation):
     question = QuestionFactory(
-        consultation=consultation, has_free_text=True, has_multiple_choice=False
+        consultation=consultation, has_free_text=True, has_multiple_choice=False, number=1
     )
     yield question
     question.delete()
@@ -265,7 +265,7 @@ def free_text_question(consultation):
 @pytest.fixture
 def multi_choice_question(consultation):
     question = QuestionFactory(
-        consultation=consultation, has_free_text=False, has_multiple_choice=True
+        consultation=consultation, has_free_text=False, has_multiple_choice=True, number=2
     )
     for answer in ["red", "blue", "green"]:
         MultiChoiceAnswerFactory.create(question=question, text=answer)
@@ -307,8 +307,10 @@ def theme_a(free_text_question):
 
 
 @pytest.fixture()
-def theme_b(free_text_question):
-    theme = SelectedThemeFactory(question=free_text_question, name="Theme B", key="B")
+def theme_b(free_text_question, consultation_user):
+    theme = SelectedThemeFactory(
+        question=free_text_question, name="Theme B", key="B", last_modified_by=consultation_user
+    )
     yield theme
     theme.delete()
 
