@@ -90,11 +90,14 @@ def get_consultation_codes() -> list[dict]:
         consultation_codes = set()
         for obj in objects:
             parts = obj.key.split("/")
-            if len(parts) >= 3 and parts[2]:  # Has consultation code
-                consultation_codes.add(parts[2])
+            if len(parts) >= 6 and parts[2] and parts[5]:  # Has consultation code and timestamp
+                consultation_codes.add((parts[2], parts[5]))
 
         # Format for dropdown
-        return [{"text": code, "value": code} for code in sorted(consultation_codes)]
+        return [
+            {"text": f"{code} ({timestamp})", "value": f"{code}-{timestamp}"}
+            for code, timestamp in sorted(consultation_codes)
+        ]
     except Exception:
         logger.exception("Failed to get consultation codes from S3")
         return []
