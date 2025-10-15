@@ -124,7 +124,7 @@ class QuestionViewSet(ModelViewSet):
                 consultation_id=consultation_uuid, consultation__users=self.request.user
             )
             .annotate(response_count=Count("response"))
-            .order_by("-created_at")
+            .order_by("number")
         )
 
     @action(detail=True, methods=["get"], url_path="theme-information")
