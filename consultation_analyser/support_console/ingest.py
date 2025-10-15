@@ -91,7 +91,7 @@ def get_consultation_codes() -> list[dict]:
         consultation_codes = set()
         for obj in objects:
             if match := re.search(
-                r"^app_data\/consultations\/(\w+)\/outputs\/mapping\/(\d{4}-\d{2}-\d{2})\/?",
+                r"^app_data\/consultations\/(\w+)\/outputs\/mapping\/(\d{2,4}-\d{2}-\d{2,4})\/?",
                 str(obj.key),
             ):
                 consultation_codes.add(match.groups())
