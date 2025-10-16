@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte"
-  import { createFetchStore } from "../global/stores.ts";
-  import Switch from "./inputs/Switch/Switch.svelte";
+  import { createFetchStore } from "../../../global/stores.ts";
+  import Switch from "../../inputs/Switch/Switch.svelte";
   
   export interface Props {
     userId: string;
