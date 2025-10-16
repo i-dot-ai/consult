@@ -5,6 +5,7 @@
     TabNames,
     type DemoData,
     type DemoOption,
+    type DemoOptionsResponse,
     type FormattedTheme,
     type QuestionMultiAnswer,
   } from "../../../global/types.ts";
@@ -40,6 +41,7 @@
     filteredTotal: number;
     demoData: DemoData;
     demoOptions: DemoOption;
+    demoOptionsData?: DemoOptionsResponse;
     themes: FormattedTheme[];
     multiChoice: QuestionMultiAnswer[];
     consultationSlug?: string;
@@ -56,6 +58,7 @@
     filteredTotal = 0,
     demoData = {},
     demoOptions = {},
+    demoOptionsData = [],
     themes = [],
     multiChoice = [],
     consultationSlug = "",
@@ -74,6 +77,7 @@
         showEvidenceRich={false}
         {demoOptions}
         {demoData}
+        {demoOptionsData}
         loading={themesLoading}
       />
 

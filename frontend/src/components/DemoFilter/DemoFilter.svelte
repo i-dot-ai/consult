@@ -13,6 +13,7 @@
   import type {
     DemoData,
     DemoOption,
+    DemoOptionsResponse,
     DemoTotalCounts,
   } from "../../global/types.ts";
 
@@ -21,6 +22,7 @@
     demoOptions?: DemoOption;
     demoData?: DemoData;
     totalCounts?: DemoTotalCounts;
+    demoOptionsData?: DemoOptionsResponse;
     skeleton?: boolean;
   }
 
@@ -29,6 +31,7 @@
     demoOptions = {},
     demoData = {},
     totalCounts = {},
+    demoOptionsData = [],
     skeleton = false,
   }: Props = $props();
 
@@ -91,6 +94,9 @@
         {@const rowValue =
           (demoData[category] && demoData[category][rowKey]) || 0}
         {@const percentage = getPercentage(rowValue, totalCounts[category])}
+        {@const demographicOption = demoOptionsData.find(
+          (option) => option.name === category && option.value === rowKey
+        )}
 
         {#if expanded}
           <div transition:slide class="my-1">
@@ -98,8 +104,8 @@
               variant="ghost"
               size="xs"
               fullWidth={true}
-              handleClick={() => demoFilters.update(category, rowKey)}
-              highlighted={demoFilters.filters[category]?.includes(rowKey)}
+              handleClick={() => demographicOption?.id && demoFilters.update(demographicOption.id)}
+              highlighted={demographicOption?.id ? demoFilters.filters.includes(demographicOption.id) : false}
               highlightVariant="light"
             >
               <div class="demo-filter w-full relative pb-1">

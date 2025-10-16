@@ -52,7 +52,7 @@
     searchMode: SearchModeValues;
     evidenceRich: boolean;
     flaggedOnly: boolean;
-    demoFilters: { [category: string]: string[] };
+    demoFilters: string[];
     multiAnswerFilters: string[];
   }
 
@@ -252,34 +252,9 @@
       page_size: PAGE_SIZE.toString(),
     });
 
-    // Convert demo filters to demographic option IDs
-    const demographicIds: string[] = [];
-    
-    if ($demoOptionsData) {
-      const validDemoFilterKeys = Object.keys(filters.demoFilters).filter((key) =>
-        Boolean(filters.demoFilters[key]),
-      );
-      
-      for (const key of validDemoFilterKeys) {
-        const filterArr: string[] = filters.demoFilters[key];
-        
-        if (filterArr && filterArr.length > 0) {
-          filterArr.forEach((filterValue: string) => {
-            // Find the demographic option ID for this key:value combination
-            const matchingOption = $demoOptionsData.find(
-              (option) => option.name === key && option.value === filterValue
-            );
-            if (matchingOption && matchingOption.id) {
-              demographicIds.push(matchingOption.id);
-            }
-          });
-        }
-      }
-    }
-    
-    // Add demographic IDs as comma-separated list
-    if (demographicIds.length > 0) {
-      params.set("demographics", demographicIds.join(","));
+    // Add demographic filters (now just an array of IDs)
+    if (filters.demoFilters.length > 0) {
+      params.set("demographics", filters.demoFilters.join(","));
     }
 
     const queryString = params.toString();
@@ -461,6 +436,7 @@
         filteredTotal={$answersData?.filtered_total}
         demoData={$demoAggrData?.demographic_aggregations}
         demoOptions={formattedDemoOptions || {}}
+        demoOptionsData={$demoOptionsData}
         multiChoice={$questionData?.multiple_choice_answer?.filter((item) =>
           Boolean(item.text),
         ) || []}
@@ -493,6 +469,7 @@
           (searchMode = newSearchMode)}
         demoData={$demoAggrData?.demographic_aggregations}
         demoOptions={formattedDemoOptions || {}}
+        demoOptionsData={$demoOptionsData}
         themes={$themeInfoData?.themes}
         {evidenceRich}
         {setEvidenceRich}
