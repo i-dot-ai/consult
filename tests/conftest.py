@@ -324,6 +324,13 @@ def candidate_theme(free_text_question):
 
 
 @pytest.fixture()
+def selected_candidate_theme(free_text_question, theme_a):
+    theme = CandidateThemeFactory(question=free_text_question, selectedtheme=theme_a)
+    yield theme
+    theme.delete()
+
+
+@pytest.fixture()
 def consultation_user(consultation):
     user = UserFactory(has_dashboard_access=True, is_staff=True)
     consultation.users.add(user)
