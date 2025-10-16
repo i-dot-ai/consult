@@ -1,6 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  export let type: string;
   export let title: string = "";
   export let variant: "default" | "primary" | "ghost" | "approve" | "approve" =
     "default";
@@ -22,6 +23,7 @@
 <svelte:element
   this={href ? "a" : "button"}
   role="button"
+  {type}
   title={title || undefined}
   data-variant={variant}
   tabindex="0"
