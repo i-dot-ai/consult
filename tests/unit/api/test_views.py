@@ -1758,6 +1758,25 @@ def test_users_patch(client, consultation_user, consultation_user_token):
 
 
 @pytest.mark.django_db
+def test_users_patch_fail(client, consultation_user, consultation_user_token):
+    assert consultation_user.is_staff is True
+    url = reverse(
+        "user-detail",
+        kwargs={"pk": consultation_user.pk},
+    )
+    response = client.patch(
+        url,
+        data=json.dumps({"is_staff": False}),
+        content_type="application/json",
+        headers={
+            "Authorization": f"Bearer {consultation_user_token}",
+        },
+    )
+    assert response.status_code == 400
+    assert "You cannot remove admin privileges from yourself" in response.json()["is_staff"]
+
+
+@pytest.mark.django_db
 def test_question_list(
     client, consultation_user_token, consultation, free_text_question, multi_choice_question
 ):

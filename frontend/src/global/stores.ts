@@ -77,17 +77,16 @@ export const createFetchStore = () => {
             method: method,
             body: body ? JSON.stringify(body) : undefined,
           });
+          const parsedData = await response.json();
+          data.set(parsedData);
           if (!response.ok) {
             throw new Error(`Fetch Error: ${response.statusText}`);
           }
-          const parsedData = await response.json();
-          data.set(parsedData);
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "unknown";
           error.set(message);
         } finally {
           loading.set(false);
-
           if (resolvePrev) {
             resolvePrev();
           }
