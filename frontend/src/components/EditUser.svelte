@@ -2,18 +2,12 @@
   import { createFetchStore } from "../global/stores.ts";
   import Switch from "./inputs/Switch/Switch.svelte";
   
-  interface Props {
+  export interface Props {
     userId: string;
-    isStaff?: boolean;
-    hasDashboardAccess?: boolean;
-    resetData: () => void;
   }
   
   let { 
-    userId, 
-    isStaff, 
-    hasDashboardAccess, 
-    resetData 
+    userId
   }: Props = $props();
 
 
@@ -21,56 +15,28 @@
     load: loadUser,
     loading: isLoadingUser,
     data: userData,
+    error: userError,
   } = createFetchStore();
 
-  
+
   // Load user data initially
   $effect(() => {
     loadUser(`/api/users/${userId}/`);
   });
-  
-  // Use live user data if available, otherwise fall back to props
-  let currentIsStaff = $derived($userData?.is_staff ?? isStaff);
-  let currentHasDashboardAccess = $derived($userData?.has_dashboard_access ?? hasDashboardAccess);
-  
-  // State for update errors
-  let updateError = $state<string | null>(null);
-  
+
   async function updateUserField(field: string, value: boolean, currentValue: boolean) {
-    // Only update if the value is actually different from current server state
-    if (value === currentValue) return;
+    if (value === currentValue) return; // Don't update if value hasn't changed
     
     try {
-      const response = await fetch(`/api/users/${userId}/`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ [field]: value }),
-      });
-      
-      if (response.status === 400) {
-        const errorData = await response.json();
-        updateError = errorData[field]?.[0] || "Update failed";
-        console.log('400 error details:', errorData);
-        return;
-      }
-      
-      if (!response.ok) {
-        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-      }
-      
-      // Success - clear any previous errors
-      updateError = null;
-      console.log('Update successful');
-      
+      await loadUser(`/api/users/${userId}/`, "PATCH", { [field]: value });
     } catch (err) {
-      console.error('Error updating user:', err);
+      console.error('Update failed:', err);
     }
   }
-  
-  const updateIsStaff = (value: boolean) => updateUserField('is_staff', value, currentIsStaff);
-  const updateHasDashboardAccess = (value: boolean) => updateUserField('has_dashboard_access', value, currentHasDashboardAccess);
+
+  const updateIsStaff = (value: boolean) => updateUserField('is_staff', value, $userData?.is_staff);
+  const updateHasDashboardAccess = (value: boolean) => updateUserField('has_dashboard_access', value, $userData?.has_dashboard_access);
+    
 </script>
 
 <div class="mb-8">
@@ -90,9 +56,9 @@
       </table>
     </div>
 
-    {#if updateError}
+    {#if $userError}
       <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-6">
-        {updateError}
+        {$userData?.is_staff[0] || "failed to update user"}
       </div>
     {/if}
 
@@ -106,7 +72,7 @@
             id="is_staff"
             label=""
             hideLabel={true}
-            value={currentIsStaff}
+            value={$userData.is_staff}
             handleChange={(value) => updateIsStaff(value)}
           />
         </div>
@@ -119,7 +85,7 @@
             id="has_dashboard_access"
             label=""
             hideLabel={true}
-            value={currentHasDashboardAccess}
+            value={$userData.has_dashboard_access}
             handleChange={(value) => updateHasDashboardAccess(value)}
           />
         </div>

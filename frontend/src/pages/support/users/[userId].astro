@@ -7,6 +7,7 @@ import Section from "../../../components/Section/Section.svelte";
 import Link from "../../../components/Link.svelte";
 import Title from "../../../components/Title.svelte";
 import EditUser from "../../../components/EditUser.svelte";
+import { createFetchStore } from "../../../global/stores.ts";
 
 const { userId } = Astro.params;
 
@@ -22,25 +23,14 @@ let consultationsData = await fetchBackendApi<{ results: ConsultationResponse[] 
   "/api/consultations/"
 );
 
-// Filter consultations that include this user
 const consultations = consultationsData.results;
-
-
-
-const showSuccessMessage = new URL(Astro.request.url).searchParams.get("updated") === "true";
 
 
 ---
 
 <Layout>
   <Section>
-    
-    {showSuccessMessage && (
-      <div class="bg-green-50 border border-green-200 text-green-800 px-4 py-3 rounded mb-6">
-        User updated successfully
-      </div>
-    )}
-    
+        
 
     <!-- User Permissions -->
     <EditUser 
