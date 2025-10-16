@@ -1,4 +1,5 @@
 <script lang="ts">
+  import { onMount } from "svelte"
   import { createFetchStore } from "../global/stores.ts";
   import Switch from "./inputs/Switch/Switch.svelte";
   
@@ -18,24 +19,34 @@
     error: userError,
   } = createFetchStore();
 
+  const {
+    load: updateUser,
+    loading: isUpdating,
+    data: updateUserData,
+    error: updateUserError,
+  } = createFetchStore();
+
 
   // Load user data initially
-  $effect(() => {
+  onMount(() => {
     loadUser(`/api/users/${userId}/`);
   });
 
-  async function updateUserField(field: string, value: boolean, currentValue: boolean) {
-    if (value === currentValue) return; // Don't update if value hasn't changed
+  async function updateIsStaff(value: boolean) {
+    if (value === $userData?.is_staff) return; // Don't update if value hasn't changed
     
-    try {
-      await loadUser(`/api/users/${userId}/`, "PATCH", { [field]: value });
-    } catch (err) {
-      console.error('Update failed:', err);
-    }
+    await updateUser(`/api/users/${userId}/`, "PATCH", { is_staff: value });
+
+    loadUser((`/api/users/${userId}/`));
   }
 
-  const updateIsStaff = (value: boolean) => updateUserField('is_staff', value, $userData?.is_staff);
-  const updateHasDashboardAccess = (value: boolean) => updateUserField('has_dashboard_access', value, $userData?.has_dashboard_access);
+  async function updateHasDashboardAccess(value: boolean) {
+    if (value === $userData?.has_dashboard_access) return; // Don't update if value hasn't changed
+    
+    await updateUser(`/api/users/${userId}/`, "PATCH", { has_dashboard_access: value });
+
+    loadUser((`/api/users/${userId}/`));
+  }
     
 </script>
 
@@ -56,9 +67,9 @@
       </table>
     </div>
 
-    {#if $userError}
+    {#if $updateUserError}
       <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-6">
-        {$userData?.is_staff[0] || "failed to update user"}
+        {$updateUserData?.is_staff[0] || "failed to update user"}
       </div>
     {/if}
 
