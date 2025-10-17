@@ -147,6 +147,7 @@ export interface MultiChoiceResponseItem {
 export type MultiChoiceResponse = MultiChoiceResponseItem[];
 
 export interface DemoOptionsResponseItem {
+  id: string;
   name: string;
   value: string;
   count: number;

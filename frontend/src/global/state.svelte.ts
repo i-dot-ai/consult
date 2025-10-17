@@ -39,7 +39,7 @@ function createThemeFiltersState() {
 export const themeFilters = createThemeFiltersState();
 
 function createDemoFiltersState() {
-  let demoFilters: { [key: string]: string[] } = $state({});
+  let demoFilters: string[] = $state([]);
 
   return {
     get filters() {
@@ -47,45 +47,26 @@ function createDemoFiltersState() {
     },
 
     reset: () => {
-      demoFilters = {};
+      demoFilters = [];
     },
 
     applied: (): boolean => {
-      for (const key of Object.keys(demoFilters)) {
-        const filterArr = demoFilters[key];
-
-        // filterArr can be undefined or empty array
-        if (filterArr && filterArr.filter(Boolean).length > 0) {
-          return true;
-        }
-      }
-      return false;
+      return demoFilters.length > 0;
     },
 
-    update: (newFilterKey: string, newFilterValue: string) => {
-      if (!newFilterKey || !newFilterValue) {
-        // Clear filters if nothing is passed
-        demoFilters = {};
+    update: (newFilter: string) => {
+      if (!newFilter) {
+        // Clear filters if newFilter is falsy
+        demoFilters = [];
         return;
       }
-
-      const existingFilters = demoFilters[newFilterKey] || [];
-
-      let resultFilters;
-      if (existingFilters.includes(newFilterValue)) {
-        // Remove filter if already added
-        resultFilters = existingFilters.filter(
-          (filter) => newFilterValue !== filter,
-        );
+      if (demoFilters.includes(newFilter)) {
+        demoFilters = [
+          ...demoFilters.filter((filter) => filter !== newFilter),
+        ];
       } else {
-        // Avoid duplicates when adding filters
-        resultFilters = [...new Set([...existingFilters, newFilterValue])];
+        demoFilters = [...demoFilters, newFilter];
       }
-
-      demoFilters = {
-        ...demoFilters,
-        [newFilterKey]: resultFilters,
-      };
     },
   };
 }

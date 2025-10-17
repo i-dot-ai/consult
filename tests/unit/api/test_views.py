@@ -83,7 +83,14 @@ class TestDemographicOptionsAPIView:
             {"count": 2, "name": "region", "value": "north"},
             {"count": 1, "name": "region", "value": "south"},
         ]
-        assert data == expected
+
+        def f(x):
+            return {k: v for k, v in x.items() if k != "id"}
+
+        def _sort(items):
+            return sorted(items, key=lambda x: (x["name"], x["value"]))
+
+        assert _sort(map(f, data)) == _sort(expected)
 
     def test_permission_required(self, client, free_text_question):
         """Test API endpoint requires proper permissions"""
@@ -171,18 +178,27 @@ class TestDemographicAggregationsAPIView:
         assert aggregations["region"]["south"] == 1
 
     def test_get_demographic_aggregations_with_filters(
-        self, client, consultation_user_token, free_text_question
+        self,
+        client,
+        consultation_user_token,
+        free_text_question,
+        individual_demographic,
+        northern_demographic,
+        group_demographic,
+        southern_demographic,
     ):
         """Test API endpoint applies demographic filters correctly"""
         # Create respondents with different demographics
+
         respondent1 = RespondentFactory(
             consultation=free_text_question.consultation,
-            demographics={"individual": True, "region": "north"},
         )
+        respondent1.demographics.set([individual_demographic, northern_demographic])
+
         respondent2 = RespondentFactory(
             consultation=free_text_question.consultation,
-            demographics={"individual": False, "region": "south"},
         )
+        respondent2.demographics.set([group_demographic, southern_demographic])
 
         ResponseFactory(question=free_text_question, respondent=respondent1)
         ResponseFactory(question=free_text_question, respondent=respondent2)
@@ -195,7 +211,10 @@ class TestDemographicAggregationsAPIView:
         # Filter by individual=true
         response = client.get(
             url,
-            query_params={"demoFilters": "individual:true", "question_id": free_text_question.id},
+            query_params={
+                "demographics": individual_demographic.pk,
+                "question_id": free_text_question.id,
+            },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
 
@@ -568,18 +587,25 @@ class TestFilteredResponsesAPIView:
         assert data["filtered_total"] == 5
 
     def test_get_filtered_responses_with_demographic_filters(
-        self, client, consultation_user_token, free_text_question
+        self,
+        client,
+        consultation_user_token,
+        free_text_question,
+        individual_demographic,
+        northern_demographic,
+        group_demographic,
+        southern_demographic,
     ):
         """Test API endpoint with demographic filtering"""
         # Create respondents with different demographics
         respondent1 = RespondentFactory(
             consultation=free_text_question.consultation,
-            demographics={"individual": True, "region": "north"},
         )
+        respondent1.demographics.set([individual_demographic, northern_demographic])
         respondent2 = RespondentFactory(
             consultation=free_text_question.consultation,
-            demographics={"individual": False, "region": "south"},
         )
+        respondent2.demographics.set([group_demographic, southern_demographic])
 
         ResponseFactory(question=free_text_question, respondent=respondent1)
         ResponseFactory(question=free_text_question, respondent=respondent2)
@@ -593,7 +619,7 @@ class TestFilteredResponsesAPIView:
         response = client.get(
             url,
             query_params={
-                "demoFilters": "individual:true",
+                "demographics": individual_demographic.pk,
                 "question_id": free_text_question.id,
             },
             headers={"Authorization": f"Bearer {consultation_user_token}"},
