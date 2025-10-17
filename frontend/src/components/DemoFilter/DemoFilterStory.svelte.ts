@@ -17,6 +17,7 @@ let skeleton = $state(TEST_DATA.skeleton);
 export default {
   name: "DemoFilter",
   component: DemoFilter,
+  category: "Dashboard",
   props: [
     { name: "category", value: category, type: "text" },
     { name: "demoOptions", value: demoOptions, type: "json" },
