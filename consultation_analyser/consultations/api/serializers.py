@@ -90,11 +90,11 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
 
 
 class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
-    users = serializers.SlugRelatedField(slug_field="email", many=True, queryset=User.objects.all())
+    users = UserSerializer(many=True, read_only=True)
 
     class Meta:
         model = Consultation
-        fields = ["id", "title", "slug", "stage", "users"]
+        fields = ["id", "title", "slug", "stage", "users", "created_at"]
 
 
 class DemographicOptionsSerializer(serializers.Serializer):
