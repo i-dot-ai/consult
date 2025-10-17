@@ -150,7 +150,6 @@ class QuestionViewSet(ModelViewSet):
 class SelectedThemeViewSet(ModelViewSet):
     serializer_class = SelectedThemeSerializer
     permission_classes = [CanSeeConsultation]
-    pagination_class = None
     http_method_names = ["get", "post", "patch", "delete"]
 
     def get_queryset(self):
@@ -209,8 +208,6 @@ class SelectedThemeViewSet(ModelViewSet):
             self.get_queryset().filter(pk=instance.pk, version=expected_version).delete()
         )
 
-        print(deleted_count)
-
         if deleted_count == 0:
             # If no rows were deleted, the resource may either have a
             # different version or no longer exist.
@@ -241,8 +238,9 @@ class CandidateThemeViewSet(ModelViewSet):
     def list(self, request, consultation_pk=None, question_pk=None):
         """List candidate themes for a question with nested children"""
         roots = self.get_queryset().filter(parent__isnull=True)
-        serializer = CandidateThemeSerializer(roots, many=True)
-        return Response(serializer.data)
+        page = self.paginate_queryset(roots)
+        serializer = CandidateThemeSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
     @action(detail=True, methods=["post"], url_path="select")
     def select(self, request, consultation_pk=None, question_pk=None, pk=None):

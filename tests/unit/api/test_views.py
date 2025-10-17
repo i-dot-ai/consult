@@ -1248,28 +1248,33 @@ class TestSelectedThemeViewSet:
         assert response.status_code == 200
 
         data = response.json()
-        assert data == [
-            {
-                "id": str(theme_a.id),
-                "name": "Theme A",
-                "description": theme_a.description,
-                "version": 1,
-                "modified_at": theme_a.modified_at.astimezone(
-                    ZoneInfo(settings.TIME_ZONE)
-                ).isoformat(),
-                "last_modified_by": None,
-            },
-            {
-                "id": str(theme_b.id),
-                "name": "Theme B",
-                "description": theme_b.description,
-                "version": 1,
-                "modified_at": theme_b.modified_at.astimezone(
-                    ZoneInfo(settings.TIME_ZONE)
-                ).isoformat(),
-                "last_modified_by": theme_b.last_modified_by.email,
-            },
-        ]
+        assert data == {
+            "count": 2,
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "id": str(theme_a.id),
+                    "name": "Theme A",
+                    "description": theme_a.description,
+                    "version": 1,
+                    "modified_at": theme_a.modified_at.astimezone(
+                        ZoneInfo(settings.TIME_ZONE)
+                    ).isoformat(),
+                    "last_modified_by": None,
+                },
+                {
+                    "id": str(theme_b.id),
+                    "name": "Theme B",
+                    "description": theme_b.description,
+                    "version": 1,
+                    "modified_at": theme_b.modified_at.astimezone(
+                        ZoneInfo(settings.TIME_ZONE)
+                    ).isoformat(),
+                    "last_modified_by": theme_b.last_modified_by.email,
+                },
+            ],
+        }
 
     def test_create_selected_theme(
         self, client, consultation_user, consultation_user_token, free_text_question
@@ -1577,45 +1582,50 @@ class TestCandidateThemeViewSet:
         assert response.status_code == 200
         data = response.json()
 
-        assert data == [
-            {
-                "id": str(root1.id),
-                "name": root1.name,
-                "description": root1.description,
-                "selectedtheme_id": None,
-                "children": [
-                    {
-                        "id": str(child1.id),
-                        "name": child1.name,
-                        "description": child1.description,
-                        "selectedtheme_id": str(theme_a.id),
-                        "children": [
-                            {
-                                "id": str(grandchild1.id),
-                                "name": grandchild1.name,
-                                "description": grandchild1.description,
-                                "selectedtheme_id": None,
-                                "children": [],
-                            }
-                        ],
-                    },
-                    {
-                        "id": str(child2.id),
-                        "name": child2.name,
-                        "description": child2.description,
-                        "selectedtheme_id": None,
-                        "children": [],
-                    },
-                ],
-            },
-            {
-                "id": str(root2.id),
-                "name": root2.name,
-                "description": root2.description,
-                "selectedtheme_id": str(theme_b.id),
-                "children": [],
-            },
-        ]
+        assert data == {
+            "count": 2,
+            "next": None,
+            "previous": None,
+            "results": [
+                {
+                    "id": str(root1.id),
+                    "name": root1.name,
+                    "description": root1.description,
+                    "selectedtheme_id": None,
+                    "children": [
+                        {
+                            "id": str(child1.id),
+                            "name": child1.name,
+                            "description": child1.description,
+                            "selectedtheme_id": str(theme_a.id),
+                            "children": [
+                                {
+                                    "id": str(grandchild1.id),
+                                    "name": grandchild1.name,
+                                    "description": grandchild1.description,
+                                    "selectedtheme_id": None,
+                                    "children": [],
+                                }
+                            ],
+                        },
+                        {
+                            "id": str(child2.id),
+                            "name": child2.name,
+                            "description": child2.description,
+                            "selectedtheme_id": None,
+                            "children": [],
+                        },
+                    ],
+                },
+                {
+                    "id": str(root2.id),
+                    "name": root2.name,
+                    "description": root2.description,
+                    "selectedtheme_id": str(theme_b.id),
+                    "children": [],
+                },
+            ],
+        }
 
     def test_select_candidate_theme(
         self,
