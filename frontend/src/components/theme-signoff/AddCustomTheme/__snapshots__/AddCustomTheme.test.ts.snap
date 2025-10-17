@@ -39,7 +39,7 @@ exports[`AddCustomTheme > should render add variant 1`] = `
       <!---->
       <button
         aria-pressed="false"
-        class="w-full text-md cursor-pointer rounded-md py-1 px-2 border bg-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1rjb6fa"
+        class="w-full text-md cursor-pointer rounded-md py-1 px-2 border bg-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
         data-variant="default"
         role="button"
         tabindex="0"
@@ -113,7 +113,7 @@ exports[`AddCustomTheme > should render add variant 1`] = `
         </label>
          
         <input
-          class="w-full mt-1 p-1 border border-gray-300 rounded-sm focus:outline-2 focus:outline-yellow-300 svelte-1bet92c"
+          class="w-full mt-1 p-1 border border-gray-300 rounded-sm focus:outline-2 focus:outline-yellow-300 svelte-1auzwdn"
           id="title-input"
           placeholder="e.g., Data Privacy Concerns"
           type="text"
@@ -151,7 +151,7 @@ exports[`AddCustomTheme > should render add variant 1`] = `
       <!---->
       <button
         aria-pressed="false"
-        class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-primary text-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:text-primary hover:border-primary disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1rjb6fa"
+        class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-primary text-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:text-primary hover:border-primary disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
         data-variant="primary"
         disabled=""
         role="button"
@@ -168,7 +168,7 @@ exports[`AddCustomTheme > should render add variant 1`] = `
       <!---->
       <button
         aria-pressed="false"
-        class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1rjb6fa"
+        class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
         data-variant="default"
         role="button"
         tabindex="0"

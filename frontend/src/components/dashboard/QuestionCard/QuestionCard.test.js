@@ -22,6 +22,8 @@ describe("QuestionCard", () => {
   afterEach(() => cleanup());
 
   it("should render data", () => {
+    vi.mock("svelte/transition");
+
     const { getByText } = render(QuestionCard, {
       consultationId: testData.consultationId,
       question: testData.question,

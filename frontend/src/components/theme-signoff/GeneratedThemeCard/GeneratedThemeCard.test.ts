@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, cleanup } from "@testing-library/svelte";
 
 import GeneratedThemeCard, { type Props } from "./GeneratedThemeCard.svelte";
@@ -22,6 +22,8 @@ describe("GeneratedThemeCard", () => {
   afterEach(() => cleanup());
 
   it("should render", async () => {
+    vi.mock("svelte/transition");
+
     const { container, getByText, getAllByText, queryByText } = render(GeneratedThemeCard, {
       ...testData,
     });

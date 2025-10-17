@@ -109,7 +109,7 @@
         handleConfirm( title, description );
       }}
     >
-      Add Theme
+      {variant === "add" ? "Add Theme" : "Save Changes"}
     </Button>
 
     <Button size="sm" handleClick={() => handleCancel()}>Cancel</Button>
