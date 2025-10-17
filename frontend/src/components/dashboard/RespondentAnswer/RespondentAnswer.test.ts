@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
 import RespondentAnswer, { type Props } from "./RespondentAnswer.svelte";
@@ -25,6 +25,8 @@ describe("RespondentAnswer", () => {
   afterEach(() => cleanup());
 
   it("should render data", () => {
+    vi.mock("svelte/transition");
+
     const { getByText } = render(RespondentAnswer, {
       ...testData,
     });
