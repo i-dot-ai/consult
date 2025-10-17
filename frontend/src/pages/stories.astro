@@ -1,0 +1,14 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Section from '../components/Section/Section.svelte';
+import Title from '../components/Title.svelte';
+import StoriesDisplay from '../components/Stories/StoriesDisplay.svelte';
+
+const selected = Astro.url.searchParams.get('selected') || '';
+---
+<Layout>
+	<Section>
+		<Title level={1} text="Stories" />
+      <StoriesDisplay client:load selected={selected} />
+	</Section>
+</Layout>
