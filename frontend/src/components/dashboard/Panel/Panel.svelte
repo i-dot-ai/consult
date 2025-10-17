@@ -15,7 +15,8 @@
     variant = "default",
     border = true,
     bg = false,
-    level = 1, children,
+    level = 1,
+    children,
   }: Props = $props();
 </script>
 
@@ -28,17 +29,19 @@
     level === 2 && "p-2",
     level === 3 && "p-1",
     "rounded-2xl",
-    border && clsx([
-      "border",
-      variant === "default" && "border-gray-200",
-      variant === "primary" && "border-pink-200",
-      variant === "approve" && "border-emerald-200",
-    ]),
-    bg && clsx([
-      variant === "default" && "bg-neutral-50",
-      variant === "primary" && "bg-pink-50",
-      variant === "approve" && "bg-emerald-50",
-    ]),
+    border &&
+      clsx([
+        "border",
+        variant === "default" && "border-gray-200",
+        variant === "primary" && "border-pink-200",
+        variant === "approve" && "border-emerald-200",
+      ]),
+    bg &&
+      clsx([
+        variant === "default" && "bg-neutral-50",
+        variant === "primary" && "bg-pink-50",
+        variant === "approve" && "bg-emerald-50",
+      ]),
   ])}
 >
   {@render children()}

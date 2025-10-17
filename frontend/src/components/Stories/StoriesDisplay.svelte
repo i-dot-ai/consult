@@ -31,7 +31,7 @@
   });
   let panel;
 
-  const categories = [...new Set(stories.map(story => story.category))];
+  const categories = [...new Set(stories.map((story) => story.category))];
 </script>
 
 <div class="grid grid-cols-4 gap-8">
@@ -40,7 +40,7 @@
       <ul class="flex flex-col gap-2">
         {#each categories as category}
           <h2 class="font-[500]">{category || "General"}</h2>
-          {#each stories.filter(story => story.category === category) as story}
+          {#each stories.filter((story) => story.category === category) as story}
             <li>
               <a
                 href={`/stories?selected=${story.name}`}

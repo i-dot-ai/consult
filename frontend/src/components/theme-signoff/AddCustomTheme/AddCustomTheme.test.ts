@@ -12,7 +12,7 @@ describe("AddCustomTheme", () => {
       handleConfirm: () => {},
       handleCancel: () => {},
     };
-  })
+  });
 
   afterEach(() => cleanup());
 

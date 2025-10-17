@@ -2,7 +2,6 @@ import { createRawSnippet } from "svelte";
 
 import Accordion from "./Accordion.svelte";
 
-
 const createSnippetWithDefault = (html: string) => {
   try {
     return createRawSnippet(() => ({
@@ -13,7 +12,7 @@ const createSnippetWithDefault = (html: string) => {
       render: () => "<p>Child Element</p>",
     }));
   }
-}
+};
 
 let titleHtml = $state(`<span>Accordion Title</span>`);
 let titleComponent = $derived.by(() => {
@@ -42,5 +41,7 @@ export default {
       rawHtml: contentHtml,
     },
   ],
-  stories: [ /* TODO: Add stories */ ],
+  stories: [
+    /* TODO: Add stories */
+  ],
 };

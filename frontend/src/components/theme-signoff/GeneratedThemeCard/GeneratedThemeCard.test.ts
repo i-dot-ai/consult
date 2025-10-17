@@ -17,24 +17,27 @@ describe("GeneratedThemeCard", () => {
       answers: ["Answer 1", "Answer 2"],
       handleSelect: () => {},
     };
-  })
+  });
 
   afterEach(() => cleanup());
 
   it("should render", async () => {
     vi.mock("svelte/transition");
 
-    const { container, getByText, getAllByText, queryByText } = render(GeneratedThemeCard, {
-      ...testData,
-    });
+    const { container, getByText, getAllByText, queryByText } = render(
+      GeneratedThemeCard,
+      {
+        ...testData,
+      },
+    );
 
     expect(getByText(testData.theme.name));
     expect(getByText(testData.theme.description));
 
     // Answers hidden initially
-    testData.answers?.forEach(answer => {
+    testData.answers?.forEach((answer) => {
       expect(queryByText(answer)).toBeNull();
-    })
+    });
 
     expect(container).toMatchSnapshot();
   });
@@ -44,16 +47,17 @@ describe("GeneratedThemeCard", () => {
       id: "child-theme",
       name: "Child Theme",
       description: "This is a child theme",
-    }
-    const { container, getByText, getAllByText, queryByText } = render(GeneratedThemeCard, {
-      ...testData,
-      theme: {
-        ...testData.theme,
-        children: [
-          CHILD_THEME,
-        ]
-      }
-    });
+    };
+    const { container, getByText, getAllByText, queryByText } = render(
+      GeneratedThemeCard,
+      {
+        ...testData,
+        theme: {
+          ...testData.theme,
+          children: [CHILD_THEME],
+        },
+      },
+    );
 
     expect(getByText(CHILD_THEME.name));
     expect(getByText(CHILD_THEME.description));

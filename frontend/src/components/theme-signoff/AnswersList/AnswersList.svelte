@@ -10,11 +10,7 @@
     variant?: "selected" | "generated";
   }
 
-  let {
-    title = "",
-    answers = [],
-    variant = "selected",
-  }: Props = $props();
+  let { title = "", answers = [], variant = "selected" }: Props = $props();
 </script>
 
 <div class="flex items-center gap-1">
@@ -84,7 +80,5 @@
     {/each}
   </ul>
 {:else}
-  <p class="mt-2 text-sm text-neutral-500 italic">
-    There are no answers
-  </p>
+  <p class="mt-2 text-sm text-neutral-500 italic">There are no answers</p>
 {/if}

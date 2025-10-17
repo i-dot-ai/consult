@@ -39,43 +39,52 @@
   let showAnswers = $state(false);
 
   let disabled = $derived(
-    Boolean(selectedThemes.find(selectedTheme => selectedTheme.id === theme.id))
+    Boolean(
+      selectedThemes.find((selectedTheme) => selectedTheme.id === theme.id),
+    ),
   );
 
   $effect(() => {
     if (forceExpand) {
       expanded = true;
     }
-  })
+  });
 
   const shouldShowAnswers = () => {
     return showAnswers && !disabled;
-  }
+  };
 </script>
 
 <div
   transition:slide
   style="margin-left: {level * leftPadding}rem;"
-  class={clsx([
-    "generated-theme-card",
-    disabled && "grayscale",
-  ])}
+  class={clsx(["generated-theme-card", disabled && "grayscale"])}
 >
   <Panel border={true}>
     <article class="flex">
-      <div class={clsx([
-        "transition-all",
-        "duration-300",
-        shouldShowAnswers() ? "w-1/3" : "w-full",
-      ])}>
+      <div
+        class={clsx([
+          "transition-all",
+          "duration-300",
+          shouldShowAnswers() ? "w-1/3" : "w-full",
+        ])}
+      >
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2">
             {#if theme.children?.length! > 0 && !disabled}
-              <Button variant="ghost" handleClick={() => {
-                expanded = !expanded;
-                setForceExpand(false);
-              }}>
-                <div class={clsx(["transition-transform", expanded && "rotate-90"])}>
+              <Button
+                variant="ghost"
+                handleClick={() => {
+                  expanded = !expanded;
+                  setForceExpand(false);
+                }}
+              >
+                <div
+                  class={clsx([
+                    "transition-transform",
+                    expanded && "rotate-90",
+                  ])}
+                >
                   <MaterialIcon size="1.2rem" color="fill-emerald-700">
                     <ChevronRight />
                   </MaterialIcon>
@@ -97,13 +106,17 @@
 
         {#if !disabled}
           <footer class="mt-4 flex items-center gap-2">
-            <Button variant="approve" size="sm" handleClick={() => {
-              disabled = !disabled
-              handleSelect(theme)
-            }}>
+            <Button
+              variant="approve"
+              size="sm"
+              handleClick={() => {
+                disabled = !disabled;
+                handleSelect(theme);
+              }}
+            >
               Select
             </Button>
-            <Button size="sm" handleClick={() => showAnswers = !showAnswers}>
+            <Button size="sm" handleClick={() => (showAnswers = !showAnswers)}>
               <div class="text-emerald-700 flex items-center gap-1">
                 <MaterialIcon color="fill-emerald-700">
                   <Visibility />
@@ -111,7 +124,7 @@
                 {showAnswers ? "Hide" : "Representative"} Responses
               </div>
             </Button>
-          </footer>  
+          </footer>
         {/if}
       </div>
 
@@ -123,7 +136,7 @@
           <AnswersList
             variant="generated"
             title="Representative Responses"
-            answers={answers}
+            {answers}
           />
         </aside>
       {:else}
@@ -143,7 +156,7 @@
           {setForceExpand}
           {handleSelect}
         />
-      {/each} 
+      {/each}
     </div>
   {:else}
     <div class="pb-4"></div>

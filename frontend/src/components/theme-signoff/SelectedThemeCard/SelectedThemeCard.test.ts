@@ -17,7 +17,7 @@ describe("SelectedThemeCard", () => {
       removeTheme: () => {},
       updateTheme: () => {},
     };
-  })
+  });
 
   afterEach(() => cleanup());
 
@@ -30,9 +30,9 @@ describe("SelectedThemeCard", () => {
     expect(getByText(testData.theme.description));
 
     // Answers hidden initially
-    testData.answers?.forEach(answer => {
+    testData.answers?.forEach((answer) => {
       expect(queryByText(answer)).toBeNull();
-    })
+    });
 
     expect(container).toMatchSnapshot();
   });

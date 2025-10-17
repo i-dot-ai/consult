@@ -106,7 +106,7 @@
       size="sm"
       disabled={!isThemeValid()}
       handleClick={() => {
-        handleConfirm( title, description );
+        handleConfirm(title, description);
       }}
     >
       {variant === "add" ? "Add Theme" : "Save Changes"}

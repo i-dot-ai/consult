@@ -11,14 +11,17 @@ describe("AnswersList", () => {
       title: "Test Title",
       answers: ["Answer 1", "Answer 2"],
     };
-  })
+  });
 
   afterEach(() => cleanup());
 
   it("should render", async () => {
-    const { container, getByText, getAllByText, queryByText } = render(AnswersList, {
-      ...testData,
-    });
+    const { container, getByText, getAllByText, queryByText } = render(
+      AnswersList,
+      {
+        ...testData,
+      },
+    );
 
     expect(getByText("Test Title"));
     expect(getByText("Answer 1"));
@@ -44,5 +47,5 @@ describe("AnswersList", () => {
     });
 
     expect(getByText(NOT_FOUND_MESSAGE));
-  })
+  });
 });

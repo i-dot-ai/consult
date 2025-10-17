@@ -5,10 +5,9 @@
   import { fade, fly } from "svelte/transition";
   import type { MouseEventHandler } from "svelte/elements";
 
-  import { createDialog, melt } from '@melt-ui/svelte';
-  
-  import Button from "../inputs/Button/Button.svelte";
+  import { createDialog, melt } from "@melt-ui/svelte";
 
+  import Button from "../inputs/Button/Button.svelte";
 
   interface Props {
     open: boolean;
@@ -27,8 +26,16 @@
   }: Props = $props();
 
   const {
-    elements: { trigger, portalled, overlay, content, title, description, close },
-    states: { open: meltOpen }
+    elements: {
+      trigger,
+      portalled,
+      overlay,
+      content,
+      title,
+      description,
+      close,
+    },
+    states: { open: meltOpen },
   } = createDialog({
     onOpenChange: (open) => setOpen(open.next),
   });
@@ -71,11 +78,9 @@
 
       <footer class="flex items-center justify-end gap-2">
         <div use:melt={$close}>
-          <Button size="sm">
-            Cancel
-          </Button>
+          <Button size="sm">Cancel</Button>
         </div>
-        
+
         <Button size="sm" variant="primary" handleClick={handleConfirm}>
           {confirmText}
         </Button>

@@ -4,7 +4,6 @@ let variant = $state("add");
 const handleConfirm = () => alert("Confirm event triggered");
 const handleCancel = () => alert("Cancel event triggered");
 
-
 export default {
   name: "AddCustomTheme",
   component: AddCustomTheme,
