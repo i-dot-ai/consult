@@ -28,7 +28,7 @@
   </label>
 
   <textarea
-    id={id}
+    {id}
     style={`min-height: ${rows}lh;`}
     class={clsx([
       "block",
@@ -40,9 +40,9 @@
       "rounded-sm",
       "focus:outline-2 focus:outline-yellow-300",
     ])}
-    placeholder={placeholder}
-    rows={rows}
-    value={value}
+    {placeholder}
+    {rows}
+    {value}
     oninput={(e) => setValue((e.target as HTMLTextAreaElement).value)}
   ></textarea>
 </div>

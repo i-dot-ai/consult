@@ -1,6 +1,6 @@
 <script lang="ts">
   import clsx from "clsx";
-  
+
   import { onMount, onDestroy } from "svelte";
   import { fade } from "svelte/transition";
 
@@ -28,11 +28,7 @@
     overlayPadding?: number;
   }
 
-  let {
-    key = "",
-    steps = [],
-    overlayPadding = 10,
-  }: Props = $props();
+  let { key = "", steps = [], overlayPadding = 10 }: Props = $props();
 
   let currStep = $state(0);
 
@@ -53,62 +49,59 @@
     if (targetEl) {
       const rect = targetEl.getBoundingClientRect();
       targetRect = {
-        top: (rect.top + window.scrollY) - overlayPadding,
-        left: (rect.left + window.scrollX) - overlayPadding,
-        width: rect.width + (overlayPadding * 2),
-        height: rect.height + (overlayPadding * 2),
-      }
+        top: rect.top + window.scrollY - overlayPadding,
+        left: rect.left + window.scrollX - overlayPadding,
+        width: rect.width + overlayPadding * 2,
+        height: rect.height + overlayPadding * 2,
+      };
       targetEl.scrollIntoView();
     } else {
       targetRect = null;
     }
-  }
+  };
 
   const goNext = () => {
     if (currStep < steps.length - 1) {
       currStep += 1;
       updateTargetRect();
     }
-  }
+  };
   const goPrev = () => {
     if (currStep > 0) {
       currStep -= 1;
       updateTargetRect();
     }
-  }
+  };
 
   const close = () => {
     currStep = -1;
     if (key) {
       localStorage.setItem(getStorageKey(), "true");
     }
-  }
+  };
 
   const getStorageKey = () => {
     return `onboardingComplete-${key}`;
-  }
+  };
 
   const isOnboardingComplete = () => {
     return localStorage.getItem(getStorageKey());
-  }
+  };
 
   onMount(() => {
     updateTargetRect();
     window.addEventListener("resize", updateTargetRect);
     window.addEventListener("scroll", updateTargetRect);
-  })
+  });
 
   onDestroy(() => {
     window.removeEventListener("resize", updateTargetRect);
     window.removeEventListener("scroll", updateTargetRect);
-  })
+  });
 </script>
 
 {#if targetRect && currStep >= 0 && !isOnboardingComplete()}
-  <article
-    transition:fade={{ duration: 300 }}
-    class="absolute top-0 left-0"
-  >
+  <article transition:fade={{ duration: 300 }} class="absolute top-0 left-0">
     <div
       style={clsx([
         `top: ${targetRect.top}px;`,
@@ -132,13 +125,7 @@
     ></div>
 
     <div
-      class={clsx([
-        "absolute",
-        "w-[15rem]",
-        "p-4",
-        "rounded-lg",
-        "bg-white",
-      ])}
+      class={clsx(["absolute", "w-[15rem]", "p-4", "rounded-lg", "bg-white"])}
       style={clsx([
         `top: ${targetRect.top + targetRect.height + overlayPadding}px;`,
         `left: ${targetRect.left}px;`,
@@ -175,18 +162,10 @@
         </div>
 
         <div class="flex gap-2 mt-4 flex-wrap">
-          <Button
-            size="xs"
-            handleClick={goPrev}
-            disabled={currStep === 0}
-          >
+          <Button size="xs" handleClick={goPrev} disabled={currStep === 0}>
             Previous
           </Button>
-          <Button
-            variant="ghost"
-            size="xs"
-            handleClick={close}
-          >
+          <Button variant="ghost" size="xs" handleClick={close}>
             Skip Tour
           </Button>
           <Button

@@ -2,11 +2,7 @@ import AnswersList from "./AnswersList.svelte";
 
 let variant = $state("selected");
 let title = $state("Test Title");
-let answers = $state([
-  "Answer 1",
-  "Answer 2",
-  "Answer 3",
-]);
+let answers = $state(["Answer 1", "Answer 2", "Answer 3"]);
 
 export default {
   name: "AnswersList",

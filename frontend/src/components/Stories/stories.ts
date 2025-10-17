@@ -38,4 +38,4 @@ export default [
   SelectedThemeCardStory,
   AnswersListStory,
   GeneratedThemeCardStory,
-] as Story[]
+] as Story[];

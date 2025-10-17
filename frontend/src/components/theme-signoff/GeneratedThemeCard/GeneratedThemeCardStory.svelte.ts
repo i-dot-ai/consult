@@ -9,7 +9,8 @@ let theme = $state({
 let answers = $state(["Answer 1", "Answer 2"]);
 let level = $state(0);
 let leftPadding = $state(1);
-let handleSelect = (theme) => alert(`Select theme event triggered with: ${theme}`);
+let handleSelect = (theme) =>
+  alert(`Select theme event triggered with: ${theme}`);
 
 export default {
   name: "GeneratedThemeCard",

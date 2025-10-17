@@ -15,10 +15,10 @@
   import AnswersList from "../AnswersList/AnswersList.svelte";
 
   export interface Props {
-    theme: GeneratedTheme,
-    answers: string[],
-    removeTheme: (themeId: string) => void,
-    updateTheme: (themeId: string, title: string, description: string) => void,
+    theme: GeneratedTheme;
+    answers: string[];
+    removeTheme: (themeId: string) => void;
+    updateTheme: (themeId: string, title: string, description: string) => void;
   }
 
   let {
