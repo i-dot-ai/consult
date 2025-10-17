@@ -7,6 +7,7 @@ from consultation_analyser.consultations.api.permissions import (
     HasDashboardAccess,
 )
 from consultation_analyser.factories import UserFactory
+from tests.utils import build_url
 
 
 @pytest.mark.django_db
@@ -206,3 +207,80 @@ class TestPermissionsCombined:
 
         assert dashboard_permission.has_permission(request, view) is True
         assert consultation_permission.has_permission(request, view) is True
+
+
+@pytest.mark.django_db
+class TestAPIViewPermissions:
+    """Test permissions across all API views"""
+
+    @pytest.mark.parametrize(
+        "endpoint_name",
+        [
+            "consultations-demographic-options",
+            "response-demographic-aggregations",
+            "question-theme-information",
+            "response-theme-aggregations",
+            "response-list",
+            "question-detail",
+            "respondent-detail",
+        ],
+    )
+    def test_unauthenticated_access_denied(self, client, free_text_question, endpoint_name):
+        """Test that unauthenticated users cannot access any API endpoint"""
+        url = build_url(endpoint_name, free_text_question)
+        response = client.get(url)
+        assert response.status_code == 401
+
+    @pytest.mark.parametrize(
+        "endpoint_name",
+        [
+            "consultations-demographic-options",
+            "response-demographic-aggregations",
+            "question-theme-information",
+            "response-theme-aggregations",
+            "response-list",
+            "question-detail",
+            "respondent-detail",
+        ],
+    )
+    @pytest.mark.skip(
+        reason="We want users without dashboard access to be able to do evaluations and view consultation questions"
+    )
+    def test_user_without_dashboard_access_denied(
+        self, client, free_text_question, non_dashboard_user_token, endpoint_name
+    ):
+        """Test that users without dashboard access cannot access any API endpoint"""
+        url = build_url(endpoint_name, free_text_question)
+        response = client.get(
+            url,
+            headers={
+                "Authorization": f"Bearer {non_dashboard_user_token}",
+            },
+        )
+        assert response.status_code == 403
+
+    @pytest.mark.parametrize(
+        "endpoint_name",
+        [
+            "consultations-detail",
+            "consultations-demographic-options",
+            "response-demographic-aggregations",
+            "question-theme-information",
+            "response-theme-aggregations",
+            "response-list",
+            "question-detail",
+            "respondent-detail",
+        ],
+    )
+    def test_user_without_consultation_access_denied(
+        self, client, free_text_question, non_consultation_user_token, endpoint_name
+    ):
+        """Test that users without consultation access cannot access any API endpoint"""
+        url = build_url(endpoint_name, free_text_question)
+        response = client.get(
+            url,
+            headers={
+                "Authorization": f"Bearer {non_consultation_user_token}",
+            },
+        )
+        assert response.status_code == 403

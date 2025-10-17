@@ -3,20 +3,16 @@ from drf_spectacular.views import SpectacularAPIView, SpectacularSwaggerView
 from rest_framework import routers
 from rest_framework_nested.routers import NestedDefaultRouter
 
-from .api.views import (
-    CandidateThemeViewSet,
-    ConsultationViewSet,
-    QuestionViewSet,
-    RespondentViewSet,
-    ResponseViewSet,
-    SelectedThemeViewSet,
-    ThemeViewSet,
-    UserViewSet,
-    generate_magic_link,
-    get_current_user,
-    get_git_sha,
-    verify_magic_link,
-)
+from .api.views.candidate_theme import CandidateThemeViewSet
+from .api.views.consultation import ConsultationViewSet
+from .api.views.git_sha import get_git_sha
+from .api.views.magic_link import generate_magic_link, verify_magic_link
+from .api.views.question import QuestionViewSet
+from .api.views.respondent import RespondentViewSet
+from .api.views.response import ResponseViewSet
+from .api.views.selected_theme import SelectedThemeViewSet
+from .api.views.theme import ThemeViewSet
+from .api.views.user import UserViewSet, get_current_user
 from .views import answers, pages, questions, root, sessions
 
 router = routers.DefaultRouter()
