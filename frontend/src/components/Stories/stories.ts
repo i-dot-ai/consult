@@ -9,6 +9,8 @@ import DemoFilterStory from "../DemoFilter/DemoFilterStory.svelte";
 import RespondentSidebarItemStory from "../dashboard/RespondentSidebarItem/RespondentSidebarItemStory.svelte";
 import AddCustomThemeStory from "../theme-signoff/AddCustomTheme/AddCustomThemeStory.svelte";
 import SelectedThemeCardStory from "../theme-signoff/SelectedThemeCard/SelectedThemeCardStory.svelte";
+import AnswersListStory from "../theme-signoff/AnswersList/AnswersListStory.svelte";
+import GeneratedThemeCardStory from "../theme-signoff/GeneratedThemeCard/GeneratedThemeCardStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -34,4 +36,6 @@ export default [
   RespondentSidebarItemStory,
   AddCustomThemeStory,
   SelectedThemeCardStory,
+  AnswersListStory,
+  GeneratedThemeCardStory,
 ] as Story[]
