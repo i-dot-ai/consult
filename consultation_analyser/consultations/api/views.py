@@ -3,6 +3,7 @@ from collections import defaultdict
 from django.conf import settings
 from django.contrib.auth import login
 from django.core.exceptions import PermissionDenied
+from django.db import transaction
 from django.db.models import Count, Exists, OuterRef
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
@@ -10,6 +11,7 @@ from django_filters.rest_framework import DjangoFilterBackend
 from magic_link.exceptions import InvalidLink
 from magic_link.models import MagicLink
 from rest_framework.decorators import action, api_view, permission_classes
+from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -18,6 +20,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 
 from .. import models
 from ..views.sessions import send_magic_link_if_email_exists
+from .exceptions import PreconditionFailed, PreconditionRequired
 from .filters import HybridSearchFilter, ResponseFilter
 from .permissions import CanSeeConsultation, HasDashboardAccess
 from .serializers import (
@@ -143,23 +146,119 @@ class QuestionViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
-    @action(detail=True, methods=["get"], url_path="selected_themes")
-    def selected_themes(self, request, pk=None, consultation_pk=None):
-        """List selected themes for a question"""
-        question = self.get_object()
-        selected_themes = models.SelectedTheme.objects.filter(question=question)
-        serializer = SelectedThemeSerializer(selected_themes, many=True)
 
-        return Response(serializer.data)
+class SelectedThemeViewSet(ModelViewSet):
+    serializer_class = SelectedThemeSerializer
+    permission_classes = [CanSeeConsultation]
+    http_method_names = ["get", "post", "patch", "delete"]
 
-    @action(detail=True, methods=["get"], url_path="candidate_themes")
-    def candidate_themes(self, request, consultation_pk=None, pk=None):
+    def get_queryset(self):
+        consultation_uuid = self.kwargs["consultation_pk"]
+        question_uuid = self.kwargs["question_pk"]
+        return models.SelectedTheme.objects.filter(
+            question__consultation_id=consultation_uuid,
+            question_id=question_uuid,
+            question__consultation__users=self.request.user,
+        )
+
+    def perform_create(self, serializer):
+        question = get_object_or_404(
+            models.Question,
+            pk=self.kwargs["question_pk"],
+            consultation__users=self.request.user,
+        )
+        serializer.save(question=question, last_modified_by=self.request.user)
+
+    def _parse_if_match_version(self, request):
+        version = request.headers.get("If-Match")
+        if not version:
+            raise PreconditionRequired()
+
+        try:
+            return int(version.strip())
+        except (TypeError, ValueError):
+            raise ParseError(detail="Invalid If-Match header; expected integer version")
+
+    def perform_update(self, serializer):
+        expected_version = self._parse_if_match_version(self.request)
+
+        with transaction.atomic():
+            # Lock the selected theme to prevent concurrent updates
+            qs = self.get_queryset().filter(pk=serializer.instance.pk).select_for_update()
+            instance = qs.get()
+
+            if instance.version != expected_version:
+                raise PreconditionFailed(
+                    detail={"message": "Version mismatch", "latest_version": instance.version}
+                )
+
+            serializer.instance = instance
+            serializer.save(last_modified_by=self.request.user)
+
+            # Bump version while lock held
+            serializer.instance.version = instance.version + 1
+            serializer.instance.save(update_fields=["version"])
+
+            serializer.instance.refresh_from_db()
+
+    def perform_destroy(self, instance):
+        expected_version = self._parse_if_match_version(self.request)
+
+        deleted_count, _ = (
+            self.get_queryset().filter(pk=instance.pk, version=expected_version).delete()
+        )
+
+        if deleted_count == 0:
+            # If no rows were deleted, the resource may either have a
+            # different version or no longer exist.
+            try:
+                selected_theme = self.get_queryset().get(pk=instance.pk)
+            except models.SelectedTheme.DoesNotExist:
+                raise NotFound()
+
+            raise PreconditionFailed(
+                detail={"message": "Version mismatch", "latest_version": selected_theme.version}
+            )
+
+
+class CandidateThemeViewSet(ModelViewSet):
+    serializer_class = CandidateThemeSerializer
+    permission_classes = [CanSeeConsultation]
+    http_method_names = ["get", "post"]
+
+    def get_queryset(self):
+        consultation_uuid = self.kwargs["consultation_pk"]
+        question_uuid = self.kwargs["question_pk"]
+        return models.CandidateTheme.objects.filter(
+            question__consultation_id=consultation_uuid,
+            question_id=question_uuid,
+            question__consultation__users=self.request.user,
+        )
+
+    def list(self, request, consultation_pk=None, question_pk=None):
         """List candidate themes for a question with nested children"""
-        question = self.get_object()
-        roots = models.CandidateTheme.objects.filter(question=question, parent__isnull=True)
-        serializer = CandidateThemeSerializer(roots, many=True)
+        roots = self.get_queryset().filter(parent__isnull=True)
+        page = self.paginate_queryset(roots)
+        serializer = CandidateThemeSerializer(page, many=True)
+        return self.get_paginated_response(serializer.data)
 
-        return Response(serializer.data)
+    @action(detail=True, methods=["post"], url_path="select")
+    def select(self, request, consultation_pk=None, question_pk=None, pk=None):
+        """Select a candidate theme to add as a selected theme"""
+        candidate_theme = get_object_or_404(self.get_queryset(), pk=pk)
+
+        selected_theme = models.SelectedTheme.objects.create(
+            question=candidate_theme.question,
+            name=candidate_theme.name,
+            description=candidate_theme.description,
+            last_modified_by=request.user,
+        )
+
+        candidate_theme.selectedtheme_id = selected_theme.id
+        candidate_theme.save(update_fields=["selectedtheme_id"])
+
+        serializer = SelectedThemeSerializer(selected_theme)
+        return Response(serializer.data, status=201)
 
 
 class BespokeResultsSetPagination(PageNumberPagination):

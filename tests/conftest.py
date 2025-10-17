@@ -15,6 +15,7 @@ from consultation_analyser.consultations.models import (
     SelectedTheme,
 )
 from consultation_analyser.factories import (
+    CandidateThemeFactory,
     ConsultationFactory,
     MultiChoiceAnswerFactory,
     QuestionFactory,
@@ -311,6 +312,20 @@ def theme_b(free_text_question, consultation_user):
     theme = SelectedThemeFactory(
         question=free_text_question, name="Theme B", key="B", last_modified_by=consultation_user
     )
+    yield theme
+    theme.delete()
+
+
+@pytest.fixture()
+def candidate_theme(free_text_question):
+    theme = CandidateThemeFactory(question=free_text_question)
+    yield theme
+    theme.delete()
+
+
+@pytest.fixture()
+def selected_candidate_theme(free_text_question, theme_a):
+    theme = CandidateThemeFactory(question=free_text_question, selectedtheme=theme_a)
     yield theme
     theme.delete()
 
