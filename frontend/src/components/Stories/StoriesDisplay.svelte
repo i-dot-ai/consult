@@ -18,19 +18,6 @@
 
   import stories from "./stories.ts";
 
-  interface StoryProp {
-    name: string;
-    value: any;
-    type: "number" | "text" | "bool" | "select" | "json" | "html" | "func";
-    schema?: string;
-  }
-  interface Story {
-    name: string;
-    component: Component;
-    props: StoryProp[];
-    stories: any[];
-  }
-
   let { selected = "" } = $props();
   let currStory: Story | undefined = $state(
     stories.find((story) => story.name === selected),
@@ -43,33 +30,39 @@
     return props;
   });
   let panel;
+
+  const categories = [...new Set(stories.map(story => story.category))];
 </script>
 
 <div class="grid grid-cols-4 gap-8">
   <aside class="col-span-1">
     <Panel border={true} bg={false}>
       <ul class="flex flex-col gap-2">
-        {#each stories as story}
-          <li>
-            <a
-              href={`/stories?selected=${story.name}`}
-              class={clsx([
-                "block",
-                "w-full",
-                "h-full",
-                "px-2",
-                "py-1",
-                "rounded-lg",
-                "transition-colors",
-                "hover:text-neutral-500",
-                "hover:bg-neutral-100",
-                currStory?.name === story.name &&
-                  "text-primary hover:text-pink-600",
-              ])}
-            >
-              {story.name}
-            </a>
-          </li>
+        {#each categories as category}
+          <h2 class="font-[500]">{category || "General"}</h2>
+          {#each stories.filter(story => story.category === category) as story}
+            <li>
+              <a
+                href={`/stories?selected=${story.name}`}
+                class={clsx([
+                  "block",
+                  "w-full",
+                  "h-full",
+                  "px-2",
+                  "py-1",
+                  "rounded-lg",
+                  "transition-colors",
+                  "text-neutral-700",
+                  "hover:text-pink-500",
+                  "hover:bg-neutral-100",
+                  currStory?.name === story.name &&
+                    "text-primary hover:text-pink-600",
+                ])}
+              >
+                {story.name}
+              </a>
+            </li>
+          {/each}
         {/each}
       </ul>
     </Panel>
@@ -82,7 +75,9 @@
 
         <div>
           <div class="mb-4 flex justify-between items-center">
-            <Title level={2} text={currStory.name} />
+            <div class="font-[500]">
+              <Title level={2} text={currStory.name} />
+            </div>
 
             <Button size="xs" handleClick={() => panel?.requestFullscreen()}>
               <span class="mr-1 ml-1">Fullscreen</span>

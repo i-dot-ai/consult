@@ -12,6 +12,7 @@ let updateTheme = $state((...args) => alert(`Update theme event triggered with: 
 export default {
   name: "SelectedThemeCard",
   component: SelectedThemeCard,
+  category: "Theme Signoff",
   props: [
     {
       name: "theme",
