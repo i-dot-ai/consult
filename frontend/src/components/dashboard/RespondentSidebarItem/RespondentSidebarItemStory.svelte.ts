@@ -20,6 +20,7 @@ let updateSubtitle = $state((newVal: string) => alert(`Updating to ${newVal}`));
 export default {
   name: "RespondentSidebarItem",
   component: RespondentSidebarItem,
+  category: "Respondent Detail",
   props: [
     {
       name: "title",
