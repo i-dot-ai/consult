@@ -25,7 +25,7 @@ export interface Consultation {
   title: string;
   id: string;
   slug: string;
-  questions: Question[];
+  created_at: string
 }
 
 export interface FormattedTheme {
