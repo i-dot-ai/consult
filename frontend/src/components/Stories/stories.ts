@@ -1,3 +1,5 @@
+import { type Component } from "svelte";
+
 import ProgressStory from "../Progress/ProgressStory.svelte";
 import HeaderStory from "../Header/HeaderStory.svelte";
 import FooterStory from "../Footer/FooterStory.svelte";
@@ -7,6 +9,20 @@ import DemoFilterStory from "../DemoFilter/DemoFilterStory.svelte";
 import RespondentSidebarItemStory from "../dashboard/RespondentSidebarItem/RespondentSidebarItemStory.svelte";
 import AddCustomThemeStory from "../theme-signoff/AddCustomTheme/AddCustomThemeStory.svelte";
 import SelectedThemeCardStory from "../theme-signoff/SelectedThemeCard/SelectedThemeCardStory.svelte";
+
+interface StoryProp {
+  name: string;
+  value: any;
+  type: "number" | "text" | "bool" | "select" | "json" | "html" | "func";
+  schema?: string;
+}
+interface Story {
+  name: string;
+  component: Component;
+  category?: string;
+  props: StoryProp[];
+  stories: any[];
+}
 
 export default [
   ProgressStory,
@@ -18,4 +34,4 @@ export default [
   RespondentSidebarItemStory,
   AddCustomThemeStory,
   SelectedThemeCardStory,
-]
+] as Story[]
