@@ -12,7 +12,7 @@ module "rds" {
   ]
   vpc_id                 = data.terraform_remote_state.vpc.outputs.vpc_id
   engine                 = "aurora-postgresql"
-  engine_version         = "16.6"
+  engine_version         = "16.8"
   family                 = null
   engine_mode            = "provisioned"
   aurora_min_scaling     = 2
