@@ -72,13 +72,13 @@
 
         <div class="mb-4">
           {#each displayQuestions as question}
-          {console.log(question)}
             <QuestionCard
               {consultationId}
               {question}
               highlightText={searchValue}
               clickable={true}
               url={getThemeSignoffDetailUrl(consultationId, question.id)}
+              isSignedOff={question.theme_status === "confirmed"}
             />
           {/each}
         </div>

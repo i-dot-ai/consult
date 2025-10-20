@@ -5,7 +5,6 @@
 
   import type { Question } from "../../../global/types.ts";
   import { favStore } from "../../../global/stores.ts";
-  import { getQuestionDetailUrl } from "../../../global/routes.ts";
   import { applyHighlight } from "../../../global/utils.ts";
 
   import MaterialIcon from "../../MaterialIcon.svelte";
@@ -15,6 +14,7 @@
   import Panel from "../Panel/Panel.svelte";
   import Link from "../../Link.svelte";
   import Button from "../../inputs/Button/Button.svelte";
+  import Tag from "../../Tag/Tag.svelte";
 
   export let consultationId: string = "";
   export let question: Question = {};
@@ -24,6 +24,7 @@
   export let skeleton: boolean = false;
   export let hideIcon: boolean = false;
   export let horizontal: boolean = false;
+  export let isSignedOff: boolean = false;
 </script>
 
 <div class="bg-white" transition:fade={{ duration: 200 }}>
@@ -116,22 +117,31 @@
           class={clsx(["-ml-2", "sm:ml-0", horizontal ? "-mt-0.5" : "-mt-1"])}
         >
           {#if !skeleton}
-            <div data-testid="fav-button">
-              <Button
-                variant="ghost"
-                handleClick={(e: MouseEvent) => {
-                  e.stopPropagation();
-                  favStore.toggleFav(question.id || "");
-                }}
-              >
-                {@const favourited = $favStore.includes(question.id)}
-                <MaterialIcon
-                  size="1.3rem"
-                  color={favourited ? "fill-yellow-500" : "fill-gray-500"}
+            <div class="flex gap-1 items-center">
+              {#if isSignedOff}
+                <div class="ml-2 md:ml-0">
+                  <Tag variant="primary-light">
+                    Signed Off
+                  </Tag>
+                </div>
+              {/if}
+              <div data-testid="fav-button">
+                <Button
+                  variant="ghost"
+                  handleClick={(e: MouseEvent) => {
+                    e.stopPropagation();
+                    favStore.toggleFav(question.id || "");
+                  }}
                 >
-                  <Star fill={favourited} />
-                </MaterialIcon>
-              </Button>
+                  {@const favourited = $favStore.includes(question.id)}
+                  <MaterialIcon
+                    size="1.3rem"
+                    color={favourited ? "fill-yellow-500" : "fill-gray-500"}
+                  >
+                    <Star fill={favourited} />
+                  </MaterialIcon>
+                </Button>
+              </div>
             </div>
           {/if}
         </div>
