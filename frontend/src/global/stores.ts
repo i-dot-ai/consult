@@ -57,7 +57,7 @@ export const createFetchStore = () => {
   let prevPromise: Promise<void> | null = null;
   let resolvePrev: (() => void) | null = null;
 
-  const load = async (url: string, method: string = "GET", body?: BodyInit) => {
+  const load = async (url: string, method: string = "GET", body?: BodyInit, headers?: HeadersInit) => {
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
       debounceTimeout = null;
@@ -73,6 +73,7 @@ export const createFetchStore = () => {
           const response = await fetch(url, {
             headers: {
               "Content-Type": "application/json",
+              ...headers,
             },
             method: method,
             body: body ? JSON.stringify(body) : undefined,

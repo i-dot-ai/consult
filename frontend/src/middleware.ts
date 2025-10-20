@@ -60,7 +60,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
   }
 
-  const hasBody = !["GET", "HEAD"].includes(context.request.method);
+  const hasBody = !["GET", "HEAD", "DELETE"].includes(context.request.method);
   const csrfCookie = context.cookies.get("csrftoken");
 
   try {
@@ -121,6 +121,10 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
 
     if (response.status === 304) {
+      return response;
+    }
+
+    if (response.status === 204) {
       return response;
     }
 
