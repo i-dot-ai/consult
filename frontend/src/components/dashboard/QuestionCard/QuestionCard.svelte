@@ -18,6 +18,7 @@
 
   export let consultationId: string = "";
   export let question: Question = {};
+  export let url: string = "";
   export let highlightText: string = "";
   export let clickable: boolean = false;
   export let skeleton: boolean = false;
@@ -30,7 +31,7 @@
     element={Link}
     condition={clickable && !skeleton}
     variant="block"
-    href={getQuestionDetailUrl(consultationId, question.id || "")}
+    href={url}
     title={`Q${question.number}: ${question.question_text}`}
     ariaLabel={`Click to view question: ${question.question_text}`}
   >

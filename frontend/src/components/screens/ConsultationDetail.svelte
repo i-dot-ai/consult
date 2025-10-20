@@ -15,7 +15,7 @@
     Consultation,
     DemoOptionsResponse,
   } from "../../global/types.ts";
-  import { getApiQuestionsUrl } from "../../global/routes.ts";
+  import { getApiQuestionsUrl, getQuestionDetailUrl } from "../../global/routes.ts";
   import { createFetchStore, favStore } from "../../global/stores.ts";
 
   export let consultationId: string = "";
@@ -96,6 +96,7 @@
               {question}
               highlightText={searchValue}
               clickable={true}
+              url={getQuestionDetailUrl(consultationId, question.id || "")}
             />
           {/each}
         </div>
