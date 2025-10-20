@@ -58,7 +58,7 @@
 <div
   transition:slide
   style="margin-left: {level * leftPadding}rem;"
-  class={clsx(["generated-theme-card", disabled && "grayscale"])}
+  class={clsx(["generated-theme-card"])}
 >
   <Panel border={true}>
     <article class="flex">
@@ -71,7 +71,7 @@
       >
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2">
-            {#if theme.children?.length! > 0 && !disabled}
+            {#if theme.children?.length! > 0}
               <Button
                 variant="ghost"
                 handleClick={() => {
@@ -94,9 +94,13 @@
 
             <h3>{theme.name}</h3>
 
-            <Tag variant="success">
-              Level {level + 1}
-            </Tag>
+            <div class={clsx([
+              disabled && "grayscale",
+            ])}>
+              <Tag variant="success">
+                Level {level + 1}
+              </Tag>
+            </div>
           </div>
         </div>
 
@@ -145,7 +149,7 @@
     </article>
   </Panel>
 
-  {#if expanded && !disabled}
+  {#if expanded}
     <div transition:slide class="pt-4">
       {#each theme.children as childTheme (childTheme.id)}
         <GeneratedThemeCard
