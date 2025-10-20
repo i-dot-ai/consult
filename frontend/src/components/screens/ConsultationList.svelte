@@ -10,6 +10,7 @@
     Routes,
     getConsultationDetailUrl,
     getConsultationEvalUrl,
+    getThemeSignoffUrl,
   } from "../../global/routes.ts";
 
   let consultations: Consultation[] = [];
@@ -42,9 +43,12 @@
         <li>
           <Title level={2} text={consultation.title} />
 
-          <div class="flex gap-2">
+          <div class="flex gap-4 flex-wrap">
             <Link href={getConsultationEvalUrl(consultation.id)}>
               View Evaluation
+            </Link>
+            <Link href={getThemeSignoffUrl(consultation.id)}>
+              Theme Sign Off
             </Link>
             {#if dashboardPermitted}
               <Link href={getConsultationDetailUrl(consultation.id)}>

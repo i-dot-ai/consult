@@ -20,6 +20,13 @@ export const getConsultationAnalysisUrl = (consultationId: string) => {
   return `${Routes.Consultations}/${consultationId}/analysis/`;
 };
 
+export const getThemeSignoffUrl = (consultationId: string) => {
+  return `${Routes.Consultations}/${consultationId}/theme-signoff`;
+};
+export const getThemeSignoffDetailUrl = (consultationId: string, questionId: string) => {
+  return `${Routes.Consultations}/${consultationId}/theme-signoff/${questionId}`;
+};
+
 export const getConsultationEvalUrl = (consultationId: string) => {
   return `${Routes.Evaluations}/${consultationId}/questions/`;
 };
