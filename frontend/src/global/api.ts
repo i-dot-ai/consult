@@ -6,7 +6,7 @@ import { getBackendUrl } from "./utils";
 export const fetchBackendApi = async <T>(
   Astro: APIContext,
   endpoint: string,
-  options: RequestInit = {},
+  options: RequestInit | undefined = {},
 ): Promise<T> => {
   const url = path.join(getBackendUrl(), endpoint);
   const accessToken = Astro.cookies.get("access")?.value;
