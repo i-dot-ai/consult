@@ -1,5 +1,5 @@
 # Use official Node.js runtime as base image
-FROM node:20-slim
+FROM public.ecr.aws/docker/library/node:20-slim
 
 # Set working directory in container
 WORKDIR /app
