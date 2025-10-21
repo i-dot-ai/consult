@@ -35,6 +35,18 @@ class UserSerializer(serializers.ModelSerializer):
             data["emails"] = [email.lower() for email in emails]
         return super().to_internal_value(data)
 
+    def validate_is_staff(self, value):
+        request = self.context.get("request")
+
+        # Check if this is an update operation and user is updating themselves
+        if self.instance and request and request.user == self.instance:
+            if value is False:
+                raise serializers.ValidationError(
+                    "You cannot remove admin privileges from yourself"
+                )
+
+        return value
+
 
 class MultiChoiceAnswerSerializer(serializers.ModelSerializer):
     id = serializers.UUIDField(read_only=True)
@@ -116,6 +128,7 @@ class SelectedThemeSerializer(serializers.ModelSerializer):
     class Meta:
         model = SelectedTheme
         fields = ["id", "name", "description", "version", "modified_at", "last_modified_by"]
+        read_only_fields = ["id", "version", "modified_at", "last_modified_by"]
 
     def get_last_modified_by(self, obj):
         return obj.last_modified_by.email if obj.last_modified_by else None
