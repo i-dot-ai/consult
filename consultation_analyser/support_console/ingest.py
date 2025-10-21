@@ -698,13 +698,14 @@ def import_respondents(consultation: Consultation, consultation_code: str):
         )
 
         demographic_options = []
-        for field_name, field_value in demographics.items():
-            demographic_option, _ = DemographicOption.objects.get_or_create(
-                consultation=consultation,
-                field_name=field_name,
-                field_value=field_value,
-            )
-            demographic_options.append(demographic_option)
+        for field_name, field_values in demographics.items():
+            for field_value in field_values:
+                demographic_option, _ = DemographicOption.objects.get_or_create(
+                    consultation=consultation,
+                    field_name=field_name,
+                    field_value=field_value,
+                )
+                demographic_options.append(demographic_option)
 
         respondent.demographics.set(demographic_options)
 
