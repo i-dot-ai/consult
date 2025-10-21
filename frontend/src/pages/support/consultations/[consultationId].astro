@@ -85,8 +85,9 @@ let questions = await fetchBackendApi<{ results: Question[]}>(
     </Section>
 
 
-    <Section class="overflow-x-auto">
+    <Section>
         <Title level={1} text="questions" />
+        <div class="overflow-x-auto">
         <table class="w-full text-left">
         <thead class="font-bold">
           <tr>
@@ -113,5 +114,6 @@ let questions = await fetchBackendApi<{ results: Question[]}>(
           }
         </tbody>
       </table>
+      </div>
     </Section>
 </Layout>
