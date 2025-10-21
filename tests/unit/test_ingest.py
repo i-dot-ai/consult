@@ -27,7 +27,7 @@ from consultation_analyser.support_console.ingest import (
 
 def get_object_side_effect(Bucket, Key):
     # Mock respondents file
-    respondents_data = b'{"themefinder_id": 1, "demographic_data": {"location": "Wales"}}\n{"themefinder_id": 2, "demographic_data": {"location": "Scotland"}}\n{"themefinder_id": 3, "demographic_data": {"location": "Scotland"}}\n{"themefinder_id": 4, "demographic_data": {"location": "Scotland"}}'
+    respondents_data = b'{"themefinder_id": 1, "demographic_data": {"location": ["Wales"]}}\n{"themefinder_id": 2, "demographic_data": {"location": ["Scotland"]}}\n{"themefinder_id": 3, "demographic_data": {"location": ["Scotland"]}}\n{"themefinder_id": 4, "demographic_data": {"location": ["Scotland"]}}'
 
     # Mock question file
     question_data = b'{"question_text": "What do you think?", "has_free_text": true, "multi_choice_options": ["a", "b", "c"]}'
