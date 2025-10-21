@@ -118,7 +118,7 @@ export interface ConsultationResponse {
   id: string;
   title: string;
   slug: string;
-  questions: Question[];
+  users: User[];
 }
 
 export interface AnswersResponse {
