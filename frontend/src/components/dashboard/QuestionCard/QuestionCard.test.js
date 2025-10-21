@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
 import QuestionCard from "./QuestionCard.svelte";
@@ -22,6 +22,8 @@ describe("QuestionCard", () => {
   afterEach(() => cleanup());
 
   it("should render data", () => {
+    vi.mock("svelte/transition");
+
     const { getByText } = render(QuestionCard, {
       consultationId: testData.consultationId,
       question: testData.question,
