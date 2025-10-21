@@ -542,7 +542,8 @@ def import_candidate_themes(question: Question, output_folder: str):
     created_themes = CandidateTheme.objects.bulk_create(themes_to_save)
 
     # Build mapping from topic_id to created CandidateTheme
-    for i, theme in enumerate(theme_data):
+    for theme, created_theme in zip(theme_data, created_themes):
+        topic_id_to_candidate_theme[theme["topic_id"]] = created_theme
         topic_id_to_candidate_theme[theme["topic_id"]] = created_themes[i]
 
     # Second pass: set parent relationships
