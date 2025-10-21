@@ -37,9 +37,12 @@
     <div in:fade>
       <AddCustomTheme
         variant="edit"
+        initialTitle={theme.name}
+        initialDescription={theme.description}
         handleCancel={() => (editing = false)}
         handleConfirm={(title, description) => {
           updateTheme(theme.id, title, description);
+          editing = false;
         }}
       />
     </div>

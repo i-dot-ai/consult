@@ -10,19 +10,23 @@
   import Tip from "../../svg/material/Tip.svelte";
 
   export interface Props {
+    initialTitle: string;
+    initialDescription: string;
     handleConfirm: (title: string, description: string) => void;
     handleCancel: () => void;
     variant?: "add" | "edit";
   }
 
   let {
+    initialTitle = "",
+    initialDescription = "",
     handleConfirm = () => {},
     handleCancel = () => {},
     variant = "add",
   }: Props = $props();
 
-  let title = $state("");
-  let description = $state("");
+  let title = $state(initialTitle);
+  let description = $state(initialDescription);
 
   const isThemeValid = () => {
     return Boolean(title && description);
