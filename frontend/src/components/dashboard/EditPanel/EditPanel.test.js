@@ -26,6 +26,8 @@ describe("EditPanel", () => {
   afterEach(() => cleanup());
 
   it("should match snapshot", async () => {
+    vi.mock("svelte/transition");
+
     const { container } = render(EditPanel, { ...testData });
 
     const button = container.querySelector("button");
