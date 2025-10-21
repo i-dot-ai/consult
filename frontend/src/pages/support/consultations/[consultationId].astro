@@ -33,14 +33,20 @@ let questions = await fetchBackendApi<{ results: Question[]}>(
 <Layout>
     <Section>
         <Title level={1} text={consultation.title} />
-          <table class="w-full text-left whitespace-nowrap">
-            <tbody>
-              <tr><td><Link href={`/evaluations/${consultationId}/questions`}>View on frontend (question review)</Link></td></tr>
-              <tr><td><Link href={`/consultations/${consultationId}`}>View on frontend (dashboard)</Link></td></tr>
-              <tr><td><Link href={`/support/consultations/${consultationId}/export`}>Export theme mapping audit data for this consultation</Link></td></tr>
-              <tr><td><Link href={`/support/consultations/${consultationId}/delete`}>Delete this consultation</Link></td></tr>
-          </tbody>
-        </table>
+        <ul class="list-none p-0 m-0 space-y-2">
+          <li>
+            <Link href={`/evaluations/${consultationId}/questions`}>View on frontend (question review)</Link>
+          </li>
+          <li>
+            <Link href={`/consultations/${consultationId}`}>View on frontend (dashboard)</Link>
+          </li>
+          <li>
+            <Link href={`/support/consultations/${consultationId}/export`}>Export theme mapping audit data for this consultation</Link>
+          </li>
+          <li>
+            <Link href={`/support/consultations/${consultationId}/delete`}>Delete this consultation</Link>
+          </li>
+        </ul>
     </Section>
     
     <Section class="overflow-x-auto">
