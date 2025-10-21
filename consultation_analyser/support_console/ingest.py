@@ -544,7 +544,6 @@ def import_candidate_themes(question: Question, output_folder: str):
     # Build mapping from topic_id to created CandidateTheme
     for theme, created_theme in zip(theme_data, created_themes):
         topic_id_to_candidate_theme[theme["topic_id"]] = created_theme
-        topic_id_to_candidate_theme[theme["topic_id"]] = created_themes[i]
 
     # Second pass: set parent relationships
     themes_to_update = []
@@ -629,7 +628,9 @@ def import_questions(
 
             if sign_off:
                 output_folder = f"{outputs_path}question_part_{question_num_str}/"
-                queue.enqueue(import_candidate_themes, question, output_folder, depends_on=responses)
+                queue.enqueue(
+                    import_candidate_themes, question, output_folder, depends_on=responses
+                )
             else:
                 if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
                     logger.info("not importing output-mappings")
