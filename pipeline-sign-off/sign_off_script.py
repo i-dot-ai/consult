@@ -385,7 +385,7 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
                     n_responses=len(responses_df),
                 )
 
-                # Select short list, using clustering if more than 20 themesß
+                # Select short list, using clustering if more than 20 themes
                 if len(refined_themes_df) > 20:
                     selected_themes, all_themes_df = agentic_theme_selection(refined_themes_df, llm)
                 else:
