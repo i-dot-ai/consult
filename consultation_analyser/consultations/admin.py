@@ -1,9 +1,10 @@
 import json
 
-from django.contrib import admin
+from django.contrib import admin, messages
 from django_rq import get_queue
 from simple_history.admin import SimpleHistoryAdmin
 
+from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml_job
 from consultation_analyser.consultations.models import (
     Consultation,
     CrossCuttingTheme,
@@ -74,9 +75,44 @@ class ResponseAdmin(admin.ModelAdmin):
     ]
 
 
+def create_dummy_consultation(modeladmin, request, queryset, size=10):
+    if len(queryset) != 1:
+        modeladmin.message_user(
+            request,
+            "Do not run this action on more than one consultation at a time",
+            level=messages.ERROR,
+        )
+        return
+
+    consultation = queryset.first()
+    if consultation.question_set.count() > 0:
+        modeladmin.message_user(
+            request, "You should only run this on an empty consultation", level=messages.ERROR
+        )
+        return
+
+    create_dummy_consultation_from_yaml_job.delay(
+        number_respondents=size, consultation=consultation
+    )
+
+
+@admin.action(description="create small dummy consultation")
+def create_small_dummy_consultation(modeladmin, request, queryset):
+    create_dummy_consultation(modeladmin, request, queryset, 10)
+
+
+@admin.action(description="create large dummy consultation")
+def create_large_dummy_consultation(modeladmin, request, queryset):
+    create_dummy_consultation(modeladmin, request, queryset, 10_000)
+
+
 class ConsultationAdmin(admin.ModelAdmin):
-    actions = [update_embeddings_admin, reimport_demographics]
-    readonly_fields = ["title", "slug", "users"]
+    actions = [
+        update_embeddings_admin,
+        reimport_demographics,
+        create_small_dummy_consultation,
+        create_large_dummy_consultation,
+    ]
 
 
 class MultiChoiceAnswerInline(admin.StackedInline):
