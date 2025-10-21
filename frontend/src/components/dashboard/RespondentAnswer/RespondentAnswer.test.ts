@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, test } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
 import { render, cleanup, screen } from "@testing-library/svelte";
 
 import RespondentAnswer, { type Props } from "./RespondentAnswer.svelte";
@@ -40,6 +40,8 @@ describe("RespondentAnswer", () => {
   });
 
   it("should not fail if no themes presenet", () => {
+    vi.mock("svelte/transition");
+
     expect(() => {
       render(RespondentAnswer, {
         ...testData,
