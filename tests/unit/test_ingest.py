@@ -4,6 +4,7 @@ import pytest
 from botocore.exceptions import ClientError
 
 from consultation_analyser.consultations.models import (
+    CandidateTheme,
     Consultation,
     MultiChoiceAnswer,
     Question,
@@ -40,7 +41,7 @@ def get_object_side_effect(Bucket, Key):
 
     # Mock themes file
     themes_data = (
-        b'[{"theme_key": "A", "theme_name": "Theme A", "theme_description": "Description A"}]'
+        b'[{"theme_key": "A", "topic_label": "Theme A", "topic_description": "Description A"}]'
     )
 
     # Mock mapping file
@@ -287,18 +288,6 @@ class TestImportConsultationFullFlow:
         responses = Response.objects.filter(question__consultation=consultation)
         assert responses.count() == 3
 
-        themes = SelectedTheme.objects.filter(question__consultation=consultation)
-        assert themes.count() == 1
-        assert themes.first().key == "A"
-
-        annotations = ResponseAnnotation.objects.filter(
-            response__question__consultation=consultation
-        )
-        assert annotations.count() == 3
-
-        for annotation in annotations:
-            assert annotation.history.count() == 1
-
 
 @pytest.mark.django_db
 class TestRespondentsImport:
@@ -369,11 +358,7 @@ class TestQuestionsImport:
         Respondent.objects.create(consultation=consultation, themefinder_id=2)
 
         # Run the import
-        import_questions(
-            consultation,
-            consultation_code,
-            "2024-01-01",
-        )
+        import_questions(consultation, consultation_code, "2024-01-01", sign_off=True)
 
         # Verify results
         questions = Question.objects.filter(consultation=consultation)
@@ -384,9 +369,9 @@ class TestQuestionsImport:
 
         assert [x.text for x in questions.first().multichoiceanswer_set.all()] == ["a", "b", "c"]
 
-        themes = SelectedTheme.objects.filter(question__consultation=consultation)
+        themes = CandidateTheme.objects.filter(question__consultation=consultation)
         assert themes.count() == 1
-        assert themes.first().key == "A"
+        assert themes.first().name == "Theme A"
 
     @patch("consultation_analyser.support_console.ingest.boto3")
     @patch("consultation_analyser.support_console.ingest.get_question_folders")

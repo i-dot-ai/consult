@@ -6,6 +6,7 @@ import tiktoken
 from botocore.exceptions import ClientError
 from django.conf import settings
 from django.contrib.postgres.search import SearchVector
+from django.shortcuts import get_object_or_404
 from django_rq import get_queue
 from simple_history.utils import bulk_create_with_history
 
@@ -529,38 +530,27 @@ def import_candidate_themes(question: Question, output_folder: str):
 
     # First pass: create all themes without parent relationships
     topic_id_to_candidate_theme = {}
-    themes_to_save = []
     for theme in theme_data:
-        candidate_theme = CandidateTheme(
+        obj = CandidateTheme.objects.create(
             question=question,
             name=theme["topic_label"],
-            description=theme["topic_description"],
-            approximate_frequency=theme["source_topic_count"],
+            description=theme.get("topic_description"),
+            approximate_frequency=theme.get("source_topic_count"),
         )
-        themes_to_save.append(candidate_theme)
-
-    created_themes = CandidateTheme.objects.bulk_create(themes_to_save)
-
-    # Build mapping from topic_id to created CandidateTheme
-    for theme, created_theme in zip(theme_data, created_themes):
-        topic_id_to_candidate_theme[theme["topic_id"]] = created_theme
+        if topic_id := theme.get("topic_id"):
+            topic_id_to_candidate_theme[topic_id] = obj
 
     # Second pass: set parent relationships
-    themes_to_update = []
     for theme in theme_data:
         parent_id = theme.get("parent_id")
         if parent_id and parent_id != "0":
             candidate_theme = topic_id_to_candidate_theme[theme["topic_id"]]
             if parent_id in topic_id_to_candidate_theme:
-                candidate_theme.parent = topic_id_to_candidate_theme[parent_id]
-                themes_to_update.append(candidate_theme)
-
-    if themes_to_update:
-        CandidateTheme.objects.bulk_update(themes_to_update, ["parent"])
+                candidate_theme.update(parent=topic_id_to_candidate_theme[parent_id])
 
     logger.info(
         "Imported {len_themes} candidate themes for question {question_number}",
-        len_themes=len(created_themes),
+        len_themes=len(topic_id_to_candidate_theme),
         question_number=question.number,
     )
 
@@ -631,24 +621,6 @@ def import_questions(
                 queue.enqueue(
                     import_candidate_themes, question, output_folder, depends_on=responses
                 )
-            else:
-                if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
-                    logger.info("not importing output-mappings")
-                else:
-                    output_folder = f"{outputs_path}question_part_{question_num_str}/"
-                    themes = queue.enqueue(
-                        import_themes, question, output_folder, depends_on=responses
-                    )
-                    response_annotations = queue.enqueue(
-                        import_response_annotations, question, output_folder, depends_on=themes
-                    )
-                    queue.enqueue(
-                        import_response_annotation_themes,
-                        question,
-                        output_folder,
-                        depends_on=response_annotations,
-                    )
-
     except Exception as e:
         logger.error(
             "Error importing question data for {consultation_code}: {error}",
@@ -656,6 +628,42 @@ def import_questions(
             error=e,
         )
         raise
+
+
+def populate_dashboard(consultation_code: str, timestamp: str):
+    """
+    Import response annotations
+    Args:
+        consultation_code: S3 folder name containing the consultation data
+        timestamp: Timestamp folder name for the AI outputs
+    """
+
+    consultation = get_object_or_404(Consultation, consultation_code)
+    outputs_path = f"app_data/consultations/{consultation_code}/outputs/mapping/{timestamp}/"
+
+    queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
+
+    for question in consultation.question_set.all():
+        try:
+            output_folder = f"{outputs_path}question_part_{question.number}/"
+            themes = queue.enqueue(import_themes, question, output_folder)
+            response_annotations = queue.enqueue(
+                import_response_annotations, question, output_folder, depends_on=themes
+            )
+            queue.enqueue(
+                import_response_annotation_themes,
+                question,
+                output_folder,
+                depends_on=response_annotations,
+            )
+        except Exception as e:
+            logger.error(
+                "Error importing annotation data for {consultation_code}: {error}",
+                consultation_code=consultation_code,
+                question_number=question.number,
+                error=e,
+            )
+            raise
 
 
 def import_cross_cutting_themes(consultation: Consultation, consultation_code: str, timestamp: str):
@@ -787,7 +795,10 @@ def create_consultation(
             consultation_code=consultation_code,
         )
 
-        consultation = Consultation.objects.create(title=consultation_name)
+        consultation = Consultation.objects.create(
+            title=consultation_name,
+            code=consultation_code,
+        )
 
         # Add the current user to the consultation
         from consultation_analyser.authentication.models import User

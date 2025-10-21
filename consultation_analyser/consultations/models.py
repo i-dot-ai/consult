@@ -53,6 +53,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         default=ConsultationStage.ANALYSIS,
     )
     s3_bucket = models.CharField(max_length=256, null=True)
+    code = models.SlugField(max_length=256, null=True, blank=True, unique=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
