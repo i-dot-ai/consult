@@ -43,7 +43,7 @@ let questions = await fetchBackendApi<{ results: Question[]}>(
         </table>
     </Section>
     
-    <Section>
+    <Section class="overflow-x-auto">
         <Title level={1} text="users" />
         <table class="w-full text-left whitespace-nowrap">
         <thead class="font-bold">
@@ -79,14 +79,14 @@ let questions = await fetchBackendApi<{ results: Question[]}>(
     </Section>
 
 
-    <Section>
+    <Section class="overflow-x-auto">
         <Title level={1} text="questions" />
-        <table class="w-full text-left whitespace-nowrap">
+        <table class="w-full text-left">
         <thead class="font-bold">
           <tr>
             <th class="py-2 pr-2">number</th>
             <th class="py-2 pr-2">text</th>
-            <th class="py-2 pr-2">free text</th>
+            <th class="py-2 pr-2 ">free text</th>
             <th class="py-2 pr-2">multiple choice</th>
             <th class="py-2">actions</th>
           </tr>
@@ -96,7 +96,7 @@ let questions = await fetchBackendApi<{ results: Question[]}>(
             questions.results?.map((question) => (
               <tr class="border-t hover:bg-gray-50">
                 <td class="py-2 pr-2">{question.number}</td>
-                <td class="py-2 pr-2">{question.question_text}</td>
+                <td class="py-2 pr-2 break-words max-w-xs">{question.question_text}</td>
                 <td class="py-2 pr-2">{question.has_free_text ? "Yes" : "No"}</td>
                 <td class="py-2 pr-2">{question.has_multiple_choice ? "Yes" : "No"}</td>
                 <td class="py-2 pr-2">
