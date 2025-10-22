@@ -162,9 +162,9 @@ class TestGetConsultationCodes:
         result = get_consultation_codes()
 
         expected = [
-            {"text": "consultation1 (2012-12-12)", "value": "consultation1-2012-12-12"},
-            {"text": "consultation2 (2020-12-12)", "value": "consultation2-2020-12-12"},
-            {"text": "other (1066-12-12)", "value": "other-1066-12-12"},
+            {"text": "consultation1", "value": "consultation1"},
+            {"text": "consultation2", "value": "consultation2"},
+            {"text": "other", "value": "other"},
         ]
         assert sorted(result, key=lambda x: x["text"]) == sorted(expected, key=lambda x: x["text"])
 

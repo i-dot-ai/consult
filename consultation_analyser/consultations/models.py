@@ -45,7 +45,7 @@ class ConsultationStage(models.TextChoices):
 
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     title = models.CharField(max_length=256)
-    slug = models.SlugField(max_length=256, unique=True)
+    slug = models.SlugField(max_length=256, unique=True)  # TODO: delete me
     users = models.ManyToManyField(User)
     stage = models.CharField(
         max_length=32,
@@ -53,6 +53,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         default=ConsultationStage.ANALYSIS,
     )
     s3_bucket = models.CharField(max_length=256, null=True)
+    code = models.SlugField(max_length=256, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:

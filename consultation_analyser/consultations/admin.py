@@ -6,6 +6,7 @@ from simple_history.admin import SimpleHistoryAdmin
 
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml_job
 from consultation_analyser.consultations.models import (
+    CandidateTheme,
     Consultation,
     CrossCuttingTheme,
     DemographicOption,
@@ -173,6 +174,11 @@ class CrossCuttingThemeAdmin(admin.ModelAdmin):
     inlines = [SelectedThemeInline]
 
 
+class CandidateThemeAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(CandidateTheme, CandidateThemeAdmin)
 admin.site.register(CrossCuttingTheme, CrossCuttingThemeAdmin)
 admin.site.register(Response, ResponseAdmin)
 admin.site.register(Consultation, ConsultationAdmin)
