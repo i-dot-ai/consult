@@ -22,7 +22,6 @@ def test_user_factory():
 def test_consultation_factory(consultation):
     assert models.Consultation.objects.filter(id=consultation.id).exists()
     assert consultation.title
-    assert consultation.slug
 
 
 @pytest.mark.django_db

@@ -72,7 +72,6 @@ class TestCanSeeConsultation:
         request.user = dashboard_user
 
         view = Mock()
-        view.kwargs = {"consultation_slug": consultation.slug}
 
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is False
@@ -84,7 +83,7 @@ class TestCanSeeConsultation:
         request.user.is_authenticated = False
 
         view = Mock()
-        view.kwargs = {"consultation_slug": consultation.slug}
+        view.kwargs = {"consultation_pk": consultation.pk}
 
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is False
