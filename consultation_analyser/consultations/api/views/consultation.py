@@ -18,7 +18,7 @@ from consultation_analyser.consultations.models import Consultation, Demographic
 class ConsultationViewSet(ModelViewSet):
     serializer_class = ConsultationSerializer
     permission_classes = [IsAuthenticated, CanSeeConsultation | IsAdminUser]
-    filterset_fields = ["slug"]
+    filterset_fields = ["code"]
     http_method_names = ["get", "patch"]
 
     def get_queryset(self):
