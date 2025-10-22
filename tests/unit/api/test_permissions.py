@@ -1,4 +1,5 @@
 from unittest.mock import Mock
+from uuid import uuid4
 
 import pytest
 
@@ -72,6 +73,7 @@ class TestCanSeeConsultation:
         request.user = dashboard_user
 
         view = Mock()
+        view.kwargs = {"consultation_pk": uuid4()}
 
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is False
