@@ -42,7 +42,7 @@ class ConsultationStage(models.TextChoices):
     ANALYSIS = "analysis", "Analysis"
 
 
-class Consultation(UUIDPrimaryKeyModel, TimeStampedModel): # type: ignore
+class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore
     title = models.CharField(max_length=256)
     users = models.ManyToManyField(User)
     stage = models.CharField(
@@ -54,7 +54,6 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel): # type: ignore
 
     def __str__(self):
         return shorten(self.code or "undefined", width=64, placeholder="...")
-    
 
 
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
