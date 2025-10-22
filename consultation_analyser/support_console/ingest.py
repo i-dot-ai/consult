@@ -631,17 +631,20 @@ def import_questions(
             if timestamp is None:
                 return
 
-            output_folder = (
-                f"{base_path}outputs/mapping/{timestamp}/question_part_{question_num_str}/"
-            )
-
             if sign_off:
+                output_folder = (
+                    f"{base_path}outputs/sign_off/{timestamp}/question_part_{question_num_str}/"
+                )
+
                 queue.enqueue(
                     import_candidate_themes, question, output_folder, depends_on=responses
                 )
             elif s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
                 logger.info("not importing output-mappings")
             else:
+                output_folder = (
+                    f"{base_path}outputs/mapping/{timestamp}/question_part_{question_num_str}/"
+                )
                 themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
                 response_annotations = queue.enqueue(
                     import_response_annotations, question, output_folder, depends_on=themes

@@ -12,6 +12,11 @@ export enum Routes {
   ApiUser = "/api/user/",
   ApiAstroSignIn = "/api/astro/sign-in",
   Design = "/design",
+  SupportImport = "/support/consultations/import-consultation",
+  SupportUsers = "/support/users",
+  SupportConsultations = "/support/consultations",
+  SupportSignOff = "/support/consultations/sign-off",
+  SupportThemefinder = "/support/consultations/themefinder",
 }
 export const getConsultationDetailUrl = (consultationId: string) => {
   return `${Routes.Consultations}/${consultationId}`;
