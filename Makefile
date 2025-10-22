@@ -97,7 +97,6 @@ AWS_REGION=eu-west-2
 APP_NAME=consult
 ECR_URL=$(AWS_ACCOUNT_ID).dkr.ecr.$(AWS_REGION).amazonaws.com
 ECR_REPO_URL=$(ECR_URL)/$(ECR_REPO_NAME)
-DOCKER_CACHE_BUCKET=i-dot-ai-docker-cache
 
 ifeq ($(service),consult)
     ECR_REPO_NAME=$(APP_NAME)
@@ -106,6 +105,8 @@ else
 endif
 
 DOCKER_BUILDER_CONTAINER=$(APP_NAME)
+cache ?= ./.build-cache
+APP_CACHE_DIR=$(cache)/$(APP_NAME)/$(service)
 IMAGE_TAG=$$(git rev-parse HEAD)
 
 AUTO_APPLY_RESOURCES = module.backend.aws_ecs_task_definition.aws-ecs-task \
@@ -137,12 +138,12 @@ endif
 docker_build: ## Build the docker container for the specified service when running in CI/CD
 ifeq ($(service),consult)
 	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
-	--cache-to type=local,dest=$(cache) \
-	--cache-from type=local,src=$(cache) .
+	--cache-to type=local,dest=$(APP_CACHE_DIR) \
+	--cache-from type=local,src=$(APP_CACHE_DIR) .
 else
 	DOCKER_BUILDKIT=1 docker buildx build --platform linux/amd64 --load --builder=$(DOCKER_BUILDER_CONTAINER) -t $(IMAGE) \
-	--cache-to type=local,dest=$(cache) \
-	--cache-from type=local,src=$(cache) -f $(service)/Dockerfile .
+	--cache-to type=local,dest=$(APP_CACHE_DIR) \
+	--cache-from type=local,src=$(APP_CACHE_DIR) -f $(service)/Dockerfile .
 endif
 
 .PHONY: docker_build_local
