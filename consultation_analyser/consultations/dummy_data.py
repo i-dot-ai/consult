@@ -120,8 +120,8 @@ def create_dummy_consultation_from_yaml(
             question_number=question.number,
         )
         logger.info(
-            "Finished adding dummy data for consultation {consultation_slug}",
-            consultation_slug=consultation.slug,
+            "Finished adding dummy data for consultation {consultation_code}",
+            consultation_code=consultation.code,
         )
     return consultation
 

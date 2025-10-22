@@ -440,7 +440,7 @@
         multiChoice={$questionData?.multiple_choice_answer?.filter((item) =>
           Boolean(item.text),
         ) || []}
-        consultationSlug={$consultationData?.slug}
+        consultationCode={$consultationData?.code}
         {evidenceRich}
         {searchValue}
         {sortAscending}

@@ -30,7 +30,6 @@ def test_delete_consultation_cascading():
     question = Question.objects.create(
         consultation=consultation,
         text="What do you think?",
-        slug="question-1",
         number=1,
         has_free_text=True,
         has_multiple_choice=False,
@@ -94,7 +93,6 @@ def test_delete_consultation_cascading():
     multiple_choice_question = Question.objects.create(
         consultation=consultation,
         text="What is your favourite colour",
-        slug="question-2",
         number=2,
         has_free_text=False,
         has_multiple_choice=True,
@@ -141,9 +139,7 @@ def test_delete_consultation_job_success(mock_connection):
     consultation = Consultation.objects.create(title="Test Consultation")
     consultation.users.add(user)
 
-    question = Question.objects.create(
-        consultation=consultation, text="Test question", slug="question-1", number=1
-    )
+    question = Question.objects.create(consultation=consultation, text="Test question", number=1)
 
     respondent = Respondent.objects.create(consultation=consultation, themefinder_id=1)
 
@@ -227,12 +223,8 @@ def test_delete_consultation_preserves_other_consultations():
     consultation2 = Consultation.objects.create(title="Consultation 2")
 
     # Add data to both
-    Question.objects.create(
-        consultation=consultation1, text="Question 1", slug="question-1-1", number=1
-    )
-    Question.objects.create(
-        consultation=consultation2, text="Question 2", slug="question-2-1", number=1
-    )
+    Question.objects.create(consultation=consultation1, text="Question 1", number=1)
+    Question.objects.create(consultation=consultation2, text="Question 2", number=1)
 
     Respondent.objects.create(consultation=consultation1, themefinder_id=1)
     Respondent.objects.create(consultation=consultation2, themefinder_id=2)
@@ -260,8 +252,8 @@ def test_delete_consultation_with_multiple_questions():
     consultation = Consultation.objects.create(title="Multi-Question Consultation")
 
     # Create multiple questions
-    question1 = Question.objects.create(consultation=consultation, text="Q1", slug="q1", number=1)
-    question2 = Question.objects.create(consultation=consultation, text="Q2", slug="q2", number=2)
+    question1 = Question.objects.create(consultation=consultation, text="Q1", number=1)
+    question2 = Question.objects.create(consultation=consultation, text="Q2", number=2)
 
     # Create respondents
     respondent = Respondent.objects.create(consultation=consultation, themefinder_id=1)
