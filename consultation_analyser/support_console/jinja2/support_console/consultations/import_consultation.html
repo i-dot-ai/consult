@@ -3,7 +3,7 @@
 {%- from 'govuk_frontend_jinja/components/select/macro.html' import govukSelect -%}
 {%- from 'govuk_frontend_jinja/components/input/macro.html' import govukInput -%}
 {%- from 'govuk_frontend_jinja/components/details/macro.html' import govukDetails -%}
-{%- from 'govuk_frontend_jinja/components/checkboxes/macro.html' import govukCheckboxes -%}
+{%- from 'govuk_frontend_jinja/components/radios/macro.html' import govukRadios -%}
 
 {% set page_title = "Consultation import" %}
 
@@ -142,13 +142,17 @@
       }) }}
 
 
-      {{ govukCheckboxes({
-      'name': 'sign_off',
+      {{ govukRadios({
+      'name': 'action',
       'items': [
         {
-          'value': 'true',
-          'text': 'Import Themes',
+          'value': 'sign_off',
+          'text': 'Populate Sign Off',
           'checked': true
+        },
+        {
+          'value': 'dashboard',
+          'text': 'Populate Dashboard'
         }
       ]
       }) }}
@@ -157,7 +161,7 @@
       'id': 'timestamp',
       'name': 'timestamp',
       'label': {
-      'text': 'Mapping timestamp folder (this can be empty)',
+      'text': 'Mapping timestamp folder (only needed to populate the dashboard)',
       'classes': 'govuk-label--s'
       },
       'hint': {
