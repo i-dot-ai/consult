@@ -4,6 +4,7 @@
   import { slide, fly } from "svelte/transition";
 
   import type { GeneratedTheme, SelectedTheme } from "../../../global/types";
+  import { createFetchStore } from "../../../global/stores";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
@@ -15,28 +16,38 @@
   import Visibility from "../../svg/material/Visibility.svelte";
 
   export interface Props {
+    consultationId: string;
     selectedThemes: SelectedTheme[];
     theme: GeneratedTheme;
-    answers?: string[];
     level?: number;
     leftPadding?: number;
     forceExpand?: boolean;
     setForceExpand?: (newValue: boolean) => void;
     handleSelect: (theme: GeneratedTheme) => void;
+    maxAnswers?: number;
   }
   let {
+    consultationId,
     selectedThemes = [],
     theme,
-    answers = [],
     level = 0,
     leftPadding = 2,
     forceExpand = false,
     setForceExpand = () => {},
     handleSelect = () => {},
+    maxAnswers = 10,
   }: Props = $props();
 
   let expanded = $state(true);
   let showAnswers = $state(false);
+  let answersRequested = $state(false);
+
+  let {
+    load: loadAnswers,
+    loading: isAnswersLoading,
+    data: answersData,
+    error: answersError,
+  } = createFetchStore();
 
   let disabled = $derived(
     Boolean(
@@ -120,7 +131,19 @@
             >
               Select
             </Button>
-            <Button size="sm" handleClick={() => (showAnswers = !showAnswers)}>
+            <Button
+              size="sm"
+              handleClick={() => {
+                if (!$answersData) {
+                  loadAnswers(`
+                    /api/consultations/${consultationId}/responses/?searchValue=${theme.name}&searchMode=semantic
+                  `);
+                }
+                showAnswers = !showAnswers;
+                answersRequested = true;
+              }}
+              disabled={$isAnswersLoading && answersRequested}
+            >
               <div class="text-emerald-700 flex items-center gap-1">
                 <MaterialIcon color="fill-emerald-700">
                   <Visibility />
@@ -140,7 +163,11 @@
           <AnswersList
             variant="generated"
             title="Representative Responses"
-            {answers}
+            answers={
+              $answersData?.all_respondents
+                .slice(0, maxAnswers)
+                .map(answer => answer.free_text_answer_text)
+            || []}
           />
         </aside>
       {:else}
@@ -153,6 +180,7 @@
     <div transition:slide class="pt-4">
       {#each theme.children as childTheme (childTheme.id)}
         <GeneratedThemeCard
+          {consultationId}
           {selectedThemes}
           theme={childTheme}
           level={level + 1}
