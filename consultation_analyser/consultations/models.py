@@ -121,7 +121,6 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
-            models.UniqueConstraint(fields=["consultation", "slug"], name="unique_question_slug"),
             models.UniqueConstraint(
                 fields=["consultation", "number"], name="unique_question_number"
             ),
