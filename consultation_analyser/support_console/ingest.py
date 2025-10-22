@@ -570,7 +570,6 @@ def import_candidate_themes(question: Question, output_folder: str):
 
 def import_questions(
     consultation: Consultation,
-    consultation_code: str,
     timestamp: str | None = None,
     sign_off: bool = False,
 ):
@@ -578,21 +577,20 @@ def import_questions(
     Import question data for a consultation.
     Args:
         consultation: Consultation object for questions
-        consultation_code: S3 folder name containing the consultation data
         timestamp: Timestamp folder name for the AI outputs
         sign_off: If True, import candidate themes; if False, use standard theme import workflow
     """
     logger.info("Starting question import for consultation {title})", title=consultation.title)
 
     bucket_name = settings.AWS_BUCKET_NAME
-    base_path = f"app_data/consultations/{consultation_code}/"
+    base_path = f"app_data/consultations/{consultation.code}/"
 
     queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
 
     try:
         s3_client = boto3.client("s3")
         question_folders = get_question_folders(
-            f"app_data/consultations/{consultation_code}/inputs/", settings.AWS_BUCKET_NAME
+            f"app_data/consultations/{consultation.code}/inputs/", settings.AWS_BUCKET_NAME
         )
 
         for question_folder in question_folders:
@@ -657,13 +655,13 @@ def import_questions(
     except Exception as e:
         logger.error(
             "Error importing question data for {consultation_code}: {error}",
-            consultation_code=consultation_code,
+            consultation_code=consultation.code,
             error=e,
         )
         raise
 
 
-def import_cross_cutting_themes(consultation: Consultation, consultation_code: str, timestamp: str):
+def import_cross_cutting_themes(consultation: Consultation, timestamp: str):
     """
     Import cross-cutting themes that span across multiple questions.
     Must run after all themes have been imported.
@@ -674,7 +672,7 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
     )
 
     s3_client = boto3.client("s3")
-    cct_file_key = f"app_data/consultations/{consultation_code}/outputs/mapping/{timestamp}/cross_cutting_themes.json"
+    cct_file_key = f"app_data/consultations/{consultation.code}/outputs/mapping/{timestamp}/cross_cutting_themes.json"
 
     try:
         # Check if file exists
@@ -728,13 +726,12 @@ def import_cross_cutting_themes(consultation: Consultation, consultation_code: s
                     )
 
 
-def import_respondents(consultation: Consultation, consultation_code: str):
+def import_respondents(consultation: Consultation):
     """
     Import respondent data for a consultation.
 
     Args:
         consultation: Consultation object for respondents
-        consultation_code: list of respondent data
     """
     logger.info(
         "Starting import_respondents batch for consultation {consultation_title})",
@@ -742,7 +739,7 @@ def import_respondents(consultation: Consultation, consultation_code: str):
     )
 
     s3_client = boto3.client("s3")
-    respondents_file_key = f"app_data/consultations/{consultation_code}/inputs/respondents.jsonl"
+    respondents_file_key = f"app_data/consultations/{consultation.code}/inputs/respondents.jsonl"
     response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=respondents_file_key)
 
     for i, line in enumerate(response["Body"].iter_lines()):
@@ -809,11 +806,10 @@ def create_consultation(
             consultation_id=consultation.id,
         )
 
-        import_respondents(consultation, consultation_code)
+        import_respondents(consultation)
 
         import_questions(
             consultation,
-            consultation_code,
             timestamp,
             sign_off,
         )
@@ -824,7 +820,6 @@ def create_consultation(
             queue.enqueue(
                 import_cross_cutting_themes,
                 consultation,
-                consultation_code,
                 timestamp,
             )
 

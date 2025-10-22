@@ -366,15 +366,13 @@ class TestQuestionsImport:
         mock_s3_client.get_object.side_effect = get_object_side_effect
         mock_boto3.client.return_value = mock_s3_client
 
-        consultation = Consultation.objects.create(title="Test Consultation")
-        consultation_code = "test"
+        consultation = Consultation.objects.create(title="Test Consultation", code = "test")
         Respondent.objects.create(consultation=consultation, themefinder_id=1)
         Respondent.objects.create(consultation=consultation, themefinder_id=2)
 
         # Run the import
         import_questions(
             consultation,
-            consultation_code,
             "2024-01-01",
         )
 
@@ -422,13 +420,11 @@ class TestQuestionsImport:
         mock_s3_client.get_object.side_effect = get_incomplete_object_side_effect
         mock_boto3.client.return_value = mock_s3_client
 
-        consultation = Consultation.objects.create(title="Test Consultation")
-        consultation_code = "test"
+        consultation = Consultation.objects.create(title="Test Consultation", code = "test")
 
         with pytest.raises(ValueError) as exc_info:
             import_questions(
                 consultation,
-                consultation_code,
                 "2024-01-01",
             )
 
