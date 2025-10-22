@@ -3,6 +3,7 @@
 {%- from 'govuk_frontend_jinja/components/select/macro.html' import govukSelect -%}
 {%- from 'govuk_frontend_jinja/components/input/macro.html' import govukInput -%}
 {%- from 'govuk_frontend_jinja/components/details/macro.html' import govukDetails -%}
+{%- from 'govuk_frontend_jinja/components/checkboxes/macro.html' import govukCheckboxes -%}
 
 {% set page_title = "Consultation import" %}
 
@@ -140,8 +141,33 @@
       'items': consultation_folders
       }) }}
 
+
+      {{ govukCheckboxes({
+      'name': 'sign_off',
+      'items': [
+        {
+          'value': 'true',
+          'text': 'Import Themes',
+          'checked': true
+        }
+      ]
+      }) }}
+
+      {{ govukInput({
+      'id': 'timestamp',
+      'name': 'timestamp',
+      'label': {
+      'text': 'Mapping timestamp folder (this can be empty)',
+      'classes': 'govuk-label--s'
+      },
+      'hint': {
+      'text': 'e.g., 2024-01-15-14-30-00'
+      },
+      'classes': 'govuk-input--width-20'
+      }) }}
+
       {{ govukButton({
-      'text': 'Import complete consultation',
+      'text': 'Import consultation',
       'classes': 'govuk-button--primary'
       }) }}
     </form>

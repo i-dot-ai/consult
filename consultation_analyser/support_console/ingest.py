@@ -92,16 +92,13 @@ def get_consultation_codes() -> list[dict]:
         consultation_codes = set()
         for obj in objects:
             if match := re.search(
-                r"^app_data\/consultations\/(\w+)\/outputs\/mapping\/(\d{2,4}-\d{2}-\d{2,4})\/?",
+                r"^app_data\/consultations\/(\w+)",
                 str(obj.key),
             ):
-                consultation_codes.add(match.groups())
+                consultation_codes.add(match.groups()[0])
 
         # Format for dropdown
-        return [
-            {"text": f"{code} ({timestamp})", "value": f"{code}-{timestamp}"}
-            for code, timestamp in sorted(consultation_codes)
-        ]
+        return [{"text": code, "value": code} for code in sorted(consultation_codes)]
     except Exception:
         logger.exception("Failed to get consultation codes from S3")
         return []
