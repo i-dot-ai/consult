@@ -4,6 +4,7 @@
   import { fade, fly } from "svelte/transition";
 
   import type { GeneratedTheme } from "../../../global/types";
+  import { createFetchStore } from "../../../global/stores";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
@@ -15,21 +16,31 @@
   import AnswersList from "../AnswersList/AnswersList.svelte";
 
   export interface Props {
+    consultationId: string;
     theme: GeneratedTheme;
-    answers: string[];
     removeTheme: (themeId: string) => void;
     updateTheme: (themeId: string, title: string, description: string) => void;
+    maxAnswers?: number;
   }
 
   let {
+    consultationId,
     theme,
-    answers = [],
     removeTheme = () => {},
     updateTheme = () => {},
+    maxAnswers = 10,
   }: Props = $props();
+
+  let {
+    load: loadAnswers,
+    loading: isAnswersLoading,
+    data: answersData,
+    error: answersError,
+  } = createFetchStore();
 
   let showAnswers = $state(false);
   let editing = $state(false);
+  let answersRequested = $state(false);
 </script>
 
 <article class="bg-white rounded-lg">
@@ -76,8 +87,16 @@
 
               <Button
                 size="sm"
-                handleClick={() => (showAnswers = !showAnswers)}
-                disabled={!answers.length}
+                handleClick={() => {
+                  if (!$answersData) {
+                    loadAnswers(`
+                      /api/consultations/${consultationId}/responses/?searchValue=${theme.name}&searchMode=semantic
+                    `);
+                  }
+                  showAnswers = !showAnswers;
+                  answersRequested = true;
+                }}
+                disabled={$isAnswersLoading && answersRequested}
               >
                 <MaterialIcon color="fill-neutral-500">
                   <Docs />
@@ -94,7 +113,14 @@
               in:fly={{ x: 300 }}
               class="col-span-8 border-l border-neutral-200 ml-4 pl-4"
             >
-              <AnswersList title="Representative Responses" {answers} />
+              <AnswersList
+                title="Representative Responses"
+                answers={
+                  $answersData?.all_respondents
+                    .slice(0, maxAnswers)
+                    .map(answer => answer.free_text_answer_text)
+                || []}
+              />
             </aside>
           {/if}
         </div>
