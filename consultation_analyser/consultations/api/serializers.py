@@ -28,7 +28,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "email", "has_dashboard_access", "is_staff", "created_at", "emails"]
 
     def to_internal_value(self, data):
-        if email := data.get( "email"):
+        if email := data.get("email"):
             data["email"] = email.lower()
 
         if emails := data.get("emails"):

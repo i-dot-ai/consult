@@ -525,7 +525,7 @@ def import_themes(question: Question, output_folder: str):
 def import_questions(
     consultation: Consultation,
     consultation_code: str,
-    timestamp: str,
+    timestamp: str | None = None,
 ):
     """
     Import question data for a consultation.
@@ -538,7 +538,6 @@ def import_questions(
 
     bucket_name = settings.AWS_BUCKET_NAME
     base_path = f"app_data/consultations/{consultation_code}/"
-    outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
 
     queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
 
@@ -583,8 +582,10 @@ def import_questions(
 
             if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
                 logger.info("not importing output-mappings")
-            else:
-                output_folder = f"{outputs_path}question_part_{question_num_str}/"
+            elif timestamp is not None:
+                output_folder = (
+                    f"{base_path}outputs/mapping/{timestamp}/question_part_{question_num_str}/"
+                )
                 themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
                 response_annotations = queue.enqueue(
                     import_response_annotations, question, output_folder, depends_on=themes
@@ -715,8 +716,8 @@ def import_respondents(consultation: Consultation, consultation_code: str):
 def create_consultation(
     consultation_name: str,
     consultation_code: str,
-    current_user_id: int,
-    timestamp: str,
+    current_user_id: UUID,
+    timestamp: str | None,
 ):
     """
     Create a consultation.
@@ -756,14 +757,15 @@ def create_consultation(
             timestamp,
         )
 
-        # Import cross-cutting themes after all questions and themes are imported
-        queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
-        queue.enqueue(
-            import_cross_cutting_themes,
-            consultation,
-            consultation_code,
-            timestamp,
-        )
+        if timestamp is not None:
+            # Import cross-cutting themes after all questions and themes are imported
+            queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
+            queue.enqueue(
+                import_cross_cutting_themes,
+                consultation,
+                consultation_code,
+                timestamp,
+            )
 
     except Exception as e:
         logger.error(

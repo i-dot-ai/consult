@@ -23,7 +23,10 @@ logger = settings.LOGGER
 
 @job("default", timeout=1800)
 def import_consultation_job(
-    consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
+    consultation_name: str,
+    consultation_code: str,
+    current_user_id: UUID,
+    timestamp: str | None = None,
 ) -> None:
     """Job wrapper for importing consultations."""
     logger.refresh_context()
@@ -31,8 +34,8 @@ def import_consultation_job(
     return ingest.create_consultation(
         consultation_name=consultation_name,
         consultation_code=consultation_code,
-        timestamp=timestamp,
         current_user_id=current_user_id,
+        timestamp=timestamp,
     )
 
 
@@ -326,8 +329,8 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
             import_consultation_job.delay(
                 consultation_name=consultation_name,
                 consultation_code=consultation_code,
-                timestamp=timestamp,
                 current_user_id=request.user.id,
+                timestamp=timestamp,
             )
             messages.success(request, f"Import started for consultation: {consultation_name}")
             return redirect("support_consultations")  # Fixed URL name
