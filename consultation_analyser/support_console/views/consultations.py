@@ -23,7 +23,11 @@ logger = settings.LOGGER
 
 @job("default", timeout=1800)
 def import_consultation_job(
-    consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
+    consultation_name: str,
+    consultation_code: str,
+    current_user_id: UUID,
+    timestamp: str | None = None,
+    sign_off: bool = False,
 ) -> None:
     """Job wrapper for importing consultations."""
     logger.refresh_context()
@@ -33,6 +37,7 @@ def import_consultation_job(
         consultation_code=consultation_code,
         timestamp=timestamp,
         current_user_id=current_user_id,
+        sign_off=sign_off,
     )
 
 

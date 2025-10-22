@@ -574,7 +574,7 @@ def import_candidate_themes(question: Question, output_folder: str):
 def import_questions(
     consultation: Consultation,
     consultation_code: str,
-    timestamp: str,
+    timestamp: str | None = None,
     sign_off: bool = False,
 ):
     """
@@ -589,7 +589,6 @@ def import_questions(
 
     bucket_name = settings.AWS_BUCKET_NAME
     base_path = f"app_data/consultations/{consultation_code}/"
-    outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
 
     queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
 
@@ -632,28 +631,30 @@ def import_questions(
             )
             queue.enqueue(create_embeddings_for_question, question.id, depends_on=responses)
 
+            if timestamp is None:
+                return
+
+            output_folder = (
+                f"{base_path}outputs/mapping/{timestamp}/question_part_{question_num_str}/"
+            )
+
             if sign_off:
-                output_folder = f"{outputs_path}question_part_{question_num_str}/"
                 queue.enqueue(
                     import_candidate_themes, question, output_folder, depends_on=responses
                 )
+            elif s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
+                logger.info("not importing output-mappings")
             else:
-                if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
-                    logger.info("not importing output-mappings")
-                else:
-                    output_folder = f"{outputs_path}question_part_{question_num_str}/"
-                    themes = queue.enqueue(
-                        import_themes, question, output_folder, depends_on=responses
-                    )
-                    response_annotations = queue.enqueue(
-                        import_response_annotations, question, output_folder, depends_on=themes
-                    )
-                    queue.enqueue(
-                        import_response_annotation_themes,
-                        question,
-                        output_folder,
-                        depends_on=response_annotations,
-                    )
+                themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
+                response_annotations = queue.enqueue(
+                    import_response_annotations, question, output_folder, depends_on=themes
+                )
+                queue.enqueue(
+                    import_response_annotation_themes,
+                    question,
+                    output_folder,
+                    depends_on=response_annotations,
+                )
 
     except Exception as e:
         logger.error(
@@ -775,8 +776,9 @@ def import_respondents(consultation: Consultation, consultation_code: str):
 def create_consultation(
     consultation_name: str,
     consultation_code: str,
-    current_user_id: int,
-    timestamp: str,
+    current_user_id: UUID,
+    timestamp: str | None = None,
+    sign_off: bool = False,
 ):
     """
     Create a consultation.
@@ -786,6 +788,7 @@ def create_consultation(
         consultation_code: S3 folder name containing the consultation data
         current_user_id: ID of the user initiating the import
         timestamp: Timestamp folder name for the AI outputs
+        sign_off: If True, import candidate themes; if False, use standard theme import workflow
     """
     try:
         logger.info(
@@ -794,7 +797,7 @@ def create_consultation(
             consultation_code=consultation_code,
         )
 
-        consultation = Consultation.objects.create(title=consultation_name)
+        consultation = Consultation.objects.create(title=consultation_name, code=consultation_code)
 
         # Add the current user to the consultation
         from consultation_analyser.authentication.models import User
@@ -814,16 +817,18 @@ def create_consultation(
             consultation,
             consultation_code,
             timestamp,
+            sign_off,
         )
 
-        # Import cross-cutting themes after all questions and themes are imported
-        queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
-        queue.enqueue(
-            import_cross_cutting_themes,
-            consultation,
-            consultation_code,
-            timestamp,
-        )
+        if timestamp is not None:
+            # Import cross-cutting themes after all questions and themes are imported
+            queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
+            queue.enqueue(
+                import_cross_cutting_themes,
+                consultation,
+                consultation_code,
+                timestamp,
+            )
 
     except Exception as e:
         logger.error(
