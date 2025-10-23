@@ -27,7 +27,7 @@ from consultation_analyser.support_console.ingest import (
 
 def get_object_side_effect(Bucket, Key):
     # Mock respondents file
-    respondents_data = b'{"themefinder_id": 1, "demographic_data": {"location": "Wales"}}\n{"themefinder_id": 2, "demographic_data": {"location": "Scotland"}}\n{"themefinder_id": 3, "demographic_data": {"location": "Scotland"}}\n{"themefinder_id": 4, "demographic_data": {"location": "Scotland"}}'
+    respondents_data = b'{"themefinder_id": 1, "demographic_data": {"location": ["Wales"]}}\n{"themefinder_id": 2, "demographic_data": {"location": ["Scotland"]}}\n{"themefinder_id": 3, "demographic_data": {"location": ["Scotland"]}}\n{"themefinder_id": 4, "demographic_data": {"location": ["Scotland"]}}'
 
     # Mock question file
     question_data = b'{"question_text": "What do you think?", "has_free_text": true, "multi_choice_options": ["a", "b", "c"]}'
@@ -162,9 +162,9 @@ class TestGetConsultationCodes:
         result = get_consultation_codes()
 
         expected = [
-            {"text": "consultation1 (2012-12-12)", "value": "consultation1-2012-12-12"},
-            {"text": "consultation2 (2020-12-12)", "value": "consultation2-2020-12-12"},
-            {"text": "other (1066-12-12)", "value": "other-1066-12-12"},
+            {"text": "consultation1", "value": "consultation1"},
+            {"text": "consultation2", "value": "consultation2"},
+            {"text": "other", "value": "other"},
         ]
         assert sorted(result, key=lambda x: x["text"]) == sorted(expected, key=lambda x: x["text"])
 

@@ -23,7 +23,11 @@ logger = settings.LOGGER
 
 @job("default", timeout=1800)
 def import_consultation_job(
-    consultation_name: str, consultation_code: str, timestamp: str, current_user_id: int
+    consultation_name: str,
+    consultation_code: str,
+    current_user_id: UUID,
+    timestamp: str | None = None,
+    sign_off: bool = False,
 ) -> None:
     """Job wrapper for importing consultations."""
     logger.refresh_context()
@@ -33,6 +37,7 @@ def import_consultation_job(
         consultation_code=consultation_code,
         timestamp=timestamp,
         current_user_id=current_user_id,
+        sign_off=sign_off,
     )
 
 
@@ -304,9 +309,9 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
 
     if request.POST:
         consultation_name = request.POST.get("consultation_name")
-        code_and_timestamp = request.POST.get("consultation_code")
-
-        consultation_code, timestamp = code_and_timestamp.split("-", 1)
+        consultation_code = request.POST.get("consultation_code")
+        timestamp = request.POST.get("timestamp")
+        action = request.POST.get("action")
 
         # TODO: replace with new logic to support multi-choice answers
         # # Validate structure
@@ -328,6 +333,7 @@ def import_consultation_view(request: HttpRequest) -> HttpResponse:
                 consultation_code=consultation_code,
                 timestamp=timestamp,
                 current_user_id=request.user.id,
+                sign_off=action == "sign_off",
             )
             messages.success(request, f"Import started for consultation: {consultation_name}")
             return redirect("support_consultations")  # Fixed URL name

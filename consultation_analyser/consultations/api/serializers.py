@@ -28,7 +28,7 @@ class UserSerializer(serializers.ModelSerializer):
         fields = ["id", "email", "has_dashboard_access", "is_staff", "created_at", "emails"]
 
     def to_internal_value(self, data):
-        if email := data.get( "email"):
+        if email := data.get("email"):
             data["email"] = email.lower()
 
         if emails := data.get("emails"):
@@ -95,12 +95,6 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
     class Meta:
         model = Consultation
         fields = ["id", "title", "slug", "stage", "users", "created_at"]
-
-
-class DemographicOptionsSerializer(serializers.Serializer):
-    name = serializers.CharField(source="demographics__field_name")
-    value = serializers.JSONField(source="demographics__field_value")
-    count = serializers.IntegerField()
 
 
 class DemographicAggregationsSerializer(serializers.Serializer):
@@ -276,12 +270,14 @@ class ResponseSerializer(serializers.ModelSerializer):
 
 
 class DemographicOptionSerializer(serializers.ModelSerializer):
+    id = serializers.CharField()
     name = serializers.CharField(source="field_name")
     value = serializers.JSONField(source="field_value")
+    count = serializers.IntegerField()
 
     class Meta:
         model = DemographicOption
-        fields = ["name", "value"]
+        fields = ["id", "name", "value", "count"]
 
 
 class RespondentSerializer(serializers.ModelSerializer):

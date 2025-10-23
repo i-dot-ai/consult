@@ -9,7 +9,7 @@ from rest_framework.viewsets import ModelViewSet
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.api.serializers import (
     ConsultationSerializer,
-    DemographicOptionsSerializer,
+    DemographicOptionSerializer,
 )
 
 
@@ -43,12 +43,15 @@ class ConsultationViewSet(ModelViewSet):
             raise PermissionDenied()
 
         data = (
-            models.Respondent.objects.filter(consultation_id=pk)
-            .order_by("demographics__field_name", "demographics__field_value")
-            .values("demographics__field_name", "demographics__field_value")
-            .annotate(count=Count("id"))
+            (
+                models.DemographicOption.objects.filter(consultation_id=pk).annotate(
+                    count=Count("respondent")
+                )
+            )
+            .values("id", "field_name", "field_value", "count")
+            .order_by("field_name", "field_value")
         )
 
-        serializer = DemographicOptionsSerializer(instance=data, many=True)
+        serializer = DemographicOptionSerializer(instance=data, many=True)
 
         return Response(serializer.data)

@@ -11,6 +11,7 @@ from django_rq import get_queue
 from simple_history.utils import bulk_create_with_history
 
 from consultation_analyser.consultations.models import (
+    CandidateTheme,
     Consultation,
     CrossCuttingTheme,
     DemographicOption,
@@ -91,16 +92,13 @@ def get_consultation_codes() -> list[dict]:
         consultation_codes = set()
         for obj in objects:
             if match := re.search(
-                r"^app_data\/consultations\/(\w+)\/outputs\/mapping\/(\d{2,4}-\d{2}-\d{2,4})\/?",
+                r"^app_data\/consultations\/(\w+)",
                 str(obj.key),
             ):
-                consultation_codes.add(match.groups())
+                consultation_codes.add(match.groups()[0])
 
         # Format for dropdown
-        return [
-            {"text": f"{code} ({timestamp})", "value": f"{code}-{timestamp}"}
-            for code, timestamp in sorted(consultation_codes)
-        ]
+        return [{"text": code, "value": code} for code in sorted(consultation_codes)]
     except Exception:
         logger.exception("Failed to get consultation codes from S3")
         return []
@@ -522,10 +520,59 @@ def import_themes(question: Question, output_folder: str):
     )
 
 
+def import_candidate_themes(question: Question, output_folder: str):
+    s3_client = boto3.client("s3")
+    themes_file_key = f"{output_folder}clustered_themes.json"
+    try:
+        response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
+        theme_data = json.loads(response["Body"].read())
+    except BaseException:
+        logger.info("couldn't load file {file}", file=themes_file_key)
+        return
+
+    # First pass: create all themes without parent relationships
+    topic_id_to_candidate_theme = {}
+    themes_to_save = []
+    for theme in theme_data:
+        candidate_theme = CandidateTheme(
+            question=question,
+            name=theme["topic_label"],
+            description=theme["topic_description"],
+            approximate_frequency=theme["source_topic_count"],
+        )
+        themes_to_save.append(candidate_theme)
+
+    created_themes = CandidateTheme.objects.bulk_create(themes_to_save)
+
+    # Build mapping from topic_id to created CandidateTheme
+    for theme, created_theme in zip(theme_data, created_themes):
+        topic_id_to_candidate_theme[theme["topic_id"]] = created_theme
+
+    # Second pass: set parent relationships
+    themes_to_update = []
+    for theme in theme_data:
+        parent_id = theme.get("parent_id")
+        if parent_id and parent_id != "0":
+            candidate_theme = topic_id_to_candidate_theme[theme["topic_id"]]
+            if parent_id in topic_id_to_candidate_theme:
+                candidate_theme.parent = topic_id_to_candidate_theme[parent_id]
+                themes_to_update.append(candidate_theme)
+
+    if themes_to_update:
+        CandidateTheme.objects.bulk_update(themes_to_update, ["parent"])
+
+    logger.info(
+        "Imported {len_themes} candidate themes for question {question_number}",
+        len_themes=len(created_themes),
+        question_number=question.number,
+    )
+
+
 def import_questions(
     consultation: Consultation,
     consultation_code: str,
-    timestamp: str,
+    timestamp: str | None = None,
+    sign_off: bool = False,
 ):
     """
     Import question data for a consultation.
@@ -533,12 +580,12 @@ def import_questions(
         consultation: Consultation object for questions
         consultation_code: S3 folder name containing the consultation data
         timestamp: Timestamp folder name for the AI outputs
+        sign_off: If True, import candidate themes; if False, use standard theme import workflow
     """
     logger.info("Starting question import for consultation {title})", title=consultation.title)
 
     bucket_name = settings.AWS_BUCKET_NAME
     base_path = f"app_data/consultations/{consultation_code}/"
-    outputs_path = f"{base_path}outputs/mapping/{timestamp}/"
 
     queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
 
@@ -581,10 +628,21 @@ def import_questions(
             )
             queue.enqueue(create_embeddings_for_question, question.id, depends_on=responses)
 
-            if s3_key_exists(multiple_choice_file) and not s3_key_exists(responses_file_key):
-                logger.info("not importing output-mappings")
+            if timestamp is None:
+                return
+
+            if sign_off:
+                output_folder = (
+                    f"{base_path}outputs/sign_off/{timestamp}/question_part_{question_num_str}/"
+                )
+
+                queue.enqueue(
+                    import_candidate_themes, question, output_folder, depends_on=responses
+                )
             else:
-                output_folder = f"{outputs_path}question_part_{question_num_str}/"
+                output_folder = (
+                    f"{base_path}outputs/mapping/{timestamp}/question_part_{question_num_str}/"
+                )
                 themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
                 response_annotations = queue.enqueue(
                     import_response_annotations, question, output_folder, depends_on=themes
@@ -698,13 +756,14 @@ def import_respondents(consultation: Consultation, consultation_code: str):
         )
 
         demographic_options = []
-        for field_name, field_value in demographics.items():
-            demographic_option, _ = DemographicOption.objects.get_or_create(
-                consultation=consultation,
-                field_name=field_name,
-                field_value=field_value,
-            )
-            demographic_options.append(demographic_option)
+        for field_name, field_values in demographics.items():
+            for field_value in field_values:
+                demographic_option, _ = DemographicOption.objects.get_or_create(
+                    consultation=consultation,
+                    field_name=field_name,
+                    field_value=field_value,
+                )
+                demographic_options.append(demographic_option)
 
         respondent.demographics.set(demographic_options)
 
@@ -715,8 +774,9 @@ def import_respondents(consultation: Consultation, consultation_code: str):
 def create_consultation(
     consultation_name: str,
     consultation_code: str,
-    current_user_id: int,
-    timestamp: str,
+    current_user_id: UUID,
+    timestamp: str | None = None,
+    sign_off: bool = False,
 ):
     """
     Create a consultation.
@@ -726,6 +786,7 @@ def create_consultation(
         consultation_code: S3 folder name containing the consultation data
         current_user_id: ID of the user initiating the import
         timestamp: Timestamp folder name for the AI outputs
+        sign_off: If True, import candidate themes; if False, use standard theme import workflow
     """
     try:
         logger.info(
@@ -734,7 +795,7 @@ def create_consultation(
             consultation_code=consultation_code,
         )
 
-        consultation = Consultation.objects.create(title=consultation_name)
+        consultation = Consultation.objects.create(title=consultation_name, code=consultation_code)
 
         # Add the current user to the consultation
         from consultation_analyser.authentication.models import User
@@ -754,16 +815,18 @@ def create_consultation(
             consultation,
             consultation_code,
             timestamp,
+            sign_off,
         )
 
-        # Import cross-cutting themes after all questions and themes are imported
-        queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
-        queue.enqueue(
-            import_cross_cutting_themes,
-            consultation,
-            consultation_code,
-            timestamp,
-        )
+        if timestamp is not None:
+            # Import cross-cutting themes after all questions and themes are imported
+            queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
+            queue.enqueue(
+                import_cross_cutting_themes,
+                consultation,
+                consultation_code,
+                timestamp,
+            )
 
     except Exception as e:
         logger.error(

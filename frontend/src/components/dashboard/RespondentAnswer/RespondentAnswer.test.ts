@@ -42,6 +42,8 @@ describe("RespondentAnswer", () => {
   });
 
   it("should not fail if no themes presenet", () => {
+    vi.mock("svelte/transition");
+
     expect(() => {
       render(RespondentAnswer, {
         ...testData,

@@ -15,6 +15,7 @@
     SearchModeValues,
     type DemoData,
     type DemoOption,
+    type DemoOptionsResponse,
     type ResponseAnswer,
     type ResponseTheme,
     type SearchableSelectOption,
@@ -56,6 +57,7 @@
 
   export let demoOptions: DemoOption = {};
   export let demoData: DemoData = {};
+  export let demoOptionsData: DemoOptionsResponse = [];
   export let themes: ResponseTheme[] = [];
 
   export let evidenceRich: boolean = false;
@@ -83,6 +85,7 @@
         showEvidenceRich={true}
         {demoOptions}
         {demoData}
+        {demoOptionsData}
         {evidenceRich}
         {setEvidenceRich}
         loading={isThemesLoading}

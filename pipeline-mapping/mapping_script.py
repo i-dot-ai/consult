@@ -159,7 +159,7 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
                     refined_themes_df=themes_df[["topic_id", "topic"]],
                     question=question,
                 )
-                mapped_df = mapped_df[["response_id", "labels", "stances"]]
+                mapped_df = mapped_df[["response_id", "labels"]]
                 mapped_df = mapped_df.rename(
                     columns={"response_id": "themefinder_id", "labels": "theme_keys"}
                 )

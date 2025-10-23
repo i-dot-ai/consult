@@ -11,12 +11,14 @@
   import type {
     DemoData,
     DemoOption,
+    DemoOptionsResponse,
     DemoTotalCounts,
   } from "../../../global/types";
 
   interface Props {
     demoOptions: DemoOption;
     demoData: DemoData;
+    demoOptionsData?: DemoOptionsResponse;
     loading: boolean;
     showEvidenceRich?: boolean;
     evidenceRich?: boolean;
@@ -25,6 +27,7 @@
   let {
     demoOptions = {},
     demoData = {},
+    demoOptionsData = [],
     loading = true,
     showEvidenceRich = true,
     evidenceRich = false,
@@ -84,6 +87,7 @@
             {category}
             {demoOptions}
             {demoData}
+            {demoOptionsData}
             {totalCounts}
             skeleton={loading}
           />
