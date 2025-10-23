@@ -175,4 +175,5 @@ export interface SelectedTheme {
   version: number;
   modified_at: string; // timestamp
   last_modified_by: string; // username
+  candidatetheme_id?: string;
 }

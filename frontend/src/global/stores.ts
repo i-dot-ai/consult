@@ -47,7 +47,7 @@ function createFavStore() {
 export const favStore = createFavStore();
 
 // Shared fetch logic
-export const createFetchStore = () => {
+export const createFetchStore = (mockFetch?: Function) => {
   const data: Writable<any> = writable(null);
   const loading: Writable<boolean> = writable(true);
   const error: Writable<string> = writable("");
@@ -70,18 +70,31 @@ export const createFetchStore = () => {
         loading.set(true);
         error.set("");
         try {
-          const response = await fetch(url, {
-            headers: {
-              "Content-Type": "application/json",
-              ...headers,
-            },
-            method: method,
-            body: body ? JSON.stringify(body) : undefined,
-          });
-          const parsedData = await response.json();
-          data.set(parsedData);
-          if (!response.ok) {
-            throw new Error(`Fetch Error: ${response.statusText}`);
+          if (mockFetch) {
+            data.set(mockFetch({
+              url: url,
+              headers: {
+                "Content-Type": "application/json",
+                ...headers,
+              },
+              method: method,
+              body: body ? JSON.stringify(body) : undefined,
+            }));
+            return;
+          } else {
+            const response = await fetch(url, {
+              headers: {
+                "Content-Type": "application/json",
+                ...headers,
+              },
+              method: method,
+              body: body ? JSON.stringify(body) : undefined,
+            });
+            const parsedData = await response.json();
+            data.set(parsedData);
+            if (!response.ok) {
+              throw new Error(`Fetch Error: ${response.statusText}`);
+            }
           }
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "unknown";

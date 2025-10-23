@@ -9,6 +9,6 @@ const selected = Astro.url.searchParams.get('selected') || '';
 <Layout>
 	<Section>
 		<Title level={1} text="Stories" />
-      <StoriesDisplay client:load selected={selected} />
+      <StoriesDisplay client:only selected={selected} />
 	</Section>
 </Layout>

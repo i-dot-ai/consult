@@ -11,6 +11,7 @@ import AddCustomThemeStory from "../theme-signoff/AddCustomTheme/AddCustomThemeS
 import SelectedThemeCardStory from "../theme-signoff/SelectedThemeCard/SelectedThemeCardStory.svelte";
 import AnswersListStory from "../theme-signoff/AnswersList/AnswersListStory.svelte";
 import GeneratedThemeCardStory from "../theme-signoff/GeneratedThemeCard/GeneratedThemeCardStory.svelte";
+import ThemeSignoffDetailStory from "../screens/ThemeSignoffDetailStory.svelte";
 
 interface StoryProp {
   name: string;
@@ -38,4 +39,5 @@ export default [
   SelectedThemeCardStory,
   AnswersListStory,
   GeneratedThemeCardStory,
+  ThemeSignoffDetailStory,
 ] as Story[];

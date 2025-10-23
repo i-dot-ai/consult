@@ -25,6 +25,7 @@
     setForceExpand?: (newValue: boolean) => void;
     handleSelect: (theme: GeneratedTheme) => void;
     maxAnswers?: number;
+    answersMock?: Function;
   }
   let {
     consultationId,
@@ -36,6 +37,7 @@
     setForceExpand = () => {},
     handleSelect = () => {},
     maxAnswers = 10,
+    answersMock,
   }: Props = $props();
 
   let expanded = $state(true);
@@ -47,11 +49,11 @@
     loading: isAnswersLoading,
     data: answersData,
     error: answersError,
-  } = createFetchStore();
+  } = createFetchStore(answersMock);
 
   let disabled = $derived(
     Boolean(
-      selectedThemes.find((selectedTheme) => selectedTheme.id === theme.id),
+      selectedThemes.find((selectedTheme) => selectedTheme.candidatetheme_id === theme.id),
     ),
   );
 
@@ -187,6 +189,7 @@
           {forceExpand}
           {setForceExpand}
           {handleSelect}
+          {answersMock}
         />
       {/each}
     </div>

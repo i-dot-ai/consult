@@ -6,11 +6,16 @@ let theme = $state({
   name: "Theme Name",
   description: "Theme description",
 });
-let answers = $state(["Answer 1", "Answer 2"]);
 let level = $state(0);
 let leftPadding = $state(1);
+
 let handleSelect = (theme) =>
   alert(`Select theme event triggered with: ${theme}`);
+
+let answersMock = () => ({ all_respondents: [
+  {free_text_answer_text: "Answer 1"},
+  {free_text_answer_text: "Answer 2"},
+]})
 
 export default {
   name: "GeneratedThemeCard",
@@ -25,11 +30,6 @@ export default {
     {
       name: "theme",
       value: theme,
-      type: "json",
-    },
-    {
-      name: "answers",
-      value: answers,
       type: "json",
     },
     {
@@ -48,6 +48,51 @@ export default {
       type: "func",
       schema: `(theme: GeneratedTheme) => void`,
     },
+    {
+      name: "answersMock",
+      value: answersMock,
+    },
   ],
-  stories: [],
+  stories: [
+    {
+      name: "Nested Levels",
+      props: {
+        selectedThemes: [],
+        theme: {
+          id: "theme-id",
+          name: "Top Level Theme",
+          description: "Theme level 1",
+          children: [
+            {
+              id: "theme-id",
+              name: "Mid Level Theme",
+              description: "Theme level 2",
+              children: [
+                {
+                  id: "theme-id",
+                  name: "Child Theme",
+                  description: "Theme level 3",
+                }
+              ]
+            }
+          ],
+        },
+        handleSelect: handleSelect,
+        answersMock: answersMock,
+      }
+    },
+    {
+      name: "No Answers",
+      props: {
+        selectedThemes: [],
+        theme: {
+          id: "theme-id",
+          name: "Top Level Theme",
+          description: "Theme level 1",
+        },
+        handleSelect: handleSelect,
+        answersMock: () => {},
+      }
+    }
+  ],
 };

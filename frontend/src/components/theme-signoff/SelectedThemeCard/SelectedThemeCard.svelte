@@ -21,6 +21,7 @@
     removeTheme: (themeId: string) => void;
     updateTheme: (themeId: string, title: string, description: string) => void;
     maxAnswers?: number;
+    answersMock?: Function;
   }
 
   let {
@@ -29,6 +30,7 @@
     removeTheme = () => {},
     updateTheme = () => {},
     maxAnswers = 10,
+    answersMock,
   }: Props = $props();
 
   let {
@@ -36,7 +38,7 @@
     loading: isAnswersLoading,
     data: answersData,
     error: answersError,
-  } = createFetchStore();
+  } = createFetchStore(answersMock);
 
   let showAnswers = $state(false);
   let editing = $state(false);
