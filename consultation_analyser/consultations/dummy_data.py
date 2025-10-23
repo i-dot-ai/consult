@@ -26,7 +26,7 @@ def create_dummy_consultation_from_yaml(
     file_path: str = "./tests/examples/sample_questions.yml",
     number_respondents: int = 10,
     consultation: Optional[models.Consultation] = None,
-    consultation_stage: Any[models.Consultation.Stage] = models.Consultation.Stage.ANALYSIS,
+    consultation_stage: Any = models.Consultation.Stage.ANALYSIS,
 ) -> ConsultationFactory:
     """
     Create consultation with questions, responses and themes from yaml file.
