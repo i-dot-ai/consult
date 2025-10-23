@@ -201,3 +201,9 @@
     </Panel>
   </div>
 </div>
+
+<style>
+  :global(div[data-testid="panel-component"]) {
+    overflow-y: auto;
+  }
+</style>
