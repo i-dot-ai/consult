@@ -60,6 +60,9 @@ export default {
     { name: "removeThemeMock", value: (req) => {
       const themeId = req.url.split("/selected-themes/")[1].replaceAll("/", "");
       selectedThemes = [...selectedThemes].filter(theme => theme.id !== themeId);
+
+      const generatedTheme = findNestedTheme(generatedThemes, (theme) => theme.selectedtheme_id === themeId);
+      generatedTheme.selectedtheme_id = null;
     }},
 
     { name: "createThemeMock", value: (req) => {
@@ -104,20 +107,12 @@ export default {
       const themeId = req.url.split("/candidate-themes/")[1].split("/select/")[0];
       
       // Recursively search child themes
-      let selectedGeneratedTheme;
-      const findGeneratedTheme = (theme) => {
-        if (theme.id === themeId) {
-          selectedGeneratedTheme = theme;
-        } else if (theme.children) {
-          theme.children.forEach((childTheme) => findGeneratedTheme(childTheme));
-        }
-      }
-      generatedThemes.forEach(theme => {
-        findGeneratedTheme(theme);
-      });
-      
+      let selectedGeneratedTheme = findNestedTheme(generatedThemes, (theme) => theme.id === themeId);
+
+      const newSelectedThemeId = (selectedThemes.length + 1).toString();
+
       const newSelectedTheme = {
-        id: (selectedThemes.length + 1).toString(),
+        id: newSelectedThemeId,
         name: selectedGeneratedTheme?.name,
         description: selectedGeneratedTheme?.description,
         version: 1,
@@ -127,7 +122,24 @@ export default {
       }
 
       selectedThemes = [...selectedThemes, newSelectedTheme];
+      selectedGeneratedTheme.selectedtheme_id = newSelectedThemeId;
     }}
   ],
   stories: [],
 };
+
+const findNestedTheme = (themes, compareFunc) => {
+  const findFunc = (theme, compareFunc) =>  {
+    if (compareFunc(theme)) {
+      return theme;
+    } else if (theme.children) {
+      for (const childTheme of theme.children) {
+        return findFunc(childTheme, compareFunc)
+      }
+    }
+  }
+
+  for (const theme of themes) {
+    return findFunc(theme, compareFunc);
+  }
+}
