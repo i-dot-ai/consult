@@ -1,8 +1,11 @@
 export const prerender = false;
 
+import { join } from "path";
+
 import type { APIRoute } from "astro";
 
 import { getBackendUrl } from "../../../global/utils";
+import { Routes } from "../../../global/routes";
 
 export const POST: APIRoute = async ({ request }) => {
   let message = "success";
@@ -12,7 +15,7 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const backendResponse = await fetch(
-      `${getBackendUrl(request.url)}/api/magic-link/`,
+      join(getBackendUrl(request.url), Routes.ApiMagicLink),
       {
         method: "POST",
         body: JSON.stringify({
