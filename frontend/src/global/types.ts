@@ -161,3 +161,20 @@ export type User = {
   is_staff: boolean;
   created_at: string;
 };
+
+export interface GeneratedTheme {
+  id: string;
+  name: string;
+  description: string;
+  selectedtheme_id?: string; // if a selected theme exists based on this one
+  children?: GeneratedTheme[]; // recursive list
+}
+export interface SelectedTheme {
+  id: string;
+  name: string;
+  description: string;
+  version: number;
+  modified_at: string; // timestamp
+  last_modified_by: string; // username
+  candidatetheme_id?: string;
+}

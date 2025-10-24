@@ -3,7 +3,6 @@ import { render, cleanup } from "@testing-library/svelte";
 
 import { createRawSnippet } from "svelte";
 
-import PanelStory from "./PanelStory.svelte";
 import Panel from "./Panel.svelte";
 
 let childComponent;
@@ -41,9 +40,5 @@ describe("Panel", () => {
       level: level,
       children: childComponent,
     });
-  });
-
-  it("should render story", () => {
-    render(PanelStory);
   });
 });

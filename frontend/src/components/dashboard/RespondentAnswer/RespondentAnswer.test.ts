@@ -25,6 +25,8 @@ describe("RespondentAnswer", () => {
   afterEach(() => cleanup());
 
   it("should render data", () => {
+    vi.mock("svelte/transition");
+
     const { getByText } = render(RespondentAnswer, {
       ...testData,
     });
