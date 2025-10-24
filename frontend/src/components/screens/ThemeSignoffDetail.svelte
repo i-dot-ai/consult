@@ -290,7 +290,7 @@
     <Button
       variant="primary"
       fullWidth={true}
-      disabled={$selectedThemesData?.results.length === 0}
+      disabled={$isSelectedThemesLoading || ($selectedThemesData?.results.length === 0)}
       handleClick={() => (isSignoffModalOpen = !isSignoffModalOpen)}
     >
       <div
@@ -301,7 +301,13 @@
           <CheckCircle />
         </MaterialIcon>
 
-        <span>Sign Off Selected Themes ({$selectedThemesData?.results.length})</span>
+        <span>
+          {#if $isSelectedThemesLoading}
+            Loading Selected Themes
+          {:else}
+            Sign Off Selected Themes ({$selectedThemesData?.results.length})
+          {/if}
+        </span>
       </div>
     </Button>
   {/if}
