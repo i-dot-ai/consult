@@ -1,16 +1,16 @@
 import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
 
-let selectedThemes = $state([]);
 let theme = $state({
   id: "theme-id",
   name: "Theme Name",
   description: "Theme description",
+  selectedtheme_id: null,
 });
 let level = $state(0);
 let leftPadding = $state(1);
 
 let handleSelect = (theme) =>
-  alert(`Select theme event triggered with: ${theme}`);
+  alert(`Select theme event triggered with: ${theme.name}`);
 
 let answersMock = () => ({ all_respondents: [
   {free_text_answer_text: "Answer 1"},
@@ -22,11 +22,6 @@ export default {
   component: GeneratedThemeCard,
   category: "Theme Signoff",
   props: [
-    {
-      name: "selectedThemes",
-      value: selectedThemes,
-      type: "json",
-    },
     {
       name: "theme",
       value: theme,
@@ -89,6 +84,20 @@ export default {
           id: "theme-id",
           name: "Top Level Theme",
           description: "Theme level 1",
+        },
+        handleSelect: handleSelect,
+        answersMock: () => {},
+      }
+    },
+    {
+      name: "Disabled",
+      props: {
+        selectedThemes: [],
+        theme: {
+          id: "theme-id",
+          name: "Disabled Theme",
+          description: "This theme is disabled because it is already added as selected theme.",
+          selectedtheme_id: "test-theme-id",
         },
         handleSelect: handleSelect,
         answersMock: () => {},

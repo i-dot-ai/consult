@@ -136,6 +136,9 @@
     loadSelectedThemes(
       getApiGetSelectedThemesUrl(consultationId, questionId),
     );
+    loadGeneratedThemes(
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
+    );
   };
   const updateTheme = async (themeId: string, title: string, description: string) => {
     const selectedTheme = $selectedThemesData?.results.find((theme) => theme.id === themeId);
@@ -167,6 +170,9 @@
     loadSelectedThemes(
       getApiGetSelectedThemesUrl(consultationId, questionId),
     );
+    loadGeneratedThemes(
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
+    )
   }
 
   const confirmSignoff = async () => {

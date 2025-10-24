@@ -17,7 +17,6 @@
 
   export interface Props {
     consultationId: string;
-    selectedThemes: SelectedTheme[];
     theme: GeneratedTheme;
     level?: number;
     leftPadding?: number;
@@ -29,7 +28,6 @@
   }
   let {
     consultationId,
-    selectedThemes = [],
     theme,
     level = 0,
     leftPadding = 2,
@@ -51,11 +49,7 @@
     error: answersError,
   } = createFetchStore(answersMock);
 
-  let disabled = $derived(
-    Boolean(
-      selectedThemes.find((selectedTheme) => selectedTheme.candidatetheme_id === theme.id),
-    ),
-  );
+  let disabled = $derived(Boolean(theme.selectedtheme_id));
 
   $effect(() => {
     if (forceExpand) {
@@ -126,10 +120,7 @@
             <Button
               variant="approve"
               size="sm"
-              handleClick={() => {
-                disabled = !disabled;
-                handleSelect(theme);
-              }}
+              handleClick={() => handleSelect(theme)}
             >
               Select
             </Button>
@@ -183,7 +174,6 @@
       {#each theme.children as childTheme (childTheme.id)}
         <GeneratedThemeCard
           {consultationId}
-          {selectedThemes}
           theme={childTheme}
           level={level + 1}
           {forceExpand}
