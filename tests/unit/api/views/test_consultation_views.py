@@ -203,10 +203,11 @@ class TestConsultationViewSet:
         assert response.status_code == 200
         assert response.json()["count"] == 3
 
-    def test_list_assigned_consultations_for_non_admin_users(
+    def test_list_all_consultations_for_non_admin_users(
         self, client, dashboard_user, dashboard_user_token
     ):
-        """Test API endpoint lists assigned consultations for non-admin users"""
+        """Test API endpoint lists only assigned consultations for
+        non-admin users even when scope=assigned is not specified"""
         ConsultationFactory.create_batch(3)
         assigned_consultation = ConsultationFactory.create()
         assigned_consultation.users.add(dashboard_user)
@@ -219,13 +220,15 @@ class TestConsultationViewSet:
         assert response.status_code == 200
         assert response.json()["count"] == 1
 
-    def test_get_assigned_consultations_for_admin_users(self, client, admin_user, admin_user_token):
+    def test_list_assigned_consultations_for_admin_users(
+        self, client, admin_user, admin_user_token
+    ):
         """Test API endpoint lists assigned consultations for admin users"""
         ConsultationFactory.create_batch(3)
         assigned_consultation = ConsultationFactory.create()
         assigned_consultation.users.add(admin_user)
 
-        url = reverse("consultations-assigned")
+        url = reverse("consultations-list", query={"scope": "assigned"})
         response = client.get(
             url,
             headers={"Authorization": f"Bearer {admin_user_token}"},
@@ -233,7 +236,7 @@ class TestConsultationViewSet:
         assert response.status_code == 200
         assert response.json()["count"] == 1
 
-    def test_get_assigned_consultations_for_non_admin_users(
+    def test_list_assigned_consultations_for_non_admin_users(
         self, client, dashboard_user, dashboard_user_token
     ):
         """Test API endpoint lists assigned consultations for non-admin users"""
@@ -243,7 +246,7 @@ class TestConsultationViewSet:
         assigned_consultation2 = ConsultationFactory.create()
         assigned_consultation2.users.add(dashboard_user)
 
-        url = reverse("consultations-assigned")
+        url = reverse("consultations-list", query={"scope": "assigned"})
         response = client.get(
             url,
             headers={"Authorization": f"Bearer {dashboard_user_token}"},
