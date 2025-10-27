@@ -50,7 +50,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore
         choices=ConsultationStage.choices,
         default=ConsultationStage.ANALYSIS,
     )
-    code = models.SlugField(max_length=256, null=True, blank=True)
+    code = models.SlugField(max_length=256)
 
     def __str__(self):
         return shorten(self.code or "undefined", width=64, placeholder="...")
