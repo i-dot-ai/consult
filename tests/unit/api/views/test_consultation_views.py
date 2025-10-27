@@ -147,3 +147,31 @@ class TestConsultationViewSet:
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
         assert response.status_code == 404  # NOT FOUND
+
+    def test_can_get_consultation_detail_for_consultation_users(
+        self, client, consultation, consultation_user_token
+    ):
+        """Test API endpoint grants access to users of the consultations"""
+        url = reverse(
+            "consultations-detail",
+            kwargs={"pk": consultation.id},
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        assert response.status_code == 200
+
+    def test_cannot_get_consultation_detail_for_unauthorized_users(
+        self, client, consultation, non_consultation_user_token
+    ):
+        """Test API endpoint denies access to unauthorized users"""
+        url = reverse(
+            "consultations-detail",
+            kwargs={"pk": consultation.id},
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {non_consultation_user_token}"},
+        )
+        assert response.status_code == 403  # FORBIDDEN

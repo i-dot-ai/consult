@@ -52,8 +52,6 @@ class TestCanSeeConsultation:
         self, request_factory, non_dashboard_user, consultation, dashboard_user
     ):
         """Test that user with access to consultation is granted permission"""
-        consultation.users.add(dashboard_user)
-
         request = request_factory.get("/")
         request.user = non_dashboard_user
 
@@ -64,15 +62,15 @@ class TestCanSeeConsultation:
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is True
 
-    def test_user_without_consultation_access(self, request_factory, dashboard_user, consultation):
+    def test_user_without_consultation_access(
+        self, request_factory, user_without_consultation_access, consultation
+    ):
         """Test that user without access to consultation is denied permission"""
-        # Don't add user to consultation.users
-
         request = request_factory.get("/")
-        request.user = dashboard_user
+        request.user = user_without_consultation_access
 
         view = Mock()
-        view.kwargs = {"consultation_slug": consultation.slug}
+        view.kwargs = {"consultation_pk": consultation.id}
 
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is False
@@ -84,41 +82,29 @@ class TestCanSeeConsultation:
         request.user.is_authenticated = False
 
         view = Mock()
-        view.kwargs = {"consultation_slug": consultation.slug}
+        view.kwargs = {"consultation_pk": consultation.id}
 
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is False
 
-    def test_missing_consultation_slug(self, request_factory, dashboard_user):
-        """Test that missing consultation_slug denies permission"""
+    def test_missing_consultation_pk(self, request_factory, dashboard_user):
+        """Test that missing consultation_pk grants permission"""
         request = request_factory.get("/")
         request.user = dashboard_user
 
-        # View without consultation_slug in kwargs
         view = Mock()
         view.kwargs = {}
 
         permission = CanSeeConsultation()
-        assert permission.has_permission(request, view) is False
+        assert permission.has_permission(request, view) is True
 
-    def test_nonexistent_consultation_slug(self, request_factory, dashboard_user):
-        """Test that nonexistent consultation slug denies permission"""
+    def test_nonexistent_consultation_pk(self, request_factory, dashboard_user):
+        """Test that nonexistent consultation_pk denies permission"""
         request = request_factory.get("/")
         request.user = dashboard_user
 
         view = Mock()
-        view.kwargs = {"consultation_slug": "nonexistent-consultation"}
-
-        permission = CanSeeConsultation()
-        assert permission.has_permission(request, view) is False
-
-    def test_consultation_slug_as_none(self, request_factory, dashboard_user):
-        """Test that None consultation_slug denies permission"""
-        request = request_factory.get("/")
-        request.user = dashboard_user
-
-        view = Mock()
-        view.kwargs = {"consultation_slug": None}
+        view.kwargs = {"consultation_pk": "868c71ab-868d-44b2-8bda-0288c05f7247"}  # Random UUID
 
         permission = CanSeeConsultation()
         assert permission.has_permission(request, view) is False
@@ -147,9 +133,6 @@ class TestCanSeeConsultation:
 
     def test_user_removed_from_consultation(self, request_factory, dashboard_user, consultation):
         """Test that user loses access when removed from consultation"""
-        # Initially add user to consultation
-        consultation.users.add(dashboard_user)
-
         request = request_factory.get("/")
         request.user = dashboard_user
 
@@ -164,6 +147,30 @@ class TestCanSeeConsultation:
 
         # Should now be denied
         assert permission.has_permission(request, view) is False
+
+    def test_consultation_pk_preference(self, request_factory, dashboard_user, consultation):
+        """Test that consultation_pk is preferred over pk in kwargs for nested routes"""
+        request = request_factory.get("/")
+        request.user = dashboard_user
+
+        view = Mock()
+        view.kwargs = {"consultation_pk": consultation.id, "pk": "some-other-id"}
+
+        permission = CanSeeConsultation()
+        assert permission.has_permission(request, view) is True
+
+    def test_uses_pk_when_consultation_pk_not_provided(
+        self, request_factory, dashboard_user, consultation
+    ):
+        """Test that pk is used when consultation_pk is not provided"""
+        request = request_factory.get("/")
+        request.user = dashboard_user
+
+        view = Mock()
+        view.kwargs = {"pk": consultation.id}
+
+        permission = CanSeeConsultation()
+        assert permission.has_permission(request, view) is True
 
 
 @pytest.mark.django_db
