@@ -14,7 +14,6 @@ class Migration(migrations.Migration):
     ]
 
     operations = [
-        migrations.RunPython(backfill_code),
         migrations.AlterModelOptions(
             name="consultation",
             options={},
@@ -23,6 +22,7 @@ class Migration(migrations.Migration):
             model_name="consultation",
             name="unique_consultation_slug",
         ),
+        migrations.RunPython(backfill_code),
         migrations.RemoveConstraint(
             model_name="question",
             name="unique_question_slug",
