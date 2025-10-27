@@ -8,7 +8,7 @@ export enum Routes {
   GetInvolved = "/get-involved",
   SignIn = "/sign-in",
   SignOut = "/sign-out",
-  ApiConsultations = "/api/consultations",
+  ApiConsultations = "/api/consultations/assigned",
   ApiUser = "/api/user/",
   ApiAstroSignIn = "/api/astro/sign-in",
   Design = "/design",

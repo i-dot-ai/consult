@@ -23,6 +23,11 @@ class CanSeeConsultation(permissions.BasePermission):
         if not request.user.is_authenticated:
             return False
 
+        # Allow staff/admin users early — they should be able to pass view-level
+        # permission checks so that object-level checks (or IsAdminUser) can run.
+        if getattr(request.user, "is_staff", False):
+            return True
+
         consultation_pk = view.kwargs.get("consultation_pk") or view.kwargs.get("pk")
         if not consultation_pk:
             # No consultation specified so no consultation to restrict access to

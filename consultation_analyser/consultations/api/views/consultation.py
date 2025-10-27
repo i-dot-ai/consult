@@ -22,7 +22,22 @@ class ConsultationViewSet(ModelViewSet):
     http_method_names = ["get", "patch"]
 
     def get_queryset(self):
+        if self.request.user.is_staff:
+            return Consultation.objects.all().order_by("-created_at")
         return Consultation.objects.filter(users=self.request.user).order_by("-created_at")
+
+    @action(
+        detail=False, methods=["get"], url_path="assigned", permission_classes=[IsAuthenticated]
+    )
+    def assigned(self, request, *args, **kwargs):
+        """Return consultations the current user is a member of."""
+        qs = Consultation.objects.filter(users=request.user).order_by("-created_at")
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(qs, many=True)
+        return Response(serializer.data)
 
     @action(
         detail=True,
