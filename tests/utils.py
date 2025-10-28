@@ -1,3 +1,7 @@
+from datetime import datetime
+from zoneinfo import ZoneInfo
+
+from django.conf import settings
 from django.urls import reverse
 
 from consultation_analyser.consultations import models
@@ -37,3 +41,17 @@ def build_url(url_pattern: str, question: Question) -> str:
         )
 
     raise ValueError("unrecognised url_pattern")
+
+
+def isoformat(dt: datetime) -> str:
+    """
+    Convert a datetime to ISO 8601 format with the correct timezone
+    and 'Z' used instead of '+00:00' to convery UTC timezone. This is
+    used to match the format returned by the API.
+
+    There is no option to output 'Z' directly from datetime.isoformat(),
+    so we replace it manually.
+    See: https://github.com/python/cpython/issues/90772
+    """
+    localtime = dt.astimezone(ZoneInfo(settings.TIME_ZONE))
+    return localtime.isoformat().replace("+00:00", "Z")

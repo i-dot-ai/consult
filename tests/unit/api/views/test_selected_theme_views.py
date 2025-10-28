@@ -1,11 +1,10 @@
 import json
-from zoneinfo import ZoneInfo
 
 import pytest
-from django.conf import settings
 from django.urls import reverse
 
 from consultation_analyser.consultations.models import SelectedTheme
+from tests.utils import isoformat
 
 
 @pytest.mark.django_db
@@ -39,9 +38,7 @@ class TestSelectedThemeViewSet:
                     "name": "Theme A",
                     "description": theme_a.description,
                     "version": 1,
-                    "modified_at": theme_a.modified_at.astimezone(
-                        ZoneInfo(settings.TIME_ZONE)
-                    ).isoformat(),
+                    "modified_at": isoformat(theme_a.modified_at),
                     "last_modified_by": None,
                 },
                 {
@@ -49,9 +46,7 @@ class TestSelectedThemeViewSet:
                     "name": "Theme B",
                     "description": theme_b.description,
                     "version": 1,
-                    "modified_at": theme_b.modified_at.astimezone(
-                        ZoneInfo(settings.TIME_ZONE)
-                    ).isoformat(),
+                    "modified_at": isoformat(theme_b.modified_at),
                     "last_modified_by": theme_b.last_modified_by.email,
                 },
             ],

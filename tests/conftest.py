@@ -221,6 +221,13 @@ def non_consultation_user():
 
 
 @pytest.fixture
+def admin_user():
+    user = UserFactory(is_staff=True)
+    yield user
+    user.delete()
+
+
+@pytest.fixture
 def consultation_user_token(consultation_user):
     refresh = RefreshToken.for_user(consultation_user)
     yield str(refresh.access_token)
@@ -241,6 +248,12 @@ def non_consultation_user_token(non_consultation_user):
 @pytest.fixture
 def non_dashboard_user_token(non_dashboard_user):
     refresh = RefreshToken.for_user(non_dashboard_user)
+    yield str(refresh.access_token)
+
+
+@pytest.fixture
+def admin_user_token(admin_user):
+    refresh = RefreshToken.for_user(admin_user)
     yield str(refresh.access_token)
 
 

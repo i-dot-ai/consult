@@ -1,11 +1,9 @@
-from zoneinfo import ZoneInfo
-
 import pytest
-from django.conf import settings
 from django.urls import reverse
 
 from consultation_analyser.consultations.models import SelectedTheme
 from consultation_analyser.factories import CandidateThemeFactory
+from tests.utils import isoformat
 
 
 @pytest.mark.django_db
@@ -129,8 +127,6 @@ class TestCandidateThemeViewSet:
             "name": selected_theme.name,
             "description": selected_theme.description,
             "version": selected_theme.version,
-            "modified_at": selected_theme.modified_at.astimezone(
-                ZoneInfo(settings.TIME_ZONE)
-            ).isoformat(),
+            "modified_at": isoformat(selected_theme.modified_at),
             "last_modified_by": consultation_user.email,
         }
