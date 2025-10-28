@@ -7,6 +7,7 @@ variable "image_tag" {
 variable "region" {
   type        = string
   description = "AWS region for infrastructure to be deployed to"
+  default = "eu-west-2"
 }
 
 variable "state_bucket" {
