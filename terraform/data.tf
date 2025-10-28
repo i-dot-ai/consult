@@ -127,3 +127,11 @@ data "aws_wafv2_ip_set" "ip_whitelist_internal" {
   name  = "i-dot-ai-core-ip-config-ip-set-internal"
   scope = var.scope
 }
+
+data "aws_secretsmanager_secret_version" "platform_slack_webhook" {
+  secret_id = data.aws_secretsmanager_secret.slack.id
+}
+
+data "aws_secretsmanager_secret" "slack" {
+  name = "i-dot-ai-${var.env}-platform-slack-webhook"
+}
