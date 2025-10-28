@@ -1,7 +1,7 @@
 module "rds" {
   #   source = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/rds"  # For testing local changes
   source                 = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/rds?ref=v4.1.1-rds"
-  db_name                = "consultations" # DO NIOT CHANGE THIS!
+  db_name                = "consultations" # DO NOT CHANGE THIS!
   kms_secrets_arn        = data.terraform_remote_state.platform.outputs.kms_key_arn
   name                   = local.name
   public_subnet_ids_list = data.terraform_remote_state.vpc.outputs.public_subnets

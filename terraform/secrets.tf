@@ -13,6 +13,30 @@ locals {
       value = module.app_bucket.id
     },
     {
+      name  = "SENTRY_DSN"
+      value = "placeholder" # Update value in SSM - Do not hardcode - Empty value will disable sentry
+    },
+    {
+      name  = "POSTGRES_PORT"
+      value = 5432
+    },
+    {
+      name  = "POSTGRES_DB"
+      value = module.rds.db_instance_name
+    },
+    {
+      name  = "POSTGRES_USER"
+      value = module.rds.rds_instance_username
+    },
+    {
+      name  = "POSTGRES_PASSWORD"
+      value = module.rds.rds_instance_db_password
+    },
+    {
+      name  = "POSTGRES_HOST"
+      value = module.rds.db_instance_address
+    },
+    {
       name  = "AWS_REGION"
       value = var.region
     },

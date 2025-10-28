@@ -7,5 +7,4 @@ module "app_bucket" {
   log_bucket    = data.terraform_remote_state.platform.outputs.log_bucket
   kms_key       = data.terraform_remote_state.platform.outputs.kms_key_arn
   force_destroy = var.env == "dev" ? true : false
-  # source_ips   = concat(var.internal_ips, var.developer_ips)
 }
