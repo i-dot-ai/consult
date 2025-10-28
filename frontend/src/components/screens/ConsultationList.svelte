@@ -18,7 +18,7 @@
 
   onMount(async () => {
     loading = true;
-    const response = await fetch(Routes.ApiConsultations);
+    const response = await fetch(`${Routes.ApiConsultations}?scope=assigned`);
     const consultationData = await response.json();
     consultations = consultationData.results;
     loading = false;
