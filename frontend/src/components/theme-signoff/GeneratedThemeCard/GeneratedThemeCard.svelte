@@ -103,9 +103,7 @@
             <div class="flex items-center gap-2 flex-wrap">
               <h3>{theme.name}</h3>
 
-              <div class={clsx([
-                disabled && "grayscale",
-              ])}>
+              <div class={clsx([disabled && "grayscale"])}>
                 <Tag variant="success">
                   Level {level + 1}
                 </Tag>
@@ -162,11 +160,9 @@
           <AnswersList
             variant="generated"
             title="Representative Responses"
-            answers={
-              $answersData?.all_respondents
-                .slice(0, maxAnswers)
-                .map(answer => answer.free_text_answer_text)
-            || []}
+            answers={$answersData?.all_respondents
+              .slice(0, maxAnswers)
+              .map((answer) => answer.free_text_answer_text) || []}
           />
         </aside>
       {:else}

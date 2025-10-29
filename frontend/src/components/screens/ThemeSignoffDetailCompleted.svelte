@@ -4,7 +4,10 @@
   import { slide } from "svelte/transition";
 
   import { createFetchStore } from "../../global/stores";
-  import { getQuestionDetailUrl, getThemeSignoffUrl } from "../../global/routes";
+  import {
+    getQuestionDetailUrl,
+    getThemeSignoffUrl,
+  } from "../../global/routes";
 
   import Panel from "../dashboard/Panel/Panel.svelte";
   import TitleRow from "../dashboard/TitleRow.svelte";
@@ -12,7 +15,7 @@
   import Button from "../inputs/Button/Button.svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
   import Price from "../svg/material/Price.svelte";
-  import CheckCircle from "../svg/material/CheckCircle.svelte";  
+  import CheckCircle from "../svg/material/CheckCircle.svelte";
   import Headphones from "../svg/material/Headphones.svelte";
   import Help from "../svg/material/Help.svelte";
   import ArrowForward from "../svg/material/ArrowForward.svelte";
@@ -46,7 +49,7 @@
     loadQuestion(
       `/api/consultations/${consultationId}/questions/${questionId}/`,
     );
-  })
+  });
 </script>
 
 <TitleRow
@@ -61,7 +64,7 @@
   <Button
     variant="ghost"
     size="sm"
-    handleClick={() => location.href = getThemeSignoffUrl(consultationId)}
+    handleClick={() => (location.href = getThemeSignoffUrl(consultationId))}
   >
     <div class="flex items-center gap-2 text-neutral-700">
       <div class="rotate-180">
@@ -112,7 +115,7 @@
         <Button
           size="sm"
           title="Click to contact Consult support"
-          handleClick={() => location.href = "mailto:support@consult.co.uk"}
+          handleClick={() => (location.href = "mailto:support@consult.co.uk")}
         >
           <MaterialIcon size="1.2rem" color="fill-primary">
             <Headphones />
@@ -137,27 +140,28 @@
       {#each $selectedThemesData?.results as selectedTheme}
         <li>
           <Panel bg={true}>
-            <div in:slide class={clsx([
-              "flex",
-              "justify-between",
-              "relative",
-              "pl-4",
-              "text-sm",
-              "before:absolute",
-              "before:top-[45%]",
-              "before:left-0",
-              "before:transform",
-              "before:-translate-y-1/2",
-              "before:w-2",
-              "before:h-2",
-              "before:bg-primary",
-              "before:rounded-full",
-            ])}>
+            <div
+              in:slide
+              class={clsx([
+                "flex",
+                "justify-between",
+                "relative",
+                "pl-4",
+                "text-sm",
+                "before:absolute",
+                "before:top-[45%]",
+                "before:left-0",
+                "before:transform",
+                "before:-translate-y-1/2",
+                "before:w-2",
+                "before:h-2",
+                "before:bg-primary",
+                "before:rounded-full",
+              ])}
+            >
               {selectedTheme.name}
 
-              <Tag variant="success">
-                Signed Off
-              </Tag>
+              <Tag variant="success">Signed Off</Tag>
             </div>
           </Panel>
         </li>
@@ -170,7 +174,7 @@
   <div class="flex items-center justify-between gap-2 flex-wrap">
     <Button
       size="sm"
-      handleClick={() => location.href = getThemeSignoffUrl(consultationId)}
+      handleClick={() => (location.href = getThemeSignoffUrl(consultationId))}
     >
       Back to Questions
     </Button>
@@ -179,7 +183,8 @@
       <Button
         size="sm"
         variant="primary"
-        handleClick={() => location.href = getQuestionDetailUrl(consultationId, questionId)}
+        handleClick={() =>
+          (location.href = getQuestionDetailUrl(consultationId, questionId))}
       >
         <div class="flex items-center gap-1">
           <MaterialIcon>
@@ -191,7 +196,7 @@
 
       <Button
         size="sm"
-        handleClick={() => location.href = getThemeSignoffUrl(consultationId)}
+        handleClick={() => (location.href = getThemeSignoffUrl(consultationId))}
       >
         Select Another Question
       </Button>

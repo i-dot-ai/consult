@@ -9,7 +9,10 @@
   import Panel from "../dashboard/Panel/Panel.svelte";
   import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
 
-  import { getApiQuestionsUrl, getThemeSignoffDetailUrl } from "../../global/routes.ts";
+  import {
+    getApiQuestionsUrl,
+    getThemeSignoffDetailUrl,
+  } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
 
   export let consultationId: string = "";
@@ -30,7 +33,7 @@
 
   onMount(async () => {
     loadQuestions(getApiQuestionsUrl(consultationId));
-  });  
+  });
 
   $: displayQuestions = $questionsData?.results?.filter((question) =>
     `Q${question.number}: ${question.question_text}`

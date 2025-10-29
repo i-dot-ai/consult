@@ -29,7 +29,10 @@ export const getConsultationAnalysisUrl = (consultationId: string) => {
 export const getThemeSignoffUrl = (consultationId: string) => {
   return `${Routes.Consultations}/${consultationId}/theme-signoff`;
 };
-export const getThemeSignoffDetailUrl = (consultationId: string, questionId: string) => {
+export const getThemeSignoffDetailUrl = (
+  consultationId: string,
+  questionId: string,
+) => {
   return `${Routes.Consultations}/${consultationId}/theme-signoff/${questionId}`;
 };
 
@@ -65,7 +68,10 @@ export const getApiAnswersUrl = (consultationId: string) => {
 export const getApiQuestionsUrl = (consultationId: string) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/`;
 };
-export const getApiQuestionUrl = (consultationId: string, questionId: string) => {
+export const getApiQuestionUrl = (
+  consultationId: string,
+  questionId: string,
+) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}`;
 };
 export const getApiAnswerUrl = (
@@ -98,24 +104,48 @@ export const getQuestionsByRespondentUrl = (
   return `${Routes.ApiConsultations}/${consultationId}/questions/?respondent_id=${respondentId}`;
 };
 
-export const getApiGetSelectedThemesUrl = (consultationId: string, questionId: string) => {
+export const getApiGetSelectedThemesUrl = (
+  consultationId: string,
+  questionId: string,
+) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/selected-themes/`;
-}
-export const getApiDeleteSelectedThemeUrl = (consultationId: string, questionId: string, themeId: string) => {
+};
+export const getApiDeleteSelectedThemeUrl = (
+  consultationId: string,
+  questionId: string,
+  themeId: string,
+) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/selected-themes/${themeId}/`;
-}
-export const getApiUpdateSelectedThemeUrl = (consultationId: string, questionId: string, themeId: string) => {
+};
+export const getApiUpdateSelectedThemeUrl = (
+  consultationId: string,
+  questionId: string,
+  themeId: string,
+) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/selected-themes/${themeId}/`;
-}
-export const getApiCreateSelectedThemeUrl = (consultationId: string, questionId: string) => {
+};
+export const getApiCreateSelectedThemeUrl = (
+  consultationId: string,
+  questionId: string,
+) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/selected-themes/`;
-}
-export const getApiGetGeneratedThemesUrl = (consultationId: string, questionId: string) => {
+};
+export const getApiGetGeneratedThemesUrl = (
+  consultationId: string,
+  questionId: string,
+) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/candidate-themes/`;
-}
-export const getApiSelectGeneratedThemeUrl = (consultationId: string, questionId: string, themeId: string) => {
+};
+export const getApiSelectGeneratedThemeUrl = (
+  consultationId: string,
+  questionId: string,
+  themeId: string,
+) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/candidate-themes/${themeId}/select/`;
-}
-export const getApiConfirmSignoffUrl = (consultationId: string, questionId: string) => {
+};
+export const getApiConfirmSignoffUrl = (
+  consultationId: string,
+  questionId: string,
+) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/`;
-}
+};

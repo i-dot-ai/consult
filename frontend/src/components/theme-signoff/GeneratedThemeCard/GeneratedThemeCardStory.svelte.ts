@@ -12,10 +12,12 @@ let leftPadding = $state(1);
 let handleSelect = (theme) =>
   alert(`Select theme event triggered with: ${theme.name}`);
 
-let answersMock = () => ({ all_respondents: [
-  {free_text_answer_text: "Answer 1"},
-  {free_text_answer_text: "Answer 2"},
-]})
+let answersMock = () => ({
+  all_respondents: [
+    { free_text_answer_text: "Answer 1" },
+    { free_text_answer_text: "Answer 2" },
+  ],
+});
 
 export default {
   name: "GeneratedThemeCard",
@@ -67,14 +69,14 @@ export default {
                   id: "theme-id",
                   name: "Child Theme",
                   description: "Theme level 3",
-                }
-              ]
-            }
+                },
+              ],
+            },
           ],
         },
         handleSelect: handleSelect,
         answersMock: answersMock,
-      }
+      },
     },
     {
       name: "No Answers",
@@ -87,7 +89,7 @@ export default {
         },
         handleSelect: handleSelect,
         answersMock: () => {},
-      }
+      },
     },
     {
       name: "Disabled",
@@ -96,12 +98,13 @@ export default {
         theme: {
           id: "theme-id",
           name: "Disabled Theme",
-          description: "This theme is disabled because it is already added as selected theme.",
+          description:
+            "This theme is disabled because it is already added as selected theme.",
           selectedtheme_id: "test-theme-id",
         },
         handleSelect: handleSelect,
         answersMock: () => {},
-      }
-    }
+      },
+    },
   ],
 };

@@ -7,7 +7,7 @@
   import Button from "../Button/Button.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Close from "../../svg/material/Close.svelte";
-    import Search from "../../svg/material/Search.svelte";
+  import Search from "../../svg/material/Search.svelte";
 
   export let inputType: HTMLInputTypeAttribute = "text";
   export let id: string = "";
@@ -46,7 +46,12 @@
   {#if variant === "search" && value}
     <div
       transition:fade={{ duration: 200 }}
-      class={clsx(["absolute", "right-1", "top-1/2", "-translate-y-1/2 mt-0.5"])}
+      class={clsx([
+        "absolute",
+        "right-1",
+        "top-1/2",
+        "-translate-y-1/2 mt-0.5",
+      ])}
     >
       <Button variant="ghost" handleClick={() => setValue("")}>
         <MaterialIcon size="1rem" color="black">

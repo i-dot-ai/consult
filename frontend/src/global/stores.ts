@@ -57,7 +57,12 @@ export const createFetchStore = (mockFetch?: Function) => {
   let prevPromise: Promise<void> | null = null;
   let resolvePrev: (() => void) | null = null;
 
-  const load = async (url: string, method: string = "GET", body?: BodyInit, headers?: HeadersInit) => {
+  const load = async (
+    url: string,
+    method: string = "GET",
+    body?: BodyInit,
+    headers?: HeadersInit,
+  ) => {
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
       debounceTimeout = null;
@@ -71,15 +76,17 @@ export const createFetchStore = (mockFetch?: Function) => {
         error.set("");
         try {
           if (mockFetch) {
-            data.set(mockFetch({
-              url: url,
-              headers: {
-                "Content-Type": "application/json",
-                ...headers,
-              },
-              method: method,
-              body: body ? JSON.stringify(body) : undefined,
-            }));
+            data.set(
+              mockFetch({
+                url: url,
+                headers: {
+                  "Content-Type": "application/json",
+                  ...headers,
+                },
+                method: method,
+                body: body ? JSON.stringify(body) : undefined,
+              }),
+            );
             return;
           } else {
             const response = await fetch(url, {

@@ -61,9 +61,7 @@ function createDemoFiltersState() {
         return;
       }
       if (demoFilters.includes(newFilter)) {
-        demoFilters = [
-          ...demoFilters.filter((filter) => filter !== newFilter),
-        ];
+        demoFilters = [...demoFilters.filter((filter) => filter !== newFilter)];
       } else {
         demoFilters = [...demoFilters, newFilter];
       }

@@ -25,7 +25,7 @@ export interface Consultation {
   title: string;
   id: string;
   slug: string;
-  created_at: string
+  created_at: string;
 }
 
 export interface FormattedTheme {

@@ -4,7 +4,18 @@
   import { fade, fly, slide } from "svelte/transition";
 
   import { createFetchStore } from "../../global/stores";
-  import { getApiConfirmSignoffUrl, getApiCreateSelectedThemeUrl, getApiDeleteSelectedThemeUrl, getApiGetGeneratedThemesUrl, getApiGetSelectedThemesUrl, getApiQuestionsUrl, getApiQuestionUrl, getApiSelectGeneratedThemeUrl, getApiUpdateSelectedThemeUrl, getThemeSignoffUrl } from "../../global/routes";
+  import {
+    getApiConfirmSignoffUrl,
+    getApiCreateSelectedThemeUrl,
+    getApiDeleteSelectedThemeUrl,
+    getApiGetGeneratedThemesUrl,
+    getApiGetSelectedThemesUrl,
+    getApiQuestionsUrl,
+    getApiQuestionUrl,
+    getApiSelectGeneratedThemeUrl,
+    getApiUpdateSelectedThemeUrl,
+    getThemeSignoffUrl,
+  } from "../../global/routes";
 
   import Panel from "../dashboard/Panel/Panel.svelte";
   import TitleRow from "../dashboard/TitleRow.svelte";
@@ -96,15 +107,11 @@
   } = createFetchStore(questionDataMock);
 
   $effect(() => {
-    loadSelectedThemes(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
+    loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
     loadGeneratedThemes(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
-    loadQuestion(
-      getApiQuestionUrl(consultationId, questionId),
-    )
+    loadQuestion(getApiQuestionUrl(consultationId, questionId));
   });
 
   const createTheme = async (title: string, description: string) => {
@@ -112,17 +119,17 @@
       getApiCreateSelectedThemeUrl(consultationId, questionId),
       "POST",
       {
-        "name": title,
-        "description": description,
+        name: title,
+        description: description,
       },
     );
 
-    loadSelectedThemes(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
+    loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
   };
   const removeTheme = async (themeId: string) => {
-    const selectedTheme = $selectedThemesData?.results.find((theme) => theme.id === themeId);
+    const selectedTheme = $selectedThemesData?.results.find(
+      (theme) => theme.id === themeId,
+    );
 
     await loadRemoveTheme(
       getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
@@ -133,32 +140,34 @@
       },
     );
 
-    loadSelectedThemes(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
+    loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
     loadGeneratedThemes(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
   };
-  const updateTheme = async (themeId: string, title: string, description: string) => {
-    const selectedTheme = $selectedThemesData?.results.find((theme) => theme.id === themeId);
+  const updateTheme = async (
+    themeId: string,
+    title: string,
+    description: string,
+  ) => {
+    const selectedTheme = $selectedThemesData?.results.find(
+      (theme) => theme.id === themeId,
+    );
 
     await updateSelectedTheme(
       getApiUpdateSelectedThemeUrl(consultationId, questionId, themeId),
       "PATCH",
       {
-        "name": title,
-        "description": description,
-        "version": selectedTheme.version + 1,
+        name: title,
+        description: description,
+        version: selectedTheme.version + 1,
       },
       {
         "If-Match": selectedTheme.version,
       },
     );
 
-    loadSelectedThemes(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
+    loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
   };
 
   const handleSelectGeneratedTheme = async (newTheme) => {
@@ -167,13 +176,11 @@
       "POST",
     );
 
-    loadSelectedThemes(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
+    loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
     loadGeneratedThemes(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
-    )
-  }
+    );
+  };
 
   const confirmSignoff = async () => {
     await loadConfirmSignoff(
@@ -203,7 +210,11 @@
   <Price slot="icon" />
 
   <div slot="aside">
-    <Button size="xs" handleClick={() => location.href = getThemeSignoffUrl(consultationId)}>Choose another question</Button>
+    <Button
+      size="xs"
+      handleClick={() => (location.href = getThemeSignoffUrl(consultationId))}
+      >Choose another question</Button
+    >
   </div>
 </TitleRow>
 
@@ -245,8 +256,9 @@
       </div>
 
       <p class="text-neutral-500 text-sm">
-        Manage your {numSelectedThemesText($selectedThemesData?.results)} for the AI in mapping
-        responses. Edit titles and descriptions, or add new themes as needed.
+        Manage your {numSelectedThemesText($selectedThemesData?.results)} for the
+        AI in mapping responses. Edit titles and descriptions, or add new themes
+        as needed.
       </p>
     </Panel>
   </div>
@@ -254,7 +266,7 @@
   {#if addingCustomTheme}
     <div transition:slide>
       <AddCustomTheme
-        handleConfirm={async ( title: string, description: string ) => {
+        handleConfirm={async (title: string, description: string) => {
           await createTheme(title, description);
           addingCustomTheme = false;
         }}
@@ -296,7 +308,8 @@
     <Button
       variant="primary"
       fullWidth={true}
-      disabled={$isSelectedThemesLoading || ($selectedThemesData?.results.length === 0)}
+      disabled={$isSelectedThemesLoading ||
+        $selectedThemesData?.results.length === 0}
       handleClick={() => (isSignoffModalOpen = !isSignoffModalOpen)}
     >
       <div
@@ -424,7 +437,7 @@
 
     {#each $generatedThemesData?.results as theme}
       <GeneratedThemeCard
-        {consultationId}  
+        {consultationId}
         selectedThemes={$selectedThemesData?.results || []}
         {theme}
         {forceExpand}

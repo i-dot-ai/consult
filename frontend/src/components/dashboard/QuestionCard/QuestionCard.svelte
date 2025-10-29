@@ -120,9 +120,7 @@
             <div class="flex gap-1 items-center">
               {#if isSignedOff}
                 <div class="ml-2 md:ml-0">
-                  <Tag variant="primary-light">
-                    Signed Off
-                  </Tag>
+                  <Tag variant="primary-light">Signed Off</Tag>
                 </div>
               {/if}
               <div data-testid="fav-button">

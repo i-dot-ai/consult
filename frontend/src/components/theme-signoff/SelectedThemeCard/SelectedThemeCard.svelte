@@ -117,11 +117,9 @@
             >
               <AnswersList
                 title="Representative Responses"
-                answers={
-                  $answersData?.all_respondents
-                    .slice(0, maxAnswers)
-                    .map(answer => answer.free_text_answer_text)
-                || []}
+                answers={$answersData?.all_respondents
+                  .slice(0, maxAnswers)
+                  .map((answer) => answer.free_text_answer_text) || []}
               />
             </aside>
           {/if}
