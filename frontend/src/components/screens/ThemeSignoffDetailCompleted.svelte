@@ -20,6 +20,7 @@
   import Help from "../svg/material/Help.svelte";
   import ArrowForward from "../svg/material/ArrowForward.svelte";
   import Finance from "../svg/material/Finance.svelte";
+  import Alert from "../Alert.svelte";
 
   interface Props {
     questionId: string;
@@ -60,142 +61,190 @@
   <Price slot="icon" />
 </TitleRow>
 
-<section class="my-6">
-  <Button
-    variant="ghost"
-    size="sm"
-    handleClick={() => (location.href = getThemeSignoffUrl(consultationId))}
-  >
-    <div class="flex items-center gap-2 text-neutral-700">
-      <div class="rotate-180">
-        <MaterialIcon color="fill-neutral-500">
-          <ArrowForward />
-        </MaterialIcon>
-      </div>
-
-      Back to questions
-    </div>
-  </Button>
-</section>
-
-<section class="mb-8">
-  <Panel bg={false} border={true}>
-    <div class="flex gap-4">
-      <div class="mt-0.5">
-        <MaterialIcon color="fill-emerald-700" size="1.2rem">
-          <Help />
-        </MaterialIcon>
-      </div>
-
-      <div>
-        <h2 class="text-md">
-          {#if !$questionData}
-            Question loading...
-          {:else}
-            {`Q${$questionData?.number}: ${$questionData?.question_text}`}
-          {/if}
-        </h2>
-
-        <div class="mt-2 mb-4">
-          <Tag variant="primary-light">
-            <MaterialIcon color="fill-primary">
-              <CheckCircle />
-            </MaterialIcon>
-            <span class="py-0.5"> Themes Signed Off </span>
-          </Tag>
+<svelte:boundary>
+  <section class="my-6">
+    <Button
+      variant="ghost"
+      size="sm"
+      handleClick={() => (location.href = getThemeSignoffUrl(consultationId))}
+    >
+      <div class="flex items-center gap-2 text-neutral-700">
+        <div class="rotate-180">
+          <MaterialIcon color="fill-neutral-500">
+            <ArrowForward />
+          </MaterialIcon>
         </div>
-        <p class="text-neutral-500 text-sm">
-          This question has completed the theme sign-off process. The selected
-          themes below have been approved for AI analysis and are ready to be
-          used for mapping consultation responses.
-        </p>
-      </div>
 
-      <div>
+        Back to questions
+      </div>
+    </Button>
+  </section>
+
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
+
+      <Panel>
+        <Alert>Unexpected top row error</Alert>
+      </Panel>
+    </div>
+  {/snippet}
+</svelte:boundary>
+
+<svelte:boundary>
+  <section class="mb-8">
+    <Panel bg={false} border={true}>
+      <div class="flex gap-4">
+        <div class="mt-0.5">
+          <MaterialIcon color="fill-emerald-700" size="1.2rem">
+            <Help />
+          </MaterialIcon>
+        </div>
+
+        <div>
+          <h2 class="text-md">
+            {#if !$questionData}
+              Question loading...
+            {:else}
+              {`Q${$questionData?.number}: ${$questionData?.question_text}`}
+            {/if}
+          </h2>
+
+          <div class="mt-2 mb-4">
+            <Tag variant="primary-light">
+              <MaterialIcon color="fill-primary">
+                <CheckCircle />
+              </MaterialIcon>
+              <span class="py-0.5"> Themes Signed Off </span>
+            </Tag>
+          </div>
+          <p class="text-neutral-500 text-sm">
+            This question has completed the theme sign-off process. The selected
+            themes below have been approved for AI analysis and are ready to be
+            used for mapping consultation responses.
+          </p>
+        </div>
+
+        <div>
+          <Button
+            size="sm"
+            title="Click to contact Consult support"
+            handleClick={() => (location.href = "mailto:support@consult.co.uk")}
+          >
+            <MaterialIcon size="1.2rem" color="fill-primary">
+              <Headphones />
+            </MaterialIcon>
+            <span class="text-primary">support@consult.co.uk</span>
+          </Button>
+        </div>
+      </div>
+    </Panel>
+  </section>
+
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
+
+      <Panel>
+        <Alert>Unexpected question details error</Alert>
+      </Panel>
+    </div>
+  {/snippet}
+</svelte:boundary>
+
+<svelte:boundary>
+  <section>
+    <Panel bg={false} border={true}>
+      <h2 class="text-md">Selected Themes</h2>
+
+      <p class="text-neutral-500 text-sm">
+        The following themes have been signed off for this question and are ready
+        for analysis.
+      </p>
+
+      <ul>
+        {#each $selectedThemesData?.results as selectedTheme}
+          <li>
+            <Panel bg={true}>
+              <div
+                in:slide
+                class={clsx([
+                  "flex",
+                  "justify-between",
+                  "relative",
+                  "pl-4",
+                  "text-sm",
+                  "before:absolute",
+                  "before:top-[45%]",
+                  "before:left-0",
+                  "before:transform",
+                  "before:-translate-y-1/2",
+                  "before:w-2",
+                  "before:h-2",
+                  "before:bg-primary",
+                  "before:rounded-full",
+                ])}
+              >
+                {selectedTheme.name}
+
+                <Tag variant="success">Signed Off</Tag>
+              </div>
+            </Panel>
+          </li>
+        {/each}
+      </ul>
+    </Panel>
+  </section>
+
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
+
+      <Panel>
+        <Alert>Unexpected selected themes error</Alert>
+      </Panel>
+    </div>
+  {/snippet}
+</svelte:boundary>
+
+<svelte:boundary>
+  <section class="mt-8">
+    <div class="flex items-center justify-between gap-2 flex-wrap">
+      <div class="flex items-center gap-2 flex-wrap">
         <Button
           size="sm"
-          title="Click to contact Consult support"
-          handleClick={() => (location.href = "mailto:support@consult.co.uk")}
+          variant="primary"
+          handleClick={() =>
+            (location.href = getQuestionDetailUrl(consultationId, questionId))}
         >
-          <MaterialIcon size="1.2rem" color="fill-primary">
-            <Headphones />
-          </MaterialIcon>
-          <span class="text-primary">support@consult.co.uk</span>
+          <div class="flex items-center gap-1">
+            <MaterialIcon>
+              <Finance />
+            </MaterialIcon>
+            View Analysis Dashboard
+          </div>
+        </Button>
+
+        <Button
+          size="sm"
+          handleClick={() => (location.href = getThemeSignoffUrl(consultationId))}
+        >
+          Select Another Question
         </Button>
       </div>
     </div>
-  </Panel>
-</section>
+  </section>
 
-<section>
-  <Panel bg={false} border={true}>
-    <h2 class="text-md">Selected Themes</h2>
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
 
-    <p class="text-neutral-500 text-sm">
-      The following themes have been signed off for this question and are ready
-      for analysis.
-    </p>
-
-    <ul>
-      {#each $selectedThemesData?.results as selectedTheme}
-        <li>
-          <Panel bg={true}>
-            <div
-              in:slide
-              class={clsx([
-                "flex",
-                "justify-between",
-                "relative",
-                "pl-4",
-                "text-sm",
-                "before:absolute",
-                "before:top-[45%]",
-                "before:left-0",
-                "before:transform",
-                "before:-translate-y-1/2",
-                "before:w-2",
-                "before:h-2",
-                "before:bg-primary",
-                "before:rounded-full",
-              ])}
-            >
-              {selectedTheme.name}
-
-              <Tag variant="success">Signed Off</Tag>
-            </div>
-          </Panel>
-        </li>
-      {/each}
-    </ul>
-  </Panel>
-</section>
-
-<section class="mt-8">
-  <div class="flex items-center justify-between gap-2 flex-wrap">
-    <div class="flex items-center gap-2 flex-wrap">
-      <Button
-        size="sm"
-        variant="primary"
-        handleClick={() =>
-          (location.href = getQuestionDetailUrl(consultationId, questionId))}
-      >
-        <div class="flex items-center gap-1">
-          <MaterialIcon>
-            <Finance />
-          </MaterialIcon>
-          View Analysis Dashboard
-        </div>
-      </Button>
-
-      <Button
-        size="sm"
-        handleClick={() => (location.href = getThemeSignoffUrl(consultationId))}
-      >
-        Select Another Question
-      </Button>
+      <Panel>
+        <Alert>Unexpected bottom row error</Alert>
+      </Panel>
     </div>
-  </div>
-</section>
+  {/snippet}
+</svelte:boundary>
 
 <style>
   .selected-section :global(div[data-testid="panel-component"]) {

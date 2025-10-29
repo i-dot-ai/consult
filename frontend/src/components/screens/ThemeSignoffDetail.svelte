@@ -31,6 +31,7 @@
   import Tag from "../Tag/Tag.svelte";
   import Modal from "../Modal/Modal.svelte";
   import GeneratedThemeCard from "../theme-signoff/GeneratedThemeCard/GeneratedThemeCard.svelte";
+    import Alert from "../Alert.svelte";
 
   let {
     consultationId = "",
@@ -218,150 +219,162 @@
   </div>
 </TitleRow>
 
-<section
-  class={clsx([
-    "selected-section",
-    "my-4",
-    "p-4",
-    "bg-pink-50/25",
-    "rounded-xl",
-    "border",
-    "border-pink-50",
-  ])}
->
-  <div id="onboarding-step-2" class="mb-4">
-    <Panel variant="primary" bg={true} border={true}>
-      <div class="flex items-center justify-between mb-2">
-        <div class="flex items-center gap-2">
-          <MaterialIcon color={"fill-primary"}>
+<svelte:boundary>
+  <section
+    class={clsx([
+      "selected-section",
+      "my-4",
+      "p-4",
+      "bg-pink-50/25",
+      "rounded-xl",
+      "border",
+      "border-pink-50",
+    ])}
+  >
+    <div id="onboarding-step-2" class="mb-4">
+      <Panel variant="primary" bg={true} border={true}>
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <MaterialIcon color={"fill-primary"}>
+              <CheckCircle />
+            </MaterialIcon>
+
+            <h3>Selected Themes</h3>
+          </div>
+
+          <Button
+            size="sm"
+            handleClick={() => (addingCustomTheme = !addingCustomTheme)}
+            highlighted={addingCustomTheme}
+            highlightVariant="primary"
+          >
+            <span
+              class={clsx([
+                "flex items-center justify-between text-primary",
+                addingCustomTheme && "text-white",
+              ])}>+ Add Custom Theme</span
+            >
+          </Button>
+        </div>
+
+        <p class="text-neutral-500 text-sm">
+          Manage your {numSelectedThemesText($selectedThemesData?.results)} for the
+          AI in mapping responses. Edit titles and descriptions, or add new themes
+          as needed.
+        </p>
+      </Panel>
+    </div>
+
+    {#if addingCustomTheme}
+      <div transition:slide>
+        <AddCustomTheme
+          handleConfirm={async (title: string, description: string) => {
+            await createTheme(title, description);
+            addingCustomTheme = false;
+          }}
+          handleCancel={() => (addingCustomTheme = false)}
+        />
+      </div>
+    {/if}
+
+    {#if $selectedThemesData?.results.length === 0}
+      <div in:fade class="flex items-center justify-center flex-col gap-2 my-8">
+        <div class="mb-2">
+          <MaterialIcon size="2rem" color="fill-neutral-500">
+            <Price />
+          </MaterialIcon>
+        </div>
+
+        <h3 class="text-md text-neutral-500">No themes selected yet</h3>
+        <p class="text-neutral-500 text-xs">
+          Select themes from the AI-generated suggestions below
+        </p>
+      </div>
+    {:else}
+      <div class="mt-4">
+        {#each $selectedThemesData?.results as selectedTheme}
+          <div transition:slide={{ duration: 150 }} class="mb-4 last:mb-0">
+            <SelectedThemeCard
+              {consultationId}
+              theme={selectedTheme}
+              {removeTheme}
+              {updateTheme}
+              {answersMock}
+            />
+          </div>
+        {/each}
+      </div>
+
+      <hr class="my-4" />
+
+      <Button
+        variant="primary"
+        fullWidth={true}
+        disabled={$isSelectedThemesLoading ||
+          $selectedThemesData?.results.length === 0}
+        handleClick={() => (isSignoffModalOpen = !isSignoffModalOpen)}
+      >
+        <div
+          id="onboarding-step-3"
+          class="flex justify-center items-center gap-2 w-full"
+        >
+          <MaterialIcon color="fill-white">
             <CheckCircle />
           </MaterialIcon>
 
-          <h3>Selected Themes</h3>
+          <span>
+            {#if $isSelectedThemesLoading}
+              Loading Selected Themes
+            {:else}
+              Sign Off Selected Themes ({$selectedThemesData?.results.length})
+            {/if}
+          </span>
         </div>
+      </Button>
+    {/if}
 
-        <Button
-          size="sm"
-          handleClick={() => (addingCustomTheme = !addingCustomTheme)}
-          highlighted={addingCustomTheme}
-          highlightVariant="primary"
-        >
-          <span
-            class={clsx([
-              "flex items-center justify-between text-primary",
-              addingCustomTheme && "text-white",
-            ])}>+ Add Custom Theme</span
-          >
-        </Button>
-      </div>
-
-      <p class="text-neutral-500 text-sm">
-        Manage your {numSelectedThemesText($selectedThemesData?.results)} for the
-        AI in mapping responses. Edit titles and descriptions, or add new themes
-        as needed.
-      </p>
-    </Panel>
-  </div>
-
-  {#if addingCustomTheme}
-    <div transition:slide>
-      <AddCustomTheme
-        handleConfirm={async (title: string, description: string) => {
-          await createTheme(title, description);
-          addingCustomTheme = false;
-        }}
-        handleCancel={() => (addingCustomTheme = false)}
-      />
-    </div>
-  {/if}
-
-  {#if $selectedThemesData?.results.length === 0}
-    <div in:fade class="flex items-center justify-center flex-col gap-2 my-8">
-      <div class="mb-2">
-        <MaterialIcon size="2rem" color="fill-neutral-500">
-          <Price />
-        </MaterialIcon>
-      </div>
-
-      <h3 class="text-md text-neutral-500">No themes selected yet</h3>
-      <p class="text-neutral-500 text-xs">
-        Select themes from the AI-generated suggestions below
-      </p>
-    </div>
-  {:else}
-    <div class="mt-4">
-      {#each $selectedThemesData?.results as selectedTheme}
-        <div transition:slide={{ duration: 150 }} class="mb-4 last:mb-0">
-          <SelectedThemeCard
-            {consultationId}
-            theme={selectedTheme}
-            {removeTheme}
-            {updateTheme}
-            {answersMock}
-          />
-        </div>
-      {/each}
-    </div>
-
-    <hr class="my-4" />
-
-    <Button
-      variant="primary"
-      fullWidth={true}
-      disabled={$isSelectedThemesLoading ||
-        $selectedThemesData?.results.length === 0}
-      handleClick={() => (isSignoffModalOpen = !isSignoffModalOpen)}
+    <Modal
+      open={isSignoffModalOpen}
+      setOpen={(newOpen: boolean) => (isSignoffModalOpen = newOpen)}
+      confirmText={"Confirm Sign Off"}
+      handleConfirm={confirmSignoff}
     >
-      <div
-        id="onboarding-step-3"
-        class="flex justify-center items-center gap-2 w-full"
-      >
-        <MaterialIcon color="fill-white">
+      <div class="flex items-center gap-2">
+        <MaterialIcon color="fill-primary">
           <CheckCircle />
         </MaterialIcon>
-
-        <span>
-          {#if $isSelectedThemesLoading}
-            Loading Selected Themes
-          {:else}
-            Sign Off Selected Themes ({$selectedThemesData?.results.length})
-          {/if}
-        </span>
+        <h3 class="font-bold mb-2">Confirm Theme Sign Off</h3>
       </div>
-    </Button>
-  {/if}
 
-  <Modal
-    open={isSignoffModalOpen}
-    setOpen={(newOpen: boolean) => (isSignoffModalOpen = newOpen)}
-    confirmText={"Confirm Sign Off"}
-    handleConfirm={confirmSignoff}
-  >
-    <div class="flex items-center gap-2">
-      <MaterialIcon color="fill-primary">
-        <CheckCircle />
-      </MaterialIcon>
-      <h3 class="font-bold mb-2">Confirm Theme Sign Off</h3>
+      <p class="text-sm text-neutral-500">
+        Are you sure you want to sign off on these {numSelectedThemesText(
+          $selectedThemesData?.results,
+        )} for Question {$questionData?.number}?
+      </p>
+
+      <h4 class="text-xs font-bold my-4">Selected themes:</h4>
+
+      <div class="max-h-64 overflow-y-auto">
+        {#each $selectedThemesData?.results as selectedTheme}
+          <Panel bg={true} border={false}>
+            <h5 class="text-xs font-bold mb-1">{selectedTheme.name}</h5>
+            <p class="text-xs text-neutral-500">{selectedTheme.description}</p>
+          </Panel>
+        {/each}
+      </div>
+    </Modal>
+  </section>
+
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
+
+      <Panel>
+        <Alert>Unexpected selected themes error</Alert>
+      </Panel>
     </div>
-
-    <p class="text-sm text-neutral-500">
-      Are you sure you want to sign off on these {numSelectedThemesText(
-        $selectedThemesData?.results,
-      )} for Question {$questionData?.number}?
-    </p>
-
-    <h4 class="text-xs font-bold my-4">Selected themes:</h4>
-
-    <div class="max-h-64 overflow-y-auto">
-      {#each $selectedThemesData?.results as selectedTheme}
-        <Panel bg={true} border={false}>
-          <h5 class="text-xs font-bold mb-1">{selectedTheme.name}</h5>
-          <p class="text-xs text-neutral-500">{selectedTheme.description}</p>
-        </Panel>
-      {/each}
-    </div>
-  </Modal>
-</section>
+  {/snippet}
+</svelte:boundary>
 
 <div
   class={clsx([
@@ -382,72 +395,84 @@
   </p>
 </div>
 
-<section>
-  <Panel>
-    <div id="onboarding-step-1">
-      <Panel variant="approve" bg={true} border={true}>
-        <div class="flex items-center justify-between mb-2">
-          <div class="flex items-center gap-2">
-            <MaterialIcon color="fill-emerald-700">
-              <SmartToy />
-            </MaterialIcon>
-
-            <h3>AI Generated Themes</h3>
-
-            <Tag variant="success">
-              {$generatedThemesData?.results.length} available
-            </Tag>
-          </div>
-
-          <div class="flex items-center gap-4">
-            <div class="flex items-center gap-1 text-xs text-neutral-500">
-              <MaterialIcon color="fill-neutral-500">
-                <Stacks />
+<svelte:boundary>
+  <section>
+    <Panel>
+      <div id="onboarding-step-1">
+        <Panel variant="approve" bg={true} border={true}>
+          <div class="flex items-center justify-between mb-2">
+            <div class="flex items-center gap-2">
+              <MaterialIcon color="fill-emerald-700">
+                <SmartToy />
               </MaterialIcon>
-              Multi-level themes
+
+              <h3>AI Generated Themes</h3>
+
+              <Tag variant="success">
+                {$generatedThemesData?.results.length} available
+              </Tag>
             </div>
-            <Button
-              size="sm"
-              handleClick={() => {
-                expandAllTrigger = expandAllTrigger + 1;
-                forceExpand = true;
-              }}
-            >
-              <span
-                class={clsx([
-                  "flex items-center justify-between gap-1 text-emerald-700",
-                  addingCustomTheme && "text-white",
-                ])}
-              >
-                <MaterialIcon color="fill-emerald-700">
+
+            <div class="flex items-center gap-4">
+              <div class="flex items-center gap-1 text-xs text-neutral-500">
+                <MaterialIcon color="fill-neutral-500">
                   <Stacks />
                 </MaterialIcon>
-                Expand All
-              </span>
-            </Button>
+                Multi-level themes
+              </div>
+              <Button
+                size="sm"
+                handleClick={() => {
+                  expandAllTrigger = expandAllTrigger + 1;
+                  forceExpand = true;
+                }}
+              >
+                <span
+                  class={clsx([
+                    "flex items-center justify-between gap-1 text-emerald-700",
+                    addingCustomTheme && "text-white",
+                  ])}
+                >
+                  <MaterialIcon color="fill-emerald-700">
+                    <Stacks />
+                  </MaterialIcon>
+                  Expand All
+                </span>
+              </Button>
+            </div>
           </div>
-        </div>
 
-        <p class="text-neutral-500 text-sm">
-          Browse AI-generated themes organised by topic hierarchy. Click "Select
-          Theme" to add themes to your selected list for analysis.
-        </p>
+          <p class="text-neutral-500 text-sm">
+            Browse AI-generated themes organised by topic hierarchy. Click "Select
+            Theme" to add themes to your selected list for analysis.
+          </p>
+        </Panel>
+      </div>
+
+      {#each $generatedThemesData?.results as theme}
+        <GeneratedThemeCard
+          {consultationId}
+          selectedThemes={$selectedThemesData?.results || []}
+          {theme}
+          {forceExpand}
+          setForceExpand={(newVal) => (forceExpand = newVal)}
+          handleSelect={handleSelectGeneratedTheme}
+          {answersMock}
+        />
+      {/each}
+    </Panel>
+  </section>
+
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
+
+      <Panel>
+        <Alert>Unexpected generated themes error</Alert>
       </Panel>
     </div>
-
-    {#each $generatedThemesData?.results as theme}
-      <GeneratedThemeCard
-        {consultationId}
-        selectedThemes={$selectedThemesData?.results || []}
-        {theme}
-        {forceExpand}
-        setForceExpand={(newVal) => (forceExpand = newVal)}
-        handleSelect={handleSelectGeneratedTheme}
-        {answersMock}
-      />
-    {/each}
-  </Panel>
-</section>
+  {/snippet}
+</svelte:boundary>
 
 <OnboardingTour
   key="theme-signoff"
