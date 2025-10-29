@@ -129,17 +129,15 @@ export default {
 };
 
 const findNestedTheme = (themes, compareFunc) => {
-  const findFunc = (theme, compareFunc) =>  {
+  for (const theme of themes) {
     if (compareFunc(theme)) {
       return theme;
-    } else if (theme.children) {
-      for (const childTheme of theme.children) {
-        return findFunc(childTheme, compareFunc)
+    } else if (theme.children?.length > 0) {
+      const result = findNestedTheme(theme.children, compareFunc);
+
+      if (result) {
+        return result;
       }
     }
-  }
-
-  for (const theme of themes) {
-    return findFunc(theme, compareFunc);
   }
 }

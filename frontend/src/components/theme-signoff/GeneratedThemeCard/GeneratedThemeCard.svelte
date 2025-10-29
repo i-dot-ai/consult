@@ -68,16 +68,17 @@
   class={clsx(["generated-theme-card"])}
 >
   <Panel border={true}>
-    <article class="flex">
+    <article class="flex flex-wrap">
       <div
         class={clsx([
           "transition-all",
           "duration-300",
-          shouldShowAnswers() ? "w-1/3" : "w-full",
+          "w-auto",
+          shouldShowAnswers() ? "md:w-1/3" : "md:w-auto",
         ])}
       >
         <div class="flex items-center justify-between mb-2">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2 flex-wrap">
             {#if theme.children?.length! > 0}
               <Button
                 variant="ghost"
@@ -99,14 +100,16 @@
               </Button>
             {/if}
 
-            <h3>{theme.name}</h3>
+            <div class="flex items-center gap-2 flex-wrap">
+              <h3>{theme.name}</h3>
 
-            <div class={clsx([
-              disabled && "grayscale",
-            ])}>
-              <Tag variant="success">
-                Level {level + 1}
-              </Tag>
+              <div class={clsx([
+                disabled && "grayscale",
+              ])}>
+                <Tag variant="success">
+                  Level {level + 1}
+                </Tag>
+              </div>
             </div>
           </div>
         </div>
@@ -116,7 +119,7 @@
         </p>
 
         {#if !disabled}
-          <footer class="mt-4 flex items-center gap-2">
+          <footer class="mt-4 flex items-center gap-2 flex-wrap">
             <Button
               variant="approve"
               size="sm"
@@ -124,6 +127,7 @@
             >
               Select
             </Button>
+
             <Button
               size="sm"
               handleClick={() => {
@@ -141,7 +145,9 @@
                 <MaterialIcon color="fill-emerald-700">
                   <Visibility />
                 </MaterialIcon>
-                {showAnswers ? "Hide" : "Representative"} Responses
+                <span class="whitespace-nowrap">
+                  {showAnswers ? "Hide" : "Representative"} Responses
+                </span>
               </div>
             </Button>
           </footer>
@@ -151,7 +157,7 @@
       {#if shouldShowAnswers()}
         <aside
           transition:fly={{ x: 300 }}
-          class="border-l border-neutral-200 ml-4 pl-4"
+          class="sm:border-l sm:border-neutral-200 sm:ml-4 sm:pl-4 pt-4 sm:pt-0"
         >
           <AnswersList
             variant="generated"

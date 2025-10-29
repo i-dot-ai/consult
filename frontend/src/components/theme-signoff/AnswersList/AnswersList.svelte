@@ -14,12 +14,14 @@
 </script>
 
 <div class="flex items-center gap-1">
-  <MaterialIcon
-    color={variant === "selected" ? "fill-primary" : "fill-emerald-700"}
-    size="1.2rem"
-  >
-    <Docs />
-  </MaterialIcon>
+  <div class="shrink-0">
+    <MaterialIcon
+      color={variant === "selected" ? "fill-primary" : "fill-emerald-700"}
+      size="1.2rem"
+    >
+      <Docs />
+    </MaterialIcon>
+  </div>
 
   <h2>{title}</h2>
 
