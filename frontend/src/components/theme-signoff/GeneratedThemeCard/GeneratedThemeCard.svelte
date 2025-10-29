@@ -68,7 +68,7 @@
   class={clsx(["generated-theme-card"])}
 >
   <Panel border={true}>
-    <article class="flex flex-wrap">
+    <article class="flex flex-wrap sm:flex-nowrap">
       <div
         class={clsx([
           "transition-all",
