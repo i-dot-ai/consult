@@ -18,6 +18,8 @@ class TestRespondentViewSet:
         )
         assert response.status_code == 200
         assert response.json()["count"] == 2
+        assert response.json()["results"][0]["demographics"]
+        assert response.json()["results"][1]["demographics"]
 
     def test_get_respondent_query_themefinder_id(
         self, client, consultation, respondent_1, respondent_2, consultation_user_token
