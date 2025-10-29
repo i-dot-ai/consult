@@ -62,8 +62,8 @@
   {:else}
     <div in:fade>
       <Panel>
-        <div class="grid grid-cols-12">
-          <div class={clsx([showAnswers ? "col-span-4" : "col-span-12"])}>
+        <div class="flex flex-wrap sm:flex-nowrap">
+          <div class={clsx([showAnswers ? "md:w-1/3" : "md:w-auto"])}>
             <header>
               <h2>{theme.name}</h2>
             </header>
@@ -113,7 +113,7 @@
           {#if showAnswers}
             <aside
               in:fly={{ x: 300 }}
-              class="col-span-8 border-l border-neutral-200 ml-4 pl-4"
+              class="sm:border-l sm:border-neutral-200 sm:ml-4 sm:pl-4 pt-4 sm:pt-0"
             >
               <AnswersList
                 title="Representative Responses"
