@@ -172,13 +172,6 @@
 
 <section class="mt-8">
   <div class="flex items-center justify-between gap-2 flex-wrap">
-    <Button
-      size="sm"
-      handleClick={() => (location.href = getThemeSignoffUrl(consultationId))}
-    >
-      Back to Questions
-    </Button>
-
     <div class="flex items-center gap-2 flex-wrap">
       <Button
         size="sm"
