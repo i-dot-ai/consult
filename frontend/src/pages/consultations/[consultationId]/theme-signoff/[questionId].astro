@@ -1,0 +1,30 @@
+---
+import { fetchBackendApi } from "../../../../global/api";
+
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section/Section.svelte";
+
+import ThemeSignoffDetail from "../../../../components/screens/ThemeSignoffDetail.svelte";
+import ThemeSignoffDetailCompleted from "../../../../components/screens/ThemeSignoffDetailCompleted.svelte";
+
+const { consultationId, questionId } = Astro.params;
+const question = await fetchBackendApi(Astro, `/api/consultations/${consultationId}/questions/${questionId}`);
+---
+<Layout>
+  <Section>
+    {(question?.theme_status === "confirmed")
+      ?
+        <ThemeSignoffDetailCompleted
+          client:only
+          consultationId={consultationId}
+          questionId={questionId}
+        ></ThemeSignoffDetailCompleted>
+      :
+        <ThemeSignoffDetail
+          client:only
+          consultationId={consultationId}
+          questionId={questionId}
+        />
+    }
+  </Section>
+</Layout>
