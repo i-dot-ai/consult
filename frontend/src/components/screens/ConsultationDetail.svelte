@@ -148,6 +148,7 @@
               {question}
               highlightText={searchValue}
               clickable={true}
+              url={getQuestionDetailUrl(consultationId, question.id || "")}
             />
           {/each}
         </div>
