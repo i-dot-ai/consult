@@ -31,7 +31,7 @@
   import Tag from "../Tag/Tag.svelte";
   import Modal from "../Modal/Modal.svelte";
   import GeneratedThemeCard from "../theme-signoff/GeneratedThemeCard/GeneratedThemeCard.svelte";
-    import Alert from "../Alert.svelte";
+  import Alert from "../Alert.svelte";
 
   let {
     consultationId = "",
@@ -443,8 +443,8 @@
           </div>
 
           <p class="text-neutral-500 text-sm">
-            Browse AI-generated themes organised by topic hierarchy. Click "Select
-            Theme" to add themes to your selected list for analysis.
+            Browse AI-generated themes organised by topic hierarchy. Click
+            "Select Theme" to add themes to your selected list for analysis.
           </p>
         </Panel>
       </div>

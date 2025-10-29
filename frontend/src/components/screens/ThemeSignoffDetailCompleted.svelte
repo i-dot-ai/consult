@@ -158,8 +158,8 @@
       <h2 class="text-md">Selected Themes</h2>
 
       <p class="text-neutral-500 text-sm">
-        The following themes have been signed off for this question and are ready
-        for analysis.
+        The following themes have been signed off for this question and are
+        ready for analysis.
       </p>
 
       <ul>
@@ -227,7 +227,8 @@
 
         <Button
           size="sm"
-          handleClick={() => (location.href = getThemeSignoffUrl(consultationId))}
+          handleClick={() =>
+            (location.href = getThemeSignoffUrl(consultationId))}
         >
           Select Another Question
         </Button>
