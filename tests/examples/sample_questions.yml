@@ -23,10 +23,12 @@
       description: "A standardized framework that benefits both consumers and manufacturers."
       key: "A"
       selected: true
+      approximate_frequency_pct: 0.6
     - name: "Innovation"
       description: "Innovation in flavour development."
       key: "B"
       selected: true
+      approximate_frequency_pct: 0.3
 
 - question_text: "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?"
   number: 2
@@ -69,36 +71,47 @@
       description: "Innovative ideas to improve chocolate bar regulations."
       key: "A"
       selected: true
+      approximate_frequency_pct: 0.4
       children:
         - name: "Innovative packaging"
           description: "Ideas for innovative packaging solutions."
           key: "B"
           selected: true
+          approximate_frequency_pct: 0.2
         - name: "New flavor combinations"
           description: "Exploring new flavor combinations."
           key: "C"
+          approximate_frequency_pct: 0.2
           children:
             - name: "Exotic flavors"
               description: "Incorporating exotic flavors."
               key: "D"
               selected: true
+              approximate_frequency_pct: 0.1
             - name: "Fusion flavors"
               description: "Creating fusion flavors."
               key: "E"
               selected: true
+              approximate_frequency_pct: 0.1
     - name: "Healthier options"
       description: "It should encourage healthier options."
       key: "F"
       selected: true
+      approximate_frequency_pct: 0.2
     - name: "Clearer guidelines"
       description: "It should include clearer guidelines."
       key: "G"
+      approximate_frequency_pct: 0.1
     - name: "Fair trade practices"
       description: "It should promote fair trade practices."
       key: "H"
+      approximate_frequency_pct: 0.1
     - name: "Sustainability"
       description: "It should focus on sustainability."
       key: "I"
+      approximate_frequency_pct: 0.1
     - name: "Transparent labeling"
       description: "It should have transparent labeling."
+      key: "J"
+      approximate_frequency_pct: 0.1
       key: "J"
