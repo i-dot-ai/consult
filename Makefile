@@ -55,6 +55,10 @@ serve: ## Run the server and the worker
 test: ## Run the tests
 	poetry run pytest tests/ --random-order
 
+.PHONY: test
+test-failed: ## Run all failed tests in the previous run
+	poetry run pytest --last-failed --random-order
+
 .PHONY: test-migrations
 test-migrations: ## Run the migration tests separately
 	poetry run pytest migration_tests/ --random-order

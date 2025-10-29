@@ -22,13 +22,8 @@ export const fetchBackendApi = async <T>(
   });
 
   if (!response.ok) {
-    let errorBody;
-    try {
-      errorBody = await response.json();
-    } catch {
-      errorBody = await response.text();
-    }
-    throw { status: response.status, error: errorBody };
+    const error = await response.json();
+    throw { status: response.status, error };
   }
 
   return response.json() as Promise<T>;

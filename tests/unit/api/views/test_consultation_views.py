@@ -3,7 +3,7 @@ from uuid import uuid4
 import pytest
 from django.urls import reverse
 
-from consultation_analyser.factories import RespondentFactory
+from consultation_analyser.factories import ConsultationFactory, RespondentFactory
 
 
 @pytest.mark.django_db
@@ -147,3 +147,109 @@ class TestConsultationViewSet:
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
         assert response.status_code == 404  # NOT FOUND
+
+    def test_can_get_consultation_detail_for_consultation_users(
+        self, client, consultation, consultation_user_token
+    ):
+        """Test API endpoint grants access to users of the consultation"""
+        url = reverse(
+            "consultations-detail",
+            kwargs={"pk": consultation.id},
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        assert response.status_code == 200
+
+    def test_can_get_consultation_detail_for_admin_users(
+        self, client, consultation, admin_user_token
+    ):
+        """Test API endpoint grants access to admin users"""
+        url = reverse(
+            "consultations-detail",
+            kwargs={"pk": consultation.id},
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {admin_user_token}"},
+        )
+        assert response.status_code == 200
+
+    def test_cannot_get_consultation_detail_for_unauthorized_users(
+        self, client, consultation, non_consultation_user_token
+    ):
+        """Test API endpoint denies access to unauthorized users"""
+        url = reverse(
+            "consultations-detail",
+            kwargs={"pk": consultation.id},
+        )
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {non_consultation_user_token}"},
+        )
+        assert response.status_code == 403  # FORBIDDEN
+
+    def test_list_all_consultations_for_admin_users(self, client, admin_user_token):
+        """Test API endpoint lists all consultations for admin users"""
+        ConsultationFactory.create_batch(3)
+
+        url = reverse("consultations-list")
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {admin_user_token}"},
+        )
+
+        assert response.status_code == 200
+        assert response.json()["count"] == 3
+
+    def test_list_all_consultations_for_non_admin_users(
+        self, client, dashboard_user, dashboard_user_token
+    ):
+        """Test API endpoint lists only assigned consultations for
+        non-admin users even when scope=assigned is not specified"""
+        ConsultationFactory.create_batch(3)
+        assigned_consultation = ConsultationFactory.create()
+        assigned_consultation.users.add(dashboard_user)
+
+        url = reverse("consultations-list")
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {dashboard_user_token}"},
+        )
+        assert response.status_code == 200
+        assert response.json()["count"] == 1
+
+    def test_list_assigned_consultations_for_admin_users(
+        self, client, admin_user, admin_user_token
+    ):
+        """Test API endpoint lists assigned consultations for admin users"""
+        ConsultationFactory.create_batch(3)
+        assigned_consultation = ConsultationFactory.create()
+        assigned_consultation.users.add(admin_user)
+
+        url = reverse("consultations-list", query={"scope": "assigned"})
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {admin_user_token}"},
+        )
+        assert response.status_code == 200
+        assert response.json()["count"] == 1
+
+    def test_list_assigned_consultations_for_non_admin_users(
+        self, client, dashboard_user, dashboard_user_token
+    ):
+        """Test API endpoint lists assigned consultations for non-admin users"""
+        ConsultationFactory.create_batch(3)
+        assigned_consultation1 = ConsultationFactory.create()
+        assigned_consultation1.users.add(dashboard_user)
+        assigned_consultation2 = ConsultationFactory.create()
+        assigned_consultation2.users.add(dashboard_user)
+
+        url = reverse("consultations-list", query={"scope": "assigned"})
+        response = client.get(
+            url,
+            headers={"Authorization": f"Bearer {dashboard_user_token}"},
+        )
+        assert response.status_code == 200
+        assert response.json()["count"] == 2
