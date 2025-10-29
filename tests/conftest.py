@@ -314,8 +314,14 @@ def multi_choice_responses(multi_choice_question):
 
 
 @pytest.fixture()
-def theme_a(free_text_question):
-    theme = SelectedThemeFactory(question=free_text_question, name="Theme A", key="A")
+def theme_a(free_text_question, consultation_user):
+    theme = SelectedThemeFactory(
+        question=free_text_question,
+        name="Theme A",
+        key="A",
+        last_modified_by=consultation_user,
+        version=2,
+    )
     yield theme
     theme.delete()
 
