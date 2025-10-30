@@ -112,11 +112,12 @@
 
           {#if showAnswers}
             <aside
-              in:fly={{ x: 300 }}
-              class="sm:border-l sm:border-neutral-200 sm:ml-4 sm:pl-4 pt-4 sm:pt-0"
+              transition:fly={{ x: 300 }}
+              class="grow sm:border-l sm:border-neutral-200 sm:ml-4 sm:pl-4 pt-4 sm:pt-0"
             >
               <AnswersList
                 title="Representative Responses"
+                loading={$isAnswersLoading}
                 answers={$answersData?.all_respondents
                   .slice(0, maxAnswers)
                   .map((answer) => answer.free_text_answer_text) || []}

@@ -7,10 +7,11 @@
   export interface Props {
     title: string;
     answers?: string[];
+    loading?: boolean;
     variant?: "selected" | "generated";
   }
 
-  let { title = "", answers = [], variant = "selected" }: Props = $props();
+  let { title = "", answers = [], loading = false, variant = "selected" }: Props = $props();
 </script>
 
 <div class="flex items-center gap-1">
@@ -40,8 +41,29 @@
     {answers.length}
   </div>
 </div>
-
-{#if answers?.length > 0}
+{#if loading}
+  <ul>
+    {#each "_".repeat(5) as _}
+      <li
+        class={clsx([
+          "blink",
+          "overflow-hidden",
+          "gap-2",
+          "first:mt-4",
+          "mb-4",
+          "last:mb-0",
+          "p-2",
+          "rounded-lg",
+          "text-neutral-100",
+          "bg-neutral-100",
+          "select-none",
+        ])}
+      >
+        {"SKELETON ".repeat(5)}
+      </li>
+    {/each}
+  </ul>
+{:else if answers?.length > 0}
   <ul class="mt-2 max-h-[20rem] overflow-y-auto">
     {#each answers as answer, i}
       <li

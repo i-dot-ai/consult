@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { slide } from "svelte/transition";
+  import { fade, slide } from "svelte/transition";
 
   import { createFetchStore } from "../../global/stores";
   import {
@@ -54,6 +54,45 @@
   });
 </script>
 
+{#snippet selectedThemeCard(
+  name: string,
+  isSkeleton?: boolean,
+)}
+  <Panel bg={true}>
+    <div
+      in:slide
+      class={clsx([
+        "flex",
+        "justify-between",
+        "relative",
+        "pl-4",
+        "text-sm",
+        !isSkeleton && clsx([
+          "before:absolute",
+          "before:top-[45%]",
+          "before:left-0",
+          "before:transform",
+          "before:-translate-y-1/2",
+          "before:w-2",
+          "before:h-2",
+          "before:bg-primary",
+          "before:rounded-full",
+        ])
+      ])}
+    >
+      {#if isSkeleton}
+        <p class="blink w-full  text-xs bg-neutral-200 text-neutral-100 select-none">
+          {name}
+        </p>
+      {:else}
+        <h3>{name}</h3>
+
+        <Tag variant="success">Signed Off</Tag>
+      {/if}
+    </div>
+  </Panel>
+{/snippet}
+
 <TitleRow
   level={1}
   title="Theme Sign Off"
@@ -105,9 +144,13 @@
         <div>
           <h2 class="text-md">
             {#if !$questionData}
-              Question loading...
+              <div class="blink bg-neutral-100 text-neutral-100 select-none">
+                SKELETON
+              </div>
             {:else}
-              {`Q${$questionData?.number}: ${$questionData?.question_text}`}
+              <span in:fade>
+                {`Q${$questionData?.number}: ${$questionData?.question_text}`}
+              </span>
             {/if}
           </h2>
 
@@ -164,35 +207,19 @@
       </p>
 
       <ul>
-        {#each $selectedThemesData?.results as selectedTheme}
-          <li>
-            <Panel bg={true}>
-              <div
-                in:slide
-                class={clsx([
-                  "flex",
-                  "justify-between",
-                  "relative",
-                  "pl-4",
-                  "text-sm",
-                  "before:absolute",
-                  "before:top-[45%]",
-                  "before:left-0",
-                  "before:transform",
-                  "before:-translate-y-1/2",
-                  "before:w-2",
-                  "before:h-2",
-                  "before:bg-primary",
-                  "before:rounded-full",
-                ])}
-              >
-                {selectedTheme.name}
-
-                <Tag variant="success">Signed Off</Tag>
-              </div>
-            </Panel>
-          </li>
-        {/each}
+        {#if $isSelectedThemesLoading}
+          {#each "_".repeat(2) as _}
+            <li>
+              {@render selectedThemeCard("SKELETON", true)}
+            </li>
+          {/each}
+        {:else}
+          {#each $selectedThemesData?.results as selectedTheme}
+            <li>
+              {@render selectedThemeCard(selectedTheme.name)}
+            </li>
+          {/each}
+        {/if}
       </ul>
     </Panel>
   </section>
