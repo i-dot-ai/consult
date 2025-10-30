@@ -14,9 +14,9 @@
     getThemeSignoffDetailUrl,
   } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
-    import Tag from "../Tag/Tag.svelte";
-    import MaterialIcon from "../MaterialIcon.svelte";
-    import Checklist from "../svg/material/Checklist.svelte";
+  import Tag from "../Tag/Tag.svelte";
+  import MaterialIcon from "../MaterialIcon.svelte";
+  import Checklist from "../svg/material/Checklist.svelte";
 
   export let consultationId: string = "";
 
@@ -87,8 +87,7 @@
               url={getThemeSignoffDetailUrl(consultationId, question.id)}
               subtext={!question.has_free_text
                 ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
-                : undefined
-              }
+                : undefined}
             >
               {#snippet tag()}
                 {#if !question.has_free_text}

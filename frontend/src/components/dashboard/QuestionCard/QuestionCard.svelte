@@ -46,15 +46,14 @@
   }: Props = $props();
 </script>
 
-<div class={clsx([
-  "bg-white",
-  disabled &&
-    clsx([
-      "grayscale",
-      "cursor-not-allowed",
-      "pointer-events-none",
-    ]),
-])} transition:fade={{ duration: 200 }}>
+<div
+  class={clsx([
+    "bg-white",
+    disabled &&
+      clsx(["grayscale", "cursor-not-allowed", "pointer-events-none"]),
+  ])}
+  transition:fade={{ duration: 200 }}
+>
   <ConditionalWrapper
     element={Link}
     condition={clickable && !skeleton}
