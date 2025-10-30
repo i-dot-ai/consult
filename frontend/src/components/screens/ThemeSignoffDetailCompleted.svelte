@@ -7,6 +7,7 @@
   import {
     getQuestionDetailUrl,
     getThemeSignoffUrl,
+    Routes,
   } from "../../global/routes";
 
   import Panel from "../dashboard/Panel/Panel.svelte";
@@ -129,12 +130,12 @@
           <Button
             size="sm"
             title="Click to contact Consult support"
-            handleClick={() => (location.href = "mailto:support@consult.co.uk")}
+            handleClick={() => (location.href = `mailto:${Routes.SupportEmail}`)}
           >
             <MaterialIcon size="1.2rem" color="fill-primary">
               <Headphones />
             </MaterialIcon>
-            <span class="text-primary">support@consult.co.uk</span>
+            <span class="text-primary">{Routes.SupportEmail}</span>
           </Button>
         </div>
       </div>

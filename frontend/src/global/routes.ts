@@ -18,6 +18,7 @@ export enum Routes {
   SupportConsultations = "/support/consultations",
   SupportSignOff = "/support/consultations/sign-off",
   SupportThemefinder = "/support/consultations/themefinder",
+  SupportEmail = "consult@cabinetoffice.gov.uk",
 }
 export const getConsultationDetailUrl = (consultationId: string) => {
   return `${Routes.Consultations}/${consultationId}`;
