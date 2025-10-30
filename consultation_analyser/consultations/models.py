@@ -38,19 +38,18 @@ class TimeStampedModel(models.Model):
         ordering = ["created_at"]
 
 
-class ConsultationStage(models.TextChoices):
-    THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
-    ANALYSIS = "analysis", "Analysis"
-
-
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
+    class Stage(models.TextChoices):
+        THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
+        ANALYSIS = "analysis", "Analysis"
+
     title = models.CharField(max_length=256)
     slug = models.SlugField(max_length=256, unique=True)  # TODO: delete me
     users = models.ManyToManyField(User)
     stage = models.CharField(
         max_length=32,
-        choices=ConsultationStage.choices,
-        default=ConsultationStage.ANALYSIS,
+        choices=Stage.choices,
+        default=Stage.ANALYSIS,
     )
     s3_bucket = models.CharField(max_length=256, null=True)
     code = models.SlugField(max_length=256, null=True, blank=True)
