@@ -14,6 +14,9 @@
     getThemeSignoffDetailUrl,
   } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
+    import Tag from "../Tag/Tag.svelte";
+    import MaterialIcon from "../MaterialIcon.svelte";
+    import Checklist from "../svg/material/Checklist.svelte";
 
   export let consultationId: string = "";
 
@@ -79,10 +82,30 @@
               {consultationId}
               {question}
               highlightText={searchValue}
-              clickable={true}
+              clickable={question.has_free_text}
+              disabled={!question.has_free_text}
               url={getThemeSignoffDetailUrl(consultationId, question.id)}
-              isSignedOff={question.theme_status === "confirmed"}
-            />
+              subtext={!question.has_free_text
+                ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
+                : undefined
+              }
+            >
+              {#snippet tag()}
+                {#if !question.has_free_text}
+                  <Tag variant="primary-light">
+                    <MaterialIcon color="fill-primary">
+                      <Checklist />
+                    </MaterialIcon>
+
+                    Multiple choice
+                  </Tag>
+                {:else if question.theme_status === "confirmed"}
+                  <Tag variant="primary-light">Signed off</Tag>
+                {:else}
+                  <div></div>
+                {/if}
+              {/snippet}
+            </QuestionCard>
           {/each}
         </div>
       </div>

@@ -1,6 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import type { Snippet } from "svelte";
   import { fade } from "svelte/transition";
 
   import type { Question } from "../../../global/types.ts";
@@ -11,23 +12,49 @@
   import ConditionalWrapper from "../../ConditionalWrapper/ConditionalWrapper.svelte";
   import Star from "../../svg/material/Star.svelte";
   import Help from "../../svg/material/Help.svelte";
+  import Checklist from "../../svg/material/Checklist.svelte";
   import Panel from "../Panel/Panel.svelte";
   import Link from "../../Link.svelte";
   import Button from "../../inputs/Button/Button.svelte";
-  import Tag from "../../Tag/Tag.svelte";
 
-  export let consultationId: string = "";
-  export let question: Question = {};
-  export let url: string = "";
-  export let highlightText: string = "";
-  export let clickable: boolean = false;
-  export let skeleton: boolean = false;
-  export let hideIcon: boolean = false;
-  export let horizontal: boolean = false;
-  export let isSignedOff: boolean = false;
+  interface Props {
+    consultationId: string;
+    question: Question;
+    url?: string;
+    highlightText?: string;
+    clickable?: boolean;
+    skeleton?: boolean;
+    hideIcon?: boolean;
+    horizontal?: boolean;
+    disabled?: boolean;
+    tag?: Snippet;
+    subtext?: string;
+  }
+
+  let {
+    consultationId = "",
+    question = {},
+    url = "",
+    highlightText = "",
+    clickable = false,
+    skeleton = false,
+    hideIcon = false,
+    horizontal = false,
+    disabled = false,
+    subtext = "",
+    tag,
+  }: Props = $props();
 </script>
 
-<div class="bg-white" transition:fade={{ duration: 200 }}>
+<div class={clsx([
+  "bg-white",
+  disabled &&
+    clsx([
+      "grayscale",
+      "cursor-not-allowed",
+      "pointer-events-none",
+    ]),
+])} transition:fade={{ duration: 200 }}>
   <ConditionalWrapper
     element={Link}
     condition={clickable && !skeleton}
@@ -36,7 +63,7 @@
     title={`Q${question.number}: ${question.question_text}`}
     ariaLabel={`Click to view question: ${question.question_text}`}
   >
-    <Panel>
+    <Panel bg={disabled}>
       <article
         class={clsx([
           "flex",
@@ -51,7 +78,11 @@
           {#if !skeleton && !hideIcon}
             <div data-testid="question-icon">
               <MaterialIcon size="1.3rem" color="fill-teal">
-                <Help />
+                {#if !question.has_free_text}
+                  <Checklist />
+                {:else}
+                  <Help />
+                {/if}
               </MaterialIcon>
             </div>
           {/if}
@@ -111,6 +142,12 @@
             >
               {question.total_responses} responses
             </div>
+
+            {#if subtext}
+              <small class="text-xs text-neutral-500">
+                {subtext}
+              </small>
+            {/if}
           {/if}
         </div>
         <div
@@ -118,11 +155,12 @@
         >
           {#if !skeleton}
             <div class="flex gap-1 items-center">
-              {#if isSignedOff}
+              {#if tag}
                 <div class="ml-2 md:ml-0">
-                  <Tag variant="primary-light">Signed Off</Tag>
+                  {@render tag()}
                 </div>
               {/if}
+
               <div data-testid="fav-button">
                 <Button
                   variant="ghost"
