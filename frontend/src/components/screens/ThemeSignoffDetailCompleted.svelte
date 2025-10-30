@@ -54,10 +54,7 @@
   });
 </script>
 
-{#snippet selectedThemeCard(
-  name: string,
-  isSkeleton?: boolean,
-)}
+{#snippet selectedThemeCard(name: string, isSkeleton?: boolean)}
   <Panel bg={true}>
     <div
       in:slide
@@ -67,21 +64,24 @@
         "relative",
         "pl-4",
         "text-sm",
-        !isSkeleton && clsx([
-          "before:absolute",
-          "before:top-[45%]",
-          "before:left-0",
-          "before:transform",
-          "before:-translate-y-1/2",
-          "before:w-2",
-          "before:h-2",
-          "before:bg-primary",
-          "before:rounded-full",
-        ])
+        !isSkeleton &&
+          clsx([
+            "before:absolute",
+            "before:top-[45%]",
+            "before:left-0",
+            "before:transform",
+            "before:-translate-y-1/2",
+            "before:w-2",
+            "before:h-2",
+            "before:bg-primary",
+            "before:rounded-full",
+          ]),
       ])}
     >
       {#if isSkeleton}
-        <p class="blink w-full  text-xs bg-neutral-200 text-neutral-100 select-none">
+        <p
+          class="blink w-full text-xs bg-neutral-200 text-neutral-100 select-none"
+        >
           {name}
         </p>
       {:else}
@@ -173,7 +173,8 @@
           <Button
             size="sm"
             title="Click to contact Consult support"
-            handleClick={() => (location.href = `mailto:${Routes.SupportEmail}`)}
+            handleClick={() =>
+              (location.href = `mailto:${Routes.SupportEmail}`)}
           >
             <MaterialIcon size="1.2rem" color="fill-primary">
               <Headphones />

@@ -11,7 +11,12 @@
     variant?: "selected" | "generated";
   }
 
-  let { title = "", answers = [], loading = false, variant = "selected" }: Props = $props();
+  let {
+    title = "",
+    answers = [],
+    loading = false,
+    variant = "selected",
+  }: Props = $props();
 </script>
 
 <div class="flex items-center gap-1">
