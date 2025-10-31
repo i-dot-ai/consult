@@ -63,7 +63,7 @@ module "backend" {
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
   source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.6.0-ecs"
   image_tag                    = var.image_tag
-  ecr_repository_uri           = var.ecr_repository_uri
+  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   host                         = local.host_backend
@@ -72,8 +72,8 @@ module "backend" {
   ecs_cluster_id               = data.terraform_remote_state.platform.outputs.ecs_cluster_id
   ecs_cluster_name             = data.terraform_remote_state.platform.outputs.ecs_cluster_name
   task_additional_iam_policies = local.additional_policy_arns
-  certificate_arn              = data.terraform_remote_state.universal.outputs.certificate_arn
-  target_group_name_override   =  "consult-backend-${var.env}-tg"
+  certificate_arn              = module.acm_certificate.arn
+  target_group_name_override   = "consult-backend-${var.env}-tg"
   permissions_boundary_name    = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
   https_listener_arn            = data.aws_lb_listener.lb_listener_443.arn
   service_discovery_service_arn = aws_service_discovery_service.service_discovery_service.arn
@@ -128,7 +128,7 @@ module "frontend" {
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
   source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.6.0-ecs"
   image_tag                    = var.image_tag
-  ecr_repository_uri           = var.frontend_repository_uri
+  ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult-frontend"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
   private_subnets              = data.terraform_remote_state.vpc.outputs.private_subnets
   host                         = local.host
@@ -145,7 +145,7 @@ module "frontend" {
 
 
 
-  container_port               = "3000"
+  container_port               = local.frontend_port
 
   health_check = {
     accepted_response   = 200
@@ -158,15 +158,15 @@ module "frontend" {
     path                = "/health"
   }
 
-  # authenticate_keycloak = {
+  authenticate_keycloak = {
     
-  #   enabled : false,
+    enabled : false,
     
-  #   realm_name : data.terraform_remote_state.keycloak.outputs.realm_name,
-  #   client_id : var.project_name,
-  #   client_secret: data.aws_ssm_parameter.client_secret.value,
-  #   keycloak_dns: data.terraform_remote_state.keycloak.outputs.keycloak_dns
-  # }
+    realm_name : data.terraform_remote_state.keycloak.outputs.realm_name,
+    client_id : var.project_name,
+    client_secret: data.aws_ssm_parameter.client_secret.value,
+    keycloak_dns: data.terraform_remote_state.keycloak.outputs.keycloak_dns
+  }
 
 
 
@@ -184,7 +184,7 @@ module "worker" {
   source             = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.3.0-ecs"
   name               = "${local.name}-worker"
   image_tag          = var.image_tag
-  ecr_repository_uri = var.ecr_repository_uri
+  ecr_repository_uri = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult"
   ecs_cluster_id     = data.terraform_remote_state.platform.outputs.ecs_cluster_id
   ecs_cluster_name   = data.terraform_remote_state.platform.outputs.ecs_cluster_name
   certificate_arn    = data.terraform_remote_state.universal.outputs.certificate_arn

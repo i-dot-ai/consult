@@ -72,11 +72,6 @@ variable "scope" {
 
 # <old-variables>
 
-variable "account_id" {
-  type        = string
-  description = "AWS Account ID"
-}
-
 variable "developer_ips" {
   type        = list(string)
   description = "List of developer IPs"
@@ -85,22 +80,6 @@ variable "developer_ips" {
 variable "external_ips" {
   type        = list(string)
   description = "List of external IPs"
-}
-
-variable "ecr_repository_uri" {
-  type        = string
-  description = "ECR repo uri"
-}
-
-variable "frontend_repository_uri" {
-  type        = string
-  description = "Frontend ECR repo uri"
-}
-
-
-variable "hosted_zone_id" {
-  type        = string
-  description = "Route 53 Hosted Zone"
 }
 
 variable "internal_ips" {

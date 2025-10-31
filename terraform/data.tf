@@ -69,9 +69,9 @@ locals {
 
 }
 
-# data "aws_ssm_parameter" "client_secret" {
-#   name = "/${var.team_name}-${terraform.workspace}-core-keycloak/app_client_secret/${var.project_name}"
-# }
+data "aws_ssm_parameter" "client_secret" {
+  name = "/${var.team_name}-${terraform.workspace}-core-keycloak/app_client_secret/${var.project_name}-ai"
+}
 
 data "aws_ssm_parameter" "auth_provider_public_key" {
   name = "/i-dot-ai-${terraform.workspace}-core-keycloak/realm_public_key"
@@ -94,9 +94,9 @@ data "aws_wafv2_ip_set" "ip_whitelist_internal" {
   scope = var.scope
 }
 
-# data "aws_route53_zone" "zone" {
-#   name = local.hosted_zone_name
-# }
+data "aws_route53_zone" "zone" {
+  name = "ai.cabinetoffice.gov.uk"
+}
 
 data "aws_secretsmanager_secret_version" "env_vars" {
   secret_id = data.aws_secretsmanager_secret.env_vars.id
