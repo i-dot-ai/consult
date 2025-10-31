@@ -1,0 +1,40 @@
+---
+import { fetchBackendApi } from "../../../global/api";
+import type { ConsultationResponse, Question } from "../../../global/types";
+
+import Layout from '../../../layouts/Layout.astro';
+import Section from '../../../components/Section/Section.svelte';
+import Title from '../../../components/Title.svelte';
+import Link from "../../../components/Link.svelte";
+
+const { consultationId } = Astro.params;
+
+const consultation = await fetchBackendApi<ConsultationResponse>(
+  Astro, 
+  `/api/consultations/${consultationId}`
+);
+
+const questions = await fetchBackendApi<{results: Question[]}>(
+  Astro, 
+  `/api/consultations/${consultationId}/questions`
+);
+
+---
+<Layout>
+	<Section>
+		<Title level={1} text={consultation.title} />
+		<Link href="/support/consultations">Back to your consultations</Link>
+		
+		<h2>All free text questions for review</h2>
+		
+		{questions?.results?.map((question) => (
+			<div style="padding: 1rem; margin: 1rem 0; display: flex; justify-content: space-between; align-items: center;">
+				<p style="margin: 0; flex: 1;">{question.question_text}</p>
+				<p style="margin: 0; padding: 0 1rem; min-width: 100px; text-align: center;">{Math.round((question.proportion_of_audited_answers || 0) * 100)}% reviewed</p>
+				<Link href={`/evaluations/${consultationId}/questions/${question.id}/show-next`}>
+					👁️ Show next
+				</Link>
+			</div>
+		))}
+	</Section>
+</Layout>
