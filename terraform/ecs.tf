@@ -50,12 +50,6 @@ locals {
 
 }
 
-data "aws_lb_listener" "lb_listener_443" {
-  load_balancer_arn = module.load_balancer.alb_arn
-  port              = 443
-  depends_on        = [module.frontend]
-}
-
 module "backend" {
   name = "${local.name}-backend"
   # checkov:skip=CKV_SECRET_4:Skip secret check as these have to be used within the Github Action
@@ -75,9 +69,9 @@ module "backend" {
   certificate_arn              = module.acm_certificate.arn
   target_group_name_override   = "consult-backend-${var.env}-tg"
   permissions_boundary_name    = "infra/i-dot-ai-${var.env}-consult-perms-boundary-app"
-  https_listener_arn            = data.aws_lb_listener.lb_listener_443.arn
+  https_listener_arn            = module.frontend.https_listener_arn
   service_discovery_service_arn = aws_service_discovery_service.service_discovery_service.arn
-  create_networking             = true
+  create_networking             = false
   create_listener               = false
 
   additional_security_group_ingress = [
@@ -97,9 +91,6 @@ module "backend" {
   ]
 
   container_port             = local.backend_port
-  memory                     = terraform.workspace == "prod" ? 2048 : 1024
-  cpu                        = terraform.workspace == "prod" ? 1024 : 512
-  autoscaling_maximum_target = var.env == "prod" ? 5 : 1
 
   health_check = {
     accepted_response   = 200
@@ -167,12 +158,6 @@ module "frontend" {
     client_secret: data.aws_ssm_parameter.client_secret.value,
     keycloak_dns: data.terraform_remote_state.keycloak.outputs.keycloak_dns
   }
-
-
-
-  memory             = local.ecs_memory
-  cpu                = local.ecs_cpus
-
 
   task_additional_iam_policies = local.additional_policy_arns
   entrypoint = ["npm", "start"]
