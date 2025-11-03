@@ -7,18 +7,6 @@ import os
 import subprocess
 from pathlib import Path
 
-import boto3
-import pandas as pd
-from langchain_openai import ChatOpenAI
-from themefinder import (
-    theme_condensation,
-    theme_generation,
-    theme_mapping,
-    theme_refinement,
-)
-from themefinder.models import HierarchicalClusteringResponse
-from themefinder.theme_clustering_agent import ThemeClusteringAgent, ThemeNode
-
 # Configure logging
 logging.basicConfig(
     level=logging.INFO,
@@ -27,13 +15,6 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
-
-llm = ChatOpenAI(
-    model="gpt-4o",
-    temperature=0,
-    openai_api_base=os.environ["LLM_GATEWAY_URL"],
-    openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-)
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 BASE_PREFIX = "app_data/consultations/"
 
@@ -343,7 +324,7 @@ def agentic_theme_selection(
     return selected_themes, all_themes_df
 
 
-async def process_consultation(consultation_dir: str = "test_consultation") -> str:
+async def process_consultation(consultation_dir: str, llm) -> str:
     """
     Process all questions in a consultation directory, generating theme analyses.
 
@@ -355,6 +336,7 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
 
     Args:
         consultation_dir: Directory containing question subdirectories
+        llm: Language model instance for processing
     """
     date = datetime.datetime.now(datetime.UTC).strftime("%Y-%m-%d")
 
@@ -450,6 +432,20 @@ if __name__ == "__main__":
     subprocess.run(["pip", "install", "--no-cache-dir", "-r", "requirements.txt"], check=True)
     logger.info("Requirements installation completed")
 
+    import boto3
+    import pandas as pd
+    from langchain_openai import ChatOpenAI
+    from themefinder import theme_condensation, theme_generation, theme_mapping, theme_refinement
+    from themefinder.models import HierarchicalClusteringResponse
+    from themefinder.theme_clustering_agent import ThemeClusteringAgent, ThemeNode
+
+    llm = ChatOpenAI(
+        model="gpt-4o",
+        temperature=0,
+        openai_api_base=os.environ["LLM_GATEWAY_URL"],
+        openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+    )
+
     parser = argparse.ArgumentParser(description="Download a subdirectory from S3.")
     parser.add_argument(
         "--subdir",
@@ -467,6 +463,6 @@ if __name__ == "__main__":
 
     logger.info("Starting processing for subdirectory: %s", args.subdir)
     download_s3_subdir(args.subdir)
-    output_dir = asyncio.run(process_consultation(args.subdir))
+    output_dir = asyncio.run(process_consultation(args.subdir, llm))
     upload_directory_to_s3(output_dir)
     logger.info("Processing completed for subdirectory: %s", args.subdir)
