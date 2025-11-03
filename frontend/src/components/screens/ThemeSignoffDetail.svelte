@@ -47,7 +47,7 @@
     selectGeneratedThemeMock,
   } = $props();
 
-  let isSignoffModalOpen = $state(false);
+  let isConfirmSignoffModalOpen = $state(false);
   let isErrorModalOpen = $state(false);
   let expandAllTrigger = $state(0);
   let forceExpand = $state(false);
@@ -194,7 +194,7 @@
     );
 
     if ($confirmSignoffError) {
-      isSignoffModalOpen = false;
+      isConfirmSignoffModalOpen = false;
       isErrorModalOpen = true;
     } else {
       location.replace(getThemeSignoffUrl(consultationId));
@@ -317,7 +317,7 @@
         fullWidth={true}
         disabled={$isSelectedThemesLoading ||
           $selectedThemesData?.results.length === 0}
-        handleClick={() => (isSignoffModalOpen = !isSignoffModalOpen)}
+        handleClick={() => (isConfirmSignoffModalOpen = !isConfirmSignoffModalOpen)}
       >
         <div
           id="onboarding-step-3"
@@ -339,8 +339,8 @@
     {/if}
 
     <Modal
-      open={isSignoffModalOpen}
-      setOpen={(newOpen: boolean) => (isSignoffModalOpen = newOpen)}
+      open={isConfirmSignoffModalOpen}
+      setOpen={(newOpen: boolean) => (isConfirmSignoffModalOpen = newOpen)}
       confirmText={"Confirm Sign Off"}
       handleConfirm={confirmSignoff}
     >
