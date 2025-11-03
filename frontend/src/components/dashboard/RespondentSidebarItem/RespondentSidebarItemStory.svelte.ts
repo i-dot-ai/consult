@@ -8,15 +8,6 @@ let icon = $state(Person);
 let editable = $state(false);
 let updateSubtitle = $state((newVal: string) => alert(`Updating to ${newVal}`));
 
-// const setIcon = (newIcon: string) => {
-//     iconComponent = {
-//         "person": Person,
-//         "star": Star,
-//     }[icon] || Person;
-// }
-
-// let iconComponent = $derived();
-
 export default {
   name: "RespondentSidebarItem",
   component: RespondentSidebarItem,
@@ -53,15 +44,5 @@ export default {
       schema: `(newVal: string) => void`,
     },
   ],
-  stories: [
-    // {
-    //     name: "Default",
-    //     props: {
-    //         title: "Default Title",
-    //         description: "Default story description",
-    //         tags: ["Tag 1", "Tag 2"],
-    //         highlightText: "",
-    //     },
-    // },
-  ],
+  stories: [],
 };
