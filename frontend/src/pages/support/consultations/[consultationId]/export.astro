@@ -1,0 +1,31 @@
+---
+
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section/Section.svelte";
+import Title from "../../../../components/Title.svelte";
+import ExportQuestion from "../../../../components/ExportQuestions/ExportQuestions.svelte"
+
+const { consultationId } = Astro.params;
+
+if (!consultationId) {
+  return Astro.redirect("/support/consultations");
+}
+
+
+
+
+
+
+
+
+---
+
+<Layout>
+    <Section>
+        <Title level={1} text="Export consultation audit data from my consultation" />
+        <p>Which questions do you want to download data for?</p>
+        <ExportQuestion consultationId={consultationId} client:load />
+      <p>The file will be saved in: downloads/[timestamp]_question_[question_number]_theme_changes</p>
+    </Section>    
+</Layout>
+
