@@ -56,15 +56,5 @@ export default {
       rawHtml: childrenHtml,
     },
   ],
-  stories: [
-    // {
-    //     name: "Default",
-    //     props: {
-    //         title: "Default Title",
-    //         description: "Default story description",
-    //         tags: ["Tag 1", "Tag 2"],
-    //         highlightText: "",
-    //     },
-    // },
-  ],
+  stories: [],
 };
