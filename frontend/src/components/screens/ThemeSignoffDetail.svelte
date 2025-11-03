@@ -163,7 +163,6 @@
       {
         name: title,
         description: description,
-        version: selectedTheme.version + 1,
       },
       {
         "If-Match": selectedTheme.version,
