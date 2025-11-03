@@ -32,6 +32,7 @@
   import Modal from "../Modal/Modal.svelte";
   import GeneratedThemeCard from "../theme-signoff/GeneratedThemeCard/GeneratedThemeCard.svelte";
   import Alert from "../Alert.svelte";
+  import Warning from "../svg/material/Warning.svelte";
 
   let {
     consultationId = "",
@@ -47,6 +48,7 @@
   } = $props();
 
   let isSignoffModalOpen = $state(false);
+  let isErrorModalOpen = $state(false);
   let expandAllTrigger = $state(0);
   let forceExpand = $state(false);
   let addingCustomTheme = $state(false);
@@ -192,8 +194,12 @@
       },
     );
 
-    // Reload page to display sign off completed page
-    location.replace(location.href);
+    if ($confirmSignoffError) {
+      isSignoffModalOpen = false;
+      isErrorModalOpen = true;
+    } else {
+      location.replace(getThemeSignoffUrl(consultationId));
+    }
   };
   const numSelectedThemesText = (themes?: Array<any>): string => {
     if (!themes) {
@@ -339,11 +345,11 @@
       confirmText={"Confirm Sign Off"}
       handleConfirm={confirmSignoff}
     >
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-2 mb-2">
         <MaterialIcon color="fill-primary">
           <CheckCircle />
         </MaterialIcon>
-        <h3 class="font-bold mb-2">Confirm Theme Sign Off</h3>
+        <h3 class="font-bold">Confirm Theme Sign Off</h3>
       </div>
 
       <p class="text-sm text-neutral-500">
@@ -473,6 +479,23 @@
     </div>
   {/snippet}
 </svelte:boundary>
+
+<Modal
+  open={isErrorModalOpen}
+  setOpen={(newOpen: boolean) => (isErrorModalOpen = newOpen)}
+  confirmText={"Ok"}
+  handleConfirm={() => isErrorModalOpen = false}
+>
+  <div class="flex items-center gap-2 mb-2">
+    <MaterialIcon color="fill-orange-600" size="1.3rem">
+      <Warning />
+    </MaterialIcon>
+
+    <h3 class="text-orange-600 text-lg">Theme Update Failed</h3>
+  </div>
+
+  <p>Theme failed to update due to error: {$confirmSignoffError}</p>
+</Modal>
 
 <OnboardingTour
   key="theme-signoff"
