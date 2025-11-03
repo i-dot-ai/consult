@@ -2,66 +2,116 @@
   number: 1
   has_free_text: True
   has_multiple_choice: True
-  multiple_choice_options: ["Yes", "No", "Don't know", "No answer"]
+  multiple_choice_options:
+    - "Yes"
+    - "No"
+    - "Don't know"
+    - "No answer"
   free_text_answers:
-  - ""
-  - "Yes, I agree with the proposal as it will create a standardized framework that benefits both consumers and manufacturers."
-  - "No, I do not agree because I feel the proposed categories are too restrictive and may stifle innovation in flavour development."
-  - "I agree with the proposal, but I think there should be room for additional categories to accommodate future trends."
-  - "I disagree with the proposal as it does not sufficiently account for regional flavour preferences across the UK."
-  - "Yes, aligning the flavour categories will help consumers easily compare products and make informed choices."
-  - "I neither agree nor disagree at this moment; I would like more information on how the categories were determined."
-  - "I support the proposal because it will likely improve transparency and consistency in labelling for consumers."
-  - "No, I believe the existing categories are sufficient and that changes could confuse consumers."
-  - "I agree in principle, but I think the guidelines should include a provision for periodic review to adapt to market changes."
-  themes:
+    - ""
+    - "Yes, I agree with the proposal as it will create a standardized framework that benefits both consumers and manufacturers."
+    - "No, I do not agree because I feel the proposed categories are too restrictive and may stifle innovation in flavour development."
+    - "I agree with the proposal, but I think there should be room for additional categories to accommodate future trends."
+    - "I disagree with the proposal as it does not sufficiently account for regional flavour preferences across the UK."
+    - "Yes, aligning the flavour categories will help consumers easily compare products and make informed choices."
+    - "I neither agree nor disagree at this moment; I would like more information on how the categories were determined."
+    - "I support the proposal because it will likely improve transparency and consistency in labelling for consumers."
+    - "No, I believe the existing categories are sufficient and that changes could confuse consumers."
+    - "I agree in principle, but I think the guidelines should include a provision for periodic review to adapt to market changes."
+  candidate_themes:
     - name: "Standardized framework"
       description: "A standardized framework that benefits both consumers and manufacturers."
       key: "A"
+      selected: true
+      approximate_frequency_pct: 0.6
     - name: "Innovation"
       description: "Innovation in flavour development."
       key: "B"
-
+      selected: true
+      approximate_frequency_pct: 0.3
 
 - question_text: "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?"
   number: 2
   has_free_text: False
   has_multiple_choice: True
-  multiple_choice_options: ["Yes", "No", "Don't know", "No answer"]
-
+  multiple_choice_options:
+    - "Yes"
+    - "No"
+    - "Don't know"
+    - "No answer"
 
 - question_text: "Which of the following factors do you believe are important when considering the packaging of chocolate bars? Please select all that apply: a) Sustainability, b) Design, c) Cost-effectiveness, d) Durability, e) Brand recognition."
   number: 3
   has_free_text: False
   has_multiple_choice: True
-  multiple_choice_options: ["Sustainability", "Design", "Cost-effectiveness", "Durability", "Brand recognition"]
-
+  multiple_choice_options:
+    - "Sustainability"
+    - "Design"
+    - "Cost-effectiveness"
+    - "Durability"
+    - "Brand recognition"
 
 - question_text: "What are your thoughts on how the current chocolate bar regulations could be improved to better address consumer needs and industry standards?"
   number: 4
   has_free_text: True
   has_multiple_choice: False
   free_text_answers:
-  - ""
-  - "I believe the current regulations should include clearer guidelines on the sourcing of ingredients to ensure ethical practices and sustainability."
-  - "The regulations could be improved by setting specific limits on sugar content to promote healthier options for consumers."
-  - "Consideration should be given to standardizing portion sizes to help consumers make informed choices and manage their calorie intake."
-  - "It would be beneficial to include mandatory allergen warnings on all packaging to enhance consumer safety."
-  - "The regulations should encourage more innovation in packaging materials to reduce environmental impact."
-  - "Introducing incentives for using locally sourced ingredients could support local economies and reduce carbon footprints."
-  - "The current regulations could be improved by including a requirement for transparent labeling about nutritional information."
-  - "I think the regulations should mandate clearer expiration dates to prevent food waste and ensure product freshness."
-  - "The industry would benefit from guidelines that promote fair trade practices, giving consumers more ethical choices."
-  themes:
+    - ""
+    - "I believe the current regulations should include clearer guidelines on the sourcing of ingredients to ensure ethical practices and sustainability."
+    - "The regulations could be improved by setting specific limits on sugar content to promote healthier options for consumers."
+    - "Consideration should be given to standardizing portion sizes to help consumers make informed choices and manage their calorie intake."
+    - "It would be beneficial to include mandatory allergen warnings on all packaging to enhance consumer safety."
+    - "The regulations should encourage more innovation in packaging materials to reduce environmental impact."
+    - "Introducing incentives for using locally sourced ingredients could support local economies and reduce carbon footprints."
+    - "The current regulations could be improved by including a requirement for transparent labeling about nutritional information."
+    - "I think the regulations should mandate clearer expiration dates to prevent food waste and ensure product freshness."
+    - "The industry would benefit from guidelines that promote fair trade practices, giving consumers more ethical choices."
+  candidate_themes:
     - name: "More innovative"
       description: "Innovative ideas to improve chocolate bar regulations."
       key: "A"
+      selected: true
+      approximate_frequency_pct: 0.4
+      children:
+        - name: "Innovative packaging"
+          description: "Ideas for innovative packaging solutions."
+          key: "B"
+          selected: true
+          approximate_frequency_pct: 0.2
+        - name: "New flavor combinations"
+          description: "Exploring new flavor combinations."
+          key: "C"
+          approximate_frequency_pct: 0.2
+          children:
+            - name: "Exotic flavors"
+              description: "Incorporating exotic flavors."
+              key: "D"
+              selected: true
+              approximate_frequency_pct: 0.1
+            - name: "Fusion flavors"
+              description: "Creating fusion flavors."
+              key: "E"
+              selected: true
+              approximate_frequency_pct: 0.1
     - name: "Healthier options"
       description: "It should encourage healthier options."
-      key: "B"
+      key: "F"
+      selected: true
+      approximate_frequency_pct: 0.2
     - name: "Clearer guidelines"
       description: "It should include clearer guidelines."
-      key: "C"
+      key: "G"
+      approximate_frequency_pct: 0.1
     - name: "Fair trade practices"
       description: "It should promote fair trade practices."
-      key: "D"
+      key: "H"
+      approximate_frequency_pct: 0.1
+    - name: "Sustainability"
+      description: "It should focus on sustainability."
+      key: "I"
+      approximate_frequency_pct: 0.1
+    - name: "Transparent labeling"
+      description: "It should have transparent labeling."
+      key: "J"
+      approximate_frequency_pct: 0.1
+      key: "J"

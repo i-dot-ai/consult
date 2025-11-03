@@ -4,6 +4,7 @@ import datetime
 import json
 import logging
 import os
+import subprocess
 from pathlib import Path
 
 import boto3
@@ -183,6 +184,10 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
 
 
 if __name__ == "__main__":
+    logger.info("Installing requirements from requirements.txt...")
+    subprocess.run(["pip", "install", "--no-cache-dir", "-r", "requirements.txt"], check=True)
+    logger.info("Requirements installation completed")
+
     parser = argparse.ArgumentParser(description="Download a subdirectory from S3.")
     parser.add_argument(
         "--subdir",

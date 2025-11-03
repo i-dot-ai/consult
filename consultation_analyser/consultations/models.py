@@ -37,18 +37,17 @@ class TimeStampedModel(models.Model):
         ordering = ["created_at"]
 
 
-class ConsultationStage(models.TextChoices):
-    THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
-    ANALYSIS = "analysis", "Analysis"
+class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
+    class Stage(models.TextChoices):
+        THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
+        ANALYSIS = "analysis", "Analysis"
 
-
-class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type: ignore
     title = models.CharField(max_length=256)
     users = models.ManyToManyField(User)
     stage = models.CharField(
         max_length=32,
-        choices=ConsultationStage.choices,
-        default=ConsultationStage.ANALYSIS,
+        choices=Stage.choices,
+        default=Stage.ANALYSIS,
     )
     code = models.SlugField(max_length=256)
 

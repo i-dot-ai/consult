@@ -1,6 +1,6 @@
 from django.db import transaction
 from django.shortcuts import get_object_or_404
-from rest_framework.exceptions import NotFound, ParseError
+from rest_framework.exceptions import ParseError
 from rest_framework.viewsets import ModelViewSet
 
 from consultation_analyser.consultations import models
@@ -54,7 +54,13 @@ class SelectedThemeViewSet(ModelViewSet):
 
             if instance.version != expected_version:
                 raise PreconditionFailed(
-                    detail={"message": "Version mismatch", "latest_version": instance.version}
+                    detail={
+                        "message": "Version mismatch",
+                        "latest_version": instance.version,
+                        "last_modified_by": {
+                            "email": instance.last_modified_by.email,
+                        },
+                    }
                 )
 
             serializer.instance = instance
@@ -76,11 +82,14 @@ class SelectedThemeViewSet(ModelViewSet):
         if deleted_count == 0:
             # If no rows were deleted, the resource may either have a
             # different version or no longer exist.
-            try:
-                selected_theme = self.get_queryset().get(pk=instance.pk)
-            except models.SelectedTheme.DoesNotExist:
-                raise NotFound()
+            selected_theme = get_object_or_404(self.get_queryset(), pk=instance.pk)
 
             raise PreconditionFailed(
-                detail={"message": "Version mismatch", "latest_version": selected_theme.version}
+                detail={
+                    "message": "Version mismatch",
+                    "latest_version": selected_theme.version,
+                    "last_modified_by": {
+                        "email": selected_theme.last_modified_by.email,
+                    },
+                }
             )
