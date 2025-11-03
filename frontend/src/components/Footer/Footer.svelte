@@ -4,6 +4,21 @@
   import AnnounceIcon from "../svg/AnnounceIcon.svelte";
   import IaiIcon from "../svg/IaiIcon.svelte";
   import OglIcon from "../svg/OglIcon.svelte";
+  import { getBackendUrl } from "../../global/utils";
+
+
+  let version = { sha: "unknown" };
+
+  fetch(`${getBackendUrl()}/api/git-sha/`, {method: "GET"})
+    .then(response => response.json())
+    .then(data => {
+      version = data;
+    })
+    .catch(() => {
+      version = { sha: "unknown" };
+    });
+
+
 </script>
 
 <footer class={clsx(["py-6", "px-0", "bg-black", "text-white", "text-xs"])}>
@@ -19,7 +34,7 @@
           </li>
           <li>
             <a href="https://github.com/i-dot-ai/consultation-analyser"
-              >Version:</a
+              >Version:{version.sha}</a
             >
           </li>
         </ul>
