@@ -92,7 +92,7 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
     return question, responses
 
 
-async def generate_themes(question: str, responses_df: pd.DataFrame) -> pd.DataFrame:
+async def generate_themes(question: str, responses_df):
     """
     Generate refined themes from question and responses through multiple analysis steps.
 
@@ -119,7 +119,7 @@ async def generate_themes(question: str, responses_df: pd.DataFrame) -> pd.DataF
     return refined_themes_df
 
 
-def prepare_long_list(refined_themes_df: pd.DataFrame) -> pd.DataFrame:
+def prepare_long_list(refined_themes_df):
     """
     Prepare a sorted long list of themes with names, descriptions, and frequencies.
 
@@ -139,7 +139,7 @@ def prepare_long_list(refined_themes_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def save_to_excel(
-    df: pd.DataFrame, save_path: str, question: str, n_responses: int, short_list: bool = False
+    df, save_path: str, question: str, n_responses: int, short_list: bool = False
 ) -> None:
     """
     Save theme list (long or short) to Excel with formatted columns and cells.
@@ -202,7 +202,7 @@ def save_to_excel(
             worksheet.set_column(col_num, col_num, min(max_length + 2, 50))
 
 
-def produce_short_list_df(themes_df: pd.DataFrame, mapped_df: pd.DataFrame) -> pd.DataFrame:
+def produce_short_list_df(themes_df, mapped_df):
     """
     Produce a detailed short list of themes with examples from responses.
 
