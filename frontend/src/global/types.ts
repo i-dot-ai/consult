@@ -175,6 +175,5 @@ export interface SelectedTheme {
   description: string;
   version: number;
   modified_at: string; // timestamp
-  last_modified_by: string; // username
-  candidatetheme_id?: string;
+  last_modified_by: string; // user id
 }
