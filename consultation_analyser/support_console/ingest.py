@@ -249,10 +249,11 @@ def create_embeddings_for_question(question_id: UUID):
 
 
 def import_response_annotation_themes(question: Question):
-    mapping_file_key = f"{question.s3_output_folder}/mapping.jsonl"
     s3_client = boto3.client("s3")
 
-    mapping_response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=mapping_file_key)
+    mapping_response = s3_client.get_object(
+        Bucket=settings.AWS_BUCKET_NAME, Key=question.mapping_file
+    )
     mapping_dict = {}
     for line in mapping_response["Body"].iter_lines():
         mapping = json.loads(line.decode("utf-8"))
@@ -289,9 +290,6 @@ def import_response_annotation_themes(question: Question):
 
 
 def import_response_annotations(question: Question):
-    sentiment_file_key = f"{question.s3_output_folder}/sentiment.jsonl"
-    evidence_file_key = f"{question.s3_output_folder}/detail_detection.jsonl"
-
     s3_client = boto3.client("s3")
 
     # Check if sentiment file exists and process it
@@ -300,7 +298,7 @@ def import_response_annotations(question: Question):
         SentimentRecord,
         s3_client,
         settings.AWS_BUCKET_NAME,
-        sentiment_file_key,
+        question.sentiment_file,
         raise_error_if_file_missing=False,
     ):
         sentiment_dict[sentiment.themefinder_id] = sentiment.sentiment_enum
@@ -310,7 +308,7 @@ def import_response_annotations(question: Question):
         DetailDetection,
         s3_client,
         settings.AWS_BUCKET_NAME,
-        evidence_file_key,
+        question.detail_detection_file,
         raise_error_if_file_missing=False,
     ):
         evidence_dict[evidence.themefinder_id] = evidence.evidence_rich_bool
@@ -494,12 +492,11 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
 
 def import_themes(question: Question):
     s3_client = boto3.client("s3")
-    themes_file_key = f"{question.s3_output_folder}/themes.json"
     try:
-        response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
+        response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=question.themes_file)
         theme_data = json.loads(response["Body"].read())
     except BaseException:
-        logger.info("couldn't load file {file}", file=themes_file_key)
+        logger.info("couldn't load file {file}", file=question.themes_file)
         return
 
     themes_to_save = []
@@ -523,14 +520,13 @@ def import_themes(question: Question):
 
 def import_candidate_themes(question: Question):
     s3_client = boto3.client("s3")
-    themes_file_key = f"{question.s3_output_folder}/clustered_themes.json".replace(
-        "/mapping/", "/sign_off/"
-    )
     try:
-        response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
+        response = s3_client.get_object(
+            Bucket=settings.AWS_BUCKET_NAME, Key=question.clustered_themes_file
+        )
         theme_data = json.loads(response["Body"].read())
     except BaseException:
-        logger.info("couldn't load file {file}", file=themes_file_key)
+        logger.info("couldn't load file {file}", file=question.clustered_themes_file)
         return
 
     # First pass: create all themes without parent relationships
@@ -660,7 +656,7 @@ def import_cross_cutting_themes(consultation: Consultation):
     )
 
     s3_client = boto3.client("s3")
-    cct_file_key = f"{consultation.s3_output_folder}/cross_cutting_themes.json"
+    cct_file_key = f"{consultation.s3_mapping_folder}/cross_cutting_themes.json"
 
     try:
         # Check if file exists

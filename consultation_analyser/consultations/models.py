@@ -1,5 +1,6 @@
 import uuid
 from textwrap import shorten
+from typing import Literal
 
 from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
@@ -71,13 +72,12 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
             models.UniqueConstraint(fields=["slug"], name="unique_consultation_slug"),
         ]
 
-    @property
-    def s3_output_folder(self) -> str:
+    def get_folder(self, kind: Literal["mapping", "sign_off"]):
         if self.code is None:
             raise ValueError("code must be defined")
         if self.timestamp is None:
             raise ValueError("timestamp must be defined")
-        return f"app_data/consultations/{self.code}/outputs/mapping/{self.timestamp}"
+        return f"app_data/consultations/{self.code}/outputs/{kind}/{self.timestamp}"
 
     def __str__(self):
         return shorten(self.slug, width=64, placeholder="...")
@@ -111,9 +111,28 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         blank=True,
     )
 
+    def get_folder(self, kind: Literal["mapping", "sign_off"], file_name: str) -> str:
+        return f"{self.consultation.get_folder(kind)}/question_part_{self.number}/{file_name}"
+
     @property
-    def s3_output_folder(self) -> str:
-        return f"{self.consultation.s3_output_folder}/question_part_{self.number}/"
+    def clustered_themes_file(self):
+        return self.get_folder("sign_off", "clustered_themes.json")
+
+    @property
+    def mapping_file(self):
+        return self.get_folder("mapping", "mapping.jsonl")
+
+    @property
+    def sentiment_file(self):
+        return self.get_folder("mapping", "sentiment.jsonl")
+
+    @property
+    def detail_detection_file(self):
+        return self.get_folder("mapping", "detail_detection.jsonl")
+
+    @property
+    def themes_file(self):
+        return self.get_folder("mapping", "themes.json")
 
     @property
     def multiple_choice_options(self) -> list:
