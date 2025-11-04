@@ -1,11 +1,11 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { render, cleanup } from "@testing-library/svelte";
 
-import AddCustomTheme, { type Props } from "./AddCustomTheme.svelte";
+import ThemeForm, { type Props } from "./ThemeForm.svelte";
 
 let testData: Props;
 
-describe("AddCustomTheme", () => {
+describe("ThemeForm", () => {
   beforeEach(() => {
     testData = {
       variant: "add",
@@ -17,7 +17,7 @@ describe("AddCustomTheme", () => {
   afterEach(() => cleanup());
 
   it("should render add variant", async () => {
-    const { container, getByText } = render(AddCustomTheme, {
+    const { container, getByText } = render(ThemeForm, {
       ...testData,
     });
 
@@ -27,7 +27,7 @@ describe("AddCustomTheme", () => {
   });
 
   it("should render add variant", async () => {
-    const { container, getByText } = render(AddCustomTheme, {
+    const { container, getByText } = render(ThemeForm, {
       ...testData,
       variant: "edit",
     });

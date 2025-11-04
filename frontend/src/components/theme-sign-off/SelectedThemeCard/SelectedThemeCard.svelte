@@ -12,7 +12,7 @@
   import Delete from "../../svg/material/Delete.svelte";
   import Docs from "../../svg/material/Docs.svelte";
   import EditSquare from "../../svg/material/EditSquare.svelte";
-  import AddCustomTheme from "../AddCustomTheme/AddCustomTheme.svelte";
+  import ThemeForm from "../ThemeForm/ThemeForm.svelte";
   import AnswersList from "../AnswersList/AnswersList.svelte";
 
   export interface Props {
@@ -48,7 +48,7 @@
 <article class="bg-white rounded-lg">
   {#if editing}
     <div in:fade>
-      <AddCustomTheme
+      <ThemeForm
         variant="edit"
         initialTitle={theme.name}
         initialDescription={theme.description}

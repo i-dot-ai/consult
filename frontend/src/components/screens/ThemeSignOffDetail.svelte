@@ -23,7 +23,7 @@
   import Button from "../inputs/Button/Button.svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
   import Price from "../svg/material/Price.svelte";
-  import AddCustomTheme from "../theme-sign-off/AddCustomTheme/AddCustomTheme.svelte";
+  import ThemeForm from "../theme-sign-off/ThemeForm/ThemeForm.svelte";
   import SelectedThemeCard from "../theme-sign-off/SelectedThemeCard/SelectedThemeCard.svelte";
   import GeneratedThemeCard from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCard.svelte";
   import CheckCircle from "../svg/material/CheckCircle.svelte";
@@ -297,7 +297,7 @@
 
     {#if addingCustomTheme}
       <div transition:slide>
-        <AddCustomTheme
+        <ThemeForm
           handleConfirm={async (title: string, description: string) => {
             await createTheme(title, description);
             addingCustomTheme = false;

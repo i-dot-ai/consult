@@ -7,7 +7,7 @@ import AccordionStory from "../Accordion/AccordionStory.svelte";
 import PanelStory from "../dashboard/Panel/PanelStory.svelte";
 import DemoFilterStory from "../DemoFilter/DemoFilterStory.svelte";
 import RespondentSidebarItemStory from "../dashboard/RespondentSidebarItem/RespondentSidebarItemStory.svelte";
-import AddCustomThemeStory from "../theme-sign-off/AddCustomTheme/AddCustomThemeStory.svelte";
+import ThemeFormStory from "../theme-sign-off/ThemeForm/ThemeFormStory.svelte";
 import SelectedThemeCardStory from "../theme-sign-off/SelectedThemeCard/SelectedThemeCardStory.svelte";
 import AnswersListStory from "../theme-sign-off/AnswersList/AnswersListStory.svelte";
 import GeneratedThemeCardStory from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCardStory.svelte";
@@ -35,7 +35,7 @@ export default [
   PanelStory,
   DemoFilterStory,
   RespondentSidebarItemStory,
-  AddCustomThemeStory,
+  ThemeFormStory,
   SelectedThemeCardStory,
   AnswersListStory,
   GeneratedThemeCardStory,

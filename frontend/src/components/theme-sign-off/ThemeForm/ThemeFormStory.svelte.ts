@@ -1,12 +1,12 @@
-import AddCustomTheme from "./AddCustomTheme.svelte";
+import ThemeForm from "./ThemeForm.svelte";
 
 let variant = $state("add");
 const handleConfirm = () => alert("Confirm event triggered");
 const handleCancel = () => alert("Cancel event triggered");
 
 export default {
-  name: "AddCustomTheme",
-  component: AddCustomTheme,
+  name: "ThemeForm",
+  component: ThemeForm,
   category: "Theme Sign Off",
   props: [
     {
