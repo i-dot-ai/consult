@@ -47,7 +47,7 @@ let generatedThemes = $state([
 export default {
   name: "ThemeSignOffDetail",
   component: ThemeSignOffDetail,
-  category: "Theme Signoff",
+  category: "Theme Sign Off",
   props: [
     { name: "consultationId", value: consultationId, type: "text" },
     { name: "questionId", value: questionId, type: "text" },
