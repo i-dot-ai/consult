@@ -573,7 +573,6 @@ def import_candidate_themes(question: Question):
 
 def import_questions(
     consultation: Consultation,
-    timestamp: str | None = None,
     sign_off: bool = False,
 ):
     """
@@ -627,9 +626,6 @@ def import_questions(
                 import_responses, question, responses_file_key, multiple_choice_file
             )
             queue.enqueue(create_embeddings_for_question, question.id, depends_on=responses)
-
-            if timestamp is None:
-                return
 
             if sign_off:
                 queue.enqueue(import_candidate_themes, question, depends_on=responses)
@@ -804,7 +800,6 @@ def create_consultation(
 
         import_questions(
             consultation,
-            timestamp,
             sign_off,
         )
 

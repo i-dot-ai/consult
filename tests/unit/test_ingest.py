@@ -371,7 +371,7 @@ class TestQuestionsImport:
         Respondent.objects.create(consultation=consultation, themefinder_id=2)
 
         # Run the import
-        import_questions(consultation, "2024-01-01")
+        import_questions(consultation)
 
         # Verify results
         questions = Question.objects.filter(consultation=consultation)
@@ -417,15 +417,10 @@ class TestQuestionsImport:
         mock_s3_client.get_object.side_effect = get_incomplete_object_side_effect
         mock_boto3.client.return_value = mock_s3_client
 
-        consultation = Consultation.objects.create(title="Test Consultation")
-        consultation_code = "test"
+        consultation = Consultation.objects.create(title="Test Consultation", code="test")
 
         with pytest.raises(ValueError) as exc_info:
-            import_questions(
-                consultation,
-                consultation_code,
-                "2024-01-01",
-            )
+            import_questions(consultation, False)
 
         assert "Question text is required" in str(exc_info.value)
 
