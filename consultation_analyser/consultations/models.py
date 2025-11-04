@@ -53,6 +53,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     )
     s3_bucket = models.CharField(max_length=256, null=True)
     code = models.SlugField(max_length=256, null=True, blank=True)
+    timestamp = models.SlugField(max_length=256, null=True, blank=True)
 
     def save(self, *args, **kwargs):
         if not self.slug:
@@ -69,6 +70,15 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
         constraints = [
             models.UniqueConstraint(fields=["slug"], name="unique_consultation_slug"),
         ]
+
+    @property
+    def s3_output_folder(self) -> str:
+        if self.code is None:
+            raise ValueError("code must be defined")
+        if self.timestamp is None:
+            raise ValueError("timestamp must be defined")
+        return f"app_data/consultations/{self.code}/outputs/mapping/{self.timestamp}"
+
 
     def __str__(self):
         return shorten(self.slug, width=64, placeholder="...")
@@ -101,6 +111,13 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         null=True,
         blank=True,
     )
+
+    @property
+    def s3_output_folder(self) -> str:
+        return f"{self.consultation.s3_output_folder}/question_part_{self.number}/"
+
+
+
 
     @property
     def multiple_choice_options(self) -> list:
