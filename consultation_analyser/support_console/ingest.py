@@ -495,9 +495,6 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
         raise
 
 
-
-
-
 def import_themes(question: Question):
     s3_client = boto3.client("s3")
     themes_file_key = f"{question.s3_output_folder}/themes.json"
@@ -529,7 +526,9 @@ def import_themes(question: Question):
 
 def import_candidate_themes(question: Question):
     s3_client = boto3.client("s3")
-    themes_file_key = f"{question.s3_output_folder}/clustered_themes.json".replace("/mapping/", "/sign_off/")
+    themes_file_key = f"{question.s3_output_folder}/clustered_themes.json".replace(
+        "/mapping/", "/sign_off/"
+    )
     try:
         response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
         theme_data = json.loads(response["Body"].read())
@@ -636,9 +635,7 @@ def import_questions(
                 return
 
             if sign_off:
-                queue.enqueue(
-                    import_candidate_themes, question, depends_on=responses
-                )
+                queue.enqueue(import_candidate_themes, question, depends_on=responses)
             else:
                 themes = queue.enqueue(import_themes, question, depends_on=responses)
                 response_annotations = queue.enqueue(
@@ -790,7 +787,9 @@ def create_consultation(
             consultation_code=consultation_code,
         )
 
-        consultation = Consultation.objects.create(title=consultation_name, code=consultation_code, timestamp=timestamp)
+        consultation = Consultation.objects.create(
+            title=consultation_name, code=consultation_code, timestamp=timestamp
+        )
 
         # Add the current user to the consultation
         from consultation_analyser.authentication.models import User

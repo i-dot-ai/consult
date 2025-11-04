@@ -1,13 +1,13 @@
 ---
-import { fetchBackendApi } from "../../../../global/api";
-import { formatDate } from "../../../../global/utils";
-import type { ConsultationResponse, Question, User } from "../../../../global/types";
+import { fetchBackendApi } from "../../../global/api";
+import { formatDate } from "../../../global/utils";
+import type { ConsultationResponse, Question, User } from "../../../global/types";
 
-import Layout from "../../../../layouts/Layout.astro";
-import Section from "../../../../components/Section/Section.svelte";
-import Link from "../../../../components/Link.svelte";
-import Title from "../../../../components/Title.svelte";
-import Button from "../../../../components/inputs/Button/Button.svelte";
+import Layout from "../../../layouts/Layout.astro";
+import Section from "../../../components/Section/Section.svelte";
+import Link from "../../../components/Link.svelte";
+import Title from "../../../components/Title.svelte";
+import Button from "../../../components/inputs/Button/Button.svelte";
 
 
 const { consultationId } = Astro.params;

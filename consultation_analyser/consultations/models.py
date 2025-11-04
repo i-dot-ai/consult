@@ -79,7 +79,6 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
             raise ValueError("timestamp must be defined")
         return f"app_data/consultations/{self.code}/outputs/mapping/{self.timestamp}"
 
-
     def __str__(self):
         return shorten(self.slug, width=64, placeholder="...")
 
@@ -115,9 +114,6 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     @property
     def s3_output_folder(self) -> str:
         return f"{self.consultation.s3_output_folder}/question_part_{self.number}/"
-
-
-
 
     @property
     def multiple_choice_options(self) -> list:

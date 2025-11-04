@@ -281,7 +281,3 @@ class RespondentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Respondent
         fields = ["id", "themefinder_id", "demographics", "name"]
-
-
-class QuestionExportSerializer(serializers.Serializer):
-    s3_key = serializers.SlugField()

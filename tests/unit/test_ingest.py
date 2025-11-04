@@ -364,15 +364,14 @@ class TestQuestionsImport:
         mock_s3_client.get_object.side_effect = get_object_side_effect
         mock_boto3.client.return_value = mock_s3_client
 
-        consultation = Consultation.objects.create(title="Test Consultation", code="test", timestamp="2024-01-01")
+        consultation = Consultation.objects.create(
+            title="Test Consultation", code="test", timestamp="2024-01-01"
+        )
         Respondent.objects.create(consultation=consultation, themefinder_id=1)
         Respondent.objects.create(consultation=consultation, themefinder_id=2)
 
         # Run the import
-        import_questions(
-            consultation,
-            "2024-01-01"
-        )
+        import_questions(consultation, "2024-01-01")
 
         # Verify results
         questions = Question.objects.filter(consultation=consultation)
@@ -486,7 +485,9 @@ class TestMappingImport:
         mock_s3_client.get_object.side_effect = get_object_side_effect
         mock_boto3.client.return_value = mock_s3_client
 
-        consultation = Consultation.objects.create(title="Test Consultation", code="test", timestamp="2024-01-01")
+        consultation = Consultation.objects.create(
+            title="Test Consultation", code="test", timestamp="2024-01-01"
+        )
         question = Question.objects.create(consultation=consultation, number=1)
         SelectedTheme.objects.create(question=question, name="name", description="", key="A")
         respondent_1 = Respondent.objects.create(consultation=consultation, themefinder_id=1)

@@ -6,11 +6,9 @@ from rest_framework.viewsets import ModelViewSet
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.api.permissions import CanSeeConsultation
 from consultation_analyser.consultations.api.serializers import (
-    QuestionExportSerializer,
     QuestionSerializer,
     ThemeInformationSerializer,
 )
-from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 
 
 class QuestionViewSet(ModelViewSet):
@@ -44,14 +42,3 @@ class QuestionViewSet(ModelViewSet):
         serializer.is_valid()
 
         return Response(serializer.data)
-
-    @action(detail=True, methods=["patch"], url_path="export")
-    def export_user_theme(self, request, pk=None, consultation_pk=None):
-        question = self.get_object()
-        serializer = QuestionExportSerializer(data=request.data)
-        if serializer.is_valid():
-            export_user_theme_job(question_id=question.id, s3_key=serializer.validated_data["s3_key"])
-            return Response(serializer.data)
-
-        return Response(serializer.errors, status=400)
-
