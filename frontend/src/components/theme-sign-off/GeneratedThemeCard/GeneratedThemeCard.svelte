@@ -5,6 +5,7 @@
 
   import type { GeneratedTheme } from "../../../global/types";
   import { createFetchStore } from "../../../global/stores";
+  import { getApiAnswersUrl } from "../../../global/routes";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
@@ -50,10 +51,6 @@
   } = createFetchStore(answersMock);
 
   let disabled = $derived(Boolean(theme.selectedtheme_id));
-
-  const shouldShowAnswers = () => {
-    return showAnswers && !disabled;
-  };
 </script>
 
 <div
@@ -68,7 +65,7 @@
           "transition-all",
           "duration-300",
           "w-auto",
-          shouldShowAnswers() ? "md:w-1/3" : "md:w-auto",
+          showAnswers && !disabled ? "md:w-1/3" : "md:w-auto",
         ])}
       >
         <div class="flex items-center justify-between mb-2">
@@ -121,9 +118,14 @@
               size="sm"
               handleClick={() => {
                 if (!$answersData) {
-                  loadAnswers(`
-                    /api/consultations/${consultationId}/responses/?searchValue=${theme.name}&searchMode=semantic
-                  `);
+                  const queryString = new URLSearchParams({
+                    searchMode: "semantic",
+                    searchValue: theme.name,
+                  }).toString();
+
+                  loadAnswers(
+                    `${getApiAnswersUrl(consultationId)}?${queryString}`
+                  );
                 }
                 showAnswers = !showAnswers;
                 answersRequested = true;
@@ -143,7 +145,7 @@
         {/if}
       </div>
 
-      {#if shouldShowAnswers()}
+      {#if showAnswers && !disabled}
         <aside
           transition:fly={{ x: 300 }}
           class="grow sm:border-l sm:border-neutral-200 sm:ml-4 sm:pl-4 pt-4 sm:pt-0"
