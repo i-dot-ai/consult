@@ -104,7 +104,7 @@
                   <Docs />
                 </MaterialIcon>
                 <span class="block w-full text-start">
-                  Respresentative Responses
+                  Representative Responses
                 </span>
               </Button>
             </footer>
