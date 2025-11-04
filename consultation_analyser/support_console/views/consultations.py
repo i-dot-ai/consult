@@ -374,32 +374,31 @@ def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UU
 def themefinder(request: HttpRequest) -> HttpResponse:
     logger.refresh_context()
 
-    consultation_folders = ingest.get_folder_names_for_dropdown()
-    bucket_name = settings.AWS_BUCKET_NAME
-    current_user_id = request.user.id
+    candidate_consultation_codes = [
+        {"text": x.code, "value": x.id} for x in Consultation.objects.filter(timestamp__isnull=True)
+    ]
 
-    consultation_code = None
-    consultation_name = None
     if request.method == "POST":
-        consultation_code = request.POST.get("consultation_code")
+        if consultation_id := request.POST.get("consultation_id"):
+            consultation = get_object_or_404(Consultation, id=consultation_id)
 
-        if consultation_code:
-            consultation = get_object_or_404(
-                Consultation, code=consultation_code, timestamp__isnull=True
-            )
-            consultation.update(timestamp=date.today().isoformat())
-            export_selected_themes(consultation)
+            consultation.timestamp = date.today().isoformat()
+            consultation.save()
+
+            for question in consultation.question_set.all():
+                export_selected_themes(question)
+
             try:
                 # Send message to SQS
                 ingest.send_job_to_sqs(
-                    consultation_code, consultation.title, current_user_id, "THEMEFINDER"
+                    consultation.code, consultation.title, request.user.id, "THEMEFINDER"
                 )
                 messages.success(
                     request,
                     format_html(
                         "Themefinder job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
-                        consultation_name,
-                        consultation_code,
+                        consultation.title,
+                        consultation.code,
                     ),
                 )
 
@@ -409,10 +408,7 @@ def themefinder(request: HttpRequest) -> HttpResponse:
             messages.error(request, "Please select a consultation folder.")
 
     context = {
-        "bucket_name": bucket_name,
-        "consultation_folders": consultation_folders,
-        "consultation_code": consultation_code,
-        "consultation_name": consultation_name,
+        "candidate_consultation_codes": candidate_consultation_codes,
     }
 
     return render(request, "support_console/consultations/themefinder.html", context=context)

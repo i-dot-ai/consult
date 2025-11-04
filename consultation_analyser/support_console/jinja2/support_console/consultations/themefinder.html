@@ -41,21 +41,21 @@
 </div>
 {% endif %}
 
-<p class="govuk-body-l">Run Themefinder to analyse the consultation responses.</p>
-<p class="govuk-body">Themefinder automatically processes consultation responses using advanced topic modelling techniques to identify common themes and patterns.</p>
+<p class="govuk-body-l">Annotate responses with themes, identify their sentiment, and determine whether they are evidence-rich of not.</p>
+<p class="govuk-body">This page is deprecated, in future this action will be triggered automatically.</p>
 
 <div class="govuk-grid-row">
   <div class="govuk-grid-column-two-thirds">
     <form method="post" novalidate>{{ csrf_input }}
 
       {{ govukSelect({
-        'id': 'consultation_code',
-        'name': 'consultation_code',
+        'id': 'consultation_id',
+        'name': 'consultation_id',
         'label': {
-          'text': 'Select consultation folder',
+          'text': 'Select consultation',
           'classes': 'govuk-label--s'
         },
-        'items': consultation_folders
+        'items': candidate_consultation_codes
       }) }}
 
       {{ govukButton({
