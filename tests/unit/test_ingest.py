@@ -289,10 +289,6 @@ class TestImportConsultationFullFlow:
         responses = Response.objects.filter(question__consultation=consultation)
         assert responses.count() == 3
 
-        # themes = CandidateTheme.objects.filter(question__consultation=consultation)
-        # assert themes.count() == 1
-        # assert themes.first().name == "A"
-
         annotations = ResponseAnnotation.objects.filter(
             response__question__consultation=consultation
         )
