@@ -522,11 +522,11 @@ def import_candidate_themes(question: Question):
     s3_client = boto3.client("s3")
     try:
         response = s3_client.get_object(
-            Bucket=settings.AWS_BUCKET_NAME, Key=question.clustered_themes_file
+            Bucket=settings.AWS_BUCKET_NAME, Key=question.candidate_themes_file
         )
         theme_data = json.loads(response["Body"].read())
     except BaseException:
-        logger.info("couldn't load file {file}", file=question.clustered_themes_file)
+        logger.info("couldn't load file {file}", file=question.candidate_themes_file)
         return
 
     # First pass: create all themes without parent relationships

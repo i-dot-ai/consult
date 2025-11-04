@@ -115,7 +115,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         return f"{self.consultation.get_folder(kind)}/question_part_{self.number}/{file_name}"
 
     @property
-    def clustered_themes_file(self):
+    def candidate_themes_file(self):
         return self.get_folder("sign_off", "clustered_themes.json")
 
     @property
