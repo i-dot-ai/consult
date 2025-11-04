@@ -28,13 +28,13 @@ export const getConsultationAnalysisUrl = (consultationId: string) => {
 };
 
 export const getThemeSignoffUrl = (consultationId: string) => {
-  return `${Routes.Consultations}/${consultationId}/theme-signoff`;
+  return `${Routes.Consultations}/${consultationId}/theme-sign-off`;
 };
 export const getThemeSignoffDetailUrl = (
   consultationId: string,
   questionId: string,
 ) => {
-  return `${Routes.Consultations}/${consultationId}/theme-signoff/${questionId}`;
+  return `${Routes.Consultations}/${consultationId}/theme-sign-off/${questionId}`;
 };
 
 export const getConsultationEvalUrl = (consultationId: string) => {
