@@ -5,6 +5,7 @@
 
   import type { GeneratedTheme } from "../../../global/types";
   import { createFetchStore } from "../../../global/stores";
+  import { getApiAnswersUrl } from "../../../global/routes";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
@@ -91,9 +92,14 @@
                 size="sm"
                 handleClick={() => {
                   if (!$answersData) {
-                    loadAnswers(`
-                      /api/consultations/${consultationId}/responses/?searchValue=${theme.name}&searchMode=semantic
-                    `);
+                    const queryString = new URLSearchParams({
+                      searchMode: "semantic",
+                      searchValue: theme.name,
+                    }).toString();
+
+                    loadAnswers(
+                      `${getApiAnswersUrl(consultationId)}?${queryString}`
+                    );
                   }
                   showAnswers = !showAnswers;
                   answersRequested = true;
