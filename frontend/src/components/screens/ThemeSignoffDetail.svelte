@@ -16,6 +16,7 @@
     getApiUpdateSelectedThemeUrl,
     getThemeSignoffUrl,
   } from "../../global/routes";
+  import { flattenArray } from "../../global/utils";
 
   import Panel from "../dashboard/Panel/Panel.svelte";
   import TitleRow from "../dashboard/TitleRow.svelte";
@@ -49,9 +50,8 @@
 
   let isConfirmSignoffModalOpen = $state(false);
   let isErrorModalOpen = $state(false);
-  let expandAllTrigger = $state(0);
-  let forceExpand = $state(false);
   let addingCustomTheme = $state(false);
+  let expandedThemes: string[] = $state([]);
 
   const {
     load: loadSelectedThemes,
@@ -108,6 +108,12 @@
     data: questionData,
     error: questionError,
   } = createFetchStore(questionDataMock);
+
+  let flatGeneratedThemes = $derived(flattenArray($generatedThemesData?.results));
+
+  $effect(() => {
+    expandedThemes = flatGeneratedThemes.map(theme => theme.id);
+  })
 
   $effect(() => {
     loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
@@ -206,6 +212,25 @@
     }
     return `${themes.length} selected theme${themes.length > 1 ? "s" : ""}`;
   };
+
+  const isThemeExpanded = (themeId: string): boolean => {
+    return expandedThemes?.includes(themeId);
+  }
+  const isAllThemesExpanded = (): boolean => {
+    return expandedThemes.length === flatGeneratedThemes.length
+  };
+  const expandAllThemes = () => {
+    expandedThemes = flatGeneratedThemes.map(theme => theme.id);
+  }
+  const collapseAllThemes = () => {
+    expandedThemes = [];
+  }
+  const expandTheme = (themeId: string) => {
+    expandedThemes = [...expandedThemes, themeId];
+  }
+  const collapseTheme = (themeId: string) => {
+    expandedThemes = expandedThemes.filter(theme => theme !== themeId);
+  }
 </script>
 
 <TitleRow
@@ -428,8 +453,11 @@
               <Button
                 size="sm"
                 handleClick={() => {
-                  expandAllTrigger = expandAllTrigger + 1;
-                  forceExpand = true;
+                  if (isAllThemesExpanded()) {
+                    collapseAllThemes();
+                  } else {
+                    expandAllThemes();
+                  }
                 }}
               >
                 <span
@@ -441,7 +469,9 @@
                   <MaterialIcon color="fill-emerald-700">
                     <Stacks />
                   </MaterialIcon>
-                  Expand All
+                  {isAllThemesExpanded()
+                    ? "Collapse All"
+                    : "Expand All"}
                 </span>
               </Button>
             </div>
@@ -457,10 +487,15 @@
       {#each $generatedThemesData?.results as theme}
         <GeneratedThemeCard
           {consultationId}
-          selectedThemes={$selectedThemesData?.results || []}
           {theme}
-          {forceExpand}
-          setForceExpand={(newVal) => (forceExpand = newVal)}
+          {expandedThemes}
+          setExpandedThemes={(id) => {
+            if (isThemeExpanded(id)) {
+              collapseTheme(id);
+            } else {
+              expandTheme(id);
+            }
+          }}
           handleSelect={handleSelectGeneratedTheme}
           {answersMock}
         />

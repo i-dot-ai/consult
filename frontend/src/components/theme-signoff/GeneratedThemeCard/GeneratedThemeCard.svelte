@@ -3,7 +3,7 @@
 
   import { slide, fly } from "svelte/transition";
 
-  import type { GeneratedTheme, SelectedTheme } from "../../../global/types";
+  import type { GeneratedTheme } from "../../../global/types";
   import { createFetchStore } from "../../../global/stores";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
@@ -20,8 +20,8 @@
     theme: GeneratedTheme;
     level?: number;
     leftPadding?: number;
-    forceExpand?: boolean;
-    setForceExpand?: (newValue: boolean) => void;
+    expandedThemes: string[];
+    setExpandedThemes: (themeId: string) => void;
     handleSelect: (theme: GeneratedTheme) => void;
     maxAnswers?: number;
     answersMock?: Function;
@@ -31,14 +31,14 @@
     theme,
     level = 0,
     leftPadding = 2,
-    forceExpand = false,
-    setForceExpand = () => {},
+    expandedThemes = [],
+    setExpandedThemes = () => {},
     handleSelect = () => {},
     maxAnswers = 10,
     answersMock,
   }: Props = $props();
 
-  let expanded = $state(true);
+  let expanded = $derived(expandedThemes.includes(theme.id));
   let showAnswers = $state(false);
   let answersRequested = $state(false);
 
@@ -50,12 +50,6 @@
   } = createFetchStore(answersMock);
 
   let disabled = $derived(Boolean(theme.selectedtheme_id));
-
-  $effect(() => {
-    if (forceExpand) {
-      expanded = true;
-    }
-  });
 
   const shouldShowAnswers = () => {
     return showAnswers && !disabled;
@@ -82,10 +76,7 @@
             {#if theme.children?.length! > 0}
               <Button
                 variant="ghost"
-                handleClick={() => {
-                  expanded = !expanded;
-                  setForceExpand(false);
-                }}
+                handleClick={() => setExpandedThemes(theme.id)}
               >
                 <div
                   class={clsx([
@@ -179,10 +170,10 @@
           {consultationId}
           theme={childTheme}
           level={level + 1}
-          {forceExpand}
-          {setForceExpand}
           {handleSelect}
           {answersMock}
+          {expandedThemes}
+          {setExpandedThemes}
         />
       {/each}
     </div>
