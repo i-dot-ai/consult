@@ -19,6 +19,7 @@ export interface Question {
   has_multiple_choice?: boolean;
   multiple_choice_answer?: QuestionMultiAnswer[];
   proportion_of_audited_answers?: number;
+  theme_status?: string;
 }
 
 export interface Consultation {
