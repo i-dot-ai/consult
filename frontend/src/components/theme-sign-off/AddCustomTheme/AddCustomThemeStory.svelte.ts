@@ -7,7 +7,7 @@ const handleCancel = () => alert("Cancel event triggered");
 export default {
   name: "AddCustomTheme",
   component: AddCustomTheme,
-  category: "Theme Signoff",
+  category: "Theme Sign Off",
   props: [
     {
       name: "variant",

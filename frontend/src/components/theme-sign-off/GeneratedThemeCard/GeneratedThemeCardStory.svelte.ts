@@ -22,7 +22,7 @@ let answersMock = () => ({
 export default {
   name: "GeneratedThemeCard",
   component: GeneratedThemeCard,
-  category: "Theme Signoff",
+  category: "Theme Sign Off",
   props: [
     {
       name: "theme",

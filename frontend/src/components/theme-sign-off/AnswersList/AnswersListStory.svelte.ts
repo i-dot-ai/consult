@@ -7,7 +7,7 @@ let answers = $state(["Answer 1", "Answer 2", "Answer 3"]);
 export default {
   name: "AnswersList",
   component: AnswersList,
-  category: "Theme Signoff",
+  category: "Theme Sign Off",
   props: [
     {
       name: "variant",
