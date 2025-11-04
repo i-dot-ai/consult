@@ -364,15 +364,14 @@ class TestQuestionsImport:
         mock_s3_client.get_object.side_effect = get_object_side_effect
         mock_boto3.client.return_value = mock_s3_client
 
-        consultation = Consultation.objects.create(title="Test Consultation", code="test")
+        consultation = Consultation.objects.create(
+            title="Test Consultation", code="test", timestamp="2024-01-01"
+        )
         Respondent.objects.create(consultation=consultation, themefinder_id=1)
         Respondent.objects.create(consultation=consultation, themefinder_id=2)
 
         # Run the import
-        import_questions(
-            consultation,
-            "2024-01-01",
-        )
+        import_questions(consultation)
 
         # Verify results
         questions = Question.objects.filter(consultation=consultation)
@@ -421,10 +420,7 @@ class TestQuestionsImport:
         consultation = Consultation.objects.create(title="Test Consultation", code="test")
 
         with pytest.raises(ValueError) as exc_info:
-            import_questions(
-                consultation,
-                "2024-01-01",
-            )
+            import_questions(consultation, False)
 
         assert "Question text is required" in str(exc_info.value)
 
@@ -483,9 +479,10 @@ class TestMappingImport:
         mock_s3_client = Mock()
         mock_s3_client.get_object.side_effect = get_object_side_effect
         mock_boto3.client.return_value = mock_s3_client
-        output_folder = "app_data/consultations/test/outputs/mapping/2024-01-01/"
 
-        consultation = Consultation.objects.create(title="Test Consultation")
+        consultation = Consultation.objects.create(
+            title="Test Consultation", code="test", timestamp="2024-01-01"
+        )
         question = Question.objects.create(consultation=consultation, number=1)
         SelectedTheme.objects.create(question=question, name="name", description="", key="A")
         respondent_1 = Respondent.objects.create(consultation=consultation, themefinder_id=1)
@@ -494,7 +491,7 @@ class TestMappingImport:
         Response.objects.create(respondent=respondent_2, question=question, free_text="no")
 
         # Run the import
-        import_response_annotations(question, output_folder)
+        import_response_annotations(question)
 
         # Verify results
         annotations = ResponseAnnotation.objects.filter(
