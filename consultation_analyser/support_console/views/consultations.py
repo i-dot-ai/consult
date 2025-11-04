@@ -1,4 +1,5 @@
 import logging
+from datetime import date
 from uuid import UUID
 
 from django.conf import settings
@@ -381,12 +382,12 @@ def themefinder(request: HttpRequest) -> HttpResponse:
     consultation_name = None
     if request.method == "POST":
         consultation_code = request.POST.get("consultation_code")
-        timestamp = request.POST.get("timestamp")
 
         if consultation_code:
             consultation = get_object_or_404(
-                Consultation, code=consultation_code, timestamp=timestamp
+                Consultation, code=consultation_code, timestamp__isnull=True
             )
+            consultation.update(timestamp=date.today().isoformat())
             export_selected_themes(consultation)
             try:
                 # Send message to SQS
