@@ -11,7 +11,7 @@
 
   import {
     getApiQuestionsUrl,
-    getThemeSignoffDetailUrl,
+    getThemeSignOffDetailUrl,
   } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
   import Tag from "../Tag/Tag.svelte";
@@ -84,7 +84,7 @@
               highlightText={searchValue}
               clickable={question.has_free_text}
               disabled={!question.has_free_text}
-              url={getThemeSignoffDetailUrl(consultationId, question.id)}
+              url={getThemeSignOffDetailUrl(consultationId, question.id)}
               subtext={!question.has_free_text
                 ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
                 : undefined}

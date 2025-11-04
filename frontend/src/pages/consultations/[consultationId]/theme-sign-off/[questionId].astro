@@ -4,8 +4,8 @@ import { fetchBackendApi } from "../../../../global/api";
 import Layout from "../../../../layouts/Layout.astro";
 import Section from "../../../../components/Section/Section.svelte";
 
-import ThemeSignoffDetail from "../../../../components/screens/ThemeSignoffDetail.svelte";
-import ThemeSignoffDetailCompleted from "../../../../components/screens/ThemeSignoffDetailCompleted.svelte";
+import ThemeSignOffDetail from "../../../../components/screens/ThemeSignOffDetail.svelte";
+import ThemeSignOffDetailCompleted from "../../../../components/screens/ThemeSignOffDetailCompleted.svelte";
 
 const { consultationId, questionId } = Astro.params;
 const question = await fetchBackendApi(Astro, `/api/consultations/${consultationId}/questions/${questionId}`);
@@ -14,13 +14,13 @@ const question = await fetchBackendApi(Astro, `/api/consultations/${consultation
   <Section>
     {(question?.theme_status === "confirmed")
       ?
-        <ThemeSignoffDetailCompleted
+        <ThemeSignOffDetailCompleted
           client:only
           consultationId={consultationId}
           questionId={questionId}
-        ></ThemeSignoffDetailCompleted>
+        ></ThemeSignOffDetailCompleted>
       :
-        <ThemeSignoffDetail
+        <ThemeSignOffDetail
           client:only
           consultationId={consultationId}
           questionId={questionId}

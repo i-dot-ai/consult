@@ -10,7 +10,7 @@
     Routes,
     getConsultationDetailUrl,
     getConsultationEvalUrl,
-    getThemeSignoffUrl,
+    getThemeSignOffUrl,
   } from "../../global/routes.ts";
 
   let consultations: Consultation[] = [];
@@ -47,7 +47,7 @@
             <Link href={getConsultationEvalUrl(consultation.id)}>
               View Evaluation
             </Link>
-            <Link href={getThemeSignoffUrl(consultation.id)}>
+            <Link href={getThemeSignOffUrl(consultation.id)}>
               Theme Sign Off
             </Link>
             {#if dashboardPermitted}

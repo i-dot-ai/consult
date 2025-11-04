@@ -5,7 +5,7 @@
 
   import { createFetchStore } from "../../global/stores";
   import {
-    getApiConfirmSignoffUrl,
+    getApiConfirmSignOffUrl,
     getApiCreateSelectedThemeUrl,
     getApiDeleteSelectedThemeUrl,
     getApiGetGeneratedThemesUrl,
@@ -14,7 +14,7 @@
     getApiQuestionUrl,
     getApiSelectGeneratedThemeUrl,
     getApiUpdateSelectedThemeUrl,
-    getThemeSignoffUrl,
+    getThemeSignOffUrl,
   } from "../../global/routes";
   import { flattenArray } from "../../global/utils";
 
@@ -23,15 +23,15 @@
   import Button from "../inputs/Button/Button.svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
   import Price from "../svg/material/Price.svelte";
-  import AddCustomTheme from "../theme-signoff/AddCustomTheme/AddCustomTheme.svelte";
-  import SelectedThemeCard from "../theme-signoff/SelectedThemeCard/SelectedThemeCard.svelte";
+  import AddCustomTheme from "../theme-sign-off/AddCustomTheme/AddCustomTheme.svelte";
+  import SelectedThemeCard from "../theme-sign-off/SelectedThemeCard/SelectedThemeCard.svelte";
+  import GeneratedThemeCard from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCard.svelte";
   import CheckCircle from "../svg/material/CheckCircle.svelte";
   import OnboardingTour from "../OnboardingTour/OnboardingTour.svelte";
   import SmartToy from "../svg/material/SmartToy.svelte";
   import Stacks from "../svg/material/Stacks.svelte";
   import Tag from "../Tag/Tag.svelte";
   import Modal from "../Modal/Modal.svelte";
-  import GeneratedThemeCard from "../theme-signoff/GeneratedThemeCard/GeneratedThemeCard.svelte";
   import Alert from "../Alert.svelte";
   import Warning from "../svg/material/Warning.svelte";
 
@@ -48,7 +48,7 @@
     selectGeneratedThemeMock,
   } = $props();
 
-  let isConfirmSignoffModalOpen = $state(false);
+  let isConfirmSignOffModalOpen = $state(false);
   let isErrorModalOpen = $state(false);
   let addingCustomTheme = $state(false);
   let expandedThemes: string[] = $state([]);
@@ -75,10 +75,10 @@
   } = createFetchStore(createThemeMock);
 
   const {
-    load: loadConfirmSignoff,
-    loading: isConfirmSignoffLoading,
-    data: confirmSignoffData,
-    error: confirmSignoffError,
+    load: loadConfirmSignOff,
+    loading: isConfirmSignOffLoading,
+    data: confirmSignOffData,
+    error: confirmSignOffError,
   } = createFetchStore();
 
   const {
@@ -190,20 +190,20 @@
     );
   };
 
-  const confirmSignoff = async () => {
-    await loadConfirmSignoff(
-      getApiConfirmSignoffUrl(consultationId, questionId),
+  const confirmSignOff = async () => {
+    await loadConfirmSignOff(
+      getApiConfirmSignOffUrl(consultationId, questionId),
       "PATCH",
       {
         theme_status: "confirmed",
       },
     );
 
-    if ($confirmSignoffError) {
-      isConfirmSignoffModalOpen = false;
+    if ($confirmSignOffError) {
+      isConfirmSignOffModalOpen = false;
       isErrorModalOpen = true;
     } else {
-      location.replace(getThemeSignoffUrl(consultationId));
+      location.replace(getThemeSignOffUrl(consultationId));
     }
   };
   const numSelectedThemesText = (themes?: Array<any>): string => {
@@ -243,7 +243,7 @@
   <div slot="aside">
     <Button
       size="xs"
-      handleClick={() => (location.href = getThemeSignoffUrl(consultationId))}
+      handleClick={() => (location.href = getThemeSignOffUrl(consultationId))}
       >Choose another question</Button
     >
   </div>
@@ -342,7 +342,7 @@
         fullWidth={true}
         disabled={$isSelectedThemesLoading ||
           $selectedThemesData?.results.length === 0}
-        handleClick={() => (isConfirmSignoffModalOpen = !isConfirmSignoffModalOpen)}
+        handleClick={() => (isConfirmSignOffModalOpen = !isConfirmSignOffModalOpen)}
       >
         <div
           id="onboarding-step-3"
@@ -364,10 +364,10 @@
     {/if}
 
     <Modal
-      open={isConfirmSignoffModalOpen}
-      setOpen={(newOpen: boolean) => (isConfirmSignoffModalOpen = newOpen)}
+      open={isConfirmSignOffModalOpen}
+      setOpen={(newOpen: boolean) => (isConfirmSignOffModalOpen = newOpen)}
       confirmText={"Confirm Sign Off"}
-      handleConfirm={confirmSignoff}
+      handleConfirm={confirmSignOff}
     >
       <div class="flex items-center gap-2 mb-2">
         <MaterialIcon color="fill-primary">
@@ -528,11 +528,11 @@
     <h3 class="text-orange-600 text-lg">Theme Update Failed</h3>
   </div>
 
-  <p>Theme failed to update due to error: {$confirmSignoffError}</p>
+  <p>Theme failed to update due to error: {$confirmSignOffError}</p>
 </Modal>
 
 <OnboardingTour
-  key="theme-signoff"
+  key="theme-sign-off"
   steps={[
     {
       id: "onboarding-step-1",

@@ -1,13 +1,13 @@
 ---
 import Layout from "../../../../layouts/Layout.astro";
 
-import ThemeSignoffArchive from "../../../../components/screens/ThemeSignoffArchive.svelte";
+import ThemeSignOffArchive from "../../../../components/screens/ThemeSignOffArchive.svelte";
 import Section from "../../../../components/Section/Section.svelte";
 
 const { consultationId } = Astro.params;
 ---
 <Layout>
     <Section>
-        <ThemeSignoffArchive client:load consultationId={consultationId} />
+        <ThemeSignOffArchive client:load consultationId={consultationId} />
     </Section>
 </Layout>

@@ -1,4 +1,4 @@
-import ThemeSignoffDetail from "./ThemeSignoffDetail.svelte";
+import ThemeSignOffDetail from "./ThemeSignOffDetail.svelte";
 
 let consultationId = $state("");
 let questionId = $state("");
@@ -45,118 +45,85 @@ let generatedThemes = $state([
 ]);
 
 export default {
-  name: "ThemeSignoffDetail",
-  component: ThemeSignoffDetail,
+  name: "ThemeSignOffDetail",
+  component: ThemeSignOffDetail,
   category: "Theme Signoff",
   props: [
     { name: "consultationId", value: consultationId, type: "text" },
     { name: "questionId", value: questionId, type: "text" },
-    { name: "questionDataMock", value: () => ({ number: 1 }) },
+    { name: "questionDataMock", value: () => ({ "number": 1 }) },
 
-    {
-      name: "generatedThemesMock",
-      value: () => ({ results: generatedThemes }),
-    },
+    { name: "generatedThemesMock" , value: () => ({ "results": generatedThemes}) },
 
-    { name: "selectedThemesMock", value: () => ({ results: selectedThemes }) },
+    { name: "selectedThemesMock", value: () => ({ "results": selectedThemes }) },
 
-    {
-      name: "removeThemeMock",
-      value: (req) => {
-        const themeId = req.url
-          .split("/selected-themes/")[1]
-          .replaceAll("/", "");
-        selectedThemes = [...selectedThemes].filter(
-          (theme) => theme.id !== themeId,
-        );
+    { name: "removeThemeMock", value: (req) => {
+      const themeId = req.url.split("/selected-themes/")[1].replaceAll("/", "");
+      selectedThemes = [...selectedThemes].filter(theme => theme.id !== themeId);
 
-        const generatedTheme = findNestedTheme(
-          generatedThemes,
-          (theme) => theme.selectedtheme_id === themeId,
-        );
-        generatedTheme.selectedtheme_id = null;
-      },
-    },
+      const generatedTheme = findNestedTheme(generatedThemes, (theme) => theme.selectedtheme_id === themeId);
+      generatedTheme.selectedtheme_id = null;
+    }},
 
-    {
-      name: "createThemeMock",
-      value: (req) => {
-        const { name, description } = JSON.parse(req.body);
-        const newTheme = {
-          id: (selectedThemes.length + 1).toString(),
-          name: name,
-          description: description,
-          version: 1,
-          last_modified_by: "email@example.com",
-          modified_at: new Date().toISOString(),
-        };
-        selectedThemes = [...selectedThemes, newTheme];
-      },
-    },
+    { name: "createThemeMock", value: (req) => {
+      const { name, description } = JSON.parse(req.body);
+      const newTheme = {
+        "id": (selectedThemes.length + 1).toString(),
+        "name": name,
+        "description": description,
+        "version": 1,
+        "last_modified_by": "email@example.com",
+        "modified_at": new Date().toISOString(),
+      };
+      selectedThemes = [...selectedThemes, newTheme];
+    }},
 
-    {
-      name: "updateThemeMock",
-      value: (req) => {
-        const themeId = req.url
-          .split("/selected-themes/")[1]
-          .replaceAll("/", "");
-        const { name, description, version } = JSON.parse(req.body);
+    { name: "updateThemeMock", value: (req) => {
+      const themeId = req.url.split("/selected-themes/")[1].replaceAll("/", "");
+      const { name, description, version } = JSON.parse(req.body);
 
-        const newTheme = {
-          id: themeId,
-          name: name,
-          description: description,
-          version: version,
-          last_modified_by: "email@example.com",
-          modified_at: new Date().toISOString(),
-        };
+      const newTheme = {
+        "id": themeId,
+        "name": name,
+        "description": description,
+        "version": version,
+        "last_modified_by": "email@example.com",
+        "modified_at": new Date().toISOString(),
+      };
 
-        selectedThemes = [...selectedThemes].map((theme) =>
-          theme.id === themeId ? newTheme : theme,
-        );
-      },
-    },
+      selectedThemes = [...selectedThemes].map(
+        theme => theme.id === themeId ? newTheme : theme
+      );
+    }},
 
-    {
-      name: "answersMock",
-      value: () => ({
-        all_respondents: [
-          { free_text_answer_text: "Example answer 1" },
-          { free_text_answer_text: "Example answer 2" },
-          { free_text_answer_text: "Example answer 3" },
-        ],
-      }),
-    },
+    { name: "answersMock", value: () =>({ all_respondents: [
+        {free_text_answer_text: "Example answer 1"},
+        {free_text_answer_text: "Example answer 2"},
+        {free_text_answer_text: "Example answer 3"},
+      ]
+    })},
 
-    {
-      name: "selectGeneratedThemeMock",
-      value: (req) => {
-        const themeId = req.url
-          .split("/candidate-themes/")[1]
-          .split("/select/")[0];
+    { name: "selectGeneratedThemeMock", value: (req) => {
+      const themeId = req.url.split("/candidate-themes/")[1].split("/select/")[0];
+      
+      // Recursively search child themes
+      let selectedGeneratedTheme = findNestedTheme(generatedThemes, (theme) => theme.id === themeId);
 
-        // Recursively search child themes
-        let selectedGeneratedTheme = findNestedTheme(
-          generatedThemes,
-          (theme) => theme.id === themeId,
-        );
+      const newSelectedThemeId = (selectedThemes.length + 1).toString();
 
-        const newSelectedThemeId = (selectedThemes.length + 1).toString();
+      const newSelectedTheme = {
+        id: newSelectedThemeId,
+        name: selectedGeneratedTheme?.name,
+        description: selectedGeneratedTheme?.description,
+        version: 1,
+        candidatetheme_id: selectedGeneratedTheme?.id,
+        last_modified_by: "email@example.com",
+        modified_at: new Date().toISOString(),
+      }
 
-        const newSelectedTheme = {
-          id: newSelectedThemeId,
-          name: selectedGeneratedTheme?.name,
-          description: selectedGeneratedTheme?.description,
-          version: 1,
-          candidatetheme_id: selectedGeneratedTheme?.id,
-          last_modified_by: "email@example.com",
-          modified_at: new Date().toISOString(),
-        };
-
-        selectedThemes = [...selectedThemes, newSelectedTheme];
-        selectedGeneratedTheme.selectedtheme_id = newSelectedThemeId;
-      },
-    },
+      selectedThemes = [...selectedThemes, newSelectedTheme];
+      selectedGeneratedTheme.selectedtheme_id = newSelectedThemeId;
+    }}
   ],
   stories: [],
 };
@@ -173,4 +140,4 @@ const findNestedTheme = (themes, compareFunc) => {
       }
     }
   }
-};
+}

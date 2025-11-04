@@ -27,10 +27,10 @@ export const getConsultationAnalysisUrl = (consultationId: string) => {
   return `${Routes.Consultations}/${consultationId}/analysis/`;
 };
 
-export const getThemeSignoffUrl = (consultationId: string) => {
+export const getThemeSignOffUrl = (consultationId: string) => {
   return `${Routes.Consultations}/${consultationId}/theme-sign-off`;
 };
-export const getThemeSignoffDetailUrl = (
+export const getThemeSignOffDetailUrl = (
   consultationId: string,
   questionId: string,
 ) => {
@@ -144,7 +144,7 @@ export const getApiSelectGeneratedThemeUrl = (
 ) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/candidate-themes/${themeId}/select/`;
 };
-export const getApiConfirmSignoffUrl = (
+export const getApiConfirmSignOffUrl = (
   consultationId: string,
   questionId: string,
 ) => {

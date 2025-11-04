@@ -6,7 +6,7 @@
   import { createFetchStore } from "../../global/stores";
   import {
     getQuestionDetailUrl,
-    getThemeSignoffUrl,
+    getThemeSignOffUrl,
     Routes,
   } from "../../global/routes";
 
@@ -106,7 +106,7 @@
     <Button
       variant="ghost"
       size="sm"
-      handleClick={() => (location.href = getThemeSignoffUrl(consultationId))}
+      handleClick={() => (location.href = getThemeSignOffUrl(consultationId))}
     >
       <div class="flex items-center gap-2 text-neutral-700">
         <div class="rotate-180">
@@ -257,7 +257,7 @@
         <Button
           size="sm"
           handleClick={() =>
-            (location.href = getThemeSignoffUrl(consultationId))}
+            (location.href = getThemeSignOffUrl(consultationId))}
         >
           Select Another Question
         </Button>
