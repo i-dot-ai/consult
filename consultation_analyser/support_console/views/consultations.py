@@ -15,8 +15,10 @@ from consultation_analyser.consultations.dummy_data import (
     create_dummy_consultation_from_yaml_job,
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
+from consultation_analyser.consultations.models import Consultation
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
+from consultation_analyser.support_console.ingest import export_selected_themes
 
 logger = settings.LOGGER
 
@@ -379,13 +381,17 @@ def themefinder(request: HttpRequest) -> HttpResponse:
     consultation_name = None
     if request.method == "POST":
         consultation_code = request.POST.get("consultation_code")
-        consultation_name = request.POST.get("consultation_name")
+        timestamp = request.POST.get("timestamp")
 
         if consultation_code:
+            consultation = get_object_or_404(
+                Consultation, code=consultation_code, timestamp=timestamp
+            )
+            export_selected_themes(consultation)
             try:
                 # Send message to SQS
                 ingest.send_job_to_sqs(
-                    consultation_code, consultation_name, current_user_id, "THEMEFINDER"
+                    consultation_code, consultation.title, current_user_id, "THEMEFINDER"
                 )
                 messages.success(
                     request,
