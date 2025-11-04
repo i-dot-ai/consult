@@ -30,10 +30,7 @@ from consultation_analyser.support_console.file_models import (
     read_from_s3,
 )
 
-try:
-    encoding = tiktoken.encoding_for_model("text-embedding-3-small")
-except BaseException:
-    encoding = None
+encoding = tiktoken.encoding_for_model("text-embedding-3-small")
 
 logger = settings.LOGGER
 DEFAULT_BATCH_SIZE = 10_000
