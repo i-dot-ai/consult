@@ -98,7 +98,7 @@
                     }).toString();
 
                     loadAnswers(
-                      `${getApiAnswersUrl(consultationId)}?${queryString}`
+                      `${getApiAnswersUrl(consultationId)}?${queryString}`,
                     );
                   }
                   showAnswers = !showAnswers;

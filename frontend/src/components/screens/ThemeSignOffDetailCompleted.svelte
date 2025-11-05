@@ -47,12 +47,8 @@
   } = createFetchStore();
 
   $effect(() => {
-    loadSelectedThemes(
-      getApiGetSelectedThemesUrl(consultationId, questionId)
-    );
-    loadQuestion(
-      getApiQuestionUrl(consultationId, questionId)
-    );
+    loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
+    loadQuestion(getApiQuestionUrl(consultationId, questionId));
   });
 </script>
 
@@ -283,4 +279,3 @@
     margin: 0;
   }
 </style>
-

@@ -109,11 +109,13 @@
     error: questionError,
   } = createFetchStore(questionDataMock);
 
-  let flatGeneratedThemes = $derived(flattenArray($generatedThemesData?.results));
+  let flatGeneratedThemes = $derived(
+    flattenArray($generatedThemesData?.results),
+  );
 
   $effect(() => {
-    expandedThemes = flatGeneratedThemes.map(theme => theme.id);
-  })
+    expandedThemes = flatGeneratedThemes.map((theme) => theme.id);
+  });
 
   $effect(() => {
     loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
@@ -215,22 +217,22 @@
 
   const isThemeExpanded = (themeId: string): boolean => {
     return expandedThemes?.includes(themeId);
-  }
+  };
   const isAllThemesExpanded = (): boolean => {
-    return expandedThemes.length === flatGeneratedThemes.length
+    return expandedThemes.length === flatGeneratedThemes.length;
   };
   const expandAllThemes = () => {
-    expandedThemes = flatGeneratedThemes.map(theme => theme.id);
-  }
+    expandedThemes = flatGeneratedThemes.map((theme) => theme.id);
+  };
   const collapseAllThemes = () => {
     expandedThemes = [];
-  }
+  };
   const expandTheme = (themeId: string) => {
     expandedThemes = [...expandedThemes, themeId];
-  }
+  };
   const collapseTheme = (themeId: string) => {
-    expandedThemes = expandedThemes.filter(theme => theme !== themeId);
-  }
+    expandedThemes = expandedThemes.filter((theme) => theme !== themeId);
+  };
 </script>
 
 <TitleRow
@@ -346,7 +348,8 @@
         fullWidth={true}
         disabled={$isSelectedThemesLoading ||
           $selectedThemesData?.results.length === 0}
-        handleClick={() => (isConfirmSignOffModalOpen = !isConfirmSignOffModalOpen)}
+        handleClick={() =>
+          (isConfirmSignOffModalOpen = !isConfirmSignOffModalOpen)}
       >
         <div
           id="onboarding-step-3"
@@ -473,9 +476,7 @@
                   <MaterialIcon color="fill-emerald-700">
                     <Stacks />
                   </MaterialIcon>
-                  {isAllThemesExpanded()
-                    ? "Collapse All"
-                    : "Expand All"}
+                  {isAllThemesExpanded() ? "Collapse All" : "Expand All"}
                 </span>
               </Button>
             </div>
@@ -522,7 +523,7 @@
   open={isErrorModalOpen}
   setOpen={(newOpen: boolean) => (isErrorModalOpen = newOpen)}
   confirmText={"Ok"}
-  handleConfirm={() => isErrorModalOpen = false}
+  handleConfirm={() => (isErrorModalOpen = false)}
 >
   <div class="flex items-center gap-2 mb-2">
     <MaterialIcon color="fill-orange-600" size="1.3rem">
@@ -562,4 +563,3 @@
     margin: 0;
   }
 </style>
-

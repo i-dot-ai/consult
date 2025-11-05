@@ -95,7 +95,12 @@
       />
     </div>
 
-    <Button type="submit" variant="primary" handleClick={handleSubmit} disabled={sending}>
+    <Button
+      type="submit"
+      variant="primary"
+      handleClick={handleSubmit}
+      disabled={sending}
+    >
       {sending ? "Sending..." : "Continue"}
     </Button>
   </div>

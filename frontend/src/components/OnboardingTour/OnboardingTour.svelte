@@ -36,7 +36,7 @@
     key = "",
     steps = [],
     overlayPadding = 10,
-    resizeObserverTarget
+    resizeObserverTarget,
   }: Props = $props();
 
   let currStep = $state(0);
@@ -102,8 +102,9 @@
     window.addEventListener("resize", updateTargetRect);
     window.addEventListener("scroll", updateTargetRect);
 
-    new ResizeObserver(updateTargetRect)
-      .observe(resizeObserverTarget || document.body);
+    new ResizeObserver(updateTargetRect).observe(
+      resizeObserverTarget || document.body,
+    );
   });
 
   onDestroy(() => {

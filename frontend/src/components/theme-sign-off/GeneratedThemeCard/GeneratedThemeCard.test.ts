@@ -70,17 +70,14 @@ describe("GeneratedThemeCard", () => {
       name: "Child Theme",
       description: "This is a child theme",
     };
-    const { queryByText } = render(
-      GeneratedThemeCard,
-      {
-        ...testData,
-        theme: {
-          ...testData.theme,
-          children: [CHILD_THEME],
-        },
-        expandedThemes: [],
+    const { queryByText } = render(GeneratedThemeCard, {
+      ...testData,
+      theme: {
+        ...testData.theme,
+        children: [CHILD_THEME],
       },
-    );
+      expandedThemes: [],
+    });
 
     expect(queryByText(CHILD_THEME.name)).toBeNull();
     expect(queryByText(CHILD_THEME.description)).toBeNull();
