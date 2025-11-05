@@ -65,6 +65,7 @@ drf-nested-routers = "^0.95.0"
 drf-orjson-renderer = "^1.7.3"
 djangorestframework-simplejwt = {extras = ["crypto"], version = "^5.5.1"}
 i-dot-ai-utilities = "^0.4.2"
+themefinder = "^0.7.3"
 
 [tool.poetry.group.development.dependencies]
 ruff = "^0.14.3"

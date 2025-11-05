@@ -22,6 +22,7 @@ from consultation_analyser.support_console.ingest import (
     DEFAULT_TIMEOUT_SECONDS,
     create_embeddings_for_question,
 )
+from consultation_analyser.theme_mapper import sync_detail_detection, sync_theme_mapping
 
 
 @admin.action(description="(Re)Embed selected Consultations")
@@ -107,12 +108,24 @@ def create_large_dummy_consultation(modeladmin, request, queryset):
     create_dummy_consultation(modeladmin, request, queryset, 10_000)
 
 
+@admin.action(description="map themes to populate dashboard")
+def map_themes(modeladmin, request, queryset):
+    # TODO: remove this and trigger jobs on user-sign-off
+    query = get_queue(default_timeout=100_000)
+
+    for consultation in queryset:
+        for question in Question.objects.filter(consultation=consultation, has_free_text__inull=False):
+            sync_detail_detection_job = query.enqueue(sync_detail_detection, question)
+            query.enqueue(sync_theme_mapping, question, depends_on=sync_detail_detection_job)
+
+
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [
         update_embeddings_admin,
         reimport_demographics,
         create_small_dummy_consultation,
         create_large_dummy_consultation,
+        map_themes,
     ]
 
 
