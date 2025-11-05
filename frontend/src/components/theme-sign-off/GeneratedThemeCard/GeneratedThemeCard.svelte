@@ -70,7 +70,7 @@
       >
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2 flex-wrap">
-            {#if theme.children?.length! > 0}
+            {#if theme.children?.length}
               <Button
                 variant="ghost"
                 handleClick={() => setExpandedThemes(theme.id)}
