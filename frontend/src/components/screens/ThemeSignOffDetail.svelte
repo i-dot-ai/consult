@@ -554,6 +554,7 @@
       body: `When you're satisfied with your theme selection and edits, click "Sign Off Selected Themes" to proceed with mapping consultation responses against your finalised themes.`,
     },
   ]}
+  resizeObserverTarget={document.querySelector("main")}
 />
 
 <style>

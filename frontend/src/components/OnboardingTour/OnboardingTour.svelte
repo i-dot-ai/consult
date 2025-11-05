@@ -26,9 +26,18 @@
     key: string;
     steps: Step[];
     overlayPadding?: number;
+
+    // element to trigger update when resized
+    // different than window resize event
+    resizeObserverTarget?: HTMLElement | null;
   }
 
-  let { key = "", steps = [], overlayPadding = 10 }: Props = $props();
+  let {
+    key = "",
+    steps = [],
+    overlayPadding = 10,
+    resizeObserverTarget
+  }: Props = $props();
 
   let currStep = $state(0);
 
@@ -92,6 +101,9 @@
     updateTargetRect();
     window.addEventListener("resize", updateTargetRect);
     window.addEventListener("scroll", updateTargetRect);
+
+    new ResizeObserver(updateTargetRect)
+      .observe(resizeObserverTarget || document.body);
   });
 
   onDestroy(() => {
