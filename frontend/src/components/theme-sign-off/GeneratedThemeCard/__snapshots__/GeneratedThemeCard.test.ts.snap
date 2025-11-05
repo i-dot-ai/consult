@@ -3,7 +3,7 @@
 exports[`GeneratedThemeCard > should render 1`] = `
 <div>
   <div
-    class="generated-theme-card svelte-1tivvk8"
+    class="generated-theme-card svelte-2iwj05"
     style="margin-left: 0rem;"
   >
     <div
@@ -11,30 +11,38 @@ exports[`GeneratedThemeCard > should render 1`] = `
       data-testid="panel-component"
     >
       <article
-        class="flex"
+        class="flex flex-wrap sm:flex-nowrap"
       >
         <div
-          class="transition-all duration-300 w-full svelte-1tivvk8"
+          class="transition-all duration-300 w-auto md:w-auto svelte-2iwj05"
         >
           <div
             class="flex items-center justify-between mb-2"
           >
             <div
-              class="flex items-center gap-2"
+              class="flex items-center gap-2 flex-wrap"
             >
               <!---->
                
-              <h3>
-                Test Theme
-              </h3>
-               
               <div
-                class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-400"
+                class="flex items-center gap-2 flex-wrap"
               >
-                Level 1
-                <!---->
+                <h3>
+                  Test Theme
+                </h3>
+                 
+                <div
+                  class="svelte-2iwj05"
+                >
+                  <div
+                    class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-400"
+                  >
+                    Level 1
+                    <!---->
+                  </div>
+                  <!---->
+                </div>
               </div>
-              <!---->
             </div>
           </div>
            
@@ -45,7 +53,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
           </p>
            
           <footer
-            class="mt-4 flex items-center gap-2"
+            class="mt-4 flex items-center gap-2 flex-wrap"
           >
             <!---->
             <button
@@ -90,7 +98,12 @@ exports[`GeneratedThemeCard > should render 1`] = `
                   <!---->
                 </svg>
                 <!---->
-                 Representative Responses
+                 
+                <span
+                  class="whitespace-nowrap"
+                >
+                  Representative Responses
+                </span>
               </div>
               
               
@@ -111,10 +124,8 @@ exports[`GeneratedThemeCard > should render 1`] = `
     <!---->
      
     <div
-      class="pt-4"
-    >
-      
-    </div>
+      class="pb-4"
+    />
     <!---->
   </div>
   

@@ -11,10 +11,10 @@ exports[`SelectedThemeCard > should render 1`] = `
         data-testid="panel-component"
       >
         <div
-          class="grid grid-cols-12"
+          class="flex flex-wrap sm:flex-nowrap"
         >
           <div
-            class="col-span-12"
+            class="md:w-auto"
           >
             <header>
               <h2>
@@ -123,7 +123,7 @@ exports[`SelectedThemeCard > should render 1`] = `
                 <span
                   class="block w-full text-start"
                 >
-                  Respresentative Responses
+                  Representative Responses
                 </span>
                 
                 

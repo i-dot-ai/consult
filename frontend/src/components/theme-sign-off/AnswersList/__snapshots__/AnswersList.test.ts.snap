@@ -5,21 +5,25 @@ exports[`AnswersList > should render 1`] = `
   <div
     class="flex items-center gap-1"
   >
-    <svg
-      class="fill-primary"
-      height="1.2rem"
-      role="img"
-      viewBox="0 -960 960 960"
-      width="1.2rem"
-      xmlns="http://www.w3.org/2000/svg"
+    <div
+      class="shrink-0"
     >
-      <path
-        d="M320-440h320v-80H320v80Zm0 120h320v-80H320v80Zm0 120h200v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"
+      <svg
+        class="fill-primary"
+        height="1.2rem"
+        role="img"
+        viewBox="0 -960 960 960"
+        width="1.2rem"
         xmlns="http://www.w3.org/2000/svg"
-      />
+      >
+        <path
+          d="M320-440h320v-80H320v80Zm0 120h320v-80H320v80Zm0 120h200v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"
+          xmlns="http://www.w3.org/2000/svg"
+        />
+        <!---->
+      </svg>
       <!---->
-    </svg>
-    <!---->
+    </div>
      
     <h2>
       Test Title
@@ -32,7 +36,8 @@ exports[`AnswersList > should render 1`] = `
     </div>
   </div>
    
-  <ul
+  <!---->
+  <ol
     class="mt-2 max-h-[20rem] overflow-y-auto"
   >
     <li
@@ -66,7 +71,8 @@ exports[`AnswersList > should render 1`] = `
       </p>
     </li>
     
-  </ul>
+  </ol>
+  
   <!---->
   
 </div>

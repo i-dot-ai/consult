@@ -56,10 +56,33 @@ describe("GeneratedThemeCard", () => {
           ...testData.theme,
           children: [CHILD_THEME],
         },
+        expandedThemes: [testData.theme.id, CHILD_THEME.id],
       },
     );
 
     expect(getByText(CHILD_THEME.name));
     expect(getByText(CHILD_THEME.description));
+  });
+
+  it("should not render child if theme is not expanded", async () => {
+    const CHILD_THEME = {
+      id: "child-theme",
+      name: "Child Theme",
+      description: "This is a child theme",
+    };
+    const { queryByText } = render(
+      GeneratedThemeCard,
+      {
+        ...testData,
+        theme: {
+          ...testData.theme,
+          children: [CHILD_THEME],
+        },
+        expandedThemes: [],
+      },
+    );
+
+    expect(queryByText(CHILD_THEME.name)).toBeNull();
+    expect(queryByText(CHILD_THEME.description)).toBeNull();
   });
 });
