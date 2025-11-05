@@ -47,7 +47,7 @@
   </div>
 </div>
 {#if loading}
-  <ul>
+  <ol>
     {#each "_".repeat(5) as _}
       <li
         class={clsx([
@@ -67,9 +67,9 @@
         {"SKELETON ".repeat(5)}
       </li>
     {/each}
-  </ul>
+  </ol>
 {:else if answers?.length > 0}
-  <ul class="mt-2 max-h-[20rem] overflow-y-auto">
+  <ol class="mt-2 max-h-[20rem] overflow-y-auto">
     {#each answers as answer, i}
       <li
         class={clsx([
@@ -107,7 +107,7 @@
         </p>
       </li>
     {/each}
-  </ul>
+  </ol>
 {:else}
   <p class="mt-2 text-sm text-neutral-500 italic">There are no answers</p>
 {/if}
