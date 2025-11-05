@@ -276,14 +276,18 @@
             size="sm"
             handleClick={() => (addingCustomTheme = !addingCustomTheme)}
             highlighted={addingCustomTheme}
-            highlightVariant="primary"
+            highlightVariant="none"
           >
             <span
               class={clsx([
-                "flex items-center justify-between text-primary",
-                addingCustomTheme && "text-white",
-              ])}>+ Add Custom Theme</span
+                "flex",
+                "items-center",
+                "justify-between",
+                "text-primary",
+              ])}
             >
+              + Add Custom Theme
+            </span>
           </Button>
         </div>
 
