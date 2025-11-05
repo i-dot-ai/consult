@@ -263,7 +263,7 @@
       "border-pink-50",
     ])}
   >
-    <div id="onboarding-step-2" class="mb-4">
+    <div id="onboarding-steps-2-and-3" class="mb-4">
       <Panel variant="primary" bg={true} border={true}>
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2">
@@ -351,10 +351,7 @@
         handleClick={() =>
           (isConfirmSignOffModalOpen = !isConfirmSignOffModalOpen)}
       >
-        <div
-          id="onboarding-step-3"
-          class="flex justify-center items-center gap-2 w-full"
-        >
+        <div class="flex justify-center items-center gap-2 w-full">
           <MaterialIcon color="fill-white">
             <CheckCircle />
           </MaterialIcon>
@@ -545,12 +542,12 @@
       body: `Browse the AI-generated themes and click "Select Theme" to move them to your selected themes list. You can view example responses for each theme to understand what types of consultation responses it represents.`,
     },
     {
-      id: "onboarding-step-2",
+      id: "onboarding-steps-2-and-3",
       title: "Edit & Manage",
       body: "Once themes are selected, you can edit their titles and descriptions by clicking the edit button, or add completely new themes to better organize your analysis.",
     },
     {
-      id: "onboarding-step-3",
+      id: "onboarding-steps-2-and-3",
       title: "Sign Off & Proceed",
       body: `When you're satisfied with your theme selection and edits, click "Sign Off Selected Themes" to proceed with mapping consultation responses against your finalised themes.`,
     },
