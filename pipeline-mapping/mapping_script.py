@@ -4,12 +4,8 @@ import datetime
 import json
 import logging
 import os
+import subprocess
 from pathlib import Path
-
-import boto3
-import pandas as pd
-from langchain_openai import ChatOpenAI
-from themefinder import detail_detection, theme_mapping
 
 # Configure logging
 logging.basicConfig(
@@ -18,14 +14,6 @@ logging.basicConfig(
     datefmt="%Y-%m-%d %H:%M:%S",
 )
 logger = logging.getLogger(__name__)
-
-
-llm = ChatOpenAI(
-    model="gpt-4o",
-    temperature=0,
-    openai_api_base=os.environ["LLM_GATEWAY_URL"],
-    openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
-)
 
 BUCKET_NAME = os.getenv("DATA_S3_BUCKET")
 BASE_PREFIX = "app_data/consultations/"
@@ -111,7 +99,7 @@ def load_question(consultation_dir: str, question_dir: str) -> tuple:
     return question, responses, themes
 
 
-async def process_consultation(consultation_dir: str = "test_consultation") -> str:
+async def process_consultation(consultation_dir: str, llm) -> str:
     """
     Process all questions in a consultation directory, generating theme analyses.
 
@@ -123,6 +111,7 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
 
     Args:
         consultation_dir: Directory containing question subdirectories
+        llm: Language model instance for processing
 
     Returns:
         str: Path to the output directory
@@ -183,6 +172,22 @@ async def process_consultation(consultation_dir: str = "test_consultation") -> s
 
 
 if __name__ == "__main__":
+    logger.info("Installing requirements from requirements.txt...")
+    subprocess.run(["pip", "install", "--no-cache-dir", "-r", "requirements.txt"], check=True)
+    logger.info("Requirements installation completed")
+
+    import boto3
+    import pandas as pd
+    from langchain_openai import ChatOpenAI
+    from themefinder import detail_detection, theme_mapping
+
+    llm = ChatOpenAI(
+        model="gpt-4o",
+        temperature=0,
+        openai_api_base=os.environ["LLM_GATEWAY_URL"],
+        openai_api_key=os.environ["LITELLM_CONSULT_OPENAI_API_KEY"],
+    )
+
     parser = argparse.ArgumentParser(description="Download a subdirectory from S3.")
     parser.add_argument(
         "--subdir",
@@ -200,6 +205,6 @@ if __name__ == "__main__":
 
     logger.info("Starting processing for subdirectory: %s", args.subdir)
     download_s3_subdir(args.subdir)
-    output_dir = asyncio.run(process_consultation(args.subdir))
+    output_dir = asyncio.run(process_consultation(args.subdir, llm))
     upload_directory_to_s3(output_dir)
     logger.info("Processing completed for subdirectory: %s", args.subdir)

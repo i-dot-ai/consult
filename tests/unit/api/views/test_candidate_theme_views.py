@@ -19,14 +19,19 @@ class TestCandidateThemeViewSet:
         #   └─ child2
         # root2 (selected)
 
-        root1 = CandidateThemeFactory(question=free_text_question, parent=None)
+        root1 = CandidateThemeFactory(
+            question=free_text_question, parent=None, approximate_frequency=35
+        )
         child1 = CandidateThemeFactory(
             question=free_text_question, parent=root1, selectedtheme=theme_a
         )
         grandchild1 = CandidateThemeFactory(question=free_text_question, parent=child1)
         child2 = CandidateThemeFactory(question=free_text_question, parent=root1)
         root2 = CandidateThemeFactory(
-            question=free_text_question, parent=None, selectedtheme=theme_b
+            question=free_text_question,
+            parent=None,
+            selectedtheme=theme_b,
+            approximate_frequency=60,  # higher frequency than root1
         )
 
         url = reverse(
@@ -49,6 +54,14 @@ class TestCandidateThemeViewSet:
             "next": None,
             "previous": None,
             "results": [
+                # Listed in descending order of parent approximate_frequency
+                {
+                    "id": str(root2.id),
+                    "name": root2.name,
+                    "description": root2.description,
+                    "selectedtheme_id": str(theme_b.id),
+                    "children": [],
+                },
                 {
                     "id": str(root1.id),
                     "name": root1.name,
@@ -78,13 +91,6 @@ class TestCandidateThemeViewSet:
                             "children": [],
                         },
                     ],
-                },
-                {
-                    "id": str(root2.id),
-                    "name": root2.name,
-                    "description": root2.description,
-                    "selectedtheme_id": str(theme_b.id),
-                    "children": [],
                 },
             ],
         }

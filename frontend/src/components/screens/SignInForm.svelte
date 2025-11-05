@@ -83,7 +83,10 @@
   <div class="flex flex-wrap justify-start items-center gap-4">
     <div class="grow max-w-[30ch]">
       <TextInput
+        inputType="email"
         id={"email-input"}
+        autocomplete="on"
+        name="email"
         label={"Email address"}
         hideLabel={true}
         placeholder={"Your email"}
@@ -92,7 +95,7 @@
       />
     </div>
 
-    <Button variant="primary" handleClick={handleSubmit} disabled={sending}>
+    <Button type="submit" variant="primary" handleClick={handleSubmit} disabled={sending}>
       {sending ? "Sending..." : "Continue"}
     </Button>
   </div>

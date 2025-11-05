@@ -72,14 +72,23 @@ def create_multi_choice_answers(question, choices):
     MultiChoiceAnswer.objects.bulk_create(multi_choice_objects)
 
 
-def create_candidate_theme_recursive(question, candidate_theme_data, parent=None):
+def create_candidate_theme_recursive(
+    question, number_respondents, candidate_theme_data, parent=None
+):
     """Create a CandidateTheme (and SelectedTheme if selected) recursively."""
     name = candidate_theme_data.get("name")
     description = candidate_theme_data.get("description", "")
     key = candidate_theme_data.get("key")
+    approximate_frequency = round(
+        candidate_theme_data.get("approximate_frequency_pct", 0) * number_respondents
+    )
 
     candidate_theme = CandidateThemeFactory(
-        question=question, description=description, name=name, parent=parent
+        question=question,
+        description=description,
+        name=name,
+        parent=parent,
+        approximate_frequency=approximate_frequency,
     )
 
     if question.theme_status == Question.ThemeStatus.CONFIRMED and candidate_theme_data.get(
@@ -92,7 +101,9 @@ def create_candidate_theme_recursive(question, candidate_theme_data, parent=None
         candidate_theme.save()
 
     for child in candidate_theme_data.get("children", []):
-        create_candidate_theme_recursive(question, child, parent=candidate_theme)
+        create_candidate_theme_recursive(
+            question, number_respondents, child, parent=candidate_theme
+        )
 
 
 def create_response(respondent, question, free_text_answers):
@@ -167,7 +178,7 @@ def create_dummy_consultation_from_yaml(
             logger.info("Free text question - create candidate themes")
 
             for candidate_theme_data in question_data["candidate_themes"]:
-                create_candidate_theme_recursive(question, candidate_theme_data)
+                create_candidate_theme_recursive(question, len(respondents), candidate_theme_data)
 
         for respondent in respondents:
             logger.info("Creating a new response...")
