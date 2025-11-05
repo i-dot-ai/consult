@@ -490,31 +490,16 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
         raise
 
 
-def import_themes(question: Question):
+def export_selected_themes(question: Question):
     s3_client = boto3.client("s3")
-    try:
-        response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=question.themes_file)
-        theme_data = json.loads(response["Body"].read())
-    except BaseException:
-        logger.info("couldn't load file {file}", file=question.themes_file)
-        return
 
-    themes_to_save = []
-    for theme in theme_data:
-        themes_to_save.append(
-            SelectedTheme(
-                question=question,
-                name=theme["theme_name"],
-                description=theme["theme_description"],
-                key=theme["theme_key"],
-            )
-        )
-
-    themes = SelectedTheme.objects.bulk_create(themes_to_save)
-    logger.info(
-        "Imported {len_themes} themes for question {question_number}",
-        len_themes=len(themes),
-        question_number=question.number,
+    themes_to_save = [
+        {"theme_name": theme.name, "theme_description": theme.description, "theme_key": theme.key}
+        for theme in SelectedTheme.objects.filter(question=question)
+    ]
+    content = json.dumps(themes_to_save)
+    s3_client.put_object(
+        Bucket=settings.AWS_BUCKET_NAME, Key=question.selected_themes_file, Body=content
     )
 
 
@@ -624,12 +609,9 @@ def import_questions(
             queue.enqueue(create_embeddings_for_question, question.id, depends_on=responses)
 
             if sign_off:
-                queue.enqueue(import_candidate_themes, question, depends_on=responses)
+                import_candidate_themes(question)
             else:
-                themes = queue.enqueue(import_themes, question, depends_on=responses)
-                response_annotations = queue.enqueue(
-                    import_response_annotations, question, depends_on=themes
-                )
+                response_annotations = queue.enqueue(import_response_annotations, question)
                 queue.enqueue(
                     import_response_annotation_themes,
                     question,

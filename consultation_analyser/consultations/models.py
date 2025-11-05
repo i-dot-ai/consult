@@ -131,7 +131,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.get_folder("mapping", "detail_detection.jsonl")
 
     @property
-    def themes_file(self):
+    def selected_themes_file(self):
         return self.get_folder("mapping", "themes.json")
 
     @property
