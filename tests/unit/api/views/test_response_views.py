@@ -240,44 +240,62 @@ class TestResponseViewSet:
         assert aggregations[str(theme_b.id)] == 1  # Only response1 has both themes
 
     def test_get_filtered_responses_basic(
-        self, client, consultation_user_token, free_text_question
+        self, client, consultation_user_token, free_text_question, django_assert_num_queries
     ):
         """Test API endpoint returns filtered responses correctly"""
         # Create test data
-        respondent = RespondentFactory(
-            consultation=free_text_question.consultation, demographics={"individual": True}
+        respondent1 = RespondentFactory(
+            consultation=free_text_question.consultation,
+            themefinder_id=1,
+            demographics={"individual": True},
         )
-        ResponseFactory(
-            question=free_text_question, respondent=respondent, free_text="Test response"
+        respondent2 = RespondentFactory(
+            consultation=free_text_question.consultation,
+            themefinder_id=2,
+            demographics={"individual": False},
         )
+        response1 = ResponseFactory(question=free_text_question, respondent=respondent1)
+        response2 = ResponseFactory(question=free_text_question, respondent=respondent2)
 
         url = reverse(
             "response-list",
             kwargs={"consultation_pk": free_text_question.consultation.id},
         )
-        response = client.get(
-            url,
-            query_params={"question_id": free_text_question.id},
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
-        )
+
+        """
+        Test for no N+1 queries. Regardless of the number of responses, we expect:
+        - 1 query to get authentication user for permission checking
+        - 1 query to get authentication user for is_flagged annotation
+        - 1 query to count respondents
+        - 1 query to count filtered responses
+        - 1 query to get responses with related data
+        - 1 query to prefetch multiple choice answers
+        - 1 query to prefetch demographic data
+        """
+        with django_assert_num_queries(7):
+            response = client.get(
+                url,
+                query_params={"question_id": free_text_question.id},
+                headers={"Authorization": f"Bearer {consultation_user_token}"},
+            )
 
         assert response.status_code == 200
 
         # Parse the response
         data = orjson.loads(response.content)
 
-        assert "all_respondents" in data
-        assert "respondents_total" in data
-        assert "filtered_total" in data
-        assert len(data["all_respondents"]) == 1
-        assert data["respondents_total"] == 1
-        assert data["filtered_total"] == 1
+        assert len(data["all_respondents"]) == 2
+        assert data["respondents_total"] == 2
+        assert data["filtered_total"] == 2
 
         # Verify respondent data structure
-        respondent_data = data["all_respondents"][0]
-        assert respondent_data["identifier"] == str(respondent.identifier)
-        assert respondent_data["free_text_answer_text"] == "Test response"
-        assert respondent_data["demographic_data"] == {"individual": True}
+        respondents = sorted(data["all_respondents"], key=lambda x: x["identifier"])
+        assert respondents[0]["identifier"] == str(respondent1.identifier)
+        assert respondents[0]["free_text_answer_text"] == response1.free_text
+        assert respondents[0]["demographic_data"] == {"individual": True}
+        assert respondents[1]["identifier"] == str(respondent2.identifier)
+        assert respondents[1]["free_text_answer_text"] == response2.free_text
+        assert respondents[1]["demographic_data"] == {"individual": False}
 
     def test_get_filtered_responses_with_pagination(
         self, client, consultation_user_token, free_text_question
