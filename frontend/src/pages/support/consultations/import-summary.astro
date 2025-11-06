@@ -8,8 +8,10 @@ import { Routes } from "../../../global/routes";
 <Layout>
   <Section>
     <Title level={1} text="Import consultation data" />
-        <br><p><Link href={Routes.SupportImport}>Import consultation</Link></p>
-        <br><p><Link href={Routes.SupportQueue}>See progress of import tasks in Django RQ dashboard</Link></p>
-        <br><p><Link href={Routes.SupportConsultations}>Return to consultations overview</Link></p>
+    <ul>
+      <li><Link href={Routes.SupportImport}>Import consultation</Link></li>
+      <li><Link href={Routes.SupportQueue}>See progress of import tasks in Django RQ dashboard</Link></li>
+      <li><Link href={Routes.SupportConsultations}>Return to consultations overview</Link></li>
+    </ul>
   </Section>
 </Layout>
