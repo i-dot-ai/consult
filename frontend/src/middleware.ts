@@ -12,6 +12,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     // /^\/sign-out[\/]?$/,
     /^\/consultations.*/,
     /^\/design.*/,
+    /^\/stories.*/,
     /^\/support.*/,
   ];
 
@@ -49,6 +50,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/support\/consultations[/]?$/,
     /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[/]?$/,
     /^\/design.*/,
+    /^\/stories.*/,
     /^\/_astro.*/,
   ];
 
@@ -58,7 +60,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
   }
 
-  const hasBody = !["GET", "HEAD"].includes(context.request.method);
+  const hasBody = !["GET", "HEAD", "DELETE"].includes(context.request.method);
   const csrfCookie = context.cookies.get("csrftoken");
 
   try {
@@ -119,6 +121,10 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
 
     if (response.status === 304) {
+      return response;
+    }
+
+    if (response.status === 204) {
       return response;
     }
 

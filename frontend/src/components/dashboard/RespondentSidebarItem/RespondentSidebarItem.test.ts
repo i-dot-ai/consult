@@ -6,7 +6,6 @@ import Star from "../../svg/material/Star.svelte";
 import RespondentSidebarItem, {
   type Props,
 } from "./RespondentSidebarItem.svelte";
-import RespondentSidebarItemStory from "./RespondentSidebarItemStory.svelte";
 
 let testData: Props;
 
@@ -105,9 +104,5 @@ describe("RespondentSidebarItem", () => {
     await user.click(editButton);
     subtitleInput = getByLabelText("Edit Subtitle") as HTMLInputElement;
     expect(subtitleInput.value).toBe(testData.subtitle);
-  });
-
-  it("should render story", () => {
-    render(RespondentSidebarItemStory);
   });
 });
