@@ -185,6 +185,7 @@
                 progressTransition = Math.abs(currStep - i) === 1;
 
                 currStep = i;
+                updateTargetRect();
               }}
             >
               <Progress
