@@ -31,6 +31,7 @@ from consultation_analyser.support_console.file_models import (
 )
 
 encoding = tiktoken.encoding_for_model("text-embedding-3-small")
+
 logger = settings.LOGGER
 DEFAULT_BATCH_SIZE = 10_000
 DEFAULT_TIMEOUT_SECONDS = 3_600
@@ -247,11 +248,12 @@ def create_embeddings_for_question(question_id: UUID):
         Response.objects.bulk_update(responses, ["embedding", "search_vector"])
 
 
-def import_response_annotation_themes(question: Question, output_folder: str):
-    mapping_file_key = f"{output_folder}mapping.jsonl"
+def import_response_annotation_themes(question: Question):
     s3_client = boto3.client("s3")
 
-    mapping_response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=mapping_file_key)
+    mapping_response = s3_client.get_object(
+        Bucket=settings.AWS_BUCKET_NAME, Key=question.mapping_file
+    )
     mapping_dict = {}
     for line in mapping_response["Body"].iter_lines():
         mapping = json.loads(line.decode("utf-8"))
@@ -287,10 +289,7 @@ def import_response_annotation_themes(question: Question, output_folder: str):
     bulk_create_with_history(objects_to_save, ResponseAnnotationTheme, ignore_conflicts=True)
 
 
-def import_response_annotations(question: Question, output_folder: str):
-    sentiment_file_key = f"{output_folder}sentiment.jsonl"
-    evidence_file_key = f"{output_folder}detail_detection.jsonl"
-
+def import_response_annotations(question: Question):
     s3_client = boto3.client("s3")
 
     # Check if sentiment file exists and process it
@@ -299,7 +298,7 @@ def import_response_annotations(question: Question, output_folder: str):
         SentimentRecord,
         s3_client,
         settings.AWS_BUCKET_NAME,
-        sentiment_file_key,
+        question.sentiment_file,
         raise_error_if_file_missing=False,
     ):
         sentiment_dict[sentiment.themefinder_id] = sentiment.sentiment_enum
@@ -309,7 +308,7 @@ def import_response_annotations(question: Question, output_folder: str):
         DetailDetection,
         s3_client,
         settings.AWS_BUCKET_NAME,
-        evidence_file_key,
+        question.detail_detection_file,
         raise_error_if_file_missing=False,
     ):
         evidence_dict[evidence.themefinder_id] = evidence.evidence_rich_bool
@@ -491,43 +490,28 @@ def import_responses(question: Question, responses_file_key: str, multichoice_fi
         raise
 
 
-def import_themes(question: Question, output_folder: str):
+def export_selected_themes(question: Question):
     s3_client = boto3.client("s3")
-    themes_file_key = f"{output_folder}themes.json"
-    try:
-        response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
-        theme_data = json.loads(response["Body"].read())
-    except BaseException:
-        logger.info("couldn't load file {file}", file=themes_file_key)
-        return
 
-    themes_to_save = []
-    for theme in theme_data:
-        themes_to_save.append(
-            SelectedTheme(
-                question=question,
-                name=theme["theme_name"],
-                description=theme["theme_description"],
-                key=theme["theme_key"],
-            )
-        )
-
-    themes = SelectedTheme.objects.bulk_create(themes_to_save)
-    logger.info(
-        "Imported {len_themes} themes for question {question_number}",
-        len_themes=len(themes),
-        question_number=question.number,
+    themes_to_save = [
+        {"theme_name": theme.name, "theme_description": theme.description, "theme_key": theme.key}
+        for theme in SelectedTheme.objects.filter(question=question)
+    ]
+    content = json.dumps(themes_to_save)
+    s3_client.put_object(
+        Bucket=settings.AWS_BUCKET_NAME, Key=question.selected_themes_file, Body=content
     )
 
 
-def import_candidate_themes(question: Question, output_folder: str):
+def import_candidate_themes(question: Question):
     s3_client = boto3.client("s3")
-    themes_file_key = f"{output_folder}clustered_themes.json"
     try:
-        response = s3_client.get_object(Bucket=settings.AWS_BUCKET_NAME, Key=themes_file_key)
+        response = s3_client.get_object(
+            Bucket=settings.AWS_BUCKET_NAME, Key=question.candidate_themes_file
+        )
         theme_data = json.loads(response["Body"].read())
     except BaseException:
-        logger.info("couldn't load file {file}", file=themes_file_key)
+        logger.info("couldn't load file {file}", file=question.candidate_themes_file)
         return
 
     # First pass: create all themes without parent relationships
@@ -570,20 +554,17 @@ def import_candidate_themes(question: Question, output_folder: str):
 
 def import_questions(
     consultation: Consultation,
-    timestamp: str | None = None,
     sign_off: bool = False,
 ):
     """
     Import question data for a consultation.
     Args:
         consultation: Consultation object for questions
-        timestamp: Timestamp folder name for the AI outputs
         sign_off: If True, import candidate themes; if False, use standard theme import workflow
     """
     logger.info("Starting question import for consultation {title})", title=consultation.title)
 
     bucket_name = settings.AWS_BUCKET_NAME
-    base_path = f"app_data/consultations/{consultation.code}/"
 
     queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
 
@@ -625,29 +606,13 @@ def import_questions(
             )
             queue.enqueue(create_embeddings_for_question, question.id, depends_on=responses)
 
-            if timestamp is None:
-                return
-
             if sign_off:
-                output_folder = (
-                    f"{base_path}outputs/sign_off/{timestamp}/question_part_{question_num_str}/"
-                )
-
-                queue.enqueue(
-                    import_candidate_themes, question, output_folder, depends_on=responses
-                )
+                import_candidate_themes(question)
             else:
-                output_folder = (
-                    f"{base_path}outputs/mapping/{timestamp}/question_part_{question_num_str}/"
-                )
-                themes = queue.enqueue(import_themes, question, output_folder, depends_on=responses)
-                response_annotations = queue.enqueue(
-                    import_response_annotations, question, output_folder, depends_on=themes
-                )
+                response_annotations = queue.enqueue(import_response_annotations, question)
                 queue.enqueue(
                     import_response_annotation_themes,
                     question,
-                    output_folder,
                     depends_on=response_annotations,
                 )
 
@@ -791,7 +756,9 @@ def create_consultation(
             consultation_code=consultation_code,
         )
 
-        consultation = Consultation.objects.create(title=consultation_name, code=consultation_code)
+        consultation = Consultation.objects.create(
+            title=consultation_name, code=consultation_code, timestamp=timestamp
+        )
 
         # Add the current user to the consultation
         from consultation_analyser.authentication.models import User
@@ -809,7 +776,6 @@ def create_consultation(
 
         import_questions(
             consultation,
-            timestamp,
             sign_off,
         )
 
