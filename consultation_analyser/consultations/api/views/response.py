@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultation_analyser.consultations import models
-from consultation_analyser.consultations.api.filters import HybridSearchFilter, ResponseFilter
+from consultation_analyser.consultations.api.filters import ResponseFilter, ResponseSearchFilter
 from consultation_analyser.consultations.api.permissions import (
     CanSeeConsultation,
     HasDashboardAccess,
@@ -25,6 +25,15 @@ class BespokeResultsSetPagination(PageNumberPagination):
     page_size = 100
     page_size_query_param = "page_size"
     max_page_size = 1000
+
+    def get_page_size(self, request):
+        search_mode = request.query_params.get("searchMode")
+
+        if search_mode == "representative":
+            # We only want to return top 10 representative responses
+            return min(10, self.max_page_size)
+        else:
+            return super().get_page_size(request)
 
     def get_paginated_response(self, data):
         original = super().get_paginated_response(data).data
@@ -53,7 +62,7 @@ class ResponseViewSet(ModelViewSet):
     serializer_class = ResponseSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
     pagination_class = BespokeResultsSetPagination
-    filter_backends = [HybridSearchFilter, DjangoFilterBackend]
+    filter_backends = [ResponseSearchFilter, DjangoFilterBackend]
     filterset_class = ResponseFilter
     http_method_names = ["get", "patch"]
 

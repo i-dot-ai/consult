@@ -1,4 +1,5 @@
 from datetime import datetime
+from unittest.mock import patch
 from uuid import uuid4
 
 import orjson
@@ -960,3 +961,141 @@ class TestResponseViewSet:
         # check that the state has changed
         assert free_text_annotation.flagged_by.contains(consultation_user) != is_flagged
         assert free_text_annotation.is_edited is True
+
+    def test_keyword_search(self, client, consultation_user_token, free_text_question):
+        """Test API endpoint only returns responses matching keyword search"""
+        # Create test data
+        respondent1 = RespondentFactory(consultation=free_text_question.consultation)
+        respondent2 = RespondentFactory(consultation=free_text_question.consultation)
+        response1 = ResponseFactory(
+            question=free_text_question, respondent=respondent1, free_text="I love apples"
+        )
+        ResponseFactory(
+            question=free_text_question, respondent=respondent2, free_text="I have no opinion"
+        )
+
+        url = reverse(
+            "response-list",
+            kwargs={"consultation_pk": free_text_question.consultation.id},
+        )
+        response = client.get(
+            url,
+            query_params={
+                "question_id": free_text_question.id,
+                "searchMode": "keyword",
+                "searchValue": "apples",
+            },
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+
+        assert response.status_code == 200
+
+        # Parse the response
+        data = orjson.loads(response.content)
+
+        assert len(data["all_respondents"]) == 1
+        assert data["respondents_total"] == 2
+        assert data["filtered_total"] == 1
+
+        # Verify respondent data structure
+        respondent = data["all_respondents"][0]
+        assert respondent["identifier"] == str(respondent1.identifier)
+        assert respondent["free_text_answer_text"] == response1.free_text
+
+    def test_semantic_search(
+        self,
+        client,
+        consultation_user_token,
+        embedded_responses,
+    ):
+        """Test API endpoint returns responses in order of semantic similarity"""
+        url = reverse(
+            "response-list",
+            kwargs={"consultation_pk": embedded_responses["consultation_id"]},
+        )
+
+        with patch(
+            "consultation_analyser.consultations.api.filters.embed_text",
+            return_value=embedded_responses["search_mode"]["semantic"]["embedding"],
+        ):
+            response = client.get(
+                url,
+                query_params={
+                    "question_id": embedded_responses["question_id"],
+                    "searchMode": "semantic",
+                    "searchValue": "public transport",
+                },
+                headers={"Authorization": f"Bearer {consultation_user_token}"},
+            )
+
+        assert response.status_code == 200
+
+        # Parse the response
+        data = orjson.loads(response.content)
+
+        assert len(data["all_respondents"]) == 5
+        assert data["respondents_total"] == 5
+        assert data["filtered_total"] == 5
+
+        # Verify order of responses by semantic similarity to searchValue
+        response_texts = [r["free_text_answer_text"] for r in data["all_respondents"]]
+        assert response_texts == [
+            "We need better buses and trains to connect our neighbourhoods",
+            "The local council should really be investing in public transport infrastructure to help reduce carbon emissions",
+            "I drive to work every day and fuel costs are rising rapidly",
+            "Something must be done about bin collections in my area",
+            "The local library needs more funding for children's programs",
+        ]
+
+    def test_representative_response_search(
+        self, client, consultation_user_token, embedded_responses, django_assert_num_queries
+    ):
+        """Test API endpoint returns representative responses for a theme"""
+        url = reverse(
+            "response-list",
+            kwargs={"consultation_pk": embedded_responses["consultation_id"]},
+        )
+        theme_name = "Public Transport"
+        theme_description = "Local councils should invest in public transport infrastructure"
+
+        with patch(
+            "consultation_analyser.consultations.api.filters.embed_text",
+            return_value=embedded_responses["search_mode"]["representative"]["embedding"],
+        ):
+            """
+            Test for no N+1 queries. Regardless of the number of responses, we expect:
+            - 1 query to get authentication user for permission checking
+            - 1 query to get authentication user for is_flagged annotation
+            - 1 query to count respondents
+            - 1 query to count filtered responses
+            - 1 query to get responses with related data
+            - 1 query to calculate average hybrid_score across responses
+            - 1 query to calculate standard deviation of hybrid_score across responses
+            - 1 query to prefetch multiple choice answers
+            - 1 query to prefetch demographic data
+            """
+            with django_assert_num_queries(9):
+                response = client.get(
+                    url,
+                    query_params={
+                        "question_id": embedded_responses["question_id"],
+                        "searchMode": "representative",
+                        "searchValue": f"{theme_name} {theme_description}",
+                    },
+                    headers={"Authorization": f"Bearer {consultation_user_token}"},
+                )
+
+        assert response.status_code == 200
+
+        # Parse the response
+        data = orjson.loads(response.content)
+
+        assert len(data["all_respondents"]) == 1
+        assert data["respondents_total"] == 5
+        assert data["filtered_total"] == 1
+
+        # Verify which responses are considered representative
+        response_texts = [r["free_text_answer_text"] for r in data["all_respondents"]]
+        assert response_texts == [
+            "The local council should really be investing in public transport infrastructure to help reduce carbon emissions",
+        ]
