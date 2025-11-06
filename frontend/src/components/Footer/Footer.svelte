@@ -7,15 +7,12 @@
   import { getBackendUrl } from "../../global/utils";
 
 
-  let version = { sha: "unknown" };
+  let version = "unknown";
 
   fetch(`${getBackendUrl()}/api/git-sha/`, {method: "GET"})
     .then(response => response.json())
     .then(data => {
-      version = data;
-    })
-    .catch(() => {
-      version = { sha: "unknown" };
+      version = data.sha;
     });
 
 
@@ -34,7 +31,7 @@
           </li>
           <li>
             <a href="https://github.com/i-dot-ai/consultation-analyser"
-              >Version:{version.sha}</a
+              >Version:{version}</a
             >
           </li>
         </ul>
