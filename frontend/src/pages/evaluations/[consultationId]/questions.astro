@@ -30,7 +30,7 @@ const questions = await fetchBackendApi<{results: Question[]}>(
 		{questions?.results?.map((question) => (
 			<div class="p-4 my-4 mx-0 flex justify-between items-center">
 				<p class="m-0  grow shrink basis-0">{question.question_text}</p>
-				<p style="margin: 0; padding: 0 1rem; min-width: 100px; text-align: center;">{Math.round((question.proportion_of_audited_answers || 0) * 100)}% reviewed</p>
+				<p class="m-0 py-0 px-4 min-w-[15ch] text-center">{Math.round((question.proportion_of_audited_answers || 0) * 100)}% reviewed</p>
 				<Link href={`/evaluations/${consultationId}/questions/${question.id}/show-next`}>
 					👁️ Show next
 				</Link>
