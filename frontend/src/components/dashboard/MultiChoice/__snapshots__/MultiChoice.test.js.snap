@@ -123,7 +123,7 @@ exports[`MultiChoice > should render data 1`] = `
                   >
                     <div
                       class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
-                      style="transform: translateX(-66.7%);"
+                      style="transform: translateX(-66.7%); transition-delay: 0ms; transition-duration: 0ms;"
                     />
                   </div>
                   <!---->
@@ -197,7 +197,7 @@ exports[`MultiChoice > should render data 1`] = `
                   >
                     <div
                       class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
-                      style="transform: translateX(-33.3%);"
+                      style="transform: translateX(-33.3%); transition-delay: 0ms; transition-duration: 0ms;"
                     />
                   </div>
                   <!---->

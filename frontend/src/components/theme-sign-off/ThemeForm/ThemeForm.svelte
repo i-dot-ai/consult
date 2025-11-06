@@ -51,7 +51,7 @@
   </div>
 
   <div class="mt-4 text-sm">
-    <Accordion>
+    <Accordion variant="gray">
       {#snippet title()}
         <div class="flex gap-2 items-center">
           <MaterialIcon color="fill-neutral-500">
