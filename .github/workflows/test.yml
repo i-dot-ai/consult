@@ -76,6 +76,8 @@ jobs:
           SIGN_OFF_BATCH_JOB_NAME: i-dot-ai-dev-consult-sign-off-job
           SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
           SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
+          LLM_GATEWAY_URL: placeholder
+          LITELLM_CONSULT_OPENAI_API_KEY: placeholder
 
       - name: Run app tests
         run:
@@ -92,6 +94,9 @@ jobs:
           SIGN_OFF_BATCH_JOB_NAME: i-dot-ai-dev-consult-sign-off-job
           SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
           SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
+          LLM_GATEWAY_URL: placeholder
+          LITELLM_CONSULT_OPENAI_API_KEY: placeholder
+
 
       - name: Run tests for migrations
         run:
@@ -108,3 +113,6 @@ jobs:
           SIGN_OFF_BATCH_JOB_NAME: i-dot-ai-dev-consult-sign-off-job
           SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
           SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
+          LLM_GATEWAY_URL: placeholder
+          LITELLM_CONSULT_OPENAI_API_KEY: placeholder
+
