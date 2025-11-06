@@ -593,7 +593,6 @@ def import_questions(
             question = Question.objects.create(
                 consultation=consultation,
                 text=question_text,
-                slug=f"question-{question_number}",
                 number=question_number,
                 has_free_text=question_data.get("has_free_text", True),
                 has_multiple_choice=bool(multi_choice_options),

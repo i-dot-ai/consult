@@ -78,7 +78,6 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
             "number",
             "total_responses",
             "question_text",
-            "slug",
             "number",
             "has_free_text",
             "has_multiple_choice",
@@ -93,7 +92,7 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Consultation
-        fields = ["id", "title", "slug", "stage", "users", "created_at"]
+        fields = ["id", "title", "code", "stage", "users", "created_at"]
 
 
 class DemographicAggregationsSerializer(serializers.Serializer):

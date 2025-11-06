@@ -14,7 +14,6 @@ export interface Question {
   number?: number;
   total_responses?: number;
   question_text?: string;
-  slug?: string;
   has_free_text?: boolean;
   has_multiple_choice?: boolean;
   multiple_choice_answer?: QuestionMultiAnswer[];
@@ -25,8 +24,7 @@ export interface Question {
 export interface Consultation {
   title: string;
   id: string;
-  slug: string;
-  created_at: string;
+  created_at: string
 }
 
 export interface FormattedTheme {
@@ -118,7 +116,7 @@ export interface ThemeAggr {
 export interface ConsultationResponse {
   id: string;
   title: string;
-  slug: string;
+  code: string;
   users: User[];
 }
 
