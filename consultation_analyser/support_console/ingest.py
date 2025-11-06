@@ -636,7 +636,7 @@ def import_cross_cutting_themes(consultation: Consultation, timestamp: str):
     )
 
     s3_client = boto3.client("s3")
-    cct_file_key = f"app_data/consultations/{consultation.code}/outputs/mapping/{timestamp}/cross_cutting_themes.json"
+    cct_file_key =f"{consultation.get_folder("mapping")}/cross_cutting_themes.json"
 
     try:
         # Check if file exists
