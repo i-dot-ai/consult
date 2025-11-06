@@ -113,7 +113,9 @@ class ResponseFactory(DjangoModelFactory):
     respondent = factory.SubFactory(RespondentFactory)
     question = factory.SubFactory(QuestionFactory)
     free_text = factory.LazyAttribute(lambda o: fake.paragraph())
-    embedding = factory.LazyAttribute(lambda o: embed_text(o.free_text))
+    embedding = factory.LazyAttribute(
+        lambda o: None if not o.free_text else embed_text(o.free_text)
+    )
 
 
 class ResponseWithMultipleChoiceFactory(ResponseFactory):

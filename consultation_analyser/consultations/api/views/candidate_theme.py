@@ -23,7 +23,7 @@ class CandidateThemeViewSet(ModelViewSet):
             question__consultation_id=consultation_uuid,
             question_id=question_uuid,
             question__consultation__users=self.request.user,
-        )
+        ).order_by("-approximate_frequency")
 
     def list(self, request, consultation_pk=None, question_pk=None):
         """List candidate themes for a question with nested children"""

@@ -15,7 +15,7 @@ try {
 }
 ---
 <!doctype html>
-<html lang="en">
+<html lang="en" class="scroll-smooth scroll-p-8">
 	<head>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
@@ -28,9 +28,9 @@ try {
 		<div class="flex flex-col h-full max-w-screen-3xl mx-auto">
 			<Header client:load isSignedIn={isSignedIn} isStaff={isStaff}/>
 
-			<div class="grow">
+			<main class="grow">
 				<slot />
-			</div>
+      </main>
 
 			<Footer />
 		</div>

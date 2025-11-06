@@ -259,7 +259,7 @@ def admin_user_token(admin_user):
 
 @pytest.fixture
 def consultation(dashboard_user, non_dashboard_user):
-    _consultation = ConsultationFactory(title="My First Consultation", slug="my-first-consultation")
+    _consultation = ConsultationFactory(title="My First Consultation", code="my-first-consultation")
     _consultation.users.add(dashboard_user)
     _consultation.users.add(non_dashboard_user)
     _consultation.save()
@@ -314,8 +314,14 @@ def multi_choice_responses(multi_choice_question):
 
 
 @pytest.fixture()
-def theme_a(free_text_question):
-    theme = SelectedThemeFactory(question=free_text_question, name="Theme A", key="A")
+def theme_a(free_text_question, consultation_user):
+    theme = SelectedThemeFactory(
+        question=free_text_question,
+        name="Theme A",
+        key="A",
+        last_modified_by=consultation_user,
+        version=2,
+    )
     yield theme
     theme.delete()
 
@@ -450,15 +456,17 @@ def twenty_five_demographic_option(consultation):
 
 
 @pytest.fixture
-def respondent_1(consultation):
+def respondent_1(consultation, individual_demographic):
     respondent = Respondent.objects.create(consultation=consultation, themefinder_id=1)
+    respondent.demographics.add(individual_demographic)
     yield respondent
     respondent.delete()
 
 
 @pytest.fixture
-def respondent_2(consultation):
+def respondent_2(consultation, northern_demographic):
     respondent = Respondent.objects.create(consultation=consultation, themefinder_id=2)
+    respondent.demographics.add(northern_demographic)
     yield respondent
     respondent.delete()
 

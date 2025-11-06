@@ -9,7 +9,6 @@ from consultation_analyser.consultations.models import (
     CandidateTheme,
     Consultation,
     CrossCuttingTheme,
-    DemographicOption,
     MultiChoiceAnswer,
     Question,
     Respondent,
@@ -79,7 +78,6 @@ class QuestionSerializer(serializers.HyperlinkedModelSerializer):
             "number",
             "total_responses",
             "question_text",
-            "slug",
             "number",
             "has_free_text",
             "has_multiple_choice",
@@ -94,7 +92,7 @@ class ConsultationSerializer(serializers.HyperlinkedModelSerializer):
 
     class Meta:
         model = Consultation
-        fields = ["id", "title", "slug", "stage", "users", "created_at"]
+        fields = ["id", "title", "code", "stage", "users", "created_at"]
 
 
 class DemographicAggregationsSerializer(serializers.Serializer):
@@ -269,15 +267,11 @@ class ResponseSerializer(serializers.ModelSerializer):
         ]
 
 
-class DemographicOptionSerializer(serializers.ModelSerializer):
+class DemographicOptionSerializer(serializers.Serializer):
     id = serializers.CharField()
     name = serializers.CharField(source="field_name")
     value = serializers.JSONField(source="field_value")
-    count = serializers.IntegerField()
-
-    class Meta:
-        model = DemographicOption
-        fields = ["id", "name", "value", "count"]
+    count = serializers.IntegerField(required=False)
 
 
 class RespondentSerializer(serializers.ModelSerializer):

@@ -77,7 +77,6 @@ def show_next(request: HttpRequest, consultation_id: UUID, question_id: UUID):
     def handle_no_responses():
         context = {
             "consultation_name": consultation.title,
-            "consultation_slug": consultation.slug,
             "question": question,
         }
         return render(request, "consultations/answers/no_responses.html", context)

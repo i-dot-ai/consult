@@ -95,7 +95,7 @@
           (demoData[category] && demoData[category][rowKey]) || 0}
         {@const percentage = getPercentage(rowValue, totalCounts[category])}
         {@const demographicOption = demoOptionsData.find(
-          (option) => option.name === category && option.value === rowKey
+          (option) => option.name === category && option.value === rowKey,
         )}
 
         {#if expanded}
@@ -104,8 +104,12 @@
               variant="ghost"
               size="xs"
               fullWidth={true}
-              handleClick={() => demographicOption?.id && demoFilters.update(demographicOption.id)}
-              highlighted={demographicOption?.id ? demoFilters.filters.includes(demographicOption.id) : false}
+              handleClick={() =>
+                demographicOption?.id &&
+                demoFilters.update(demographicOption.id)}
+              highlighted={demographicOption?.id
+                ? demoFilters.filters.includes(demographicOption.id)
+                : false}
               highlightVariant="light"
             >
               <div class="demo-filter w-full relative pb-1">

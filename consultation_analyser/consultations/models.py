@@ -1,5 +1,6 @@
 import uuid
 from textwrap import shorten
+from typing import Literal
 
 from django.conf import settings
 from django.contrib.postgres.indexes import GinIndex
@@ -9,7 +10,6 @@ from django.db import models
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from django.utils import timezone
-from django.utils.text import slugify
 from pgvector.django import VectorField
 from simple_history.models import HistoricalRecords
 
@@ -38,41 +38,30 @@ class TimeStampedModel(models.Model):
         ordering = ["created_at"]
 
 
-class ConsultationStage(models.TextChoices):
-    THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
-    ANALYSIS = "analysis", "Analysis"
+class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
+    class Stage(models.TextChoices):
+        THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
+        ANALYSIS = "analysis", "Analysis"
 
-
-class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):
     title = models.CharField(max_length=256)
-    slug = models.SlugField(max_length=256, unique=True)  # TODO: delete me
     users = models.ManyToManyField(User)
     stage = models.CharField(
         max_length=32,
-        choices=ConsultationStage.choices,
-        default=ConsultationStage.ANALYSIS,
+        choices=Stage.choices,
+        default=Stage.ANALYSIS,
     )
-    s3_bucket = models.CharField(max_length=256, null=True)
-    code = models.SlugField(max_length=256, null=True, blank=True)
+    code = models.SlugField(max_length=256)
+    timestamp = models.SlugField(max_length=256, null=True, blank=True)
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = slugify(self.title)[:250]
-            slug = base_slug
-            counter = 1
-            while Consultation.objects.filter(slug=slug).exclude(pk=self.pk).exists():
-                slug = f"{base_slug}-{counter}"
-                counter += 1
-            self.slug = slug
-        return super().save(*args, **kwargs)
-
-    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
-        constraints = [
-            models.UniqueConstraint(fields=["slug"], name="unique_consultation_slug"),
-        ]
+    def get_folder(self, kind: Literal["mapping", "sign_off"]):
+        if self.code is None:
+            raise ValueError("code must be defined")
+        if self.timestamp is None:
+            raise ValueError("timestamp must be defined")
+        return f"app_data/consultations/{self.code}/outputs/{kind}/{self.timestamp}"
 
     def __str__(self):
-        return shorten(self.slug, width=64, placeholder="...")
+        return self.code
 
 
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
@@ -87,7 +76,6 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
     consultation = models.ForeignKey(Consultation, on_delete=models.CASCADE)
     text = models.TextField()
-    slug = models.SlugField(max_length=256)
     number = models.IntegerField()
     theme_status = models.CharField(
         max_length=32, choices=ThemeStatus.choices, default=ThemeStatus.CONFIRMED
@@ -103,16 +91,33 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         blank=True,
     )
 
+    def get_folder(self, kind: Literal["mapping", "sign_off"], file_name: str) -> str:
+        return f"{self.consultation.get_folder(kind)}/question_part_{self.number}/{file_name}"
+
+    @property
+    def candidate_themes_file(self):
+        return self.get_folder("sign_off", "clustered_themes.json")
+
+    @property
+    def mapping_file(self):
+        return self.get_folder("mapping", "mapping.jsonl")
+
+    @property
+    def sentiment_file(self):
+        return self.get_folder("mapping", "sentiment.jsonl")
+
+    @property
+    def detail_detection_file(self):
+        return self.get_folder("mapping", "detail_detection.jsonl")
+
+    @property
+    def selected_themes_file(self):
+        return self.get_folder("mapping", "themes.json")
+
     @property
     def multiple_choice_options(self) -> list:
         """List of options when has_multiple_choice=True"""
         return list(self.multichoiceanswer_set.all())
-
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            base_slug = slugify(self.text)[:240]
-            self.slug = f"{base_slug}-{self.number}" if base_slug else str(self.number)
-        return super().save(*args, **kwargs)
 
     @property
     def proportion_of_audited_answers(self) -> float:
@@ -147,7 +152,6 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
 
     class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
         constraints = [
-            models.UniqueConstraint(fields=["consultation", "slug"], name="unique_question_slug"),
             models.UniqueConstraint(
                 fields=["consultation", "number"], name="unique_question_number"
             ),
@@ -158,7 +162,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
         ]
 
     def __str__(self):
-        return shorten(self.slug, width=64, placeholder="...")
+        return shorten(self.text, width=64, placeholder="...")
 
 
 class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
