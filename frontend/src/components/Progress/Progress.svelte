@@ -7,6 +7,8 @@
   import { writable } from "svelte/store";
 
   export let value: number = 0;
+  export let transitionDelay: number = 0;
+  export let transitionDuration: number = 0;
 
   const writableValue = writable(30);
 
@@ -41,8 +43,12 @@
       "duration-[660ms]",
       "ease-[cubic-bezier(0.65,0,0.35,1)]",
     ])}
-    style={`transform: translateX(-${
-      100 - (100 * ($writableValue ?? 0)) / ($max ?? 1)
-    }%)`}
+    style={`
+      transform: translateX(-${
+        100 - (100 * ($writableValue ?? 0)) / ($max ?? 1)
+      }%);
+      transition-delay: ${transitionDelay}ms;
+      transition-duration: ${transitionDuration}ms;
+    `}
   ></div>
 </div>

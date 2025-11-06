@@ -42,6 +42,8 @@
 
   let currStep = $state(0);
 
+  let progressTransition = $state(true);
+
   let targetRect: TargetRect | null = $state(null);
 
   const updateTargetRect = () => {
@@ -71,6 +73,8 @@
   };
 
   const goNext = () => {
+    progressTransition = true;
+
     if (currStep < steps.length - 1) {
       currStep += 1;
       updateTargetRect();
@@ -79,6 +83,8 @@
     }
   };
   const goPrev = () => {
+    progressTransition = true;
+
     if (currStep > 0) {
       currStep -= 1;
       updateTargetRect();
@@ -171,9 +177,21 @@
       <footer>
         <div class="flex flex-no-wrap gap-1 mt-4">
           {#each steps as _, i}
-            <div style="width: {Math.round(100 / steps.length)}%;">
-              <Progress value={currStep >= i ? 100 : 0} />
-            </div>
+            <button
+              style="width: {Math.round(100 / steps.length)}%;"
+              class={"hover:opacity-75"}
+              onclick={() => {
+                // transition only if 1 step difference
+                progressTransition = Math.abs(currStep - i) === 1;
+
+                currStep = i;
+              }}
+            >
+              <Progress
+                value={currStep >= i ? 100 : 0}
+                transitionDuration={progressTransition ? 1000 : 0}
+              />
+            </button>
           {/each}
         </div>
 
