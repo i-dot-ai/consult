@@ -596,6 +596,7 @@ def import_questions(
                 number=question_number,
                 has_free_text=question_data.get("has_free_text", True),
                 has_multiple_choice=bool(multi_choice_options),
+                theme_status=Question.ThemeStatus.DRAFT,
             )
             for answer in multi_choice_options:
                 MultiChoiceAnswer.objects.create(question=question, text=answer)
