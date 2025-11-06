@@ -1,5 +1,4 @@
 import logging
-from datetime import date
 from uuid import UUID
 
 from django.conf import settings
@@ -8,7 +7,7 @@ from django.db import connection
 from django.http import HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils.html import format_html
-from django_rq import job
+from django_rq import get_queue, job
 
 from consultation_analyser.consultations import models
 from consultation_analyser.consultations.dummy_data import (
@@ -16,10 +15,10 @@ from consultation_analyser.consultations.dummy_data import (
     create_dummy_consultation_from_yaml_job,
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
-from consultation_analyser.consultations.models import Consultation
+from consultation_analyser.consultations.models import Consultation, Question
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
-from consultation_analyser.support_console.ingest import export_selected_themes
+from consultation_analyser.theme_mapper import sync_detail_detection, sync_theme_mapping
 
 logger = settings.LOGGER
 
@@ -375,30 +374,30 @@ def themefinder(request: HttpRequest) -> HttpResponse:
     logger.refresh_context()
 
     candidate_consultation_codes = [
-        {"text": x.code, "value": x.id} for x in Consultation.objects.filter(timestamp__isnull=True)
+        {"text": x.title, "value": x.id}
+        for x in Consultation.objects.filter(timestamp__isnull=True)
     ]
 
     if request.method == "POST":
         if consultation_id := request.POST.get("consultation_id"):
             consultation = get_object_or_404(Consultation, id=consultation_id)
 
-            consultation.timestamp = date.today().isoformat()
-            consultation.save()
-
-            for question in consultation.question_set.all():
-                export_selected_themes(question)
+            query = get_queue(default_timeout=100_000)
 
             try:
-                # Send message to SQS
-                ingest.send_job_to_sqs(
-                    consultation.code, consultation.title, request.user.id, "THEMEFINDER"
-                )
+                for question in Question.objects.filter(
+                    consultation=consultation, has_free_text=True
+                ):
+                    sync_detail_detection_job = query.enqueue(sync_detail_detection, question)
+                    query.enqueue(
+                        sync_theme_mapping, question, depends_on=sync_detail_detection_job
+                    )
+
                 messages.success(
                     request,
                     format_html(
-                        "Themefinder job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
+                        "Themefinder job submitted successfully for consultation '<strong>{}</strong>'",
                         consultation.title,
-                        consultation.code,
                     ),
                 )
 
