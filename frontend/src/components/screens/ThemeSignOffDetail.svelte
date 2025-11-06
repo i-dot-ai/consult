@@ -34,6 +34,8 @@
   import Modal from "../Modal/Modal.svelte";
   import Alert from "../Alert.svelte";
   import Warning from "../svg/material/Warning.svelte";
+  import Target from "../svg/material/Target.svelte";
+  import EditSquare from "../svg/material/EditSquare.svelte";
 
   let {
     consultationId = "",
@@ -550,16 +552,19 @@
       id: "onboarding-step-1",
       title: "Select Themes",
       body: `Browse the AI-generated themes and click "Select Theme" to move them to your selected themes list. You can view example responses for each theme to understand what types of consultation responses it represents.`,
+      icon: Target,
     },
     {
       id: "onboarding-steps-2-and-3",
       title: "Edit & Manage",
       body: "Once themes are selected, you can edit their titles and descriptions by clicking the edit button, or add completely new themes to better organize your analysis.",
+      icon: EditSquare,
     },
     {
       id: "onboarding-steps-2-and-3",
       title: "Sign Off & Proceed",
       body: `When you're satisfied with your theme selection and edits, click "Sign Off Selected Themes" to proceed with mapping consultation responses against your finalised themes.`,
+      icon: CheckCircle,
     },
   ]}
   resizeObserverTarget={document.querySelector("main")}

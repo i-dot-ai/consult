@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { onMount, onDestroy } from "svelte";
+  import { onMount, onDestroy, type Component } from "svelte";
   import { fade } from "svelte/transition";
 
   import MaterialIcon from "../MaterialIcon.svelte";
@@ -14,6 +14,7 @@
     id: string;
     title: string;
     body: string;
+    icon?: Component;
   }
 
   interface TargetRect {
@@ -154,13 +155,23 @@
       ])}
     >
       <header class="mb-2 flex justify-between items-start">
-        <div>
-          <h3 class="text-sm mb-1">
-            {steps[currStep].title}
-          </h3>
-          <p class="text-xs text-neutral-500">
-            Step {currStep + 1} of {steps.length}
-          </p>
+        <div class="flex items-center gap-2">
+          {#if steps[currStep].icon}
+            <div class="bg-pink-100 rounded-full p-1">
+              <MaterialIcon color="fill-primary" size="1.2rem">
+                <svelte:component this={steps[currStep].icon} />
+              </MaterialIcon>
+            </div>
+          {/if}
+
+          <div>
+            <h3 class="text-sm mb-1">
+              {steps[currStep].title}
+            </h3>
+            <p class="text-xs text-neutral-500">
+              Step {currStep + 1} of {steps.length}
+            </p>
+          </div>
         </div>
 
         <Button variant="ghost" handleClick={close}>
