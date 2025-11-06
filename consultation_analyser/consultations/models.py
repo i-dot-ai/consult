@@ -61,7 +61,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         return f"app_data/consultations/{self.code}/outputs/{kind}/{self.timestamp}"
 
     def __str__(self):
-        return shorten(self.code or "undefined", width=64, placeholder="...")
+        return self.code
 
 
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
