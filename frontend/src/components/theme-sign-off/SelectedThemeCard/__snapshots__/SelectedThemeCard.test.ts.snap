@@ -4,6 +4,7 @@ exports[`SelectedThemeCard > should render 1`] = `
 <div>
   <article
     class="bg-white rounded-lg"
+    data-themeid="theme-id"
   >
     <div>
       <div
