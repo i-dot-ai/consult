@@ -22,15 +22,12 @@ llm = ChatOpenAI(
 )
 
 
-def model_to_dict(question, model, key, value) -> dict[str, str]:
-    return {
-        record[key]: record[value]
-        for record in model.objects.filter(question=question).values(key, value)
-    }
+def model_to_dict(objects, key, value) -> dict[str, str]:
+    return {record[key]: record[value] for record in objects.values(key, value)}
 
 
-def sync_detail_detection(question: Question):
-    responses_df = pd.DataFrame(
+def get_responses_df(question: Question):
+    return pd.DataFrame(
         [
             {
                 "response_id": response["respondent__themefinder_id"],
@@ -42,6 +39,10 @@ def sync_detail_detection(question: Question):
         ]
     )
 
+
+def sync_detail_detection(question: Question):
+    responses_df = get_responses_df(question)
+
     detail_df, _ = asyncio.run(
         detail_detection(
             responses_df,
@@ -50,7 +51,9 @@ def sync_detail_detection(question: Question):
         )
     )
 
-    themefinder_id_mapping = model_to_dict(question, Response, "respondent__themefinder_id", "id")
+    themefinder_id_mapping = model_to_dict(
+        Response.objects.filter(question=question), "respondent__themefinder_id", "id"
+    )
 
     detail_df["response_id"] = detail_df["response_id"].map(themefinder_id_mapping)
     detail_df["evidence_rich"] = detail_df["evidence_rich"] == "YES"
@@ -72,15 +75,7 @@ def sync_detail_detection(question: Question):
 
 
 def sync_theme_mapping(question: Question):
-    responses_df = pd.DataFrame(
-        [
-            {
-                "response_id": response["respondent__themefinder_id"],
-                "response": response["free_text"],
-            }
-            for response in Response.objects.filter(question=question)
-        ]
-    )
+    responses_df = get_responses_df(question)
 
     themes_df = pd.DataFrame(
         [
@@ -88,6 +83,9 @@ def sync_theme_mapping(question: Question):
             for theme in SelectedTheme.objects.filter(question=question)
         ]
     )
+
+    if themes_df.empty:
+        raise ValueError("no themes found")
 
     mapped_df, _ = asyncio.run(
         theme_mapping(
@@ -101,18 +99,21 @@ def sync_theme_mapping(question: Question):
     mapped_df = mapped_df.explode("labels")
 
     themefinder_id_mapping = model_to_dict(
-        question, ResponseAnnotation, "annotation__response__respondent__themefinder_id", "id"
+        ResponseAnnotation.objects.filter(response__question=question),
+        "response__respondent__themefinder_id",
+        "id",
     )
-    theme_key_mapping = model_to_dict(question, SelectedTheme, "key", "id")
+
+    theme_key_mapping = model_to_dict(SelectedTheme.objects.filter(question=question), "key", "id")
 
     mapped_df["response_annotation_id"] = mapped_df["response_id"].map(themefinder_id_mapping)
     mapped_df["theme_id"] = mapped_df["labels"].map(theme_key_mapping)
 
-    mapped_df = mapped_df[["response_annotation_id", "theme_id"]].distinct()
+    mapped_df = mapped_df[["response_annotation_id", "theme_id"]].drop_duplicates()
 
     response_annotation_theme_to_save = [
         ResponseAnnotationTheme(
-            response_annotation_id=row.response_id,
+            response_annotation_id=row.response_annotation_id,
             theme_id=row.theme_id,
         )
         for _, row in mapped_df.iterrows()
