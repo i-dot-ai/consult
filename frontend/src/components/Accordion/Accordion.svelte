@@ -11,15 +11,16 @@
   interface Props {
     title: Snippet;
     content: Snippet;
+    variant?: "light" | "gray";
   }
 
-  let { title, content }: Props = $props();
+  let { title, content, variant = "light" }: Props = $props();
 
   let expanded = $state(false);
 </script>
 
 <Button
-  variant="default"
+  variant={variant === "gray" ? "gray" : "default"}
   handleClick={() => (expanded = !expanded)}
   fullWidth={true}
 >
@@ -38,7 +39,9 @@
   <div
     transition:slide
     class={clsx([
-      "bg-white p-4 border border-neutral-300 border-t-0 rounded-b-lg",
+      variant === "light" && "bg-white",
+      variant === "gray" && "bg-neutral-100",
+      "p-4 border border-neutral-300 border-t-0 rounded-b-lg",
     ])}
   >
     {@render content()}
