@@ -19,6 +19,7 @@ export enum Routes {
   SupportSignOff = "/support/consultations/sign-off",
   SupportThemefinder = "/support/consultations/themefinder",
   SupportEmail = "consult@cabinetoffice.gov.uk",
+  SupportQueue = "/support/django-rq",
 }
 export const getConsultationDetailUrl = (consultationId: string) => {
   return `${Routes.Consultations}/${consultationId}`;
@@ -149,4 +150,11 @@ export const getApiConfirmSignOffUrl = (
   questionId: string,
 ) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/`;
+};
+
+export const getApiShowNextResponse = (
+  consultationId: string,
+  questionId: string,
+) => {
+  return `${Routes.Evaluations}/${consultationId}/questions/${questionId}/show-next`;
 };

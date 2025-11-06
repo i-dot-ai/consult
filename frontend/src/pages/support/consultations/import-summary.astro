@@ -3,12 +3,13 @@ import Layout from "../../../layouts/Layout.astro";
 import Section from "../../../components/Section/Section.svelte";
 import Link from "../../../components/Link.svelte";
 import Title from "../../../components/Title.svelte";
+import { Routes } from "../../../global/routes";
 ---
 <Layout>
   <Section>
     <Title level={1} text="Import consultation data" />
-        <br><p><Link href={`/support/consultations/import-consultation`}>Import consultation</Link></p>
-        <br><p><Link href={`/support/django-rq`}>See progress of import tasks in Django RQ dashboard</Link></p>
-        <br><p><Link href={`/support/consultations`}>Return to consultations overview</Link></p>
+        <br><p><Link href={Routes.SupportImport}>Import consultation</Link></p>
+        <br><p><Link href={Routes.SupportQueue}>See progress of import tasks in Django RQ dashboard</Link></p>
+        <br><p><Link href={Routes.SupportConsultations}>Return to consultations overview</Link></p>
   </Section>
 </Layout>

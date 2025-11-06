@@ -6,24 +6,24 @@ import Layout from '../../../layouts/Layout.astro';
 import Section from '../../../components/Section/Section.svelte';
 import Title from '../../../components/Title.svelte';
 import Link from "../../../components/Link.svelte";
-
+import {getConsultationDetailUrl, getApiQuestionsUrl, getApiShowNextResponse} from "../../../global/routes";
+import { Routes } from "../../../global/routes";
+ 
 const { consultationId } = Astro.params;
 
 const consultation = await fetchBackendApi<ConsultationResponse>(
-  Astro, 
-  `/api/consultations/${consultationId}`
+  Astro, getConsultationDetailUrl(consultationId)
 );
 
 const questions = await fetchBackendApi<{results: Question[]}>(
-  Astro, 
-  `/api/consultations/${consultationId}/questions`
+  Astro, getApiQuestionsUrl(consultationId)
 );
 
 ---
 <Layout>
 	<Section>
 		<Title level={1} text={consultation.title} />
-		<Link href="/support/consultations">Back to your consultations</Link>
+		<Link href={Routes.SupportConsultations}>Back to your consultations</Link>
 		
 		<h2>All free text questions for review</h2>
 		
@@ -31,7 +31,7 @@ const questions = await fetchBackendApi<{results: Question[]}>(
 			<div class="p-4 my-4 mx-0 flex justify-between items-center">
 				<p class="m-0  grow shrink basis-0">{question.question_text}</p>
 				<p class="m-0 py-0 px-4 min-w-[15ch] text-center">{Math.round((question.proportion_of_audited_answers || 0) * 100)}% reviewed</p>
-				<Link href={`/evaluations/${consultationId}/questions/${question.id}/show-next`}>
+				<Link href={getApiShowNextResponse(consultationId, question.id)}>
 					👁️ Show next
 				</Link>
 			</div>
