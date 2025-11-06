@@ -1,6 +1,6 @@
 <script>
   import EditUser from "./EditUser.svelte";
-  
+
   export let userId = "test-user-id";
 </script>
 

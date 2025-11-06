@@ -1,0 +1,79 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`AnswersList > should render 1`] = `
+<div>
+  <div
+    class="flex items-center gap-1"
+  >
+    <div
+      class="shrink-0"
+    >
+      <svg
+        class="fill-primary"
+        height="1.2rem"
+        role="img"
+        viewBox="0 -960 960 960"
+        width="1.2rem"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M320-440h320v-80H320v80Zm0 120h320v-80H320v80Zm0 120h200v-80H320v80ZM240-80q-33 0-56.5-23.5T160-160v-640q0-33 23.5-56.5T240-880h320l240 240v480q0 33-23.5 56.5T720-80H240Zm280-520v-200H240v640h480v-440H520ZM240-800v200-200 640-640Z"
+          xmlns="http://www.w3.org/2000/svg"
+        />
+        <!---->
+      </svg>
+      <!---->
+    </div>
+     
+    <h2>
+      Test Title
+    </h2>
+     
+    <div
+      class="ml-1 px-1.5 py-0.5 rounded-lg text-xs bg-pink-100 text-primary"
+    >
+      2
+    </div>
+  </div>
+   
+  <!---->
+  <ol
+    class="mt-2 max-h-[20rem] overflow-y-auto"
+  >
+    <li
+      class="flex items-center gap-2 mb-2 last:mb-0 p-2 rounded-lg text-neutral-600 bg-neutral-50"
+    >
+      <div
+        class="shrink-0 flex justify-center items-center w-[3ch] h-[3ch] rounded-full text-xs bg-pink-200 text-primary"
+      >
+        1
+      </div>
+       
+      <p
+        class="text-sm"
+      >
+        Answer 1
+      </p>
+    </li>
+    <li
+      class="flex items-center gap-2 mb-2 last:mb-0 p-2 rounded-lg text-neutral-600 bg-neutral-50"
+    >
+      <div
+        class="shrink-0 flex justify-center items-center w-[3ch] h-[3ch] rounded-full text-xs bg-pink-200 text-primary"
+      >
+        2
+      </div>
+       
+      <p
+        class="text-sm"
+      >
+        Answer 2
+      </p>
+    </li>
+    
+  </ol>
+  
+  <!---->
+  
+</div>
+`;
