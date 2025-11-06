@@ -48,10 +48,8 @@ if (Astro.request.method === "POST") {
         <Title level={1} text="Delete consultation" />  
         <div>
             <p class="govuk-body">Are you sure you want to delete this consultation:</p>
-            <p class="govuk-body">{consultation.title}</p>
+            <p class="govuk-body" style="margin-bottom: 1rem;">{consultation.title}</p>
         </div>
-        
-        <br />
         
         <form method="post">
             <button 
