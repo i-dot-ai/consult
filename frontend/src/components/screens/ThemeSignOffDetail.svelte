@@ -186,10 +186,20 @@
       "POST",
     );
 
-    loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
-    loadGeneratedThemes(
+    await loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
+    await loadGeneratedThemes(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
+
+    // get selectedtheme_id created after back end select action is complete
+    const updatedTheme = $generatedThemesData?.results?.find(
+      generatedTheme => generatedTheme.id === newTheme.id
+    );
+
+    // scroll up to equivalent in selected themes list
+    document.querySelector(
+      `article[data-themeid="${updatedTheme.selectedtheme_id}"]`
+    )?.scrollIntoView();
   };
 
   const confirmSignOff = async () => {

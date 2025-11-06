@@ -46,7 +46,7 @@
   let answersRequested = $state(false);
 </script>
 
-<article class="bg-white rounded-lg">
+<article class="bg-white rounded-lg" data-themeid={theme.id}>
   {#if editing}
     <div in:fade>
       <ThemeForm
