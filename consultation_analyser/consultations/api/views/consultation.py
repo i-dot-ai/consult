@@ -19,7 +19,7 @@ from consultation_analyser.support_console.views.consultations import delete_con
 class ConsultationViewSet(ModelViewSet):
     serializer_class = ConsultationSerializer
     permission_classes = [IsAuthenticated, CanSeeConsultation | IsAdminUser]
-    filterset_fields = ["slug"]
+    filterset_fields = ["code"]
     http_method_names = ["get", "patch", "delete"]
 
     def get_queryset(self):

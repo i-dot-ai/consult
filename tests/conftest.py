@@ -259,7 +259,7 @@ def admin_user_token(admin_user):
 
 @pytest.fixture
 def consultation(dashboard_user, non_dashboard_user):
-    _consultation = ConsultationFactory(title="My First Consultation", slug="my-first-consultation")
+    _consultation = ConsultationFactory(title="My First Consultation", code="my-first-consultation")
     _consultation.users.add(dashboard_user)
     _consultation.users.add(non_dashboard_user)
     _consultation.save()

@@ -109,7 +109,7 @@ class TestConsultationViewSet:
         url = reverse("consultations-list")
         response = client.get(
             url,
-            {"slug": consultation.slug},
+            {"code": consultation.code},
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
         assert response.status_code == 200
@@ -119,7 +119,7 @@ class TestConsultationViewSet:
 
         # Should return exactly one consultation
         assert len(results) == 1
-        assert results[0]["slug"] == consultation.slug
+        assert results[0]["code"] == consultation.code
         assert results[0]["title"] == consultation.title
         assert results[0]["stage"] == consultation.stage
 
@@ -129,7 +129,7 @@ class TestConsultationViewSet:
         url = reverse("consultations-list")
         response = client.get(
             url,
-            {"slug": "nonexistent-slug"},
+            {"code": "nonexistent-code"},
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
         assert response.status_code == 200
