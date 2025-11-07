@@ -76,7 +76,7 @@
         <div class={clsx(["mt-0.5", "hidden", "sm:block"])}>
           {#if !skeleton && !hideIcon}
             <div data-testid="question-icon">
-              <MaterialIcon size="1.3rem" color="fill-teal">
+              <MaterialIcon size="1.3rem" color="fill-secondary">
                 {#if !question.has_free_text}
                   <Checklist />
                 {:else}

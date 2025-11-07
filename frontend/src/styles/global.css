@@ -27,7 +27,7 @@
 
 :root {
   --color-primary: #c40678;
-  --color-teal: oklch(0.6429 0.103 186.61);
+  --color-secondary: oklch(0.6429 0.103 186.61);
 }
 
 .blink {

@@ -77,9 +77,9 @@
       "my-2",
       "p-2",
       "rounded-full",
-      status === "done" && "bg-emerald-700",
+      status === "done" && "bg-secondary",
       status === "todo" && "bg-neutral-200",
-      status === "current" && "bg-emerald-700 ring-4 ring-emerald-100",
+      status === "current" && "bg-secondary ring-4 ring-teal-100",
     ])}>
       <MaterialIcon
         color={status === "todo"
@@ -92,7 +92,7 @@
       </MaterialIcon>
     </div>
     <h3 class={clsx([
-      status === "current" && "text-emerald-700",
+      status === "current" && "text-secondary",
     ])}>
       {text}
     </h3>
@@ -119,7 +119,7 @@
         </ol>
 
         <div class="px-0 md:px-16">
-          <h2 class="text-emerald-700 text-center">
+          <h2 class="text-secondary text-center">
             All Questions Signed Off
           </h2>
 
