@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  export let type: string;
+  export let type: string | undefined;
   export let title: string = "";
   export let variant: "default" | "gray" | "primary" | "ghost" | "approve" | "approve" =
     "default";
