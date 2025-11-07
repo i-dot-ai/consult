@@ -1,14 +1,15 @@
 module "load_balancer" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source           = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/load_balancer" # For testing local changes
-  source            = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/load_balancer?ref=v2.0.1-load_balancer"
-  name              = local.name
-  account_id        = data.aws_caller_identity.current.account_id
-  vpc_id            = data.terraform_remote_state.vpc.outputs.vpc_id
-  public_subnets    = data.terraform_remote_state.vpc.outputs.public_subnets
-  certificate_arn   = module.acm_certificate.arn
-  web_acl_arn       = module.waf.web_acl_arn
-  env               = var.env 
+  source          = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/load_balancer?ref=v2.0.1-load_balancer"
+  name            = local.name
+  account_id      = data.aws_caller_identity.current.account_id
+  vpc_id          = data.terraform_remote_state.vpc.outputs.vpc_id
+  public_subnets  = data.terraform_remote_state.vpc.outputs.public_subnets
+  certificate_arn = module.acm_certificate.arn
+  web_acl_arn     = module.waf.web_acl_arn
+  env             = var.env
+  ip_whitelist    = concat(var.internal_ips, var.external_ips, var.developer_ips)
 }
 
 module "waf" {
