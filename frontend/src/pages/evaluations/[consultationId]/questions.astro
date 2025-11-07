@@ -9,7 +9,8 @@ import Link from "../../../components/Link.svelte";
 import {getApiConsultationUrl, getApiQuestionsUrl, getApiShowNextResponse} from "../../../global/routes";
 import { Routes } from "../../../global/routes";
 import Visibility from "../../../components/svg/material/Visibility.svelte";
- 
+import MaterialIcon from "./../../../components/MaterialIcon.svelte";
+
 const { consultationId } = Astro.params;
 
 const consultation = await fetchBackendApi<ConsultationResponse>(
@@ -33,7 +34,9 @@ const questions = await fetchBackendApi<{results: Question[]}>(
 				<p class="m-0  grow shrink basis-0">{question.question_text}</p>
 				<p class="m-0 py-0 px-4 min-w-[15ch] text-center">{Math.round((question.proportion_of_audited_answers || 0) * 100)}% reviewed</p>
 				<Link href={getApiShowNextResponse(consultationId, question.id)}>
-					<Visibility /> Show next
+					<MaterialIcon color="fill-neutral-500" size="1rem">
+					  <Visibility />
+					</MaterialIcon> Show next
 				</Link>
 			</div>
 		))}
