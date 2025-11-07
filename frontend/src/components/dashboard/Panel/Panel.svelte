@@ -4,7 +4,7 @@
   import { type Snippet } from "svelte";
 
   interface Props {
-    variant?: "default" | "primary" | "approve";
+    variant?: "default" | "primary" | "approve" | "approve-dark";
     border?: boolean;
     bg?: boolean;
     level?: number;
@@ -35,12 +35,14 @@
         variant === "default" && "border-gray-200",
         variant === "primary" && "border-pink-200",
         variant === "approve" && "border-emerald-200",
+        variant === "approve-dark" && "border-emerald-700",
       ]),
     bg &&
       clsx([
         variant === "default" && "bg-neutral-50",
         variant === "primary" && "bg-pink-50",
         variant === "approve" && "bg-emerald-50",
+        variant === "approve-dark" && "bg-neutral-50",
       ]),
   ])}
 >
