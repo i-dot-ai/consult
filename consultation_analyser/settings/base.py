@@ -227,6 +227,11 @@ LOGGING = {
             "formatter": "rq_console",
             "exclude": ["%(asctime)s"],
         },
+        "file": {
+            "level": "DEBUG",
+            "class": "logging.FileHandler",
+            "filename": "sql.log",
+        },
     },
     "loggers": {
         "pipeline": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
@@ -235,8 +240,10 @@ LOGGING = {
         "export": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "dummy_data": {"handlers": ["stdout"], "level": "INFO", "propagate": False},
         "rq.worker": {"handlers": ["rq_console"], "level": "INFO"},
+        "django.db.backends": {"handlers": ["file"], "level": "DEBUG", "propagate": False},
     },
 }
+
 
 LOGGER = StructuredLogger(
     level="info",

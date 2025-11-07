@@ -215,8 +215,15 @@ class ResponseSerializer(serializers.ModelSerializer):
     sentiment = serializers.CharField(source="annotation.sentiment")
     human_reviewed = serializers.BooleanField(source="annotation.human_reviewed")
     is_flagged = serializers.BooleanField(read_only=True)
-    is_edited = serializers.BooleanField(source="annotation.is_edited")
+    is_edited = serializers.SerializerMethodField()
     question_id = serializers.UUIDField()
+
+    def get_is_edited(self, obj):
+        """
+        Returns True if annotation was edited.
+        This replicates annotation.is_edited property logic in a way that avoids N+1 queries.
+        """
+        return obj.annotation_is_edited or obj.annotation_has_human_assigned_themes
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}
