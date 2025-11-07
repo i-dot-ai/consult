@@ -68,7 +68,7 @@
   icon: Component,
   status: "done" | "current" | "todo",
 )}
-  <div class="flex flex-col items-center">
+  <div class="flex flex-col items-center min-w-16">
     <div class={clsx([
       "my-2",
       "p-2",
@@ -98,8 +98,8 @@
 {#if allQuestionsSignedOff}
   <section in:slide>
     <Panel variant="approve-dark" bg={true}>
-      <div class="px-8 md:px-16">
-        <ol class="flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8">
+      <div class="px-2 sm:px-8 md:px-16">
+        <ol class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-full overflow-x-auto">
           <li>
             {@render themeStage("Consultation Overview", CheckCircle, "done")}
           </li>
@@ -133,11 +133,13 @@
             fullWidth={true}
             handleClick={() => {}}
           >
-            <div class="flex justify-center items-center gap-1 w-full">
-              <MaterialIcon>
-                <CheckCircle />
-              </MaterialIcon>
-              <span class="text-center">
+            <div class="flex justify-center items-center gap-3 sm:gap-1 w-full">
+              <div class="shrink-0">
+                <MaterialIcon>
+                  <CheckCircle />
+                </MaterialIcon>
+              </div>
+              <span class="text-left">
                 Confirm and Proceed to Mapping
               </span>
             </div>
