@@ -61,7 +61,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         return f"app_data/consultations/{self.code}/outputs/{kind}/{self.timestamp}"
 
     def __str__(self):
-        return self.code
+        return self.title
 
 
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):
