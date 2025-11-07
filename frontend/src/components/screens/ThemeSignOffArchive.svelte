@@ -23,6 +23,7 @@
   import Checklist from "../svg/material/Checklist.svelte";
   import CheckCircle from "../svg/material/CheckCircle.svelte";
   import Finance from "../svg/material/Finance.svelte";
+  import WandStars from "../svg/material/WandStars.svelte";
 
   interface Props {
     consultationId: string;
@@ -107,7 +108,7 @@
             {@render themeStage("Theme Sign Off", CheckCircle, "current")}
           </li>
           <li>
-            {@render themeStage("AI Theme Mapping", CheckCircle, "todo")}
+            {@render themeStage("AI Theme Mapping", WandStars, "todo")}
           </li>
           <li>
             {@render themeStage("Analysis Dashboard", Finance, "todo")}
