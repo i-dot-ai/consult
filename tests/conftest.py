@@ -2,11 +2,14 @@ import json
 
 import boto3
 import pytest
+import yaml
+from django.contrib.postgres.search import SearchVector
 from django.test import RequestFactory
 from moto import mock_aws
 from rest_framework_simplejwt.tokens import RefreshToken
 
 from consultation_analyser.consultations.models import (
+    Consultation,
     DemographicOption,
     Respondent,
     Response,
@@ -20,6 +23,7 @@ from consultation_analyser.factories import (
     MultiChoiceAnswerFactory,
     QuestionFactory,
     RespondentFactory,
+    ResponseFactory,
     SelectedThemeFactory,
     UserFactory,
 )
@@ -543,3 +547,29 @@ def alternative_theme(free_text_response):
     )
     yield theme
     theme.delete()
+
+
+@pytest.fixture
+def embedded_responses():
+    with open("./tests/examples/response_search_embeddings.yml", "r") as file:
+        data = yaml.safe_load(file)
+
+    question = QuestionFactory(text=data["question"], has_free_text=True)
+
+    for response_data in data["responses"]:
+        respondent = RespondentFactory(consultation=question.consultation)
+        response = ResponseFactory(
+            question=question,
+            respondent=respondent,
+            free_text=response_data["text"],
+            embedding=response_data["embedding"],
+        )
+        response.search_vector = SearchVector("free_text")
+        response.save()
+
+    yield {
+        "consultation_id": question.consultation.id,
+        "question_id": question.id,
+        "search_mode": data["search_mode"],
+    }
+    Consultation.objects.filter(id=question.consultation.id).delete()
