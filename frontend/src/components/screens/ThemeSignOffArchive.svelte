@@ -10,6 +10,7 @@
   import TitleRow from "../dashboard/TitleRow.svelte";
   import Panel from "../dashboard/Panel/Panel.svelte";
   import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
+  import { type Question } from "../../global/types.ts";
 
   import {
     getApiQuestionsUrl,
@@ -57,10 +58,12 @@
       .includes(searchValue.toLocaleLowerCase()),
   ))
 
-  let allQuestionsSignedOff = $derived($questionsData?.results?.filter(
-    question => question.has_free_text
-  ).every(
-    question => question.theme_status === "confirmed"
+  let questionsForSignOff = $derived($questionsData?.results?.filter(
+    (question: Question) => question.has_free_text
+  ));
+
+  let isAllQuestionsSignedOff: boolean =  $derived(questionsForSignOff?.every(
+    (question: Question) => question.theme_status === "confirmed"
   ));
 </script>
 
@@ -96,7 +99,7 @@
   </div>
 {/snippet}
 
-{#if allQuestionsSignedOff}
+{#if isAllQuestionsSignedOff}
   <section in:slide>
     <Panel variant="approve-dark" bg={true}>
       <div class="px-2 sm:px-8 md:px-16">
@@ -121,7 +124,7 @@
           </h2>
 
           <p class="text-sm text-center text-neutral-500 my-4">
-            You have successfully reviewed and signed off themes for all 8 consultation questions.
+            You have successfully reviewed and signed off themes for all {questionsForSignOff?.length || 0} consultation questions.
           </p>
 
           <p class="text-sm text-center text-neutral-500 my-4">
