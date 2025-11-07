@@ -560,7 +560,6 @@ def import_questions(
     Import question data for a consultation.
     Args:
         consultation: Consultation object for questions
-        timestamp: Timestamp folder name for the AI outputs
         sign_off: If True, import candidate themes; if False, use standard theme import workflow
     """
     logger.info("Starting question import for consultation {title})", title=consultation.title)
@@ -627,7 +626,7 @@ def import_questions(
         raise
 
 
-def import_cross_cutting_themes(consultation: Consultation):
+def import_cross_cutting_themes(consultation: Consultation, timestamp: str):
     """
     Import cross-cutting themes that span across multiple questions.
     Must run after all themes have been imported.
@@ -638,7 +637,7 @@ def import_cross_cutting_themes(consultation: Consultation):
     )
 
     s3_client = boto3.client("s3")
-    cct_file_key = f"{consultation.s3_mapping_folder}/cross_cutting_themes.json"
+    cct_file_key =f"{consultation.get_folder("mapping")}/cross_cutting_themes.json"
 
     try:
         # Check if file exists
