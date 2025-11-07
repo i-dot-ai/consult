@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { onMount, type Snippet } from "svelte";
+  import { onMount, type Component } from "svelte";
   import { slide } from "svelte/transition";
   import type { Writable } from "svelte/store";
 
@@ -24,10 +24,15 @@
   import CheckCircle from "../svg/material/CheckCircle.svelte";
   import Finance from "../svg/material/Finance.svelte";
 
+  interface Props {
+    consultationId: string;
+  }
 
-  export let consultationId: string = "";
+  let {
+    consultationId = "",
+  }: Props = $props();
 
-  let searchValue: string = "";
+  let searchValue: string = $state("");
 
   const {
     loading: isQuestionsLoading,
@@ -45,16 +50,22 @@
     loadQuestions(getApiQuestionsUrl(consultationId));
   });
 
-  $: displayQuestions = $questionsData?.results?.filter((question) =>
+  let displayQuestions = $derived($questionsData?.results?.filter((question) =>
     `Q${question.number}: ${question.question_text}`
       .toLocaleLowerCase()
       .includes(searchValue.toLocaleLowerCase()),
-  );
+  ))
+
+  let allQuestionsSignedOff = $derived($questionsData?.results?.filter(
+    question => question.has_free_text
+  ).every(
+    question => question.theme_status === "confirmed"
+  ));
 </script>
 
 {#snippet themeStage(
   text: string,
-  icon: Snippet,
+  icon: Component,
   status: "done" | "current" | "todo",
 )}
   <div class="flex flex-col items-center">
@@ -84,56 +95,58 @@
   </div>
 {/snippet}
 
-<section>
-  <Panel variant="approve-dark" bg={true}>
-    <div class="px-8 md:px-16">
-      <ol class="flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8">
-        <li>
-          {@render themeStage("Consultation Overview", CheckCircle, "done")}
-        </li>
-        <li>
-          {@render themeStage("Theme Sign Off", CheckCircle, "current")}
-        </li>
-        <li>
-          {@render themeStage("AI Theme Mapping", CheckCircle, "todo")}
-        </li>
-        <li>
-          {@render themeStage("Analysis Dashboard", Finance, "todo")}
-        </li>
-      </ol>
+{#if allQuestionsSignedOff}
+  <section in:slide>
+    <Panel variant="approve-dark" bg={true}>
+      <div class="px-8 md:px-16">
+        <ol class="flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8">
+          <li>
+            {@render themeStage("Consultation Overview", CheckCircle, "done")}
+          </li>
+          <li>
+            {@render themeStage("Theme Sign Off", CheckCircle, "current")}
+          </li>
+          <li>
+            {@render themeStage("AI Theme Mapping", CheckCircle, "todo")}
+          </li>
+          <li>
+            {@render themeStage("Analysis Dashboard", Finance, "todo")}
+          </li>
+        </ol>
 
-      <div class="px-0 md:px-16">
-        <h2 class="text-emerald-700 text-center">
-          All Questions Signed Off
-        </h2>
+        <div class="px-0 md:px-16">
+          <h2 class="text-emerald-700 text-center">
+            All Questions Signed Off
+          </h2>
 
-        <p class="text-sm text-center text-neutral-500 my-4">
-          You have successfully reviewed and signed off themes for all 8 consultation questions.
-        </p>
+          <p class="text-sm text-center text-neutral-500 my-4">
+            You have successfully reviewed and signed off themes for all 8 consultation questions.
+          </p>
 
-        <p class="text-sm text-center text-neutral-500 my-4">
-          <strong class="">Next:</strong> Confirm and proceed to the AI mapping phase where responses will be mapped to your selected themes.
-        </p>
+          <p class="text-sm text-center text-neutral-500 my-4">
+            <strong class="">Next:</strong> Confirm and proceed to the AI mapping phase where responses will be mapped to your selected themes.
+          </p>
 
-        <Button
-          variant="approve"
-          size="sm"
-          fullWidth={true}
-          handleClick={() => {}}
-        >
-          <div class="flex justify-center items-center gap-1 w-full">
-            <MaterialIcon>
-              <CheckCircle />
-            </MaterialIcon>
-            <span class="text-center">
-              Confirm and Proceed to Mapping
-            </span>
-          </div>
-        </Button>
+          <Button
+            variant="approve"
+            size="sm"
+            fullWidth={true}
+            handleClick={() => {}}
+          >
+            <div class="flex justify-center items-center gap-1 w-full">
+              <MaterialIcon>
+                <CheckCircle />
+              </MaterialIcon>
+              <span class="text-center">
+                Confirm and Proceed to Mapping
+              </span>
+            </div>
+          </Button>
+        </div>
       </div>
-    </div>
-  </Panel>
-</section>
+    </Panel>
+  </section>
+{/if}
 
 <section class="my-8">
   <div class="my-2">
