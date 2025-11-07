@@ -34,9 +34,12 @@ const questions = await fetchBackendApi<{results: Question[]}>(
 				<p class="m-0  grow shrink basis-0">{question.question_text}</p>
 				<p class="m-0 py-0 px-4 min-w-[15ch] text-center">{Math.round((question.proportion_of_audited_answers || 0) * 100)}% reviewed</p>
 				<Link href={getApiShowNextResponse(consultationId, question.id)}>
-					<MaterialIcon color="fill-neutral-500" size="1rem">
-					  <Visibility />
-					</MaterialIcon> Show next
+					<span class="flex items-center gap-1">
+                       <MaterialIcon color="fill-neutral-500" size="1rem">
+					    <Visibility />
+					  </MaterialIcon>
+                       Show next
+                    </span>
 				</Link>
 			</div>
 		))}
