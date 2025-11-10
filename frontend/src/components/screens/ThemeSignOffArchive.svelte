@@ -140,36 +140,24 @@
           class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-full overflow-x-auto"
         >
           <li>
-            {@render themeStage(
-              "Consultation Overview",
-              CheckCircle,
-              "done"
-            )}
+            {@render themeStage("Consultation Overview", CheckCircle, "done")}
           </li>
           <li>
             {@render themeStage(
               "Theme Sign Off",
               CheckCircle,
-              $consultationData?.stage === "theme_mapping"
-                ? "done"
-                : "current"
+              $consultationData?.stage === "theme_mapping" ? "done" : "current",
             )}
           </li>
           <li>
             {@render themeStage(
               "AI Theme Mapping",
               WandStars,
-              $consultationData?.stage === "theme_mapping"
-                ? "current"
-                : "todo"
+              $consultationData?.stage === "theme_mapping" ? "current" : "todo",
             )}
           </li>
           <li>
-            {@render themeStage(
-              "Analysis Dashboard",
-              Finance,
-              "todo"
-            )}
+            {@render themeStage("Analysis Dashboard", Finance, "todo")}
           </li>
         </ol>
 
@@ -217,8 +205,8 @@
           getApiConsultationUrl(consultationId),
           "PATCH",
           {
-            "stage": "theme_mapping",
-          }
+            stage: "theme_mapping",
+          },
         );
 
         if (!$updateConsultationError) {

@@ -29,7 +29,7 @@ export const fetchBackendApi = async <T>(
   if (response.status == 204) {
     // 204 No Content
     return {} as Promise<T>;
-  }else{
+  } else {
     return response.json() as Promise<T>;
   }
 };
