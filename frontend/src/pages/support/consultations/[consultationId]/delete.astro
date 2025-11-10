@@ -5,7 +5,7 @@ import type { ConsultationResponse } from "../../../../global/types";
 import Layout from "../../../../layouts/Layout.astro";
 import Section from "../../../../components/Section/Section.svelte";
 import Title from "../../../../components/Title.svelte";
-import { getConsultationDetailUrl, Routes } from "../../../../global/routes";
+import { getApiConsultationUrl, Routes } from "../../../../global/routes";
 
 const { consultationId } = Astro.params;
 
@@ -15,7 +15,7 @@ if (!consultationId) {
 
 // Fetch consultation data first (needed for both GET and POST to show the form)
 let consultation = await fetchBackendApi<ConsultationResponse>(
-  Astro, getConsultationDetailUrl(consultationId)
+  Astro, getApiConsultationUrl(consultationId)
 );
 
 // Handle POST request for deletion
@@ -29,7 +29,7 @@ if (Astro.request.method === "POST") {
     try {
         await fetchBackendApi(
             Astro,
-            getConsultationDetailUrl(consultationId),
+            getApiConsultationUrl(consultationId),
             {
             method: "DELETE",
             }
