@@ -188,20 +188,22 @@
       "POST",
     );
 
-    await loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
+    await loadSelectedThemes(
+      getApiGetSelectedThemesUrl(consultationId, questionId),
+    );
     await loadGeneratedThemes(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
 
     // get selectedtheme_id created after back end select action is complete
     const updatedTheme = $generatedThemesData?.results?.find(
-      generatedTheme => generatedTheme.id === newTheme.id
+      (generatedTheme) => generatedTheme.id === newTheme.id,
     );
 
     // scroll up to equivalent in selected themes list
-    document.querySelector(
-      `article[data-themeid="${updatedTheme.selectedtheme_id}"]`
-    )?.scrollIntoView();
+    document
+      .querySelector(`article[data-themeid="${updatedTheme.selectedtheme_id}"]`)
+      ?.scrollIntoView();
   };
 
   const confirmSignOff = async () => {
@@ -380,18 +382,14 @@
     {/if}
 
     <Modal
+      variant="primary"
+      title="Confirm Theme Sign Off"
+      icon={CheckCircle}
       open={isConfirmSignOffModalOpen}
       setOpen={(newOpen: boolean) => (isConfirmSignOffModalOpen = newOpen)}
       confirmText={"Confirm Sign Off"}
       handleConfirm={confirmSignOff}
     >
-      <div class="flex items-center gap-2 mb-2">
-        <MaterialIcon color="fill-primary">
-          <CheckCircle />
-        </MaterialIcon>
-        <h3 class="font-bold">Confirm Theme Sign Off</h3>
-      </div>
-
       <p class="text-sm text-neutral-500">
         Are you sure you want to sign off on these {numSelectedThemesText(
           $selectedThemesData?.results,
@@ -436,7 +434,16 @@
     "after:-z-10",
   ])}
 >
-  <p class={clsx(["m-auto", "w-max", "bg-white", "px-4", "text-sm", "text-neutral-500"])}>
+  <p
+    class={clsx([
+      "m-auto",
+      "w-max",
+      "bg-white",
+      "px-4",
+      "text-sm",
+      "text-neutral-500",
+    ])}
+  >
     Browse AI Generated Themes
   </p>
 </div>
@@ -448,7 +455,7 @@
         <Panel variant="approve" bg={true} border={true}>
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-              <MaterialIcon color="fill-emerald-700">
+              <MaterialIcon color="fill-secondary">
                 <SmartToy />
               </MaterialIcon>
 
@@ -478,11 +485,11 @@
               >
                 <span
                   class={clsx([
-                    "flex items-center justify-between gap-1 text-emerald-700",
+                    "flex items-center justify-between gap-1 text-secondary",
                     addingCustomTheme && "text-white",
                   ])}
                 >
-                  <MaterialIcon color="fill-emerald-700">
+                  <MaterialIcon color="fill-secondary">
                     <Stacks />
                   </MaterialIcon>
                   {isAllThemesExpanded() ? "Collapse All" : "Expand All"}

@@ -1,9 +1,9 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  export let type: string;
+  export let type: string | undefined;
   export let title: string = "";
-  export let variant: "default" | "gray" | "primary" | "ghost" | "approve" | "approve" =
+  export let variant: "default" | "gray" | "primary" | "ghost" | "approve" =
     "default";
   export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
   export let highlighted: boolean = false;
@@ -39,7 +39,7 @@
     variant === "default" && "bg-white",
     variant === "gray" && "bg-neutral-100",
     variant === "primary" && "bg-primary text-white",
-    variant === "approve" && "bg-emerald-700 text-white",
+    variant === "approve" && "bg-secondary text-white",
     variant === "ghost" ? "border-transparent" : "border-gray-300",
     "transition-colors",
     "duration-300",
@@ -49,7 +49,7 @@
     "items-center",
     "hover:bg-gray-100",
     variant === "primary" && "hover:text-primary hover:border-primary",
-    variant === "approve" && "hover:text-teal hover:border-teal",
+    variant === "approve" && "hover:text-secondary hover:border-secondary",
 
     disabled &&
       clsx([
@@ -72,7 +72,7 @@
         highlightVariant === "primary" &&
           "!bg-primary text-white hover:bg-pink-500",
         highlightVariant === "approve" &&
-          "border-teal text-teal hover:bg-teal-500",
+          "border-secondary text-secondary hover:bg-teal-500",
       ]),
   ])}
   {disabled}
@@ -89,7 +89,7 @@
 
 <style>
   button[data-variant="approve"]:not(.disabled):hover :global(svg) {
-    fill: var(--color-teal);
+    fill: var(--color-secondary);
   }
   button[data-variant="primary"]:not(.disabled):hover :global(svg) {
     fill: var(--color-primary);

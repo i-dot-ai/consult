@@ -46,14 +46,7 @@
   }: Props = $props();
 </script>
 
-<div
-  class={clsx([
-    "bg-white",
-    disabled &&
-      clsx(["grayscale", "cursor-not-allowed", "pointer-events-none"]),
-  ])}
-  transition:fade={{ duration: 200 }}
->
+<div class={clsx(["bg-white"])} transition:fade={{ duration: 200 }}>
   <ConditionalWrapper
     element={Link}
     condition={clickable && !skeleton}
@@ -76,7 +69,10 @@
         <div class={clsx(["mt-0.5", "hidden", "sm:block"])}>
           {#if !skeleton && !hideIcon}
             <div data-testid="question-icon">
-              <MaterialIcon size="1.3rem" color="fill-teal">
+              <MaterialIcon
+                size="1.3rem"
+                color={disabled ? "fill-neutral-400" : "fill-secondary"}
+              >
                 {#if !question.has_free_text}
                   <Checklist />
                 {:else}
@@ -128,7 +124,10 @@
               000 responses
             </div>
           {:else}
-            <p in:fade class="text-md leading-6">
+            <p
+              in:fade
+              class={clsx(["text-md", "leading-6", disabled && "opacity-50"])}
+            >
               {@html applyHighlight(
                 `Q${question.number}: ${question.question_text}`,
                 highlightText,
@@ -137,13 +136,23 @@
 
             <div
               in:fade
-              class={clsx(["text-sm", "leading-6", "whitespace-nowrap"])}
+              class={clsx([
+                "text-sm",
+                "leading-6",
+                "whitespace-nowrap",
+                disabled && "opacity-50",
+              ])}
             >
               {question.total_responses} responses
             </div>
 
             {#if subtext}
-              <small class="text-xs text-neutral-500">
+              <small
+                class={clsx([
+                  "text-xs text-neutral-500",
+                  disabled && "opacity-75",
+                ])}
+              >
                 {subtext}
               </small>
             {/if}
@@ -155,12 +164,20 @@
           {#if !skeleton}
             <div class="flex gap-1 items-center">
               {#if tag}
-                <div class="ml-2 md:ml-0">
+                <div
+                  class={clsx([
+                    "ml-2 md:ml-0",
+                    disabled && "grayscale opacity-50",
+                  ])}
+                >
                   {@render tag()}
                 </div>
               {/if}
 
-              <div data-testid="fav-button">
+              <div
+                data-testid="fav-button"
+                class={clsx([disabled && "grayscale"])}
+              >
                 <Button
                   variant="ghost"
                   handleClick={(e: MouseEvent) => {

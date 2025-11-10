@@ -67,7 +67,7 @@
       "leading-[1.5rem]",
       "transition-all",
       "duration-300",
-      editing && clsx(["outline", "outline-4", "outline-teal", "p-2"]),
+      editing && clsx(["outline", "outline-4", "outline-secondary", "p-2"]),
     ])}
   >
     <header

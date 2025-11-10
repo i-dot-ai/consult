@@ -1,25 +1,32 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import type { Snippet } from "svelte";
+  import type { Component, Snippet } from "svelte";
   import { fade, fly } from "svelte/transition";
   import type { MouseEventHandler } from "svelte/elements";
 
   import { createDialog, melt } from "@melt-ui/svelte";
 
   import Button from "../inputs/Button/Button.svelte";
+  import MaterialIcon from "../MaterialIcon.svelte";
 
   interface Props {
+    variant: "primary" | "secondary";
+    title: string;
     open: boolean;
     confirmText: string;
+    icon?: Component;
     setOpen: (newValue: boolean) => void;
     handleConfirm: MouseEventHandler<any>;
     children: Snippet;
   }
 
   let {
+    variant = "primary",
+    title = "",
     open = false,
     confirmText = "Confirm",
+    icon,
     setOpen = () => {},
     handleConfirm = () => {},
     children,
@@ -31,7 +38,7 @@
       portalled,
       overlay,
       content,
-      title,
+      title: titleMelt,
       description,
       close,
     },
@@ -74,6 +81,26 @@
         y: 8,
       }}
     >
+      <div class="flex items-center gap-2 mb-2">
+        {#if icon}
+          <MaterialIcon
+            color={variant === "primary" ? "fill-primary" : "fill-secondary"}
+            size="1.3rem"
+          >
+            <svelte:component this={icon} />
+          </MaterialIcon>
+        {/if}
+        <h3
+          use:titleMelt
+          class={clsx([
+            "font-bold",
+            variant === "secondary" && "text-secondary",
+          ])}
+        >
+          {title}
+        </h3>
+      </div>
+
       {@render children()}
 
       <footer class="flex items-center justify-end gap-2">
@@ -81,7 +108,11 @@
           <Button size="sm">Cancel</Button>
         </div>
 
-        <Button size="sm" variant="primary" handleClick={handleConfirm}>
+        <Button
+          size="sm"
+          variant={variant === "primary" ? "primary" : "approve"}
+          handleClick={handleConfirm}
+        >
           {confirmText}
         </Button>
       </footer>
