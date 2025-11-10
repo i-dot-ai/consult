@@ -119,8 +119,8 @@
               handleClick={() => {
                 if (!$answersData) {
                   const queryString = new URLSearchParams({
-                    searchMode: "semantic",
-                    searchValue: theme.name,
+                    searchMode: "representative",
+                    searchValue: `${theme.name} ${theme.description}`,
                   }).toString();
 
                   loadAnswers(
