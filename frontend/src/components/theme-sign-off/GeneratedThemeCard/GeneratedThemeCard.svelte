@@ -81,7 +81,7 @@
                     expanded && "rotate-90",
                   ])}
                 >
-                  <MaterialIcon size="1.2rem" color="fill-emerald-700">
+                  <MaterialIcon size="1.2rem" color="fill-secondary">
                     <ChevronRight />
                   </MaterialIcon>
                 </div>
@@ -132,8 +132,8 @@
               }}
               disabled={$isAnswersLoading && answersRequested}
             >
-              <div class="text-emerald-700 flex items-center gap-1">
-                <MaterialIcon color="fill-emerald-700">
+              <div class="text-secondary flex items-center gap-1">
+                <MaterialIcon color="fill-secondary">
                   <Visibility />
                 </MaterialIcon>
                 <span class="whitespace-nowrap">

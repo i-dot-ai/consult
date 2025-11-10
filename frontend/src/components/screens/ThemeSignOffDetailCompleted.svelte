@@ -134,7 +134,7 @@
     <Panel bg={false} border={true}>
       <div class="flex gap-4">
         <div class="mt-0.5">
-          <MaterialIcon color="fill-emerald-700" size="1.2rem">
+          <MaterialIcon color="fill-secondary" size="1.2rem">
             <Help />
           </MaterialIcon>
         </div>
