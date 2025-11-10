@@ -6,6 +6,7 @@
   import type { Writable } from "svelte/store";
 
   import {
+    getApiConsultationUrl,
     getApiQuestionsUrl,
     getThemeSignOffDetailUrl,
     Routes,
@@ -45,6 +46,18 @@
     error: questionsError,
     load: loadQuestions,
     data: questionsData,
+  }: {
+    loading: Writable<boolean>;
+    error: Writable<string>;
+    load: Function;
+    data: Writable<any>;
+  } = createFetchStore();
+
+  const {
+    loading: isConsultationUpdating,
+    error: updateConsultationError,
+    load: updateConsultation,
+    data: updateConsultationData,
   }: {
     loading: Writable<boolean>;
     error: Writable<string>;
@@ -166,8 +179,19 @@
       icon={Warning}
       open={isConfirmModalOpen}
       setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
-      handleConfirm={() => {
-        isConfirmModalOpen = false;
+      handleConfirm={async () => {
+        await updateConsultation(
+          getApiConsultationUrl(consultationId),
+          "PATCH",
+          {
+            "stage": "theme_mapping",
+          }
+        );
+
+        if (!$updateConsultationError) {
+          isConfirmModalOpen = false;
+          location.href = location.href;
+        }
       }}
     >
       <p class="text-sm text-neutral-500 mb-4">
@@ -214,6 +238,14 @@
           {Routes.SupportEmail}
         </div>
       </a>
+
+      {#if $updateConsultationError}
+        <div class="mt-2 mb-4">
+          <Alert>
+            <span class="text-sm">{$updateConsultationError}</span>
+          </Alert>
+        </div>
+      {/if}
     </Modal>
   </section>
 {/if}
