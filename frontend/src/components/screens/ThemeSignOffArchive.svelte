@@ -205,7 +205,7 @@
       </p>
       <a
         href={`mailto:${Routes.SupportEmail}`}
-        class="support-link text-sm text-secondary hover:text-primary"
+        class="support-link block mb-4 text-sm text-secondary hover:text-primary"
       >
         <div class="flex items-center gap-1">
           <MaterialIcon color="fill-secondary">
