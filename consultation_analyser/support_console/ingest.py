@@ -520,8 +520,8 @@ def import_candidate_themes(question: Question):
     for theme in theme_data:
         candidate_theme = CandidateTheme(
             question=question,
-            name=theme["topic_label"],
-            description=theme["topic_description"],
+            name=theme["Theme Name"],
+            description=theme["Theme Description"],
             approximate_frequency=theme["source_topic_count"],
         )
         themes_to_save.append(candidate_theme)

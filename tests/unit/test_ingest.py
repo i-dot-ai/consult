@@ -40,7 +40,7 @@ def get_object_side_effect(Bucket, Key):
     multi_choice_data = b'{"themefinder_id": 1, "options": ["a"]}\n{"themefinder_id": 3, "options": ["b", "c"]}\n{"themefinder_id": 4}'
 
     # Mock themes file
-    themes_data = b'[{"topic_id": "A", "topic_label": "Theme A", "topic_description": "Description A", "source_topic_count": 42}]'
+    themes_data = b'[{"topic_id": "A", "topic_label": "Theme A", "Theme Name": "Theme A", "Theme Description": "Theme A Description", "topic_description": "Description A", "source_topic_count": 42}]'
 
     # Mock mapping file
     mapping_data = (
