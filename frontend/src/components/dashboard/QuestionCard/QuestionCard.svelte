@@ -46,12 +46,7 @@
   }: Props = $props();
 </script>
 
-<div
-  class={clsx([
-    "bg-white",
-  ])}
-  transition:fade={{ duration: 200 }}
->
+<div class={clsx(["bg-white"])} transition:fade={{ duration: 200 }}>
   <ConditionalWrapper
     element={Link}
     condition={clickable && !skeleton}
@@ -129,11 +124,10 @@
               000 responses
             </div>
           {:else}
-            <p in:fade class={clsx([
-              "text-md",
-              "leading-6",
-              disabled && "opacity-50",
-            ])}>
+            <p
+              in:fade
+              class={clsx(["text-md", "leading-6", disabled && "opacity-50"])}
+            >
               {@html applyHighlight(
                 `Q${question.number}: ${question.question_text}`,
                 highlightText,
@@ -153,10 +147,12 @@
             </div>
 
             {#if subtext}
-              <small class={clsx([
-                "text-xs text-neutral-500",
-                disabled && "opacity-75",
-              ])}>
+              <small
+                class={clsx([
+                  "text-xs text-neutral-500",
+                  disabled && "opacity-75",
+                ])}
+              >
                 {subtext}
               </small>
             {/if}
@@ -168,19 +164,19 @@
           {#if !skeleton}
             <div class="flex gap-1 items-center">
               {#if tag}
-                <div class={clsx([
-                  "ml-2 md:ml-0",
-                  disabled && "grayscale opacity-50",
-                ])}>
+                <div
+                  class={clsx([
+                    "ml-2 md:ml-0",
+                    disabled && "grayscale opacity-50",
+                  ])}
+                >
                   {@render tag()}
                 </div>
               {/if}
 
               <div
                 data-testid="fav-button"
-                class={clsx([
-                  disabled && "grayscale",
-                ])}
+                class={clsx([disabled && "grayscale"])}
               >
                 <Button
                   variant="ghost"

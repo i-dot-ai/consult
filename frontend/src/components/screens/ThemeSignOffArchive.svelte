@@ -35,9 +35,7 @@
     consultationId: string;
   }
 
-  let {
-    consultationId = "",
-  }: Props = $props();
+  let { consultationId = "" }: Props = $props();
 
   let searchValue: string = $state("");
   let isConfirmModalOpen: boolean = $state(false);
@@ -58,19 +56,25 @@
     loadQuestions(getApiQuestionsUrl(consultationId));
   });
 
-  let displayQuestions = $derived($questionsData?.results?.filter((question) =>
-    `Q${question.number}: ${question.question_text}`
-      .toLocaleLowerCase()
-      .includes(searchValue.toLocaleLowerCase()),
-  ))
+  let displayQuestions = $derived(
+    $questionsData?.results?.filter((question) =>
+      `Q${question.number}: ${question.question_text}`
+        .toLocaleLowerCase()
+        .includes(searchValue.toLocaleLowerCase()),
+    ),
+  );
 
-  let questionsForSignOff = $derived($questionsData?.results?.filter(
-    (question: Question) => question.has_free_text
-  ));
+  let questionsForSignOff = $derived(
+    $questionsData?.results?.filter(
+      (question: Question) => question.has_free_text,
+    ),
+  );
 
-  let isAllQuestionsSignedOff: boolean =  $derived(questionsForSignOff?.every(
-    (question: Question) => question.theme_status === "confirmed"
-  ));
+  let isAllQuestionsSignedOff: boolean = $derived(
+    questionsForSignOff?.every(
+      (question: Question) => question.theme_status === "confirmed",
+    ),
+  );
 </script>
 
 {#snippet themeStage(
@@ -79,27 +83,24 @@
   status: "done" | "current" | "todo",
 )}
   <div class="flex flex-col items-center min-w-16">
-    <div class={clsx([
-      "my-2",
-      "p-2",
-      "rounded-full",
-      status === "done" && "bg-secondary",
-      status === "todo" && "bg-neutral-200",
-      status === "current" && "bg-secondary ring-4 ring-teal-100",
-    ])}>
+    <div
+      class={clsx([
+        "my-2",
+        "p-2",
+        "rounded-full",
+        status === "done" && "bg-secondary",
+        status === "todo" && "bg-neutral-200",
+        status === "current" && "bg-secondary ring-4 ring-teal-100",
+      ])}
+    >
       <MaterialIcon
-        color={status === "todo"
-          ? "fill-neutral-500"
-          : "fill-white"
-        }
+        color={status === "todo" ? "fill-neutral-500" : "fill-white"}
         size="1.2rem"
       >
         {@render icon()}
       </MaterialIcon>
     </div>
-    <h3 class={clsx([
-      status === "current" && "text-secondary",
-    ])}>
+    <h3 class={clsx([status === "current" && "text-secondary"])}>
       {text}
     </h3>
   </div>
@@ -109,7 +110,9 @@
   <section in:slide>
     <Panel variant="approve-dark" bg={true}>
       <div class="px-2 sm:px-8 md:px-16">
-        <ol class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-full overflow-x-auto">
+        <ol
+          class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-full overflow-x-auto"
+        >
           <li>
             {@render themeStage("Consultation Overview", CheckCircle, "done")}
           </li>
@@ -125,23 +128,23 @@
         </ol>
 
         <div class="px-0 md:px-16">
-          <h2 class="text-secondary text-center">
-            All Questions Signed Off
-          </h2>
+          <h2 class="text-secondary text-center">All Questions Signed Off</h2>
 
           <p class="text-sm text-center text-neutral-500 my-4">
-            You have successfully reviewed and signed off themes for all {questionsForSignOff?.length || 0} consultation questions.
+            You have successfully reviewed and signed off themes for all {questionsForSignOff?.length ||
+              0} consultation questions.
           </p>
 
           <p class="text-sm text-center text-neutral-500 my-4">
-            <strong class="">Next:</strong> Confirm and proceed to the AI mapping phase where responses will be mapped to your selected themes.
+            <strong class="">Next:</strong> Confirm and proceed to the AI mapping
+            phase where responses will be mapped to your selected themes.
           </p>
 
           <Button
             variant="approve"
             size="sm"
             fullWidth={true}
-            handleClick={() => isConfirmModalOpen = true}
+            handleClick={() => (isConfirmModalOpen = true)}
           >
             <div class="flex justify-center items-center gap-3 sm:gap-1 w-full">
               <div class="shrink-0">
@@ -149,9 +152,7 @@
                   <CheckCircle />
                 </MaterialIcon>
               </div>
-              <span class="text-left">
-                Confirm and Proceed to Mapping
-              </span>
+              <span class="text-left"> Confirm and Proceed to Mapping </span>
             </div>
           </Button>
         </div>
@@ -170,20 +171,30 @@
       }}
     >
       <p class="text-sm text-neutral-500 mb-4">
-        You have successfully reviewed and signed off themes for all {questionsForSignOff?.length || 0} consultation questions. Are you ready to proceed with AI mapping?
+        You have successfully reviewed and signed off themes for all {questionsForSignOff?.length ||
+          0} consultation questions. Are you ready to proceed with AI mapping?
       </p>
 
       <p class="text-sm text-neutral-500 mb-2">This action will:</p>
       <ol class="text-sm text-neutral-500 mb-2 list-disc pl-4">
-        <li class="mb-2">Process all consultation responses across {questionsForSignOff?.length || 0} questions</li>
-        <li class="mb-2">Map responses to your selected themes using AI analysis</li>
+        <li class="mb-2">
+          Process all consultation responses across {questionsForSignOff?.length ||
+            0} questions
+        </li>
+        <li class="mb-2">
+          Map responses to your selected themes using AI analysis
+        </li>
         <li class="mb-2">Incur computational costs for the AI processing</li>
-        <li class="mb-2">Take several hours to complete. More responses = longer time to process</li>
+        <li class="mb-2">
+          Take several hours to complete. More responses = longer time to
+          process
+        </li>
       </ol>
 
       <Alert>
         <span class="text-sm">
-          <strong>Warning:</strong> Once started, this process cannot be stopped or easily reversed. Ensure all theme selections are final.
+          <strong>Warning:</strong> Once started, this process cannot be stopped
+          or easily reversed. Ensure all theme selections are final.
         </span>
       </Alert>
 

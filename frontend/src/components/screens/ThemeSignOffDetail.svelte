@@ -188,20 +188,22 @@
       "POST",
     );
 
-    await loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
+    await loadSelectedThemes(
+      getApiGetSelectedThemesUrl(consultationId, questionId),
+    );
     await loadGeneratedThemes(
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
 
     // get selectedtheme_id created after back end select action is complete
     const updatedTheme = $generatedThemesData?.results?.find(
-      generatedTheme => generatedTheme.id === newTheme.id
+      (generatedTheme) => generatedTheme.id === newTheme.id,
     );
 
     // scroll up to equivalent in selected themes list
-    document.querySelector(
-      `article[data-themeid="${updatedTheme.selectedtheme_id}"]`
-    )?.scrollIntoView();
+    document
+      .querySelector(`article[data-themeid="${updatedTheme.selectedtheme_id}"]`)
+      ?.scrollIntoView();
   };
 
   const confirmSignOff = async () => {
@@ -432,7 +434,16 @@
     "after:-z-10",
   ])}
 >
-  <p class={clsx(["m-auto", "w-max", "bg-white", "px-4", "text-sm", "text-neutral-500"])}>
+  <p
+    class={clsx([
+      "m-auto",
+      "w-max",
+      "bg-white",
+      "px-4",
+      "text-sm",
+      "text-neutral-500",
+    ])}
+  >
     Browse AI Generated Themes
   </p>
 </div>

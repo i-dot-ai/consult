@@ -84,19 +84,19 @@
       <div class="flex items-center gap-2 mb-2">
         {#if icon}
           <MaterialIcon
-            color={variant === "primary"
-              ? "fill-primary"
-              : "fill-secondary"
-            }
+            color={variant === "primary" ? "fill-primary" : "fill-secondary"}
             size="1.3rem"
           >
             <svelte:component this={icon} />
           </MaterialIcon>
         {/if}
-        <h3 use:titleMelt class={clsx([
-          "font-bold",
-          variant === "secondary" && "text-secondary",
-        ])}>
+        <h3
+          use:titleMelt
+          class={clsx([
+            "font-bold",
+            variant === "secondary" && "text-secondary",
+          ])}
+        >
           {title}
         </h3>
       </div>

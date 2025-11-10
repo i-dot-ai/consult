@@ -3,8 +3,12 @@
 
   export let type: string | undefined;
   export let title: string = "";
-  export let variant: "default" | "gray" | "primary" | "ghost" | "approve" | "approve" =
-    "default";
+  export let variant:
+    | "default"
+    | "gray"
+    | "primary"
+    | "ghost"
+    | "approve" = "default";
   export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
   export let highlighted: boolean = false;
   export let highlightVariant:

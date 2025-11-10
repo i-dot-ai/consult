@@ -24,7 +24,7 @@ export interface Question {
 export interface Consultation {
   title: string;
   id: string;
-  created_at: string
+  created_at: string;
 }
 
 export interface FormattedTheme {
