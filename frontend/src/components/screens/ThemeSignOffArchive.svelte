@@ -153,11 +153,17 @@
             {@render themeStage(
               "AI Theme Mapping",
               WandStars,
-              $consultationData?.stage === "theme_mapping" ? "current" : "todo",
+              $consultationData?.stage === "theme_mapping" ? "current" : (
+                $consultationData?.stage === "analysis" ? "done" : "todo"
+              ),
             )}
           </li>
           <li>
-            {@render themeStage("Analysis Dashboard", Finance, "todo")}
+            {@render themeStage(
+              "Analysis Dashboard",
+              Finance,
+              $consultationData?.stage === "analysis" ? "current" : "todo"
+            )}
           </li>
         </ol>
 
@@ -174,21 +180,23 @@
             phase where responses will be mapped to your selected themes.
           </p>
 
-          <Button
-            variant="approve"
-            size="sm"
-            fullWidth={true}
-            handleClick={() => (isConfirmModalOpen = true)}
-          >
-            <div class="flex justify-center items-center gap-3 sm:gap-1 w-full">
-              <div class="shrink-0">
-                <MaterialIcon>
-                  <CheckCircle />
-                </MaterialIcon>
+          {#if $consultationData.stage !== "theme_mapping" && $consultationData.stage !== "analysis"}
+            <Button
+              variant="approve"
+              size="sm"
+              fullWidth={true}
+              handleClick={() => (isConfirmModalOpen = true)}
+            >
+              <div class="flex justify-center items-center gap-3 sm:gap-1 w-full">
+                <div class="shrink-0">
+                  <MaterialIcon>
+                    <CheckCircle />
+                  </MaterialIcon>
+                </div>
+                <span class="text-left"> Confirm and Proceed to Mapping </span>
               </div>
-              <span class="text-left"> Confirm and Proceed to Mapping </span>
-            </div>
-          </Button>
+            </Button>
+          {/if}
         </div>
       </div>
     </Panel>
