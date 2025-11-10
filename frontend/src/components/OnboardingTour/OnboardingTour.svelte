@@ -148,7 +148,14 @@
     ></div>
 
     <div
-      class={clsx(["absolute", "w-auto", "min-w-[15rem]", "p-4", "rounded-lg", "bg-white"])}
+      class={clsx([
+        "absolute",
+        "w-auto",
+        "min-w-[15rem]",
+        "p-4",
+        "rounded-lg",
+        "bg-white",
+      ])}
       style={clsx([
         `top: ${targetRect.top + targetRect.height + overlayPadding}px;`,
         `left: ${targetRect.left}px;`,
@@ -209,20 +216,20 @@
 
         <div class="flex items-center gap-2 mt-4">
           <!-- Previous Button -->
-          <div class={clsx([
-            currStep === 0 && "invisible",
-          ])}>
+          <div class={clsx([currStep === 0 && "invisible"])}>
             <Button size="xs" handleClick={goPrev}>
-              <div class={clsx([
-                "flex",
-                "items-center",
-                "gap-1",
-                "max-w-[10ch]",
-                "px-1",
-                "py-0.5",
-              ])}>
+              <div
+                class={clsx([
+                  "flex",
+                  "items-center",
+                  "gap-1",
+                  "max-w-[10ch]",
+                  "px-1",
+                  "py-0.5",
+                ])}
+              >
                 <div class="rotate-180">
-                  <MaterialIcon color="black" >
+                  <MaterialIcon color="black">
                     <ChevronRight />
                   </MaterialIcon>
                 </div>
@@ -232,40 +239,37 @@
           </div>
 
           <!-- Skip Button -->
-          <div class={clsx([
-            "my-auto",
-            currStep === steps.length -1 && "invisible",
-          ])}>
+          <div
+            class={clsx([
+              "my-auto",
+              currStep === steps.length - 1 && "invisible",
+            ])}
+          >
             <Button variant="ghost" size="xs" handleClick={close}>
-              <div class="whitespace-nowrap">
-                Skip Tour
-              </div>
+              <div class="whitespace-nowrap">Skip Tour</div>
             </Button>
           </div>
 
           <!-- Next Button -->
-          <Button
-            variant="primary"
-            size="xs"
-            handleClick={goNext}
-          >
-            <div class={clsx([
-              "flex",
-              "justify-between",
-              "items-center",
-              "gap-1",
-              "min-w-[10ch]",
-              "px-1",
-              "py-0.5",
-            ])}>
+          <Button variant="primary" size="xs" handleClick={goNext}>
+            <div
+              class={clsx([
+                "flex",
+                "justify-between",
+                "items-center",
+                "gap-1",
+                "min-w-[10ch]",
+                "px-1",
+                "py-0.5",
+              ])}
+            >
               <div class="flex justify-center text-center w-full">
-                {currStep === steps.length -1 && "invisible"
+                {currStep === steps.length - 1 && "invisible"
                   ? "Finish"
-                  : "Next"
-                }
+                  : "Next"}
               </div>
               <div class="shrink-0">
-                <MaterialIcon >
+                <MaterialIcon>
                   <ChevronRight />
                 </MaterialIcon>
               </div>
