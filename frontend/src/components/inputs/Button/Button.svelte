@@ -1,9 +1,9 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  export let type: string;
+  export let type: string | undefined;
   export let title: string = "";
-  export let variant: "default" | "primary" | "ghost" | "approve" | "approve" =
+  export let variant: "default" | "gray" | "primary" | "ghost" | "approve" =
     "default";
   export let size: "xs" | "sm" | "md" | "lg" | "xl" = "md";
   export let highlighted: boolean = false;
@@ -36,8 +36,10 @@
     size === "xs" ? "py-0.5" : "py-1",
     size === "xs" ? "px-1" : "px-2",
     "border",
+    variant === "default" && "bg-white",
+    variant === "gray" && "bg-neutral-100",
     variant === "primary" && "bg-primary text-white",
-    variant === "approve" && "bg-emerald-700 text-white",
+    variant === "approve" && "bg-secondary text-white",
     variant === "ghost" ? "border-transparent" : "border-gray-300",
     "transition-colors",
     "duration-300",
@@ -47,10 +49,11 @@
     "items-center",
     "hover:bg-gray-100",
     variant === "primary" && "hover:text-primary hover:border-primary",
-    variant === "approve" && "hover:text-teal hover:border-teal",
+    variant === "approve" && "hover:text-secondary hover:border-secondary",
 
     disabled &&
       clsx([
+        "disabled",
         "disabled:bg-gray-200",
         "disabled:text-gray-400",
         "disabled:cursor-not-allowed",
@@ -63,13 +66,13 @@
       !disabled &&
       clsx([
         highlightVariant === "dark" &&
-          "bg-neutral-800 text-white hover:bg-neutral-700",
+          "!bg-neutral-800 text-white hover:bg-neutral-700",
         highlightVariant === "light" &&
-          "bg-pink-100 text-neutral-800 border border-pink-200 hover:bg-pink-200",
+          "!bg-pink-100 text-neutral-800 border border-pink-200 hover:bg-pink-200",
         highlightVariant === "primary" &&
-          "bg-primary text-white hover:bg-pink-500",
+          "!bg-primary text-white hover:bg-pink-500",
         highlightVariant === "approve" &&
-          "border-teal text-teal hover:bg-teal-500",
+          "border-secondary text-secondary hover:bg-teal-500",
       ]),
   ])}
   {disabled}
@@ -85,13 +88,13 @@
 </svelte:element>
 
 <style>
-  button[data-variant="approve"]:hover :global(svg) {
-    fill: var(--color-teal);
+  button[data-variant="approve"]:not(.disabled):hover :global(svg) {
+    fill: var(--color-secondary);
   }
-  button[data-variant="primary"]:hover :global(svg) {
+  button[data-variant="primary"]:not(.disabled):hover :global(svg) {
     fill: var(--color-primary);
   }
-  button[data-variant="ghost"]:hover :global(svg) {
+  button[data-variant="ghost"]:not(.disabled):hover :global(svg) {
     fill: var(--color-primary);
   }
 </style>

@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from consultation_analyser.consultations import models
-from consultation_analyser.consultations.api.filters import HybridSearchFilter, ResponseFilter
+from consultation_analyser.consultations.api.filters import ResponseFilter, ResponseSearchFilter
 from consultation_analyser.consultations.api.permissions import (
     CanSeeConsultation,
     HasDashboardAccess,
@@ -21,16 +21,30 @@ from consultation_analyser.consultations.api.serializers import (
 
 
 class BespokeResultsSetPagination(PageNumberPagination):
-    # TODO: remove this, and adapt .js to mach standard PageNumberPagination
+    # TODO: remove this, and adapt .js to match standard PageNumberPagination
     page_size = 100
     page_size_query_param = "page_size"
     max_page_size = 1000
 
+    def get_page_size(self, request):
+        search_mode = request.query_params.get("searchMode")
+
+        if search_mode == "representative":
+            # We only want to return top 10 representative responses
+            return min(10, self.max_page_size)
+        else:
+            return super().get_page_size(request)
+
     def get_paginated_response(self, data):
         original = super().get_paginated_response(data).data
 
-        if question_id := self.request._request.GET.get("question_id"):
+        # Get question_id count from the viewset if available, otherwise calculate once
+        if hasattr(self, "_question_respondents_total"):
+            respondents_total = self._question_respondents_total
+        elif question_id := self.request._request.GET.get("question_id"):
             respondents_total = models.Response.objects.filter(question_id=question_id).count()
+            # Cache it on the viewset for subsequent calls
+            self._question_respondents_total = respondents_total
         else:
             respondents_total = None
 
@@ -48,7 +62,7 @@ class ResponseViewSet(ModelViewSet):
     serializer_class = ResponseSerializer
     permission_classes = [HasDashboardAccess, CanSeeConsultation]
     pagination_class = BespokeResultsSetPagination
-    filter_backends = [HybridSearchFilter, DjangoFilterBackend]
+    filter_backends = [ResponseSearchFilter, DjangoFilterBackend]
     filterset_class = ResponseFilter
     http_method_names = ["get", "patch"]
 
@@ -56,12 +70,36 @@ class ResponseViewSet(ModelViewSet):
         consultation_uuid = self.kwargs["consultation_pk"]
         queryset = models.Response.objects.filter(question__consultation_id=consultation_uuid)
 
+        # Optimize queryset with select_related and prefetch_related
+        queryset = queryset.select_related(
+            "respondent",
+            "annotation",
+            "question",
+        ).prefetch_related(
+            "chosen_options",
+            "respondent__demographics",
+            "annotation__responseannotationtheme_set__assigned_by",
+            "annotation__responseannotationtheme_set",
+            "annotation__responseannotationtheme_set__theme",
+        )
+
         queryset = queryset.annotate(
             is_flagged=Exists(
                 models.ResponseAnnotation.objects.filter(
                     response=OuterRef("pk"), flagged_by=self.request.user
                 )
-            )
+            ),
+            annotation_is_edited=Exists(
+                models.ResponseAnnotation.history.filter(id=OuterRef("annotation__id")).values(
+                    "id"
+                )[1:]
+            ),
+            annotation_has_human_assigned_themes=Exists(
+                models.ResponseAnnotationTheme.history.filter(
+                    response_annotation_id=OuterRef("annotation__id"),
+                    assigned_by__isnull=False,
+                )
+            ),
         )
         # Apply additional FilterSet filtering (including themeFilters)
         filterset = self.filterset_class(self.request.GET, queryset=queryset)
@@ -78,10 +116,6 @@ class ResponseViewSet(ModelViewSet):
             .values("field_name", "field_value")
             .annotate(count=Count("respondent", distinct=True))
         )
-
-        result = defaultdict(dict)
-        for item in aggregations:
-            result[item["field_name"]][item["field_value"]] = item["count"]
 
         result = defaultdict(dict)
         for item in aggregations:

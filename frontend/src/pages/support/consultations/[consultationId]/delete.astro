@@ -1,0 +1,65 @@
+---
+import { fetchBackendApi } from "../../../../global/api";
+import type { ConsultationResponse } from "../../../../global/types";
+
+import Layout from "../../../../layouts/Layout.astro";
+import Section from "../../../../components/Section/Section.svelte";
+import Title from "../../../../components/Title.svelte";
+import { getApiConsultationUrl, Routes } from "../../../../global/routes";
+
+const { consultationId } = Astro.params;
+
+if (!consultationId) {
+  return Astro.redirect(Routes.SupportConsultations);
+}
+
+// Fetch consultation data first (needed for both GET and POST to show the form)
+let consultation = await fetchBackendApi<ConsultationResponse>(
+  Astro, getApiConsultationUrl(consultationId)
+);
+
+// Handle POST request for deletion
+if (Astro.request.method === "POST") {
+  const formData = await Astro.request.formData();
+  const confirmDeletion = formData.get("confirm_deletion");
+  
+  console.log("POST request received, confirmDeletion:", confirmDeletion);
+  
+  if (confirmDeletion) {
+    try {
+        await fetchBackendApi(
+            Astro,
+            getApiConsultationUrl(consultationId),
+            {
+            method: "DELETE",
+            }
+        );
+        return Astro.redirect(Routes.SupportConsultations);
+    } catch (error) {
+      console.error("Failed to delete consultation:", error);
+      throw error; // Re-throw to see if this is the issue
+    }
+  }
+}
+---
+
+<Layout>
+    <Section>
+        <Title level={1} text="Delete consultation" />  
+        <div>
+            <p class="govuk-body">Are you sure you want to delete this consultation:</p>
+            <p class="govuk-body mb-4">{consultation.title}</p>
+        </div>
+        
+        <form method="post">
+            <button 
+                type="submit" 
+                name="confirm_deletion" 
+                value="true"
+                class="govuk-button govuk-button--warning"
+            >
+                Yes, delete it
+            </button>
+        </form>
+    </Section>
+</Layout>

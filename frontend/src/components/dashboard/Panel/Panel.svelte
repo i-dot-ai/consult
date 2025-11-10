@@ -1,7 +1,23 @@
-<script>
+<script lang="ts">
   import clsx from "clsx";
 
-  let { border = true, bg = false, level = 1, children } = $props();
+  import { type Snippet } from "svelte";
+
+  interface Props {
+    variant?: "default" | "primary" | "approve" | "approve-dark";
+    border?: boolean;
+    bg?: boolean;
+    level?: number;
+    children: Snippet;
+  }
+
+  let {
+    variant = "default",
+    border = true,
+    bg = false,
+    level = 1,
+    children,
+  }: Props = $props();
 </script>
 
 <div
@@ -13,9 +29,21 @@
     level === 2 && "p-2",
     level === 3 && "p-1",
     "rounded-2xl",
-    border && "border",
-    border && "border-gray-200",
-    bg && "bg-neutral-50",
+    border &&
+      clsx([
+        "border",
+        variant === "default" && "border-gray-200",
+        variant === "primary" && "border-pink-200",
+        variant === "approve" && "border-teal-200",
+        variant === "approve-dark" && "border-secondary",
+      ]),
+    bg &&
+      clsx([
+        variant === "default" && "bg-neutral-50",
+        variant === "primary" && "bg-pink-50",
+        variant === "approve" && "bg-teal-50",
+        variant === "approve-dark" && "bg-neutral-50",
+      ]),
   ])}
 >
   {@render children()}

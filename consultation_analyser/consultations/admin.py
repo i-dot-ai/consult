@@ -147,12 +147,11 @@ class MultiChoiceAnswerInline(admin.StackedInline):
 
 class QuestionAdmin(admin.ModelAdmin):
     list_filter = ["consultation"]
-    list_display = ["slug", "consultation"]
+    list_display = ["consultation"]
     list_select_related = True
     readonly_fields = [
         "consultation",
         "text",
-        "slug",
         "number",
         "has_free_text",
         "has_multiple_choice",

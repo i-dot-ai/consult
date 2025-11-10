@@ -44,7 +44,7 @@
     demoOptionsData?: DemoOptionsResponse;
     themes: FormattedTheme[];
     multiChoice: QuestionMultiAnswer[];
-    consultationSlug?: string;
+    consultationCode?: string;
     sortAscending?: boolean;
     searchValue: string;
     evidenceRich: boolean;
@@ -61,7 +61,7 @@
     demoOptionsData = [],
     themes = [],
     multiChoice = [],
-    consultationSlug = "",
+    consultationCode = "",
     searchValue = "",
     evidenceRich = false,
     sortAscending = true,
@@ -124,7 +124,7 @@
               <div slot="aside">
                 <svelte:boundary>
                   <CsvDownload
-                    fileName={`theme_mentions_for_${consultationSlug}.csv`}
+                    fileName={`theme_mentions_for_${consultationCode}.csv`}
                     data={themes.map((theme) => ({
                       "Theme Name": theme.name,
                       "Theme Description": theme.description,

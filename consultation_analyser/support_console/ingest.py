@@ -520,8 +520,8 @@ def import_candidate_themes(question: Question):
     for theme in theme_data:
         candidate_theme = CandidateTheme(
             question=question,
-            name=theme["topic_label"],
-            description=theme["topic_description"],
+            name=theme["Theme Name"],
+            description=theme["Theme Description"],
             approximate_frequency=theme["source_topic_count"],
         )
         themes_to_save.append(candidate_theme)
@@ -593,10 +593,10 @@ def import_questions(
             question = Question.objects.create(
                 consultation=consultation,
                 text=question_text,
-                slug=f"question-{question_number}",
                 number=question_number,
                 has_free_text=question_data.get("has_free_text", True),
                 has_multiple_choice=bool(multi_choice_options),
+                theme_status=Question.ThemeStatus.DRAFT,
             )
             for answer in multi_choice_options:
                 MultiChoiceAnswer.objects.create(question=question, text=answer)
