@@ -444,7 +444,7 @@
         <Panel variant="approve" bg={true} border={true}>
           <div class="flex items-center justify-between mb-2">
             <div class="flex items-center gap-2">
-              <MaterialIcon color="fill-emerald-700">
+              <MaterialIcon color="fill-secondary">
                 <SmartToy />
               </MaterialIcon>
 
@@ -474,11 +474,11 @@
               >
                 <span
                   class={clsx([
-                    "flex items-center justify-between gap-1 text-emerald-700",
+                    "flex items-center justify-between gap-1 text-secondary",
                     addingCustomTheme && "text-white",
                   ])}
                 >
-                  <MaterialIcon color="fill-emerald-700">
+                  <MaterialIcon color="fill-secondary">
                     <Stacks />
                   </MaterialIcon>
                   {isAllThemesExpanded() ? "Collapse All" : "Expand All"}
