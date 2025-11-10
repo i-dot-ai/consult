@@ -380,18 +380,14 @@
     {/if}
 
     <Modal
+      variant="primary"
+      title="Confirm Theme Sign Off"
+      icon={CheckCircle}
       open={isConfirmSignOffModalOpen}
       setOpen={(newOpen: boolean) => (isConfirmSignOffModalOpen = newOpen)}
       confirmText={"Confirm Sign Off"}
       handleConfirm={confirmSignOff}
     >
-      <div class="flex items-center gap-2 mb-2">
-        <MaterialIcon color="fill-primary">
-          <CheckCircle />
-        </MaterialIcon>
-        <h3 class="font-bold">Confirm Theme Sign Off</h3>
-      </div>
-
       <p class="text-sm text-neutral-500">
         Are you sure you want to sign off on these {numSelectedThemesText(
           $selectedThemesData?.results,

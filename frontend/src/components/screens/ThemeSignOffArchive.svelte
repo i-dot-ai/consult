@@ -5,26 +5,31 @@
   import { slide } from "svelte/transition";
   import type { Writable } from "svelte/store";
 
-  import TextInput from "../inputs/TextInput/TextInput.svelte";
-  import Help from "../svg/material/Help.svelte";
-  import TitleRow from "../dashboard/TitleRow.svelte";
-  import Panel from "../dashboard/Panel/Panel.svelte";
-  import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
-  import { type Question } from "../../global/types.ts";
-
   import {
     getApiQuestionsUrl,
     getThemeSignOffDetailUrl,
+    Routes,
   } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
+  import { type Question } from "../../global/types.ts";
 
   import Tag from "../Tag/Tag.svelte";
+  import Modal from "../Modal/Modal.svelte";
+  import Alert from "../Alert.svelte";
   import Button from "../inputs/Button/Button.svelte";
+  import TextInput from "../inputs/TextInput/TextInput.svelte";
+  import TitleRow from "../dashboard/TitleRow.svelte";
+  import Panel from "../dashboard/Panel/Panel.svelte";
+  import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
+
   import MaterialIcon from "../MaterialIcon.svelte";
   import Checklist from "../svg/material/Checklist.svelte";
   import CheckCircle from "../svg/material/CheckCircle.svelte";
   import Finance from "../svg/material/Finance.svelte";
   import WandStars from "../svg/material/WandStars.svelte";
+  import Warning from "../svg/material/Warning.svelte";
+  import Headphones from "../svg/material/Headphones.svelte";
+  import Help from "../svg/material/Help.svelte";
 
   interface Props {
     consultationId: string;
@@ -35,6 +40,7 @@
   }: Props = $props();
 
   let searchValue: string = $state("");
+  let isConfirmModalOpen: boolean = $state(false);
 
   const {
     loading: isQuestionsLoading,
@@ -135,7 +141,7 @@
             variant="approve"
             size="sm"
             fullWidth={true}
-            handleClick={() => {}}
+            handleClick={() => isConfirmModalOpen = true}
           >
             <div class="flex justify-center items-center gap-3 sm:gap-1 w-full">
               <div class="shrink-0">
@@ -151,6 +157,53 @@
         </div>
       </div>
     </Panel>
+
+    <Modal
+      variant="secondary"
+      title="Confirm AI Mapping"
+      confirmText="Yes, Start AI Mapping"
+      icon={Warning}
+      open={isConfirmModalOpen}
+      setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
+      handleConfirm={() => {
+        isConfirmModalOpen = false;
+      }}
+    >
+      <p class="text-sm text-neutral-500 mb-4">
+        You have successfully reviewed and signed off themes for all {questionsForSignOff?.length || 0} consultation questions. Are you ready to proceed with AI mapping?
+      </p>
+
+      <p class="text-sm text-neutral-500 mb-2">This action will:</p>
+      <ol class="text-sm text-neutral-500 mb-2 list-disc pl-4">
+        <li class="mb-2">Process all consultation responses across {questionsForSignOff?.length || 0} questions</li>
+        <li class="mb-2">Map responses to your selected themes using AI analysis</li>
+        <li class="mb-2">Incur computational costs for the AI processing</li>
+        <li class="mb-2">Take several hours to complete. More responses = longer time to process</li>
+      </ol>
+
+      <Alert>
+        <span class="text-sm">
+          <strong>Warning:</strong> Once started, this process cannot be stopped or easily reversed. Ensure all theme selections are final.
+        </span>
+      </Alert>
+
+      <hr class="my-4" />
+
+      <p class="text-sm text-neutral-500 mb-2">
+        If you have concerns or need assistance, please contact support:
+      </p>
+      <a
+        href={`mailto:${Routes.SupportEmail}`}
+        class="support-link text-sm text-secondary hover:text-primary"
+      >
+        <div class="flex items-center gap-1">
+          <MaterialIcon color="fill-secondary">
+            <Headphones />
+          </MaterialIcon>
+          {Routes.SupportEmail}
+        </div>
+      </a>
+    </Modal>
   </section>
 {/if}
 
@@ -220,3 +273,9 @@
     {/if}
   </Panel>
 </section>
+
+<style>
+  .support-link:hover :global(svg) {
+    fill: var(--color-primary);
+  }
+</style>
