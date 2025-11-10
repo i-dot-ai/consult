@@ -153,16 +153,18 @@
             {@render themeStage(
               "AI Theme Mapping",
               WandStars,
-              $consultationData?.stage === "theme_mapping" ? "current" : (
-                $consultationData?.stage === "analysis" ? "done" : "todo"
-              ),
+              $consultationData?.stage === "theme_mapping"
+                ? "current"
+                : $consultationData?.stage === "analysis"
+                  ? "done"
+                  : "todo",
             )}
           </li>
           <li>
             {@render themeStage(
               "Analysis Dashboard",
               Finance,
-              $consultationData?.stage === "analysis" ? "current" : "todo"
+              $consultationData?.stage === "analysis" ? "current" : "todo",
             )}
           </li>
         </ol>
@@ -187,7 +189,9 @@
               fullWidth={true}
               handleClick={() => (isConfirmModalOpen = true)}
             >
-              <div class="flex justify-center items-center gap-3 sm:gap-1 w-full">
+              <div
+                class="flex justify-center items-center gap-3 sm:gap-1 w-full"
+              >
                 <div class="shrink-0">
                   <MaterialIcon>
                     <CheckCircle />
