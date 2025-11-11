@@ -524,6 +524,18 @@
     </Panel>
   </section>
 
+  <Modal
+    variant="warning"
+    open={isErrorModalOpen}
+    title="Theme Update Failed"
+    icon={Warning}
+    setOpen={(newOpen: boolean) => (isErrorModalOpen = newOpen)}
+    confirmText={"Ok"}
+    handleConfirm={() => (isErrorModalOpen = false)}
+  >
+    <p>Theme failed to update due to error: {$confirmSignOffError}</p>
+  </Modal>
+
   {#snippet failed(error)}
     <div>
       {console.error(error)}
@@ -535,47 +547,42 @@
   {/snippet}
 </svelte:boundary>
 
-<Modal
-  open={isErrorModalOpen}
-  setOpen={(newOpen: boolean) => (isErrorModalOpen = newOpen)}
-  confirmText={"Ok"}
-  handleConfirm={() => (isErrorModalOpen = false)}
->
-  <div class="flex items-center gap-2 mb-2">
-    <MaterialIcon color="fill-orange-600" size="1.3rem">
-      <Warning />
-    </MaterialIcon>
+<svelte:boundary>
+  <OnboardingTour
+    key="theme-sign-off"
+    steps={[
+      {
+        id: "onboarding-step-1",
+        title: "Select Themes",
+        body: `Browse the AI-generated themes and click "Select Theme" to move them to your selected themes list. You can view example responses for each theme to understand what types of consultation responses it represents.`,
+        icon: Target,
+      },
+      {
+        id: "onboarding-steps-2-and-3",
+        title: "Edit & Manage",
+        body: "Once themes are selected, you can edit their titles and descriptions by clicking the edit button, or add completely new themes to better organize your analysis.",
+        icon: EditSquare,
+      },
+      {
+        id: "onboarding-steps-2-and-3",
+        title: "Sign Off & Proceed",
+        body: `When you're satisfied with your theme selection and edits, click "Sign Off Selected Themes" to proceed with mapping consultation responses against your finalised themes.`,
+        icon: CheckCircle,
+      },
+    ]}
+    resizeObserverTarget={document.querySelector("main")}
+  />
 
-    <h3 class="text-orange-600 text-lg">Theme Update Failed</h3>
-  </div>
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
 
-  <p>Theme failed to update due to error: {$confirmSignOffError}</p>
-</Modal>
-
-<OnboardingTour
-  key="theme-sign-off"
-  steps={[
-    {
-      id: "onboarding-step-1",
-      title: "Select Themes",
-      body: `Browse the AI-generated themes and click "Select Theme" to move them to your selected themes list. You can view example responses for each theme to understand what types of consultation responses it represents.`,
-      icon: Target,
-    },
-    {
-      id: "onboarding-steps-2-and-3",
-      title: "Edit & Manage",
-      body: "Once themes are selected, you can edit their titles and descriptions by clicking the edit button, or add completely new themes to better organize your analysis.",
-      icon: EditSquare,
-    },
-    {
-      id: "onboarding-steps-2-and-3",
-      title: "Sign Off & Proceed",
-      body: `When you're satisfied with your theme selection and edits, click "Sign Off Selected Themes" to proceed with mapping consultation responses against your finalised themes.`,
-      icon: CheckCircle,
-    },
-  ]}
-  resizeObserverTarget={document.querySelector("main")}
-/>
+      <Panel>
+        <Alert>Unexpected onboarding tour error</Alert>
+      </Panel>
+    </div>
+  {/snippet}
+</svelte:boundary>
 
 <style>
   .selected-section :global(div[data-testid="panel-component"]) {
