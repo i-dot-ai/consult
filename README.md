@@ -245,7 +245,14 @@ If the import fails half-way, delete the consultation or question (which will de
 To run locally you must have access to your AWS account
 
 
-## Front-End Tests Suites
+## Testing
+
+### Backend Tests
+```
+make test
+```
+
+### Frontend Unit Tests
 Run the below command to run all unit tests for front-end components, using Storybook as test runner.
 
 ```
@@ -253,3 +260,21 @@ npm run storybook-test
 ```
 
 Each component also displays its test cases inside the "Component tests" panel when Storybook is viewed on the browser.
+
+### End-to-End Tests
+End-to-end tests are located in the `/e2e_tests` folder and use Playwright to test the full application flow.
+
+To run e2e tests:
+```bash
+cd e2e_tests
+npm install
+npx playwright install --with-deps
+npm run e2e
+```
+
+Or run with UI:
+```bash
+npm run e2e-ui
+```
+
+The e2e tests run against docker-compose services and test complete user journeys including authentication, navigation, and form submissions.

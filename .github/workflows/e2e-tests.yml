@@ -34,13 +34,17 @@ jobs:
         with:
           node-version: 24.8
 
+      - name: Install e2e test dependencies
+        run: npm install
+        working-directory: e2e_tests
+
       - name: Install Playwright
         run: npx playwright install --with-deps
-        working-directory: frontend
+        working-directory: e2e_tests
 
       - name: Run Playwright tests
         run: npm run e2e
-        working-directory: frontend
+        working-directory: e2e_tests
 
       - name: Stop docker-compose services
         run: docker compose down
@@ -51,5 +55,5 @@ jobs:
         if: always()
         with:
           name: playwright-report
-          path: frontend/playwright-report/
+          path: e2e_tests/playwright-report/
           retention-days: 30
