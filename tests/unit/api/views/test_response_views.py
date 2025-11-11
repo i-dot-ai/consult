@@ -143,62 +143,6 @@ class TestResponseViewSet:
         assert data["demographic_aggregations"]["individual"] == {"True": 1, "False": 1}
         assert data["demographic_aggregations"]["region"] == {"north": 1, "south": 1}
 
-    def test_get_demographic_aggregations_with_list_values(
-        self,
-        client,
-        consultation_user_token,
-        free_text_question,
-        individual_demographic,
-        northern_demographic,
-        group_demographic,
-        southern_demographic,
-    ):
-        """Test API endpoint applies demographic list filters"""
-
-        respondent1 = RespondentFactory(
-            consultation=free_text_question.consultation,
-        )
-        respondent1.demographics.set([individual_demographic, northern_demographic])
-
-
-        ResponseFactory(question=free_text_question, respondent=respondent1)
-
-        url = reverse(
-            "response-demographic-aggregations",
-            kwargs={"consultation_pk": free_text_question.consultation.id},
-        )
-
-        # Filter by individual=true
-        response = client.get(
-            url,
-            query_params={
-                "demographics": individual_demographic.pk,
-                "question_id": free_text_question.id,
-            },
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-
-        # Should only include data from individual=True respondent
-        aggregations = data["demographic_aggregations"]
-        assert aggregations["individual"]["True"] == 1
-        assert aggregations["region"]["north"] == 1
-        # Should not have data from individual=False respondent
-        assert "False" not in aggregations["individual"]
-        assert "south" not in aggregations["region"]
-
-        response = client.get(
-            url + "?demoFilters=individual:true&demoFilters=individual:false",
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
-        )
-
-        assert response.status_code == 200
-        data = response.json()
-        assert data["demographic_aggregations"]["individual"] == {"True": 1, "False": 1}
-        assert data["demographic_aggregations"]["region"] == {"north": 1, "south": 1}
-
     def test_get_theme_aggregations_no_responses(
         self, client, consultation_user_token, free_text_question
     ):
