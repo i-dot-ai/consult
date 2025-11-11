@@ -14,6 +14,10 @@ jobs:
         run: |
           docker compose version
 
+      - name: Copy environment file
+        run: |
+          cp .env.example .env
+
       - name: Start services with docker compose
         run: |
           docker compose up -d postgres

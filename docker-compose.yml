@@ -24,17 +24,12 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8000:8000"
+    env_file:
+      - .env
     environment:
       - DEBUG=True
       - DATABASE_URL=postgresql://consultations_test:consultations_test@postgres:5432/consultation_analyser
-      - SECRET_KEY=dev-secret-key-change-in-production
       - ALLOWED_HOSTS=localhost,127.0.0.1,backend,frontend
-      - DOMAIN_NAME=
-      - SENTRY_DSN=
-      - EXECUTION_CONTEXT=
-      - GIT_SHA=
-      - APP_BUCKET=
-      - ADMIN_USERS=email@example.com
       - BACKEND_URL=http://backend:8000
     volumes:
       - .:/app
