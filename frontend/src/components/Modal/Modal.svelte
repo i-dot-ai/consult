@@ -11,7 +11,7 @@
   import MaterialIcon from "../MaterialIcon.svelte";
 
   interface Props {
-    variant: "primary" | "secondary";
+    variant?: "primary" | "secondary" | "warning";
     title: string;
     open: boolean;
     confirmText: string;
@@ -50,6 +50,19 @@
   $effect(() => {
     meltOpen.set(open);
   });
+
+  const getIconColor = () => {
+    if (variant === "primary") {
+      return "fill-primary";
+    }
+    if (variant === "secondary")  {
+      return "fill-secondary";
+    }
+    if (variant === "warning") {
+      return "fill-orange-600";
+    }
+    return "fill-neutral-500";
+  }
 </script>
 
 {#if $meltOpen}
@@ -84,7 +97,7 @@
       <div class="flex items-center gap-2 mb-2">
         {#if icon}
           <MaterialIcon
-            color={variant === "primary" ? "fill-primary" : "fill-secondary"}
+            color={getIconColor()}
             size="1.3rem"
           >
             <svelte:component this={icon} />
@@ -93,8 +106,9 @@
         <h3
           use:titleMelt
           class={clsx([
-            "font-bold",
+            "text-lg",
             variant === "secondary" && "text-secondary",
+            variant === "warning" && "text-orange-600",
           ])}
         >
           {title}
@@ -110,7 +124,7 @@
 
         <Button
           size="sm"
-          variant={variant === "primary" ? "primary" : "approve"}
+          variant={variant === "secondary" ? "approve" : "primary"}
           handleClick={handleConfirm}
         >
           {confirmText}
