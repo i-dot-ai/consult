@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import type { Component, Snippet } from "svelte";
+  import { type Component, type Snippet } from "svelte";
   import { fade, fly } from "svelte/transition";
   import type { MouseEventHandler } from "svelte/elements";
 
@@ -10,15 +10,15 @@
   import Button from "../inputs/Button/Button.svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
 
-  interface Props {
+  export interface Props {
     variant?: "primary" | "secondary" | "warning";
     title: string;
-    open: boolean;
     confirmText: string;
     icon?: Component;
+    open?: boolean;
     setOpen: (newValue: boolean) => void;
     handleConfirm: MouseEventHandler<any>;
-    children: Snippet;
+    children?: Snippet;
   }
 
   let {
@@ -51,7 +51,13 @@
     meltOpen.set(open);
   });
 
-  const getIconColor = () => {
+  // For unit tests primarily
+  let imperativeOpen = $state();
+  export const setImperativeOpen = (newVal: boolean) => {
+    imperativeOpen = newVal;
+  }
+
+  export const getIconColor = () => {
     if (variant === "primary") {
       return "fill-primary";
     }
@@ -65,7 +71,7 @@
   }
 </script>
 
-{#if $meltOpen}
+{#if $meltOpen || (imperativeOpen !== undefined && imperativeOpen)}
   <div use:melt={$portalled}>
     <div
       use:melt={$overlay}
@@ -115,7 +121,9 @@
         </h3>
       </div>
 
-      {@render children()}
+      {#if children}
+        {@render children()}
+      {/if}
 
       <footer class="flex items-center justify-end gap-2">
         <div use:melt={$close}>
