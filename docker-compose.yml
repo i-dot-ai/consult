@@ -27,6 +27,7 @@ services:
     env_file:
       - .env
     environment:
+      - DATABASE_URL=postgresql://consultations_test:consultations_test@postgres:5432/consultation_analyser
       - DJANGO_SETTINGS_MODULE=consultation_analyser.settings.local
       - DOMAIN_NAME=localhost:3000
     volumes:
