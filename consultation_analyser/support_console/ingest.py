@@ -520,8 +520,8 @@ def import_candidate_themes(question: Question):
     for theme in theme_data:
         candidate_theme = CandidateTheme(
             question=question,
-            name=theme["topic_label"],
-            description=theme["topic_description"],
+            name=theme["Theme Name"],
+            description=theme["Theme Description"],
             approximate_frequency=theme["source_topic_count"],
         )
         themes_to_save.append(candidate_theme)
@@ -780,15 +780,6 @@ def create_consultation(
             consultation,
             sign_off,
         )
-
-        if timestamp is not None:
-            # Import cross-cutting themes after all questions and themes are imported
-            queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
-            queue.enqueue(
-                import_cross_cutting_themes,
-                consultation,
-                timestamp,
-            )
 
     except Exception as e:
         logger.error(

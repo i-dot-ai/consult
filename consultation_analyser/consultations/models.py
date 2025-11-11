@@ -41,6 +41,7 @@ class TimeStampedModel(models.Model):
 class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     class Stage(models.TextChoices):
         THEME_SIGN_OFF = "theme_sign_off", "Theme Sign Off"
+        THEME_MAPPING = "theme_mapping", "Theme Mapping"
         ANALYSIS = "analysis", "Analysis"
 
     title = models.CharField(max_length=256)
@@ -61,7 +62,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
         return f"app_data/consultations/{self.code}/outputs/{kind}/{self.timestamp}"
 
     def __str__(self):
-        return self.code
+        return self.title
 
 
 class Question(UUIDPrimaryKeyModel, TimeStampedModel):

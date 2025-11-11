@@ -3,6 +3,7 @@ from uuid import uuid4
 import pytest
 from django.urls import reverse
 
+from consultation_analyser.consultations.models import Consultation
 from consultation_analyser.factories import ConsultationFactory, RespondentFactory
 
 
@@ -253,3 +254,25 @@ class TestConsultationViewSet:
         )
         assert response.status_code == 200
         assert response.json()["count"] == 2
+
+    def test_delete_consultation(self, client, consultation, consultation_user_token):
+        """test that a user can delete their own consultation"""
+        url = reverse("consultations-detail", kwargs={"pk": consultation.id})
+        response = client.delete(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        assert response.status_code == 204
+        assert not response.content
+        assert not Consultation.objects.filter(pk=consultation.pk).exists()
+
+    def test_delete_consultation_fail(self, client, consultation, non_consultation_user_token):
+        """test that a user cannot delete a consultation they do not own"""
+        url = reverse("consultations-detail", kwargs={"pk": consultation.id})
+        response = client.delete(
+            url,
+            headers={"Authorization": f"Bearer {non_consultation_user_token}"},
+        )
+        assert response.status_code == 403
+        assert response.json()["detail"] == "You do not have permission to perform this action."
+        assert Consultation.objects.filter(pk=consultation.pk).exists()

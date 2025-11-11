@@ -1,13 +1,27 @@
 import path from "path";
 
 import type { MiddlewareHandler } from "astro";
+import { Routes } from "./global/routes";
+import { fetchBackendApi } from "./global/api";
 import { getBackendUrl } from "./global/utils";
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
+  let userIsStaff: boolean = false;
+
+  try {
+    const resp = await fetchBackendApi<{ is_staff: Boolean }>(
+      context,
+      Routes.ApiUser,
+    );
+    userIsStaff = Boolean(resp.is_staff);
+  } catch {
+    console.log("user not signed in");
+  }
+
   const accessToken = context.cookies.get("access")?.value;
   const url = context.url;
 
-  // Redirect to sign-in if not logged in
+  // Redirect to sign-in if user not logged in or not staff
   const protectedRoutes = [
     // /^\/sign-out[\/]?$/,
     /^\/consultations.*/,
@@ -15,13 +29,20 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/stories.*/,
     /^\/support.*/,
   ];
+  const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
   for (const protectedRoute of protectedRoutes) {
     if (
       protectedRoute.test(url.pathname) &&
       !context.cookies.get("access")?.value
     ) {
-      return context.redirect("/sign-in");
+      return context.redirect(Routes.SignIn);
+    }
+  }
+
+  for (const protectedStaffRoute of protectedStaffRoutes) {
+    if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
+      return context.redirect(Routes.Home);
     }
   }
 
@@ -43,12 +64,14 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/health[/]?$/,
     /^\/.well-known\/.*/,
     /^\/consultations.*/,
-    // /^\/evaluations.*/,
+    /^\/evaluations\/[A-Za-z0-9-]*\/questions[/]?$/,
     /^\/support\/users[/]?$/,
     /^\/support\/users\/[A-Za-z0-9]*[/]?$/,
     /^\/support\/users\/new[/]?$/,
     /^\/support\/consultations[/]?$/,
     /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[/]?$/,
+    /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/delete[/]?$/,
+    /^\/support\/consultations\/import-summary[/]?$/,
     /^\/design.*/,
     /^\/stories.*/,
     /^\/_astro.*/,

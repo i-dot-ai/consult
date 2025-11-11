@@ -47,9 +47,11 @@
             <Link href={getConsultationEvalUrl(consultation.id)}>
               View Evaluation
             </Link>
-            <Link href={getThemeSignOffUrl(consultation.id)}>
-              Theme Sign Off
-            </Link>
+            <!-- TODO: Enable after theme sign off implementation
+              <Link href={getThemeSignOffUrl(consultation.id)}>
+                Theme Sign Off
+              </Link>
+            -->
             {#if dashboardPermitted}
               <Link href={getConsultationDetailUrl(consultation.id)}>
                 View Dashboard

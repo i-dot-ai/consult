@@ -22,7 +22,7 @@
 <div class="flex items-center gap-1">
   <div class="shrink-0">
     <MaterialIcon
-      color={variant === "selected" ? "fill-primary" : "fill-emerald-700"}
+      color={variant === "selected" ? "fill-primary" : "fill-secondary"}
       size="1.2rem"
     >
       <Docs />
@@ -40,7 +40,7 @@
       "text-xs",
       variant === "selected"
         ? "bg-pink-100 text-primary"
-        : "bg-emerald-50 text-emerald-700",
+        : "bg-teal-50 text-secondary",
     ])}
   >
     {answers.length}
@@ -96,7 +96,7 @@
             "text-xs",
             variant === "selected"
               ? "bg-pink-200 text-primary"
-              : "bg-emerald-50 text-emerald-700",
+              : "bg-teal-50 text-secondary",
           ])}
         >
           {i + 1}

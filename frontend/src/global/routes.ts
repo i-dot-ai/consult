@@ -13,12 +13,14 @@ export enum Routes {
   ApiUser = "/api/user/",
   ApiAstroSignIn = "/api/astro/sign-in",
   Design = "/design",
-  SupportImport = "/support/consultations/import-consultation",
+  SupportImport = "/support/consultations/import-summary",
+  ImportConsultations = "/support/consultations/import-consultation",
   SupportUsers = "/support/users",
   SupportConsultations = "/support/consultations",
   SupportSignOff = "/support/consultations/sign-off",
   SupportThemefinder = "/support/consultations/themefinder",
   SupportEmail = "consult@cabinetoffice.gov.uk",
+  SupportQueue = "/support/django-rq",
 }
 export const getConsultationDetailUrl = (consultationId: string) => {
   return `${Routes.Consultations}/${consultationId}`;
@@ -61,7 +63,7 @@ export const getRespondentDetailUrl = (
   return `${Routes.Consultations}/${consultationId}/respondent/${respondentId}`;
 };
 export const getApiConsultationUrl = (consultationId: string) => {
-  return `${Routes.ApiConsultations}/${consultationId}`;
+  return `${Routes.ApiConsultations}/${consultationId}/`;
 };
 export const getApiAnswersUrl = (consultationId: string) => {
   return `/api/consultations/${consultationId}/responses/`;
@@ -149,4 +151,11 @@ export const getApiConfirmSignOffUrl = (
   questionId: string,
 ) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/`;
+};
+
+export const getApiShowNextResponse = (
+  consultationId: string,
+  questionId: string,
+) => {
+  return `${Routes.Evaluations}/${consultationId}/questions/${questionId}/show-next`;
 };

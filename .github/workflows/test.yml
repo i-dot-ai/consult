@@ -47,7 +47,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '14'
+          node-version: 18
 
       - name: Install npm dependencies
         run: npm install
@@ -78,8 +78,7 @@ jobs:
           SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
 
       - name: Run app tests
-        run:
-          make test
+        run: make test
         env:
           REDIS_HOST: redis
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
@@ -94,8 +93,7 @@ jobs:
           SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
 
       - name: Run tests for migrations
-        run:
-          make test-migrations
+        run: make test-migrations
         env:
           REDIS_HOST: redis
           DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test

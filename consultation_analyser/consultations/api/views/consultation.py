@@ -13,13 +13,14 @@ from consultation_analyser.consultations.api.serializers import (
     DemographicOptionSerializer,
 )
 from consultation_analyser.consultations.models import Consultation, DemographicOption
+from consultation_analyser.support_console.views.consultations import delete_consultation_job
 
 
 class ConsultationViewSet(ModelViewSet):
     serializer_class = ConsultationSerializer
     permission_classes = [IsAuthenticated, CanSeeConsultation | IsAdminUser]
     filterset_fields = ["code"]
-    http_method_names = ["get", "patch"]
+    http_method_names = ["get", "patch", "delete"]
 
     def get_queryset(self):
         scope = self.request.query_params.get("scope")
@@ -28,6 +29,9 @@ class ConsultationViewSet(ModelViewSet):
         elif self.request.user.is_staff:
             return Consultation.objects.all().order_by("-created_at")
         return Consultation.objects.filter(users=self.request.user).order_by("-created_at")
+
+    def perform_destroy(self, instance):
+        delete_consultation_job(instance)
 
     @action(
         detail=True,

@@ -1,0 +1,47 @@
+---
+import { fetchBackendApi } from "../../../global/api";
+import type { ConsultationResponse, Question } from "../../../global/types";
+
+import Layout from '../../../layouts/Layout.astro';
+import Section from '../../../components/Section/Section.svelte';
+import Title from '../../../components/Title.svelte';
+import Link from "../../../components/Link.svelte";
+import {getApiConsultationUrl, getApiQuestionsUrl, getApiShowNextResponse} from "../../../global/routes";
+import { Routes } from "../../../global/routes";
+import Visibility from "../../../components/svg/material/Visibility.svelte";
+import MaterialIcon from "./../../../components/MaterialIcon.svelte";
+
+const { consultationId } = Astro.params;
+
+const consultation = await fetchBackendApi<ConsultationResponse>(
+  Astro, getApiConsultationUrl(consultationId)
+);
+
+const questions = await fetchBackendApi<{results: Question[]}>(
+  Astro, getApiQuestionsUrl(consultationId)
+);
+
+---
+<Layout>
+	<Section>
+		<Title level={1} text={consultation.title} />
+		<Link href={Routes.Consultations}>Back to your consultations</Link>
+		
+		<h2>All free text questions for review</h2>
+		
+		{questions?.results?.map((question) => (
+			<div class="p-4 my-4 mx-0 flex justify-between items-center">
+				<p class="m-0  grow shrink basis-0">{question.question_text}</p>
+				<p class="m-0 py-0 px-4 min-w-[15ch] text-center">{Math.round((question.proportion_of_audited_answers || 0) * 100)}% reviewed</p>
+				<Link href={getApiShowNextResponse(consultationId, question.id)}>
+					<span class="flex items-center gap-1">
+            <MaterialIcon color="fill-neutral-500" size="1rem">
+					    <Visibility />
+					  </MaterialIcon>
+              Show next
+          </span>
+        </Link>
+			</div>
+		))}
+	</Section>
+</Layout>
