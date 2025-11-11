@@ -132,223 +132,247 @@
   </div>
 {/snippet}
 
-{#if isAllQuestionsSignedOff}
-  <section in:slide>
-    <Panel variant="approve-dark" bg={true}>
-      <div class="px-2 sm:px-8 md:px-16">
-        <ol
-          class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-full overflow-x-auto"
-        >
-          <li>
-            {@render themeStage("Consultation Overview", CheckCircle, "done")}
+<svelte:boundary>
+  {#if isAllQuestionsSignedOff}
+    <section in:slide>
+      <Panel variant="approve-dark" bg={true}>
+        <div class="px-2 sm:px-8 md:px-16">
+          <ol
+            class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-full overflow-x-auto"
+          >
+            <li>
+              {@render themeStage("Consultation Overview", CheckCircle, "done")}
+            </li>
+            <li>
+              {@render themeStage(
+                "Theme Sign Off",
+                CheckCircle,
+                $consultationData?.stage === "theme_mapping" ? "done" : "current",
+              )}
+            </li>
+            <li>
+              {@render themeStage(
+                "AI Theme Mapping",
+                WandStars,
+                $consultationData?.stage === "theme_mapping"
+                  ? "current"
+                  : $consultationData?.stage === "analysis"
+                    ? "done"
+                    : "todo",
+              )}
+            </li>
+            <li>
+              {@render themeStage(
+                "Analysis Dashboard",
+                Finance,
+                $consultationData?.stage === "analysis" ? "current" : "todo",
+              )}
+            </li>
+          </ol>
+
+          <div class="px-0 md:px-16">
+            <h2 class="text-secondary text-center">All Questions Signed Off</h2>
+
+            <p class="text-sm text-center text-neutral-500 my-4">
+              You have successfully reviewed and signed off themes for all {questionsForSignOff?.length ||
+                0} consultation questions.
+            </p>
+
+            <p class="text-sm text-center text-neutral-500 my-4">
+              <strong class="">Next:</strong> Confirm and proceed to the AI mapping
+              phase where responses will be mapped to your selected themes.
+            </p>
+
+            {#if $consultationData.stage !== "theme_mapping" && $consultationData.stage !== "analysis"}
+              <Button
+                variant="approve"
+                size="sm"
+                fullWidth={true}
+                handleClick={() => (isConfirmModalOpen = true)}
+              >
+                <div
+                  class="flex justify-center items-center gap-3 sm:gap-1 w-full"
+                >
+                  <div class="shrink-0">
+                    <MaterialIcon>
+                      <CheckCircle />
+                    </MaterialIcon>
+                  </div>
+                  <span class="text-left"> Confirm and Proceed to Mapping </span>
+                </div>
+              </Button>
+            {/if}
+          </div>
+        </div>
+      </Panel>
+
+      <Modal
+        variant="secondary"
+        title="Confirm AI Mapping"
+        confirmText="Yes, Start AI Mapping"
+        icon={Warning}
+        open={isConfirmModalOpen}
+        setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
+        handleConfirm={async () => {
+          await updateConsultation(
+            getApiConsultationUrl(consultationId),
+            "PATCH",
+            {
+              stage: "theme_mapping",
+            },
+          );
+
+          if (!$updateConsultationError) {
+            isConfirmModalOpen = false;
+            location.href = location.href;
+          }
+        }}
+      >
+        <p class="text-sm text-neutral-500 mb-4">
+          You have successfully reviewed and signed off themes for all {questionsForSignOff?.length ||
+            0} consultation questions. Are you ready to proceed with AI mapping?
+        </p>
+
+        <p class="text-sm text-neutral-500 mb-2">This action will:</p>
+        <ol class="text-sm text-neutral-500 mb-2 list-disc pl-4">
+          <li class="mb-2">
+            Process all consultation responses across {questionsForSignOff?.length ||
+              0} questions
           </li>
-          <li>
-            {@render themeStage(
-              "Theme Sign Off",
-              CheckCircle,
-              $consultationData?.stage === "theme_mapping" ? "done" : "current",
-            )}
+          <li class="mb-2">
+            Map responses to your selected themes using AI analysis
           </li>
-          <li>
-            {@render themeStage(
-              "AI Theme Mapping",
-              WandStars,
-              $consultationData?.stage === "theme_mapping"
-                ? "current"
-                : $consultationData?.stage === "analysis"
-                  ? "done"
-                  : "todo",
-            )}
-          </li>
-          <li>
-            {@render themeStage(
-              "Analysis Dashboard",
-              Finance,
-              $consultationData?.stage === "analysis" ? "current" : "todo",
-            )}
+          <li class="mb-2">Incur computational costs for the AI processing</li>
+          <li class="mb-2">
+            Take several hours to complete. More responses = longer time to
+            process
           </li>
         </ol>
 
-        <div class="px-0 md:px-16">
-          <h2 class="text-secondary text-center">All Questions Signed Off</h2>
+        <Alert>
+          <span class="text-sm">
+            <strong>Warning:</strong> Once started, this process cannot be stopped
+            or easily reversed. Ensure all theme selections are final.
+          </span>
+        </Alert>
 
-          <p class="text-sm text-center text-neutral-500 my-4">
-            You have successfully reviewed and signed off themes for all {questionsForSignOff?.length ||
-              0} consultation questions.
-          </p>
+        <hr class="my-4" />
 
-          <p class="text-sm text-center text-neutral-500 my-4">
-            <strong class="">Next:</strong> Confirm and proceed to the AI mapping
-            phase where responses will be mapped to your selected themes.
-          </p>
+        <p class="text-sm text-neutral-500 mb-2">
+          If you have concerns or need assistance, please contact support:
+        </p>
+        <a
+          href={`mailto:${Routes.SupportEmail}`}
+          class="support-link block mb-4 text-sm text-secondary hover:text-primary"
+        >
+          <div class="flex items-center gap-1">
+            <MaterialIcon color="fill-secondary">
+              <Headphones />
+            </MaterialIcon>
+            {Routes.SupportEmail}
+          </div>
+        </a>
 
-          {#if $consultationData.stage !== "theme_mapping" && $consultationData.stage !== "analysis"}
-            <Button
-              variant="approve"
-              size="sm"
-              fullWidth={true}
-              handleClick={() => (isConfirmModalOpen = true)}
-            >
-              <div
-                class="flex justify-center items-center gap-3 sm:gap-1 w-full"
-              >
-                <div class="shrink-0">
-                  <MaterialIcon>
-                    <CheckCircle />
-                  </MaterialIcon>
-                </div>
-                <span class="text-left"> Confirm and Proceed to Mapping </span>
-              </div>
-            </Button>
-          {/if}
-        </div>
-      </div>
-    </Panel>
+        {#if $updateConsultationError}
+          <div class="mt-2 mb-4">
+            <Alert>
+              <span class="text-sm">{$updateConsultationError}</span>
+            </Alert>
+          </div>
+        {/if}
+      </Modal>
+    </section>
+  {/if}
 
-    <Modal
-      variant="secondary"
-      title="Confirm AI Mapping"
-      confirmText="Yes, Start AI Mapping"
-      icon={Warning}
-      open={isConfirmModalOpen}
-      setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
-      handleConfirm={async () => {
-        await updateConsultation(
-          getApiConsultationUrl(consultationId),
-          "PATCH",
-          {
-            stage: "theme_mapping",
-          },
-        );
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
 
-        if (!$updateConsultationError) {
-          isConfirmModalOpen = false;
-          location.href = location.href;
-        }
-      }}
-    >
-      <p class="text-sm text-neutral-500 mb-4">
-        You have successfully reviewed and signed off themes for all {questionsForSignOff?.length ||
-          0} consultation questions. Are you ready to proceed with AI mapping?
-      </p>
+      <Panel>
+        <Alert>Unexpected Sign-Off Modal Error</Alert>
+      </Panel>
+    </div>
+  {/snippet}
+</svelte:boundary>
 
-      <p class="text-sm text-neutral-500 mb-2">This action will:</p>
-      <ol class="text-sm text-neutral-500 mb-2 list-disc pl-4">
-        <li class="mb-2">
-          Process all consultation responses across {questionsForSignOff?.length ||
-            0} questions
-        </li>
-        <li class="mb-2">
-          Map responses to your selected themes using AI analysis
-        </li>
-        <li class="mb-2">Incur computational costs for the AI processing</li>
-        <li class="mb-2">
-          Take several hours to complete. More responses = longer time to
-          process
-        </li>
-      </ol>
-
-      <Alert>
-        <span class="text-sm">
-          <strong>Warning:</strong> Once started, this process cannot be stopped
-          or easily reversed. Ensure all theme selections are final.
-        </span>
-      </Alert>
-
-      <hr class="my-4" />
-
-      <p class="text-sm text-neutral-500 mb-2">
-        If you have concerns or need assistance, please contact support:
-      </p>
-      <a
-        href={`mailto:${Routes.SupportEmail}`}
-        class="support-link block mb-4 text-sm text-secondary hover:text-primary"
+<svelte:boundary>
+  <section class="my-8">
+    <div class="my-2">
+      <TitleRow
+        title="All consultation questions"
+        subtitle="Browse or search through all questions in this consultation."
       >
-        <div class="flex items-center gap-1">
-          <MaterialIcon color="fill-secondary">
-            <Headphones />
-          </MaterialIcon>
-          {Routes.SupportEmail}
-        </div>
-      </a>
+        <Help slot="icon" />
 
-      {#if $updateConsultationError}
-        <div class="mt-2 mb-4">
-          <Alert>
-            <span class="text-sm">{$updateConsultationError}</span>
-          </Alert>
+        <p slot="aside">
+          {$questionsData?.results?.length || 0} questions
+        </p>
+      </TitleRow>
+    </div>
+
+    <Panel bg={true} border={true}>
+      {#if $isQuestionsLoading}
+        <p transition:slide>Loading questions...</p>
+      {:else if $questionsError}
+        <p transition:slide>{$questionsError}</p>
+      {:else}
+        <div transition:slide>
+          <TextInput
+            variant="search"
+            id="search-input"
+            label="Search"
+            placeholder="Search..."
+            hideLabel={true}
+            value={searchValue}
+            setValue={(value) => (searchValue = value.trim())}
+          />
+
+          <div class="mb-4">
+            {#each displayQuestions as question}
+              <QuestionCard
+                {consultationId}
+                {question}
+                highlightText={searchValue}
+                clickable={question.has_free_text}
+                disabled={!question.has_free_text}
+                url={getThemeSignOffDetailUrl(consultationId, question.id)}
+                subtext={!question.has_free_text
+                  ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
+                  : undefined}
+              >
+                {#snippet tag()}
+                  {#if !question.has_free_text}
+                    <Tag variant="primary-light">
+                      <MaterialIcon color="fill-primary">
+                        <Checklist />
+                      </MaterialIcon>
+
+                      Multiple choice
+                    </Tag>
+                  {:else if question.theme_status === "confirmed"}
+                    <Tag variant="primary-light">Signed off</Tag>
+                  {:else}
+                    <div></div>
+                  {/if}
+                {/snippet}
+              </QuestionCard>
+            {/each}
+          </div>
         </div>
       {/if}
-    </Modal>
+    </Panel>
   </section>
-{/if}
 
-<section class="my-8">
-  <div class="my-2">
-    <TitleRow
-      title="All consultation questions"
-      subtitle="Browse or search through all questions in this consultation."
-    >
-      <Help slot="icon" />
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
 
-      <p slot="aside">
-        {$questionsData?.results?.length || 0} questions
-      </p>
-    </TitleRow>
-  </div>
-
-  <Panel bg={true} border={true}>
-    {#if $isQuestionsLoading}
-      <p transition:slide>Loading questions...</p>
-    {:else if $questionsError}
-      <p transition:slide>{$questionsError}</p>
-    {:else}
-      <div transition:slide>
-        <TextInput
-          variant="search"
-          id="search-input"
-          label="Search"
-          placeholder="Search..."
-          hideLabel={true}
-          value={searchValue}
-          setValue={(value) => (searchValue = value.trim())}
-        />
-
-        <div class="mb-4">
-          {#each displayQuestions as question}
-            <QuestionCard
-              {consultationId}
-              {question}
-              highlightText={searchValue}
-              clickable={question.has_free_text}
-              disabled={!question.has_free_text}
-              url={getThemeSignOffDetailUrl(consultationId, question.id)}
-              subtext={!question.has_free_text
-                ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
-                : undefined}
-            >
-              {#snippet tag()}
-                {#if !question.has_free_text}
-                  <Tag variant="primary-light">
-                    <MaterialIcon color="fill-primary">
-                      <Checklist />
-                    </MaterialIcon>
-
-                    Multiple choice
-                  </Tag>
-                {:else if question.theme_status === "confirmed"}
-                  <Tag variant="primary-light">Signed off</Tag>
-                {:else}
-                  <div></div>
-                {/if}
-              {/snippet}
-            </QuestionCard>
-          {/each}
-        </div>
-      </div>
-    {/if}
-  </Panel>
-</section>
+      <Panel>
+        <Alert>Unexpected Question List Error</Alert>
+      </Panel>
+    </div>
+  {/snippet}
+</svelte:boundary>
 
 <style>
   .support-link:hover :global(svg) {
