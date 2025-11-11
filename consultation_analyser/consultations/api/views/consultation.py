@@ -13,6 +13,7 @@ from consultation_analyser.consultations.api.serializers import (
     DemographicOptionSerializer,
 )
 from consultation_analyser.consultations.models import Consultation, DemographicOption
+from consultation_analyser.support_console import ingest
 from consultation_analyser.support_console.views.consultations import delete_consultation_job
 
 
@@ -53,5 +54,18 @@ class ConsultationViewSet(ModelViewSet):
         )
 
         serializer = DemographicOptionSerializer(instance=data, many=True)
+
+        return Response(serializer.data)
+
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path="consultation-folders",
+        permission_classes=[HasDashboardAccess],
+    )
+    def consultation_folders(self, request):
+        consultation_folders = ingest.get_consultation_codes()
+
+        serializer = ConsultationSerializer(instance=consultation_folders, many=True)
 
         return Response(serializer.data)

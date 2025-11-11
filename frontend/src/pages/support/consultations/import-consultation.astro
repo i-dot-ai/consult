@@ -2,12 +2,14 @@
 import Layout from "../../../layouts/Layout.astro";
 import Section from "../../../components/Section/Section.svelte";
 import Details from "../../../components/Details/Details.svelte";
-import Text from '../components/Text/Text.svelte';
-import TextInput from '../../../components/inputs/TextInput/Text.svelte';
+import Text from '../../../components/Text/Text.svelte';
+import TextInput from '../../../components/inputs/TextInput/TextInput.svelte';
 import Title from "../../../components/Title.svelte";
 import Select from "../../../components/inputs/Select.svelte";
 import { Routes } from "../../../global/routes";
+import Button from "../../design/inputs/button.astro";
 ---
+
 <Layout>
   <Section>
     <Title level={1} text="Consultation import" />
@@ -40,7 +42,6 @@ import { Routes } from "../../../global/routes";
                         ├── detail_detection.jsonl
                         └── mapping.jsonl</code></pre>
     </Details>
-    <TextInput id="consultation_name" name="consultation_name" label="Consultation title" autocomplete="false" />
-    <Select label="Select consultation folder"  />
+    
   </Section>
 </Layout>
