@@ -5,14 +5,14 @@ services:
     image: pgvector/pgvector:0.8.0-pg17-bookworm
     environment:
       POSTGRES_DB: consultation_analyser
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres  # pragma: allowlist secret
+      POSTGRES_USER: consultations_test
+      POSTGRES_PASSWORD: consultations_test  # pragma: allowlist secret
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      test: ["CMD-SHELL", "pg_isready -U consultations_test"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,7 +26,7 @@ services:
       - "8000:8000"
     environment:
       - DEBUG=True
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/consultation_analyser
+      - DATABASE_URL=postgresql://consultations_test:consultations_test@postgres:5432/consultation_analyser
       - SECRET_KEY=dev-secret-key-change-in-production
       - ALLOWED_HOSTS=localhost,127.0.0.1,backend,frontend
       - DOMAIN_NAME=
