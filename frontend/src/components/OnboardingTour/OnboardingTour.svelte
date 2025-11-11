@@ -161,7 +161,7 @@
         `left: ${targetRect.left}px;`,
       ])}
     >
-      <header class="mb-2 flex justify-between items-start">
+      <header class="mb-8 flex justify-between items-start">
         <div class="flex items-center gap-2">
           {#if steps[currStep].icon}
             <div class="bg-pink-100 rounded-full p-1">
