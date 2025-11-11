@@ -10,6 +10,7 @@ export enum Routes {
   SignOut = "/sign-out",
   ApiMagicLink = "/api/magic-link/",
   ApiConsultations = "/api/consultations",
+  ApiConsultationFolders = "/api/consultation-folders",
   ApiUser = "/api/user/",
   ApiAstroSignIn = "/api/astro/sign-in",
   Design = "/design",
