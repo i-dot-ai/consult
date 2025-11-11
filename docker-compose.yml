@@ -28,6 +28,7 @@ services:
       - .env
     environment:
       - DEBUG=True
+      - DOMAIN_NAME=localhost:3000
       - DATABASE_URL=postgresql://consultations_test:consultations_test@postgres:5432/consultation_analyser
       - ALLOWED_HOSTS=localhost,127.0.0.1,backend,frontend
       - BACKEND_URL=http://backend:8000
