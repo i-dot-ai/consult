@@ -9,10 +9,13 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   let userIsStaff: boolean = false;
 
   try {
-    const resp = await fetchBackendApi<{ is_staff: Boolean}>(context, Routes.ApiUser);
+    const resp = await fetchBackendApi<{ is_staff: Boolean }>(
+      context,
+      Routes.ApiUser,
+    );
     userIsStaff = Boolean(resp.is_staff);
   } catch {
-    console.log("user not signed in")
+    console.log("user not signed in");
   }
 
   const accessToken = context.cookies.get("access")?.value;
@@ -26,10 +29,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/stories.*/,
     /^\/support.*/,
   ];
-  const protectedStaffRoutes = [
-    /^\/support.*/,
-    /^\/stories.*/,
-  ]
+  const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
   for (const protectedRoute of protectedRoutes) {
     if (
@@ -41,10 +41,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   }
 
   for (const protectedStaffRoute of protectedStaffRoutes) {
-    if (
-      protectedStaffRoute.test(url.pathname) &&
-      !userIsStaff
-    ) {
+    if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
       return context.redirect(Routes.Home);
     }
   }
