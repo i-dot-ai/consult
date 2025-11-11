@@ -21,6 +21,10 @@ jobs:
           docker compose up -d frontend
           sleep 30
 
+      - name: Create admin user
+        run: |
+          docker-compose run backend venv/bin/django-admin createadminusers
+
       - name: Set up Node.js (for Playwright only)
         uses: actions/setup-node@v6
         with:
