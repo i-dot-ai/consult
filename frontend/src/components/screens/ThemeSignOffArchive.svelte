@@ -17,6 +17,7 @@
   import Tag from "../Tag/Tag.svelte";
   import Modal from "../Modal/Modal.svelte";
   import Alert from "../Alert.svelte";
+  import OnboardingTour from "../OnboardingTour/OnboardingTour.svelte";
   import Button from "../inputs/Button/Button.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import TitleRow from "../dashboard/TitleRow.svelte";
@@ -31,6 +32,7 @@
   import Warning from "../svg/material/Warning.svelte";
   import Headphones from "../svg/material/Headphones.svelte";
   import Help from "../svg/material/Help.svelte";
+  import Target from "../svg/material/Target.svelte";
 
   interface Props {
     consultationId: string;
@@ -101,6 +103,37 @@
       (question: Question) => question.theme_status === "confirmed",
     ),
   );
+
+  const renderOnboardingItem = (
+    number: number,
+    title: string,
+    body: string,
+    active: boolean
+  ): string => {
+    return `
+      <li class="flex items-start gap-2 mb-4">
+        <div class="${clsx([
+          "flex",
+          "items-center",
+          "justify-center",
+          "w-[1ch]",
+          "h-[1ch]",
+          "p-3",
+          "rounded-full",
+          "font-bold",
+          active ? "text-primary" : "text-neutral-500",
+          active ? "bg-pink-100" : "bg-neutral-100",
+        ])}"
+        >
+          ${number}
+        </div>
+        <div>
+          <h4 class="font-[500]">${title}</h4>
+          <p>${body}</p>
+        </div>
+      </li>
+    `
+  }
 </script>
 
 {#snippet themeStage(
@@ -297,7 +330,7 @@
 
 <svelte:boundary>
   <section class="my-8">
-    <div class="my-2">
+    <div class="my-2" id="onboarding-step-1">
       <TitleRow
         title="All consultation questions"
         subtitle="Browse or search through all questions in this consultation."
@@ -373,6 +406,41 @@
     </div>
   {/snippet}
 </svelte:boundary>
+
+<OnboardingTour
+  key="theme-sign-off-archive"
+  steps={[
+    {
+      id: "onboarding-step-1",
+      title: "Welcome to Theme Sign Off",
+      subtitle: "3-step process to finalise themes",
+      body: `
+        <p>Here's how the theme sign-off process works:</p>
+        <ol class="mt-4">
+          ${[
+            {
+              title: "Choose a Question",
+              body: "Select any consultation question to start working with its AI-generated themes",
+            },
+            {
+              title: "Select & Edit Themes",
+              body: "Review AI themes, select relevant ones, and edit or merge as needed",
+            },
+            {
+              title: "Sign Off & Proceed",
+              body: "Finalise your theme selection to enable AI response mapping",
+            },
+          ]
+          .map((item, i) => renderOnboardingItem(i + 1, item.title, item.body, i === 0))
+          .join("")}
+        </ol>
+      `,
+      icon: Target,
+      nextButtonText: "Get Started",
+    },
+  ]}
+  resizeObserverTarget={document.querySelector("main")}
+/>
 
 <style>
   .support-link:hover :global(svg) {
