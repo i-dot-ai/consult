@@ -31,6 +31,7 @@ describe("Modal", () => {
     await act(() => component.setImperativeOpen(false));
 
     expect(queryByText("Ok")).toBeNull();
+    expect(queryByText("Child Element")).toBeNull();
   });
 
   it("should render contents if open", async () => {
@@ -47,6 +48,7 @@ describe("Modal", () => {
     // store does not update without this
     await act(() => component.setImperativeOpen(true));
 
+    expect(getByText("Child Element"));
     expect(getByText(testData.title));
     expect(getByText(testData.confirmText));
   });
