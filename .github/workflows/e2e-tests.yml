@@ -1,14 +1,49 @@
 name: Playwright E2E Tests
 
 on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
   workflow_dispatch:
 
 jobs:
   e2e-tests:
     runs-on: ubuntu-latest
+    container: python:3.12.3
+
+    services:
+      redis:
+        image: redis
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+      postgres:
+        image: pgvector/pgvector:pg17
+        env:
+          POSTGRES_USER: pguser
+          POSTGRES_PASSWORD: pgpass
+          POSTGRES_DB: consultations_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
 
     steps:
       - uses: actions/checkout@v5
+
+      - name: Install Poetry & Python dependencies
+        run: |
+          python -m pip install --upgrade poetry
+          poetry install --with development
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -23,14 +58,60 @@ jobs:
         run: npx playwright install --with-deps
         working-directory: frontend
 
-      - name: Check if tests exist
-        run: ls -la
+      - name: Setup Django app
+        run: |
+          poetry run python manage.py migrate
+          make govuk_frontend
+        env:
+          DJANGO_SECRET_KEY: dummy-key
+          DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
+          BATCH_JOB_QUEUE: dummy-queue
+          BATCH_JOB_DEFINITION: dummy-definition
+          SAGEMAKER_ENDPOINT_NAME: test-endpoint
+          GOVUK_NOTIFY_API_KEY: dummy-key
+          GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID: dummy-template
+          ENVIRONMENT: test
+          LLM_BACKEND: fake
+          AWS_REGION: eu-west-2
+          AWS_BUCKET_NAME: test-bucket
+          SQS_QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/123456789012/test-queue
+          MAPPING_BATCH_JOB_NAME: i-dot-ai-dev-consult-mapping-job
+          MAPPING_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-queue
+          MAPPING_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-definition
+          SIGN_OFF_BATCH_JOB_NAME: i-dot-ai-dev-consult-sign-off-job
+          SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
+          SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
+
+      - name: Start Django server
+        run: |
+          poetry run python manage.py runserver 0.0.0.0:8000 &
+          sleep 10
+        env:
+          REDIS_HOST: redis
+          DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
+          BATCH_JOB_QUEUE: dummy-queue
+          BATCH_JOB_DEFINITION: dummy-definition
+          SQS_QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/123456789012/test-queue
+          MAPPING_BATCH_JOB_NAME: i-dot-ai-dev-consult-mapping-job
+          MAPPING_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-queue
+          MAPPING_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-definition
+          SIGN_OFF_BATCH_JOB_NAME: i-dot-ai-dev-consult-sign-off-job
+          SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
+          SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
+
+      - name: Build frontend
+        run: npm run build
+        working-directory: frontend
+
+      - name: Start frontend server
+        run: |
+          npm run preview &
+          sleep 10
         working-directory: frontend
 
       - name: Run Playwright tests
         run: npm run e2e
         working-directory: frontend
-        continue-on-error: true
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
