@@ -161,7 +161,7 @@
         `left: ${targetRect.left}px;`,
       ])}
     >
-      <header class="mb-2 flex justify-between items-start">
+      <header class="mb-8 flex justify-between items-start">
         <div class="flex items-center gap-2">
           {#if steps[currStep].icon}
             <div class="bg-pink-100 rounded-full p-1">
@@ -195,7 +195,11 @@
       <footer>
         <div class="flex flex-no-wrap gap-1 mt-4">
           {#each steps as _, i}
+            {@const labelText = `Go to step ${i + 1}`}
+
             <button
+              title={labelText}
+              aria-label={labelText}
               style="width: {Math.round(100 / steps.length)}%;"
               class={"hover:opacity-75"}
               onclick={() => {
@@ -208,6 +212,7 @@
             >
               <Progress
                 value={currStep >= i ? 100 : 0}
+                thickness={1.5}
                 transitionDuration={progressTransition ? 1000 : 0}
               />
             </button>
