@@ -19,11 +19,12 @@ jobs:
           docker compose up -d postgres
           docker compose up -d backend
           docker compose up -d frontend
-          sleep 10
+          sleep 30
 
-      - name: Install npm dependencies
-        run: npm install
-        working-directory: frontend
+      - name: Set up Node.js (for Playwright only)
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.8
 
       - name: Install Playwright
         run: npx playwright install --with-deps
