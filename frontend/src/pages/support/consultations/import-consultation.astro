@@ -1,0 +1,46 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import Section from "../../../components/Section/Section.svelte";
+import Details from "../../../components/Details/Details.svelte";
+import Text from '../components/Text/Text.svelte';
+import TextInput from '../../../components/inputs/TextInput/Text.svelte';
+import Title from "../../../components/Title.svelte";
+import Select from "../../../components/inputs/Select.svelte";
+import { Routes } from "../../../global/routes";
+---
+<Layout>
+  <Section>
+    <Title level={1} text="Consultation import" />
+    <Text>Import complete consultation data including AI analysis in one operation.</Text>
+    <Text>This will import both the consultation data (questions, respondents, responses) and AI analysis results (themes, sentiment, evidence) sequentially.</Text>
+    <Text>Data should be saved in: i-dot-ai-dev-consult-data/app_data/consultations/[CONSULTATION FOLDER]</Text>
+
+    <Details summaryText="Expected S3 Structure">
+        <pre><code>&lt;consultation-folder&gt;/
+        ├── inputs/
+        │   ├── respondents.jsonl
+        │   ├── question_part_1/
+        │   │   ├── question.json
+        │   │   ├── responses.jsonl
+        │   │   └── multi_choice.jsonl
+        │   └── question_part_2/
+        │       ├── question.json
+        │       └── responses.jsonl
+        └── outputs/
+            └── mapping/
+                └── &lt;timestamp&gt;/
+                    ├── question_part_1/
+                    │   ├── themes.json
+                    │   ├── sentiment.jsonl [optional]
+                    │   ├── detail_detection.jsonl
+                    │   └── mapping.jsonl
+                    └── question_part_2/
+                        ├── themes.json
+                        ├── sentiment.jsonl [optional]
+                        ├── detail_detection.jsonl
+                        └── mapping.jsonl</code></pre>
+    </Details>
+    <TextInput id="consultation_name" name="consultation_name" label="Consultation title" autocomplete="false" />
+    <Select label="Select consultation folder"  />
+  </Section>
+</Layout>
