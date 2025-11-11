@@ -195,8 +195,11 @@
       <footer>
         <div class="flex flex-no-wrap gap-1 mt-4">
           {#each steps as _, i}
+            {@const labelText = `Go to step ${i + 1}`}
+
             <button
-              title={`Go to step ${i + 1}`}
+              title={labelText}
+              aria-label={labelText}
               style="width: {Math.round(100 / steps.length)}%;"
               class={"hover:opacity-75"}
               onclick={() => {
