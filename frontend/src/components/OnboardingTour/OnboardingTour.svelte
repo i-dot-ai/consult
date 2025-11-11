@@ -196,6 +196,7 @@
         <div class="flex flex-no-wrap gap-1 mt-4">
           {#each steps as _, i}
             <button
+              title={`Go to step ${i + 1}`}
               style="width: {Math.round(100 / steps.length)}%;"
               class={"hover:opacity-75"}
               onclick={() => {
@@ -208,6 +209,7 @@
             >
               <Progress
                 value={currStep >= i ? 100 : 0}
+                thickness={1.5}
                 transitionDuration={progressTransition ? 1000 : 0}
               />
             </button>
