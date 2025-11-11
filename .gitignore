@@ -168,6 +168,10 @@ frontend/iai-assets
 frontend/admin
 frontend/django_extensions
 
+# Playwright e2e tests
+e2e_tests/test-results/
+e2e_tests/playwright-report/
+
 # Other
 .env
 .DS_Store
