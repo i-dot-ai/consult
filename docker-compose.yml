@@ -27,7 +27,8 @@ services:
     env_file:
       - .env
     environment:
-      - ENVIRONMENT=test
+      - EXECUTION_CONTEXT=**
+      - GIT_SHA=**
       - DEBUG=True
       - DOMAIN_NAME=localhost:3000
       - SENTRY_DSN=**
