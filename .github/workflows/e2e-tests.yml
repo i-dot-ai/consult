@@ -14,7 +14,7 @@ jobs:
         run: |
           docker compose version
 
-      - name: Start services with docker-compose
+      - name: Start services with docker compose
         run: |
           docker compose up -d postgres
           docker compose up -d backend
@@ -23,7 +23,7 @@ jobs:
 
       - name: Create admin user
         run: |
-          docker-compose run backend venv/bin/django-admin createadminusers
+          docker compose run backend venv/bin/django-admin createadminusers
 
       - name: Set up Node.js (for Playwright only)
         uses: actions/setup-node@v6
