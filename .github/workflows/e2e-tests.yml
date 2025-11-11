@@ -6,38 +6,19 @@ on:
 jobs:
   e2e-tests:
     runs-on: ubuntu-latest
-    container: python:3.12.3
-
-    services:
-      redis:
-        image: redis
-        options: >-
-          --health-cmd "redis-cli ping"
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
-      postgres:
-        image: pgvector/pgvector:pg17
-        env:
-          POSTGRES_USER: consultations_test
-          POSTGRES_PASSWORD: consultations_test
-          POSTGRES_DB: consultations_test
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
 
     steps:
       - uses: actions/checkout@v5
 
-      - name: Install Poetry & Python dependencies
+      - name: Set up Docker Compose
         run: |
-          python -m pip install --upgrade poetry
-          poetry install --with development
+          docker compose version
+
+      - name: Start services with docker-compose
+        run: |
+          docker compose up -d postgres
+          docker compose up -d backend
+          sleep 30
 
       - name: Set up Node.js
         uses: actions/setup-node@v6
@@ -52,46 +33,6 @@ jobs:
         run: npx playwright install --with-deps
         working-directory: frontend
 
-      - name: Setup Django app
-        run: |
-          poetry run python manage.py migrate
-          make govuk_frontend
-        env:
-          DEBUG: "True"
-          DJANGO_SECRET_KEY: dummy-key
-          DATABASE_URL: psql://consultations_test:consultations_test@postgres:5432/consultations_test
-          SAGEMAKER_ENDPOINT_NAME: test-endpoint
-          ENVIRONMENT: test
-          BATCH_JOB_QUEUE: dummy-queue
-          BATCH_JOB_DEFINITION: dummy-definition
-          AWS_ACCOUNT_ID: ""
-          GOVUK_NOTIFY_API_KEY: not-used
-          GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID: not-used
-          AWS_REGION: us-east-1
-          AWS_BUCKET_NAME: test-bucket
-          GUNICORN_WORKERS: "1"
-          GUNICORN_TIMEOUT: "30"
-
-      - name: Start Django server
-        run: |
-          poetry run python manage.py runserver 0.0.0.0:8000 &
-          sleep 10
-        env:
-          DEBUG: "True"
-          DJANGO_SECRET_KEY: dummy-key
-          DATABASE_URL: psql://consultations_test:consultations_test@postgres:5432/consultations_test
-          SAGEMAKER_ENDPOINT_NAME: test-endpoint
-          ENVIRONMENT: test
-          BATCH_JOB_QUEUE: dummy-queue
-          BATCH_JOB_DEFINITION: dummy-definition
-          AWS_ACCOUNT_ID: ""
-          GOVUK_NOTIFY_API_KEY: not-used
-          GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID: not-used
-          AWS_REGION: us-east-1
-          AWS_BUCKET_NAME: test-bucket
-          GUNICORN_WORKERS: "1"
-          GUNICORN_TIMEOUT: "30"
-
       - name: Build frontend
         run: npm run build
         working-directory: frontend
@@ -105,6 +46,10 @@ jobs:
       - name: Run Playwright tests
         run: npm run e2e
         working-directory: frontend
+
+      - name: Stop docker-compose services
+        run: docker compose down
+        if: always()
 
       - name: Upload Playwright report
         uses: actions/upload-artifact@v4
