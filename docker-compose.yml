@@ -16,6 +16,23 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - consult
+
+  # Redis Cache
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - consult
 
   # Django Backend
   backend:
@@ -36,6 +53,10 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - consult
     command: sh -c "venv/bin/python manage.py migrate && venv/bin/python manage.py runserver 0.0.0.0:8000"
 
   # Frontend
@@ -51,8 +72,14 @@ services:
       - ./frontend:/app
     depends_on:
       - backend
+    networks:
+      - consult
     command: sh -c "npm install && npm run dev"
 
 volumes:
   postgres_data:
+  redis_data:
   frontend_node_modules:
+
+networks:
+  consult:
