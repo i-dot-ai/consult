@@ -1,3 +1,5 @@
+import json
+
 from django.db.models import Count
 from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import action, api_view
@@ -66,4 +68,4 @@ def get_consultation_folders(request) -> HttpResponse:
     """
     consultation_folders = ingest.get_consultation_codes()
 
-    return JsonResponse(consultation_folders)
+    return JsonResponse(json.dumps(consultation_folders), safe=False)
