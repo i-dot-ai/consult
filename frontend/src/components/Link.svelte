@@ -1,6 +1,8 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { handleEnterOrSpacePress } from "../global/utils";
+
   export let href: string = "";
   export let title: string = "";
   export let ariaLabel: string = "";
@@ -27,7 +29,8 @@
   {title}
   tabindex="0"
   role="button"
-  on:click={variant === "block" ? () => (window.location.href = href) : null}
+  onclick={variant === "block" ? () => (window.location.href = href) : null}
+  onkeypress={(e) => handleEnterOrSpacePress(e, () => window.location.href = href)}
 >
   <slot />
 </svelte:element>
