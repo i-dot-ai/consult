@@ -103,37 +103,6 @@
       (question: Question) => question.theme_status === "confirmed",
     ),
   );
-
-  const renderOnboardingItem = (
-    number: number,
-    title: string,
-    body: string,
-    active: boolean
-  ): string => {
-    return `
-      <li class="flex items-start gap-2 mb-4">
-        <div class="${clsx([
-          "flex",
-          "items-center",
-          "justify-center",
-          "w-[1ch]",
-          "h-[1ch]",
-          "p-3",
-          "rounded-full",
-          "font-bold",
-          active ? "text-primary" : "text-neutral-500",
-          active ? "bg-pink-100" : "bg-neutral-100",
-        ])}"
-        >
-          ${number}
-        </div>
-        <div>
-          <h4 class="font-[500]">${title}</h4>
-          <p>${body}</p>
-        </div>
-      </li>
-    `
-  }
 </script>
 
 {#snippet themeStage(
