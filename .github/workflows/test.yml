@@ -52,8 +52,8 @@ jobs:
           poetry run python manage.py makemigrations --check
           make govuk_frontend
         env:
-          DJANGO_SECRET_KEY: dummy-key
-          # DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
+          # DJANGO_SECRET_KEY: dummy-key
+          DATABASE_URL: postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser
           # BATCH_JOB_QUEUE: dummy-queue
           # BATCH_JOB_DEFINITION: dummy-definition
           # SAGEMAKER_ENDPOINT_NAME: test-endpoint
@@ -74,8 +74,8 @@ jobs:
       - name: Run app tests
         run: make test
         env:
-          REDIS_HOST: redis
-          # DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
+          # REDIS_HOST: redis
+          DATABASE_URL: postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser
           # BATCH_JOB_QUEUE: dummy-queue
           # BATCH_JOB_DEFINITION: dummy-definition
           # SQS_QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/123456789012/test-queue
@@ -89,8 +89,8 @@ jobs:
       - name: Run tests for migrations
         run: make test-migrations
         env:
-          REDIS_HOST: redis
-          # DATABASE_URL: psql://pguser:pgpass@postgres:5432/consultations_test
+          # REDIS_HOST: redis
+          DATABASE_URL: postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser
           # BATCH_JOB_QUEUE: dummy-queue
           # BATCH_JOB_DEFINITION: dummy-definition
           # SQS_QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/123456789012/test-queue
