@@ -127,7 +127,7 @@
 
   const hasMultipleSteps = () => {
     return steps.length > 1;
-  }
+  };
 </script>
 
 {#if targetRect && currStep >= 0 && !isOnboardingComplete()}
@@ -185,7 +185,8 @@
               {steps[currStep].title}
             </h3>
             <p class="text-xs text-neutral-500">
-              {steps[currStep].subtitle || `Step ${currStep + 1} of ${steps.length}`}
+              {steps[currStep].subtitle ||
+                `Step ${currStep + 1} of ${steps.length}`}
             </p>
           </div>
         </div>
@@ -201,7 +202,7 @@
         {#if typeof steps[currStep].body === "string"}
           {@html steps[currStep].body}
         {:else}
-          {@render (steps[currStep].body as Snippet)() }
+          {@render (steps[currStep].body as Snippet)()}
         {/if}
       </p>
 
@@ -257,9 +258,7 @@
                   {#if steps[currStep].prevButtonText}
                     {steps[currStep].prevButtonText}
                   {:else}
-                    <span class="grow">
-                      Previous
-                    </span>
+                    <span class="grow"> Previous </span>
                   {/if}
                 </div>
               </Button>
@@ -273,14 +272,19 @@
                 "grow",
               ])}
             >
-              <Button variant="ghost" size="xs" handleClick={close} fullWidth={true}>
+              <Button
+                variant="ghost"
+                size="xs"
+                handleClick={close}
+                fullWidth={true}
+              >
                 <div class="whitespace-nowrap w-full">Skip Tour</div>
               </Button>
             </div>
           {/if}
 
           <!-- Next Button -->
-           <div class="grow">
+          <div class="grow">
             <Button
               fullWidth={true}
               variant="primary"
@@ -305,8 +309,7 @@
                   {:else}
                     {currStep === steps.length - 1 && "invisible"
                       ? "Finish"
-                      : "Next"
-                    }
+                      : "Next"}
                   {/if}
                 </div>
                 <div class="shrink-0">

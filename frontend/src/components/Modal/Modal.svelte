@@ -55,14 +55,14 @@
     if (variant === "primary") {
       return "fill-primary";
     }
-    if (variant === "secondary")  {
+    if (variant === "secondary") {
       return "fill-secondary";
     }
     if (variant === "warning") {
       return "fill-orange-600";
     }
     return "fill-neutral-500";
-  }
+  };
 </script>
 
 {#if $meltOpen}
@@ -96,10 +96,7 @@
     >
       <div class="flex items-center gap-2 mb-2">
         {#if icon}
-          <MaterialIcon
-            color={getIconColor()}
-            size="1.3rem"
-          >
+          <MaterialIcon color={getIconColor()} size="1.3rem">
             <svelte:component this={icon} />
           </MaterialIcon>
         {/if}

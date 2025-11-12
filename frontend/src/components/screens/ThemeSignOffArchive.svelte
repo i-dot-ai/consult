@@ -149,7 +149,9 @@
               {@render themeStage(
                 "Theme Sign Off",
                 CheckCircle,
-                $consultationData?.stage === "theme_mapping" ? "done" : "current",
+                $consultationData?.stage === "theme_mapping"
+                  ? "done"
+                  : "current",
               )}
             </li>
             <li>
@@ -200,7 +202,9 @@
                       <CheckCircle />
                     </MaterialIcon>
                   </div>
-                  <span class="text-left"> Confirm and Proceed to Mapping </span>
+                  <span class="text-left">
+                    Confirm and Proceed to Mapping
+                  </span>
                 </div>
               </Button>
             {/if}
@@ -407,18 +411,19 @@
   active: boolean,
 )}
   <li class="flex items-start gap-2 mb-4">
-    <div class="{clsx([
-      "flex",
-      "items-center",
-      "justify-center",
-      "w-[1ch]",
-      "h-[1ch]",
-      "p-3",
-      "rounded-full",
-      "font-bold",
-      active ? "text-primary" : "text-neutral-500",
-      active ? "bg-pink-100" : "bg-neutral-100",
-    ])}"
+    <div
+      class={clsx([
+        "flex",
+        "items-center",
+        "justify-center",
+        "w-[1ch]",
+        "h-[1ch]",
+        "p-3",
+        "rounded-full",
+        "font-bold",
+        active ? "text-primary" : "text-neutral-500",
+        active ? "bg-pink-100" : "bg-neutral-100",
+      ])}
     >
       {number}
     </div>
