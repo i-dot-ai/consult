@@ -72,7 +72,7 @@ jobs:
           # SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
 
       - name: Run app tests
-        run: make test
+        run: DATABASE_URL=postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser poetry run pytest
         env:
           # REDIS_HOST: redis
           DATABASE_URL: postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser
