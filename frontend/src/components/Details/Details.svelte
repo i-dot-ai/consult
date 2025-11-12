@@ -33,7 +33,7 @@
 
   .govuk-details__summary {
     position: relative;
-    color: var(--color-primary);;
+    color: var(--color-primary);
     cursor: pointer;
   }
 
