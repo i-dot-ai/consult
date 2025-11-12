@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { onMount, onDestroy, type Component } from "svelte";
+  import { onMount, onDestroy, type Component, type Snippet } from "svelte";
   import { fade } from "svelte/transition";
 
   import MaterialIcon from "../MaterialIcon.svelte";
@@ -13,8 +13,11 @@
   interface Step {
     id: string;
     title: string;
-    body: string;
+    subtitle?: string;
+    body: string | Snippet;
     icon?: Component;
+    prevButtonText?: string;
+    nextButtonText?: string;
   }
 
   interface TargetRect {
@@ -121,6 +124,10 @@
     window.removeEventListener("resize", updateTargetRect);
     window.removeEventListener("scroll", updateTargetRect);
   });
+
+  const hasMultipleSteps = () => {
+    return steps.length > 1;
+  };
 </script>
 
 {#if targetRect && currStep >= 0 && !isOnboardingComplete()}
@@ -151,7 +158,9 @@
       class={clsx([
         "absolute",
         "w-auto",
-        "min-w-[15rem]",
+        "min-w-[80vw]",
+        "sm:min-w-[50vw]",
+        "md:min-w-[25vw]",
         "p-4",
         "rounded-lg",
         "bg-white",
@@ -176,7 +185,8 @@
               {steps[currStep].title}
             </h3>
             <p class="text-xs text-neutral-500">
-              Step {currStep + 1} of {steps.length}
+              {steps[currStep].subtitle ||
+                `Step ${currStep + 1} of ${steps.length}`}
             </p>
           </div>
         </div>
@@ -189,97 +199,127 @@
       </header>
 
       <p class="text-xs text-neutral-700 leading-5">
-        {steps[currStep].body}
+        {#if typeof steps[currStep].body === "string"}
+          {@html steps[currStep].body}
+        {:else}
+          {@render (steps[currStep].body as Snippet)()}
+        {/if}
       </p>
 
       <footer>
-        <div class="flex flex-no-wrap gap-1 mt-4">
-          {#each steps as _, i}
-            {@const labelText = `Go to step ${i + 1}`}
+        {#if hasMultipleSteps()}
+          <div class="flex flex-no-wrap gap-1 mt-4">
+            {#each steps as _, i}
+              {@const labelText = `Go to step ${i + 1}`}
 
-            <button
-              title={labelText}
-              aria-label={labelText}
-              style="width: {Math.round(100 / steps.length)}%;"
-              class={"hover:opacity-75"}
-              onclick={() => {
-                // transition only if 1 step difference
-                progressTransition = Math.abs(currStep - i) === 1;
+              <button
+                title={labelText}
+                aria-label={labelText}
+                style="width: {Math.round(100 / steps.length)}%;"
+                class={"hover:opacity-75"}
+                onclick={() => {
+                  // transition only if 1 step difference
+                  progressTransition = Math.abs(currStep - i) === 1;
 
-                currStep = i;
-                updateTargetRect();
-              }}
-            >
-              <Progress
-                value={currStep >= i ? 100 : 0}
-                thickness={1.5}
-                transitionDuration={progressTransition ? 1000 : 0}
-              />
-            </button>
-          {/each}
-        </div>
+                  currStep = i;
+                  updateTargetRect();
+                }}
+              >
+                <Progress
+                  value={currStep >= i ? 100 : 0}
+                  thickness={1.5}
+                  transitionDuration={progressTransition ? 1000 : 0}
+                />
+              </button>
+            {/each}
+          </div>
+        {/if}
 
         <div class="flex items-center gap-2 mt-4">
-          <!-- Previous Button -->
-          <div class={clsx([currStep === 0 && "invisible"])}>
-            <Button size="xs" handleClick={goPrev}>
+          {#if hasMultipleSteps()}
+            <!-- Previous Button -->
+            <div class={clsx(["grow", currStep === 0 && "invisible"])}>
+              <Button size="xs" handleClick={goPrev} fullWidth={true}>
+                <div
+                  class={clsx([
+                    "flex",
+                    "items-center",
+                    "gap-1",
+                    "px-1",
+                    "py-0.5",
+                    "w-full",
+                  ])}
+                >
+                  <div class="rotate-180">
+                    <MaterialIcon color="black">
+                      <ChevronRight />
+                    </MaterialIcon>
+                  </div>
+                  {#if steps[currStep].prevButtonText}
+                    {steps[currStep].prevButtonText}
+                  {:else}
+                    <span class="grow"> Previous </span>
+                  {/if}
+                </div>
+              </Button>
+            </div>
+
+            <!-- Skip Button -->
+            <div
+              class={clsx([
+                "my-auto",
+                currStep === steps.length - 1 && "invisible",
+                "grow",
+              ])}
+            >
+              <Button
+                variant="ghost"
+                size="xs"
+                handleClick={close}
+                fullWidth={true}
+              >
+                <div class="whitespace-nowrap w-full">Skip Tour</div>
+              </Button>
+            </div>
+          {/if}
+
+          <!-- Next Button -->
+          <div class="grow">
+            <Button
+              fullWidth={true}
+              variant="primary"
+              size="xs"
+              handleClick={goNext}
+            >
               <div
                 class={clsx([
                   "flex",
+                  "justify-between",
                   "items-center",
                   "gap-1",
-                  "max-w-[10ch]",
+                  "min-w-[10ch]",
                   "px-1",
                   "py-0.5",
+                  "w-full",
                 ])}
               >
-                <div class="rotate-180">
-                  <MaterialIcon color="black">
+                <div class="flex justify-center text-center w-full">
+                  {#if steps[currStep].nextButtonText}
+                    {steps[currStep].nextButtonText}
+                  {:else}
+                    {currStep === steps.length - 1 && "invisible"
+                      ? "Finish"
+                      : "Next"}
+                  {/if}
+                </div>
+                <div class="shrink-0">
+                  <MaterialIcon>
                     <ChevronRight />
                   </MaterialIcon>
                 </div>
-                Previous
               </div>
             </Button>
           </div>
-
-          <!-- Skip Button -->
-          <div
-            class={clsx([
-              "my-auto",
-              currStep === steps.length - 1 && "invisible",
-            ])}
-          >
-            <Button variant="ghost" size="xs" handleClick={close}>
-              <div class="whitespace-nowrap">Skip Tour</div>
-            </Button>
-          </div>
-
-          <!-- Next Button -->
-          <Button variant="primary" size="xs" handleClick={goNext}>
-            <div
-              class={clsx([
-                "flex",
-                "justify-between",
-                "items-center",
-                "gap-1",
-                "min-w-[10ch]",
-                "px-1",
-                "py-0.5",
-              ])}
-            >
-              <div class="flex justify-center text-center w-full">
-                {currStep === steps.length - 1 && "invisible"
-                  ? "Finish"
-                  : "Next"}
-              </div>
-              <div class="shrink-0">
-                <MaterialIcon>
-                  <ChevronRight />
-                </MaterialIcon>
-              </div>
-            </div>
-          </Button>
         </div>
       </footer>
     </div>
