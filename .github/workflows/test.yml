@@ -11,8 +11,6 @@ on:
 jobs:
   test:
     runs-on: ubuntu-latest
-    container: python:3.12.3
-
 
           # POSTGRES_USER: pguser
           # POSTGRES_PASSWORD: pgpass
