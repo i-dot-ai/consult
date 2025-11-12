@@ -18,20 +18,28 @@
   let error: string = "";
   let success: boolean = false;
   let loading: boolean = false;
+
   let consultationName: string = "";
   let timestamp: string = "";
+  let populateOption: string = "";
+  let consultationFolderCode: string = "";
+
   let consultationFolders: SelectOption[] = [];
   let RADIO_OPTIONS: RadioItem[] = [
-      {value: 'sign_off',
+    {
+      value: 'sign_off',
       text: 'Populate Sign Off',
       checked: false,
-      disabled: false}
+      disabled: false
+    }
     ,
-      {value: 'dashboard',
+    {
+      value: 'dashboard',
       text: 'Populate Dashboard',
       checked: true,
-      disabled: false}
-  ]
+      disabled: false
+    }
+  ];
 
   onMount(async () => {
     loading = true;
@@ -50,16 +58,23 @@
 
   const timestampRegex = /^\d{4}-\d{2}-\d{2}-\d{2}-\d{2}-\d{2}$/;
 
-   const setConsultationName = (newValue: string) => {
+  const setConsultationName = (newValue: string) => {
     consultationName = newValue;
-
-    error = consultationName ? "Please enter a consultation name" : "";
+    error = !consultationName ? "Please enter a consultation name" : "";
   };
 
   const setTimestamp = (newValue: string) => {
     timestamp = newValue;
-
     error = timestamp && !timestampRegex.test(newValue) ? "Please enter a consultation name" : "";
+  };
+
+  const setPopulateOption = (newValue: string) => {
+    populateOption = newValue;
+  };
+
+  const setConsultationFolderCode = (newValue: string) => {
+    consultationFolderCode = newValue;
+    error = !consultationFolderCode ? "Please select a consultation folder" : "";
   };
 
   const handleSubmit = async () => {
@@ -68,14 +83,16 @@
     sending = true;
 
     try {
-      const response = await fetch(Routes.ApiAstroSignIn, {
+      const response = await fetch(Routes.ApiConsultationImport, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({ 
           consultation_name: consultationName,
-          timestamp: timestamp 
+          timestamp: timestamp,
+          action: populateOption,
+          consultation_code: consultationFolderCode,
         }),
       });
 
@@ -84,8 +101,12 @@
       }
 
       success = true;
+      loading = false;
+      error = ""
       consultationName = "";
       timestamp = "";
+      consultationFolderCode = "";
+      window.location.href = "/consultations/";
     } catch (err: any) {
       error = err.message;
     } finally {
@@ -109,8 +130,8 @@
   {/if}
 
   <TextInput id="consultation_name" name="consultation_name" label="Consultation title" autocomplete="false" value={consultationName} setValue={setConsultationName} />
-  <Select id="consultation_code" name="consultation_code" label="Select consultation folder" items={consultationFolders} />
-  <Radio name="action" items={RADIO_OPTIONS} />
+  <Select id="consultation_code" name="consultation_code" label="Select consultation folder" items={consultationFolders} onchange={setConsultationFolderCode} />
+  <Radio value={populateOption} name="action" items={RADIO_OPTIONS} onchange={setPopulateOption} />
   <TextInput autocomplete="false" id="timestamp" name="timestamp" label="Mapping timestamp folder (only needed to populate the dashboard)" placeholder="e.g., 2024-01-15-14-30-00" value={timestamp} setValue={setTimestamp} />
   <Button
     type="submit"
