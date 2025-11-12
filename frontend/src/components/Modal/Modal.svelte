@@ -15,6 +15,7 @@
     title: string;
     open: boolean;
     confirmText: string;
+    canCancel?: boolean;
     icon?: Component;
     setOpen: (newValue: boolean) => void;
     handleConfirm: MouseEventHandler<any>;
@@ -26,6 +27,7 @@
     title = "",
     open = false,
     confirmText = "Confirm",
+    canCancel = true,
     icon,
     setOpen = () => {},
     handleConfirm = () => {},
@@ -118,9 +120,11 @@
       {@render children()}
 
       <footer class="flex items-center justify-end gap-2">
-        <div use:melt={$close}>
-          <Button size="sm">Cancel</Button>
-        </div>
+        {#if canCancel}
+          <div use:melt={$close}>
+            <Button size="sm">Cancel</Button>
+          </div>
+        {/if}
 
         <Button
           size="sm"
