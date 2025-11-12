@@ -26,7 +26,7 @@ jobs:
           docker compose up -d postgres
           docker compose up -d backend
           docker compose up -d frontend
-          sleep 30
+          sleep 10
 
       - name: Create admin user
         run: |
