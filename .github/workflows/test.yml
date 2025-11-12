@@ -24,6 +24,8 @@ jobs:
       - name: Copy environment file
         run: |
           cp .env.example .env
+          cp .env.test .env.test.bak
+          sed 's/@postgres:/@localhost:/g' .env.test.bak > .env.test
 
       - name: Start services with docker compose
         run: |
