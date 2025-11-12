@@ -29,6 +29,8 @@ jobs:
         run: |
           docker compose up -d postgres redis
           docker compose exec -T postgres pg_isready -U consultations_test || (sleep 5 && docker compose exec -T postgres pg_isready -U consultations_test) || (sleep 10 && docker compose exec -T postgres pg_isready -U consultations_test)
+        env:
+          DATABASE_URL: postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser
 
       - name: install poetry & deps
         run: |
