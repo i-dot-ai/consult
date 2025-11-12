@@ -17,7 +17,7 @@ from consultation_analyser.consultations.api.serializers import (
 )
 from consultation_analyser.consultations.models import Consultation, DemographicOption
 from consultation_analyser.support_console import ingest
-from consultation_analyser.support_console.views.consultations import delete_consultation_job
+from consultation_analyser.support_console.views.consultations import delete_consultation_job, import_consultation_job
 
 
 class ConsultationViewSet(ModelViewSet):
@@ -69,3 +69,25 @@ def get_consultation_folders(request) -> HttpResponse:
     consultation_folders = ingest.get_consultation_codes()
 
     return JsonResponse(json.dumps(consultation_folders), safe=False)
+
+@api_view(["POST"])
+def submit_consultation_import(request) -> HttpResponse:
+    """
+    Submit consultation import.
+    """
+    consultation_name = request.data.get("consultation_name")
+    consultation_code = request.data.get("consultation_code")
+    timestamp = request.data.get("timestamp")
+    action = request.data.get("action")
+
+    try:
+        import_consultation_job.delay(
+            consultation_name=consultation_name,
+            consultation_code=consultation_code,
+            timestamp=timestamp,
+            current_user_id=request.user.id,
+            sign_off=action == "sign_off",
+        )
+        return HttpResponse(status=201)
+    except Exception as e:
+        return HttpResponse(status=500, content=str(e))
