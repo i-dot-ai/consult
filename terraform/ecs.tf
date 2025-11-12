@@ -214,6 +214,9 @@ module "worker" {
     "RolePassableByRunner" = "True"
   }
   entrypoint = ["./start-worker.sh"]
+
+  memory = 4096
+  cpu    = 1024
 }
 
 resource "aws_service_discovery_private_dns_namespace" "private_dns_namespace" {
