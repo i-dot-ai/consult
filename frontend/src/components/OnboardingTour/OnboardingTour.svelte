@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { onMount, onDestroy, type Component } from "svelte";
+  import { onMount, onDestroy, type Component, type Snippet } from "svelte";
   import { fade } from "svelte/transition";
 
   import MaterialIcon from "../MaterialIcon.svelte";
@@ -14,7 +14,7 @@
     id: string;
     title: string;
     subtitle?: string;
-    body: string;
+    body: string | Snippet;
     icon?: Component;
     prevButtonText?: string;
     nextButtonText?: string;
@@ -198,7 +198,11 @@
       </header>
 
       <p class="text-xs text-neutral-700 leading-5">
-        {@html steps[currStep].body}
+        {#if typeof steps[currStep].body === "string"}
+          {@html steps[currStep].body}
+        {:else}
+          {@render (steps[currStep].body as Snippet)() }
+        {/if}
       </p>
 
       <footer>

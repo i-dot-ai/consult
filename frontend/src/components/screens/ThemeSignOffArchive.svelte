@@ -407,40 +407,84 @@
   {/snippet}
 </svelte:boundary>
 
-<OnboardingTour
-  key="theme-sign-off-archive"
-  steps={[
-    {
-      id: "onboarding-step-1",
-      title: "Welcome to Theme Sign Off",
-      subtitle: "3-step process to finalise themes",
-      body: `
-        <p>Here's how the theme sign-off process works:</p>
-        <ol class="mt-4">
-          ${[
-            {
-              title: "Choose a Question",
-              body: "Select any consultation question to start working with its AI-generated themes",
-            },
-            {
-              title: "Select & Edit Themes",
-              body: "Review AI themes, select relevant ones, and edit or merge as needed",
-            },
-            {
-              title: "Sign Off & Proceed",
-              body: "Finalise your theme selection to enable AI response mapping",
-            },
-          ]
-          .map((item, i) => renderOnboardingItem(i + 1, item.title, item.body, i === 0))
-          .join("")}
-        </ol>
-      `,
-      icon: Target,
-      nextButtonText: "Get Started",
-    },
-  ]}
-  resizeObserverTarget={document.querySelector("main")}
-/>
+{#snippet onboardingBody()}
+  <p>Here's how the theme sign-off process works:</p>
+  <ol class="mt-4">
+    {@render onboardingBodyItem(
+      1,
+      "Choose a Question",
+      "Select any consultation question to start working with its AI-generated themes",
+      true,
+    )}
+    {@render onboardingBodyItem(
+      2,
+      "Select & Edit Themes",
+      "Review AI themes, select relevant ones, and edit or merge as needed",
+      false,
+    )}
+    {@render onboardingBodyItem(
+      3,
+      "Sign Off & Proceed",
+      "Finalise your theme selection to enable AI response mapping",
+      false,
+    )}
+  </ol>
+{/snippet}
+
+{#snippet onboardingBodyItem(
+  number: number,
+  title: string,
+  body: string,
+  active: boolean,
+)}
+  <li class="flex items-start gap-2 mb-4">
+    <div class="{clsx([
+      "flex",
+      "items-center",
+      "justify-center",
+      "w-[1ch]",
+      "h-[1ch]",
+      "p-3",
+      "rounded-full",
+      "font-bold",
+      active ? "text-primary" : "text-neutral-500",
+      active ? "bg-pink-100" : "bg-neutral-100",
+    ])}"
+    >
+      {number}
+    </div>
+    <div>
+      <h4 class="font-[500]">{title}</h4>
+      <p>{body}</p>
+    </div>
+  </li>
+{/snippet}
+
+<svelte:boundary>
+  <OnboardingTour
+    key="theme-sign-off-archive"
+    steps={[
+      {
+        id: "onboarding-step-1",
+        title: "Welcome to Theme Sign Off",
+        subtitle: "3-step process to finalise themes",
+        body: onboardingBody,
+        icon: Target,
+        nextButtonText: "Get Started",
+      },
+    ]}
+    resizeObserverTarget={document.querySelector("main")}
+  />
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
+
+      <Panel>
+        <Alert>Unexpected onboarding tour error</Alert>
+      </Panel>
+    </div>
+  {/snippet}
+</svelte:boundary>
 
 <style>
   .support-link:hover :global(svg) {
