@@ -35,7 +35,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
                   class="svelte-2iwj05"
                 >
                   <div
-                    class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-emerald-700 bg-emerald-50 border border-emerald-400"
+                    class="flex justify-between items-center gap-2 rounded-md w-max py-0.5 px-2 text-xs text-secondary bg-teal-50 border border-teal-400"
                   >
                     Level 1
                     <!---->
@@ -58,7 +58,7 @@ exports[`GeneratedThemeCard > should render 1`] = `
             <!---->
             <button
               aria-pressed="false"
-              class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-emerald-700 text-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:text-teal hover:border-teal svelte-1d0mdzt"
+              class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-secondary text-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:text-secondary hover:border-secondary svelte-1d0mdzt"
               data-variant="approve"
               role="button"
               tabindex="0"
@@ -81,10 +81,10 @@ exports[`GeneratedThemeCard > should render 1`] = `
             >
               <!---->
               <div
-                class="text-emerald-700 flex items-center gap-1"
+                class="text-secondary flex items-center gap-1"
               >
                 <svg
-                  class="fill-emerald-700"
+                  class="fill-secondary"
                   height="1rem"
                   role="img"
                   viewBox="0 -960 960 960"
