@@ -24,6 +24,7 @@ jobs:
       - name: Copy environment file
         run: |
           cp .env.example .env
+          echo "DATABASE_URL=postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser" >> .env
 
       - name: Start services with docker compose
         run: |
