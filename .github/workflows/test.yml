@@ -14,14 +14,6 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
-          # POSTGRES_USER: pguser
-          # POSTGRES_PASSWORD: pgpass
-          # POSTGRES_DB: consultations_test
-
-          #       POSTGRES_DB: consultation_analyser
-      # POSTGRES_USER: consultations_test
-      # POSTGRES_PASSWORD: consultations_test  # pragma: allowlist secret
-
     steps:
       - uses: actions/checkout@v5
 
@@ -57,51 +49,14 @@ jobs:
           poetry run python manage.py makemigrations --check
           make govuk_frontend
         env:
-          # DJANGO_SECRET_KEY: dummy-key
           DATABASE_URL: postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser
-          # BATCH_JOB_QUEUE: dummy-queue
-          # BATCH_JOB_DEFINITION: dummy-definition
-          # SAGEMAKER_ENDPOINT_NAME: test-endpoint
-          # GOVUK_NOTIFY_API_KEY: dummy-key
-          # GOVUK_NOTIFY_PLAIN_EMAIL_TEMPLATE_ID: dummy-template
-          # ENVIRONMENT: test
-          # LLM_BACKEND: fake
-          # AWS_REGION: eu-west-2
-          # AWS_BUCKET_NAME: test-bucket
-          # SQS_QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/123456789012/test-queue
-          # MAPPING_BATCH_JOB_NAME: i-dot-ai-dev-consult-mapping-job
-          # MAPPING_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-queue
-          # MAPPING_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-definition
-          # SIGN_OFF_BATCH_JOB_NAME: i-dot-ai-dev-consult-sign-off-job
-          # SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
-          # SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
 
       - name: Run app tests
         run: poetry run pytest
         env:
-          # REDIS_HOST: redis
           DATABASE_URL: postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser
-          # BATCH_JOB_QUEUE: dummy-queue
-          # BATCH_JOB_DEFINITION: dummy-definition
-          # SQS_QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/123456789012/test-queue
-          # MAPPING_BATCH_JOB_NAME: i-dot-ai-dev-consult-mapping-job
-          # MAPPING_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-queue
-          # MAPPING_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-definition
-          # SIGN_OFF_BATCH_JOB_NAME: i-dot-ai-dev-consult-sign-off-job
-          # SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
-          # SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
 
       - name: Run tests for migrations
         run: make test-migrations
         env:
-          # REDIS_HOST: redis
           DATABASE_URL: postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser
-          # BATCH_JOB_QUEUE: dummy-queue
-          # BATCH_JOB_DEFINITION: dummy-definition
-          # SQS_QUEUE_URL: https://sqs.eu-west-2.amazonaws.com/123456789012/test-queue
-          # MAPPING_BATCH_JOB_NAME: i-dot-ai-dev-consult-mapping-job
-          # MAPPING_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-queue
-          # MAPPING_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-mapping-FARGATE-batch-job-definition
-          # SIGN_OFF_BATCH_JOB_NAME: i-dot-ai-dev-consult-sign-off-job
-          # SIGN_OFF_BATCH_JOB_QUEUE: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-queue
-          # SIGN_OFF_BATCH_JOB_DEFINITION: i-dot-ai-dev-consult-sign-off-FARGATE-batch-job-definition
