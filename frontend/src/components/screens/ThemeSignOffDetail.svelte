@@ -312,6 +312,10 @@
             </MaterialIcon>
 
             <h3>Selected Themes</h3>
+
+            <Tag variant="primary-light">
+              {$selectedThemesData?.results.length} selected
+            </Tag>
           </div>
 
           <Button
