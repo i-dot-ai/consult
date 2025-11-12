@@ -1,6 +1,8 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { slide } from "svelte/transition";
+
   import { onMount } from "svelte";
 
   import { Routes } from "../../global/routes";
@@ -9,7 +11,7 @@
   import Radio from "../Radio/Radio.svelte";
   import type { RadioItem } from "../../global/types";
   import Button from "../inputs/Button/Button.svelte";
-  import Select from "../inputs/Select.svelte";
+  import Select from "../inputs/Select/Select.svelte";
   import type { SelectOption } from "../../global/types";
 
   let sending: boolean = false;
@@ -35,7 +37,8 @@
     loading = true;
     const response = await fetch(`${Routes.ApiConsultationFolders}`);
     const consultationFolderData = await response.json();
-    for (let folder of consultationFolderData.results) {
+    for (let folder of consultationFolderData) {
+      console.log(consultationFolderData)
       let option: SelectOption = {
       value: folder.value, 
       label: folder.text
@@ -93,8 +96,20 @@
 
 <form class={clsx(["flex", "flex-col", "gap-4"])}
     on:submit|preventDefault={handleSubmit}>
+  {#if error}
+  <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
+    {error}
+  </small>
+  {/if}
+
+  {#if success}
+    <small class="text-sm text-gray-500" transition:slide={{ duration: 300 }}>
+      Consultation has been submitted.
+    </small>
+  {/if}
+
   <TextInput id="consultation_name" name="consultation_name" label="Consultation title" autocomplete="false" value={consultationName} setValue={setConsultationName} />
-  <Select label="Select consultation folder" options={consultationFolders} />
+  <Select id="consultation_code" name="consultation_code" label="Select consultation folder" items={consultationFolders} />
   <Radio name="action" items={RADIO_OPTIONS} />
   <TextInput autocomplete="false" id="timestamp" name="timestamp" label="Mapping timestamp folder (only needed to populate the dashboard)" placeholder="e.g., 2024-01-15-14-30-00" value={timestamp} setValue={setTimestamp} />
   <Button
