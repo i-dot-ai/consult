@@ -3,11 +3,9 @@ import Layout from "../../../layouts/Layout.astro";
 import Section from "../../../components/Section/Section.svelte";
 import Details from "../../../components/Details/Details.svelte";
 import Text from '../../../components/Text/Text.svelte';
-import TextInput from '../../../components/inputs/TextInput/TextInput.svelte';
 import Title from "../../../components/Title.svelte";
-import Select from "../../../components/inputs/Select.svelte";
-import { Routes } from "../../../global/routes";
-import Button from "../../design/inputs/button.astro";
+import ImportConsultationForm from "../../../components/screens/ImportConsultationForm.svelte";
+import Link from "../../../components/Link.svelte";
 ---
 
 <Layout>
@@ -15,7 +13,7 @@ import Button from "../../design/inputs/button.astro";
     <Title level={1} text="Consultation import" />
     <Text>Import complete consultation data including AI analysis in one operation.</Text>
     <Text>This will import both the consultation data (questions, respondents, responses) and AI analysis results (themes, sentiment, evidence) sequentially.</Text>
-    <Text>Data should be saved in: i-dot-ai-dev-consult-data/app_data/consultations/[CONSULTATION FOLDER]</Text>
+    <Text>Data should be saved in: "i-dot-ai-dev-consult-data/app_data/consultations/[CONSULTATION FOLDER]"</Text>
 
     <Details summaryText="Expected S3 Structure">
         <pre><code>&lt;consultation-folder&gt;/
@@ -42,6 +40,10 @@ import Button from "../../design/inputs/button.astro";
                         ├── detail_detection.jsonl
                         └── mapping.jsonl</code></pre>
     </Details>
-    
+    <ImportConsultationForm client:load/>
+  </Section>
+  <Section>
+    <Title level={1} text="Import progress" />
+    <Text>Check the <Link href="/support/django-rq/">Django RQ dashboard</Link> to monitor import progress.</Text>
   </Section>
 </Layout>
