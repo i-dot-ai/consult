@@ -9,7 +9,7 @@ module "submit_batch_job_lambda" {
   package_type                   = "Zip"
   memory_size                    = 1024
   source_code_hash               = data.archive_file.submit_batch_job_archive.output_base64sha256
-  account_id                     = var.account_id
+  account_id                     = data.aws_caller_identity.current.account_id
   lambda_additional_policy_arns  = {for idx, arn in [aws_iam_policy.lambda_exec_custom_policy.arn] : idx => arn}
 }
 
@@ -32,7 +32,7 @@ module "slack_notifier_lambda" {
   package_type                   = "Zip"
   memory_size                    = 1024
   source_code_hash               = data.archive_file.slack_notifier_archive.output_base64sha256
-  account_id                     = var.account_id
+  account_id                     = data.aws_caller_identity.current.account_id
   lambda_additional_policy_arns  = {for idx, arn in [aws_iam_policy.lambda_exec_custom_policy.arn] : idx => arn}
   environment_variables = {
     "SLACK_WEBHOOK_URL" = data.aws_ssm_parameter.slack_webhook_url.value,
@@ -50,7 +50,7 @@ module "consultation_import_lambda" {
   package_type                 = "Zip"
   memory_size                  = 1024
   source_code_hash             = data.archive_file.consultation_import_archive.output_base64sha256
-  account_id                   = var.account_id
+  account_id                   = data.aws_caller_identity.current.account_id
   lambda_additional_policy_arns = {for idx, arn in [aws_iam_policy.lambda_exec_custom_policy.arn] : idx => arn}
   aws_security_group_ids = [aws_security_group.lambda_sg.id]
   subnet_ids              = data.terraform_remote_state.vpc.outputs.private_subnets

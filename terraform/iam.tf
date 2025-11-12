@@ -57,7 +57,6 @@ data "aws_iam_policy_document" "ecs_exec_custom_policy" {
       ]
       resources = [module.batch_job_queue.sqs_queue_arn]
   }
-  
   statement {
     effect = "Allow"
     actions = [
