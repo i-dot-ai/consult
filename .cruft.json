@@ -1,0 +1,25 @@
+{
+  "template": "git@github.com:i-dot-ai/i-dot-ai-cookiecutter.git",
+  "commit": "ea726db8ab76bbde550d97e897614c656f17e9c8",
+  "checkout": null,
+  "context": {
+    "cookiecutter": {
+      "project_name": "consult",
+      "app_name": "consult",
+      "_copy_without_render": [
+        "*.html",
+        "*.js",
+        "*.css"
+      ],
+      "frontend_framework": "astro",
+      "backend_framework": "fastapi",
+      "database_backend": "Simple",
+      "_integration_test": "false",
+      "__perms_boundary_app_name": "consult",
+      "owner": "Owner Name",
+      "email_address": "Email Address",
+      "_template": "git@github.com:i-dot-ai/i-dot-ai-cookiecutter.git"
+    }
+  },
+  "directory": "templates/webapp-ecs"
+}
