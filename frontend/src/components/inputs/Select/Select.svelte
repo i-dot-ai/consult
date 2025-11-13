@@ -1,4 +1,5 @@
 <script lang="ts">
+  import clsx from "clsx";
   import type { SelectOption } from "../../../global/types";
 
   interface LabelConfig {
@@ -34,6 +35,17 @@
 
   let labelText = $derived(typeof label === 'string' ? label : label?.text);
   let labelClasses = $derived(typeof label === 'object' ? label?.classes : '');
+  
+  // Convert GOV.UK label classes to Tailwind equivalents
+  let tailwindLabelClasses = $derived(
+    clsx([
+      "block text-neutral-900 mb-1 text-base leading-5 md:text-lg md:leading-6",
+      labelClasses?.includes('govuk-label--s') && "font-semibold",
+      labelClasses?.includes('govuk-label--m') && "text-lg leading-tight md:text-2xl font-semibold",
+      labelClasses?.includes('govuk-label--l') && "text-2xl leading-tight md:text-4xl font-semibold", 
+      labelClasses?.includes('govuk-label--xl') && "text-3xl leading-tight md:text-5xl font-semibold"
+    ])
+  );
 
   function handleChange(event: Event) {
     const target = event.target as HTMLSelectElement;
@@ -43,28 +55,36 @@
   }
 </script>
 
-<div class="govuk-form-group" class:govuk-form-group--error={errorMessage}>
+<div class={clsx([
+  "mb-5",
+  errorMessage && "mr-4 border-l-4 border-red-600 pl-3"
+])}>
   {#if labelText && !hideLabel}
-    <label class="govuk-label {labelClasses}" for={id}>
+    <label class={tailwindLabelClasses} for={id}>
       {labelText}
     </label>
   {/if}
   
   {#if hint}
-    <div id="{id}-hint" class="govuk-hint">
+    <div id="{id}-hint" class="text-base leading-5 text-neutral-600 mb-4 md:text-lg md:leading-6">
       {hint}
     </div>
   {/if}
   
   {#if errorMessage}
-    <p id="{id}-error" class="govuk-error-message">
-      <span class="govuk-visually-hidden">Error:</span> {errorMessage}
+    <p id="{id}-error" class="font-bold text-base leading-5 text-red-600 mb-4 md:text-lg md:leading-6">
+      <span class="sr-only">Error:</span> {errorMessage}
     </p>
   {/if}
   
   <select
-    class="govuk-select"
-    class:govuk-select--error={errorMessage}
+    class={clsx([
+      "w-full h-10 px-1 py-1 text-base leading-5 border border-neutral-300 bg-white text-neutral-900",
+      "focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent",
+      "disabled:opacity-50 disabled:text-neutral-600 disabled:bg-neutral-100 disabled:cursor-not-allowed",
+      "md:text-lg md:leading-6",
+      errorMessage && "border-red-600"
+    ])}
     {id}
     {name}
     {value}
@@ -73,163 +93,10 @@
     onchange={handleChange}
   >
     {#each items as item}
-      <option value={item.value} selected={value === item.value}>
+      <option value={item.value} selected={value === item.value} class="text-neutral-900 bg-white">
         {item.label}
       </option>
     {/each}
   </select>
 </div>
 
-<style>
-  .govuk-form-group {
-    margin-bottom: 20px;
-  }
-
-  .govuk-form-group--error {
-    margin-right: 15px;
-    border-left: 5px solid #d4351c;
-    padding-left: 10px;
-  }
-
-  .govuk-label {
-    font-family: "GDS Transport", arial, sans-serif;
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 1.25;
-    color: #0b0c0c;
-    display: block;
-    margin-bottom: 5px;
-  }
-
-  .govuk-label--s {
-    font-weight: 600;
-  }
-
-  .govuk-label--m {
-    font-size: 18px;
-    line-height: 1.11111;
-    font-weight: 600;
-  }
-
-  .govuk-label--l {
-    font-size: 24px;
-    line-height: 1.04167;
-    font-weight: 600;
-  }
-
-  .govuk-label--xl {
-    font-size: 32px;
-    line-height: 1.09375;
-    font-weight: 600;
-  }
-
-  .govuk-hint {
-    font-family: "GDS Transport", arial, sans-serif;
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 1.25;
-    color: #505a5f;
-    margin-bottom: 15px;
-  }
-
-  .govuk-error-message {
-    font-family: "GDS Transport", arial, sans-serif;
-    font-weight: 700;
-    font-size: 16px;
-    line-height: 1.25;
-    color: #d4351c;
-    margin-bottom: 15px;
-  }
-
-  .govuk-visually-hidden {
-    position: absolute !important;
-    width: 1px !important;
-    height: 1px !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    overflow: hidden !important;
-    clip: rect(0 0 0 0) !important;
-    -webkit-clip-path: inset(50%) !important;
-    clip-path: inset(50%) !important;
-    border: 0 !important;
-    white-space: nowrap !important;
-  }
-
-  .govuk-select {
-    font-family: "GDS Transport", arial, sans-serif;
-    font-weight: 400;
-    font-size: 16px;
-    line-height: 1.25;
-    box-sizing: border-box;
-    width: 100%;
-    height: 40px;
-    margin-top: 0;
-    padding: 5px 4px 4px;
-    border: rgb(209 213 219 / var(--tw-border-opacity, 1)) 1px solid;
-    border-radius: 0;
-    -webkit-appearance: menulist;
-    -moz-appearance: menulist;
-    appearance: menulist;
-    background-color: #ffffff;
-    color: #0b0c0c;
-  }
-
-  .govuk-select:focus {
-    outline: 3px solid #fd0;
-    outline-offset: 0;
-    box-shadow: inset 0 0 0 2px;
-  }
-
-  .govuk-select:disabled {
-    opacity: 0.5;
-    color: #505a5f;
-    background-color: #f3f2f1;
-    cursor: not-allowed;
-  }
-
-  .govuk-select--error {
-    border-color: #d4351c;
-  }
-
-  .govuk-select option {
-    color: #0b0c0c;
-    background-color: #ffffff;
-  }
-
-  @media (min-width: 40.0625em) {
-    .govuk-label {
-      font-size: 19px;
-      line-height: 1.31579;
-    }
-
-    .govuk-label--m {
-      font-size: 24px;
-      line-height: 1.04167;
-    }
-
-    .govuk-label--l {
-      font-size: 36px;
-      line-height: 1.11111;
-    }
-
-    .govuk-label--xl {
-      font-size: 48px;
-      line-height: 1.04167;
-    }
-
-    .govuk-hint {
-      font-size: 19px;
-      line-height: 1.31579;
-    }
-
-    .govuk-error-message {
-      font-size: 19px;
-      line-height: 1.31579;
-    }
-
-    .govuk-select {
-      font-size: 19px;
-      line-height: 1.31579;
-    }
-  }
-</style>
