@@ -149,9 +149,9 @@
               {@render themeStage(
                 "Theme Sign Off",
                 CheckCircle,
-                $consultationData?.stage === "theme_mapping"
-                  ? "done"
-                  : "current",
+                $consultationData?.stage === "theme_sign_off"
+                  ? "current"
+                  : "done",
               )}
             </li>
             <li>
