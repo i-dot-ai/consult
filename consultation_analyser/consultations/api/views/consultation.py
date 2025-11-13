@@ -68,7 +68,7 @@ def get_consultation_folders(request) -> HttpResponse:
     """
     consultation_folders = ingest.get_consultation_codes()
 
-    return JsonResponse(json.dumps(consultation_folders), safe=False)
+    return JsonResponse(consultation_folders, safe=False)
 
 @api_view(["POST"])
 def submit_consultation_import(request) -> HttpResponse:
