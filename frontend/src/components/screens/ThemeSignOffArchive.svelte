@@ -34,6 +34,7 @@
   import Help from "../svg/material/Help.svelte";
   import Target from "../svg/material/Target.svelte";
   import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
+  import Price from "../svg/material/Price.svelte";
 
   interface Props {
     consultationId: string;
@@ -105,6 +106,17 @@
     ),
   );
 </script>
+
+<TitleRow
+  level={1}
+  context="theme-sign-off"
+  title="Theme Sign Off"
+  subtitle="Finalise themes to use for AI to map responses to"
+>
+  <Price slot="icon" />
+</TitleRow>
+
+<hr class="my-6" />
 
 {#snippet themeStage(
   text: string,

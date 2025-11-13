@@ -7,7 +7,7 @@
   export let text: string = "";
   export let weight: "light" | "normal" | "bold" = "normal";
   export let maxChars: number = 0;
-  export let context: "dashboard" | "public" = "dashboard";
+  export let context: "dashboard" | "public" | "theme-sign-off" = "dashboard";
 
   const tagMap = {
     1: "h1",
@@ -29,6 +29,7 @@
     weight === "bold" && "font-bold",
     weight === "light" && "font-light",
     level === 1 && context === "dashboard" && "text-xl",
+    level === 1 && context === "theme-sign-off" && "text-2xl",
     level === 2 && "text-lg",
     level === 3 && "text-md",
     level === 4 && "text-sm",
