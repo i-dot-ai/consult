@@ -166,19 +166,11 @@ def theme_identifier(question: Question):
     records = {}
     for _, row in all_themes_df.iterrows():
         if row["topic_id"] != "0":
-            try:
-                name, description = row["topic"].split(":", 1)
-                source_topic_count = 0
-            except Exception:
-                name = row["topic_label"]
-                description = row["topic_description"]
-                source_topic_count = row["source_topic_count"]
-
             records[row["topic_id"]] = CandidateTheme.objects.create(
                 question=question,
-                name=name,
-                description=description,
-                approximate_frequency=source_topic_count,
+                name=row["topic_label"],
+                description=row["topic_description"],
+                approximate_frequency=row["source_topic_count"],
             )
 
     for _, row in all_themes_df.iterrows():
@@ -258,12 +250,9 @@ def agentic_theme_selection(
         selected_themes = agent.select_themes(significance_percentage)
         significance_percentage += 1
     
-    try:
-        selected_themes["topic"] = (
-            selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
-        )
-    except BaseException:
-        raise ValueError("missaligned columns", selected_themes.columns)
+    selected_themes["topic"] = (
+        selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
+    )
 
     selected_themes.rename(
         columns={"topic_label": "Theme Name", "topic_description": "Theme Description"},
