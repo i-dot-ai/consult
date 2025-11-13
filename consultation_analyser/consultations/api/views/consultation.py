@@ -1,5 +1,3 @@
-import json
-
 from django.db.models import Count
 from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import action, api_view
@@ -17,7 +15,10 @@ from consultation_analyser.consultations.api.serializers import (
 )
 from consultation_analyser.consultations.models import Consultation, DemographicOption
 from consultation_analyser.support_console import ingest
-from consultation_analyser.support_console.views.consultations import delete_consultation_job, import_consultation_job
+from consultation_analyser.support_console.views.consultations import (
+    delete_consultation_job,
+    import_consultation_job,
+)
 
 
 class ConsultationViewSet(ModelViewSet):
@@ -69,6 +70,7 @@ def get_consultation_folders(request) -> HttpResponse:
     consultation_folders = ingest.get_consultation_codes()
 
     return JsonResponse(consultation_folders, safe=False)
+
 
 @api_view(["POST"])
 def submit_consultation_import(request) -> HttpResponse:

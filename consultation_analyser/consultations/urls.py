@@ -4,7 +4,11 @@ from rest_framework import routers
 from rest_framework_nested.routers import NestedDefaultRouter
 
 from .api.views.candidate_theme import CandidateThemeViewSet
-from .api.views.consultation import ConsultationViewSet, get_consultation_folders, submit_consultation_import
+from .api.views.consultation import (
+    ConsultationViewSet,
+    get_consultation_folders,
+    submit_consultation_import,
+)
 from .api.views.git_sha import get_git_sha
 from .api.views.magic_link import generate_magic_link, verify_magic_link
 from .api.views.question import QuestionViewSet
