@@ -17,7 +17,10 @@
       <div
         class={clsx(["bg-pink-50", "p-2", "rounded-md", !subtitle && "mt-1.5"])}
       >
-        <MaterialIcon size={level === 1 ? "1.8rem" : "1.3rem"} color="fill-pink-700">
+        <MaterialIcon
+          size={level === 1 ? "1.8rem" : "1.3rem"}
+          color="fill-pink-700"
+        >
           <slot name="icon" />
         </MaterialIcon>
       </div>
@@ -27,10 +30,9 @@
     <Title {context} {level} text={title} />
 
     {#if subtitle}
-      <p class={clsx([
-        "text-neutral-600",
-        level === 1 ? "text-md" : "text-sm",
-      ])}>
+      <p
+        class={clsx(["text-neutral-600", level === 1 ? "text-md" : "text-sm"])}
+      >
         {subtitle}
       </p>
     {/if}
