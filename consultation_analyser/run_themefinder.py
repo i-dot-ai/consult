@@ -169,7 +169,7 @@ def theme_identifier(question: Question):
             try:
                 name, description = row["topic"].split(":", 1)
             except Exception:
-                raise ValueError("missaligned columns", all_themes_df.columns)
+                raise ValueError("missaligned columns", row)
             source_topic_count = 0
 
             records[row["topic_id"]] = CandidateTheme.objects.create(
