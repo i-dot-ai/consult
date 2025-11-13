@@ -70,9 +70,7 @@
               <h2>{theme.name}</h2>
 
               {#if theme?.version > 1}
-                <Tag variant="primary-light">
-                  Edited
-                </Tag>
+                <Tag variant="primary-light">Edited</Tag>
               {/if}
             </header>
 

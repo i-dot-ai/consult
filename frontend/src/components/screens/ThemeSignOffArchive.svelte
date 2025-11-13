@@ -33,6 +33,7 @@
   import Headphones from "../svg/material/Headphones.svelte";
   import Help from "../svg/material/Help.svelte";
   import Target from "../svg/material/Target.svelte";
+  import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
 
   interface Props {
     consultationId: string;
@@ -334,35 +335,42 @@
           />
 
           <div class="mb-4">
-            {#each displayQuestions as question}
-              <QuestionCard
-                {consultationId}
-                {question}
-                highlightText={searchValue}
-                clickable={question.has_free_text}
-                disabled={!question.has_free_text}
-                url={getThemeSignOffDetailUrl(consultationId, question.id)}
-                subtext={!question.has_free_text
-                  ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
-                  : undefined}
-              >
-                {#snippet tag()}
-                  {#if !question.has_free_text}
-                    <Tag variant="primary-light">
-                      <MaterialIcon color="fill-primary">
-                        <Checklist />
-                      </MaterialIcon>
+            {#if !displayQuestions?.length && !$isQuestionsLoading}
+              <NotFoundMessage
+                variant="archive"
+                body="No questions found matching your search."
+              />
+            {:else}
+              {#each displayQuestions as question}
+                <QuestionCard
+                  {consultationId}
+                  {question}
+                  highlightText={searchValue}
+                  clickable={question.has_free_text}
+                  disabled={!question.has_free_text}
+                  url={getThemeSignOffDetailUrl(consultationId, question.id)}
+                  subtext={!question.has_free_text
+                    ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
+                    : undefined}
+                >
+                  {#snippet tag()}
+                    {#if !question.has_free_text}
+                      <Tag variant="primary-light">
+                        <MaterialIcon color="fill-primary">
+                          <Checklist />
+                        </MaterialIcon>
 
-                      Multiple choice
-                    </Tag>
-                  {:else if question.theme_status === "confirmed"}
-                    <Tag variant="primary-light">Signed off</Tag>
-                  {:else}
-                    <div></div>
-                  {/if}
-                {/snippet}
-              </QuestionCard>
-            {/each}
+                        Multiple choice
+                      </Tag>
+                    {:else if question.theme_status === "confirmed"}
+                      <Tag variant="primary-light">Signed off</Tag>
+                    {:else}
+                      <div></div>
+                    {/if}
+                  {/snippet}
+                </QuestionCard>
+              {/each}
+            {/if}
           </div>
         </div>
       {/if}

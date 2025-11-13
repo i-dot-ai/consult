@@ -34,7 +34,9 @@
   import Alert from "../Alert.svelte";
   import Target from "../svg/material/Target.svelte";
   import EditSquare from "../svg/material/EditSquare.svelte";
-  import ErrorModal, { type ErrorType } from "../theme-sign-off/ErrorModal.svelte";
+  import ErrorModal, {
+    type ErrorType,
+  } from "../theme-sign-off/ErrorModal.svelte";
 
   let {
     consultationId = "",
@@ -54,7 +56,9 @@
 
   const errorModalOnClose = () => {
     loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
-    loadGeneratedThemes(getApiGetGeneratedThemesUrl(consultationId, questionId));
+    loadGeneratedThemes(
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
+    );
     errorData = null;
   };
 
@@ -143,16 +147,20 @@
             "Content-Type": "application/json",
             "If-Match": selectedTheme.version,
           },
-        }
+        },
       );
 
       if (response.ok) {
-        loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
-        loadGeneratedThemes(getApiGetGeneratedThemesUrl(consultationId, questionId));
+        loadSelectedThemes(
+          getApiGetSelectedThemesUrl(consultationId, questionId),
+        );
+        loadGeneratedThemes(
+          getApiGetGeneratedThemesUrl(consultationId, questionId),
+        );
       } else if (response.status === 412) {
         const { last_modified_by, latest_version } = await response.json();
         errorData = {
-          type: 'remove-conflict',
+          type: "remove-conflict",
           lastModifiedBy: last_modified_by.email,
           latestVersion: latest_version,
         };
@@ -160,7 +168,7 @@
         throw new Error(`Remove theme failed: ${response.statusText}`);
       }
     } catch (err: any) {
-      errorData = { type: 'unexpected' }
+      errorData = { type: "unexpected" };
     }
   };
 
@@ -175,36 +183,38 @@
 
     try {
       const response = await fetch(
-          getApiUpdateSelectedThemeUrl(consultationId, questionId, themeId),
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              "If-Match": selectedTheme.version,
-            },
-            body: JSON.stringify({
-              name: title,
-              description: description,
-            }),
-          }
-        );
+        getApiUpdateSelectedThemeUrl(consultationId, questionId, themeId),
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "If-Match": selectedTheme.version,
+          },
+          body: JSON.stringify({
+            name: title,
+            description: description,
+          }),
+        },
+      );
 
-        if (response.ok) {
-          loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
-        } else if (response.status === 404) {
-          errorData = { type: 'theme-does-not-exist' };
-        } else if (response.status === 412) {
-          const { last_modified_by, latest_version } = await response.json();
-          errorData = {
-            type: 'edit-conflict',
-            lastModifiedBy: last_modified_by.email,
-            latestVersion: latest_version,
-          };
-        } else {
-          throw new Error(`Edit theme failed: ${response.statusText}`);
-        }
+      if (response.ok) {
+        loadSelectedThemes(
+          getApiGetSelectedThemesUrl(consultationId, questionId),
+        );
+      } else if (response.status === 404) {
+        errorData = { type: "theme-does-not-exist" };
+      } else if (response.status === 412) {
+        const { last_modified_by, latest_version } = await response.json();
+        errorData = {
+          type: "edit-conflict",
+          lastModifiedBy: last_modified_by.email,
+          latestVersion: latest_version,
+        };
+      } else {
+        throw new Error(`Edit theme failed: ${response.statusText}`);
+      }
     } catch (err: any) {
-      errorData = { type: 'unexpected' };
+      errorData = { type: "unexpected" };
     }
   };
 
@@ -243,7 +253,7 @@
 
     if ($confirmSignOffError) {
       isConfirmSignOffModalOpen = false;
-      errorData = { type: 'unexpected' };
+      errorData = { type: "unexpected" };
     } else {
       location.replace(getThemeSignOffUrl(consultationId));
     }
@@ -555,10 +565,7 @@
   </section>
 
   {#if errorData}
-    <ErrorModal 
-      {...errorData}
-      onClose={errorModalOnClose}
-    />
+    <ErrorModal {...errorData} onClose={errorModalOnClose} />
   {/if}
 
   {#snippet failed(error)}
