@@ -3,6 +3,7 @@
   import { slide } from "svelte/transition";
   import type { Writable } from "svelte/store";
 
+  import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import Help from "../svg/material/Help.svelte";
   import Star from "../svg/material/Star.svelte";
@@ -142,15 +143,22 @@
         />
 
         <div class="mb-4">
-          {#each displayQuestions as question}
-            <QuestionCard
-              {consultationId}
-              {question}
-              highlightText={searchValue}
-              clickable={true}
-              url={getQuestionDetailUrl(consultationId, question.id || "")}
+          {#if !displayQuestions?.length && !$isQuestionsLoading}
+            <NotFoundMessage
+              variant="archive"
+              body="No questions found matching your search."
             />
-          {/each}
+          {:else}
+            {#each displayQuestions as question}
+              <QuestionCard
+                {consultationId}
+                {question}
+                highlightText={searchValue}
+                clickable={true}
+                url={getQuestionDetailUrl(consultationId, question.id || "")}
+              />
+            {/each}
+          {/if}
         </div>
       </div>
     {/if}
