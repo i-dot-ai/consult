@@ -40,7 +40,7 @@ Pre-commit identifies some potential secrets on commit (but will not catch all p
 
 ### Environment variables
 
-Populate `.env` by copying `.env.example` and filling in required values.
+Populate `.env` by copying `.env.test` and filling in required values.
 
 
 ### Install packages
