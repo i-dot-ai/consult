@@ -102,9 +102,13 @@ export const formatDate = (dateStr: string) => {
 };
 
 export const handleEnterOrSpacePress = (event: KeyboardEvent, callback: Function) => {
-  event.preventDefault();
+  const key = event.key || event.code || event.keyCode;
+  const isEnter = ["Enter", "Return", 13].includes(key);
+  const isSpace = [" ", "Spacebar", 32].includes(key);
+
   // Enter or Space pressed
-  if (event.keyCode == 13 || event.keyCode == 32) {
+  if (isEnter || isSpace) {
+    event.preventDefault();
     callback();
   }
 }
