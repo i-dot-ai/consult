@@ -11,10 +11,11 @@
   import MaterialIcon from "../MaterialIcon.svelte";
 
   interface Props {
-    variant: "primary" | "secondary";
+    variant?: "primary" | "secondary" | "warning";
     title: string;
     open: boolean;
     confirmText: string;
+    canCancel?: boolean;
     icon?: Component;
     setOpen: (newValue: boolean) => void;
     handleConfirm: MouseEventHandler<any>;
@@ -26,6 +27,7 @@
     title = "",
     open = false,
     confirmText = "Confirm",
+    canCancel = true,
     icon,
     setOpen = () => {},
     handleConfirm = () => {},
@@ -50,6 +52,19 @@
   $effect(() => {
     meltOpen.set(open);
   });
+
+  const getIconColor = () => {
+    if (variant === "primary") {
+      return "fill-primary";
+    }
+    if (variant === "secondary") {
+      return "fill-secondary";
+    }
+    if (variant === "warning") {
+      return "fill-orange-600";
+    }
+    return "fill-neutral-500";
+  };
 </script>
 
 {#if $meltOpen}
@@ -83,18 +98,16 @@
     >
       <div class="flex items-center gap-2 mb-2">
         {#if icon}
-          <MaterialIcon
-            color={variant === "primary" ? "fill-primary" : "fill-secondary"}
-            size="1.3rem"
-          >
+          <MaterialIcon color={getIconColor()} size="1.3rem">
             <svelte:component this={icon} />
           </MaterialIcon>
         {/if}
         <h3
           use:titleMelt
           class={clsx([
-            "font-bold",
+            "text-lg",
             variant === "secondary" && "text-secondary",
+            variant === "warning" && "text-orange-600",
           ])}
         >
           {title}
@@ -104,13 +117,15 @@
       {@render children()}
 
       <footer class="flex items-center justify-end gap-2">
-        <div use:melt={$close}>
-          <Button size="sm">Cancel</Button>
-        </div>
+        {#if canCancel}
+          <div use:melt={$close}>
+            <Button size="sm">Cancel</Button>
+          </div>
+        {/if}
 
         <Button
           size="sm"
-          variant={variant === "primary" ? "primary" : "approve"}
+          variant={variant === "secondary" ? "approve" : "primary"}
           handleClick={handleConfirm}
         >
           {confirmText}

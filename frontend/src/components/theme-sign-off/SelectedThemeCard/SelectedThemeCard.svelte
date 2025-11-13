@@ -15,6 +15,7 @@
   import EditSquare from "../../svg/material/EditSquare.svelte";
   import ThemeForm from "../ThemeForm/ThemeForm.svelte";
   import AnswersList from "../AnswersList/AnswersList.svelte";
+  import Tag from "../../Tag/Tag.svelte";
 
   export interface Props {
     consultationId: string;
@@ -65,8 +66,14 @@
       <Panel>
         <div class="flex flex-wrap sm:flex-nowrap">
           <div class={clsx([showAnswers ? "md:w-1/3" : "md:w-auto"])}>
-            <header>
+            <header class="flex items-center gap-2">
               <h2>{theme.name}</h2>
+
+              {#if theme?.version > 1}
+                <Tag variant="primary-light">
+                  Edited
+                </Tag>
+              {/if}
             </header>
 
             <p class="text-sm text-neutral-700 my-4">

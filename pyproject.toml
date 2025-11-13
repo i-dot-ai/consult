@@ -85,3 +85,7 @@ django-webtest = "^1.9.14"
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"
+
+[tool.bandit]
+exclude = "*/.cruft.json"
+
