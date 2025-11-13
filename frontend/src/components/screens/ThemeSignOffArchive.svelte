@@ -334,35 +334,48 @@
           />
 
           <div class="mb-4">
-            {#each displayQuestions as question}
-              <QuestionCard
-                {consultationId}
-                {question}
-                highlightText={searchValue}
-                clickable={question.has_free_text}
-                disabled={!question.has_free_text}
-                url={getThemeSignOffDetailUrl(consultationId, question.id)}
-                subtext={!question.has_free_text
-                  ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
-                  : undefined}
-              >
-                {#snippet tag()}
-                  {#if !question.has_free_text}
-                    <Tag variant="primary-light">
-                      <MaterialIcon color="fill-primary">
-                        <Checklist />
-                      </MaterialIcon>
+            {#if !displayQuestions?.length && !$isQuestionsLoading}
+              <div class="pt-12 pb-8">
+                <div class="w-max mx-auto mb-2">
+                  <MaterialIcon color="fill-neutral-500" size="2rem">
+                    <Help />
+                  </MaterialIcon>
+                </div>
+                <p class="text-sm text-center text-neutral-500">
+                  No questions found matching your search.
+                </p>
+              </div>
+            {:else}
+              {#each displayQuestions as question}
+                <QuestionCard
+                  {consultationId}
+                  {question}
+                  highlightText={searchValue}
+                  clickable={question.has_free_text}
+                  disabled={!question.has_free_text}
+                  url={getThemeSignOffDetailUrl(consultationId, question.id)}
+                  subtext={!question.has_free_text
+                    ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
+                    : undefined}
+                >
+                  {#snippet tag()}
+                    {#if !question.has_free_text}
+                      <Tag variant="primary-light">
+                        <MaterialIcon color="fill-primary">
+                          <Checklist />
+                        </MaterialIcon>
 
-                      Multiple choice
-                    </Tag>
-                  {:else if question.theme_status === "confirmed"}
-                    <Tag variant="primary-light">Signed off</Tag>
-                  {:else}
-                    <div></div>
-                  {/if}
-                {/snippet}
-              </QuestionCard>
-            {/each}
+                        Multiple choice
+                      </Tag>
+                    {:else if question.theme_status === "confirmed"}
+                      <Tag variant="primary-light">Signed off</Tag>
+                    {:else}
+                      <div></div>
+                    {/if}
+                  {/snippet}
+                </QuestionCard>
+              {/each}
+            {/if}
           </div>
         </div>
       {/if}
