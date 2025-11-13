@@ -15,9 +15,7 @@ For our core AI-pipeline used for topic modelling to classify consultation respo
 
 ### External dependencies
 
-- PostgreSQL (`brew install postgresql`)
-- Postgres Vector Plugin (`brew install pgvector`)
-- redis (`brew install redis`)
+- Docker (`brew install docker`)
 - GraphViz (`brew install graphviz`), for generating diagrams
 - precommit (`brew install pre-commit`)
 
@@ -50,7 +48,7 @@ Ensure you have `python 3.12.3`, `poetry` and `npm` installed. Then run `poetry 
 ### Database setup
 
 ```
-brew services start postgresql
+docker compose up -d postgres
 ```
 This will run the postgresql locally.
 
@@ -77,7 +75,7 @@ make check_db
 
 Make sure redis is running:
 ```
-brew services start redis
+docker compose up -d redis
 ```
 
 The database should also be running as described above.

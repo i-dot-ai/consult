@@ -10,29 +10,15 @@ help:     ## Show this help.
 	@egrep -h '\s##\s' $(MAKEFILE_LIST) | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m  %-30s\033[0m %s\n", $$1, $$2}'
 
 
-.PHONY: setup_dev_db
-setup_dev_db: ## Set up the development db on a local postgres
-	createdb consultations_dev
-	-createuser consultations_dev
-	-psql -d postgres -c 'GRANT ALL ON database consultations_dev TO consultations_dev;'
-	-psql -d postgres -c 'ALTER USER consultations_dev WITH SUPERUSER;'
+.PHONY: setup_db
+setup_db: ## Set up the development db on docker
+	docker compose up -d postgres
 
-.PHONY: reset_dev_db
-reset_dev_db: ## Reset the dev db
-	-dropdb consultations_dev
-	$(MAKE) setup_dev_db
-
-.PHONY: setup_test_db
-setup_test_db:  ## Set up the test db on a local postgres
-	createdb consultations_test
-	-createuser consultations_test
-	-psql -d postgres -c 'GRANT ALL ON database consultations_test TO consultations_test; ALTER USER consultations_test CREATEDB;'
-	-psql -d postgres -c 'ALTER USER consultations_test WITH SUPERUSER;'
-
-.PHONY: reset_test_db
-reset_test_db: ## Reset the test db
-	-psql -lqt | cut -d \| -f 1 | grep -qw consultations_test && dropdb consultations_test
-	$(MAKE) setup_test_db
+.PHONY: reset_db
+reset_db: ## Reset the dev db
+	docker compose down postgres
+	docker volume rm -f consult_postgres_data
+	$(MAKE) setup_db
 
 .PHONY: check_db
 check_db: ## Make sure the db is addressable
@@ -49,6 +35,7 @@ migrate: ## Apply migrations
 
 .PHONY: serve
 serve: ## Run the server and the worker
+	docker compose up -d postgres redis
 	poetry run honcho start
 
 .PHONY: test
@@ -91,7 +78,7 @@ dev_admin_user:
 	poetry run python manage.py shell -c "from consultation_analyser.authentication.models import User; User.objects.create_user(email='email@example.com', password='admin', is_staff=True)" # pragma: allowlist secret
 
 .PHONY: dev_environment
-dev_environment: reset_dev_db migrate dummy_data reset_test_db govuk_frontend dev_admin_user ## set up the database with dummy data and configure govuk_frontend
+dev_environment: reset_db migrate dummy_data govuk_frontend dev_admin_user ## set up the database with dummy data and configure govuk_frontend
 
 # Docker
 AWS_REGION=eu-west-2
@@ -151,17 +138,6 @@ endif
 docker_build_local: ## Build the docker container for the specified service locally
 	DOCKER_BUILDKIT=1 docker build --platform=linux/amd64 -t $(IMAGE) -f $(service)/Dockerfile .
 
-.PHONY: docker_run
-docker_run: ## Run the docker container
-	docker run -e DATABASE_URL=psql://consultations_dev:@host.docker.internal:5432/consultations_dev -p 8000:8000 $(IMAGE)
-
-.PHONY: docker_shell
-docker_shell: ## Run the docker container
-	docker run -e DATABASE_URL=psql://consultations_dev:@host.docker.internal:5432/consultations_dev -it $(IMAGE) /bin/bash
-
-.PHONY: docker_test
-docker_test: ## Run the tests in the docker container
-	docker run -e DATABASE_URL=psql://consultations_test:@host.docker.internal:5432/consultations_test $(IMAGE) ./venv/bin/pytest
 
 .PHONY: docker_login
 docker_login:

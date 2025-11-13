@@ -28,7 +28,7 @@ jobs:
       - name: Start services with docker compose
         run: |
           docker compose up -d postgres redis
-          docker compose exec -T postgres pg_isready -U consultations_test || (sleep 5 && docker compose exec -T postgres pg_isready -U consultations_test) || (sleep 10 && docker compose exec -T postgres pg_isready -U consultations_test)
+          docker compose exec -T postgres pg_isready -U postgres || (sleep 5 && docker compose exec -T postgres pg_isready -U postgres) || (sleep 10 && docker compose exec -T postgres pg_isready -U postgres)
 
       - name: install poetry & deps
         run: |
@@ -48,10 +48,6 @@ jobs:
           poetry run python manage.py migrate
           poetry run python manage.py makemigrations --check
           make govuk_frontend
-        env:
-          DATABASE_URL: postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser
 
       - name: Run app tests
         run: poetry run pytest
-        env:
-          DATABASE_URL: postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser
