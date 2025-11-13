@@ -18,7 +18,9 @@
         class={clsx(["bg-pink-50", "p-2", "rounded-md", !subtitle && "mt-1.5"])}
       >
         <MaterialIcon
-          size={level === 1 ? "1.8rem" : "1.3rem"}
+          size={level === 1 && context === "theme-sign-off"
+            ? "1.8rem"
+            : "1.3rem"}
           color="fill-pink-700"
         >
           <slot name="icon" />
