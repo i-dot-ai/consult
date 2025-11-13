@@ -12,14 +12,15 @@ repos:
     rev: 1.7.6
     hooks:
     -   id: bandit
-        args: [ "-c", "pyproject.toml", "-ll", "-r", "consultation_analyser" ]
+        args: [ "-c", "pyproject.toml", "-ll" ]
         additional_dependencies: [ "bandit[toml]" ]
+        files: '^consultation_analyser/.*\.py$'
 
   - repo: https://github.com/Yelp/detect-secrets
     rev: v1.4.0
     hooks:
     -   id: detect-secrets
-        exclude: (poetry.lock|.env.example|.env.test|^.github/workflows/)
+        exclude: (poetry.lock|.env.example|.env.test|^.github/workflows/|\.cruft\.json)
   - repo: local
     hooks:
     -   id: detect-ip

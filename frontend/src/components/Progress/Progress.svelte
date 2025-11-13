@@ -7,6 +7,7 @@
   import { writable } from "svelte/store";
 
   export let value: number = 0;
+  export let thickness: 1 | 1.5 | 2 = 2;
   export let transitionDelay: number = 0;
   export let transitionDuration: number = 0;
 
@@ -27,7 +28,9 @@
   use:melt={$root}
   class={clsx([
     "relative",
-    "h-2",
+    thickness === 1 && "h-1",
+    thickness === 1.5 && "h-1.5",
+    thickness === 2 && "h-2",
     "w-full",
     "overflow-hidden",
     "rounded-[99999px]",

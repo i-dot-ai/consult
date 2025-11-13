@@ -205,10 +205,10 @@ TF_BACKEND_CONFIG=$(CONFIG_DIR)/backend.hcl
 
 
 tf_new_workspace:
-	terraform -chdir=./infrastructure/$(instance)  workspace new $(env)
+	terraform -chdir=./terraform/$(instance)  workspace new $(env)
 
 tf_set_workspace:
-	terraform -chdir=./infrastructure/$(instance) workspace select $(env)
+	terraform -chdir=./terraform/$(instance) workspace select $(env)
 
 tf_set_or_create_workspace:
 	make tf_set_workspace || make tf_new_workspace
@@ -218,41 +218,41 @@ tf_init_and_set_workspace:
 
 .PHONY: tf_init
 tf_init: ## Initialise terraform
-	terraform -chdir=./infrastructure/$(instance) init -backend-config=$(TF_BACKEND_CONFIG) -reconfigure
+	terraform -chdir=./terraform/$(instance) init -backend-config=$(TF_BACKEND_CONFIG) -reconfigure
 
 .PHONY: tf_plan
 tf_plan: ## Plan terraform
 	make tf_init_and_set_workspace && \
-	terraform -chdir=./infrastructure/$(instance) plan -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+	terraform -chdir=./terraform/$(instance) plan -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
 .PHONY: tf_apply
 tf_apply: ## Apply terraform
 	make tf_init_and_set_workspace && \
-	terraform -chdir=./infrastructure/$(instance) apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} ${args}
+	terraform -chdir=./terraform/$(instance) apply -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} ${args}
 
 .PHONY: tf_init_universal
 tf_init_universal: ## Initialise terraform
-	terraform -chdir=./infrastructure/universal init -backend-config=../$(TF_BACKEND_CONFIG)
+	terraform -chdir=./terraform/universal init -backend-config=../$(TF_BACKEND_CONFIG)
 
 .PHONY: tf_apply_universal
 tf_apply_universal: ## Apply terraform
-	terraform -chdir=./infrastructure workspace select prod && \
-	terraform -chdir=./infrastructure/universal apply -var-file=../$(CONFIG_DIR)/prod-input-params.tfvars
+	terraform -chdir=./terraform workspace select prod && \
+	terraform -chdir=./terraform/universal apply -var-file=../$(CONFIG_DIR)/prod-input-params.tfvars
 
 .PHONY: tf_auto_apply
 tf_auto_apply: ## Auto apply terraform
 	make tf_init_and_set_workspace && \
-	terraform -chdir=./infrastructure apply -auto-approve -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} $(target_modules)
+	terraform -chdir=./terraform apply -auto-approve -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args} $(target_modules)
 
 .PHONY: tf_destroy
 tf_destroy: ## Destroy terraform
 	make tf_init_and_set_workspace && \
-	terraform -chdir=./infrastructure destroy -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
+	terraform -chdir=./terraform destroy -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${tf_build_args}
 
 .PHONY: tf_import
 tf_import:
 	make tf_init_and_set_workspace && \
-	terraform -chdir=./infrastructure/$(instance) import ${tf_build_args} -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${name} ${id}
+	terraform -chdir=./terraform/$(instance) import ${tf_build_args} -var-file=$(CONFIG_DIR)/${env}-input-params.tfvars ${name} ${id}
 
 # Release commands to deploy your app to AWS
 .PHONY: release
@@ -263,4 +263,4 @@ release: ## Deploy app
 		exit 1; \
 	fi
 
-	chmod +x ./infrastructure/scripts/release.sh && ./infrastructure/scripts/release.sh $(env)
+	chmod +x ./terraform/scripts/release.sh && ./terraform/scripts/release.sh $(env)
