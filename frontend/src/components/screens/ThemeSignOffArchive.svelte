@@ -33,6 +33,7 @@
   import Headphones from "../svg/material/Headphones.svelte";
   import Help from "../svg/material/Help.svelte";
   import Target from "../svg/material/Target.svelte";
+  import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
 
   interface Props {
     consultationId: string;
@@ -335,16 +336,10 @@
 
           <div class="mb-4">
             {#if !displayQuestions?.length && !$isQuestionsLoading}
-              <div class="pt-12 pb-8">
-                <div class="w-max mx-auto mb-2">
-                  <MaterialIcon color="fill-neutral-500" size="2rem">
-                    <Help />
-                  </MaterialIcon>
-                </div>
-                <p class="text-sm text-center text-neutral-500">
-                  No questions found matching your search.
-                </p>
-              </div>
+              <NotFoundMessage
+                variant="archive"
+                body="No questions found matching your search."
+              />
             {:else}
               {#each displayQuestions as question}
                 <QuestionCard
