@@ -168,9 +168,11 @@ def theme_identifier(question: Question):
         if row["topic_id"] != "0":
             try:
                 name, description = row["topic"].split(":", 1)
+                source_topic_count = 0
             except Exception:
-                raise ValueError("missaligned columns", row)
-            source_topic_count = 0
+                name = row["topic_label"]
+                description = row["topic_description"]
+                source_topic_count = row["source_topic_count"]
 
             records[row["topic_id"]] = CandidateTheme.objects.create(
                 question=question,
