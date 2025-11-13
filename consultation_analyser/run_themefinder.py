@@ -255,7 +255,7 @@ def agentic_theme_selection(
     
     try:
         selected_themes["topic"] = (
-            selected_themes["topic"] + ": " + selected_themes["topic_description"]
+            selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
         )
     except BaseException:
         raise ValueError("missaligned columns", selected_themes.columns)

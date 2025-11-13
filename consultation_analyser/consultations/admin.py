@@ -120,7 +120,7 @@ def theme_identifier_action(modeladmin, request, queryset):
             query.enqueue(theme_identifier, question)
 
 
-@admin.action(description="find themes")
+@admin.action(description="map themes")
 def theme_mapper_action(modeladmin, request, queryset):
     query = get_queue(default_timeout=100_000)
     for consultation in queryset:
