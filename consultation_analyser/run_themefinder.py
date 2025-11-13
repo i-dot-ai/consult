@@ -252,9 +252,14 @@ def agentic_theme_selection(
     ) and (significance_percentage < 20):
         selected_themes = agent.select_themes(significance_percentage)
         significance_percentage += 1
-    selected_themes["topic"] = (
-        selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
-    )
+    
+    try:
+        selected_themes["topic"] = (
+            selected_themes["topic"] + ": " + selected_themes["topic_description"]
+        )
+    except BaseException:
+        raise ValueError("missaligned columns", selected_themes.columns)
+
     selected_themes.rename(
         columns={"topic_label": "Theme Name", "topic_description": "Theme Description"},
         inplace=True,
