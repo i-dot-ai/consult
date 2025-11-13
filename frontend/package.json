@@ -12,8 +12,6 @@
     "preview": "astro preview --host",
     "astro": "astro",
     "test": "npx vitest --coverage",
-    "e2e": "npx playwright test",
-    "e2e-ui": "npx playwright test --ui",
     "prettier-check": "npx prettier --check .",
     "prettier-fix": "npx prettier --write ."
   },

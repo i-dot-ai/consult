@@ -24,9 +24,10 @@ def send_magic_link_if_email_exists(request: HttpRequest, email: str) -> None:
         link = MagicLink.objects.create(user=user, redirect_to="/")
         if HostingEnvironment.is_test():
             magic_link = f"http://testserver/magic-link/{link.token}/"
+        elif HostingEnvironment.is_local():
+            magic_link = f"http://localhost:3000/magic-link/{link.token}/"
         else:
-            scheme = "http" if HostingEnvironment.is_local() else "https"
-            magic_link = f"{scheme}://{settings.DOMAIN_NAME}/magic-link/{link.token}/"
+            magic_link = f"https://{settings.DOMAIN_NAME}/magic-link/{link.token}/"
 
         # Log magic link in local environment only
         if HostingEnvironment.is_local():
