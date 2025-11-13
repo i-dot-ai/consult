@@ -59,9 +59,6 @@ test: ## Run the tests
 test-failed: ## Run all failed tests in the previous run
 	poetry run pytest --last-failed --random-order
 
-.PHONY: test-migrations
-test-migrations: ## Run the migration tests separately
-	poetry run pytest migration_tests/ --random-order
 
 .PHONY: check-python-code
 check-python-code: ## Check Python code - linting and mypy

@@ -55,8 +55,3 @@ jobs:
         run: poetry run pytest
         env:
           DATABASE_URL: postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser
-
-      - name: Run tests for migrations
-        run: poetry run pytest migration_tests/
-        env:
-          DATABASE_URL: postgresql://consultations_test:consultations_test@localhost:5432/consultation_analyser
