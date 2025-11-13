@@ -166,7 +166,10 @@ def theme_identifier(question: Question):
     records = {}
     for _, row in all_themes_df.iterrows():
         if row["topic_id"] != "0":
-            name, description = row["topic"].split(":", 1)
+            try:
+                name, description = row["topic"].split(":", 1)
+            except Exception:
+                raise ValueError("missaligned columns", all_themes_df.columns)
             source_topic_count = 0
 
             records[row["topic_id"]] = CandidateTheme.objects.create(
