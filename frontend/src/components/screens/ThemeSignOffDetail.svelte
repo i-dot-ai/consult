@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { fade, fly, slide } from "svelte/transition";
+  import { fade, slide } from "svelte/transition";
 
   import { createFetchStore } from "../../global/stores";
   import {
@@ -10,7 +10,6 @@
     getApiDeleteSelectedThemeUrl,
     getApiGetGeneratedThemesUrl,
     getApiGetSelectedThemesUrl,
-    getApiQuestionsUrl,
     getApiQuestionUrl,
     getApiSelectGeneratedThemeUrl,
     getApiUpdateSelectedThemeUrl,
@@ -33,9 +32,11 @@
   import Tag from "../Tag/Tag.svelte";
   import Modal from "../Modal/Modal.svelte";
   import Alert from "../Alert.svelte";
-  import Warning from "../svg/material/Warning.svelte";
   import Target from "../svg/material/Target.svelte";
   import EditSquare from "../svg/material/EditSquare.svelte";
+  import ErrorModal, {
+    type ErrorType,
+  } from "../theme-sign-off/ErrorModal.svelte";
 
   let {
     consultationId = "",
@@ -43,17 +44,23 @@
     questionDataMock,
     generatedThemesMock,
     selectedThemesMock,
-    removeThemeMock,
     createThemeMock,
-    updateThemeMock,
     answersMock,
     selectGeneratedThemeMock,
   } = $props();
 
   let isConfirmSignOffModalOpen = $state(false);
-  let isErrorModalOpen = $state(false);
   let addingCustomTheme = $state(false);
   let expandedThemes: string[] = $state([]);
+  let errorData: ErrorType | null = $state(null);
+
+  const errorModalOnClose = () => {
+    loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
+    loadGeneratedThemes(
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
+    );
+    errorData = null;
+  };
 
   const {
     load: loadSelectedThemes,
@@ -82,20 +89,6 @@
     data: confirmSignOffData,
     error: confirmSignOffError,
   } = createFetchStore();
-
-  const {
-    load: loadRemoveTheme,
-    loading: isRemoveThemeLoading,
-    data: removeThemeData,
-    error: removeThemeError,
-  } = createFetchStore(removeThemeMock);
-
-  const {
-    load: updateSelectedTheme,
-    loading: isUpdatingTheme,
-    data: updateThemeData,
-    error: updateThemeError,
-  } = createFetchStore(updateThemeMock);
 
   const {
     load: selectGeneratedTheme,
@@ -139,25 +132,46 @@
 
     loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
   };
+
   const removeTheme = async (themeId: string) => {
     const selectedTheme = $selectedThemesData?.results.find(
       (theme) => theme.id === themeId,
     );
 
-    await loadRemoveTheme(
-      getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
-      "DELETE",
-      undefined,
-      {
-        "If-Match": selectedTheme.version,
-      },
-    );
+    try {
+      const response = await fetch(
+        getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
+        {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json",
+            "If-Match": selectedTheme.version,
+          },
+        },
+      );
 
-    loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
-    loadGeneratedThemes(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
+      if (response.ok) {
+        loadSelectedThemes(
+          getApiGetSelectedThemesUrl(consultationId, questionId),
+        );
+        loadGeneratedThemes(
+          getApiGetGeneratedThemesUrl(consultationId, questionId),
+        );
+      } else if (response.status === 412) {
+        const { last_modified_by, latest_version } = await response.json();
+        errorData = {
+          type: "remove-conflict",
+          lastModifiedBy: last_modified_by.email,
+          latestVersion: latest_version,
+        };
+      } else {
+        throw new Error(`Remove theme failed: ${response.statusText}`);
+      }
+    } catch (err: any) {
+      errorData = { type: "unexpected" };
+    }
   };
+
   const updateTheme = async (
     themeId: string,
     title: string,
@@ -167,19 +181,41 @@
       (theme) => theme.id === themeId,
     );
 
-    await updateSelectedTheme(
-      getApiUpdateSelectedThemeUrl(consultationId, questionId, themeId),
-      "PATCH",
-      {
-        name: title,
-        description: description,
-      },
-      {
-        "If-Match": selectedTheme.version,
-      },
-    );
+    try {
+      const response = await fetch(
+        getApiUpdateSelectedThemeUrl(consultationId, questionId, themeId),
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "If-Match": selectedTheme.version,
+          },
+          body: JSON.stringify({
+            name: title,
+            description: description,
+          }),
+        },
+      );
 
-    loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
+      if (response.ok) {
+        loadSelectedThemes(
+          getApiGetSelectedThemesUrl(consultationId, questionId),
+        );
+      } else if (response.status === 404) {
+        errorData = { type: "theme-does-not-exist" };
+      } else if (response.status === 412) {
+        const { last_modified_by, latest_version } = await response.json();
+        errorData = {
+          type: "edit-conflict",
+          lastModifiedBy: last_modified_by.email,
+          latestVersion: latest_version,
+        };
+      } else {
+        throw new Error(`Edit theme failed: ${response.statusText}`);
+      }
+    } catch (err: any) {
+      errorData = { type: "unexpected" };
+    }
   };
 
   const handleSelectGeneratedTheme = async (newTheme) => {
@@ -217,7 +253,7 @@
 
     if ($confirmSignOffError) {
       isConfirmSignOffModalOpen = false;
-      isErrorModalOpen = true;
+      errorData = { type: "unexpected" };
     } else {
       location.replace(getThemeSignOffUrl(consultationId));
     }
@@ -286,6 +322,10 @@
             </MaterialIcon>
 
             <h3>Selected Themes</h3>
+
+            <Tag variant="primary-light">
+              {$selectedThemesData?.results.length} selected
+            </Tag>
           </div>
 
           <Button
@@ -524,6 +564,10 @@
     </Panel>
   </section>
 
+  {#if errorData}
+    <ErrorModal {...errorData} onClose={errorModalOnClose} />
+  {/if}
+
   {#snippet failed(error)}
     <div>
       {console.error(error)}
@@ -535,47 +579,42 @@
   {/snippet}
 </svelte:boundary>
 
-<Modal
-  open={isErrorModalOpen}
-  setOpen={(newOpen: boolean) => (isErrorModalOpen = newOpen)}
-  confirmText={"Ok"}
-  handleConfirm={() => (isErrorModalOpen = false)}
->
-  <div class="flex items-center gap-2 mb-2">
-    <MaterialIcon color="fill-orange-600" size="1.3rem">
-      <Warning />
-    </MaterialIcon>
+<svelte:boundary>
+  <OnboardingTour
+    key="theme-sign-off"
+    steps={[
+      {
+        id: "onboarding-step-1",
+        title: "Select Themes",
+        body: `Browse the AI-generated themes and click "Select Theme" to move them to your selected themes list. You can view example responses for each theme to understand what types of consultation responses it represents.`,
+        icon: Target,
+      },
+      {
+        id: "onboarding-steps-2-and-3",
+        title: "Edit & Manage",
+        body: "Once themes are selected, you can edit their titles and descriptions by clicking the edit button, or add completely new themes to better organize your analysis.",
+        icon: EditSquare,
+      },
+      {
+        id: "onboarding-steps-2-and-3",
+        title: "Sign Off & Proceed",
+        body: `When you're satisfied with your theme selection and edits, click "Sign Off Selected Themes" to proceed with mapping consultation responses against your finalised themes.`,
+        icon: CheckCircle,
+      },
+    ]}
+    resizeObserverTarget={document.querySelector("main")}
+  />
 
-    <h3 class="text-orange-600 text-lg">Theme Update Failed</h3>
-  </div>
+  {#snippet failed(error)}
+    <div>
+      {console.error(error)}
 
-  <p>Theme failed to update due to error: {$confirmSignOffError}</p>
-</Modal>
-
-<OnboardingTour
-  key="theme-sign-off"
-  steps={[
-    {
-      id: "onboarding-step-1",
-      title: "Select Themes",
-      body: `Browse the AI-generated themes and click "Select Theme" to move them to your selected themes list. You can view example responses for each theme to understand what types of consultation responses it represents.`,
-      icon: Target,
-    },
-    {
-      id: "onboarding-steps-2-and-3",
-      title: "Edit & Manage",
-      body: "Once themes are selected, you can edit their titles and descriptions by clicking the edit button, or add completely new themes to better organize your analysis.",
-      icon: EditSquare,
-    },
-    {
-      id: "onboarding-steps-2-and-3",
-      title: "Sign Off & Proceed",
-      body: `When you're satisfied with your theme selection and edits, click "Sign Off Selected Themes" to proceed with mapping consultation responses against your finalised themes.`,
-      icon: CheckCircle,
-    },
-  ]}
-  resizeObserverTarget={document.querySelector("main")}
-/>
+      <Panel>
+        <Alert>Unexpected onboarding tour error</Alert>
+      </Panel>
+    </div>
+  {/snippet}
+</svelte:boundary>
 
 <style>
   .selected-section :global(div[data-testid="panel-component"]) {

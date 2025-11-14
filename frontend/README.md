@@ -11,7 +11,7 @@ To run locally, make sure you have the Django application running then run `npm 
 
 ## Testing
 
-Run `npx playwright install` to be able to run end-to-end tests with playwright.
+For unit tests, use `npm run test`. For end-to-end tests, see the `/e2e_tests` folder.
 
 ## Commands
 
@@ -26,8 +26,6 @@ All commands are run from the root of the project, from a terminal:
 | `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
 | `npm run astro -- --help` | Get help using the Astro CLI                     |
 | `npm run test`            | Run vitest unit tests                            |
-| `npm run e2e`             | Run playwright end-to-end tests                  |
-| `npm run e2e-ui`          | Run playwright end-to-end tests with ui          |
 
 ## Astro documentation
 

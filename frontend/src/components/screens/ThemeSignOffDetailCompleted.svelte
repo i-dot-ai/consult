@@ -200,10 +200,11 @@
     <Panel bg={false} border={true}>
       <h2 class="text-md">Selected Themes</h2>
 
-      <p class="text-neutral-500 text-sm">
+      <!-- TODO: Subtitle disabled -->
+      <!-- <p class="text-neutral-500 text-sm">
         The following themes have been signed off for this question and are
         ready for analysis.
-      </p>
+      </p> -->
 
       <ul>
         {#if $isSelectedThemesLoading}
@@ -238,7 +239,8 @@
   <section class="mt-8">
     <div class="flex items-center justify-between gap-2 flex-wrap">
       <div class="flex items-center gap-2 flex-wrap">
-        <Button
+        <!-- TODO: Button disabled -->
+        <!-- <Button
           size="sm"
           variant="primary"
           handleClick={() =>
@@ -250,7 +252,7 @@
             </MaterialIcon>
             View Analysis Dashboard
           </div>
-        </Button>
+        </Button> -->
 
         <Button
           size="sm"

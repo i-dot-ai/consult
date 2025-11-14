@@ -8,6 +8,6 @@ const { consultationId } = Astro.params;
 ---
 <Layout>
     <Section>
-        <ThemeSignOffArchive client:load consultationId={consultationId} />
+        <ThemeSignOffArchive client:only consultationId={consultationId} />
     </Section>
 </Layout>

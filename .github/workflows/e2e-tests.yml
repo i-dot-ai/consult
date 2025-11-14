@@ -1,0 +1,62 @@
+name: Playwright E2E Tests
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  e2e-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Docker Compose
+        run: |
+          docker compose version
+
+      - name: Copy environment file
+        run: |
+          cp .env.example .env
+
+      - name: Start services with docker compose
+        run: |
+          docker compose up -d postgres
+          docker compose up -d backend
+          docker compose up -d frontend
+          sleep 30
+
+      - name: Create admin user
+        run: |
+          docker compose run backend venv/bin/django-admin createadminusers
+
+      - name: Set up Node.js (for Playwright only)
+        uses: actions/setup-node@v6
+        with:
+          node-version: 24.8
+
+      - name: Install e2e test dependencies
+        run: npm install
+        working-directory: e2e_tests
+
+      - name: Install Playwright
+        run: npx playwright install --with-deps
+        working-directory: e2e_tests
+
+      - name: Run Playwright tests
+        run: npm run e2e
+        working-directory: e2e_tests
+
+      - name: Stop docker-compose services
+        run: docker compose down
+        if: always()
+
+      - name: Upload Playwright report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: playwright-report
+          path: e2e_tests/playwright-report/
+          retention-days: 30
