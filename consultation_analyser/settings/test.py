@@ -6,7 +6,7 @@ from django.conf.global_settings import STORAGES
 
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
 
-# Take environment variables from .env file
+# Take environment variables from .env.test file
 environ.Env.read_env(os.path.join(BASE_DIR, ".env.test"))
 
 from consultation_analyser.settings.base import *  # noqa
