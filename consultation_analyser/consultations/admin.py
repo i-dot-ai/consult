@@ -129,6 +129,16 @@ def theme_mapper_action(modeladmin, request, queryset):
             query.enqueue(sync_theme_mapping, question, depends_on=sync_detail_detection_job)
 
 
+class CandidateThemeInline(admin.StackedInline):
+    model = CandidateTheme
+    extra = 0
+
+
+class SelectedThemeInline(admin.StackedInline):
+    model = SelectedTheme
+    extra = 0
+
+
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [
         update_embeddings_admin,
@@ -138,6 +148,7 @@ class ConsultationAdmin(admin.ModelAdmin):
         theme_identifier_action,
         theme_mapper_action,
     ]
+    inlines = [CandidateThemeInline, SelectedThemeInline]
 
 
 class MultiChoiceAnswerInline(admin.StackedInline):
@@ -188,18 +199,8 @@ class DemographicOptionAdmin(admin.ModelAdmin):
     readonly_fields = ["consultation", "field_name", "field_value"]
 
 
-class SelectedThemeInline(admin.StackedInline):
-    model = SelectedTheme
-    extra = 0
-
-
-class CandidateThemeInline(admin.StackedInline):
-    model = CandidateTheme
-    extra = 0
-
-
 class CrossCuttingThemeAdmin(admin.ModelAdmin):
-    inlines = [SelectedThemeInline, CandidateThemeInline]
+    inlines = [SelectedThemeInline]
 
 
 class CandidateThemeAdmin(admin.ModelAdmin):
