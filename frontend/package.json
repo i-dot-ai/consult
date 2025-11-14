@@ -13,8 +13,7 @@
     "astro": "astro",
     "test": "vitest --coverage",
     "update-snapshots": "vitest --update",
-    "prettier-check": "prettier --check .",
-    "prettier-fix": "prettier --write ."
+    "lint": "eslint ."
   },
   "dependencies": {
     "@astrojs/node": "^9.3.3",

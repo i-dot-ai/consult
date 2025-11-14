@@ -5,12 +5,20 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 
 export default defineConfig([
+  globalIgnores([
+    ".astro/",
+    "coverage/",
+    "dist/",
+    "node_modules/",
+    "public/lit/",
+  ]),
   {
-    files: ["**/*.{js,mjs,cjs,ts,mts,cts}"],
-    plugins: { js },
-    extends: ["js/recommended", eslintPluginPrettierRecommended],
+    files: ["**/*.{js,ts,mjs}"],
+    extends: [
+      js.configs.recommended,
+      eslintPluginPrettierRecommended,
+      ...tseslint.configs.recommended,
+    ],
     languageOptions: { globals: globals.browser },
   },
-  globalIgnores(["public/lit/"]),
-  tseslint.configs.recommended,
 ]);
