@@ -214,7 +214,7 @@ def agentic_theme_selection(
     refined_themes_df[["topic_label", "topic_description"]] = refined_themes_df["topic"].str.split(
         ":", n=1, expand=True
     )
-    selected_themes = pd.DataFrame()
+    all_themes_df = pd.DataFrame()
 
     initial_themes = [
         ThemeNode(
