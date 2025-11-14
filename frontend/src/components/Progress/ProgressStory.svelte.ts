@@ -1,6 +1,6 @@
 import Progress from "./Progress.svelte";
 
-let value = $state(40);
+const value = $state(40);
 
 export default {
   name: "Progress",

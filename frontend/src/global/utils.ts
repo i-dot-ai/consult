@@ -74,25 +74,6 @@ export function paginateArray(arr: unknown[] | undefined, size: number) {
   }, []);
 }
 
-export function flattenArray(items: any[]): any[] {
-  if (!items) {
-    return [];
-  }
-
-  const result = [];
-
-  for (const item of items) {
-    const { children, ...attrs } = item;
-    result.push(attrs);
-
-    if (children?.length > 0) {
-      result.push(...flattenArray(children));
-    }
-  }
-
-  return result;
-}
-
 export const formatDate = (dateStr: string) => {
   const date = new Date(dateStr);
   return date.toLocaleString("en-GB", {

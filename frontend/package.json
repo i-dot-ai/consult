@@ -12,8 +12,9 @@
     "preview": "astro preview --host",
     "astro": "astro",
     "test": "vitest --coverage",
-    "update-snapshots": "vitest --update",
-    "lint": "eslint ."
+    "test:update-snapshots": "vitest --update",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@astrojs/node": "^9.3.3",

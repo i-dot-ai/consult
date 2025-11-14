@@ -15,8 +15,6 @@
     getApiUpdateSelectedThemeUrl,
     getThemeSignOffUrl,
   } from "../../global/routes";
-  import { flattenArray } from "../../global/utils";
-
   import Panel from "../dashboard/Panel/Panel.svelte";
   import TitleRow from "../dashboard/TitleRow.svelte";
   import Button from "../inputs/Button/Button.svelte";
@@ -48,6 +46,25 @@
     answersMock,
     selectGeneratedThemeMock,
   } = $props();
+
+  const flattenGeneratedThemes = (items: any[]): any[] => {
+    if (!items) {
+      return [];
+    }
+
+    const result = [];
+
+    for (const item of items) {
+      const { children, ...attrs } = item;
+      result.push(attrs);
+
+      if (children?.length > 0) {
+        result.push(...flattenGeneratedThemes(children));
+      }
+    }
+
+    return result;
+  }
 
   let isConfirmSignOffModalOpen = $state(false);
   let addingCustomTheme = $state(false);
@@ -105,7 +122,7 @@
   } = createFetchStore(questionDataMock);
 
   let flatGeneratedThemes = $derived(
-    flattenArray($generatedThemesData?.results),
+    flattenGeneratedThemes($generatedThemesData?.results),
   );
 
   $effect(() => {
