@@ -45,27 +45,38 @@ class EdgeJWTAuthenticationMiddleware:
     def __call__(self, request):
         # Try to authenticate using JWT token from Authorization header
         auth_header = request.META.get("HTTP_AUTHORIZATION")
-        if not auth_header or not auth_header.startswith("Bearer "):
-            raise PermissionDenied()
+        if auth_header and auth_header.startswith("Bearer "):
+            token = auth_header[7:]  # Remove "Bearer " prefix
+            try:
+                # Decode JWT without signature verification (edge handles validation)
+                payload = jwt.decode(token, options={"verify_signature": False})
 
-        token = auth_header[7:]  # Remove "Bearer " prefix
-        try:
-            # Decode JWT without signature verification (edge handles validation)
-            payload = jwt.decode(token, options={"verify_signature": False})
-            email = payload["email"]
-        except (jwt.DecodeError, KeyError):
-            raise PermissionDenied()
+                # Try email field first (for edge tokens)
+                if "email" in payload:
+                    email = payload["email"]
+                    try:
+                        user = User.objects.get(email=email)
+                        request.user = user
+                        request._cached_user = user
+                    except User.DoesNotExist:
+                        raise PermissionDenied("User not found in system")
+                # Fallback to user_id field (for existing DRF tokens)
+                elif "user_id" in payload:
+                    user_id = payload["user_id"]
+                    try:
+                        user = User.objects.get(id=user_id)
+                        request.user = user
+                        request._cached_user = user
+                    except User.DoesNotExist:
+                        raise PermissionDenied("User not found in system")
+                else:
+                    raise PermissionDenied("No valid user identifier in JWT")
 
-        try:
-            user = User.objects.get(email=email)
-        except (User.DoesNotExist, KeyError):
-            raise PermissionDenied()
+            except jwt.DecodeError:
+                raise PermissionDenied("Invalid JWT format")
 
-        request.user = user
-        request._cached_user = user
         response = self.get_response(request)
         return response
-
 
 
 class SupportAppStaffRequiredMiddleware:
