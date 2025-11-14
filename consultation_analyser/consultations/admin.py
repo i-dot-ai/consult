@@ -148,7 +148,6 @@ class ConsultationAdmin(admin.ModelAdmin):
         theme_identifier_action,
         theme_mapper_action,
     ]
-    inlines = [CandidateThemeInline, SelectedThemeInline]
 
 
 class MultiChoiceAnswerInline(admin.StackedInline):
@@ -167,7 +166,7 @@ class QuestionAdmin(admin.ModelAdmin):
         "has_free_text",
         "has_multiple_choice",
     ]
-    inlines = [MultiChoiceAnswerInline]
+    inlines = [MultiChoiceAnswerInline, CandidateThemeInline, SelectedThemeInline]
 
 
 class ResponseAnnotationAdmin(SimpleHistoryAdmin):
