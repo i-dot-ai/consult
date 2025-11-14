@@ -50,7 +50,7 @@
     $answersData = null;
     showAnswers = false;
     answersRequested = false;
-  }
+  };
 </script>
 
 <article class="bg-white rounded-lg" data-themeid={theme.id}>
