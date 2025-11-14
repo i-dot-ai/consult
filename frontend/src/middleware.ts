@@ -18,7 +18,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     console.log("user not signed in");
   }
 
-  const accessToken = context.cookies.get("access")?.value;
+  // Get accessToken from edge authentication header
+  const accessToken = context.request.headers.get("x-amzn-oidc-accesstoken");
   const url = context.url;
 
   // Redirect to sign-in if user not logged in or not staff
@@ -34,7 +35,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   for (const protectedRoute of protectedRoutes) {
     if (
       protectedRoute.test(url.pathname) &&
-      !context.cookies.get("access")?.value
+      !accessToken
     ) {
       return context.redirect(Routes.SignIn);
     }
