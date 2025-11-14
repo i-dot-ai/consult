@@ -1,8 +1,13 @@
+import jwt
 from django.conf import settings
+from django.contrib.auth import get_user_model
+from django.core.exceptions import PermissionDenied
 from django.http import Http404
 from django.shortcuts import redirect
 from rest_framework_simplejwt.authentication import JWTAuthentication
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
+
+User = get_user_model()
 
 
 class JWTAuthenticationMiddleware:
@@ -29,6 +34,38 @@ class JWTAuthenticationMiddleware:
 
         response = self.get_response(request)
         return response
+
+
+class EdgeJWTAuthenticationMiddleware:
+    """Authenticate JWT tokens from edge authentication (no signature verification)."""
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        # Try to authenticate using JWT token from Authorization header
+        auth_header = request.META.get("HTTP_AUTHORIZATION")
+        if not auth_header or not auth_header.startswith("Bearer "):
+            raise PermissionDenied()
+
+        token = auth_header[7:]  # Remove "Bearer " prefix
+        try:
+            # Decode JWT without signature verification (edge handles validation)
+            payload = jwt.decode(token, options={"verify_signature": False})
+            email = payload["email"]
+        except (jwt.DecodeError, KeyError):
+            raise PermissionDenied()
+
+        try:
+            user = User.objects.get(email=email)
+        except (User.DoesNotExist, KeyError):
+            raise PermissionDenied()
+
+        request.user = user
+        request._cached_user = user
+        response = self.get_response(request)
+        return response
+
 
 
 class SupportAppStaffRequiredMiddleware:

@@ -72,7 +72,7 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "consultation_analyser.middleware.JWTAuthenticationMiddleware",
+    "consultation_analyser.middleware.EdgeJWTAuthenticationMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.middleware.common.CommonMiddleware",
     "consultation_analyser.middleware.CSRFExemptMiddleware",  # Must be before CsrfViewMiddleware

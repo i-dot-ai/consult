@@ -155,7 +155,7 @@ module "frontend" {
 
   authenticate_keycloak = {
     
-    enabled : false,
+    enabled : true,
     
     realm_name : data.terraform_remote_state.keycloak.outputs.realm_name,
     client_id : var.project_name,
