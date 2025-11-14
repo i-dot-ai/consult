@@ -4,7 +4,7 @@
   import { fade, fly } from "svelte/transition";
 
   import type { GeneratedTheme } from "../../../global/types";
-  import { createFetchStore } from "../../../global/stores";
+  import { createFetchStore, type MockFetch } from "../../../global/stores";
   import { getApiAnswersUrl } from "../../../global/routes";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
@@ -23,7 +23,7 @@
     removeTheme: (themeId: string) => void;
     updateTheme: (themeId: string, title: string, description: string) => void;
     maxAnswers?: number;
-    answersMock?: Function;
+    answersMock?: MockFetch;
   }
 
   let {
@@ -39,7 +39,6 @@
     load: loadAnswers,
     loading: isAnswersLoading,
     data: answersData,
-    error: answersError,
   } = createFetchStore(answersMock);
 
   let showAnswers = $state(false);

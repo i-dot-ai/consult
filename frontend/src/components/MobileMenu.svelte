@@ -39,7 +39,7 @@
       "hover:bg-primary",
     ])}
   >
-    <MaterialIcon size={"1.5rem"} color={"fill-white"}>
+    <MaterialIcon size="1.5rem" color="fill-white">
       <Menu />
     </MaterialIcon>
   </button>
@@ -47,7 +47,7 @@
   {#if $open}
     <nav use:melt={$menu} transition:slide>
       <ul class={clsx(["text-white", "shadow-xl"])}>
-        {#each items as navItem}
+        {#each items as navItem (navItem.text)}
           <li
             use:melt={$item}
             class={clsx([

@@ -223,7 +223,7 @@
         </div>
       </div>
     {:else}
-      {#each themes as theme}
+      {#each themes as theme (theme.id)}
         <CrossCuttingThemeCard
           title={theme.name}
           mentions={theme.mentions}

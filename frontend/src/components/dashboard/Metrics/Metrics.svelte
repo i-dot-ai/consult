@@ -109,7 +109,7 @@
         <Panel bg={true} border={true}>
           {#if loading}
             <div class="mb-4">
-              <Title level={3} text={`Loading questions`} />
+              <Title level={3} text="Loading questions" />
             </div>
 
             <div
@@ -195,7 +195,7 @@
         </div>
 
         <div class="grid grid-cols-12 gap-4 pb-4">
-          {#each paginatedCategories[currPage] as category}
+          {#each paginatedCategories[currPage] as category (category)}
             {@const categoryOptions = demoOptions.filter(
               (opt: DemoOptionsResponseItem) => opt.name === category,
             )}

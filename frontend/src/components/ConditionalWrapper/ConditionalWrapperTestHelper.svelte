@@ -1,11 +1,11 @@
 <script lang="ts">
   import ConditionalWrapper from "./ConditionalWrapper.svelte";
 
-  export let element = false;
+  export let element: string | boolean = false;
   export let condition: boolean = false;
-  export let slot: string = "";
+  export let content: string = "";
 </script>
 
 <ConditionalWrapper {element} {condition}>
-  {@html slot}
+  <p>{content}</p>
 </ConditionalWrapper>

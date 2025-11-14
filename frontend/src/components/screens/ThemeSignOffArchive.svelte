@@ -3,7 +3,6 @@
 
   import { onMount, type Component } from "svelte";
   import { slide } from "svelte/transition";
-  import type { Writable } from "svelte/store";
 
   import {
     getApiConsultationUrl,
@@ -50,36 +49,12 @@
     error: questionsError,
     load: loadQuestions,
     data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
   } = createFetchStore();
 
-  const {
-    loading: isConsultationLoading,
-    error: loadConsultationError,
-    load: loadConsultation,
-    data: consultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
+  const { load: loadConsultation, data: consultationData } = createFetchStore();
 
-  const {
-    loading: isConsultationUpdating,
-    error: updateConsultationError,
-    load: updateConsultation,
-    data: updateConsultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
+  const { load: updateConsultation, error: updateConsultationError } =
+    createFetchStore();
 
   onMount(async () => {
     loadConsultation(getApiConsultationUrl(consultationId));
@@ -353,7 +328,7 @@
                 body="No questions found matching your search."
               />
             {:else}
-              {#each displayQuestions as question}
+              {#each displayQuestions as question (question.id)}
                 <QuestionCard
                   {consultationId}
                   {question}

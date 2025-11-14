@@ -1,4 +1,5 @@
 import ThemeSignOffDetail from "./ThemeSignOffDetail.svelte";
+import { SvelteDate } from "svelte/reactivity";
 
 const consultationId = $state("");
 const questionId = $state("");
@@ -88,7 +89,7 @@ export default {
           description: description,
           version: 1,
           last_modified_by: "email@example.com",
-          modified_at: new Date().toISOString(),
+          modified_at: new SvelteDate().toISOString(),
         };
         selectedThemes = [...selectedThemes, newTheme];
       },
@@ -108,7 +109,7 @@ export default {
           description: description,
           version: version,
           last_modified_by: "email@example.com",
-          modified_at: new Date().toISOString(),
+          modified_at: new SvelteDate().toISOString(),
         };
 
         selectedThemes = [...selectedThemes].map((theme) =>
@@ -150,7 +151,7 @@ export default {
           version: 1,
           candidatetheme_id: selectedGeneratedTheme?.id,
           last_modified_by: "email@example.com",
-          modified_at: new Date().toISOString(),
+          modified_at: new SvelteDate().toISOString(),
         };
 
         selectedThemes = [...selectedThemes, newSelectedTheme];

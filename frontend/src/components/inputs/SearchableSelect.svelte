@@ -18,13 +18,13 @@
   import type { SearchableSelectOption } from "../../global/types";
 
   export let label: string = "";
-  export let handleChange = (option: SearchableSelectOption) => {};
+  export let handleChange = (_option: SearchableSelectOption) => {};
   export let options: SearchableSelectOption[] = [];
-  export let selectedValues: any[] = [];
+  export let selectedValues: unknown[] = [];
   export let hideArrow: boolean = false;
   export let notFoundMessage: string = "No results found";
 
-  const handleSelectedChange = ({ curr, next }: { curr: any; next: any }) => {
+  const handleSelectedChange = ({ next }: { next: unknown }) => {
     handleChange(next as SearchableSelectOption);
     return next;
   };
@@ -39,8 +39,8 @@
 
   const {
     elements: { menu, input, option: meltOption, label: meltLabel },
-    states: { open, inputValue, touchedInput, selected },
-    helpers: { isSelected },
+    states: { open, inputValue, touchedInput, selected: _selected },
+    helpers: { isSelected: _isSelected },
   } = createCombobox<SearchableSelectOption>({
     onSelectedChange: handleSelectedChange,
     forceVisible: true,
@@ -66,7 +66,6 @@
 </script>
 
 <div class="flex flex-col gap-1">
-  <!-- svelte-ignore a11y-label-has-associated-control - $label contains the 'for' attribute -->
   <label use:melt={$meltLabel}>
     <span class="text-sm font-medium text-neutral-900">
       {label}

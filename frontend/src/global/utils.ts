@@ -25,20 +25,6 @@ export const getBackendUrl = (): string => {
   );
 };
 
-export const applyHighlight = (
-  fullText: string,
-  matchedText: string,
-): string => {
-  if (!matchedText) {
-    return fullText;
-  }
-  const regex = new RegExp(matchedText, "gi");
-  return fullText.replace(
-    regex,
-    (match) => `<span class="bg-yellow-300">${match}</span>`,
-  );
-};
-
 export const getPercentage = (
   partialValue: number,
   totalValue: number,

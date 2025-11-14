@@ -24,12 +24,7 @@
     toggleFlagMock,
   }: Props = $props();
 
-  const {
-    loading: isSubmitting,
-    error: submitError,
-    load: toggleFlag,
-    data: answerData,
-  } = createFetchStore();
+  const { load: toggleFlag } = createFetchStore();
 </script>
 
 <div class="py-2">

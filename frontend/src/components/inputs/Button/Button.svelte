@@ -13,7 +13,7 @@
     | "primary"
     | "approve"
     | "none" = "dark";
-  export let handleClick = (e: MouseEvent) => {};
+  export let handleClick = (_e: MouseEvent) => {};
   export let disabled: boolean = false;
   export let fullWidth: boolean = false;
   export let testId: string = "";

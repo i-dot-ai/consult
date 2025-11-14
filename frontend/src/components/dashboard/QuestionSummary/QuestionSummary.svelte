@@ -24,11 +24,7 @@
   import Alert from "../../Alert.svelte";
   import FilterAlt from "../../svg/material/FilterAlt.svelte";
 
-  import {
-    themeFilters,
-    demoFilters,
-    multiAnswerFilters,
-  } from "../../../global/state.svelte.ts";
+  import { themeFilters } from "../../../global/state.svelte.ts";
   import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
   import MultiChoice from "../MultiChoice/MultiChoice.svelte";
   import CsvDownload from "../../CsvDownload/CsvDownload.svelte";
@@ -55,15 +51,12 @@
     showThemes = true,
     themesLoading = true,
     totalAnswers = 0,
-    filteredTotal = 0,
     demoData = {},
     demoOptions = {},
     demoOptionsData = [],
     themes = [],
     multiChoice = [],
     consultationCode = "",
-    searchValue = "",
-    evidenceRich = false,
     sortAscending = true,
     setActiveTab = () => {},
     anyFilterApplied = false,

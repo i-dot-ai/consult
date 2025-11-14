@@ -13,13 +13,22 @@ import AnswersListStory from "../theme-sign-off/AnswersList/AnswersListStory.sve
 import GeneratedThemeCardStory from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCardStory.svelte";
 import ThemeSignoffDetailStory from "../screens/ThemeSignOffDetailStory.svelte";
 
-interface StoryProp {
+export interface StoryOption {
+  label: string;
+  value: unknown;
+}
+
+export interface StoryProp {
   name: string;
   value: unknown;
   type: "number" | "text" | "bool" | "select" | "json" | "html" | "func";
   schema?: string;
+  label?: string;
+  options?: StoryOption[];
+  rawHtml?: string;
 }
-interface Story {
+
+export interface Story {
   name: string;
   component: Component;
   category?: string;

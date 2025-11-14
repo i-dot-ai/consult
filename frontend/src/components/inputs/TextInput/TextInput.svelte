@@ -17,7 +17,7 @@
   export let placeholder: string = "";
   export let autocomplete: string;
   export let name: string;
-  export let setValue = (newValue: string) => {};
+  export let setValue = (_newValue: string) => {};
 
   export let variant: "default" | "search" = "default";
 </script>

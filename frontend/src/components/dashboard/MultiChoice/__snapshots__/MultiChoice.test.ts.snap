@@ -48,9 +48,7 @@ exports[`MultiChoice > should render data 1`] = `
             class="text-neutral-700 text-lg"
             style=""
           >
-            <!---->
             Multiple Choice Answers
-            
             
           </h2>
           

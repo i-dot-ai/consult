@@ -1,11 +1,9 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { applyHighlight } from "../../../global/utils";
-
-  import Title from "../../Title.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Star from "../../svg/material/Star.svelte";
+  import ApplyHighlight from "../../HighlightText/HighlightText.svelte";
 
   interface Props {
     title: string;
@@ -25,32 +23,30 @@
 <article>
   <div class={clsx(["flex", "gap-2"])}>
     <div class={clsx(["mt-1"])}>
-      <MaterialIcon size={"1.3rem"}>
+      <MaterialIcon size="1.3rem">
         <Star />
       </MaterialIcon>
     </div>
 
     <div class={clsx(["grow", "flex", "flex-col", "gap-2"])}>
       <div class={clsx(["flex", "justify-between"])}>
-        <Title
-          weight={"light"}
-          level={3}
-          text={applyHighlight(title, highlightText)}
-        />
+        <h3 class="text-neutral-700 font-light text-md">
+          <ApplyHighlight text={title} textToHighlight={highlightText} />
+        </h3>
 
         <slot name="aside" />
       </div>
 
       {#if description}
         <p>
-          {@html applyHighlight(description, highlightText)}
+          <ApplyHighlight text={description} textToHighlight={highlightText} />
         </p>
       {/if}
 
       <footer class={clsx(["flex", "gap-3", "flex-wrap"])}>
         <slot name="footer" />
 
-        {#each tags as tag}
+        {#each tags as tag (tag)}
           <span
             class={clsx([
               "flex",

@@ -15,14 +15,14 @@
   export let open: boolean = false;
   export let arrow: boolean = true;
   export let border: boolean = true;
-  export let handleOpenChange = (next: boolean) => {};
+  export let handleOpenChange = (_next: boolean) => {};
 
   const {
-    elements: { trigger, content, close },
+    elements: { trigger, content, close: _close },
     states,
   } = createPopover({
     forceVisible: true,
-    onOpenChange: ({ curr, next }) => {
+    onOpenChange: ({ curr: _curr, next }) => {
       handleOpenChange(next);
       return next;
     },

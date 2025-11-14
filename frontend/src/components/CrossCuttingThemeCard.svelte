@@ -50,7 +50,7 @@
   <div class={clsx(["mt-4"])}>
     <div class={clsx(["text-sm", "text-gray-600", "mb-2"])}>Questions:</div>
     <div class={clsx(["flex", "flex-wrap", "gap-1"])}>
-      {#each questions as question}
+      {#each questions as question (question)}
         <span
           class={clsx([
             "inline-block",

@@ -6,7 +6,6 @@
 
   import type { Question } from "../../../global/types.ts";
   import { favStore } from "../../../global/stores.ts";
-  import { applyHighlight } from "../../../global/utils.ts";
 
   import MaterialIcon from "../../MaterialIcon.svelte";
   import ConditionalWrapper from "../../ConditionalWrapper/ConditionalWrapper.svelte";
@@ -16,6 +15,7 @@
   import Panel from "../Panel/Panel.svelte";
   import Link from "../../Link.svelte";
   import Button from "../../inputs/Button/Button.svelte";
+  import ApplyHighlight from "../../HighlightText/HighlightText.svelte";
 
   interface Props {
     consultationId: string;
@@ -32,7 +32,6 @@
   }
 
   let {
-    consultationId = "",
     question = {},
     url = "",
     highlightText = "",
@@ -128,10 +127,10 @@
               in:fade
               class={clsx(["text-md", "leading-6", disabled && "opacity-50"])}
             >
-              {@html applyHighlight(
-                `Q${question.number}: ${question.question_text}`,
-                highlightText,
-              )}
+              <ApplyHighlight
+                text={`Q${question.number}: ${question.question_text}`}
+                textToHighlight={highlightText}
+              />
             </p>
 
             <div

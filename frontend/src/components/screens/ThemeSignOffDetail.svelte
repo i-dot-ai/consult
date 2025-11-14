@@ -35,6 +35,7 @@
   import ErrorModal, {
     type ErrorType,
   } from "../theme-sign-off/ErrorModal.svelte";
+  import { type GeneratedTheme } from "../../global/types";
 
   let {
     consultationId = "",
@@ -47,28 +48,39 @@
     selectGeneratedThemeMock,
   } = $props();
 
-  const flattenGeneratedThemes = (items: any[]): any[] => {
-    if (!items) {
+  const flattenGeneratedThemes = (
+    themes: GeneratedTheme[],
+  ): GeneratedTheme[] => {
+    if (!themes) {
       return [];
     }
 
     const result = [];
 
-    for (const item of items) {
-      const { children, ...attrs } = item;
+    for (const theme of themes) {
+      const { children, ...attrs } = theme;
       result.push(attrs);
 
-      if (children?.length > 0) {
+      if (children?.length) {
         result.push(...flattenGeneratedThemes(children));
       }
     }
 
     return result;
-  }
+  };
+
+  const { load: loadGeneratedThemes, data: generatedThemesData } =
+    createFetchStore(generatedThemesMock);
+
+  let flatGeneratedThemes = $derived(
+    flattenGeneratedThemes($generatedThemesData?.results),
+  );
 
   let isConfirmSignOffModalOpen = $state(false);
   let addingCustomTheme = $state(false);
-  let expandedThemes: string[] = $state([]);
+  let expandedThemes: string[] = $derived(
+    flatGeneratedThemes.map((theme) => theme.id),
+  );
   let errorData: ErrorType | null = $state(null);
 
   const errorModalOnClose = () => {
@@ -83,51 +95,19 @@
     load: loadSelectedThemes,
     loading: isSelectedThemesLoading,
     data: selectedThemesData,
-    error: selectedThemesError,
   } = createFetchStore(selectedThemesMock);
 
-  const {
-    load: loadGeneratedThemes,
-    loading: isGeneratedThemesLoading,
-    data: generatedThemesData,
-    error: generatedThemesError,
-  } = createFetchStore(generatedThemesMock);
+  const { load: createSelectedTheme } = createFetchStore(createThemeMock);
 
-  const {
-    load: createSelectedTheme,
-    loading: isCreatingSelectedTheme,
-    data: createSelectedThemeData,
-    error: createSelectedThemeError,
-  } = createFetchStore(createThemeMock);
+  const { load: loadConfirmSignOff, error: confirmSignOffError } =
+    createFetchStore();
 
-  const {
-    load: loadConfirmSignOff,
-    loading: isConfirmSignOffLoading,
-    data: confirmSignOffData,
-    error: confirmSignOffError,
-  } = createFetchStore();
-
-  const {
-    load: selectGeneratedTheme,
-    loading: isSelectingGeneratedTheme,
-    data: selectGeneratedThemeData,
-    error: selectGeneratedThemeError,
-  } = createFetchStore(selectGeneratedThemeMock);
-
-  const {
-    load: loadQuestion,
-    loading: isQuestionLoading,
-    data: questionData,
-    error: questionError,
-  } = createFetchStore(questionDataMock);
-
-  let flatGeneratedThemes = $derived(
-    flattenGeneratedThemes($generatedThemesData?.results),
+  const { load: selectGeneratedTheme } = createFetchStore(
+    selectGeneratedThemeMock,
   );
 
-  $effect(() => {
-    expandedThemes = flatGeneratedThemes.map((theme) => theme.id);
-  });
+  const { load: loadQuestion, data: questionData } =
+    createFetchStore(questionDataMock);
 
   $effect(() => {
     loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
@@ -184,7 +164,7 @@
       } else {
         throw new Error(`Remove theme failed: ${response.statusText}`);
       }
-    } catch (err: any) {
+    } catch (_err: unknown) {
       errorData = { type: "unexpected" };
     }
   };
@@ -230,7 +210,7 @@
       } else {
         throw new Error(`Edit theme failed: ${response.statusText}`);
       }
-    } catch (err: any) {
+    } catch (_err: unknown) {
       errorData = { type: "unexpected" };
     }
   };
@@ -275,7 +255,7 @@
       location.replace(getThemeSignOffUrl(consultationId));
     }
   };
-  const numSelectedThemesText = (themes?: Array<any>): string => {
+  const numSelectedThemesText = (themes?: Array<unknown>): string => {
     if (!themes) {
       return "";
     }
@@ -334,7 +314,7 @@
       <Panel variant="primary" bg={true} border={true}>
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2">
-            <MaterialIcon color={"fill-primary"}>
+            <MaterialIcon color="fill-primary">
               <CheckCircle />
             </MaterialIcon>
 
@@ -399,7 +379,7 @@
       </div>
     {:else}
       <div class="mt-4">
-        {#each $selectedThemesData?.results as selectedTheme}
+        {#each $selectedThemesData?.results as selectedTheme (selectedTheme.id)}
           <div transition:slide={{ duration: 150 }} class="mb-4 last:mb-0">
             <SelectedThemeCard
               {consultationId}
@@ -444,7 +424,7 @@
       icon={CheckCircle}
       open={isConfirmSignOffModalOpen}
       setOpen={(newOpen: boolean) => (isConfirmSignOffModalOpen = newOpen)}
-      confirmText={"Confirm Sign Off"}
+      confirmText="Confirm Sign Off"
       handleConfirm={confirmSignOff}
     >
       <p class="text-sm text-neutral-500">
@@ -456,7 +436,7 @@
       <h4 class="text-xs font-bold my-4">Selected themes:</h4>
 
       <div class="max-h-64 overflow-y-auto">
-        {#each $selectedThemesData?.results as selectedTheme}
+        {#each $selectedThemesData?.results as selectedTheme (selectedTheme.id)}
           <Panel bg={true} border={false}>
             <h5 class="text-xs font-bold mb-1">{selectedTheme.name}</h5>
             <p class="text-xs text-neutral-500">{selectedTheme.description}</p>
@@ -562,7 +542,7 @@
         </Panel>
       </div>
 
-      {#each $generatedThemesData?.results as theme}
+      {#each $generatedThemesData?.results as theme (theme.id)}
         <GeneratedThemeCard
           {consultationId}
           {theme}
