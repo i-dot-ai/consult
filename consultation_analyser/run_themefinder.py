@@ -166,12 +166,15 @@ def theme_identifier(question: Question):
     records = {}
     for _, row in all_themes_df.iterrows():
         if row["topic_id"] != "0":
-            records[row["topic_id"]] = CandidateTheme.objects.create(
-                question=question,
-                name=row["topic_label"],
-                description=row["topic_description"],
-                approximate_frequency=row["source_topic_count"],
-            )
+            try:
+                records[row["topic_id"]] = CandidateTheme.objects.create(
+                    question=question,
+                    name=row["topic_label"],
+                    description=row["topic_description"],
+                    approximate_frequency=row["source_topic_count"],
+                )
+            except KeyError:
+                raise KeyError(row)
 
     for _, row in all_themes_df.iterrows():
         if parent := records.get(row["parent_id"]):
