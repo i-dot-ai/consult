@@ -250,9 +250,10 @@ def agentic_theme_selection(
         selected_themes = agent.select_themes(significance_percentage)
         significance_percentage += 1
 
-    selected_themes["topic"] = (
-        selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
-    )
+    if not selected_themes.empty:
+        selected_themes["topic"] = (
+            selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
+        )
 
     selected_themes.rename(
         columns={"topic_label": "Theme Name", "topic_description": "Theme Description"},
