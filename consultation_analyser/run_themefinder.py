@@ -249,7 +249,7 @@ def agentic_theme_selection(
     ) and (significance_percentage < 20):
         selected_themes = agent.select_themes(significance_percentage)
         significance_percentage += 1
-    
+
     selected_themes["topic"] = (
         selected_themes["topic_label"] + ": " + selected_themes["topic_description"]
     )

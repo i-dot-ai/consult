@@ -193,8 +193,13 @@ class SelectedThemeInline(admin.StackedInline):
     extra = 0
 
 
+class CandidateThemeInline(admin.StackedInline):
+    model = CandidateTheme
+    extra = 0
+
+
 class CrossCuttingThemeAdmin(admin.ModelAdmin):
-    inlines = [SelectedThemeInline]
+    inlines = [SelectedThemeInline, CandidateThemeInline]
 
 
 class CandidateThemeAdmin(admin.ModelAdmin):
