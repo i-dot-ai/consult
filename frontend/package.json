@@ -11,10 +11,10 @@
     "build": "astro build",
     "preview": "astro preview --host",
     "astro": "astro",
-    "test": "npx vitest --coverage",
-    "update-snapshots": "npx vitest --update",
-    "prettier-check": "npx prettier --check .",
-    "prettier-fix": "npx prettier --write ."
+    "test": "vitest --coverage",
+    "update-snapshots": "vitest --update",
+    "prettier-check": "prettier --check .",
+    "prettier-fix": "prettier --write ."
   },
   "dependencies": {
     "@astrojs/node": "^9.3.3",
