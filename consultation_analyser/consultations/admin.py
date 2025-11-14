@@ -203,7 +203,7 @@ class CrossCuttingThemeAdmin(admin.ModelAdmin):
 
 
 class CandidateThemeAdmin(admin.ModelAdmin):
-    list_display = ["question__consultation"]
+    list_filter = ["question__consultation"]
 
 
 admin.site.register(CandidateTheme, CandidateThemeAdmin)

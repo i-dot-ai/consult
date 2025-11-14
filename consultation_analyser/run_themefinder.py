@@ -156,7 +156,6 @@ def theme_identifier(question: Question):
             question=question.text,
         )
     )
-
     if len(refined_themes_df) > 20:
         _, all_themes_df = agentic_theme_selection(refined_themes_df)
     else:
@@ -167,14 +166,17 @@ def theme_identifier(question: Question):
     for _, row in all_themes_df.iterrows():
         if row["topic_id"] != "0":
             try:
-                records[row["topic_id"]] = CandidateTheme.objects.create(
-                    question=question,
-                    name=row["topic_label"],
-                    description=row["topic_description"],
-                    approximate_frequency=row["source_topic_count"],
-                )
+                name = row["topic_label"]
+                description = row["topic_description"]
             except KeyError:
-                raise KeyError(row)
+                name, description = row["topic"].split(":", 1)
+
+            records[row["topic_id"]] = CandidateTheme.objects.create(
+                question=question,
+                name=name,
+                description=description,
+                approximate_frequency=row["source_topic_count"],
+            )
 
     for _, row in all_themes_df.iterrows():
         if parent := records.get(row["parent_id"]):
