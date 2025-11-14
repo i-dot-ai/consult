@@ -2,6 +2,8 @@ locals {
   backend_port  = 8000
   frontend_port = 3000
 
+  llm_gateway_name = var.env == "dev" || var.env == "preprod" ? "llm-gateway.${var.env}" : "llm-gateway"
+
   rds_fqdn        = "postgres://${module.rds.rds_instance_username}:${module.rds.rds_instance_db_password}@${module.rds.db_instance_address}/${module.rds.db_instance_name}"
   secret_env_vars = jsondecode(data.aws_secretsmanager_secret_version.env_vars.secret_string)
   base_env_vars = {
@@ -108,7 +110,7 @@ module "backend" {
     "RolePassableByRunner" = "True"
   }
   entrypoint = ["./start.sh"]
-
+  
   memory = 4096
   cpu    = 1024
 

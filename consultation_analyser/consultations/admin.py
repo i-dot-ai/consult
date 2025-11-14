@@ -18,6 +18,11 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotationTheme,
     SelectedTheme,
 )
+from consultation_analyser.run_themefinder import (
+    sync_detail_detection,
+    sync_theme_mapping,
+    theme_identifier,
+)
 from consultation_analyser.support_console.ingest import (
     DEFAULT_TIMEOUT_SECONDS,
     create_embeddings_for_question,
@@ -107,12 +112,41 @@ def create_large_dummy_consultation(modeladmin, request, queryset):
     create_dummy_consultation(modeladmin, request, queryset, 10_000)
 
 
+@admin.action(description="find themes")
+def theme_identifier_action(modeladmin, request, queryset):
+    query = get_queue(default_timeout=100_000)
+    for consultation in queryset:
+        for question in Question.objects.filter(consultation=consultation):
+            query.enqueue(theme_identifier, question)
+
+
+@admin.action(description="map themes")
+def theme_mapper_action(modeladmin, request, queryset):
+    query = get_queue(default_timeout=100_000)
+    for consultation in queryset:
+        for question in Question.objects.filter(consultation=consultation):
+            sync_detail_detection_job = query.enqueue(sync_detail_detection, question)
+            query.enqueue(sync_theme_mapping, question, depends_on=sync_detail_detection_job)
+
+
+class CandidateThemeInline(admin.StackedInline):
+    model = CandidateTheme
+    extra = 0
+
+
+class SelectedThemeInline(admin.StackedInline):
+    model = SelectedTheme
+    extra = 0
+
+
 class ConsultationAdmin(admin.ModelAdmin):
     actions = [
         update_embeddings_admin,
         reimport_demographics,
         create_small_dummy_consultation,
         create_large_dummy_consultation,
+        theme_identifier_action,
+        theme_mapper_action,
     ]
 
 
@@ -122,8 +156,8 @@ class MultiChoiceAnswerInline(admin.StackedInline):
 
 
 class QuestionAdmin(admin.ModelAdmin):
-    list_filter = ["consultation"]
-    list_display = ["consultation"]
+    list_filter = ["consultation", "theme_status"]
+    list_display = ["number", "text", "consultation", "theme_status"]
     list_select_related = True
     readonly_fields = [
         "consultation",
@@ -132,7 +166,7 @@ class QuestionAdmin(admin.ModelAdmin):
         "has_free_text",
         "has_multiple_choice",
     ]
-    inlines = [MultiChoiceAnswerInline]
+    inlines = [MultiChoiceAnswerInline, CandidateThemeInline, SelectedThemeInline]
 
 
 class ResponseAnnotationAdmin(SimpleHistoryAdmin):
@@ -164,17 +198,12 @@ class DemographicOptionAdmin(admin.ModelAdmin):
     readonly_fields = ["consultation", "field_name", "field_value"]
 
 
-class SelectedThemeInline(admin.StackedInline):
-    model = SelectedTheme
-    extra = 0
-
-
 class CrossCuttingThemeAdmin(admin.ModelAdmin):
     inlines = [SelectedThemeInline]
 
 
 class CandidateThemeAdmin(admin.ModelAdmin):
-    pass
+    list_filter = ["question__consultation"]
 
 
 admin.site.register(CandidateTheme, CandidateThemeAdmin)
