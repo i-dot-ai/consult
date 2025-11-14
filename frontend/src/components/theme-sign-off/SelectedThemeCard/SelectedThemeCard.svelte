@@ -45,6 +45,12 @@
   let showAnswers = $state(false);
   let editing = $state(false);
   let answersRequested = $state(false);
+
+  const resetAnswers = () => {
+    $answersData = null;
+    showAnswers = false;
+    answersRequested = false;
+  }
 </script>
 
 <article class="bg-white rounded-lg" data-themeid={theme.id}>
@@ -57,6 +63,7 @@
         handleCancel={() => (editing = false)}
         handleConfirm={(title, description) => {
           updateTheme(theme.id, title, description);
+          resetAnswers();
           editing = false;
         }}
       />
