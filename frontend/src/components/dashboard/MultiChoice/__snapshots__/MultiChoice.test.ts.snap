@@ -1,0 +1,229 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`MultiChoice > should render data 1`] = `
+<div>
+  <section
+    class="my-4"
+  >
+    <div
+      class="h-full my-4 p-4 rounded-2xl border border-gray-200"
+      data-testid="panel-component"
+    >
+      <!---->
+      <div
+        class="flex gap-4"
+      >
+        <div
+          class="flex justify-center items-center"
+        >
+          <div
+            class="bg-pink-50 p-2 rounded-md mt-1.5"
+          >
+            <svg
+              class="fill-pink-700"
+              height="1.3rem"
+              role="img"
+              viewBox="0 -960 960 960"
+              width="1.3rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <!---->
+              <path
+                d="M280-600v-80h560v80H280Zm0 160v-80h560v80H280Zm0 160v-80h560v80H280ZM160-600q-17 0-28.5-11.5T120-640q0-17 11.5-28.5T160-680q17 0 28.5 11.5T200-640q0 17-11.5 28.5T160-600Zm0 160q-17 0-28.5-11.5T120-480q0-17 11.5-28.5T160-520q17 0 28.5 11.5T200-480q0 17-11.5 28.5T160-440Zm0 160q-17 0-28.5-11.5T120-320q0-17 11.5-28.5T160-360q17 0 28.5 11.5T200-320q0 17-11.5 28.5T160-280Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              
+              <!---->
+            </svg>
+            <!---->
+          </div>
+        </div>
+        <!---->
+         
+        <div
+          class="grow"
+        >
+          <!---->
+          <h2
+            class="text-neutral-700 text-lg"
+            style=""
+          >
+            <!---->
+            Multiple Choice Answers
+            
+            
+          </h2>
+          
+          <!---->
+           
+          <!---->
+        </div>
+         
+        <!---->
+      </div>
+      <!---->
+       
+      <div
+        class="h-full my-4 p-4 rounded-2xl border border-gray-200 bg-neutral-50"
+        data-testid="panel-component"
+      >
+        <!---->
+        <div
+          class="mb-1 last:mb-0"
+        >
+          <!---->
+          <button
+            aria-pressed="false"
+            class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-variant="ghost"
+            role="button"
+            tabindex="0"
+          >
+            <!---->
+            <div
+              class="flex items-center justify-between gap-1 text-xs mb-4 last:mb-0 w-full p-1"
+            >
+              <h3
+                class="w-1/2 text-left"
+              >
+                Multi Choice Answer 1
+              </h3>
+               
+              <div
+                class="flex flex-col justify-center items-center gap-1 w-2/3 sm:flex-row sm:w-1/2 sm:gap-4"
+              >
+                <div
+                  class="flex justify-between items-center w-full sm:justify-end"
+                >
+                  <span>
+                    33.3%
+                  </span>
+                   
+                  <span
+                    class="sm:hidden"
+                  >
+                    10
+                  </span>
+                </div>
+                 
+                <div
+                  class="w-full"
+                >
+                  <div
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="33.3"
+                    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+                    data-max="100"
+                    data-melt-progress=""
+                    data-state="loading"
+                    data-value="33.3"
+                    max="100"
+                    role="meter"
+                  >
+                    <div
+                      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+                      style="transform: translateX(-66.7%); transition-delay: 0ms; transition-duration: 0ms;"
+                    />
+                  </div>
+                  <!---->
+                </div>
+                 
+                <span
+                  class="hidden sm:block min-w-[4ch]"
+                >
+                  10
+                </span>
+              </div>
+            </div>
+            
+            
+          </button>
+          
+          <!---->
+        </div>
+        <div
+          class="mb-1 last:mb-0"
+        >
+          <!---->
+          <button
+            aria-pressed="false"
+            class="w-full text-xs cursor-pointer rounded-md py-0.5 px-1 border border-transparent transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 svelte-1d0mdzt"
+            data-variant="ghost"
+            role="button"
+            tabindex="0"
+          >
+            <!---->
+            <div
+              class="flex items-center justify-between gap-1 text-xs mb-4 last:mb-0 w-full p-1"
+            >
+              <h3
+                class="w-1/2 text-left"
+              >
+                Multi Choice Answer 2
+              </h3>
+               
+              <div
+                class="flex flex-col justify-center items-center gap-1 w-2/3 sm:flex-row sm:w-1/2 sm:gap-4"
+              >
+                <div
+                  class="flex justify-between items-center w-full sm:justify-end"
+                >
+                  <span>
+                    66.7%
+                  </span>
+                   
+                  <span
+                    class="sm:hidden"
+                  >
+                    20
+                  </span>
+                </div>
+                 
+                <div
+                  class="w-full"
+                >
+                  <div
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="66.7"
+                    class="relative h-2 w-full overflow-hidden rounded-[99999px] bg-neutral-300"
+                    data-max="100"
+                    data-melt-progress=""
+                    data-state="loading"
+                    data-value="66.7"
+                    max="100"
+                    role="meter"
+                  >
+                    <div
+                      class="h-full w-full bg-primary transition-transform duration-[660ms] ease-[cubic-bezier(0.65,0,0.35,1)]"
+                      style="transform: translateX(-33.3%); transition-delay: 0ms; transition-duration: 0ms;"
+                    />
+                  </div>
+                  <!---->
+                </div>
+                 
+                <span
+                  class="hidden sm:block min-w-[4ch]"
+                >
+                  20
+                </span>
+              </div>
+            </div>
+            
+            
+          </button>
+          
+          <!---->
+        </div>
+        
+        <!---->
+      </div>
+      <!---->
+      <!---->
+    </div>
+    <!---->
+  </section>
+  
+</div>
+`;

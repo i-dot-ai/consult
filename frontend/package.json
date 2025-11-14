@@ -12,6 +12,7 @@
     "preview": "astro preview --host",
     "astro": "astro",
     "test": "npx vitest --coverage",
+    "update-snapshots": "npx vitest --update",
     "prettier-check": "npx prettier --check .",
     "prettier-fix": "npx prettier --write ."
   },

@@ -7,26 +7,23 @@ import { multiAnswerFilters } from "../../../global/state.svelte";
 
 import MultiChoice from "./MultiChoice.svelte";
 
-let testData;
-
 describe("MultiChoice", () => {
-  beforeEach(() => {
-    testData = {
-      data: [
-        {
-          id: "id-1",
-          text: "Multi Choice Answer 1",
-          response_count: 10,
-        },
-        {
-          id: "id-2",
-          text: "Multi Choice Answer 2",
-          response_count: 20,
-        },
-      ],
-      totalCounts: 30,
-    };
-  });
+  const testData = {
+    data: [
+      {
+        id: "id-1",
+        text: "Multi Choice Answer 1",
+        response_count: 10,
+      },
+      {
+        id: "id-2",
+        text: "Multi Choice Answer 2",
+        response_count: 20,
+      },
+    ],
+    totalCounts: 30,
+  };
+
   afterEach(() => {
     cleanup();
     multiAnswerFilters.reset();
@@ -63,18 +60,18 @@ describe("MultiChoice", () => {
     const buttons = screen.getAllByRole("button");
 
     // First filter applied
-    await user.click(buttons.at(0));
+    await user.click(buttons[0]);
     expect(multiAnswerFilters.filters).toStrictEqual([testData.data[0].id]);
 
     // Second filter applied
-    await user.click(buttons.at(1));
+    await user.click(buttons[1]);
     expect(multiAnswerFilters.filters).toStrictEqual([
       testData.data[0].id,
       testData.data[1].id,
     ]);
 
     // First filter removed by clicking on it again
-    await user.click(buttons.at(0));
+    await user.click(buttons[0]);
     expect(multiAnswerFilters.filters).toStrictEqual([testData.data[1].id]);
   });
 });

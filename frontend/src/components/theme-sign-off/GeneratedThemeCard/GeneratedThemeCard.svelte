@@ -21,9 +21,9 @@
     theme: GeneratedTheme;
     level?: number;
     leftPadding?: number;
-    expandedThemes: string[];
-    setExpandedThemes: (themeId: string) => void;
-    handleSelect: (theme: GeneratedTheme) => void;
+    expandedThemes?: string[];
+    setExpandedThemes?: (themeId: string) => void;
+    handleSelect?: (theme: GeneratedTheme) => void;
     maxAnswers?: number;
     answersMock?: Function;
   }

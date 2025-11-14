@@ -17,10 +17,14 @@ exports[`SelectedThemeCard > should render 1`] = `
           <div
             class="md:w-auto"
           >
-            <header>
+            <header
+              class="flex items-center gap-2"
+            >
               <h2>
                 Theme Name
               </h2>
+               
+              <!---->
             </header>
              
             <p

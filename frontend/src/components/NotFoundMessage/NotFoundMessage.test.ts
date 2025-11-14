@@ -11,6 +11,7 @@ describe("Section", () => {
     const { getByText } = render(NotFoundMessage, {
       title: TEST_TITLE,
       body: TEST_BODY,
+      variant: "default",
     });
 
     expect(getByText(TEST_TITLE));
