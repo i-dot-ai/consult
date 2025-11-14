@@ -12,8 +12,11 @@ on:
     paths:
       - "frontend/**"
 
+env:
+  NODE_VERSION: "20.18.0" # Match exact version specified in .nvmrc and frontend/Dockerfile
+
 jobs:
-  frontend-ci:
+  test:
     runs-on: ubuntu-latest
 
     defaults:
@@ -26,7 +29,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: "20.18.0" # Match exact version specified in .nvmrc and frontend/Dockerfile
+          node-version: ${{ env.NODE_VERSION }}
           cache: "npm"
           cache-dependency-path: frontend/package-lock.json
 
@@ -36,5 +39,25 @@ jobs:
       - name: Run tests
         run: npm test
 
-      - name: Build frontend
-        run: npm run build
+  lint:
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: ./frontend
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check code formatting
+        run: npm run prettier-check
