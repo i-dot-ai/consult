@@ -281,11 +281,6 @@ class DemographicOptionSerializer(serializers.Serializer):
     count = serializers.IntegerField(required=False)
 
 
-class ConsultationFolderSerializer(serializers.Serializer):
-    key = serializers.CharField()
-    value = serializers.CharField()
-
-
 class RespondentSerializer(serializers.ModelSerializer):
     demographics = DemographicOptionSerializer(many=True, read_only=True)
 
