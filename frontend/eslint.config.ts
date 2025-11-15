@@ -4,6 +4,7 @@ import tseslint from "typescript-eslint";
 import { defineConfig, globalIgnores } from "eslint/config";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 import svelte from "eslint-plugin-svelte";
+import astro from "eslint-plugin-astro";
 
 export default defineConfig([
   globalIgnores([
@@ -14,12 +15,13 @@ export default defineConfig([
     "public/lit/",
   ]),
   {
-    files: ["**/*.{js,ts,mjs,svelte}"],
+    files: ["**/*.{js,ts,mjs,svelte,astro}"],
     extends: [
       js.configs.recommended,
       eslintPluginPrettierRecommended,
       ...tseslint.configs.recommended,
       ...svelte.configs["flat/recommended"],
+      ...astro.configs.recommended,
     ],
     languageOptions: {
       globals: globals.browser,

@@ -8,14 +8,17 @@ import Section from "../../../components/Section/Section.svelte";
 import Title from "../../../components/Title.svelte";
 import Link from "../../../components/Link.svelte";
 
-const data = await fetchBackendApi<{ results: Consultation[]}>(Astro, "/api/consultations/");
+const data = await fetchBackendApi<{ results: Consultation[] }>(
+  Astro,
+  "/api/consultations/",
+);
 const consultations = data.results;
-
 ---
+
 <Layout>
   <Section>
     <Title level={1} text="Consultations" />
-        <div class="overflow-x-auto">
+    <div class="overflow-x-auto">
       <table class="w-full text-left whitespace-nowrap">
         <thead class="font-bold">
           <tr>
@@ -24,19 +27,20 @@ const consultations = data.results;
           </tr>
         </thead>
         <tbody>
-        {
+          {
             consultations.map((consultation) => (
               <tr class="border-t hover:bg-gray-50">
                 <td class="py-2 pr-2">
-                  <Link href={`/support/consultations/${consultation.id}`}>{consultation.title}</Link>
+                  <Link href={`/support/consultations/${consultation.id}`}>
+                    {consultation.title}
+                  </Link>
                 </td>
                 <td class="py-2 pr-2">{formatDate(consultation.created_at)}</td>
               </tr>
             ))
           }
-
         </tbody>
       </table>
-
-  </Section>
-</Layout>
+    </div>
+  </Section></Layout
+>
