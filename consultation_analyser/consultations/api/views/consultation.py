@@ -1,5 +1,6 @@
 from django.db.models import Count
-from rest_framework.decorators import action
+from django.http import HttpResponse, JsonResponse
+from rest_framework.decorators import action, api_view
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -13,7 +14,11 @@ from consultation_analyser.consultations.api.serializers import (
     DemographicOptionSerializer,
 )
 from consultation_analyser.consultations.models import Consultation, DemographicOption
-from consultation_analyser.support_console.views.consultations import delete_consultation_job
+from consultation_analyser.support_console import ingest
+from consultation_analyser.support_console.views.consultations import (
+    delete_consultation_job,
+    import_consultation_job,
+)
 
 
 class ConsultationViewSet(ModelViewSet):
@@ -55,3 +60,36 @@ class ConsultationViewSet(ModelViewSet):
         serializer = DemographicOptionSerializer(instance=data, many=True)
 
         return Response(serializer.data)
+
+
+@api_view(["GET"])
+def get_consultation_folders(request) -> HttpResponse:
+    """
+    get consultation folders.
+    """
+    consultation_folders = ingest.get_consultation_codes()
+
+    return JsonResponse(consultation_folders, safe=False)
+
+
+@api_view(["POST"])
+def submit_consultation_import(request) -> HttpResponse:
+    """
+    Submit consultation import.
+    """
+    consultation_name = request.data.get("consultation_name")
+    consultation_code = request.data.get("consultation_code")
+    timestamp = request.data.get("timestamp")
+    action = request.data.get("action")
+
+    try:
+        import_consultation_job.delay(
+            consultation_name=consultation_name,
+            consultation_code=consultation_code,
+            timestamp=timestamp,
+            current_user_id=request.user.id,
+            sign_off=action == "sign_off",
+        )
+        return HttpResponse(status=201)
+    except Exception as e:
+        return HttpResponse(status=500, content=str(e))

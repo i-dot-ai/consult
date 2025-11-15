@@ -8,7 +8,7 @@
   import AnswerCard from "../AnswerCard/AnswerCard.svelte";
   import Finance from "../../svg/material/Finance.svelte";
   import FiltersSidebar from "../FiltersSidebar/FiltersSidebar.svelte";
-  import Select from "../../inputs/Select.svelte";
+  import Select from "../../inputs/Select/Select.svelte";
 
   import {
     SearchModeLabels,
@@ -147,10 +147,11 @@
 
               <div class="w-full sm:w-auto">
                 <Select
+                  id="search_mode"
                   label="Search Mode"
                   hideLabel={true}
                   value={searchMode}
-                  options={[
+                  items={[
                     {
                       value: SearchModeValues.KEYWORD,
                       label: SearchModeLabels.KEYWORD,
@@ -160,7 +161,7 @@
                       label: SearchModeLabels.SEMANTIC,
                     },
                   ]}
-                  handleChange={(nextValue: string) => {
+                  onchange={(nextValue: string) => {
                     setSearchMode(nextValue as SearchModeValues);
                   }}
                 />

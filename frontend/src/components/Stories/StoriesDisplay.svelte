@@ -11,7 +11,7 @@
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import Switch from "../inputs/Switch/Switch.svelte";
   import Button from "../inputs/Button/Button.svelte";
-  import Select from "../inputs/Select.svelte";
+  import Select from "../inputs/Select/Select.svelte";
   import Tag from "../Tag/Tag.svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
   import Fullscreen from "../svg/material/Fullscreen.svelte";
@@ -141,14 +141,15 @@
                 />
               {:else if prop.type === "select"}
                 <Select
+                  id={inputId}
                   label={prop.name}
                   hideLabel={true}
                   value={prop.label}
-                  options={prop.options.map((opt: any) => ({
+                  items={prop.options.map((opt: any) => ({
                     value: opt.label,
                     label: opt.label,
                   }))}
-                  handleChange={(nextVal) => {
+                  onchange={(nextVal) => {
                     if (!nextVal) {
                       return;
                     }

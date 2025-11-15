@@ -42,6 +42,13 @@ export interface SelectOption {
   label: string;
 }
 
+export interface RadioItem {
+  value: string;
+  text: string;
+  checked?: boolean;
+  disabled?: boolean;
+}
+
 export enum SearchModeValues {
   SEMANTIC = "semantic",
   KEYWORD = "keyword",
