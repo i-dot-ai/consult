@@ -6,8 +6,9 @@ import Section from "../../../components/Section/Section.svelte";
 
 const { consultationId } = Astro.params;
 ---
+
 <Layout>
-    <Section>
-        <ConsultationDetail client:load consultationId={consultationId} />
-    </Section>
+  <Section>
+    <ConsultationDetail client:load consultationId={consultationId} />
+  </Section>
 </Layout>

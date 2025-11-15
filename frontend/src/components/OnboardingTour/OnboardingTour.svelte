@@ -200,7 +200,7 @@
 
       <p class="text-xs text-neutral-700 leading-5">
         {#if typeof steps[currStep].body === "string"}
-          {@html steps[currStep].body}
+          {steps[currStep].body}
         {:else}
           {@render (steps[currStep].body as Snippet)()}
         {/if}
@@ -209,14 +209,14 @@
       <footer>
         {#if hasMultipleSteps()}
           <div class="flex flex-no-wrap gap-1 mt-4">
-            {#each steps as _, i}
+            {#each steps as step, i (step.id)}
               {@const labelText = `Go to step ${i + 1}`}
 
               <button
                 title={labelText}
                 aria-label={labelText}
                 style="width: {Math.round(100 / steps.length)}%;"
-                class={"hover:opacity-75"}
+                class="hover:opacity-75"
                 onclick={() => {
                   // transition only if 1 step difference
                   progressTransition = Math.abs(currStep - i) === 1;

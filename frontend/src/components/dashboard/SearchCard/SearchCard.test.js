@@ -19,32 +19,35 @@ describe("SearchCard", () => {
   afterEach(() => cleanup());
 
   it("should render data", () => {
-    const { getByText } = render(SearchCardTest, {
-      title: testData.title,
-      description: testData.description,
-      tags: testData.tags,
-      footerContent: testData.footerContent,
-      asideContent: testData.asideContent,
-    });
-
-    expect(getByText(testData.title));
-    expect(getByText(testData.description));
-    expect(getByText(testData.footerContent));
-    expect(getByText(testData.asideContent));
-    testData.tags.forEach((tag) => expect(getByText(tag)));
-  });
-
-  it("should render data", () => {
     const { container, getByText } = render(SearchCardTest, {
       title: testData.title,
       description: testData.description,
       tags: testData.tags,
       footerContent: testData.footerContent,
       asideContent: testData.asideContent,
+      highlightText: "",
     });
 
-    expect(getByText(testData.title));
-    expect(getByText(testData.description));
+    // Use container.textContent for text that might be split across elements
+    expect(container.textContent).toContain(testData.title);
+    expect(container.textContent).toContain(testData.description);
+    expect(getByText(testData.footerContent));
+    expect(getByText(testData.asideContent));
+    testData.tags.forEach((tag) => expect(getByText(tag)));
+  });
+
+  it("should render data without highlights", () => {
+    const { container, getByText } = render(SearchCardTest, {
+      title: testData.title,
+      description: testData.description,
+      tags: testData.tags,
+      footerContent: testData.footerContent,
+      asideContent: testData.asideContent,
+      highlightText: "",
+    });
+
+    expect(container.textContent).toContain(testData.title);
+    expect(container.textContent).toContain(testData.description);
     expect(getByText(testData.footerContent));
     expect(getByText(testData.asideContent));
     testData.tags.forEach((tag) => expect(getByText(tag)));

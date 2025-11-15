@@ -1,6 +1,6 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { render, cleanup } from "@testing-library/svelte";
 
 import { createRawSnippet } from "svelte";
 
@@ -20,7 +20,7 @@ describe("RespondentTopbar", () => {
   afterEach(() => cleanup());
 
   it("should render data and links", () => {
-    const { getByText, container } = render(RespondentTopbar, {
+    const { getByText } = render(RespondentTopbar, {
       ...testData,
     });
 
@@ -29,7 +29,7 @@ describe("RespondentTopbar", () => {
   });
 
   it("should render child", () => {
-    const { getByText, container } = render(RespondentTopbar, {
+    const { getByText } = render(RespondentTopbar, {
       ...testData,
       children: createRawSnippet(() => ({
         render: () => `<p>Child content</p>`,

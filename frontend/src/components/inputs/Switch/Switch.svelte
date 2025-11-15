@@ -26,7 +26,7 @@
     elements: { root, input },
     states: { checked },
   } = createSwitch({
-    onCheckedChange: ({ curr, next }) => {
+    onCheckedChange: ({ curr: _curr, next }) => {
       handleChange(next);
       return next;
     },

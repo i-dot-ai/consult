@@ -1,7 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
-  import type { Writable } from "svelte/store";
 
   import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
@@ -12,10 +11,6 @@
   import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
   import Metrics from "../dashboard/Metrics/Metrics.svelte";
 
-  import type {
-    Consultation,
-    DemoOptionsResponse,
-  } from "../../global/types.ts";
   import {
     getApiQuestionsUrl,
     getQuestionDetailUrl,
@@ -28,14 +23,8 @@
 
   const {
     loading: isDemoOptionsLoading,
-    error: demoOptionsError,
     load: loadDemoOptions,
     data: demoOptionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<DemoOptionsResponse>;
   } = createFetchStore();
 
   onMount(async () => {
@@ -51,11 +40,6 @@
     error: questionsError,
     load: loadQuestions,
     data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
   } = createFetchStore();
 
   $: favQuestions = $questionsData?.results?.filter((question) =>
@@ -94,7 +78,7 @@
     {:else}
       <div transition:slide>
         <div class="mb-8">
-          {#each favQuestions as question}
+          {#each favQuestions as question (question.id)}
             <QuestionCard
               {consultationId}
               {question}
@@ -149,7 +133,7 @@
               body="No questions found matching your search."
             />
           {:else}
-            {#each displayQuestions as question}
+            {#each displayQuestions as question (question.id)}
               <QuestionCard
                 {consultationId}
                 {question}

@@ -51,8 +51,8 @@
           }));
         }
       }
-    } catch (err: any) {
-      error = err.message || "something went wrong.";
+    } catch (err: unknown) {
+      error = err instanceof Error ? err.message : "something went wrong.";
     } finally {
       loading = false;
     }
@@ -97,7 +97,7 @@
     {#if typeof error === "string"}
       <p class="text-sm text-red-500">{`Error: ${error}`}</p>
     {:else}
-      {#each error as err}
+      {#each error as err (err.email)}
         <p class="text-sm text-red-500">
           {`Error for ${err.email}: ${err.error}`}
         </p>

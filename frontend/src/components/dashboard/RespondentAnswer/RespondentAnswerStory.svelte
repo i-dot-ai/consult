@@ -66,11 +66,9 @@
 <TextInput
   id="input-themes-all"
   label="Themes"
-  value={`[ "Innovation", "Standardized framework" ]`}
+  value="[ &quot;Innovation&quot;, &quot;Standardized framework&quot; ]"
   setValue={(newValue) => {
-    try {
-      themes = JSON.parse(newValue);
-    } catch {}
+    themes = JSON.parse(newValue);
   }}
 />
 

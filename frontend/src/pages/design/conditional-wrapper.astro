@@ -1,16 +1,16 @@
 ---
-import Story from '../../layouts/Story.astro';
+import Story from "../../layouts/Story.astro";
 import ConditionalWrapperStory from "../../components/ConditionalWrapper/ConditionalWrapperStory.svelte";
-import { Routes } from '../../global/routes';
-
+import { Routes } from "../../global/routes";
 
 const title = "Conditional Render";
 const description = `
     Renders slotted elements inside an optional element 
     depending on the condition provided. Element can be 
     an HTML tag or another svelte component.
-`
+`;
 ---
+
 <Story title={title} description={description} backUrl={Routes.Design}>
-    <ConditionalWrapperStory client:load />
+  <ConditionalWrapperStory client:load />
 </Story>

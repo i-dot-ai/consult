@@ -1,20 +1,35 @@
 ---
-import Layout from '../layouts/Layout.astro';
-import Section from '../components/Section/Section.svelte';
-import Title from '../components/Title.svelte';
-import Text from '../components/Text/Text.svelte';
-import UnorderedList from '../components/list/UnorderedList.svelte';
-import Link from '../components/Link.svelte';
+import Layout from "../layouts/Layout.astro";
+import Section from "../components/Section/Section.svelte";
+import Title from "../components/Title.svelte";
+import Text from "../components/Text/Text.svelte";
+import UnorderedList from "../components/list/UnorderedList.svelte";
+import Link from "../components/Link.svelte";
 ---
+
 <Layout>
-	<Section narrow>
-		<Title level={1} context="public" text="How it works" />
-		<Text>How AI finds themes in the consultation and summarises them:</Text>
-		<UnorderedList>
-			<li>For each question, free-text responses are clustered into themes using a machine learning technique called topic modelling</li>
-			<li>For each theme, a large language model (LLM) is used to create a human-readable summary</li>
-			<li>The tool uses an internally hosted LLM suitable for Official-Sensitive data</li>
-		</UnorderedList>
-		<Text>You can see the code on <Link href="https://github.com/i-dot-ai/consultation-analyser">https://github.com/i-dot-ai/consultation-analyser</Link></Text>
-	</Section>
+  <Section narrow>
+    <Title level={1} context="public" text="How it works" />
+    <Text>How AI finds themes in the consultation and summarises them:</Text>
+    <UnorderedList>
+      <li>
+        For each question, free-text responses are clustered into themes using a
+        machine learning technique called topic modelling
+      </li>
+      <li>
+        For each theme, a large language model (LLM) is used to create a
+        human-readable summary
+      </li>
+      <li>
+        The tool uses an internally hosted LLM suitable for Official-Sensitive
+        data
+      </li>
+    </UnorderedList>
+    <Text
+      >You can see the code on <Link
+        href="https://github.com/i-dot-ai/consultation-analyser"
+        >https://github.com/i-dot-ai/consultation-analyser</Link
+      ></Text
+    >
+  </Section>
 </Layout>

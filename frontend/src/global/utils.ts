@@ -25,20 +25,6 @@ export const getBackendUrl = (): string => {
   );
 };
 
-export const applyHighlight = (
-  fullText: string,
-  matchedText: string,
-): string => {
-  if (!matchedText) {
-    return fullText;
-  }
-  const regex = new RegExp(matchedText, "gi");
-  return fullText.replace(
-    regex,
-    (match) => `<span class="bg-yellow-300">${match}</span>`,
-  );
-};
-
 export const getPercentage = (
   partialValue: number,
   totalValue: number,
@@ -72,25 +58,6 @@ export function paginateArray(arr: unknown[] | undefined, size: number) {
 
     return acc;
   }, []);
-}
-
-export function flattenArray(items: any[]): any[] {
-  if (!items) {
-    return [];
-  }
-
-  const result = [];
-
-  for (const item of items) {
-    const { children, ...attrs } = item;
-    result.push(attrs);
-
-    if (children?.length > 0) {
-      result.push(...flattenArray(children));
-    }
-  }
-
-  return result;
 }
 
 export const formatDate = (dateStr: string) => {

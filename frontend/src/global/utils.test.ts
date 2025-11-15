@@ -1,11 +1,5 @@
 import { describe, expect, it } from "vitest";
-import {
-  applyHighlight,
-  formatDate,
-  getEnv,
-  getPercentage,
-  toTitleCase,
-} from "./utils";
+import { formatDate, getEnv, getPercentage, toTitleCase } from "./utils";
 
 describe("getPercentage", () => {
   it("correctly calculates percentages", () => {
@@ -43,17 +37,6 @@ describe("toTitleCase", () => {
   });
   it("handles empty strings", () => {
     expect(toTitleCase("")).toEqual("");
-  });
-});
-
-describe("applyHighlight", () => {
-  it("wraps highlighted text inside span", () => {
-    const result = applyHighlight("Full test text", "test");
-    expect(result).toContain(`<span class="bg-yellow-300">test</span>`);
-  });
-  it("handles upper and lower cases", () => {
-    const result = applyHighlight("full TeSt text", "test");
-    expect(result).toContain(`<span class="bg-yellow-300">TeSt</span>`);
   });
 });
 

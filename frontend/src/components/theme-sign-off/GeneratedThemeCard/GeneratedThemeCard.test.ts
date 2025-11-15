@@ -6,15 +6,16 @@ import GeneratedThemeCard, { type Props } from "./GeneratedThemeCard.svelte";
 let testData: Props;
 
 describe("GeneratedThemeCard", () => {
+  const answers = ["Answer 1", "Answer 2"];
+
   beforeEach(() => {
     testData = {
-      selectedThemes: [],
+      consultationId: "test-consultation",
       theme: {
         id: "test-theme",
         name: "Test Theme",
         description: "This is a test theme",
       },
-      answers: ["Answer 1", "Answer 2"],
       handleSelect: () => {},
     };
   });
@@ -24,18 +25,15 @@ describe("GeneratedThemeCard", () => {
   it("should render", async () => {
     vi.mock("svelte/transition");
 
-    const { container, getByText, getAllByText, queryByText } = render(
-      GeneratedThemeCard,
-      {
-        ...testData,
-      },
-    );
+    const { container, getByText, queryByText } = render(GeneratedThemeCard, {
+      ...testData,
+    });
 
     expect(getByText(testData.theme.name));
     expect(getByText(testData.theme.description));
 
     // Answers hidden initially
-    testData.answers?.forEach((answer) => {
+    answers.forEach((answer) => {
       expect(queryByText(answer)).toBeNull();
     });
 
@@ -48,17 +46,14 @@ describe("GeneratedThemeCard", () => {
       name: "Child Theme",
       description: "This is a child theme",
     };
-    const { container, getByText, getAllByText, queryByText } = render(
-      GeneratedThemeCard,
-      {
-        ...testData,
-        theme: {
-          ...testData.theme,
-          children: [CHILD_THEME],
-        },
-        expandedThemes: [testData.theme.id, CHILD_THEME.id],
+    const { getByText } = render(GeneratedThemeCard, {
+      ...testData,
+      theme: {
+        ...testData.theme,
+        children: [CHILD_THEME],
       },
-    );
+      expandedThemes: [testData.theme.id, CHILD_THEME.id],
+    });
 
     expect(getByText(CHILD_THEME.name));
     expect(getByText(CHILD_THEME.description));

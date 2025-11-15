@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { cleanup, render } from "@testing-library/svelte";
 
-import ConditionalWrapperTest from "./ConditionalWrapperTest.svelte";
+import ConditionalWrapperTestHelper from "./ConditionalWrapperTestHelper.svelte";
 import ConditionalWrapperStory from "./ConditionalWrapperStory.svelte";
 
 describe("ConditionalRender", () => {
@@ -10,23 +10,25 @@ describe("ConditionalRender", () => {
   });
 
   it("should render a tag and slot if condition met", () => {
-    const { container, getByText } = render(ConditionalWrapperTest, {
+    const { container, getByText } = render(ConditionalWrapperTestHelper, {
       element: "a",
       condition: true,
-      slot: "<p>rendered</p>",
+      content: "rendered",
     });
+
     expect(container.querySelector("a")).toBeTruthy();
-    expect(getByText("rendered"));
+    expect(getByText("rendered")).toBeTruthy();
   });
 
   it("should not render a tag if condition not met but still render slot", () => {
-    const { container, getByText } = render(ConditionalWrapperTest, {
+    const { container, getByText } = render(ConditionalWrapperTestHelper, {
       element: "a",
       condition: false,
-      slot: "<p>rendered</p>",
+      content: "rendered",
     });
+
     expect(container.querySelector("a")).toBeFalsy();
-    expect(getByText("rendered"));
+    expect(getByText("rendered")).toBeTruthy();
   });
 
   it("should render story", () => {

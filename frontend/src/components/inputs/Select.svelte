@@ -19,7 +19,7 @@
   export let hideLabel: boolean = false;
   export let options: SelectOption[] = [];
   export let placeholder: string = "Select";
-  export let handleChange = (nextValue: string) => {};
+  export let handleChange = (_nextValue: string) => {};
 
   function getOption(value: string): SelectOption {
     return (
@@ -42,7 +42,7 @@
     helpers: { isSelected },
   } = createSelect<string>({
     forceVisible: true,
-    onSelectedChange: onSelectedChange as any,
+    onSelectedChange,
     positioning: {
       placement: "bottom",
       fitViewport: true,
@@ -54,7 +54,6 @@
 </script>
 
 <div class="flex flex-col gap-1 text-sm w-full">
-  <!-- svelte-ignore a11y-label-has-associated-control - $label contains the 'for' attribute -->
   <label
     use:melt={$meltLabel}
     class={clsx(["block", "text-neutral-900", hideLabel && "sr-only"])}
@@ -114,11 +113,9 @@
             "capitalize",
             "text-neutral-800",
           ])}
-        >
-          {""}
-        </div>
+        ></div>
 
-        {#each options as optionItem}
+        {#each options as optionItem (optionItem.value)}
           <div
             class={[
               "flex",

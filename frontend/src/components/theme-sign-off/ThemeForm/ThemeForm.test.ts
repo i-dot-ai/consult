@@ -27,7 +27,7 @@ describe("ThemeForm", () => {
   });
 
   it("should render add variant", async () => {
-    const { container, getByText } = render(ThemeForm, {
+    const { getByText } = render(ThemeForm, {
       ...testData,
       variant: "edit",
     });

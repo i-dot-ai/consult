@@ -19,7 +19,6 @@
   import Tag from "../../Tag/Tag.svelte";
   import Title from "../../Title.svelte";
   import TitleRow from "../TitleRow.svelte";
-  import AutoRenew from "../../svg/material/AutoRenew.svelte";
 
   function removeTheme(id: string) {
     stagedThemes = stagedThemes.filter((theme) => theme.id !== id);
@@ -62,7 +61,7 @@
       {
         themes: stagedThemes.map((theme) => ({ id: theme.id })),
         evidenceRich: stagedEvidenceRich,
-      } as unknown as BodyInit,
+      },
     );
 
     if (!$submitError && !$isSubmitting) {
@@ -77,12 +76,15 @@
     themes: ResponseTheme[];
     themeOptions: ResponseTheme[];
     evidenceRich: boolean;
-    resetData: Function;
-    setEditing: Function;
+    resetData: () => void;
+    setEditing: (isEditing: boolean) => void;
     updateAnswerMock?: (
       url: string,
       method: string,
-      options: BodyInit,
+      options: {
+        themes: { id: string }[];
+        evidenceRich: boolean;
+      },
     ) => Promise<void>;
   }
 
@@ -106,7 +108,6 @@
     loading: isSubmitting,
     error: submitError,
     load: updateAnswer,
-    data: answerData,
   } = createFetchStore();
 
   onMount(() => {
@@ -155,7 +156,7 @@
       <ul
         class="flex flex-wrap gap-2 items-center justify-start my-1 sm:max-w-[30vw]"
       >
-        {#each stagedThemes as theme}
+        {#each stagedThemes as theme (theme.id)}
           <Tag>
             {theme.name}
 

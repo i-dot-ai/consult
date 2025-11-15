@@ -6,12 +6,13 @@ import QuestionDetail from "../../../../components/screens/QuestionDetail.svelte
 
 const { consultationId, responseId } = Astro.params;
 ---
+
 <Layout>
-    <Section>
-        <QuestionDetail
-            client:load
-            consultationId={consultationId}
-            questionId={responseId}
-        />
-    </Section>
+  <Section>
+    <QuestionDetail
+      client:load
+      consultationId={consultationId}
+      questionId={responseId}
+    />
+  </Section>
 </Layout>

@@ -1,87 +1,167 @@
 ---
-import { clsx } from 'clsx';
+import { clsx } from "clsx";
 
-import Layout from '../layouts/Layout.astro';
-import Link from '../components/Link.svelte';
-import Section from '../components/Section/Section.svelte';
-import Title from '../components/Title.svelte';
-import Text from '../components/Text/Text.svelte';
-import UnorderedList from '../components/list/UnorderedList.svelte';
+import Layout from "../layouts/Layout.astro";
+import Link from "../components/Link.svelte";
+import Section from "../components/Section/Section.svelte";
+import Title from "../components/Title.svelte";
+import Text from "../components/Text/Text.svelte";
+import UnorderedList from "../components/list/UnorderedList.svelte";
 
 const h2Classes = clsx([
-	"text-2xl",
-	"font-bold",
-	"mt-10",
-	"mb-2",
-	"text-neutral-700"
+  "text-2xl",
+  "font-bold",
+  "mt-10",
+  "mb-2",
+  "text-neutral-700",
 ]);
 const h3Classes = clsx([
-	"text-xl",
-	"font-bold",
-	"mt-6",
-	"mb-2",
-	"text-neutral-700"
-])
+  "text-xl",
+  "font-bold",
+  "mt-6",
+  "mb-2",
+  "text-neutral-700",
+]);
 ---
+
 <Layout>
-    <Section narrow>
-		<Title level={1} context="public" text="Privacy notice for Consult" />
-		<Text>This notice sets out how we will use your personal data, and your rights. It is made under Articles 13 and/or 14 of the UK General Data Protection Regulation (UK GDPR).</Text>
+  <Section narrow>
+    <Title level={1} context="public" text="Privacy notice for Consult" />
+    <Text
+      >This notice sets out how we will use your personal data, and your rights.
+      It is made under Articles 13 and/or 14 of the UK General Data Protection
+      Regulation (UK GDPR).</Text
+    >
 
-		<h2 class={h2Classes}>How we will use your data</h2>
+    <h2 class={h2Classes}>How we will use your data</h2>
 
-		<h3 class={h3Classes}>Purpose</h3>
-		<Text>The purpose for which we are processing your personal data are:</Text>
-		<UnorderedList>
-			<li>to be used in email correspondence as part of the feedback and review process</li>
-			<li>credentials for access to Cabinet Office provided i.AI Consult platform</li>
-		</UnorderedList>
+    <h3 class={h3Classes}>Purpose</h3>
+    <Text>The purpose for which we are processing your personal data are:</Text>
+    <UnorderedList>
+      <li>
+        to be used in email correspondence as part of the feedback and review
+        process
+      </li>
+      <li>
+        credentials for access to Cabinet Office provided i.AI Consult platform
+      </li>
+    </UnorderedList>
 
-		<h3 class={h3Classes}>The data</h3>
-		<Text>We will process the following personal data:</Text>
-		<UnorderedList>
-			<li>name (via email)</li>
-			<li>work email</li>
-			<li>department</li>
-			<li>profession</li>
-		</UnorderedList>
+    <h3 class={h3Classes}>The data</h3>
+    <Text>We will process the following personal data:</Text>
+    <UnorderedList>
+      <li>name (via email)</li>
+      <li>work email</li>
+      <li>department</li>
+      <li>profession</li>
+    </UnorderedList>
 
-		<h3 class={h3Classes}>Legal basis for processing</h3>
-		<Text>Processing your personal data is necessary for the purposes of the legitimate interests pursued by the controller or by a third party. In this case those are providing secure access to Cabinet Office platforms and applications, as well as enabling you to participate in electronic communications as part of the feedback on the process.</Text>
+    <h3 class={h3Classes}>Legal basis for processing</h3>
+    <Text
+      >Processing your personal data is necessary for the purposes of the
+      legitimate interests pursued by the controller or by a third party. In
+      this case those are providing secure access to Cabinet Office platforms
+      and applications, as well as enabling you to participate in electronic
+      communications as part of the feedback on the process.</Text
+    >
 
-		<h3 class={h3Classes}>Recipients</h3>
-		<Text>Your personal data will be shared by us with:</Text>
-		<UnorderedList>
-			<li>for platform access it will be provided to the provider of the platform</li>
-			<li>also as your personal data will be stored on our IT infrastructure it will also be shared with our data processors who provide email, and document management and storage services</li>
-		</UnorderedList>
+    <h3 class={h3Classes}>Recipients</h3>
+    <Text>Your personal data will be shared by us with:</Text>
+    <UnorderedList>
+      <li>
+        for platform access it will be provided to the provider of the platform
+      </li>
+      <li>
+        also as your personal data will be stored on our IT infrastructure it
+        will also be shared with our data processors who provide email, and
+        document management and storage services
+      </li>
+    </UnorderedList>
 
-		<h3 class={h3Classes}>Retention</h3>
-		<Text>As your personal data will be kept by us:</Text>
-		<UnorderedList>
-			<li>platform credentials - until you cease to either require access to the platform, at which point the data will be deleted from the platform credentials database</li>
-		</UnorderedList>
+    <h3 class={h3Classes}>Retention</h3>
+    <Text>As your personal data will be kept by us:</Text>
+    <UnorderedList>
+      <li>
+        platform credentials - until you cease to either require access to the
+        platform, at which point the data will be deleted from the platform
+        credentials database
+      </li>
+    </UnorderedList>
 
-		<h3 class={h3Classes}>Your rights</h3>
-		<Text>You have the right to request information about how your personal data are processed, and to request a copy of that personal data.</Text>
-		<Text>You have the right to request that any inaccuracies in your personal data are rectified without delay.</Text>
-		<Text>You have the right to request that any incomplete personal data are completed, including by means of a supplementary statement.</Text>
-		<Text>You have the right to request that your personal data are erased if there is no longer a justification for them to be processed.</Text>
-		<Text>You have the right in certain circumstances (for example, where accuracy is contested) to request that the processing of your personal data is restricted.</Text>
+    <h3 class={h3Classes}>Your rights</h3>
+    <Text
+      >You have the right to request information about how your personal data
+      are processed, and to request a copy of that personal data.</Text
+    >
+    <Text
+      >You have the right to request that any inaccuracies in your personal data
+      are rectified without delay.</Text
+    >
+    <Text
+      >You have the right to request that any incomplete personal data are
+      completed, including by means of a supplementary statement.</Text
+    >
+    <Text
+      >You have the right to request that your personal data are erased if there
+      is no longer a justification for them to be processed.</Text
+    >
+    <Text
+      >You have the right in certain circumstances (for example, where accuracy
+      is contested) to request that the processing of your personal data is
+      restricted.</Text
+    >
 
-		<h3 class={h3Classes}>International transfers</h3>
-		<Text>As your personal data is stored on our Corporate IT infrastructure, and shared with our data processors, it may be transferred and stored securely outside the UK. Where that is the case it will be subject to equivalent legal protection through an adequacy decision, reliance on Standard Contractual Clauses, or reliance on a UK International Data Transfer Agreement.</Text>
+    <h3 class={h3Classes}>International transfers</h3>
+    <Text
+      >As your personal data is stored on our Corporate IT infrastructure, and
+      shared with our data processors, it may be transferred and stored securely
+      outside the UK. Where that is the case it will be subject to equivalent
+      legal protection through an adequacy decision, reliance on Standard
+      Contractual Clauses, or reliance on a UK International Data Transfer
+      Agreement.</Text
+    >
 
-		<h3 class={h3Classes}>Complaints</h3>
-		<Text>If you consider that your personal data has been misused or mishandled, you may make a complaint to the Information Commissioner, who is an independent regulator. The Information Commissioner can be contacted at:  Information Commissioner's Office, Wycliffe House, Water Lane, Wilmslow, Cheshire, SK9 5AF, or <Link href="tel:03031231113">0303 123 1113</Link>, or <Link href="mailto:icocasework@ico.org.uk">icocasework@ico.org.uk</Link>. Any complaint to the Information Commissioner is without prejudice to your right to seek redress through the courts.</Text>
+    <h3 class={h3Classes}>Complaints</h3>
+    <Text
+      >If you consider that your personal data has been misused or mishandled,
+      you may make a complaint to the Information Commissioner, who is an
+      independent regulator. The Information Commissioner can be contacted at:
+      Information Commissioner's Office, Wycliffe House, Water Lane, Wilmslow,
+      Cheshire, SK9 5AF, or <Link href="tel:03031231113">0303 123 1113</Link>,
+      or <Link href="mailto:icocasework@ico.org.uk">icocasework@ico.org.uk</Link
+      >. Any complaint to the Information Commissioner is without prejudice to
+      your right to seek redress through the courts.</Text
+    >
 
-		<h3 class={h3Classes}>Contact details</h3>
-		<Text>The data controller for your personal data is the Cabinet Office. The contact details for the data controller are: Cabinet Office, 70 Whitehall, London, SW1A 2AS, or <Link href="02072761234">0207 276 1234</Link>, or you can use the <Link href="https://www.gov.uk/guidance/contact-the-cabinet-office">Contact the Cabinet Office webform</Link>.</Text>
-		<Text>The contact details for the data controller's Data Protection Officer are: <Link href="mailto:dpo@cabinetoffice.gov.uk">dpo@cabinetoffice.gov.uk</Link>.</Text>
-		<Text>The Data Protection Officer provides independent advice and monitoring of Cabinet Office's use of personal information.</Text>
+    <h3 class={h3Classes}>Contact details</h3>
+    <Text
+      >The data controller for your personal data is the Cabinet Office. The
+      contact details for the data controller are: Cabinet Office, 70 Whitehall,
+      London, SW1A 2AS, or <Link href="02072761234">0207 276 1234</Link>, or you
+      can use the <Link
+        href="https://www.gov.uk/guidance/contact-the-cabinet-office"
+        >Contact the Cabinet Office webform</Link
+      >.</Text
+    >
+    <Text
+      >The contact details for the data controller's Data Protection Officer
+      are: <Link href="mailto:dpo@cabinetoffice.gov.uk"
+        >dpo@cabinetoffice.gov.uk</Link
+      >.</Text
+    >
+    <Text
+      >The Data Protection Officer provides independent advice and monitoring of
+      Cabinet Office's use of personal information.</Text
+    >
 
-		<h2 class={h2Classes}>Changes to this notice</h2>
-		<Text>We may change this privacy notice. When we make changes to this notice, the "last updated" date at the bottom of this page will also change. Any changes to this privacy notice will apply to you and your data immediately. If these changes affect how your personal data is processed, Cabinet Office will take reasonable steps to make sure you know.</Text>
-		<Text>Last updated: 12 April 2024</Text>
-    </Section>
+    <h2 class={h2Classes}>Changes to this notice</h2>
+    <Text
+      >We may change this privacy notice. When we make changes to this notice,
+      the "last updated" date at the bottom of this page will also change. Any
+      changes to this privacy notice will apply to you and your data
+      immediately. If these changes affect how your personal data is processed,
+      Cabinet Office will take reasonable steps to make sure you know.</Text
+    >
+    <Text>Last updated: 12 April 2024</Text>
+  </Section>
 </Layout>

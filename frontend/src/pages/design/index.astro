@@ -1,42 +1,42 @@
 ---
-import type { NavItem } from '../../global/types';
+import type { NavItem } from "../../global/types";
 
-import Story from '../../layouts/Story.astro';
-import Link from '../../components/Link.svelte';
-import { Routes } from '../../global/routes';
-
+import Story from "../../layouts/Story.astro";
+import Link from "../../components/Link.svelte";
+import { Routes } from "../../global/routes";
 
 const links: NavItem[] = [
-    {
-        text: "/dashboard",
-        url: "/design/dashboard",
-    },
-    {
-        text: "/inputs",
-        url: "/design/inputs",
-    },
-    {
-        text: "/svg",
-        url: "/design/svg",
-    },
-    {
-        text: "Conditional Wrapper",
-        url: "/design/conditional-wrapper",
-    },
-    {
-        text: "Magic Link Button",
-        url: "/design/magic-link-button",
-    }
-]
+  {
+    text: "/dashboard",
+    url: "/design/dashboard",
+  },
+  {
+    text: "/inputs",
+    url: "/design/inputs",
+  },
+  {
+    text: "/svg",
+    url: "/design/svg",
+  },
+  {
+    text: "Conditional Wrapper",
+    url: "/design/conditional-wrapper",
+  },
+  {
+    text: "Magic Link Button",
+    url: "/design/magic-link-button",
+  },
+];
 ---
+
 <Story backUrl={Routes.Home}>
-    <ul class="flex flex-col gap-2 mt-4">
-        {links.map(link => (
-            <li>
-                <Link href={link.url}>
-                    {link.text}
-                </Link>
-            </li>
-        ))}
-    </ul>
+  <ul class="flex flex-col gap-2 mt-4">
+    {
+      links.map((link) => (
+        <li>
+          <Link href={link.url}>{link.text}</Link>
+        </li>
+      ))
+    }
+  </ul>
 </Story>

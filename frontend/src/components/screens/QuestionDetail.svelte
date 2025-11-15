@@ -2,7 +2,7 @@
   import clsx from "clsx";
 
   import { onMount, untrack } from "svelte";
-  import type { Writable } from "svelte/store";
+  import { SvelteURLSearchParams } from "svelte/reactivity";
 
   import MaterialIcon from "../MaterialIcon.svelte";
   import Button from "../inputs/Button/Button.svelte";
@@ -25,18 +25,10 @@
   import {
     SearchModeValues,
     TabNames,
-    type AnswersResponse,
-    type ConsultationResponse,
-    type DemoAggrResponse,
     type DemoOption,
-    type DemoOptionsResponse,
     type DemoOptionsResponseItem,
     type FormattedTheme,
-    type MultiChoiceResponse,
-    type Question,
     type ResponseAnswer,
-    type ThemeAggrResponse,
-    type ThemeInfoResponse,
   } from "../../global/types.ts";
   import {
     themeFilters,
@@ -64,7 +56,6 @@
   let { consultationId = "", questionId = "" }: Props = $props();
 
   const PAGE_SIZE: number = 50;
-  const MAX_THEME_FILTERS: number = Infinity;
 
   let currPage: number = $state(1);
   let hasMorePages: boolean = $state(true);
@@ -83,11 +74,6 @@
     error: consultationError,
     load: loadConsultation,
     data: consultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<ConsultationResponse>;
   } = createFetchStore();
 
   const {
@@ -95,11 +81,6 @@
     error: questionsError,
     load: loadQuestions,
     data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
   } = createFetchStore();
 
   const {
@@ -107,71 +88,24 @@
     error: answersError,
     load: loadAnswers,
     data: answersData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<AnswersResponse>;
   } = createFetchStore();
 
   const {
     loading: isThemeAggrLoading,
-    error: themeAggrError,
     load: loadThemeAggr,
     data: themeAggrData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<ThemeAggrResponse>;
   } = createFetchStore();
 
-  const {
-    loading: isThemeInfoLoading,
-    error: themeInfoError,
-    load: loadThemeInfo,
-    data: themeInfoData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<ThemeInfoResponse>;
-  } = createFetchStore();
+  const { load: loadThemeInfo, data: themeInfoData } = createFetchStore();
 
-  const {
-    loading: isDemoOptionsLoading,
-    error: demoOptionsError,
-    load: loadDemoOptions,
-    data: demoOptionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<DemoOptionsResponse>;
-  } = createFetchStore();
+  const { load: loadDemoOptions, data: demoOptionsData } = createFetchStore();
 
-  const {
-    loading: isDemoAggrLoading,
-    error: demoAggrError,
-    load: loadDemoAggr,
-    data: demoAggrData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<DemoAggrResponse>;
-  } = createFetchStore();
+  const { load: loadDemoAggr, data: demoAggrData } = createFetchStore();
 
   const {
     loading: isQuestionLoading,
-    error: questionError,
     load: loadQuestion,
     data: questionData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<Question>;
   } = createFetchStore();
 
   onMount(() => {
@@ -212,21 +146,19 @@
     }
 
     // Append next page of answers to existing answers
-    try {
-      await loadAnswers(`${getApiAnswersUrl(consultationId)}${queryString}`);
+    await loadAnswers(`${getApiAnswersUrl(consultationId)}${queryString}`);
 
-      if ($answersData.all_respondents) {
-        const newAnswers = $answersData.all_respondents;
-        answers = [...answers, ...newAnswers];
-      }
-      hasMorePages = $answersData.has_more_pages || false;
-    } catch {}
+    if ($answersData.all_respondents) {
+      const newAnswers = $answersData.all_respondents;
+      answers = [...answers, ...newAnswers];
+    }
+    hasMorePages = $answersData.has_more_pages || false;
 
     currPage += 1;
   }
 
   function buildQuery(filters: QueryFilters) {
-    const params = new URLSearchParams({
+    const params = new SvelteURLSearchParams({
       ...(filters.questionId && {
         question_id: filters.questionId,
       }),
@@ -290,14 +222,14 @@
   const setEvidenceRich = (value: boolean) => (evidenceRich = value);
 
   $effect(() => {
-    // @ts-ignore: ignore dependencies
-    (searchValue,
-      searchMode,
-      themeFilters.filters,
-      evidenceRich,
-      demoFilters.filters,
-      multiAnswerFilters.filters,
-      flaggedOnly);
+    // Track dependencies explicitly
+    void searchValue;
+    void searchMode;
+    void themeFilters.filters;
+    void evidenceRich;
+    void demoFilters.filters;
+    void multiAnswerFilters.filters;
+    void flaggedOnly;
 
     resetAnswers();
 

@@ -1,6 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { render, cleanup } from "@testing-library/svelte";
 
 import DemoFilter from "./DemoFilter.svelte";
 import { getPercentage } from "../../global/utils";

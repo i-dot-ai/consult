@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { createRawSnippet, type Component } from "svelte";
+  import { createRawSnippet } from "svelte";
 
   import CodeMirror from "svelte-codemirror-editor";
   import { json } from "@codemirror/lang-json";
@@ -17,12 +17,13 @@
   import Fullscreen from "../svg/material/Fullscreen.svelte";
 
   import stories from "./stories.ts";
+  import type { Story } from "./stories.ts";
 
   let { selected = "" } = $props();
   let currStory: Story | undefined = $state(
     stories.find((story) => story.name === selected),
   );
-  let componentProps: Object = $derived.by(() => {
+  let componentProps: object = $derived.by(() => {
     let props = {};
     currStory?.props.forEach((prop) => {
       props[prop.name] = prop.value;
@@ -38,9 +39,9 @@
   <aside class="col-span-1">
     <Panel border={true} bg={false}>
       <ul class="flex flex-col gap-2">
-        {#each categories as category}
+        {#each categories as category (category)}
           <h2 class="font-[500]">{category || "General"}</h2>
-          {#each stories.filter((story) => story.category === category) as story}
+          {#each stories.filter((story) => story.category === category) as story (story.name)}
             <li>
               <a
                 href={`/stories?selected=${story.name}`}
@@ -88,7 +89,7 @@
             </Button>
           </div>
 
-          {#each currStory.stories as story}
+          {#each currStory.stories as story (story.name)}
             <div class="mb-4 last:mb-0">
               <h3>{story.name}</h3>
               <StoryComponent {...story.props} />
@@ -103,7 +104,7 @@
 
           <StoryComponent {...componentProps} />
 
-          {#each currStory.props as prop}
+          {#each currStory.props as prop (prop.name)}
             {@const inputId = `input-${prop.name.toLowerCase().replaceAll(" ", "-")}`}
 
             <div class="pl-4 mt-4">
@@ -119,8 +120,9 @@
                   class="border border-neutral-300 rounded-lg p-2"
                   type="number"
                   value={prop.value.toString()}
-                  oninput={(e: any) => {
-                    prop.value = parseInt(e.target.value);
+                  oninput={(e: Event) => {
+                    const target = e.target as HTMLInputElement;
+                    prop.value = parseInt(target.value);
                   }}
                 />
               {:else if prop.type === "text"}
@@ -144,17 +146,20 @@
                   label={prop.name}
                   hideLabel={true}
                   value={prop.label}
-                  options={prop.options.map((opt: any) => ({
+                  options={prop.options?.map((opt) => ({
                     value: opt.label,
                     label: opt.label,
-                  }))}
+                  })) || []}
                   handleChange={(nextVal) => {
-                    if (!nextVal) {
+                    if (!nextVal || !prop.options) {
                       return;
                     }
-                    prop.value = prop.options.find((opt: any) => {
+                    const selectedOption = prop.options.find((opt) => {
                       return opt.label === nextVal;
-                    }).value;
+                    });
+                    if (selectedOption) {
+                      prop.value = selectedOption.value;
+                    }
                   }}
                 />
               {:else if prop.type === "json"}
@@ -164,7 +169,9 @@
                   onchange={(newVal) => {
                     try {
                       prop.value = JSON.parse(newVal);
-                    } catch {}
+                    } catch (error) {
+                      console.warn("Invalid JSON:", error);
+                    }
                   }}
                 />
               {:else if prop.type === "html"}
@@ -184,7 +191,9 @@
                         render: () => newVal,
                       }));
                       prop.rawHtml = newVal;
-                    } catch {}
+                    } catch (error) {
+                      console.warn("Invalid HTML snippet:", error);
+                    }
                   }}
                 />
               {:else if prop.type === "func"}

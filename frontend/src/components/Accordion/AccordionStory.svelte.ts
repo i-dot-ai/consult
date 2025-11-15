@@ -14,13 +14,13 @@ const createSnippetWithDefault = (html: string) => {
   }
 };
 
-let titleHtml = $state(`<span>Accordion Title</span>`);
-let titleComponent = $derived.by(() => {
+const titleHtml = $state(`<span>Accordion Title</span>`);
+const titleComponent = $derived.by(() => {
   return createSnippetWithDefault(titleHtml);
 });
 
-let contentHtml = $state(`<p>Panel Content</p>`);
-let contentComponent = $derived.by(() => {
+const contentHtml = $state(`<p>Panel Content</p>`);
+const contentComponent = $derived.by(() => {
   return createSnippetWithDefault(contentHtml);
 });
 
