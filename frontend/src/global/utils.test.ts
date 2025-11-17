@@ -5,6 +5,7 @@ import {
   formatTimeDeltaText,
   getEnv,
   getPercentage,
+  getTimeDeltaInMinutes,
   toTitleCase,
 } from "./utils";
 
@@ -129,3 +130,22 @@ describe("formatTimeDelta", () => {
     expect(formatTimeDeltaText(60 * 24 * 30 * 12 * 2)).toEqual("2 years");
   });
 })
+
+describe("getTimeDeltaInMinutes", (() => {
+  it("calculates 1 minute ago", () => {
+    const now = new Date();
+
+    const MINUTE_IN_MILLISECONDS = 60 * 1000;
+    const minuteDelta = getTimeDeltaInMinutes(now, new Date(now.getTime() - MINUTE_IN_MILLISECONDS));
+    expect(minuteDelta).toEqual(1);
+  })
+
+  it("calculates 1 year ago", () => {
+    const now = new Date();
+
+    const YEAR_IN_MILLISECONDS = 1000 * 60 * 24 * 30 * 12;
+    const MINUTES_IN_YEAR = 24 * 30 * 12;
+    const yearDalte = getTimeDeltaInMinutes(now, new Date(now.getTime() - YEAR_IN_MILLISECONDS));
+    expect(yearDalte).toEqual(MINUTES_IN_YEAR);
+  })
+}))
