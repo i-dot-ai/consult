@@ -174,7 +174,21 @@ class TestConsultationImportSerializer:
         assert serializer.validated_data == expected
         assert serializer.get_sign_off()
 
-        serializer.action = "dashboard"
+        data = {
+            "consultation_name": "test",
+            "timestamp": "08-09-2025",
+            "action": "dashboard",
+            "consultation_code": "demo_consultation",
+        }
+        serializer = ConsultationImportSerializer(data=data)
+        assert serializer.is_valid()
+        expected = {
+            "consultation_name": "test",
+            "timestamp": "08-09-2025",
+            "action": "dashboard",
+            "consultation_code": "demo_consultation",
+        }
+        assert serializer.validated_data == expected
         assert not serializer.get_sign_off()
 
     def test_missing_fields(self):
@@ -232,7 +246,7 @@ class TestConsultationFoldersSerializer:
         assert not serializer.is_valid()
         assert "text" in serializer.errors
 
-    def test_invalid_response_count(self):
+    def test_invalid_fields(self):
         """Test consultation folder information serializer with invalid value"""
         data = [
             {"value": False, "text": "test consultation 2"},
