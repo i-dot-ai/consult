@@ -96,6 +96,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
     if (accessToken === ""){
       console.log("no accessToken found in", context.request.headers);
+    }else{
+      console.log("accessToken found:", accessToken);
     }
 
     // Handle request body properly for forms
