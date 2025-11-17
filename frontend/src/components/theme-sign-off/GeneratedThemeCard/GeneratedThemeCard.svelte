@@ -15,6 +15,7 @@
   import Tag from "../../Tag/Tag.svelte";
   import AnswersList from "../AnswersList/AnswersList.svelte";
   import Visibility from "../../svg/material/Visibility.svelte";
+  import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
 
   export interface Props {
     consultationId: string;
@@ -117,11 +118,12 @@
               disabled={isBeingSelected}
               handleClick={() => handleSelect(theme)}
             >
-              {#if isBeingSelected}
-                Selecting...
-              {:else}
+              <div class="flex items-center gap-1">
                 Select
-              {/if}
+                {#if isBeingSelected}
+                  <LoadingIndicator size="1rem" />
+                {/if}
+              </div>
             </Button>
 
             <Button
