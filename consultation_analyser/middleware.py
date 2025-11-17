@@ -70,7 +70,7 @@ class EdgeJWTAuthenticationMiddleware:
                     except User.DoesNotExist:
                         raise PermissionDenied("User not found in system")
                 else:
-                    raise PermissionDenied("No valid user identifier in JWT")
+                    raise PermissionDenied("No valid user identifier in JWT", auth_header)
 
             except jwt.DecodeError:
                 raise PermissionDenied("Invalid JWT format")
