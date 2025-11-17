@@ -244,7 +244,7 @@ class TestConsultationFoldersSerializer:
         ]
         serializer = ConsultationFolderSerializer(data=data, many=True)
         assert not serializer.is_valid()
-        assert "text" in serializer.errors.keys()
+        assert any("text" in error_dict for error_dict in serializer.errors)
 
     def test_invalid_fields(self):
         """Test consultation folder information serializer with invalid value"""
@@ -255,4 +255,4 @@ class TestConsultationFoldersSerializer:
         ]
         serializer = ConsultationFolderSerializer(data=data, many=True)
         assert not serializer.is_valid()
-        assert "value" in serializer.errors.keys()
+        assert any("value" in error_dict for error_dict in serializer.errors)
