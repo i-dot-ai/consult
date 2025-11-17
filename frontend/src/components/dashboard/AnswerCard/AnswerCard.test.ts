@@ -5,7 +5,7 @@ import AnswerCard, { type Props } from "./AnswerCard.svelte";
 
 let testData: Props;
 
-describe("AnswerCard", () => {
+describe("AnswerCard ", () => {
   beforeEach(() => {
     testData = {
       consultationId: "consultation-id",

@@ -40,5 +40,7 @@
     "[json]": {
         "editor.defaultFormatter": "esbenp.prettier-vscode"
     },
-    "svelte.enable-ts-plugin": true
+    "svelte.enable-ts-plugin": true,
+    "typescript.tsdk": "frontend/node_modules/typescript/lib",
+    "typescript.enablePromptUseWorkspaceTsdk": true
 }
