@@ -104,6 +104,8 @@
     error: questionError,
   } = createFetchStore(questionDataMock);
 
+  let themesBeingSelected = $state([]);
+
   let flatGeneratedThemes = $derived(
     flattenArray($generatedThemesData?.results),
   );
@@ -219,6 +221,8 @@
   };
 
   const handleSelectGeneratedTheme = async (newTheme) => {
+    themesBeingSelected = [...themesBeingSelected, newTheme.id];
+
     await selectGeneratedTheme(
       getApiSelectGeneratedThemeUrl(consultationId, questionId, newTheme.id),
       "POST",
@@ -231,8 +235,10 @@
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
 
+    themesBeingSelected = themesBeingSelected.filter(themeId => themeId !== newTheme.id);
+
     // get selectedtheme_id created after back end select action is complete
-    const updatedTheme = $generatedThemesData?.results?.find(
+    const updatedTheme = flattenArray($generatedThemesData?.results || []).find(
       (generatedTheme) => generatedTheme.id === newTheme.id,
     );
 
@@ -561,6 +567,7 @@
           }}
           handleSelect={handleSelectGeneratedTheme}
           {answersMock}
+          {themesBeingSelected}
         />
       {/each}
     </Panel>

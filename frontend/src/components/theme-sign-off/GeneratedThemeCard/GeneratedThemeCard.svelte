@@ -25,6 +25,7 @@
     expandedThemes: string[];
     setExpandedThemes: (themeId: string) => void;
     handleSelect: (theme: GeneratedTheme) => void;
+    themesBeingSelected: string[];
     maxAnswers?: number;
     answersMock?: Function;
   }
@@ -37,6 +38,7 @@
     expandedThemes = [],
     setExpandedThemes = () => {},
     handleSelect = () => {},
+    themesBeingSelected = [],
     maxAnswers = 10,
     answersMock,
   }: Props = $props();
@@ -53,6 +55,7 @@
   } = createFetchStore(answersMock);
 
   let disabled = $derived(Boolean(theme.selectedtheme_id));
+  let isBeingSelected = $derived(themesBeingSelected.includes(theme.id));
 </script>
 
 <div
@@ -111,9 +114,14 @@
             <Button
               variant="approve"
               size="sm"
+              disabled={isBeingSelected}
               handleClick={() => handleSelect(theme)}
             >
-              Select
+              {#if isBeingSelected}
+                Selecting...
+              {:else}
+                Select
+              {/if}
             </Button>
 
             <Button
@@ -176,6 +184,7 @@
           theme={childTheme}
           level={level + 1}
           {handleSelect}
+          {themesBeingSelected}
           {answersMock}
           {expandedThemes}
           {setExpandedThemes}
