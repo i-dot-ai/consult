@@ -43,6 +43,8 @@ locals {
     "SIGN_OFF_BATCH_JOB_NAME"             = "${local.name}-sign-off-job"
     "SIGN_OFF_BATCH_JOB_QUEUE"            = module.batch_job_sign_off.job_queue_name 
     "SIGN_OFF_BATCH_JOB_DEFINITION"       = module.batch_job_sign_off.job_definition_name
+    "AUTH_PROVIDER_PUBLIC_KEY"            = data.aws_ssm_parameter.auth_provider_public_key.value
+    "AUTH_API_URL"                        = data.aws_ssm_parameter.auth_api_invoke_url.value
   })
 
   ecs_env_vars = { for k, v in local.ecs_env_vars_raw : k => tostring(v) }
@@ -56,7 +58,7 @@ module "backend" {
   # checkov:skip=CKV_SECRET_4:Skip secret check as these have to be used within the Github Action
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
-  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.6.0-ecs"
+  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.7.0-ecs"
   image_tag                    = var.image_tag
   ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
@@ -121,7 +123,7 @@ module "frontend" {
   # checkov:skip=CKV_SECRET_4:Skip secret check as these have to be used within the Github Action
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
-  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.6.0-ecs"
+  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.7.0-ecs"
   image_tag                    = var.image_tag
   ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult-frontend"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id
@@ -153,14 +155,10 @@ module "frontend" {
     path                = "/health"
   }
 
-  authenticate_keycloak = {
-    
-    enabled : false,
-    
-    realm_name : data.terraform_remote_state.keycloak.outputs.realm_name,
-    client_id : var.project_name,
-    client_secret: data.aws_ssm_parameter.client_secret.value,
-    keycloak_dns: data.terraform_remote_state.keycloak.outputs.keycloak_dns
+  authenticate_gds_internal_access = {
+    enabled : true,
+    client_id : aws_ssm_parameter.oidc_secrets["client_id"].value,
+    client_secret : aws_ssm_parameter.oidc_secrets["client_secret"].value,
   }
 
   task_additional_iam_policies = local.additional_policy_arns
@@ -172,7 +170,7 @@ module "worker" {
   # checkov:skip=CKV_SECRET_4:Skip secret check as these have to be used within the Github Action
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source                      = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/ecs" # For testing local changes
-  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.6.0-ecs"
+  source                       = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/ecs?ref=v5.7.0-ecs"
   image_tag                    = var.image_tag
   ecr_repository_uri           = "${data.aws_caller_identity.current.account_id}.dkr.ecr.${var.region}.amazonaws.com/consult"
   vpc_id                       = data.terraform_remote_state.vpc.outputs.vpc_id

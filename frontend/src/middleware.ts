@@ -18,7 +18,9 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     console.log("user not signed in");
   }
 
-  const accessToken = context.cookies.get("access")?.value;
+  const internalAccessToken = context.request.headers.get('x-amzn-oidc-data');
+
+  // const accessToken = context.cookies.get("access")?.value;
   const url = context.url;
 
   // Redirect to sign-in if user not logged in or not staff
@@ -31,14 +33,14 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   ];
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
-  for (const protectedRoute of protectedRoutes) {
-    if (
-      protectedRoute.test(url.pathname) &&
-      !context.cookies.get("access")?.value
-    ) {
-      return context.redirect(Routes.SignIn);
-    }
-  }
+  // for (const protectedRoute of protectedRoutes) {
+  //   if (
+  //     protectedRoute.test(url.pathname) &&
+  //     !context.cookies.get("access")?.value
+  //   ) {
+  //     return context.redirect(Routes.SignIn);
+  //   }
+  // }
 
   for (const protectedStaffRoute of protectedStaffRoutes) {
     if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
@@ -46,7 +48,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
   }
 
-  const backendUrl = getBackendUrl(url.hostname);
+  const backendUrl = getBackendUrl();
   const fullBackendUrl = path.join(backendUrl, url.pathname) + url.search;
 
   // skip as new pages are moved to astro
@@ -115,7 +117,11 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
 
     // Add/override specific headers
-    headersToSend.set("Authorization", `Bearer ${accessToken}`);
+    if (internalAccessToken){
+      headersToSend.set("Authorization", `Bearer ${internalAccessToken}`);
+    }else{
+      console.error("x-amzn-oidc-data not set!")
+    }
     headersToSend.set("Cookie", cookieHeader);
     if (csrfCookie) {
       headersToSend.set("X-CSRFToken", csrfCookie.value);
