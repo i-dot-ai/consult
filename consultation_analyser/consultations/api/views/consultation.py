@@ -1,6 +1,6 @@
 from django.db.models import Count
 from django.http import HttpResponse, JsonResponse
-from rest_framework.decorators import action, api_view
+from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
@@ -11,7 +11,8 @@ from consultation_analyser.consultations.api.permissions import (
 )
 from consultation_analyser.consultations.api.serializers import (
     ConsultationSerializer,
-    DemographicOptionSerializer, ConsultationFolderSerializer,
+    DemographicOptionSerializer,
+    ConsultationFolderSerializer,
 )
 from consultation_analyser.consultations.models import Consultation, DemographicOption
 from consultation_analyser.support_console import ingest
@@ -85,7 +86,7 @@ class ConsultationViewSet(ModelViewSet):
                 sign_off=action == "sign_off",
             )
             return Response(status=201)
-        except Exception as e:
+        except Exception:
             return Response(status=500, exception=True, data={"message": "Something went wrong"})
 
     @action(
@@ -103,5 +104,3 @@ class ConsultationViewSet(ModelViewSet):
         serializer = ConsultationFolderSerializer(consultation_folders, many=True, default={})
 
         return JsonResponse(serializer.data)
-
-
