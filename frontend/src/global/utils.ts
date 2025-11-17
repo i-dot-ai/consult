@@ -100,3 +100,15 @@ export const formatDate = (dateStr: string) => {
     timeStyle: "short",
   });
 };
+
+export const handleEnterOrSpacePress = (event: KeyboardEvent, callback: Function) => {
+  const key = event.key || event.code || event.keyCode;
+  const isEnter = ["Enter", "Return", 13].includes(key);
+  const isSpace = [" ", "Spacebar", 32].includes(key);
+
+  // Enter or Space pressed
+  if (isEnter || isSpace) {
+    event.preventDefault();
+    callback();
+  }
+}

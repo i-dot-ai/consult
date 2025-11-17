@@ -178,21 +178,26 @@
                 data-testid="fav-button"
                 class={clsx([disabled && "grayscale"])}
               >
-                <Button
-                  variant="ghost"
-                  handleClick={(e: MouseEvent) => {
-                    e.stopPropagation();
-                    favStore.toggleFav(question.id || "");
-                  }}
+                <div
+                  onkeypress={(e) => e.stopPropagation()}
+                  onclick={(e) => e.stopPropagation()}
                 >
-                  {@const favourited = $favStore.includes(question.id)}
-                  <MaterialIcon
-                    size="1.3rem"
-                    color={favourited ? "fill-yellow-500" : "fill-gray-500"}
+                  <Button
+                    variant="ghost"
+                    handleClick={(e: MouseEvent) => {
+                      e.stopPropagation();
+                      favStore.toggleFav(question.id || "");
+                    }}
                   >
-                    <Star fill={favourited} />
-                  </MaterialIcon>
-                </Button>
+                    {@const favourited = $favStore.includes(question.id)}
+                    <MaterialIcon
+                      size="1.3rem"
+                      color={favourited ? "fill-yellow-500" : "fill-gray-500"}
+                    >
+                      <Star fill={favourited} />
+                    </MaterialIcon>
+                  </Button>
+                </div>
               </div>
             </div>
           {/if}
