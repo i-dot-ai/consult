@@ -200,7 +200,7 @@
               phase where responses will be mapped to your selected themes.
             </p>
 
-            {#if $consultationData.stage !== "theme_mapping" && $consultationData.stage !== "analysis"}
+            {#if $consultationData?.stage !== "theme_mapping" && $consultationData?.stage !== "analysis"}
               <Button
                 variant="approve"
                 size="sm"
