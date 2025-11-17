@@ -4,6 +4,9 @@ import type { MiddlewareHandler } from "astro";
 import { Routes } from "./global/routes";
 import { fetchBackendApi } from "./global/api";
 import { getBackendUrl } from "./global/utils";
+import type { IncomingHttpHeaders } from "http";
+
+/// Filter to limit headers to only amazon headers for auth
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
   let userIsStaff: boolean = false;
@@ -19,7 +22,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   }
 
   // Get accessToken from edge authentication header
-  const accessToken = context.request.headers.get("x-amzn-oidc-accesstoken");
   const url = context.url;
 
   // Redirect to sign-in if user not logged in or not staff
@@ -34,8 +36,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
   for (const protectedRoute of protectedRoutes) {
     if (
-      protectedRoute.test(url.pathname) &&
-      !accessToken
+      protectedRoute.test(url.pathname)
     ) {
       return context.redirect(Routes.SignIn);
     }
@@ -47,7 +48,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
   }
 
-  const backendUrl = getBackendUrl(url.hostname);
+  const backendUrl = getBackendUrl();
   const fullBackendUrl = path.join(backendUrl, url.pathname) + url.search;
 
   // skip as new pages are moved to astro
@@ -90,6 +91,12 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   try {
     // Get all cookies and forward them
     const cookieHeader = context.request.headers.get("cookie") || "";
+    
+    const accessToken = context.request.headers.get('x-amzn') || "";
+
+    if (accessToken === ""){
+      console.log("no accessToken found in", context.request.headers);
+    }
 
     // Handle request body properly for forms
     let requestBody = undefined;
