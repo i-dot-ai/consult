@@ -239,6 +239,6 @@ class TestConsultationFoldersSerializer:
             {"value": "test consultation 3", "text": "test consultation 3"},
             {"value": "test consultation", "text": "test consultation"},
         ]
-        serializer = ConsultationImportSerializer(data=data, many=True)
+        serializer = ConsultationFolderSerializer(data=data, many=True)
         assert not serializer.is_valid()
         assert "value" in serializer.errors
