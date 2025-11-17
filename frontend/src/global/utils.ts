@@ -129,6 +129,9 @@ export const formatTimeDeltaText = (minutes: number): string => {
   if (minutes >= MINUTES_IN_HALF_HOUR && minutes < MINUTES_IN_HOUR) {
     return `less than an hour`;
   }
+  if (minutes < 1) {
+    return `a moment`;
+  }
 
   let value: number = minutes;
   let unit: "minute" | "hour" | "day" | "month" | "year" = "minute";

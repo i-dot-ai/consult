@@ -96,6 +96,11 @@ describe("formatDate", () => {
 });
 
 describe("formatTimeDelta", () => {
+  it("returns correct text for zero and negative minutes", () => {
+    expect(formatTimeDeltaText(0)).toEqual("a moment");
+    expect(formatTimeDeltaText(-10)).toEqual("a moment");
+  });
+
   it("returns correct text for minutes", () => {
     expect(formatTimeDeltaText(1)).toEqual("1 minute");
     expect(formatTimeDeltaText(2)).toEqual("2 minutes");
