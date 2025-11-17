@@ -73,7 +73,7 @@ class EdgeJWTAuthenticationMiddleware:
                     raise PermissionDenied("No valid user identifier in JWT", auth_header)
 
             except jwt.DecodeError:
-                raise PermissionDenied("Invalid JWT format")
+                raise PermissionDenied("Invalid JWT format", auth_header)
 
         response = self.get_response(request)
         return response
