@@ -19,11 +19,6 @@
   let success: boolean = false;
   let loading: boolean = false;
 
-  let consultationName: string = "";
-  let timestamp: string = "";
-  let populateOption: string = "";
-  let consultationFolderCode: string = "";
-
   let consultationFolders: SelectOption[] = [];
   let RADIO_OPTIONS: RadioItem[] = [
     {
@@ -31,8 +26,7 @@
       text: 'Populate Sign Off',
       checked: false,
       disabled: false
-    }
-    ,
+    },
     {
       value: 'dashboard',
       text: 'Populate Dashboard',
@@ -40,6 +34,11 @@
       disabled: false
     }
   ];
+
+  let consultationName: string = "";
+  let timestamp: string = "";
+  let consultationFolderCode: string = "";
+  let populateOption: string = RADIO_OPTIONS.find(option => option.checked)?.value || "";
 
   onMount(async () => {
     loading = true;

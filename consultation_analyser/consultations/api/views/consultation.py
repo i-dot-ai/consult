@@ -1,4 +1,5 @@
 from django.db.models import Count
+from rest_framework import status, serializers
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -12,6 +13,7 @@ from consultation_analyser.consultations.api.serializers import (
     ConsultationSerializer,
     DemographicOptionSerializer,
     ConsultationFolderSerializer,
+    ConsultationImportSerializer,
 )
 from consultation_analyser.consultations.models import Consultation, DemographicOption
 from consultation_analyser.support_console import ingest
@@ -71,22 +73,33 @@ class ConsultationViewSet(ModelViewSet):
         """
         Submit consultation import.
         """
-        consultation_name = request.data.get("consultation_name")
-        consultation_code = request.data.get("consultation_code")
-        timestamp = request.data.get("timestamp")
-        action = request.data.get("action")
-
         try:
+            input_serializer = ConsultationImportSerializer(data=request.data)
+            input_serializer.is_valid(raise_exception=True)
+
+            validated = input_serializer.validated_data
+
             import_consultation_job.delay(
-                consultation_name=consultation_name,
-                consultation_code=consultation_code,
-                timestamp=timestamp,
+                consultation_name=validated["consultation_name"],
+                consultation_code=validated["consultation_code"],
+                timestamp=validated["timestamp"],
                 current_user_id=request.user.id,
-                sign_off=action == "sign_off",
+                sign_off=input_serializer.get_sign_off(),
             )
-            return Response(status=201)
+
+            return Response(
+                {"message": "Import job started successfully"}, status=status.HTTP_202_ACCEPTED
+            )
+        except serializers.ValidationError:
+            return Response(
+                {"message": "An error occurred while starting the import"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
         except Exception:
-            return Response(status=500, exception=True, data={"message": "Something went wrong"})
+            return Response(
+                {"message": "An error occurred while starting the import"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
     @action(
         detail=False,

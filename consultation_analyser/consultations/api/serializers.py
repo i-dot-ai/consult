@@ -286,6 +286,16 @@ class ConsultationFolderSerializer(serializers.Serializer):
     value = serializers.CharField()
 
 
+class ConsultationImportSerializer(serializers.Serializer):
+    consultation_name = serializers.CharField(max_length=255)
+    consultation_code = serializers.CharField(max_length=255)
+    timestamp = serializers.CharField(max_length=100)
+    action = serializers.CharField(max_length=50)
+
+    def get_sign_off(self):
+        return self.validated_data.get("action") == "sign_off"
+
+
 class RespondentSerializer(serializers.ModelSerializer):
     demographics = DemographicOptionSerializer(many=True, read_only=True)
 
