@@ -6,6 +6,7 @@
   import type { GeneratedTheme } from "../../../global/types";
   import { createFetchStore } from "../../../global/stores";
   import { getApiAnswersUrl } from "../../../global/routes";
+  import { formatTimeDeltaText, getTimeDeltaInMinutes } from "../../../global/utils";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
@@ -86,6 +87,16 @@
             <p class="text-sm text-neutral-700 my-4">
               {theme.description}
             </p>
+
+            {#if theme.version > 1}
+              <hr class="mb-4" />
+
+              <small class="block text-xs text-neutral-500 mb-4">
+                Edited {formatTimeDeltaText(
+                  getTimeDeltaInMinutes(new Date, new Date(theme.modified_at))
+                )} ago by {theme.last_modified_by}
+              </small>
+            {/if}
 
             <footer class="flex items-center flex-wrap gap-2">
               <Button size="sm" handleClick={() => (editing = !editing)}>
