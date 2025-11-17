@@ -92,4 +92,4 @@ def submit_consultation_import(request) -> HttpResponse:
         )
         return HttpResponse(status=201)
     except Exception as e:
-        return HttpResponse(status=500, content=str(e))
+        return HttpResponse(status=500, content="Something went wrong")
