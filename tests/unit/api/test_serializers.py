@@ -159,7 +159,7 @@ class TestConsultationImportSerializer:
         data = {
             "consultation_name": "test",
             "timestamp": "08-09-2025",
-            "action": "dashboard",
+            "action": "sign_off",
             "consultation_code": "demo_consultation",
         }
         serializer = ConsultationImportSerializer(data=data)
