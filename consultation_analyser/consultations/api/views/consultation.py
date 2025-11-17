@@ -1,5 +1,5 @@
 from django.db.models import Count
-from rest_framework import status, serializers
+from rest_framework import serializers, status
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -10,10 +10,10 @@ from consultation_analyser.consultations.api.permissions import (
     HasDashboardAccess,
 )
 from consultation_analyser.consultations.api.serializers import (
-    ConsultationSerializer,
-    DemographicOptionSerializer,
     ConsultationFolderSerializer,
     ConsultationImportSerializer,
+    ConsultationSerializer,
+    DemographicOptionSerializer,
 )
 from consultation_analyser.consultations.models import Consultation, DemographicOption
 from consultation_analyser.support_console import ingest
