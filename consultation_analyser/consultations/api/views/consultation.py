@@ -1,5 +1,4 @@
 from django.db.models import Count
-from django.http import HttpResponse, JsonResponse
 from rest_framework.decorators import action
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.response import Response
@@ -26,7 +25,7 @@ class ConsultationViewSet(ModelViewSet):
     serializer_class = ConsultationSerializer
     permission_classes = [IsAuthenticated, CanSeeConsultation | IsAdminUser]
     filterset_fields = ["code"]
-    http_method_names = ["get", "patch", "delete"]
+    http_method_names = ["get", "patch", "delete", "post"]
 
     def get_queryset(self):
         scope = self.request.query_params.get("scope")
@@ -68,7 +67,7 @@ class ConsultationViewSet(ModelViewSet):
         url_path="import",
         permission_classes=[HasDashboardAccess],
     )
-    def submit_consultation_import(self, request) -> HttpResponse:
+    def submit_consultation_import(self, request) -> Response:
         """
         Submit consultation import.
         """
@@ -91,16 +90,16 @@ class ConsultationViewSet(ModelViewSet):
 
     @action(
         detail=False,
-        methods=["post"],
+        methods=["get"],
         url_path="folders",
         permission_classes=[HasDashboardAccess],
     )
-    def get_consultation_folders(self, request) -> HttpResponse:
+    def get_consultation_folders(self, request) -> Response:
         """
         get consultation folders.
         """
         consultation_folders = ingest.get_consultation_codes()
 
-        serializer = ConsultationFolderSerializer(consultation_folders, many=True, default={})
+        serializer = ConsultationFolderSerializer(consultation_folders, many=True)
 
-        return JsonResponse(serializer.data)
+        return Response(serializer.data)
