@@ -202,13 +202,13 @@ class TestConsultationImportSerializer:
         assert not serializer.is_valid()
         assert "timestamp" in serializer.errors
 
-    def test_invalid_response_count(self):
+    def test_invalid_fields(self):
         """Test consultation import information serializer with invalid code"""
         data = {
             "consultation_name": "test",
             "timestamp": "08-09-2025",
             "action": "sign_off",
-            "consultation_code": 12345,
+            "consultation_code": False,
         }
         serializer = ConsultationImportSerializer(data=data)
         assert not serializer.is_valid()
@@ -244,7 +244,7 @@ class TestConsultationFoldersSerializer:
         ]
         serializer = ConsultationFolderSerializer(data=data, many=True)
         assert not serializer.is_valid()
-        assert "text" in serializer.errors
+        assert "text" in serializer.errors.keys()
 
     def test_invalid_fields(self):
         """Test consultation folder information serializer with invalid value"""
@@ -255,4 +255,4 @@ class TestConsultationFoldersSerializer:
         ]
         serializer = ConsultationFolderSerializer(data=data, many=True)
         assert not serializer.is_valid()
-        assert "value" in serializer.errors
+        assert "value" in serializer.errors.keys()
