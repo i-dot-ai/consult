@@ -5,7 +5,7 @@ from consultation_analyser.consultations.api.serializers import (
     QuestionSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
-    ThemeSerializer,
+    ThemeSerializer, ConsultationImportSerializer, ConsultationFolderSerializer,
 )
 
 
@@ -149,3 +149,126 @@ class TestQuestionSerializer:
         serializer = QuestionSerializer(data=data)
         assert not serializer.is_valid()
         assert "number" in serializer.errors
+
+class TestConsultationImportSerializer:
+    def test_valid_data(self):
+        """Test import consultation information serializer with valid data"""
+        data = {
+            "consultation_name": "test",
+            "timestamp": "08-09-2025",
+            "action": "dashboard",
+            "consultation_code": "demo_consultation"
+        }
+        serializer = ConsultationImportSerializer(data=data)
+        assert serializer.is_valid()
+        expected = {
+            "consultation_name": "test",
+            "timestamp": "08-09-2025",
+            "action": "sign_off",
+            "consultation_code": "demo_consultation"
+        }
+
+        assert serializer.validated_data == expected
+        assert serializer.get_sign_off() == True
+
+        serializer.action = "dashboard"
+        assert serializer.get_sign_off() == False
+
+    def test_missing_fields(self):
+        """Test consultation import information serializer with missing fields"""
+        data = {
+            "consultation_name": "test",
+            "action": "dashboard",
+            "consultation_code": "demo_consultation"
+        }
+        serializer = ConsultationImportSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "timestamp" in serializer.errors
+
+    def test_invalid_response_count(self):
+        """Test consultation import information serializer with invalid code"""
+        data = {
+            "consultation_name": "test",
+            "timestamp": "08-09-2025",
+            "action": "sign_off",
+            "consultation_code": 12345
+        }
+        serializer = ConsultationImportSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "consultation_code" in serializer.errors
+
+
+class TestConsultationFoldersSerializer:
+    def test_valid_data(self):
+        """Test consultation folders information serializer with valid data"""
+        data = [
+            {
+                "value": "test consultation 2",
+                "text": "test consultation 2"
+            },
+            {
+                "value": "test consultation 3",
+                "text": "test consultation 3"
+            },
+            {
+                "value": "test consultation",
+                "text": "test consultation"
+            }
+        ]
+        serializer = ConsultationFolderSerializer(data=data, many=True)
+        assert serializer.is_valid()
+        expected = [
+            {
+                "value": "test consultation 2",
+                "text": "test consultation 2"
+            },
+            {
+                "value": "test consultation 3",
+                "text": "test consultation 3"
+            },
+            {
+                "value": "test consultation",
+                "text": "test consultation"
+            }
+        ]
+
+        assert serializer.validated_data == expected
+
+    def test_missing_fields(self):
+        """Test consultation folders information serializer with missing fields"""
+        data = [
+            {
+                "value": "test consultation 2",
+            },
+            {
+                "value": "test consultation 3",
+                "text": "test consultation 3"
+            },
+            {
+                "value": "test consultation",
+                "text": "test consultation"
+            }
+        ]
+        serializer = ConsultationFolderSerializer(data=data, many=True)
+        assert not serializer.is_valid()
+        assert "text" in serializer.errors
+
+    def test_invalid_response_count(self):
+        """Test consultation folder information serializer with invalid value"""
+        data = [
+            {
+                "value": False,
+                "text": "test consultation 2"
+            },
+            {
+                "value": "test consultation 3",
+                "text": "test consultation 3"
+            },
+            {
+                "value": "test consultation",
+                "text": "test consultation"
+            }
+        ]
+        serializer = ConsultationImportSerializer(data=data, many=True)
+        assert not serializer.is_valid()
+        assert "value" in serializer.errors
