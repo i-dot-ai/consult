@@ -386,6 +386,7 @@
           <div transition:slide={{ duration: 150 }} class="mb-4 last:mb-0">
             <SelectedThemeCard
               {consultationId}
+              {questionId}
               theme={selectedTheme}
               {removeTheme}
               {updateTheme}
@@ -548,6 +549,7 @@
       {#each $generatedThemesData?.results as theme}
         <GeneratedThemeCard
           {consultationId}
+          {questionId}
           {theme}
           {expandedThemes}
           setExpandedThemes={(id) => {

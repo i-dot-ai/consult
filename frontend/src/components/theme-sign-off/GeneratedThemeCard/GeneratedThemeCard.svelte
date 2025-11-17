@@ -18,6 +18,7 @@
 
   export interface Props {
     consultationId: string;
+    questionId: string;
     theme: GeneratedTheme;
     level?: number;
     leftPadding?: number;
@@ -29,6 +30,7 @@
   }
   let {
     consultationId,
+    questionId,
     theme,
     level = 0,
     leftPadding = 2,
@@ -121,6 +123,7 @@
                   const queryString = new URLSearchParams({
                     searchMode: "representative",
                     searchValue: `${theme.name} ${theme.description}`,
+                    question_id: questionId
                   }).toString();
 
                   loadAnswers(

@@ -19,6 +19,7 @@
 
   export interface Props {
     consultationId: string;
+    questionId: string;
     theme: GeneratedTheme;
     removeTheme: (themeId: string) => void;
     updateTheme: (themeId: string, title: string, description: string) => void;
@@ -28,6 +29,7 @@
 
   let {
     consultationId,
+    questionId,
     theme,
     removeTheme = () => {},
     updateTheme = () => {},
@@ -107,6 +109,7 @@
                     const queryString = new URLSearchParams({
                       searchMode: "representative",
                       searchValue: `${theme.name} ${theme.description}`,
+                      question_id: questionId
                     }).toString();
 
                     loadAnswers(
