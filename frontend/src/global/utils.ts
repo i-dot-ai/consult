@@ -125,6 +125,7 @@ export const formatTimeDeltaText = (minutes: number): string => {
   const MINUTES_IN_MONTH = MINUTES_IN_DAY * 30;
   const MINUTES_IN_YEAR = MINUTES_IN_MONTH * 12;
 
+  // Exceptional cases
   if (minutes >= MINUTES_IN_HALF_HOUR && minutes < MINUTES_IN_HOUR) {
     return `less than an hour`;
   }
@@ -132,7 +133,7 @@ export const formatTimeDeltaText = (minutes: number): string => {
   let value: number = minutes;
   let unit: "minute" | "hour" | "day" | "month" | "year" = "minute";
 
-  if (minutes < (MINUTES_IN_HALF_HOUR)) {
+  if (minutes < MINUTES_IN_HOUR) {
     value = minutes;
     unit = "minute";
   } else if (minutes >= MINUTES_IN_HOUR && minutes < MINUTES_IN_DAY) {
