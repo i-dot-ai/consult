@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyHighlight,
   formatDate,
+  formatTimeDeltaText,
   getEnv,
   getPercentage,
   toTitleCase,
@@ -92,3 +93,39 @@ describe("formatDate", () => {
     expect(formatDate(dateStr)).toBe("Invalid Date");
   });
 });
+
+describe("formatTimeDelta", () => {
+  it("returns correct text for minutes", () => {
+    expect(formatTimeDeltaText(1)).toEqual("1 minute");
+    expect(formatTimeDeltaText(2)).toEqual("2 minutes");
+    expect(formatTimeDeltaText(10)).toEqual("10 minutes");
+  });
+
+  it("return correct text for less than hour", () => {
+    expect(formatTimeDeltaText(30)).toEqual("less than an hour");
+    expect(formatTimeDeltaText(40)).toEqual("less than an hour");
+  });
+
+  it("return correct text for hours", () => {
+    expect(formatTimeDeltaText(60)).toEqual("1 hour");
+    expect(formatTimeDeltaText(60 * 2)).toEqual("2 hours");
+    expect(formatTimeDeltaText(60 * 2)).toEqual("2 hours");
+  });
+
+  it("return correct text for days", () => {
+    expect(formatTimeDeltaText(60 * 24)).toEqual("1 day");
+    expect(formatTimeDeltaText(60 * 24 * 2)).toEqual("2 days");
+    expect(formatTimeDeltaText(60 * 24 * 3)).toEqual("3 days");
+  });
+
+  it("return correct text for months", () => {
+    expect(formatTimeDeltaText(60 * 24 * 30)).toEqual("1 month");
+    expect(formatTimeDeltaText(60 * 24 * 30 * 2)).toEqual("2 months");
+    expect(formatTimeDeltaText(60 * 24 * 30 * 10)).toEqual("10 months");
+  });
+
+  it("return correct text for years", () => {
+    expect(formatTimeDeltaText(60 * 24 * 30 * 12)).toEqual("1 year");
+    expect(formatTimeDeltaText(60 * 24 * 30 * 12 * 2)).toEqual("2 years");
+  });
+})
