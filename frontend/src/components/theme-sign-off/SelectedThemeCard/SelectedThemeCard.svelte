@@ -3,7 +3,7 @@
 
   import { fade, fly } from "svelte/transition";
 
-  import type { GeneratedTheme } from "../../../global/types";
+  import type { SelectedTheme } from "../../../global/types";
   import { createFetchStore } from "../../../global/stores";
   import { getApiAnswersUrl } from "../../../global/routes";
   import { formatTimeDeltaText, getTimeDeltaInMinutes } from "../../../global/utils";
@@ -21,7 +21,7 @@
   export interface Props {
     consultationId: string;
     questionId: string;
-    theme: GeneratedTheme;
+    theme: SelectedTheme;
     removeTheme: (themeId: string) => void;
     updateTheme: (themeId: string, title: string, description: string) => void;
     maxAnswers?: number;
