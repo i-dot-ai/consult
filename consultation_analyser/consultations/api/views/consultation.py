@@ -11,7 +11,7 @@ from consultation_analyser.consultations.api.permissions import (
 )
 from consultation_analyser.consultations.api.serializers import (
     ConsultationSerializer,
-    DemographicOptionSerializer,
+    DemographicOptionSerializer, ConsultationFolderSerializer,
 )
 from consultation_analyser.consultations.models import Consultation, DemographicOption
 from consultation_analyser.support_console import ingest
@@ -61,35 +61,47 @@ class ConsultationViewSet(ModelViewSet):
 
         return Response(serializer.data)
 
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="import",
+        permission_classes=[HasDashboardAccess],
+    )
+    def submit_consultation_import(self, request) -> HttpResponse:
+        """
+        Submit consultation import.
+        """
+        consultation_name = request.data.get("consultation_name")
+        consultation_code = request.data.get("consultation_code")
+        timestamp = request.data.get("timestamp")
+        action = request.data.get("action")
 
-@api_view(["GET"])
-def get_consultation_folders(request) -> HttpResponse:
-    """
-    get consultation folders.
-    """
-    consultation_folders = ingest.get_consultation_codes()
+        try:
+            import_consultation_job.delay(
+                consultation_name=consultation_name,
+                consultation_code=consultation_code,
+                timestamp=timestamp,
+                current_user_id=request.user.id,
+                sign_off=action == "sign_off",
+            )
+            return Response(status=201)
+        except Exception as e:
+            return Response(status=500, exception=True, data={"message": "Something went wrong"})
 
-    return JsonResponse(consultation_folders, safe=False)
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="folders",
+        permission_classes=[HasDashboardAccess],
+    )
+    def get_consultation_folders(self, request) -> HttpResponse:
+        """
+        get consultation folders.
+        """
+        consultation_folders = ingest.get_consultation_codes()
+
+        serializer = ConsultationFolderSerializer(consultation_folders, many=True, default={})
+
+        return JsonResponse(serializer.data)
 
 
-@api_view(["POST"])
-def submit_consultation_import(request) -> HttpResponse:
-    """
-    Submit consultation import.
-    """
-    consultation_name = request.data.get("consultation_name")
-    consultation_code = request.data.get("consultation_code")
-    timestamp = request.data.get("timestamp")
-    action = request.data.get("action")
-
-    try:
-        import_consultation_job.delay(
-            consultation_name=consultation_name,
-            consultation_code=consultation_code,
-            timestamp=timestamp,
-            current_user_id=request.user.id,
-            sign_off=action == "sign_off",
-        )
-        return HttpResponse(status=201)
-    except Exception as e:
-        return HttpResponse(status=500, content="Something went wrong")
