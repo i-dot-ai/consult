@@ -133,7 +133,7 @@ class TestQuestionViewSet:
                 "pk": free_text_question.id,
             },
         )
-        assert free_text_question.theme_status == Question.ThemeStatus.CONFIRMED
+        assert free_text_question.theme_status == Question.ThemeStatus.DRAFT
         response = client.patch(
             url,
             data={"theme_status": Question.ThemeStatus.DRAFT},
@@ -155,7 +155,7 @@ class TestQuestionViewSet:
                 "pk": free_text_question.id,
             },
         )
-        assert free_text_question.theme_status == Question.ThemeStatus.CONFIRMED
+        assert free_text_question.theme_status == Question.ThemeStatus.DRAFT
         response = client.patch(
             url,
             data={"theme_status": "INVALID"},
@@ -164,7 +164,7 @@ class TestQuestionViewSet:
         )
         assert response.status_code == 400
         free_text_question.refresh_from_db()
-        assert free_text_question.theme_status == Question.ThemeStatus.CONFIRMED
+        assert free_text_question.theme_status == Question.ThemeStatus.DRAFT
 
     @pytest.mark.parametrize("has_free_text", [True, False, ""])
     def test_filter(self, client, consultation_user_token, consultation, has_free_text):
