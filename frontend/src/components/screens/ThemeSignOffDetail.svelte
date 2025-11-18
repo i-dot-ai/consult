@@ -91,6 +91,14 @@
   } = createFetchStore();
 
   const {
+    load: removeSelectedTheme,
+    loading: isRemovingSelectedTheme,
+    data: removeSelectedThemeData,
+    error: removeSelectedThemeError,
+    status: removeSelectedThemeStatus,
+  } = createFetchStore();
+
+  const {
     load: selectGeneratedTheme,
     loading: isSelectingGeneratedTheme,
     data: selectGeneratedThemeData,
@@ -140,37 +148,33 @@
       (theme) => theme.id === themeId,
     );
 
-    try {
-      const response = await fetch(
-        getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            "If-Match": selectedTheme.version,
-          },
-        },
-      );
+    await removeSelectedTheme(
+      getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
+      "DELETE",
+      undefined,
+      {
+        "Content-Type": "application/json",
+        "If-Match": selectedTheme.version,
+      },
+    );
 
-      if (response.ok) {
-        loadSelectedThemes(
-          getApiGetSelectedThemesUrl(consultationId, questionId),
-        );
-        loadGeneratedThemes(
-          getApiGetGeneratedThemesUrl(consultationId, questionId),
-        );
-      } else if (response.status === 412) {
-        const { last_modified_by, latest_version } = await response.json();
-        errorData = {
-          type: "remove-conflict",
-          lastModifiedBy: last_modified_by.email,
-          latestVersion: latest_version,
-        };
-      } else {
-        throw new Error(`Remove theme failed: ${response.statusText}`);
-      }
-    } catch (err: any) {
+    if ($removeSelectedThemeStatus === 412) {
+      const { last_modified_by, latest_version } = $removeSelectedThemeData;
+      errorData = {
+        type: "remove-conflict",
+        lastModifiedBy: last_modified_by.email,
+        latestVersion: latest_version,
+      };
+    } else if ($removeSelectedThemeError) {
       errorData = { type: "unexpected" };
+      console.error($removeSelectedThemeError);
+    } else {
+      loadSelectedThemes(
+      getApiGetSelectedThemesUrl(consultationId, questionId),
+        );
+      loadGeneratedThemes(
+        getApiGetGeneratedThemesUrl(consultationId, questionId),
+      );
     }
   };
 
