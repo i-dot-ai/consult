@@ -165,6 +165,10 @@
         lastModifiedBy: last_modified_by.email,
         latestVersion: latest_version,
       };
+    } else if ($removeSelectedThemeStatus === 404) {
+      errorData = {
+        type: "theme-does-not-exist",
+      };
     } else if ($removeSelectedThemeError) {
       errorData = { type: "unexpected" };
       console.error($removeSelectedThemeError);
