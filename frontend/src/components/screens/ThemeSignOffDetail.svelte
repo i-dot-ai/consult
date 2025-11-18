@@ -174,8 +174,8 @@
       console.error($removeSelectedThemeError);
     } else {
       loadSelectedThemes(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-        );
+        getApiGetSelectedThemesUrl(consultationId, questionId),
+      );
       loadGeneratedThemes(
         getApiGetGeneratedThemesUrl(consultationId, questionId),
       );
