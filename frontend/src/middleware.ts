@@ -18,7 +18,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     console.log("user not signed in");
   }
 
-  const internalAccessToken = context.request.headers.get('x-amzn-oidc-data');
+  const internalAccessToken = context.request.headers.get('x-amzn-oidc-data') || "undefined";
 
   const accessToken = context.cookies.get("access")?.value;
   const url = context.url;
@@ -48,7 +48,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
   }
 
-  const backendUrl = getBackendUrl();
+  const backendUrl = getBackendUrl(url.hostname);
   const fullBackendUrl = path.join(backendUrl, url.pathname) + url.search;
 
   // skip as new pages are moved to astro
@@ -118,11 +118,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
     // Add/override specific headers
     headersToSend.set("Authorization", `Bearer ${accessToken}`);
-    if (internalAccessToken){
-      headersToSend.set("x-amzn-oidc-data", internalAccessToken);
-    }else{
-      console.error("x-amzn-oidc-data not set!")
-    }
+    headersToSend.set("x-amzn-oidc-data", internalAccessToken);
     headersToSend.set("Cookie", cookieHeader);
     if (csrfCookie) {
       headersToSend.set("X-CSRFToken", csrfCookie.value);
