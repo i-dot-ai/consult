@@ -1,3 +1,4 @@
+from django.conf import settings
 from django.contrib.postgres.search import SearchQuery, SearchRank
 from django.db.models import Avg, Count, F, StdDev
 from django_filters import UUIDFilter
@@ -71,7 +72,9 @@ class ResponseSearchFilter(SearchFilter):
             search_rank_score = SearchRank(F("search_vector"), search_query, normalization=32)
 
             hybrid_score = (0.9 * semantic_score) + (0.1 * search_rank_score)
-            responses = queryset.annotate(hybrid_score=hybrid_score)
+            responses = queryset.annotate(
+                hybrid_score=hybrid_score, semantic_score=semantic_score
+            ).filter(semantic_score__gte=settings.SEMANTIC_THRESHOLD)
 
             mean = responses.aggregate(Avg("hybrid_score"))["hybrid_score__avg"]
             std = responses.aggregate(StdDev("hybrid_score"))["hybrid_score__stddev"]
