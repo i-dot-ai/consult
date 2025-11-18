@@ -166,20 +166,17 @@
         latestVersion: latest_version,
       };
     } else if ($removeSelectedThemeStatus === 404) {
-      errorData = {
-        type: "theme-does-not-exist",
-      };
+      // No action or error needed
     } else if ($removeSelectedThemeError) {
       errorData = { type: "unexpected" };
       console.error($removeSelectedThemeError);
-    } else {
-      loadSelectedThemes(
-        getApiGetSelectedThemesUrl(consultationId, questionId),
-      );
-      loadGeneratedThemes(
-        getApiGetGeneratedThemesUrl(consultationId, questionId),
-      );
     }
+    loadSelectedThemes(
+      getApiGetSelectedThemesUrl(consultationId, questionId),
+    );
+    loadGeneratedThemes(
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
+    );
   };
 
   const updateTheme = async (
