@@ -759,7 +759,10 @@ def create_consultation(
         )
 
         consultation = Consultation.objects.create(
-            title=consultation_name, code=consultation_code, timestamp=timestamp
+            title=consultation_name,
+            code=consultation_code,
+            timestamp=timestamp,
+            stage=Consultation.Stage.THEME_MAPPING,
         )
 
         # Add the current user to the consultation
