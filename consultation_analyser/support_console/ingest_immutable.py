@@ -1,9 +1,20 @@
 from typing import Dict, List, Optional
+from uuid import UUID
 
 import boto3
 import tiktoken
 from django.conf import settings
+from django.db import transaction
 
+from consultation_analyser.authentication.models import User
+from consultation_analyser.consultations.models import (
+    Consultation,
+    DemographicOption,
+    MultiChoiceAnswer,
+    Question,
+    Respondent,
+    Response,
+)
 from consultation_analyser.support_console.pydantic_models import (
     ImmutableDataBatch,
     MultiChoiceInput,
@@ -243,3 +254,299 @@ def load_immutable_data_batch(
     )
 
     return batch
+
+
+# =============================================================================
+# INGESTION LOGIC - Create Django models from validated data
+# =============================================================================
+
+
+@transaction.atomic
+def ingest_immutable_data(batch: ImmutableDataBatch, user_id: UUID) -> UUID:
+    """
+    Ingest immutable consultation data (consultation, respondents, questions, responses).
+
+    This function is idempotent and can be safely re-run. It will update existing
+    consultations rather than creating duplicates.
+
+    Immutable data includes:
+    - Consultation definition
+    - Respondents and their demographics
+    - Questions and their configuration
+    - Response text (both free text and multiple choice)
+
+    This does NOT include:
+    - Candidate themes (sign-off workflow)
+    - Response annotations (mapping workflow)
+
+    Args:
+        batch: Validated immutable data batch from S3
+        user_id: User ID to associate with consultation
+
+    Returns:
+        UUID of created/updated consultation
+
+    Raises:
+        User.DoesNotExist: If user_id doesn't exist
+    """
+    logger.info(f"Starting immutable data ingestion for {batch.consultation_code}")
+
+    # 1. Create or update consultation
+    consultation, created = Consultation.objects.get_or_create(
+        code=batch.consultation_code,
+        defaults={
+            "title": batch.consultation_title,
+            "timestamp": batch.timestamp,
+        },
+    )
+
+    if not created:
+        logger.warning(f"Consultation {batch.consultation_code} already exists, updating...")
+        consultation.title = batch.consultation_title
+        consultation.timestamp = batch.timestamp
+        consultation.save()
+
+    # Add user to consultation
+    user = User.objects.get(id=user_id)
+    consultation.users.add(user)
+
+    # 2. Create respondents with demographics
+    _ingest_respondents(consultation, batch.respondents)
+
+    # 3. Create questions with multi-choice options
+    _ingest_questions(consultation, batch.questions)
+
+    # 4. Create responses (free text and multi-choice)
+    _ingest_responses(consultation, batch.responses_by_question, batch.multi_choice_by_question)
+
+    logger.info(f"Completed immutable data ingestion for {consultation.code}")
+    return consultation.id
+
+
+def _ingest_respondents(consultation: Consultation, respondents: List[RespondentInput]) -> None:
+    """
+    Create respondents and their demographics for a consultation.
+
+    This deletes existing respondents for idempotency.
+
+    Args:
+        consultation: Consultation object
+        respondents: List of validated respondent inputs
+    """
+    logger.info(f"Ingesting {len(respondents)} respondents")
+
+    # Delete existing respondents for idempotency (cascades to responses)
+    existing_count = Respondent.objects.filter(consultation=consultation).count()
+    if existing_count > 0:
+        logger.warning(f"Deleting {existing_count} existing respondents for idempotency")
+        Respondent.objects.filter(consultation=consultation).delete()
+
+    # Create respondents
+    respondents_to_create = []
+    for respondent_input in respondents:
+        respondent = Respondent(
+            consultation=consultation,
+            themefinder_id=respondent_input.themefinder_id,
+        )
+        respondents_to_create.append((respondent, respondent_input))
+
+    created_respondents = Respondent.objects.bulk_create([r for r, _ in respondents_to_create])
+
+    # Create demographics for each respondent
+    for respondent, (_, respondent_input) in zip(created_respondents, respondents_to_create):
+        if not respondent_input.demographic_data:
+            continue
+
+        demographic_options = []
+        for field_name, field_values in respondent_input.demographic_data.items():
+            for field_value in field_values:
+                option, _ = DemographicOption.objects.get_or_create(
+                    consultation=consultation,
+                    field_name=field_name,
+                    field_value=field_value,
+                )
+                demographic_options.append(option)
+
+        if demographic_options:
+            respondent.demographics.set(demographic_options)
+
+    logger.info(f"Created {len(created_respondents)} respondents")
+
+
+def _ingest_questions(consultation: Consultation, questions: List[QuestionInput]) -> None:
+    """
+    Create questions and their multi-choice options for a consultation.
+
+    This deletes existing questions for idempotency (cascades to responses).
+
+    Args:
+        consultation: Consultation object
+        questions: List of validated question inputs
+    """
+    logger.info(f"Ingesting {len(questions)} questions")
+
+    # Delete existing questions for idempotency (cascades to responses)
+    existing_count = Question.objects.filter(consultation=consultation).count()
+    if existing_count > 0:
+        logger.warning(f"Deleting {existing_count} existing questions for idempotency")
+        Question.objects.filter(consultation=consultation).delete()
+
+    # Create questions
+    questions_to_create = []
+    for question_input in questions:
+        has_mc = len(question_input.multi_choice_options) > 0
+        question = Question(
+            consultation=consultation,
+            text=question_input.question_text,
+            number=question_input.question_number,
+            has_free_text=question_input.has_free_text,
+            has_multiple_choice=has_mc,
+        )
+        questions_to_create.append((question, question_input))
+
+    created_questions = Question.objects.bulk_create([q for q, _ in questions_to_create])
+
+    # Create multi-choice options for each question
+    for question, (_, question_input) in zip(created_questions, questions_to_create):
+        if not question_input.multi_choice_options:
+            continue
+
+        options = [
+            MultiChoiceAnswer(question=question, text=option_text)
+            for option_text in question_input.multi_choice_options
+        ]
+        MultiChoiceAnswer.objects.bulk_create(options)
+
+    logger.info(f"Created {len(created_questions)} questions")
+
+
+def _ingest_responses(
+    consultation: Consultation,
+    responses_by_question: Dict[int, List[ResponseInput]],
+    multi_choice_by_question: Dict[int, List[MultiChoiceInput]],
+) -> None:
+    """
+    Create responses with careful indexing to link correct respondent + question.
+
+    This is a critical function that must correctly match:
+    - themefinder_id -> Respondent
+    - question_number -> Question
+    - Merge free text and multi-choice by themefinder_id
+
+    Args:
+        consultation: Consultation object
+        responses_by_question: Dict mapping question_number to list of ResponseInputs
+        multi_choice_by_question: Dict mapping question_number to list of MultiChoiceInputs
+    """
+    logger.info("Ingesting responses")
+
+    # Build lookup dictionaries for efficient indexing
+    respondent_lookup = {
+        r.themefinder_id: r for r in Respondent.objects.filter(consultation=consultation)
+    }
+
+    question_lookup = {q.number: q for q in Question.objects.filter(consultation=consultation)}
+
+    # Process each question
+    for question_number, question in question_lookup.items():
+        logger.info(f"Processing responses for question {question_number}")
+
+        free_text_responses = responses_by_question.get(question_number, [])
+        multi_choice_responses = multi_choice_by_question.get(question_number, [])
+
+        # Merge free text and multi-choice by themefinder_id
+        responses_by_tf_id: Dict[int, Dict] = {}
+
+        for resp in free_text_responses:
+            responses_by_tf_id[resp.themefinder_id] = {
+                "free_text": resp.text,
+                "multi_choice": None,
+            }
+
+        for mc in multi_choice_responses:
+            if mc.themefinder_id in responses_by_tf_id:
+                responses_by_tf_id[mc.themefinder_id]["multi_choice"] = mc.options
+            else:
+                responses_by_tf_id[mc.themefinder_id] = {
+                    "free_text": None,
+                    "multi_choice": mc.options,
+                }
+
+        # Create Response objects with batching based on token count
+        responses_to_create: List = []
+        max_total_tokens = 100_000
+        max_batch_size = 2048
+        total_tokens = 0
+
+        for i, (tf_id, data) in enumerate(responses_by_tf_id.items()):
+            if tf_id not in respondent_lookup:
+                logger.warning(f"No respondent found for themefinder_id {tf_id}")
+                continue
+
+            free_text = data["free_text"]
+
+            # Calculate tokens for free text
+            if free_text:
+                token_count = len(encoding.encode(free_text))
+                if token_count > 8192:
+                    logger.warning(f"Truncated text for themefinder_id: {tf_id}")
+                    free_text = free_text[:1000]
+                    token_count = len(encoding.encode(free_text))
+            else:
+                token_count = 0
+
+            # Batch by token count or size
+            if (
+                total_tokens + token_count > max_total_tokens
+                or len(responses_to_create) >= max_batch_size
+            ):
+                Response.objects.bulk_create([r for r, _ in responses_to_create])
+                responses_to_create = []
+                total_tokens = 0
+                logger.info(
+                    f"Saved batch of responses for question {question_number} (total so far: {i + 1})"
+                )
+
+            response = Response(
+                respondent=respondent_lookup[tf_id],
+                question=question,
+                free_text=free_text,
+            )
+
+            responses_to_create.append((response, data["multi_choice"]))
+            total_tokens += token_count
+
+        # Save last batch
+        if responses_to_create:
+            created_responses = Response.objects.bulk_create([r for r, _ in responses_to_create])
+
+            # Set multi-choice options (requires M2M after creation)
+            mc_options_lookup = {
+                opt.text: opt for opt in MultiChoiceAnswer.objects.filter(question=question)
+            }
+
+            for response, (_, mc_options) in zip(created_responses, responses_to_create):
+                if mc_options:
+                    chosen = [
+                        mc_options_lookup[text] for text in mc_options if text in mc_options_lookup
+                    ]
+                    if chosen:
+                        response.chosen_options.set(chosen)
+                        response.save()
+
+            # Update search vectors (via signal on save)
+            for response in created_responses:
+                if response.free_text:
+                    response.save()
+
+            logger.info(
+                f"Saved final batch of {len(created_responses)} responses for question {question_number}"
+            )
+
+        # Update question total_responses count
+        question.update_total_responses()
+        logger.info(
+            f"Updated total_responses count for question {question_number}: {question.total_responses}"
+        )
+
+    logger.info("Completed response ingestion")
