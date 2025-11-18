@@ -158,25 +158,26 @@
       },
     );
 
-    if ($removeSelectedThemeStatus === 412) {
+    if (!$removeSelectedThemeError || $removeSelectedThemeStatus === 404) {
+      // No action or error needed if status 404 (theme already deselected)
+
+      loadSelectedThemes(
+        getApiGetSelectedThemesUrl(consultationId, questionId),
+      );
+      loadGeneratedThemes(
+        getApiGetGeneratedThemesUrl(consultationId, questionId),
+      );
+    } else if ($removeSelectedThemeStatus === 412) {
       const { last_modified_by, latest_version } = $removeSelectedThemeData;
       errorData = {
         type: "remove-conflict",
         lastModifiedBy: last_modified_by.email,
         latestVersion: latest_version,
       };
-    } else if ($removeSelectedThemeStatus === 404) {
-      // No action or error needed
-    } else if ($removeSelectedThemeError) {
+    } else {
       errorData = { type: "unexpected" };
       console.error($removeSelectedThemeError);
     }
-    loadSelectedThemes(
-      getApiGetSelectedThemesUrl(consultationId, questionId),
-    );
-    loadGeneratedThemes(
-      getApiGetGeneratedThemesUrl(consultationId, questionId),
-    );
   };
 
   const updateTheme = async (
