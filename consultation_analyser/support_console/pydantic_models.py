@@ -1,0 +1,93 @@
+from typing import Dict, List, Optional
+
+from pydantic import BaseModel, Field, field_validator
+
+
+class RespondentInput(BaseModel):
+    """
+    Input model for a single respondent from respondents.jsonl.
+
+    Example S3 file: app_data/consultations/{code}/inputs/respondents.jsonl
+    Each line represents one respondent with their demographic information.
+    """
+
+    themefinder_id: int
+    demographic_data: Dict[str, List[str]] = Field(default_factory=dict)
+
+    model_config = {"extra": "forbid"}
+
+
+class QuestionInput(BaseModel):
+    """
+    Input model for a question from question.json.
+
+    Example S3 file: app_data/consultations/{code}/inputs/question_part_N/question.json
+    Contains the question text and configuration (free text, multiple choice options).
+    """
+
+    question_text: str
+    question_number: int
+    has_free_text: bool = True
+    multi_choice_options: List[str] = Field(default_factory=list)
+
+    @field_validator("multi_choice_options", mode="before")
+    @classmethod
+    def coerce_none_to_empty_list(cls, v):
+        """Ensure None values are converted to empty list"""
+        return v if v is not None else []
+
+    model_config = {"extra": "forbid"}
+
+
+class ResponseInput(BaseModel):
+    """
+    Input model for a free text response from responses.jsonl.
+
+    Example S3 file: app_data/consultations/{code}/inputs/question_part_N/responses.jsonl
+    Each line represents one respondent's free text answer to the question.
+    """
+
+    themefinder_id: int
+    text: str
+
+    model_config = {"extra": "forbid"}
+
+
+class MultiChoiceInput(BaseModel):
+    """
+    Input model for multi-choice selections from multi_choice.jsonl.
+
+    Example S3 file: app_data/consultations/{code}/inputs/question_part_N/multi_choice.jsonl
+    Each line represents one respondent's selected options for a multiple choice question.
+    """
+
+    themefinder_id: int
+    options: List[str]
+
+    model_config = {"extra": "forbid"}
+
+
+class ImmutableDataBatch(BaseModel):
+    """
+    All immutable consultation data that is not dependent on AI processing.
+
+    This represents the complete set of data needed to create the core consultation
+
+    Immutable data is data that should not change after initial import:
+    - Consultation definition
+    - Respondents and their demographics
+    - Questions and their configuration
+    - Responses (both free text and multiple choice)
+    """
+
+    consultation_code: str
+    consultation_title: str
+    timestamp: Optional[str] = None
+    respondents: List[RespondentInput]
+    questions: List[QuestionInput]
+
+    # Keyed by question_number for efficient lookup
+    responses_by_question: Dict[int, List[ResponseInput]] = Field(default_factory=dict)
+    multi_choice_by_question: Dict[int, List[MultiChoiceInput]] = Field(default_factory=dict)
+
+    model_config = {"extra": "forbid"}
