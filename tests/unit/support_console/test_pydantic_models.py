@@ -2,11 +2,13 @@ import pytest
 from pydantic import ValidationError
 
 from consultation_analyser.support_console.pydantic_models import (
-    RespondentInput,
-    QuestionInput,
-    ResponseInput,
-    MultiChoiceInput,
+    CandidateThemeBatch,
+    CandidateThemeInput,
     ImmutableDataBatch,
+    MultiChoiceInput,
+    QuestionInput,
+    RespondentInput,
+    ResponseInput,
 )
 
 
@@ -270,3 +272,141 @@ class TestImmutableDataBatch:
         # Note: Pydantic will actually keep dict keys as strings in JSON
         # but we can access them either way
         assert 1 in batch.responses_by_question or "1" in batch.responses_by_question
+
+
+class TestCandidateThemeInput:
+    """Tests for CandidateThemeInput model"""
+
+    def test_valid_candidate_theme(self):
+        """Test creating a valid candidate theme with all fields"""
+        data = {
+            "topic_id": "123",
+            "topic_label": "Healthcare Access",
+            "topic_description": "Issues related to accessing healthcare services",
+            "source_topic_count": 45,
+            "parent_id": "0",
+            "children": ["124", "125"],
+        }
+        theme = CandidateThemeInput(**data)
+
+        assert theme.topic_id == "123"
+        assert theme.topic_label == "Healthcare Access"
+        assert theme.topic_description == "Issues related to accessing healthcare services"
+        assert theme.source_topic_count == 45
+        assert theme.parent_id == "0"
+        assert theme.children == ["124", "125"]
+
+    def test_candidate_theme_snake_case_fields(self):
+        """Test that standard snake_case field names work"""
+        data = {
+            "topic_id": "123",
+            "topic_label": "Test Theme",
+            "topic_description": "Test Description",
+            "source_topic_count": 10,
+            "parent_id": "0",
+        }
+        theme = CandidateThemeInput(**data)
+        assert theme.topic_label == "Test Theme"
+        assert theme.topic_description == "Test Description"
+
+    def test_candidate_theme_children_defaults_to_empty_list(self):
+        """Test that children defaults to empty list"""
+        data = {
+            "topic_id": "123",
+            "topic_label": "Test",
+            "topic_description": "Test",
+            "source_topic_count": 10,
+            "parent_id": "0",
+        }
+        theme = CandidateThemeInput(**data)
+        assert theme.children == []
+
+    def test_candidate_theme_missing_required_fields(self):
+        """Test that missing required fields raises ValidationError"""
+        data = {"topic_id": "123"}
+        with pytest.raises(Exception):  # Pydantic ValidationError
+            CandidateThemeInput(**data)
+
+    def test_candidate_theme_invalid_source_topic_count_type(self):
+        """Test that invalid type for source_topic_count raises ValidationError"""
+        data = {
+            "topic_id": "123",
+            "topic_label": "Test",
+            "topic_description": "Test",
+            "source_topic_count": "not an int",  # Should be int
+            "parent_id": "0",
+        }
+        with pytest.raises(Exception):  # Pydantic ValidationError
+            CandidateThemeInput(**data)
+
+
+class TestCandidateThemeBatch:
+    """Tests for CandidateThemeBatch model"""
+
+    def test_valid_candidate_theme_batch(self):
+        """Test creating a valid candidate theme batch"""
+        data = {
+            "consultation_code": "NHS_2024",
+            "timestamp": "2024-01-15",
+            "themes_by_question": {
+                1: [
+                    {
+                        "topic_id": "1",
+                        "topic_label": "Theme 1",
+                        "topic_description": "Description 1",
+                        "source_topic_count": 10,
+                        "parent_id": "0",
+                    }
+                ],
+                2: [
+                    {
+                        "topic_id": "2",
+                        "topic_label": "Theme 2",
+                        "topic_description": "Description 2",
+                        "source_topic_count": 20,
+                        "parent_id": "0",
+                    }
+                ],
+            },
+        }
+        batch = CandidateThemeBatch(**data)
+
+        assert batch.consultation_code == "NHS_2024"
+        assert batch.timestamp == "2024-01-15"
+        assert 1 in batch.themes_by_question
+        assert 2 in batch.themes_by_question
+        assert len(batch.themes_by_question[1]) == 1
+        assert batch.themes_by_question[1][0].topic_label == "Theme 1"
+
+    def test_candidate_theme_batch_empty_themes(self):
+        """Test batch with no themes"""
+        data = {
+            "consultation_code": "TEST",
+            "timestamp": "2024-01-15",
+            "themes_by_question": {},
+        }
+        batch = CandidateThemeBatch(**data)
+        assert batch.themes_by_question == {}
+
+    def test_candidate_theme_batch_missing_timestamp(self):
+        """Test that missing timestamp raises ValidationError"""
+        data = {
+            "consultation_code": "TEST",
+            # Missing timestamp
+        }
+        with pytest.raises(Exception):  # Pydantic ValidationError
+            CandidateThemeBatch(**data)
+
+    def test_candidate_theme_batch_invalid_nested_theme(self):
+        """Test that invalid nested theme raises ValidationError"""
+        data = {
+            "consultation_code": "TEST",
+            "timestamp": "2024-01-15",
+            "themes_by_question": {
+                1: [
+                    {"topic_id": "1"}  # Missing required fields
+                ]
+            },
+        }
+        with pytest.raises(Exception):  # Pydantic ValidationError
+            CandidateThemeBatch(**data)
