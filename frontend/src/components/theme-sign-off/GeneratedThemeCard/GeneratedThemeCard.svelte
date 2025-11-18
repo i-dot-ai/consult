@@ -183,6 +183,7 @@
       {#each theme.children as childTheme (childTheme.id)}
         <GeneratedThemeCard
           {consultationId}
+          {questionId}
           theme={childTheme}
           level={level + 1}
           {handleSelect}
