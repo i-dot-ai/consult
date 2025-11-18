@@ -5,6 +5,7 @@ import boto3
 import tiktoken
 from django.conf import settings
 from django.db import transaction
+from django_rq import get_queue
 
 from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.models import (
@@ -15,6 +16,7 @@ from consultation_analyser.consultations.models import (
     Respondent,
     Response,
 )
+from consultation_analyser.embeddings import embed_text
 from consultation_analyser.support_console.pydantic_models import (
     ImmutableDataBatch,
     MultiChoiceInput,
@@ -550,3 +552,103 @@ def _ingest_responses(
         )
 
     logger.info("Completed response ingestion")
+
+
+# =============================================================================
+# ASYNC JOBS - Background processing
+# =============================================================================
+
+
+def create_embeddings_for_question(question_id: UUID) -> None:
+    """
+    Create embeddings for all responses to a question.
+
+    This is designed to be run as an async job via django-rq.
+
+    Args:
+        question_id: UUID of the question
+    """
+    from django.contrib.postgres.search import SearchVector
+
+    queryset = Response.objects.filter(question_id=question_id, free_text__isnull=False)
+    total = queryset.count()
+    batch_size = 1_000
+
+    logger.info(f"Creating embeddings for {total} responses in question {question_id}")
+
+    for i in range(0, total, batch_size):
+        responses = queryset.order_by("id")[i : i + batch_size]
+
+        free_texts = [
+            f"Question: {response.question.text} \nAnswer: {response.free_text}"
+            for response in responses
+        ]
+
+        embeddings = embed_text(free_texts)
+
+        for response, embedding in zip(responses, embeddings):
+            response.embedding = embedding
+            response.search_vector = SearchVector("free_text")
+
+        Response.objects.bulk_update(responses, ["embedding", "search_vector"])
+
+        logger.info(f"Created embeddings for batch {i // batch_size + 1} of question {question_id}")
+
+    logger.info(f"Completed embedding creation for question {question_id}")
+
+
+# =============================================================================
+# ORCHESTRATION - High-level workflow functions
+# =============================================================================
+
+
+def import_consultation_from_s3(
+    consultation_code: str,
+    consultation_title: str,
+    user_id: UUID,
+    timestamp: Optional[str] = None,
+    enqueue_embeddings: bool = True,
+) -> UUID:
+    """
+    Import consultation (immutable data only) from S3.
+
+    This orchestrates:
+    1. Loading data from S3
+    2. Validating with Pydantic
+    3. Ingesting into Django models
+    4. Optionally enqueueing async jobs for embeddings
+
+    Args:
+        consultation_code: S3 folder code
+        consultation_title: Display name
+        user_id: User ID to associate
+        timestamp: Optional timestamp for outputs
+        enqueue_embeddings: Whether to enqueue embedding jobs (default True)
+
+    Returns:
+        Consultation UUID
+    """
+    logger.info(f"Starting S3 import for {consultation_code}")
+
+    # Load and validate data from S3
+    batch = load_immutable_data_batch(
+        consultation_code=consultation_code,
+        consultation_title=consultation_title,
+        timestamp=timestamp,
+    )
+
+    # Ingest immutable data
+    consultation_id = ingest_immutable_data(batch, user_id)
+
+    # Enqueue async jobs for embeddings
+    if enqueue_embeddings:
+        consultation = Consultation.objects.get(id=consultation_id)
+        queue = get_queue(default_timeout=DEFAULT_TIMEOUT_SECONDS)
+
+        for question in Question.objects.filter(consultation=consultation):
+            if question.has_free_text:
+                logger.info(f"Enqueueing embedding job for question {question.number}")
+                queue.enqueue(create_embeddings_for_question, question.id)
+
+    logger.info(f"Completed S3 import for {consultation_code}")
+    return consultation_id
