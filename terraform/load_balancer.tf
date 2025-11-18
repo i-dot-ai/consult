@@ -9,15 +9,17 @@ module "load_balancer" {
   certificate_arn = module.acm_certificate.arn
   web_acl_arn     = module.waf.web_acl_arn
   env             = var.env
+  ip_whitelist    = concat(var.internal_ips, var.external_ips, var.developer_ips)
 }
 
 module "waf" {
   # checkov:skip=CKV_TF_1: We're using semantic versions instead of commit hash
   #source        = "../../i-dot-ai-core-terraform-modules//modules/infrastructure/waf" # For testing local changes
-  source         = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/waf?ref=v7.1.1-waf"
-  name           = local.name
-  host           = local.host
-  env            = var.env
+  source = "git::https://github.com/i-dot-ai/i-dot-ai-core-terraform-modules.git//modules/infrastructure/waf?ref=v5.3.0-waf"
+  name   = local.name
+  ip_set = concat(var.internal_ips, var.developer_ips, var.external_ips)
+  scope  = var.scope
+  host   = local.host
 }
 
 resource "aws_route53_record" "type_a_record" {
