@@ -3,6 +3,7 @@
 
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Docs from "../../svg/material/Docs.svelte";
+  import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
 
   export interface Props {
     title: string;
@@ -43,7 +44,11 @@
         : "bg-teal-50 text-secondary",
     ])}
   >
-    {answers.length}
+    {#if loading}
+      <LoadingIndicator size="1rem" />
+    {:else}
+      {answers.length}
+    {/if}
   </div>
 </div>
 {#if loading}
