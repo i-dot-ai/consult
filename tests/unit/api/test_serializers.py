@@ -2,6 +2,7 @@ import uuid
 from uuid import uuid4
 
 from consultation_analyser.consultations.api.serializers import (
+    ConsultationExportSerializer,
     ConsultationFolderSerializer,
     ConsultationImportSerializer,
     DemographicAggregationsSerializer,
@@ -9,7 +10,6 @@ from consultation_analyser.consultations.api.serializers import (
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
     ThemeSerializer,
-    ConsultationExportSerializer,
 )
 
 
