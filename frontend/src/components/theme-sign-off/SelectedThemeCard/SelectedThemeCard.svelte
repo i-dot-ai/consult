@@ -37,19 +37,14 @@
     answersMock,
   }: Props = $props();
 
-  let {
-    load: loadAnswers,
-    loading: isAnswersLoading,
-    data: answersData,
-    error: answersError,
-  } = createFetchStore(answersMock);
+  const answersStore = createFetchStore(answersMock);
 
   let showAnswers = $state(false);
   let editing = $state(false);
   let answersRequested = $state(false);
 
   const resetAnswers = () => {
-    $answersData = null;
+    $answersStore.data = null;
     showAnswers = false;
     answersRequested = false;
   }
@@ -105,21 +100,21 @@
               <Button
                 size="sm"
                 handleClick={() => {
-                  if (!$answersData) {
+                  if (!$answersStore.data) {
                     const queryString = new URLSearchParams({
                       searchMode: "representative",
                       searchValue: `${theme.name} ${theme.description}`,
                       question_id: questionId
                     }).toString();
 
-                    loadAnswers(
+                    $answersStore.fetch(
                       `${getApiAnswersUrl(consultationId)}?${queryString}`,
                     );
                   }
                   showAnswers = !showAnswers;
                   answersRequested = true;
                 }}
-                disabled={$isAnswersLoading && answersRequested}
+                disabled={$answersStore.isLoading && answersRequested}
               >
                 <MaterialIcon color="fill-neutral-500">
                   <Docs />
@@ -138,8 +133,8 @@
             >
               <AnswersList
                 title="Representative Responses"
-                loading={$isAnswersLoading}
-                answers={$answersData?.all_respondents
+                loading={$answersStore.isLoading}
+                answers={$answersStore.data?.all_respondents
                   .slice(0, maxAnswers)
                   .map((answer) => answer.free_text_answer_text) || []}
               />
