@@ -1,3 +1,5 @@
+from uuid import UUID
+
 from django.db.models import Count
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -14,6 +16,7 @@ from consultation_analyser.consultations.api.serializers import (
     ConsultationImportSerializer,
     ConsultationSerializer,
     DemographicOptionSerializer,
+    ConsultationExportSerializer,
 )
 from consultation_analyser.consultations.models import Consultation, DemographicOption
 from consultation_analyser.support_console import ingest
@@ -21,6 +24,9 @@ from consultation_analyser.support_console.views.consultations import (
     delete_consultation_job,
     import_consultation_job,
 )
+
+import logging
+from consultation_analyser.consultations.export_user_theme import export_user_theme_job
 
 
 class ConsultationViewSet(ModelViewSet):
@@ -98,6 +104,46 @@ class ConsultationViewSet(ModelViewSet):
         except Exception:
             return Response(
                 {"message": "An error occurred while starting the import"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="export",
+        permission_classes=[HasDashboardAccess],
+    )
+    def submit_consultation_export(self, request) -> Response:
+        """
+        Submit consultation export.
+        """
+        try:
+            input_serializer = ConsultationExportSerializer(data=request.data)
+            input_serializer.is_valid(raise_exception=True)
+
+            validated = input_serializer.validated_data
+
+            for id in validated["question_ids"]:
+                try:
+                    logging.info("Exporting theme audit data - sending to queue")
+                    export_user_theme_job.delay(question_id=UUID(id), s3_key=validated["s3_key"])
+                except Exception:
+                    return Response(
+                        {
+                            "message": f"An error occurred while processing question export for question {id}"
+                        },
+                        status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    )
+
+            return Response({"message": "Export job completed"}, status=status.HTTP_200_OK)
+        except serializers.ValidationError:
+            return Response(
+                {"message": "An error occurred while starting the export"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception:
+            return Response(
+                {"message": "An error occurred while starting the export"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
 
