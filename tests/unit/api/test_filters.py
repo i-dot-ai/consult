@@ -24,12 +24,12 @@ def pad_vector(vector):
 def test_semantic_threshold_for_response_search_filter(
     mock_embed_text, respondent_1, respondent_2, free_text_question, delta, expected
 ):
-    """we are checking just above and below the SEMANTIC_THRESHOLD boundary to see that
+    """we are checking just above and below the semantic-threshold boundary to see that
     ResponseSearchFilter is correctly filtering the right responses"""
 
-    angle = settings.SEMANTIC_THRESHOLD + delta
+    angle = 0.3 + delta
 
-    # here we construct the vector need to match the SEMANTIC_THRESHOLD given
+    # here we construct the vector need to match the semantic-threshold given
     # that embed_text is mocked to always return the unit vector
     embedding = pad_vector([angle, math.sqrt(1 - math.pow(angle, 2))])
 
