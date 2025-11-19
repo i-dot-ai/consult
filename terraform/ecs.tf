@@ -43,7 +43,6 @@ locals {
     "SIGN_OFF_BATCH_JOB_NAME"             = "${local.name}-sign-off-job"
     "SIGN_OFF_BATCH_JOB_QUEUE"            = module.batch_job_sign_off.job_queue_name 
     "SIGN_OFF_BATCH_JOB_DEFINITION"       = module.batch_job_sign_off.job_definition_name
-    "AUTH_PROVIDER_PUBLIC_KEY"            = data.aws_ssm_parameter.auth_provider_public_key.value
     "AUTH_API_URL"                        = data.aws_ssm_parameter.auth_api_invoke_url.value
   })
 
