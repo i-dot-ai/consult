@@ -2,13 +2,18 @@ import pytest
 from pydantic import ValidationError
 
 from consultation_analyser.support_console.pydantic_models import (
+    AnnotationBatch,
     CandidateThemeBatch,
     CandidateThemeInput,
+    DetailDetectionInput,
     ImmutableDataBatch,
     MultiChoiceInput,
     QuestionInput,
     RespondentInput,
     ResponseInput,
+    SelectedThemeInput,
+    SentimentInput,
+    ThemeMappingInput,
 )
 
 
@@ -410,3 +415,256 @@ class TestCandidateThemeBatch:
         }
         with pytest.raises(Exception):  # Pydantic ValidationError
             CandidateThemeBatch(**data)
+
+
+class TestSentimentInput:
+    """Tests for SentimentInput Pydantic model"""
+
+    def test_valid_sentiment_agreement(self):
+        """Test creating valid sentiment with AGREEMENT"""
+        data = {"themefinder_id": 1, "sentiment": "AGREEMENT"}
+        sentiment = SentimentInput(**data)
+        assert sentiment.themefinder_id == 1
+        assert sentiment.sentiment == "AGREEMENT"
+
+    def test_valid_sentiment_disagreement(self):
+        """Test creating valid sentiment with DISAGREEMENT"""
+        data = {"themefinder_id": 1, "sentiment": "DISAGREEMENT"}
+        sentiment = SentimentInput(**data)
+        assert sentiment.sentiment == "DISAGREEMENT"
+
+    def test_valid_sentiment_unclear(self):
+        """Test creating valid sentiment with UNCLEAR"""
+        data = {"themefinder_id": 1, "sentiment": "UNCLEAR"}
+        sentiment = SentimentInput(**data)
+        assert sentiment.sentiment == "UNCLEAR"
+
+    def test_sentiment_defaults_to_unclear(self):
+        """Test that sentiment defaults to UNCLEAR if not provided"""
+        data = {"themefinder_id": 1}
+        sentiment = SentimentInput(**data)
+        assert sentiment.sentiment == "UNCLEAR"
+
+    def test_invalid_sentiment_value(self):
+        """Test that invalid sentiment value raises ValidationError"""
+        data = {"themefinder_id": 1, "sentiment": "POSITIVE"}
+        with pytest.raises(ValidationError) as exc_info:
+            SentimentInput(**data)
+        assert "sentiment" in str(exc_info.value)
+
+    def test_missing_themefinder_id(self):
+        """Test that missing themefinder_id raises ValidationError"""
+        data = {"sentiment": "AGREEMENT"}
+        with pytest.raises(ValidationError) as exc_info:
+            SentimentInput(**data)
+        assert "themefinder_id" in str(exc_info.value)
+
+
+class TestDetailDetectionInput:
+    """Tests for DetailDetectionInput Pydantic model"""
+
+    def test_valid_detail_detection_yes(self):
+        """Test creating valid detail detection with YES"""
+        data = {"themefinder_id": 1, "evidence_rich": "YES"}
+        detail = DetailDetectionInput(**data)
+        assert detail.themefinder_id == 1
+        assert detail.evidence_rich == "YES"
+        assert detail.as_bool is True
+
+    def test_valid_detail_detection_no(self):
+        """Test creating valid detail detection with NO"""
+        data = {"themefinder_id": 1, "evidence_rich": "NO"}
+        detail = DetailDetectionInput(**data)
+        assert detail.evidence_rich == "NO"
+        assert detail.as_bool is False
+
+    def test_detail_detection_defaults_to_no(self):
+        """Test that evidence_rich defaults to NO if not provided"""
+        data = {"themefinder_id": 1}
+        detail = DetailDetectionInput(**data)
+        assert detail.evidence_rich == "NO"
+        assert detail.as_bool is False
+
+    def test_as_bool_property(self):
+        """Test that as_bool property correctly converts YES/NO to boolean"""
+        yes_detail = DetailDetectionInput(themefinder_id=1, evidence_rich="YES")
+        no_detail = DetailDetectionInput(themefinder_id=2, evidence_rich="NO")
+        assert yes_detail.as_bool is True
+        assert no_detail.as_bool is False
+
+    def test_invalid_evidence_rich_value(self):
+        """Test that invalid evidence_rich value raises ValidationError"""
+        data = {"themefinder_id": 1, "evidence_rich": "MAYBE"}
+        with pytest.raises(ValidationError) as exc_info:
+            DetailDetectionInput(**data)
+        assert "evidence_rich" in str(exc_info.value)
+
+
+class TestThemeMappingInput:
+    """Tests for ThemeMappingInput Pydantic model"""
+
+    def test_valid_theme_mapping_single_theme(self):
+        """Test creating valid theme mapping with single theme"""
+        data = {"themefinder_id": 1, "theme_keys": ["healthcare"]}
+        mapping = ThemeMappingInput(**data)
+        assert mapping.themefinder_id == 1
+        assert mapping.theme_keys == ["healthcare"]
+
+    def test_valid_theme_mapping_multiple_themes(self):
+        """Test creating valid theme mapping with multiple themes"""
+        data = {"themefinder_id": 1, "theme_keys": ["healthcare", "education", "transport"]}
+        mapping = ThemeMappingInput(**data)
+        assert len(mapping.theme_keys) == 3
+        assert "healthcare" in mapping.theme_keys
+        assert "education" in mapping.theme_keys
+
+    def test_theme_mapping_empty_list(self):
+        """Test that empty theme_keys list is valid"""
+        data = {"themefinder_id": 1, "theme_keys": []}
+        mapping = ThemeMappingInput(**data)
+        assert mapping.theme_keys == []
+
+    def test_missing_theme_keys(self):
+        """Test that missing theme_keys raises ValidationError"""
+        data = {"themefinder_id": 1}
+        with pytest.raises(ValidationError) as exc_info:
+            ThemeMappingInput(**data)
+        assert "theme_keys" in str(exc_info.value)
+
+    def test_invalid_theme_keys_type(self):
+        """Test that non-list theme_keys raises ValidationError"""
+        data = {"themefinder_id": 1, "theme_keys": "healthcare"}
+        with pytest.raises(ValidationError) as exc_info:
+            ThemeMappingInput(**data)
+        assert "theme_keys" in str(exc_info.value)
+
+
+class TestSelectedThemeInput:
+    """Tests for SelectedThemeInput Pydantic model"""
+
+    def test_valid_selected_theme(self):
+        """Test creating valid selected theme"""
+        data = {
+            "theme_key": "healthcare_access",
+            "theme_name": "Healthcare Access",
+            "theme_description": "Issues related to accessing healthcare services",
+        }
+        theme = SelectedThemeInput(**data)
+        assert theme.theme_key == "healthcare_access"
+        assert theme.theme_name == "Healthcare Access"
+        assert theme.theme_description == "Issues related to accessing healthcare services"
+
+    def test_missing_required_fields(self):
+        """Test that missing required fields raise ValidationError"""
+        data = {"theme_key": "healthcare"}
+        with pytest.raises(ValidationError) as exc_info:
+            SelectedThemeInput(**data)
+        assert "theme_name" in str(exc_info.value) or "theme_description" in str(exc_info.value)
+
+    def test_extra_fields_forbidden(self):
+        """Test that extra fields are not allowed"""
+        data = {
+            "theme_key": "healthcare",
+            "theme_name": "Healthcare",
+            "theme_description": "Description",
+            "extra_field": "value",
+        }
+        with pytest.raises(ValidationError) as exc_info:
+            SelectedThemeInput(**data)
+        assert "extra_field" in str(exc_info.value)
+
+
+class TestAnnotationBatch:
+    """Tests for AnnotationBatch Pydantic model"""
+
+    def test_valid_complete_annotation_batch(self):
+        """Test creating complete annotation batch with all data types"""
+        data = {
+            "consultation_code": "NHS_2024",
+            "timestamp": "2024-01-15",
+            "selected_themes_by_question": {
+                1: [
+                    {
+                        "theme_key": "healthcare",
+                        "theme_name": "Healthcare",
+                        "theme_description": "Healthcare issues",
+                    }
+                ]
+            },
+            "sentiments_by_question": {1: [{"themefinder_id": 1, "sentiment": "AGREEMENT"}]},
+            "details_by_question": {1: [{"themefinder_id": 1, "evidence_rich": "YES"}]},
+            "mappings_by_question": {1: [{"themefinder_id": 1, "theme_keys": ["healthcare"]}]},
+        }
+        batch = AnnotationBatch(**data)
+
+        assert batch.consultation_code == "NHS_2024"
+        assert batch.timestamp == "2024-01-15"
+        assert 1 in batch.selected_themes_by_question
+        assert 1 in batch.sentiments_by_question
+        assert 1 in batch.details_by_question
+        assert 1 in batch.mappings_by_question
+
+    def test_annotation_batch_minimal(self):
+        """Test minimal annotation batch with required fields only"""
+        data = {
+            "consultation_code": "TEST",
+            "timestamp": "2024-01-15",
+        }
+        batch = AnnotationBatch(**data)
+        assert batch.consultation_code == "TEST"
+        assert batch.timestamp == "2024-01-15"
+        assert batch.sentiments_by_question == {}
+        assert batch.details_by_question == {}
+        assert batch.mappings_by_question == {}
+        assert batch.selected_themes_by_question == {}
+
+    def test_annotation_batch_without_sentiments(self):
+        """Test that sentiments are optional"""
+        data = {
+            "consultation_code": "TEST",
+            "timestamp": "2024-01-15",
+            "selected_themes_by_question": {
+                1: [
+                    {
+                        "theme_key": "healthcare",
+                        "theme_name": "Healthcare",
+                        "theme_description": "Healthcare",
+                    }
+                ]
+            },
+            "details_by_question": {1: [{"themefinder_id": 1, "evidence_rich": "YES"}]},
+            "mappings_by_question": {1: [{"themefinder_id": 1, "theme_keys": ["healthcare"]}]},
+        }
+        batch = AnnotationBatch(**data)
+        assert batch.sentiments_by_question == {}
+
+    def test_annotation_batch_missing_timestamp(self):
+        """Test that missing timestamp raises ValidationError"""
+        data = {"consultation_code": "TEST"}
+        with pytest.raises(ValidationError) as exc_info:
+            AnnotationBatch(**data)
+        assert "timestamp" in str(exc_info.value)
+
+    def test_annotation_batch_invalid_nested_sentiment(self):
+        """Test that invalid nested sentiment raises ValidationError"""
+        data = {
+            "consultation_code": "TEST",
+            "timestamp": "2024-01-15",
+            "sentiments_by_question": {1: [{"themefinder_id": 1, "sentiment": "INVALID"}]},
+        }
+        with pytest.raises(ValidationError) as exc_info:
+            AnnotationBatch(**data)
+        assert "sentiment" in str(exc_info.value)
+
+    def test_annotation_batch_invalid_nested_theme(self):
+        """Test that invalid nested theme raises ValidationError"""
+        data = {
+            "consultation_code": "TEST",
+            "timestamp": "2024-01-15",
+            "selected_themes_by_question": {
+                1: [{"theme_key": "healthcare"}]  # Missing required fields
+            },
+        }
+        with pytest.raises(ValidationError) as exc_info:
+            AnnotationBatch(**data)
+        assert "selected_themes_by_question" in str(exc_info.value)

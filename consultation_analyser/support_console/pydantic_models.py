@@ -1,4 +1,4 @@
-from typing import Dict, List, Optional
+from typing import Dict, List, Literal, Optional
 
 from pydantic import BaseModel, Field, field_validator
 
@@ -134,5 +134,99 @@ class CandidateThemeBatch(BaseModel):
     consultation_code: str
     timestamp: str
     themes_by_question: Dict[int, List[CandidateThemeInput]] = Field(default_factory=dict)
+
+    model_config = {"extra": "forbid"}
+
+
+# ============================================================================
+# RESPONSE ANNOTATIONS - AI-generated annotations (sentiment, themes, evidence)
+# ============================================================================
+
+
+class SentimentInput(BaseModel):
+    """
+    Input model for sentiment analysis from sentiment.jsonl.
+
+    Example S3 file: app_data/consultations/{code}/outputs/mapping/{timestamp}/question_part_N/sentiment.jsonl
+    Contains sentiment classification for each response (AGREEMENT, DISAGREEMENT, UNCLEAR).
+
+    Note: This file may not exist for all consultations. If missing, skip sentiment ingestion.
+    """
+
+    themefinder_id: int
+    sentiment: Literal["AGREEMENT", "DISAGREEMENT", "UNCLEAR"] = "UNCLEAR"
+
+    model_config = {"extra": "forbid"}
+
+
+class DetailDetectionInput(BaseModel):
+    """
+    Input model for evidence richness detection from detail_detection.jsonl.
+
+    Example S3 file: app_data/consultations/{code}/outputs/mapping/{timestamp}/question_part_N/detail_detection.jsonl
+    Indicates whether each response is evidence-rich (contains specific details/examples).
+    """
+
+    themefinder_id: int
+    evidence_rich: Literal["YES", "NO"] = "NO"
+
+    @property
+    def as_bool(self) -> bool:
+        """Convert YES/NO to boolean for database storage."""
+        return self.evidence_rich == "YES"
+
+    model_config = {"extra": "forbid"}
+
+
+class ThemeMappingInput(BaseModel):
+    """
+    Input model for theme mappings from mapping.jsonl.
+
+    Example S3 file: app_data/consultations/{code}/outputs/mapping/{timestamp}/question_part_N/mapping.jsonl
+    Links each response to one or more themes via theme_keys.
+    """
+
+    themefinder_id: int
+    theme_keys: List[str]
+
+    model_config = {"extra": "forbid"}
+
+
+class SelectedThemeInput(BaseModel):
+    """
+    Input model for selected themes from themes.json.
+
+    Example S3 file: app_data/consultations/{code}/outputs/mapping/{timestamp}/question_part_N/themes.json
+    Defines the themes used for this question after sign-off.
+    """
+
+    theme_key: str
+    theme_name: str
+    theme_description: str
+
+    model_config = {"extra": "forbid"}
+
+
+class AnnotationBatch(BaseModel):
+    """
+    All response annotations for a consultation organized by question.
+
+    Response annotations are AI-generated during the mapping workflow and stored
+    in the outputs/mapping/{timestamp}/ folder structure. They include:
+    - Sentiment analysis (optional)
+    - Evidence richness detection
+    - Theme mappings (response-to-theme links)
+    - Selected themes (the themes themselves)
+
+    The timestamp is required for annotations as it identifies the specific
+    mapping run that generated these outputs.
+    """
+
+    consultation_code: str
+    timestamp: str
+    sentiments_by_question: Dict[int, List[SentimentInput]] = Field(default_factory=dict)
+    details_by_question: Dict[int, List[DetailDetectionInput]] = Field(default_factory=dict)
+    mappings_by_question: Dict[int, List[ThemeMappingInput]] = Field(default_factory=dict)
+    selected_themes_by_question: Dict[int, List[SelectedThemeInput]] = Field(default_factory=dict)
 
     model_config = {"extra": "forbid"}
