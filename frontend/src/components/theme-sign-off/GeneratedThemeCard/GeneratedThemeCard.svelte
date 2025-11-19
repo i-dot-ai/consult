@@ -15,6 +15,7 @@
   import Tag from "../../Tag/Tag.svelte";
   import AnswersList from "../AnswersList/AnswersList.svelte";
   import Visibility from "../../svg/material/Visibility.svelte";
+  import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
 
   export interface Props {
     consultationId: string;
@@ -25,6 +26,7 @@
     expandedThemes: string[];
     setExpandedThemes: (themeId: string) => void;
     handleSelect: (theme: GeneratedTheme) => void;
+    themesBeingSelected: string[];
     maxAnswers?: number;
     answersMock?: Function;
   }
@@ -37,6 +39,7 @@
     expandedThemes = [],
     setExpandedThemes = () => {},
     handleSelect = () => {},
+    themesBeingSelected = [],
     maxAnswers = 10,
     answersMock,
   }: Props = $props();
@@ -53,6 +56,7 @@
   } = createFetchStore(answersMock);
 
   let disabled = $derived(Boolean(theme.selectedtheme_id));
+  let isBeingSelected = $derived(themesBeingSelected.includes(theme.id));
 </script>
 
 <div
@@ -111,9 +115,15 @@
             <Button
               variant="approve"
               size="sm"
+              disabled={isBeingSelected}
               handleClick={() => handleSelect(theme)}
             >
-              Select
+              <div class="flex items-center gap-1">
+                Select
+                {#if isBeingSelected}
+                  <LoadingIndicator size="1rem" />
+                {/if}
+              </div>
             </Button>
 
             <Button
@@ -173,9 +183,11 @@
       {#each theme.children as childTheme (childTheme.id)}
         <GeneratedThemeCard
           {consultationId}
+          {questionId}
           theme={childTheme}
           level={level + 1}
           {handleSelect}
+          {themesBeingSelected}
           {answersMock}
           {expandedThemes}
           {setExpandedThemes}

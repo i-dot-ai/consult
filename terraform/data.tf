@@ -69,9 +69,6 @@ locals {
 
 }
 
-data "aws_ssm_parameter" "client_secret" {
-  name = "/${var.team_name}-${terraform.workspace}-core-keycloak/app_client_secret/${var.project_name}"
-}
 
 data "aws_ssm_parameter" "auth_provider_public_key" {
   name = "/i-dot-ai-${terraform.workspace}-core-keycloak/realm_public_key"

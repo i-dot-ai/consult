@@ -17,9 +17,8 @@
   import Panel from "../Panel/Panel.svelte";
   import TitleRow from "../TitleRow.svelte";
   import Title from "../../Title.svelte";
-  import MaterialIcon from "../../MaterialIcon.svelte";
-  import ProgressActivity from "../../svg/material/ProgressActivity.svelte";
   import Finance from "../../svg/material/Finance.svelte";
+  import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
 
   interface Props {
     consultationId: string;
@@ -112,14 +111,7 @@
               <Title level={3} text={`Loading questions`} />
             </div>
 
-            <div
-              style="animation-timing-function: ease-in-out;"
-              class={clsx(["animate-spin", "ease-in-out", "w-max", "m-auto"])}
-            >
-              <MaterialIcon color="fill-neutral-300" size="10rem">
-                <ProgressActivity />
-              </MaterialIcon>
-            </div>
+            <LoadingIndicator size="10rem" />
           {:else}
             <TabView
               variant="dots"
