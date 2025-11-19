@@ -37,6 +37,12 @@ class CandidateThemeViewSet(ModelViewSet):
         """Select a candidate theme to add as a selected theme"""
         candidate_theme = get_object_or_404(self.get_queryset(), pk=pk)
 
+        if models.SelectedTheme.objects.filter(
+            question=candidate_theme.question,
+            name=candidate_theme.name,
+        ).exists():
+            return Response({"detail": "this theme has already been selected"}, status=400)
+
         selected_theme = models.SelectedTheme.objects.create(
             question=candidate_theme.question,
             name=candidate_theme.name,

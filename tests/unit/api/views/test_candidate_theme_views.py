@@ -136,3 +136,13 @@ class TestCandidateThemeViewSet:
             "modified_at": isoformat(selected_theme.modified_at),
             "last_modified_by": consultation_user.email,
         }
+
+        # now we post the same theme again and we expect to get an error
+        response = client.post(
+            url,
+            headers={"Authorization": f"Bearer {consultation_user_token}"},
+        )
+        assert response.status_code == 400
+        assert response.json() == {
+            "detail": "this theme has already been selected",
+        }
