@@ -136,13 +136,13 @@ class TestQuestionViewSet:
         assert free_text_question.theme_status == Question.ThemeStatus.DRAFT
         response = client.patch(
             url,
-            data={"theme_status": Question.ThemeStatus.DRAFT},
+            data={"theme_status": Question.ThemeStatus.CONFIRMED},
             content_type="application/json",
             headers={"Authorization": f"Bearer {consultation_user_token}"},
         )
         assert response.status_code == 200
         free_text_question.refresh_from_db()
-        assert free_text_question.theme_status == Question.ThemeStatus.DRAFT
+        assert free_text_question.theme_status == Question.ThemeStatus.CONFIRMED
 
     def test_patch_question_invalid_theme_status(
         self, client, consultation_user, free_text_question, consultation_user_token
