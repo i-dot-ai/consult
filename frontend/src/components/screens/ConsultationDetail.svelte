@@ -26,43 +26,22 @@
 
   let searchValue: string = "";
 
-  const {
-    loading: isDemoOptionsLoading,
-    error: demoOptionsError,
-    load: loadDemoOptions,
-    data: demoOptionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<DemoOptionsResponse>;
-  } = createFetchStore();
+  const questionsStore = createFetchStore();
+  const demoOptionsStore = createFetchStore();
 
   onMount(async () => {
-    loadQuestions(getApiQuestionsUrl(consultationId));
+    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
 
-    loadDemoOptions(
+    $demoOptionsStore.fetch(
       `/api/consultations/${consultationId}/demographic-options/`,
     );
   });
 
-  const {
-    loading: isQuestionsLoading,
-    error: questionsError,
-    load: loadQuestions,
-    data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
-
-  $: favQuestions = $questionsData?.results?.filter((question) =>
+  $: favQuestions = $questionsStore.data?.results?.filter((question) =>
     $favStore.includes(question.id),
   );
 
-  $: displayQuestions = $questionsData?.results?.filter((question) =>
+  $: displayQuestions = $questionsStore.data?.results?.filter((question) =>
     `Q${question.number}: ${question.question_text}`
       .toLocaleLowerCase()
       .includes(searchValue.toLocaleLowerCase()),
@@ -72,10 +51,10 @@
 <section class="my-8">
   <Metrics
     {consultationId}
-    questions={$questionsData?.results || []}
-    loading={$isQuestionsLoading}
-    demoOptionsLoading={$isDemoOptionsLoading}
-    demoOptions={$demoOptionsData || []}
+    questions={$questionsStore.data?.results || []}
+    loading={$questionsStore.isLoading}
+    demoOptionsLoading={$demoOptionsStore.isLoading}
+    demoOptions={$demoOptionsStore.data || []}
   />
 </section>
 
@@ -87,10 +66,10 @@
   </div>
 
   {#if $favStore.length > 0}
-    {#if $isQuestionsLoading}
+    {#if $questionsStore.isLoading}
       <p transition:slide>Loading questions...</p>
-    {:else if $questionsError}
-      <p transition:slide>{$questionsError}</p>
+    {:else if $questionsStore.error}
+      <p transition:slide>{$questionsStore.error}</p>
     {:else}
       <div transition:slide>
         <div class="mb-8">
@@ -120,16 +99,16 @@
       <Help slot="icon" />
 
       <p slot="aside">
-        {$questionsData?.results?.length || 0} questions
+        {$questionsStore.data?.results?.length || 0} questions
       </p>
     </TitleRow>
   </div>
 
   <Panel bg={true} border={true}>
-    {#if $isQuestionsLoading}
+    {#if $questionsStore.isLoading}
       <p transition:slide>Loading questions...</p>
-    {:else if $questionsError}
-      <p transition:slide>{$questionsError}</p>
+    {:else if $questionsStore.error}
+      <p transition:slide>{$questionsStore.error}</p>
     {:else}
       <div transition:slide>
         <TextInput
@@ -143,7 +122,7 @@
         />
 
         <div class="mb-4">
-          {#if !displayQuestions?.length && !$isQuestionsLoading}
+          {#if !displayQuestions?.length && !$questionsStore.isLoading}
             <NotFoundMessage
               variant="archive"
               body="No questions found matching your search."
