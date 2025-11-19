@@ -37,6 +37,8 @@
   import ErrorModal, {
     type ErrorType,
   } from "../theme-sign-off/ErrorModal.svelte";
+    import Checklist from "../svg/material/Checklist.svelte";
+    import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
 
   let {
     consultationId = "",
@@ -312,6 +314,13 @@
     >
   </div>
 </TitleRow>
+
+<QuestionCard
+  skeleton={$isQuestionLoading}
+  {consultationId}
+  question={$questionData || {}}
+  clickable={false}
+/>
 
 <svelte:boundary>
   <section
