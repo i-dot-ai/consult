@@ -18,6 +18,7 @@ module "waf" {
   name           = local.name
   scope          = var.scope
   host           = local.host
+  env            = var.env
 }
 
 resource "aws_route53_record" "type_a_record" {
