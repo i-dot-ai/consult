@@ -52,6 +52,7 @@
 
   const selectedThemesStore = createFetchStore(selectedThemesMock);
   const selectedThemesCreateStore = createFetchStore(createThemeMock);
+  const selectedThemesDeleteStore = createFetchStore();
   const generatedThemesStore = createFetchStore(selectedThemesMock);
   const generatedThemesSelectStore = createFetchStore(selectGeneratedThemeMock);
   const questionStore = createFetchStore(questionDataMock);
@@ -105,37 +106,35 @@
       (theme) => theme.id === themeId,
     );
 
-    try {
-      const response = await fetch(
-        getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            "If-Match": selectedTheme.version,
-          },
-        },
-      );
+    await $selectedThemesDeleteStore.fetch(
+      getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
+      "DELETE",
+      undefined,
+      {
+        "Content-Type": "application/json",
+        "If-Match": selectedTheme.version,
+      },
+    );
 
-      if (response.ok) {
-        $selectedThemesStore.fetch(
-          getApiGetSelectedThemesUrl(consultationId, questionId),
-        );
-        $generatedThemesStore.fetch(
-          getApiGetGeneratedThemesUrl(consultationId, questionId),
-        );
-      } else if (response.status === 412) {
-        const { last_modified_by, latest_version } = await response.json();
-        errorData = {
-          type: "remove-conflict",
-          lastModifiedBy: last_modified_by.email,
-          latestVersion: latest_version,
-        };
-      } else {
-        throw new Error(`Remove theme failed: ${response.statusText}`);
-      }
-    } catch (err: any) {
+    if (!$selectedThemesDeleteStore.error || $selectedThemesDeleteStore.status === 404) {
+      // No action or error needed if status 404 (theme already deselected)
+
+      $selectedThemesStore.fetch(
+        getApiGetSelectedThemesUrl(consultationId, questionId),
+      );
+      $generatedThemesStore.fetch(
+        getApiGetGeneratedThemesUrl(consultationId, questionId),
+      );
+    } else if ($selectedThemesDeleteStore.status === 412) {
+      const { last_modified_by, latest_version } = $selectedThemesDeleteStore.data;
+      errorData = {
+        type: "remove-conflict",
+        lastModifiedBy: last_modified_by.email,
+        latestVersion: latest_version,
+      };
+    } else {
       errorData = { type: "unexpected" };
+      console.error($selectedThemesDeleteStore.error);
     }
   };
 

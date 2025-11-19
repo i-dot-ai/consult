@@ -49,7 +49,7 @@ class Consultation(UUIDPrimaryKeyModel, TimeStampedModel):  # type:ignore
     stage = models.CharField(
         max_length=32,
         choices=Stage.choices,
-        default=Stage.ANALYSIS,
+        default=Stage.THEME_SIGN_OFF,
     )
     code = models.SlugField(max_length=256)
     timestamp = models.SlugField(max_length=256, null=True, blank=True)
@@ -79,7 +79,7 @@ class Question(UUIDPrimaryKeyModel, TimeStampedModel):
     text = models.TextField()
     number = models.IntegerField()
     theme_status = models.CharField(
-        max_length=32, choices=ThemeStatus.choices, default=ThemeStatus.CONFIRMED
+        max_length=32, choices=ThemeStatus.choices, default=ThemeStatus.DRAFT
     )
 
     # Question configuration

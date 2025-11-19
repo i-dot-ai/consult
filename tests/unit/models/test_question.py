@@ -10,6 +10,12 @@ from consultation_analyser.factories import (
 
 
 @pytest.mark.django_db
+def test_initial_question_theme_status():
+    question = Question()
+    assert question.theme_status == Question.ThemeStatus.DRAFT
+
+
+@pytest.mark.django_db
 def test_unique_question_number():
     question_1 = QuestionFactory(number=1, text="question text")
     consultation = question_1.consultation

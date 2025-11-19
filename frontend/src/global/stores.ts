@@ -108,8 +108,14 @@ export const createFetchStore = (mockFetch?: Function) => {
               body: body ? JSON.stringify(body) : undefined,
             });
 
-            const parsedData = await response.json();
-            store.update(s => ({...s, data: parsedData}));
+            // Avoid error if no body is returned
+            // equivalent to .json()
+            const textBody = await response.text();
+            if (textBody) {
+              const parsedData = JSON.parse(textBody);
+              store.update(s => ({...s, data: parsedData}));
+            }
+            store.update(s => ({...s, status: response.status}));
 
             if (!response.ok) {
               throw new Error(`Fetch Error: ${response.statusText}`);

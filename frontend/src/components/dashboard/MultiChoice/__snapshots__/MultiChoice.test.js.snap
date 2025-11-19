@@ -11,7 +11,7 @@ exports[`MultiChoice > should render data 1`] = `
     >
       <!---->
       <div
-        class="flex gap-2"
+        class="flex gap-4"
       >
         <div
           class="flex justify-center items-center"

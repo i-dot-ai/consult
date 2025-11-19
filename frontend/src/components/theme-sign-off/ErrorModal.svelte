@@ -30,7 +30,7 @@
         return {
           title: "Theme Deselected",
           message:
-            "Another user has deselected this theme whilst you were editing it. Your edits will not be saved and the theme is no longer a selected theme.",
+            "This theme has been deselected. Your edits will not be saved and the theme is no longer a selected theme.",
           confirmText: "Got it",
           canCancel: false,
         };
