@@ -1,3 +1,4 @@
+import uuid
 from uuid import uuid4
 
 from consultation_analyser.consultations.api.serializers import (
@@ -7,7 +8,7 @@ from consultation_analyser.consultations.api.serializers import (
     QuestionSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
-    ThemeSerializer,
+    ThemeSerializer, ConsultationExportSerializer,
 )
 
 
@@ -256,3 +257,51 @@ class TestConsultationFoldersSerializer:
         serializer = ConsultationFolderSerializer(data=data, many=True)
         assert not serializer.is_valid()
         assert any("value" in error_dict for error_dict in serializer.errors)
+
+
+class TestConsultationExportSerializer:
+    def test_valid_data(self):
+        """Test export consultation information serializer with valid data"""
+        data = {
+            "s3_key": "test",
+            "question_ids": [uuid.uuid4(), uuid.uuid4()],
+        }
+        serializer = ConsultationExportSerializer(data=data)
+        assert serializer.is_valid()
+        expected = {
+            "s3_key": "test",
+            "question_ids": [uuid.uuid4(), uuid.uuid4()],
+        }
+
+        assert serializer.validated_data == expected
+
+        data = {
+            "s3_key": None,
+            "question_ids": [uuid.uuid4(), uuid.uuid4()],
+        }
+        serializer = ConsultationExportSerializer(data=data)
+        assert serializer.is_valid()
+        expected = {
+            "s3_key": None,
+            "question_ids": [uuid.uuid4(), uuid.uuid4()],
+        }
+        assert serializer.validated_data == expected
+
+    def test_missing_fields(self):
+        """Test consultation export information serializer with missing fields"""
+        data = {
+            "s3_key": None,
+        }
+        serializer = ConsultationExportSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "question_ids" in serializer.errors
+
+    def test_invalid_fields(self):
+        """Test consultation export information serializer with invalid code"""
+        data = {
+            "s3_key": None,
+            "question_ids": "test bad field",
+        }
+        serializer = ConsultationExportSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "question_ids" in serializer.errors
