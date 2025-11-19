@@ -88,15 +88,13 @@
               {theme.description}
             </p>
 
-            {#if theme.version > 1}
-              <hr class="mb-4" />
+            <hr class="mb-4" />
 
-              <small class="block text-xs text-neutral-500 mb-4">
-                Edited {formatTimeDeltaText(
-                  getTimeDeltaInMinutes(new Date, new Date(theme.modified_at))
-                )} ago by {theme.last_modified_by}
-              </small>
-            {/if}
+            <small class="block text-xs text-neutral-500 mb-4">
+              {theme.version > 1 ? "Edited" : "Added"} {formatTimeDeltaText(
+                getTimeDeltaInMinutes(new Date, new Date(theme.modified_at))
+              )} ago by {theme.last_modified_by}
+            </small>
 
             <footer class="flex items-center flex-wrap gap-2">
               <Button size="sm" handleClick={() => (editing = !editing)}>
