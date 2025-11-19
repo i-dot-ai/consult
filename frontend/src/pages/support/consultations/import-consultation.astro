@@ -6,6 +6,8 @@ import Text from '../../../components/Text/Text.svelte';
 import Title from "../../../components/Title.svelte";
 import ImportConsultationForm from "../../../components/screens/ImportConsultationForm.svelte";
 import Link from "../../../components/Link.svelte";
+
+const bucketName = process.env?.AWS_BUCKET_NAME
 ---
 
 <Layout>
@@ -13,7 +15,7 @@ import Link from "../../../components/Link.svelte";
     <Title level={1} text="Consultation import" />
     <Text>Import complete consultation data including AI analysis in one operation.</Text>
     <Text>This will import both the consultation data (questions, respondents, responses) and AI analysis results (themes, sentiment, evidence) sequentially.</Text>
-    <Text>Data should be saved in: "i-dot-ai-dev-consult-data/app_data/consultations/[CONSULTATION FOLDER]"</Text>
+    <Text>Data should be saved in: "{bucketName}/app_data/consultations/[CONSULTATION FOLDER]"</Text>
 
     <Details summaryText="Expected S3 Structure">
         <pre><code>&lt;consultation-folder&gt;/
