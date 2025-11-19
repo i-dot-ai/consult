@@ -1,6 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { onMount } from "svelte";
   import { fade, slide } from "svelte/transition";
 
   import { createFetchStore } from "../../global/stores";
@@ -32,24 +33,13 @@
 
   let { questionId = "", consultationId = "" }: Props = $props();
 
-  const {
-    load: loadSelectedThemes,
-    loading: isSelectedThemesLoading,
-    data: selectedThemesData,
-    error: selectedThemesError,
-  } = createFetchStore();
+  const selectedThemesStore = createFetchStore();
+  const questionStore = createFetchStore();
 
-  const {
-    load: loadQuestion,
-    loading: isQuestionLoading,
-    data: questionData,
-    error: questionError,
-  } = createFetchStore();
-
-  $effect(() => {
-    loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
-    loadQuestion(getApiQuestionUrl(consultationId, questionId));
-  });
+  onMount(() => {
+    $selectedThemesStore.fetch(getApiGetSelectedThemesUrl(consultationId, questionId));
+    $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
+  })
 </script>
 
 {#snippet selectedThemeCard(name: string, isSkeleton?: boolean)}
@@ -141,13 +131,13 @@
 
         <div>
           <h2 class="text-md">
-            {#if !$questionData}
+            {#if !$questionStore.data}
               <div class="blink bg-neutral-100 text-neutral-100 select-none">
                 SKELETON
               </div>
             {:else}
               <span in:fade>
-                {`Q${$questionData?.number}: ${$questionData?.question_text}`}
+                {`Q${$questionStore.data?.number}: ${$questionStore.data?.question_text}`}
               </span>
             {/if}
           </h2>
@@ -207,14 +197,14 @@
       </p> -->
 
       <ul>
-        {#if $isSelectedThemesLoading}
+        {#if $selectedThemesStore.isLoading}
           {#each "_".repeat(2) as _}
             <li>
               {@render selectedThemeCard("SKELETON", true)}
             </li>
           {/each}
         {:else}
-          {#each $selectedThemesData?.results as selectedTheme}
+          {#each $selectedThemesStore.data?.results as selectedTheme}
             <li>
               {@render selectedThemeCard(selectedTheme.name)}
             </li>
