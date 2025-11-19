@@ -8,7 +8,8 @@ from consultation_analyser.consultations.api.serializers import (
     QuestionSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
-    ThemeSerializer, ConsultationExportSerializer,
+    ThemeSerializer,
+    ConsultationExportSerializer,
 )
 
 
