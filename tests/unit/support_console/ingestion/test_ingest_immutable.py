@@ -13,18 +13,18 @@ from consultation_analyser.consultations.models import (
     Respondent,
     Response,
 )
-from consultation_analyser.support_console.pydantic_models import (
+from consultation_analyser.support_console.ingestion.ingest_immutable import (
+    _ingest_questions,
+    _ingest_respondents,
+    _ingest_responses,
+    ingest_immutable_data,
+)
+from consultation_analyser.support_console.ingestion.pydantic_models import (
     ImmutableDataBatch,
     MultiChoiceInput,
     QuestionInput,
     RespondentInput,
     ResponseInput,
-)
-from consultation_analyser.support_console.ingest_immutable import (
-    ingest_immutable_data,
-    _ingest_respondents,
-    _ingest_questions,
-    _ingest_responses,
 )
 
 
@@ -307,7 +307,9 @@ class TestIngestImmutableData:
                     ResponseInput(themefinder_id=2, text="Not sure"),
                 ]
             },
-            multi_choice_by_question={2: [MultiChoiceInput(themefinder_id=1, options=["Option A"])]},
+            multi_choice_by_question={
+                2: [MultiChoiceInput(themefinder_id=1, options=["Option A"])]
+            },
         )
 
         consultation_id = ingest_immutable_data(batch, user.id)

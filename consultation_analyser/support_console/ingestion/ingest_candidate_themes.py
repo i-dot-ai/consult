@@ -5,11 +5,11 @@ from django.conf import settings
 from django.db import transaction
 
 from consultation_analyser.consultations.models import CandidateTheme, Consultation, Question
-from consultation_analyser.support_console.pydantic_models import (
+from consultation_analyser.support_console.ingestion.pydantic_models import (
     CandidateThemeBatch,
     CandidateThemeInput,
 )
-from consultation_analyser.support_console.s3_utils import read_json_from_s3
+from consultation_analyser.support_console.ingestion.s3_utils import read_json_from_s3
 
 logger = logging.getLogger(__name__)
 

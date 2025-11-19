@@ -1,7 +1,7 @@
 import pytest
 from pydantic import ValidationError
 
-from consultation_analyser.support_console.pydantic_models import (
+from consultation_analyser.support_console.ingestion.pydantic_models import (
     AnnotationBatch,
     CandidateThemeBatch,
     CandidateThemeInput,

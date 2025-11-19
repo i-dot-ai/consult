@@ -16,7 +16,7 @@ from consultation_analyser.consultations.models import (
     ResponseAnnotation,
     SelectedTheme,
 )
-from consultation_analyser.support_console.ingest_response_annotations import (
+from consultation_analyser.support_console.ingestion.ingest_response_annotations import (
     _ingest_response_annotations,
     _ingest_selected_themes,
     import_response_annotations_from_s3,
@@ -27,7 +27,7 @@ from consultation_analyser.support_console.ingest_response_annotations import (
     load_sentiments_from_s3,
     load_theme_mappings_from_s3,
 )
-from consultation_analyser.support_console.pydantic_models import (
+from consultation_analyser.support_console.ingestion.pydantic_models import (
     AnnotationBatch,
     DetailDetectionInput,
     SelectedThemeInput,
@@ -855,7 +855,7 @@ class TestImportResponseAnnotationsFromS3:
         )
 
         with patch(
-            "consultation_analyser.support_console.ingest_response_annotations.load_annotation_batch"
+            "consultation_analyser.support_console.ingestion.ingest_response_annotations.load_annotation_batch"
         ) as mock_load:
             mock_load.return_value = mock_batch
 
@@ -892,7 +892,7 @@ class TestImportResponseAnnotationsFromS3:
         )
 
         with patch(
-            "consultation_analyser.support_console.ingest_response_annotations.load_annotation_batch"
+            "consultation_analyser.support_console.ingestion.ingest_response_annotations.load_annotation_batch"
         ) as mock_load:
             mock_load.return_value = mock_batch
 

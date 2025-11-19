@@ -9,14 +9,14 @@ import pytest
 from botocore.exceptions import ClientError
 
 from consultation_analyser.consultations.models import CandidateTheme, Consultation, Question
-from consultation_analyser.support_console.ingest_candidate_themes import (
+from consultation_analyser.support_console.ingestion.ingest_candidate_themes import (
     _ingest_candidate_themes_for_question,
     import_candidate_themes_from_s3,
     ingest_candidate_themes,
     load_candidate_themes_batch,
     load_candidate_themes_from_s3,
 )
-from consultation_analyser.support_console.pydantic_models import (
+from consultation_analyser.support_console.ingestion.pydantic_models import (
     CandidateThemeBatch,
     CandidateThemeInput,
 )
@@ -100,9 +100,7 @@ class TestLoadCandidateThemesFromS3:
 
         # Verify correct S3 key was requested
         expected_key = "app_data/consultations/TEST/outputs/sign_off/2024-01-15/question_part_1/clustered_themes.json"
-        mock_s3_client.get_object.assert_called_once_with(
-            Bucket="test-bucket", Key=expected_key
-        )
+        mock_s3_client.get_object.assert_called_once_with(Bucket="test-bucket", Key=expected_key)
 
         # Verify themes loaded and validated
         assert len(themes) == 3
@@ -119,9 +117,7 @@ class TestLoadCandidateThemesFromS3:
     def test_load_themes_file_not_found(self):
         """Test handling when S3 file doesn't exist"""
         client = MagicMock()
-        client.get_object.side_effect = ClientError(
-            {"Error": {"Code": "NoSuchKey"}}, "GetObject"
-        )
+        client.get_object.side_effect = ClientError({"Error": {"Code": "NoSuchKey"}}, "GetObject")
 
         themes = load_candidate_themes_from_s3(
             consultation_code="TEST",
@@ -155,7 +151,9 @@ class TestLoadCandidateThemesFromS3:
 class TestLoadCandidateThemesBatch:
     """Tests for load_candidate_themes_batch function"""
 
-    def test_load_batch_for_multiple_questions(self, db, consultation, question_1, question_2, mock_s3_client):
+    def test_load_batch_for_multiple_questions(
+        self, db, consultation, question_1, question_2, mock_s3_client
+    ):
         """Test loading themes for multiple questions"""
         batch = load_candidate_themes_batch(
             consultation_code="TEST",
@@ -175,7 +173,9 @@ class TestLoadCandidateThemesBatch:
         assert len(batch.themes_by_question[1]) == 3
         assert len(batch.themes_by_question[2]) == 3
 
-    def test_load_batch_specific_questions(self, db, consultation, question_1, question_2, mock_s3_client):
+    def test_load_batch_specific_questions(
+        self, db, consultation, question_1, question_2, mock_s3_client
+    ):
         """Test loading themes for specific question numbers only"""
         batch = load_candidate_themes_batch(
             consultation_code="TEST",
@@ -200,9 +200,7 @@ class TestLoadCandidateThemesBatch:
     def test_load_batch_no_themes_for_question(self, db, consultation, question_1):
         """Test handling when no themes file exists for a question"""
         client = MagicMock()
-        client.get_object.side_effect = ClientError(
-            {"Error": {"Code": "NoSuchKey"}}, "GetObject"
-        )
+        client.get_object.side_effect = ClientError({"Error": {"Code": "NoSuchKey"}}, "GetObject")
 
         batch = load_candidate_themes_batch(
             consultation_code="TEST",
@@ -471,7 +469,9 @@ class TestImportCandidateThemesFromS3:
             },
         )
 
-        with patch("consultation_analyser.support_console.ingest_candidate_themes.load_candidate_themes_batch") as mock_load:
+        with patch(
+            "consultation_analyser.support_console.ingestion.ingest_candidate_themes.load_candidate_themes_batch"
+        ) as mock_load:
             mock_load.return_value = mock_batch
 
             import_candidate_themes_from_s3(
@@ -487,7 +487,9 @@ class TestImportCandidateThemesFromS3:
         consultation.refresh_from_db()
         assert consultation.timestamp == "2024-01-15"
 
-    def test_import_specific_questions(self, db, consultation, question_1, question_2, sample_themes_data):
+    def test_import_specific_questions(
+        self, db, consultation, question_1, question_2, sample_themes_data
+    ):
         """Test importing only specific questions"""
         # Mock the batch loading for only question 1
         mock_batch = CandidateThemeBatch(
@@ -498,7 +500,9 @@ class TestImportCandidateThemesFromS3:
             },
         )
 
-        with patch("consultation_analyser.support_console.ingest_candidate_themes.load_candidate_themes_batch") as mock_load:
+        with patch(
+            "consultation_analyser.support_console.ingestion.ingest_candidate_themes.load_candidate_themes_batch"
+        ) as mock_load:
             mock_load.return_value = mock_batch
 
             import_candidate_themes_from_s3(
