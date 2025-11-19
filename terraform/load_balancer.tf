@@ -9,7 +9,6 @@ module "load_balancer" {
   certificate_arn = module.acm_certificate.arn
   web_acl_arn     = module.waf.web_acl_arn
   env             = var.env
-  ip_whitelist    = concat(var.internal_ips, var.external_ips, var.developer_ips)
 }
 
 module "waf" {
