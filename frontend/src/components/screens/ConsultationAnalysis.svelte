@@ -32,61 +32,29 @@
 
   let { consultationId = "" }: Props = $props();
 
-  const {
-    loading: isConsultationLoading,
-    error: consultationError,
-    load: loadConsultation,
-    data: consultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<ConsultationResponse>;
-  } = createFetchStore();
-
-  const {
-    loading: isQuestionsLoading,
-    error: questionsError,
-    load: loadQuestions,
-    data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<ConsultationResponse>;
-  } = createFetchStore();
-
-  const {
-    loading: isDemoOptionsLoading,
-    error: demoOptionsError,
-    load: loadDemoOptions,
-    data: demoOptionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<DemoOptionsResponse>;
-  } = createFetchStore();
+  const consultationStore = createFetchStore();
+  const questionsStore = createFetchStore();
+  const demoOptionsStore = createFetchStore();
 
   let totalResponses = $derived(
-    $questionsData?.results?.reduce(
+    $questionsStore.data?.results?.reduce(
       (acc, question) => acc + (question?.total_responses || 0),
       0,
     ),
   );
 
   let demoCategories = $derived([
-    ...new Set(($demoOptionsData || []).map((opt) => opt.name)),
+    ...new Set(($demoOptionsStore.data || []).map((opt) => opt.name)),
   ]);
 
   let chartQuestions = $derived(
-    $questionsData?.results?.filter((question) => question.has_multiple_choice),
+    $questionsStore.data?.results?.filter((question) => question.has_multiple_choice),
   );
 
-  $effect(() => {
-    loadConsultation(getApiConsultationUrl(consultationId));
-    loadQuestions(getApiQuestionsUrl(consultationId));
-    loadDemoOptions(
+  onMount(() => {
+    $consultationStore.fetch(getApiConsultationUrl(consultationId));
+    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
+    $demoOptionsStore.fetch(
       `/api/consultations/${consultationId}/demographic-options/`,
     );
   });
@@ -112,7 +80,7 @@
         <div class="col-span-12 md:col-span-4">
           <MetricsDemoCard
             title={category}
-            items={[...($demoOptionsData || [])]
+            items={[...($demoOptionsStore.data || [])]
               .filter((opt: DemoOptionsResponseItem) => opt.name === category)
               .sort(
                 (a: DemoOptionsResponseItem, b: DemoOptionsResponseItem) => {
