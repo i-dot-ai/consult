@@ -69,6 +69,9 @@ locals {
 
 }
 
+data "aws_ssm_parameter" "auth_provider_public_key" {
+  name = "/i-dot-ai-${terraform.workspace}-core-keycloak/realm_public_key"
+}
 
 data "aws_ssm_parameter" "auth_api_invoke_url" {
   name = "/i-dot-ai-${terraform.workspace}-core-auth-api/auth/INVOKE_URL"

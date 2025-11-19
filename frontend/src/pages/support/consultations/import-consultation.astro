@@ -1,0 +1,51 @@
+---
+import Layout from "../../../layouts/Layout.astro";
+import Section from "../../../components/Section/Section.svelte";
+import Details from "../../../components/Details/Details.svelte";
+import Text from '../../../components/Text/Text.svelte';
+import Title from "../../../components/Title.svelte";
+import ImportConsultationForm from "../../../components/screens/ImportConsultationForm.svelte";
+import Link from "../../../components/Link.svelte";
+
+const bucketName = process.env?.AWS_BUCKET_NAME
+---
+
+<Layout>
+  <Section>
+    <Title level={1} text="Consultation import" />
+    <Text>Import complete consultation data including AI analysis in one operation.</Text>
+    <Text>This will import both the consultation data (questions, respondents, responses) and AI analysis results (themes, sentiment, evidence) sequentially.</Text>
+    <Text>Data should be saved in: "{bucketName}/app_data/consultations/[CONSULTATION FOLDER]"</Text>
+
+    <Details summaryText="Expected S3 Structure">
+        <pre><code>&lt;consultation-folder&gt;/
+        ├── inputs/
+        │   ├── respondents.jsonl
+        │   ├── question_part_1/
+        │   │   ├── question.json
+        │   │   ├── responses.jsonl
+        │   │   └── multi_choice.jsonl
+        │   └── question_part_2/
+        │       ├── question.json
+        │       └── responses.jsonl
+        └── outputs/
+            └── mapping/
+                └── &lt;timestamp&gt;/
+                    ├── question_part_1/
+                    │   ├── themes.json
+                    │   ├── sentiment.jsonl [optional]
+                    │   ├── detail_detection.jsonl
+                    │   └── mapping.jsonl
+                    └── question_part_2/
+                        ├── themes.json
+                        ├── sentiment.jsonl [optional]
+                        ├── detail_detection.jsonl
+                        └── mapping.jsonl</code></pre>
+    </Details>
+    <ImportConsultationForm client:load/>
+  </Section>
+  <Section>
+    <Title level={1} text="Import progress" />
+    <Text>Check the <Link href="/support/django-rq/">Django RQ dashboard</Link> to monitor import progress.</Text>
+  </Section>
+</Layout>
