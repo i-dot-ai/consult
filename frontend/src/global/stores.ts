@@ -82,7 +82,7 @@ export const createFetchStore = (mockFetch?: Function) => {
       resolvePrev = resolve;
 
       debounceTimeout = setTimeout(async () => {
-        store.update(s => ({...s, isLoading: true, error: ""}));
+        store.update(store => ({...store, isLoading: true, error: ""}));
 
         try {
           if (mockFetch) {
@@ -96,7 +96,7 @@ export const createFetchStore = (mockFetch?: Function) => {
               body: body ? JSON.stringify(body) : undefined,
             });
 
-            store.update(s => ({...s, data: mockData }));
+            store.update(store => ({...store, data: mockData }));
             return;
           } else {
             const response = await fetch(url, {
@@ -113,9 +113,9 @@ export const createFetchStore = (mockFetch?: Function) => {
             const textBody = await response.text();
             if (textBody) {
               const parsedData = JSON.parse(textBody);
-              store.update(s => ({...s, data: parsedData}));
+              store.update(store => ({...store, data: parsedData}));
             }
-            store.update(s => ({...s, status: response.status}));
+            store.update(store => ({...store, status: response.status}));
 
             if (!response.ok) {
               throw new Error(`Fetch Error: ${response.statusText}`);
@@ -123,9 +123,9 @@ export const createFetchStore = (mockFetch?: Function) => {
           }
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "unknown";
-          store.update(s => ({...s, error: message}));
+          store.update(store => ({...store, error: message}));
         } finally {
-          store.update(s => ({...s, isLoading: false}));
+          store.update(store => ({...store, isLoading: false}));
           if (resolvePrev) {
             resolvePrev();
           }
@@ -136,6 +136,6 @@ export const createFetchStore = (mockFetch?: Function) => {
     return prevPromise;
   };
 
-  store.update(s => ({ ...s, fetch: doFetch }))
+  store.update(store => ({ ...store, fetch: doFetch }))
   return store;
 };
