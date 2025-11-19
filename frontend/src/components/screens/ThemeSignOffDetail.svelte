@@ -23,6 +23,7 @@
   import MaterialIcon from "../MaterialIcon.svelte";
   import Price from "../svg/material/Price.svelte";
   import ThemeForm from "../theme-sign-off/ThemeForm/ThemeForm.svelte";
+  import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
   import SelectedThemeCard from "../theme-sign-off/SelectedThemeCard/SelectedThemeCard.svelte";
   import GeneratedThemeCard from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCard.svelte";
   import CheckCircle from "../svg/material/CheckCircle.svelte";
@@ -37,8 +38,6 @@
   import ErrorModal, {
     type ErrorType,
   } from "../theme-sign-off/ErrorModal.svelte";
-    import Checklist from "../svg/material/Checklist.svelte";
-    import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
 
   let {
     consultationId = "",
