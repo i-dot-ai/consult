@@ -3,18 +3,13 @@
 
   import { slide } from "svelte/transition";
 
-  import { onMount } from "svelte";
-
   import { Routes } from "../../global/routes";
 
   import TextInput from "../inputs/TextInput/TextInput.svelte";
-  import Radio from "../Radio/Radio.svelte";
-  import type { Question, RadioItem } from "../../global/types";
+  import type { Question } from "../../global/types";
   import Button from "../inputs/Button/Button.svelte";
-  import Select from "../inputs/Select/Select.svelte";
-  import type { SelectOption } from "../../global/types";
-    import Checkbox from "../inputs/Checkbox/Checkbox.svelte";
-    import Text from "../Text/Text.svelte";
+  import Checkbox from "../inputs/Checkbox/Checkbox.svelte";
+  import Text from "../Text/Text.svelte";
 
   let sending: boolean = false;
   let errors: Record<string, string> = {}
