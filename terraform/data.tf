@@ -70,7 +70,7 @@ locals {
 }
 
 data "aws_ssm_parameter" "client_secret" {
-  name = "/${var.team_name}-${terraform.workspace}-core-keycloak/app_client_secret/${var.project_name}-ai"
+  name = "/${var.team_name}-${terraform.workspace}-core-keycloak/app_client_secret/${var.project_name}"
 }
 
 data "aws_ssm_parameter" "auth_provider_public_key" {
