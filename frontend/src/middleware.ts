@@ -20,6 +20,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
   const internalAccessToken = context.request.headers.get('x-amzn-oidc-data') || "undefined";
 
+  console.log("internalAccessToken = ", internalAccessToken)
+
   const accessToken = context.cookies.get("access")?.value;
   const url = context.url;
 
