@@ -45,49 +45,17 @@
   let searchValue: string = $state("");
   let isConfirmModalOpen: boolean = $state(false);
 
-  const {
-    loading: isQuestionsLoading,
-    error: questionsError,
-    load: loadQuestions,
-    data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
-
-  const {
-    loading: isConsultationLoading,
-    error: loadConsultationError,
-    load: loadConsultation,
-    data: consultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
-
-  const {
-    loading: isConsultationUpdating,
-    error: updateConsultationError,
-    load: updateConsultation,
-    data: updateConsultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
+  const questionsStore = createFetchStore();
+  const consultationStore = createFetchStore();
+  const consultationUpdateStore = createFetchStore();
 
   onMount(async () => {
-    loadConsultation(getApiConsultationUrl(consultationId));
-    loadQuestions(getApiQuestionsUrl(consultationId));
+    $consultationStore.fetch(getApiConsultationUrl(consultationId));
+    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
   });
 
   let displayQuestions = $derived(
-    $questionsData?.results?.filter((question) =>
+    $questionsStore.data?.results?.filter((question) =>
       `Q${question.number}: ${question.question_text}`
         .toLocaleLowerCase()
         .includes(searchValue.toLocaleLowerCase()),
@@ -95,7 +63,7 @@
   );
 
   let questionsForSignOff = $derived(
-    $questionsData?.results?.filter(
+    $questionsStore.data?.results?.filter(
       (question: Question) => question.has_free_text,
     ),
   );
@@ -162,7 +130,7 @@
               {@render themeStage(
                 "Theme Sign Off",
                 CheckCircle,
-                $consultationData?.stage === "theme_sign_off"
+                $consultationStore.data?.stage === "theme_sign_off"
                   ? "current"
                   : "done",
               )}
@@ -171,9 +139,9 @@
               {@render themeStage(
                 "AI Theme Mapping",
                 WandStars,
-                $consultationData?.stage === "theme_mapping"
+                $consultationStore.data?.stage === "theme_mapping"
                   ? "current"
-                  : $consultationData?.stage === "analysis"
+                  : $consultationStore.data?.stage === "analysis"
                     ? "done"
                     : "todo",
               )}
@@ -182,7 +150,7 @@
               {@render themeStage(
                 "Analysis Dashboard",
                 Finance,
-                $consultationData?.stage === "analysis" ? "current" : "todo",
+                $consultationStore.data?.stage === "analysis" ? "current" : "todo",
               )}
             </li>
           </ol>
@@ -200,7 +168,7 @@
               phase where responses will be mapped to your selected themes.
             </p>
 
-            {#if $consultationData?.stage !== "theme_mapping" && $consultationData?.stage !== "analysis"}
+            {#if $consultationStore.data?.stage !== "theme_mapping" && $consultationStore.data?.stage !== "analysis"}
               <Button
                 variant="approve"
                 size="sm"
@@ -233,7 +201,7 @@
         open={isConfirmModalOpen}
         setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
         handleConfirm={async () => {
-          await updateConsultation(
+          await $consultationUpdateStore.load(
             getApiConsultationUrl(consultationId),
             "PATCH",
             {
@@ -241,7 +209,7 @@
             },
           );
 
-          if (!$updateConsultationError) {
+          if (!$consultationUpdateStore.error) {
             isConfirmModalOpen = false;
             location.href = location.href;
           }
@@ -292,10 +260,10 @@
           </div>
         </a>
 
-        {#if $updateConsultationError}
+        {#if $consultationUpdateStore.error}
           <div class="mt-2 mb-4">
             <Alert>
-              <span class="text-sm">{$updateConsultationError}</span>
+              <span class="text-sm">{$consultationUpdateStore.error}</span>
             </Alert>
           </div>
         {/if}
@@ -324,16 +292,16 @@
         <Help slot="icon" />
 
         <p slot="aside">
-          {$questionsData?.results?.length || 0} questions
+          {$questionsStore.data?.results?.length || 0} questions
         </p>
       </TitleRow>
     </div>
 
     <Panel bg={true} border={true}>
-      {#if $isQuestionsLoading}
+      {#if $questionsStore.isLoading}
         <p transition:slide>Loading questions...</p>
-      {:else if $questionsError}
-        <p transition:slide>{$questionsError}</p>
+      {:else if $questionsStore.error}
+        <p transition:slide>{$questionsStore.error}</p>
       {:else}
         <div transition:slide>
           <TextInput
@@ -347,7 +315,7 @@
           />
 
           <div class="mb-4">
-            {#if !displayQuestions?.length && !$isQuestionsLoading}
+            {#if !displayQuestions?.length && !$questionsStore.isLoading}
               <NotFoundMessage
                 variant="archive"
                 body="No questions found matching your search."

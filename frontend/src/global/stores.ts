@@ -48,16 +48,26 @@ export const favStore = createFavStore();
 
 // Shared fetch logic
 export const createFetchStore = (mockFetch?: Function) => {
-  const data: Writable<any> = writable(null);
-  const loading: Writable<boolean> = writable(true);
-  const error: Writable<string> = writable("");
+  const store: Writable<{
+    data: any,
+    isLoading: boolean,
+    error: string,
+    status: number,
+    fetch: Function,
+  }> = writable({
+    data: null,
+    isLoading: true,
+    error: "",
+    status: 0,
+    fetch: () => {},
+  });
 
   const DEBOUNCE_DELAY = 500;
   let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
   let prevPromise: Promise<void> | null = null;
   let resolvePrev: (() => void) | null = null;
 
-  const load = async (
+  const doFetch = async (
     url: string,
     method: string = "GET",
     body?: BodyInit,
@@ -72,21 +82,21 @@ export const createFetchStore = (mockFetch?: Function) => {
       resolvePrev = resolve;
 
       debounceTimeout = setTimeout(async () => {
-        loading.set(true);
-        error.set("");
+        store.update(s => ({...s, isLoading: true, error: ""}));
+
         try {
           if (mockFetch) {
-            data.set(
-              mockFetch({
-                url: url,
-                headers: {
-                  "Content-Type": "application/json",
-                  ...headers,
-                },
-                method: method,
-                body: body ? JSON.stringify(body) : undefined,
-              }),
-            );
+            const mockData = mockFetch({
+              url: url,
+              headers: {
+                "Content-Type": "application/json",
+                ...headers,
+              },
+              method: method,
+              body: body ? JSON.stringify(body) : undefined,
+            });
+
+            store.update(s => ({...s, data: mockData }));
             return;
           } else {
             const response = await fetch(url, {
@@ -97,17 +107,19 @@ export const createFetchStore = (mockFetch?: Function) => {
               method: method,
               body: body ? JSON.stringify(body) : undefined,
             });
+
             const parsedData = await response.json();
-            data.set(parsedData);
+            store.update(s => ({...s, data: parsedData}));
+
             if (!response.ok) {
               throw new Error(`Fetch Error: ${response.statusText}`);
             }
           }
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "unknown";
-          error.set(message);
+          store.update(s => ({...s, error: message}));
         } finally {
-          loading.set(false);
+          store.update(s => ({...s, isLoading: false}));
           if (resolvePrev) {
             resolvePrev();
           }
@@ -118,5 +130,6 @@ export const createFetchStore = (mockFetch?: Function) => {
     return prevPromise;
   };
 
-  return { data, loading, error, load };
+  store.update(s => ({ ...s, fetch: doFetch }))
+  return store;
 };
