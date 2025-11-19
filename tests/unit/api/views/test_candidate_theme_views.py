@@ -112,37 +112,31 @@ class TestCandidateThemeViewSet:
                 "pk": candidate_theme.id,
             },
         )
-        response = client.post(
-            url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
-        )
 
-        candidate_theme.refresh_from_db()
-        selected_theme = SelectedTheme.objects.get(pk=candidate_theme.selectedtheme_id)
+        for _ in range(3):
+            # we run this three times to check that multiple users can add the
+            # same theme
+            response = client.post(
+                url,
+                headers={"Authorization": f"Bearer {consultation_user_token}"},
+            )
 
-        assert selected_theme.id == candidate_theme.selectedtheme_id
-        assert selected_theme.name == candidate_theme.name
-        assert selected_theme.description == candidate_theme.description
-        assert selected_theme.question == free_text_question
-        assert selected_theme.version == 1
-        assert selected_theme.last_modified_by == consultation_user
+            candidate_theme.refresh_from_db()
+            selected_theme = SelectedTheme.objects.get(pk=candidate_theme.selectedtheme_id)
 
-        assert response.status_code == 201
-        assert response.json() == {
-            "id": str(selected_theme.id),
-            "name": selected_theme.name,
-            "description": selected_theme.description,
-            "version": selected_theme.version,
-            "modified_at": isoformat(selected_theme.modified_at),
-            "last_modified_by": consultation_user.email,
-        }
+            assert selected_theme.id == candidate_theme.selectedtheme_id
+            assert selected_theme.name == candidate_theme.name
+            assert selected_theme.description == candidate_theme.description
+            assert selected_theme.question == free_text_question
+            assert selected_theme.version == 1
+            assert selected_theme.last_modified_by == consultation_user
 
-        # now we post the same theme again and we expect to get an error
-        response = client.post(
-            url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
-        )
-        assert response.status_code == 400
-        assert response.json() == {
-            "detail": "this theme has already been selected",
-        }
+            assert response.status_code == 201
+            assert response.json() == {
+                "id": str(selected_theme.id),
+                "name": selected_theme.name,
+                "description": selected_theme.description,
+                "version": selected_theme.version,
+                "modified_at": isoformat(selected_theme.modified_at),
+                "last_modified_by": consultation_user.email,
+            }
