@@ -40,7 +40,14 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       protectedRoute.test(url.pathname) &&
       !context.cookies.get("access")?.value
     ) {
-      return context.redirect(Routes.SignIn);
+      
+      const response = await fetch("api/validate-token/", {
+        method: "POST",
+        body: JSON.stringify({"internal_access_token": accessToken}),
+      });
+      let tk = "";
+      response.json().then(x => tk=x.token);
+      context.cookies.set("access", tk)
     }
   }
 

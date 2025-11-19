@@ -1,4 +1,6 @@
-from django.contrib.auth import login
+import jwt
+from django.conf import settings
+from django.contrib.auth import get_user_model, login
 from django.core.exceptions import PermissionDenied
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import get_object_or_404
@@ -58,3 +60,29 @@ def verify_magic_link(request) -> HttpResponse:
                 "sessionId": request.session.session_key,
             }
         )
+
+
+User = get_user_model()
+logger = settings.LOGGER
+
+
+@api_view(["POST"])
+def validate_token(request):
+    try:
+        token = request.data["internal_access_token"]
+        email = jwt.decode(token, options={"verify_signature": False})["email"]
+        user, _ = User.objects.get_or_create(email=email)
+    except (jwt.DecodeError, KeyError) as ex:
+        logger.error("error authenticating request {error}", error=str(ex.args[0]))
+        return JsonResponse(data={"detail": str(ex.args[0])}, status=403)
+
+    login(request, user)
+    # Ensure session is created if it doesn't exist
+    if not request.session.session_key:
+        request.session.save()
+    return JsonResponse(
+        {
+            "access": str(token),
+            "sessionId": request.session.session_key,
+        }
+    )
