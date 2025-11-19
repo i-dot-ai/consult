@@ -265,26 +265,26 @@ class TestConsultationExportSerializer:
         """Test export consultation information serializer with valid data"""
         data = {
             "s3_key": "test",
-            "question_ids": [uuid.uuid4(), uuid.uuid4()],
+            "question_ids": [str(uuid.uuid4()), str(uuid.uuid4())],
         }
         serializer = ConsultationExportSerializer(data=data)
         assert serializer.is_valid()
         expected = {
             "s3_key": "test",
-            "question_ids": [uuid.uuid4(), uuid.uuid4()],
+            "question_ids": [str(uuid.uuid4()), str(uuid.uuid4())],
         }
 
         assert serializer.validated_data == expected
 
         data = {
             "s3_key": None,
-            "question_ids": [uuid.uuid4(), uuid.uuid4()],
+            "question_ids": [str(uuid.uuid4()), str(uuid.uuid4())],
         }
         serializer = ConsultationExportSerializer(data=data)
         assert serializer.is_valid()
         expected = {
             "s3_key": None,
-            "question_ids": [uuid.uuid4(), uuid.uuid4()],
+            "question_ids": [str(uuid.uuid4()), str(uuid.uuid4())],
         }
         assert serializer.validated_data == expected
 
