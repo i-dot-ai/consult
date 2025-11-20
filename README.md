@@ -124,7 +124,7 @@ you can run `manage.py generate_erd`. (You will need `graphviz` installed: see
 For local development, you can authenticate using the `TEST_INTERNAL_ACCESS_TOKEN` environment variable. Set this in your `.env` file:
 
 ```
-TEST_INTERNAL_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIn0.k27nav4gbG-2lIArYInTqP1GUz2LRuzb3lWandMKRoY
+TEST_INTERNAL_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIn0.k27nav4gbG-2lIArYInTqP1GUz2LRuzb3lWandMKRoY # pragma: allowlist secret
 ```
 
 This token will be used when the `x-amzn-oidc-data` header is not present in requests.
