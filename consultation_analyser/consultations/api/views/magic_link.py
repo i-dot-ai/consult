@@ -2,12 +2,22 @@ import jwt
 from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.http import JsonResponse
+from i_dot_ai_utilities.auth.auth_api import AuthApiClient
 from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework_simplejwt.tokens import AccessToken
 
+from consultation_analyser.hosting_environment import HostingEnvironment
+
 User = get_user_model()
 logger = settings.LOGGER
+client = AuthApiClient(app_name="consult", auth_api_url=settings.AUTH_API_URL, logger=logger)
+
+
+def get_email_from_token(token):
+    if HostingEnvironment.is_development_environment():
+        return client.get_user_authorisation_info(token).email
+    return jwt.decode(token, options={"verify_signature": False})["email"]
 
 
 class TokenSerializer(serializers.Serializer):
@@ -22,7 +32,7 @@ def validate_token(request):
 
     try:
         internal_access_token = serializer.validated_data["internal_access_token"]
-        email = jwt.decode(internal_access_token, options={"verify_signature": False})["email"]
+        email = get_email_from_token(internal_access_token)
         user, _ = User.objects.get_or_create(email=email)
     except (jwt.DecodeError, KeyError) as ex:
         logger.error("error authenticating request {error}", error=str(ex.args[0]))
