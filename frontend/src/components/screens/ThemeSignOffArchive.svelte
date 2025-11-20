@@ -17,6 +17,7 @@
   import Tag from "../Tag/Tag.svelte";
   import Modal from "../Modal/Modal.svelte";
   import Alert from "../Alert.svelte";
+  import LoadingIndicator from "../LoadingIndicator/LoadingIndicator.svelte";
   import OnboardingTour from "../OnboardingTour/OnboardingTour.svelte";
   import Button from "../inputs/Button/Button.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
@@ -44,6 +45,7 @@
 
   let searchValue: string = $state("");
   let isConfirmModalOpen: boolean = $state(false);
+  let dataRequested: boolean = $state(false);
 
   const questionsStore = createFetchStore();
   const consultationStore = createFetchStore();
@@ -52,6 +54,7 @@
   onMount(async () => {
     $consultationStore.fetch(getApiConsultationUrl(consultationId));
     $questionsStore.fetch(getApiQuestionsUrl(consultationId));
+    dataRequested = true;
   });
 
   let displayQuestions = $derived(
@@ -298,8 +301,11 @@
     </div>
 
     <Panel bg={true} border={true}>
-      {#if $questionsStore.isLoading}
-        <p transition:slide>Loading questions...</p>
+      {#if !dataRequested || $questionsStore.isLoading}
+        <div transition:slide class="my-8">
+          <LoadingIndicator size="5rem" />
+          <p class="text-center text-neutral-500">Loading questions...</p>
+        </div>
       {:else if $questionsStore.error}
         <p transition:slide>{$questionsStore.error}</p>
       {:else}
