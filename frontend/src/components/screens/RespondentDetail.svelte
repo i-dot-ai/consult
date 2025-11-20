@@ -1,6 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { onMount } from "svelte";
   import { slide } from "svelte/transition";
 
   import {
@@ -47,46 +48,17 @@
     themefinderId = 1,
   }: Props = $props();
 
-  const {
-    load: loadRespondents,
-    loading: isRepondentsLoading,
-    data: respondentsData,
-    error: respondentsError,
-  } = createFetchStore();
+  const respondentsStore = createFetchStore();
+  const respondentStore = createFetchStore();
+  const consultationQuestionsStore = createFetchStore();
+  const questionsStore = createFetchStore();
+  const answersStore = createFetchStore();
 
-  const {
-    load: loadRespondent,
-    loading: isRepondentLoading,
-    data: respondentData,
-    error: respondentError,
-  } = createFetchStore();
-
-  const {
-    load: loadConsultationQuestions,
-    loading: isConsultationQuestionsLoading,
-    data: consultationQuestionsData,
-    error: consultationQuestionsError,
-  } = createFetchStore();
-
-  const {
-    load: loadQuestions,
-    loading: isQuestionsLoading,
-    data: questionsData,
-    error: questionsError,
-  } = createFetchStore();
-
-  const {
-    load: loadAnswers,
-    loading: isAnswersLoading,
-    data: answersData,
-    error: answersError,
-  } = createFetchStore();
-
-  $effect(() => {
-    loadConsultationQuestions(getApiQuestionsUrl(consultationId));
-    loadRespondents(getLoadRespondentsUrl());
-    loadQuestions(getQuestionsByRespondentUrl(consultationId, respondentId));
-    loadAnswers(
+  onMount(() => {
+    $consultationQuestionsStore.fetch(getApiQuestionsUrl(consultationId));
+    $respondentsStore.fetch(getLoadRespondentsUrl());
+    $questionsStore.fetch(getQuestionsByRespondentUrl(consultationId, respondentId));
+    $answersStore.fetch(
       `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
     );
   });
@@ -99,19 +71,19 @@
   }
 
   let currRespondent = $derived(
-    $respondentsData?.results?.find(
+    $respondentsStore.data?.results?.find(
       (respondent: Respondent) => respondent.id === respondentId,
     ),
   );
 
   let prevRespondent = $derived(
-    $respondentsData?.results?.find(
+    $respondentsStore.data?.results?.find(
       (respondent: Respondent) =>
         respondent?.themefinder_id === currRespondent?.themefinder_id - 1,
     ) ?? null,
   );
   let nextRespondent = $derived(
-    $respondentsData?.results?.find(
+    $respondentsStore.data?.results?.find(
       (respondent: Respondent) =>
         respondent?.themefinder_id === currRespondent?.themefinder_id + 1,
     ) ?? null,
@@ -164,11 +136,11 @@
         <RespondentSidebar
           demoData={currRespondent?.demographics}
           stakeholderName={currRespondent?.name}
-          questionsAnswered={$questionsData?.results.length ?? 0}
-          totalQuestions={$consultationQuestionsData?.results?.length ?? 0}
+          questionsAnswered={$questionsStore.data?.results.length ?? 0}
+          totalQuestions={$consultationQuestionsStore.data?.results?.length ?? 0}
           updateStakeholderName={async (newStakeholderName) => {
             // update current respondent stakeholder name
-            await loadRespondent(
+            await $respondentStore.fetch(
               getApiConsultationRespondentUrl(consultationId, respondentId),
               "PATCH",
               {
@@ -177,7 +149,7 @@
             );
 
             // refresh respondents
-            loadRespondents(getLoadRespondentsUrl());
+            $respondentsStore.fetch(getLoadRespondentsUrl());
           }}
         />
 
@@ -204,8 +176,8 @@
             </p>
 
             <ul>
-              {#each $answersData?.all_respondents ?? [] as answer, i}
-                {@const answerQuestion = $questionsData?.results?.find(
+              {#each $answersStore.data?.all_respondents ?? [] as answer, i}
+                {@const answerQuestion = $questionsStore.data?.results?.find(
                   (question) => question.id === answer.question_id,
                 )}
 
