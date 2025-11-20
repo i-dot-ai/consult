@@ -82,7 +82,6 @@ def validate_token(request):
         email = jwt.decode(internal_access_token, options={"verify_signature": False})["email"]
         user, _ = User.objects.get_or_create(email=email)
     except (jwt.DecodeError, KeyError) as ex:
-        print("failed")
         logger.error("error authenticating request {error}", error=str(ex.args[0]))
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
