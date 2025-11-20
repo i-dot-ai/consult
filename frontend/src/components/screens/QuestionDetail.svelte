@@ -78,6 +78,7 @@
   let evidenceRich: boolean = $state(false);
   let sortAscending: boolean = $state(false);
   let flaggedOnly: boolean = $state(false);
+  let dataRequested: boolean = $state(false);
 
   const consultationStore = createFetchStore();
   const questionsStore = createFetchStore();
@@ -92,6 +93,7 @@
     // Load consultation and questions data once on mount
     $consultationStore.fetch(getApiConsultationUrl(consultationId));
     $questionsStore.fetch(getApiQuestionsUrl(consultationId));
+    dataRequested = true;
   });
 
   async function loadData() {
@@ -289,7 +291,7 @@
       </div>
     {:else}
       <QuestionCard
-        skeleton={$questionsStore.isLoading || $consultationStore.isLoading}
+        skeleton={!dataRequested || $questionsStore.isLoading || $consultationStore.isLoading}
         clickable={false}
         consultationId={$consultationStore.data?.id}
         {question}
@@ -331,7 +333,7 @@
   >
     {#if activeTab === TabNames.QuestionSummary}
       <QuestionSummary
-        showThemes={Boolean($questionStore.isLoading || $questionStore.data?.has_free_text)}
+        showThemes={Boolean(!dataRequested || $questionStore.isLoading || $questionStore.data?.has_free_text)}
         themes={Object.keys($themeAggrStore.data?.theme_aggregations || []).map(
           (themeId) => {
             return {
@@ -345,7 +347,7 @@
             };
           },
         ) as FormattedTheme[]}
-        themesLoading={$themeAggrStore.isLoading}
+        themesLoading={!dataRequested || $themeAggrStore.isLoading}
         totalAnswers={question?.total_responses || 0}
         filteredTotal={$answersStore.data?.filtered_total}
         demoData={$demoAggrStore.data?.demographic_aggregations}
@@ -367,7 +369,7 @@
         questionId={question?.id}
         pageSize={PAGE_SIZE}
         {answers}
-        isAnswersLoading={$answersStore.isLoading}
+        isAnswersLoading={!dataRequested || $answersStore.isLoading}
         answersError={$answersStore.error}
         filteredTotal={$answersStore.data?.filtered_total}
         {hasMorePages}
@@ -387,7 +389,7 @@
         themes={$themeInfoStore.data?.themes}
         {evidenceRich}
         {setEvidenceRich}
-        isThemesLoading={$themeAggrStore.isLoading}
+        isThemesLoading={!dataRequested || $themeAggrStore.isLoading}
         {flaggedOnly}
         setFlaggedOnly={(newValue) => (flaggedOnly = newValue)}
         anyFilterApplied={anyFilterApplied()}
