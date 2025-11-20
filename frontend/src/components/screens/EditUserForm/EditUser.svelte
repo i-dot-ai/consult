@@ -3,6 +3,8 @@
 
   import { createFetchStore } from "../../../global/stores.ts";
 
+  import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
+  import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
   import Switch from "../../inputs/Switch/Switch.svelte";
 
   export interface Props {
@@ -14,9 +16,12 @@
   const userStore = createFetchStore();
   const userUpdateStore = createFetchStore();
 
+  let dataRequested: boolean = $state(false);
+
   // Load user data initially
   onMount(() => {
     $userStore.fetch(`/api/users/${userId}/`);
+    dataRequested = true;
   });
 
   async function updateIsStaff(value: boolean) {
@@ -39,8 +44,8 @@
 </script>
 
 <div class="mb-8">
-  {#if $userStore.isLoading}
-    <div class="text-sm text-gray-600">Loading user data...</div>
+  {#if !dataRequested || $userStore.isLoading}
+    <LoadingMessage message="Loading user data..." />
   {:else if $userStore.data}
     <!-- User Details -->
     <div class="mb-8">
@@ -94,8 +99,13 @@
         </div>
       </div>
 
-      {#if $userStore.isLoading}
-        <div class="text-sm text-gray-600">Updating permissions...</div>
+      {#if $userUpdateStore.isLoading}
+        <div class="text-sm text-gray-600 flex items-center gap-2">
+          <div class="grow-0">
+            <LoadingIndicator size="1rem" />
+          </div>
+          Updating permissions...
+        </div>
       {/if}
     </div>
   {/if}
