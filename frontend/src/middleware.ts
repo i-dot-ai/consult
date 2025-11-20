@@ -78,9 +78,10 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       body: JSON.stringify({internal_access_token: internalAccessToken}),
       headers: {"Content-Type": "application/json"}
     });
-    response.json().then(x => {
-      if (x.access) {
-        context.cookies.set("access", x.access);
+    response.json().then(data => {
+      if (data.access) {
+        context.cookies.set("access", data.access);
+        context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
       } else {
         context.redirect('/auth-error');
       }
