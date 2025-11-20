@@ -15,9 +15,10 @@
   } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
 
-  import Panel from "../dashboard/Panel/Panel.svelte";
   import Alert from "../Alert.svelte";
+  import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
   import MaterialIcon from "../MaterialIcon.svelte";
+  import Panel from "../dashboard/Panel/Panel.svelte";
   import ChevronRight from "../svg/material/ChevronRight.svelte";
   import Button from "../inputs/Button/Button.svelte";
   import RespondentSidebar from "../dashboard/RespondentSidebar/RespondentSidebar.svelte";
@@ -54,6 +55,8 @@
   const questionsStore = createFetchStore();
   const answersStore = createFetchStore();
 
+  let dataRequested: boolean = $state(false);
+
   onMount(() => {
     $consultationQuestionsStore.fetch(getApiQuestionsUrl(consultationId));
     $respondentsStore.fetch(getLoadRespondentsUrl());
@@ -61,6 +64,7 @@
     $answersStore.fetch(
       `${getApiAnswersUrl(consultationId)}?respondent_id=${respondentId}`,
     );
+    dataRequested = true;
   });
 
   function getLoadRespondentsUrl() {
@@ -174,6 +178,10 @@
               All responses submitted by this respondent, ordered by question
               number
             </p>
+
+            {#if !dataRequested || $answersStore.isLoading}
+              <LoadingMessage message="Loading Answers..." />
+            {/if}
 
             <ul>
               {#each $answersStore.data?.all_respondents ?? [] as answer, i}
