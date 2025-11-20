@@ -48,7 +48,6 @@
 
   let expanded = $derived(expandedThemes.includes(theme.id));
   let showAnswers = $state(false);
-  let answersRequested = $state(false);
 
   let disabled = $derived(Boolean(theme.selectedtheme_id));
   let isBeingSelected = $derived(themesBeingSelected.includes(theme.id));
@@ -136,9 +135,8 @@
                   );
                 }
                 showAnswers = !showAnswers;
-                answersRequested = true;
               }}
-              disabled={$answersStore.isLoading && answersRequested}
+              disabled={$answersStore.isLoading}
             >
               <div class="text-secondary flex items-center gap-1">
                 <MaterialIcon color="fill-secondary">
