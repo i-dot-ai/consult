@@ -3,6 +3,7 @@ from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.http import JsonResponse
 from i_dot_ai_utilities.auth.auth_api import AuthApiClient
+from i_dot_ai_utilities.auth.exceptions import AuthApiRequestError
 from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework_simplejwt.tokens import AccessToken
@@ -34,7 +35,7 @@ def validate_token(request):
         internal_access_token = serializer.validated_data["internal_access_token"]
         email = get_email_from_token(internal_access_token)
         user, _ = User.objects.get_or_create(email=email)
-    except (jwt.DecodeError, KeyError) as ex:
+    except (jwt.DecodeError, KeyError, AuthApiRequestError) as ex:
         logger.error("error authenticating request {error}", error=str(ex.args[0]))
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
