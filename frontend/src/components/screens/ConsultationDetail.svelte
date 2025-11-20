@@ -4,7 +4,7 @@
   import type { Writable } from "svelte/store";
 
   import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
-  import LoadingIndicator from "../LoadingIndicator/LoadingIndicator.svelte";
+  import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import Help from "../svg/material/Help.svelte";
   import Star from "../svg/material/Star.svelte";
@@ -77,12 +77,7 @@
     <p transition:slide class="mb-12">You have not favourited any question.</p>
   {:else}
     {#if !dataRequested || $questionsStore.isLoading}
-      <div transition:slide class="my-8">
-        <LoadingIndicator size="5rem" />
-        <p class="text-center text-neutral-500">
-          Loading questions...
-        </p>
-      </div>
+      <LoadingMessage message="Loading Questions..." />
     {:else if $questionsStore.error}
       <p transition:slide>{$questionsStore.error}</p>
     {:else}
@@ -119,12 +114,7 @@
 
   <Panel bg={true} border={true}>
     {#if !dataRequested || $questionsStore.isLoading}
-      <div transition:slide class="my-8">
-        <LoadingIndicator size="5rem" />
-        <p class="text-center text-neutral-500">
-          Loading questions...
-        </p>
-      </div>
+      <LoadingMessage message="Loading Questions..." />
     {:else if $questionsStore.error}
       <p transition:slide>{$questionsStore.error}</p>
     {:else}

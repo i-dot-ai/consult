@@ -19,6 +19,7 @@
   import Title from "../../Title.svelte";
   import Finance from "../../svg/material/Finance.svelte";
   import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
+  import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
 
   interface Props {
     consultationId: string;
@@ -226,12 +227,7 @@
     </div>
   {:else}
     {#if demoOptionsLoading}
-      <div transition:slide class="mt-12 mb-6">
-        <LoadingIndicator size="5rem" />
-        <p class="text-neutral-500 text-center">
-          Loading demographics
-        </p>
-      </div>
+      <LoadingMessage message="Loading Demographics..." />
     {:else}
       <div class="my-4"></div>
     {/if}
