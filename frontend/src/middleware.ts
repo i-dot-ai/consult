@@ -43,18 +43,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   }
 
   // Authentication logic
-  let userIsStaff: boolean = false;
-
-  try {
-    const resp = await fetchBackendApi<{ is_staff: Boolean }>(
-      context,
-      Routes.ApiUser,
-    );
-    userIsStaff = Boolean(resp.is_staff);
-  } catch {
-    console.log("user not signed in");
-  }
-
   let internalAccessToken = context.request.headers.get('x-amzn-oidc-data');
   if (!internalAccessToken) {
     console.log("attempting to read TEST_INTERNAL_ACCESS_TOKEN from env vars", process.env.TEST_INTERNAL_ACCESS_TOKEN);
@@ -64,6 +52,18 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       console.error("failed to find token, redirecting to /auth-error");
       return context.redirect('/auth-error');
     }
+  }
+
+  let userIsStaff: boolean = false;
+
+  try {
+    const resp = await fetchBackendApi<{ is_staff: Boolean }>(
+      context,
+      Routes.ApiUser,
+    );
+    userIsStaff = Boolean(resp.is_staff);
+  } catch {
+      return context.redirect('/auth-error');
   }
 
   console.log("internalAccessToken = ", internalAccessToken)
@@ -129,7 +129,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
     // Add/override specific headers
     headersToSend.set("Authorization", `Bearer ${accessToken}`);
-    headersToSend.set("x-amzn-oidc-data", internalAccessToken);
     headersToSend.set("Cookie", cookieHeader);
     if (csrfCookie) {
       headersToSend.set("X-CSRFToken", csrfCookie.value);
