@@ -117,19 +117,29 @@ you can run `manage.py generate_erd`. (You will need `graphviz` installed: see
 
 ![](docs/erd.png)
 
-## Login
+## Authentication
 
-### Magic links
+### Local Development
 
-You can sign into the application using a magic link, requested via `/sign-in/`. 
+For local development, you can authenticate using the `TEST_INTERNAL_ACCESS_TOKEN` environment variable. Set this in your `.env` file:
+
+```
+TEST_INTERNAL_ACCESS_TOKEN=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJlbWFpbCI6ImVtYWlsQGV4YW1wbGUuY29tIn0.k27nav4gbG-2lIArYInTqP1GUz2LRuzb3lWandMKRoY
+```
+
+This token will be used when the `x-amzn-oidc-data` header is not present in requests.
+
+### Production Authentication
+
+In production, the application expects the `x-amzn-oidc-data` header to be set by AWS ALB (Application Load Balancer) with OIDC authentication. If this header is missing and no fallback token is configured, users will be redirected to an authentication error page.
+
+### User Management
+
 You need to have a user set-up first - add new users in `/support/users/` 
 (only be done by `staff` members).
 
 When running locally, you can create your first admin user using `make dev_admin_user`, 
 on dev/pre-prod/prod ask one of the existing members of the team.
-
-For convenience, in local dev environments the value of the magic link will be
-logged along with the rest of the server logs.
 
 
 ### The frontend

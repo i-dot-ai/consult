@@ -6,70 +6,17 @@ import { fetchBackendApi } from "./global/api";
 import { getBackendUrl } from "./global/utils";
 
 export const onRequest: MiddlewareHandler = async (context, next) => {
-  let userIsStaff: boolean = false;
-
-  try {
-    const resp = await fetchBackendApi<{ is_staff: Boolean }>(
-      context,
-      Routes.ApiUser,
-    );
-    userIsStaff = Boolean(resp.is_staff);
-  } catch {
-    console.log("user not signed in");
-  }
-
-  const internalAccessToken = context.request.headers.get('x-amzn-oidc-data') || "undefined";
-
-  console.log("internalAccessToken = ", internalAccessToken)
-
-  const accessToken = context.cookies.get("access")?.value;
   const url = context.url;
 
-  // Redirect to sign-in if user not logged in or not staff
-  const protectedRoutes = [
-    // /^\/sign-out[\/]?$/,
-    /^\/consultations.*/,
-    /^\/design.*/,
-    /^\/stories.*/,
-    /^\/support.*/,
-  ];
-  const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
-
-  for (const protectedRoute of protectedRoutes) {
-    if (
-      protectedRoute.test(url.pathname) &&
-      !context.cookies.get("access")?.value
-    ) {
-      
-      const response = await fetch("api/validate-token/", {
-        method: "POST",
-        body: JSON.stringify({"internal_access_token": accessToken}),
-      });
-      let tk = "";
-      response.json().then(x => tk=x.token);
-      context.cookies.set("access", tk)
-    }
-  }
-
-  for (const protectedStaffRoute of protectedStaffRoutes) {
-    if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
-      return context.redirect(Routes.Home);
-    }
-  }
-
-  const backendUrl = getBackendUrl(url.hostname);
-  const fullBackendUrl = path.join(backendUrl, url.pathname) + url.search;
-
-  // skip as new pages are moved to astro
+  // skip as new pages are moved to astro - check this first to avoid auth loops
   const toSkip = [
-    /^\/$/,
+    /^\/auth-error[/]?$/,
     /^\/data-sharing[/]?$/,
     /^\/get-involved[/]?$/,
     /^\/how-it-works[/]?$/,
     /^\/privacy[/]?$/,
-    /^\/sign-in[/]?$/,
+    /^\/api\/validate-token[/]?$/,
     /^\/sign-out[/]?$/,
-    /^\/magic-link\/[A-Za-z0-9-]*[/]?$/,
     /^\/api\/astro\/.*/,
     /^\/api\/health[/]?$/,
     /^\/health[/]?$/,
@@ -94,6 +41,60 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       return next();
     }
   }
+
+  // Authentication logic
+  let userIsStaff: boolean = false;
+
+  try {
+    const resp = await fetchBackendApi<{ is_staff: Boolean }>(
+      context,
+      Routes.ApiUser,
+    );
+    userIsStaff = Boolean(resp.is_staff);
+  } catch {
+    console.log("user not signed in");
+  }
+
+  let internalAccessToken = context.request.headers.get('x-amzn-oidc-data');
+  if (!internalAccessToken) {
+    console.log("attempting to read TEST_INTERNAL_ACCESS_TOKEN from env vars", process.env.TEST_INTERNAL_ACCESS_TOKEN);
+    if ( process.env.TEST_INTERNAL_ACCESS_TOKEN) {
+      internalAccessToken = process.env.TEST_INTERNAL_ACCESS_TOKEN;
+    } else {
+      console.error("failed to find token, redirecting to /auth-error");
+      return context.redirect('/auth-error');
+    }
+  }
+
+  console.log("internalAccessToken = ", internalAccessToken)
+
+  const accessToken = context.cookies.get("access")?.value;
+  const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
+
+  if (!context.cookies.get("access")?.value) {
+    const backendUrl = getBackendUrl();
+    const response = await fetch(path.join(backendUrl, "/api/validate-token/"), {
+      method: "POST",
+      body: JSON.stringify({internal_access_token: internalAccessToken}),
+      headers: {"Content-Type": "application/json"}
+    });
+    response.json().then(x => {
+      if (x.access) {
+        context.cookies.set("access", x.access);
+      } else {
+        context.redirect('/auth-error');
+      }
+    });      
+  }
+
+  for (const protectedStaffRoute of protectedStaffRoutes) {
+    if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
+      return context.redirect(Routes.Home);
+    }
+  }
+
+  const backendUrl = getBackendUrl();
+  const fullBackendUrl = path.join(backendUrl, url.pathname) + url.search;
 
   const hasBody = !["GET", "HEAD", "DELETE"].includes(context.request.method);
   const csrfCookie = context.cookies.get("csrftoken");
@@ -153,7 +154,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     });
 
     if (response.status === 401) {
-      return context.redirect("/sign-out");
+      return context.redirect('/auth-error');
     }
 
     if (response.status === 304) {
