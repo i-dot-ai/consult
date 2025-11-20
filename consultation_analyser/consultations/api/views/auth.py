@@ -3,7 +3,6 @@ from django.conf import settings
 from django.contrib.auth import get_user_model, login
 from django.http import JsonResponse
 from i_dot_ai_utilities.auth.auth_api import AuthApiClient
-from i_dot_ai_utilities.auth.exceptions import AuthApiRequestError
 from rest_framework import serializers
 from rest_framework.decorators import api_view
 from rest_framework_simplejwt.tokens import AccessToken
@@ -12,7 +11,9 @@ from consultation_analyser.hosting_environment import HostingEnvironment
 
 User = get_user_model()
 logger = settings.LOGGER
-client = AuthApiClient(app_name="consult", auth_api_url=settings.AUTH_API_URL, logger=logger)
+client = AuthApiClient(
+    app_name="consult", auth_api_url=settings.AUTH_API_URL, logger=logger, timeout=10
+)
 
 
 class TokenSerializer(serializers.Serializer):
@@ -37,7 +38,7 @@ def validate_token(request):
             email = jwt.decode(internal_access_token, options={"verify_signature": False})["email"]
 
         user, _ = User.objects.get_or_create(email=email)
-    except (jwt.DecodeError, KeyError, AuthApiRequestError) as ex:
+    except Exception as ex:
         logger.error("error authenticating request {error}", error=str(ex.args[0]))
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
