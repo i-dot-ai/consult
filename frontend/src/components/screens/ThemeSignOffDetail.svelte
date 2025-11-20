@@ -314,12 +314,14 @@
   </div>
 </TitleRow>
 
-<QuestionCard
-  skeleton={$isQuestionLoading}
-  {consultationId}
-  question={$questionData || {}}
-  clickable={false}
-/>
+<section class="my-8">
+  <QuestionCard
+    skeleton={$isQuestionLoading}
+    {consultationId}
+    question={$questionData || {}}
+    clickable={false}
+  />
+</section>
 
 <svelte:boundary>
   <section
@@ -330,7 +332,7 @@
       "bg-pink-50/25",
       "rounded-xl",
       "border",
-      "border-pink-50",
+      "border-pink-100",
     ])}
   >
     <div id="onboarding-steps-2-and-3" class="mb-4">
