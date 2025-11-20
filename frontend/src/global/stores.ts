@@ -56,7 +56,7 @@ export const createFetchStore = (mockFetch?: Function) => {
     fetch: Function,
   }> = writable({
     data: null,
-    isLoading: true,
+    isLoading: false,
     error: "",
     status: 0,
     fetch: () => {},
@@ -76,14 +76,14 @@ export const createFetchStore = (mockFetch?: Function) => {
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
       debounceTimeout = null;
+    } else {
+      store.update(store => ({...store, isLoading: true, error: ""}));
     }
 
     prevPromise = new Promise<void>((resolve) => {
       resolvePrev = resolve;
 
       debounceTimeout = setTimeout(async () => {
-        store.update(store => ({...store, isLoading: true, error: ""}));
-
         try {
           if (mockFetch) {
             const mockData = mockFetch({

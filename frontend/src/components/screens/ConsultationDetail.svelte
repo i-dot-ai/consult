@@ -22,38 +22,45 @@
   } from "../../global/routes.ts";
   import { createFetchStore, favStore } from "../../global/stores.ts";
 
-  export let consultationId: string = "";
+  interface Props {
+    consultationId: string;
+  }
 
-  let searchValue: string = "";
+  let {
+    consultationId
+  }: Props = $props();
+
+  let searchValue: string = $state("");
+  let dataRequested: boolean = $state(false);
 
   const questionsStore = createFetchStore();
   const demoOptionsStore = createFetchStore();
 
-  onMount(async () => {
+  onMount(() => {
     $questionsStore.fetch(getApiQuestionsUrl(consultationId));
+    $demoOptionsStore.fetch(`/api/consultations/${consultationId}/demographic-options/`);
+    dataRequested = true;
+  })
 
-    $demoOptionsStore.fetch(
-      `/api/consultations/${consultationId}/demographic-options/`,
-    );
-  });
+  let favQuestions = $derived(
+    $questionsStore.data?.results?.filter((question) =>
+      $favStore.includes(question.id),
+    )
+  )
 
-  $: favQuestions = $questionsStore.data?.results?.filter((question) =>
-    $favStore.includes(question.id),
-  );
-
-  $: displayQuestions = $questionsStore.data?.results?.filter((question) =>
+  let displayQuestions = $derived($questionsStore.data?.results?.filter((question) =>
     `Q${question.number}: ${question.question_text}`
       .toLocaleLowerCase()
       .includes(searchValue.toLocaleLowerCase()),
-  );
+  ));
 </script>
 
 <section class="my-8">
   <Metrics
     {consultationId}
     questions={$questionsStore.data?.results || []}
-    loading={$questionsStore.isLoading}
-    demoOptionsLoading={$demoOptionsStore.isLoading}
+    loading={!dataRequested || $questionsStore.isLoading}
+    demoOptionsLoading={!dataRequested || $demoOptionsStore.isLoading}
     demoOptions={$demoOptionsStore.data || []}
   />
 </section>
@@ -65,8 +72,8 @@
     </TitleRow>
   </div>
 
-  {#if $favStore.length > 0}
-    {#if $questionsStore.isLoading}
+  {#if !dataRequested || $favStore.length > 0}
+    {#if !dataRequested || $questionsStore.isLoading}
       <p transition:slide>Loading questions...</p>
     {:else if $questionsStore.error}
       <p transition:slide>{$questionsStore.error}</p>
@@ -105,7 +112,7 @@
   </div>
 
   <Panel bg={true} border={true}>
-    {#if $questionsStore.isLoading}
+    {#if !dataRequested || $questionsStore.isLoading}
       <p transition:slide>Loading questions...</p>
     {:else if $questionsStore.error}
       <p transition:slide>{$questionsStore.error}</p>
