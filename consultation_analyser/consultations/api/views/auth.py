@@ -15,7 +15,7 @@ client = AuthApiClient(app_name="consult", auth_api_url=settings.AUTH_API_URL, l
 
 
 def get_email_from_token(token):
-    if HostingEnvironment.is_development_environment():
+    if HostingEnvironment.is_deployed():
         return client.get_user_authorisation_info(token).email
     return jwt.decode(token, options={"verify_signature": False})["email"]
 
