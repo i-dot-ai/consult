@@ -59,7 +59,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const accessToken = context.cookies.get("access")?.value;
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
-  if (!context.cookies.get("access")?.value) {
+  if (!accessToken) {
     const backendUrl = getBackendUrl();
     const response = await fetch(path.join(backendUrl, "/api/validate-token/"), {
       method: "POST",
@@ -70,7 +70,9 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       if (data.access) {
         context.cookies.set("access", data.access);
         context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
+        console.log("logged in");
       } else {
+        console.log("failed to login", data, internalAccessToken);
         context.redirect('/auth-error');
       }
     });      
