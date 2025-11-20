@@ -35,10 +35,12 @@
 
   const selectedThemesStore = createFetchStore();
   const questionStore = createFetchStore();
+  let dataRequested: boolean = $state(false);
 
   onMount(() => {
     $selectedThemesStore.fetch(getApiGetSelectedThemesUrl(consultationId, questionId));
     $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
+    dataRequested = true;
   })
 </script>
 
@@ -131,9 +133,15 @@
 
         <div>
           <h2 class="text-md">
-            {#if !$questionStore.data}
+            {#if !dataRequested || $questionStore.isLoading}
               <div class="blink bg-neutral-100 text-neutral-100 select-none">
                 SKELETON
+              </div>
+            {:else if $questionStore.error}
+              <div class="mb-4">
+                <Alert>
+                  {$questionStore.error}
+                </Alert>
               </div>
             {:else}
               <span in:fade>
@@ -197,12 +205,18 @@
       </p> -->
 
       <ul>
-        {#if $selectedThemesStore.isLoading}
+        {#if !dataRequested || $selectedThemesStore.isLoading}
           {#each "_".repeat(2) as _}
             <li>
               {@render selectedThemeCard("SKELETON", true)}
             </li>
           {/each}
+        {:else if $selectedThemesStore.error}
+          <div class="my-2">
+            <Alert>
+              {$questionStore.error}
+            </Alert>
+          </div>
         {:else}
           {#each $selectedThemesStore.data?.results as selectedTheme}
             <li>
