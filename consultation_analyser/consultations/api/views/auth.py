@@ -15,12 +15,6 @@ logger = settings.LOGGER
 client = AuthApiClient(app_name="consult", auth_api_url=settings.AUTH_API_URL, logger=logger)
 
 
-def get_email_from_token(token):
-    if HostingEnvironment.is_deployed():
-        return client.get_user_authorisation_info(token).email
-    return jwt.decode(token, options={"verify_signature": False})["email"]
-
-
 class TokenSerializer(serializers.Serializer):
     internal_access_token = serializers.CharField()
 
@@ -33,7 +27,14 @@ def validate_token(request):
 
     try:
         internal_access_token = serializer.validated_data["internal_access_token"]
-        email = get_email_from_token(internal_access_token)
+        if HostingEnvironment.is_deployed():
+            user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
+            if user_authorisation_info.is_authorised:
+                return JsonResponse(data={"detail": "authentication failed"}, status=403)
+            email = user_authorisation_info.email
+        else:
+            email = jwt.decode(internal_access_token, options={"verify_signature": False})["email"]
+
         user, _ = User.objects.get_or_create(email=email)
     except (jwt.DecodeError, KeyError, AuthApiRequestError) as ex:
         logger.error("error authenticating request {error}", error=str(ex.args[0]))
