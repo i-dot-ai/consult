@@ -168,7 +168,7 @@
     {/if}
   </div>
 
-  {#if paginatedCategories.length > 0 || demoOptionsLoading}
+  {#if paginatedCategories.length > 0 && !demoOptionsLoading}
     <div transition:slide class="mt-8">
       <TabView
         variant="dots"
@@ -224,5 +224,16 @@
         </div>
       </TabView>
     </div>
+  {:else}
+    {#if demoOptionsLoading}
+      <div transition:slide class="mt-12 mb-6">
+        <LoadingIndicator size="5rem" />
+        <p class="text-neutral-500 text-center">
+          Loading demographics
+        </p>
+      </div>
+    {:else}
+      <div class="my-4"></div>
+    {/if}
   {/if}
 </Panel>

@@ -4,6 +4,7 @@
   import type { Writable } from "svelte/store";
 
   import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
+  import LoadingIndicator from "../LoadingIndicator/LoadingIndicator.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import Help from "../svg/material/Help.svelte";
   import Star from "../svg/material/Star.svelte";
@@ -72,9 +73,16 @@
     </TitleRow>
   </div>
 
-  {#if !dataRequested || $favStore.length > 0}
+  {#if dataRequested && (favQuestions?.length === 0 || $favStore.length === 0) }
+    <p transition:slide class="mb-12">You have not favourited any question.</p>
+  {:else}
     {#if !dataRequested || $questionsStore.isLoading}
-      <p transition:slide>Loading questions...</p>
+      <div transition:slide class="my-8">
+        <LoadingIndicator size="5rem" />
+        <p class="text-center text-neutral-500">
+          Loading questions...
+        </p>
+      </div>
     {:else if $questionsStore.error}
       <p transition:slide>{$questionsStore.error}</p>
     {:else}
@@ -92,8 +100,6 @@
         </div>
       </div>
     {/if}
-  {:else}
-    <p transition:slide>You have not favourited any question.</p>
   {/if}
 </section>
 
@@ -113,7 +119,12 @@
 
   <Panel bg={true} border={true}>
     {#if !dataRequested || $questionsStore.isLoading}
-      <p transition:slide>Loading questions...</p>
+      <div transition:slide class="my-8">
+        <LoadingIndicator size="5rem" />
+        <p class="text-center text-neutral-500">
+          Loading questions...
+        </p>
+      </div>
     {:else if $questionsStore.error}
       <p transition:slide>{$questionsStore.error}</p>
     {:else}
