@@ -1,6 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
+
   import { createFetchStore } from "../../../global/stores.ts";
+
   import Switch from "../../inputs/Switch/Switch.svelte";
 
   export interface Props {
@@ -9,68 +11,57 @@
 
   let { userId }: Props = $props();
 
-  const {
-    load: loadUser,
-    loading: isLoadingUser,
-    data: userData,
-    error: userError,
-  } = createFetchStore();
-
-  const {
-    load: updateUser,
-    loading: isUpdating,
-    data: updateUserData,
-    error: updateUserError,
-  } = createFetchStore();
+  const userStore = createFetchStore();
+  const userUpdateStore = createFetchStore();
 
   // Load user data initially
   onMount(() => {
-    loadUser(`/api/users/${userId}/`);
+    $userStore.fetch(`/api/users/${userId}/`);
   });
 
   async function updateIsStaff(value: boolean) {
-    if (value === $userData?.is_staff) return; // Don't update if value hasn't changed
+    if (value === $userStore.data?.is_staff) return; // Don't update if value hasn't changed
 
-    await updateUser(`/api/users/${userId}/`, "PATCH", { is_staff: value });
+    await $userUpdateStore.fetch(`/api/users/${userId}/`, "PATCH", { is_staff: value });
 
-    loadUser(`/api/users/${userId}/`);
+    $userStore.fetch(`/api/users/${userId}/`);
   }
 
   async function updateHasDashboardAccess(value: boolean) {
-    if (value === $userData?.has_dashboard_access) return; // Don't update if value hasn't changed
+    if (value === $userStore.data?.has_dashboard_access) return; // Don't update if value hasn't changed
 
-    await updateUser(`/api/users/${userId}/`, "PATCH", {
+    await $userUpdateStore.fetch(`/api/users/${userId}/`, "PATCH", {
       has_dashboard_access: value,
     });
 
-    loadUser(`/api/users/${userId}/`);
+    $userStore.fetch(`/api/users/${userId}/`);
   }
 </script>
 
 <div class="mb-8">
-  {#if $isLoadingUser}
+  {#if $userStore.isLoading}
     <div class="text-sm text-gray-600">Loading user data...</div>
-  {:else if $userData}
+  {:else if $userStore.data}
     <!-- User Details -->
     <div class="mb-8">
-      <h1 class="text-2xl font-bold mb-4">{$userData.email}</h1>
+      <h1 class="text-2xl font-bold mb-4">{$userStore.data?.email}</h1>
       <table class="w-full border-collapse">
         <tbody>
           <tr class="border-b">
             <th class="text-left py-3 pr-4 font-semibold">Created at</th>
             <td class="py-3"
-              >{new Date($userData.created_at).toLocaleDateString()}</td
+              >{new Date($userStore.data.created_at).toLocaleDateString()}</td
             >
           </tr>
         </tbody>
       </table>
     </div>
 
-    {#if $updateUserError}
+    {#if $userUpdateStore.error}
       <div
         class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded mb-6"
       >
-        {$updateUserData?.is_staff[0] || "failed to update user"}
+        {$userUpdateStore.data?.is_staff[0] || "failed to update user"}
       </div>
     {/if}
 
@@ -84,7 +75,7 @@
             id="is_staff"
             label=""
             hideLabel={true}
-            value={$userData.is_staff}
+            value={$userStore.data.is_staff}
             handleChange={(value) => updateIsStaff(value)}
           />
         </div>
@@ -97,13 +88,13 @@
             id="has_dashboard_access"
             label=""
             hideLabel={true}
-            value={$userData.has_dashboard_access}
+            value={$userStore.data.has_dashboard_access}
             handleChange={(value) => updateHasDashboardAccess(value)}
           />
         </div>
       </div>
 
-      {#if $isLoadingUser}
+      {#if $userStore.isLoading}
         <div class="text-sm text-gray-600">Updating permissions...</div>
       {/if}
     </div>
