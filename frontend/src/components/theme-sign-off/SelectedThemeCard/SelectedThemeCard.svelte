@@ -42,12 +42,10 @@
 
   let showAnswers = $state(false);
   let editing = $state(false);
-  let answersRequested = $state(false);
 
   const resetAnswers = () => {
     $answersStore.data = null;
     showAnswers = false;
-    answersRequested = false;
   }
 </script>
 
@@ -121,9 +119,8 @@
                     );
                   }
                   showAnswers = !showAnswers;
-                  answersRequested = true;
                 }}
-                disabled={$answersStore.isLoading && answersRequested}
+                disabled={$answersStore.isLoading}
               >
                 <MaterialIcon color="fill-neutral-500">
                   <Docs />

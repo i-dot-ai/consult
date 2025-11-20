@@ -73,11 +73,13 @@ export const createFetchStore = (mockFetch?: Function) => {
     body?: BodyInit,
     headers?: HeadersInit,
   ) => {
+    // immediate feedback to the UI that fetching has started
+    // even though it awaits debounce timeout
+    store.update(store => ({...store, isLoading: true, error: ""}));
+
     if (debounceTimeout) {
       clearTimeout(debounceTimeout);
       debounceTimeout = null;
-    } else {
-      store.update(store => ({...store, isLoading: true, error: ""}));
     }
 
     prevPromise = new Promise<void>((resolve) => {
