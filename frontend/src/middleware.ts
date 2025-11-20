@@ -54,18 +54,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
   }
 
-  let userIsStaff: boolean = false;
-
-  try {
-    const resp = await fetchBackendApi<{ is_staff: Boolean }>(
-      context,
-      Routes.ApiUser,
-    );
-    userIsStaff = Boolean(resp.is_staff);
-  } catch {
-      return context.redirect('/auth-error');
-  }
-
   console.log("internalAccessToken = ", internalAccessToken)
 
   const accessToken = context.cookies.get("access")?.value;
@@ -86,6 +74,18 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         context.redirect('/auth-error');
       }
     });      
+  }
+
+  let userIsStaff: boolean = false;
+
+  try {
+    const resp = await fetchBackendApi<{ is_staff: Boolean }>(
+      context,
+      Routes.ApiUser,
+    );
+    userIsStaff = Boolean(resp.is_staff);
+  } catch {
+      return context.redirect('/auth-error');
   }
 
   for (const protectedStaffRoute of protectedStaffRoutes) {
