@@ -4,7 +4,8 @@ from django.contrib.auth import get_user_model, login
 from django.http import JsonResponse
 from i_dot_ai_utilities.auth.auth_api import AuthApiClient
 from rest_framework import serializers
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny
 from rest_framework_simplejwt.tokens import AccessToken
 
 from consultation_analyser.hosting_environment import HostingEnvironment
@@ -21,6 +22,7 @@ class TokenSerializer(serializers.Serializer):
 
 
 @api_view(["POST"])
+@permission_classes([AllowAny])
 def validate_token(request):
     serializer = TokenSerializer(data=request.data)
     if not serializer.is_valid():
