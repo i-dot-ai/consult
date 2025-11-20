@@ -63,6 +63,7 @@
   let expandedThemes: string[] = $state([]);
   let errorData: ErrorType | null = $state(null);
   let themesBeingSelected = $state([]);
+  let dataRequested: boolean = $state(false);
 
   let flatGeneratedThemes = $derived(
     flattenArray($generatedThemesStore.data?.results),
@@ -86,6 +87,7 @@
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
     $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
+    dataRequested = true;
   });
 
   const createTheme = async (title: string, description: string) => {
@@ -371,7 +373,7 @@
       <Button
         variant="primary"
         fullWidth={true}
-        disabled={$selectedThemesStore.isLoading ||
+        disabled={!dataRequested || $selectedThemesStore.isLoading ||
           $selectedThemesStore.data?.results.length === 0}
         handleClick={() =>
           (isConfirmSignOffModalOpen = !isConfirmSignOffModalOpen)}
@@ -382,7 +384,7 @@
           </MaterialIcon>
 
           <span>
-            {#if $selectedThemesStore.isLoading}
+            {#if !dataRequested || $selectedThemesStore.isLoading}
               Loading Selected Themes
             {:else}
               Sign Off Selected Themes ({$selectedThemesStore.data?.results.length})
