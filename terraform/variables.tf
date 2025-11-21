@@ -69,23 +69,3 @@ variable "scope" {
   type        = string
   default     = "REGIONAL"
 }
-
-# <old-variables>
-
-variable "developer_ips" {
-  type        = list(string)
-  description = "List of developer IPs"
-}
-
-variable "external_ips" {
-  type        = list(string)
-  description = "List of external IPs"
-}
-
-variable "internal_ips" {
-  type        = list(string)
-  description = "IP's of No10 and CO"
-}
-
-# </old-variables>
-

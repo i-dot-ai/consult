@@ -24,6 +24,7 @@
   import MaterialIcon from "../MaterialIcon.svelte";
   import Price from "../svg/material/Price.svelte";
   import ThemeForm from "../theme-sign-off/ThemeForm/ThemeForm.svelte";
+  import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
   import SelectedThemeCard from "../theme-sign-off/SelectedThemeCard/SelectedThemeCard.svelte";
   import GeneratedThemeCard from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCard.svelte";
   import CheckCircle from "../svg/material/CheckCircle.svelte";
@@ -273,6 +274,15 @@
   </div>
 </TitleRow>
 
+<section class="my-8">
+  <QuestionCard
+    skeleton={$isQuestionLoading}
+    {consultationId}
+    question={$questionData || {}}
+    clickable={false}
+  />
+</section>
+
 <svelte:boundary>
   <section
     class={clsx([
@@ -282,7 +292,7 @@
       "bg-pink-50/25",
       "rounded-xl",
       "border",
-      "border-pink-50",
+      "border-pink-100",
     ])}
   >
     <div id="onboarding-steps-2-and-3" class="mb-4">

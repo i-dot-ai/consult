@@ -153,16 +153,6 @@ module "frontend" {
     path                = "/health"
   }
 
-  authenticate_keycloak = {
-    
-    enabled : false,
-    
-    realm_name : data.terraform_remote_state.keycloak.outputs.realm_name,
-    client_id : var.project_name,
-    client_secret: data.aws_ssm_parameter.client_secret.value,
-    keycloak_dns: data.terraform_remote_state.keycloak.outputs.keycloak_dns
-  }
-
   task_additional_iam_policies = local.additional_policy_arns
   entrypoint = ["npm", "start"]
 }
