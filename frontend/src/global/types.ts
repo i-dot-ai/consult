@@ -49,6 +49,13 @@ export interface RadioItem {
   disabled?: boolean;
 }
 
+export interface CheckboxItem {
+  value: string;
+  text: string;
+  hint?: string;
+  disabled?: boolean;
+}
+
 export enum SearchModeValues {
   SEMANTIC = "semantic",
   KEYWORD = "keyword",
