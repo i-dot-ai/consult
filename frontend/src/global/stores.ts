@@ -47,9 +47,9 @@ function createFavStore() {
 export const favStore = createFavStore();
 
 // Shared fetch logic
-export const createFetchStore = (mockFetch?: Function) => {
+export const createFetchStore = <T>(mockFetch?: Function) => {
   const store: Writable<{
-    data: any,
+    data: T | null,
     isLoading: boolean,
     error: string,
     status: number,

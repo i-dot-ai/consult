@@ -126,7 +126,28 @@ export interface ConsultationResponse {
   code: string;
   users: User[];
 }
-
+export interface QuestionsResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: Question[];
+}
+export interface SelectedThemesResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: SelectedTheme[];
+}
+export interface SelectedThemesDeleteResponse {
+  last_modified_by?: { email: string };
+  latest_version?: string;
+}
+export interface GeneratedThemesResponse {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: GeneratedTheme[];
+}
 export interface AnswersResponse {
   respondents_total: number;
   filtered_total: number;

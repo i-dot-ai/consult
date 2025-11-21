@@ -35,6 +35,7 @@
     type FormattedTheme,
     type MultiChoiceResponse,
     type Question,
+    type QuestionsResponse,
     type ResponseAnswer,
     type ThemeAggrResponse,
     type ThemeInfoResponse,
@@ -80,14 +81,14 @@
   let flaggedOnly: boolean = $state(false);
   let dataRequested: boolean = $state(false);
 
-  const consultationStore = createFetchStore();
-  const questionsStore = createFetchStore();
-  const questionStore = createFetchStore();
-  const answersStore = createFetchStore();
-  const themeAggrStore = createFetchStore();
-  const themeInfoStore = createFetchStore();
-  const demoOptionsStore = createFetchStore();
-  const demoAggrStore = createFetchStore();
+  const consultationStore = createFetchStore<ConsultationResponse>();
+  const questionsStore = createFetchStore<QuestionsResponse>();
+  const questionStore = createFetchStore<Question>();
+  const answersStore = createFetchStore<AnswersResponse>();
+  const themeAggrStore = createFetchStore<ThemeAggrResponse>();
+  const themeInfoStore = createFetchStore<ThemeInfoResponse>();
+  const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
+  const demoAggrStore = createFetchStore<DemoAggrResponse>();
 
   onMount(() => {
     // Load consultation and questions data once on mount
@@ -131,11 +132,11 @@
     try {
       await $answersStore.fetch(`${getApiAnswersUrl(consultationId)}${queryString}`);
 
-      if ($answersStore.data.all_respondents) {
-        const newAnswers = $answersStore.data.all_respondents;
+      if ($answersStore.data?.all_respondents) {
+        const newAnswers = $answersStore.data?.all_respondents;
         answers = [...answers, ...newAnswers];
       }
-      hasMorePages = $answersStore.data.has_more_pages || false;
+      hasMorePages = $answersStore.data?.has_more_pages || false;
     } catch {}
 
     currPage += 1;
@@ -293,8 +294,8 @@
       <QuestionCard
         skeleton={!dataRequested || $questionsStore.isLoading || $consultationStore.isLoading}
         clickable={false}
-        consultationId={$consultationStore.data?.id}
-        {question}
+        consultationId={$consultationStore.data?.id || ""}
+        question={question || {}}
         hideIcon={true}
         horizontal={true}
       />
@@ -349,10 +350,10 @@
         ) as FormattedTheme[]}
         themesLoading={!dataRequested || $themeAggrStore.isLoading}
         totalAnswers={question?.total_responses || 0}
-        filteredTotal={$answersStore.data?.filtered_total}
-        demoData={$demoAggrStore.data?.demographic_aggregations}
+        filteredTotal={$answersStore.data?.filtered_total || 0}
+        demoData={$demoAggrStore.data?.demographic_aggregations || {}}
         demoOptions={formattedDemoOptions || {}}
-        demoOptionsData={$demoOptionsStore.data}
+        demoOptionsData={$demoOptionsStore.data || undefined}
         multiChoice={$questionStore.data?.multiple_choice_answer?.filter((item) =>
           Boolean(item.text),
         ) || []}
@@ -385,7 +386,7 @@
           (searchMode = newSearchMode)}
         demoData={$demoAggrStore.data?.demographic_aggregations}
         demoOptions={formattedDemoOptions || {}}
-        demoOptionsData={$demoOptionsStore.data}
+        demoOptionsData={$demoOptionsStore.data || undefined}
         themes={$themeInfoStore.data?.themes}
         {evidenceRich}
         {setEvidenceRich}

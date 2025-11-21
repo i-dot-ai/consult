@@ -18,6 +18,13 @@
   } from "../../global/routes";
   import { flattenArray } from "../../global/utils";
 
+  import {
+    type SelectedThemesDeleteResponse,
+    type GeneratedThemesResponse,
+    type Question,
+    type SelectedThemesResponse
+  } from "../../global/types";
+
   import Panel from "../dashboard/Panel/Panel.svelte";
   import TitleRow from "../dashboard/TitleRow.svelte";
   import Button from "../inputs/Button/Button.svelte";
@@ -51,23 +58,23 @@
     selectGeneratedThemeMock,
   } = $props();
 
-  const selectedThemesStore = createFetchStore(selectedThemesMock);
+  const selectedThemesStore = createFetchStore<SelectedThemesResponse>(selectedThemesMock);
   const selectedThemesCreateStore = createFetchStore(createThemeMock);
-  const selectedThemesDeleteStore = createFetchStore();
-  const generatedThemesStore = createFetchStore(selectedThemesMock);
+  const selectedThemesDeleteStore = createFetchStore<SelectedThemesDeleteResponse>();
+  const generatedThemesStore = createFetchStore<GeneratedThemesResponse>(selectedThemesMock);
   const generatedThemesSelectStore = createFetchStore(selectGeneratedThemeMock);
-  const questionStore = createFetchStore(questionDataMock);
+  const questionStore = createFetchStore<Question>(questionDataMock);
   const confirmSignOffStore = createFetchStore();
 
-  let isConfirmSignOffModalOpen = $state(false);
-  let addingCustomTheme = $state(false);
+  let isConfirmSignOffModalOpen: boolean = $state(false);
+  let addingCustomTheme: boolean = $state(false);
   let expandedThemes: string[] = $state([]);
   let errorData: ErrorType | null = $state(null);
-  let themesBeingSelected = $state([]);
+  let themesBeingSelected: string[] = $state([]); // array of ids
   let dataRequested: boolean = $state(false);
 
   let flatGeneratedThemes = $derived(
-    flattenArray($generatedThemesStore.data?.results),
+    flattenArray($generatedThemesStore.data?.results || []),
   );
 
   const errorModalOnClose = () => {
@@ -109,6 +116,11 @@
       (theme) => theme.id === themeId,
     );
 
+    if (!selectedTheme) {
+      console.error(`Selected theme ${themeId} not found`);
+      return;
+    }
+
     await $selectedThemesDeleteStore.fetch(
       getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
       "DELETE",
@@ -129,11 +141,12 @@
         getApiGetGeneratedThemesUrl(consultationId, questionId),
       );
     } else if ($selectedThemesDeleteStore.status === 412) {
-      const { last_modified_by, latest_version } = $selectedThemesDeleteStore.data;
+      const respData = $selectedThemesDeleteStore.data;
+
       errorData = {
         type: "remove-conflict",
-        lastModifiedBy: last_modified_by.email,
-        latestVersion: latest_version,
+        lastModifiedBy: respData?.last_modified_by?.email || "",
+        latestVersion: respData?.latest_version || "",
       };
     } else {
       errorData = { type: "unexpected" };
@@ -149,6 +162,11 @@
     const selectedTheme = $selectedThemesStore.data?.results.find(
       (theme) => theme.id === themeId,
     );
+
+    if (!selectedTheme) {
+      console.error(`Selected theme ${themeId} not found`);
+      return;
+    }
 
     try {
       const response = await fetch(
@@ -276,9 +294,9 @@
 
 <section class="my-8">
   <QuestionCard
-    skeleton={$isQuestionLoading}
+    skeleton={$questionStore.isLoading}
     {consultationId}
-    question={$questionData || {}}
+    question={$questionStore.data || {}}
     clickable={false}
   />
 </section>
