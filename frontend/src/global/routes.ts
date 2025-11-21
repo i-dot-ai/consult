@@ -7,6 +7,8 @@ export enum Routes {
   DataSharing = "/data-sharing",
   GetInvolved = "/get-involved",
   SignOut = "/sign-out",
+  AuthError = "/auth-error",
+  APIValidateToken = "/api/validate-token/",
   ApiConsultations = "/api/consultations",
   ApiConsultationFolders = "/api/consultations/folders/",
   ApiConsultationImport = "/api/consultations/import/",

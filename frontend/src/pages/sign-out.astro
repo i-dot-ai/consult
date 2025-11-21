@@ -3,8 +3,6 @@ import Layout from '../layouts/Layout.astro';
 import Section from '../components/Section/Section.svelte';
 import Title from '../components/Title.svelte';
 
-import { Routes } from '../global/routes';
-
 
 ["access", "sessionId"].forEach(cookie => {
     Astro.cookies.set(cookie, "", {
@@ -14,7 +12,9 @@ import { Routes } from '../global/routes';
     })
 })
 
-return Astro.redirect(Routes.Home);
+const clinet_id = import.meta.env.PUBLIC_INETENAL_ACCESS_CLIENT_ID;
+const sign_out_url = `https://sso.service.security.gov.uk/sign-out?from_app=${clinet_id}`;
+return Astro.redirect(sign_out_url);
 ---
 <Layout>
 	<Section>

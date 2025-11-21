@@ -43,25 +43,13 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   }
 
   // Authentication logic
-  let internalAccessToken = context.request.headers.get('x-amzn-oidc-data');
-  if (!internalAccessToken) {
-    console.log("attempting to read TEST_INTERNAL_ACCESS_TOKEN from env vars", process.env.TEST_INTERNAL_ACCESS_TOKEN);
-    if ( process.env.TEST_INTERNAL_ACCESS_TOKEN) {
-      internalAccessToken = process.env.TEST_INTERNAL_ACCESS_TOKEN;
-    } else {
-      console.error("failed to find token, redirecting to /auth-error");
-      return context.redirect('/auth-error');
-    }
-  }
-
-  console.log("internalAccessToken = ", internalAccessToken)
-
+  const internalAccessToken = context.request.headers.get('x-amzn-oidc-data') || process.env.TEST_INTERNAL_ACCESS_TOKEN;
   const accessToken = context.cookies.get("access")?.value;
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
   if (!accessToken) {
     const backendUrl = getBackendUrl();
-    const response = await fetch(path.join(backendUrl, "/api/validate-token/"), {
+    const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
       method: "POST",
       body: JSON.stringify({internal_access_token: internalAccessToken}),
       headers: {"Content-Type": "application/json"}
@@ -73,7 +61,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         console.log("logged in");
       } else {
         console.log("failed to login", data, internalAccessToken);
-        context.redirect('/auth-error');
+        context.redirect(Routes.AuthError);
       }
     });      
   }
@@ -87,7 +75,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     );
     userIsStaff = Boolean(resp.is_staff);
   } catch {
-      return context.redirect('/auth-error');
+      return context.redirect(Routes.AuthError);
   }
 
   for (const protectedStaffRoute of protectedStaffRoutes) {
@@ -156,7 +144,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     });
 
     if (response.status === 401) {
-      return context.redirect('/auth-error');
+      return context.redirect(Routes.AuthError);
     }
 
     if (response.status === 304) {
