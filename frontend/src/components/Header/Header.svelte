@@ -8,9 +8,10 @@
   import GovIcon from "../svg/GovIcon.svelte";
   import MobileMenu from "../MobileMenu.svelte";
 
+  export let isSignedIn: boolean = false;
   export let isStaff: boolean = false;
 
-  function getNavItems(isStaff: boolean): NavItem[] {
+  function getNavItems(isSignedIn: boolean, isStaff: boolean): NavItem[] {
     if (isStaff) {
       return [
         { text: "Consultations", url: Routes.SupportConsultations },
@@ -20,11 +21,18 @@
         { text: "Themefinder", url: Routes.SupportThemefinder },
         { text: "Sign out", url: Routes.SignOut },
       ];
-    } else {
+    } else if (isSignedIn) {
       return [
         { text: "Support", url: Routes.Support },
         { text: "Your consultations", url: Routes.Consultations },
         { text: "Sign out", url: Routes.SignOut },
+      ];
+    } else {
+      return [
+        { text: "How it works", url: Routes.HowItWorks },
+        { text: "Data sharing", url: Routes.DataSharing },
+        { text: "Get involved", url: Routes.GetInvolved },
+        { text: "Sign in", url: Routes.SignIn },
       ];
     }
   }
@@ -57,7 +65,7 @@
           ])}
         >
           <a
-            href={Routes.Consultations}
+            href={isSignedIn ? Routes.Consultations : Routes.Home}
             class={clsx([
               "flex",
               "justify-center",
@@ -97,7 +105,7 @@
 
       <nav class="hidden lg:block">
         <ul class="flex gap-4 items-center">
-          {#each getNavItems(isStaff) as navItem}
+          {#each getNavItems(isSignedIn, isStaff) as navItem}
             <li>
               <a href={navItem.url} class="hover:underline">
                 {navItem.text}
@@ -108,7 +116,7 @@
       </nav>
 
       <div class="block lg:hidden">
-        <MobileMenu items={getNavItems(isStaff)} />
+        <MobileMenu items={getNavItems(isSignedIn, isStaff)} />
       </div>
     </div>
   </div>
