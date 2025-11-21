@@ -12,7 +12,7 @@
     Routes,
   } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
-  import { type Question } from "../../global/types.ts";
+  import { type ConsultationResponse, type Question, type QuestionsResponse } from "../../global/types.ts";
 
   import Tag from "../Tag/Tag.svelte";
   import Modal from "../Modal/Modal.svelte";
@@ -47,8 +47,8 @@
   let isConfirmModalOpen: boolean = $state(false);
   let dataRequested: boolean = $state(false);
 
-  const questionsStore = createFetchStore();
-  const consultationStore = createFetchStore();
+  const questionsStore = createFetchStore<QuestionsResponse>();
+  const consultationStore = createFetchStore<ConsultationResponse>();
   const consultationUpdateStore = createFetchStore();
 
   onMount(async () => {
@@ -72,9 +72,9 @@
   );
 
   let isAllQuestionsSignedOff: boolean = $derived(
-    questionsForSignOff?.every(
+    Boolean(questionsForSignOff?.every(
       (question: Question) => question.theme_status === "confirmed",
-    ),
+    )),
   );
 </script>
 
@@ -204,7 +204,7 @@
         open={isConfirmModalOpen}
         setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
         handleConfirm={async () => {
-          await $consultationUpdateStore.load(
+          await $consultationUpdateStore.fetch(
             getApiConsultationUrl(consultationId),
             "PATCH",
             {
@@ -334,7 +334,7 @@
                   highlightText={searchValue}
                   clickable={question.has_free_text}
                   disabled={!question.has_free_text}
-                  url={getThemeSignOffDetailUrl(consultationId, question.id)}
+                  url={getThemeSignOffDetailUrl(consultationId, question.id || "")}
                   subtext={!question.has_free_text
                     ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
                     : undefined}

@@ -125,6 +125,7 @@ export interface ConsultationResponse {
   title: string;
   code: string;
   users: User[];
+  stage: "theme_sign_off" | "theme_mapping" | "analysis";
 }
 export interface QuestionsResponse {
   count: number;
