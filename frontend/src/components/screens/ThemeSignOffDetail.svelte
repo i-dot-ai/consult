@@ -525,7 +525,7 @@
               <h3>AI Generated Themes</h3>
 
               <Tag variant="success">
-                {$generatedThemesData?.results.length} available
+                {flattenArray($generatedThemesData?.results || []).length} available
               </Tag>
             </div>
 
