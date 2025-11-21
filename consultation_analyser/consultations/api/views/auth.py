@@ -45,7 +45,7 @@ def validate_token(request):
             data={"detail": "authentication failed, user not registered"}, status=403
         )
     except Exception as ex:
-        logger.error("error authenticating request {error}", error=str(ex.args[0]))
+        logger.error("error authenticating request {error}", error=", ".join(map(str, ex.args)))
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
 
     login(request, user)
