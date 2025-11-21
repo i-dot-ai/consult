@@ -1,10 +1,38 @@
 ---
+import path from 'path';
 import Layout from '../layouts/Layout.astro';
 import Section from '../components/Section/Section.svelte';
 import Title from '../components/Title.svelte';
+import { Routes } from '../global/routes';
+import { getBackendUrl } from '../global/utils';
 
-const {redirect} = Astro.params;
-return Astro.redirect(redirect);
+const redirect = Astro.url.searchParams.get('redirect') || Astro.params.redirect;
+const backendUrl = getBackendUrl();
+
+const internalAccessToken = Astro.request.headers.get('x-amzn-oidc-data') || process.env.TEST_INTERNAL_ACCESS_TOKEN;
+
+if (internalAccessToken) {
+  const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
+    method: "POST",
+    body: JSON.stringify({internal_access_token: internalAccessToken}),
+    headers: {"Content-Type": "application/json"}
+  });
+  
+  const data = await response.json();
+  
+  if (data.access) {
+    Astro.cookies.set("access", data.access);
+    Astro.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
+    console.log("logged in");
+    return Astro.redirect(redirect || '/');
+  } else {
+    console.log("failed to login", data, internalAccessToken);
+    return Astro.redirect(Routes.AuthError);
+  }
+}
+
+// If no token, redirect to auth error
+return Astro.redirect(Routes.AuthError);
 ---
 <Layout>
 	<Section>

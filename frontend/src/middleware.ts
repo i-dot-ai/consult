@@ -18,7 +18,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     console.log("user not signed in");
   }
 
-  const backendUrl = getBackendUrl();
   const accessToken = context.cookies.get("access")?.value;
   const url = context.url;
 
@@ -37,24 +36,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       protectedRoute.test(url.pathname) &&
       !context.cookies.get("access")?.value
     ) {
-      const internalAccessToken = context.request.headers.get('x-amzn-oidc-data') || process.env.TEST_INTERNAL_ACCESS_TOKEN;
-
-      const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
-        method: "POST",
-        body: JSON.stringify({internal_access_token: internalAccessToken}),
-        headers: {"Content-Type": "application/json"}
-      });
-      response.json().then(data => {
-        if (data.access) {
-          context.cookies.set("access", data.access);
-          context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
-          console.log("logged in");
-          return context.redirect(`${Routes.SignIn}?redirect=${encodeURIComponent(context.url.pathname)}`);
-        } else {
-          console.log("failed to login", data, internalAccessToken);
-          context.redirect(Routes.AuthError);
-        }
-      });
+      return context.redirect(Routes.SignIn);
     }
   }
 
@@ -64,6 +46,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
   }
 
+  const backendUrl = getBackendUrl(url.hostname);
   const fullBackendUrl = path.join(backendUrl, url.pathname) + url.search;
 
   // skip as new pages are moved to astro
@@ -75,8 +58,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/privacy[/]?$/,
     /^\/sign-in[/]?$/,
     /^\/sign-out[/]?$/,
-    /^\/auth-error[/]?$/,
-    /^\/api\/validate-token[/]?$/,
     /^\/magic-link\/[A-Za-z0-9-]*[/]?$/,
     /^\/api\/astro\/.*/,
     /^\/api\/health[/]?$/,
@@ -95,6 +76,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/design.*/,
     /^\/stories.*/,
     /^\/_astro.*/,
+    /^\/auth-error[/]?$/,
+    /^\/api\/validate-token[/]?$/,
   ];
 
   for (const skipPattern of toSkip) {
