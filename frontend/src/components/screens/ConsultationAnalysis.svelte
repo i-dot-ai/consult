@@ -15,6 +15,7 @@
     type DemoOptionsResponse,
     type DemoOptionsResponseItem,
     type QuestionMultiAnswer,
+    type QuestionsResponse,
   } from "../../global/types";
   import { getPercentage } from "../../global/utils";
   import { createFetchStore } from "../../global/stores";
@@ -34,17 +35,17 @@
 
   let { consultationId = "" }: Props = $props();
 
-  const consultationStore = createFetchStore();
-  const questionsStore = createFetchStore();
-  const demoOptionsStore = createFetchStore();
+  const consultationStore = createFetchStore<ConsultationResponse>();
+  const questionsStore = createFetchStore<QuestionsResponse>();
+  const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
 
   let dataRequested: boolean = $state(false);
 
-  let totalResponses = $derived(
+  let totalResponses: number = $derived(
     $questionsStore.data?.results?.reduce(
       (acc, question) => acc + (question?.total_responses || 0),
       0,
-    ),
+    ) || 0,
   );
 
   let demoCategories = $derived([
@@ -116,7 +117,7 @@
 
 {#if !dataRequested || $questionsStore.isLoading}
   <LoadingMessage message="Loading Questions..." />
-{:else if chartQuestions?.length > 0}
+{:else if chartQuestions && chartQuestions?.length > 0}
   <section>
     <Panel>
       <TitleRow

@@ -16,6 +16,7 @@
   import type {
     Consultation,
     DemoOptionsResponse,
+    QuestionsResponse,
   } from "../../global/types.ts";
   import {
     getApiQuestionsUrl,
@@ -34,8 +35,8 @@
   let searchValue: string = $state("");
   let dataRequested: boolean = $state(false);
 
-  const questionsStore = createFetchStore();
-  const demoOptionsStore = createFetchStore();
+  const questionsStore = createFetchStore<QuestionsResponse>();
+  const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
 
   onMount(() => {
     $questionsStore.fetch(getApiQuestionsUrl(consultationId));
