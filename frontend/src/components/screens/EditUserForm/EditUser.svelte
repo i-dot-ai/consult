@@ -2,6 +2,7 @@
   import { onMount } from "svelte";
 
   import { createFetchStore } from "../../../global/stores.ts";
+  import type { User } from "../../../global/types.ts";
 
   import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
   import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
@@ -10,11 +11,14 @@
   export interface Props {
     userId: string;
   }
+  interface UserUpdateResponse {
+    is_staff: boolean[];
+  }
 
   let { userId }: Props = $props();
 
-  const userStore = createFetchStore();
-  const userUpdateStore = createFetchStore();
+  const userStore = createFetchStore<User>();
+  const userUpdateStore = createFetchStore<UserUpdateResponse>();
 
   let dataRequested: boolean = $state(false);
 
