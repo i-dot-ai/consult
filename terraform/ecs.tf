@@ -25,6 +25,7 @@ locals {
     # need to duplicate this because Astro's import.meta.env only exposes environment variables that start with PUBLIC_.
     "PUBLIC_BACKEND_URL"                   = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
     "LLM_GATEWAY_URL"                      = "https://llm-gateway.i.ai.gov.uk/",
+    "INTERNAL_ACCESS_CLIENT_ID"     = aws_ssm_parameter.oidc_secrets["client_id"].value,
     "PUBLIC_INTERNAL_ACCESS_CLIENT_ID"     = aws_ssm_parameter.oidc_secrets["client_id"].value,
   }
 

@@ -25,6 +25,24 @@ export const getBackendUrl = (): string => {
   );
 };
 
+
+export const getClientId = (): string => {
+  // Try runtime environment variable first (for server-side)
+  if (typeof process !== "undefined" && process.env?.INTERNAL_ACCESS_CLIENT_ID) {
+    return process.env.INTERNAL_ACCESS_CLIENT_ID;
+  }
+
+  // Fall back to build-time public env var (for client-side)
+  const client_id = import.meta.env.PUBLIC_INTERNAL_ACCESS_CLIENT_ID;
+  if (client_id) {
+    return client_id;
+  }
+
+  throw new Error(
+    "PUBLIC_INTERNAL_ACCESS_CLIENT_ID environment variable is not set. This is required for the application to function.",
+  );
+};
+
 export const applyHighlight = (
   fullText: string,
   matchedText: string,
