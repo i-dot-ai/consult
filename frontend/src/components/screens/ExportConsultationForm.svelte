@@ -77,7 +77,7 @@
         errors = {};
         selectedQuestions = [];
         s3Key = "";
-        window.location.href = "/support/consultations/";
+        window.location.href = Routes.SupportConsultations;
       } catch (err: any) {
         errors["general"] = err.message;
       } finally {

@@ -6,21 +6,22 @@ import Title from "../../../../components/Title.svelte";
 import ExportConsultationForm from "../../../../components/screens/ExportConsultationForm.svelte";
 import { fetchBackendApi } from "../../../../global/api";
 import type { ConsultationResponse, Question } from "../../../../global/types";
+import { getApiConsultationUrl, getApiQuestionsUrl, Routes } from "../../../../global/routes";
 
 const { consultationId } = Astro.params;
 
 if (!consultationId) {
-  return Astro.redirect("/support/consultations");
+  return Astro.redirect(Routes.SupportConsultations);
 }
 
 let consultation = await fetchBackendApi<ConsultationResponse>(
   Astro, 
-  `/api/consultations/${consultationId}/`
+  getApiConsultationUrl(consultationId)
 );
 
 let questions = (await fetchBackendApi<{ results: Question[]}>(
-  Astro, 
-  `/api/consultations/${consultationId}/questions/`
+  Astro,
+  getApiQuestionsUrl(consultationId)
 )).results;
 
 const env = process.env?.ENVIRONMENT
