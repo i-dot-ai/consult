@@ -22,7 +22,8 @@
     type SelectedThemesDeleteResponse,
     type GeneratedThemesResponse,
     type Question,
-    type SelectedThemesResponse
+    type SelectedThemesResponse,
+    type GeneratedTheme,
   } from "../../global/types";
 
   import Panel from "../dashboard/Panel/Panel.svelte";
@@ -205,7 +206,7 @@
     }
   };
 
-  const handleSelectGeneratedTheme = async (newTheme) => {
+  const handleSelectGeneratedTheme = async (newTheme: GeneratedTheme) => {
     themesBeingSelected = [...themesBeingSelected, newTheme.id];
 
     await $generatedThemesSelectStore.fetch(
