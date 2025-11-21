@@ -14,6 +14,7 @@
     getRespondentDetailUrl,
   } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
+  import type { AnswersResponse, QuestionsResponse, Respondent, RespondentsResponse } from "../../global/types.ts";
 
   import Alert from "../Alert.svelte";
   import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
@@ -26,14 +27,6 @@
   import RespondentAnswer from "../dashboard/RespondentAnswer/RespondentAnswer.svelte";
 
   const FLY_ANIMATION_DELAY = 100;
-
-  interface Respondent {
-    id: string;
-    consultation: string;
-    themefinder_id: number;
-    demographics: any[];
-    name?: any;
-  }
 
   interface Props {
     consultationId: string;
@@ -49,11 +42,11 @@
     themefinderId = 1,
   }: Props = $props();
 
-  const respondentsStore = createFetchStore();
-  const respondentStore = createFetchStore();
-  const consultationQuestionsStore = createFetchStore();
-  const questionsStore = createFetchStore();
-  const answersStore = createFetchStore();
+  const respondentsStore = createFetchStore<RespondentsResponse>();
+  const respondentStore = createFetchStore<Respondent>();
+  const consultationQuestionsStore = createFetchStore<QuestionsResponse>();
+  const questionsStore = createFetchStore<QuestionsResponse>();
+  const answersStore = createFetchStore<AnswersResponse>();
 
   let dataRequested: boolean = $state(false);
 
@@ -83,13 +76,13 @@
   let prevRespondent = $derived(
     $respondentsStore.data?.results?.find(
       (respondent: Respondent) =>
-        respondent?.themefinder_id === currRespondent?.themefinder_id - 1,
+        respondent?.themefinder_id === (currRespondent?.themefinder_id || 0) - 1,
     ) ?? null,
   );
   let nextRespondent = $derived(
     $respondentsStore.data?.results?.find(
       (respondent: Respondent) =>
-        respondent?.themefinder_id === currRespondent?.themefinder_id + 1,
+        respondent?.themefinder_id === (currRespondent?.themefinder_id || 0) + 1,
     ) ?? null,
   );
 </script>
@@ -106,7 +99,7 @@
       disabled={!Boolean(prevRespondent)}
       handleClick={(e) =>
         (location.href =
-          getRespondentDetailUrl(consultationId, prevRespondent.id) +
+          getRespondentDetailUrl(consultationId, prevRespondent?.id || "") +
           `?themefinder_id=${themefinderId - 1}&question_id=${questionId}`)}
     >
       <div class="rotate-180">
@@ -123,7 +116,7 @@
       disabled={!Boolean(nextRespondent)}
       handleClick={(e) =>
         (location.href =
-          getRespondentDetailUrl(consultationId, nextRespondent.id) +
+          getRespondentDetailUrl(consultationId, nextRespondent?.id || "") +
           `?themefinder_id=${themefinderId + 1}&question_id=${questionId}`)}
     >
       <span class="ml-2 my-[0.1rem]">Next Respondent</span>
@@ -138,7 +131,7 @@
     <div class="col-span-12 md:col-span-3 h-max md:sticky md:top-4" in:slide>
       <svelte:boundary>
         <RespondentSidebar
-          demoData={currRespondent?.demographics}
+          demoData={currRespondent?.demographics || []}
           stakeholderName={currRespondent?.name}
           questionsAnswered={$questionsStore.data?.results.length ?? 0}
           totalQuestions={$consultationQuestionsStore.data?.results?.length ?? 0}
@@ -192,11 +185,11 @@
                 <RespondentAnswer
                   {consultationId}
                   questionId={answer.question_id}
-                  questionTitle={answerQuestion?.question_text}
-                  questionNumber={answerQuestion?.number}
+                  questionTitle={answerQuestion?.question_text || ""}
+                  questionNumber={answerQuestion?.number || 0}
                   answerText={answer.free_text_answer_text}
                   multiChoice={answer.multiple_choice_answer}
-                  themes={answer.themes?.map((theme) => theme.name)}
+                  themes={answer.themes?.map((theme) => theme.name) || []}
                   evidenceRich={answer.evidenceRich}
                   delay={FLY_ANIMATION_DELAY * i}
                 />
