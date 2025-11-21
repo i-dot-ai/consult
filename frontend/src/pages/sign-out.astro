@@ -12,8 +12,13 @@ import Title from '../components/Title.svelte';
     })
 })
 
-const clinet_id = import.meta.env.PUBLIC_INETENAL_ACCESS_CLIENT_ID;
-const sign_out_url = `https://sso.service.security.gov.uk/sign-out?from_app=${clinet_id}`;
+const client_id = import.meta.env.PUBLIC_INTERNAL_ACCESS_CLIENT_ID;
+if (!client_id) {
+    throw new Error(
+    "PUBLIC_INTERNAL_ACCESS_CLIENT_ID environment variable is not set. This is required for the application to function.",
+  );
+}
+const sign_out_url = `https://sso.service.security.gov.uk/sign-out?from_app=${client_id}`;
 return Astro.redirect(sign_out_url);
 ---
 <Layout>
