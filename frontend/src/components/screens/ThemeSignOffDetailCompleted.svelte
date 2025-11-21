@@ -12,6 +12,7 @@
     getThemeSignOffUrl,
     Routes,
   } from "../../global/routes";
+  import type { Question, SelectedThemesResponse } from "../../global/types";
 
   import Panel from "../dashboard/Panel/Panel.svelte";
   import TitleRow from "../dashboard/TitleRow.svelte";
@@ -33,8 +34,8 @@
 
   let { questionId = "", consultationId = "" }: Props = $props();
 
-  const selectedThemesStore = createFetchStore();
-  const questionStore = createFetchStore();
+  const selectedThemesStore = createFetchStore<SelectedThemesResponse>();
+  const questionStore = createFetchStore<Question>();
   let dataRequested: boolean = $state(false);
 
   onMount(() => {
