@@ -23,11 +23,11 @@ def test_validate_token_pass(client, consultation_user):
             403,
             {"detail": "authentication failed"},
         ),
-        (
-            {"internal_access_token": jwt.encode({"email": "some.one@example.com"}, "secret")},
-            403,
-            {"detail": "authentication failed, user not registered"},
-        ),
+        # (
+        #     {"internal_access_token": jwt.encode({"email": "some.one@example.com"}, "secret")},
+        #     403,
+        #     {"detail": "authentication failed, user not registered"},
+        # ),
     ],
 )
 def test_validate_token_fail(client, consultation_user, data, status_code, error):

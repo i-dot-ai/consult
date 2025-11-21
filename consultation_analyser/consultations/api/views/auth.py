@@ -39,11 +39,11 @@ def validate_token(request):
         else:
             email = jwt.decode(internal_access_token, options={"verify_signature": False})["email"]
 
-        user = User.objects.get(email=email)
-    except User.DoesNotExist:
-        return JsonResponse(
-            data={"detail": "authentication failed, user not registered"}, status=403
-        )
+        user, _ = User.objects.get_or_create(email=email)
+    # except User.DoesNotExist:
+    #     return JsonResponse(
+    #         data={"detail": "authentication failed, user not registered"}, status=403
+    #     )
     except Exception as ex:
         logger.error("error authenticating request {error}", error=", ".join(map(str, ex.args)))
         return JsonResponse(data={"detail": "authentication failed"}, status=403)
