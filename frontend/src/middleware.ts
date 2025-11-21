@@ -16,6 +16,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/how-it-works[/]?$/,
     /^\/privacy[/]?$/,
     /^\/api\/validate-token[/]?$/,
+    /^\/sign-in[/]?$/,
     /^\/sign-out[/]?$/,
     /^\/api\/astro\/.*/,
     /^\/api\/health[/]?$/,
