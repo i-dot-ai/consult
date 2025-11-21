@@ -12,11 +12,12 @@
     Routes,
   } from "../../global/routes.ts";
   import { createFetchStore } from "../../global/stores.ts";
-  import { type Question } from "../../global/types.ts";
+  import { type ConsultationResponse, type Question, type QuestionsResponse } from "../../global/types.ts";
 
   import Tag from "../Tag/Tag.svelte";
   import Modal from "../Modal/Modal.svelte";
   import Alert from "../Alert.svelte";
+  import LoadingIndicator from "../LoadingIndicator/LoadingIndicator.svelte";
   import OnboardingTour from "../OnboardingTour/OnboardingTour.svelte";
   import Button from "../inputs/Button/Button.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
@@ -44,50 +45,20 @@
 
   let searchValue: string = $state("");
   let isConfirmModalOpen: boolean = $state(false);
+  let dataRequested: boolean = $state(false);
 
-  const {
-    loading: isQuestionsLoading,
-    error: questionsError,
-    load: loadQuestions,
-    data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
-
-  const {
-    loading: isConsultationLoading,
-    error: loadConsultationError,
-    load: loadConsultation,
-    data: consultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
-
-  const {
-    loading: isConsultationUpdating,
-    error: updateConsultationError,
-    load: updateConsultation,
-    data: updateConsultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
+  const questionsStore = createFetchStore<QuestionsResponse>();
+  const consultationStore = createFetchStore<ConsultationResponse>();
+  const consultationUpdateStore = createFetchStore();
 
   onMount(async () => {
-    loadConsultation(getApiConsultationUrl(consultationId));
-    loadQuestions(getApiQuestionsUrl(consultationId));
+    $consultationStore.fetch(getApiConsultationUrl(consultationId));
+    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
+    dataRequested = true;
   });
 
   let displayQuestions = $derived(
-    $questionsData?.results?.filter((question) =>
+    $questionsStore.data?.results?.filter((question) =>
       `Q${question.number}: ${question.question_text}`
         .toLocaleLowerCase()
         .includes(searchValue.toLocaleLowerCase()),
@@ -95,15 +66,15 @@
   );
 
   let questionsForSignOff = $derived(
-    $questionsData?.results?.filter(
+    $questionsStore.data?.results?.filter(
       (question: Question) => question.has_free_text,
     ),
   );
 
   let isAllQuestionsSignedOff: boolean = $derived(
-    questionsForSignOff?.every(
+    Boolean(questionsForSignOff?.every(
       (question: Question) => question.theme_status === "confirmed",
-    ),
+    )),
   );
 </script>
 
@@ -162,7 +133,7 @@
               {@render themeStage(
                 "Theme Sign Off",
                 CheckCircle,
-                $consultationData?.stage === "theme_sign_off"
+                $consultationStore.data?.stage === "theme_sign_off"
                   ? "current"
                   : "done",
               )}
@@ -171,9 +142,9 @@
               {@render themeStage(
                 "AI Theme Mapping",
                 WandStars,
-                $consultationData?.stage === "theme_mapping"
+                $consultationStore.data?.stage === "theme_mapping"
                   ? "current"
-                  : $consultationData?.stage === "analysis"
+                  : $consultationStore.data?.stage === "analysis"
                     ? "done"
                     : "todo",
               )}
@@ -182,7 +153,7 @@
               {@render themeStage(
                 "Analysis Dashboard",
                 Finance,
-                $consultationData?.stage === "analysis" ? "current" : "todo",
+                $consultationStore.data?.stage === "analysis" ? "current" : "todo",
               )}
             </li>
           </ol>
@@ -200,7 +171,7 @@
               phase where responses will be mapped to your selected themes.
             </p>
 
-            {#if $consultationData?.stage !== "theme_mapping" && $consultationData?.stage !== "analysis"}
+            {#if $consultationStore.data?.stage !== "theme_mapping" && $consultationStore.data?.stage !== "analysis"}
               <Button
                 variant="approve"
                 size="sm"
@@ -233,7 +204,7 @@
         open={isConfirmModalOpen}
         setOpen={(newOpen: boolean) => (isConfirmModalOpen = newOpen)}
         handleConfirm={async () => {
-          await updateConsultation(
+          await $consultationUpdateStore.fetch(
             getApiConsultationUrl(consultationId),
             "PATCH",
             {
@@ -241,7 +212,7 @@
             },
           );
 
-          if (!$updateConsultationError) {
+          if (!$consultationUpdateStore.error) {
             isConfirmModalOpen = false;
             location.href = location.href;
           }
@@ -292,10 +263,10 @@
           </div>
         </a>
 
-        {#if $updateConsultationError}
+        {#if $consultationUpdateStore.error}
           <div class="mt-2 mb-4">
             <Alert>
-              <span class="text-sm">{$updateConsultationError}</span>
+              <span class="text-sm">{$consultationUpdateStore.error}</span>
             </Alert>
           </div>
         {/if}
@@ -324,16 +295,19 @@
         <Help slot="icon" />
 
         <p slot="aside">
-          {$questionsData?.results?.length || 0} questions
+          {$questionsStore.data?.results?.length || 0} questions
         </p>
       </TitleRow>
     </div>
 
     <Panel bg={true} border={true}>
-      {#if $isQuestionsLoading}
-        <p transition:slide>Loading questions...</p>
-      {:else if $questionsError}
-        <p transition:slide>{$questionsError}</p>
+      {#if !dataRequested || $questionsStore.isLoading}
+        <div transition:slide class="my-8">
+          <LoadingIndicator size="5rem" />
+          <p class="text-center text-neutral-500">Loading questions...</p>
+        </div>
+      {:else if $questionsStore.error}
+        <p transition:slide>{$questionsStore.error}</p>
       {:else}
         <div transition:slide>
           <TextInput
@@ -347,7 +321,7 @@
           />
 
           <div class="mb-4">
-            {#if !displayQuestions?.length && !$isQuestionsLoading}
+            {#if !displayQuestions?.length && !$questionsStore.isLoading}
               <NotFoundMessage
                 variant="archive"
                 body="No questions found matching your search."
@@ -360,7 +334,7 @@
                   highlightText={searchValue}
                   clickable={question.has_free_text}
                   disabled={!question.has_free_text}
-                  url={getThemeSignOffDetailUrl(consultationId, question.id)}
+                  url={getThemeSignOffDetailUrl(consultationId, question.id || "")}
                   subtext={!question.has_free_text
                     ? "No free text responses for this question = no themes to sign off. Multiple choice data will be shown in analysis dashboard."
                     : undefined}

@@ -4,6 +4,7 @@
 
   import Title from "../Title.svelte";
   import Link from "../Link.svelte";
+  import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
 
   import type { Consultation } from "../../global/types.ts";
   import {
@@ -36,7 +37,9 @@
 
 <section class="mt-4">
   {#if loading}
-    <p transition:slide>Loading consultations...</p>
+    <p transition:slide>
+      <LoadingMessage message="Loading consultations..." />
+    </p>
   {:else}
     <ul>
       {#each consultations as consultation}
