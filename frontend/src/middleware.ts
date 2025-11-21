@@ -59,6 +59,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         context.cookies.set("access", data.access);
         context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
         console.log("logged in");
+        return context.redirect(`${Routes.SignIn}?redirect=${encodeURIComponent(context.url.pathname)}`);
       } else {
         console.log("failed to login", data, internalAccessToken);
         context.redirect(Routes.AuthError);
