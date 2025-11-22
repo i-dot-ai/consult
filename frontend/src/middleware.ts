@@ -76,7 +76,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/design.*/,
     /^\/stories.*/,
     /^\/_astro.*/,
-    /^\/auth-error[/]?$/,
     /^\/api\/validate-token[/]?$/,
   ];
 
@@ -144,7 +143,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
     if (response.status === 401) {
       console.log("401 error", accessToken, response.json());
-      return context.redirect(Routes.AuthError);
+      return context.redirect(Routes.SignIn);
     }
 
     if (response.status === 304) {

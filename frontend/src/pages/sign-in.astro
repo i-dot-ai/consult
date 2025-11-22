@@ -3,6 +3,7 @@ import path from 'path';
 import Layout from '../layouts/Layout.astro';
 import Section from '../components/Section/Section.svelte';
 import Title from '../components/Title.svelte';
+import Link from '../components/Link.svelte';
 import { Routes } from '../global/routes';
 import { getBackendUrl } from '../global/utils';
 
@@ -10,6 +11,8 @@ const redirect = Astro.url.searchParams.get('redirect') || Astro.params.redirect
 const backendUrl = getBackendUrl();
 
 const internalAccessToken = Astro.request.headers.get('x-amzn-oidc-data') || process.env.TEST_INTERNAL_ACCESS_TOKEN;
+
+let title = "You are signed-out";
 
 if (internalAccessToken) {
   const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
@@ -23,23 +26,15 @@ if (internalAccessToken) {
   if (data.access) {
     Astro.cookies.set("access", data.access);
     Astro.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
-    console.log("logged in");
-    return Astro.redirect(redirect || '/');
-  } else {
-    console.log("failed to login", data, internalAccessToken);
-    return Astro.redirect(Routes.AuthError);
+    title = "You are signed in"
   }
 }
 
-// If no token, redirect to auth error
-return Astro.redirect(Routes.AuthError);
+title = "Error, you do not have access to Consult"
 ---
 <Layout>
 	<Section>
-		<Title level={1} text="Signed out" />
-
-        <p class="my-4 text-md text-gray-500">
-            You are being signed in to Consult
-        </p>
+		<Title level={1} text={title} />
+      <Link href={redirect}>Continue</Link>
 	</Section>
 </Layout>
