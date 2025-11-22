@@ -51,6 +51,7 @@ export const createFetchStore = (mockFetch?: Function) => {
   const data: Writable<any> = writable(null);
   const loading: Writable<boolean> = writable(true);
   const error: Writable<string> = writable("");
+  const status: Writable<number> = writable();
 
   const DEBOUNCE_DELAY = 500;
   let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
@@ -97,8 +98,16 @@ export const createFetchStore = (mockFetch?: Function) => {
               method: method,
               body: body ? JSON.stringify(body) : undefined,
             });
-            const parsedData = await response.json();
-            data.set(parsedData);
+
+            // Avoid error if no body is returned
+            // equivalent to .json()
+            const textBody = await response.text();
+            if (textBody) {
+              const parsedData = JSON.parse(textBody);
+              data.set(parsedData);
+            }
+
+            status.set(response.status);
             if (!response.ok) {
               throw new Error(`Fetch Error: ${response.statusText}`);
             }
@@ -118,5 +127,5 @@ export const createFetchStore = (mockFetch?: Function) => {
     return prevPromise;
   };
 
-  return { data, loading, error, load };
+  return { data, loading, error, status, load };
 };

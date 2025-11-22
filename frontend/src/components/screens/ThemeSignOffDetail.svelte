@@ -23,6 +23,7 @@
   import MaterialIcon from "../MaterialIcon.svelte";
   import Price from "../svg/material/Price.svelte";
   import ThemeForm from "../theme-sign-off/ThemeForm/ThemeForm.svelte";
+  import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
   import SelectedThemeCard from "../theme-sign-off/SelectedThemeCard/SelectedThemeCard.svelte";
   import GeneratedThemeCard from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCard.svelte";
   import CheckCircle from "../svg/material/CheckCircle.svelte";
@@ -91,6 +92,14 @@
   } = createFetchStore();
 
   const {
+    load: removeSelectedTheme,
+    loading: isRemovingSelectedTheme,
+    data: removeSelectedThemeData,
+    error: removeSelectedThemeError,
+    status: removeSelectedThemeStatus,
+  } = createFetchStore();
+
+  const {
     load: selectGeneratedTheme,
     loading: isSelectingGeneratedTheme,
     data: selectGeneratedThemeData,
@@ -140,37 +149,35 @@
       (theme) => theme.id === themeId,
     );
 
-    try {
-      const response = await fetch(
-        getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            "If-Match": selectedTheme.version,
-          },
-        },
-      );
+    await removeSelectedTheme(
+      getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
+      "DELETE",
+      undefined,
+      {
+        "Content-Type": "application/json",
+        "If-Match": selectedTheme.version,
+      },
+    );
 
-      if (response.ok) {
-        loadSelectedThemes(
-          getApiGetSelectedThemesUrl(consultationId, questionId),
-        );
-        loadGeneratedThemes(
-          getApiGetGeneratedThemesUrl(consultationId, questionId),
-        );
-      } else if (response.status === 412) {
-        const { last_modified_by, latest_version } = await response.json();
-        errorData = {
-          type: "remove-conflict",
-          lastModifiedBy: last_modified_by.email,
-          latestVersion: latest_version,
-        };
-      } else {
-        throw new Error(`Remove theme failed: ${response.statusText}`);
-      }
-    } catch (err: any) {
+    if (!$removeSelectedThemeError || $removeSelectedThemeStatus === 404) {
+      // No action or error needed if status 404 (theme already deselected)
+
+      loadSelectedThemes(
+        getApiGetSelectedThemesUrl(consultationId, questionId),
+      );
+      loadGeneratedThemes(
+        getApiGetGeneratedThemesUrl(consultationId, questionId),
+      );
+    } else if ($removeSelectedThemeStatus === 412) {
+      const { last_modified_by, latest_version } = $removeSelectedThemeData;
+      errorData = {
+        type: "remove-conflict",
+        lastModifiedBy: last_modified_by.email,
+        latestVersion: latest_version,
+      };
+    } else {
       errorData = { type: "unexpected" };
+      console.error($removeSelectedThemeError);
     }
   };
 
@@ -307,6 +314,15 @@
   </div>
 </TitleRow>
 
+<section class="my-8">
+  <QuestionCard
+    skeleton={$isQuestionLoading}
+    {consultationId}
+    question={$questionData || {}}
+    clickable={false}
+  />
+</section>
+
 <svelte:boundary>
   <section
     class={clsx([
@@ -316,7 +332,7 @@
       "bg-pink-50/25",
       "rounded-xl",
       "border",
-      "border-pink-50",
+      "border-pink-100",
     ])}
   >
     <div id="onboarding-steps-2-and-3" class="mb-4">
@@ -509,7 +525,7 @@
               <h3>AI Generated Themes</h3>
 
               <Tag variant="success">
-                {$generatedThemesData?.results.length} available
+                {flattenArray($generatedThemesData?.results || []).length} available
               </Tag>
             </div>
 
