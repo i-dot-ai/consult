@@ -4,6 +4,7 @@ from django.contrib import admin, messages
 from django_rq import get_queue
 from simple_history.admin import SimpleHistoryAdmin
 
+from consultation_analyser.authentication.models import User
 from consultation_analyser.consultations.dummy_data import create_dummy_consultation_from_yaml_job
 from consultation_analyser.consultations.models import (
     CandidateTheme,
@@ -177,6 +178,11 @@ class CandidateThemeAdmin(admin.ModelAdmin):
     pass
 
 
+class UserAdmin(admin.ModelAdmin):
+    pass
+
+
+admin.site.register(User, UserAdmin)
 admin.site.register(CandidateTheme, CandidateThemeAdmin)
 admin.site.register(CrossCuttingTheme, CrossCuttingThemeAdmin)
 admin.site.register(Response, ResponseAdmin)

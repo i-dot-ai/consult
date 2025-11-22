@@ -5,7 +5,6 @@ import Footer from "../components/Footer/Footer.svelte";
 import { fetchBackendApi } from "../global/api";
 
 let isStaff:Boolean = false
-let	isSignedIn:Boolean = false
 
 try {
 	const data = await fetchBackendApi<{ is_staff: Boolean}>(Astro, "/api/user/");
@@ -26,7 +25,7 @@ try {
 	</head>
 	<body>
 		<div class="flex flex-col h-full max-w-screen-3xl mx-auto">
-			<Header client:load isSignedIn={isSignedIn} isStaff={isStaff}/>
+			<Header client:load isStaff={isStaff}/>
 
 			<main class="grow">
 				<slot />

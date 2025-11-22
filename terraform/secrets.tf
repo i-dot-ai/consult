@@ -49,6 +49,34 @@ locals {
       value = data.aws_ssm_parameter.litellm_api_key.value
     }
   ]
+
+  # These settings are used by the platform team to configure authentication into the application.
+  oidc_secrets = [
+    {
+      name  = "client_id"
+      value = "placeholder" # Update value in SSM - Do not hardcode
+    },
+    {
+      name  = "client_secret"
+      value = "placeholder" # Update value in SSM - Do not hardcode
+    },
+  ]
+}
+
+resource "aws_ssm_parameter" "oidc_secrets" {
+  for_each = { for os in local.oidc_secrets : os.name => os }
+
+  type   = "SecureString"
+  key_id = data.terraform_remote_state.platform.outputs.kms_key_arn
+
+  name  = "/${local.name}/oidc_secrets/${each.value.name}"
+  value = each.value.value
+
+  lifecycle {
+    ignore_changes = [
+      value,
+    ]
+  }
 }
 
 resource "aws_ssm_parameter" "env_secrets" {

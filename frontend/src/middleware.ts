@@ -76,6 +76,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/design.*/,
     /^\/stories.*/,
     /^\/_astro.*/,
+    /^\/api\/validate-token[/]?$/,
   ];
 
   for (const skipPattern of toSkip) {
@@ -141,7 +142,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     });
 
     if (response.status === 401) {
-      return context.redirect("/sign-out");
+      console.log("401 error", accessToken, response.json());
+      return context.redirect(Routes.SignIn);
     }
 
     if (response.status === 304) {
