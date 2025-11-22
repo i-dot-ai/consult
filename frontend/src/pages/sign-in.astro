@@ -7,7 +7,7 @@ import Link from '../components/Link.svelte';
 import { Routes } from '../global/routes';
 import { getBackendUrl } from '../global/utils';
 
-const redirect = Astro.url.searchParams.get('redirect') || Astro.params.redirect;
+const redirect = Astro.url.searchParams.get('redirect') || Astro.params.redirect || "/";
 const backendUrl = getBackendUrl();
 
 const internalAccessToken = Astro.request.headers.get('x-amzn-oidc-data') || process.env.TEST_INTERNAL_ACCESS_TOKEN;
@@ -30,7 +30,6 @@ if (internalAccessToken) {
   }
 }
 
-title = "Error, you do not have access to Consult"
 ---
 <Layout>
 	<Section>
