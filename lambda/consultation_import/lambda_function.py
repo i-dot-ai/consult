@@ -80,8 +80,8 @@ def lambda_handler(event, context):
             "consultation_analyser.support_console.views.consultations.import_consultation_job",
             consultation_name,
             consultation_code,
-            mapping_date,
             user_id,
+            mapping_date,
         )
 
         logger.info("✅ RQ job enqueued successfully!")

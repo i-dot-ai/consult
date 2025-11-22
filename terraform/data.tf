@@ -158,5 +158,5 @@ data "aws_ssm_parameter" "slack_webhook_url" {
 }
 
 data "aws_ssm_parameter" "litellm_api_key" {
-  name = "/i-dot-ai-${terraform.workspace}-core-llm-gateway/env_secrets/${var.project_name}-api-key"
+  name = "/i-dot-ai-prod-core-llm-gateway/env_secrets/${var.project_name}-api-key"
 }
