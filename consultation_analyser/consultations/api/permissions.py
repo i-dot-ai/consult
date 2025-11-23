@@ -27,6 +27,13 @@ class CanSeeConsultation(permissions.BasePermission):
     """
 
     def has_permission(self, request, view):
+        logger.info(
+            "CanSeeConsultation permission check - user: {email}, view.kwargs: {kwargs}, path: {path}",
+            email=getattr(request.user, "email", "unknown"),
+            kwargs=view.kwargs,
+            path=request.path,
+        )
+
         if not request.user.is_authenticated:
             logger.info("user {email} not authenticated", email=request.user.email)
             return False
@@ -34,12 +41,15 @@ class CanSeeConsultation(permissions.BasePermission):
         # Allow staff/admin users early — they should be able to pass view-level
         # permission checks so that object-level checks (or IsAdminUser) can run.
         if getattr(request.user, "is_staff", False):
-            logger.info("user {email} is not staff", email=request.user.email)
+            logger.info("user {email} is staff", email=request.user.email)
             return True
 
         consultation_pk = view.kwargs.get("consultation_pk") or view.kwargs.get("pk")
+        logger.info("consultation_pk extracted: {pk}", pk=consultation_pk)
+
         if not consultation_pk:
             # No consultation specified so no consultation to restrict access to
+            logger.info("No consultation_pk found, allowing access")
             return True
 
         # Check if user has access to this consultation
@@ -51,4 +61,6 @@ class CanSeeConsultation(permissions.BasePermission):
                 "user {email} doesnt have access to this consultation", email=request.user.email
             )
             return False
+
+        logger.info("user {email} has access to this consultation", email=request.user.email)
         return True
