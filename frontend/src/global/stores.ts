@@ -90,7 +90,10 @@ export const createFetchStore = (mockFetch?: Function) => {
             );
             return;
           } else {
-            const accessToken = document.cookie.match(/access=([^;]+)/)?.[1] || "";
+            const accessToken = document.cookie.match(/access=([^;]+)/)?.[1];
+            if (!accessToken) {
+              throw new Error("no accessToken provided");
+            }
             const response = await fetch(url, {
               headers: {
                 "Content-Type": "application/json",
