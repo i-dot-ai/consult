@@ -13,7 +13,7 @@ class HasDashboardAccess(permissions.BasePermission):
 
     def has_permission(self, request, view):
         if not request.user.is_authenticated:
-            logger.info("user {email} not authenticated", email=request.user.email)
+            logger.info("Anonymous user not authenticated")
             return False
         if not request.user.has_dashboard_access:
             logger.info("user {email} doesnt have dashboard access", email=request.user.email)
@@ -35,7 +35,7 @@ class CanSeeConsultation(permissions.BasePermission):
         )
 
         if not request.user.is_authenticated:
-            logger.info("user {email} not authenticated", email=request.user.email)
+            logger.info("Anonymous user not authenticated")
             return False
 
         # Allow staff/admin users early — they should be able to pass view-level
