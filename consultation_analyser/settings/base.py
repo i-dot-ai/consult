@@ -289,7 +289,7 @@ SIGN_OFF_BATCH_JOB_DEFINITION = env("SIGN_OFF_BATCH_JOB_DEFINITION")
 
 
 # Authentication
-LOGIN_URL = "/sign-in/"
+LOGIN_URL = None
 
 # version info
 GIT_SHA = env("GIT_SHA", default=None)
