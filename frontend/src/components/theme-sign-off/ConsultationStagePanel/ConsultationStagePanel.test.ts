@@ -4,11 +4,7 @@ import { cleanup, render, screen } from "@testing-library/svelte";
 import ConsultationStagePanel from "./ConsultationStagePanel.svelte";
 
 describe("ConsultationStagePanel", () => {
-  const baseConsultation = {
-    id: "test-consultation-id",
-    title: "Test Consultation",
-    created_at: "2024-01-01T00:00:00Z",
-  };
+  const id = "test-consultation-id";
   const onConfirmClickMock = vi.fn();
 
   afterEach(() => cleanup());
@@ -18,7 +14,7 @@ describe("ConsultationStagePanel", () => {
 
     beforeEach(() => {
       const result = render(ConsultationStagePanel, {
-        consultation: { ...baseConsultation, stage: "theme_sign_off" },
+        consultation: { id, stage: "theme_sign_off" },
         questionsCount: 10,
         onConfirmClick: onConfirmClickMock,
       });
@@ -54,7 +50,7 @@ describe("ConsultationStagePanel", () => {
 
     beforeEach(() => {
       const result = render(ConsultationStagePanel, {
-        consultation: { ...baseConsultation, stage: "theme_mapping" },
+        consultation: { id, stage: "theme_mapping" },
         questionsCount: 10,
         onConfirmClick: onConfirmClickMock,
       });
@@ -83,7 +79,7 @@ describe("ConsultationStagePanel", () => {
 
     beforeEach(() => {
       const result = render(ConsultationStagePanel, {
-        consultation: { ...baseConsultation, stage: "analysis" },
+        consultation: { id, stage: "analysis" },
         questionsCount: 10,
         onConfirmClick: onConfirmClickMock,
       });

@@ -1,5 +1,6 @@
 <script lang="ts">
   import clsx from "clsx";
+  import type { Component } from "svelte";
 
   import Button from "../../inputs/Button/Button.svelte";
   import Panel from "../../dashboard/Panel/Panel.svelte";
@@ -11,43 +12,57 @@
   import type { Consultation } from "../../../global/types";
 
   interface Props {
-    consultation: Consultation;
+    consultation: {id: Consultation["id"]; stage: Consultation["stage"]};
     questionsCount: number;
     onConfirmClick: () => void;
   }
 
   let { consultation, questionsCount, onConfirmClick }: Props = $props();
 
+  type Step = {
+    order: number;
+    label: string;
+    icon: Component;
+  }
+
   const STAGES = {
     consultation_overview: {
-      order: 1,
-      stepLabel: "Consultation Overview",
-      stepIcon: CheckCircle,
+      step: {
+        order: 1,
+        label: "Consultation Overview",
+        icon: CheckCircle,
+      }
     },
     theme_sign_off: {
-      order: 2,
-      stepLabel: "Theme Sign Off",
-      stepIcon: CheckCircle,
+      step: {
+        order: 2,
+        label: "Theme Sign Off",
+        icon: CheckCircle,
+      },
       title: "All Questions Signed Off",
       content: themeSignOffContent,
     },
     theme_mapping: {
-      order: 3,
-      stepLabel: "AI Theme Mapping",
-      stepIcon: WandStars,
+      step: {
+        order: 3,
+        label: "AI Theme Mapping",
+        icon: WandStars,
+      },
       title: "AI Mapping in Progress",
       content: themeMappingContent,
     },
     analysis: {
-      order: 4,
-      stepLabel: "Analysis Dashboard",
-      stepIcon: Finance,
+      step: {
+        order: 4,
+        label: "Analysis Dashboard",
+        icon: Finance,
+      },
       title: "AI Mapping Complete",
       content: analysisContent,
     },
   } as const;
 
-  type StageKey = keyof typeof STAGES;
+  let currentConsultationStage = $derived(STAGES[consultation.stage]);
 </script>
 
 {#snippet themeSignOffContent()}
@@ -110,15 +125,15 @@
   </p>
 {/snippet}
 
-{#snippet step(stage: StageKey, currentStage: Consultation["stage"])}
-  {@const label = STAGES[stage].stepLabel}
+{#snippet ConsultationStep(step: Step, currentConsultationStep: Step)}
+  {@const label = step.label}
   {@const status =
-      STAGES[stage].order < STAGES[currentStage].order
+      step.order < currentConsultationStep.order
         ? "done"
-        : STAGES[stage].order === STAGES[currentStage].order
+        : step.order === currentConsultationStep.order
           ? "current"
           : "todo"}
-  {@const Icon = status === "done" ? CheckCircle : STAGES[stage].stepIcon}
+  {@const Icon = status === "done" ? CheckCircle : step.icon}
 
   <div class="flex flex-col items-center min-w-16">
     <div
@@ -159,18 +174,18 @@
       ])}
       aria-label="Consultation progress"
     >
-      {#each Object.keys(STAGES) as stage (stage)}
+      {#each Object.values(STAGES) as {step} (step.label)}
         <li>
-          {@render step(stage as StageKey, consultation.stage)}
+          {@render ConsultationStep(step, currentConsultationStage.step)}
         </li>
       {/each}
     </ol>
 
     <div class="px-0 md:px-16">
       <h2 class="text-secondary text-center">
-        {STAGES[consultation.stage].title}
+        {currentConsultationStage.title}
       </h2>
-      {@render STAGES[consultation.stage].content()}
+      {@render currentConsultationStage.content()}
     </div>
   </div>
 </Panel>
