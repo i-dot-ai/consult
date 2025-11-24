@@ -1,3 +1,5 @@
+import fetchMock from "fetch-mock";
+
 export const getEnv = (url: string): string => {
   if (url.includes("consult-dev.ai.cabinetoffice.gov.uk")) {
     return "dev";
@@ -153,4 +155,31 @@ export const formatTimeDeltaText = (minutes: number): string => {
     unit = "year";
   }
   return `${Math.floor(value)} ${unit}${value > 1 ? "s" : ""}`;
+}
+
+export const createFetchMock = (
+  routes: { matcher: string | RegExp, response: any, options: Object }[] = [],
+  callback: ({ url, options }: { url: string, options: Object }) => void = () => {},
+) => {
+  const fetchMockInstance = fetchMock.createInstance();
+
+  routes.forEach(({ matcher, response, options }) => {
+    fetchMockInstance.route(
+      matcher,
+      (url, options) => {
+        callback({ url, options: options });
+        return response;
+      },
+      options,
+    )
+  })
+
+  return {
+    fetch: fetchMockInstance.fetchHandler,
+    restore: () => {
+      fetchMockInstance.removeRoutes();
+      fetchMockInstance.clearHistory();
+    },
+    callHistory: fetchMockInstance.callHistory
+  }
 }
