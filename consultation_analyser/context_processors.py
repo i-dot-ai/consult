@@ -130,12 +130,6 @@ def app_config(request: HttpRequest):
                     "text": "Get involved",
                     "active": request.path == "/get-involved/",
                 },
-                {
-                    "href": "/sign-in/",
-                    "text": "Sign in",
-                    "active": request.path == "/sign-in/",
-                    "classes": "x-govuk-primary-navigation__item--right",
-                },
             ],
         )
 
