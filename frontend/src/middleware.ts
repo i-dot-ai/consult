@@ -142,8 +142,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     });
 
     if (response.status === 401) {
-      console.log("401 error", accessToken, response.json());
-      return context.redirect(Routes.SignIn);
+      console.log("401 error");
+      return response
     }
 
     if (response.status === 304) {
