@@ -73,6 +73,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/delete[/]?$/,
     /^\/support\/consultations\/import-summary[/]?$/,
     /^\/support\/consultations\/import-consultation[/]?$/,
+    /^\/support\/consultations\/[A-Za-z0-9-]*\/export[/]?$/,
     /^\/design.*/,
     /^\/stories.*/,
     /^\/_astro.*/,
@@ -142,8 +143,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     });
 
     if (response.status === 401) {
-      console.log("401 error", fullBackendUrl, Object.fromEntries(headersToSend.entries()));
-      return response
+      return context.redirect(Routes.SignIn);
     }
 
     if (response.status === 304) {
