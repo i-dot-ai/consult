@@ -113,9 +113,9 @@ class TestCandidateThemeViewSet:
             },
         )
 
-        for _ in range(3):
+        for status_code in 201, 200, 200:
             # we run this three times to check that multiple users can add the
-            # same theme
+            # same theme, on the first pass we expect 201 = created, and 200 thereafter
             response = client.post(
                 url,
                 headers={"Authorization": f"Bearer {consultation_user_token}"},
@@ -131,7 +131,7 @@ class TestCandidateThemeViewSet:
             assert selected_theme.version == 1
             assert selected_theme.last_modified_by == consultation_user
 
-            assert response.status_code == 201
+            assert response.status_code == status_code
             assert response.json() == {
                 "id": str(selected_theme.id),
                 "name": selected_theme.name,
