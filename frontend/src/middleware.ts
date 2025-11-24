@@ -142,7 +142,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     });
 
     if (response.status === 401) {
-      console.log("401 error");
+      console.log("401 error", fullBackendUrl, Object.fromEntries(headersToSend.entries()));
       return response
     }
 
