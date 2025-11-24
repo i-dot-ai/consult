@@ -288,9 +288,6 @@ SIGN_OFF_BATCH_JOB_QUEUE = env("SIGN_OFF_BATCH_JOB_QUEUE")
 SIGN_OFF_BATCH_JOB_DEFINITION = env("SIGN_OFF_BATCH_JOB_DEFINITION")
 
 
-# Authentication
-LOGIN_URL = "/sign-in/"
-
 # version info
 GIT_SHA = env("GIT_SHA", default=None)
 
@@ -337,7 +334,7 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
-        "rest_framework.authentication.SessionAuthentication",
+        # "rest_framework.authentication.SessionAuthentication",
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
