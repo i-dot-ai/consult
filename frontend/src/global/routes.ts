@@ -8,6 +8,7 @@ export enum Routes {
   GetInvolved = "/get-involved",
   SignIn = "/sign-in",
   SignOut = "/sign-out",
+  APIValidateToken = "/api/validate-token/",
   ApiConsultations = "/api/consultations/",
   ApiConsultationFolders = "/api/consultations/folders/",
   ApiConsultationImport = "/api/consultations/import/",
