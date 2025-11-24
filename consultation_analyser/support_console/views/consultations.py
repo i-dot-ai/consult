@@ -1,5 +1,4 @@
 import logging
-from datetime import date
 from uuid import UUID
 
 from django.conf import settings
@@ -16,10 +15,8 @@ from consultation_analyser.consultations.dummy_data import (
     create_dummy_consultation_from_yaml_job,
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
-from consultation_analyser.consultations.models import Consultation
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
-from consultation_analyser.support_console.ingest import export_selected_themes
 
 logger = settings.LOGGER
 
@@ -383,18 +380,20 @@ def themefinder(request: HttpRequest) -> HttpResponse:
     if request.method == "POST":
         consultation_code = request.POST.get("consultation_code")
         consultation_name = request.POST.get("consultation_name")
-        
+
         if consultation_code:
             try:
                 # Send message to SQS
-                ingest.send_job_to_sqs(consultation_code, consultation_name, current_user_id, "THEMEFINDER")
+                ingest.send_job_to_sqs(
+                    consultation_code, consultation_name, current_user_id, "THEMEFINDER"
+                )
                 messages.success(
                     request,
                     format_html(
                         "Themefinder job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
                         consultation_name,
-                        consultation_code
-                    )
+                        consultation_code,
+                    ),
                 )
 
             except Exception as e:
