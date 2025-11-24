@@ -24,7 +24,7 @@ if (internalAccessToken) {
   const data = await response.json();
   
   if (data.access) {
-    Astro.cookies.set("access", data.access);
+    Astro.cookies.set("access", data.access, { path: "/", sameSite: "lax" });
     Astro.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
     title = "You are signed in"
   }
