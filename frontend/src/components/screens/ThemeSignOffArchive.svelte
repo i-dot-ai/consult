@@ -18,7 +18,6 @@
   import Modal from "../Modal/Modal.svelte";
   import Alert from "../Alert.svelte";
   import OnboardingTour from "../OnboardingTour/OnboardingTour.svelte";
-  import Button from "../inputs/Button/Button.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import TitleRow from "../dashboard/TitleRow.svelte";
   import Panel from "../dashboard/Panel/Panel.svelte";
@@ -117,10 +116,10 @@
 <hr class="my-6" />
 
 <svelte:boundary>
-  {#if isAllQuestionsSignedOff}
+  {#if isAllQuestionsSignedOff || $consultationData?.stage === "theme_mapping" || $consultationData?.stage === "analysis"}
     <section in:slide>
       <ConsultationStagePanel
-        consultationStage={$consultationData?.stage}
+        consultation={$consultationData || {}}
         questionsCount={questionsForSignOff?.length || 0}
         onConfirmClick={() => (isConfirmModalOpen = true)}
       />
