@@ -17,8 +17,8 @@ from consultation_analyser.consultations.api.permissions import (
 from consultation_analyser.consultations.api.serializers import (
     DemographicAggregationsSerializer,
     ResponseSerializer,
-    ThemeAggregationsSerializer,
     ResponseThemeInformationSerializer,
+    ThemeAggregationsSerializer,
     ThemeSerializer,
 )
 
