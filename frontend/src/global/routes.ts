@@ -9,6 +9,7 @@ export enum Routes {
   SignIn = "/sign-in",
   SignOut = "/sign-out",
   ApiMagicLink = "/api/magic-link/",
+  ApiResponses = "/api/responses/",
   ApiConsultations = "/api/consultations/",
   ApiConsultationFolders = "/api/consultations/folders/",
   ApiConsultationImport = "/api/consultations/import/",
@@ -79,7 +80,7 @@ export const getApiQuestionUrl = (
   consultationId: string,
   questionId: string,
 ) => {
-  return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}`;
+  return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}/`;
 };
 export const getApiAnswerUrl = (
   consultationId: string,
@@ -162,4 +163,20 @@ export const getApiShowNextResponse = (
   questionId: string,
 ) => {
   return `${Routes.Evaluations}/${consultationId}/questions/${questionId}/show-next`;
+};
+
+export const getApiQuestionResponse = (
+  consultationId: string,
+  questionId: string,
+  responseId: string
+) => {
+  return `${Routes.ApiConsultations}/${consultationId}/responses/${responseId}/`;
+};
+
+export const getThemeInformationResponse = (
+  consultationId: string,
+  questionId: string,
+  responseId: string
+) => {
+  return `${Routes.ApiConsultations}/${consultationId}/responses/${responseId}/themes/`;
 };
