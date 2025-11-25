@@ -116,6 +116,11 @@ class ThemeInformationSerializer(serializers.Serializer):
     themes = serializers.ListField(child=ThemeSerializer())
 
 
+class ResponseThemeInformationSerializer(serializers.Serializer):
+    selected_themes = serializers.ListField(child=ThemeSerializer())
+    all_themes = serializers.ListField(child=ThemeSerializer())
+
+
 class ThemeAggregationsSerializer(serializers.Serializer):
     theme_aggregations = serializers.DictField(child=serializers.IntegerField())
 
@@ -200,9 +205,25 @@ class ResponseAnnotationThemeSerializer(serializers.ModelSerializer):
         fields = ["id", "assigned_by", "name", "description", "key"]
 
 
+class DemographicOptionSerializer(serializers.Serializer):
+    id = serializers.CharField()
+    name = serializers.CharField(source="field_name")
+    value = serializers.JSONField(source="field_value")
+    count = serializers.IntegerField(required=False)
+
+
+class RespondentSerializer(serializers.ModelSerializer):
+    demographics = DemographicOptionSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Respondent
+        fields = ["id", "themefinder_id", "demographics", "name"]
+
+
 class ResponseSerializer(serializers.ModelSerializer):
     identifier = serializers.CharField(source="respondent.themefinder_id", read_only=True)
     respondent_id = serializers.UUIDField(source="respondent.id", read_only=True)
+    respondent = RespondentSerializer(read_only=True)
     free_text_answer_text = serializers.CharField(source="free_text", read_only=True)
     demographic_data = serializers.SerializerMethodField(read_only=True)
     themes = ResponseAnnotationThemeSerializer(
@@ -261,6 +282,7 @@ class ResponseSerializer(serializers.ModelSerializer):
             "id",
             "identifier",
             "respondent_id",
+            "respondent",
             "question_id",
             "free_text_answer_text",
             "demographic_data",
@@ -272,13 +294,6 @@ class ResponseSerializer(serializers.ModelSerializer):
             "is_flagged",
             "is_edited",
         ]
-
-
-class DemographicOptionSerializer(serializers.Serializer):
-    id = serializers.CharField()
-    name = serializers.CharField(source="field_name")
-    value = serializers.JSONField(source="field_value")
-    count = serializers.IntegerField(required=False)
 
 
 class ConsultationFolderSerializer(serializers.Serializer):
@@ -301,9 +316,3 @@ class ConsultationExportSerializer(serializers.Serializer):
     question_ids = serializers.ListSerializer(child=serializers.CharField())
 
 
-class RespondentSerializer(serializers.ModelSerializer):
-    demographics = DemographicOptionSerializer(many=True, read_only=True)
-
-    class Meta:
-        model = Respondent
-        fields = ["id", "themefinder_id", "demographics", "name"]
