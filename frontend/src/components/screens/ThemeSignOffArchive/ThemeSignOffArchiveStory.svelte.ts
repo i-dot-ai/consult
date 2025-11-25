@@ -31,6 +31,16 @@ const mocks = {
       matcher: getApiQuestionsUrl("test-consultation"),
       response: { ...testData, results: [] },
     }]),
+    consultation: createFetchMock([{
+      matcher: getApiConsultationUrl("test-consultation"),
+      response: { stage: "theme_sign_off" },
+    }]),
+    consultationUpdate: createFetchMock(
+      [{
+        matcher: getApiConsultationUrl("test-consultation"),
+        response: testData,
+      }],
+    ),
   },
 
   allSignedOff: {
@@ -50,7 +60,7 @@ const mocks = {
         matcher: getApiConsultationUrl("test-consultation"),
         response: testData,
       }],
-      (args) => alert(`Update Called With: ${args.options.body}`)
+      ({ options }) => alert(`Update Called With: ${options.body}`)
     ),
   },
 }
@@ -71,6 +81,8 @@ export default {
       props: {
         consultationId: "test-consultation",
         questionsFetch: mocks.noQuestions.questions.fetch,
+        consultationFetch: mocks.noQuestions.consultation.fetch,
+        consultationUpdateFetch: mocks.noQuestions.consultationUpdate.fetch,
       },
     },
     {

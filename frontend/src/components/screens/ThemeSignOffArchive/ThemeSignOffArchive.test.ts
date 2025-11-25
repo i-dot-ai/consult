@@ -144,7 +144,7 @@ describe("ThemeSignOffArchive", () => {
         matcher: getApiConsultationUrl("test-consultation"),
         response: { stage: "theme_sign_off" },
       }],
-      (args) => updateConsultationMock(JSON.parse(args.options.body)),
+      ({ options }) => updateConsultationMock(JSON.parse(options.body)),
     );
 
     render(ThemeSignOffArchive, {
