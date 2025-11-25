@@ -1,0 +1,41 @@
+---
+import Layout from "../../../../../../../layouts/Layout.astro";
+import Section from "../../../../../../../components/Section/Section.svelte";
+import Text from '../../../../../../../components/Text/Text.svelte';
+import Title from "../../../../../../../components/Title.svelte";
+import ThemeSelectionForm from "../../../../../../../components/screens/ThemeSelectionForm.svelte";
+import { fetchBackendApi } from "../../../../../../../global/api";
+import type { Question, QuestionResponseResponse, ResponseThemeInformation } from "../../../../../../../global/types";
+import { getApiQuestionResponse, getApiQuestionUrl, getThemeInformationResponse, Routes } from "../../../../../../../global/routes";
+
+const { consultationId, questionId, responseId } = Astro.params;
+
+if (!responseId || !questionId || !consultationId) {
+  return Astro.redirect(Routes.SupportConsultations);
+}
+
+let question = await fetchBackendApi<Question>(
+  Astro, 
+  getApiQuestionUrl(consultationId, questionId)
+);
+
+let response = await fetchBackendApi<QuestionResponseResponse>(
+  Astro, 
+  getApiQuestionResponse(consultationId, questionId, responseId)
+);
+
+let themes = await fetchBackendApi<ResponseThemeInformation>(
+  Astro, 
+  getThemeInformationResponse(consultationId, questionId, responseId)
+);
+---
+
+<Layout>
+  <Section>
+    <Title level={1} text={`Question ${question.number}:`} />
+    <Title level={1} text={question.question_text} />
+    <Text>Response{(response.respondent.themefinder_id || response.respondent.themefinder_id === 0) && ` ${response.respondent.themefinder_id}`}:</Text>
+    <Text>Which questions do you want to download data for?</Text>
+    <ThemeSelectionForm client:load question={question} response={response} themes={themes} />
+  </Section>
+</Layout>
