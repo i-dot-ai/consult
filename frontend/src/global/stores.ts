@@ -75,42 +75,30 @@ export const createFetchStore = (mockFetch?: Function) => {
       debounceTimeout = setTimeout(async () => {
         loading.set(true);
         error.set("");
+
         try {
-          if (mockFetch) {
-            data.set(
-              mockFetch({
-                url: url,
-                headers: {
-                  "Content-Type": "application/json",
-                  ...headers,
-                },
-                method: method,
-                body: body ? JSON.stringify(body) : undefined,
-              }),
-            );
-            return;
-          } else {
-            const response = await fetch(url, {
-              headers: {
-                "Content-Type": "application/json",
-                ...headers,
-              },
-              method: method,
-              body: body ? JSON.stringify(body) : undefined,
-            });
+          const actualFetch = mockFetch || fetch;
 
-            // Avoid error if no body is returned
-            // equivalent to .json()
-            const textBody = await response.text();
-            if (textBody) {
-              const parsedData = JSON.parse(textBody);
-              data.set(parsedData);
-            }
+          const response = await actualFetch(url, {
+            headers: {
+              "Content-Type": "application/json",
+              ...headers,
+            },
+            method: method,
+            body: body ? JSON.stringify(body) : undefined,
+          });
 
-            status.set(response.status);
-            if (!response.ok) {
-              throw new Error(`Fetch Error: ${response.statusText}`);
-            }
+          // Avoid error if no body is returned
+          // equivalent to .json()
+          const textBody = await response.text();
+          if (textBody) {
+            const parsedData = JSON.parse(textBody);
+            data.set(parsedData);
+          }
+
+          status.set(response.status);
+          if (!response.ok) {
+            throw new Error(`Fetch Error: ${response.statusText}`);
           }
         } catch (err: unknown) {
           const message = err instanceof Error ? err.message : "unknown";

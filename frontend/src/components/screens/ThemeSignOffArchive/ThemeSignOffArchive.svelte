@@ -10,37 +10,38 @@
     getApiQuestionsUrl,
     getThemeSignOffDetailUrl,
     Routes,
-  } from "../../global/routes.ts";
-  import { createFetchStore } from "../../global/stores.ts";
-  import { type Question } from "../../global/types.ts";
+  } from "../../../global/routes.ts";
+  import { createFetchStore } from "../../../global/stores.ts";
+  import { type Question } from "../../../global/types.ts";
 
-  import Tag from "../Tag/Tag.svelte";
-  import Modal from "../Modal/Modal.svelte";
-  import Alert from "../Alert.svelte";
-  import OnboardingTour from "../OnboardingTour/OnboardingTour.svelte";
-  import Button from "../inputs/Button/Button.svelte";
-  import TextInput from "../inputs/TextInput/TextInput.svelte";
-  import TitleRow from "../dashboard/TitleRow.svelte";
-  import Panel from "../dashboard/Panel/Panel.svelte";
-  import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
+  import Tag from "../../Tag/Tag.svelte";
+  import Modal from "../../Modal/Modal.svelte";
+  import Alert from "../../Alert.svelte";
+  import OnboardingTour from "../../OnboardingTour/OnboardingTour.svelte";
+  import Button from "../../inputs/Button/Button.svelte";
+  import TextInput from "../../inputs/TextInput/TextInput.svelte";
+  import TitleRow from "../../dashboard/TitleRow.svelte";
+  import Panel from "../../dashboard/Panel/Panel.svelte";
+  import QuestionCard from "../../dashboard/QuestionCard/QuestionCard.svelte";
 
-  import MaterialIcon from "../MaterialIcon.svelte";
-  import Checklist from "../svg/material/Checklist.svelte";
-  import CheckCircle from "../svg/material/CheckCircle.svelte";
-  import Finance from "../svg/material/Finance.svelte";
-  import WandStars from "../svg/material/WandStars.svelte";
-  import Warning from "../svg/material/Warning.svelte";
-  import Headphones from "../svg/material/Headphones.svelte";
-  import Help from "../svg/material/Help.svelte";
-  import Target from "../svg/material/Target.svelte";
-  import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
-  import Price from "../svg/material/Price.svelte";
+  import MaterialIcon from "../../MaterialIcon.svelte";
+  import Checklist from "../../svg/material/Checklist.svelte";
+  import CheckCircle from "../../svg/material/CheckCircle.svelte";
+  import Finance from "../../svg/material/Finance.svelte";
+  import WandStars from "../../svg/material/WandStars.svelte";
+  import Warning from "../../svg/material/Warning.svelte";
+  import Headphones from "../../svg/material/Headphones.svelte";
+  import Help from "../../svg/material/Help.svelte";
+  import Target from "../../svg/material/Target.svelte";
+  import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
+  import Price from "../../svg/material/Price.svelte";
 
   interface Props {
     consultationId: string;
+    mockFetch?: any;
   }
 
-  let { consultationId = "" }: Props = $props();
+  let { consultationId = "", mockFetch }: Props = $props();
 
   let searchValue: string = $state("");
   let isConfirmModalOpen: boolean = $state(false);
@@ -55,7 +56,7 @@
     error: Writable<string>;
     load: Function;
     data: Writable<any>;
-  } = createFetchStore();
+  } = createFetchStore(mockFetch);
 
   const {
     loading: isConsultationLoading,

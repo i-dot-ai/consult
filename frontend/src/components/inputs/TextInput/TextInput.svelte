@@ -27,6 +27,7 @@
     {label}
   </label>
   <input
+    data-testid={id}
     class={clsx([
       "w-full",
       "mt-1",

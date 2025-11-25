@@ -62,7 +62,7 @@
     }
 
     const targetEl = document.getElementById(step.id);
-    if (targetEl) {
+    if (targetEl && typeof targetEl.scrollIntoView === "function") {
       const rect = targetEl.getBoundingClientRect();
       targetRect = {
         top: rect.top + window.scrollY - overlayPadding,
@@ -115,9 +115,11 @@
     window.addEventListener("resize", updateTargetRect);
     window.addEventListener("scroll", updateTargetRect);
 
-    new ResizeObserver(updateTargetRect).observe(
-      resizeObserverTarget || document.body,
-    );
+    if (window && window.ResizeObserver) {
+      new ResizeObserver(updateTargetRect).observe(
+        resizeObserverTarget || document.body,
+      );
+    }
   });
 
   onDestroy(() => {

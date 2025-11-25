@@ -158,7 +158,7 @@ export const formatTimeDeltaText = (minutes: number): string => {
 }
 
 export const createFetchMock = (
-  routes: { matcher: string | RegExp, response: any, options: Object }[] = [],
+  routes: { matcher: string | RegExp, response: any, options?: Object }[] = [],
   callback: ({ url, options }: { url: string, options: Object }) => void = () => {},
 ) => {
   const fetchMockInstance = fetchMock.createInstance();
