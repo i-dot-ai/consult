@@ -7,6 +7,8 @@ from consultation_analyser.consultations.api.serializers import (
     ConsultationImportSerializer,
     DemographicAggregationsSerializer,
     QuestionSerializer,
+    RespondentSerializer,
+    ResponseThemeInformationSerializer,
     ThemeAggregationsSerializer,
     ThemeInformationSerializer,
     ThemeSerializer,
@@ -307,3 +309,127 @@ class TestConsultationExportSerializer:
         serializer = ConsultationExportSerializer(data=data)
         assert not serializer.is_valid()
         assert "question_ids" in serializer.errors
+
+
+class TestRespondentSerializer:
+    def test_valid_data(self):
+        """Test respondent serializer with valid data"""
+        data = {
+            "id": uuid4(),
+            "themefinder_id": 12345,
+            "name": "John Doe",
+            "demographics": [
+                {"id": "age_group", "field_name": "age_group", "field_value": "25-34"},
+                {"id": "gender", "field_name": "gender", "field_value": "male"},
+            ]
+        }
+        serializer = RespondentSerializer(data=data)
+        assert serializer.is_valid()
+
+    def test_null_themefinder_id(self):
+        """Test respondent serializer with null themefinder_id"""
+        data = {
+            "id": uuid4(),
+            "themefinder_id": None,
+            "name": "Anonymous User",
+            "demographics": []
+        }
+        serializer = RespondentSerializer(data=data)
+        assert serializer.is_valid()
+
+    def test_missing_required_fields(self):
+        """Test respondent serializer with missing required fields"""
+        data = {
+            "themefinder_id": 12345,
+            "demographics": []
+        }
+        serializer = RespondentSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "id" in serializer.errors
+
+    def test_invalid_id_type(self):
+        """Test respondent serializer with invalid ID type"""
+        data = {
+            "id": "invalid-uuid",
+            "themefinder_id": 12345,
+            "name": "John Doe",
+            "demographics": []
+        }
+        serializer = RespondentSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "id" in serializer.errors
+
+
+class TestResponseThemeInformationSerializer:
+    def test_valid_data(self):
+        """Test response theme information serializer with valid data"""
+        data = {
+            "selected_themes": [
+                {"id": uuid4(), "name": "Theme A", "description": "Description A", "key": "theme_a"}
+            ],
+            "all_themes": [
+                {"id": uuid4(), "name": "Theme A", "description": "Description A", "key": "theme_a"},
+                {"id": uuid4(), "name": "Theme B", "description": "Description B", "key": "theme_b"},
+            ]
+        }
+        serializer = ResponseThemeInformationSerializer(data=data)
+        assert serializer.is_valid()
+        assert serializer.validated_data == data
+
+    def test_empty_themes(self):
+        """Test response theme information serializer with empty themes"""
+        data = {
+            "selected_themes": [],
+            "all_themes": []
+        }
+        serializer = ResponseThemeInformationSerializer(data=data)
+        assert serializer.is_valid()
+        assert serializer.validated_data == data
+
+    def test_no_selected_themes(self):
+        """Test response theme information serializer with no selected themes"""
+        data = {
+            "selected_themes": [],
+            "all_themes": [
+                {"id": uuid4(), "name": "Theme A", "description": "Description A", "key": "theme_a"},
+                {"id": uuid4(), "name": "Theme B", "description": "Description B", "key": "theme_b"},
+            ]
+        }
+        serializer = ResponseThemeInformationSerializer(data=data)
+        assert serializer.is_valid()
+        assert serializer.validated_data == data
+
+    def test_invalid_theme_structure(self):
+        """Test response theme information serializer with invalid theme structure"""
+        data = {
+            "selected_themes": [
+                {"id": "invalid-uuid", "name": "Theme A"}  # Missing description and invalid ID
+            ],
+            "all_themes": [
+                {"name": "Theme B"}  # Missing ID and description
+            ]
+        }
+        serializer = ResponseThemeInformationSerializer(data=data)
+        assert not serializer.is_valid()
+
+    def test_missing_required_fields(self):
+        """Test response theme information serializer with missing required fields"""
+        data = {
+            "selected_themes": []
+            # Missing all_themes
+        }
+        serializer = ResponseThemeInformationSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "all_themes" in serializer.errors
+
+    def test_invalid_field_types(self):
+        """Test response theme information serializer with invalid field types"""
+        data = {
+            "selected_themes": "not a list",
+            "all_themes": [
+                {"id": uuid4(), "name": "Theme A", "description": "Description A"}
+            ]
+        }
+        serializer = ResponseThemeInformationSerializer(data=data)
+        assert not serializer.is_valid()
+        assert "selected_themes" in serializer.errors
