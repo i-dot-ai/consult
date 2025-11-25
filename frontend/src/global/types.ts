@@ -113,7 +113,7 @@ export interface QuestionResponseResponse {
   id: string;
   respondent: Respondent;
   question: Question;
-  free_text: string;
+  free_text_answer_text: string;
   chosen_options: MultiChoiceResponse;
   created_at: string;
   modified_at: string;
