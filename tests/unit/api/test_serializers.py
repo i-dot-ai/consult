@@ -312,44 +312,43 @@ class TestConsultationExportSerializer:
 
 
 class TestRespondentSerializer:
-    def test_valid_data(self):
-        """Test respondent serializer with valid data"""
+    def test_valid_data_with_name(self):
+        """Test respondent serializer with valid data including name"""
         data = {
-            "id": uuid4(),
-            "themefinder_id": 12345,
             "name": "John Doe",
-            "demographics": [
+        }
+        serializer = RespondentSerializer(data=data)
+        assert serializer.is_valid()
+        assert serializer.validated_data == data
+
+    def test_valid_data_minimal(self):
+        """Test respondent serializer with minimal valid data"""
+        data = {}
+        serializer = RespondentSerializer(data=data)
+        assert serializer.is_valid()
+        assert serializer.validated_data == data
+
+    def test_valid_data_with_null_name(self):
+        """Test respondent serializer with null name"""
+        data = {"name": None}
+        serializer = RespondentSerializer(data=data)
+        assert serializer.is_valid()
+        assert serializer.validated_data == data
+
+    def test_read_only_fields_ignored(self):
+        """Test that read-only fields are ignored in validation"""
+        data = {
+            "id": uuid4(),  # read-only, should be ignored
+            "themefinder_id": 12345,  # read-only, should be ignored 
+            "name": "John Doe",
+            "demographics": [  # read-only, should be ignored
                 {"id": "age_group", "field_name": "age_group", "field_value": "25-34"},
-                {"id": "gender", "field_name": "gender", "field_value": "male"},
             ],
         }
         serializer = RespondentSerializer(data=data)
         assert serializer.is_valid()
-
-    def test_null_themefinder_id(self):
-        """Test respondent serializer with null themefinder_id"""
-        data = {"id": uuid4(), "themefinder_id": None, "name": "Anonymous User", "demographics": []}
-        serializer = RespondentSerializer(data=data)
-        assert serializer.is_valid()
-
-    def test_missing_required_fields(self):
-        """Test respondent serializer with missing required fields"""
-        data = {"themefinder_id": 12345, "demographics": []}
-        serializer = RespondentSerializer(data=data)
-        assert not serializer.is_valid()
-        assert "id" in serializer.errors
-
-    def test_invalid_id_type(self):
-        """Test respondent serializer with invalid ID type"""
-        data = {
-            "id": "invalid-uuid",
-            "themefinder_id": 12345,
-            "name": "John Doe",
-            "demographics": [],
-        }
-        serializer = RespondentSerializer(data=data)
-        assert not serializer.is_valid()
-        assert "id" in serializer.errors
+        # Only writable fields should be in validated_data
+        assert serializer.validated_data == {"name": "John Doe"}
 
 
 class TestResponseThemeInformationSerializer:
