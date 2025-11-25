@@ -314,5 +314,3 @@ class ConsultationImportSerializer(serializers.Serializer):
 class ConsultationExportSerializer(serializers.Serializer):
     s3_key = serializers.CharField(max_length=255, default="", allow_null=True)
     question_ids = serializers.ListSerializer(child=serializers.CharField())
-
-

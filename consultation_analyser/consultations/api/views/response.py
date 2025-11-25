@@ -17,7 +17,9 @@ from consultation_analyser.consultations.api.permissions import (
 from consultation_analyser.consultations.api.serializers import (
     DemographicAggregationsSerializer,
     ResponseSerializer,
-    ThemeAggregationsSerializer, ThemeInformationSerializer, ResponseThemeInformationSerializer, ThemeSerializer,
+    ThemeAggregationsSerializer,
+    ResponseThemeInformationSerializer,
+    ThemeSerializer,
 )
 
 
@@ -163,10 +165,9 @@ class ResponseViewSet(ModelViewSet):
         all_themes_data = ThemeSerializer(all_themes, many=True).data
         selected_themes_data = ThemeSerializer(selected_themes, many=True).data
 
-        serializer = ResponseThemeInformationSerializer(data={
-            "selected_themes": selected_themes_data, 
-            "all_themes": all_themes_data
-        })
+        serializer = ResponseThemeInformationSerializer(
+            data={"selected_themes": selected_themes_data, "all_themes": all_themes_data}
+        )
         serializer.is_valid(raise_exception=True)
 
         return Response(serializer.data)
