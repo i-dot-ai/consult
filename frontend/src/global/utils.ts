@@ -166,8 +166,8 @@ export const createFetchMock = (
   routes.forEach(({ matcher, response, options }) => {
     fetchMockInstance.route(
       matcher,
-      (url, options) => {
-        callback({ url, options: options });
+      (args) => {
+        callback(args);
         return response;
       },
       options,

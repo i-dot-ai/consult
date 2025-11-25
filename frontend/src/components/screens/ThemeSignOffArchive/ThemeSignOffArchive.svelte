@@ -38,10 +38,17 @@
 
   interface Props {
     consultationId: string;
-    mockFetch?: any;
+    questionsFetch?: Function;
+    consultationFetch?: Function;
+    consultationUpdateFetch?: Function;
   }
 
-  let { consultationId = "", mockFetch }: Props = $props();
+  let {
+    consultationId = "",
+    questionsFetch,
+    consultationFetch,
+    consultationUpdateFetch,
+  }: Props = $props();
 
   let searchValue: string = $state("");
   let isConfirmModalOpen: boolean = $state(false);
@@ -56,7 +63,7 @@
     error: Writable<string>;
     load: Function;
     data: Writable<any>;
-  } = createFetchStore(mockFetch);
+  } = createFetchStore(questionsFetch);
 
   const {
     loading: isConsultationLoading,
@@ -68,7 +75,7 @@
     error: Writable<string>;
     load: Function;
     data: Writable<any>;
-  } = createFetchStore();
+  } = createFetchStore(consultationFetch);
 
   const {
     loading: isConsultationUpdating,
@@ -80,7 +87,7 @@
     error: Writable<string>;
     load: Function;
     data: Writable<any>;
-  } = createFetchStore();
+  } = createFetchStore(consultationUpdateFetch);
 
   onMount(async () => {
     loadConsultation(getApiConsultationUrl(consultationId));

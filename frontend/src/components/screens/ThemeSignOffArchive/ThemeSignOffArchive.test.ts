@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
-import { fireEvent, render, screen, waitFor } from "@testing-library/svelte";
+import { fireEvent, getByRole, render, screen, waitFor } from "@testing-library/svelte";
+import userEvent from "@testing-library/user-event";
 
 import { createFetchMock } from "../../../global/utils";
-import { getApiQuestionsUrl } from "../../../global/routes";
+import { getApiConsultationUrl, getApiQuestionsUrl } from "../../../global/routes";
 
 import ThemeSignOffArchive from "./ThemeSignOffArchive.svelte";
 import testData from "./testData";
@@ -10,7 +11,7 @@ import testData from "./testData";
 vi.mock("svelte/transition");
 
 describe("ThemeSignOffArchive", () => {
-  it("should render questions", async () => {
+  it("should render questions but not sign off stage", async () => {
     const { fetch: questionsFetch } = createFetchMock([{
       matcher: getApiQuestionsUrl("test-consultation"),
       response: testData
@@ -18,10 +19,11 @@ describe("ThemeSignOffArchive", () => {
 
     const { getByText } = render(ThemeSignOffArchive, {
       consultationId: "test-consultation",
-      mockFetch: questionsFetch,
+      questionsFetch: questionsFetch,
     });
 
     expect(getByText("Theme Sign Off"));
+    expect(screen.queryByText("All Questions Signed Off")).toBeFalsy();
 
     await waitFor(() => {
       testData.results.forEach(question => {
@@ -38,7 +40,7 @@ describe("ThemeSignOffArchive", () => {
 
     render(ThemeSignOffArchive, {
       consultationId: "test-consultation",
-      mockFetch: questionsFetch,
+      questionsFetch: questionsFetch,
     });
 
     // Confirm all questions are visible initially
@@ -68,7 +70,7 @@ describe("ThemeSignOffArchive", () => {
 
     render(ThemeSignOffArchive, {
       consultationId: "test-consultation",
-      mockFetch: questionsFetch,
+      questionsFetch: questionsFetch,
     });
 
     // Confirm all questions are visible initially
@@ -93,5 +95,85 @@ describe("ThemeSignOffArchive", () => {
         }
       })
     });
+  });
+
+  it("should display sign off stage if all questions are confirmed", async () => {
+    const { fetch: questionsFetch } = createFetchMock([{
+      matcher: getApiQuestionsUrl("test-consultation"),
+      response: {...testData, results: testData.results.map(question => ({
+        ...question,
+        theme_status: "confirmed"
+      }))},
+    }]);
+    const { fetch: consultationFetch } = createFetchMock([{
+      matcher: getApiQuestionsUrl("test-consultation"),
+      response: { stage: "theme_sign_off" },
+    }]);
+
+    render(ThemeSignOffArchive, {
+      consultationId: "test-consultation",
+      questionsFetch: questionsFetch,
+      consultationFetch: consultationFetch,
+    });
+
+    // Confirm all questions are visible initially
+    await waitFor(() => {
+      screen.debug()
+      expect(screen.getByText("All Questions Signed Off")).toBeTruthy();
+    });
+  });
+
+  it("should update theme stage when user clicks on confirm", async () => {
+    const updateConsultationMock = vi.fn();
+
+    const { fetch: questionsFetch } = createFetchMock([{
+      matcher: getApiQuestionsUrl("test-consultation"),
+      response: {...testData, results: testData.results.map(question => ({
+        ...question,
+        theme_status: "confirmed"
+      }))},
+    }]);
+
+    const { fetch: consultationFetch } = createFetchMock([{
+      matcher: getApiConsultationUrl("test-consultation"),
+      response: { stage: "theme_sign_off" },
+    }]);
+
+    const { fetch: consultationUpdateFetch } = createFetchMock(
+      [{
+        matcher: getApiConsultationUrl("test-consultation"),
+        response: { stage: "theme_sign_off" },
+      }],
+      (args) => updateConsultationMock(JSON.parse(args.options.body)),
+    );
+
+    render(ThemeSignOffArchive, {
+      consultationId: "test-consultation",
+      questionsFetch: questionsFetch,
+      consultationFetch: consultationFetch,
+      consultationUpdateFetch: consultationUpdateFetch,
+    });
+
+    let button;
+    const user = userEvent.setup();
+
+    // Click on confirm theme sign off button
+    await waitFor(() => {
+      button = screen.getByText("Confirm and Proceed to Mapping");
+    });
+    await user.click(button!);
+
+    // Click on confirm button inside confirmation modal
+    await waitFor(() => {
+      button = screen.getByText("Yes, Start AI Mapping");
+    })
+    await user.click(button!);
+
+    // Confirm consultation update request has been sent
+    await waitFor(() => {
+      expect(updateConsultationMock).toHaveBeenCalledWith(
+        { stage: "theme_mapping" },
+      );
+    })
   });
 });
