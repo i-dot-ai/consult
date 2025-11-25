@@ -32,10 +32,27 @@ let themes = await fetchBackendApi<ResponseThemeInformation>(
 
 <Layout>
   <Section>
-    <Title level={1} text={`Question ${question.number}:`} />
-    <Title level={1} text={question.question_text} />
-    <Text>Response{(response.respondent.themefinder_id || response.respondent.themefinder_id === 0) && ` ${response.respondent.themefinder_id}`}:</Text>
-    <Text>Which questions do you want to download data for?</Text>
-    <ThemeSelectionForm client:load question={question} response={response} themes={themes} />
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+      <div class="flex flex-col gap-4">
+        <div>
+          <Title level={1} text={`Question ${question.number}:`} />
+          <Title level={1} text={question.question_text} />
+        </div>
+        
+        <div class="bg-gray-50 border border-gray-200 rounded-xl p-6">
+          <Text>Response{(response.respondent.themefinder_id || response.respondent.themefinder_id === 0) && ` ${response.respondent.themefinder_id}`}:</Text>
+          <div class="mt-3">
+            <Text>{response.free_text_answer_text}</Text>
+          </div>
+        </div>
+      </div>
+      <div class="flex flex-col gap-4">
+        <div>
+          <Title level={2} text="Select Themes" />
+          <Text>Which themes apply to this response?</Text>
+        </div>
+        <ThemeSelectionForm client:load response={response} themes={themes} consultationId={consultationId} questionId={questionId} />
+      </div>
+    </div>
   </Section>
 </Layout>
