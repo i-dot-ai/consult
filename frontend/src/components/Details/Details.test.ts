@@ -1,5 +1,9 @@
 import { render } from "@testing-library/svelte";
 import { describe, it, expect } from "vitest";
+import '@testing-library/jest-dom/vitest';
+
+import { createRawSnippet } from "svelte";
+
 import Details from "./Details.svelte";
 
 describe("Details Component", () => {
@@ -7,7 +11,11 @@ describe("Details Component", () => {
     const { getByText } = render(Details, {
       props: {
         summaryText: "Test Summary",
-        children: () => "Test content"
+        children: createRawSnippet(() => {
+          return {
+            render: () => `<div>Test content</div>`,
+          };
+        }),
       }
     });
 
@@ -18,7 +26,11 @@ describe("Details Component", () => {
     const { container } = render(Details, {
       props: {
         summaryText: "Test Summary", 
-        children: () => "Test content"
+        children: createRawSnippet((name) => {
+          return {
+            render: () => `<div>Test content</div>`,
+          };
+        }),
       }
     });
 
@@ -30,7 +42,11 @@ describe("Details Component", () => {
     const { container } = render(Details, {
       props: {
         summaryText: "Test Summary",
-        children: () => "Test content",
+        children: createRawSnippet((name) => {
+          return {
+            render: () => `<div>Test content</div>`,
+          };
+        }),
         open: true
       }
     });
@@ -43,7 +59,11 @@ describe("Details Component", () => {
     const { getByText } = render(Details, {
       props: {
         summaryText: "Test Summary",
-        children: () => "Test content"
+        children: createRawSnippet((name) => {
+          return {
+            render: () => `<div>Test content</div>`,
+          };
+        })
       }
     });
 

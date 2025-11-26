@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/svelte";
+import '@testing-library/jest-dom/vitest';
 
 import NotFoundMessage from "./NotFoundMessage.svelte";
+
+vi.mock("svelte/transition");
 
 describe("Section", () => {
   it("should render title and body", () => {

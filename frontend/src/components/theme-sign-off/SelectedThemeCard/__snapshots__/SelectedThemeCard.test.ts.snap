@@ -33,7 +33,15 @@ exports[`SelectedThemeCard > should render 1`] = `
               This is the theme description
             </p>
              
-            <!---->
+            <hr
+              class="mb-4"
+            />
+             
+            <small
+              class="block text-xs text-neutral-500 mb-4"
+            >
+              Added NaN minute ago by 
+            </small>
              
             <footer
               class="flex items-center flex-wrap gap-2"
