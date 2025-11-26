@@ -1,6 +1,7 @@
 import logging
 from uuid import UUID
 
+import sentry_sdk
 from django.db.models import Count
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -138,12 +139,14 @@ class ConsultationViewSet(ModelViewSet):
                 {"message": "Immutable data import job started successfully"},
                 status=status.HTTP_202_ACCEPTED,
             )
-        except serializers.ValidationError:
+        except serializers.ValidationError as e:
+            sentry_sdk.capture_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        except Exception:
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -174,12 +177,14 @@ class ConsultationViewSet(ModelViewSet):
                 {"message": "Candidate themes import job started successfully"},
                 status=status.HTTP_202_ACCEPTED,
             )
-        except serializers.ValidationError:
+        except serializers.ValidationError as e:
+            sentry_sdk.capture_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        except Exception:
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -210,12 +215,14 @@ class ConsultationViewSet(ModelViewSet):
                 {"message": "Response annotations import job started successfully"},
                 status=status.HTTP_202_ACCEPTED,
             )
-        except serializers.ValidationError:
+        except serializers.ValidationError as e:
+            sentry_sdk.capture_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
                 status=status.HTTP_400_BAD_REQUEST,
             )
-        except Exception:
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
