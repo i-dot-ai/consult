@@ -19,6 +19,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   }
 
   const accessToken = context.cookies.get("access")?.value;
+  const internalAccessToken = context.cookies.get('x-amzn-oidc-data') || process.env.TEST_INTERNAL_ACCESS_TOKEN;
   const url = context.url;
 
   // Redirect to sign-in if user not logged in or not staff
@@ -36,7 +37,24 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       protectedRoute.test(url.pathname) &&
       !context.cookies.get("access")?.value
     ) {
-      return context.redirect(Routes.SignIn);
+      if (internalAccessToken) {
+        const response = await fetch(Routes.APIValidateToken, {
+          method: "POST",
+          body: JSON.stringify({internal_access_token: internalAccessToken}),
+          headers: {"Content-Type": "application/json"}
+        });
+        
+        const data = await response.json();
+        
+        if (data.access) {
+          context.cookies.set("access", data.access, { path: "/", sameSite: "lax" });
+          context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
+        } else {
+          context.redirect(Routes.SignInError);
+        }
+      } else {
+        context.redirect(Routes.SignInError);
+      }
     }
   }
 

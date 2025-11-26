@@ -32,7 +32,6 @@
         { text: "How it works", url: Routes.HowItWorks },
         { text: "Data sharing", url: Routes.DataSharing },
         { text: "Get involved", url: Routes.GetInvolved },
-        { text: "Sign in", url: Routes.SignIn },
       ];
     }
   }
