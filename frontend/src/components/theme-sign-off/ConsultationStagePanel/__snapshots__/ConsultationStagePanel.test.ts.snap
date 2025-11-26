@@ -1,0 +1,612 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`ConsultationStagePanel > Analysis stage > should match snapshot for analysis stage 1`] = `
+<div>
+  <div
+    class="h-full my-4 p-4 rounded-2xl border border-secondary bg-neutral-50"
+    data-testid="panel-component"
+  >
+    <div
+      class="px-2 sm:px-8 md:px-16"
+    >
+      <ol
+        aria-label="Consultation progress"
+        class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-full overflow-x-auto"
+      >
+        <li>
+          <div
+            class="flex flex-col items-center min-w-16"
+          >
+            <div
+              class="my-2 p-2 rounded-full bg-secondary"
+            >
+              <svg
+                class="fill-white"
+                height="1.2rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1.2rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!---->
+                <path
+                  d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <h3
+              class="text-xs"
+            >
+              Consultation Overview
+            </h3>
+          </div>
+          <!---->
+        </li>
+        <li>
+          <div
+            class="flex flex-col items-center min-w-16"
+          >
+            <div
+              class="my-2 p-2 rounded-full bg-secondary"
+            >
+              <svg
+                class="fill-white"
+                height="1.2rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1.2rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!---->
+                <path
+                  d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <h3
+              class="text-xs"
+            >
+              Theme Sign Off
+            </h3>
+          </div>
+          <!---->
+        </li>
+        <li>
+          <div
+            class="flex flex-col items-center min-w-16"
+          >
+            <div
+              class="my-2 p-2 rounded-full bg-secondary"
+            >
+              <svg
+                class="fill-white"
+                height="1.2rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1.2rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!---->
+                <path
+                  d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <h3
+              class="text-xs"
+            >
+              AI Theme Mapping
+            </h3>
+          </div>
+          <!---->
+        </li>
+        <li>
+          <div
+            class="flex flex-col items-center min-w-16"
+          >
+            <div
+              class="my-2 p-2 rounded-full bg-secondary ring-4 ring-teal-100"
+            >
+              <svg
+                class="fill-white"
+                height="1.2rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1.2rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!---->
+                <path
+                  d="M200-120q-33 0-56.5-23.5T120-200v-640h80v640h640v80H200Zm40-120v-360h160v360H240Zm200 0v-560h160v560H440Zm200 0v-200h160v200H640Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <h3
+              class="text-xs text-secondary"
+            >
+              Analysis Dashboard
+            </h3>
+          </div>
+          <!---->
+        </li>
+        
+      </ol>
+       
+      <div
+        class="px-0 md:px-16"
+      >
+        <h2
+          class="text-secondary text-center"
+        >
+          AI Mapping Complete
+        </h2>
+         
+        <p
+          class="text-sm text-center text-neutral-500 my-4"
+        >
+          All consultation responses have been successfully mapped against your selected
+    themes.
+        </p>
+         
+        <p
+          class="text-sm text-center text-neutral-500 my-4"
+        >
+          <strong>
+            Next:
+          </strong>
+           View the mapped data in the 
+          <a
+            class="text-secondary hover:underline"
+            href="/consultations/test-consultation-id"
+          >
+            Analysis Dashboard
+          </a>
+           to explore detailed insights and generate reports.
+        </p>
+        <!---->
+      </div>
+    </div>
+    <!---->
+  </div>
+  
+  
+</div>
+`;
+
+exports[`ConsultationStagePanel > Theme Mapping stage > should match snapshot for theme_mapping stage 1`] = `
+<div>
+  <div
+    class="h-full my-4 p-4 rounded-2xl border border-secondary bg-neutral-50"
+    data-testid="panel-component"
+  >
+    <div
+      class="px-2 sm:px-8 md:px-16"
+    >
+      <ol
+        aria-label="Consultation progress"
+        class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-full overflow-x-auto"
+      >
+        <li>
+          <div
+            class="flex flex-col items-center min-w-16"
+          >
+            <div
+              class="my-2 p-2 rounded-full bg-secondary"
+            >
+              <svg
+                class="fill-white"
+                height="1.2rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1.2rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!---->
+                <path
+                  d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <h3
+              class="text-xs"
+            >
+              Consultation Overview
+            </h3>
+          </div>
+          <!---->
+        </li>
+        <li>
+          <div
+            class="flex flex-col items-center min-w-16"
+          >
+            <div
+              class="my-2 p-2 rounded-full bg-secondary"
+            >
+              <svg
+                class="fill-white"
+                height="1.2rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1.2rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!---->
+                <path
+                  d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <h3
+              class="text-xs"
+            >
+              Theme Sign Off
+            </h3>
+          </div>
+          <!---->
+        </li>
+        <li>
+          <div
+            class="flex flex-col items-center min-w-16"
+          >
+            <div
+              class="my-2 p-2 rounded-full bg-secondary ring-4 ring-teal-100"
+            >
+              <svg
+                class="fill-white"
+                height="1.2rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1.2rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!---->
+                <path
+                  d="m176-120-56-56 301-302-181-45 198-123-17-234 179 151 216-88-87 217 151 178-234-16-124 198-45-181-301 301Zm24-520-80-80 80-80 80 80-80 80Zm355 197 48-79 93 7-60-71 35-86-86 35-71-59 7 92-79 49 90 22 23 90Zm165 323-80-80 80-80 80 80-80 80ZM569-570Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <h3
+              class="text-xs text-secondary"
+            >
+              AI Theme Mapping
+            </h3>
+          </div>
+          <!---->
+        </li>
+        <li>
+          <div
+            class="flex flex-col items-center min-w-16"
+          >
+            <div
+              class="my-2 p-2 rounded-full bg-neutral-200"
+            >
+              <svg
+                class="fill-neutral-500"
+                height="1.2rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1.2rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!---->
+                <path
+                  d="M200-120q-33 0-56.5-23.5T120-200v-640h80v640h640v80H200Zm40-120v-360h160v360H240Zm200 0v-560h160v560H440Zm200 0v-200h160v200H640Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <h3
+              class="text-xs"
+            >
+              Analysis Dashboard
+            </h3>
+          </div>
+          <!---->
+        </li>
+        
+      </ol>
+       
+      <div
+        class="px-0 md:px-16"
+      >
+        <h2
+          class="text-secondary text-center"
+        >
+          AI Mapping in Progress
+        </h2>
+         
+        <p
+          class="text-sm text-center text-neutral-500 my-4"
+        >
+          You have completed the theme sign-off phase for all 10 consultation
+    questions.
+        </p>
+         
+        <p
+          class="text-sm text-center text-neutral-500 my-4"
+        >
+          AI is currently mapping consultation responses to your signed-off themes. This
+    process analyses each response and assigns it to the most relevant themes you've
+    selected.
+        </p>
+         
+        <p
+          class="text-sm text-center text-neutral-500 my-4"
+        >
+          <strong>
+            Next:
+          </strong>
+           When mapping is complete, you'll be able to access the Analysis
+    Dashboard to view all mapped data for detailed insights and reporting.
+        </p>
+        <!---->
+      </div>
+    </div>
+    <!---->
+  </div>
+  
+  
+</div>
+`;
+
+exports[`ConsultationStagePanel > Theme Sign Off stage > should match snapshot for theme_sign_off stage 1`] = `
+<div>
+  <div
+    class="h-full my-4 p-4 rounded-2xl border border-secondary bg-neutral-50"
+    data-testid="panel-component"
+  >
+    <div
+      class="px-2 sm:px-8 md:px-16"
+    >
+      <ol
+        aria-label="Consultation progress"
+        class="px-1 flex items-center justify-around gap-4 text-xs text-center text-neutral-700 mb-8 w-full overflow-x-auto"
+      >
+        <li>
+          <div
+            class="flex flex-col items-center min-w-16"
+          >
+            <div
+              class="my-2 p-2 rounded-full bg-secondary"
+            >
+              <svg
+                class="fill-white"
+                height="1.2rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1.2rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!---->
+                <path
+                  d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <h3
+              class="text-xs"
+            >
+              Consultation Overview
+            </h3>
+          </div>
+          <!---->
+        </li>
+        <li>
+          <div
+            class="flex flex-col items-center min-w-16"
+          >
+            <div
+              class="my-2 p-2 rounded-full bg-secondary ring-4 ring-teal-100"
+            >
+              <svg
+                class="fill-white"
+                height="1.2rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1.2rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!---->
+                <path
+                  d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <h3
+              class="text-xs text-secondary"
+            >
+              Theme Sign Off
+            </h3>
+          </div>
+          <!---->
+        </li>
+        <li>
+          <div
+            class="flex flex-col items-center min-w-16"
+          >
+            <div
+              class="my-2 p-2 rounded-full bg-neutral-200"
+            >
+              <svg
+                class="fill-neutral-500"
+                height="1.2rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1.2rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!---->
+                <path
+                  d="m176-120-56-56 301-302-181-45 198-123-17-234 179 151 216-88-87 217 151 178-234-16-124 198-45-181-301 301Zm24-520-80-80 80-80 80 80-80 80Zm355 197 48-79 93 7-60-71 35-86-86 35-71-59 7 92-79 49 90 22 23 90Zm165 323-80-80 80-80 80 80-80 80ZM569-570Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <h3
+              class="text-xs"
+            >
+              AI Theme Mapping
+            </h3>
+          </div>
+          <!---->
+        </li>
+        <li>
+          <div
+            class="flex flex-col items-center min-w-16"
+          >
+            <div
+              class="my-2 p-2 rounded-full bg-neutral-200"
+            >
+              <svg
+                class="fill-neutral-500"
+                height="1.2rem"
+                role="img"
+                viewBox="0 -960 960 960"
+                width="1.2rem"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <!---->
+                <path
+                  d="M200-120q-33 0-56.5-23.5T120-200v-640h80v640h640v80H200Zm40-120v-360h160v360H240Zm200 0v-560h160v560H440Zm200 0v-200h160v200H640Z"
+                  xmlns="http://www.w3.org/2000/svg"
+                />
+                
+                <!---->
+              </svg>
+              <!---->
+            </div>
+             
+            <h3
+              class="text-xs"
+            >
+              Analysis Dashboard
+            </h3>
+          </div>
+          <!---->
+        </li>
+        
+      </ol>
+       
+      <div
+        class="px-0 md:px-16"
+      >
+        <h2
+          class="text-secondary text-center"
+        >
+          All Questions Signed Off
+        </h2>
+         
+        <p
+          class="text-sm text-center text-neutral-500 my-4"
+        >
+          You have successfully reviewed and signed off themes for all 10
+    consultation questions.
+        </p>
+         
+        <p
+          class="text-sm text-center text-neutral-500 my-4"
+        >
+          <strong>
+            Next:
+          </strong>
+           Confirm and proceed to the AI mapping phase where responses
+    will be mapped to your selected themes.
+        </p>
+         
+        <!---->
+        <button
+          aria-pressed="false"
+          class="w-full text-md cursor-pointer rounded-md py-1 px-2 border bg-secondary text-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:text-secondary hover:border-secondary svelte-1d0mdzt"
+          data-variant="approve"
+          role="button"
+          tabindex="0"
+          type="button"
+        >
+          <!---->
+          <span
+            class="flex items-center gap-2 mx-auto"
+          >
+            <svg
+              class="fill-white"
+              height="1rem"
+              role="img"
+              viewBox="0 -960 960 960"
+              width="1rem"
+              xmlns="http://www.w3.org/2000/svg"
+            >
+              <path
+                d="m424-296 282-282-56-56-226 226-114-114-56 56 170 170Zm56 216q-83 0-156-31.5T197-197q-54-54-85.5-127T80-480q0-83 31.5-156T197-763q54-54 127-85.5T480-880q83 0 156 31.5T763-763q54 54 85.5 127T880-480q0 83-31.5 156T763-197q-54 54-127 85.5T480-80Zm0-80q134 0 227-93t93-227q0-134-93-227t-227-93q-134 0-227 93t-93 227q0 134 93 227t227 93Zm0-320Z"
+                xmlns="http://www.w3.org/2000/svg"
+              />
+              <!---->
+            </svg>
+            <!---->
+             Confirm and Proceed to Mapping
+          </span>
+          
+          
+        </button>
+        
+        <!---->
+        <!---->
+      </div>
+    </div>
+    <!---->
+  </div>
+  
+  
+</div>
+`;
