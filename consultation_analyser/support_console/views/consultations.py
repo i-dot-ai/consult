@@ -49,7 +49,6 @@ def import_immutable_data_job(
     consultation_name: str,
     consultation_code: str,
     user_id: UUID,
-    timestamp: str | None = None,
 ) -> UUID:
     """Import consultation immutable data from S3."""
     from consultation_analyser.support_console.ingestion.ingest_immutable import (
@@ -62,7 +61,6 @@ def import_immutable_data_job(
         consultation_code=consultation_code,
         consultation_title=consultation_name,
         user_id=user_id,
-        timestamp=timestamp,
         enqueue_embeddings=True,
     )
 

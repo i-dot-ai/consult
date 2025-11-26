@@ -132,7 +132,6 @@ class ConsultationViewSet(ModelViewSet):
                 consultation_name=validated["consultation_name"],
                 consultation_code=validated["consultation_code"],
                 user_id=request.user.id,
-                timestamp=validated.get("timestamp") or None,
             )
 
             return Response(

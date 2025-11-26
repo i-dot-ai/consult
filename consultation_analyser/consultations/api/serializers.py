@@ -299,9 +299,6 @@ class ConsultationImportSerializer(serializers.Serializer):
 class ConsultationImportImmutableSerializer(serializers.Serializer):
     consultation_name = serializers.CharField(required=True, max_length=255)
     consultation_code = serializers.CharField(required=True, max_length=255)
-    timestamp = serializers.CharField(
-        required=False, allow_blank=True, allow_null=True, max_length=100
-    )
 
 
 class ConsultationImportCandidateThemesSerializer(serializers.Serializer):
