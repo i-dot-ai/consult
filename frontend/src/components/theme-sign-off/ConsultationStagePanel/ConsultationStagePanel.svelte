@@ -169,7 +169,8 @@
         "text-center",
         "text-neutral-700",
         "mb-8",
-        "w-full",
+        "w-3/4",
+        "mx-auto",
         "overflow-x-auto",
       ])}
       aria-label="Consultation progress"
