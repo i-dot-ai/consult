@@ -1,4 +1,6 @@
 ---
+import { fetchBackendApi } from "../../../global/api";
+import type { Consultation } from "../../../global/types";
 import Layout from "../../../layouts/Layout.astro";
 import Section from "../../../components/Section/Section.svelte";
 import Details from "../../../components/Details/Details.svelte";
@@ -10,6 +12,20 @@ import ImportResponseAnnotationsForm from "../../../components/screens/ImportRes
 import Link from "../../../components/Link.svelte";
 
 const bucketName = process.env?.AWS_BUCKET_NAME
+
+// Fetch consultation folders for immutable data import
+const foldersData = await fetchBackendApi<Array<{text: string, value: string}>>(Astro, "/api/consultations/folders/");
+const consultationFolders = foldersData.map((folder) => ({
+  value: folder.value,
+  label: folder.text
+}));
+
+// Fetch existing consultations for candidate themes and annotations imports
+const consultationsData = await fetchBackendApi<{ results: Consultation[]}>(Astro, "/api/consultations/?scope=all");
+const existingConsultations = consultationsData.results.map((consultation) => ({
+  value: consultation.code,
+  label: `${consultation.title} (${consultation.code})`
+}));
 ---
 
 <Layout>
@@ -78,7 +94,7 @@ const bucketName = process.env?.AWS_BUCKET_NAME
     </div>
 
     <Details summaryText="Show import form">
-      <ImportImmutableDataForm client:load/>
+      <ImportImmutableDataForm client:load consultationFolders={consultationFolders}/>
     </Details>
   </Section>
 
@@ -104,7 +120,7 @@ const bucketName = process.env?.AWS_BUCKET_NAME
     </ul>
 
     <Details summaryText="Show import form">
-      <ImportCandidateThemesForm client:load/>
+      <ImportCandidateThemesForm client:load existingConsultations={existingConsultations}/>
     </Details>
   </Section>
 
@@ -131,7 +147,7 @@ const bucketName = process.env?.AWS_BUCKET_NAME
     </ul>
 
     <Details summaryText="Show import form">
-      <ImportResponseAnnotationsForm client:load/>
+      <ImportResponseAnnotationsForm client:load existingConsultations={existingConsultations}/>
     </Details>
   </Section>
 

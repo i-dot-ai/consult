@@ -1,35 +1,20 @@
 <script lang="ts">
   import clsx from "clsx";
   import { slide } from "svelte/transition";
-  import { onMount } from "svelte";
   import { Routes } from "../../global/routes";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import Button from "../inputs/Button/Button.svelte";
   import Select from "../inputs/Select/Select.svelte";
   import type { SelectOption } from "../../global/types";
 
+  export let existingConsultations: SelectOption[] = [];
+
   let sending: boolean = false;
   let errors: Record<string, string> = {}
   let success: boolean = false;
-  let loading: boolean = false;
 
-  let existingConsultations: SelectOption[] = [];
   let consultationCode: string = "";
   let timestamp: string = "";
-
-  onMount(async () => {
-    loading = true;
-    existingConsultations = []
-    const response = await fetch(`${Routes.ApiConsultations}?scope=all`);
-    const consultationData = await response.json();
-
-    existingConsultations = consultationData.results.map((consultation: any) => ({
-      value: consultation.code,
-      label: `${consultation.title} (${consultation.code})`
-    }));
-
-    loading = false;
-  });
 
   const setConsultationCode = (newValue: string) => {
     consultationCode = newValue;

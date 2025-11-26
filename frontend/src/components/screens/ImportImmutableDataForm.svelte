@@ -1,35 +1,20 @@
 <script lang="ts">
   import clsx from "clsx";
   import { slide } from "svelte/transition";
-  import { onMount } from "svelte";
   import { Routes } from "../../global/routes";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import Button from "../inputs/Button/Button.svelte";
   import Select from "../inputs/Select/Select.svelte";
   import type { SelectOption } from "../../global/types";
 
+  export let consultationFolders: SelectOption[] = [];
+
   let sending: boolean = false;
   let errors: Record<string, string> = {}
   let success: boolean = false;
-  let loading: boolean = false;
 
-  let consultationFolders: SelectOption[] = [];
   let consultationName: string = "";
   let consultationFolderCode: string = "";
-
-  onMount(async () => {
-    loading = true;
-    consultationFolders = []
-    const response = await fetch(`${Routes.ApiConsultationFolders}`);
-    const consultationFolderData = await response.json();
-
-    consultationFolders = consultationFolderData.map((folder: any) => ({
-      value: folder.value,
-      label: folder.text
-    }));
-
-    loading = false;
-  });
 
   const setConsultationName = (newValue: string) => {
     consultationName = newValue;
