@@ -117,7 +117,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=False,
         methods=["post"],
         url_path="import-immutable",
-        permission_classes=[HasDashboardAccess],
+        permission_classes=[IsAdminUser],
     )
     def import_immutable_data(self, request) -> Response:
         """
@@ -156,7 +156,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=False,
         methods=["post"],
         url_path="import-candidate-themes",
-        permission_classes=[HasDashboardAccess],
+        permission_classes=[IsAdminUser],
     )
     def import_candidate_themes(self, request) -> Response:
         """
@@ -194,7 +194,7 @@ class ConsultationViewSet(ModelViewSet):
         detail=False,
         methods=["post"],
         url_path="import-annotations",
-        permission_classes=[HasDashboardAccess],
+        permission_classes=[IsAdminUser],
     )
     def import_annotations(self, request) -> Response:
         """
