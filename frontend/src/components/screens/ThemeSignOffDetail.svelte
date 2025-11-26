@@ -373,9 +373,13 @@
         </div>
 
         <p class="text-neutral-500 text-sm">
-          Manage your {numSelectedThemesText($selectedThemesData?.results)} for the
-          AI in mapping responses. Edit titles and descriptions, or add new themes
-          as needed.
+          {#if $selectedThemesData?.results?.length > 0}
+            Manage your {numSelectedThemesText($selectedThemesData?.results)} for the
+            AI in mapping responses. Edit titles and descriptions, or add new themes
+            as needed.
+          {:else}
+            Finalise the themes for the AI to map responses to. Choose from the AI generated themes or add new.
+          {/if}
         </p>
       </Panel>
     </div>
