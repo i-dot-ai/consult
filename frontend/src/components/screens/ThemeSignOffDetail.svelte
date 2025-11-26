@@ -542,36 +542,38 @@
             </div>
 
             <div class="flex items-center gap-4">
-              <div class="flex items-center gap-1 text-xs text-neutral-500">
-                <MaterialIcon color="fill-neutral-500">
-                  <Stacks />
-                </MaterialIcon>
-                Multi-level themes
-              </div>
-              <Button
-                size="sm"
-                disabled={!hasNestedThemes}
-                handleClick={() => {
-                  if (isAllThemesExpanded()) {
-                    collapseAllThemes();
-                  } else {
-                    expandAllThemes();
-                  }
-                }}
-              >
-                <span
-                  class={clsx([
-                    "flex items-center justify-between gap-1",
-                    addingCustomTheme && "text-white",
-                    hasNestedThemes ? "text-secondary" : "text-neutral-400",
-                  ])}
-                >
-                  <MaterialIcon color={hasNestedThemes ? "fill-secondary" : "fill-neutral-400"}>
+              {#if hasNestedThemes}
+                <div class="flex items-center gap-1 text-xs text-neutral-500">
+                  <MaterialIcon color="fill-neutral-500">
                     <Stacks />
                   </MaterialIcon>
-                  {isAllThemesExpanded() ? "Collapse All" : "Expand All"}
-                </span>
-              </Button>
+                  Multi-level themes
+                </div>
+
+                <Button
+                  size="sm"
+                  disabled={!hasNestedThemes}
+                  handleClick={() => {
+                    if (isAllThemesExpanded()) {
+                      collapseAllThemes();
+                    } else {
+                      expandAllThemes();
+                    }
+                  }}
+                >
+                  <span
+                    class={clsx([
+                      "flex items-center justify-between gap-1 text-secondary",
+                      addingCustomTheme && "text-white",
+                    ])}
+                  >
+                    <MaterialIcon color="fill-secondary">
+                      <Stacks />
+                    </MaterialIcon>
+                    {isAllThemesExpanded() ? "Collapse All" : "Expand All"}
+                  </span>
+                </Button>
+              {/if}
             </div>
           </div>
 
