@@ -37,6 +37,11 @@ class CandidateThemeViewSet(ModelViewSet):
         """Select a candidate theme to add as a selected theme"""
         candidate_theme = get_object_or_404(self.get_queryset(), pk=pk)
 
+        if candidate_theme.selectedtheme:
+            selected_theme = candidate_theme.selectedtheme
+            serializer = SelectedThemeSerializer(selected_theme)
+            return Response(serializer.data, status=200)
+
         selected_theme = models.SelectedTheme.objects.create(
             question=candidate_theme.question,
             name=candidate_theme.name,

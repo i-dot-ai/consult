@@ -112,27 +112,31 @@ class TestCandidateThemeViewSet:
                 "pk": candidate_theme.id,
             },
         )
-        response = client.post(
-            url,
-            headers={"Authorization": f"Bearer {consultation_user_token}"},
-        )
 
-        candidate_theme.refresh_from_db()
-        selected_theme = SelectedTheme.objects.get(pk=candidate_theme.selectedtheme_id)
+        for status_code in 201, 200, 200:
+            # we run this three times to check that multiple users can add the
+            # same theme, on the first pass we expect 201 = created, and 200 thereafter
+            response = client.post(
+                url,
+                headers={"Authorization": f"Bearer {consultation_user_token}"},
+            )
 
-        assert selected_theme.id == candidate_theme.selectedtheme_id
-        assert selected_theme.name == candidate_theme.name
-        assert selected_theme.description == candidate_theme.description
-        assert selected_theme.question == free_text_question
-        assert selected_theme.version == 1
-        assert selected_theme.last_modified_by == consultation_user
+            candidate_theme.refresh_from_db()
+            selected_theme = SelectedTheme.objects.get(pk=candidate_theme.selectedtheme_id)
 
-        assert response.status_code == 201
-        assert response.json() == {
-            "id": str(selected_theme.id),
-            "name": selected_theme.name,
-            "description": selected_theme.description,
-            "version": selected_theme.version,
-            "modified_at": isoformat(selected_theme.modified_at),
-            "last_modified_by": consultation_user.email,
-        }
+            assert selected_theme.id == candidate_theme.selectedtheme_id
+            assert selected_theme.name == candidate_theme.name
+            assert selected_theme.description == candidate_theme.description
+            assert selected_theme.question == free_text_question
+            assert selected_theme.version == 1
+            assert selected_theme.last_modified_by == consultation_user
+
+            assert response.status_code == status_code
+            assert response.json() == {
+                "id": str(selected_theme.id),
+                "name": selected_theme.name,
+                "description": selected_theme.description,
+                "version": selected_theme.version,
+                "modified_at": isoformat(selected_theme.modified_at),
+                "last_modified_by": consultation_user.email,
+            }
