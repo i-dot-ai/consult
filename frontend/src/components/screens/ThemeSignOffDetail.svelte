@@ -309,8 +309,11 @@
     <Button
       size="xs"
       handleClick={() => (location.href = getThemeSignOffUrl(consultationId))}
-      >Choose another question</Button
     >
+      <span class="p-1">
+        Choose another question
+      </span>
+    </Button>
   </div>
 </TitleRow>
 
