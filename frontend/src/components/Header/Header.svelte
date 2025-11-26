@@ -8,31 +8,33 @@
   import GovIcon from "../svg/GovIcon.svelte";
   import MobileMenu from "../MobileMenu.svelte";
 
-  export let isSignedIn: boolean = false;
   export let isStaff: boolean = false;
+  export let email: string | null = null;
 
-  function getNavItems(isSignedIn: boolean, isStaff: boolean): NavItem[] {
-    if (isStaff) {
-      return [
-        { text: "Consultations", url: Routes.SupportConsultations },
-        { text: "Users", url: Routes.SupportUsers },
-        { text: "Import", url: Routes.SupportImport },
-        { text: "Sign-off", url: Routes.SupportSignOff },
-        { text: "Themefinder", url: Routes.SupportThemefinder },
-        { text: "Sign out", url: Routes.SignOut },
-      ];
-    } else if (isSignedIn) {
-      return [
-        { text: "Support", url: Routes.Support },
-        { text: "Your consultations", url: Routes.Consultations },
-        { text: "Sign out", url: Routes.SignOut },
-      ];
-    } else {
+  function getNavItems(email: string | null, isStaff: boolean): NavItem[] {
+    if (!email ) {
       return [
         { text: "How it works", url: Routes.HowItWorks },
         { text: "Data sharing", url: Routes.DataSharing },
         { text: "Get involved", url: Routes.GetInvolved },
       ];
+    } else {
+      if (isStaff) {
+        return [
+          { text: "Consultations", url: Routes.SupportConsultations },
+          { text: "Users", url: Routes.SupportUsers },
+          { text: "Import", url: Routes.SupportImport },
+          { text: "Sign-off", url: Routes.SupportSignOff },
+          { text: "Themefinder", url: Routes.SupportThemefinder },
+          { text: `Sign out ${email}`, url: Routes.SignOut },
+        ];
+      } else {
+        return [
+          { text: "Support", url: Routes.Support },
+          { text: "Your consultations", url: Routes.Consultations },
+          { text: `Sign out ${email}`, url: Routes.SignOut },
+        ];
+      } 
     }
   }
 </script>
@@ -64,7 +66,7 @@
           ])}
         >
           <a
-            href={isSignedIn ? Routes.Consultations : Routes.Home}
+            href={!email ? Routes.Home: Routes.Consultations}
             class={clsx([
               "flex",
               "justify-center",
@@ -104,7 +106,7 @@
 
       <nav class="hidden lg:block">
         <ul class="flex gap-4 items-center">
-          {#each getNavItems(isSignedIn, isStaff) as navItem}
+          {#each getNavItems(email, isStaff) as navItem}
             <li>
               <a href={navItem.url} class="hover:underline">
                 {navItem.text}
@@ -115,7 +117,7 @@
       </nav>
 
       <div class="block lg:hidden">
-        <MobileMenu items={getNavItems(isSignedIn, isStaff)} />
+        <MobileMenu items={getNavItems(email, isStaff)} />
       </div>
     </div>
   </div>
