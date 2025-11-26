@@ -16,6 +16,7 @@
     getThemeSignOffUrl,
   } from "../../global/routes";
   import { flattenArray } from "../../global/utils";
+  import type { GeneratedTheme } from "../../global/types";
 
   import Panel from "../dashboard/Panel/Panel.svelte";
   import TitleRow from "../dashboard/TitleRow.svelte";
@@ -296,6 +297,10 @@
   const collapseTheme = (themeId: string) => {
     expandedThemes = expandedThemes.filter((theme) => theme !== themeId);
   };
+
+  let hasNestedThemes = $derived($generatedThemesData?.results?.some(
+    (theme: GeneratedTheme) => Boolean(theme.children && theme.children.length > 0))
+  );
 </script>
 
 <TitleRow
@@ -545,6 +550,7 @@
               </div>
               <Button
                 size="sm"
+                disabled={!hasNestedThemes}
                 handleClick={() => {
                   if (isAllThemesExpanded()) {
                     collapseAllThemes();
@@ -555,11 +561,12 @@
               >
                 <span
                   class={clsx([
-                    "flex items-center justify-between gap-1 text-secondary",
+                    "flex items-center justify-between gap-1",
                     addingCustomTheme && "text-white",
+                    hasNestedThemes ? "text-secondary" : "text-neutral-400",
                   ])}
                 >
-                  <MaterialIcon color="fill-secondary">
+                  <MaterialIcon color={hasNestedThemes ? "fill-secondary" : "fill-neutral-400"}>
                     <Stacks />
                   </MaterialIcon>
                   {isAllThemesExpanded() ? "Collapse All" : "Expand All"}
