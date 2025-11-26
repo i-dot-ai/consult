@@ -8,16 +8,6 @@ import { getBackendUrl } from "./global/utils";
 export const onRequest: MiddlewareHandler = async (context, next) => {
   let userIsStaff: boolean = false;
 
-  try {
-    const resp = await fetchBackendApi<{ is_staff: Boolean }>(
-      context,
-      Routes.ApiUser,
-    );
-    userIsStaff = Boolean(resp.is_staff);
-  } catch {
-    console.log("user not signed in");
-  }
-
   const accessToken = context.cookies.get("access")?.value;
   const internalAccessToken = context.cookies.get('x-amzn-oidc-data') || process.env.TEST_INTERNAL_ACCESS_TOKEN;
   const url = context.url;
@@ -49,6 +39,11 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         if (data.access) {
           context.cookies.set("access", data.access, { path: "/", sameSite: "lax" });
           context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
+          const resp = await fetchBackendApi<{ is_staff: Boolean }>(
+            context,
+            Routes.ApiUser,
+          );
+          userIsStaff = Boolean(resp.is_staff);
         } else {
           context.redirect(Routes.SignInError);
         }
