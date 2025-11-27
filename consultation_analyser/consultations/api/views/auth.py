@@ -32,9 +32,10 @@ def validate_token(request):
         internal_access_token = serializer.validated_data["internal_access_token"]
         if HostingEnvironment.is_deployed():
             user_authorisation_info = client.get_user_authorisation_info(internal_access_token)
-            # if user_authorisation_info.is_authorised:
-            #     logger.error("{email} is not authenticated", email=user_authorisation_info.email)
-            #     return JsonResponse(data={"detail": "authentication failed"}, status=403)
+            if user_authorisation_info.is_authorised:
+                logger.error("{email} is not authenticated", email=user_authorisation_info.email)
+                # TODO: reinstate this line once unblocked
+                # return JsonResponse(data={"detail": "authentication failed"}, status=403)
             email = user_authorisation_info.email
         else:
             email = jwt.decode(internal_access_token, options={"verify_signature": False})["email"]
