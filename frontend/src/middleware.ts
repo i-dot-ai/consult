@@ -17,7 +17,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   console.log("hello 1");
   if (!context.cookies.get("access")?.value) {
     console.log("hello 2");
-    if (internalAccessToken) {
+    if (!internalAccessToken) {
       console.log("hello 3");
       const url = path.join(getBackendUrl(), Routes.APIValidateToken);
       const response = await fetch(url, {
@@ -27,6 +27,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       });
       
       const data = await response.json();
+      console.log("response=", data);
       
       if (data.access) {
         context.cookies.set("access", data.access, { path: "/", sameSite: "lax" });
@@ -147,7 +148,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     });
 
     if (response.status === 401) {
-      return context.redirect(Routes.SignIn);
+      return context.redirect(Routes.SignInError);
     }
 
     if (response.status === 304) {
