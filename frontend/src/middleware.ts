@@ -11,35 +11,31 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const accessToken = context.cookies.get("access")?.value;
   const internalAccessToken = context.cookies.get('x-amzn-oidc-data') || process.env.TEST_INTERNAL_ACCESS_TOKEN;
   const url = context.url;
+  const backendUrl = getBackendUrl();
+
 
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
   console.log("hello 1");
   if (!context.cookies.get("access")?.value) {
     console.log("hello 2");
-    if (!internalAccessToken) {
-      console.log("hello 3");
-      const url = path.join(getBackendUrl(), Routes.APIValidateToken);
-      const response = await fetch(url, {
-        method: "POST",
-        body: JSON.stringify({internal_access_token: internalAccessToken}),
-        headers: {"Content-Type": "application/json"}
-      });
-      
-      const data = await response.json();
-      console.log("response=", data);
-      
-      if (data.access) {
-        context.cookies.set("access", data.access, { path: "/", sameSite: "lax" });
-        context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
-        const resp = await fetchBackendApi<{ is_staff: Boolean }>(
-          context,
-          Routes.ApiUser,
-        );
-        userIsStaff = Boolean(resp.is_staff);
-      } else {
-        context.redirect(Routes.SignInError);
-      }
+    const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
+      method: "POST",
+      body: JSON.stringify({internal_access_token: internalAccessToken}),
+      headers: {"Content-Type": "application/json"}
+    });
+    
+    const data = await response.json();
+    console.log("response=", data);
+    
+    if (data.access) {
+      context.cookies.set("access", data.access, { path: "/", sameSite: "lax" });
+      context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
+      const resp = await fetchBackendApi<{ is_staff: Boolean }>(
+        context,
+        Routes.ApiUser,
+      );
+      userIsStaff = Boolean(resp.is_staff);
     } else {
       context.redirect(Routes.SignInError);
     }
@@ -51,7 +47,6 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     }
   }
 
-  const backendUrl = getBackendUrl(url.hostname);
   const fullBackendUrl = path.join(backendUrl, url.pathname) + url.search;
 
   // skip as new pages are moved to astro
