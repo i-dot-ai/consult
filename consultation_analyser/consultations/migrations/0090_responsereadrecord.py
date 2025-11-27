@@ -7,7 +7,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("consultations", "0089_alter_consultation_stage_alter_question_theme_status"),
         migrations.swappable_dependency(settings.AUTH_USER_MODEL),
@@ -49,12 +48,8 @@ class Migration(migrations.Migration):
                 "ordering": ["created_at"],
                 "abstract": False,
                 "indexes": [
-                    models.Index(
-                        fields=["user"], name="consultatio_user_id_1b0e7c_idx"
-                    ),
-                    models.Index(
-                        fields=["response"], name="consultatio_respons_9c1c11_idx"
-                    ),
+                    models.Index(fields=["user"], name="consultatio_user_id_1b0e7c_idx"),
+                    models.Index(fields=["response"], name="consultatio_respons_9c1c11_idx"),
                     models.Index(
                         fields=["user", "response"],
                         name="consultatio_user_id_3d1c2d_idx",

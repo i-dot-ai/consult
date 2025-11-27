@@ -22,7 +22,6 @@ class ResponseFilter(FilterSet):
     respondent_id = UUIDFilter()
     question_id = UUIDFilter()
 
-
     def filter_seen(self, queryset, name, value):
         """
         Filter responses based on whether they have been read by the current user.
@@ -33,7 +32,11 @@ class ResponseFilter(FilterSet):
             return queryset
 
         try:
-            show_unseen_only = value[0].lower() == 'true' if isinstance(value, list) and len(value) > 0 else bool(value)
+            show_unseen_only = (
+                value[0].lower() == "true"
+                if isinstance(value, list) and len(value) > 0
+                else bool(value)
+            )
         except (AttributeError, IndexError, ValueError):
             return queryset
 

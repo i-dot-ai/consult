@@ -173,8 +173,10 @@ class ResponseViewSet(ModelViewSet):
         was_already_read = response.is_read_by(request.user)
         read_record = response.mark_as_read_by(request.user)
 
-        return Response({
-            "message": "Response marked as read",
-            "read_at": read_record.created_at,
-            "was_already_read": was_already_read
-        })
+        return Response(
+            {
+                "message": "Response marked as read",
+                "read_at": read_record.created_at,
+                "was_already_read": was_already_read,
+            }
+        )

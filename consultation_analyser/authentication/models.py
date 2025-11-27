@@ -63,4 +63,5 @@ class User(AbstractBaseUser, PermissionsMixin):
     def get_read_responses(self):
         """Get all responses this user has read"""
         from consultation_analyser.consultations.models import Response
+
         return Response.objects.filter(read_records__user=self)
