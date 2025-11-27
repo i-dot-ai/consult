@@ -157,3 +157,18 @@ class ResponseViewSet(ModelViewSet):
             response.annotation.flagged_by.add(request.user)
         response.annotation.save()
         return Response()
+
+    @action(detail=True, methods=["post"], url_path="mark-read")
+    def mark_read(self, request, consultation_pk=None, pk=None):
+        """Mark this response as read by the current user"""
+        response = self.get_object()
+        
+        # Check if already read before marking
+        was_already_read = response.is_read_by(request.user)
+        read_record = response.mark_as_read_by(request.user)
+        
+        return Response({
+            "message": "Response marked as read",
+            "read_at": read_record.created_at,
+            "was_already_read": was_already_read
+        })
