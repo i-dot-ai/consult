@@ -33,8 +33,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       );
       userIsStaff = Boolean(resp.is_staff);
 
-    } catch(error) {
-      console.error("sign-in error", error);
+    } catch (error) {
+      console.error("sign-in error", error.message);
       context.redirect(Routes.SignInError);
     }
   }

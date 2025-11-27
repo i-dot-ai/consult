@@ -24,7 +24,6 @@ class TokenSerializer(serializers.Serializer):
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def validate_token(request):
-    logger.info("request.data={data}", data=request.data)
     serializer = TokenSerializer(data=request.data)
     if not serializer.is_valid():
         return JsonResponse(serializer.errors, status=400)
