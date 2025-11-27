@@ -15,7 +15,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
 
-  if (!context.cookies.get("access")?.value) {
+  if (!context.cookies.get("access")?.value && internalAccessToken) {
     try {
       const body = JSON.stringify({internal_access_token: internalAccessToken});
       const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
@@ -33,7 +33,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       );
       userIsStaff = Boolean(resp.is_staff);
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("sign-in error", error.message);
       context.redirect(Routes.SignInError);
     }
