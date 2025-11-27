@@ -12,44 +12,35 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const internalAccessToken = context.cookies.get('x-amzn-oidc-data') || process.env.TEST_INTERNAL_ACCESS_TOKEN;
   const url = context.url;
 
-  // Redirect to sign-in if user not logged in or not staff
-  const protectedRoutes = [
-    // /^\/sign-out[\/]?$/,
-    /^\/consultations.*/,
-    /^\/design.*/,
-    /^\/stories.*/,
-    /^\/support.*/,
-  ];
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
-  for (const protectedRoute of protectedRoutes) {
-    if (
-      protectedRoute.test(url.pathname) &&
-      !context.cookies.get("access")?.value
-    ) {
-      if (internalAccessToken) {
-        const response = await fetch(Routes.APIValidateToken, {
-          method: "POST",
-          body: JSON.stringify({internal_access_token: internalAccessToken}),
-          headers: {"Content-Type": "application/json"}
-        });
-        
-        const data = await response.json();
-        
-        if (data.access) {
-          context.cookies.set("access", data.access, { path: "/", sameSite: "lax" });
-          context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
-          const resp = await fetchBackendApi<{ is_staff: Boolean }>(
-            context,
-            Routes.ApiUser,
-          );
-          userIsStaff = Boolean(resp.is_staff);
-        } else {
-          context.redirect(Routes.SignInError);
-        }
+  console.log("hello 1");
+  if (!context.cookies.get("access")?.value) {
+    console.log("hello 2");
+    if (internalAccessToken) {
+      console.log("hello 3");
+      const url = path.join(getBackendUrl(), Routes.APIValidateToken);
+      const response = await fetch(url, {
+        method: "POST",
+        body: JSON.stringify({internal_access_token: internalAccessToken}),
+        headers: {"Content-Type": "application/json"}
+      });
+      
+      const data = await response.json();
+      
+      if (data.access) {
+        context.cookies.set("access", data.access, { path: "/", sameSite: "lax" });
+        context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
+        const resp = await fetchBackendApi<{ is_staff: Boolean }>(
+          context,
+          Routes.ApiUser,
+        );
+        userIsStaff = Boolean(resp.is_staff);
       } else {
         context.redirect(Routes.SignInError);
       }
+    } else {
+      context.redirect(Routes.SignInError);
     }
   }
 
