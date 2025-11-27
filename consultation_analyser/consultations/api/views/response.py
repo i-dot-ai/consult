@@ -64,7 +64,7 @@ class ResponseViewSet(ModelViewSet):
     pagination_class = BespokeResultsSetPagination
     filter_backends = [ResponseSearchFilter, DjangoFilterBackend]
     filterset_class = ResponseFilter
-    http_method_names = ["get", "patch"]
+    http_method_names = ["get", "patch", "post"]
 
     def get_queryset(self):
         consultation_uuid = self.kwargs["consultation_pk"]
