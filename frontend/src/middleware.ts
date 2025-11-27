@@ -15,30 +15,34 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
 
-  if (!context.cookies.get("access")?.value && internalAccessToken) {
-    try {
-      const body = JSON.stringify({internal_access_token: internalAccessToken});
-      const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
-        method: "POST",
-        body: body,
-        headers: {"Content-Type": "application/json"}
-      });      
-      const data = await response.json();
-      
-      context.cookies.set("access", data.access, { path: "/", sameSite: "lax" });
-      context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
-      const resp = await fetchBackendApi<{ is_staff: Boolean }>(
-        context,
-        Routes.ApiUser,
-      );
-      userIsStaff = Boolean(resp.is_staff);
+  if (!context.cookies.get("access")?.value) {
+    if (internalAccessToken) {
+      try {
+        const body = JSON.stringify({internal_access_token: internalAccessToken});
+        const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
+          method: "POST",
+          body: body,
+          headers: {"Content-Type": "application/json"}
+        });      
+        const data = await response.json();
+        
+        context.cookies.set("access", data.access, { path: "/", sameSite: "lax" });
+        context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
+        const resp = await fetchBackendApi<{ is_staff: Boolean }>(
+          context,
+          Routes.ApiUser,
+        );
+        userIsStaff = Boolean(resp.is_staff);
 
-    } catch (error: any) {
-      console.error("sign-in error", error.message);
-      context.redirect(Routes.SignInError);
+      } catch (error: any) {
+        console.error("sign-in error", error.message);
+        context.redirect(Routes.SignInError);
+      }
+    } else {
+        console.error("internalAccessToken not set");
+        context.redirect(Routes.SignInError);
     }
   }
-
   for (const protectedStaffRoute of protectedStaffRoutes) {
     if (protectedStaffRoute.test(url.pathname) && !userIsStaff) {
       return context.redirect(Routes.Home);
