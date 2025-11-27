@@ -79,7 +79,7 @@
       <li
         class={clsx([
           "flex",
-          "items-center",
+          "items-start",
           "gap-2",
           "mb-2",
           "last:mb-0",
