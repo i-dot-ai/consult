@@ -41,6 +41,63 @@ def import_consultation_job(
     )
 
 
+@job("default", timeout=3600)
+def import_immutable_data_job(
+    consultation_name: str,
+    consultation_code: str,
+    user_id: UUID,
+) -> UUID:
+    """Import consultation immutable data from S3."""
+    from consultation_analyser.support_console.ingestion.ingest_immutable import (
+        import_consultation_from_s3,
+    )
+
+    logger.refresh_context()
+
+    return import_consultation_from_s3(
+        consultation_code=consultation_code,
+        consultation_title=consultation_name,
+        user_id=user_id,
+        enqueue_embeddings=True,
+    )
+
+
+@job("default", timeout=3600)
+def import_candidate_themes_job(
+    consultation_code: str,
+    timestamp: str,
+) -> None:
+    """Import candidate themes from S3."""
+    from consultation_analyser.support_console.ingestion.ingest_candidate_themes import (
+        import_candidate_themes_from_s3,
+    )
+
+    logger.refresh_context()
+
+    import_candidate_themes_from_s3(
+        consultation_code=consultation_code,
+        timestamp=timestamp,
+    )
+
+
+@job("default", timeout=3600)
+def import_response_annotations_job(
+    consultation_code: str,
+    timestamp: str,
+) -> None:
+    """Import response annotations from S3."""
+    from consultation_analyser.support_console.ingestion.ingest_response_annotations import (
+        import_response_annotations_from_s3,
+    )
+
+    logger.refresh_context()
+
+    import_response_annotations_from_s3(
+        consultation_code=consultation_code,
+        timestamp=timestamp,
+    )
+
+
 def delete_question_related_table(table: str, consultation_id: UUID):
     logger.info("Deleting records from table={table}", table=table)
 

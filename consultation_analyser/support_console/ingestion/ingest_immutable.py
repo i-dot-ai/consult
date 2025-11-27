@@ -166,7 +166,6 @@ def load_multi_choice_from_s3(
 def load_immutable_data_batch(
     consultation_code: str,
     consultation_title: str,
-    timestamp: Optional[str] = None,
     bucket_name: Optional[str] = None,
 ) -> ImmutableDataBatch:
     """
@@ -181,7 +180,6 @@ def load_immutable_data_batch(
     Args:
         consultation_code: Consultation code (S3 folder name)
         consultation_title: Display title for the consultation
-        timestamp: Optional timestamp for outputs
         bucket_name: S3 bucket name (defaults to settings.AWS_BUCKET_NAME)
 
     Returns:
@@ -242,7 +240,6 @@ def load_immutable_data_batch(
     batch = ImmutableDataBatch(
         consultation_code=consultation_code,
         consultation_title=consultation_title,
-        timestamp=timestamp,
         respondents=respondents,
         questions=questions,
         responses_by_question=responses_by_question,
@@ -298,14 +295,12 @@ def ingest_immutable_data(batch: ImmutableDataBatch, user_id: UUID) -> UUID:
         code=batch.consultation_code,
         defaults={
             "title": batch.consultation_title,
-            "timestamp": batch.timestamp,
         },
     )
 
     if not created:
         logger.warning(f"Consultation {batch.consultation_code} already exists, updating...")
         consultation.title = batch.consultation_title
-        consultation.timestamp = batch.timestamp
         consultation.save()
 
     # Add user to consultation
@@ -606,7 +601,6 @@ def import_consultation_from_s3(
     consultation_code: str,
     consultation_title: str,
     user_id: UUID,
-    timestamp: Optional[str] = None,
     enqueue_embeddings: bool = True,
 ) -> UUID:
     """
@@ -622,7 +616,6 @@ def import_consultation_from_s3(
         consultation_code: S3 folder code
         consultation_title: Display name
         user_id: User ID to associate
-        timestamp: Optional timestamp for outputs
         enqueue_embeddings: Whether to enqueue embedding jobs (default True)
 
     Returns:
@@ -634,7 +627,6 @@ def import_consultation_from_s3(
     batch = load_immutable_data_batch(
         consultation_code=consultation_code,
         consultation_title=consultation_title,
-        timestamp=timestamp,
     )
 
     # Ingest immutable data
