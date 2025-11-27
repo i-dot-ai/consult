@@ -18,10 +18,11 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
   console.log("hello 1");
   if (!context.cookies.get("access")?.value) {
-    console.log("hello 2");
+    const body = JSON.stringify({internal_access_token: internalAccessToken});
+    console.log("hello 2", body);
     const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
       method: "POST",
-      body: JSON.stringify({internal_access_token: internalAccessToken}),
+      body: body,
       headers: {"Content-Type": "application/json"}
     });
     
@@ -56,9 +57,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/get-involved[/]?$/,
     /^\/how-it-works[/]?$/,
     /^\/privacy[/]?$/,
-    /^\/sign-in[/]?$/,
+    /^\/sign-in-error[/]?$/,
     /^\/sign-out[/]?$/,
-    /^\/magic-link\/[A-Za-z0-9-]*[/]?$/,
     /^\/api\/astro\/.*/,
     /^\/api\/health[/]?$/,
     /^\/health[/]?$/,
