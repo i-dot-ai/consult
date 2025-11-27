@@ -9,16 +9,14 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   let userIsStaff: boolean = false;
 
   const accessToken = context.cookies.get("access")?.value;
-  const internalAccessToken = context.cookies.get('x-amzn-oidc-data') || process.env.TEST_INTERNAL_ACCESS_TOKEN;
+  const internalAccessToken = context.request.headers.get('x-amzn-oidc-data') || process.env.TEST_INTERNAL_ACCESS_TOKEN;
   const url = context.url;
   const backendUrl = getBackendUrl();
-
-
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
+
 
   if (!context.cookies.get("access")?.value) {
     try {
-      console.log('internalAccessToken:', internalAccessToken);
       const body = JSON.stringify({internal_access_token: internalAccessToken});
       const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
         method: "POST",
@@ -36,7 +34,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
       userIsStaff = Boolean(resp.is_staff);
 
     } catch(error) {
-      console.error("lsign-in error", error);
+      console.error("sign-in error", error);
       context.redirect(Routes.SignInError);
     }
   }
