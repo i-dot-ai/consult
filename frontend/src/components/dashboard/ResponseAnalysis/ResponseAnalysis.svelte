@@ -63,6 +63,9 @@
   export let evidenceRich: boolean = false;
   export let setEvidenceRich = (value: boolean) => {};
 
+  export let unseenResponses: boolean = false;
+  export let setUnseenResponses = (value: boolean) => {};
+
   export let flaggedOnly: boolean = false;
   export let setFlaggedOnly = (value: boolean) => {};
 
@@ -83,11 +86,14 @@
     <svelte:boundary>
       <FiltersSidebar
         showEvidenceRich={true}
+        showUnseenResponse={true}
         {demoOptions}
         {demoData}
         {demoOptionsData}
         {evidenceRich}
         {setEvidenceRich}
+        {unseenResponses}
+        {setUnseenResponses}
         loading={isThemesLoading}
       />
 

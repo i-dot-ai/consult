@@ -14,6 +14,7 @@
     DemoOptionsResponse,
     DemoTotalCounts,
   } from "../../../global/types";
+    import Visibility from "../../svg/material/Visibility.svelte";
 
   interface Props {
     demoOptions: DemoOption;
@@ -21,8 +22,11 @@
     demoOptionsData?: DemoOptionsResponse;
     loading: boolean;
     showEvidenceRich?: boolean;
+    showUnseenResponse?: boolean;
     evidenceRich?: boolean;
     setEvidenceRich?: (newVal: boolean) => void;
+    unseenResponses?: boolean;
+    setUnseenResponses?: (newVal: boolean) => void;
   }
   let {
     demoOptions = {},
@@ -32,6 +36,9 @@
     showEvidenceRich = true,
     evidenceRich = false,
     setEvidenceRich = () => {},
+    showUnseenResponse = true,
+    unseenResponses = false,
+    setUnseenResponses = () => {},
   }: Props = $props();
 
   // Derive to avoid calculating on re-render
@@ -73,7 +80,26 @@
         </Switch>
       </Panel>
     {/if}
+    {#if showUnseenResponse}
+    <Panel level={2} border={true} bg={true}>
+        <Switch
+          id="unseen-responses-toggle"
+          label="Show unseen responses"
+          value={unseenResponses}
+          handleChange={(value: boolean) => setUnseenResponses(value)}
+        >
+          <div slot="label" class="flex gap-1 items-center">
+            <div class="bg-green-100 rounded-2xl text-xs p-0.5">
+              <MaterialIcon size="1rem" color="fill-green-700">
+                <Visibility />
+              </MaterialIcon>
+            </div>
 
+            <span class="text-xs">Show unseen responses</span>
+          </div>
+        </Switch>
+      </Panel>
+    {/if}
     {#if loading}
       <div in:fade>
         {#each "_".repeat(3) as _}

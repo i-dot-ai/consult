@@ -14,12 +14,33 @@ class ResponseFilter(FilterSet):
     # TODO: adjust the frontend to match sensible DRF defaults
     sentimentFilters = BaseInFilter(field_name="annotation__sentiment", lookup_expr="in")
     evidenceRich = BooleanFilter(field_name="annotation__evidence_rich")
+    unseenResponses = BaseInFilter(method="filter_seen", lookup_expr="in")
     themeFilters = BaseInFilter(method="filter_themes", lookup_expr="in")
     demographics = BaseInFilter(field_name="respondent__demographics", lookup_expr="in")
     is_flagged = BooleanFilter()
     multiple_choice_answer = BaseInFilter(field_name="chosen_options", lookup_expr="in")
     respondent_id = UUIDFilter()
     question_id = UUIDFilter()
+
+
+    def filter_seen(self, queryset, name, value):
+        """
+        Filter responses based on whether they have been read by the current user.
+        When unseenResponses=true, show only responses NOT read by the current user.
+        When unseenResponses=false, show all responses (no filtering).
+        """
+        if not value or not self.request or not self.request.user.is_authenticated:
+            return queryset
+
+        try:
+            show_unseen_only = value[0].lower() == 'true' if isinstance(value, list) and len(value) > 0 else bool(value)
+        except (AttributeError, IndexError, ValueError):
+            return queryset
+
+        if show_unseen_only:
+            return queryset.exclude(read_records__user=self.request.user)
+        else:
+            return queryset
 
     def filter_themes(self, queryset, name, value):
         if not value:

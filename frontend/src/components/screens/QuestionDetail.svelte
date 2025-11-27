@@ -51,6 +51,7 @@
     themeFilters: string[];
     searchMode: SearchModeValues;
     evidenceRich: boolean;
+    unseenResponses: boolean;
     flaggedOnly: boolean;
     demoFilters: string[];
     multiAnswerFilters: string[];
@@ -75,6 +76,7 @@
   let searchValue: string = $state("");
   let searchMode: SearchModeValues = $state(SearchModeValues.KEYWORD);
   let evidenceRich: boolean = $state(false);
+  let unseenResponses: boolean = $state(false);
   let sortAscending: boolean = $state(false);
   let flaggedOnly: boolean = $state(false);
 
@@ -187,6 +189,7 @@
       searchMode: searchMode,
       themeFilters: themeFilters.filters,
       evidenceRich: evidenceRich,
+      unseenResponses: unseenResponses,
       demoFilters: demoFilters.filters,
       flaggedOnly: flaggedOnly,
       multiAnswerFilters: multiAnswerFilters.filters,
@@ -242,6 +245,9 @@
       ...(filters.evidenceRich && {
         evidenceRich: JSON.stringify(filters.evidenceRich),
       }),
+      ...(filters.unseenResponses && {
+        unseenResponses: JSON.stringify(filters.unseenResponses),
+      }),
       ...(filters.flaggedOnly && {
         is_flagged: JSON.stringify(filters.flaggedOnly),
       }),
@@ -272,6 +278,7 @@
     demoFilters.reset();
     multiAnswerFilters.reset();
     evidenceRich = false;
+    unseenResponses = false;
     searchValue = "";
     flaggedOnly = false;
   };
@@ -282,12 +289,14 @@
         demoFilters.applied() ||
         multiAnswerFilters.applied() ||
         evidenceRich ||
+        unseenResponses ||
         searchValue ||
         flaggedOnly,
     );
   };
 
   const setEvidenceRich = (value: boolean) => (evidenceRich = value);
+  const setUnseenResponses = (value: boolean) => (unseenResponses = value);
 
   $effect(() => {
     // @ts-ignore: ignore dependencies
@@ -295,6 +304,7 @@
       searchMode,
       themeFilters.filters,
       evidenceRich,
+      unseenResponses,
       demoFilters.filters,
       multiAnswerFilters.filters,
       flaggedOnly);
@@ -473,6 +483,8 @@
         themes={$themeInfoData?.themes}
         {evidenceRich}
         {setEvidenceRich}
+        {unseenResponses}
+        {setUnseenResponses}
         isThemesLoading={$isThemeAggrLoading}
         {flaggedOnly}
         setFlaggedOnly={(newValue) => (flaggedOnly = newValue)}
