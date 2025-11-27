@@ -13,6 +13,8 @@ import { getClientId } from '../global/utils';
     })
 })
 
+console.log("remaining cookies =", Astro.request.headers.get("cookies"));
+
 const client_id = getClientId();
 const sign_out_url = `https://sso.service.security.gov.uk/sign-out?from_app=${client_id}`;
 return Astro.redirect(sign_out_url);
