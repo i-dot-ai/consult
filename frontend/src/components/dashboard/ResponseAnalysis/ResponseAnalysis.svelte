@@ -37,6 +37,7 @@
   import Popover from "../../inputs/Popover/Popover.svelte";
   import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
   import Flag2 from "../../svg/material/Flag2.svelte";
+  import MarkAsRead from "../MarkAsRead/MarkAsRead.svelte";
 
   export let consultationId: string = "";
   export let questionId: string = "";
@@ -319,6 +320,8 @@
                   {#each answers as answer, i (answer.id)}
                     <li>
                       <div transition:fly={{ x: 300, delay: getDelay(i) }}>
+                      <!-- Stops running the timers and sending API requests if the answer has already been read -->
+                      {#if answer.is_read}
                         <AnswerCard
                           {consultationId}
                           {questionId}
@@ -336,6 +339,27 @@
                           isEdited={answer.is_edited}
                           {resetData}
                         />
+                      {:else}
+                        <MarkAsRead consultationId={consultationId} responseId={answer.id}>
+                          <AnswerCard
+                            {consultationId}
+                            {questionId}
+                            answerId={answer.id}
+                            respondentId={answer.respondent_id}
+                            respondentDisplayId={answer.identifier.toString()}
+                            demoData={Object.values(answer.demographic_data)}
+                            multiAnswers={answer.multiple_choice_answer}
+                            evidenceRich={answer.evidenceRich}
+                            text={answer.free_text_answer_text}
+                            themes={answer.themes}
+                            themeOptions={themes}
+                            highlightText={searchValue}
+                            isFlagged={answer.is_flagged}
+                            isEdited={answer.is_edited}
+                            {resetData}
+                          />
+                        </MarkAsRead>
+                      {/if}
                       </div>
                     </li>
                   {/each}
