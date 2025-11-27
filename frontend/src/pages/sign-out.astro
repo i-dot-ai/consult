@@ -5,7 +5,7 @@ import Title from '../components/Title.svelte';
 import { getClientId } from '../global/utils';
 
 
-console.log("current cookies =", Astro.request.headers.get("cookies"));
+console.log("Astro.cookies before:", Object.fromEntries(Astro.cookies));
 
 ["access", "sessionId", "AWSALBAuthNonce", "__Secure-AuthSessionCookie-0", "__Secure-AuthSessionCookie-1"].forEach(cookie => {
     Astro.cookies.set(cookie, "", {
@@ -15,7 +15,7 @@ console.log("current cookies =", Astro.request.headers.get("cookies"));
     })
 })
 
-console.log("remaining cookies =", Astro.request.headers.get("cookies"));
+console.log("Astro.cookies after:", Object.fromEntries(Astro.cookies));
 
 const client_id = getClientId();
 const sign_out_url = `https://sso.service.security.gov.uk/sign-out?from_app=${client_id}`;
