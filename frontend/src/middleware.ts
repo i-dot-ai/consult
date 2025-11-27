@@ -16,20 +16,17 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
 
   const protectedStaffRoutes = [/^\/support.*/, /^\/stories.*/];
 
-  console.log("hello 1");
   if (!context.cookies.get("access")?.value) {
-    const body = JSON.stringify({internal_access_token: internalAccessToken});
-    console.log("hello 2", body);
-    const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
-      method: "POST",
-      body: body,
-      headers: {"Content-Type": "application/json"}
-    });
-    
-    const data = await response.json();
-    console.log("response=", data);
-    
-    if (data.access) {
+    try {
+      console.log('internalAccessToken:', internalAccessToken);
+      const body = JSON.stringify({internal_access_token: internalAccessToken});
+      const response = await fetch(path.join(backendUrl, Routes.APIValidateToken), {
+        method: "POST",
+        body: body,
+        headers: {"Content-Type": "application/json"}
+      });      
+      const data = await response.json();
+      
       context.cookies.set("access", data.access, { path: "/", sameSite: "lax" });
       context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
       const resp = await fetchBackendApi<{ is_staff: Boolean }>(
@@ -37,7 +34,9 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
         Routes.ApiUser,
       );
       userIsStaff = Boolean(resp.is_staff);
-    } else {
+
+    } catch(error) {
+      console.error("lsign-in error", error);
       context.redirect(Routes.SignInError);
     }
   }
