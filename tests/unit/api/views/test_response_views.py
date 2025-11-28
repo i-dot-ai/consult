@@ -269,7 +269,7 @@ class TestResponseViewSet:
         - 1 query to get authentication user for is_flagged annotation
         - 1 query to count respondents
         - 1 query to count filtered responses
-        - 1 query to get responses with related data
+        - 1 query to get responses with related data (includes is_read annotation)
         - 1 query to prefetch multiple choice answers
         - 1 query to prefetch demographic data
         """
@@ -1068,7 +1068,7 @@ class TestResponseViewSet:
             - 1 query to get authentication user for is_flagged annotation
             - 1 query to count respondents
             - 1 query to count filtered responses
-            - 1 query to get responses with related data
+            - 1 query to get responses with related data (includes is_read annotation)
             - 1 query to calculate average hybrid_score across responses
             - 1 query to calculate standard deviation of hybrid_score across responses
             - 1 query to prefetch multiple choice answers

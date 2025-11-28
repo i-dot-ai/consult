@@ -229,11 +229,9 @@ class ResponseSerializer(serializers.ModelSerializer):
     def get_is_read(self, obj):
         """
         Returns True if the current user has read this response.
+        Uses the annotated field is_read_by_user to avoid N+1 queries.
         """
-        request = self.context.get("request")
-        if request and request.user and request.user.is_authenticated:
-            return obj.is_read_by(request.user)
-        return False
+        return getattr(obj, 'is_read_by_user', False)
 
     def get_demographic_data(self, obj) -> dict[str, Any] | None:
         return {d.field_name: d.field_value for d in obj.respondent.demographics.all()}

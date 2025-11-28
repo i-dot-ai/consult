@@ -89,6 +89,11 @@ class ResponseViewSet(ModelViewSet):
                     response=OuterRef("pk"), flagged_by=self.request.user
                 )
             ),
+            is_read_by_user=Exists(
+                models.ResponseReadRecord.objects.filter(
+                    response=OuterRef("pk"), user=self.request.user
+                )
+            ),
             annotation_is_edited=Exists(
                 models.ResponseAnnotation.history.filter(id=OuterRef("annotation__id")).values(
                     "id"
