@@ -22,7 +22,7 @@ from consultation_analyser.consultations.api.serializers import (
 
 class BespokeResultsSetPagination(PageNumberPagination):
     # TODO: remove this, and adapt .js to match standard PageNumberPagination
-    page_size = 100
+    page_size = 5
     page_size_query_param = "page_size"
     max_page_size = 1000
 
@@ -162,12 +162,6 @@ class ResponseViewSet(ModelViewSet):
             response.annotation.flagged_by.add(request.user)
         response.annotation.save()
         return Response()
-
-    def perform_update(self, serializer):
-        """Override to automatically mark response as read when updated"""
-        super().perform_update(serializer)
-        response = serializer.instance
-        response.mark_as_read_by(self.request.user)
 
     @action(detail=True, methods=["post"], url_path="mark-read")
     def mark_read(self, request, consultation_pk=None, pk=None):

@@ -25,6 +25,7 @@
     demoFilters,
     multiAnswerFilters,
   } from "../../../global/state.svelte";
+  import { updateResponseReadStatus } from "../../../global/routes";
 
   import Title from "../../Title.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
@@ -37,11 +38,10 @@
   import Popover from "../../inputs/Popover/Popover.svelte";
   import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
   import Flag2 from "../../svg/material/Flag2.svelte";
-  import MarkAsRead from "../MarkAsRead/MarkAsRead.svelte";
 
   export let consultationId: string = "";
   export let questionId: string = "";
-  export let pageSize: number = 50;
+  export let pageSize: number = 5;
   export let isAnswersLoading: boolean = true;
   export let isThemesLoading: boolean = true;
   export let answersError: string = "";
@@ -79,6 +79,40 @@
     // Reset delay after page size so load more button loads
     // new answers without initial delay but still scattered
     return BASE_FLY_DELAY * (index % pageSize);
+  }
+
+  let markAsReadTimer: ReturnType<typeof setTimeout> | null = null;
+
+  function startMarkAsReadTimer() {
+    if (markAsReadTimer) {
+      clearTimeout(markAsReadTimer);
+    }
+    
+    markAsReadTimer = setTimeout(async () => {
+      if (answers.length > 0) {
+        const markPromises = answers.map(answer => 
+          fetch(updateResponseReadStatus(consultationId, answer.id), {
+            method: "POST",
+          })
+        );
+        await Promise.all(markPromises);
+      }
+    }, 10000);
+  }
+
+  function resetMarkAsReadTimer() {
+    if (markAsReadTimer) {
+      clearTimeout(markAsReadTimer);
+      markAsReadTimer = null;
+    }
+  }
+
+  $: if (answers.length > 0 && !isAnswersLoading && !answersError) {
+    startMarkAsReadTimer();
+  }
+
+  $: if (searchValue || anyFilterApplied || evidenceRich || unseenResponses || flaggedOnly || themeFilters.filters.length > 0) {
+    resetMarkAsReadTimer();
   }
 </script>
 
@@ -320,8 +354,6 @@
                   {#each answers as answer, i (answer.id)}
                     <li>
                       <div transition:fly={{ x: 300, delay: getDelay(i) }}>
-                      <!-- Stops running the timers and sending API requests if the answer has already been read -->
-                      {#if answer.is_read}
                         <AnswerCard
                           {consultationId}
                           {questionId}
@@ -339,27 +371,6 @@
                           isEdited={answer.is_edited}
                           {resetData}
                         />
-                      {:else}
-                        <MarkAsRead consultationId={consultationId} responseId={answer.id}>
-                          <AnswerCard
-                            {consultationId}
-                            {questionId}
-                            answerId={answer.id}
-                            respondentId={answer.respondent_id}
-                            respondentDisplayId={answer.identifier.toString()}
-                            demoData={Object.values(answer.demographic_data)}
-                            multiAnswers={answer.multiple_choice_answer}
-                            evidenceRich={answer.evidenceRich}
-                            text={answer.free_text_answer_text}
-                            themes={answer.themes}
-                            themeOptions={themes}
-                            highlightText={searchValue}
-                            isFlagged={answer.is_flagged}
-                            isEdited={answer.is_edited}
-                            {resetData}
-                          />
-                        </MarkAsRead>
-                      {/if}
                       </div>
                     </li>
                   {/each}

@@ -64,7 +64,7 @@
 
   let { consultationId = "", questionId = "" }: Props = $props();
 
-  const PAGE_SIZE: number = 50;
+  const PAGE_SIZE: number = 5;
   const MAX_THEME_FILTERS: number = Infinity;
 
   let currPage: number = $state(1);
