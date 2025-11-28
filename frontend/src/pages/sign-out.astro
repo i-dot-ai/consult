@@ -7,6 +7,10 @@ import { getClientId } from '../global/utils';
 const cookiesToDelete = ["access", "sessionId", "AWSALBAuthNonce", "__Secure-AuthSessionCookie-0", "__Secure-AuthSessionCookie-1"];
 
 const rawCookie_Header = Astro.request.headers.get("cookie") || "";
+
+let remainingCookies = [];
+let deletedCookies = [];
+
 for (var cookie of rawCookie_Header.split("; ")) {
     const cookieName = cookie.split("=")[0];
     if (cookiesToDelete.includes(cookieName)) {
@@ -15,20 +19,21 @@ for (var cookie of rawCookie_Header.split("; ")) {
             sameSite: "lax",
             expires: new Date(0),
         });
-        console.info("deleting cookie =", cookieName);
+        deletedCookies.push(cookieName);
     } else {
-        console.info("keeping cookie =", cookieName);
+        remainingCookies.push(cookieName);
     }
 }
+
+console.info("deleted cookies =", deletedCookies);
+console.info("remaining cookies =", remainingCookies);
 
 
 
 const clientId = getClientId();
 const signOutUrl = `https://sso.service.security.gov.uk/sign-out?from_app=${clientId}`;
 
-const data = await fetch(signOutUrl)
-console.info("responses from IA SSO =", data.status);
-// return Astro.redirect(sign_out_url);
+return Astro.redirect(signOutUrl);
 ---
 <Layout>
 	<Section>
