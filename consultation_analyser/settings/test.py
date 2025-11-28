@@ -21,5 +21,3 @@ for queueConfig in RQ_QUEUES.values():  # noqa
 
 # Use memory email backend for tests
 EMAIL_BACKEND = "django.core.mail.backends.locmem.EmailBackend"
-
-SIGNIN_URL = "http://" + DOMAIN_NAME + LOGIN_URL  # noqa: F405

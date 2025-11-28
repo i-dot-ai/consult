@@ -1,4 +1,3 @@
-from django.conf import settings
 from django.http import Http404
 from django.shortcuts import redirect
 from rest_framework_simplejwt.authentication import JWTAuthentication
@@ -40,7 +39,7 @@ class SupportAppStaffRequiredMiddleware:
     def __call__(self, request):
         if request.path.startswith("/support/"):
             if not request.user.is_authenticated:
-                return redirect(settings.SIGNIN_URL)
+                return redirect("/sign-in/")
 
             # Must already be logged in from login required middleware.
             # Sign-out is excepted as we don't want to 404 on sign-out.

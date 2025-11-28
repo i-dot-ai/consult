@@ -47,12 +47,10 @@ INSTALLED_APPS = [
     "django.contrib.auth",
     "django.contrib.admin",
     "waffle",  # feature flags
-    "magic_link",
     "consultation_analyser.authentication",
     "consultation_analyser.consultations",
     "consultation_analyser.support_console",
     "consultation_analyser.error_pages",
-    "consultation_analyser.email",
     "compressor",
     "crispy_forms",
     "crispy_forms_gds",
@@ -290,9 +288,6 @@ SIGN_OFF_BATCH_JOB_QUEUE = env("SIGN_OFF_BATCH_JOB_QUEUE")
 SIGN_OFF_BATCH_JOB_DEFINITION = env("SIGN_OFF_BATCH_JOB_DEFINITION")
 
 
-# Authentication
-LOGIN_URL = "/sign-in/"
-
 # version info
 GIT_SHA = env("GIT_SHA", default=None)
 
@@ -357,3 +352,5 @@ SPECTACULAR_SETTINGS = {
     "COMPONENT_SPLIT_REQUEST": True,
     "SCHEMA_PATH_PREFIX": "/api/",
 }
+
+AUTH_API_URL = env.str("AUTH_API_URL", None)
