@@ -48,6 +48,17 @@
     type ErrorType,
   } from "../theme-sign-off/ErrorModal.svelte";
 
+  interface Props {
+    consultationId: string;
+    questionId: string;
+    questionDataMock?: Function;
+    generatedThemesMock?: Function;
+    selectedThemesMock?: Function;
+    createThemeMock?: Function;
+    answersMock?: Function;
+    selectGeneratedThemeMock?: Function;
+  }
+
   let {
     consultationId = "",
     questionId = "",
@@ -57,14 +68,14 @@
     createThemeMock,
     answersMock,
     selectGeneratedThemeMock,
-  } = $props();
+  }: Props = $props();
 
-  const selectedThemesStore = createFetchStore<SelectedThemesResponse>(selectedThemesMock);
-  const selectedThemesCreateStore = createFetchStore(createThemeMock);
+  const selectedThemesStore = createFetchStore<SelectedThemesResponse>({ mockFetch: selectedThemesMock });
+  const selectedThemesCreateStore = createFetchStore({ mockFetch: createThemeMock });
   const selectedThemesDeleteStore = createFetchStore<SelectedThemesDeleteResponse>();
-  const generatedThemesStore = createFetchStore<GeneratedThemesResponse>(selectedThemesMock);
-  const generatedThemesSelectStore = createFetchStore(selectGeneratedThemeMock);
-  const questionStore = createFetchStore<Question>(questionDataMock);
+  const generatedThemesStore = createFetchStore<GeneratedThemesResponse>({ mockFetch: selectedThemesMock });
+  const generatedThemesSelectStore = createFetchStore({ mockFetch: selectGeneratedThemeMock });
+  const questionStore = createFetchStore<Question>({ mockFetch: questionDataMock });
   const confirmSignOffStore = createFetchStore();
 
   let isConfirmSignOffModalOpen: boolean = $state(false);

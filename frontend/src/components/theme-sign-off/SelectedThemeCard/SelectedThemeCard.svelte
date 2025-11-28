@@ -38,7 +38,7 @@
     answersMock,
   }: Props = $props();
 
-  const answersStore = createFetchStore(answersMock);
+  const answersStore = createFetchStore({ mockFetch: answersMock });
 
   let showAnswers = $state(false);
   let editing = $state(false);

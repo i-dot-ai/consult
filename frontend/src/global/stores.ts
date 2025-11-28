@@ -47,7 +47,9 @@ function createFavStore() {
 export const favStore = createFavStore();
 
 // Shared fetch logic
-export const createFetchStore = <T>(mockFetch?: Function) => {
+export const createFetchStore = <T>(
+  { mockFetch, debounceDelay=500 }: { mockFetch?: Function; debounceDelay?: number } | undefined = {}
+) => {
   const store: Writable<{
     data: T | null,
     isLoading: boolean,
@@ -62,7 +64,6 @@ export const createFetchStore = <T>(mockFetch?: Function) => {
     fetch: () => {},
   });
 
-  const DEBOUNCE_DELAY = 500;
   let debounceTimeout: ReturnType<typeof setTimeout> | null = null;
   let prevPromise: Promise<void> | null = null;
   let resolvePrev: (() => void) | null = null;
@@ -132,7 +133,7 @@ export const createFetchStore = <T>(mockFetch?: Function) => {
             resolvePrev();
           }
         }
-      }, DEBOUNCE_DELAY);
+      }, debounceDelay);
     });
 
     return prevPromise;
