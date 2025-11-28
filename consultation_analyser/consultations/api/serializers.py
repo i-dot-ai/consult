@@ -307,6 +307,21 @@ class ConsultationImportSerializer(serializers.Serializer):
         return self.validated_data.get("action") == "sign_off"
 
 
+class ConsultationImportImmutableSerializer(serializers.Serializer):
+    consultation_name = serializers.CharField(required=True, max_length=255)
+    consultation_code = serializers.CharField(required=True, max_length=255)
+
+
+class ConsultationImportCandidateThemesSerializer(serializers.Serializer):
+    consultation_code = serializers.CharField(required=True, max_length=255)
+    timestamp = serializers.CharField(required=True, max_length=100)
+
+
+class ConsultationImportAnnotationsSerializer(serializers.Serializer):
+    consultation_code = serializers.CharField(required=True, max_length=255)
+    timestamp = serializers.CharField(required=True, max_length=100)
+
+
 class ConsultationExportSerializer(serializers.Serializer):
     s3_key = serializers.CharField(max_length=255, default="", allow_null=True)
     question_ids = serializers.ListSerializer(child=serializers.CharField())
