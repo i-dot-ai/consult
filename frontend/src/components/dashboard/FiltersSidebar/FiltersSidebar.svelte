@@ -89,8 +89,8 @@
           handleChange={(value: boolean) => setUnseenResponses(value)}
         >
           <div slot="label" class="flex gap-1 items-center">
-            <div class="bg-green-100 rounded-2xl text-xs p-0.5">
-              <MaterialIcon size="1rem" color="fill-green-700">
+            <div class="bg-teal-100 rounded-2xl text-xs p-0.5">
+              <MaterialIcon size="1rem" color="fill-teal-700">
                 <Visibility />
               </MaterialIcon>
             </div>
