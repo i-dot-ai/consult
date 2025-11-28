@@ -1,6 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
+  import { onMount } from "svelte";
   import { fade, slide } from "svelte/transition";
 
   import { createFetchStore } from "../../global/stores";
@@ -11,6 +12,7 @@
     getThemeSignOffUrl,
     Routes,
   } from "../../global/routes";
+  import type { Question, SelectedThemesResponse } from "../../global/types";
 
   import Panel from "../dashboard/Panel/Panel.svelte";
   import TitleRow from "../dashboard/TitleRow.svelte";
@@ -32,24 +34,15 @@
 
   let { questionId = "", consultationId = "" }: Props = $props();
 
-  const {
-    load: loadSelectedThemes,
-    loading: isSelectedThemesLoading,
-    data: selectedThemesData,
-    error: selectedThemesError,
-  } = createFetchStore();
+  const selectedThemesStore = createFetchStore<SelectedThemesResponse>();
+  const questionStore = createFetchStore<Question>();
+  let dataRequested: boolean = $state(false);
 
-  const {
-    load: loadQuestion,
-    loading: isQuestionLoading,
-    data: questionData,
-    error: questionError,
-  } = createFetchStore();
-
-  $effect(() => {
-    loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
-    loadQuestion(getApiQuestionUrl(consultationId, questionId));
-  });
+  onMount(() => {
+    $selectedThemesStore.fetch(getApiGetSelectedThemesUrl(consultationId, questionId));
+    $questionStore.fetch(getApiQuestionUrl(consultationId, questionId));
+    dataRequested = true;
+  })
 </script>
 
 {#snippet selectedThemeCard(name: string, isSkeleton?: boolean)}
@@ -141,13 +134,19 @@
 
         <div>
           <h2 class="text-md">
-            {#if !$questionData}
+            {#if !dataRequested || $questionStore.isLoading}
               <div class="blink bg-neutral-100 text-neutral-100 select-none">
                 SKELETON
               </div>
+            {:else if $questionStore.error}
+              <div class="mb-4">
+                <Alert>
+                  {$questionStore.error}
+                </Alert>
+              </div>
             {:else}
               <span in:fade>
-                {`Q${$questionData?.number}: ${$questionData?.question_text}`}
+                {`Q${$questionStore.data?.number}: ${$questionStore.data?.question_text}`}
               </span>
             {/if}
           </h2>
@@ -207,14 +206,20 @@
       </p> -->
 
       <ul>
-        {#if $isSelectedThemesLoading}
+        {#if !dataRequested || $selectedThemesStore.isLoading}
           {#each "_".repeat(2) as _}
             <li>
               {@render selectedThemeCard("SKELETON", true)}
             </li>
           {/each}
+        {:else if $selectedThemesStore.error}
+          <div class="my-2">
+            <Alert>
+              {$questionStore.error}
+            </Alert>
+          </div>
         {:else}
-          {#each $selectedThemesData?.results as selectedTheme}
+          {#each $selectedThemesStore.data?.results as selectedTheme}
             <li>
               {@render selectedThemeCard(selectedTheme.name)}
             </li>

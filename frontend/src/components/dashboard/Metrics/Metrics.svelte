@@ -19,6 +19,7 @@
   import Title from "../../Title.svelte";
   import Finance from "../../svg/material/Finance.svelte";
   import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
+  import LoadingMessage from "../../LoadingMessage/LoadingMessage.svelte";
 
   interface Props {
     consultationId: string;
@@ -168,7 +169,7 @@
     {/if}
   </div>
 
-  {#if paginatedCategories.length > 0 || demoOptionsLoading}
+  {#if paginatedCategories.length > 0 && !demoOptionsLoading}
     <div transition:slide class="mt-8">
       <TabView
         variant="dots"
@@ -224,5 +225,11 @@
         </div>
       </TabView>
     </div>
+  {:else}
+    {#if demoOptionsLoading}
+      <LoadingMessage message="Loading Demographics..." />
+    {:else}
+      <div class="my-4"></div>
+    {/if}
   {/if}
 </Panel>

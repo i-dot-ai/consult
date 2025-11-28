@@ -1,5 +1,7 @@
 import { render, fireEvent } from "@testing-library/svelte";
 import { describe, it, expect, vi } from "vitest";
+import '@testing-library/jest-dom/vitest';
+
 import Checkbox from "./Checkbox.svelte";
 
 describe("Checkbox Component", () => {
@@ -218,7 +220,7 @@ describe("Checkbox Component", () => {
   });
 
   it("sets checkbox value attribute when provided", () => {
-    const { getByRole } = render(Checkbox, {
+    const { container } = render(Checkbox, {
       props: {
         id: "newsletter",
         label: "Subscribe",
@@ -226,7 +228,6 @@ describe("Checkbox Component", () => {
       }
     });
 
-    const checkbox = getByRole("checkbox");
-    expect(checkbox).toHaveValue("newsletter-subscription");
+    expect(container.querySelector(`input[value="newsletter-subscription"]`)).toBeTruthy();
   });
 });
