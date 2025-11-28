@@ -9,7 +9,7 @@ export enum Routes {
   SignIn = "/sign-in",
   SignOut = "/sign-out",
   ApiMagicLink = "/api/magic-link/",
-  ApiConsultations = "/api/consultations/",
+  ApiConsultations = "/api/consultations",
   ApiConsultationFolders = "/api/consultations/folders/",
   ApiConsultationImport = "/api/consultations/import/",
   ApiConsultationImportImmutable = "/api/consultations/import-immutable/",
@@ -165,4 +165,11 @@ export const getApiShowNextResponse = (
   questionId: string,
 ) => {
   return `${Routes.Evaluations}/${consultationId}/questions/${questionId}/show-next`;
+};
+
+export const updateResponseReadStatus = (
+  consultationId: string,
+  responseId: string,
+) => {
+  return `${Routes.ApiConsultations}/${consultationId}/responses/${responseId}/mark-read/`;
 };

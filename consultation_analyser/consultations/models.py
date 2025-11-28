@@ -182,6 +182,29 @@ class Respondent(UUIDPrimaryKeyModel, TimeStampedModel):
         return self.themefinder_id if self.themefinder_id else self.id
 
 
+class ResponseReadRecord(UUIDPrimaryKeyModel, TimeStampedModel):
+    """Track which responses have been read by which users"""
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="read_responses")
+    response = models.ForeignKey("Response", on_delete=models.CASCADE, related_name="read_records")
+
+    class Meta(UUIDPrimaryKeyModel.Meta, TimeStampedModel.Meta):
+        constraints = [
+            models.UniqueConstraint(
+                fields=["user", "response"],
+                name="unique_user_response_read",
+            ),
+        ]
+        indexes = [
+            models.Index(fields=["user"]),
+            models.Index(fields=["response"]),
+            models.Index(fields=["user", "response"]),
+        ]
+
+    def __str__(self):
+        return f"Response {self.response.id} read by {self.user.email}"
+
+
 class Response(UUIDPrimaryKeyModel, TimeStampedModel):
     """Response to a question - can include both free text and multiple choice"""
 
@@ -208,6 +231,22 @@ class Response(UUIDPrimaryKeyModel, TimeStampedModel):
         if self.free_text:
             return shorten(self.free_text, width=64, placeholder="...")
         return "multi-choice response"
+
+    def mark_as_read_by(self, user):
+        """Mark this response as read by the given user"""
+        read_record, created = ResponseReadRecord.objects.get_or_create(
+            user=user,
+            response=self,
+        )
+        return read_record
+
+    def is_read_by(self, user):
+        """Check if this response has been read by the given user"""
+        return self.read_records.filter(user=user).exists()
+
+    def get_readers(self):
+        """Get all users who have read this response"""
+        return User.objects.filter(read_responses__response=self)
 
 
 @receiver(post_save, sender=Response)
