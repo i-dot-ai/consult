@@ -119,8 +119,8 @@
                   class="border border-neutral-300 rounded-lg p-2"
                   type="number"
                   value={prop.value.toString()}
-                  oninput={(e: any) => {
-                    prop.value = parseInt(e.target.value);
+                  oninput={(e) => {
+                    prop.value = parseInt(e?.target?.value);
                   }}
                 />
               {:else if prop.type === "text"}
@@ -145,15 +145,12 @@
                   label={prop.name}
                   hideLabel={true}
                   value={prop.label}
-                  items={prop.options.map((opt: any) => ({
-                    value: opt.label,
-                    label: opt.label,
-                  }))}
+                  items={prop.options}
                   onchange={(nextVal) => {
                     if (!nextVal) {
                       return;
                     }
-                    prop.value = prop.options.find((opt: any) => {
+                    prop.value = prop.options.find((opt: { label: string }) => {
                       return opt.label === nextVal;
                     }).value;
                   }}

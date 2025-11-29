@@ -18,14 +18,14 @@
   import type { SearchableSelectOption } from "../../global/types";
 
   export let label: string = "";
-  export let handleChange = () => {};
+  export let handleChange = (_next: SearchableSelectOption) => {};
   export let options: SearchableSelectOption[] = [];
-  export let selectedValues: any[] = [];
+  export let selectedValues: unknown[] = [];
   export let hideArrow: boolean = false;
   export let notFoundMessage: string = "No results found";
 
-  const handleSelectedChange = ({ next }: { next: any }) => {
-    handleChange(next as SearchableSelectOption);
+  const handleSelectedChange = ({ next }: { next: SearchableSelectOption }) => {
+    handleChange(next);
     return next;
   };
 

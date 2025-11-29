@@ -65,8 +65,9 @@
         consultationCode = "";
         timestamp = "";
         window.location.href = "/support/consultations/";
-      } catch (err: any) {
-        errors["general"] = err.message;
+      } catch (err: unknown) {
+        errors["general"] =
+          err instanceof Error ? err.message : "An unknown error occurred";
       } finally {
         sending = false;
       }

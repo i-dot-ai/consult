@@ -4,13 +4,13 @@
   import Download from "../svg/material/Download.svelte";
 
   interface Props {
-    data: any[];
+    data: Record<string, unknown>[];
     fileName: string;
   }
 
   let { data = [], fileName = "data.csv" }: Props = $props();
 
-  const buildCsv = (data: any[]) => {
+  const buildCsv = (data: Record<string, unknown>[]) => {
     if (!data || Object.keys(data).length <= 0) {
       return "";
     }
