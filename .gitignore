@@ -171,6 +171,8 @@ frontend/django_extensions
 .env
 .DS_Store
 .vscode
+!.vscode/settings.json
+!.vscode/extensions.json
 
 # Local .terraform directories
 **/.terraform/*
