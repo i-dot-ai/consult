@@ -25,7 +25,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-.astro/
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -167,10 +166,6 @@ frontend/govuk-assets
 frontend/iai-assets
 frontend/admin
 frontend/django_extensions
-
-# Playwright e2e tests
-e2e_tests/test-results/
-e2e_tests/playwright-report/
 
 # Other
 .env
