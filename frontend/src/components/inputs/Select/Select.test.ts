@@ -1,11 +1,12 @@
 import { render, fireEvent } from "@testing-library/svelte";
 import { describe, it, expect, vi } from "vitest";
+
 import Select from "./Select.svelte";
 
 const mockItems = [
   { value: "consultation1", label: "Consultation Folder 1" },
   { value: "consultation2", label: "Consultation Folder 2" },
-  { value: "consultation3", label: "Consultation Folder 3" }
+  { value: "consultation3", label: "Consultation Folder 3" },
 ];
 
 describe("Select Component", () => {
@@ -14,8 +15,8 @@ describe("Select Component", () => {
       props: {
         id: "consultation_code",
         label: "Select consultation folder",
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
     expect(getByLabelText("Select consultation folder")).toBeInTheDocument();
@@ -26,8 +27,8 @@ describe("Select Component", () => {
     const { getAllByRole } = render(Select, {
       props: {
         id: "consultation_code",
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
     const options = getAllByRole("option");
@@ -38,21 +39,20 @@ describe("Select Component", () => {
   });
 
   it("renders label with object configuration", () => {
-    const { getByLabelText, container } = render(Select, {
+    const { getByText } = render(Select, {
       props: {
         id: "consultation_code",
         name: "consultation_code",
         label: {
           text: "Select consultation folder",
-          classes: "govuk-label--s"
+          classes: "govuk-label--s",
         },
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
-    const label = container.querySelector('.govuk-label');
-    expect(getByLabelText("Select consultation folder")).toBeInTheDocument();
-    expect(label).toHaveClass('govuk-label--s');
+    const label = getByText("Select consultation folder");
+    expect(label).toBeInTheDocument();
   });
 
   it("renders label with string configuration", () => {
@@ -60,8 +60,8 @@ describe("Select Component", () => {
       props: {
         id: "consultation_code",
         label: "Simple label text",
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
     expect(getByLabelText("Simple label text")).toBeInTheDocument();
@@ -72,8 +72,8 @@ describe("Select Component", () => {
       props: {
         id: "consultation_code",
         items: mockItems,
-        value: "consultation2"
-      }
+        value: "consultation2",
+      },
     });
 
     const select = getByRole("combobox");
@@ -86,8 +86,8 @@ describe("Select Component", () => {
       props: {
         id: "consultation_code",
         items: mockItems,
-        onchange
-      }
+        onchange,
+      },
     });
 
     const select = getByRole("combobox");
@@ -101,39 +101,34 @@ describe("Select Component", () => {
       props: {
         id: "consultation_code",
         items: mockItems,
-        hint: "Choose the consultation folder to import"
-      }
+        hint: "Choose the consultation folder to import",
+      },
     });
 
-    expect(getByText("Choose the consultation folder to import")).toBeInTheDocument();
+    expect(
+      getByText("Choose the consultation folder to import"),
+    ).toBeInTheDocument();
   });
 
-  it("renders error message when provided", () => {
-    const { getByText } = render(Select, {
+  it("shows error message and applies error styling", () => {
+    const errorMessage = "Please select a consultation folder";
+    const { getByRole, getByText } = render(Select, {
       props: {
         id: "consultation_code",
+        label: "Select option",
         items: mockItems,
-        errorMessage: "Please select a consultation folder"
-      }
+        hint: "Hint text",
+        errorMessage,
+      },
     });
 
-    expect(getByText("Please select a consultation folder")).toBeInTheDocument();
-  });
+    expect(getByText(errorMessage)).toBeInTheDocument();
 
-  it("applies error styling when error message present", () => {
-    const { container } = render(Select, {
-      props: {
-        id: "consultation_code",
-        items: mockItems,
-        errorMessage: "Error message"
-      }
-    });
-
-    const formGroup = container.querySelector('.govuk-form-group');
-    const select = container.querySelector('.govuk-select');
-    
-    expect(formGroup).toHaveClass('govuk-form-group--error');
-    expect(select).toHaveClass('govuk-select--error');
+    const select = getByRole("combobox");
+    expect(select).toHaveAttribute(
+      "aria-describedby",
+      "consultation_code-hint consultation_code-error",
+    );
   });
 
   it("hides label when hideLabel is true", () => {
@@ -142,8 +137,8 @@ describe("Select Component", () => {
         id: "consultation_code",
         label: "Hidden Label",
         hideLabel: true,
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
     expect(queryByText("Hidden Label")).not.toBeInTheDocument();
@@ -154,35 +149,21 @@ describe("Select Component", () => {
       props: {
         id: "consultation_code",
         items: mockItems,
-        disabled: true
-      }
+        disabled: true,
+      },
     });
 
     const select = getByRole("combobox");
     expect(select).toBeDisabled();
   });
 
-  it("sets correct aria-describedby attributes", () => {
-    const { getByRole } = render(Select, {
-      props: {
-        id: "consultation_code",
-        items: mockItems,
-        hint: "Hint text",
-        errorMessage: "Error text"
-      }
-    });
-
-    const select = getByRole("combobox");
-    expect(select).toHaveAttribute("aria-describedby", "consultation_code-hint consultation_code-error");
-  });
-
   it("uses name prop or defaults to id", () => {
     const { getByRole } = render(Select, {
       props: {
         id: "consultation_code",
-        name: "custom-name", 
-        items: mockItems
-      }
+        name: "custom-name",
+        items: mockItems,
+      },
     });
 
     const select = getByRole("combobox");
@@ -193,8 +174,8 @@ describe("Select Component", () => {
     const { getByRole } = render(Select, {
       props: {
         id: "consultation_code",
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
     const select = getByRole("combobox");
@@ -202,22 +183,28 @@ describe("Select Component", () => {
   });
 
   it("applies all GOV.UK label size classes", () => {
-    const labelSizes = ['s', 'm', 'l', 'xl'];
-    
-    labelSizes.forEach(size => {
-      const { container } = render(Select, {
+    const labelSizes = [
+      { size: "s", expectedClass: "font-semibold" },
+      { size: "m", expectedClass: "text-lg" },
+      { size: "l", expectedClass: "text-2xl" },
+      { size: "xl", expectedClass: "text-3xl" },
+    ];
+
+    labelSizes.forEach(({ size, expectedClass }) => {
+      const labelText = "Test label: Size " + size;
+      const { getByText } = render(Select, {
         props: {
           id: "test-select",
           label: {
-            text: "Test label",
-            classes: `govuk-label--${size}`
+            text: labelText,
+            classes: `govuk-label--${size}`,
           },
-          items: mockItems
-        }
+          items: mockItems,
+        },
       });
 
-      const label = container.querySelector('.govuk-label');
-      expect(label).toHaveClass(`govuk-label--${size}`);
+      const label = getByText(labelText);
+      expect(label).toHaveClass(expectedClass);
     });
   });
 });

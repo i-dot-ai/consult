@@ -40,7 +40,7 @@
     handleClick={async () => {
       let toggle = toggleFlagMock || toggleFlag;
       await toggle(
-        getApiAnswerFlagUrl(consultationId, questionId, answerId),
+        getApiAnswerFlagUrl(consultationId, answerId),
         "PATCH",
       );
 

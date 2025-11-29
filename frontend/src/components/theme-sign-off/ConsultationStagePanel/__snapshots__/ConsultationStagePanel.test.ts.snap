@@ -189,7 +189,6 @@ exports[`ConsultationStagePanel > Analysis stage > should match snapshot for ana
     <!---->
   </div>
   
-  
 </div>
 `;
 
@@ -383,7 +382,6 @@ exports[`ConsultationStagePanel > Theme Mapping stage > should match snapshot fo
     </div>
     <!---->
   </div>
-  
   
 </div>
 `;
@@ -606,7 +604,6 @@ exports[`ConsultationStagePanel > Theme Sign Off stage > should match snapshot f
     </div>
     <!---->
   </div>
-  
   
 </div>
 `;
