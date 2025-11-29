@@ -29,7 +29,7 @@
     data: demoOptionsData,
   }: {
     loading: Writable<boolean>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<DemoOptionsResponse>;
   } = createFetchStore();
 

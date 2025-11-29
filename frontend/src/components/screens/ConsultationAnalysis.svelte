@@ -31,13 +31,13 @@
 
   let { consultationId = "" }: Props = $props();
 
-  const { load: loadConsultation }: { load: Function } = createFetchStore();
+  const { load: loadConsultation } = createFetchStore();
 
   const {
     load: loadQuestions,
     data: questionsData,
   }: {
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<ConsultationResponse>;
   } = createFetchStore();
 
@@ -45,7 +45,7 @@
     load: loadDemoOptions,
     data: demoOptionsData,
   }: {
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<DemoOptionsResponse>;
   } = createFetchStore();
 

@@ -6,7 +6,7 @@
     type ResponseTheme,
     type SearchableSelectOption,
   } from "../../../global/types";
-  import { createFetchStore } from "../../../global/stores";
+  import { createFetchStore, type MockFetch } from "../../../global/stores";
   import { getApiAnswerUrl } from "../../../global/routes";
 
   import Button from "../../inputs/Button/Button.svelte";
@@ -76,13 +76,9 @@
     themes: ResponseTheme[];
     themeOptions: ResponseTheme[];
     evidenceRich: boolean;
-    resetData: Function;
-    setEditing: Function;
-    updateAnswerMock?: (
-      url: string,
-      method: string,
-      options: BodyInit,
-    ) => Promise<void>;
+    resetData: () => void;
+    setEditing: () => void;
+    updateAnswerMock?: MockFetch;
   }
 
   let {
