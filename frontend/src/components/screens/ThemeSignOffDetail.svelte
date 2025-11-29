@@ -15,7 +15,6 @@
     getApiUpdateSelectedThemeUrl,
     getThemeSignOffUrl,
   } from "../../global/routes";
-  import { flattenArray } from "../../global/utils";
 
   import Panel from "../dashboard/Panel/Panel.svelte";
   import TitleRow from "../dashboard/TitleRow.svelte";
@@ -54,6 +53,21 @@
   let addingCustomTheme = $state(false);
   let expandedThemes: string[] = $state([]);
   let errorData: ErrorType | null = $state(null);
+
+  const flattenGeneratedThemes = (items: any[]): any[] => {
+    if (!items) {
+      return [];
+    }
+    const result = [];
+    for (const item of items) {
+      const { children, ...attrs } = item;
+      result.push(attrs);
+      if (children?.length > 0) {
+        result.push(...flattenGeneratedThemes(children));
+      }
+    }
+    return result;
+  }
 
   const errorModalOnClose = () => {
     loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
@@ -116,7 +130,7 @@
   let themesBeingSelected = $state([]);
 
   let flatGeneratedThemes = $derived(
-    flattenArray($generatedThemesData?.results),
+    flattenGeneratedThemes($generatedThemesData?.results),
   );
 
   $effect(() => {
@@ -245,7 +259,7 @@
     themesBeingSelected = themesBeingSelected.filter(themeId => themeId !== newTheme.id);
 
     // get selectedtheme_id created after back end select action is complete
-    const updatedTheme = flattenArray($generatedThemesData?.results || []).find(
+    const updatedTheme = flattenGeneratedThemes($generatedThemesData?.results || []).find(
       (generatedTheme) => generatedTheme.id === newTheme.id,
     );
 
@@ -525,7 +539,7 @@
               <h3>AI Generated Themes</h3>
 
               <Tag variant="success">
-                {flattenArray($generatedThemesData?.results || []).length} available
+                {flattenGeneratedThemes($generatedThemesData?.results || []).length} available
               </Tag>
             </div>
 

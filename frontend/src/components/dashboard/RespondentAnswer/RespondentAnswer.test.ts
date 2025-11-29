@@ -1,5 +1,5 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { render, cleanup } from "@testing-library/svelte";
 
 import RespondentAnswer, { type Props } from "./RespondentAnswer.svelte";
 import RespondentAnswerStory from "./RespondentAnswerStory.svelte";

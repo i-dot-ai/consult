@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { render, cleanup } from "@testing-library/svelte";
 
 import EditUserTest from "./EditUserTest.svelte";
 

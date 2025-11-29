@@ -1,11 +1,8 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { render, cleanup } from "@testing-library/svelte";
 
-import RespondentSidebar, {
-  type RespondentDemoItem,
-  type Props,
-} from "./RespondentSidebar.svelte";
+import RespondentSidebar, { type Props } from "./RespondentSidebar.svelte";
 import RespondentSidebarStory from "./RespondentSidebarStory.svelte";
 import { getPercentage } from "../../../global/utils";
 
