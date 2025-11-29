@@ -47,7 +47,7 @@
   {#if $open}
     <nav use:melt={$menu} transition:slide>
       <ul class={clsx(["text-white", "shadow-xl"])}>
-        {#each items as navItem}
+        {#each items as navItem (navItem.text)}
           <li
             use:melt={$item}
             class={clsx([

@@ -105,7 +105,7 @@
 
       <nav class="hidden lg:block">
         <ul class="flex gap-4 items-center">
-          {#each getNavItems(isSignedIn, isStaff) as navItem}
+          {#each getNavItems(isSignedIn, isStaff) as navItem (navItem.text)}
             <li>
               <a href={navItem.url} class="hover:underline">
                 {navItem.text}

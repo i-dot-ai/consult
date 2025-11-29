@@ -187,7 +187,7 @@
         </div>
 
         <div class="grid grid-cols-12 gap-4 pb-4">
-          {#each paginatedCategories[currPage] as category}
+          {#each paginatedCategories[currPage] as category (category)}
             {@const categoryOptions = demoOptions.filter(
               (opt: DemoOptionsResponseItem) => opt.name === category,
             )}

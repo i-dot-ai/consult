@@ -209,7 +209,7 @@
       <footer>
         {#if hasMultipleSteps()}
           <div class="flex flex-no-wrap gap-1 mt-4">
-            {#each steps as _, i}
+            {#each steps as _, i (i)}
               {@const labelText = `Go to step ${i + 1}`}
 
               <button

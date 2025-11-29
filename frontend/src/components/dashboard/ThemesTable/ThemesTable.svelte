@@ -24,7 +24,7 @@
   <table class="w-full text-md">
     <thead class="text-sm">
       <tr>
-        {#each ["Theme", "Mentions", "%&nbsp;Percentage"] as header}
+        {#each ["Theme", "Mentions", "%&nbsp;Percentage"] as header (header)}
           <th class="text-left text-md m-2 pr-4 font-normal">
             {@html header}
           </th>
@@ -33,7 +33,7 @@
     </thead>
     {#if skeleton}
       <tbody in:fade>
-        {#each "_".repeat(5) as _}
+        {#each "_".repeat(5) as _, i (i)}
           <tr
             class={clsx([
               "text-xs",

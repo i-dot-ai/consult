@@ -39,7 +39,7 @@
     <p transition:slide>Loading consultations...</p>
   {:else}
     <ul>
-      {#each consultations as consultation}
+      {#each consultations as consultation (consultation.id)}
         <li>
           <Title level={2} text={consultation.title} />
 

@@ -152,7 +152,7 @@
       <ul
         class="flex flex-wrap gap-2 items-center justify-start my-1 sm:max-w-[30vw]"
       >
-        {#each stagedThemes as theme}
+        {#each stagedThemes as theme (theme.id)}
           <Tag>
             {theme.name}
 

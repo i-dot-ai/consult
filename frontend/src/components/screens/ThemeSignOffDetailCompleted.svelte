@@ -200,13 +200,13 @@
 
       <ul>
         {#if $isSelectedThemesLoading}
-          {#each "_".repeat(2) as _}
+          {#each "_".repeat(2) as _, i (i)}
             <li>
               {@render selectedThemeCard("SKELETON", true)}
             </li>
           {/each}
         {:else}
-          {#each $selectedThemesData?.results as selectedTheme}
+          {#each $selectedThemesData?.results as selectedTheme (selectedTheme.id)}
             <li>
               {@render selectedThemeCard(selectedTheme.name)}
             </li>

@@ -89,7 +89,7 @@
     {:else}
       <div transition:slide>
         <div class="mb-8">
-          {#each favQuestions as question}
+          {#each favQuestions as question (question.id)}
             <QuestionCard
               {consultationId}
               {question}
@@ -144,7 +144,7 @@
               body="No questions found matching your search."
             />
           {:else}
-            {#each displayQuestions as question}
+            {#each displayQuestions as question (question.id)}
               <QuestionCard
                 {consultationId}
                 {question}

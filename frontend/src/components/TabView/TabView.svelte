@@ -103,7 +103,7 @@
           </Button>
         {/if}
 
-        {#each tabs as tab}
+        {#each tabs as tab (tab.id)}
           {#if variant === "default"}
             <button
               use:melt={$trigger(tab.id)}

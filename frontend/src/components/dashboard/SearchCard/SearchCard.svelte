@@ -50,7 +50,7 @@
       <footer class={clsx(["flex", "gap-3", "flex-wrap"])}>
         <slot name="footer" />
 
-        {#each tags as tag}
+        {#each tags as tag (tag)}
           <span
             class={clsx([
               "flex",

@@ -90,7 +90,7 @@
         </div>
       </div>
     {:else}
-      {#each demoOptions[category] as rowKey}
+      {#each demoOptions[category] as rowKey (rowKey)}
         {@const rowValue =
           (demoData[category] && demoData[category][rowKey]) || 0}
         {@const percentage = getPercentage(rowValue, totalCounts[category])}

@@ -76,7 +76,7 @@
 
     {#if loading}
       <div in:fade>
-        {#each "_".repeat(3) as _}
+        {#each "_".repeat(3) as _, i (i)}
           <DemoFilter skeleton={true} />
         {/each}
       </div>

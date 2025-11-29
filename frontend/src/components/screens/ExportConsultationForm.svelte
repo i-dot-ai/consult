@@ -93,7 +93,7 @@
       {errors.general}
     </small>
   {/if}
-  {#each questions as question}
+  {#each questions as question (question.id)}
     <Checkbox
       id={question.id!}
       value={question.id!}
