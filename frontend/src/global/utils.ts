@@ -101,7 +101,10 @@ export const formatDate = (dateStr: string) => {
   });
 };
 
-export const handleEnterOrSpacePress = (event: KeyboardEvent, callback: Function) => {
+export const handleEnterOrSpacePress = (
+  event: KeyboardEvent,
+  callback: Function,
+) => {
   const key = event.key || event.code || event.keyCode;
   const isEnter = ["Enter", "Return", 13].includes(key);
   const isSpace = [" ", "Spacebar", 32].includes(key);
@@ -111,12 +114,15 @@ export const handleEnterOrSpacePress = (event: KeyboardEvent, callback: Function
     event.preventDefault();
     callback();
   }
-}
-export const getTimeDeltaInMinutes = (laterDate: Date, earlierDate: Date): number => {
+};
+export const getTimeDeltaInMinutes = (
+  laterDate: Date,
+  earlierDate: Date,
+): number => {
   const MILLISECONDS_PER_MINUTE = 60000;
   const delta = laterDate.getTime() - earlierDate.getTime();
   return Math.floor(delta / MILLISECONDS_PER_MINUTE);
-}
+};
 
 export const formatTimeDeltaText = (minutes: number): string => {
   const MINUTES_IN_HALF_HOUR = 30;
@@ -153,4 +159,4 @@ export const formatTimeDeltaText = (minutes: number): string => {
     unit = "year";
   }
   return `${Math.floor(value)} ${unit}${value > 1 ? "s" : ""}`;
-}
+};

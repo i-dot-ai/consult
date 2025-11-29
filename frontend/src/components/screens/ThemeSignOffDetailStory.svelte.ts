@@ -1,11 +1,11 @@
 import ThemeSignOffDetail from "./ThemeSignOffDetail.svelte";
 
-let consultationId = $state("");
-let questionId = $state("");
+const consultationId = $state("");
+const questionId = $state("");
 
 let selectedThemes = $state([]);
 
-let generatedThemes = $state([
+const generatedThemes = $state([
   {
     id: "b1a2c3d4-e5f6-7890-abcd-1234567890ab",
     name: "Ethical AI Development",
@@ -136,7 +136,7 @@ export default {
           .split("/select/")[0];
 
         // Recursively search child themes
-        let selectedGeneratedTheme = findNestedTheme(
+        const selectedGeneratedTheme = findNestedTheme(
           generatedThemes,
           (theme) => theme.id === themeId,
         );

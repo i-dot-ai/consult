@@ -1,6 +1,6 @@
 import Footer from "./Footer.svelte";
 
-let isSignedIn = $state(false);
+const isSignedIn = $state(false);
 
 export default {
   name: "Footer",

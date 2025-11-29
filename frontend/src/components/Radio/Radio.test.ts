@@ -5,13 +5,13 @@ import Radio from "./Radio.svelte";
 const mockItems = [
   {
     value: "sign_off",
-    text: "Populate Sign Off"
+    text: "Populate Sign Off",
   },
   {
-    value: "dashboard", 
+    value: "dashboard",
     text: "Populate Dashboard",
-    checked: true
-  }
+    checked: true,
+  },
 ];
 
 describe("Radio Component", () => {
@@ -19,8 +19,8 @@ describe("Radio Component", () => {
     const { getByText } = render(Radio, {
       props: {
         name: "action",
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
     expect(getByText("Populate Sign Off")).toBeInTheDocument();
@@ -32,8 +32,8 @@ describe("Radio Component", () => {
       props: {
         name: "action",
         items: mockItems,
-        legend: "Choose an action"
-      }
+        legend: "Choose an action",
+      },
     });
 
     expect(getByText("Choose an action")).toBeInTheDocument();
@@ -43,8 +43,8 @@ describe("Radio Component", () => {
     const { container } = render(Radio, {
       props: {
         name: "action",
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
     const dashboardRadio = container.querySelector('input[value="dashboard"]');
@@ -60,8 +60,8 @@ describe("Radio Component", () => {
       props: {
         name: "action",
         items: mockItems,
-        onchange
-      }
+        onchange,
+      },
     });
 
     const signOffRadio = container.querySelector('input[value="sign_off"]');
@@ -73,10 +73,10 @@ describe("Radio Component", () => {
   it("respects value prop override", () => {
     const { container } = render(Radio, {
       props: {
-        name: "action", 
+        name: "action",
         items: mockItems,
-        value: "sign_off"
-      }
+        value: "sign_off",
+      },
     });
 
     const dashboardRadio = container.querySelector('input[value="dashboard"]');
@@ -92,15 +92,15 @@ describe("Radio Component", () => {
       {
         value: "disabled",
         text: "Disabled Option",
-        disabled: true
-      }
+        disabled: true,
+      },
     ];
 
     const { container } = render(Radio, {
       props: {
         name: "action",
-        items: itemsWithDisabled
-      }
+        items: itemsWithDisabled,
+      },
     });
 
     const disabledRadio = container.querySelector('input[value="disabled"]');
@@ -111,12 +111,14 @@ describe("Radio Component", () => {
     const { container } = render(Radio, {
       props: {
         name: "test-action",
-        items: mockItems
-      }
+        items: mockItems,
+      },
     });
 
     const signOffRadio = container.querySelector('input[value="sign_off"]');
-    const signOffLabel = container.querySelector('label[for="test-action-sign_off"]');
+    const signOffLabel = container.querySelector(
+      'label[for="test-action-sign_off"]',
+    );
 
     expect(signOffRadio).toHaveAttribute("id", "test-action-sign_off");
     expect(signOffRadio).toHaveAttribute("name", "test-action");

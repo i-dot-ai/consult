@@ -2,13 +2,13 @@ import { createRawSnippet } from "svelte";
 
 import Panel from "./Panel.svelte";
 
-let variant = $state("default");
-let childrenHtml = $state("<p>Child Element</p>");
-let border = $state(true);
-let bg = $state(false);
-let level = $state(1);
+const variant = $state("default");
+const childrenHtml = $state("<p>Child Element</p>");
+const border = $state(true);
+const bg = $state(false);
+const level = $state(1);
 
-let childrenComponent = $derived.by(() => {
+const childrenComponent = $derived.by(() => {
   try {
     return createRawSnippet(() => ({
       render: () => childrenHtml,
