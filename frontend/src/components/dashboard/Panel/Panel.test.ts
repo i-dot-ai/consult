@@ -1,21 +1,16 @@
-import { afterEach, describe, expect, it } from "vitest";
-import { render, cleanup } from "@testing-library/svelte";
+import { describe, expect, it } from "vitest";
+import { render } from "@testing-library/svelte";
 
 import { createRawSnippet } from "svelte";
 
 import Panel from "./Panel.svelte";
 
-let childComponent;
-
 describe("Panel", () => {
-  beforeEach(() => {
-    childComponent = createRawSnippet(() => {
-      return {
-        render: () => "<p>Child Content</p>",
-      };
-    });
+  const childComponent = createRawSnippet(() => {
+    return {
+      render: () => "<p>Child Content</p>",
+    };
   });
-  afterEach(() => cleanup());
 
   it("should render slot", () => {
     const { getByText } = render(Panel, { children: childComponent });

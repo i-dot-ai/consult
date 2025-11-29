@@ -1,41 +1,37 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, cleanup } from "@testing-library/svelte";
+import { describe, expect, it, vi } from "vitest";
+import { render } from "@testing-library/svelte";
 
-import GeneratedThemeCard, { type Props } from "./GeneratedThemeCard.svelte";
-
-let testData: Props;
+import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
 
 describe("GeneratedThemeCard", () => {
-  beforeEach(() => {
-    testData = {
-      selectedThemes: [],
-      theme: {
-        id: "test-theme",
-        name: "Test Theme",
-        description: "This is a test theme",
-      },
-      answers: ["Answer 1", "Answer 2"],
-      handleSelect: () => {},
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    consultationId: "test-consultation",
+    questionId: "test-question",
+    theme: {
+      id: "test-theme",
+      name: "Test Theme",
+      description: "This is a test theme",
+    },
+    expandedThemes: [],
+    setExpandedThemes: () => {},
+    handleSelect: () => {},
+    themesBeingSelected: [],
+  };
+  const answers = ["Answer 1", "Answer 2"];
 
   it("should render", async () => {
     vi.mock("svelte/transition");
 
-    const { container, getByText, getAllByText, queryByText } = render(
+    const { container, getByText, queryByText } = render(
       GeneratedThemeCard,
-      {
-        ...testData,
-      },
+      testData,
     );
 
     expect(getByText(testData.theme.name));
     expect(getByText(testData.theme.description));
 
     // Answers hidden initially
-    testData.answers?.forEach((answer) => {
+    answers.forEach((answer) => {
       expect(queryByText(answer)).toBeNull();
     });
 
@@ -48,17 +44,14 @@ describe("GeneratedThemeCard", () => {
       name: "Child Theme",
       description: "This is a child theme",
     };
-    const { container, getByText, getAllByText, queryByText } = render(
-      GeneratedThemeCard,
-      {
-        ...testData,
-        theme: {
-          ...testData.theme,
-          children: [CHILD_THEME],
-        },
-        expandedThemes: [testData.theme.id, CHILD_THEME.id],
+    const { getByText } = render(GeneratedThemeCard, {
+      ...testData,
+      theme: {
+        ...testData.theme,
+        children: [CHILD_THEME],
       },
-    );
+      expandedThemes: [testData.theme.id, CHILD_THEME.id],
+    });
 
     expect(getByText(CHILD_THEME.name));
     expect(getByText(CHILD_THEME.description));
