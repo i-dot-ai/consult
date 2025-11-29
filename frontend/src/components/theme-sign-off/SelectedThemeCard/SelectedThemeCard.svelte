@@ -4,7 +4,7 @@
   import { fade, fly } from "svelte/transition";
 
   import type { SelectedTheme } from "../../../global/types";
-  import { createFetchStore } from "../../../global/stores";
+  import { createFetchStore, type MockFetch } from "../../../global/stores";
   import { getApiAnswersUrl } from "../../../global/routes";
   import {
     formatTimeDeltaText,
@@ -28,7 +28,7 @@
     removeTheme: (themeId: string) => void;
     updateTheme: (themeId: string, title: string, description: string) => void;
     maxAnswers?: number;
-    answersMock?: Function;
+    answersMock?: MockFetch;
   }
 
   let {

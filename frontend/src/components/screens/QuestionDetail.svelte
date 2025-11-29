@@ -84,7 +84,7 @@
   }: {
     loading: Writable<boolean>;
     error: Writable<string>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<ConsultationResponse>;
   } = createFetchStore();
 
@@ -103,7 +103,7 @@
   }: {
     loading: Writable<boolean>;
     error: Writable<string>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<AnswersResponse>;
   } = createFetchStore();
 
@@ -113,7 +113,7 @@
     data: themeAggrData,
   }: {
     loading: Writable<boolean>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<ThemeAggrResponse>;
   } = createFetchStore();
 
@@ -121,7 +121,7 @@
     load: loadThemeInfo,
     data: themeInfoData,
   }: {
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<ThemeInfoResponse>;
   } = createFetchStore();
 
@@ -129,7 +129,7 @@
     load: loadDemoOptions,
     data: demoOptionsData,
   }: {
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<DemoOptionsResponse>;
   } = createFetchStore();
 
@@ -137,7 +137,7 @@
     load: loadDemoAggr,
     data: demoAggrData,
   }: {
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<DemoAggrResponse>;
   } = createFetchStore();
 
@@ -147,7 +147,7 @@
     data: questionData,
   }: {
     loading: Writable<boolean>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<Question>;
   } = createFetchStore();
 

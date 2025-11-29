@@ -46,15 +46,15 @@ function createFavStore() {
 }
 export const favStore = createFavStore();
 
+export type MockFetch = (config: {
+  url: string;
+  headers?: HeadersInit;
+  method: string;
+  body?: string;
+}) => unknown;
+
 // Shared fetch logic
-export const createFetchStore = (
-  mockFetch?: (config: {
-    url: string;
-    headers?: HeadersInit;
-    method: string;
-    body?: string;
-  }) => unknown,
-) => {
+export const createFetchStore = (mockFetch?: MockFetch) => {
   const data: Writable<unknown> = writable(null);
   const loading: Writable<boolean> = writable(true);
   const error: Writable<string> = writable("");

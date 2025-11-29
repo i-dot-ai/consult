@@ -4,7 +4,7 @@
   import { slide, fly } from "svelte/transition";
 
   import type { GeneratedTheme } from "../../../global/types";
-  import { createFetchStore } from "../../../global/stores";
+  import { createFetchStore, type MockFetch } from "../../../global/stores";
   import { getApiAnswersUrl } from "../../../global/routes";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
@@ -28,7 +28,7 @@
     handleSelect: (theme: GeneratedTheme) => void;
     themesBeingSelected: string[];
     maxAnswers?: number;
-    answersMock?: Function;
+    answersMock?: MockFetch;
   }
   let {
     consultationId,
