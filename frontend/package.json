@@ -12,9 +12,9 @@
     "preview": "astro preview --host",
     "astro": "astro",
     "test": "npx vitest --coverage",
-    "update-snapshots": "npx vitest --update",
-    "prettier-check": "npx prettier --check .",
-    "prettier-fix": "npx prettier --write ."
+    "test:update-snapshots": "vitest --update",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
   },
   "dependencies": {
     "@astrojs/node": "^9.3.3",
