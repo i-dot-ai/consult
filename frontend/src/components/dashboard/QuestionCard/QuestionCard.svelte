@@ -32,7 +32,6 @@
   }
 
   let {
-    consultationId = "",
     question = {},
     url = "",
     highlightText = "",

@@ -35,15 +35,7 @@
   }: Props = $props();
 
   const {
-    elements: {
-      trigger,
-      portalled,
-      overlay,
-      content,
-      title: titleMelt,
-      description,
-      close,
-    },
+    elements: { portalled, overlay, content, title: titleMelt, close },
     states: { open: meltOpen },
   } = createDialog({
     onOpenChange: (open) => setOpen(open.next),

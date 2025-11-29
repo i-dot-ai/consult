@@ -17,7 +17,6 @@
   let sending: boolean = false;
   let errors: Record<string, string> = {};
   let success: boolean = false;
-  let loading: boolean = false;
 
   let consultationFolders: SelectOption[] = [];
   let RADIO_OPTIONS: RadioItem[] = [
@@ -42,7 +41,6 @@
     RADIO_OPTIONS.find((option) => option.checked)?.value || "";
 
   onMount(async () => {
-    loading = true;
     consultationFolders = [];
     const response = await fetch(`${Routes.ApiConsultationFolders}`);
     const consultationFolderData = await response.json();
@@ -51,8 +49,6 @@
       value: folder.value,
       label: folder.text,
     }));
-
-    loading = false;
   });
 
   const setConsultationName = (newValue: string) => {
@@ -117,7 +113,6 @@
         }
 
         success = true;
-        loading = false;
         errors = {};
         consultationName = "";
         timestamp = "";

@@ -55,27 +55,19 @@
   } = createFetchStore();
 
   const {
-    loading: isConsultationLoading,
-    error: loadConsultationError,
     load: loadConsultation,
     data: consultationData,
   }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
     load: Function;
     data: Writable<any>;
   } = createFetchStore();
 
   const {
-    loading: isConsultationUpdating,
     error: updateConsultationError,
     load: updateConsultation,
-    data: updateConsultationData,
   }: {
-    loading: Writable<boolean>;
     error: Writable<string>;
     load: Function;
-    data: Writable<any>;
   } = createFetchStore();
 
   onMount(async () => {

@@ -13,12 +13,10 @@
     load: loadUser,
     loading: isLoadingUser,
     data: userData,
-    error: userError,
   } = createFetchStore();
 
   const {
     load: updateUser,
-    loading: isUpdating,
     data: updateUserData,
     error: updateUserError,
   } = createFetchStore();

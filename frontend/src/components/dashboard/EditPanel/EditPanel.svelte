@@ -87,7 +87,6 @@
 
   let {
     consultationId = "",
-    questionId = "",
     answerId = "",
     themes = [],
     themeOptions = [],
@@ -105,7 +104,6 @@
     loading: isSubmitting,
     error: submitError,
     load: updateAnswer,
-    data: answerData,
   } = createFetchStore();
 
   onMount(() => {

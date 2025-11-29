@@ -40,7 +40,8 @@ exports[`SelectedThemeCard > should render 1`] = `
             <small
               class="block text-xs text-neutral-500 mb-4"
             >
-              Added NaN minute ago by 
+              Added
+              NaN minute ago by 
             </small>
              
             <footer

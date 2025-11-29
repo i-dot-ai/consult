@@ -47,40 +47,16 @@
     themefinderId = 1,
   }: Props = $props();
 
-  const {
-    load: loadRespondents,
-    loading: isRepondentsLoading,
-    data: respondentsData,
-    error: respondentsError,
-  } = createFetchStore();
+  const { load: loadRespondents, data: respondentsData } = createFetchStore();
 
-  const {
-    load: loadRespondent,
-    loading: isRepondentLoading,
-    data: respondentData,
-    error: respondentError,
-  } = createFetchStore();
+  const { load: loadRespondent } = createFetchStore();
 
-  const {
-    load: loadConsultationQuestions,
-    loading: isConsultationQuestionsLoading,
-    data: consultationQuestionsData,
-    error: consultationQuestionsError,
-  } = createFetchStore();
+  const { load: loadConsultationQuestions, data: consultationQuestionsData } =
+    createFetchStore();
 
-  const {
-    load: loadQuestions,
-    loading: isQuestionsLoading,
-    data: questionsData,
-    error: questionsError,
-  } = createFetchStore();
+  const { load: loadQuestions, data: questionsData } = createFetchStore();
 
-  const {
-    load: loadAnswers,
-    loading: isAnswersLoading,
-    data: answersData,
-    error: answersError,
-  } = createFetchStore();
+  const { load: loadAnswers, data: answersData } = createFetchStore();
 
   $effect(() => {
     loadConsultationQuestions(getApiQuestionsUrl(consultationId));
@@ -128,7 +104,7 @@
     <Button
       size="xs"
       disabled={!prevRespondent}
-      handleClick={(e) =>
+      handleClick={() =>
         (location.href =
           getRespondentDetailUrl(consultationId, prevRespondent.id) +
           `?themefinder_id=${themefinderId - 1}&question_id=${questionId}`)}
@@ -145,7 +121,7 @@
     <Button
       size="xs"
       disabled={!nextRespondent}
-      handleClick={(e) =>
+      handleClick={() =>
         (location.href =
           getRespondentDetailUrl(consultationId, nextRespondent.id) +
           `?themefinder_id=${themefinderId + 1}&question_id=${questionId}`)}

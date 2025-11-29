@@ -52,7 +52,6 @@
     load: loadAnswers,
     loading: isAnswersLoading,
     data: answersData,
-    error: answersError,
   } = createFetchStore(answersMock);
 
   let disabled = $derived(Boolean(theme.selectedtheme_id));

@@ -10,7 +10,6 @@
     DoughnutController,
     Legend,
     Tooltip,
-    registerables,
     type ChartConfiguration,
     type ChartOptions,
     type LegendItem,
