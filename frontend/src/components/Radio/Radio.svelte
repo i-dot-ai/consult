@@ -21,7 +21,7 @@
 
   $effect(() => {
     if (!value && items.length > 0) {
-      const checkedItem = items.find(item => item.checked);
+      const checkedItem = items.find((item) => item.checked);
       if (checkedItem) {
         value = checkedItem.value;
       }
@@ -44,7 +44,7 @@
               class={clsx([
                 "mt-1 h-5 w-5 rounded-full border-2 border-neutral-900 text-neutral-900",
                 "focus:ring-2 focus:ring-yellow-400 focus:ring-offset-0",
-                "disabled:opacity-50 disabled:cursor-default"
+                "disabled:opacity-50 disabled:cursor-default",
               ])}
               id="{name}-{item.value}"
               {name}
@@ -54,11 +54,11 @@
               disabled={item.disabled}
               onchange={handleChange}
             />
-            <label 
+            <label
               class={clsx([
                 "cursor-pointer text-base leading-5 text-neutral-900 md:text-lg md:leading-6",
-                item.disabled && "opacity-50 cursor-default"
-              ])} 
+                item.disabled && "opacity-50 cursor-default",
+              ])}
               for="{name}-{item.value}"
             >
               {item.text}
@@ -75,7 +75,7 @@
             class={clsx([
               "mt-1 h-5 w-5 rounded-full border-2 border-neutral-900 text-neutral-900",
               "focus:ring-2 focus:ring-yellow-400 focus:ring-offset-0",
-              "disabled:opacity-50 disabled:cursor-default"
+              "disabled:opacity-50 disabled:cursor-default",
             ])}
             id="{name}-{item.value}"
             {name}
@@ -85,11 +85,11 @@
             disabled={item.disabled}
             onchange={handleChange}
           />
-          <label 
+          <label
             class={clsx([
               "cursor-pointer text-base leading-5 text-neutral-900 md:text-lg md:leading-6",
-              item.disabled && "opacity-50 cursor-default"
-            ])} 
+              item.disabled && "opacity-50 cursor-default",
+            ])}
             for="{name}-{item.value}"
           >
             {item.text}
@@ -99,4 +99,3 @@
     </div>
   {/if}
 </div>
-

@@ -78,7 +78,7 @@
           label="Edit Subtitle"
           hideLabel={true}
           value={stagedSubtitle}
-          placeholder={"Business or organisation name"}
+          placeholder="Business or organisation name"
           setValue={(newValue) => (stagedSubtitle = newValue.trim())}
         />
         <div class="flex items-center justify-around gap-2 flex-wrap mt-3">

@@ -30,7 +30,8 @@
   tabindex="0"
   role="button"
   onclick={variant === "block" ? () => (window.location.href = href) : null}
-  onkeypress={(e) => handleEnterOrSpacePress(e, () => window.location.href = href)}
+  onkeypress={(e) =>
+    handleEnterOrSpacePress(e, () => (window.location.href = href))}
 >
   <slot />
 </svelte:element>

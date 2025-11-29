@@ -12,7 +12,7 @@
   import type { Consultation } from "../../../global/types";
 
   interface Props {
-    consultation: {id: Consultation["id"]; stage: Consultation["stage"]};
+    consultation: { id: Consultation["id"]; stage: Consultation["stage"] };
     questionsCount: number;
     onConfirmClick: () => void;
   }
@@ -23,7 +23,7 @@
     order: number;
     label: string;
     icon: Component;
-  }
+  };
 
   const STAGES = {
     consultation_overview: {
@@ -31,7 +31,7 @@
         order: 1,
         label: "Consultation Overview",
         icon: CheckCircle,
-      }
+      },
     },
     theme_sign_off: {
       step: {
@@ -99,26 +99,29 @@
   </p>
 
   <p class="text-sm text-center text-neutral-500 my-4">
-    AI is currently mapping consultation responses to your signed-off themes. This
-    process analyses each response and assigns it to the most relevant themes you've
-    selected.
+    AI is currently mapping consultation responses to your signed-off themes.
+    This process analyses each response and assigns it to the most relevant
+    themes you've selected.
   </p>
 
   <p class="text-sm text-center text-neutral-500 my-4">
-    <strong>Next:</strong> When mapping is complete, you'll be able to access the Analysis
-    Dashboard to view all mapped data for detailed insights and reporting.
+    <strong>Next:</strong> When mapping is complete, you'll be able to access the
+    Analysis Dashboard to view all mapped data for detailed insights and reporting.
   </p>
 {/snippet}
 
 {#snippet analysisContent()}
   <p class="text-sm text-center text-neutral-500 my-4">
-    All consultation responses have been successfully mapped against your selected
-    themes.
+    All consultation responses have been successfully mapped against your
+    selected themes.
   </p>
 
   <p class="text-sm text-center text-neutral-500 my-4">
     <strong>Next:</strong> View the mapped data in the
-    <a class="text-secondary hover:underline" href={getConsultationDetailUrl(consultation.id)}>
+    <a
+      class="text-secondary hover:underline"
+      href={getConsultationDetailUrl(consultation.id)}
+    >
       Analysis Dashboard
     </a>
     to explore detailed insights and generate reports.
@@ -128,11 +131,11 @@
 {#snippet ConsultationStep(step: Step, currentConsultationStep: Step)}
   {@const label = step.label}
   {@const status =
-      step.order < currentConsultationStep.order
-        ? "done"
-        : step.order === currentConsultationStep.order
-          ? "current"
-          : "todo"}
+    step.order < currentConsultationStep.order
+      ? "done"
+      : step.order === currentConsultationStep.order
+        ? "current"
+        : "todo"}
   {@const Icon = status === "done" ? CheckCircle : step.icon}
 
   <div class="flex flex-col items-center min-w-16">
@@ -174,7 +177,7 @@
       ])}
       aria-label="Consultation progress"
     >
-      {#each Object.values(STAGES) as {step} (step.label)}
+      {#each Object.values(STAGES) as { step } (step.label)}
         <li>
           {@render ConsultationStep(step, currentConsultationStage.step)}
         </li>

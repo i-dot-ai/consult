@@ -121,13 +121,13 @@
 <section>
   <RespondentTopbar
     title={`Respondent ${themefinderId || "not found"}`}
-    backText={"Back to Analysis"}
+    backText="Back to Analysis"
     onClickBack={() =>
       (location.href = getQuestionDetailUrl(consultationId, questionId))}
   >
     <Button
       size="xs"
-      disabled={!Boolean(prevRespondent)}
+      disabled={!prevRespondent}
       handleClick={(e) =>
         (location.href =
           getRespondentDetailUrl(consultationId, prevRespondent.id) +
@@ -144,7 +144,7 @@
 
     <Button
       size="xs"
-      disabled={!Boolean(nextRespondent)}
+      disabled={!nextRespondent}
       handleClick={(e) =>
         (location.href =
           getRespondentDetailUrl(consultationId, nextRespondent.id) +

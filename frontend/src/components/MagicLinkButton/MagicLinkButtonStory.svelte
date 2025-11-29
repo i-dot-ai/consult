@@ -5,5 +5,5 @@
 
 <div>
   <Title level={2} text="Default" />
-  <MagicLinkButton magicLink={"123-456"} />
+  <MagicLinkButton magicLink="123-456" />
 </div>

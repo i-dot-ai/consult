@@ -133,7 +133,7 @@
                   const queryString = new URLSearchParams({
                     searchMode: "representative",
                     searchValue: `${theme.name} ${theme.description}`,
-                    question_id: questionId
+                    question_id: questionId,
                   }).toString();
 
                   loadAnswers(

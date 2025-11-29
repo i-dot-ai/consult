@@ -216,7 +216,7 @@
                 title={labelText}
                 aria-label={labelText}
                 style="width: {Math.round(100 / steps.length)}%;"
-                class={"hover:opacity-75"}
+                class="hover:opacity-75"
                 onclick={() => {
                   // transition only if 1 step difference
                   progressTransition = Math.abs(currStep - i) === 1;

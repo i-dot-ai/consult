@@ -84,12 +84,12 @@
     <div class="grow max-w-[30ch]">
       <TextInput
         inputType="email"
-        id={"email-input"}
+        id="email-input"
         autocomplete="on"
         name="email"
-        label={"Email address"}
+        label="Email address"
         hideLabel={true}
-        placeholder={"Your email"}
+        placeholder="Your email"
         value={email}
         setValue={setEmail}
       />
