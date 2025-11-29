@@ -1,7 +1,6 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { onMount } from "svelte";
   import type { Writable } from "svelte/store";
 
   import {
@@ -32,39 +31,21 @@
 
   let { consultationId = "" }: Props = $props();
 
-  const {
-    loading: isConsultationLoading,
-    error: consultationError,
-    load: loadConsultation,
-    data: consultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<ConsultationResponse>;
-  } = createFetchStore();
+  const { load: loadConsultation } = createFetchStore();
 
   const {
-    loading: isQuestionsLoading,
-    error: questionsError,
     load: loadQuestions,
     data: questionsData,
   }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<ConsultationResponse>;
   } = createFetchStore();
 
   const {
-    loading: isDemoOptionsLoading,
-    error: demoOptionsError,
     load: loadDemoOptions,
     data: demoOptionsData,
   }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<DemoOptionsResponse>;
   } = createFetchStore();
 
@@ -108,7 +89,7 @@
     </TitleRow>
 
     <div class="grid grid-cols-12 gap-4 mb-4">
-      {#each demoCategories as category}
+      {#each demoCategories as category (category)}
         <div class="col-span-12 md:col-span-4">
           <MetricsDemoCard
             title={category}
@@ -148,7 +129,7 @@
       </TitleRow>
 
       <div class="grid grid-cols-12 gap-4 mb-4">
-        {#each chartQuestions as question}
+        {#each chartQuestions as question (question.id)}
           <div class="col-span-12 sm:col-span-6 lg:col-span-4 mt-4">
             <div class="w-full h-full">
               <Panel border={true} bg={true}>

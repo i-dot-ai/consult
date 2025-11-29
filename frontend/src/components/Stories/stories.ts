@@ -15,7 +15,7 @@ import ThemeSignoffDetailStory from "../screens/ThemeSignOffDetailStory.svelte";
 
 interface StoryProp {
   name: string;
-  value: any;
+  value: unknown;
   type: "number" | "text" | "bool" | "select" | "json" | "html" | "func";
   schema?: string;
 }
@@ -24,7 +24,7 @@ interface Story {
   component: Component;
   category?: string;
   props: StoryProp[];
-  stories: any[];
+  stories: unknown[];
 }
 
 export default [

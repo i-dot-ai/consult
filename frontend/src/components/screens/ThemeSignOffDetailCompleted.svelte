@@ -7,7 +7,6 @@
   import {
     getApiGetSelectedThemesUrl,
     getApiQuestionUrl,
-    getQuestionDetailUrl,
     getThemeSignOffUrl,
     Routes,
   } from "../../global/routes";
@@ -22,7 +21,6 @@
   import Headphones from "../svg/material/Headphones.svelte";
   import Help from "../svg/material/Help.svelte";
   import ArrowForward from "../svg/material/ArrowForward.svelte";
-  import Finance from "../svg/material/Finance.svelte";
   import Alert from "../Alert.svelte";
 
   interface Props {
@@ -36,15 +34,9 @@
     load: loadSelectedThemes,
     loading: isSelectedThemesLoading,
     data: selectedThemesData,
-    error: selectedThemesError,
   } = createFetchStore();
 
-  const {
-    load: loadQuestion,
-    loading: isQuestionLoading,
-    data: questionData,
-    error: questionError,
-  } = createFetchStore();
+  const { load: loadQuestion, data: questionData } = createFetchStore();
 
   $effect(() => {
     loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
@@ -208,13 +200,13 @@
 
       <ul>
         {#if $isSelectedThemesLoading}
-          {#each "_".repeat(2) as _}
+          {#each "_".repeat(2) as _, i (i)}
             <li>
               {@render selectedThemeCard("SKELETON", true)}
             </li>
           {/each}
         {:else}
-          {#each $selectedThemesData?.results as selectedTheme}
+          {#each $selectedThemesData?.results as selectedTheme (selectedTheme.id)}
             <li>
               {@render selectedThemeCard(selectedTheme.name)}
             </li>

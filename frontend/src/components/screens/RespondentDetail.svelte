@@ -19,7 +19,9 @@
   import MaterialIcon from "../MaterialIcon.svelte";
   import ChevronRight from "../svg/material/ChevronRight.svelte";
   import Button from "../inputs/Button/Button.svelte";
-  import RespondentSidebar from "../dashboard/RespondentSidebar/RespondentSidebar.svelte";
+  import RespondentSidebar, {
+    type RespondentDemoItem,
+  } from "../dashboard/RespondentSidebar/RespondentSidebar.svelte";
   import RespondentTopbar from "../dashboard/RespondentTopbar/RespondentTopbar.svelte";
   import RespondentAnswer from "../dashboard/RespondentAnswer/RespondentAnswer.svelte";
 
@@ -29,8 +31,8 @@
     id: string;
     consultation: string;
     themefinder_id: number;
-    demographics: any[];
-    name?: any;
+    demographics: RespondentDemoItem[];
+    name?: string;
   }
 
   interface Props {
@@ -47,40 +49,16 @@
     themefinderId = 1,
   }: Props = $props();
 
-  const {
-    load: loadRespondents,
-    loading: isRepondentsLoading,
-    data: respondentsData,
-    error: respondentsError,
-  } = createFetchStore();
+  const { load: loadRespondents, data: respondentsData } = createFetchStore();
 
-  const {
-    load: loadRespondent,
-    loading: isRepondentLoading,
-    data: respondentData,
-    error: respondentError,
-  } = createFetchStore();
+  const { load: loadRespondent } = createFetchStore();
 
-  const {
-    load: loadConsultationQuestions,
-    loading: isConsultationQuestionsLoading,
-    data: consultationQuestionsData,
-    error: consultationQuestionsError,
-  } = createFetchStore();
+  const { load: loadConsultationQuestions, data: consultationQuestionsData } =
+    createFetchStore();
 
-  const {
-    load: loadQuestions,
-    loading: isQuestionsLoading,
-    data: questionsData,
-    error: questionsError,
-  } = createFetchStore();
+  const { load: loadQuestions, data: questionsData } = createFetchStore();
 
-  const {
-    load: loadAnswers,
-    loading: isAnswersLoading,
-    data: answersData,
-    error: answersError,
-  } = createFetchStore();
+  const { load: loadAnswers, data: answersData } = createFetchStore();
 
   $effect(() => {
     loadConsultationQuestions(getApiQuestionsUrl(consultationId));
@@ -121,14 +99,14 @@
 <section>
   <RespondentTopbar
     title={`Respondent ${themefinderId || "not found"}`}
-    backText={"Back to Analysis"}
+    backText="Back to Analysis"
     onClickBack={() =>
       (location.href = getQuestionDetailUrl(consultationId, questionId))}
   >
     <Button
       size="xs"
-      disabled={!Boolean(prevRespondent)}
-      handleClick={(e) =>
+      disabled={!prevRespondent}
+      handleClick={() =>
         (location.href =
           getRespondentDetailUrl(consultationId, prevRespondent.id) +
           `?themefinder_id=${themefinderId - 1}&question_id=${questionId}`)}
@@ -144,8 +122,8 @@
 
     <Button
       size="xs"
-      disabled={!Boolean(nextRespondent)}
-      handleClick={(e) =>
+      disabled={!nextRespondent}
+      handleClick={() =>
         (location.href =
           getRespondentDetailUrl(consultationId, nextRespondent.id) +
           `?themefinder_id=${themefinderId + 1}&question_id=${questionId}`)}
@@ -204,7 +182,7 @@
             </p>
 
             <ul>
-              {#each $answersData?.all_respondents ?? [] as answer, i}
+              {#each $answersData?.all_respondents ?? [] as answer, i (answer.id)}
                 {@const answerQuestion = $questionsData?.results?.find(
                   (question) => question.id === answer.question_id,
                 )}

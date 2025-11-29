@@ -69,7 +69,7 @@
   <Panel bg={true} border={true}>
     <Title level={4} text={title} />
 
-    {#each items as item, index}
+    {#each items as item, index (item.title)}
       {@render cardItem(item, index)}
     {/each}
 

@@ -30,8 +30,8 @@
       }
 
       window.location.href = Routes.Consultations;
-    } catch (err: any) {
-      error = err.message;
+    } catch (err: unknown) {
+      error = err instanceof Error ? err.message : "An unknown error occurred";
     } finally {
       loading = false;
     }

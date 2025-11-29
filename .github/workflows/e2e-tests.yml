@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  e2e-tests:
+  test:
     runs-on: ubuntu-latest
 
     steps:

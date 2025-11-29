@@ -6,7 +6,7 @@
     type ResponseTheme,
     type SearchableSelectOption,
   } from "../../../global/types";
-  import { createFetchStore } from "../../../global/stores";
+  import { createFetchStore, type MockFetch } from "../../../global/stores";
   import { getApiAnswerUrl } from "../../../global/routes";
 
   import Button from "../../inputs/Button/Button.svelte";
@@ -19,7 +19,6 @@
   import Tag from "../../Tag/Tag.svelte";
   import Title from "../../Title.svelte";
   import TitleRow from "../TitleRow.svelte";
-  import AutoRenew from "../../svg/material/AutoRenew.svelte";
 
   function removeTheme(id: string) {
     stagedThemes = stagedThemes.filter((theme) => theme.id !== id);
@@ -57,7 +56,7 @@
     }
 
     await actualUpdateAnswer(
-      getApiAnswerUrl(consultationId, questionId, answerId),
+      getApiAnswerUrl(consultationId, answerId),
       "PATCH",
       {
         themes: stagedThemes.map((theme) => ({ id: theme.id })),
@@ -77,18 +76,13 @@
     themes: ResponseTheme[];
     themeOptions: ResponseTheme[];
     evidenceRich: boolean;
-    resetData: Function;
-    setEditing: Function;
-    updateAnswerMock?: (
-      url: string,
-      method: string,
-      options: BodyInit,
-    ) => Promise<void>;
+    resetData: () => void;
+    setEditing: () => void;
+    updateAnswerMock?: MockFetch;
   }
 
   let {
     consultationId = "",
-    questionId = "",
     answerId = "",
     themes = [],
     themeOptions = [],
@@ -106,7 +100,6 @@
     loading: isSubmitting,
     error: submitError,
     load: updateAnswer,
-    data: answerData,
   } = createFetchStore();
 
   onMount(() => {
@@ -155,7 +148,7 @@
       <ul
         class="flex flex-wrap gap-2 items-center justify-start my-1 sm:max-w-[30vw]"
       >
-        {#each stagedThemes as theme}
+        {#each stagedThemes as theme (theme.id)}
           <Tag>
             {theme.name}
 

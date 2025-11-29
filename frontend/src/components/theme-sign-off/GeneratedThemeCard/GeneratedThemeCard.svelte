@@ -4,7 +4,7 @@
   import { slide, fly } from "svelte/transition";
 
   import type { GeneratedTheme } from "../../../global/types";
-  import { createFetchStore } from "../../../global/stores";
+  import { createFetchStore, type MockFetch } from "../../../global/stores";
   import { getApiAnswersUrl } from "../../../global/routes";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
@@ -28,7 +28,7 @@
     handleSelect: (theme: GeneratedTheme) => void;
     themesBeingSelected: string[];
     maxAnswers?: number;
-    answersMock?: Function;
+    answersMock?: MockFetch;
   }
   let {
     consultationId,
@@ -52,7 +52,6 @@
     load: loadAnswers,
     loading: isAnswersLoading,
     data: answersData,
-    error: answersError,
   } = createFetchStore(answersMock);
 
   let disabled = $derived(Boolean(theme.selectedtheme_id));
@@ -133,7 +132,7 @@
                   const queryString = new URLSearchParams({
                     searchMode: "representative",
                     searchValue: `${theme.name} ${theme.description}`,
-                    question_id: questionId
+                    question_id: questionId,
                   }).toString();
 
                   loadAnswers(

@@ -47,36 +47,12 @@
     error: questionsError,
     load: loadQuestions,
     data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
   } = createFetchStore();
 
-  const {
-    loading: isConsultationLoading,
-    error: loadConsultationError,
-    load: loadConsultation,
-    data: consultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
+  const { load: loadConsultation, data: consultationData } = createFetchStore();
 
-  const {
-    loading: isConsultationUpdating,
-    error: updateConsultationError,
-    load: updateConsultation,
-    data: updateConsultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
+  const { error: updateConsultationError, load: updateConsultation } =
+    createFetchStore();
 
   onMount(async () => {
     loadConsultation(getApiConsultationUrl(consultationId));
@@ -252,7 +228,7 @@
                 body="No questions found matching your search."
               />
             {:else}
-              {#each displayQuestions as question}
+              {#each displayQuestions as question (question.id)}
                 <QuestionCard
                   {consultationId}
                   {question}

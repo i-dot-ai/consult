@@ -32,7 +32,6 @@
     type DemoOptionsResponse,
     type DemoOptionsResponseItem,
     type FormattedTheme,
-    type MultiChoiceResponse,
     type Question,
     type ResponseAnswer,
     type ThemeAggrResponse,
@@ -64,7 +63,6 @@
   let { consultationId = "", questionId = "" }: Props = $props();
 
   const PAGE_SIZE: number = 50;
-  const MAX_THEME_FILTERS: number = Infinity;
 
   let currPage: number = $state(1);
   let hasMorePages: boolean = $state(true);
@@ -86,7 +84,7 @@
   }: {
     loading: Writable<boolean>;
     error: Writable<string>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<ConsultationResponse>;
   } = createFetchStore();
 
@@ -95,11 +93,6 @@
     error: questionsError,
     load: loadQuestions,
     data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
   } = createFetchStore();
 
   const {
@@ -110,67 +103,51 @@
   }: {
     loading: Writable<boolean>;
     error: Writable<string>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<AnswersResponse>;
   } = createFetchStore();
 
   const {
     loading: isThemeAggrLoading,
-    error: themeAggrError,
     load: loadThemeAggr,
     data: themeAggrData,
   }: {
     loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<ThemeAggrResponse>;
   } = createFetchStore();
 
   const {
-    loading: isThemeInfoLoading,
-    error: themeInfoError,
     load: loadThemeInfo,
     data: themeInfoData,
   }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<ThemeInfoResponse>;
   } = createFetchStore();
 
   const {
-    loading: isDemoOptionsLoading,
-    error: demoOptionsError,
     load: loadDemoOptions,
     data: demoOptionsData,
   }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<DemoOptionsResponse>;
   } = createFetchStore();
 
   const {
-    loading: isDemoAggrLoading,
-    error: demoAggrError,
     load: loadDemoAggr,
     data: demoAggrData,
   }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<DemoAggrResponse>;
   } = createFetchStore();
 
   const {
     loading: isQuestionLoading,
-    error: questionError,
     load: loadQuestion,
     data: questionData,
   }: {
     loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<Question>;
   } = createFetchStore();
 

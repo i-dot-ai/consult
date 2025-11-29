@@ -39,7 +39,7 @@
   </div>
 
   <div class="pl-4">
-    {#each demoData as demoDataItem}
+    {#each demoData as demoDataItem (demoDataItem.name)}
       <RespondentSidebarItem
         title={demoDataItem.name}
         subtitle={demoDataItem.value}

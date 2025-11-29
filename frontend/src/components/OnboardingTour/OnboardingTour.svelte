@@ -209,14 +209,14 @@
       <footer>
         {#if hasMultipleSteps()}
           <div class="flex flex-no-wrap gap-1 mt-4">
-            {#each steps as _, i}
+            {#each steps as _, i (i)}
               {@const labelText = `Go to step ${i + 1}`}
 
               <button
                 title={labelText}
                 aria-label={labelText}
                 style="width: {Math.round(100 / steps.length)}%;"
-                class={"hover:opacity-75"}
+                class="hover:opacity-75"
                 onclick={() => {
                   // transition only if 1 step difference
                   progressTransition = Math.abs(currStep - i) === 1;

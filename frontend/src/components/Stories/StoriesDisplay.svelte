@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { createRawSnippet, type Component } from "svelte";
+  import { createRawSnippet } from "svelte";
 
   import CodeMirror from "svelte-codemirror-editor";
   import { json } from "@codemirror/lang-json";
@@ -22,7 +22,7 @@
   let currStory: Story | undefined = $state(
     stories.find((story) => story.name === selected),
   );
-  let componentProps: Object = $derived.by(() => {
+  let componentProps: object = $derived.by(() => {
     let props = {};
     currStory?.props.forEach((prop) => {
       props[prop.name] = prop.value;
@@ -38,9 +38,9 @@
   <aside class="col-span-1">
     <Panel border={true} bg={false}>
       <ul class="flex flex-col gap-2">
-        {#each categories as category}
+        {#each categories as category (category)}
           <h2 class="font-[500]">{category || "General"}</h2>
-          {#each stories.filter((story) => story.category === category) as story}
+          {#each stories.filter((story) => story.category === category) as story (category + story.name)}
             <li>
               <a
                 href={`/stories?selected=${story.name}`}
@@ -88,7 +88,7 @@
             </Button>
           </div>
 
-          {#each currStory.stories as story}
+          {#each currStory.stories as story (story.name)}
             <div class="mb-4 last:mb-0">
               <h3>{story.name}</h3>
               <StoryComponent {...story.props} />
@@ -103,7 +103,7 @@
 
           <StoryComponent {...componentProps} />
 
-          {#each currStory.props as prop}
+          {#each currStory.props as prop (prop.name)}
             {@const inputId = `input-${prop.name.toLowerCase().replaceAll(" ", "-")}`}
 
             <div class="pl-4 mt-4">
@@ -119,8 +119,8 @@
                   class="border border-neutral-300 rounded-lg p-2"
                   type="number"
                   value={prop.value.toString()}
-                  oninput={(e: any) => {
-                    prop.value = parseInt(e.target.value);
+                  oninput={(e) => {
+                    prop.value = parseInt(e?.target?.value);
                   }}
                 />
               {:else if prop.type === "text"}
@@ -145,15 +145,12 @@
                   label={prop.name}
                   hideLabel={true}
                   value={prop.label}
-                  items={prop.options.map((opt: any) => ({
-                    value: opt.label,
-                    label: opt.label,
-                  }))}
+                  items={prop.options}
                   onchange={(nextVal) => {
                     if (!nextVal) {
                       return;
                     }
-                    prop.value = prop.options.find((opt: any) => {
+                    prop.value = prop.options.find((opt: { label: string }) => {
                       return opt.label === nextVal;
                     }).value;
                   }}

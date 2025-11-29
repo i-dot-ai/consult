@@ -53,7 +53,7 @@
 </div>
 {#if loading}
   <ol>
-    {#each "_".repeat(5) as _}
+    {#each "_".repeat(5) as _, i (i)}
       <li
         class={clsx([
           "blink",
@@ -75,7 +75,7 @@
   </ol>
 {:else if answers?.length > 0}
   <ol class="mt-2 max-h-[20rem] overflow-y-auto">
-    {#each answers as answer, i}
+    {#each answers as answer, i (i)}
       <li
         class={clsx([
           "flex",
