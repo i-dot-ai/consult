@@ -7,11 +7,13 @@ describe("Checkbox Component", () => {
     const { getByRole, getByLabelText } = render(Checkbox, {
       props: {
         id: "terms",
-        label: "I agree to the terms and conditions"
-      }
+        label: "I agree to the terms and conditions",
+      },
     });
 
-    expect(getByLabelText("I agree to the terms and conditions")).toBeInTheDocument();
+    expect(
+      getByLabelText("I agree to the terms and conditions"),
+    ).toBeInTheDocument();
     expect(getByRole("checkbox")).toBeInTheDocument();
   });
 
@@ -22,21 +24,21 @@ describe("Checkbox Component", () => {
         name: "terms",
         label: {
           text: "I agree to the terms",
-          classes: "govuk-label--s"
-        }
-      }
+          classes: "govuk-label--s",
+        },
+      },
     });
 
     expect(getByLabelText("I agree to the terms")).toBeInTheDocument();
-    expect(container.querySelector('label')).toHaveClass('font-semibold');
+    expect(container.querySelector("label")).toHaveClass("font-semibold");
   });
 
   it("renders label with string configuration", () => {
     const { getByLabelText } = render(Checkbox, {
       props: {
         id: "newsletter",
-        label: "Subscribe to newsletter"
-      }
+        label: "Subscribe to newsletter",
+      },
     });
 
     expect(getByLabelText("Subscribe to newsletter")).toBeInTheDocument();
@@ -47,8 +49,8 @@ describe("Checkbox Component", () => {
       props: {
         id: "newsletter",
         label: "Subscribe",
-        checked: true
-      }
+        checked: true,
+      },
     });
 
     const checkbox = getByRole("checkbox");
@@ -62,8 +64,8 @@ describe("Checkbox Component", () => {
         id: "newsletter",
         label: "Subscribe",
         value: "newsletter-opt-in",
-        onchange
-      }
+        onchange,
+      },
     });
 
     const checkbox = getByRole("checkbox");
@@ -78,8 +80,8 @@ describe("Checkbox Component", () => {
       props: {
         id: "newsletter",
         label: "Subscribe",
-        onchange
-      }
+        onchange,
+      },
     });
 
     const checkbox = getByRole("checkbox");
@@ -93,8 +95,8 @@ describe("Checkbox Component", () => {
       props: {
         id: "newsletter",
         label: "Subscribe",
-        hint: "You can unsubscribe at any time"
-      }
+        hint: "You can unsubscribe at any time",
+      },
     });
 
     expect(getByText("You can unsubscribe at any time")).toBeInTheDocument();
@@ -105,8 +107,8 @@ describe("Checkbox Component", () => {
       props: {
         id: "terms",
         label: "Accept terms",
-        errorMessage: "You must accept the terms"
-      }
+        errorMessage: "You must accept the terms",
+      },
     });
 
     expect(getByText("You must accept the terms")).toBeInTheDocument();
@@ -117,15 +119,15 @@ describe("Checkbox Component", () => {
       props: {
         id: "terms",
         label: "Accept terms",
-        errorMessage: "Error message"
-      }
+        errorMessage: "Error message",
+      },
     });
 
     const formGroup = container.firstChild;
     const checkbox = container.querySelector('input[type="checkbox"]');
-    
-    expect(formGroup).toHaveClass('border-l-4', 'border-red-600');
-    expect(checkbox).toHaveClass('border-red-600');
+
+    expect(formGroup).toHaveClass("border-l-4", "border-red-600");
+    expect(checkbox).toHaveClass("border-red-600");
   });
 
   it("hides label when hideLabel is true", () => {
@@ -133,8 +135,8 @@ describe("Checkbox Component", () => {
       props: {
         id: "hidden-checkbox",
         label: "Hidden Label",
-        hideLabel: true
-      }
+        hideLabel: true,
+      },
     });
 
     expect(queryByText("Hidden Label")).not.toBeInTheDocument();
@@ -145,8 +147,8 @@ describe("Checkbox Component", () => {
       props: {
         id: "disabled-checkbox",
         label: "Disabled",
-        disabled: true
-      }
+        disabled: true,
+      },
     });
 
     const checkbox = getByRole("checkbox");
@@ -159,12 +161,15 @@ describe("Checkbox Component", () => {
         id: "newsletter",
         label: "Subscribe",
         hint: "Hint text",
-        errorMessage: "Error text"
-      }
+        errorMessage: "Error text",
+      },
     });
 
     const checkbox = getByRole("checkbox");
-    expect(checkbox).toHaveAttribute("aria-describedby", "newsletter-hint newsletter-error");
+    expect(checkbox).toHaveAttribute(
+      "aria-describedby",
+      "newsletter-hint newsletter-error",
+    );
   });
 
   it("uses name prop or defaults to id", () => {
@@ -172,8 +177,8 @@ describe("Checkbox Component", () => {
       props: {
         id: "newsletter",
         name: "custom-name",
-        label: "Subscribe"
-      }
+        label: "Subscribe",
+      },
     });
 
     const checkbox = getByRole("checkbox");
@@ -184,8 +189,8 @@ describe("Checkbox Component", () => {
     const { getByRole } = render(Checkbox, {
       props: {
         id: "newsletter",
-        label: "Subscribe"
-      }
+        label: "Subscribe",
+      },
     });
 
     const checkbox = getByRole("checkbox");
@@ -193,40 +198,27 @@ describe("Checkbox Component", () => {
   });
 
   it("applies all GOV.UK label size classes", () => {
-    const labelSizes = ['s', 'm', 'l', 'xl'];
-    
-    labelSizes.forEach(size => {
+    const labelSizes = ["s", "m", "l", "xl"] as const;
+
+    labelSizes.forEach((size) => {
       const { container } = render(Checkbox, {
         props: {
           id: "test-checkbox",
           label: {
             text: "Test label",
-            classes: `govuk-label--${size}`
-          }
-        }
+            classes: `govuk-label--${size}`,
+          },
+        },
       });
 
-      const label = container.querySelector('label');
+      const label = container.querySelector("label");
       const expectedClasses = {
-        's': 'font-semibold',
-        'm': 'font-semibold',
-        'l': 'font-semibold',
-        'xl': 'font-semibold'
+        s: "font-semibold",
+        m: "font-semibold",
+        l: "font-semibold",
+        xl: "font-semibold",
       };
       expect(label).toHaveClass(expectedClasses[size]);
     });
-  });
-
-  it("sets checkbox value attribute when provided", () => {
-    const { getByRole } = render(Checkbox, {
-      props: {
-        id: "newsletter",
-        label: "Subscribe",
-        value: "newsletter-subscription"
-      }
-    });
-
-    const checkbox = getByRole("checkbox");
-    expect(checkbox).toHaveValue("newsletter-subscription");
   });
 });

@@ -1,29 +1,23 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup } from "@testing-library/svelte";
+import { render } from "@testing-library/svelte";
 
 import EditPanel from "./EditPanel.svelte";
 
-let testData;
-
 describe("EditPanel", () => {
-  beforeEach(() => {
-    testData = {
-      consultationId: "test-consultation-id",
-      questionId: "test-question-id",
-      answerId: "test-answer-id",
-      themes: [
-        { id: "theme-one", name: "Theme 1" },
-        { id: "theme-two", name: "Theme 2" },
-      ],
-      themeOptions: [],
-      evidenceRich: false,
-      resetData: () => {},
-      setEditing: () => {},
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    consultationId: "test-consultation-id",
+    questionId: "test-question-id",
+    answerId: "test-answer-id",
+    themes: [
+      { id: "theme-one", name: "Theme 1", description: "Description 1" },
+      { id: "theme-two", name: "Theme 2", description: "Description 2" },
+    ],
+    themeOptions: [],
+    evidenceRich: false,
+    resetData: () => {},
+    setEditing: () => {},
+  };
 
   it("should match snapshot", async () => {
     vi.mock("svelte/transition");
@@ -33,9 +27,9 @@ describe("EditPanel", () => {
     const button = container.querySelector("button");
     ["aria-controls", "id"].forEach((attribute) => {
       // Confirm attribute is created
-      expect(button.getAttribute(attribute)).toBeTruthy();
+      expect(button?.getAttribute(attribute)).toBeTruthy();
       // Remove randomly generated attributes to avoid mismatch
-      button.removeAttribute(attribute);
+      button?.removeAttribute(attribute);
     });
 
     expect(container).toMatchSnapshot();

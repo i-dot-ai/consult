@@ -19,7 +19,6 @@
   import Tag from "../../Tag/Tag.svelte";
   import Title from "../../Title.svelte";
   import TitleRow from "../TitleRow.svelte";
-  import AutoRenew from "../../svg/material/AutoRenew.svelte";
 
   function removeTheme(id: string) {
     stagedThemes = stagedThemes.filter((theme) => theme.id !== id);
@@ -57,7 +56,7 @@
     }
 
     await actualUpdateAnswer(
-      getApiAnswerUrl(consultationId, questionId, answerId),
+      getApiAnswerUrl(consultationId, answerId),
       "PATCH",
       {
         themes: stagedThemes.map((theme) => ({ id: theme.id })),
