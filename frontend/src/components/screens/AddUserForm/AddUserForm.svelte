@@ -97,7 +97,7 @@
     {#if typeof error === "string"}
       <p class="text-sm text-red-500">{`Error: ${error}`}</p>
     {:else}
-      {#each error as err}
+      {#each error as err, i (i)}
         <p class="text-sm text-red-500">
           {`Error for ${err.email}: ${err.error}`}
         </p>

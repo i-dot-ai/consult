@@ -38,9 +38,9 @@
   <aside class="col-span-1">
     <Panel border={true} bg={false}>
       <ul class="flex flex-col gap-2">
-        {#each categories as category}
+        {#each categories as category (category)}
           <h2 class="font-[500]">{category || "General"}</h2>
-          {#each stories.filter((story) => story.category === category) as story}
+          {#each stories.filter((story) => story.category === category) as story (category + story.name)}
             <li>
               <a
                 href={`/stories?selected=${story.name}`}
@@ -88,7 +88,7 @@
             </Button>
           </div>
 
-          {#each currStory.stories as story}
+          {#each currStory.stories as story (story.name)}
             <div class="mb-4 last:mb-0">
               <h3>{story.name}</h3>
               <StoryComponent {...story.props} />
@@ -103,7 +103,7 @@
 
           <StoryComponent {...componentProps} />
 
-          {#each currStory.props as prop}
+          {#each currStory.props as prop (prop.name)}
             {@const inputId = `input-${prop.name.toLowerCase().replaceAll(" ", "-")}`}
 
             <div class="pl-4 mt-4">

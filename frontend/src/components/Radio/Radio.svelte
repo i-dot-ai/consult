@@ -38,7 +38,7 @@
         </h2>
       </legend>
       <div class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6">
-        {#each items as item}
+        {#each items as item (item.value)}
           <div class="flex items-start gap-3 mb-2.5 last:mb-0">
             <input
               class={clsx([
@@ -69,7 +69,7 @@
     </fieldset>
   {:else}
     <div class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6">
-      {#each items as item}
+      {#each items as item (item.value)}
         <div class="flex items-start gap-3 mb-2.5 last:mb-0">
           <input
             class={clsx([

@@ -244,7 +244,7 @@
                 body="No questions found matching your search."
               />
             {:else}
-              {#each displayQuestions as question}
+              {#each displayQuestions as question (question.id)}
                 <QuestionCard
                   {consultationId}
                   {question}

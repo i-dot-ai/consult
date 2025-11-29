@@ -93,7 +93,7 @@
           ])}
         >
           {#if skeleton}
-            {#each "_".repeat(3) as _}
+            {#each "_".repeat(3) as _, i (i)}
               <div class="blink">
                 <Tag>
                   <span
@@ -104,7 +104,7 @@
               </div>
             {/each}
           {:else}
-            {#each demoData as demoDataItem}
+            {#each demoData as demoDataItem (demoDataItem)}
               <Tag>
                 <span class="text-xs">{demoDataItem.replaceAll("'", "")}</span>
               </Tag>
@@ -201,7 +201,7 @@
 
     {#if multiAnswers && multiAnswers.length > 0 && !skeleton}
       <ul class={clsx(["flex", "gap-2", "flex-wrap", "my-1"])}>
-        {#each multiAnswers as multiAnswer}
+        {#each multiAnswers as multiAnswer (multiAnswer)}
           <Tag>
             <span class="text-xs">{multiAnswer}</span>
           </Tag>
@@ -212,7 +212,7 @@
     {#if themes && themes.length > 0 && !skeleton}
       <footer class={clsx(["flex", "items-center", "gap-1", "flex-wrap"])}>
         <small class="text-neutral-500"> Themes: </small>
-        {#each themes as theme}
+        {#each themes as theme (theme.id)}
           <Button
             handleClick={() => themeFilters.update(theme.id)}
             highlighted={themeFilters.filters.includes(theme.id)}

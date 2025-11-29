@@ -103,7 +103,7 @@
       .join(" ") || undefined}
     onchange={handleChange}
   >
-    {#each items as item}
+    {#each items as item (item.value)}
       <option
         value={item.value}
         selected={value === item.value}

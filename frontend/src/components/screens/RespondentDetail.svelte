@@ -180,7 +180,7 @@
             </p>
 
             <ul>
-              {#each $answersData?.all_respondents ?? [] as answer, i}
+              {#each $answersData?.all_respondents ?? [] as answer, i (answer.id)}
                 {@const answerQuestion = $questionsData?.results?.find(
                   (question) => question.id === answer.question_id,
                 )}

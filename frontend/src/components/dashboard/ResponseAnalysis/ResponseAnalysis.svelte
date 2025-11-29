@@ -187,7 +187,7 @@
                     transition:slide
                     class="flex gap-2 flex-wrap items-center my-2"
                   >
-                    {#each themeFilters.filters as themeFilter}
+                    {#each themeFilters.filters as themeFilter (themeFilter)}
                       <div transition:fly={{ x: 300 }}>
                         <Tag variant="primary">
                           <span>
@@ -291,7 +291,7 @@
 
             {#if isAnswersLoading && answers.length === 0}
               <div transition:fade>
-                {#each "_".repeat(5) as _}
+                {#each "_".repeat(5) as _, i (i)}
                   <AnswerCard skeleton={true} />
                 {/each}
               </div>
@@ -342,7 +342,7 @@
 
                 {#if isAnswersLoading}
                   <div transition:fade>
-                    {#each "_".repeat(5) as _}
+                    {#each "_".repeat(5) as _, i (i)}
                       <AnswerCard skeleton={true} />
                     {/each}
                   </div>

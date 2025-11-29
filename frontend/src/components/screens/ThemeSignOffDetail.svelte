@@ -398,7 +398,7 @@
       </div>
     {:else}
       <div class="mt-4">
-        {#each $selectedThemesData?.results as selectedTheme}
+        {#each $selectedThemesData?.results as selectedTheme (selectedTheme.id)}
           <div transition:slide={{ duration: 150 }} class="mb-4 last:mb-0">
             <SelectedThemeCard
               {consultationId}
@@ -456,7 +456,7 @@
       <h4 class="text-xs font-bold my-4">Selected themes:</h4>
 
       <div class="max-h-64 overflow-y-auto">
-        {#each $selectedThemesData?.results as selectedTheme}
+        {#each $selectedThemesData?.results as selectedTheme (selectedTheme.id)}
           <Panel bg={true} border={false}>
             <h5 class="text-xs font-bold mb-1">{selectedTheme.name}</h5>
             <p class="text-xs text-neutral-500">{selectedTheme.description}</p>
@@ -563,7 +563,7 @@
         </Panel>
       </div>
 
-      {#each $generatedThemesData?.results as theme}
+      {#each $generatedThemesData?.results as theme (theme.id)}
         <GeneratedThemeCard
           {consultationId}
           {questionId}
