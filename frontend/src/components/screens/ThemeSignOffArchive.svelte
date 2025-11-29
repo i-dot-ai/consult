@@ -47,28 +47,12 @@
     error: questionsError,
     load: loadQuestions,
     data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
   } = createFetchStore();
 
-  const {
-    load: loadConsultation,
-    data: consultationData,
-  }: {
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
+  const { load: loadConsultation, data: consultationData } = createFetchStore();
 
-  const {
-    error: updateConsultationError,
-    load: updateConsultation,
-  }: {
-    error: Writable<string>;
-    load: Function;
-  } = createFetchStore();
+  const { error: updateConsultationError, load: updateConsultation } =
+    createFetchStore();
 
   onMount(async () => {
     loadConsultation(getApiConsultationUrl(consultationId));

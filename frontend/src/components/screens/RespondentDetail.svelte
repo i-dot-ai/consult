@@ -19,7 +19,9 @@
   import MaterialIcon from "../MaterialIcon.svelte";
   import ChevronRight from "../svg/material/ChevronRight.svelte";
   import Button from "../inputs/Button/Button.svelte";
-  import RespondentSidebar from "../dashboard/RespondentSidebar/RespondentSidebar.svelte";
+  import RespondentSidebar, {
+    type RespondentDemoItem,
+  } from "../dashboard/RespondentSidebar/RespondentSidebar.svelte";
   import RespondentTopbar from "../dashboard/RespondentTopbar/RespondentTopbar.svelte";
   import RespondentAnswer from "../dashboard/RespondentAnswer/RespondentAnswer.svelte";
 
@@ -29,8 +31,8 @@
     id: string;
     consultation: string;
     themefinder_id: number;
-    demographics: any[];
-    name?: any;
+    demographics: RespondentDemoItem[];
+    name?: string;
   }
 
   interface Props {

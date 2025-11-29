@@ -41,14 +41,8 @@
     RADIO_OPTIONS.find((option) => option.checked)?.value || "";
 
   onMount(async () => {
-    consultationFolders = [];
     const response = await fetch(`${Routes.ApiConsultationFolders}`);
-    const consultationFolderData = await response.json();
-
-    consultationFolders = consultationFolderData.map((folder: any) => ({
-      value: folder.value,
-      label: folder.text,
-    }));
+    consultationFolders = await response.json();
   });
 
   const setConsultationName = (newValue: string) => {
@@ -118,8 +112,9 @@
         timestamp = "";
         consultationFolderCode = "";
         window.location.href = "/support/consultations/";
-      } catch (err: any) {
-        errors["general"] = err.message;
+      } catch (err: unknown) {
+        errors["general"] =
+          err instanceof Error ? err.message : "An unknown error occurred";
       } finally {
         sending = false;
       }

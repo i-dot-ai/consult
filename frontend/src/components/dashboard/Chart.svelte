@@ -70,7 +70,7 @@
 
   const htmlLegendPlugin = {
     id: "htmlLegend",
-    afterUpdate(chart: Chart, args: any, options: ChartOptions) {
+    afterUpdate(chart: Chart, args: unknown, options: ChartOptions) {
       //@ts-ignore: containerID added by plugin
       const ul = getOrCreateLegendList(chart, options.containerID);
 

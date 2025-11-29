@@ -48,8 +48,8 @@
 
       success = true;
       email = "";
-    } catch (err: any) {
-      error = err.message;
+    } catch (err: unknown) {
+      error = err instanceof Error ? err.message : "An unknown error occurred";
     } finally {
       sending = false;
     }

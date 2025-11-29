@@ -51,8 +51,8 @@
           }));
         }
       }
-    } catch (err: any) {
-      error = err.message || "something went wrong.";
+    } catch (err: unknown) {
+      error = err instanceof Error ? err.message : "something went wrong.";
     } finally {
       loading = false;
     }

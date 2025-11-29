@@ -37,6 +37,7 @@
   import ErrorModal, {
     type ErrorType,
   } from "../theme-sign-off/ErrorModal.svelte";
+  import type { GeneratedTheme, SelectedTheme } from "../../global/types";
 
   let {
     consultationId = "",
@@ -54,7 +55,9 @@
   let expandedThemes: string[] = $state([]);
   let errorData: ErrorType | null = $state(null);
 
-  const flattenGeneratedThemes = (items: any[]): any[] => {
+  const flattenGeneratedThemes = (
+    items: GeneratedTheme[],
+  ): GeneratedTheme[] => {
     if (!items) {
       return [];
     }
@@ -62,7 +65,7 @@
     for (const item of items) {
       const { children, ...attrs } = item;
       result.push(attrs);
-      if (children?.length > 0) {
+      if (children?.length) {
         result.push(...flattenGeneratedThemes(children));
       }
     }
@@ -265,8 +268,8 @@
       location.replace(getThemeSignOffUrl(consultationId));
     }
   };
-  const numSelectedThemesText = (themes?: Array<any>): string => {
-    if (!themes) {
+  const numSelectedThemesText = (themes: Array<SelectedTheme>): string => {
+    if (themes.length === 0) {
       return "";
     }
     return `${themes.length} selected theme${themes.length > 1 ? "s" : ""}`;

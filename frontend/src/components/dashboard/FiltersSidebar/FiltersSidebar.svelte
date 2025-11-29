@@ -36,7 +36,7 @@
 
   // Derive to avoid calculating on re-render
   let totalCounts: DemoTotalCounts = $derived.by(() => {
-    let counts: any = {};
+    let counts: Record<string, number> = {};
     for (const category of Object.keys(demoData)) {
       counts[category] = Object.values(demoData[category]).reduce(
         (a, b) => (a as number) + (b as number),

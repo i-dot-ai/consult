@@ -46,11 +46,6 @@
     error: questionsError,
     load: loadQuestions,
     data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
   } = createFetchStore();
 
   $: favQuestions = $questionsData?.results?.filter((question) =>
