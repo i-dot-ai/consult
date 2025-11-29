@@ -39,10 +39,7 @@
     variant="ghost"
     handleClick={async () => {
       let toggle = toggleFlagMock || toggleFlag;
-      await toggle(
-        getApiAnswerFlagUrl(consultationId, answerId),
-        "PATCH",
-      );
+      await toggle(getApiAnswerFlagUrl(consultationId, answerId), "PATCH");
 
       resetData();
     }}

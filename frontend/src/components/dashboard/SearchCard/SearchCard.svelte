@@ -25,7 +25,7 @@
 <article>
   <div class={clsx(["flex", "gap-2"])}>
     <div class={clsx(["mt-1"])}>
-      <MaterialIcon size={"1.3rem"}>
+      <MaterialIcon size="1.3rem">
         <Star />
       </MaterialIcon>
     </div>
@@ -33,7 +33,7 @@
     <div class={clsx(["grow", "flex", "flex-col", "gap-2"])}>
       <div class={clsx(["flex", "justify-between"])}>
         <Title
-          weight={"light"}
+          weight="light"
           level={3}
           text={applyHighlight(title, highlightText)}
         />

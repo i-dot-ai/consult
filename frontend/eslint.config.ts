@@ -3,6 +3,7 @@ import globals from "globals";
 import tseslint from "typescript-eslint";
 import { defineConfig, globalIgnores } from "eslint/config";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
+import svelte from "eslint-plugin-svelte";
 
 export default defineConfig([
   globalIgnores([
@@ -13,12 +14,29 @@ export default defineConfig([
     "public/lit/",
   ]),
   {
-    files: ["**/*.{js,ts,mjs}"],
+    files: ["**/*.{js,ts,mjs,svelte}"],
     extends: [
       js.configs.recommended,
       eslintPluginPrettierRecommended,
       ...tseslint.configs.recommended,
+      ...svelte.configs["flat/recommended"],
     ],
-    languageOptions: { globals: globals.browser },
+    languageOptions: {
+      globals: globals.browser,
+      parserOptions: {
+        parser: tseslint.parser,
+      },
+    },
+    rules: {
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          destructuredArrayIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
+    },
   },
 ]);

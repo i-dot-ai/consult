@@ -22,7 +22,7 @@
   let currStory: Story | undefined = $state(
     stories.find((story) => story.name === selected),
   );
-  let componentProps: Object = $derived.by(() => {
+  let componentProps: object = $derived.by(() => {
     let props = {};
     currStory?.props.forEach((prop) => {
       props[prop.name] = prop.value;

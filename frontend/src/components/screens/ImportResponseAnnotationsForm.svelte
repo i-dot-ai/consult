@@ -10,7 +10,7 @@
   export let existingConsultations: SelectOption[] = [];
 
   let sending: boolean = false;
-  let errors: Record<string, string> = {}
+  let errors: Record<string, string> = {};
   let success: boolean = false;
 
   let consultationCode: string = "";
@@ -61,7 +61,7 @@
 
         success = true;
         loading = false;
-        errors = {}
+        errors = {};
         consultationCode = "";
         timestamp = "";
         window.location.href = "/support/consultations/";
@@ -74,12 +74,14 @@
   };
 </script>
 
-<form class={clsx(["flex", "flex-col", "gap-4"])}
-    on:submit|preventDefault={handleSubmit}>
+<form
+  class={clsx(["flex", "flex-col", "gap-4"])}
+  on:submit|preventDefault={handleSubmit}
+>
   {#if "general" in errors}
-  <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
-    {errors.general}
-  </small>
+    <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
+      {errors.general}
+    </small>
   {/if}
 
   {#if success}
@@ -88,17 +90,31 @@
     </small>
   {/if}
   {#if "code" in errors}
-  <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
-    {errors.code}
-  </small>
+    <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
+      {errors.code}
+    </small>
   {/if}
-  <Select id="consultation_code" name="consultation_code" label="Select existing consultation" items={existingConsultations} onchange={setConsultationCode} />
+  <Select
+    id="consultation_code"
+    name="consultation_code"
+    label="Select existing consultation"
+    items={existingConsultations}
+    onchange={setConsultationCode}
+  />
   {#if "timestamp" in errors}
-  <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
-    {errors.timestamp}
-  </small>
+    <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
+      {errors.timestamp}
+    </small>
   {/if}
-  <TextInput autocomplete="false" id="timestamp" name="timestamp" label="Timestamp folder (required)" placeholder="e.g. 2024-01-15" value={timestamp} setValue={setTimestamp} />
+  <TextInput
+    autocomplete="false"
+    id="timestamp"
+    name="timestamp"
+    label="Timestamp folder (required)"
+    placeholder="e.g. 2024-01-15"
+    value={timestamp}
+    setValue={setTimestamp}
+  />
   <Button
     type="submit"
     variant="primary"

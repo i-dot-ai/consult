@@ -6,7 +6,10 @@
   import type { SelectedTheme } from "../../../global/types";
   import { createFetchStore } from "../../../global/stores";
   import { getApiAnswersUrl } from "../../../global/routes";
-  import { formatTimeDeltaText, getTimeDeltaInMinutes } from "../../../global/utils";
+  import {
+    formatTimeDeltaText,
+    getTimeDeltaInMinutes,
+  } from "../../../global/utils";
 
   import Panel from "../../dashboard/Panel/Panel.svelte";
   import Button from "../../inputs/Button/Button.svelte";
@@ -53,7 +56,7 @@
     $answersData = null;
     showAnswers = false;
     answersRequested = false;
-  }
+  };
 </script>
 
 <article class="bg-white rounded-lg" data-themeid={theme.id}>
@@ -91,8 +94,9 @@
             <hr class="mb-4" />
 
             <small class="block text-xs text-neutral-500 mb-4">
-              {theme.version > 1 ? "Edited" : "Added"} {formatTimeDeltaText(
-                getTimeDeltaInMinutes(new Date, new Date(theme.modified_at))
+              {theme.version > 1 ? "Edited" : "Added"}
+              {formatTimeDeltaText(
+                getTimeDeltaInMinutes(new Date(), new Date(theme.modified_at)),
               )} ago by {theme.last_modified_by}
             </small>
 
@@ -118,7 +122,7 @@
                     const queryString = new URLSearchParams({
                       searchMode: "representative",
                       searchValue: `${theme.name} ${theme.description}`,
-                      question_id: questionId
+                      question_id: questionId,
                     }).toString();
 
                     loadAnswers(

@@ -39,7 +39,7 @@
       "hover:bg-primary",
     ])}
   >
-    <MaterialIcon size={"1.5rem"} color={"fill-white"}>
+    <MaterialIcon size="1.5rem" color="fill-white">
       <Menu />
     </MaterialIcon>
   </button>

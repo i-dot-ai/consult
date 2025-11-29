@@ -67,7 +67,7 @@
       }
     }
     return result;
-  }
+  };
 
   const errorModalOnClose = () => {
     loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
@@ -256,12 +256,14 @@
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
 
-    themesBeingSelected = themesBeingSelected.filter(themeId => themeId !== newTheme.id);
+    themesBeingSelected = themesBeingSelected.filter(
+      (themeId) => themeId !== newTheme.id,
+    );
 
     // get selectedtheme_id created after back end select action is complete
-    const updatedTheme = flattenGeneratedThemes($generatedThemesData?.results || []).find(
-      (generatedTheme) => generatedTheme.id === newTheme.id,
-    );
+    const updatedTheme = flattenGeneratedThemes(
+      $generatedThemesData?.results || [],
+    ).find((generatedTheme) => generatedTheme.id === newTheme.id);
 
     // scroll up to equivalent in selected themes list
     document
@@ -353,7 +355,7 @@
       <Panel variant="primary" bg={true} border={true}>
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2">
-            <MaterialIcon color={"fill-primary"}>
+            <MaterialIcon color="fill-primary">
               <CheckCircle />
             </MaterialIcon>
 
@@ -464,7 +466,7 @@
       icon={CheckCircle}
       open={isConfirmSignOffModalOpen}
       setOpen={(newOpen: boolean) => (isConfirmSignOffModalOpen = newOpen)}
-      confirmText={"Confirm Sign Off"}
+      confirmText="Confirm Sign Off"
       handleConfirm={confirmSignOff}
     >
       <p class="text-sm text-neutral-500">
@@ -539,7 +541,8 @@
               <h3>AI Generated Themes</h3>
 
               <Tag variant="success">
-                {flattenGeneratedThemes($generatedThemesData?.results || []).length} available
+                {flattenGeneratedThemes($generatedThemesData?.results || [])
+                  .length} available
               </Tag>
             </div>
 

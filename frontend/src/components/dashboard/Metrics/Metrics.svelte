@@ -108,7 +108,7 @@
         <Panel bg={true} border={true}>
           {#if loading}
             <div class="mb-4">
-              <Title level={3} text={`Loading questions`} />
+              <Title level={3} text="Loading questions" />
             </div>
 
             <LoadingIndicator size="10rem" />
