@@ -81,51 +81,29 @@
     load: loadSelectedThemes,
     loading: isSelectedThemesLoading,
     data: selectedThemesData,
-    error: selectedThemesError,
   } = createFetchStore(selectedThemesMock);
 
-  const {
-    load: loadGeneratedThemes,
-    loading: isGeneratedThemesLoading,
-    data: generatedThemesData,
-    error: generatedThemesError,
-  } = createFetchStore(generatedThemesMock);
+  const { load: loadGeneratedThemes, data: generatedThemesData } =
+    createFetchStore(generatedThemesMock);
+
+  const { load: createSelectedTheme } = createFetchStore(createThemeMock);
+
+  const { load: loadConfirmSignOff, error: confirmSignOffError } =
+    createFetchStore();
 
   const {
-    load: createSelectedTheme,
-    loading: isCreatingSelectedTheme,
-    data: createSelectedThemeData,
-    error: createSelectedThemeError,
-  } = createFetchStore(createThemeMock);
-
-  const {
-    load: loadConfirmSignOff,
-    loading: isConfirmSignOffLoading,
-    data: confirmSignOffData,
-    error: confirmSignOffError,
-  } = createFetchStore();
-
-  const {
-    load: removeSelectedTheme,
-    loading: isRemovingSelectedTheme,
     data: removeSelectedThemeData,
+    load: removeSelectedTheme,
     error: removeSelectedThemeError,
     status: removeSelectedThemeStatus,
   } = createFetchStore();
 
-  const {
-    load: selectGeneratedTheme,
-    loading: isSelectingGeneratedTheme,
-    data: selectGeneratedThemeData,
-    error: selectGeneratedThemeError,
-  } = createFetchStore(selectGeneratedThemeMock);
+  const { load: selectGeneratedTheme } = createFetchStore(
+    selectGeneratedThemeMock,
+  );
 
-  const {
-    load: loadQuestion,
-    loading: isQuestionLoading,
-    data: questionData,
-    error: questionError,
-  } = createFetchStore(questionDataMock);
+  const { loading: isQuestionLoading, data: questionData } =
+    createFetchStore(questionDataMock);
 
   let themesBeingSelected = $state([]);
 
@@ -236,7 +214,7 @@
       } else {
         throw new Error(`Edit theme failed: ${response.statusText}`);
       }
-    } catch (err: any) {
+    } catch {
       errorData = { type: "unexpected" };
     }
   };

@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { createRawSnippet, type Component } from "svelte";
+  import { createRawSnippet } from "svelte";
 
   import CodeMirror from "svelte-codemirror-editor";
   import { json } from "@codemirror/lang-json";

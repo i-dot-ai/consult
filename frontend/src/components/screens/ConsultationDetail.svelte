@@ -12,10 +12,7 @@
   import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
   import Metrics from "../dashboard/Metrics/Metrics.svelte";
 
-  import type {
-    Consultation,
-    DemoOptionsResponse,
-  } from "../../global/types.ts";
+  import type { DemoOptionsResponse } from "../../global/types.ts";
   import {
     getApiQuestionsUrl,
     getQuestionDetailUrl,
@@ -28,12 +25,10 @@
 
   const {
     loading: isDemoOptionsLoading,
-    error: demoOptionsError,
     load: loadDemoOptions,
     data: demoOptionsData,
   }: {
     loading: Writable<boolean>;
-    error: Writable<string>;
     load: Function;
     data: Writable<DemoOptionsResponse>;
   } = createFetchStore();

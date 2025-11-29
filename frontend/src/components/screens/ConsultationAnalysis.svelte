@@ -1,7 +1,6 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import { onMount } from "svelte";
   import type { Writable } from "svelte/store";
 
   import {
@@ -32,38 +31,20 @@
 
   let { consultationId = "" }: Props = $props();
 
-  const {
-    loading: isConsultationLoading,
-    error: consultationError,
-    load: loadConsultation,
-    data: consultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<ConsultationResponse>;
-  } = createFetchStore();
+  const { load: loadConsultation }: { load: Function } = createFetchStore();
 
   const {
-    loading: isQuestionsLoading,
-    error: questionsError,
     load: loadQuestions,
     data: questionsData,
   }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
     load: Function;
     data: Writable<ConsultationResponse>;
   } = createFetchStore();
 
   const {
-    loading: isDemoOptionsLoading,
-    error: demoOptionsError,
     load: loadDemoOptions,
     data: demoOptionsData,
   }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
     load: Function;
     data: Writable<DemoOptionsResponse>;
   } = createFetchStore();

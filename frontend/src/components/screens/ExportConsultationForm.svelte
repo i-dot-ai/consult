@@ -13,8 +13,6 @@
 
   let sending: boolean = false;
   let errors: Record<string, string> = {};
-  let success: boolean = false;
-  let loading: boolean = false;
 
   export let env: string = "";
   export let bucketName: string = "";
@@ -45,7 +43,6 @@
 
   const handleSubmit = async () => {
     errors = {};
-    success = false;
     sending = false;
 
     if (selectedQuestions.length == 0) {
@@ -57,7 +54,6 @@
     }
 
     if (Object.keys(errors).length == 0) {
-      success = false;
       sending = true;
       try {
         const response = await fetch(Routes.ApiConsultationExport, {
@@ -75,8 +71,6 @@
           throw new Error(`Error: ${response.status}`);
         }
 
-        success = true;
-        loading = false;
         errors = {};
         selectedQuestions = [];
         s3Key = "";

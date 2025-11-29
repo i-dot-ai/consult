@@ -20,11 +20,7 @@
     type ResponseTheme,
     type SearchableSelectOption,
   } from "../../../global/types";
-  import {
-    themeFilters,
-    demoFilters,
-    multiAnswerFilters,
-  } from "../../../global/state.svelte";
+  import { themeFilters } from "../../../global/state.svelte";
 
   import Title from "../../Title.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
@@ -51,9 +47,9 @@
   export let resetData = () => {};
 
   export let searchValue: string = "";
-  export let setSearchValue = (value: string) => {};
+  export let setSearchValue = () => {};
   export let searchMode: SearchModeValues = SearchModeValues.KEYWORD;
-  export let setSearchMode = (next: SearchModeValues) => {};
+  export let setSearchMode = () => {};
 
   export let demoOptions: DemoOption = {};
   export let demoData: DemoData = {};
@@ -61,10 +57,10 @@
   export let themes: ResponseTheme[] = [];
 
   export let evidenceRich: boolean = false;
-  export let setEvidenceRich = (value: boolean) => {};
+  export let setEvidenceRich = () => {};
 
   export let flaggedOnly: boolean = false;
-  export let setFlaggedOnly = (value: boolean) => {};
+  export let setFlaggedOnly = () => {};
 
   export let anyFilterApplied: boolean = false;
   export let resetFilters: () => void = () => {};

@@ -13,7 +13,7 @@
   import EditPanel from "../EditPanel/EditPanel.svelte";
   import FlagButton from "../FlagButton/FlagButton.svelte";
   import Person from "../../svg/material/Person.svelte";
-  import { getRespondentDetailUrl, Routes } from "../../../global/routes";
+  import { getRespondentDetailUrl } from "../../../global/routes";
 
   export interface Props {
     consultationId?: string;
