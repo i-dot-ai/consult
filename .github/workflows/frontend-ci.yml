@@ -39,26 +39,25 @@ jobs:
       - name: Run tests
         run: npm test
 
-  ### TO DO: Re-enable linting job after fixing existing lint issues ###
-  # lint:
-  #   runs-on: ubuntu-latest
+  lint:
+    runs-on: ubuntu-latest
 
-  #   defaults:
-  #     run:
-  #       working-directory: ./frontend
+    defaults:
+      run:
+        working-directory: ./frontend
 
-  #   steps:
-  #     - uses: actions/checkout@v6
+    steps:
+      - uses: actions/checkout@v6
 
-  #     - name: Set up Node.js
-  #       uses: actions/setup-node@v6
-  #       with:
-  #         node-version: ${{ env.NODE_VERSION }}
-  #         cache: "npm"
-  #         cache-dependency-path: frontend/package-lock.json
+      - name: Set up Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: "npm"
+          cache-dependency-path: frontend/package-lock.json
 
-  #     - name: Install dependencies
-  #       run: npm ci
+      - name: Install dependencies
+        run: npm ci
 
-  #     - name: Check code quality and formatting with ESLint and Prettier
-  #       run: npm run lint
+      - name: Check code quality and formatting with ESLint and Prettier
+        run: npm run lint
