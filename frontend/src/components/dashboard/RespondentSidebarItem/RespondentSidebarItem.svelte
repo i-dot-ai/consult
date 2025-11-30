@@ -39,17 +39,17 @@
   };
 </script>
 
-<div in:slide class="flex items-start gap-2 mt-4 text-xs">
+<div in:slide class="mt-4 flex items-start gap-2 text-xs">
   {#if icon}
-    <div class="bg-neutral-100 p-1 rounded-lg h-max">
+    <div class="h-max rounded-lg bg-neutral-100 p-1">
       <MaterialIcon size="1.3rem" color="fill-neutral-700">
         <svelte:component this={icon} />
       </MaterialIcon>
     </div>
   {/if}
 
-  <div class="flex flex-col w-full flex-wrap bg-white">
-    <div class="flex justify-between items-start">
+  <div class="flex w-full flex-col flex-wrap bg-white">
+    <div class="flex items-start justify-between">
       <h3 class="uppercase text-neutral-500">{title}</h3>
 
       {#if editable}
@@ -77,7 +77,7 @@
           placeholder="Business or organisation name"
           setValue={(newValue) => (stagedSubtitle = newValue.trim())}
         />
-        <div class="flex items-center justify-around gap-2 flex-wrap mt-3">
+        <div class="mt-3 flex flex-wrap items-center justify-around gap-2">
           <div class="grow">
             <Button
               variant="approve"
@@ -88,7 +88,7 @@
               }}
               testId="save-button"
             >
-              <div class="flex justify-center w-full gap-2">
+              <div class="flex w-full justify-center gap-2">
                 <MaterialIcon color="fill-white">
                   <Check />
                 </MaterialIcon>
@@ -103,7 +103,7 @@
               handleClick={() => toggleEditing()}
               testId="cancel-button"
             >
-              <div class="flex justify-center w-full gap-2">
+              <div class="flex w-full justify-center gap-2">
                 <MaterialIcon color="fill-neutral-500">
                   <Close />
                 </MaterialIcon>

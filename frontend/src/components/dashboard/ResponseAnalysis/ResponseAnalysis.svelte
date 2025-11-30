@@ -127,9 +127,9 @@
             {/if}
 
             <div
-              class="flex justify-between items-center gap-4 flex-col-reverse sm:flex-row"
+              class="flex flex-col-reverse items-center justify-between gap-4 sm:flex-row"
             >
-              <div class="w-full sm:w-auto grow">
+              <div class="w-full grow sm:w-auto">
                 <TextInput
                   variant="search"
                   id="search-input"
@@ -185,7 +185,7 @@
                 {#if themeFilters.filters.length > 0}
                   <div
                     transition:slide
-                    class="flex gap-2 flex-wrap items-center my-2"
+                    class="my-2 flex flex-wrap items-center gap-2"
                   >
                     {#each themeFilters.filters as themeFilter (themeFilter)}
                       <div transition:fly={{ x: 300 }}>
@@ -213,7 +213,7 @@
                   </div>
                 {/if}
 
-                <div class="w-full md:w-1/2 mt-4">
+                <div class="mt-4 w-full md:w-1/2">
                   <Popover>
                     <span slot="trigger" class="block text-left">
                       Select Themes...
@@ -260,7 +260,7 @@
               title={`${filteredTotal} responses found`}
               subtitle="All responses to this question"
             >
-              <div slot="aside" class="flex gap-2 items-center flex-wrap">
+              <div slot="aside" class="flex flex-wrap items-center gap-2">
                 {#if anyFilterApplied}
                   <Button
                     size="sm"
@@ -372,7 +372,7 @@
                 </div>
 
                 {#if answers}
-                  <p class="text-sm text-center mt-2">
+                  <p class="mt-2 text-center text-sm">
                     {`Showing first ${answers.length} of ${filteredTotal} responses. Use filters to narrow results.`}
                   </p>
                 {/if}

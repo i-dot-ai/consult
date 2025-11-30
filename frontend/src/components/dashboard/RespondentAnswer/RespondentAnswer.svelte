@@ -38,7 +38,7 @@
   <Panel border={true} bg={true}>
     <article>
       <header
-        class="flex flex-col-reverse md:flex-row gap-y-4 justify-between items-start gap-2 mb-4"
+        class="mb-4 flex flex-col-reverse items-start justify-between gap-2 gap-y-4 md:flex-row"
       >
         <a href={getQuestionDetailUrl(consultationId, questionId)}>
           <div class="flex items-start gap-2">
@@ -85,11 +85,11 @@
 
       {#if multiChoice?.length > 0}
         <div>
-          <h4 class="mt-4 mb-1 uppercase text-xs text-neutral-500">
+          <h4 class="mb-1 mt-4 text-xs uppercase text-neutral-500">
             Multiple Choice Response:
           </h4>
 
-          <ul class="flex items-center flex-wrap gap-1">
+          <ul class="flex flex-wrap items-center gap-1">
             {#each multiChoice as multiChoiceAnswer (multiChoiceAnswer)}
               <li class="text-xs">
                 {multiChoiceAnswer}
@@ -101,7 +101,7 @@
 
       <div>
         {#if multiChoice?.length > 0}
-          <h4 class="mt-4 mb-1 uppercase text-xs text-neutral-500">
+          <h4 class="mb-1 mt-4 text-xs uppercase text-neutral-500">
             Additional Comments:
           </h4>
         {/if}
@@ -111,7 +111,7 @@
       </div>
 
       {#if themes?.length > 0}
-        <footer class="flex items-center flex-wrap gap-2 mt-4">
+        <footer class="mt-4 flex flex-wrap items-center gap-2">
           <small class="text-xs text-neutral-500"> Themes: </small>
 
           {#each themes as theme (theme)}

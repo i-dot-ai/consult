@@ -91,7 +91,7 @@
             "flex-wrap",
             !loading &&
               !chartQuestions.length &&
-              "md:w-max md:gap-16 md:flex-nowrap",
+              "md:w-max md:flex-nowrap md:gap-16",
           ])}
         >
           <MetricsSummary
@@ -125,7 +125,7 @@
             >
               <div slot="title">
                 <Title level={3} maxChars={50}>
-                  <span class="text-primary mr-1">
+                  <span class="mr-1 text-primary">
                     Q{selectedChartQuestion?.number}
                   </span>{selectedChartQuestion?.question_text}
                 </Title>
@@ -133,7 +133,7 @@
 
               <div class="overflow-x-auto">
                 <div
-                  class="flex flex-row-reverse justify-center gap-4 mt-4 flex-wrap"
+                  class="mt-4 flex flex-row-reverse flex-wrap justify-center gap-4"
                 >
                   <div id="legend-container"></div>
 

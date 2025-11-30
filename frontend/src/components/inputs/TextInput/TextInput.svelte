@@ -36,7 +36,7 @@
       "rounded-sm",
       "focus:outline-2",
       "focus:outline-yellow-300",
-      variant === "search" && "pr-4 pl-8",
+      variant === "search" && "pl-8 pr-4",
     ])}
     type={inputType}
     {id}
@@ -54,7 +54,7 @@
         "absolute",
         "right-1",
         "top-1/2",
-        "-translate-y-1/2 mt-0.5",
+        "mt-0.5 -translate-y-1/2",
       ])}
     >
       <Button variant="ghost" handleClick={() => setValue("")}>
@@ -66,7 +66,7 @@
   {/if}
 
   {#if variant === "search"}
-    <div class="absolute left-2 top-1/2 transform -translate-y-1/2 mt-0.5">
+    <div class="absolute left-2 top-1/2 mt-0.5 -translate-y-1/2 transform">
       <MaterialIcon color="fill-neutral-400" size="1.2rem">
         <Search />
       </MaterialIcon>

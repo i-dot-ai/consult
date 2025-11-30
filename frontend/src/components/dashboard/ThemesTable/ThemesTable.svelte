@@ -21,11 +21,11 @@
 </script>
 
 <div class="w-full overflow-auto">
-  <table class="w-full text-md">
+  <table class="text-md w-full">
     <thead class="text-sm">
       <tr>
         {#each ["Theme", "Mentions", "% Percentage"] as header (header)}
-          <th class="text-left text-md m-2 pr-4 font-normal">
+          <th class="text-md m-2 pr-4 text-left font-normal">
             {header}
           </th>
         {/each}
@@ -47,12 +47,12 @@
             <td class="pr-4">
               <div transition:fade class="p-2">
                 <h3
-                  class="font-bold text-sm bg-neutral-100 text-neutral-100 select-none blink w-max mb-2"
+                  class="blink mb-2 w-max select-none bg-neutral-100 text-sm font-bold text-neutral-100"
                 >
                   {"SKELETON ".repeat(3)}
                 </h3>
                 <p
-                  class="text-sm bg-neutral-100 text-neutral-100 select-none blink"
+                  class="blink select-none bg-neutral-100 text-sm text-neutral-100"
                 >
                   {"SKELETON ".repeat(5)}
                 </p>
@@ -61,15 +61,15 @@
 
             <td class="pr-4">
               <div class="mt-8">
-                <span class="bg-neutral-100 text-neutral-100 select-none blink">
+                <span class="blink select-none bg-neutral-100 text-neutral-100">
                   000 SKELETON
                 </span>
               </div>
             </td>
             <td class="pr-4">
-              <div class="flex items-center gap-1 mt-8">
+              <div class="mt-8 flex items-center gap-1">
                 <span
-                  class="w-[5ch] bg-neutral-100 text-neutral-100 select-none blink"
+                  class="blink w-[5ch] select-none bg-neutral-100 text-neutral-100"
                 >
                   000%
                 </span>
@@ -104,8 +104,8 @@
           >
             <td class="pr-4">
               <div transition:fade class="p-2">
-                <h3 class="font-normal text-sm">{theme.name}</h3>
-                <p class="font-light text-neutral-500 text-sm">
+                <h3 class="text-sm font-normal">{theme.name}</h3>
+                <p class="text-sm font-light text-neutral-500">
                   {theme.description}
                 </p>
               </div>

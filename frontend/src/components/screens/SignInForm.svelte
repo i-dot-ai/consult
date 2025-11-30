@@ -80,8 +80,8 @@
     </small>
   {/if}
 
-  <div class="flex flex-wrap justify-start items-center gap-4">
-    <div class="grow max-w-[30ch]">
+  <div class="flex flex-wrap items-center justify-start gap-4">
+    <div class="max-w-[30ch] grow">
       <TextInput
         inputType="email"
         id="email-input"

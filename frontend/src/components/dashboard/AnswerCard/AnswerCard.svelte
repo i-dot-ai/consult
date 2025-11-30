@@ -97,7 +97,7 @@
               <div class="blink">
                 <Tag>
                   <span
-                    class="text-xs bg-neutral-100 text-neutral-100 select-none"
+                    class="select-none bg-neutral-100 text-xs text-neutral-100"
                     >skeleton</span
                   >
                 </Tag>
@@ -155,7 +155,7 @@
           title="Respondent ID"
           class={clsx([
             "whitespace-nowrap",
-            skeleton && "bg-neutral-100 text-neutral-100 select-none blink",
+            skeleton && "blink select-none bg-neutral-100 text-neutral-100",
           ])}
         >
           {#if skeleton}

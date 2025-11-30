@@ -117,7 +117,7 @@
         </MaterialIcon>
       </div>
 
-      <span class="mr-2 my-[0.1rem]">Previous Respondent</span>
+      <span class="my-[0.1rem] mr-2">Previous Respondent</span>
     </Button>
 
     <Button
@@ -128,7 +128,7 @@
           getRespondentDetailUrl(consultationId, nextRespondent.id) +
           `?themefinder_id=${themefinderId + 1}&question_id=${questionId}`)}
     >
-      <span class="ml-2 my-[0.1rem]">Next Respondent</span>
+      <span class="my-[0.1rem] ml-2">Next Respondent</span>
 
       <MaterialIcon color="fill-neutral-700">
         <ChevronRight />
@@ -137,7 +137,7 @@
   </RespondentTopbar>
 
   <div class={clsx(["grid", "grid-cols-12", "gap-4"])}>
-    <div class="col-span-12 md:col-span-3 h-max md:sticky md:top-4" in:slide>
+    <div class="col-span-12 h-max md:sticky md:top-4 md:col-span-3" in:slide>
       <svelte:boundary>
         <RespondentSidebar
           demoData={currRespondent?.demographics}

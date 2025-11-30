@@ -161,12 +161,12 @@
           class={clsx(["-ml-2", "sm:ml-0", horizontal ? "-mt-0.5" : "-mt-1"])}
         >
           {#if !skeleton}
-            <div class="flex gap-1 items-center">
+            <div class="flex items-center gap-1">
               {#if tag}
                 <div
                   class={clsx([
                     "ml-2 md:ml-0",
-                    disabled && "grayscale opacity-50",
+                    disabled && "opacity-50 grayscale",
                   ])}
                 >
                   {@render tag()}

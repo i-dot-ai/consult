@@ -114,5 +114,5 @@
     {/each}
   </ol>
 {:else}
-  <p class="mt-2 text-sm text-neutral-500 italic">There are no answers</p>
+  <p class="mt-2 text-sm italic text-neutral-500">There are no answers</p>
 {/if}

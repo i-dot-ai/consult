@@ -29,7 +29,7 @@ let questions = await fetchBackendApi<{ results: Question[] }>(
 <Layout>
   <Section>
     <Title level={1} text={consultation.title} />
-    <ul class="list-none p-0 m-0 space-y-2">
+    <ul class="m-0 list-none space-y-2 p-0">
       <li>
         <Link href={`/evaluations/${consultationId}/questions`}
           >View on frontend (question review)</Link
@@ -55,7 +55,7 @@ let questions = await fetchBackendApi<{ results: Question[] }>(
 
   <Section class="overflow-x-auto">
     <Title level={1} text="users" />
-    <table class="w-full text-left whitespace-nowrap">
+    <table class="w-full whitespace-nowrap text-left">
       <thead class="font-bold">
         <tr>
           <th class="py-2 pr-2">email</th>
@@ -113,7 +113,7 @@ let questions = await fetchBackendApi<{ results: Question[] }>(
             questions.results?.map((question) => (
               <tr class="border-t hover:bg-gray-50">
                 <td class="py-2 pr-2">{question.number}</td>
-                <td class="py-2 pr-2 break-words max-w-xs">
+                <td class="max-w-xs break-words py-2 pr-2">
                   {question.question_text}
                 </td>
                 <td class="py-2 pr-2">

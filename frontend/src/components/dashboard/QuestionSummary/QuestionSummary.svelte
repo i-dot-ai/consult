@@ -136,7 +136,7 @@
                   <FilterAlt slot="icon" />
 
                   <div
-                    class="flex justify-between items-center gap-4 flex-wrap"
+                    class="flex flex-wrap items-center justify-between gap-4"
                   >
                     <p class="text-sm">Results are filtered</p>
 
@@ -170,7 +170,7 @@
                   />
                 </div>
 
-                <div class="flex gap-1 flex-wrap">
+                <div class="flex flex-wrap gap-1">
                   {#each themeFilters.filters as themeFilterId (themeFilterId)}
                     <div transition:fly={{ x: 300 }}>
                       <Tag variant="primary">
@@ -212,7 +212,7 @@
               </Panel>
             {/if}
 
-            <div class="flex justify-between items-center flex-wrap gap-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-y-4">
               <small>
                 {`Showing ${themes?.length || 0} themes • Click rows to select themes for response analysis`}
               </small>

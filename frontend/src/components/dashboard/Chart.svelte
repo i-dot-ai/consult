@@ -226,6 +226,6 @@
   });
 </script>
 
-<div class="w-full h-full">
+<div class="h-full w-full">
   <canvas class="h-full" bind:this={chartElement}></canvas>
 </div>

@@ -41,7 +41,7 @@
 <section>
   <Panel level={2} border={true} bg={skeleton ? false : true}>
     {#if skeleton}
-      <h3 class="bg-neutral-100 text-neutral-100 select-none w-max blink">
+      <h3 class="blink w-max select-none bg-neutral-100 text-neutral-100">
         skeleton
       </h3>
     {:else}
@@ -51,7 +51,7 @@
         fullWidth={true}
         handleClick={() => (expanded = !expanded)}
       >
-        <div class="flex justify-between w-full">
+        <div class="flex w-full justify-between">
           <h3 class="truncate" title={category}>
             {skeleton ? "Skeleton" : category}
           </h3>
@@ -69,22 +69,22 @@
 
     {#if skeleton}
       <div class="my-1">
-        <div class="demo-filter w-full relative pb-3">
-          <div class="grid grid-cols-3 gap-1 mb-1">
+        <div class="demo-filter relative w-full pb-3">
+          <div class="mb-1 grid grid-cols-3 gap-1">
             <span
-              class="text-left bg-neutral-100 text-neutral-100 select-none blink"
+              class="blink select-none bg-neutral-100 text-left text-neutral-100"
               >skeleton</span
             >
             <span
-              class="text-right bg-neutral-100 text-neutral-100 select-none blink"
+              class="blink select-none bg-neutral-100 text-right text-neutral-100"
               >000%</span
             >
             <span
-              class="text-right bg-neutral-100 text-neutral-100 select-none blink"
+              class="blink select-none bg-neutral-100 text-right text-neutral-100"
               >00000</span
             >
           </div>
-          <div class="w-full bg-neutral-100 text-neutral-100 select-none blink">
+          <div class="blink w-full select-none bg-neutral-100 text-neutral-100">
             {"_".repeat(10)}
           </div>
         </div>
@@ -112,9 +112,9 @@
                 : false}
               highlightVariant="light"
             >
-              <div class="demo-filter w-full relative pb-1">
-                <div class="flex justify-between items-center gap-1">
-                  <span class="text-left truncate grow" title={rowKey}>
+              <div class="demo-filter relative w-full pb-1">
+                <div class="flex items-center justify-between gap-1">
+                  <span class="grow truncate text-left" title={rowKey}>
                     {rowKey ? rowKey.replaceAll("'", "") : ""}
                   </span>
 

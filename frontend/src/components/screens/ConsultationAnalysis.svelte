@@ -88,7 +88,7 @@
       <Finance slot="icon" />
     </TitleRow>
 
-    <div class="grid grid-cols-12 gap-4 mb-4">
+    <div class="mb-4 grid grid-cols-12 gap-4">
       {#each demoCategories as category (category)}
         <div class="col-span-12 md:col-span-4">
           <MetricsDemoCard
@@ -128,13 +128,13 @@
         <PieChart slot="icon" />
       </TitleRow>
 
-      <div class="grid grid-cols-12 gap-4 mb-4">
+      <div class="mb-4 grid grid-cols-12 gap-4">
         {#each chartQuestions as question (question.id)}
-          <div class="col-span-12 sm:col-span-6 lg:col-span-4 mt-4">
-            <div class="w-full h-full">
+          <div class="col-span-12 mt-4 sm:col-span-6 lg:col-span-4">
+            <div class="h-full w-full">
               <Panel border={true} bg={true}>
-                <div class="flex flex-col justify-start h-full">
-                  <div class="flex items-start gap-4 mb-4">
+                <div class="flex h-full flex-col justify-start">
+                  <div class="mb-4 flex items-start gap-4">
                     <span class="text-sm text-primary">
                       Q{question.number}
                     </span>

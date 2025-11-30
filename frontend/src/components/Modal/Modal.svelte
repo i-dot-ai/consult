@@ -87,7 +87,7 @@
         y: 8,
       }}
     >
-      <div class="flex items-center gap-2 mb-2">
+      <div class="mb-2 flex items-center gap-2">
         {#if icon}
           <MaterialIcon color={getIconColor()} size="1.3rem">
             <svelte:component this={icon} />

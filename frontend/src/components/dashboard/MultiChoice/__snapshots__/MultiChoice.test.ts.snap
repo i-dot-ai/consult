@@ -14,7 +14,7 @@ exports[`MultiChoice > should render data 1`] = `
         class="flex gap-4"
       >
         <div
-          class="flex justify-center items-center"
+          class="flex items-center justify-center"
         >
           <div
             class="bg-pink-50 p-2 rounded-md mt-1.5"
@@ -130,7 +130,7 @@ exports[`MultiChoice > should render data 1`] = `
                 </div>
                  
                 <span
-                  class="hidden sm:block min-w-[4ch]"
+                  class="hidden min-w-[4ch] sm:block"
                 >
                   10
                 </span>
@@ -204,7 +204,7 @@ exports[`MultiChoice > should render data 1`] = `
                 </div>
                  
                 <span
-                  class="hidden sm:block min-w-[4ch]"
+                  class="hidden min-w-[4ch] sm:block"
                 >
                   20
                 </span>

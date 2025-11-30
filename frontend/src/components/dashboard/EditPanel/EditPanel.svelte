@@ -146,7 +146,7 @@
       <Title level={4} text="Themes" />
 
       <ul
-        class="flex flex-wrap gap-2 items-center justify-start my-1 sm:max-w-[30vw]"
+        class="my-1 flex flex-wrap items-center justify-start gap-2 sm:max-w-[30vw]"
       >
         {#each stagedThemes as theme (theme.id)}
           <Tag>
@@ -183,7 +183,7 @@
     <div class="my-2">
       <Title level={4} text="Evidence-rich" />
 
-      <div class="flex items-center gap-2 my-1">
+      <div class="my-1 flex items-center gap-2">
         <Button
           size="xs"
           handleClick={() => (stagedEvidenceRich = true)}
@@ -207,20 +207,20 @@
     <hr class="my-4" />
 
     {#if $submitError}
-      <small class="block my-2 text-red-500" transition:slide
+      <small class="my-2 block text-red-500" transition:slide
         >{$submitError}</small
       >
     {/if}
 
-    <div class="w-full flex justify-end">
-      <div class="w-1/2 ml-1">
+    <div class="flex w-full justify-end">
+      <div class="ml-1 w-1/2">
         <Button
           variant="approve"
           size="sm"
           handleClick={() => submit()}
           fullWidth={true}
         >
-          <div class="flex justify-center items-center gap-2 w-full py-0.5">
+          <div class="flex w-full items-center justify-center gap-2 py-0.5">
             <div class="shrink-0">
               <MaterialIcon>
                 <Check />

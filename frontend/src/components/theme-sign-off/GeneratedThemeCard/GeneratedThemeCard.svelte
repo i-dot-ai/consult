@@ -73,8 +73,8 @@
           showAnswers && !disabled ? "md:w-1/3" : "md:w-auto",
         ])}
       >
-        <div class="flex items-center justify-between mb-2">
-          <div class="flex items-center gap-2 flex-wrap">
+        <div class="mb-2 flex items-center justify-between">
+          <div class="flex flex-wrap items-center gap-2">
             {#if theme.children?.length}
               <Button
                 variant="ghost"
@@ -93,7 +93,7 @@
               </Button>
             {/if}
 
-            <div class="flex items-center gap-2 flex-wrap">
+            <div class="flex flex-wrap items-center gap-2">
               <h3>{theme.name}</h3>
 
               <div class={clsx([disabled && "grayscale"])}>
@@ -105,12 +105,12 @@
           </div>
         </div>
 
-        <p class="text-neutral-500 text-sm">
+        <p class="text-sm text-neutral-500">
           {theme.description}
         </p>
 
         {#if !disabled}
-          <footer class="mt-4 flex items-center gap-2 flex-wrap">
+          <footer class="mt-4 flex flex-wrap items-center gap-2">
             <Button
               variant="approve"
               size="sm"
@@ -144,7 +144,7 @@
               }}
               disabled={$isAnswersLoading && answersRequested}
             >
-              <div class="text-secondary flex items-center gap-1">
+              <div class="flex items-center gap-1 text-secondary">
                 <MaterialIcon color="fill-secondary">
                   <Visibility />
                 </MaterialIcon>
@@ -160,7 +160,7 @@
       {#if showAnswers && !disabled}
         <aside
           transition:fly={{ x: 300 }}
-          class="grow sm:border-l sm:border-neutral-200 sm:ml-4 sm:pl-4 pt-4 sm:pt-0"
+          class="grow pt-4 sm:ml-4 sm:border-l sm:border-neutral-200 sm:pl-4 sm:pt-0"
         >
           <AnswersList
             variant="generated"

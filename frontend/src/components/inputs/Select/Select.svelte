@@ -39,14 +39,14 @@
   // Convert GOV.UK label classes to Tailwind equivalents
   let tailwindLabelClasses = $derived(
     clsx([
-      "block text-neutral-900 mb-1 text-base leading-5 md:text-lg md:leading-6",
+      "mb-1 block text-base leading-5 text-neutral-900 md:text-lg md:leading-6",
       labelClasses?.includes("govuk-label--s") && "font-semibold",
       labelClasses?.includes("govuk-label--m") &&
-        "text-lg leading-tight md:text-2xl font-semibold",
+        "text-lg font-semibold leading-tight md:text-2xl",
       labelClasses?.includes("govuk-label--l") &&
-        "text-2xl leading-tight md:text-4xl font-semibold",
+        "text-2xl font-semibold leading-tight md:text-4xl",
       labelClasses?.includes("govuk-label--xl") &&
-        "text-3xl leading-tight md:text-5xl font-semibold",
+        "text-3xl font-semibold leading-tight md:text-5xl",
     ]),
   );
 
@@ -70,7 +70,7 @@
   {#if hint}
     <div
       id="{id}-hint"
-      class="text-base leading-5 text-neutral-600 mb-4 md:text-lg md:leading-6"
+      class="mb-4 text-base leading-5 text-neutral-600 md:text-lg md:leading-6"
     >
       {hint}
     </div>
@@ -79,7 +79,7 @@
   {#if errorMessage}
     <p
       id="{id}-error"
-      class="font-bold text-base leading-5 text-red-600 mb-4 md:text-lg md:leading-6"
+      class="mb-4 text-base font-bold leading-5 text-red-600 md:text-lg md:leading-6"
     >
       <span class="sr-only">Error:</span>
       {errorMessage}
@@ -88,9 +88,9 @@
 
   <select
     class={clsx([
-      "w-full h-10 px-1 py-1 text-base leading-5 border border-neutral-300 bg-white text-neutral-900",
-      "focus:outline-none focus:ring-2 focus:ring-yellow-400 focus:border-transparent",
-      "disabled:opacity-50 disabled:text-neutral-600 disabled:bg-neutral-100 disabled:cursor-not-allowed",
+      "h-10 w-full border border-neutral-300 bg-white px-1 py-1 text-base leading-5 text-neutral-900",
+      "focus:border-transparent focus:outline-none focus:ring-2 focus:ring-yellow-400",
+      "disabled:cursor-not-allowed disabled:bg-neutral-100 disabled:text-neutral-600 disabled:opacity-50",
       "md:text-lg md:leading-6",
       errorMessage && "border-red-600",
     ])}
@@ -107,7 +107,7 @@
       <option
         value={item.value}
         selected={value === item.value}
-        class="text-neutral-900 bg-white"
+        class="bg-white text-neutral-900"
       >
         {item.label}
       </option>

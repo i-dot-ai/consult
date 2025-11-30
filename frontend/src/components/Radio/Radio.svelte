@@ -31,20 +31,20 @@
 
 <div class="mb-5">
   {#if legend}
-    <fieldset class="m-0 p-0 border-0">
-      <legend class="text-lg leading-tight text-neutral-900 mb-4 md:text-2xl">
-        <h2 class="m-0 text-inherit leading-inherit">
+    <fieldset class="m-0 border-0 p-0">
+      <legend class="mb-4 text-lg leading-tight text-neutral-900 md:text-2xl">
+        <h2 class="leading-inherit m-0 text-inherit">
           {legend}
         </h2>
       </legend>
       <div class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6">
         {#each items as item (item.value)}
-          <div class="flex items-start gap-3 mb-2.5 last:mb-0">
+          <div class="mb-2.5 flex items-start gap-3 last:mb-0">
             <input
               class={clsx([
                 "mt-1 h-5 w-5 rounded-full border-2 border-neutral-900 text-neutral-900",
                 "focus:ring-2 focus:ring-yellow-400 focus:ring-offset-0",
-                "disabled:opacity-50 disabled:cursor-default",
+                "disabled:cursor-default disabled:opacity-50",
               ])}
               id="{name}-{item.value}"
               {name}
@@ -57,7 +57,7 @@
             <label
               class={clsx([
                 "cursor-pointer text-base leading-5 text-neutral-900 md:text-lg md:leading-6",
-                item.disabled && "opacity-50 cursor-default",
+                item.disabled && "cursor-default opacity-50",
               ])}
               for="{name}-{item.value}"
             >
@@ -70,12 +70,12 @@
   {:else}
     <div class="text-base leading-5 text-neutral-900 md:text-lg md:leading-6">
       {#each items as item (item.value)}
-        <div class="flex items-start gap-3 mb-2.5 last:mb-0">
+        <div class="mb-2.5 flex items-start gap-3 last:mb-0">
           <input
             class={clsx([
               "mt-1 h-5 w-5 rounded-full border-2 border-neutral-900 text-neutral-900",
               "focus:ring-2 focus:ring-yellow-400 focus:ring-offset-0",
-              "disabled:opacity-50 disabled:cursor-default",
+              "disabled:cursor-default disabled:opacity-50",
             ])}
             id="{name}-{item.value}"
             {name}
@@ -88,7 +88,7 @@
           <label
             class={clsx([
               "cursor-pointer text-base leading-5 text-neutral-900 md:text-lg md:leading-6",
-              item.disabled && "opacity-50 cursor-default",
+              item.disabled && "cursor-default opacity-50",
             ])}
             for="{name}-{item.value}"
           >

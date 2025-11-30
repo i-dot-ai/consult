@@ -335,7 +335,7 @@
   >
     <div id="onboarding-steps-2-and-3" class="mb-4">
       <Panel variant="primary" bg={true} border={true}>
-        <div class="flex items-center justify-between mb-2">
+        <div class="mb-2 flex items-center justify-between">
           <div class="flex items-center gap-2">
             <MaterialIcon color="fill-primary">
               <CheckCircle />
@@ -367,7 +367,7 @@
           </Button>
         </div>
 
-        <p class="text-neutral-500 text-sm">
+        <p class="text-sm text-neutral-500">
           Manage your {numSelectedThemesText($selectedThemesData?.results)} for the
           AI in mapping responses. Edit titles and descriptions, or add new themes
           as needed.
@@ -388,7 +388,7 @@
     {/if}
 
     {#if $selectedThemesData?.results.length === 0}
-      <div in:fade class="flex items-center justify-center flex-col gap-2 my-8">
+      <div in:fade class="my-8 flex flex-col items-center justify-center gap-2">
         <div class="mb-2">
           <MaterialIcon size="2rem" color="fill-neutral-500">
             <Price />
@@ -396,7 +396,7 @@
         </div>
 
         <h3 class="text-md text-neutral-500">No themes selected yet</h3>
-        <p class="text-neutral-500 text-xs">
+        <p class="text-xs text-neutral-500">
           Select themes from the AI-generated suggestions below
         </p>
       </div>
@@ -426,7 +426,7 @@
         handleClick={() =>
           (isConfirmSignOffModalOpen = !isConfirmSignOffModalOpen)}
       >
-        <div class="flex justify-center items-center gap-2 w-full">
+        <div class="flex w-full items-center justify-center gap-2">
           <MaterialIcon color="fill-white">
             <CheckCircle />
           </MaterialIcon>
@@ -457,12 +457,12 @@
         )} for Question {$questionData?.number}?
       </p>
 
-      <h4 class="text-xs font-bold my-4">Selected themes:</h4>
+      <h4 class="my-4 text-xs font-bold">Selected themes:</h4>
 
       <div class="max-h-64 overflow-y-auto">
         {#each $selectedThemesData?.results as selectedTheme (selectedTheme.id)}
           <Panel bg={true} border={false}>
-            <h5 class="text-xs font-bold mb-1">{selectedTheme.name}</h5>
+            <h5 class="mb-1 text-xs font-bold">{selectedTheme.name}</h5>
             <p class="text-xs text-neutral-500">{selectedTheme.description}</p>
           </Panel>
         {/each}
@@ -514,7 +514,7 @@
     <Panel>
       <div id="onboarding-step-1">
         <Panel variant="approve" bg={true} border={true}>
-          <div class="flex items-center justify-between mb-2">
+          <div class="mb-2 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <MaterialIcon color="fill-secondary">
                 <SmartToy />
@@ -560,7 +560,7 @@
             </div>
           </div>
 
-          <p class="text-neutral-500 text-sm">
+          <p class="text-sm text-neutral-500">
             Browse AI-generated themes organised by topic hierarchy. Click
             "Select Theme" to add themes to your selected list for analysis.
           </p>

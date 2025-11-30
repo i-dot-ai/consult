@@ -19,7 +19,7 @@
       {summaryText}
     </span>
   </summary>
-  <div class="pt-4 pl-6 ml-6 border-l-4 border-neutral-400">
+  <div class="ml-6 border-l-4 border-neutral-400 pl-6 pt-4">
     {@render children()}
   </div>
 </details>

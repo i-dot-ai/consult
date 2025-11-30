@@ -46,7 +46,7 @@
 >
   {#if !hideLabel}
     <label
-      class="grow pr-4 leading-none text-neutral-800 cursor-pointer"
+      class="grow cursor-pointer pr-4 leading-none text-neutral-800"
       for={id}
       id={`${id}-label`}
     >

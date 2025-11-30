@@ -15,10 +15,10 @@ exports[`ConsultationStagePanel > should render correctly for analysis stage 1`]
       >
         <li>
           <div
-            class="flex flex-col items-center min-w-16"
+            class="flex min-w-16 flex-col items-center"
           >
             <div
-              class="my-2 p-2 rounded-full bg-secondary"
+              class="my-2 rounded-full p-2 bg-secondary"
             >
               <svg
                 class="fill-white"
@@ -49,10 +49,10 @@ exports[`ConsultationStagePanel > should render correctly for analysis stage 1`]
         </li>
         <li>
           <div
-            class="flex flex-col items-center min-w-16"
+            class="flex min-w-16 flex-col items-center"
           >
             <div
-              class="my-2 p-2 rounded-full bg-secondary"
+              class="my-2 rounded-full p-2 bg-secondary"
             >
               <svg
                 class="fill-white"
@@ -83,10 +83,10 @@ exports[`ConsultationStagePanel > should render correctly for analysis stage 1`]
         </li>
         <li>
           <div
-            class="flex flex-col items-center min-w-16"
+            class="flex min-w-16 flex-col items-center"
           >
             <div
-              class="my-2 p-2 rounded-full bg-secondary"
+              class="my-2 rounded-full p-2 bg-secondary"
             >
               <svg
                 class="fill-white"
@@ -117,10 +117,10 @@ exports[`ConsultationStagePanel > should render correctly for analysis stage 1`]
         </li>
         <li>
           <div
-            class="flex flex-col items-center min-w-16"
+            class="flex min-w-16 flex-col items-center"
           >
             <div
-              class="my-2 p-2 rounded-full bg-secondary ring-4 ring-teal-100"
+              class="my-2 rounded-full p-2 bg-secondary ring-4 ring-teal-100"
             >
               <svg
                 class="fill-white"
@@ -156,20 +156,20 @@ exports[`ConsultationStagePanel > should render correctly for analysis stage 1`]
         class="px-0 md:px-16"
       >
         <h2
-          class="text-secondary text-center"
+          class="text-center text-secondary"
         >
           AI Mapping Complete
         </h2>
          
         <p
-          class="text-sm text-center text-neutral-500 my-4"
+          class="my-4 text-center text-sm text-neutral-500"
         >
           All consultation responses have been successfully mapped against your
     selected themes.
         </p>
          
         <p
-          class="text-sm text-center text-neutral-500 my-4"
+          class="my-4 text-center text-sm text-neutral-500"
         >
           <strong>
             Next:
@@ -207,10 +207,10 @@ exports[`ConsultationStagePanel > should render correctly for theme_mapping stag
       >
         <li>
           <div
-            class="flex flex-col items-center min-w-16"
+            class="flex min-w-16 flex-col items-center"
           >
             <div
-              class="my-2 p-2 rounded-full bg-secondary"
+              class="my-2 rounded-full p-2 bg-secondary"
             >
               <svg
                 class="fill-white"
@@ -241,10 +241,10 @@ exports[`ConsultationStagePanel > should render correctly for theme_mapping stag
         </li>
         <li>
           <div
-            class="flex flex-col items-center min-w-16"
+            class="flex min-w-16 flex-col items-center"
           >
             <div
-              class="my-2 p-2 rounded-full bg-secondary"
+              class="my-2 rounded-full p-2 bg-secondary"
             >
               <svg
                 class="fill-white"
@@ -275,10 +275,10 @@ exports[`ConsultationStagePanel > should render correctly for theme_mapping stag
         </li>
         <li>
           <div
-            class="flex flex-col items-center min-w-16"
+            class="flex min-w-16 flex-col items-center"
           >
             <div
-              class="my-2 p-2 rounded-full bg-secondary ring-4 ring-teal-100"
+              class="my-2 rounded-full p-2 bg-secondary ring-4 ring-teal-100"
             >
               <svg
                 class="fill-white"
@@ -309,10 +309,10 @@ exports[`ConsultationStagePanel > should render correctly for theme_mapping stag
         </li>
         <li>
           <div
-            class="flex flex-col items-center min-w-16"
+            class="flex min-w-16 flex-col items-center"
           >
             <div
-              class="my-2 p-2 rounded-full bg-neutral-200"
+              class="my-2 rounded-full p-2 bg-neutral-200"
             >
               <svg
                 class="fill-neutral-500"
@@ -348,20 +348,20 @@ exports[`ConsultationStagePanel > should render correctly for theme_mapping stag
         class="px-0 md:px-16"
       >
         <h2
-          class="text-secondary text-center"
+          class="text-center text-secondary"
         >
           AI Mapping in Progress
         </h2>
          
         <p
-          class="text-sm text-center text-neutral-500 my-4"
+          class="my-4 text-center text-sm text-neutral-500"
         >
           You have completed the theme sign-off phase for all 10 consultation
     questions.
         </p>
          
         <p
-          class="text-sm text-center text-neutral-500 my-4"
+          class="my-4 text-center text-sm text-neutral-500"
         >
           AI is currently mapping consultation responses to your signed-off themes.
     This process analyses each response and assigns it to the most relevant
@@ -369,7 +369,7 @@ exports[`ConsultationStagePanel > should render correctly for theme_mapping stag
         </p>
          
         <p
-          class="text-sm text-center text-neutral-500 my-4"
+          class="my-4 text-center text-sm text-neutral-500"
         >
           <strong>
             Next:
@@ -401,10 +401,10 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
       >
         <li>
           <div
-            class="flex flex-col items-center min-w-16"
+            class="flex min-w-16 flex-col items-center"
           >
             <div
-              class="my-2 p-2 rounded-full bg-secondary"
+              class="my-2 rounded-full p-2 bg-secondary"
             >
               <svg
                 class="fill-white"
@@ -435,10 +435,10 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
         </li>
         <li>
           <div
-            class="flex flex-col items-center min-w-16"
+            class="flex min-w-16 flex-col items-center"
           >
             <div
-              class="my-2 p-2 rounded-full bg-secondary ring-4 ring-teal-100"
+              class="my-2 rounded-full p-2 bg-secondary ring-4 ring-teal-100"
             >
               <svg
                 class="fill-white"
@@ -469,10 +469,10 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
         </li>
         <li>
           <div
-            class="flex flex-col items-center min-w-16"
+            class="flex min-w-16 flex-col items-center"
           >
             <div
-              class="my-2 p-2 rounded-full bg-neutral-200"
+              class="my-2 rounded-full p-2 bg-neutral-200"
             >
               <svg
                 class="fill-neutral-500"
@@ -503,10 +503,10 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
         </li>
         <li>
           <div
-            class="flex flex-col items-center min-w-16"
+            class="flex min-w-16 flex-col items-center"
           >
             <div
-              class="my-2 p-2 rounded-full bg-neutral-200"
+              class="my-2 rounded-full p-2 bg-neutral-200"
             >
               <svg
                 class="fill-neutral-500"
@@ -542,20 +542,20 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
         class="px-0 md:px-16"
       >
         <h2
-          class="text-secondary text-center"
+          class="text-center text-secondary"
         >
           All Questions Signed Off
         </h2>
          
         <p
-          class="text-sm text-center text-neutral-500 my-4"
+          class="my-4 text-center text-sm text-neutral-500"
         >
           You have successfully reviewed and signed off themes for all 10
     consultation questions.
         </p>
          
         <p
-          class="text-sm text-center text-neutral-500 my-4"
+          class="my-4 text-center text-sm text-neutral-500"
         >
           <strong>
             Next:
@@ -567,7 +567,7 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
         <!---->
         <button
           aria-pressed="false"
-          class="w-full text-md cursor-pointer rounded-md py-1 px-2 border bg-secondary text-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:text-secondary hover:border-secondary svelte-1d0mdzt"
+          class="w-full text-md cursor-pointer rounded-md py-1 px-2 border bg-secondary text-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-secondary hover:text-secondary svelte-1d0mdzt"
           data-variant="approve"
           role="button"
           tabindex="0"
@@ -575,7 +575,7 @@ exports[`ConsultationStagePanel > should render correctly for theme_sign_off sta
         >
           <!---->
           <span
-            class="flex items-center gap-2 mx-auto"
+            class="mx-auto flex items-center gap-2"
           >
             <svg
               class="fill-white"

@@ -37,9 +37,9 @@ const questions = await fetchBackendApi<{ results: Question[] }>(
 
     {
       questions?.results?.map((question) => (
-        <div class="p-4 my-4 mx-0 flex justify-between items-center">
-          <p class="m-0  grow shrink basis-0">{question.question_text}</p>
-          <p class="m-0 py-0 px-4 min-w-[15ch] text-center">
+        <div class="mx-0 my-4 flex items-center justify-between p-4">
+          <p class="m-0 shrink grow basis-0">{question.question_text}</p>
+          <p class="m-0 min-w-[15ch] px-4 py-0 text-center">
             {Math.round((question.proportion_of_audited_answers || 0) * 100)}%
             reviewed
           </p>

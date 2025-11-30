@@ -61,8 +61,8 @@
           value={evidenceRich}
           handleChange={(value: boolean) => setEvidenceRich(value)}
         >
-          <div slot="label" class="flex gap-1 items-center">
-            <div class="bg-yellow-100 rounded-2xl text-xs p-0.5">
+          <div slot="label" class="flex items-center gap-1">
+            <div class="rounded-2xl bg-yellow-100 p-0.5 text-xs">
               <MaterialIcon size="1rem" color="fill-yellow-700">
                 <Diamond />
               </MaterialIcon>

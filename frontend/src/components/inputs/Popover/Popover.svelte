@@ -45,7 +45,7 @@
   title={label || undefined}
   aria-label={label}
 >
-  <div class="flex justify-between items-center">
+  <div class="flex items-center justify-between">
     <slot name="trigger" />
 
     {#if arrow}

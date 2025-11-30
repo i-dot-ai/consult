@@ -70,7 +70,7 @@
     >
       {#if isSkeleton}
         <p
-          class="blink w-full text-xs bg-neutral-200 text-neutral-100 select-none"
+          class="blink w-full select-none bg-neutral-200 text-xs text-neutral-100"
         >
           {name}
         </p>
@@ -134,7 +134,7 @@
         <div>
           <h2 class="text-md">
             {#if !$questionData}
-              <div class="blink bg-neutral-100 text-neutral-100 select-none">
+              <div class="blink select-none bg-neutral-100 text-neutral-100">
                 SKELETON
               </div>
             {:else}
@@ -144,7 +144,7 @@
             {/if}
           </h2>
 
-          <div class="mt-2 mb-4">
+          <div class="mb-4 mt-2">
             <Tag variant="primary-light">
               <MaterialIcon color="fill-primary">
                 <CheckCircle />
@@ -152,7 +152,7 @@
               <span class="py-0.5"> Themes Signed Off </span>
             </Tag>
           </div>
-          <p class="text-neutral-500 text-sm">
+          <p class="text-sm text-neutral-500">
             This question has completed the theme sign-off process. The selected
             themes below have been approved for AI analysis and are ready to be
             used for mapping consultation responses.
@@ -229,8 +229,8 @@
 
 <svelte:boundary>
   <section class="mt-8">
-    <div class="flex items-center justify-between gap-2 flex-wrap">
-      <div class="flex items-center gap-2 flex-wrap">
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <div class="flex flex-wrap items-center gap-2">
         <!-- TODO: Button disabled -->
         <!-- <Button
           size="sm"

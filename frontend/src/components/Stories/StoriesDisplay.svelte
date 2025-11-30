@@ -72,13 +72,13 @@
         {@const StoryComponent = currStory.component}
 
         <div>
-          <div class="mb-4 flex justify-between items-center">
+          <div class="mb-4 flex items-center justify-between">
             <div class="font-[500]">
               <Title level={2} text={currStory.name} />
             </div>
 
             <Button size="xs" handleClick={() => panel?.requestFullscreen()}>
-              <span class="mr-1 ml-1">Fullscreen</span>
+              <span class="ml-1 mr-1">Fullscreen</span>
 
               <MaterialIcon color="fill-neutral-500">
                 <Fullscreen />
@@ -104,7 +104,7 @@
           {#each currStory.props as prop (prop.name)}
             {@const inputId = `input-${prop.name.toLowerCase().replaceAll(" ", "-")}`}
 
-            <div class="pl-4 mt-4">
+            <div class="mt-4 pl-4">
               {#if ["number", "text", "bool", "select", "json", "html", "func"].includes(prop.type)}
                 <div class="mb-1">
                   <Title level={4} text={prop.name} />
@@ -114,7 +114,7 @@
               {#if prop.type === "number"}
                 <input
                   id={inputId}
-                  class="border border-neutral-300 rounded-lg p-2"
+                  class="rounded-lg border border-neutral-300 p-2"
                   type="number"
                   value={prop.value.toString()}
                   oninput={(e) => {

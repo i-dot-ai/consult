@@ -320,7 +320,7 @@
       window.location.href = getConsultationDetailUrl(consultationId);
     }}
   >
-    <div class="flex items-center gap-2 justify-between">
+    <div class="flex items-center justify-between gap-2">
       <div class="rotate-90">
         <MaterialIcon color="fill-neutral-600">
           <KeyboardArrowDown />
