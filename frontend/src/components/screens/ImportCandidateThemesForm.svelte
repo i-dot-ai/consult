@@ -63,7 +63,6 @@
         }
 
         success = true;
-        loading = false;
         errors = {};
         consultationCode = "";
         timestamp = "";

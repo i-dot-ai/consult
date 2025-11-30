@@ -6,8 +6,8 @@
 
   import type { Question } from "../../../global/types.ts";
   import { favStore } from "../../../global/stores.ts";
-  import { applyHighlight } from "../../../global/utils.ts";
 
+  import HighlightedText from "../HighlightedText/HighlightedText.svelte";
   import MaterialIcon from "../../MaterialIcon.svelte";
   import ConditionalWrapper from "../../ConditionalWrapper/ConditionalWrapper.svelte";
   import Star from "../../svg/material/Star.svelte";
@@ -127,10 +127,10 @@
               in:fade
               class={clsx(["text-md", "leading-6", disabled && "opacity-50"])}
             >
-              {@html applyHighlight(
-                `Q${question.number}: ${question.question_text}`,
-                highlightText,
-              )}
+              <HighlightedText
+                text={`Q${question.number}: ${question.question_text}`}
+                highlight={highlightText}
+              />
             </p>
 
             <div

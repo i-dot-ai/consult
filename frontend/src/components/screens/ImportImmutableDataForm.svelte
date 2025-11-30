@@ -64,7 +64,6 @@
         }
 
         success = true;
-        loading = false;
         errors = {};
         consultationName = "";
         consultationFolderCode = "";

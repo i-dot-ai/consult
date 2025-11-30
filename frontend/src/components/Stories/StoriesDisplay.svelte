@@ -19,9 +19,7 @@
   import stories from "./stories.ts";
 
   let { selected = "" } = $props();
-  let currStory: Story | undefined = $state(
-    stories.find((story) => story.name === selected),
-  );
+  let currStory = $state(stories.find((story) => story.name === selected));
   let componentProps: object = $derived.by(() => {
     let props = {};
     currStory?.props.forEach((prop) => {
@@ -160,9 +158,7 @@
                   value={JSON.stringify(prop.value)}
                   lang={json()}
                   onchange={(newVal) => {
-                    try {
-                      prop.value = JSON.parse(newVal);
-                    } catch {}
+                    prop.value = JSON.parse(newVal);
                   }}
                 />
               {:else if prop.type === "html"}
@@ -177,12 +173,10 @@
                       return;
                     }
 
-                    try {
-                      prop.value = createRawSnippet(() => ({
-                        render: () => newVal,
-                      }));
-                      prop.rawHtml = newVal;
-                    } catch {}
+                    prop.value = createRawSnippet(() => ({
+                      render: () => newVal,
+                    }));
+                    prop.rawHtml = newVal;
                   }}
                 />
               {:else if prop.type === "func"}

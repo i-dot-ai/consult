@@ -68,9 +68,7 @@
   label="Themes"
   value="[ &quot;Innovation&quot;, &quot;Standardized framework&quot; ]"
   setValue={(newValue) => {
-    try {
-      themes = JSON.parse(newValue);
-    } catch {}
+    themes = JSON.parse(newValue);
   }}
 />
 

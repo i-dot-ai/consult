@@ -71,7 +71,7 @@
   const htmlLegendPlugin = {
     id: "htmlLegend",
     afterUpdate(chart: Chart, args: unknown, options: ChartOptions) {
-      //@ts-ignore: containerID added by plugin
+      //@ts-expect-error: containerID added by plugin
       const ul = getOrCreateLegendList(chart, options.containerID);
 
       // Clear legend
@@ -211,7 +211,7 @@
                 },
               },
             },
-            //@ts-ignore: custom plugin adds htmlLegend
+            //@ts-expect-error: custom plugin adds htmlLegend
             htmlLegend: {
               containerID: legendId,
             },

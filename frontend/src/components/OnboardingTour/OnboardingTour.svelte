@@ -200,6 +200,7 @@
 
       <p class="text-xs text-neutral-700 leading-5">
         {#if typeof steps[currStep].body === "string"}
+          <!-- eslint-disable-next-line svelte/no-at-html-tags -->
           {@html steps[currStep].body}
         {:else}
           {@render (steps[currStep].body as Snippet)()}

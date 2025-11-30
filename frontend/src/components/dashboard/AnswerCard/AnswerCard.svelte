@@ -2,9 +2,9 @@
   import clsx from "clsx";
 
   import type { ResponseTheme } from "../../../global/types";
-  import { applyHighlight } from "../../../global/utils";
   import { themeFilters } from "../../../global/state.svelte";
 
+  import HighlightedText from "../HighlightedText/HighlightedText.svelte";
   import Button from "../../inputs/Button/Button.svelte";
   import Panel from "../Panel/Panel.svelte";
   import Tag from "../../Tag/Tag.svelte";
@@ -195,7 +195,7 @@
       </p>
     {:else if text}
       <p>
-        {@html applyHighlight(text, highlightText)}
+        <HighlightedText {text} highlight={highlightText} />
       </p>
     {/if}
 

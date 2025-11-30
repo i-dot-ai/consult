@@ -124,16 +124,11 @@
                 (currQuestion = parseInt(newTab.replace("tab-", "")))}
             >
               <div slot="title">
-                <Title
-                  level={3}
-                  text={`
-                    <span class="text-primary mr-1">
-                      Q${selectedChartQuestion?.number}
-                    </span>
-                    ${selectedChartQuestion?.question_text}
-                  `}
-                  maxChars={50}
-                />
+                <Title level={3} maxChars={50}>
+                  <span class="text-primary mr-1">
+                    Q{selectedChartQuestion?.number}
+                  </span>{selectedChartQuestion?.question_text}
+                </Title>
               </div>
 
               <div class="overflow-x-auto">

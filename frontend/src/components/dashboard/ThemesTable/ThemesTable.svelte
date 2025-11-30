@@ -24,9 +24,9 @@
   <table class="w-full text-md">
     <thead class="text-sm">
       <tr>
-        {#each ["Theme", "Mentions", "%&nbsp;Percentage"] as header (header)}
+        {#each ["Theme", "Mentions", "% Percentage"] as header (header)}
           <th class="text-left text-md m-2 pr-4 font-normal">
-            {@html header}
+            {header}
           </th>
         {/each}
       </tr>

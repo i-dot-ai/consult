@@ -61,7 +61,7 @@
       {
         themes: stagedThemes.map((theme) => ({ id: theme.id })),
         evidenceRich: stagedEvidenceRich,
-      } as unknown as BodyInit,
+      },
     );
 
     if (!$submitError && !$isSubmitting) {

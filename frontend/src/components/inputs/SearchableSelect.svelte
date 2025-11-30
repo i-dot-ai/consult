@@ -65,7 +65,6 @@
 </script>
 
 <div class="flex flex-col gap-1">
-  <!-- svelte-ignore a11y-label-has-associated-control - $label contains the 'for' attribute -->
   <label use:melt={$meltLabel}>
     <span class="text-sm font-medium text-neutral-900">
       {label}

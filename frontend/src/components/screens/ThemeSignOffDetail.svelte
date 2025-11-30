@@ -50,10 +50,8 @@
     selectGeneratedThemeMock,
   } = $props();
 
-  let isConfirmSignOffModalOpen = $state(false);
-  let addingCustomTheme = $state(false);
-  let expandedThemes: string[] = $state([]);
-  let errorData: ErrorType | null = $state(null);
+  const { load: loadGeneratedThemes, data: generatedThemesData } =
+    createFetchStore(generatedThemesMock);
 
   const flattenGeneratedThemes = (
     items: GeneratedTheme[],
@@ -72,6 +70,17 @@
     return result;
   };
 
+  let flatGeneratedThemes = $derived(
+    flattenGeneratedThemes($generatedThemesData?.results),
+  );
+
+  let isConfirmSignOffModalOpen = $state(false);
+  let addingCustomTheme = $state(false);
+  let expandedThemes: string[] = $derived(
+    flatGeneratedThemes.map((theme) => theme.id),
+  );
+  let errorData: ErrorType | null = $state(null);
+
   const errorModalOnClose = () => {
     loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
     loadGeneratedThemes(
@@ -85,9 +94,6 @@
     loading: isSelectedThemesLoading,
     data: selectedThemesData,
   } = createFetchStore(selectedThemesMock);
-
-  const { load: loadGeneratedThemes, data: generatedThemesData } =
-    createFetchStore(generatedThemesMock);
 
   const { load: createSelectedTheme } = createFetchStore(createThemeMock);
 
@@ -105,18 +111,13 @@
     selectGeneratedThemeMock,
   );
 
-  const { loading: isQuestionLoading, data: questionData } =
-    createFetchStore(questionDataMock);
+  const {
+    load: loadQuestion,
+    loading: isQuestionLoading,
+    data: questionData,
+  } = createFetchStore(questionDataMock);
 
   let themesBeingSelected = $state([]);
-
-  let flatGeneratedThemes = $derived(
-    flattenGeneratedThemes($generatedThemesData?.results),
-  );
-
-  $effect(() => {
-    expandedThemes = flatGeneratedThemes.map((theme) => theme.id);
-  });
 
   $effect(() => {
     loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));

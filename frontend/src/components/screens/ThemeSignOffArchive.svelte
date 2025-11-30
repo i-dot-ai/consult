@@ -3,7 +3,6 @@
 
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
-  import type { Writable } from "svelte/store";
 
   import {
     getApiConsultationUrl,
