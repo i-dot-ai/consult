@@ -21,13 +21,13 @@ const question: Question = await fetchBackendApi(
     {
       question?.theme_status === "confirmed" ? (
         <ThemeSignOffDetailCompleted
-          client:only
+          client:only="svelte"
           consultationId={consultationId}
           questionId={questionId}
         />
       ) : (
         <ThemeSignOffDetail
-          client:only
+          client:only="svelte"
           consultationId={consultationId}
           questionId={questionId}
         />
