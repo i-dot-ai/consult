@@ -24,10 +24,12 @@ describe("QuestionCard", () => {
       getByText(
         `Q${testData.question.number}: ${testData.question.question_text}`,
       ),
-    );
-    expect(getByText(`${testData.question.total_responses} responses`));
-    expect(screen.getByTestId("question-icon"));
-    expect(screen.getByTestId("fav-button"));
+    ).toBeInTheDocument();
+    expect(
+      getByText(`${testData.question.total_responses} responses`),
+    ).toBeInTheDocument();
+    expect(screen.getByTestId("question-icon")).toBeInTheDocument();
+    expect(screen.getByTestId("fav-button")).toBeInTheDocument();
   });
 
   it("should highlight text if highlighted is passed", () => {
@@ -77,7 +79,7 @@ describe("QuestionCard", () => {
     expect(questionButton).toBeNull();
   });
 
-  it("should not render inside a tag if clickable is false", () => {
+  it("should not render icon if hideIcon is true", () => {
     render(QuestionCard, {
       consultationId: testData.consultationId,
       question: testData.question,

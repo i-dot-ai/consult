@@ -17,12 +17,12 @@ describe("AnswersList", () => {
       },
     );
 
-    expect(getByText("Test Title"));
-    expect(getByText("Answer 1"));
-    expect(getByText("Answer 2"));
+    expect(getByText("Test Title")).toBeInTheDocument();
+    expect(getByText("Answer 1")).toBeInTheDocument();
+    expect(getByText("Answer 2")).toBeInTheDocument();
 
     // Confirm answeer 1's number
-    expect(getByText("1"));
+    expect(getByText("1")).toBeInTheDocument();
     // Finds 2, one is total num of answers, other is answer 2's number
     expect(getAllByText("2")).toHaveLength(2);
 
@@ -40,6 +40,6 @@ describe("AnswersList", () => {
       answers: undefined,
     });
 
-    expect(getByText(NOT_FOUND_MESSAGE));
+    expect(getByText(NOT_FOUND_MESSAGE)).toBeInTheDocument();
   });
 });

@@ -25,8 +25,8 @@ describe("GeneratedThemeCard", () => {
       testData,
     );
 
-    expect(getByText(testData.theme.name));
-    expect(getByText(testData.theme.description));
+    expect(getByText(testData.theme.name)).toBeInTheDocument();
+    expect(getByText(testData.theme.description)).toBeInTheDocument();
 
     // Answers hidden initially
     answers.forEach((answer) => {
@@ -51,8 +51,8 @@ describe("GeneratedThemeCard", () => {
       expandedThemes: [testData.theme.id, CHILD_THEME.id],
     });
 
-    expect(getByText(CHILD_THEME.name));
-    expect(getByText(CHILD_THEME.description));
+    expect(getByText(CHILD_THEME.name)).toBeInTheDocument();
+    expect(getByText(CHILD_THEME.description)).toBeInTheDocument();
   });
 
   it("should not render child if theme is not expanded", async () => {

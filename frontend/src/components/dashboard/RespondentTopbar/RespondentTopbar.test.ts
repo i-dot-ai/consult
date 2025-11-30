@@ -5,7 +5,6 @@ import { render } from "@testing-library/svelte";
 import { createRawSnippet } from "svelte";
 
 import RespondentTopbar from "./RespondentTopbar.svelte";
-import RespondentTopbarStory from "./RespondentTopbarStory.svelte";
 
 describe("RespondentTopbar", () => {
   const testData = {
@@ -18,8 +17,8 @@ describe("RespondentTopbar", () => {
       ...testData,
     });
 
-    expect(getByText(testData.title));
-    expect(getByText(testData.backText));
+    expect(getByText(testData.title)).toBeInTheDocument();
+    expect(getByText(testData.backText)).toBeInTheDocument();
   });
 
   it("should render child", () => {
@@ -30,7 +29,7 @@ describe("RespondentTopbar", () => {
       })),
     });
 
-    expect(getByText(`Child content`));
+    expect(getByText(`Child content`)).toBeInTheDocument();
   });
 
   it("should call on back click callback", async () => {
@@ -49,9 +48,5 @@ describe("RespondentTopbar", () => {
     await user.click(button);
 
     expect(onClickBackMock).toHaveBeenCalledOnce();
-  });
-
-  it("should render story", () => {
-    render(RespondentTopbarStory);
   });
 });

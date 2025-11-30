@@ -45,13 +45,13 @@ describe("MetricsDemoCard", () => {
       items: [...testData.items],
     });
 
-    expect(getByText("Test Demo Card"));
-    expect(getByText("Test Demo Item 1"));
-    expect(getByText("25%"));
+    expect(getByText("Test Demo Card")).toBeInTheDocument();
+    expect(getByText("Test Demo Item 1")).toBeInTheDocument();
+    expect(getByText("25%")).toBeInTheDocument();
 
-    expect(getByText("Test Demo Item 2"));
-    expect(getByText(15));
-    expect(getByText("75%"));
+    expect(getByText("Test Demo Item 2")).toBeInTheDocument();
+    expect(getByText(15)).toBeInTheDocument();
+    expect(getByText("75%")).toBeInTheDocument();
   });
 
   it("should hide items above max", async () => {
@@ -61,12 +61,12 @@ describe("MetricsDemoCard", () => {
     });
 
     // Expect button label displays correct number of items
-    expect(getByText("View All 5"));
+    expect(getByText("View All 5")).toBeInTheDocument();
 
     // Max display 3 initially
-    expect(getByText("Test Demo Item 1"));
-    expect(getByText("Test Demo Item 2"));
-    expect(getByText("Test Demo Item 3"));
+    expect(getByText("Test Demo Item 1")).toBeInTheDocument();
+    expect(getByText("Test Demo Item 2")).toBeInTheDocument();
+    expect(getByText("Test Demo Item 3")).toBeInTheDocument();
     expect(queryByText("Test Demo Item 4")).toBeNull();
     expect(queryByText("Test Demo Item 5")).toBeNull();
   });
@@ -82,11 +82,11 @@ describe("MetricsDemoCard", () => {
     expect(queryByText("View All 5")).toBeNull();
 
     // Max display 3 initially
-    expect(getByText("Test Demo Item 1"));
-    expect(getByText("Test Demo Item 2"));
-    expect(getByText("Test Demo Item 3"));
-    expect(getByText("Test Demo Item 4"));
-    expect(getByText("Test Demo Item 5"));
+    expect(getByText("Test Demo Item 1")).toBeInTheDocument();
+    expect(getByText("Test Demo Item 2")).toBeInTheDocument();
+    expect(getByText("Test Demo Item 3")).toBeInTheDocument();
+    expect(getByText("Test Demo Item 4")).toBeInTheDocument();
+    expect(getByText("Test Demo Item 5")).toBeInTheDocument();
   });
 
   it("should format count display correctly", () => {
@@ -103,6 +103,6 @@ describe("MetricsDemoCard", () => {
       ],
     });
 
-    expect(getByText("12,345"));
+    expect(getByText("12,345")).toBeInTheDocument();
   });
 });

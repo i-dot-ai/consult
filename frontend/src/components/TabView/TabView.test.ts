@@ -20,8 +20,8 @@ describe("TabView", () => {
       handleChange: handleChangeMock,
     });
 
-    expect(screen.getByText("Star Tab"));
-    expect(screen.getByText("Finance Tab"));
+    expect(screen.getByText("Star Tab")).toBeInTheDocument();
+    expect(screen.getByText("Finance Tab")).toBeInTheDocument();
     expect(container.querySelectorAll("svg")).toHaveLength(2);
 
     const tabButtons = await screen.findAllByRole("tab");

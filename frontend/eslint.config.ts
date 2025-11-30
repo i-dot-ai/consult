@@ -5,6 +5,7 @@ import { defineConfig, globalIgnores } from "eslint/config";
 import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended";
 import svelte from "eslint-plugin-svelte";
 import astro from "eslint-plugin-astro";
+import vitest from "eslint-plugin-vitest";
 
 export default defineConfig([
   globalIgnores([
@@ -38,6 +39,11 @@ export default defineConfig([
         },
       ],
     },
+  },
+  {
+    files: ["**/*.test.ts"],
+    plugins: { vitest },
+    rules: vitest.configs.recommended.rules,
   },
   {
     files: ["**/*.{js,mjs}"],

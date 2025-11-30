@@ -11,6 +11,6 @@ describe("Tag", () => {
       content: TAG_CONTENT,
     });
 
-    expect(getByText(TAG_CONTENT));
+    expect(getByText(TAG_CONTENT)).toBeInTheDocument();
   });
 });

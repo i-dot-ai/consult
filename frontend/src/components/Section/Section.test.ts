@@ -6,6 +6,6 @@ import SectionTest from "./SectionTest.svelte";
 describe("Section", () => {
   it("should render", () => {
     const { getByText } = render(SectionTest);
-    expect(getByText("Test Slot"));
+    expect(getByText("Test Slot")).toBeInTheDocument();
   });
 });

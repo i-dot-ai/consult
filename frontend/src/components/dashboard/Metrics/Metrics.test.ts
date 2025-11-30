@@ -76,7 +76,7 @@ describe("Metrics", () => {
       demoOptions: testData.demoOptions,
       demoOptionsLoading: false,
     });
-    expect(getByTestId("metrics-chart"));
+    expect(getByTestId("metrics-chart")).toBeInTheDocument();
   });
 
   it("should render demo options data", () => {
@@ -87,12 +87,12 @@ describe("Metrics", () => {
       demoOptionsLoading: false,
     });
 
-    expect(getByText("Demographics Breakdown"));
+    expect(getByText("Demographics Breakdown")).toBeInTheDocument();
 
     testData.demoOptions.forEach((opt) => {
-      expect(getByText(opt.name));
-      expect(getByText(opt.value));
-      expect(getByText(opt.count));
+      expect(getByText(opt.name)).toBeInTheDocument();
+      expect(getByText(opt.value)).toBeInTheDocument();
+      expect(getByText(opt.count)).toBeInTheDocument();
     });
   });
 

@@ -52,11 +52,11 @@ describe("EditPanel", () => {
     const button = getByRole("button");
     await user.click(button);
 
-    expect(getByTestId("panel"));
+    expect(getByTestId("panel")).toBeInTheDocument();
     expect(setEditingMock).toHaveBeenCalledWith(true);
 
     testData.themes.forEach((theme) => {
-      getByText(theme.name);
+      expect(getByText(theme.name)).toBeInTheDocument();
     });
 
     // Click again to close panel

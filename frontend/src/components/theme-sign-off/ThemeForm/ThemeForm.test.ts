@@ -17,7 +17,7 @@ describe("ThemeForm", () => {
       variant: "add",
     });
 
-    expect(getByText("Add Custom Theme"));
+    expect(getByText("Add Custom Theme")).toBeInTheDocument();
 
     expect(container).toMatchSnapshot();
   });
@@ -28,6 +28,6 @@ describe("ThemeForm", () => {
       variant: "edit",
     });
 
-    expect(getByText("Edit Theme"));
+    expect(getByText("Edit Theme")).toBeInTheDocument();
   });
 });

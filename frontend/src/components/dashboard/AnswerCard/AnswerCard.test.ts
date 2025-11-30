@@ -24,12 +24,20 @@ describe("AnswerCard", () => {
       ...testData,
     });
 
-    expect(getByText(`ID: ${testData.respondentDisplayId}`));
-    expect(getByText(testData.text!));
-    testData.demoData!.forEach((data) => expect(getByText(data)));
-    testData.multiAnswers!.forEach((multi) => expect(getByText(multi)));
-    testData.themes!.forEach((theme) => expect(getByText(theme.name)));
-    expect(getByText("Evidence-rich"));
+    expect(
+      getByText(`ID: ${testData.respondentDisplayId}`),
+    ).toBeInTheDocument();
+    expect(getByText(testData.text!)).toBeInTheDocument();
+    testData.demoData!.forEach((data) =>
+      expect(getByText(data)).toBeInTheDocument(),
+    );
+    testData.multiAnswers!.forEach((multi) =>
+      expect(getByText(multi)).toBeInTheDocument(),
+    );
+    testData.themes!.forEach((theme) =>
+      expect(getByText(theme.name)).toBeInTheDocument(),
+    );
+    expect(getByText("Evidence-rich")).toBeInTheDocument();
   });
 
   it("should not render data if skeleton", async () => {

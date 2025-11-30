@@ -7,7 +7,7 @@ describe("Header", () => {
   it("should render", () => {
     const { container, getByText } = render(Header);
     expect(container.querySelector("header")).toBeTruthy();
-    expect(getByText("Consult"));
-    expect(getByText("Alpha"));
+    expect(getByText("Consult")).toBeInTheDocument();
+    expect(getByText("Alpha")).toBeInTheDocument();
   });
 });

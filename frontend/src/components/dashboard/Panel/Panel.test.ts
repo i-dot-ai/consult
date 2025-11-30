@@ -15,7 +15,7 @@ describe("Panel", () => {
   it("should render slot", () => {
     const { getByText } = render(Panel, { children: childComponent });
 
-    expect(getByText("Child Content"));
+    expect(getByText("Child Content")).toBeInTheDocument();
   });
 
   it("should render correct css based on props", () => {
@@ -28,12 +28,5 @@ describe("Panel", () => {
     const panel = getByTestId("panel-component");
     expect(panel.getAttribute("class")).toContain("border");
     expect(panel.getAttribute("class")).toContain("bg-");
-  });
-
-  it.each([1, 2, 3])("should render correctly for each level", (level) => {
-    render(Panel, {
-      level: level,
-      children: childComponent,
-    });
   });
 });

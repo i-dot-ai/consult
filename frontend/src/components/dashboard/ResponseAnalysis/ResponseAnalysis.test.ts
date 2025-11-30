@@ -7,9 +7,9 @@ describe("ResponseAnalysis", () => {
   it("should render data", () => {
     const { getByText } = render(ResponseAnalysis, {});
 
-    expect(getByText("Response refinement"));
+    expect(getByText("Response refinement")).toBeInTheDocument();
     expect(
       getByText("In-depth analysis of individual consultation responses."),
-    );
+    ).toBeInTheDocument();
   });
 });

@@ -4,7 +4,6 @@ import { render, screen } from "@testing-library/svelte";
 
 import ThemesTable from "./ThemesTable.svelte";
 import { getPercentage } from "../../../global/utils";
-import ThemesTableStory from "./ThemesTableStory.svelte";
 
 describe("ThemesTable", () => {
   const testData = {
@@ -34,11 +33,11 @@ describe("ThemesTable", () => {
     });
 
     testData.themes.forEach((theme) => {
-      expect(getByText(theme.name));
-      expect(getByText(theme.description));
-      expect(getByText(theme.count));
+      expect(getByText(theme.name)).toBeInTheDocument();
+      expect(getByText(theme.description)).toBeInTheDocument();
+      expect(getByText(theme.count)).toBeInTheDocument();
       const percentage = getPercentage(theme.count, testData.totalAnswers);
-      expect(getByText(`${Math.round(percentage)}%`));
+      expect(getByText(`${Math.round(percentage)}%`)).toBeInTheDocument();
     });
   });
 
@@ -100,9 +99,5 @@ describe("ThemesTable", () => {
     });
 
     expect(getAllByText("<1%")).toBeTruthy();
-  });
-
-  it("should render story", () => {
-    render(ThemesTableStory);
   });
 });

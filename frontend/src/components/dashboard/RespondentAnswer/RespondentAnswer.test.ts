@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/svelte";
 
 import RespondentAnswer from "./RespondentAnswer.svelte";
-import RespondentAnswerStory from "./RespondentAnswerStory.svelte";
 
 describe("RespondentAnswer", () => {
   const testData = {
@@ -23,14 +22,16 @@ describe("RespondentAnswer", () => {
       ...testData,
     });
 
-    expect(getByText(testData.questionTitle));
-    expect(getByText(`Q${testData.questionNumber}`));
-    expect(getByText(testData.answerText));
+    expect(getByText(testData.questionTitle)).toBeInTheDocument();
+    expect(getByText(`Q${testData.questionNumber}`)).toBeInTheDocument();
+    expect(getByText(testData.answerText)).toBeInTheDocument();
     testData.multiChoice.forEach((multiAnswer) =>
-      expect(getByText(multiAnswer)),
+      expect(getByText(multiAnswer)).toBeInTheDocument(),
     );
-    testData.themes.forEach((theme) => expect(getByText(theme)));
-    expect(getByText("Evidence-rich"));
+    testData.themes.forEach((theme) =>
+      expect(getByText(theme)).toBeInTheDocument(),
+    );
+    expect(getByText("Evidence-rich")).toBeInTheDocument();
   });
 
   it("should not fail if no themes presenet", () => {
@@ -49,9 +50,5 @@ describe("RespondentAnswer", () => {
     });
 
     expect(queryByText("Evidence-rich")).toBeNull();
-  });
-
-  it("should render story", () => {
-    render(RespondentAnswerStory);
   });
 });

@@ -13,7 +13,7 @@ describe("Section", () => {
       body: TEST_BODY,
     });
 
-    expect(getByText(TEST_TITLE));
-    expect(getByText(TEST_BODY));
+    expect(getByText(TEST_TITLE)).toBeInTheDocument();
+    expect(getByText(TEST_BODY)).toBeInTheDocument();
   });
 });

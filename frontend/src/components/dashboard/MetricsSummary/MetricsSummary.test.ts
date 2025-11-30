@@ -17,14 +17,14 @@ describe("MetricsSummary", () => {
       demoCount: TEST_DATA.demoCount,
     });
 
-    expect(getByText("Responses"));
-    expect(getByText(TEST_DATA.responseCount));
+    expect(getByText("Responses")).toBeInTheDocument();
+    expect(getByText(TEST_DATA.responseCount)).toBeInTheDocument();
 
-    expect(getByText("Questions"));
-    expect(getByText(TEST_DATA.questionCount));
+    expect(getByText("Questions")).toBeInTheDocument();
+    expect(getByText(TEST_DATA.questionCount)).toBeInTheDocument();
 
-    expect(getByText("Demographics"));
-    expect(getByText(TEST_DATA.demoCount));
+    expect(getByText("Demographics")).toBeInTheDocument();
+    expect(getByText(TEST_DATA.demoCount)).toBeInTheDocument();
 
     expect(container).toMatchSnapshot();
   });

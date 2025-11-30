@@ -20,7 +20,7 @@ describe("ConsultationStagePanel", () => {
     });
 
     it("should render correct title for theme_sign_off stage", () => {
-      expect(screen.getByText("All Questions Signed Off"));
+      expect(screen.getByText("All Questions Signed Off")).toBeInTheDocument();
     });
 
     it("should render correct content for theme_sign_off stage", () => {
@@ -28,7 +28,7 @@ describe("ConsultationStagePanel", () => {
         screen.getByText(
           /You have successfully reviewed and signed off themes for all 10 consultation questions/i,
         ),
-      );
+      ).toBeInTheDocument();
     });
 
     it("should render confirm button for theme_sign_off stage", () => {
@@ -56,7 +56,7 @@ describe("ConsultationStagePanel", () => {
     });
 
     it("should render correct title for theme_mapping stage", () => {
-      expect(screen.getByText("AI Mapping in Progress"));
+      expect(screen.getByText("AI Mapping in Progress")).toBeInTheDocument();
     });
 
     it("should render correct content for theme_mapping stage", () => {
@@ -64,7 +64,7 @@ describe("ConsultationStagePanel", () => {
         screen.getByText(
           /You have completed the theme sign-off phase for all 10 consultation questions/i,
         ),
-      );
+      ).toBeInTheDocument();
     });
 
     it("should match snapshot for theme_mapping stage", () => {
@@ -85,7 +85,7 @@ describe("ConsultationStagePanel", () => {
     });
 
     it("should render correct title for analysis stage", () => {
-      expect(screen.getByText("AI Mapping Complete"));
+      expect(screen.getByText("AI Mapping Complete")).toBeInTheDocument();
     });
 
     it("should render correct content for analysis stage", () => {
@@ -93,7 +93,7 @@ describe("ConsultationStagePanel", () => {
         screen.getByText(
           /All consultation responses have been successfully mapped/i,
         ),
-      );
+      ).toBeInTheDocument();
     });
 
     it("should render link to Analysis Dashboard", () => {

@@ -18,7 +18,7 @@ describe("Popover", () => {
     const button = screen.getByRole("button");
     await user.click(button);
 
-    expect(getByText(PANEL_CONTENT));
+    expect(getByText(PANEL_CONTENT)).toBeInTheDocument();
   });
 
   it("should be open or close initially based on the open prop", async () => {
@@ -30,7 +30,7 @@ describe("Popover", () => {
       open: true,
     });
 
-    expect(getByText(PANEL_CONTENT));
+    expect(getByText(PANEL_CONTENT)).toBeInTheDocument();
 
     const button = screen.getByRole("button");
     await user.click(button);

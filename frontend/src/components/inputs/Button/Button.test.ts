@@ -3,7 +3,6 @@ import userEvent from "@testing-library/user-event";
 import { render, screen } from "@testing-library/svelte";
 
 import Button from "./Button.svelte";
-import ButtonStory from "./ButtonStory.svelte";
 
 describe("Button", () => {
   it("should call handleClick func", async () => {
@@ -50,9 +49,5 @@ describe("Button", () => {
     const link = screen.getByRole("button");
     expect(link.tagName).toBe("A");
     expect(link.getAttribute("href")).toEqual("/test-link");
-  });
-
-  it("should render story", () => {
-    render(ButtonStory);
   });
 });

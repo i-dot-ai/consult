@@ -12,12 +12,12 @@ describe("QuestionSummary", () => {
   it("should render data", () => {
     const { getByText } = render(QuestionSummary, {});
 
-    expect(getByText("Theme analysis"));
+    expect(getByText("Theme analysis")).toBeInTheDocument();
     expect(
       getByText(
         "Analysis of key themes mentioned in responses to this question.",
       ),
-    );
+    ).toBeInTheDocument();
   });
 
   it("should render multi choice data if passed", () => {
@@ -31,12 +31,14 @@ describe("QuestionSummary", () => {
       themesLoading: testData.themesLoading,
     });
 
-    expect(getByText("Multiple Choice Answers"));
+    expect(getByText("Multiple Choice Answers")).toBeInTheDocument();
 
     multiChoice.forEach((item) => {
-      expect(getByText(item.text));
-      expect(getAllByText(item.response_count));
-      expect(getByText(getPercentage(item.response_count, 30) + "%"));
+      expect(getByText(item.text)).toBeInTheDocument();
+      expect(getAllByText(item.response_count)).toHaveLength(2);
+      expect(
+        getByText(getPercentage(item.response_count, 30) + "%"),
+      ).toBeInTheDocument();
     });
   });
 });

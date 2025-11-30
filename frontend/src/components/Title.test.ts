@@ -9,7 +9,7 @@ describe("Title", () => {
       props: { text: "Test text" },
     });
 
-    expect(getByText("Test text"));
+    expect(getByText("Test text")).toBeInTheDocument();
   });
 
   it.each([1, 2, 3, 4, 5, 6])("renders correct tag", (level) => {

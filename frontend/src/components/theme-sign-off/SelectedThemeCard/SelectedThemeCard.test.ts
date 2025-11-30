@@ -21,8 +21,8 @@ describe("SelectedThemeCard", () => {
       testData,
     );
 
-    expect(getByText(testData.theme.name));
-    expect(getByText(testData.theme.description));
+    expect(getByText(testData.theme.name)).toBeInTheDocument();
+    expect(getByText(testData.theme.description)).toBeInTheDocument();
 
     // Answers hidden initially
     testData.answers?.forEach((answer) => {

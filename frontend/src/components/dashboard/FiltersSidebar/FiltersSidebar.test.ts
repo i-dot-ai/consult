@@ -22,13 +22,15 @@ describe("FiltersSidebar", () => {
       loading: testData.loading,
     });
     Object.keys(testData.demoData).forEach((category) => {
-      expect(getByText(category));
+      expect(getByText(category)).toBeInTheDocument();
       Object.keys(testData.demoData[category]).forEach((rowKey) => {
-        expect(getByText(rowKey));
-        expect(getByText(testData.demoData[category][rowKey]));
+        expect(getByText(rowKey)).toBeInTheDocument();
+        expect(
+          getByText(testData.demoData[category][rowKey]),
+        ).toBeInTheDocument();
       });
     });
-    expect(getByText("Show evidence rich"));
+    expect(getByText("Show evidence rich")).toBeInTheDocument();
   });
 
   it("should not render data if loading", () => {
@@ -46,7 +48,7 @@ describe("FiltersSidebar", () => {
         expect(queryByText(testData.demoData[category][rowKey])).toBeNull();
       });
     });
-    expect(getByText("Show evidence rich"));
+    expect(getByText("Show evidence rich")).toBeInTheDocument();
   });
 
   it("should not render evidence rich switch if not show evidence rich", () => {
@@ -57,7 +59,7 @@ describe("FiltersSidebar", () => {
       evidenceRich: testData.evidenceRich,
     });
 
-    expect(queryByText("Show evidence rich"));
+    expect(queryByText("Show evidence rich")).not.toBeInTheDocument();
   });
 
   it("should call set evidence rich func", async () => {

@@ -61,7 +61,7 @@ describe("Switch", () => {
     expect(
       container.querySelector(`#test-switch-label[for="test-switch"]`),
     ).toBeTruthy();
-    expect(getByLabelText("Test Switch"));
+    expect(getByLabelText("Test Switch")).toBeInTheDocument();
   });
 
   it("should have be checked initially if value is true", async () => {
@@ -85,6 +85,6 @@ describe("Switch", () => {
       labelSlot: "Label Slot Content",
     });
 
-    expect(screen.getByText("Label Slot Content"));
+    expect(screen.getByText("Label Slot Content")).toBeInTheDocument();
   });
 });

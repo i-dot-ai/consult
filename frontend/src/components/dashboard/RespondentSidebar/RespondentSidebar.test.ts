@@ -3,7 +3,6 @@ import userEvent from "@testing-library/user-event";
 import { render } from "@testing-library/svelte";
 
 import RespondentSidebar from "./RespondentSidebar.svelte";
-import RespondentSidebarStory from "./RespondentSidebarStory.svelte";
 import { getPercentage } from "../../../global/utils";
 
 describe("RespondentSidebar", () => {
@@ -23,16 +22,16 @@ describe("RespondentSidebar", () => {
     });
 
     testData.demoData.forEach((dataItem) => {
-      expect(getByText(dataItem.name));
-      expect(getByText(dataItem.value));
+      expect(getByText(dataItem.name)).toBeInTheDocument();
+      expect(getByText(dataItem.value)).toBeInTheDocument();
     });
-    expect(getByText(testData.stakeholderName));
+    expect(getByText(testData.stakeholderName)).toBeInTheDocument();
 
     const partialNum = testData.questionsAnswered;
     const totalNum = testData.totalQuestions;
     const percentage = getPercentage(partialNum, totalNum);
     const countsText = `${percentage}% (${partialNum}/${totalNum})`;
-    expect(getByText(countsText));
+    expect(getByText(countsText)).toBeInTheDocument();
   });
 
   it("should render editable mode and call update callback", async () => {
@@ -59,9 +58,5 @@ describe("RespondentSidebar", () => {
 
     // check if subtitle is updated correctly
     expect(updateMock).toHaveBeenCalledWith("New Stakeholder");
-  });
-
-  it("should render story", () => {
-    render(RespondentSidebarStory);
   });
 });

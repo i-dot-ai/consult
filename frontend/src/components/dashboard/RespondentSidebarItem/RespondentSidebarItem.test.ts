@@ -17,8 +17,8 @@ describe("RespondentSidebarItem", () => {
       ...testData,
     });
 
-    expect(getByText(testData.title));
-    expect(getByText(testData.subtitle));
+    expect(getByText(testData.title)).toBeInTheDocument();
+    expect(getByText(testData.subtitle)).toBeInTheDocument();
     expect(container.querySelector("svg")).toBeTruthy();
   });
 
@@ -85,7 +85,7 @@ describe("RespondentSidebarItem", () => {
     expect(queryByLabelText("Edit Subtitle")).toBeNull();
 
     // check that old subtitle is displayed still
-    expect(getByText(testData.subtitle));
+    expect(getByText(testData.subtitle)).toBeInTheDocument();
 
     // check that update callback never been called
     expect(updateSubtitleMock).not.toHaveBeenCalled();

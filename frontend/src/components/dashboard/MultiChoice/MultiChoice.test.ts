@@ -34,13 +34,13 @@ describe("MultiChoice", () => {
     });
 
     testData.data.forEach((item) => {
-      expect(getByText(item.text));
+      expect(getByText(item.text)).toBeInTheDocument();
       expect(getAllByText(item.response_count).length).toBe(2);
       expect(
         getByText(
           `${getPercentage(item.response_count, testData.totalCounts)}%`,
         ),
-      );
+      ).toBeInTheDocument();
     });
 
     expect(container).toMatchSnapshot();
