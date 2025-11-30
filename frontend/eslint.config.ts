@@ -6,6 +6,7 @@ import eslintPluginPrettierRecommended from "eslint-plugin-prettier/recommended"
 import svelte from "eslint-plugin-svelte";
 import astro from "eslint-plugin-astro";
 import vitest from "eslint-plugin-vitest";
+import testingLibrary from "eslint-plugin-testing-library";
 
 export default defineConfig([
   globalIgnores([
@@ -42,8 +43,11 @@ export default defineConfig([
   },
   {
     files: ["**/*.test.ts"],
-    plugins: { vitest },
-    rules: vitest.configs.recommended.rules,
+    plugins: { vitest, "testing-library": testingLibrary },
+    rules: {
+      ...vitest.configs.recommended.rules,
+      ...testingLibrary.configs["flat/svelte"].rules,
+    },
   },
   {
     files: ["**/*.{js,mjs}"],
