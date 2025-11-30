@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { render, screen } from "@testing-library/svelte";
 
@@ -6,8 +6,6 @@ import PopoverTest from "./PopoverTest.svelte";
 
 describe("Popover", () => {
   it("should toggle panel when trigger is clicked", async () => {
-    vi.mock("svelte/transition");
-
     const PANEL_CONTENT = "Panel Content";
     const user = userEvent.setup();
 
@@ -24,8 +22,6 @@ describe("Popover", () => {
   });
 
   it("should be open or close initially based on the open prop", async () => {
-    vi.mock("svelte/transition");
-
     const PANEL_CONTENT = "Panel Content";
     const user = userEvent.setup();
 
@@ -43,8 +39,6 @@ describe("Popover", () => {
   });
 
   it("should render trigger content and label", async () => {
-    vi.mock("svelte/transition");
-
     const TRIGGER_CONTENT = "trigger content";
     const LABEL_CONTENT = "label content";
 

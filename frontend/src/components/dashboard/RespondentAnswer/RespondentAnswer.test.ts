@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/svelte";
 
 import RespondentAnswer from "./RespondentAnswer.svelte";
@@ -19,8 +19,6 @@ describe("RespondentAnswer", () => {
   };
 
   it("should render data", () => {
-    vi.mock("svelte/transition");
-
     const { getByText } = render(RespondentAnswer, {
       ...testData,
     });
@@ -36,8 +34,6 @@ describe("RespondentAnswer", () => {
   });
 
   it("should not fail if no themes presenet", () => {
-    vi.mock("svelte/transition");
-
     expect(() => {
       render(RespondentAnswer, {
         ...testData,

@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it } from "vitest";
 import userEvent from "@testing-library/user-event";
 import { render, screen } from "@testing-library/svelte";
 
@@ -29,8 +29,6 @@ describe("MultiChoice", () => {
   });
 
   it("should render data", () => {
-    vi.mock("svelte/transition");
-
     const { container, getByText, getAllByText } = render(MultiChoice, {
       data: testData.data,
     });

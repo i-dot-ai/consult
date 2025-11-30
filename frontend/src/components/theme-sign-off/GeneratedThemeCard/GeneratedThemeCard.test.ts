@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/svelte";
 
 import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
@@ -20,8 +20,6 @@ describe("GeneratedThemeCard", () => {
   const answers = ["Answer 1", "Answer 2"];
 
   it("should render", async () => {
-    vi.mock("svelte/transition");
-
     const { container, getByText, queryByText } = render(
       GeneratedThemeCard,
       testData,

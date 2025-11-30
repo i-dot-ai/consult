@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render } from "@testing-library/svelte";
 
 import MetricsDemoCard from "./MetricsDemoCard.svelte";
@@ -55,8 +55,6 @@ describe("MetricsDemoCard", () => {
   });
 
   it("should hide items above max", async () => {
-    vi.mock("svelte/transition");
-
     const { getByText, queryByText } = render(MetricsDemoCard, {
       ...testData,
       items: [...testData.items, ...testData.extraItems],
@@ -74,8 +72,6 @@ describe("MetricsDemoCard", () => {
   });
 
   it("should not hide items if threshold is infinity", async () => {
-    vi.mock("svelte/transition");
-
     const { getByText, queryByText } = render(MetricsDemoCard, {
       ...testData,
       items: [...testData.items, ...testData.extraItems],

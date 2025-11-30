@@ -20,8 +20,6 @@ describe("EditPanel", () => {
   };
 
   it("should match snapshot", async () => {
-    vi.mock("svelte/transition");
-
     const { container } = render(EditPanel, { ...testData });
 
     const button = container.querySelector("button");
@@ -36,7 +34,6 @@ describe("EditPanel", () => {
   });
 
   it("should open and close on click and call setEditing callback", async () => {
-    vi.mock("svelte/transition");
     const setEditingMock = vi.fn();
     const user = userEvent.setup();
 
@@ -69,7 +66,6 @@ describe("EditPanel", () => {
   });
 
   it("should update correct data and call resetData callback", async () => {
-    vi.mock("svelte/transition");
     const resetDataMock = vi.fn();
     const updateAnswerMock = vi.fn();
     const user = userEvent.setup();

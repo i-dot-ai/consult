@@ -46,8 +46,6 @@ describe("DemoFilter", () => {
 
   // TODO: Update below case
   // it("should update filters state when clicked", async () => {
-  //   vi.mock("svelte/transition");
-
   //   const user = userEvent.setup();
   //   expect(demoFilters.filters).toEqual({});
 

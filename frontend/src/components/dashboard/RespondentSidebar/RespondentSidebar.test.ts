@@ -36,7 +36,6 @@ describe("RespondentSidebar", () => {
   });
 
   it("should render editable mode and call update callback", async () => {
-    vi.mock("svelte/transition");
     const user = userEvent.setup();
     const updateMock = vi.fn();
 

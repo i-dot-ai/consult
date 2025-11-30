@@ -23,7 +23,6 @@ describe("RespondentSidebarItem", () => {
   });
 
   it("should render editable mode and all update callback", async () => {
-    vi.mock("svelte/transition");
     const user = userEvent.setup();
     const updateSubtitleMock = vi.fn();
 
@@ -57,7 +56,6 @@ describe("RespondentSidebarItem", () => {
   });
 
   it("should reset staged subtitle if cancel is clicked", async () => {
-    vi.mock("svelte/transition");
     const user = userEvent.setup();
     const updateSubtitleMock = vi.fn();
 

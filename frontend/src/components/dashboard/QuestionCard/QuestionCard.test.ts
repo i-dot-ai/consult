@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it } from "vitest";
 import { render, screen } from "@testing-library/svelte";
 
 import QuestionCard from "./QuestionCard.svelte";
@@ -15,8 +15,6 @@ describe("QuestionCard", () => {
   };
 
   it("should render data", () => {
-    vi.mock("svelte/transition");
-
     const { getByText } = render(QuestionCard, {
       consultationId: testData.consultationId,
       question: testData.question,
