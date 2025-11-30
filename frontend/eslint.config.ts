@@ -15,7 +15,7 @@ export default defineConfig([
     "public/lit/",
   ]),
   {
-    files: ["**/*.{js,ts,mjs,svelte,astro}"],
+    files: ["**/*.{js,ts,svelte,astro}"],
     extends: [
       js.configs.recommended,
       eslintPluginPrettierRecommended,
@@ -35,6 +35,20 @@ export default defineConfig([
         {
           args: "after-used",
           argsIgnorePattern: "^_",
+        },
+      ],
+    },
+  },
+  {
+    files: ["**/*.{js,mjs}"],
+    ignores: ["svelte.config.js"], // Svelte does not support svelte.config.ts
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "Program",
+          message:
+            "JavaScript files are not allowed. Please use TypeScript (.ts) instead.",
         },
       ],
     },
