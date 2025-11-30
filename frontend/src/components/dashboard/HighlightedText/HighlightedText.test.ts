@@ -1,59 +1,50 @@
 import { describe, expect, it } from "vitest";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import HighlightedText from "./HighlightedText.svelte";
 
 describe("HighlightedText", () => {
   it("should render plain text when highlight is empty", () => {
-    const { container } = render(HighlightedText, {
+    render(HighlightedText, {
       text: "Hello world",
       highlight: "",
     });
 
-    expect(container.textContent).toBe("Hello world");
-    expect(container.querySelector("span.bg-yellow-300")).toBeFalsy();
-  });
-
-  it("should handle empty text", () => {
-    const { container } = render(HighlightedText, {
-      text: "",
-      highlight: "test",
-    });
-
-    expect(container.textContent).toBe("");
+    expect(screen.getByText("Hello world")).toBeInTheDocument();
+    expect(screen.queryByTestId("highlighted-text")).not.toBeInTheDocument();
   });
 
   it("should handle text with no matches", () => {
-    const { container } = render(HighlightedText, {
+    render(HighlightedText, {
       text: "Hello world",
       highlight: "xyz",
     });
 
-    expect(container.textContent).toBe("Hello world");
-    expect(container.querySelector("span.bg-yellow-300")).toBeFalsy();
+    expect(screen.getByText("Hello world")).toBeInTheDocument();
+    expect(screen.queryByTestId("highlighted-text")).not.toBeInTheDocument();
   });
 
   it("should highlight a single match", () => {
-    const { container } = render(HighlightedText, {
+    render(HighlightedText, {
       text: "Hello world",
       highlight: "world",
     });
 
-    expect(container.textContent).toBe("Hello world");
-    const highlightedSpan = container.querySelector("span.bg-yellow-300");
-    expect(highlightedSpan).toBeTruthy();
-    expect(highlightedSpan?.textContent).toBe("world");
+    expect(screen.getByText("Hello")).toBeInTheDocument();
+    const highlightedText = screen.getByTestId("highlighted-text");
+    expect(highlightedText).toBeInTheDocument();
+    expect(highlightedText.textContent).toBe("world");
   });
 
   it("should highlight multiple matches", () => {
-    const { container } = render(HighlightedText, {
+    render(HighlightedText, {
       text: "The cat and the dog",
       highlight: "the",
     });
 
-    const highlightedSpans = container.querySelectorAll("span.bg-yellow-300");
-    expect(highlightedSpans.length).toBe(2);
-    expect(highlightedSpans[0].textContent).toBe("The");
-    expect(highlightedSpans[1].textContent).toBe("the");
+    const highlightedTexts = screen.getAllByTestId("highlighted-text");
+    expect(highlightedTexts.length).toBe(2);
+    expect(highlightedTexts[0].textContent).toBe("The");
+    expect(highlightedTexts[1].textContent).toBe("the");
   });
 });

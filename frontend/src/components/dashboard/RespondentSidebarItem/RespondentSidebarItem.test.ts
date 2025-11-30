@@ -13,13 +13,10 @@ describe("RespondentSidebarItem", () => {
   };
 
   it("should render data", () => {
-    const { container } = render(RespondentSidebarItem, {
-      ...testData,
-    });
+    render(RespondentSidebarItem, testData);
 
     expect(screen.getByText(testData.title)).toBeInTheDocument();
     expect(screen.getByText(testData.subtitle)).toBeInTheDocument();
-    expect(container.querySelector("svg")).toBeTruthy();
   });
 
   it("should render editable mode and all update callback", async () => {

@@ -5,8 +5,8 @@ import Footer from "./Footer.svelte";
 
 describe("Footer", () => {
   it("should render", () => {
-    const { container } = render(Footer);
-    expect(container.querySelector("footer")).toBeTruthy();
+    render(Footer);
+    expect(screen.getByRole("contentinfo")).toBeInTheDocument();
     expect(screen.getByTestId("privacy-link").href).toContain("/privacy/");
   });
 });

@@ -5,8 +5,8 @@ import Header from "./Header.svelte";
 
 describe("Header", () => {
   it("should render", () => {
-    const { container } = render(Header);
-    expect(container.querySelector("header")).toBeTruthy();
+    render(Header);
+    expect(screen.getByRole("banner")).toBeInTheDocument();
     expect(screen.getByText("Consult")).toBeInTheDocument();
     expect(screen.getByText("Alpha")).toBeInTheDocument();
   });

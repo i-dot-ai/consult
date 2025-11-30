@@ -13,27 +13,25 @@ describe("Details Component", () => {
   };
 
   it("renders with summary text", () => {
-    render(Details, { props });
+    render(Details, props);
 
     expect(screen.getByText("Test Summary")).toBeInTheDocument();
   });
 
   it("renders closed by default", () => {
-    const { container } = render(Details, { props });
+    render(Details, props);
 
-    const details = container.querySelector("details");
-    expect(details).not.toHaveAttribute("open");
+    expect(screen.getByRole("group")).not.toHaveAttribute("open");
   });
 
   it("renders open when open prop is true", () => {
-    const { container } = render(Details, { props: { ...props, open: true } });
+    render(Details, { ...props, open: true });
 
-    const details = container.querySelector("details");
-    expect(details).toHaveAttribute("open");
+    expect(screen.getByRole("group")).toHaveAttribute("open");
   });
 
   it("renders content in details text area", () => {
-    render(Details, { props });
+    render(Details, props);
 
     expect(screen.getByText("Test content")).toBeInTheDocument();
   });

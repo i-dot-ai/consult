@@ -20,9 +20,9 @@ describe("EditPanel", () => {
   };
 
   it("should match snapshot", async () => {
-    const { container } = render(EditPanel, { ...testData });
+    const { container } = render(EditPanel, testData);
 
-    const button = container.querySelector("button");
+    const button = screen.getByRole("button");
     ["aria-controls", "id"].forEach((attribute) => {
       // Confirm attribute is created
       expect(button?.getAttribute(attribute)).toBeTruthy();

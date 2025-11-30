@@ -64,12 +64,12 @@ describe("AnswerCard", () => {
 
   it("should highlight text if passed", async () => {
     const HIGHLIGHT_TEXT = "answer";
-    const { container } = render(AnswerCard, {
+    render(AnswerCard, {
       ...testData,
       highlightText: HIGHLIGHT_TEXT,
     });
 
-    expect(container?.querySelector("span.bg-yellow-300")?.innerHTML).toEqual(
+    expect(screen.getByTestId("highlighted-text").textContent).toEqual(
       HIGHLIGHT_TEXT,
     );
   });

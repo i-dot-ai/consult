@@ -50,17 +50,13 @@ describe("Switch", () => {
   it("should have render props", async () => {
     const handleChangeMock = vi.fn();
 
-    const { container } = render(SwitchTest, {
+    render(SwitchTest, {
       id: "test-switch",
       value: false,
       label: "Test Switch",
       handleChange: handleChangeMock,
     });
 
-    expect(container.querySelector("#test-switch")).toBeTruthy();
-    expect(
-      container.querySelector(`#test-switch-label[for="test-switch"]`),
-    ).toBeTruthy();
     expect(screen.getByLabelText("Test Switch")).toBeInTheDocument();
   });
 

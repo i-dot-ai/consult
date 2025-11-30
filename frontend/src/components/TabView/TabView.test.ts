@@ -11,7 +11,7 @@ describe("TabView", () => {
     const user = userEvent.setup();
     const handleChangeMock = vi.fn();
 
-    const { container } = render(TabView, {
+    render(TabView, {
       value: "star-tab",
       tabs: [
         { id: "star-tab", title: "Star Tab", icon: Star },
@@ -22,7 +22,7 @@ describe("TabView", () => {
 
     expect(screen.getByText("Star Tab")).toBeInTheDocument();
     expect(screen.getByText("Finance Tab")).toBeInTheDocument();
-    expect(container.querySelectorAll("svg")).toHaveLength(2);
+    expect(screen.getAllByRole("img").length).toBe(2);
 
     const tabButtons = await screen.findAllByRole("tab");
     const starTab = tabButtons.at(0);
@@ -38,7 +38,7 @@ describe("TabView", () => {
   });
 
   it("should not render icons if no icon is passed", async () => {
-    const { container } = render(TabView, {
+    render(TabView, {
       value: "star-tab",
       tabs: [
         { id: "star-tab", title: "Star Tab" },
@@ -46,6 +46,6 @@ describe("TabView", () => {
       ],
     });
 
-    expect(container.querySelectorAll("svg")).toHaveLength(0);
+    expect(screen.queryByRole("img")).not.toBeInTheDocument();
   });
 });

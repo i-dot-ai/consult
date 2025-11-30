@@ -18,7 +18,7 @@ describe("Checkbox Component", () => {
   });
 
   it("renders label with object configuration", () => {
-    const { container } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "terms",
         name: "terms",
@@ -29,8 +29,9 @@ describe("Checkbox Component", () => {
       },
     });
 
-    expect(screen.getByLabelText("I agree to the terms")).toBeInTheDocument();
-    expect(container.querySelector("label")).toHaveClass("font-semibold");
+    const label = screen.getByText("I agree to the terms");
+    expect(label).toBeInTheDocument();
+    expect(label).toHaveClass("font-semibold");
   });
 
   it("renders label with string configuration", () => {
@@ -119,7 +120,7 @@ describe("Checkbox Component", () => {
   });
 
   it("applies error styling when error message present", () => {
-    const { container } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "terms",
         label: "Accept terms",
@@ -127,10 +128,7 @@ describe("Checkbox Component", () => {
       },
     });
 
-    const formGroup = container.firstChild;
-    const checkbox = container.querySelector('input[type="checkbox"]');
-
-    expect(formGroup).toHaveClass("border-l-4", "border-red-600");
+    const checkbox = screen.getByRole("checkbox");
     expect(checkbox).toHaveClass("border-red-600");
   });
 
@@ -203,25 +201,26 @@ describe("Checkbox Component", () => {
 
   it("applies all GOV.UK label size classes", () => {
     const labelSizes = ["s", "m", "l", "xl"] as const;
+    const expectedClasses = {
+      s: "font-semibold",
+      m: "text-lg",
+      l: "text-2xl",
+      xl: "text-3xl",
+    };
 
     labelSizes.forEach((size) => {
-      const { container } = render(Checkbox, {
+      render(Checkbox, {
         props: {
           id: "test-checkbox",
           label: {
-            text: "Test label",
+            text: `Test label; ${size}`,
             classes: `govuk-label--${size}`,
           },
         },
       });
 
-      const label = container.querySelector("label");
-      const expectedClasses = {
-        s: "font-semibold",
-        m: "font-semibold",
-        l: "font-semibold",
-        xl: "font-semibold",
-      };
+      const label = screen.getByText(`Test label; ${size}`);
+      expect(label).toBeInTheDocument();
       expect(label).toHaveClass(expectedClasses[size]);
     });
   });

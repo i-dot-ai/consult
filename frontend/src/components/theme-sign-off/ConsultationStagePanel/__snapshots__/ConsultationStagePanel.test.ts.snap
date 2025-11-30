@@ -1,6 +1,6 @@
 // Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
 
-exports[`ConsultationStagePanel > Analysis stage > should match snapshot for analysis stage 1`] = `
+exports[`ConsultationStagePanel > should render correctly for analysis stage 1`] = `
 <div>
   <div
     class="h-full my-4 p-4 rounded-2xl border border-secondary bg-neutral-50"
@@ -192,7 +192,7 @@ exports[`ConsultationStagePanel > Analysis stage > should match snapshot for ana
 </div>
 `;
 
-exports[`ConsultationStagePanel > Theme Mapping stage > should match snapshot for theme_mapping stage 1`] = `
+exports[`ConsultationStagePanel > should render correctly for theme_mapping stage 1`] = `
 <div>
   <div
     class="h-full my-4 p-4 rounded-2xl border border-secondary bg-neutral-50"
@@ -386,7 +386,7 @@ exports[`ConsultationStagePanel > Theme Mapping stage > should match snapshot fo
 </div>
 `;
 
-exports[`ConsultationStagePanel > Theme Sign Off stage > should match snapshot for theme_sign_off stage 1`] = `
+exports[`ConsultationStagePanel > should render correctly for theme_sign_off stage 1`] = `
 <div>
   <div
     class="h-full my-4 p-4 rounded-2xl border border-secondary bg-neutral-50"

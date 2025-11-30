@@ -13,6 +13,6 @@
 
 {#each parts as part, i (i)}
   {#if highlight.toLowerCase() === part.toLowerCase()}
-    <span class="bg-yellow-300">{part}</span>
+    <span class="bg-yellow-300" data-testid="highlighted-text">{part}</span>
   {:else}{part}{/if}
 {/each}

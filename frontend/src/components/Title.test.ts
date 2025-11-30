@@ -5,18 +5,14 @@ import Title from "./Title.svelte";
 
 describe("Title", () => {
   it("renders correct text", () => {
-    render(Title, {
-      props: { text: "Test text" },
-    });
+    render(Title, { text: "Test text" });
 
     expect(screen.getByText("Test text")).toBeInTheDocument();
   });
 
   it.each([1, 2, 3, 4, 5, 6])("renders correct tag", (level) => {
-    const { container } = render(Title, {
-      props: { level, text: "Test text" },
-    });
+    render(Title, { level, text: "Test text" });
 
-    expect(container.querySelector(`h${level}`)).toBeTruthy();
+    expect(screen.getByRole("heading", { level })).toBeInTheDocument();
   });
 });

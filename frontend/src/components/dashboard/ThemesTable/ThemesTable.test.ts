@@ -44,7 +44,7 @@ describe("ThemesTable", () => {
   });
 
   it("should highlight row if highlighted is true", () => {
-    const { container } = render(ThemesTable, {
+    render(ThemesTable, {
       themes: testData.themes.map((theme, index) => ({
         ...theme,
         highlighted: index % 2 === 1, // alternate between highlighted
@@ -53,9 +53,7 @@ describe("ThemesTable", () => {
       skeleton: testData.skeleton,
     });
 
-    expect(container.querySelectorAll(`tr[aria-pressed="true"]`)).toHaveLength(
-      1,
-    );
+    expect(screen.getAllByRole("button", { pressed: true })).toHaveLength(1);
   });
 
   it("should call handle func if a row is clicked", async () => {

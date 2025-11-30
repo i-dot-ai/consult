@@ -18,19 +18,19 @@ describe("DemoFilter", () => {
   });
 
   it("should render data", () => {
-    const { container } = render(DemoFilter, testData);
+    render(DemoFilter, testData);
 
     expect(screen.getByText("country")).toBeInTheDocument();
 
     Object.values(testData.demoData.country).forEach((value) => {
       expect(screen.getByText(value)).toBeInTheDocument();
       const percentage = getPercentage(value, testData.totalCounts.country);
-      expect(container.querySelector(`[title="${percentage}%"]`)).toBeTruthy();
+      expect(screen.getByTitle(`${percentage}%`)).toBeInTheDocument();
     });
   });
 
   it("should not render data if skeleton", () => {
-    const { container } = render(DemoFilter, {
+    render(DemoFilter, {
       ...testData,
       skeleton: true,
     });
@@ -38,9 +38,9 @@ describe("DemoFilter", () => {
     expect(screen.queryByText("country")).toBeNull();
 
     Object.values(testData.demoData.country).forEach((value) => {
-      expect(screen.queryByText(value)).toBeNull();
+      expect(screen.queryByText(value)).not.toBeInTheDocument();
       const percentage = getPercentage(value, testData.totalCounts.country);
-      expect(container.querySelector(`[title="${percentage}%"]`)).toBeNull();
+      expect(screen.queryByTitle(`${percentage}%`)).not.toBeInTheDocument();
     });
   });
 

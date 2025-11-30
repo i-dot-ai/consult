@@ -11,7 +11,6 @@ describe("QuestionCard", () => {
       total_responses: 100,
       question_text: "Test question text",
     },
-    // horizontal: false,
   };
 
   it("should render data", () => {
@@ -35,15 +34,15 @@ describe("QuestionCard", () => {
   it("should highlight text if highlighted is passed", () => {
     const HIGHLIGHT_TEXT = "question";
 
-    const { container } = render(QuestionCard, {
+    render(QuestionCard, {
       consultationId: testData.consultationId,
       question: testData.question,
       highlightText: HIGHLIGHT_TEXT,
     });
 
-    const highlightedText = container.querySelector("span.bg-yellow-300");
-    expect(highlightedText).toBeTruthy();
-    expect(highlightedText?.innerHTML).toEqual(HIGHLIGHT_TEXT);
+    const highlightedText = screen.getByTestId("highlighted-text");
+    expect(highlightedText).toBeInTheDocument();
+    expect(highlightedText.textContent).toEqual(HIGHLIGHT_TEXT);
   });
 
   it("should render inside a tag if clickable is true", () => {

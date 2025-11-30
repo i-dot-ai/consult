@@ -24,26 +24,27 @@ describe("TextInput", () => {
   });
 
   it("should render props", async () => {
-    const { container } = render(TextInput, {
+    render(TextInput, {
       id: "test-input",
       value: "",
       label: "Test Input",
       placeholder: "Test Placeholder",
     });
-    expect(container.querySelector("#test-input")).toBeTruthy();
-    expect(
-      container.querySelector(`input[placeholder="Test Placeholder"]`),
-    ).toBeTruthy();
+
+    expect(screen.getByRole("textbox")).toBeInTheDocument();
+    expect(screen.getByLabelText("Test Input")).toBeInTheDocument();
+    expect(screen.getByPlaceholderText("Test Placeholder")).toBeInTheDocument();
   });
 
   it("should hide label if hideLabel is true", async () => {
-    const { container } = render(TextInput, {
+    render(TextInput, {
       id: "test-input",
       value: "",
       label: "Test Input",
       hideLabel: true,
     });
-    expect(container.querySelector("label.sr-only")).toBeTruthy();
+
+    expect(screen.queryByText("Test Input")).toHaveClass("sr-only");
   });
 
   it("should have a reset button if variant is search", async () => {
