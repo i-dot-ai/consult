@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { createRawSnippet } from "svelte";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import Text from "./Text.svelte";
 
@@ -12,8 +12,8 @@ describe("Text", () => {
         render: () => content,
       };
     });
-    const { getByText } = render(Text, { children: childComponent });
+    render(Text, { children: childComponent });
 
-    expect(getByText(content)).toBeTruthy();
+    expect(screen.getByText(content)).toBeTruthy();
   });
 });

@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import NotFoundMessage from "./NotFoundMessage.svelte";
 
@@ -8,12 +8,12 @@ describe("Section", () => {
     const TEST_TITLE = "Test title";
     const TEST_BODY = "Test body";
 
-    const { getByText } = render(NotFoundMessage, {
+    render(NotFoundMessage, {
       title: TEST_TITLE,
       body: TEST_BODY,
     });
 
-    expect(getByText(TEST_TITLE)).toBeInTheDocument();
-    expect(getByText(TEST_BODY)).toBeInTheDocument();
+    expect(screen.getByText(TEST_TITLE)).toBeInTheDocument();
+    expect(screen.getByText(TEST_BODY)).toBeInTheDocument();
   });
 });

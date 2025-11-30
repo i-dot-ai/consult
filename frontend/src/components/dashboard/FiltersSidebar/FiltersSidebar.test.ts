@@ -14,7 +14,7 @@ describe("FiltersSidebar", () => {
   };
 
   it("should render data", () => {
-    const { getByText } = render(FiltersSidebar, {
+    render(FiltersSidebar, {
       showEvidenceRich: testData.showEvidenceRich,
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
@@ -22,19 +22,19 @@ describe("FiltersSidebar", () => {
       loading: testData.loading,
     });
     Object.keys(testData.demoData).forEach((category) => {
-      expect(getByText(category)).toBeInTheDocument();
+      expect(screen.getByText(category)).toBeInTheDocument();
       Object.keys(testData.demoData[category]).forEach((rowKey) => {
-        expect(getByText(rowKey)).toBeInTheDocument();
+        expect(screen.getByText(rowKey)).toBeInTheDocument();
         expect(
-          getByText(testData.demoData[category][rowKey]),
+          screen.getByText(testData.demoData[category][rowKey]),
         ).toBeInTheDocument();
       });
     });
-    expect(getByText("Show evidence rich")).toBeInTheDocument();
+    expect(screen.getByText("Show evidence rich")).toBeInTheDocument();
   });
 
   it("should not render data if loading", () => {
-    const { getByText, queryByText } = render(FiltersSidebar, {
+    render(FiltersSidebar, {
       showEvidenceRich: testData.showEvidenceRich,
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
@@ -42,24 +42,26 @@ describe("FiltersSidebar", () => {
       loading: true,
     });
     Object.keys(testData.demoData).forEach((category) => {
-      expect(queryByText(category)).toBeNull();
+      expect(screen.queryByText(category)).toBeNull();
       Object.keys(testData.demoData[category]).forEach((rowKey) => {
-        expect(queryByText(rowKey)).toBeNull();
-        expect(queryByText(testData.demoData[category][rowKey])).toBeNull();
+        expect(screen.queryByText(rowKey)).toBeNull();
+        expect(
+          screen.queryByText(testData.demoData[category][rowKey]),
+        ).toBeNull();
       });
     });
-    expect(getByText("Show evidence rich")).toBeInTheDocument();
+    expect(screen.getByText("Show evidence rich")).toBeInTheDocument();
   });
 
   it("should not render evidence rich switch if not show evidence rich", () => {
-    const { queryByText } = render(FiltersSidebar, {
+    render(FiltersSidebar, {
       showEvidenceRich: false,
       demoOptions: testData.demoOptions,
       demoData: testData.demoData,
       evidenceRich: testData.evidenceRich,
     });
 
-    expect(queryByText("Show evidence rich")).not.toBeInTheDocument();
+    expect(screen.queryByText("Show evidence rich")).not.toBeInTheDocument();
   });
 
   it("should call set evidence rich func", async () => {

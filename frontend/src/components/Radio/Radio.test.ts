@@ -1,4 +1,4 @@
-import { render, fireEvent } from "@testing-library/svelte";
+import { render, fireEvent, screen } from "@testing-library/svelte";
 import { describe, it, expect, vi } from "vitest";
 import Radio from "./Radio.svelte";
 
@@ -16,19 +16,19 @@ const mockItems = [
 
 describe("Radio Component", () => {
   it("renders all radio items", () => {
-    const { getByText } = render(Radio, {
+    render(Radio, {
       props: {
         name: "action",
         items: mockItems,
       },
     });
 
-    expect(getByText("Populate Sign Off")).toBeInTheDocument();
-    expect(getByText("Populate Dashboard")).toBeInTheDocument();
+    expect(screen.getByText("Populate Sign Off")).toBeInTheDocument();
+    expect(screen.getByText("Populate Dashboard")).toBeInTheDocument();
   });
 
   it("renders with legend when provided", () => {
-    const { getByText } = render(Radio, {
+    render(Radio, {
       props: {
         name: "action",
         items: mockItems,
@@ -36,7 +36,7 @@ describe("Radio Component", () => {
       },
     });
 
-    expect(getByText("Choose an action")).toBeInTheDocument();
+    expect(screen.getByText("Choose an action")).toBeInTheDocument();
   });
 
   it("sets checked state correctly", () => {

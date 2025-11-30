@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import Metrics from "./Metrics.svelte";
 
@@ -56,7 +56,7 @@ describe("Metrics", () => {
   };
 
   it("should not render chart if no question has multi answers", () => {
-    const { queryByTestId } = render(Metrics, {
+    render(Metrics, {
       loading: false,
       questions: testData.questions.map((question) => ({
         ...question,
@@ -66,43 +66,43 @@ describe("Metrics", () => {
       demoOptions: testData.demoOptions,
       demoOptionsLoading: false,
     });
-    expect(queryByTestId("metrics-chart")).toBeNull();
+    expect(screen.queryByTestId("metrics-chart")).toBeNull();
   });
 
   it("should render chart if some questions have multi answers", () => {
-    const { getByTestId } = render(Metrics, {
+    render(Metrics, {
       loading: false,
       questions: testData.questions,
       demoOptions: testData.demoOptions,
       demoOptionsLoading: false,
     });
-    expect(getByTestId("metrics-chart")).toBeInTheDocument();
+    expect(screen.getByTestId("metrics-chart")).toBeInTheDocument();
   });
 
   it("should render demo options data", () => {
-    const { getByText } = render(Metrics, {
+    render(Metrics, {
       loading: false,
       questions: testData.questions,
       demoOptions: testData.demoOptions,
       demoOptionsLoading: false,
     });
 
-    expect(getByText("Demographics Breakdown")).toBeInTheDocument();
+    expect(screen.getByText("Demographics Breakdown")).toBeInTheDocument();
 
     testData.demoOptions.forEach((opt) => {
-      expect(getByText(opt.name)).toBeInTheDocument();
-      expect(getByText(opt.value)).toBeInTheDocument();
-      expect(getByText(opt.count)).toBeInTheDocument();
+      expect(screen.getByText(opt.name)).toBeInTheDocument();
+      expect(screen.getByText(opt.value)).toBeInTheDocument();
+      expect(screen.getByText(opt.count)).toBeInTheDocument();
     });
   });
 
   it("should not render demo options section if no data", () => {
-    const { queryByText } = render(Metrics, {
+    render(Metrics, {
       loading: false,
       questions: testData.questions,
       demoOptions: [],
       demoOptionsLoading: false,
     });
-    expect(queryByText("Demographics Breakdown")).toBeNull();
+    expect(screen.queryByText("Demographics Breakdown")).toBeNull();
   });
 });

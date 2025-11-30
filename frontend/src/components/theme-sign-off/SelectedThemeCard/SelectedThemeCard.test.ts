@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import SelectedThemeCard from "./SelectedThemeCard.svelte";
 
@@ -16,17 +16,14 @@ describe("SelectedThemeCard", () => {
   };
 
   it("should render", async () => {
-    const { container, getByText, queryByText } = render(
-      SelectedThemeCard,
-      testData,
-    );
+    const { container } = render(SelectedThemeCard, testData);
 
-    expect(getByText(testData.theme.name)).toBeInTheDocument();
-    expect(getByText(testData.theme.description)).toBeInTheDocument();
+    expect(screen.getByText(testData.theme.name)).toBeInTheDocument();
+    expect(screen.getByText(testData.theme.description)).toBeInTheDocument();
 
     // Answers hidden initially
     testData.answers?.forEach((answer) => {
-      expect(queryByText(answer)).toBeNull();
+      expect(screen.queryByText(answer)).toBeNull();
     });
 
     expect(container).toMatchSnapshot();

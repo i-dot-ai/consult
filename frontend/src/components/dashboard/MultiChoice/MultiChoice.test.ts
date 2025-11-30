@@ -29,15 +29,15 @@ describe("MultiChoice", () => {
   });
 
   it("should render data", () => {
-    const { container, getByText, getAllByText } = render(MultiChoice, {
+    const { container } = render(MultiChoice, {
       data: testData.data,
     });
 
     testData.data.forEach((item) => {
-      expect(getByText(item.text)).toBeInTheDocument();
-      expect(getAllByText(item.response_count).length).toBe(2);
+      expect(screen.getByText(item.text)).toBeInTheDocument();
+      expect(screen.getAllByText(item.response_count).length).toBe(2);
       expect(
-        getByText(
+        screen.getByText(
           `${getPercentage(item.response_count, testData.totalCounts)}%`,
         ),
       ).toBeInTheDocument();

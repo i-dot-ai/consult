@@ -15,18 +15,18 @@ describe("QuestionCard", () => {
   };
 
   it("should render data", () => {
-    const { getByText } = render(QuestionCard, {
+    render(QuestionCard, {
       consultationId: testData.consultationId,
       question: testData.question,
     });
 
     expect(
-      getByText(
+      screen.getByText(
         `Q${testData.question.number}: ${testData.question.question_text}`,
       ),
     ).toBeInTheDocument();
     expect(
-      getByText(`${testData.question.total_responses} responses`),
+      screen.getByText(`${testData.question.total_responses} responses`),
     ).toBeInTheDocument();
     expect(screen.getByTestId("question-icon")).toBeInTheDocument();
     expect(screen.getByTestId("fav-button")).toBeInTheDocument();
@@ -90,31 +90,31 @@ describe("QuestionCard", () => {
   });
 
   it("should not render data if skeleton", () => {
-    const { queryByText } = render(QuestionCard, {
+    render(QuestionCard, {
       consultationId: testData.consultationId,
       question: testData.question,
       skeleton: true,
     });
 
     expect(
-      queryByText(
+      screen.queryByText(
         `Q${testData.question.number}: ${testData.question.question_text}`,
       ),
     ).toBeNull();
     expect(
-      queryByText(`${testData.question.total_responses} responses`),
+      screen.queryByText(`${testData.question.total_responses} responses`),
     ).toBeNull();
   });
 
   it("should render alternative css if horizontal", () => {
-    const { getByTestId } = render(QuestionCard, {
+    render(QuestionCard, {
       consultationId: testData.consultationId,
       question: testData.question,
       horizontal: true,
     });
 
-    expect(getByTestId("horizontal-container").getAttribute("class")).toContain(
-      "justify-between",
-    );
+    expect(
+      screen.getByTestId("horizontal-container").getAttribute("class"),
+    ).toContain("justify-between");
   });
 });

@@ -9,33 +9,33 @@ describe("Popover", () => {
     const PANEL_CONTENT = "Panel Content";
     const user = userEvent.setup();
 
-    const { getByText, queryByText } = render(PopoverTest, {
+    render(PopoverTest, {
       panelContent: PANEL_CONTENT,
     });
 
-    expect(queryByText(PANEL_CONTENT)).toBeNull();
+    expect(screen.queryByText(PANEL_CONTENT)).toBeNull();
 
     const button = screen.getByRole("button");
     await user.click(button);
 
-    expect(getByText(PANEL_CONTENT)).toBeInTheDocument();
+    expect(screen.getByText(PANEL_CONTENT)).toBeInTheDocument();
   });
 
   it("should be open or close initially based on the open prop", async () => {
     const PANEL_CONTENT = "Panel Content";
     const user = userEvent.setup();
 
-    const { getByText, queryByText } = render(PopoverTest, {
+    render(PopoverTest, {
       panelContent: PANEL_CONTENT,
       open: true,
     });
 
-    expect(getByText(PANEL_CONTENT)).toBeInTheDocument();
+    expect(screen.getByText(PANEL_CONTENT)).toBeInTheDocument();
 
     const button = screen.getByRole("button");
     await user.click(button);
 
-    expect(queryByText(PANEL_CONTENT)).toBeNull();
+    expect(screen.queryByText(PANEL_CONTENT)).toBeNull();
   });
 
   it("should render trigger content and label", async () => {

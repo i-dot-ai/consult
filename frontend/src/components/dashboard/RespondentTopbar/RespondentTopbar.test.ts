@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import { createRawSnippet } from "svelte";
 
@@ -13,30 +13,30 @@ describe("RespondentTopbar", () => {
   };
 
   it("should render data and links", () => {
-    const { getByText } = render(RespondentTopbar, {
+    render(RespondentTopbar, {
       ...testData,
     });
 
-    expect(getByText(testData.title)).toBeInTheDocument();
-    expect(getByText(testData.backText)).toBeInTheDocument();
+    expect(screen.getByText(testData.title)).toBeInTheDocument();
+    expect(screen.getByText(testData.backText)).toBeInTheDocument();
   });
 
   it("should render child", () => {
-    const { getByText } = render(RespondentTopbar, {
+    render(RespondentTopbar, {
       ...testData,
       children: createRawSnippet(() => ({
         render: () => `<p>Child content</p>`,
       })),
     });
 
-    expect(getByText(`Child content`)).toBeInTheDocument();
+    expect(screen.getByText(`Child content`)).toBeInTheDocument();
   });
 
   it("should call on back click callback", async () => {
     const onClickBackMock = vi.fn();
     const user = userEvent.setup();
 
-    const { getByRole } = render(RespondentTopbar, {
+    render(RespondentTopbar, {
       ...testData,
       onClickBack: onClickBackMock,
       children: createRawSnippet(() => ({
@@ -44,7 +44,7 @@ describe("RespondentTopbar", () => {
       })),
     });
 
-    const button = getByRole("button");
+    const button = screen.getByRole("button");
     await user.click(button);
 
     expect(onClickBackMock).toHaveBeenCalledOnce();

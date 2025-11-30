@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import MetricsSummary, { type Props } from "./MetricsSummary.svelte";
 
@@ -11,20 +11,20 @@ describe("MetricsSummary", () => {
       demoCount: 30,
     };
 
-    const { container, getByText } = render(MetricsSummary, {
+    const { container } = render(MetricsSummary, {
       questionCount: TEST_DATA.questionCount,
       responseCount: TEST_DATA.responseCount,
       demoCount: TEST_DATA.demoCount,
     });
 
-    expect(getByText("Responses")).toBeInTheDocument();
-    expect(getByText(TEST_DATA.responseCount)).toBeInTheDocument();
+    expect(screen.getByText("Responses")).toBeInTheDocument();
+    expect(screen.getByText(TEST_DATA.responseCount)).toBeInTheDocument();
 
-    expect(getByText("Questions")).toBeInTheDocument();
-    expect(getByText(TEST_DATA.questionCount)).toBeInTheDocument();
+    expect(screen.getByText("Questions")).toBeInTheDocument();
+    expect(screen.getByText(TEST_DATA.questionCount)).toBeInTheDocument();
 
-    expect(getByText("Demographics")).toBeInTheDocument();
-    expect(getByText(TEST_DATA.demoCount)).toBeInTheDocument();
+    expect(screen.getByText("Demographics")).toBeInTheDocument();
+    expect(screen.getByText(TEST_DATA.demoCount)).toBeInTheDocument();
 
     expect(container).toMatchSnapshot();
   });

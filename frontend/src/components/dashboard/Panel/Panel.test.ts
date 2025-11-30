@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import { createRawSnippet } from "svelte";
 
@@ -13,19 +13,19 @@ describe("Panel", () => {
   });
 
   it("should render slot", () => {
-    const { getByText } = render(Panel, { children: childComponent });
+    render(Panel, { children: childComponent });
 
-    expect(getByText("Child Content")).toBeInTheDocument();
+    expect(screen.getByText("Child Content")).toBeInTheDocument();
   });
 
   it("should render correct css based on props", () => {
-    const { getByTestId } = render(Panel, {
+    render(Panel, {
       border: true,
       bg: true,
       children: childComponent,
     });
 
-    const panel = getByTestId("panel-component");
+    const panel = screen.getByTestId("panel-component");
     expect(panel.getAttribute("class")).toContain("border");
     expect(panel.getAttribute("class")).toContain("bg-");
   });

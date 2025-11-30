@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import QuestionSummary from "./QuestionSummary.svelte";
 import { getPercentage } from "../../../global/utils";
@@ -10,11 +10,11 @@ describe("QuestionSummary", () => {
   };
 
   it("should render data", () => {
-    const { getByText } = render(QuestionSummary, {});
+    render(QuestionSummary, {});
 
-    expect(getByText("Theme analysis")).toBeInTheDocument();
+    expect(screen.getByText("Theme analysis")).toBeInTheDocument();
     expect(
-      getByText(
+      screen.getByText(
         "Analysis of key themes mentioned in responses to this question.",
       ),
     ).toBeInTheDocument();
@@ -26,18 +26,18 @@ describe("QuestionSummary", () => {
       { text: "no", response_count: 20 },
     ];
 
-    const { getByText, getAllByText } = render(QuestionSummary, {
+    render(QuestionSummary, {
       multiChoice: multiChoice,
       themesLoading: testData.themesLoading,
     });
 
-    expect(getByText("Multiple Choice Answers")).toBeInTheDocument();
+    expect(screen.getByText("Multiple Choice Answers")).toBeInTheDocument();
 
     multiChoice.forEach((item) => {
-      expect(getByText(item.text)).toBeInTheDocument();
-      expect(getAllByText(item.response_count)).toHaveLength(2);
+      expect(screen.getByText(item.text)).toBeInTheDocument();
+      expect(screen.getAllByText(item.response_count)).toHaveLength(2);
       expect(
-        getByText(getPercentage(item.response_count, 30) + "%"),
+        screen.getByText(getPercentage(item.response_count, 30) + "%"),
       ).toBeInTheDocument();
     });
   });

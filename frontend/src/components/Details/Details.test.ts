@@ -1,4 +1,4 @@
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 import { describe, it, expect } from "vitest";
 import { createRawSnippet } from "svelte";
 
@@ -13,9 +13,9 @@ describe("Details Component", () => {
   };
 
   it("renders with summary text", () => {
-    const { getByText } = render(Details, { props });
+    render(Details, { props });
 
-    expect(getByText("Test Summary")).toBeInTheDocument();
+    expect(screen.getByText("Test Summary")).toBeInTheDocument();
   });
 
   it("renders closed by default", () => {
@@ -33,8 +33,8 @@ describe("Details Component", () => {
   });
 
   it("renders content in details text area", () => {
-    const { getByText } = render(Details, { props });
+    render(Details, { props });
 
-    expect(getByText("Test content")).toBeInTheDocument();
+    expect(screen.getByText("Test content")).toBeInTheDocument();
   });
 });

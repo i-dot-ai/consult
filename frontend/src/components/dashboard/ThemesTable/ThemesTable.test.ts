@@ -26,18 +26,20 @@ describe("ThemesTable", () => {
   };
 
   it("should render data", () => {
-    const { getByText } = render(ThemesTable, {
+    render(ThemesTable, {
       themes: testData.themes,
       totalAnswers: testData.totalAnswers,
       skeleton: testData.skeleton,
     });
 
     testData.themes.forEach((theme) => {
-      expect(getByText(theme.name)).toBeInTheDocument();
-      expect(getByText(theme.description)).toBeInTheDocument();
-      expect(getByText(theme.count)).toBeInTheDocument();
+      expect(screen.getByText(theme.name)).toBeInTheDocument();
+      expect(screen.getByText(theme.description)).toBeInTheDocument();
+      expect(screen.getByText(theme.count)).toBeInTheDocument();
       const percentage = getPercentage(theme.count, testData.totalAnswers);
-      expect(getByText(`${Math.round(percentage)}%`)).toBeInTheDocument();
+      expect(
+        screen.getByText(`${Math.round(percentage)}%`),
+      ).toBeInTheDocument();
     });
   });
 
@@ -76,28 +78,28 @@ describe("ThemesTable", () => {
   });
 
   it("should not render data if skeleton", () => {
-    const { queryByText } = render(ThemesTable, {
+    render(ThemesTable, {
       themes: testData.themes,
       totalAnswers: testData.totalAnswers,
       skeleton: true,
     });
 
     testData.themes.forEach((theme) => {
-      expect(queryByText(theme.name)).toBeNull();
-      expect(queryByText(theme.description)).toBeNull();
-      expect(queryByText(theme.count)).toBeNull();
+      expect(screen.queryByText(theme.name)).toBeNull();
+      expect(screen.queryByText(theme.description)).toBeNull();
+      expect(screen.queryByText(theme.count)).toBeNull();
       const percentage = getPercentage(theme.count, testData.totalAnswers);
-      expect(queryByText(`${percentage}%`)).toBeNull();
+      expect(screen.queryByText(`${percentage}%`)).toBeNull();
     });
   });
 
   it("should render special text when percentage is below 1 but not 0", () => {
-    const { getAllByText } = render(ThemesTable, {
+    render(ThemesTable, {
       themes: testData.themes,
       totalAnswers: 10000,
       skeleton: false,
     });
 
-    expect(getAllByText("<1%")).toBeTruthy();
+    expect(screen.getAllByText("<1%")).toBeTruthy();
   });
 });

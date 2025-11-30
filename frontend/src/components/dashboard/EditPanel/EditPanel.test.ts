@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import EditPanel from "./EditPanel.svelte";
 
@@ -37,31 +37,28 @@ describe("EditPanel", () => {
     const setEditingMock = vi.fn();
     const user = userEvent.setup();
 
-    const { getByText, getByRole, getByTestId, queryByTestId } = render(
-      EditPanel,
-      {
-        ...testData,
-        setEditing: setEditingMock,
-      },
-    );
+    render(EditPanel, {
+      ...testData,
+      setEditing: setEditingMock,
+    });
 
     // Panel hidden initially
-    expect(queryByTestId("panel")).toBeNull();
+    expect(screen.queryByTestId("panel")).toBeNull();
 
     // Click to reveal panel
-    const button = getByRole("button");
+    const button = screen.getByRole("button");
     await user.click(button);
 
-    expect(getByTestId("panel")).toBeInTheDocument();
+    expect(screen.getByTestId("panel")).toBeInTheDocument();
     expect(setEditingMock).toHaveBeenCalledWith(true);
 
     testData.themes.forEach((theme) => {
-      expect(getByText(theme.name)).toBeInTheDocument();
+      expect(screen.getByText(theme.name)).toBeInTheDocument();
     });
 
     // Click again to close panel
     await user.click(button);
-    expect(queryByTestId("panel")).toBeNull();
+    expect(screen.queryByTestId("panel")).toBeNull();
     expect(setEditingMock).toHaveBeenCalledWith(false);
   });
 
@@ -70,7 +67,7 @@ describe("EditPanel", () => {
     const updateAnswerMock = vi.fn();
     const user = userEvent.setup();
 
-    const { getByText, getByRole } = render(EditPanel, {
+    render(EditPanel, {
       ...testData,
       evidenceRich: true,
       resetData: resetDataMock,
@@ -78,15 +75,15 @@ describe("EditPanel", () => {
     });
 
     // Click to reveal panel
-    const button = getByRole("button");
+    const button = screen.getByRole("button");
     await user.click(button);
 
     // Click to change evidence rich status
-    const evidenceRichButton = getByText("Not evidence-rich");
+    const evidenceRichButton = screen.getByText("Not evidence-rich");
     await user.click(evidenceRichButton);
 
     // Click to save changes
-    const saveButton = getByText("Save Changes");
+    const saveButton = screen.getByText("Save Changes");
     await user.click(saveButton);
 
     // Correct endpoint is called with correct body

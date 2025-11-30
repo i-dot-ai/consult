@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import RespondentAnswer from "./RespondentAnswer.svelte";
 
@@ -18,20 +18,20 @@ describe("RespondentAnswer", () => {
   };
 
   it("should render data", () => {
-    const { getByText } = render(RespondentAnswer, {
+    render(RespondentAnswer, {
       ...testData,
     });
 
-    expect(getByText(testData.questionTitle)).toBeInTheDocument();
-    expect(getByText(`Q${testData.questionNumber}`)).toBeInTheDocument();
-    expect(getByText(testData.answerText)).toBeInTheDocument();
+    expect(screen.getByText(testData.questionTitle)).toBeInTheDocument();
+    expect(screen.getByText(`Q${testData.questionNumber}`)).toBeInTheDocument();
+    expect(screen.getByText(testData.answerText)).toBeInTheDocument();
     testData.multiChoice.forEach((multiAnswer) =>
-      expect(getByText(multiAnswer)).toBeInTheDocument(),
+      expect(screen.getByText(multiAnswer)).toBeInTheDocument(),
     );
     testData.themes.forEach((theme) =>
-      expect(getByText(theme)).toBeInTheDocument(),
+      expect(screen.getByText(theme)).toBeInTheDocument(),
     );
-    expect(getByText("Evidence-rich")).toBeInTheDocument();
+    expect(screen.getByText("Evidence-rich")).toBeInTheDocument();
   });
 
   it("should not fail if no themes presenet", () => {
@@ -44,11 +44,11 @@ describe("RespondentAnswer", () => {
   });
 
   it("should not render evidence rich tag if not evidence rich", () => {
-    const { queryByText } = render(RespondentAnswer, {
+    render(RespondentAnswer, {
       ...testData,
       evidenceRich: false,
     });
 
-    expect(queryByText("Evidence-rich")).toBeNull();
+    expect(screen.queryByText("Evidence-rich")).toBeNull();
   });
 });

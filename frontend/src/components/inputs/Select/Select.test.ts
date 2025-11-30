@@ -1,4 +1,4 @@
-import { render, fireEvent } from "@testing-library/svelte";
+import { render, fireEvent, screen } from "@testing-library/svelte";
 import { describe, it, expect, vi } from "vitest";
 
 import Select from "./Select.svelte";
@@ -11,7 +11,7 @@ const mockItems = [
 
 describe("Select Component", () => {
   it("renders with basic props", () => {
-    const { getByRole, getByLabelText } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         label: "Select consultation folder",
@@ -19,19 +19,21 @@ describe("Select Component", () => {
       },
     });
 
-    expect(getByLabelText("Select consultation folder")).toBeInTheDocument();
-    expect(getByRole("combobox")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Select consultation folder"),
+    ).toBeInTheDocument();
+    expect(screen.getByRole("combobox")).toBeInTheDocument();
   });
 
   it("renders all items", () => {
-    const { getAllByRole } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         items: mockItems,
       },
     });
 
-    const options = getAllByRole("option");
+    const options = screen.getAllByRole("option");
     expect(options).toHaveLength(3);
     expect(options[0]).toHaveTextContent("Consultation Folder 1");
     expect(options[1]).toHaveTextContent("Consultation Folder 2");
@@ -39,7 +41,7 @@ describe("Select Component", () => {
   });
 
   it("renders label with object configuration", () => {
-    const { getByText } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         name: "consultation_code",
@@ -51,12 +53,12 @@ describe("Select Component", () => {
       },
     });
 
-    const label = getByText("Select consultation folder");
+    const label = screen.getByText("Select consultation folder");
     expect(label).toBeInTheDocument();
   });
 
   it("renders label with string configuration", () => {
-    const { getByLabelText } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         label: "Simple label text",
@@ -64,11 +66,11 @@ describe("Select Component", () => {
       },
     });
 
-    expect(getByLabelText("Simple label text")).toBeInTheDocument();
+    expect(screen.getByLabelText("Simple label text")).toBeInTheDocument();
   });
 
   it("sets correct selected value", () => {
-    const { getByRole } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         items: mockItems,
@@ -76,13 +78,13 @@ describe("Select Component", () => {
       },
     });
 
-    const select = getByRole("combobox");
+    const select = screen.getByRole("combobox");
     expect(select).toHaveValue("consultation2");
   });
 
   it("calls onchange when value changes", async () => {
     const onchange = vi.fn();
-    const { getByRole } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         items: mockItems,
@@ -90,14 +92,14 @@ describe("Select Component", () => {
       },
     });
 
-    const select = getByRole("combobox");
+    const select = screen.getByRole("combobox");
     await fireEvent.change(select, { target: { value: "consultation3" } });
 
     expect(onchange).toHaveBeenCalledWith("consultation3");
   });
 
   it("renders hint text when provided", () => {
-    const { getByText } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         items: mockItems,
@@ -106,13 +108,13 @@ describe("Select Component", () => {
     });
 
     expect(
-      getByText("Choose the consultation folder to import"),
+      screen.getByText("Choose the consultation folder to import"),
     ).toBeInTheDocument();
   });
 
   it("shows error message and applies error styling", () => {
     const errorMessage = "Please select a consultation folder";
-    const { getByRole, getByText } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         label: "Select option",
@@ -122,9 +124,9 @@ describe("Select Component", () => {
       },
     });
 
-    expect(getByText(errorMessage)).toBeInTheDocument();
+    expect(screen.getByText(errorMessage)).toBeInTheDocument();
 
-    const select = getByRole("combobox");
+    const select = screen.getByRole("combobox");
     expect(select).toHaveAttribute(
       "aria-describedby",
       "consultation_code-hint consultation_code-error",
@@ -132,7 +134,7 @@ describe("Select Component", () => {
   });
 
   it("hides label when hideLabel is true", () => {
-    const { queryByText } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         label: "Hidden Label",
@@ -141,11 +143,11 @@ describe("Select Component", () => {
       },
     });
 
-    expect(queryByText("Hidden Label")).not.toBeInTheDocument();
+    expect(screen.queryByText("Hidden Label")).not.toBeInTheDocument();
   });
 
   it("disables select when disabled prop is true", () => {
-    const { getByRole } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         items: mockItems,
@@ -153,12 +155,12 @@ describe("Select Component", () => {
       },
     });
 
-    const select = getByRole("combobox");
+    const select = screen.getByRole("combobox");
     expect(select).toBeDisabled();
   });
 
   it("uses name prop or defaults to id", () => {
-    const { getByRole } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         name: "custom-name",
@@ -166,19 +168,19 @@ describe("Select Component", () => {
       },
     });
 
-    const select = getByRole("combobox");
+    const select = screen.getByRole("combobox");
     expect(select).toHaveAttribute("name", "custom-name");
   });
 
   it("defaults name to id when name not provided", () => {
-    const { getByRole } = render(Select, {
+    render(Select, {
       props: {
         id: "consultation_code",
         items: mockItems,
       },
     });
 
-    const select = getByRole("combobox");
+    const select = screen.getByRole("combobox");
     expect(select).toHaveAttribute("name", "consultation_code");
   });
 
@@ -192,7 +194,7 @@ describe("Select Component", () => {
 
     labelSizes.forEach(({ size, expectedClass }) => {
       const labelText = "Test label: Size " + size;
-      const { getByText } = render(Select, {
+      render(Select, {
         props: {
           id: "test-select",
           label: {
@@ -203,7 +205,7 @@ describe("Select Component", () => {
         },
       });
 
-      const label = getByText(labelText);
+      const label = screen.getByText(labelText);
       expect(label).toHaveClass(expectedClass);
     });
   });

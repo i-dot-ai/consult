@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import AnswerCard from "./AnswerCard.svelte";
 
@@ -20,42 +20,46 @@ describe("AnswerCard", () => {
   };
 
   it("should render data", () => {
-    const { getByText } = render(AnswerCard, {
+    render(AnswerCard, {
       ...testData,
     });
 
     expect(
-      getByText(`ID: ${testData.respondentDisplayId}`),
+      screen.getByText(`ID: ${testData.respondentDisplayId}`),
     ).toBeInTheDocument();
-    expect(getByText(testData.text!)).toBeInTheDocument();
+    expect(screen.getByText(testData.text!)).toBeInTheDocument();
     testData.demoData!.forEach((data) =>
-      expect(getByText(data)).toBeInTheDocument(),
+      expect(screen.getByText(data)).toBeInTheDocument(),
     );
     testData.multiAnswers!.forEach((multi) =>
-      expect(getByText(multi)).toBeInTheDocument(),
+      expect(screen.getByText(multi)).toBeInTheDocument(),
     );
     testData.themes!.forEach((theme) =>
-      expect(getByText(theme.name)).toBeInTheDocument(),
+      expect(screen.getByText(theme.name)).toBeInTheDocument(),
     );
-    expect(getByText("Evidence-rich")).toBeInTheDocument();
+    expect(screen.getByText("Evidence-rich")).toBeInTheDocument();
   });
 
   it("should not render data if skeleton", async () => {
-    const { queryByText } = render(AnswerCard, {
+    render(AnswerCard, {
       ...testData,
       skeleton: true,
     });
 
-    expect(queryByText(`ID: ${testData.respondentDisplayId}`)).toBeNull();
-    expect(queryByText(testData.text!)).toBeNull();
-    expect(queryByText("Evidence-rich")).toBeNull();
+    expect(
+      screen.queryByText(`ID: ${testData.respondentDisplayId}`),
+    ).toBeNull();
+    expect(screen.queryByText(testData.text!)).toBeNull();
+    expect(screen.queryByText("Evidence-rich")).toBeNull();
     testData.themes!.forEach((theme) =>
-      expect(queryByText(theme.name)).toBeNull(),
+      expect(screen.queryByText(theme.name)).toBeNull(),
     );
     testData.multiAnswers!.forEach((multi) =>
-      expect(queryByText(multi)).toBeNull(),
+      expect(screen.queryByText(multi)).toBeNull(),
     );
-    testData.demoData!.forEach((demo) => expect(queryByText(demo)).toBeNull());
+    testData.demoData!.forEach((demo) =>
+      expect(screen.queryByText(demo)).toBeNull(),
+    );
   });
 
   it("should highlight text if passed", async () => {

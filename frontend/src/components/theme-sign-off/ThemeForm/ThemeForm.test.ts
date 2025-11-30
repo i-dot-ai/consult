@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import ThemeForm from "./ThemeForm.svelte";
 
@@ -12,22 +12,22 @@ describe("ThemeForm", () => {
   };
 
   it("should render add variant", async () => {
-    const { container, getByText } = render(ThemeForm, {
+    const { container } = render(ThemeForm, {
       ...testData,
       variant: "add",
     });
 
-    expect(getByText("Add Custom Theme")).toBeInTheDocument();
+    expect(screen.getByText("Add Custom Theme")).toBeInTheDocument();
 
     expect(container).toMatchSnapshot();
   });
 
   it("should render edit variant", async () => {
-    const { getByText } = render(ThemeForm, {
+    render(ThemeForm, {
       ...testData,
       variant: "edit",
     });
 
-    expect(getByText("Edit Theme")).toBeInTheDocument();
+    expect(screen.getByText("Edit Theme")).toBeInTheDocument();
   });
 });

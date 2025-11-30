@@ -1,10 +1,10 @@
-import { render, fireEvent } from "@testing-library/svelte";
+import { render, fireEvent, screen } from "@testing-library/svelte";
 import { describe, it, expect, vi } from "vitest";
 import Checkbox from "./Checkbox.svelte";
 
 describe("Checkbox Component", () => {
   it("renders with basic props", () => {
-    const { getByRole, getByLabelText } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "terms",
         label: "I agree to the terms and conditions",
@@ -12,13 +12,13 @@ describe("Checkbox Component", () => {
     });
 
     expect(
-      getByLabelText("I agree to the terms and conditions"),
+      screen.getByLabelText("I agree to the terms and conditions"),
     ).toBeInTheDocument();
-    expect(getByRole("checkbox")).toBeInTheDocument();
+    expect(screen.getByRole("checkbox")).toBeInTheDocument();
   });
 
   it("renders label with object configuration", () => {
-    const { getByLabelText, container } = render(Checkbox, {
+    const { container } = render(Checkbox, {
       props: {
         id: "terms",
         name: "terms",
@@ -29,23 +29,25 @@ describe("Checkbox Component", () => {
       },
     });
 
-    expect(getByLabelText("I agree to the terms")).toBeInTheDocument();
+    expect(screen.getByLabelText("I agree to the terms")).toBeInTheDocument();
     expect(container.querySelector("label")).toHaveClass("font-semibold");
   });
 
   it("renders label with string configuration", () => {
-    const { getByLabelText } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "newsletter",
         label: "Subscribe to newsletter",
       },
     });
 
-    expect(getByLabelText("Subscribe to newsletter")).toBeInTheDocument();
+    expect(
+      screen.getByLabelText("Subscribe to newsletter"),
+    ).toBeInTheDocument();
   });
 
   it("sets correct checked state", () => {
-    const { getByRole } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "newsletter",
         label: "Subscribe",
@@ -53,13 +55,13 @@ describe("Checkbox Component", () => {
       },
     });
 
-    const checkbox = getByRole("checkbox");
+    const checkbox = screen.getByRole("checkbox");
     expect(checkbox).toBeChecked();
   });
 
   it("calls onchange when checked state changes", async () => {
     const onchange = vi.fn();
-    const { getByRole } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "newsletter",
         label: "Subscribe",
@@ -68,7 +70,7 @@ describe("Checkbox Component", () => {
       },
     });
 
-    const checkbox = getByRole("checkbox");
+    const checkbox = screen.getByRole("checkbox");
     await fireEvent.click(checkbox);
 
     expect(onchange).toHaveBeenCalledWith(true, "newsletter-opt-in");
@@ -76,7 +78,7 @@ describe("Checkbox Component", () => {
 
   it("calls onchange without value when value not provided", async () => {
     const onchange = vi.fn();
-    const { getByRole } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "newsletter",
         label: "Subscribe",
@@ -84,14 +86,14 @@ describe("Checkbox Component", () => {
       },
     });
 
-    const checkbox = getByRole("checkbox");
+    const checkbox = screen.getByRole("checkbox");
     await fireEvent.click(checkbox);
 
     expect(onchange).toHaveBeenCalledWith(true, undefined);
   });
 
   it("renders hint text when provided", () => {
-    const { getByText } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "newsletter",
         label: "Subscribe",
@@ -99,11 +101,13 @@ describe("Checkbox Component", () => {
       },
     });
 
-    expect(getByText("You can unsubscribe at any time")).toBeInTheDocument();
+    expect(
+      screen.getByText("You can unsubscribe at any time"),
+    ).toBeInTheDocument();
   });
 
   it("renders error message when provided", () => {
-    const { getByText } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "terms",
         label: "Accept terms",
@@ -111,7 +115,7 @@ describe("Checkbox Component", () => {
       },
     });
 
-    expect(getByText("You must accept the terms")).toBeInTheDocument();
+    expect(screen.getByText("You must accept the terms")).toBeInTheDocument();
   });
 
   it("applies error styling when error message present", () => {
@@ -131,7 +135,7 @@ describe("Checkbox Component", () => {
   });
 
   it("hides label when hideLabel is true", () => {
-    const { queryByText } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "hidden-checkbox",
         label: "Hidden Label",
@@ -139,11 +143,11 @@ describe("Checkbox Component", () => {
       },
     });
 
-    expect(queryByText("Hidden Label")).not.toBeInTheDocument();
+    expect(screen.queryByText("Hidden Label")).not.toBeInTheDocument();
   });
 
   it("disables checkbox when disabled prop is true", () => {
-    const { getByRole } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "disabled-checkbox",
         label: "Disabled",
@@ -151,12 +155,12 @@ describe("Checkbox Component", () => {
       },
     });
 
-    const checkbox = getByRole("checkbox");
+    const checkbox = screen.getByRole("checkbox");
     expect(checkbox).toBeDisabled();
   });
 
   it("sets correct aria-describedby attributes", () => {
-    const { getByRole } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "newsletter",
         label: "Subscribe",
@@ -165,7 +169,7 @@ describe("Checkbox Component", () => {
       },
     });
 
-    const checkbox = getByRole("checkbox");
+    const checkbox = screen.getByRole("checkbox");
     expect(checkbox).toHaveAttribute(
       "aria-describedby",
       "newsletter-hint newsletter-error",
@@ -173,7 +177,7 @@ describe("Checkbox Component", () => {
   });
 
   it("uses name prop or defaults to id", () => {
-    const { getByRole } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "newsletter",
         name: "custom-name",
@@ -181,19 +185,19 @@ describe("Checkbox Component", () => {
       },
     });
 
-    const checkbox = getByRole("checkbox");
+    const checkbox = screen.getByRole("checkbox");
     expect(checkbox).toHaveAttribute("name", "custom-name");
   });
 
   it("defaults name to id when name not provided", () => {
-    const { getByRole } = render(Checkbox, {
+    render(Checkbox, {
       props: {
         id: "newsletter",
         label: "Subscribe",
       },
     });
 
-    const checkbox = getByRole("checkbox");
+    const checkbox = screen.getByRole("checkbox");
     expect(checkbox).toHaveAttribute("name", "newsletter");
   });
 

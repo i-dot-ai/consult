@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it } from "vitest";
-import { render } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import DemoFilter from "./DemoFilter.svelte";
 import { getPercentage } from "../../global/utils";
@@ -18,27 +18,27 @@ describe("DemoFilter", () => {
   });
 
   it("should render data", () => {
-    const { container, getByText } = render(DemoFilter, testData);
+    const { container } = render(DemoFilter, testData);
 
-    expect(getByText("country")).toBeInTheDocument();
+    expect(screen.getByText("country")).toBeInTheDocument();
 
     Object.values(testData.demoData.country).forEach((value) => {
-      expect(getByText(value)).toBeInTheDocument();
+      expect(screen.getByText(value)).toBeInTheDocument();
       const percentage = getPercentage(value, testData.totalCounts.country);
       expect(container.querySelector(`[title="${percentage}%"]`)).toBeTruthy();
     });
   });
 
   it("should not render data if skeleton", () => {
-    const { container, queryByText } = render(DemoFilter, {
+    const { container } = render(DemoFilter, {
       ...testData,
       skeleton: true,
     });
 
-    expect(queryByText("country")).toBeNull();
+    expect(screen.queryByText("country")).toBeNull();
 
     Object.values(testData.demoData.country).forEach((value) => {
-      expect(queryByText(value)).toBeNull();
+      expect(screen.queryByText(value)).toBeNull();
       const percentage = getPercentage(value, testData.totalCounts.country);
       expect(container.querySelector(`[title="${percentage}%"]`)).toBeNull();
     });
