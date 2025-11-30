@@ -13,14 +13,15 @@ function parseThemefinderId(themefinderId: string | null): number {
   return Number.isInteger(parsedId) ? parsedId : -1;
 }
 ---
+
 <Layout>
-    <Section>
-        <RespondentDetail
-          client:load
-          consultationId={consultationId}
-          questionId={questionId}
-          respondentId={respondentId}
-          themefinderId={parseThemefinderId(themefinderId)}
-        />
-    </Section>
+  <Section>
+    <RespondentDetail
+      client:load
+      consultationId={consultationId}
+      questionId={questionId}
+      respondentId={respondentId}
+      themefinderId={parseThemefinderId(themefinderId)}
+    />
+  </Section>
 </Layout>

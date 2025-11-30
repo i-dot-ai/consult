@@ -1,13 +1,18 @@
 ---
-import Story from '../../../layouts/Story.astro';
+import Story from "../../../layouts/Story.astro";
 import ButtonStory from "../../../components/inputs/Button/ButtonStory.svelte";
-import { Routes } from '../../../global/routes';
+import { Routes } from "../../../global/routes";
 
 const title = "inputs - Button";
 const description = `
     Renders a button element.
 `;
 ---
-<Story title={title} description={description} backUrl={Routes.Design + "/inputs"}>
-    <ButtonStory client:load />
+
+<Story
+  title={title}
+  description={description}
+  backUrl={Routes.Design + "/inputs"}
+>
+  <ButtonStory client:load />
 </Story>
