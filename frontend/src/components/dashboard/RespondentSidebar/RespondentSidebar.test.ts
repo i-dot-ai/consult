@@ -1,27 +1,21 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup } from "@testing-library/svelte";
+import { render } from "@testing-library/svelte";
 
-import RespondentSidebar, { type Props } from "./RespondentSidebar.svelte";
+import RespondentSidebar from "./RespondentSidebar.svelte";
 import RespondentSidebarStory from "./RespondentSidebarStory.svelte";
 import { getPercentage } from "../../../global/utils";
 
-let testData: Props;
-
 describe("RespondentSidebar", () => {
-  beforeEach(() => {
-    testData = {
-      demoData: [
-        { name: "country", value: "england" },
-        { name: "age", value: "25-35" },
-      ],
-      stakeholderName: "Test stakeholder",
-      questionsAnswered: 10,
-      totalQuestions: 20,
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    demoData: [
+      { name: "country", value: "england" },
+      { name: "age", value: "25-35" },
+    ],
+    stakeholderName: "Test stakeholder",
+    questionsAnswered: 10,
+    totalQuestions: 20,
+  };
 
   it("should render data", () => {
     const { getByText } = render(RespondentSidebar, {

@@ -1,14 +1,12 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import TabView from "./TabView.svelte";
 import Star from "../svg/material/Star.svelte";
 import Finance from "../svg/material/Finance.svelte";
 
 describe("TabView", () => {
-  afterEach(() => cleanup());
-
   it("should call handleClick func", async () => {
     const user = userEvent.setup();
     const handleChangeMock = vi.fn();

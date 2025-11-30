@@ -1,38 +1,24 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { cleanup, render } from "@testing-library/svelte";
+import { describe, expect, it } from "vitest";
+import { render } from "@testing-library/svelte";
 
 import CsvDownload from "./CsvDownload.svelte";
 import { getPercentage } from "../../global/utils";
 
-let testData;
-
 describe("CsvDownload", () => {
-  beforeEach(() => {
-    testData = [{ foo: 1, bar: 2 }];
-  });
-
-  afterEach(() => {
-    cleanup();
-  });
+  const data = [{ foo: 1, bar: 2 }];
+  const fileName = "test.csv";
 
   it("should render data inside href for downloading", () => {
-    const TEST_FILENAME = "test.csv";
-
-    const { getByTestId } = render(CsvDownload, {
-      data: testData,
-      fileName: TEST_FILENAME,
-    });
+    const { getByTestId } = render(CsvDownload, { data, fileName });
 
     const el = getByTestId("csv-download");
     const decoded = atob(el.href.split(",")[1]);
     expect(decoded).toEqual("foo,bar\n1,2");
-    expect(el.download).toEqual(TEST_FILENAME);
+    expect(el.download).toEqual(fileName);
   });
 
   it("should default to a filename if none provided", () => {
-    const { getByTestId } = render(CsvDownload, {
-      data: testData,
-    });
+    const { getByTestId } = render(CsvDownload, { data });
 
     const el = getByTestId("csv-download");
     expect(el.download).toEqual("data.csv");

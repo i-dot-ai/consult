@@ -1,12 +1,10 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen, fireEvent } from "@testing-library/svelte";
+import { render, screen, fireEvent } from "@testing-library/svelte";
 
 import TextInput from "./TextInput.svelte";
 
 describe("TextInput", () => {
-  afterEach(() => cleanup());
-
   it("should call setValue func", async () => {
     const handleInputMock = vi.fn();
 

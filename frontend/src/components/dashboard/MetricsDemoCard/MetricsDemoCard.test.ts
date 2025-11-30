@@ -1,60 +1,43 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, cleanup } from "@testing-library/svelte";
+import { describe, expect, it, vi } from "vitest";
+import { render } from "@testing-library/svelte";
 
 import MetricsDemoCard from "./MetricsDemoCard.svelte";
 
-interface Item {
-  title: string;
-  count: number;
-  percentage: number;
-}
-
-let testData: {
-  title: string;
-  items: Item[];
-  extraItems: Item[];
-  hideThreshold: number;
-  consultationId: string;
-};
-
 describe("MetricsDemoCard", () => {
-  beforeEach(() => {
-    testData = {
-      title: "Test Demo Card",
-      items: [
-        {
-          title: "Test Demo Item 1",
-          count: 5,
-          percentage: 25,
-        },
-        {
-          title: "Test Demo Item 2",
-          count: 15,
-          percentage: 75,
-        },
-      ],
-      extraItems: [
-        {
-          title: "Test Demo Item 3",
-          count: 5,
-          percentage: 25,
-        },
-        {
-          title: "Test Demo Item 4",
-          count: 5,
-          percentage: 25,
-        },
-        {
-          title: "Test Demo Item 5",
-          count: 5,
-          percentage: 25,
-        },
-      ],
-      hideThreshold: 3,
-      consultationId: "123-456",
-    };
-  });
-  afterEach(() => cleanup());
+  const testData = {
+    title: "Test Demo Card",
+    items: [
+      {
+        title: "Test Demo Item 1",
+        count: 5,
+        percentage: 25,
+      },
+      {
+        title: "Test Demo Item 2",
+        count: 15,
+        percentage: 75,
+      },
+    ],
+    extraItems: [
+      {
+        title: "Test Demo Item 3",
+        count: 5,
+        percentage: 25,
+      },
+      {
+        title: "Test Demo Item 4",
+        count: 5,
+        percentage: 25,
+      },
+      {
+        title: "Test Demo Item 5",
+        count: 5,
+        percentage: 25,
+      },
+    ],
+    hideThreshold: 3,
+    consultationId: "123-456",
+  };
 
   it("should render data", () => {
     const { getByText } = render(MetricsDemoCard, {

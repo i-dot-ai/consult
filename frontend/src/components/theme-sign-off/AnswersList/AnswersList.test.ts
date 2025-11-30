@@ -1,19 +1,13 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { render, cleanup } from "@testing-library/svelte";
+import { describe, expect, it } from "vitest";
+import { render } from "@testing-library/svelte";
 
-import AnswersList, { type Props } from "./AnswersList.svelte";
-
-let testData: Props;
+import AnswersList from "./AnswersList.svelte";
 
 describe("AnswersList", () => {
-  beforeEach(() => {
-    testData = {
-      title: "Test Title",
-      answers: ["Answer 1", "Answer 2"],
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    title: "Test Title",
+    answers: ["Answer 1", "Answer 2"],
+  };
 
   it("should render", async () => {
     const { container, getByText, getAllByText, queryByText } = render(

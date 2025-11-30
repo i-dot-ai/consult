@@ -5,7 +5,7 @@
 
   interface Props {
     data: Record<string, unknown>[];
-    fileName: string;
+    fileName?: string;
   }
 
   let { data = [], fileName = "data.csv" }: Props = $props();

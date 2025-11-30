@@ -1,12 +1,10 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import PopoverTest from "./PopoverTest.svelte";
 
 describe("Popover", () => {
-  afterEach(() => cleanup());
-
   it("should toggle panel when trigger is clicked", async () => {
     vi.mock("svelte/transition");
 

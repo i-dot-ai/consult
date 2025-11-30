@@ -1,34 +1,30 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import { getPercentage } from "../../../global/utils";
 import { multiAnswerFilters } from "../../../global/state.svelte";
 
 import MultiChoice from "./MultiChoice.svelte";
 
-let testData;
-
 describe("MultiChoice", () => {
-  beforeEach(() => {
-    testData = {
-      data: [
-        {
-          id: "id-1",
-          text: "Multi Choice Answer 1",
-          response_count: 10,
-        },
-        {
-          id: "id-2",
-          text: "Multi Choice Answer 2",
-          response_count: 20,
-        },
-      ],
-      totalCounts: 30,
-    };
-  });
+  const testData = {
+    data: [
+      {
+        id: "id-1",
+        text: "Multi Choice Answer 1",
+        response_count: 10,
+      },
+      {
+        id: "id-2",
+        text: "Multi Choice Answer 2",
+        response_count: 20,
+      },
+    ],
+    totalCounts: 30,
+  };
+
   afterEach(() => {
-    cleanup();
     multiAnswerFilters.reset();
   });
 

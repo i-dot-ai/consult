@@ -1,13 +1,11 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { cleanup, render, screen } from "@testing-library/svelte";
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/svelte";
 
 import ConsultationStagePanel from "./ConsultationStagePanel.svelte";
 
 describe("ConsultationStagePanel", () => {
   const id = "test-consultation-id";
   const onConfirmClickMock = vi.fn();
-
-  afterEach(() => cleanup());
 
   describe("Theme Sign Off stage", () => {
     let container: HTMLElement;

@@ -1,23 +1,17 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup } from "@testing-library/svelte";
+import { render } from "@testing-library/svelte";
 
 import { createRawSnippet } from "svelte";
 
-import RespondentTopbar, { type Props } from "./RespondentTopbar.svelte";
+import RespondentTopbar from "./RespondentTopbar.svelte";
 import RespondentTopbarStory from "./RespondentTopbarStory.svelte";
 
-let testData: Props;
-
 describe("RespondentTopbar", () => {
-  beforeEach(() => {
-    testData = {
-      title: "test-title",
-      backText: "Back to Analysis",
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    title: "test-title",
+    backText: "Back to Analysis",
+  };
 
   it("should render data and links", () => {
     const { getByText } = render(RespondentTopbar, {

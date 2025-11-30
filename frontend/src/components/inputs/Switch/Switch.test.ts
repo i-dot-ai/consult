@@ -1,12 +1,10 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import SwitchTest from "./SwitchTest.svelte";
 
 describe("Switch", () => {
-  afterEach(() => cleanup());
-
   it("should call handleChange func", async () => {
     const user = userEvent.setup();
     const handleChangeMock = vi.fn();

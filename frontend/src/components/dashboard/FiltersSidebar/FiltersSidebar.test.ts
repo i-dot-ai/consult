@@ -1,23 +1,17 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import FiltersSidebar from "./FiltersSidebar.svelte";
 
-let testData;
-
 describe("FiltersSidebar", () => {
-  beforeEach(() => {
-    testData = {
-      showEvidenceRich: true,
-      demoOptions: { country: ["england", "scotland"] },
-      demoData: { country: { england: 10, scotland: 20 } },
-      evidenceRich: false,
-      loading: false,
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    showEvidenceRich: true,
+    demoOptions: { country: ["england", "scotland"] },
+    demoData: { country: { england: 10, scotland: 20 } },
+    evidenceRich: false,
+    loading: false,
+  };
 
   it("should render data", () => {
     const { getByText } = render(FiltersSidebar, {

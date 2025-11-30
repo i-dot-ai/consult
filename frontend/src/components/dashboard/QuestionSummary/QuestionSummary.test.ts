@@ -1,19 +1,13 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { render, cleanup } from "@testing-library/svelte";
+import { describe, expect, it } from "vitest";
+import { render } from "@testing-library/svelte";
 
 import QuestionSummary from "./QuestionSummary.svelte";
 import { getPercentage } from "../../../global/utils";
 
-let testData;
-
 describe("QuestionSummary", () => {
-  beforeEach(() => {
-    testData = {
-      themesLoading: false,
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    themesLoading: false,
+  };
 
   it("should render data", () => {
     const { getByText } = render(QuestionSummary, {});

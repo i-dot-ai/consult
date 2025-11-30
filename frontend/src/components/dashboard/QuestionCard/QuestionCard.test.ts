@@ -1,25 +1,18 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { describe, expect, it, vi } from "vitest";
+import { render, screen } from "@testing-library/svelte";
 
 import QuestionCard from "./QuestionCard.svelte";
-
-let testData;
-
 describe("QuestionCard", () => {
-  beforeEach(() => {
-    testData = {
-      consultationId: "test-consultation",
-      question: {
-        id: "test-question",
-        number: 1,
-        total_responses: 100,
-        question_text: "Test question text",
-      },
-      // horizontal: false,
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    consultationId: "test-consultation",
+    question: {
+      id: "test-question",
+      number: 1,
+      total_responses: 100,
+      question_text: "Test question text",
+    },
+    // horizontal: false,
+  };
 
   it("should render data", () => {
     vi.mock("svelte/transition");
@@ -50,7 +43,7 @@ describe("QuestionCard", () => {
 
     const highlightedText = container.querySelector("span.bg-yellow-300");
     expect(highlightedText).toBeTruthy();
-    expect(highlightedText.innerHTML).toEqual(HIGHLIGHT_TEXT);
+    expect(highlightedText?.innerHTML).toEqual(HIGHLIGHT_TEXT);
   });
 
   it("should render inside a tag if clickable is true", () => {

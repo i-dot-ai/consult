@@ -1,13 +1,11 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import Button from "./Button.svelte";
 import ButtonStory from "./ButtonStory.svelte";
 
 describe("Button", () => {
-  afterEach(() => cleanup());
-
   it("should call handleClick func", async () => {
     const user = userEvent.setup();
     const handleClickMock = vi.fn();

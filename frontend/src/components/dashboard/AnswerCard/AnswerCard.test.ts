@@ -1,29 +1,23 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { render, cleanup } from "@testing-library/svelte";
+import { describe, expect, it } from "vitest";
+import { render } from "@testing-library/svelte";
 
-import AnswerCard, { type Props } from "./AnswerCard.svelte";
-
-let testData: Props;
+import AnswerCard from "./AnswerCard.svelte";
 
 describe("AnswerCard", () => {
-  beforeEach(() => {
-    testData = {
-      consultationId: "consultation-id",
-      answerId: "answer-id",
-      respondentId: "respondent-id",
-      respondentDisplayId: "respondent-display-id",
-      text: "Test answer",
-      demoData: ["demo 1", "demo 2"],
-      multiAnswers: ["multi 1", "multi 2"],
-      evidenceRich: true,
-      themes: [
-        { id: "theme-1", name: "theme 1", description: "desc 1" },
-        { id: "theme-2", name: "theme 2", description: "desc 2" },
-      ],
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    consultationId: "consultation-id",
+    answerId: "answer-id",
+    respondentId: "respondent-id",
+    respondentDisplayId: "respondent-display-id",
+    text: "Test answer",
+    demoData: ["demo 1", "demo 2"],
+    multiAnswers: ["multi 1", "multi 2"],
+    evidenceRich: true,
+    themes: [
+      { id: "theme-1", name: "theme 1", description: "desc 1" },
+      { id: "theme-2", name: "theme 2", description: "desc 2" },
+    ],
+  };
 
   it("should render data", () => {
     const { getByText } = render(AnswerCard, {

@@ -1,36 +1,30 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import ThemesTable from "./ThemesTable.svelte";
 import { getPercentage } from "../../../global/utils";
 import ThemesTableStory from "./ThemesTableStory.svelte";
 
-let testData;
-
 describe("ThemesTable", () => {
-  beforeEach(() => {
-    testData = {
-      themes: [
-        {
-          id: "theme-1",
-          name: "Theme 1",
-          description: "Test theme 1 description",
-          count: 10,
-        },
-        {
-          id: "theme-2",
-          name: "Theme 2",
-          description: "Test theme 2 description",
-          count: 20,
-        },
-      ],
-      totalAnswers: 30,
-      skeleton: false,
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    themes: [
+      {
+        id: "theme-1",
+        name: "Theme 1",
+        description: "Test theme 1 description",
+        count: 10,
+      },
+      {
+        id: "theme-2",
+        name: "Theme 2",
+        description: "Test theme 2 description",
+        count: 20,
+      },
+    ],
+    totalAnswers: 30,
+    skeleton: false,
+  };
 
   it("should render data", () => {
     const { getByText } = render(ThemesTable, {
