@@ -143,7 +143,7 @@
           {#if showAnswers}
             <aside
               transition:fly={{ x: 300 }}
-              class="grow sm:border-l sm:border-neutral-200 sm:ml-4 sm:pl-4 pt-4 sm:pt-0"
+              class="grow sm:w-2/3 sm:border-l sm:border-neutral-200 sm:ml-4 sm:pl-4 pt-4 sm:pt-0"
             >
               <AnswersList
                 title="Representative Responses"
