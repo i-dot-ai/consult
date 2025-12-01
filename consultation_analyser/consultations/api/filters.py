@@ -41,7 +41,7 @@ class ResponseFilter(FilterSet):
             return queryset
 
         if show_unseen_only:
-            return queryset.exclude(read_records__user=self.request.user)
+            return queryset.filter(read_by=self.request.user)
         else:
             return queryset
 

@@ -90,8 +90,8 @@ class ResponseViewSet(ModelViewSet):
                 )
             ),
             is_read_by_user=Exists(
-                models.ResponseReadRecord.objects.filter(
-                    response=OuterRef("pk"), user=self.request.user
+                models.Response.objects.filter(
+                    read_by=self.request.user
                 )
             ),
             annotation_is_edited=Exists(
@@ -170,12 +170,11 @@ class ResponseViewSet(ModelViewSet):
 
         # Check if already read before marking
         was_already_read = response.is_read_by(request.user)
-        read_record = response.mark_as_read_by(request.user)
+        response.mark_as_read_by(request.user)
 
         return Response(
             {
                 "message": "Response marked as read",
-                "read_at": read_record.created_at,
                 "was_already_read": was_already_read,
             }
         )
