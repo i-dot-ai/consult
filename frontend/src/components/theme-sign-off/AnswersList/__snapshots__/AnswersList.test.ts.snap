@@ -33,6 +33,7 @@ exports[`AnswersList > should render 1`] = `
       class="ml-1 px-1.5 py-0.5 rounded-lg text-xs bg-pink-100 text-primary"
     >
       2
+      <!---->
     </div>
   </div>
    

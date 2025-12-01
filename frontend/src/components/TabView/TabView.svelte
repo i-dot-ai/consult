@@ -7,16 +7,15 @@
 
   import { createTabs, melt } from "@melt-ui/svelte";
 
-  import { TabDirections, TabNames } from "../../global/types";
+  import { TabDirections } from "../../global/types";
 
   import MaterialIcon from "../MaterialIcon.svelte";
-  import Title from "../Title.svelte";
   import Button from "../inputs/Button/Button.svelte";
   import ArrowForward from "../svg/material/ArrowForward.svelte";
 
   export let tabs: Tab[] = [];
   export let value: string = "";
-  export let handleChange = (newVal: string) => {};
+  export let handleChange = () => {};
   export let title: string = "";
   export let variant: "default" | "dots" = "default";
 
@@ -41,7 +40,7 @@
   }
 
   const {
-    elements: { root, list, content, trigger },
+    elements: { root, list, trigger },
   } = createTabs({
     value: writableValue,
     onValueChange: ({ next }) => {
@@ -104,7 +103,7 @@
           </Button>
         {/if}
 
-        {#each tabs as tab}
+        {#each tabs as tab (tab.id)}
           {#if variant === "default"}
             <button
               use:melt={$trigger(tab.id)}

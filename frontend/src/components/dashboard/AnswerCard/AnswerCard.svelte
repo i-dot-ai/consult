@@ -2,9 +2,9 @@
   import clsx from "clsx";
 
   import type { ResponseTheme } from "../../../global/types";
-  import { applyHighlight } from "../../../global/utils";
   import { themeFilters } from "../../../global/state.svelte";
 
+  import HighlightedText from "../HighlightedText/HighlightedText.svelte";
   import Button from "../../inputs/Button/Button.svelte";
   import Panel from "../Panel/Panel.svelte";
   import Tag from "../../Tag/Tag.svelte";
@@ -13,7 +13,7 @@
   import EditPanel from "../EditPanel/EditPanel.svelte";
   import FlagButton from "../FlagButton/FlagButton.svelte";
   import Person from "../../svg/material/Person.svelte";
-  import { getRespondentDetailUrl, Routes } from "../../../global/routes";
+  import { getRespondentDetailUrl } from "../../../global/routes";
 
   export interface Props {
     consultationId?: string;
@@ -93,18 +93,18 @@
           ])}
         >
           {#if skeleton}
-            {#each "_".repeat(3) as _}
+            {#each "_".repeat(3) as _, i (i)}
               <div class="blink">
                 <Tag>
                   <span
-                    class="text-xs bg-neutral-100 text-neutral-100 select-none"
+                    class="select-none bg-neutral-100 text-xs text-neutral-100"
                     >skeleton</span
                   >
                 </Tag>
               </div>
             {/each}
           {:else}
-            {#each demoData as demoDataItem}
+            {#each demoData as demoDataItem (demoDataItem)}
               <Tag>
                 <span class="text-xs">{demoDataItem.replaceAll("'", "")}</span>
               </Tag>
@@ -155,7 +155,7 @@
           title="Respondent ID"
           class={clsx([
             "whitespace-nowrap",
-            skeleton && "bg-neutral-100 text-neutral-100 select-none blink",
+            skeleton && "blink select-none bg-neutral-100 text-neutral-100",
           ])}
         >
           {#if skeleton}
@@ -195,13 +195,13 @@
       </p>
     {:else if text}
       <p>
-        {@html applyHighlight(text, highlightText)}
+        <HighlightedText {text} highlight={highlightText} />
       </p>
     {/if}
 
     {#if multiAnswers && multiAnswers.length > 0 && !skeleton}
       <ul class={clsx(["flex", "gap-2", "flex-wrap", "my-1"])}>
-        {#each multiAnswers as multiAnswer}
+        {#each multiAnswers as multiAnswer, i (i)}
           <Tag>
             <span class="text-xs">{multiAnswer}</span>
           </Tag>
@@ -212,7 +212,7 @@
     {#if themes && themes.length > 0 && !skeleton}
       <footer class={clsx(["flex", "items-center", "gap-1", "flex-wrap"])}>
         <small class="text-neutral-500"> Themes: </small>
-        {#each themes as theme}
+        {#each themes as theme (theme.id)}
           <Button
             handleClick={() => themeFilters.update(theme.id)}
             highlighted={themeFilters.filters.includes(theme.id)}

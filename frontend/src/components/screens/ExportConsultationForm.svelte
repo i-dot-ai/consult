@@ -12,37 +12,37 @@
   import Text from "../Text/Text.svelte";
 
   let sending: boolean = false;
-  let errors: Record<string, string> = {}
-  let success: boolean = false;
-  let loading: boolean = false;
+  let errors: Record<string, string> = {};
 
   export let env: string = "";
   export let bucketName: string = "";
-  export let questions: Question[] =[];
+  export let questions: Question[] = [];
 
   let selectedQuestions: string[] = [];
   let s3Key: string = "";
 
   const setSelectedQuestions = (checked: boolean, value?: string) => {
     if (!value) return;
-    
+
     if (checked) {
       if (!selectedQuestions.includes(value)) {
         selectedQuestions = [...selectedQuestions, value];
       }
     } else {
-      selectedQuestions = selectedQuestions.filter(id => id !== value);
+      selectedQuestions = selectedQuestions.filter((id) => id !== value);
     }
   };
 
   const setS3Key = (newValue: string) => {
     s3Key = newValue;
-    errors["s3Key"] = !["local", "test"].includes(env) && !s3Key ? "Please enter an s3 key" : "";
+    errors["s3Key"] =
+      !["local", "test"].includes(env) && !s3Key
+        ? "Please enter an s3 key"
+        : "";
   };
 
   const handleSubmit = async () => {
     errors = {};
-    success = false;
     sending = false;
 
     if (selectedQuestions.length == 0) {
@@ -52,9 +52,8 @@
     if (!["local", "test"].includes(env) && !s3Key) {
       errors["s3Key"] = "Please enter an s3 key";
     }
-    
+
     if (Object.keys(errors).length == 0) {
-      success = false;
       sending = true;
       try {
         const response = await fetch(Routes.ApiConsultationExport, {
@@ -62,7 +61,7 @@
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             question_ids: selectedQuestions,
             s3_key: s3Key || null,
           }),
@@ -72,14 +71,13 @@
           throw new Error(`Error: ${response.status}`);
         }
 
-        success = true;
-        loading = false;
         errors = {};
         selectedQuestions = [];
         s3Key = "";
         window.location.href = Routes.SupportConsultations;
-      } catch (err: any) {
-        errors["general"] = err.message;
+      } catch (err: unknown) {
+        errors["general"] =
+          err instanceof Error ? err.message : "An unknown error occurred";
       } finally {
         sending = false;
       }
@@ -87,34 +85,49 @@
   };
 </script>
 
-<form class={clsx(["flex", "flex-col", "gap-4"])}
-  on:submit|preventDefault={handleSubmit}>
+<form
+  class={clsx(["flex", "flex-col", "gap-4"])}
+  on:submit|preventDefault={handleSubmit}
+>
   {#if "general" in errors}
-  <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
-    {errors.general}
-  </small>
+    <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
+      {errors.general}
+    </small>
   {/if}
-  {#each questions as question}
-    <Checkbox 
-      id={question.id!} 
+  {#each questions as question (question.id)}
+    <Checkbox
+      id={question.id!}
       value={question.id!}
-      checked={selectedQuestions.includes(question.id!)} 
-      disabled={false} 
-      label={question.question_text} 
+      checked={selectedQuestions.includes(question.id!)}
+      disabled={false}
+      label={question.question_text}
       name="selected_questions"
       onchange={setSelectedQuestions}
     />
   {/each}
   {#if env == "local"}
-    <Text>The file will be saved in: downloads/[timestamp]_question_[question_number]_theme_changes</Text>
+    <Text
+      >The file will be saved in:
+      downloads/[timestamp]_question_[question_number]_theme_changes</Text
+    >
   {:else}
     {#if "s3Key" in errors}
-    <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
-      {errors.s3Key}
-    </small>
+      <small class="text-sm text-red-500" transition:slide={{ duration: 300 }}>
+        {errors.s3Key}
+      </small>
     {/if}
-    <TextInput id="s3_key" name="s3_key" label="Where should the file be saved?" autocomplete="false" value={s3Key} setValue={setS3Key} ></TextInput>
-    <Text>The file will be saved as: {bucketName}/[YOUR PATH]/[timestamp]_question_[question_number]_theme_changes.csv</Text>
+    <TextInput
+      id="s3_key"
+      name="s3_key"
+      label="Where should the file be saved?"
+      autocomplete="false"
+      value={s3Key}
+      setValue={setS3Key}
+    ></TextInput>
+    <Text
+      >The file will be saved as: {bucketName}/[YOUR
+      PATH]/[timestamp]_question_[question_number]_theme_changes.csv</Text
+    >
   {/if}
   <Button
     type="submit"

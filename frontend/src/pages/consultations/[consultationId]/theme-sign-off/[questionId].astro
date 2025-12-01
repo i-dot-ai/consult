@@ -10,23 +10,28 @@ import ThemeSignOffDetail from "../../../../components/screens/ThemeSignOffDetai
 import ThemeSignOffDetailCompleted from "../../../../components/screens/ThemeSignOffDetailCompleted.svelte";
 
 const { consultationId, questionId } = Astro.params;
-const question: Question = await fetchBackendApi(Astro, `/api/consultations/${consultationId}/questions/${questionId}`);
+const question: Question = await fetchBackendApi(
+  Astro,
+  `/api/consultations/${consultationId}/questions/${questionId}`,
+);
 ---
+
 <Layout>
   <Section>
-    {(question?.theme_status === "confirmed")
-      ?
+    {
+      question?.theme_status === "confirmed" ? (
         <ThemeSignOffDetailCompleted
-          client:only
-          consultationId={consultationId}
-          questionId={questionId}
-        ></ThemeSignOffDetailCompleted>
-      :
-        <ThemeSignOffDetail
-          client:only
+          client:only="svelte"
           consultationId={consultationId}
           questionId={questionId}
         />
+      ) : (
+        <ThemeSignOffDetail
+          client:only="svelte"
+          consultationId={consultationId}
+          questionId={questionId}
+        />
+      )
     }
   </Section>
 </Layout>

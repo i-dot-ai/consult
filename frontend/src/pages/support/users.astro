@@ -9,19 +9,19 @@ import Title from "../../components/Title.svelte";
 import Button from "../../components/inputs/Button/Button.svelte";
 import Link from "../../components/Link.svelte";
 
-const data = await fetchBackendApi<{ results: User[]}>(Astro, "/api/users/");
+const data = await fetchBackendApi<{ results: User[] }>(Astro, "/api/users/");
 const users = data.results;
-
 ---
 
 <Layout>
   <Section>
     <Title level={1} text="Users" />
     <div class="my-4">
-        <Button href="/support/users/new" variant="primary">Add a new user</Button>
+      <Button href="/support/users/new" variant="primary">Add a new user</Button
+      >
     </div>
     <div class="overflow-x-auto">
-      <table class="w-full text-left whitespace-nowrap">
+      <table class="w-full whitespace-nowrap text-left">
         <thead class="font-bold">
           <tr>
             <th class="py-2 pr-2">Email</th>

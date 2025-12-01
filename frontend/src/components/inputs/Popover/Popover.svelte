@@ -15,14 +15,14 @@
   export let open: boolean = false;
   export let arrow: boolean = true;
   export let border: boolean = true;
-  export let handleOpenChange = (next: boolean) => {};
+  export let handleOpenChange = () => {};
 
   const {
-    elements: { trigger, content, close },
+    elements: { trigger, content },
     states,
   } = createPopover({
     forceVisible: true,
-    onOpenChange: ({ curr, next }) => {
+    onOpenChange: ({ next }) => {
       handleOpenChange(next);
       return next;
     },
@@ -45,7 +45,7 @@
   title={label || undefined}
   aria-label={label}
 >
-  <div class="flex justify-between items-center">
+  <div class="flex items-center justify-between">
     <slot name="trigger" />
 
     {#if arrow}
