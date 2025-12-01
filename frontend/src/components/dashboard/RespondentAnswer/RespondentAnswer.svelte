@@ -90,7 +90,7 @@
           </h4>
 
           <ul class="flex flex-wrap items-center gap-1">
-            {#each multiChoice as multiChoiceAnswer (multiChoiceAnswer)}
+            {#each multiChoice as multiChoiceAnswer, i (i)}
               <li class="text-xs">
                 {multiChoiceAnswer}
               </li>

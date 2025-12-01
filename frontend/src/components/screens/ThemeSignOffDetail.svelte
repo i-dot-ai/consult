@@ -269,8 +269,8 @@
       location.replace(getThemeSignOffUrl(consultationId));
     }
   };
-  const numSelectedThemesText = (themes: Array<SelectedTheme>): string => {
-    if (themes.length === 0) {
+  const numSelectedThemesText = (themes?: Array<SelectedTheme>): string => {
+    if (!themes?.length) {
       return "";
     }
     return `${themes.length} selected theme${themes.length > 1 ? "s" : ""}`;

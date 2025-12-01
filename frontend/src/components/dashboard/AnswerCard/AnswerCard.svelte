@@ -201,7 +201,7 @@
 
     {#if multiAnswers && multiAnswers.length > 0 && !skeleton}
       <ul class={clsx(["flex", "gap-2", "flex-wrap", "my-1"])}>
-        {#each multiAnswers as multiAnswer (multiAnswer)}
+        {#each multiAnswers as multiAnswer, i (i)}
           <Tag>
             <span class="text-xs">{multiAnswer}</span>
           </Tag>

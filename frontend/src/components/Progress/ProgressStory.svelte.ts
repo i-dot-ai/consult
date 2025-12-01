@@ -1,11 +1,9 @@
 import Progress from "./Progress.svelte";
 
-const value = $state(40);
-
 export default {
   name: "Progress",
   component: Progress,
-  props: [{ name: "value", value: value, type: "number" }],
+  props: [{ name: "value", value: 40, type: "number" }],
   stories: [
     {
       name: "Default",
