@@ -106,7 +106,7 @@
     stagedThemes = themes ? [...themes] : [];
     stagedEvidenceRich = evidenceRich;
     $answerUpdateStore.isLoading = false;
-    $answerUpdateStore.error = "";
+    $answerUpdateStore.error = null;
   }
 </script>
 
