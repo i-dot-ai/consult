@@ -34,6 +34,7 @@
   import Popover from "../../inputs/Popover/Popover.svelte";
   import NotFoundMessage from "../../NotFoundMessage/NotFoundMessage.svelte";
   import Flag2 from "../../svg/material/Flag2.svelte";
+    import { onDestroy } from "svelte";
 
   export let consultationId: string = "";
   export let questionId: string = "";
@@ -104,6 +105,13 @@
       markAsReadTimer = null;
     }
   }
+
+  onDestroy(() => {
+    if (markAsReadTimer) {
+      clearTimeout(markAsReadTimer);
+      markAsReadTimer = null;
+    }
+  });
 
   $: if (answers.length > 0 && !isAnswersLoading && !answersError) {
     startMarkAsReadTimer();
