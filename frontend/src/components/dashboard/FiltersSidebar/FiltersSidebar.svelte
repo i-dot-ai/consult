@@ -14,7 +14,7 @@
     DemoOptionsResponse,
     DemoTotalCounts,
   } from "../../../global/types";
-    import Visibility from "../../svg/material/Visibility.svelte";
+  import Visibility from "../../svg/material/Visibility.svelte";
 
   interface Props {
     demoOptions: DemoOption;
@@ -81,7 +81,7 @@
       </Panel>
     {/if}
     {#if showUnseenResponse}
-    <Panel level={2} border={true} bg={true}>
+      <Panel level={2} border={true} bg={true}>
         <Switch
           id="unseen-responses-toggle"
           label="Show unseen responses"

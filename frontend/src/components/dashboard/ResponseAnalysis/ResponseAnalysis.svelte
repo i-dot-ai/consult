@@ -107,7 +107,8 @@
     startMarkAsReadTimer();
   }
 
-  $: if (searchValue ||
+  $: if (
+    searchValue ||
     anyFilterApplied ||
     evidenceRich ||
     unseenResponses ||
