@@ -1,37 +1,29 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { render, cleanup } from "@testing-library/svelte";
+import { describe, expect, it } from "vitest";
+import { render, screen } from "@testing-library/svelte";
 
-import SelectedThemeCard, { type Props } from "./SelectedThemeCard.svelte";
-
-let testData: Props;
+import SelectedThemeCard from "./SelectedThemeCard.svelte";
 
 describe("SelectedThemeCard", () => {
-  beforeEach(() => {
-    testData = {
-      theme: {
-        id: "theme-id",
-        name: "Theme Name",
-        description: "This is the theme description",
-      },
-      answers: ["Answer 1", "Answer 2"],
-      removeTheme: () => {},
-      updateTheme: () => {},
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    theme: {
+      id: "theme-id",
+      name: "Theme Name",
+      description: "This is the theme description",
+    },
+    answers: ["Answer 1", "Answer 2"],
+    removeTheme: () => {},
+    updateTheme: () => {},
+  };
 
   it("should render", async () => {
-    const { container, getByText, queryByText } = render(SelectedThemeCard, {
-      ...testData,
-    });
+    const { container } = render(SelectedThemeCard, testData);
 
-    expect(getByText(testData.theme.name));
-    expect(getByText(testData.theme.description));
+    expect(screen.getByText(testData.theme.name)).toBeInTheDocument();
+    expect(screen.getByText(testData.theme.description)).toBeInTheDocument();
 
     // Answers hidden initially
     testData.answers?.forEach((answer) => {
-      expect(queryByText(answer)).toBeNull();
+      expect(screen.queryByText(answer)).toBeNull();
     });
 
     expect(container).toMatchSnapshot();

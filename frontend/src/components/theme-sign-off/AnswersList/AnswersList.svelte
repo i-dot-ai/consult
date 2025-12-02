@@ -3,6 +3,7 @@
 
   import MaterialIcon from "../../MaterialIcon.svelte";
   import Docs from "../../svg/material/Docs.svelte";
+  import LoadingIndicator from "../../LoadingIndicator/LoadingIndicator.svelte";
 
   export interface Props {
     title: string;
@@ -43,12 +44,16 @@
         : "bg-teal-50 text-secondary",
     ])}
   >
-    {answers.length}
+    {#if loading}
+      <LoadingIndicator size="1rem" />
+    {:else}
+      {answers.length}
+    {/if}
   </div>
 </div>
 {#if loading}
   <ol>
-    {#each "_".repeat(5) as _}
+    {#each "_".repeat(5) as _, i (i)}
       <li
         class={clsx([
           "blink",
@@ -70,7 +75,7 @@
   </ol>
 {:else if answers?.length > 0}
   <ol class="mt-2 max-h-[20rem] overflow-y-auto">
-    {#each answers as answer, i}
+    {#each answers as answer, i (i)}
       <li
         class={clsx([
           "flex",
@@ -109,5 +114,5 @@
     {/each}
   </ol>
 {:else}
-  <p class="mt-2 text-sm text-neutral-500 italic">There are no answers</p>
+  <p class="mt-2 text-sm italic text-neutral-500">There are no answers</p>
 {/if}

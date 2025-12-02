@@ -1,0 +1,86 @@
+import { describe, expect, it, vi } from "vitest";
+import userEvent from "@testing-library/user-event";
+import { render, screen } from "@testing-library/svelte";
+
+import SwitchTest from "./SwitchTest.svelte";
+
+describe("Switch", () => {
+  it("should call handleChange func", async () => {
+    const user = userEvent.setup();
+    const handleChangeMock = vi.fn();
+
+    render(SwitchTest, {
+      id: "test-switch",
+      value: false,
+      label: "Test Switch",
+      handleChange: handleChangeMock,
+    });
+
+    const button = screen.getByRole("switch");
+
+    expect(handleChangeMock).toHaveBeenCalledTimes(1);
+
+    await user.click(button);
+
+    expect(handleChangeMock).toHaveBeenCalledTimes(2);
+  });
+
+  it("should have correct attributes when switched", async () => {
+    const user = userEvent.setup();
+    const handleChangeMock = vi.fn();
+
+    render(SwitchTest, {
+      id: "test-switch",
+      value: false,
+      label: "Test Switch",
+      handleChange: handleChangeMock,
+    });
+
+    const button = screen.getByRole("switch");
+
+    expect(button.getAttribute("data-state")).toEqual("unchecked");
+    expect(button.getAttribute("aria-checked")).toEqual("false");
+
+    await user.click(button);
+
+    expect(button.getAttribute("data-state")).toEqual("checked");
+    expect(button.getAttribute("aria-checked")).toEqual("true");
+  });
+
+  it("should have render props", async () => {
+    const handleChangeMock = vi.fn();
+
+    render(SwitchTest, {
+      id: "test-switch",
+      value: false,
+      label: "Test Switch",
+      handleChange: handleChangeMock,
+    });
+
+    expect(screen.getByLabelText("Test Switch")).toBeInTheDocument();
+  });
+
+  it("should have be checked initially if value is true", async () => {
+    const handleChangeMock = vi.fn();
+
+    render(SwitchTest, {
+      id: "test-switch",
+      value: true,
+      label: "Test Switch",
+      handleChange: handleChangeMock,
+    });
+    const button = screen.getByRole("switch");
+    expect(button.getAttribute("data-state")).toEqual("checked");
+  });
+
+  it("should render label slot", async () => {
+    render(SwitchTest, {
+      id: "test-switch",
+      value: false,
+      label: "Test Switch",
+      labelSlot: "Label Slot Content",
+    });
+
+    expect(screen.getByText("Label Slot Content")).toBeInTheDocument();
+  });
+});

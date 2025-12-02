@@ -9,7 +9,7 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
   let userIsStaff: boolean = false;
 
   try {
-    const resp = await fetchBackendApi<{ is_staff: Boolean }>(
+    const resp = await fetchBackendApi<{ is_staff: boolean }>(
       context,
       Routes.ApiUser,
     );
@@ -72,6 +72,8 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
     /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}[/]?$/,
     /^\/support\/consultations\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/delete[/]?$/,
     /^\/support\/consultations\/import-summary[/]?$/,
+    /^\/support\/consultations\/import-consultation[/]?$/,
+    /^\/support\/consultations\/[A-Za-z0-9-]*\/export[/]?$/,
     /^\/design.*/,
     /^\/stories.*/,
     /^\/_astro.*/,

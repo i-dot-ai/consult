@@ -1,13 +1,27 @@
 <script lang="ts">
   import clsx from "clsx";
+  import type { Snippet } from "svelte";
 
   import type { TitleLevels } from "../global/types";
 
-  export let level: TitleLevels = 1;
-  export let text: string = "";
-  export let weight: "light" | "normal" | "bold" = "normal";
-  export let maxChars: number = 0;
-  export let context: "dashboard" | "public" = "dashboard";
+  type Props = {
+    level?: TitleLevels;
+    weight?: "light" | "normal" | "bold";
+    maxChars?: number;
+    context?: "dashboard" | "public" | "theme-sign-off";
+  } & (
+    | { text: string; children?: never }
+    | { text?: never; children: Snippet }
+  );
+
+  let {
+    level = 1,
+    weight = "normal",
+    maxChars = 0,
+    context = "dashboard",
+    text,
+    children,
+  }: Props = $props();
 
   const tagMap = {
     1: "h1",
@@ -29,6 +43,7 @@
     weight === "bold" && "font-bold",
     weight === "light" && "font-light",
     level === 1 && context === "dashboard" && "text-xl",
+    level === 1 && context === "theme-sign-off" && "text-2xl",
     level === 2 && "text-lg",
     level === 3 && "text-md",
     level === 4 && "text-sm",
@@ -44,5 +59,9 @@
       ]),
   ])}
 >
-  {@html text}
+  {#if children}
+    {@render children()}
+  {:else}
+    {text}
+  {/if}
 </svelte:element>

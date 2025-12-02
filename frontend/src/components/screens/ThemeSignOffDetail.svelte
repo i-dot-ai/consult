@@ -15,7 +15,6 @@
     getApiUpdateSelectedThemeUrl,
     getThemeSignOffUrl,
   } from "../../global/routes";
-  import { flattenArray } from "../../global/utils";
 
   import Panel from "../dashboard/Panel/Panel.svelte";
   import TitleRow from "../dashboard/TitleRow.svelte";
@@ -23,6 +22,7 @@
   import MaterialIcon from "../MaterialIcon.svelte";
   import Price from "../svg/material/Price.svelte";
   import ThemeForm from "../theme-sign-off/ThemeForm/ThemeForm.svelte";
+  import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
   import SelectedThemeCard from "../theme-sign-off/SelectedThemeCard/SelectedThemeCard.svelte";
   import GeneratedThemeCard from "../theme-sign-off/GeneratedThemeCard/GeneratedThemeCard.svelte";
   import CheckCircle from "../svg/material/CheckCircle.svelte";
@@ -34,7 +34,10 @@
   import Alert from "../Alert.svelte";
   import Target from "../svg/material/Target.svelte";
   import EditSquare from "../svg/material/EditSquare.svelte";
-  import ErrorModal, { type ErrorType } from "../theme-sign-off/ErrorModal.svelte";
+  import ErrorModal, {
+    type ErrorType,
+  } from "../theme-sign-off/ErrorModal.svelte";
+  import type { GeneratedTheme, SelectedTheme } from "../../global/types";
 
   let {
     consultationId = "",
@@ -47,14 +50,42 @@
     selectGeneratedThemeMock,
   } = $props();
 
+  const { load: loadGeneratedThemes, data: generatedThemesData } =
+    createFetchStore(generatedThemesMock);
+
+  const flattenGeneratedThemes = (
+    items: GeneratedTheme[],
+  ): GeneratedTheme[] => {
+    if (!items) {
+      return [];
+    }
+    const result = [];
+    for (const item of items) {
+      const { children, ...attrs } = item;
+      result.push(attrs);
+      if (children?.length) {
+        result.push(...flattenGeneratedThemes(children));
+      }
+    }
+    return result;
+  };
+
+  let flatGeneratedThemes = $derived(
+    flattenGeneratedThemes($generatedThemesData?.results),
+  );
+
   let isConfirmSignOffModalOpen = $state(false);
   let addingCustomTheme = $state(false);
-  let expandedThemes: string[] = $state([]);
+  let expandedThemes: string[] = $derived(
+    flatGeneratedThemes.map((theme) => theme.id),
+  );
   let errorData: ErrorType | null = $state(null);
 
   const errorModalOnClose = () => {
     loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
-    loadGeneratedThemes(getApiGetGeneratedThemesUrl(consultationId, questionId));
+    loadGeneratedThemes(
+      getApiGetGeneratedThemesUrl(consultationId, questionId),
+    );
     errorData = null;
   };
 
@@ -62,51 +93,31 @@
     load: loadSelectedThemes,
     loading: isSelectedThemesLoading,
     data: selectedThemesData,
-    error: selectedThemesError,
   } = createFetchStore(selectedThemesMock);
 
-  const {
-    load: loadGeneratedThemes,
-    loading: isGeneratedThemesLoading,
-    data: generatedThemesData,
-    error: generatedThemesError,
-  } = createFetchStore(generatedThemesMock);
+  const { load: createSelectedTheme } = createFetchStore(createThemeMock);
+
+  const { load: loadConfirmSignOff, error: confirmSignOffError } =
+    createFetchStore();
 
   const {
-    load: createSelectedTheme,
-    loading: isCreatingSelectedTheme,
-    data: createSelectedThemeData,
-    error: createSelectedThemeError,
-  } = createFetchStore(createThemeMock);
-
-  const {
-    load: loadConfirmSignOff,
-    loading: isConfirmSignOffLoading,
-    data: confirmSignOffData,
-    error: confirmSignOffError,
+    data: removeSelectedThemeData,
+    load: removeSelectedTheme,
+    error: removeSelectedThemeError,
+    status: removeSelectedThemeStatus,
   } = createFetchStore();
 
-  const {
-    load: selectGeneratedTheme,
-    loading: isSelectingGeneratedTheme,
-    data: selectGeneratedThemeData,
-    error: selectGeneratedThemeError,
-  } = createFetchStore(selectGeneratedThemeMock);
+  const { load: selectGeneratedTheme } = createFetchStore(
+    selectGeneratedThemeMock,
+  );
 
   const {
     load: loadQuestion,
     loading: isQuestionLoading,
     data: questionData,
-    error: questionError,
   } = createFetchStore(questionDataMock);
 
-  let flatGeneratedThemes = $derived(
-    flattenArray($generatedThemesData?.results),
-  );
-
-  $effect(() => {
-    expandedThemes = flatGeneratedThemes.map((theme) => theme.id);
-  });
+  let themesBeingSelected = $state([]);
 
   $effect(() => {
     loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
@@ -134,33 +145,35 @@
       (theme) => theme.id === themeId,
     );
 
-    try {
-      const response = await fetch(
-        getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
-        {
-          method: "DELETE",
-          headers: {
-            "Content-Type": "application/json",
-            "If-Match": selectedTheme.version,
-          },
-        }
-      );
+    await removeSelectedTheme(
+      getApiDeleteSelectedThemeUrl(consultationId, questionId, themeId),
+      "DELETE",
+      undefined,
+      {
+        "Content-Type": "application/json",
+        "If-Match": selectedTheme.version,
+      },
+    );
 
-      if (response.ok) {
-        loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
-        loadGeneratedThemes(getApiGetGeneratedThemesUrl(consultationId, questionId));
-      } else if (response.status === 412) {
-        const { last_modified_by, latest_version } = await response.json();
-        errorData = {
-          type: 'remove-conflict',
-          lastModifiedBy: last_modified_by.email,
-          latestVersion: latest_version,
-        };
-      } else {
-        throw new Error(`Remove theme failed: ${response.statusText}`);
-      }
-    } catch (err: any) {
-      errorData = { type: 'unexpected' }
+    if (!$removeSelectedThemeError || $removeSelectedThemeStatus === 404) {
+      // No action or error needed if status 404 (theme already deselected)
+
+      loadSelectedThemes(
+        getApiGetSelectedThemesUrl(consultationId, questionId),
+      );
+      loadGeneratedThemes(
+        getApiGetGeneratedThemesUrl(consultationId, questionId),
+      );
+    } else if ($removeSelectedThemeStatus === 412) {
+      const { last_modified_by, latest_version } = $removeSelectedThemeData;
+      errorData = {
+        type: "remove-conflict",
+        lastModifiedBy: last_modified_by.email,
+        latestVersion: latest_version,
+      };
+    } else {
+      errorData = { type: "unexpected" };
+      console.error($removeSelectedThemeError);
     }
   };
 
@@ -175,40 +188,44 @@
 
     try {
       const response = await fetch(
-          getApiUpdateSelectedThemeUrl(consultationId, questionId, themeId),
-          {
-            method: "PATCH",
-            headers: {
-              "Content-Type": "application/json",
-              "If-Match": selectedTheme.version,
-            },
-            body: JSON.stringify({
-              name: title,
-              description: description,
-            }),
-          }
-        );
+        getApiUpdateSelectedThemeUrl(consultationId, questionId, themeId),
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "If-Match": selectedTheme.version,
+          },
+          body: JSON.stringify({
+            name: title,
+            description: description,
+          }),
+        },
+      );
 
-        if (response.ok) {
-          loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
-        } else if (response.status === 404) {
-          errorData = { type: 'theme-does-not-exist' };
-        } else if (response.status === 412) {
-          const { last_modified_by, latest_version } = await response.json();
-          errorData = {
-            type: 'edit-conflict',
-            lastModifiedBy: last_modified_by.email,
-            latestVersion: latest_version,
-          };
-        } else {
-          throw new Error(`Edit theme failed: ${response.statusText}`);
-        }
-    } catch (err: any) {
-      errorData = { type: 'unexpected' };
+      if (response.ok) {
+        loadSelectedThemes(
+          getApiGetSelectedThemesUrl(consultationId, questionId),
+        );
+      } else if (response.status === 404) {
+        errorData = { type: "theme-does-not-exist" };
+      } else if (response.status === 412) {
+        const { last_modified_by, latest_version } = await response.json();
+        errorData = {
+          type: "edit-conflict",
+          lastModifiedBy: last_modified_by.email,
+          latestVersion: latest_version,
+        };
+      } else {
+        throw new Error(`Edit theme failed: ${response.statusText}`);
+      }
+    } catch {
+      errorData = { type: "unexpected" };
     }
   };
 
   const handleSelectGeneratedTheme = async (newTheme) => {
+    themesBeingSelected = [...themesBeingSelected, newTheme.id];
+
     await selectGeneratedTheme(
       getApiSelectGeneratedThemeUrl(consultationId, questionId, newTheme.id),
       "POST",
@@ -221,10 +238,14 @@
       getApiGetGeneratedThemesUrl(consultationId, questionId),
     );
 
-    // get selectedtheme_id created after back end select action is complete
-    const updatedTheme = $generatedThemesData?.results?.find(
-      (generatedTheme) => generatedTheme.id === newTheme.id,
+    themesBeingSelected = themesBeingSelected.filter(
+      (themeId) => themeId !== newTheme.id,
     );
+
+    // get selectedtheme_id created after back end select action is complete
+    const updatedTheme = flattenGeneratedThemes(
+      $generatedThemesData?.results || [],
+    ).find((generatedTheme) => generatedTheme.id === newTheme.id);
 
     // scroll up to equivalent in selected themes list
     document
@@ -243,13 +264,13 @@
 
     if ($confirmSignOffError) {
       isConfirmSignOffModalOpen = false;
-      errorData = { type: 'unexpected' };
+      errorData = { type: "unexpected" };
     } else {
       location.replace(getThemeSignOffUrl(consultationId));
     }
   };
-  const numSelectedThemesText = (themes?: Array<any>): string => {
-    if (!themes) {
+  const numSelectedThemesText = (themes?: Array<SelectedTheme>): string => {
+    if (!themes?.length) {
       return "";
     }
     return `${themes.length} selected theme${themes.length > 1 ? "s" : ""}`;
@@ -291,6 +312,15 @@
   </div>
 </TitleRow>
 
+<section class="my-8">
+  <QuestionCard
+    skeleton={$isQuestionLoading}
+    {consultationId}
+    question={$questionData || {}}
+    clickable={false}
+  />
+</section>
+
 <svelte:boundary>
   <section
     class={clsx([
@@ -300,14 +330,14 @@
       "bg-pink-50/25",
       "rounded-xl",
       "border",
-      "border-pink-50",
+      "border-pink-100",
     ])}
   >
     <div id="onboarding-steps-2-and-3" class="mb-4">
       <Panel variant="primary" bg={true} border={true}>
-        <div class="flex items-center justify-between mb-2">
+        <div class="mb-2 flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <MaterialIcon color={"fill-primary"}>
+            <MaterialIcon color="fill-primary">
               <CheckCircle />
             </MaterialIcon>
 
@@ -337,7 +367,7 @@
           </Button>
         </div>
 
-        <p class="text-neutral-500 text-sm">
+        <p class="text-sm text-neutral-500">
           Manage your {numSelectedThemesText($selectedThemesData?.results)} for the
           AI in mapping responses. Edit titles and descriptions, or add new themes
           as needed.
@@ -358,7 +388,7 @@
     {/if}
 
     {#if $selectedThemesData?.results.length === 0}
-      <div in:fade class="flex items-center justify-center flex-col gap-2 my-8">
+      <div in:fade class="my-8 flex flex-col items-center justify-center gap-2">
         <div class="mb-2">
           <MaterialIcon size="2rem" color="fill-neutral-500">
             <Price />
@@ -366,16 +396,17 @@
         </div>
 
         <h3 class="text-md text-neutral-500">No themes selected yet</h3>
-        <p class="text-neutral-500 text-xs">
+        <p class="text-xs text-neutral-500">
           Select themes from the AI-generated suggestions below
         </p>
       </div>
     {:else}
       <div class="mt-4">
-        {#each $selectedThemesData?.results as selectedTheme}
+        {#each $selectedThemesData?.results as selectedTheme (selectedTheme.id)}
           <div transition:slide={{ duration: 150 }} class="mb-4 last:mb-0">
             <SelectedThemeCard
               {consultationId}
+              {questionId}
               theme={selectedTheme}
               {removeTheme}
               {updateTheme}
@@ -395,7 +426,7 @@
         handleClick={() =>
           (isConfirmSignOffModalOpen = !isConfirmSignOffModalOpen)}
       >
-        <div class="flex justify-center items-center gap-2 w-full">
+        <div class="flex w-full items-center justify-center gap-2">
           <MaterialIcon color="fill-white">
             <CheckCircle />
           </MaterialIcon>
@@ -417,7 +448,7 @@
       icon={CheckCircle}
       open={isConfirmSignOffModalOpen}
       setOpen={(newOpen: boolean) => (isConfirmSignOffModalOpen = newOpen)}
-      confirmText={"Confirm Sign Off"}
+      confirmText="Confirm Sign Off"
       handleConfirm={confirmSignOff}
     >
       <p class="text-sm text-neutral-500">
@@ -426,12 +457,12 @@
         )} for Question {$questionData?.number}?
       </p>
 
-      <h4 class="text-xs font-bold my-4">Selected themes:</h4>
+      <h4 class="my-4 text-xs font-bold">Selected themes:</h4>
 
       <div class="max-h-64 overflow-y-auto">
-        {#each $selectedThemesData?.results as selectedTheme}
+        {#each $selectedThemesData?.results as selectedTheme (selectedTheme.id)}
           <Panel bg={true} border={false}>
-            <h5 class="text-xs font-bold mb-1">{selectedTheme.name}</h5>
+            <h5 class="mb-1 text-xs font-bold">{selectedTheme.name}</h5>
             <p class="text-xs text-neutral-500">{selectedTheme.description}</p>
           </Panel>
         {/each}
@@ -483,7 +514,7 @@
     <Panel>
       <div id="onboarding-step-1">
         <Panel variant="approve" bg={true} border={true}>
-          <div class="flex items-center justify-between mb-2">
+          <div class="mb-2 flex items-center justify-between">
             <div class="flex items-center gap-2">
               <MaterialIcon color="fill-secondary">
                 <SmartToy />
@@ -492,7 +523,8 @@
               <h3>AI Generated Themes</h3>
 
               <Tag variant="success">
-                {$generatedThemesData?.results.length} available
+                {flattenGeneratedThemes($generatedThemesData?.results || [])
+                  .length} available
               </Tag>
             </div>
 
@@ -528,16 +560,17 @@
             </div>
           </div>
 
-          <p class="text-neutral-500 text-sm">
+          <p class="text-sm text-neutral-500">
             Browse AI-generated themes organised by topic hierarchy. Click
             "Select Theme" to add themes to your selected list for analysis.
           </p>
         </Panel>
       </div>
 
-      {#each $generatedThemesData?.results as theme}
+      {#each $generatedThemesData?.results as theme (theme.id)}
         <GeneratedThemeCard
           {consultationId}
+          {questionId}
           {theme}
           {expandedThemes}
           setExpandedThemes={(id) => {
@@ -549,16 +582,14 @@
           }}
           handleSelect={handleSelectGeneratedTheme}
           {answersMock}
+          {themesBeingSelected}
         />
       {/each}
     </Panel>
   </section>
 
   {#if errorData}
-    <ErrorModal 
-      {...errorData}
-      onClose={errorModalOnClose}
-    />
+    <ErrorModal {...errorData} onClose={errorModalOnClose} />
   {/if}
 
   {#snippet failed(error)}

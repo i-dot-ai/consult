@@ -22,8 +22,9 @@ export interface Question {
 }
 
 export interface Consultation {
-  title: string;
   id: string;
+  title: string;
+  stage: "theme_sign_off" | "theme_mapping" | "analysis";
   created_at: string;
 }
 
@@ -40,6 +41,20 @@ export interface FormattedTheme {
 export interface SelectOption {
   value: string;
   label: string;
+}
+
+export interface RadioItem {
+  value: string;
+  text: string;
+  checked?: boolean;
+  disabled?: boolean;
+}
+
+export interface CheckboxItem {
+  value: string;
+  text: string;
+  hint?: string;
+  disabled?: boolean;
 }
 
 export enum SearchModeValues {

@@ -106,6 +106,6 @@
 <div>
   <Title level={2} text="Full Width" />
   <Button fullWidth={true}>
-    <span class="text-center w-full">Click Here</span>
+    <span class="w-full text-center">Click Here</span>
   </Button>
 </div>

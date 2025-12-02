@@ -7,7 +7,6 @@
   import {
     getApiGetSelectedThemesUrl,
     getApiQuestionUrl,
-    getQuestionDetailUrl,
     getThemeSignOffUrl,
     Routes,
   } from "../../global/routes";
@@ -22,7 +21,6 @@
   import Headphones from "../svg/material/Headphones.svelte";
   import Help from "../svg/material/Help.svelte";
   import ArrowForward from "../svg/material/ArrowForward.svelte";
-  import Finance from "../svg/material/Finance.svelte";
   import Alert from "../Alert.svelte";
 
   interface Props {
@@ -36,15 +34,9 @@
     load: loadSelectedThemes,
     loading: isSelectedThemesLoading,
     data: selectedThemesData,
-    error: selectedThemesError,
   } = createFetchStore();
 
-  const {
-    load: loadQuestion,
-    loading: isQuestionLoading,
-    data: questionData,
-    error: questionError,
-  } = createFetchStore();
+  const { load: loadQuestion, data: questionData } = createFetchStore();
 
   $effect(() => {
     loadSelectedThemes(getApiGetSelectedThemesUrl(consultationId, questionId));
@@ -78,7 +70,7 @@
     >
       {#if isSkeleton}
         <p
-          class="blink w-full text-xs bg-neutral-200 text-neutral-100 select-none"
+          class="blink w-full select-none bg-neutral-200 text-xs text-neutral-100"
         >
           {name}
         </p>
@@ -142,7 +134,7 @@
         <div>
           <h2 class="text-md">
             {#if !$questionData}
-              <div class="blink bg-neutral-100 text-neutral-100 select-none">
+              <div class="blink select-none bg-neutral-100 text-neutral-100">
                 SKELETON
               </div>
             {:else}
@@ -152,7 +144,7 @@
             {/if}
           </h2>
 
-          <div class="mt-2 mb-4">
+          <div class="mb-4 mt-2">
             <Tag variant="primary-light">
               <MaterialIcon color="fill-primary">
                 <CheckCircle />
@@ -160,7 +152,7 @@
               <span class="py-0.5"> Themes Signed Off </span>
             </Tag>
           </div>
-          <p class="text-neutral-500 text-sm">
+          <p class="text-sm text-neutral-500">
             This question has completed the theme sign-off process. The selected
             themes below have been approved for AI analysis and are ready to be
             used for mapping consultation responses.
@@ -200,20 +192,21 @@
     <Panel bg={false} border={true}>
       <h2 class="text-md">Selected Themes</h2>
 
-      <p class="text-neutral-500 text-sm">
+      <!-- TODO: Subtitle disabled -->
+      <!-- <p class="text-neutral-500 text-sm">
         The following themes have been signed off for this question and are
         ready for analysis.
-      </p>
+      </p> -->
 
       <ul>
         {#if $isSelectedThemesLoading}
-          {#each "_".repeat(2) as _}
+          {#each "_".repeat(2) as _, i (i)}
             <li>
               {@render selectedThemeCard("SKELETON", true)}
             </li>
           {/each}
         {:else}
-          {#each $selectedThemesData?.results as selectedTheme}
+          {#each $selectedThemesData?.results as selectedTheme (selectedTheme.id)}
             <li>
               {@render selectedThemeCard(selectedTheme.name)}
             </li>
@@ -236,9 +229,10 @@
 
 <svelte:boundary>
   <section class="mt-8">
-    <div class="flex items-center justify-between gap-2 flex-wrap">
-      <div class="flex items-center gap-2 flex-wrap">
-        <Button
+    <div class="flex flex-wrap items-center justify-between gap-2">
+      <div class="flex flex-wrap items-center gap-2">
+        <!-- TODO: Button disabled -->
+        <!-- <Button
           size="sm"
           variant="primary"
           handleClick={() =>
@@ -250,7 +244,7 @@
             </MaterialIcon>
             View Analysis Dashboard
           </div>
-        </Button>
+        </Button> -->
 
         <Button
           size="sm"

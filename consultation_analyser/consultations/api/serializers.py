@@ -281,6 +281,41 @@ class DemographicOptionSerializer(serializers.Serializer):
     count = serializers.IntegerField(required=False)
 
 
+class ConsultationFolderSerializer(serializers.Serializer):
+    text = serializers.CharField()
+    value = serializers.CharField()
+
+
+class ConsultationImportSerializer(serializers.Serializer):
+    consultation_name = serializers.CharField(max_length=255)
+    consultation_code = serializers.CharField(max_length=255)
+    timestamp = serializers.CharField(max_length=100)
+    action = serializers.CharField(max_length=50)
+
+    def get_sign_off(self):
+        return self.validated_data.get("action") == "sign_off"
+
+
+class ConsultationImportImmutableSerializer(serializers.Serializer):
+    consultation_name = serializers.CharField(required=True, max_length=255)
+    consultation_code = serializers.CharField(required=True, max_length=255)
+
+
+class ConsultationImportCandidateThemesSerializer(serializers.Serializer):
+    consultation_code = serializers.CharField(required=True, max_length=255)
+    timestamp = serializers.CharField(required=True, max_length=100)
+
+
+class ConsultationImportAnnotationsSerializer(serializers.Serializer):
+    consultation_code = serializers.CharField(required=True, max_length=255)
+    timestamp = serializers.CharField(required=True, max_length=100)
+
+
+class ConsultationExportSerializer(serializers.Serializer):
+    s3_key = serializers.CharField(max_length=255, default="", allow_null=True)
+    question_ids = serializers.ListSerializer(child=serializers.CharField())
+
+
 class RespondentSerializer(serializers.ModelSerializer):
     demographics = DemographicOptionSerializer(many=True, read_only=True)
 

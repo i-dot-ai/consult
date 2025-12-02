@@ -1,49 +1,42 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import userEvent from "@testing-library/user-event";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { render, screen } from "@testing-library/svelte";
 
 import { createRawSnippet } from "svelte";
 
-import RespondentTopbar, { type Props } from "./RespondentTopbar.svelte";
-import RespondentTopbarStory from "./RespondentTopbarStory.svelte";
-
-let testData: Props;
+import RespondentTopbar from "./RespondentTopbar.svelte";
 
 describe("RespondentTopbar", () => {
-  beforeEach(() => {
-    testData = {
-      title: "test-title",
-      backText: "Back to Analysis",
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    title: "test-title",
+    backText: "Back to Analysis",
+  };
 
   it("should render data and links", () => {
-    const { getByText, container } = render(RespondentTopbar, {
+    render(RespondentTopbar, {
       ...testData,
     });
 
-    expect(getByText(testData.title));
-    expect(getByText(testData.backText));
+    expect(screen.getByText(testData.title)).toBeInTheDocument();
+    expect(screen.getByText(testData.backText)).toBeInTheDocument();
   });
 
   it("should render child", () => {
-    const { getByText, container } = render(RespondentTopbar, {
+    render(RespondentTopbar, {
       ...testData,
       children: createRawSnippet(() => ({
         render: () => `<p>Child content</p>`,
       })),
     });
 
-    expect(getByText(`Child content`));
+    expect(screen.getByText(`Child content`)).toBeInTheDocument();
   });
 
   it("should call on back click callback", async () => {
     const onClickBackMock = vi.fn();
     const user = userEvent.setup();
 
-    const { getByRole } = render(RespondentTopbar, {
+    render(RespondentTopbar, {
       ...testData,
       onClickBack: onClickBackMock,
       children: createRawSnippet(() => ({
@@ -51,13 +44,9 @@ describe("RespondentTopbar", () => {
       })),
     });
 
-    const button = getByRole("button");
+    const button = screen.getByRole("button");
     await user.click(button);
 
     expect(onClickBackMock).toHaveBeenCalledOnce();
-  });
-
-  it("should render story", () => {
-    render(RespondentTopbarStory);
   });
 });

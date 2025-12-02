@@ -24,6 +24,7 @@ locals {
     "BACKEND_URL"                          = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
     # need to duplicate this because Astro's import.meta.env only exposes environment variables that start with PUBLIC_.
     "PUBLIC_BACKEND_URL"                   = "http://${aws_service_discovery_service.service_discovery_service.name}.${aws_service_discovery_private_dns_namespace.private_dns_namespace.name}:${local.backend_port}",
+    "LLM_GATEWAY_URL"                      = "https://llm-gateway.i.ai.gov.uk/",
   }
 
   batch_env_vars = merge(local.base_env_vars, {
@@ -108,6 +109,9 @@ module "backend" {
   }
   entrypoint = ["./start.sh"]
 
+  memory = 4096
+  cpu    = 1024
+
 }
 
 
@@ -147,16 +151,6 @@ module "frontend" {
     unhealthy_threshold = 5
     port                = local.frontend_port
     path                = "/health"
-  }
-
-  authenticate_keycloak = {
-    
-    enabled : false,
-    
-    realm_name : data.terraform_remote_state.keycloak.outputs.realm_name,
-    client_id : var.project_name,
-    client_secret: data.aws_ssm_parameter.client_secret.value,
-    keycloak_dns: data.terraform_remote_state.keycloak.outputs.keycloak_dns
   }
 
   task_additional_iam_policies = local.additional_policy_arns

@@ -9,9 +9,16 @@ export enum Routes {
   SignIn = "/sign-in",
   SignOut = "/sign-out",
   ApiMagicLink = "/api/magic-link/",
-  ApiConsultations = "/api/consultations",
+  ApiConsultations = "/api/consultations/",
+  ApiConsultationFolders = "/api/consultations/folders/",
+  ApiConsultationImport = "/api/consultations/import/",
+  ApiConsultationImportImmutable = "/api/consultations/import-immutable/",
+  ApiConsultationImportCandidateThemes = "/api/consultations/import-candidate-themes/",
+  ApiConsultationImportAnnotations = "/api/consultations/import-annotations/",
+  ApiConsultationExport = "/api/consultations/export/",
+  ApiConsultationQuestions = "/api/questions/",
   ApiUser = "/api/user/",
-  ApiAstroSignIn = "/api/astro/sign-in",
+  ApiAstroSignIn = "/api/astro/sign-in/",
   Design = "/design",
   SupportImport = "/support/consultations/import-summary",
   ImportConsultations = "/support/consultations/import-consultation",
@@ -77,19 +84,14 @@ export const getApiQuestionUrl = (
 ) => {
   return `${Routes.ApiConsultations}/${consultationId}/questions/${questionId}`;
 };
-export const getApiAnswerUrl = (
-  consultationId: string,
-  questionId: string,
-  answerId: string,
-) => {
-  return `${Routes.ApiConsultations}/${consultationId}/responses/${answerId}/`;
+export const getApiAnswerUrl = (consultationId: string, answerId: string) => {
+  return `${Routes.ApiConsultations}${consultationId}/responses/${answerId}/`;
 };
 export const getApiAnswerFlagUrl = (
   consultationId: string,
-  questionId: string,
   answerId: string,
 ) => {
-  return `${Routes.ApiConsultations}/${consultationId}/responses/${answerId}/toggle-flag/`;
+  return `${Routes.ApiConsultations}${consultationId}/responses/${answerId}/toggle-flag/`;
 };
 export const getApiConsultationRespondentsUrl = (consultationId: string) => {
   return `${Routes.ApiConsultations}/${consultationId}/respondents/`;

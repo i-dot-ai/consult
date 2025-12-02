@@ -5,13 +5,24 @@ import Link from "../../../components/Link.svelte";
 import Title from "../../../components/Title.svelte";
 import { Routes } from "../../../global/routes";
 ---
+
 <Layout>
   <Section>
     <Title level={1} text="Import consultation data" />
     <ul>
-      <li><Link href={Routes.ImportConsultations}>Import consultation</Link></li>
-      <li><Link href={Routes.SupportQueue}>See progress of import tasks in Django RQ dashboard</Link></li>
-      <li><Link href={Routes.SupportConsultations}>Return to consultations overview</Link></li>
+      <li>
+        <Link href={Routes.ImportConsultations}>Import consultation</Link>
+      </li>
+      <li>
+        <Link href={Routes.SupportQueue}
+          >See progress of import tasks in Django RQ dashboard</Link
+        >
+      </li>
+      <li>
+        <Link href={Routes.SupportConsultations}
+          >Return to consultations overview</Link
+        >
+      </li>
     </ul>
   </Section>
 </Layout>

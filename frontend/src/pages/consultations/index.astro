@@ -1,16 +1,17 @@
 ---
-import Layout from '../../layouts/Layout.astro';
-import Section from '../../components/Section/Section.svelte';
-import Title from '../../components/Title.svelte';
+import Layout from "../../layouts/Layout.astro";
+import Section from "../../components/Section/Section.svelte";
+import Title from "../../components/Title.svelte";
 
-import ConsultationList from '../../components/screens/ConsultationList.svelte';
+import ConsultationList from "../../components/screens/ConsultationList.svelte";
 ---
+
 <Layout>
-	<Section>
-		<Title level={1} text="Your consultations" />
+  <Section>
+    <Title level={1} text="Your consultations" />
 
-		<p>Click to review themes for your consultations</p>
+    <p>Click to review themes for your consultations</p>
 
-		<ConsultationList client:load />
-	</Section>
+    <ConsultationList client:load />
+  </Section>
 </Layout>

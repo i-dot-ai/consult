@@ -1,5 +1,4 @@
 import logging
-from datetime import date
 from uuid import UUID
 
 from django.conf import settings
@@ -16,10 +15,8 @@ from consultation_analyser.consultations.dummy_data import (
     create_dummy_consultation_from_yaml_job,
 )
 from consultation_analyser.consultations.export_user_theme import export_user_theme_job
-from consultation_analyser.consultations.models import Consultation
 from consultation_analyser.hosting_environment import HostingEnvironment
 from consultation_analyser.support_console import ingest
-from consultation_analyser.support_console.ingest import export_selected_themes
 
 logger = settings.LOGGER
 
@@ -41,6 +38,63 @@ def import_consultation_job(
         timestamp=timestamp,
         current_user_id=current_user_id,
         sign_off=sign_off,
+    )
+
+
+@job("default", timeout=3600)
+def import_immutable_data_job(
+    consultation_name: str,
+    consultation_code: str,
+    user_id: UUID,
+) -> UUID:
+    """Import consultation immutable data from S3."""
+    from consultation_analyser.support_console.ingestion.ingest_immutable import (
+        import_consultation_from_s3,
+    )
+
+    logger.refresh_context()
+
+    return import_consultation_from_s3(
+        consultation_code=consultation_code,
+        consultation_title=consultation_name,
+        user_id=user_id,
+        enqueue_embeddings=True,
+    )
+
+
+@job("default", timeout=3600)
+def import_candidate_themes_job(
+    consultation_code: str,
+    timestamp: str,
+) -> None:
+    """Import candidate themes from S3."""
+    from consultation_analyser.support_console.ingestion.ingest_candidate_themes import (
+        import_candidate_themes_from_s3,
+    )
+
+    logger.refresh_context()
+
+    import_candidate_themes_from_s3(
+        consultation_code=consultation_code,
+        timestamp=timestamp,
+    )
+
+
+@job("default", timeout=3600)
+def import_response_annotations_job(
+    consultation_code: str,
+    timestamp: str,
+) -> None:
+    """Import response annotations from S3."""
+    from consultation_analyser.support_console.ingestion.ingest_response_annotations import (
+        import_response_annotations_from_s3,
+    )
+
+    logger.refresh_context()
+
+    import_response_annotations_from_s3(
+        consultation_code=consultation_code,
+        timestamp=timestamp,
     )
 
 
@@ -374,31 +428,28 @@ def delete_question(request: HttpRequest, consultation_id: UUID, question_id: UU
 def themefinder(request: HttpRequest) -> HttpResponse:
     logger.refresh_context()
 
-    candidate_consultation_codes = [
-        {"text": x.code, "value": x.id} for x in Consultation.objects.filter(timestamp__isnull=True)
-    ]
+    consultation_folders = ingest.get_folder_names_for_dropdown()
+    bucket_name = settings.AWS_BUCKET_NAME
+    current_user_id = request.user.id
 
+    consultation_code = None
+    consultation_name = None
     if request.method == "POST":
-        if consultation_id := request.POST.get("consultation_id"):
-            consultation = get_object_or_404(Consultation, id=consultation_id)
+        consultation_code = request.POST.get("consultation_code")
+        consultation_name = request.POST.get("consultation_name")
 
-            consultation.timestamp = date.today().isoformat()
-            consultation.save()
-
-            for question in consultation.question_set.all():
-                export_selected_themes(question)
-
+        if consultation_code:
             try:
                 # Send message to SQS
                 ingest.send_job_to_sqs(
-                    consultation.code, consultation.title, request.user.id, "THEMEFINDER"
+                    consultation_code, consultation_name, current_user_id, "THEMEFINDER"
                 )
                 messages.success(
                     request,
                     format_html(
                         "Themefinder job submitted successfully for consultation '<strong>{}</strong>' from folder '<strong>{}</strong>'",
-                        consultation.title,
-                        consultation.code,
+                        consultation_name,
+                        consultation_code,
                     ),
                 )
 
@@ -408,7 +459,10 @@ def themefinder(request: HttpRequest) -> HttpResponse:
             messages.error(request, "Please select a consultation folder.")
 
     context = {
-        "candidate_consultation_codes": candidate_consultation_codes,
+        "bucket_name": bucket_name,
+        "consultation_folders": consultation_folders,
+        "consultation_code": consultation_code,
+        "consultation_name": consultation_name,
     }
 
     return render(request, "support_console/consultations/themefinder.html", context=context)

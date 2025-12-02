@@ -3,6 +3,7 @@
   import { slide } from "svelte/transition";
   import type { Writable } from "svelte/store";
 
+  import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import Help from "../svg/material/Help.svelte";
   import Star from "../svg/material/Star.svelte";
@@ -11,10 +12,7 @@
   import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
   import Metrics from "../dashboard/Metrics/Metrics.svelte";
 
-  import type {
-    Consultation,
-    DemoOptionsResponse,
-  } from "../../global/types.ts";
+  import type { DemoOptionsResponse } from "../../global/types.ts";
   import {
     getApiQuestionsUrl,
     getQuestionDetailUrl,
@@ -27,13 +25,11 @@
 
   const {
     loading: isDemoOptionsLoading,
-    error: demoOptionsError,
     load: loadDemoOptions,
     data: demoOptionsData,
   }: {
     loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
+    load: (_url: string) => Promise<void>;
     data: Writable<DemoOptionsResponse>;
   } = createFetchStore();
 
@@ -50,11 +46,6 @@
     error: questionsError,
     load: loadQuestions,
     data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
   } = createFetchStore();
 
   $: favQuestions = $questionsData?.results?.filter((question) =>
@@ -93,7 +84,7 @@
     {:else}
       <div transition:slide>
         <div class="mb-8">
-          {#each favQuestions as question}
+          {#each favQuestions as question (question.id)}
             <QuestionCard
               {consultationId}
               {question}
@@ -142,15 +133,22 @@
         />
 
         <div class="mb-4">
-          {#each displayQuestions as question}
-            <QuestionCard
-              {consultationId}
-              {question}
-              highlightText={searchValue}
-              clickable={true}
-              url={getQuestionDetailUrl(consultationId, question.id || "")}
+          {#if !displayQuestions?.length && !$isQuestionsLoading}
+            <NotFoundMessage
+              variant="archive"
+              body="No questions found matching your search."
             />
-          {/each}
+          {:else}
+            {#each displayQuestions as question (question.id)}
+              <QuestionCard
+                {consultationId}
+                {question}
+                highlightText={searchValue}
+                clickable={true}
+                url={getQuestionDetailUrl(consultationId, question.id || "")}
+              />
+            {/each}
+          {/if}
         </div>
       </div>
     {/if}
