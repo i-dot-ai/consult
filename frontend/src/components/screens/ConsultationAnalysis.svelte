@@ -1,7 +1,7 @@
 <script lang="ts">
   import clsx from "clsx";
 
-  import type { Writable } from "svelte/store";
+  import { onMount } from "svelte";
 
   import {
     getApiConsultationUrl,
@@ -13,10 +13,12 @@
     type DemoOptionsResponse,
     type DemoOptionsResponseItem,
     type QuestionMultiAnswer,
+    type QuestionsResponse,
   } from "../../global/types";
   import { getPercentage } from "../../global/utils";
   import { createFetchStore } from "../../global/stores";
 
+  import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
   import Chart from "../dashboard/Chart.svelte";
   import MetricsDemoCard from "../dashboard/MetricsDemoCard/MetricsDemoCard.svelte";
   import Panel from "../dashboard/Panel/Panel.svelte";
@@ -31,45 +33,36 @@
 
   let { consultationId = "" }: Props = $props();
 
-  const { load: loadConsultation } = createFetchStore();
+  const consultationStore = createFetchStore<ConsultationResponse>();
+  const questionsStore = createFetchStore<QuestionsResponse>();
+  const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
 
-  const {
-    load: loadQuestions,
-    data: questionsData,
-  }: {
-    load: (_url: string) => Promise<void>;
-    data: Writable<ConsultationResponse>;
-  } = createFetchStore();
+  let dataRequested: boolean = $state(false);
 
-  const {
-    load: loadDemoOptions,
-    data: demoOptionsData,
-  }: {
-    load: (_url: string) => Promise<void>;
-    data: Writable<DemoOptionsResponse>;
-  } = createFetchStore();
-
-  let totalResponses = $derived(
-    $questionsData?.results?.reduce(
+  let totalResponses: number = $derived(
+    $questionsStore.data?.results?.reduce(
       (acc, question) => acc + (question?.total_responses || 0),
       0,
-    ),
+    ) || 0,
   );
 
   let demoCategories = $derived([
-    ...new Set(($demoOptionsData || []).map((opt) => opt.name)),
+    ...new Set(($demoOptionsStore.data || []).map((opt) => opt.name)),
   ]);
 
   let chartQuestions = $derived(
-    $questionsData?.results?.filter((question) => question.has_multiple_choice),
+    $questionsStore.data?.results?.filter(
+      (question) => question.has_multiple_choice,
+    ),
   );
 
-  $effect(() => {
-    loadConsultation(getApiConsultationUrl(consultationId));
-    loadQuestions(getApiQuestionsUrl(consultationId));
-    loadDemoOptions(
+  onMount(() => {
+    $consultationStore.fetch(getApiConsultationUrl(consultationId));
+    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
+    $demoOptionsStore.fetch(
       `/api/consultations/${consultationId}/demographic-options/`,
     );
+    dataRequested = true;
   });
 </script>
 
@@ -88,37 +81,43 @@
       <Finance slot="icon" />
     </TitleRow>
 
-    <div class="mb-4 grid grid-cols-12 gap-4">
-      {#each demoCategories as category (category)}
-        <div class="col-span-12 md:col-span-4">
-          <MetricsDemoCard
-            title={category}
-            items={[...($demoOptionsData || [])]
-              .filter((opt: DemoOptionsResponseItem) => opt.name === category)
-              .sort(
-                (a: DemoOptionsResponseItem, b: DemoOptionsResponseItem) => {
-                  if (a.count < b.count) {
-                    return 1;
-                  } else if (a.count > b.count) {
-                    return -1;
-                  }
-                  return 0;
-                },
-              )
-              .map((demoOption: DemoOptionsResponseItem) => ({
-                title: demoOption.value.replaceAll("'", ""),
-                count: demoOption.count,
-                percentage: getPercentage(demoOption.count, totalResponses),
-              }))}
-            hideThreshold={Infinity}
-          />
-        </div>
-      {/each}
-    </div>
+    {#if !dataRequested || $demoOptionsStore.isLoading}
+      <LoadingMessage message="Loading Demographics..." />
+    {:else}
+      <div class="mb-4 grid grid-cols-12 gap-4">
+        {#each demoCategories as category (category)}
+          <div class="col-span-12 md:col-span-4">
+            <MetricsDemoCard
+              title={category}
+              items={[...($demoOptionsStore.data || [])]
+                .filter((opt: DemoOptionsResponseItem) => opt.name === category)
+                .sort(
+                  (a: DemoOptionsResponseItem, b: DemoOptionsResponseItem) => {
+                    if (a.count < b.count) {
+                      return 1;
+                    } else if (a.count > b.count) {
+                      return -1;
+                    }
+                    return 0;
+                  },
+                )
+                .map((demoOption: DemoOptionsResponseItem) => ({
+                  title: demoOption.value.replaceAll("'", ""),
+                  count: demoOption.count,
+                  percentage: getPercentage(demoOption.count, totalResponses),
+                }))}
+              hideThreshold={Infinity}
+            />
+          </div>
+        {/each}
+      </div>
+    {/if}
   </Panel>
 </section>
 
-{#if chartQuestions?.length > 0}
+{#if !dataRequested || $questionsStore.isLoading}
+  <LoadingMessage message="Loading Questions..." />
+{:else if chartQuestions && chartQuestions?.length > 0}
   <section>
     <Panel>
       <TitleRow

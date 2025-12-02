@@ -19,35 +19,22 @@ jobs:
 
       - name: Copy environment file
         run: |
-          cp .env.example .env
+          cp .env.test .env
 
       - name: Start services with docker compose
         run: |
           docker compose up -d postgres
           docker compose up -d backend
           docker compose up -d frontend
-          sleep 30
-
-      - name: Create admin user
-        run: |
-          docker compose run backend venv/bin/django-admin createadminusers
+          sleep 10
 
       - name: Set up Node.js (for Playwright only)
         uses: actions/setup-node@v6
         with:
           node-version: 24.8
 
-      - name: Install e2e test dependencies
-        run: npm install
-        working-directory: e2e_tests
-
-      - name: Install Playwright
-        run: npx playwright install --with-deps
-        working-directory: e2e_tests
-
-      - name: Run Playwright tests
-        run: npm run e2e
-        working-directory: e2e_tests
+      - name: run tests
+        run: make test-end-to-end
 
       - name: Stop docker-compose services
         run: docker compose down

@@ -13,9 +13,7 @@ For our core AI-pipeline used for topic modelling to classify consultation respo
 
 ### External dependencies
 
-- PostgreSQL (`brew install postgresql`)
-- Postgres Vector Plugin (`brew install pgvector`)
-- redis (`brew install redis`)
+- Docker (`brew install docker`)
 - GraphViz (`brew install graphviz`), for generating diagrams
 - precommit (`brew install pre-commit`)
 
@@ -66,7 +64,7 @@ You can override these settings in your User Settings if you prefer different pe
 
 ### Environment variables
 
-Populate `.env` by copying `.env.example` and filling in required values.
+Populate `.env` by copying `.env.test` and filling in required values.
 
 ### Install packages
 
@@ -75,7 +73,7 @@ Ensure you have `python 3.12.3`, `poetry` and `npm` installed. Then run `poetry 
 ### Database setup
 
 ```
-brew services start postgresql
+docker compose up -d postgres
 ```
 
 This will run the postgresql locally.
@@ -103,7 +101,7 @@ make check_db
 Make sure redis is running:
 
 ```
-brew services start redis
+docker compose up -d redis
 ```
 
 The database should also be running as described above.
@@ -310,10 +308,7 @@ End-to-end tests are located in the `/e2e_tests` folder and use Playwright to te
 To run e2e tests:
 
 ```bash
-cd e2e_tests
-npm install
-npx playwright install --with-deps
-npm run e2e
+make test-end-to-end
 ```
 
 Or run with UI:

@@ -1,9 +1,9 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
-  import type { Writable } from "svelte/store";
 
   import NotFoundMessage from "../NotFoundMessage/NotFoundMessage.svelte";
+  import LoadingMessage from "../LoadingMessage/LoadingMessage.svelte";
   import TextInput from "../inputs/TextInput/TextInput.svelte";
   import Help from "../svg/material/Help.svelte";
   import Star from "../svg/material/Star.svelte";
@@ -12,60 +12,58 @@
   import QuestionCard from "../dashboard/QuestionCard/QuestionCard.svelte";
   import Metrics from "../dashboard/Metrics/Metrics.svelte";
 
-  import type { DemoOptionsResponse } from "../../global/types.ts";
+  import type {
+    DemoOptionsResponse,
+    QuestionsResponse,
+  } from "../../global/types.ts";
   import {
     getApiQuestionsUrl,
     getQuestionDetailUrl,
   } from "../../global/routes.ts";
   import { createFetchStore, favStore } from "../../global/stores.ts";
 
-  export let consultationId: string = "";
+  interface Props {
+    consultationId: string;
+  }
 
-  let searchValue: string = "";
+  let { consultationId }: Props = $props();
 
-  const {
-    loading: isDemoOptionsLoading,
-    load: loadDemoOptions,
-    data: demoOptionsData,
-  }: {
-    loading: Writable<boolean>;
-    load: (_url: string) => Promise<void>;
-    data: Writable<DemoOptionsResponse>;
-  } = createFetchStore();
+  let searchValue: string = $state("");
+  let dataRequested: boolean = $state(false);
 
-  onMount(async () => {
-    loadQuestions(getApiQuestionsUrl(consultationId));
+  const questionsStore = createFetchStore<QuestionsResponse>();
+  const demoOptionsStore = createFetchStore<DemoOptionsResponse>();
 
-    loadDemoOptions(
+  onMount(() => {
+    $questionsStore.fetch(getApiQuestionsUrl(consultationId));
+    $demoOptionsStore.fetch(
       `/api/consultations/${consultationId}/demographic-options/`,
     );
+    dataRequested = true;
   });
 
-  const {
-    loading: isQuestionsLoading,
-    error: questionsError,
-    load: loadQuestions,
-    data: questionsData,
-  } = createFetchStore();
-
-  $: favQuestions = $questionsData?.results?.filter((question) =>
-    $favStore.includes(question.id),
+  let favQuestions = $derived(
+    $questionsStore.data?.results?.filter((question) =>
+      $favStore.includes(question.id),
+    ),
   );
 
-  $: displayQuestions = $questionsData?.results?.filter((question) =>
-    `Q${question.number}: ${question.question_text}`
-      .toLocaleLowerCase()
-      .includes(searchValue.toLocaleLowerCase()),
+  let displayQuestions = $derived(
+    $questionsStore.data?.results?.filter((question) =>
+      `Q${question.number}: ${question.question_text}`
+        .toLocaleLowerCase()
+        .includes(searchValue.toLocaleLowerCase()),
+    ),
   );
 </script>
 
 <section class="my-8">
   <Metrics
     {consultationId}
-    questions={$questionsData?.results || []}
-    loading={$isQuestionsLoading}
-    demoOptionsLoading={$isDemoOptionsLoading}
-    demoOptions={$demoOptionsData || []}
+    questions={$questionsStore.data?.results || []}
+    loading={!dataRequested || $questionsStore.isLoading}
+    demoOptionsLoading={!dataRequested || $demoOptionsStore.isLoading}
+    demoOptions={$demoOptionsStore.data || []}
   />
 </section>
 
@@ -76,28 +74,26 @@
     </TitleRow>
   </div>
 
-  {#if $favStore.length > 0}
-    {#if $isQuestionsLoading}
-      <p transition:slide>Loading questions...</p>
-    {:else if $questionsError}
-      <p transition:slide>{$questionsError}</p>
-    {:else}
-      <div transition:slide>
-        <div class="mb-8">
-          {#each favQuestions as question (question.id)}
-            <QuestionCard
-              {consultationId}
-              {question}
-              highlightText={searchValue}
-              clickable={true}
-              url={getQuestionDetailUrl(consultationId, question.id || "")}
-            />
-          {/each}
-        </div>
-      </div>
-    {/if}
+  {#if dataRequested && (favQuestions?.length === 0 || $favStore.length === 0)}
+    <p transition:slide class="mb-12">You have not favourited any question.</p>
+  {:else if !dataRequested || $questionsStore.isLoading}
+    <LoadingMessage message="Loading Questions..." />
+  {:else if $questionsStore.error}
+    <p transition:slide>{$questionsStore.error}</p>
   {:else}
-    <p transition:slide>You have not favourited any question.</p>
+    <div transition:slide>
+      <div class="mb-8">
+        {#each favQuestions as question (question.id)}
+          <QuestionCard
+            {consultationId}
+            {question}
+            highlightText={searchValue}
+            clickable={true}
+            url={getQuestionDetailUrl(consultationId, question.id || "")}
+          />
+        {/each}
+      </div>
+    </div>
   {/if}
 </section>
 
@@ -110,16 +106,16 @@
       <Help slot="icon" />
 
       <p slot="aside">
-        {$questionsData?.results?.length || 0} questions
+        {$questionsStore.data?.results?.length || 0} questions
       </p>
     </TitleRow>
   </div>
 
   <Panel bg={true} border={true}>
-    {#if $isQuestionsLoading}
-      <p transition:slide>Loading questions...</p>
-    {:else if $questionsError}
-      <p transition:slide>{$questionsError}</p>
+    {#if !dataRequested || $questionsStore.isLoading}
+      <LoadingMessage message="Loading Questions..." />
+    {:else if $questionsStore.error}
+      <p transition:slide>{$questionsStore.error}</p>
     {:else}
       <div transition:slide>
         <TextInput
@@ -133,7 +129,7 @@
         />
 
         <div class="mb-4">
-          {#if !displayQuestions?.length && !$isQuestionsLoading}
+          {#if !displayQuestions?.length && !$questionsStore.isLoading}
             <NotFoundMessage
               variant="archive"
               body="No questions found matching your search."
