@@ -84,6 +84,8 @@
       clearTimeout(markAsReadTimer);
     }
 
+    const READ_TIMEOUT = 10000;  // 10 seconds
+
     markAsReadTimer = setTimeout(async () => {
       if (answers.length > 0) {
         const markPromises = answers.map((answer) =>
@@ -93,7 +95,7 @@
         );
         await Promise.all(markPromises);
       }
-    }, 10000);
+    }, READ_TIMEOUT);
   }
 
   function resetMarkAsReadTimer() {
