@@ -7,9 +7,11 @@ import Details from "./Details.svelte";
 describe("Details Component", () => {
   const props = {
     summaryText: "Test Summary",
-    children: createRawSnippet(() => ({
-      render: () => `<p>Test content</p>`,
-    })),
+    children: createRawSnippet(() => {
+      return {
+        render: () => `<div>Test content</div>`,
+      };
+    }),
   };
 
   it("renders with summary text", () => {

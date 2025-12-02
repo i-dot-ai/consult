@@ -8,7 +8,7 @@
   export let title: string = "";
   export let subtitle: string = "";
   export let level: TitleLevels = 2;
-  export let context: "theme-sign-off";
+  export let context: "dashboard" | "public" | "theme-sign-off" = "dashboard";
 </script>
 
 <div class="flex gap-4">

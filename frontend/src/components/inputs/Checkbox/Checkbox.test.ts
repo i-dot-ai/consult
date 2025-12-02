@@ -1,5 +1,6 @@
 import { render, fireEvent, screen } from "@testing-library/svelte";
 import { describe, it, expect, vi } from "vitest";
+
 import Checkbox from "./Checkbox.svelte";
 
 describe("Checkbox Component", () => {

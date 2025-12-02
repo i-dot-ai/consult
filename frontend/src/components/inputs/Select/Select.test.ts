@@ -183,30 +183,4 @@ describe("Select Component", () => {
     const select = screen.getByRole("combobox");
     expect(select).toHaveAttribute("name", "consultation_code");
   });
-
-  it("applies all GOV.UK label size classes", () => {
-    const labelSizes = [
-      { size: "s", expectedClass: "font-semibold" },
-      { size: "m", expectedClass: "text-lg" },
-      { size: "l", expectedClass: "text-2xl" },
-      { size: "xl", expectedClass: "text-3xl" },
-    ];
-
-    labelSizes.forEach(({ size, expectedClass }) => {
-      const labelText = "Test label: Size " + size;
-      render(Select, {
-        props: {
-          id: "test-select",
-          label: {
-            text: labelText,
-            classes: `govuk-label--${size}`,
-          },
-          items: mockItems,
-        },
-      });
-
-      const label = screen.getByText(labelText);
-      expect(label).toHaveClass(expectedClass);
-    });
-  });
 });

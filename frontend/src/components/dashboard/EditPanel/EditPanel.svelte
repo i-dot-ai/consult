@@ -49,7 +49,7 @@
   }
 
   async function submit() {
-    let actualUpdateAnswer = updateAnswerMock || updateAnswer;
+    let actualUpdateAnswer = updateAnswerMock || $answerUpdateStore.fetch;
 
     if (noChangesStaged()) {
       return;
@@ -64,7 +64,7 @@
       },
     );
 
-    if (!$submitError && !$isSubmitting) {
+    if (!$answerUpdateStore.error && !$answerUpdateStore.isLoading) {
       resetData();
     }
   }
@@ -96,11 +96,7 @@
   let stagedEvidenceRich = $state(false);
   let panelOpen: boolean = $state(false);
 
-  const {
-    loading: isSubmitting,
-    error: submitError,
-    load: updateAnswer,
-  } = createFetchStore();
+  const answerUpdateStore = createFetchStore();
 
   onMount(() => {
     resetStaged();
@@ -109,8 +105,8 @@
   function resetStaged() {
     stagedThemes = themes ? [...themes] : [];
     stagedEvidenceRich = evidenceRich;
-    isSubmitting.set(false);
-    submitError.set("");
+    $answerUpdateStore.isLoading = false;
+    $answerUpdateStore.error = null;
   }
 </script>
 
@@ -206,9 +202,9 @@
 
     <hr class="my-4" />
 
-    {#if $submitError}
+    {#if $answerUpdateStore.error}
       <small class="my-2 block text-red-500" transition:slide
-        >{$submitError}</small
+        >{$answerUpdateStore.error}</small
       >
     {/if}
 
@@ -228,7 +224,7 @@
             </div>
 
             <span class="whitespace-nowrap">
-              {$isSubmitting ? "Saving..." : "Save Changes"}
+              {$answerUpdateStore.isLoading ? "Saving..." : "Save Changes"}
             </span>
           </div>
         </Button>

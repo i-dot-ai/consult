@@ -42,7 +42,7 @@ exports[`AnswersList > should render 1`] = `
     class="mt-2 max-h-[20rem] overflow-y-auto"
   >
     <li
-      class="flex items-center gap-2 mb-2 last:mb-0 p-2 rounded-lg text-neutral-600 bg-neutral-50"
+      class="flex items-start gap-2 mb-2 last:mb-0 p-2 rounded-lg text-neutral-600 bg-neutral-50"
     >
       <div
         class="shrink-0 flex justify-center items-center w-[3ch] h-[3ch] rounded-full text-xs bg-pink-200 text-primary"
@@ -57,7 +57,7 @@ exports[`AnswersList > should render 1`] = `
       </p>
     </li>
     <li
-      class="flex items-center gap-2 mb-2 last:mb-0 p-2 rounded-lg text-neutral-600 bg-neutral-50"
+      class="flex items-start gap-2 mb-2 last:mb-0 p-2 rounded-lg text-neutral-600 bg-neutral-50"
     >
       <div
         class="shrink-0 flex justify-center items-center w-[3ch] h-[3ch] rounded-full text-xs bg-pink-200 text-primary"

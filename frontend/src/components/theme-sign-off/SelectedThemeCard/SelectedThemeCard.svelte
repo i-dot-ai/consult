@@ -41,20 +41,14 @@
     answersMock,
   }: Props = $props();
 
-  let {
-    load: loadAnswers,
-    loading: isAnswersLoading,
-    data: answersData,
-  } = createFetchStore(answersMock);
+  const answersStore = createFetchStore({ mockFetch: answersMock });
 
   let showAnswers = $state(false);
   let editing = $state(false);
-  let answersRequested = $state(false);
 
   const resetAnswers = () => {
-    $answersData = null;
+    $answersStore.data = null;
     showAnswers = false;
-    answersRequested = false;
   };
 </script>
 
@@ -117,21 +111,20 @@
               <Button
                 size="sm"
                 handleClick={() => {
-                  if (!$answersData) {
+                  if (!$answersStore.data) {
                     const queryString = new URLSearchParams({
                       searchMode: "representative",
                       searchValue: `${theme.name} ${theme.description}`,
                       question_id: questionId,
                     }).toString();
 
-                    loadAnswers(
+                    $answersStore.fetch(
                       `${getApiAnswersUrl(consultationId)}?${queryString}`,
                     );
                   }
                   showAnswers = !showAnswers;
-                  answersRequested = true;
                 }}
-                disabled={$isAnswersLoading && answersRequested}
+                disabled={$answersStore.isLoading}
               >
                 <MaterialIcon color="fill-neutral-500">
                   <Docs />
@@ -146,12 +139,12 @@
           {#if showAnswers}
             <aside
               transition:fly={{ x: 300 }}
-              class="grow pt-4 sm:ml-4 sm:border-l sm:border-neutral-200 sm:pl-4 sm:pt-0"
+              class="grow pt-4 sm:ml-4 sm:w-2/3 sm:border-l sm:border-neutral-200 sm:pl-4 sm:pt-0"
             >
               <AnswersList
                 title="Representative Responses"
-                loading={$isAnswersLoading}
-                answers={$answersData?.all_respondents
+                loading={$answersStore.isLoading}
+                answers={$answersStore.data?.all_respondents
                   .slice(0, maxAnswers)
                   .map((answer) => answer.free_text_answer_text) || []}
               />
