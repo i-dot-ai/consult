@@ -8,7 +8,7 @@ export default {
         primary: "var(--color-primary)",
         secondary: "var(--color-secondary)",
         iaiteal: {
-          50: "oklch(0.96 0.02 175)",åß
+          50: "oklch(0.96 0.02 175)",
           100: "oklch(0.91 0.05 175)",
           200: "oklch(0.84 0.08 175)",
           300: "oklch(0.75 0.12 175)",
