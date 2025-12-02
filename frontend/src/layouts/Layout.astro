@@ -4,8 +4,8 @@ import Header from "../components/Header/Header.svelte";
 import Footer from "../components/Footer/Footer.svelte";
 import { fetchBackendApi } from "../global/api";
 
-let isStaff: Boolean = false;
-let email: String | null  = null;
+let isStaff: boolean = false;
+let isSignedIn: boolean = false;
 
 try {
 	const data = await fetchBackendApi<{ is_staff: Boolean, email: String}>(Astro, "/api/user/");
@@ -13,16 +13,17 @@ try {
 	email = data.email;
 	console.log(`user ${email} signed in`)
 } catch {
-	console.log("user not signed in")
+  console.log("user not signed in");
 }
 ---
+
 <!doctype html>
-<html lang="en" class="scroll-smooth scroll-p-8">
-	<head>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.ico" />
-		<title>Consult</title>
+<html lang="en" class="scroll-p-8 scroll-smooth">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.ico" />
+    <title>Consult</title>
 
 		<script is:inline src="/lit/index.js"></script>
 	</head>
@@ -30,20 +31,20 @@ try {
 		<div class="flex flex-col h-full max-w-screen-3xl mx-auto">
 			<Header client:load isStaff={isStaff} email={email}/>
 
-			<main class="grow">
-				<slot />
+      <main class="grow">
+        <slot />
       </main>
 
-			<Footer />
-		</div>
-	</body>
+      <Footer />
+    </div>
+  </body>
 </html>
 
 <style>
-	html,
-	body {
-		margin: 0;
-		width: 100%;
-		height: 100%;
-	}
+  html,
+  body {
+    margin: 0;
+    width: 100%;
+    height: 100%;
+  }
 </style>

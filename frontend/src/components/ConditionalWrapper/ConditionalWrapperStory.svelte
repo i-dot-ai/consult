@@ -6,14 +6,14 @@
 
 <div>
   <Title level={2} text="With Condition True" />
-  <ConditionalWrapper condition={true} element={"a"} href="#">
+  <ConditionalWrapper condition={true} element="a" href="#">
     <p>Slot text</p>
   </ConditionalWrapper>
 </div>
 
 <div>
   <Title level={2} text="With Condition False" />
-  <ConditionalWrapper condition={false} element={"a"} href="#">
+  <ConditionalWrapper condition={false} element="a" href="#">
     <p>Slot text</p>
   </ConditionalWrapper>
 </div>

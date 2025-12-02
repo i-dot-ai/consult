@@ -1,6 +1,7 @@
 import logging
 from uuid import UUID
 
+import sentry_sdk
 from django.db.models import Count
 from rest_framework import serializers, status
 from rest_framework.decorators import action
@@ -15,6 +16,9 @@ from consultation_analyser.consultations.api.permissions import (
 from consultation_analyser.consultations.api.serializers import (
     ConsultationExportSerializer,
     ConsultationFolderSerializer,
+    ConsultationImportAnnotationsSerializer,
+    ConsultationImportCandidateThemesSerializer,
+    ConsultationImportImmutableSerializer,
     ConsultationImportSerializer,
     ConsultationSerializer,
     DemographicOptionSerializer,
@@ -24,7 +28,10 @@ from consultation_analyser.consultations.models import Consultation, Demographic
 from consultation_analyser.support_console import ingest
 from consultation_analyser.support_console.views.consultations import (
     delete_consultation_job,
+    import_candidate_themes_job,
     import_consultation_job,
+    import_immutable_data_job,
+    import_response_annotations_job,
 )
 
 
@@ -101,6 +108,121 @@ class ConsultationViewSet(ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST,
             )
         except Exception:
+            return Response(
+                {"message": "An error occurred while starting the import"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="import-immutable",
+        permission_classes=[IsAdminUser],
+    )
+    def import_immutable_data(self, request) -> Response:
+        """
+        Import immutable consultation data from S3.
+        """
+        try:
+            input_serializer = ConsultationImportImmutableSerializer(data=request.data)
+            input_serializer.is_valid(raise_exception=True)
+
+            validated = input_serializer.validated_data
+
+            import_immutable_data_job.delay(
+                consultation_name=validated["consultation_name"],
+                consultation_code=validated["consultation_code"],
+                user_id=request.user.id,
+            )
+
+            return Response(
+                {"message": "Immutable data import job started successfully"},
+                status=status.HTTP_202_ACCEPTED,
+            )
+        except serializers.ValidationError as e:
+            sentry_sdk.capture_exception(e)
+            return Response(
+                {"message": "An error occurred while starting the import"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return Response(
+                {"message": "An error occurred while starting the import"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="import-candidate-themes",
+        permission_classes=[IsAdminUser],
+    )
+    def import_candidate_themes(self, request) -> Response:
+        """
+        Import candidate themes from S3.
+        """
+        try:
+            input_serializer = ConsultationImportCandidateThemesSerializer(data=request.data)
+            input_serializer.is_valid(raise_exception=True)
+
+            validated = input_serializer.validated_data
+
+            import_candidate_themes_job.delay(
+                consultation_code=validated["consultation_code"],
+                timestamp=validated["timestamp"],
+            )
+
+            return Response(
+                {"message": "Candidate themes import job started successfully"},
+                status=status.HTTP_202_ACCEPTED,
+            )
+        except serializers.ValidationError as e:
+            sentry_sdk.capture_exception(e)
+            return Response(
+                {"message": "An error occurred while starting the import"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
+            return Response(
+                {"message": "An error occurred while starting the import"},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
+
+    @action(
+        detail=False,
+        methods=["post"],
+        url_path="import-annotations",
+        permission_classes=[IsAdminUser],
+    )
+    def import_annotations(self, request) -> Response:
+        """
+        Import response annotations from S3.
+        """
+        try:
+            input_serializer = ConsultationImportAnnotationsSerializer(data=request.data)
+            input_serializer.is_valid(raise_exception=True)
+
+            validated = input_serializer.validated_data
+
+            import_response_annotations_job.delay(
+                consultation_code=validated["consultation_code"],
+                timestamp=validated["timestamp"],
+            )
+
+            return Response(
+                {"message": "Response annotations import job started successfully"},
+                status=status.HTTP_202_ACCEPTED,
+            )
+        except serializers.ValidationError as e:
+            sentry_sdk.capture_exception(e)
+            return Response(
+                {"message": "An error occurred while starting the import"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        except Exception as e:
+            sentry_sdk.capture_exception(e)
             return Response(
                 {"message": "An error occurred while starting the import"},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,

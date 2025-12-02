@@ -23,9 +23,9 @@ export const onRequest: MiddlewareHandler = async (context, next) => {
           method: "POST",
           body: body,
           headers: {"Content-Type": "application/json"}
-        });      
+        });
         const data = await response.json();
-        
+
         context.cookies.set("access", data.access, { path: "/", sameSite: "lax" });
         context.cookies.set("sessionId", data.sessionId, { path: "/", sameSite: "lax" });
         const resp = await fetchBackendApi<{ is_staff: Boolean }>(

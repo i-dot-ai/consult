@@ -285,7 +285,6 @@ class TestIngestImmutableData:
         batch = ImmutableDataBatch(
             consultation_code="NHS_2024",
             consultation_title="NHS Consultation 2024",
-            timestamp="2024-01-15",
             respondents=[
                 RespondentInput(themefinder_id=1, demographic_data={"age": ["25-34"]}),
                 RespondentInput(themefinder_id=2, demographic_data={"age": ["35-44"]}),
@@ -318,7 +317,6 @@ class TestIngestImmutableData:
         consultation = Consultation.objects.get(id=consultation_id)
         assert consultation.code == "NHS_2024"
         assert consultation.title == "NHS Consultation 2024"
-        assert consultation.timestamp == "2024-01-15"
         assert user in consultation.users.all()
 
         # Verify respondents created

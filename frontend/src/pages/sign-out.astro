@@ -35,12 +35,11 @@ const signOutUrl = `https://sso.service.security.gov.uk/sign-out?from_app=${clie
 
 return Astro.redirect(signOutUrl);
 ---
-<Layout>
-	<Section>
-		<Title level={1} text="Signed out" />
 
-        <p class="my-4 text-md text-gray-500">
-            You have signed out
-        </p>
-	</Section>
+<Layout>
+  <Section>
+    <Title level={1} text="Signed out" />
+
+    <p class="text-md my-4 text-gray-500">You have signed out</p>
+  </Section>
 </Layout>

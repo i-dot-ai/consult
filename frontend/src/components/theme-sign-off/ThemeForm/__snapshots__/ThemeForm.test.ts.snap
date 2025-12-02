@@ -46,10 +46,10 @@ exports[`ThemeForm > should render add variant 1`] = `
       >
         <!---->
         <div
-          class="flex justify-between items-center gap-2 w-full"
+          class="flex w-full items-center justify-between gap-2"
         >
           <div
-            class="flex gap-2 items-center"
+            class="flex items-center gap-2"
           >
             <svg
               class="fill-neutral-500"
@@ -153,9 +153,8 @@ exports[`ThemeForm > should render add variant 1`] = `
       <!---->
       <button
         aria-pressed="false"
-        class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-primary text-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:text-primary hover:border-primary disabled disabled:bg-gray-200 disabled:text-gray-400 disabled:cursor-not-allowed disabled:hover:bg-gray-200 disabled:hover:border-gray-300 disabled:hover:text-gray-400 svelte-1d0mdzt"
+        class="text-sm cursor-pointer rounded-md py-1 px-2 border bg-primary text-white border-gray-300 transition-colors duration-300 self-start inline-flex gap-1 items-center hover:bg-gray-100 hover:border-primary hover:text-primary svelte-1d0mdzt"
         data-variant="primary"
-        disabled=""
         role="button"
         tabindex="0"
       >

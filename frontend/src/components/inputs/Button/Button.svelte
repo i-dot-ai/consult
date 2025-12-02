@@ -13,7 +13,7 @@
     | "primary"
     | "approve"
     | "none" = "dark";
-  export let handleClick = (e: MouseEvent) => {};
+  export let handleClick = () => {};
   export let disabled: boolean = false;
   export let fullWidth: boolean = false;
   export let testId: string = "";
@@ -48,8 +48,8 @@
     "gap-1",
     "items-center",
     "hover:bg-gray-100",
-    variant === "primary" && "hover:text-primary hover:border-primary",
-    variant === "approve" && "hover:text-secondary hover:border-secondary",
+    variant === "primary" && "hover:border-primary hover:text-primary",
+    variant === "approve" && "hover:border-secondary hover:text-secondary",
 
     disabled &&
       clsx([
@@ -68,7 +68,7 @@
         highlightVariant === "dark" &&
           "!bg-neutral-800 text-white hover:bg-neutral-700",
         highlightVariant === "light" &&
-          "!bg-pink-100 text-neutral-800 border border-pink-200 hover:bg-pink-200",
+          "border border-pink-200 !bg-pink-100 text-neutral-800 hover:bg-pink-200",
         highlightVariant === "primary" &&
           "!bg-primary text-white hover:bg-pink-500",
         highlightVariant === "approve" &&

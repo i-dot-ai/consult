@@ -131,7 +131,7 @@
 </script>
 
 {#if targetRect && currStep >= 0 && !isOnboardingComplete()}
-  <article transition:fade={{ duration: 300 }} class="absolute top-0 left-0">
+  <article transition:fade={{ duration: 300 }} class="absolute left-0 top-0">
     <div
       style={clsx([
         `top: ${targetRect.top}px;`,
@@ -170,10 +170,10 @@
         `left: ${targetRect.left}px;`,
       ])}
     >
-      <header class="mb-8 flex justify-between items-start">
+      <header class="mb-8 flex items-start justify-between">
         <div class="flex items-center gap-2">
           {#if steps[currStep].icon}
-            <div class="bg-pink-100 rounded-full p-1">
+            <div class="rounded-full bg-pink-100 p-1">
               <MaterialIcon color="fill-primary" size="1.2rem">
                 <svelte:component this={steps[currStep].icon} />
               </MaterialIcon>
@@ -181,7 +181,7 @@
           {/if}
 
           <div>
-            <h3 class="text-sm mb-1">
+            <h3 class="mb-1 text-sm">
               {steps[currStep].title}
             </h3>
             <p class="text-xs text-neutral-500">
@@ -198,8 +198,9 @@
         </Button>
       </header>
 
-      <p class="text-xs text-neutral-700 leading-5">
+      <p class="text-xs leading-5 text-neutral-700">
         {#if typeof steps[currStep].body === "string"}
+          <!-- eslint-disable-next-line svelte/no-at-html-tags -->
           {@html steps[currStep].body}
         {:else}
           {@render (steps[currStep].body as Snippet)()}
@@ -208,15 +209,15 @@
 
       <footer>
         {#if hasMultipleSteps()}
-          <div class="flex flex-no-wrap gap-1 mt-4">
-            {#each steps as _, i}
+          <div class="flex-no-wrap mt-4 flex gap-1">
+            {#each steps as _, i (i)}
               {@const labelText = `Go to step ${i + 1}`}
 
               <button
                 title={labelText}
                 aria-label={labelText}
                 style="width: {Math.round(100 / steps.length)}%;"
-                class={"hover:opacity-75"}
+                class="hover:opacity-75"
                 onclick={() => {
                   // transition only if 1 step difference
                   progressTransition = Math.abs(currStep - i) === 1;
@@ -235,7 +236,7 @@
           </div>
         {/if}
 
-        <div class="flex items-center gap-2 mt-4">
+        <div class="mt-4 flex items-center gap-2">
           {#if hasMultipleSteps()}
             <!-- Previous Button -->
             <div class={clsx(["grow", currStep === 0 && "invisible"])}>
@@ -278,7 +279,7 @@
                 handleClick={close}
                 fullWidth={true}
               >
-                <div class="whitespace-nowrap w-full">Skip Tour</div>
+                <div class="w-full whitespace-nowrap">Skip Tour</div>
               </Button>
             </div>
           {/if}
@@ -303,7 +304,7 @@
                   "w-full",
                 ])}
               >
-                <div class="flex justify-center text-center w-full">
+                <div class="flex w-full justify-center text-center">
                   {#if steps[currStep].nextButtonText}
                     {steps[currStep].nextButtonText}
                   {:else}

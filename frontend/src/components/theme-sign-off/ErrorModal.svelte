@@ -75,7 +75,7 @@
   confirmText={content.confirmText}
   {handleConfirm}
 >
-  <p class="text-sm text-gray-600 mb-4">
+  <p class="mb-4 text-sm text-gray-600">
     {content.message}
   </p>
 </Modal>
