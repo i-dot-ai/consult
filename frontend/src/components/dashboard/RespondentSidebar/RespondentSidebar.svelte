@@ -31,7 +31,7 @@
 </script>
 
 <Panel>
-  <div class="flex items-center gap-2 mb-6">
+  <div class="mb-6 flex items-center gap-2">
     <MaterialIcon size="1.5rem" color="fill-neutral-700">
       <Person />
     </MaterialIcon>
@@ -39,7 +39,7 @@
   </div>
 
   <div class="pl-4">
-    {#each demoData as demoDataItem}
+    {#each demoData as demoDataItem (demoDataItem.name)}
       <RespondentSidebarItem
         title={demoDataItem.name}
         subtitle={demoDataItem.value}

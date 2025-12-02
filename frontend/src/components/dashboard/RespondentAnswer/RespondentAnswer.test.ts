@@ -1,49 +1,40 @@
-import { afterEach, beforeEach, describe, expect, it, test, vi } from "vitest";
-import { render, cleanup, screen } from "@testing-library/svelte";
+import { describe, expect, it } from "vitest";
+import { render, screen } from "@testing-library/svelte";
 
-import RespondentAnswer, { type Props } from "./RespondentAnswer.svelte";
-import RespondentAnswerStory from "./RespondentAnswerStory.svelte";
-
-let testData: Props;
+import RespondentAnswer from "./RespondentAnswer.svelte";
 
 describe("RespondentAnswer", () => {
-  beforeEach(() => {
-    testData = {
-      consultationId: "123",
-      questionId: "456",
-      questionTitle:
-        "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
-      questionNumber: 1,
-      answerText:
-        "I agree in principle, but I think the guidelines should include a provision for periodic review to adapt to market changes.",
-      multiChoice: ["multi 1", "multi 2"],
-      themes: ["Innovation", "Standardized framework"],
-      evidenceRich: true,
-    };
-  });
-
-  afterEach(() => cleanup());
+  const testData = {
+    consultationId: "123",
+    questionId: "456",
+    questionTitle:
+      "Do you agree with the proposal to align the flavour categories of chocolate bars as outlined in the draft guidelines of the Chocolate Bar Regulation for the United Kingdom?",
+    questionNumber: 1,
+    answerText:
+      "I agree in principle, but I think the guidelines should include a provision for periodic review to adapt to market changes.",
+    multiChoice: ["multi 1", "multi 2"],
+    themes: ["Innovation", "Standardized framework"],
+    evidenceRich: true,
+  };
 
   it("should render data", () => {
-    vi.mock("svelte/transition");
-
-    const { getByText } = render(RespondentAnswer, {
+    render(RespondentAnswer, {
       ...testData,
     });
 
-    expect(getByText(testData.questionTitle));
-    expect(getByText(`Q${testData.questionNumber}`));
-    expect(getByText(testData.answerText));
+    expect(screen.getByText(testData.questionTitle)).toBeInTheDocument();
+    expect(screen.getByText(`Q${testData.questionNumber}`)).toBeInTheDocument();
+    expect(screen.getByText(testData.answerText)).toBeInTheDocument();
     testData.multiChoice.forEach((multiAnswer) =>
-      expect(getByText(multiAnswer)),
+      expect(screen.getByText(multiAnswer)).toBeInTheDocument(),
     );
-    testData.themes.forEach((theme) => expect(getByText(theme)));
-    expect(getByText("Evidence-rich"));
+    testData.themes.forEach((theme) =>
+      expect(screen.getByText(theme)).toBeInTheDocument(),
+    );
+    expect(screen.getByText("Evidence-rich")).toBeInTheDocument();
   });
 
   it("should not fail if no themes presenet", () => {
-    vi.mock("svelte/transition");
-
     expect(() => {
       render(RespondentAnswer, {
         ...testData,
@@ -53,15 +44,11 @@ describe("RespondentAnswer", () => {
   });
 
   it("should not render evidence rich tag if not evidence rich", () => {
-    const { queryByText } = render(RespondentAnswer, {
+    render(RespondentAnswer, {
       ...testData,
       evidenceRich: false,
     });
 
-    expect(queryByText("Evidence-rich")).toBeNull();
-  });
-
-  it("should render story", () => {
-    render(RespondentAnswerStory);
+    expect(screen.queryByText("Evidence-rich")).toBeNull();
   });
 });

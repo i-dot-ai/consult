@@ -48,8 +48,8 @@
 
       success = true;
       email = "";
-    } catch (err: any) {
-      error = err.message;
+    } catch (err: unknown) {
+      error = err instanceof Error ? err.message : "An unknown error occurred";
     } finally {
       sending = false;
     }
@@ -80,16 +80,16 @@
     </small>
   {/if}
 
-  <div class="flex flex-wrap justify-start items-center gap-4">
-    <div class="grow max-w-[30ch]">
+  <div class="flex flex-wrap items-center justify-start gap-4">
+    <div class="max-w-[30ch] grow">
       <TextInput
         inputType="email"
-        id={"email-input"}
+        id="email-input"
         autocomplete="on"
         name="email"
-        label={"Email address"}
+        label="Email address"
         hideLabel={true}
-        placeholder={"Your email"}
+        placeholder="Your email"
         value={email}
         setValue={setEmail}
       />

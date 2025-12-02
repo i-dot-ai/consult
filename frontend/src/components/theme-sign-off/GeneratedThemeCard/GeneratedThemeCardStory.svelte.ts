@@ -1,18 +1,18 @@
 import GeneratedThemeCard from "./GeneratedThemeCard.svelte";
 
-let theme = $state({
+const theme = $state({
   id: "theme-id",
   name: "Theme Name",
   description: "Theme description",
   selectedtheme_id: null,
 });
-let level = $state(0);
-let leftPadding = $state(1);
+const level = $state(0);
+const leftPadding = $state(1);
 
-let handleSelect = (theme) =>
+const handleSelect = (theme) =>
   alert(`Select theme event triggered with: ${theme.name}`);
 
-let answersMock = () => ({
+const answersMock = () => ({
   all_respondents: [
     { free_text_answer_text: "Answer 1" },
     { free_text_answer_text: "Answer 2" },

@@ -51,8 +51,8 @@
           }));
         }
       }
-    } catch (err: any) {
-      error = err.message || "something went wrong.";
+    } catch (err: unknown) {
+      error = err instanceof Error ? err.message : "something went wrong.";
     } finally {
       loading = false;
     }
@@ -68,7 +68,7 @@
   <textarea
     id="emailsInput"
     rows="3"
-    class="border border-gray-300 rounded px-3 py-2"
+    class="rounded border border-gray-300 px-3 py-2"
     placeholder="Enter one or more email addresses, separated by comma, space, or newline."
     bind:value={emailsInput}
     disabled={loading}
@@ -88,7 +88,7 @@
       on:change={(e) =>
         (hasDashboardAccess = (e.target as HTMLInputElement).checked)}
       disabled={loading}
-      class="w-6 h-6 focus:ring-2 focus:ring-yellow-300"
+      class="h-6 w-6 focus:ring-2 focus:ring-yellow-300"
     />
     Can access dashboards
   </label>
@@ -97,7 +97,7 @@
     {#if typeof error === "string"}
       <p class="text-sm text-red-500">{`Error: ${error}`}</p>
     {:else}
-      {#each error as err}
+      {#each error as err, i (i)}
         <p class="text-sm text-red-500">
           {`Error for ${err.email}: ${err.error}`}
         </p>

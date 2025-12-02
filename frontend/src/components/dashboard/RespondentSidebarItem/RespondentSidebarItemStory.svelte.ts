@@ -2,11 +2,13 @@ import Person from "../../svg/material/Person.svelte";
 import Star from "../../svg/material/Star.svelte";
 import RespondentSidebarItem from "./RespondentSidebarItem.svelte";
 
-let title = $state("Test title");
-let subtitle = $state("Test subtitle");
-let icon = $state(Person);
-let editable = $state(false);
-let updateSubtitle = $state((newVal: string) => alert(`Updating to ${newVal}`));
+const title = $state("Test title");
+const subtitle = $state("Test subtitle");
+const icon = $state(Person);
+const editable = $state(false);
+const updateSubtitle = $state((newVal: string) =>
+  alert(`Updating to ${newVal}`),
+);
 
 export default {
   name: "RespondentSidebarItem",

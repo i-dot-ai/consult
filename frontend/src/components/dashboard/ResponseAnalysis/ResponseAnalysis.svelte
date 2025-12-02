@@ -20,12 +20,9 @@
     type ResponseTheme,
     type SearchableSelectOption,
   } from "../../../global/types";
-  import {
-    themeFilters,
-    demoFilters,
-    multiAnswerFilters,
-  } from "../../../global/state.svelte";
+  import { themeFilters } from "../../../global/state.svelte";
   import { updateResponseReadStatus } from "../../../global/routes";
+
 
   import Title from "../../Title.svelte";
   import TextInput from "../../inputs/TextInput/TextInput.svelte";
@@ -52,9 +49,9 @@
   export let resetData = () => {};
 
   export let searchValue: string = "";
-  export let setSearchValue = (value: string) => {};
+  export let setSearchValue = () => {};
   export let searchMode: SearchModeValues = SearchModeValues.KEYWORD;
-  export let setSearchMode = (next: SearchModeValues) => {};
+  export let setSearchMode = () => {};
 
   export let demoOptions: DemoOption = {};
   export let demoData: DemoData = {};
@@ -62,13 +59,13 @@
   export let themes: ResponseTheme[] = [];
 
   export let evidenceRich: boolean = false;
-  export let setEvidenceRich = (value: boolean) => {};
+  export let setEvidenceRich = () => {};
 
   export let unseenResponses: boolean = false;
   export let setUnseenResponses = (value: boolean) => {};
 
   export let flaggedOnly: boolean = false;
-  export let setFlaggedOnly = (value: boolean) => {};
+  export let setFlaggedOnly = () => {};
 
   export let anyFilterApplied: boolean = false;
   export let resetFilters: () => void = () => {};
@@ -87,10 +84,10 @@
     if (markAsReadTimer) {
       clearTimeout(markAsReadTimer);
     }
-    
+
     markAsReadTimer = setTimeout(async () => {
       if (answers.length > 0) {
-        const markPromises = answers.map(answer => 
+        const markPromises = answers.map(answer =>
           fetch(updateResponseReadStatus(consultationId, answer.id), {
             method: "POST",
           })
@@ -172,9 +169,9 @@
             {/if}
 
             <div
-              class="flex justify-between items-center gap-4 flex-col-reverse sm:flex-row"
+              class="flex flex-col-reverse items-center justify-between gap-4 sm:flex-row"
             >
-              <div class="w-full sm:w-auto grow">
+              <div class="w-full grow sm:w-auto">
                 <TextInput
                   variant="search"
                   id="search-input"
@@ -230,9 +227,9 @@
                 {#if themeFilters.filters.length > 0}
                   <div
                     transition:slide
-                    class="flex gap-2 flex-wrap items-center my-2"
+                    class="my-2 flex flex-wrap items-center gap-2"
                   >
-                    {#each themeFilters.filters as themeFilter}
+                    {#each themeFilters.filters as themeFilter (themeFilter)}
                       <div transition:fly={{ x: 300 }}>
                         <Tag variant="primary">
                           <span>
@@ -258,7 +255,7 @@
                   </div>
                 {/if}
 
-                <div class="w-full md:w-1/2 mt-4">
+                <div class="mt-4 w-full md:w-1/2">
                   <Popover>
                     <span slot="trigger" class="block text-left">
                       Select Themes...
@@ -305,7 +302,7 @@
               title={`${filteredTotal} responses found`}
               subtitle="All responses to this question"
             >
-              <div slot="aside" class="flex gap-2 items-center flex-wrap">
+              <div slot="aside" class="flex flex-wrap items-center gap-2">
                 {#if anyFilterApplied}
                   <Button
                     size="sm"
@@ -336,7 +333,7 @@
 
             {#if isAnswersLoading && answers.length === 0}
               <div transition:fade>
-                {#each "_".repeat(5) as _}
+                {#each "_".repeat(5) as _, i (i)}
                   <AnswerCard skeleton={true} />
                 {/each}
               </div>
@@ -387,7 +384,7 @@
 
                 {#if isAnswersLoading}
                   <div transition:fade>
-                    {#each "_".repeat(5) as _}
+                    {#each "_".repeat(5) as _, i (i)}
                       <AnswerCard skeleton={true} />
                     {/each}
                   </div>
@@ -417,7 +414,7 @@
                 </div>
 
                 {#if answers}
-                  <p class="text-sm text-center mt-2">
+                  <p class="mt-2 text-center text-sm">
                     {`Showing first ${answers.length} of ${filteredTotal} responses. Use filters to narrow results.`}
                   </p>
                 {/if}

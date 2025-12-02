@@ -3,7 +3,6 @@
 
   import { onMount } from "svelte";
   import { slide } from "svelte/transition";
-  import type { Writable } from "svelte/store";
 
   import {
     getApiConsultationUrl,
@@ -47,36 +46,12 @@
     error: questionsError,
     load: loadQuestions,
     data: questionsData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
   } = createFetchStore();
 
-  const {
-    loading: isConsultationLoading,
-    error: loadConsultationError,
-    load: loadConsultation,
-    data: consultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
+  const { load: loadConsultation, data: consultationData } = createFetchStore();
 
-  const {
-    loading: isConsultationUpdating,
-    error: updateConsultationError,
-    load: updateConsultation,
-    data: updateConsultationData,
-  }: {
-    loading: Writable<boolean>;
-    error: Writable<string>;
-    load: Function;
-    data: Writable<any>;
-  } = createFetchStore();
+  const { error: updateConsultationError, load: updateConsultation } =
+    createFetchStore();
 
   onMount(async () => {
     loadConsultation(getApiConsultationUrl(consultationId));
@@ -146,13 +121,13 @@
           }
         }}
       >
-        <p class="text-sm text-neutral-500 mb-4">
+        <p class="mb-4 text-sm text-neutral-500">
           You have successfully reviewed and signed off themes for all {questionsForSignOff?.length ||
             0} consultation questions. Are you ready to proceed with AI mapping?
         </p>
 
-        <p class="text-sm text-neutral-500 mb-2">This action will:</p>
-        <ol class="text-sm text-neutral-500 mb-2 list-disc pl-4">
+        <p class="mb-2 text-sm text-neutral-500">This action will:</p>
+        <ol class="mb-2 list-disc pl-4 text-sm text-neutral-500">
           <li class="mb-2">
             Process all consultation responses across {questionsForSignOff?.length ||
               0} questions
@@ -176,12 +151,12 @@
 
         <hr class="my-4" />
 
-        <p class="text-sm text-neutral-500 mb-2">
+        <p class="mb-2 text-sm text-neutral-500">
           If you have concerns or need assistance, please contact support:
         </p>
         <a
           href={`mailto:${Routes.SupportEmail}`}
-          class="support-link block mb-4 text-sm text-secondary hover:text-primary"
+          class="support-link mb-4 block text-sm text-secondary hover:text-primary"
         >
           <div class="flex items-center gap-1">
             <MaterialIcon color="fill-secondary">
@@ -192,7 +167,7 @@
         </a>
 
         {#if $updateConsultationError}
-          <div class="mt-2 mb-4">
+          <div class="mb-4 mt-2">
             <Alert>
               <span class="text-sm">{$updateConsultationError}</span>
             </Alert>
@@ -252,7 +227,7 @@
                 body="No questions found matching your search."
               />
             {:else}
-              {#each displayQuestions as question}
+              {#each displayQuestions as question (question.id)}
                 <QuestionCard
                   {consultationId}
                   {question}
@@ -329,7 +304,7 @@
   body: string,
   active: boolean,
 )}
-  <li class="flex items-start gap-2 mb-4">
+  <li class="mb-4 flex items-start gap-2">
     <div
       class={clsx([
         "flex",
