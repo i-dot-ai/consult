@@ -295,8 +295,10 @@
     expandedThemes = expandedThemes.filter((theme) => theme !== themeId);
   };
 
-  let hasNestedThemes = $derived($generatedThemesData?.results?.some(
-    (theme: GeneratedTheme) => Boolean(theme.children && theme.children.length > 0))
+  let hasNestedThemes = $derived(
+    $generatedThemesData?.results?.some((theme: GeneratedTheme) =>
+      Boolean(theme.children && theme.children.length > 0),
+    ),
   );
 </script>
 
@@ -312,9 +314,7 @@
       size="xs"
       handleClick={() => (location.href = getThemeSignOffUrl(consultationId))}
     >
-      <span class="p-1">
-        Choose another question
-      </span>
+      <span class="p-1"> Choose another question </span>
     </Button>
   </div>
 </TitleRow>
@@ -376,11 +376,12 @@
 
         <p class="text-sm text-neutral-500">
           {#if $selectedThemesData?.results?.length > 0}
-            Manage your {numSelectedThemesText($selectedThemesData?.results)} for the
-            AI in mapping responses. Edit titles and descriptions, or add new themes
-            as needed.
+            Manage your {numSelectedThemesText($selectedThemesData?.results)} for
+            the AI in mapping responses. Edit titles and descriptions, or add new
+            themes as needed.
           {:else}
-            Finalise the themes for the AI to map responses to. Choose from the AI generated themes or add new.
+            Finalise the themes for the AI to map responses to. Choose from the
+            AI generated themes or add new.
           {/if}
         </p>
       </Panel>
